@@ -163,21 +163,24 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	// the first answer naming the head github took holds: a later answer may name none
 	took := res.Details.ExpectedHead
 	clock := newStackClock()
+	var polled error
 	for res.Status == "pending" && clock.elapsed() < stackMergeBudget {
 		clock.sleep(2 * time.Second)
-		if _, err := ghFetch(asDima, api+"/"+res.Details.UUID, &res); err != nil {
-			return "", "", err
+		if _, polled = ghFetch(asDima, api+"/"+res.Details.UUID, &res); polled != nil {
+			break
 		}
 		took = cmp.Or(took, res.Details.ExpectedHead)
 	}
-	landed := res.Status == "merged" || res.Status == "enqueued"
 	switch {
 	case took != "" && took != head:
 		said := fmt.Sprintf("⚠ the stack merge of #%s (%s) reports head %s, not the gated %s", n, res.Status, short(took), short(head))
 		return "", "", brakeAfter(repo, n, "merged a head its gate never read", said)
-	case took == "" && landed:
+	// only github's own «failed» says nothing merged; any other answer with no head may still land one
+	case took == "" && (res.Status != "failed" || polled != nil):
 		said := fmt.Sprintf("⚠ the stack merge of #%s (%s) named no head it took, so the gated %s is unverified", n, res.Status, short(head))
-		return "", "", brakeAfter(repo, n, "merged a head github never named", said)
+		return "", "", errors.Join(polled, brakeAfter(repo, n, "merged a head github never named", said))
+	case polled != nil:
+		return "", "", polled
 	}
 	switch res.Status {
 	case "merged":

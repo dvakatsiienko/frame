@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
@@ -362,24 +363,57 @@ func TestMergeAutoBrakesFromItsOwnRecordWhenTheLabelFailed(t *testing.T) {
 	}
 }
 
-// github's answer named no head it took, so the gated head is unverified: said on stderr, and the brake goes on
+// github's answer named no head it took and did not say nothing merged, so the gated head is unverified: said on
+// stderr, and the brake goes on
 func TestMergeAutoBrakesWhenTheStackMergeNamesNoHead(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, answer string }{
+		{"merged", `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`},
+		{"enqueued", `{"status":"enqueued","details":{}}`},
+		{"still pending at the budget", `{"status":"pending","details":{"uuid":"u1"}}`},
+		{"a status x does not know", `{"status":"queued","details":{}}`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			w := linkedMergeWorld(t)
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = c.answer
+			w.hub.mu.Unlock()
+
+			cmd := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+			cmd.Dir = w.clone
+			cmd.Env = append(append(cleanEnv(), "X_TEST=1", "X_FAKE_SLEEP=1"), w.env...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			code := exitOf(cmd.Run())
+
+			labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+			if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+				t.Fatalf("exit %d, stderr %q, label calls %q: want the merge called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
+			}
+		})
+	}
+}
+
+// with the label refused and the record unwritable, nothing holds the brake: the message says so and names the hand step
+func TestMergeAutoSaysTheBrakeIsOffWhenItsRecordFailedToo(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
-	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + strings.Repeat("d", 40) + `"}}`
+	w.hub.pages["labels:"+brakeLabel] = serverDown
 	w.hub.mu.Unlock()
+	// the record's dir reads as empty and takes no write
+	dir := filepath.Join(w.state, "merge-brake")
+	if err := os.MkdirAll(dir, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(dir, 0o755) })
 
-	c := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
-	c.Dir = w.clone
-	c.Env = append(append(cleanEnv(), "X_TEST=1"), w.env...)
-	var stdout, stderr bytes.Buffer
-	c.Stdout, c.Stderr = &stdout, &stderr
-	code := exitOf(c.Run())
+	got := w.run(t, "8", "--apply")
 
-	labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
-	if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
-		t.Fatalf("exit %d, stderr %q, label calls %q: want the merge called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "NOT on") || got.next != "gh pr edit 8 --add-label "+brakeLabel {
+		t.Fatalf("exit %d, error %q, next %q: want the brake named off and the hand label step", got.code, msg, got.next)
 	}
 }
 

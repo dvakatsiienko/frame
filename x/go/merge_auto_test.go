@@ -973,6 +973,23 @@ func TestMergeAutoReleaseClearsTheBrakesOwnRecord(t *testing.T) {
 	}
 }
 
+// a release names its pr: another pr's record stays, and so does its brake
+func TestMergeAutoReleaseKeepsAnotherPrsRecord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	record := filepath.Join(w.state, "merge-brake", "o_r.json")
+	write(t, record, `{"pr":"8","why":"merged a head its gate never read"}`)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues/9/labels/"+brakeLabel] = `[]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "9", "--apply", "--release-brake", "--dima-ok", "9")
+
+	if got.code != 0 || !exists(record) {
+		t.Fatalf("exit %d, record kept %v: want #9's release to leave #8's record\n%s", got.code, exists(record), got.stdout)
+	}
+}
+
 // a record merge-auto cannot read never reads as off
 func TestMergeAutoRefusesWhenTheBrakesOwnRecordIsUnreadable(t *testing.T) {
 	t.Parallel()
