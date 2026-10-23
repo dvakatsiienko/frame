@@ -11,3 +11,5 @@
 - 13:50 · ccrow-caught · the pickup skipped the 13:36 «close all tails, maybe some freebies» step and never told dima; the CST had judged the 6 tails coder work but the report did not say so → fix: told him with each tail's verdict; a CST first-act that says «say so if asked» about a step dima ordered is said unasked
 
 - 15:25 · ccrow-caught · dropped the afk digest he had ticked as a child ticket (o44), calling it my idea with no proof → fix: re-asked in orbit; a ticked outcome changes only on his word
+
+- 20:21 · ccrow-caught #repeat · turned his ticked o158 «start the 3-day age check» into «build it after the pocket/linear grill» in a status line, with no ask → fix: re-asked in orbit, warn-only now as the pick; a ticked outcome changes only on his word, and a reason to change it goes to him as an ask, never into a status line

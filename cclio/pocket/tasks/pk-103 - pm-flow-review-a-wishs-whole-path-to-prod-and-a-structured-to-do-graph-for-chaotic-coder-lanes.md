@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-23T11:25:00Z'
+updated_date: '2026-10-23T18:02:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -522,4 +522,8 @@ W218 (14:12) print a slim, easy-to-read list.
 routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W181 (boot board, trophy-sys, FRM-417 shape, the budget hook), W206–W208 (PK-198). dropped as cclio's own lines he quoted with ←, never his wish: W163, W165, W166, W183–W189, W213. ❓1–❓22 answered in the thread the turn each came in.
 
 2026-10-23 14:27 dima on W6 (a name for chaotic lanes): «I thought we discarded chaotic lanes» — W6 settled as dropped; no lane kind is named chaotic.
+
+2026-10-23 20:53 dima's pocket ↔ linear drop for tomorrow's grill (no action tonight): raw in ~/.local/state/cclio/prompts/2026-10-23.md:747; the prep with cclio's ideas: ~/frame/.scratch/dima-intervenes/runs/pocket-linear-grill-prep.md
+
+2026-10-23 21:03 timing probe: one append-notes, measured for the pocket/linear grill
 <!-- SECTION:NOTES:END -->

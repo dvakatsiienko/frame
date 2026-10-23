@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-23T15:17:00Z'
-updated_date: '2026-10-23T15:56:00Z'
+updated_date: '2026-10-23T16:12:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -330,4 +330,6 @@ sources: ~/.local/state/x/lanes/cli-1/x-architecture-review-2026-10-23.md, the F
 done already: the `merged-by-x` label exists in frame and bytes
 
 2026-10-23 18:56 cclio: dima 18:37 pulled the 5 cli chunks forward — they are signed right after the 18:5x second wind (o115); only the mods lane and the rest of the cli wait for the pm module. cli rider (shape-lane § 4, dima o109): a guard in `x linear body --set` refuses a write to a ticket labelled `signed` unless the body gains a `## signed` line.
+
+2026-10-23 19:11 dima: plain and stacked pr modes both first-class, declared visibly (AGENTS.md, PRODUCT.md, FTR, docs), both covered by tests, so the pr flow never breaks. today the docs frame stacks as an optional, deletable trial (pr-flow.md:16, x/AGENTS.md:81, BYT-98). grill round 2: ~/frame/.scratch/dima-intervenes/runs/cli-sign-2-proposal.md
 <!-- SECTION:NOTES:END -->
