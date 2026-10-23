@@ -26,7 +26,7 @@ is_dev() {
 
 stale=0
 [[ -x ${bin} ]] || stale=1
-for file in "${go}"/*.go "${go}"/registry.json "${go}"/go.mod "${go}"/go.sum; do
+for file in "${go}"/*.go "${go}"/*.json "${go}"/go.mod "${go}"/go.sum; do
     ((stale)) && break
     [[ ${file} -nt ${bin} ]] && stale=1
 done

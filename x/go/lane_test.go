@@ -523,3 +523,53 @@ func TestCommitWithNoIndexLockSaysNothingOfWaiting(t *testing.T) {
 		t.Errorf("exit %d, data %v: want a commit with no waited field", got.code, got.data)
 	}
 }
+
+// layers pushes each branch on top of the one before it, from main up, and leaves a clone on the last
+func layers(t *testing.T, names ...string) string {
+	t.Helper()
+	origin := filepath.Join(t.TempDir(), "origin.git")
+	gitT(t, filepath.Dir(origin), "init", "-q", "--bare", "-b", "main", origin)
+	seed := repo(t)
+	gitT(t, seed, "remote", "add", "origin", origin)
+	gitT(t, seed, "push", "-q", "origin", "main")
+	for _, name := range names {
+		gitT(t, seed, "switch", "-q", "-c", name)
+		write(t, filepath.Join(seed, strings.ReplaceAll(name, "/", "-")+".txt"), name+"\n")
+		gitT(t, seed, "add", ".")
+		gitT(t, seed, "commit", "-q", "-m", name)
+		gitT(t, seed, "push", "-q", "origin", name)
+	}
+	clone := filepath.Join(t.TempDir(), "clone")
+	gitT(t, filepath.Dir(clone), "clone", "-q", "-b", names[len(names)-1], origin, clone)
+	return clone
+}
+
+// ghRecorder is a fake gh on PATH: every call lands in calls.log behind its token, then the case body answers it
+func ghRecorder(t *testing.T, cases string) (env []string, log string) {
+	t.Helper()
+	dir := t.TempDir()
+	log = filepath.Join(dir, "calls.log")
+	write(t, filepath.Join(dir, "bin/gh"), "#!/bin/sh\nprintf '%s %s\\n' \"$GH_TOKEN\" \"$*\" >> '"+log+"'\ncase \"$*\" in\n"+cases+"\nesac\n")
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+	return []string{"PATH=" + filepath.Join(dir, "bin") + ":" + os.Getenv("PATH"), "X_KEYS=" + keys}, log
+}
+
+const prCreated = `'pr create'*) echo https://github.com/o/r/pull/8 ;;`
+
+func bodyFile(t *testing.T) string {
+	path := filepath.Join(t.TempDir(), "body.md")
+	write(t, path, "the body\n")
+	return path
+}
+
+func TestPrOpenOpensOntoMain(t *testing.T) {
+	clone := layers(t, "coder/FRM-1-a")
+	env, log := ghRecorder(t, prCreated)
+
+	got := xIn(t, clone, env, "lane", "pr-open", "--apply", "a title", bodyFile(t))
+
+	calls := strings.TrimSpace(read(t, log))
+	if got.code != 0 || !strings.HasPrefix(calls, "ghs_coder pr create --base main --head coder/FRM-1-a ") || strings.Contains(calls, "\n") {
+		t.Fatalf("exit %d, gh calls %q, want one pr create onto main as the coder app\n%s", got.code, calls, got.stdout)
+	}
+}
