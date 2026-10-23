@@ -82,6 +82,7 @@ brief says which, and when it does not, ask once, up front.
   takes only your paths in a dirty shared checkout; when your change sits on someone's uncommitted hunks
   you cannot separate, carry them and name them in the body.
 - **the merge is cclio's**, on the verifier's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.
+- **a stacked lane** (the brief says `pr mode: stacked`): read [stacked-lane.md](stacked-lane.md) before the first branch
 
 ## 3. «final» — the review chain
 
@@ -125,7 +126,7 @@ on diff lines.
 
 - a red check → fix and push
 - a comment from dima or a review bot → answer on the thread, then act
-- main moved under you → `x lane merge-main` before the next push, never a rebase of a pushed branch
+- main moved under you → `x lane merge-main` before the next push, never a rebase of a pushed branch (a stacked lane restacks, § 2)
 - merged or closed → `TaskStop` the monitor
 
 ## 5. talking

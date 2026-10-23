@@ -45,6 +45,7 @@ this file says how every member does it. A section headed with roles binds only 
   replaces your standing focus for that run
 - it names one automation candidate: a script, a verb or a guard
 - a trial you rode gets a «trials» line each, outside the 12: your impression in plain words (helped, got in the way), keep or drop, one suggestion — dima reads these to judge the trial
+- a stacked lane appends its «stack» block at every layer's land, not only at the lane's end, so the trial reads each layer while the lane runs (dima, 2026-10-23); the block's shape is your role skill's
 
 ## coder · verifier · designer
 
