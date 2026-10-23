@@ -298,6 +298,7 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 		neither = "pre-commit:\n  commands:\n    # pnpm typecheck and pnpm test moved to pre-push\n    format:\n      run: pnpm exec biome check {staged_files}\n    mods:\n      run: pnpm mods:test\npre-push:\n  commands:\n    t:\n      run: pnpm typecheck && pnpm test\n"
 		wired   = "#!/bin/sh\n# lefthook shim\nexit 0\n"
 		other   = "#!/bin/sh\nexit 0\n"
+		notExec = "chmod-x:"
 	)
 	cases := []struct {
 		name, config, hook, path string
@@ -305,9 +306,10 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 	}{
 		{"frame's pre-commit runs both", both, wired, "src/a.ts", nil},
 		{"a pre-commit running neither", neither, wired, "src/a.ts", []string{"typecheck", "test"}},
-		{"bytes' turbo typecheck keeps test", turbo, wired, "src/a.ts", []string{"test"}},
+		{"a turbo typecheck keeps test", turbo, wired, "src/a.ts", []string{"test"}},
 		{"no hook installed", both, "", "src/a.ts", []string{"typecheck", "test"}},
 		{"a hook not wired to lefthook", both, other, "src/a.ts", []string{"typecheck", "test"}},
+		{"a hook git skips, no exec bit", both, notExec + wired, "src/a.ts", []string{"typecheck", "test"}},
 		{"a go path runs go test either way", both, wired, "mod/m.go", []string{"go"}},
 	}
 	for _, c := range cases {
@@ -320,8 +322,12 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 			write(t, filepath.Join(dir, ".gitignore"), "*.ran\n")
 			gitT(t, dir, "add", ".")
 			gitT(t, dir, "commit", "-q", "-m", "plant")
-			if c.hook != "" {
-				write(t, filepath.Join(dir, ".git/hooks/pre-commit"), c.hook)
+			if hook, plain := strings.CutPrefix(c.hook, notExec); c.hook != "" {
+				path := filepath.Join(dir, ".git/hooks/pre-commit")
+				write(t, path, hook)
+				if plain {
+					_ = os.Chmod(path, 0o644)
+				}
 			}
 			body := "export const a = 1\n"
 			if strings.HasSuffix(c.path, ".go") {

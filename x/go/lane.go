@@ -731,6 +731,10 @@ func preCommitRuns(tree string) map[string]bool {
 	if err != nil {
 		return runs
 	}
+	// git skips a hook without the exec bit, silently
+	if info, err := os.Stat(hookPath); err != nil || info.Mode()&0o111 == 0 {
+		return runs
+	}
 	if hook, err := os.ReadFile(hookPath); err != nil || !strings.Contains(string(hook), "lefthook") {
 		return runs
 	}
