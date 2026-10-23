@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -285,6 +286,68 @@ func TestCommitGatesOnTheCiJobsOnlyOnMain(t *testing.T) {
 
 			if moved := gitT(t, dir, "rev-parse", "HEAD") != before; moved != c.commits || (got.code == 0) != c.commits {
 				t.Fatalf("committed %v, exit %d, want committed %v\n%s", moved, got.code, c.commits, got.stdout)
+			}
+		})
+	}
+}
+
+func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
+	const (
+		both    = "pre-commit:\n  commands:\n    typecheck:\n      run: script/index-run.sh pnpm typecheck\n    test:\n      run: script/index-run.sh pnpm test\npre-push:\n  commands:\n    t:\n      run: pnpm test\n"
+		turbo   = "pre-commit:\n  jobs:\n    - name: typecheck-changed\n      run: pnpm turbo typecheck --filter='...[origin/main]'\n"
+		neither = "pre-commit:\n  commands:\n    # pnpm typecheck and pnpm test moved to pre-push\n    format:\n      run: pnpm exec biome check {staged_files}\n    mods:\n      run: pnpm mods:test\npre-push:\n  commands:\n    t:\n      run: pnpm typecheck && pnpm test\n"
+		wired   = "#!/bin/sh\ncall_lefthook() { :; }\ncall_lefthook run \"pre-commit\" \"$@\"\n"
+		other   = "#!/bin/sh\nexit 0\n"
+		mention = "#!/bin/sh\n# a lefthook shim, once\nexit 0\n"
+		notExec = "chmod-x:"
+	)
+	cases := []struct {
+		name, config, hook, path, env string
+		want                          []string
+	}{
+		{"frame's pre-commit runs both", both, wired, "src/a.ts", "", nil},
+		{"a pre-commit running neither", neither, wired, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a turbo typecheck keeps test", turbo, wired, "src/a.ts", "", []string{"test"}},
+		{"no hook installed", both, "", "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a hook not wired to lefthook", both, other, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a hook that only mentions lefthook", both, mention, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a hook git skips, no exec bit", both, notExec + wired, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"lefthook switched off in the env", both, wired, "src/a.ts", "LEFTHOOK=0", []string{"typecheck", "test"}},
+		{"a go path runs go test either way", both, wired, "mod/m.go", "", []string{"go"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := repo(t)
+			write(t, filepath.Join(dir, "mod/go.mod"), "module m\n\ngo 1.21\n")
+			write(t, filepath.Join(dir, "mod/m_test.go"), "package m\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestM(t *testing.T) { _ = os.WriteFile(\"../go.ran\", nil, 0o644) }\n")
+			write(t, filepath.Join(dir, "package.json"), `{"scripts":{"typecheck":"touch typecheck.ran","test":"touch test.ran"}}`)
+			write(t, filepath.Join(dir, "lefthook.yaml"), c.config)
+			write(t, filepath.Join(dir, ".gitignore"), "*.ran\n")
+			gitT(t, dir, "add", ".")
+			gitT(t, dir, "commit", "-q", "-m", "plant")
+			if hook, plain := strings.CutPrefix(c.hook, notExec); c.hook != "" {
+				path := filepath.Join(dir, ".git/hooks/pre-commit")
+				write(t, path, hook)
+				if plain {
+					_ = os.Chmod(path, 0o644)
+				}
+			}
+			body := "export const a = 1\n"
+			if strings.HasSuffix(c.path, ".go") {
+				body = "package m\n"
+			}
+			write(t, filepath.Join(dir, c.path), body)
+
+			got := xIn(t, dir, []string{"GIT_CONFIG_GLOBAL=/dev/null", c.env}, "lane", "commit", message(t), "--", c.path)
+
+			var ran []string
+			for _, job := range []string{"typecheck", "test", "go"} {
+				if exists(filepath.Join(dir, job+".ran")) {
+					ran = append(ran, job)
+				}
+			}
+			if got.code != 0 || !slices.Equal(ran, c.want) {
+				t.Fatalf("exit %d, jobs run %q, want %q\n%s", got.code, ran, c.want, got.stdout)
 			}
 		})
 	}

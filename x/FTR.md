@@ -96,7 +96,9 @@
   - when `x lane commit` runs
   - then `go test ./...` in that module, and the repo's `pnpm typecheck` and `pnpm test` for ts, run before the hooks; a red job refuses the commit with its output, and HEAD does not move
   - given any other branch, then no job runs
+  - given the repo's pre-commit hook is installed, executable, calls lefthook, and its `pre-commit:` block runs `pnpm typecheck` or `pnpm test` (frame both; bytes neither, its turbo typecheck sits under `pre-push:`), then that job is left to the hook and runs once; any other hook runs both here; `go test` runs either way
   - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
+  - decision: a check runs once, at commit (dima, 2026-10-15: «checks belong at commit, never per edit, and pre-commit stays short»)
 - ✅ `x lane commit` waits out a peer's index lock
   - given another git holds the repo's `index.lock`
   - when `x lane commit` reaches its `add` or its `commit`

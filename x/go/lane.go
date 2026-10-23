@@ -675,13 +675,59 @@ func ciJobs(tree string, paths []string) []ciJob {
 	}
 	if ts {
 		scripts := packageScripts(tree)
+		hooked := preCommitRuns(tree)
 		for _, script := range []string{"typecheck", "test"} {
-			if scripts[script] != "" {
+			if scripts[script] != "" && !hooked[script] {
 				jobs = append(jobs, ciJob{tree, nil, []string{"pnpm", script}})
 			}
 		}
 	}
 	return jobs
+}
+
+// a pnpm or turbo typecheck/test call on a run line; a comment or a `mods:test` never matches
+var lefthookCall = regexp.MustCompile(`(?m)^\s*\S*lefthook\s+run\s+"?pre-commit"?`)
+
+var hookJob = regexp.MustCompile(`(?:^|\s)(?:pnpm|turbo)(?:\s+(?:run|turbo|exec\s+turbo))?\s+(typecheck|test)(?:\s|'|$)`)
+
+// the jobs the repo's own pre-commit runs, only while its hook is installed and calls lefthook
+func preCommitRuns(tree string) map[string]bool {
+	runs := map[string]bool{}
+	// lefthook's own off switch: its hook then exits 0 and runs nothing
+	if off := os.Getenv("LEFTHOOK"); off == "0" || off == "false" {
+		return runs
+	}
+	hookPath, err := mustGitIn(tree, "hook", "rev-parse", "--path-format=absolute", "--git-path", "hooks/pre-commit")
+	if err != nil {
+		return runs
+	}
+	// git skips a hook without the exec bit, silently
+	if info, err := os.Stat(hookPath); err != nil || info.Mode()&0o111 == 0 {
+		return runs
+	}
+	if hook, err := os.ReadFile(hookPath); err != nil || !lefthookCall.Match(hook) {
+		return runs
+	}
+	var config []byte
+	for _, name := range []string{"lefthook.yaml", "lefthook.yml"} {
+		if config, err = os.ReadFile(filepath.Join(tree, name)); err == nil {
+			break
+		}
+	}
+	inPreCommit := false
+	for line := range strings.Lines(string(config)) {
+		if line != "" && line[0] != ' ' && line[0] != '\t' && line[0] != '#' {
+			inPreCommit = strings.HasPrefix(line, "pre-commit:")
+			continue
+		}
+		if !inPreCommit || strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+		for _, match := range hookJob.FindAllStringSubmatch(line, -1) {
+			runs[match[1]] = true
+		}
+	}
+	return runs
 }
 
 // goModule is the nearest dir at or above dir, inside the tree, that holds a go.mod
