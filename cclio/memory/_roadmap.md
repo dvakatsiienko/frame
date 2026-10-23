@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → monorepo → speak → chords → trophy-sys → portfolio → monorepo
 - now: fleet sweep done, monorepo next; first the pm review, then the cli lanes
 - next: speak v2 or oxc/vp + bun
-- started mils: cli · 🐉 prs land themselves 2/4, monorepo · 🐉 ci made boring 2/5
+- started mils: cli · 🐉 prs land themselves 3/4, monorepo · 🐉 ci made boring 2/5
