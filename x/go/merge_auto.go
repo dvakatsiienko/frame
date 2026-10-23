@@ -17,6 +17,9 @@ import (
 // github's own auto-merge is never turned on: a stack cannot take it (gh-stack#504)
 const mergeTrailer = "Merged-by: x lane merge-auto"
 
+// the mark of a merge whose commit carries no trailer (github's async merge takes no message)
+const mergedLabel = "merged-by-x"
+
 type mergeCheck struct {
 	Name   string `json:"name"`
 	OK     bool   `json:"ok"`
@@ -34,6 +37,9 @@ type mergeDecision struct {
 	Merged   string       `json:"merged,omitempty"`
 	title    string
 	body     string
+	layered  bool
+	heads    map[string]string // a stack's every gated head, pr → sha
+	landed   string
 }
 
 type pullHead struct {
@@ -64,6 +70,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	r.Open("#" + n + " " + repo)
 
 	var pr pullHead
+	var layers *prLayers
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
@@ -75,13 +82,13 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		if state != "open" {
 			return "", &Fail{Refused: true, Msg: "#" + n + " is " + state + ", nothing to merge", Next: "x gh pr " + n}
 		}
-		if laneAddOn.mergeWait != nil {
-			wait, err := laneAddOn.mergeWait(repo, pr)
-			if err != nil {
+		if laneAddOn.layersOf != nil {
+			var err error
+			if layers, err = laneAddOn.layersOf(repo, n, pr); err != nil {
 				return "", err
 			}
-			if wait != "" {
-				return "", &Fail{Refused: true, Msg: "wait: " + wait, Next: "x lane merge-auto " + n}
+			if layers != nil && layers.wait != "" {
+				return "", &Fail{Refused: true, Msg: "wait: " + layers.wait, Next: "x lane merge-auto " + n}
 			}
 		}
 		return pr.Head.Ref + " at " + short(pr.Head.Sha), nil
@@ -89,6 +96,30 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body}
+	trunk := pr.Base.Ref
+	if layers == nil {
+		r.skip("layers")
+	} else {
+		trunk, d.layered = layers.trunk, true
+		d.heads = map[string]string{n: pr.Head.Sha}
+		if err := r.Step("layers", "gating every layer under the pr", func() (string, error) {
+			for _, below := range layers.below {
+				wait, err := layerWait(repo, api, trunk, below, d)
+				if err != nil {
+					return "", err
+				}
+				if wait != "" {
+					return "", &Fail{Refused: true, Msg: "wait: " + wait + " — a stack merges all of its layers at once", Next: "x lane merge-auto " + n}
+				}
+			}
+			if len(layers.below) == 0 {
+				return "the bottom layer, onto " + trunk, nil
+			}
+			return "#" + strings.Join(layers.below, ", #") + " clean, green, threadless", nil
+		}); err != nil {
+			return nil, err
+		}
+	}
 
 	var verifier, ci, threads mergeCheck
 	if err := r.Step("verifier", "reading the verifier's clean", func() (string, error) {
@@ -100,7 +131,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	needsApprove := false
 	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
 		var err error
-		ci, needsApprove, err = ciCheck(api, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha)
+		ci, needsApprove, err = ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
 		if err != nil || needsApprove {
 			return ci.Detail, err
 		}
@@ -120,8 +151,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	d.Checks = []mergeCheck{verifier, ci, threads}
 	var self []string
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
-		var err error
-		d.Risky, self, err = riskyPaths(api, n)
+		own, ownSelf, err := riskyPaths(api, n)
+		// a stack's lower layers named theirs in the layers step; the card shows every layer's
+		d.Risky, self = append(own, d.Risky...), ownSelf
 		switch {
 		case err != nil:
 			return "", err
@@ -137,7 +169,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	brake := ""
 	if err := r.Step("brake", "looking for a revert of a merge-auto merge in 7 days", func() (string, error) {
 		var err error
-		brake, err = brakeOn(pr.Base.Ref)
+		brake, err = brakeOn(api, trunk)
 		switch {
 		case err != nil:
 			return "", err
@@ -175,6 +207,60 @@ func decide(brake string, self []string, needsApprove bool, verifier, ci, thread
 	return "merge", ""
 }
 
+// why a layer under the merged pr holds the merge, as the same gate reads it; "" when it passes
+func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
+	var pr pullHead
+	if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+		return "", err
+	}
+	d.heads[n] = pr.Head.Sha
+	verifier := verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
+	if err != nil {
+		return "", err
+	}
+	threads, err := threadsCheck(repo, n)
+	if err != nil {
+		return "", err
+	}
+	risky, self, err := riskyPaths(api, n)
+	if err != nil {
+		return "", err
+	}
+	for _, path := range risky {
+		d.Risky = append(d.Risky, "#"+n+" "+path)
+	}
+	layer := "#" + n + " (" + pr.Head.Ref + ")"
+	decision, wait := decide("", self, needsApprove, verifier, ci, threads)
+	switch decision {
+	case "merge":
+		return "", nil
+	case "approve":
+		return layer + " needs its review:clean first: x lane merge-auto --apply " + n, nil
+	}
+	for _, c := range []mergeCheck{verifier, ci, threads} {
+		if !c.OK && c.Detail == wait {
+			wait = c.Name + ": " + wait
+		}
+	}
+	return layer + " — " + wait, nil
+}
+
+// the async merge takes no sha to pin, so every gated head is read again right before it: a push since refuses
+func headsHeld(api string, heads map[string]string) error {
+	for n, gated := range heads {
+		var pr pullHead
+		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+			return err
+		}
+		if pr.Head.Sha != gated {
+			return &Fail{Refused: true, Msg: fmt.Sprintf("#%s moved from %s to %s after the gate read it; nothing merged", n, short(gated), short(pr.Head.Sha)),
+				Next: "x lane merge-auto <pr>, once the verifier cleared #" + n + "'s new head"}
+		}
+	}
+	return nil
+}
+
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
 	return "merge #" + d.PR + " at " + short(d.Head) + "?"
@@ -191,6 +277,22 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
+		if d.layered && laneAddOn.mergeLayers != nil {
+			// a stacked pr refuses the plain endpoint (403); its layers land together or not at all
+			if err := headsHeld(api, d.heads); err != nil {
+				return "", err
+			}
+			// before the merge, so a stack that lands always wears it; a label on a pr that then fails to merge is harmless
+			for n := range d.heads {
+				if _, _, err := ghSend(asDima, http.MethodPost, api+"/issues/"+n+"/labels", map[string][]string{"labels": {mergedLabel}}, nil); err != nil {
+					return "", err
+				}
+			}
+			shown, sha, err := laneAddOn.mergeLayers(d.Repo, d.PR)
+			d.landed = shown
+			d.Merged = sha
+			return shown, err
+		}
 		var merged struct {
 			Sha string `json:"sha"`
 		}
@@ -204,7 +306,11 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done("merged #"+d.PR+" at "+short(d.Merged)+"\n"+d.summary(), "")
+	result := "merged #" + d.PR + " at " + short(d.Merged)
+	if d.layered {
+		result = d.landed
+	}
+	r.Done(result+"\n"+d.summary(), "")
 	return d, nil
 }
 
@@ -315,7 +421,7 @@ var (
 )
 
 // no stored state (grill, 2026-10-20); git's revert names the sha, github's revert button only the subject
-func brakeOn(base string) (string, error) {
+func brakeOn(api, base string) (string, error) {
 	if _, err := mustGit("brake", "fetch", "-q", "origin", base); err != nil {
 		return "", err
 	}
@@ -328,9 +434,6 @@ func brakeOn(base string) (string, error) {
 		sha, subject, _ := strings.Cut(strings.TrimSpace(line), "\x00")
 		merged[sha], merged[subject] = true, true
 	}
-	if len(merged) == 0 {
-		return "", nil
-	}
 	since := clock().Add(-brakeFor).Format(time.RFC3339)
 	recent, err := mustGit("brake", "log", "origin/"+base, "--since="+since, "--format=%H%x00%B%x1e")
 	if err != nil {
@@ -338,14 +441,65 @@ func brakeOn(base string) (string, error) {
 	}
 	for record := range strings.SplitSeq(recent, "\x1e") {
 		sha, message, _ := strings.Cut(strings.TrimSpace(record), "\x00")
-		if match := revertsSha.FindStringSubmatch(message); match != nil && merged[match[1]] {
-			return short(sha) + " reverts " + short(match[1]), nil
+		if match := revertsSha.FindStringSubmatch(message); match != nil {
+			ours, err := mergedByX(api, merged, match[1], "/commits/"+match[1]+"/pulls")
+			if err != nil || ours {
+				return short(sha) + " reverts " + short(match[1]), err
+			}
 		}
-		if match := revertsSubject.FindStringSubmatch(message); match != nil && merged[match[1]] {
-			return short(sha) + " reverts «" + match[1] + "»", nil
+		if match := revertsSubject.FindStringSubmatch(message); match != nil {
+			pr := ""
+			if n := prOfSubject.FindStringSubmatch(match[1]); n != nil {
+				pr = "/pulls/" + n[1]
+			}
+			ours, err := mergedByX(api, merged, match[1], pr)
+			if err != nil || ours {
+				return short(sha) + " reverts «" + match[1] + "»", err
+			}
 		}
 	}
 	return "", nil
+}
+
+var prOfSubject = regexp.MustCompile(`\(#(\d+)\)$`)
+
+// a reverted commit is merge-auto's when it carries the trailer, or when github says its pr wears the label
+func mergedByX(api string, trailered map[string]bool, key, path string) (bool, error) {
+	if trailered[key] {
+		return true, nil
+	}
+	if path == "" {
+		return false, nil
+	}
+	type labelled struct {
+		Labels []struct {
+			Name string `json:"name"`
+		} `json:"labels"`
+	}
+	var prs []labelled
+	var target any = &prs
+	var one labelled
+	if strings.HasPrefix(path, "/pulls/") {
+		target = &one
+	}
+	status, _, err := ghSend(asDima, http.MethodGet, api+path, nil, target)
+	switch {
+	case status == http.StatusNotFound:
+		return false, nil
+	case err != nil:
+		return false, err
+	}
+	if target == &one {
+		prs = []labelled{one}
+	}
+	for _, pr := range prs {
+		for _, label := range pr.Labels {
+			if label.Name == mergedLabel {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 func clock() time.Time {

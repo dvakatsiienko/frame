@@ -3,6 +3,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -208,6 +209,149 @@ func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"state":"open","head":{"ref":"coder/y"}},` + lower + `]`
 	w.hub.pages[repoPath+"/pulls/8/files"] = w.hub.pages[repoPath+"/pulls/7/files"]
 	return w
+}
+
+// a linked stack on github: #7 (coder/x onto main) under #8, both clean, green and threadless; the async
+// merge of #8 starts pending and the poll answers merged
+func linkedMergeWorld(t *testing.T) *mergeWorld {
+	t.Helper()
+	w := stackedMergeWorld(t, "coder/x", lowerOpen)
+	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#8":"`+w.head+`"}`)
+	w.hub.mu.Lock()
+	defer w.hub.mu.Unlock()
+	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
+		{"number":7,"state":"open","head":{"ref":"coder/x"}},{"number":8,"state":"open","head":{"ref":"coder/x-2"}}]}]`
+	w.hub.pages[repoPath+"/pulls/8/merge-async"] = `{"status":"pending","details":{"uuid":"u1"}}`
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	return w
+}
+
+func TestMergeAutoLandsALinkedStackInOneCall(t *testing.T) {
+	w := linkedMergeWorld(t)
+
+	got := w.run(t, "8", "--apply", "--json")
+
+	asyncs := w.hub.sent("PUT " + repoPath + "/pulls/8/merge-async")
+	if got.code != 0 || len(asyncs) != 1 || len(w.hub.sent("PUT "+repoPath+"/pulls/7")) != 0 || len(w.hub.sent("PUT "+repoPath+"/pulls/8/merge ")) != 0 {
+		t.Fatalf("exit %d, async merges %q, all puts %q: want one async merge of #8 and nothing else\n%s", got.code, asyncs, w.hub.sent("PUT"), got.stdout)
+	}
+	if !strings.Contains(asyncs[0], `"merge_method":"squash"`) || envelopeOf(got).Data.Merged != mergedSha {
+		t.Errorf("merge call %q, merged %q: want a squash and the merged sha read back\n%s", asyncs[0], envelopeOf(got).Data.Merged, got.stdout)
+	}
+}
+
+// the find on 2026-10-23: the plain endpoint answered 403 for #99, a stack's bottom layer
+func TestMergeAutoLandsAStacksBottomLayerAsync(t *testing.T) {
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7/merge-async"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || len(w.hub.sent("PUT "+repoPath+"/pulls/7/merge-async")) != 1 || len(w.hub.sent("PUT "+repoPath+"/pulls/7/merge ")) != 0 {
+		t.Fatalf("exit %d, puts %q: want one async merge of #7\n%s", got.code, w.hub.sent("PUT"), got.stdout)
+	}
+}
+
+func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
+	cases := []struct {
+		name, reason string
+		fail         func(w *mergeWorld)
+	}{
+		{"no clean record", "verifier", func(w *mergeWorld) { write(t, w.store, `{"o/r#8":"`+w.head+`"}`) }},
+		{"a self-edit waiting for dima", "self-edit", func(w *mergeWorld) {
+			w.hub.mu.Lock()
+			defer w.hub.mu.Unlock()
+			w.hub.pages[repoPath+"/pulls/7/files"] = `[{"filename":"x/go/merge_auto.go","status":"modified"}]`
+		}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			w := linkedMergeWorld(t)
+			c.fail(w)
+
+			got := w.run(t, "8", "--apply")
+
+			if got.code == 0 || !strings.Contains(got.stdout, "#7") || !strings.Contains(got.stdout, c.reason) || len(w.hub.sent("PUT")) != 0 {
+				t.Fatalf("exit %d, puts %q: want no merge and a wait naming #7 and %q\n%s", got.code, w.hub.sent("PUT"), c.reason, got.stdout)
+			}
+		})
+	}
+}
+
+func TestMergeAutoRefusesAStackWhoseLayerMovedAfterTheGate(t *testing.T) {
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.later = map[string]string{repoPath + "/pulls/7": strings.ReplaceAll(w.hub.pages[repoPath+"/pulls/7"], w.head, strings.Repeat("d", 40))}
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "#7") || !strings.Contains(got.stdout, "moved") || len(w.hub.sent("PUT")) != 0 {
+		t.Fatalf("exit %d, puts %q: want a refusal naming #7's moved head and no merge\n%s", got.code, w.hub.sent("PUT"), got.stdout)
+	}
+}
+
+func TestMergeAutoNamesALowerLayersRiskyPaths(t *testing.T) {
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7/files"] = `[{"filename":".github/workflows/ci.yml","status":"modified"}]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply", "--json")
+
+	if got.code != 0 || !slices.Contains(envelopeOf(got).Data.Risky, "#7 .github/workflows/ci.yml") {
+		t.Fatalf("exit %d, risky %q: want #7's workflow named\n%s", got.code, envelopeOf(got).Data.Risky, got.stdout)
+	}
+}
+
+func TestMergeAutoSkipsAMergedLayerBelow(t *testing.T) {
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
+		{"number":6,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"coder/w"}},
+		{"number":7,"state":"open","head":{"ref":"coder/x"}},{"number":8,"state":"open","head":{"ref":"coder/x-2"}}]}]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code != 0 || len(w.hub.sent("GET "+repoPath+"/pulls/6")) != 0 {
+		t.Fatalf("exit %d, reads of #6 %q: want the merged layer skipped\n%s", got.code, w.hub.sent("GET "+repoPath+"/pulls/6"), got.stdout)
+	}
+}
+
+func TestMergeAutoLabelsEveryStackLayerBeforeTheMerge(t *testing.T) {
+	w := linkedMergeWorld(t)
+
+	got := w.run(t, "8", "--apply")
+
+	w.hub.mu.Lock()
+	calls := slices.Clone(w.hub.calls)
+	w.hub.mu.Unlock()
+	at := func(prefix string) int {
+		return slices.IndexFunc(calls, func(c string) bool { return strings.HasPrefix(c, prefix) })
+	}
+	merge := at("PUT " + repoPath + "/pulls/8/merge-async")
+	for _, n := range []string{"7", "8"} {
+		label := at("POST " + repoPath + "/issues/" + n + "/labels")
+		if got.code != 0 || label < 0 || label > merge || !strings.Contains(calls[label], mergedLabel) {
+			t.Fatalf("exit %d, #%s label call at %d, merge at %d: want every layer labelled %s first\n%s", got.code, n, label, merge, mergedLabel, got.stdout)
+		}
+	}
+}
+
+func TestMergeAutoReportsAFailedStackMerge(t *testing.T) {
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"failed","details":{"message":"merge conflict in #8"}}`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "merge conflict in #8") || !strings.Contains(got.stdout, "nothing merged") {
+		t.Fatalf("exit %d, want the failure named and «nothing merged»\n%s", got.code, got.stdout)
+	}
 }
 
 func TestMergeAutoRefusesALayerWhoseLowerPrMerged(t *testing.T) {

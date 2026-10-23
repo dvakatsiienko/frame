@@ -24,6 +24,9 @@ type hub struct {
 	auth      []string
 	head      string
 	onApprove func(h *hub)
+	// a path's answer from its second GET on: a push landing between two reads
+	later map[string]string
+	reads map[string]int
 }
 
 func (h *hub) serve(t *testing.T) *httptest.Server {
@@ -55,6 +58,9 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			}
 			_, _ = w.Write([]byte(`{"state":"APPROVED"}`))
 			return
+		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/labels"):
+			_, _ = w.Write([]byte(`[]`))
+			return
 		case r.Method == http.MethodPost && r.URL.Path == "/graphql":
 			_, _ = w.Write([]byte(h.pages["graphql"]))
 			return
@@ -66,9 +72,20 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			w.Header().Set("Link", `<`+server.URL+r.URL.Path+`?per_page=100&page=2>; rel="next"`)
 		}
 		body, ok := h.pages[key]
+		if h.reads == nil {
+			h.reads = map[string]int{}
+		}
+		if h.reads[key]++; h.reads[key] > 1 && h.later[key] != "" {
+			body = h.later[key]
+		}
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			_, _ = w.Write([]byte(`{"message":"Not Found"}`))
+			return
+		}
+		if body == serverDown {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"message":"Server Error"}`))
 			return
 		}
 		_, _ = w.Write([]byte(body))
@@ -443,6 +460,58 @@ func TestMergeAutoBrakesForSevenDaysAfterARevertOfItsMerge(t *testing.T) {
 				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 			}
 		})
+	}
+}
+
+// a stack lands through github's async merge, which takes no message, so its squash carries no trailer;
+// the brake finds it by the label merge-auto set on its pr
+func TestMergeAutoBrakesAfterARevertOfALabelledMerge(t *testing.T) {
+	cases := []struct {
+		name   string
+		revert func(t *testing.T, w *mergeWorld, merged, at string) string
+	}{
+		{"git revert", gitRevert},
+		{"github's revert pr", githubRevert},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			w := newMergeWorld(t, "script/foo.ts")
+			write(t, filepath.Join(w.seed, "merged.txt"), "a stack layer\n")
+			gitT(t, w.seed, "add", "merged.txt")
+			merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body")
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/commits/"+merged+"/pulls"] = `[{"number":5,"labels":[{"name":"` + mergedLabel + `"}]}]`
+			w.hub.pages[repoPath+"/pulls/5"] = `{"number":5,"state":"closed","merged":true,"labels":[{"name":"` + mergedLabel + `"}]}`
+			w.hub.mu.Unlock()
+			revert := c.revert(t, w, merged, "2026-10-18T12:00:00Z")
+
+			got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply")
+
+			want := "wait: brake on, needs dima's word — " + short(revert)
+			if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+				t.Fatalf("exit %d, error %q, want %q", got.code, envelopeOf(got).Error, want)
+			}
+		})
+	}
+}
+
+// a hub page holding this answers 500
+const serverDown = "<500>"
+
+func TestMergeAutoRefusesWhenTheBrakeCannotAskGithub(t *testing.T) {
+	w := newMergeWorld(t, "script/foo.ts")
+	write(t, filepath.Join(w.seed, "merged.txt"), "a stack layer\n")
+	gitT(t, w.seed, "add", "merged.txt")
+	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/commits/"+merged+"/pulls"] = serverDown
+	w.hub.mu.Unlock()
+	gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
+
+	got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply")
+
+	if got.code == 0 || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, puts %q: want a refusal when the brake's lookup fails, never a merge\n%s", got.code, w.hub.sent("PUT "), got.stdout)
 	}
 }
 
