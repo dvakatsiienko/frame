@@ -104,15 +104,17 @@ func unlinkedWait(repo string, pr pullHead) (string, error) {
 const stackMergeBudget = 10 * time.Minute
 
 // github's async merge, the one door a stacked pr takes: every open layer up to n lands at once or none does.
-// it takes no commit message, so these squashes carry no merge-auto trailer for the brake to find
-func stackMerge(repo, n string) (merged, sha string, err error) {
+// it takes no commit message, so these squashes carry no merge-auto trailer for the brake to find; it takes no sha
+// either, so the head github merged is read back against the gated one, and a mismatch turns the brake on
+func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	api := githubBase() + "/repos/" + repo + "/pulls/" + n + "/merge-async"
 	var res struct {
 		Status  string `json:"status"`
 		Details struct {
-			UUID    string `json:"uuid"`
-			SHA     string `json:"sha"`
-			Message string `json:"message"`
+			UUID         string `json:"uuid"`
+			SHA          string `json:"sha"`
+			Message      string `json:"message"`
+			ExpectedHead string `json:"expected_head_sha"`
 		} `json:"details"`
 	}
 	status, _, err := ghSend(asDima, http.MethodPut, api, map[string]string{"merge_method": "squash", "merge_action": "default"}, &res)
@@ -129,6 +131,9 @@ func stackMerge(repo, n string) (merged, sha string, err error) {
 			return "", "", err
 		}
 	}
+	if got := res.Details.ExpectedHead; got != "" && got != head {
+		return "", "", headMismatch(repo, n, head, got)
+	}
 	switch res.Status {
 	case "merged":
 		return "#" + n + " and every layer under it → " + short(res.Details.SHA), res.Details.SHA, nil
@@ -138,6 +143,15 @@ func stackMerge(repo, n string) (merged, sha string, err error) {
 		return "", "", &Fail{Msg: "the stack merge failed, nothing merged: " + res.Details.Message, Next: "x lane stack view"}
 	}
 	return "", "", &Fail{Msg: fmt.Sprintf("the stack merge is still %s after %s", res.Status, stackMergeBudget), Next: "x lane stack view"}
+}
+
+// gh-stack's own merge compares the same field (merge_async.go:88); the label is the brake every next run reads
+func headMismatch(repo, n, gated, merged string) error {
+	said := fmt.Sprintf("⚠ the stack merge of #%s took head %s, not the gated %s: the brake is on, nothing else merges until dima looks", n, short(merged), short(gated))
+	if _, _, err := ghSend(asDima, http.MethodPost, githubBase()+"/repos/"+repo+"/issues/"+n+"/labels", map[string][]string{"labels": {brakeLabel}}, nil); err != nil {
+		said += "; the " + brakeLabel + " label failed too: " + err.Error()
+	}
+	return &Fail{Msg: said, Log: []string{said}, Next: releaseBrake(n)}
 }
 
 /* Verbs */

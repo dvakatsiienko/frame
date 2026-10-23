@@ -3,6 +3,8 @@
 package main
 
 import (
+	"bytes"
+	"os/exec"
 	"slices"
 	"strings"
 	"testing"
@@ -291,6 +293,31 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 				t.Fatalf("exit %d, puts %q: want no merge and a wait naming #7 and %q\n%s", got.code, w.hub.sent("PUT"), c.reason, got.stdout)
 			}
 		})
+	}
+}
+
+// github merged a head the gate never read: loud on stderr, and the brake goes on for every next merge
+func TestMergeAutoBrakesWhenTheStackMergedAnotherHead(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	moved := strings.Repeat("d", 40)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + moved + `"}}`
+	w.hub.mu.Unlock()
+
+	c := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+	c.Dir = w.clone
+	c.Env = append(append(cleanEnv(), "X_TEST=1"), w.env...)
+	var stdout, stderr bytes.Buffer
+	c.Stdout, c.Stderr = &stdout, &stderr
+	code := exitOf(c.Run())
+
+	labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+	if code != 1 || !strings.Contains(stderr.String(), short(moved)) || !strings.Contains(stderr.String(), short(w.head)) {
+		t.Fatalf("exit %d, stderr %q: want a loud mismatch naming %s and %s", code, stderr.String(), short(moved), short(w.head))
+	}
+	if !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+		t.Errorf("label calls %q, want #8 marked %s", labelled, brakeLabel)
 	}
 }
 

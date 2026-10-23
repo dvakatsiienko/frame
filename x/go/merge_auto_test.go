@@ -893,6 +893,48 @@ func TestMergeAutoReadsTheSignFromLinearNeverThePr(t *testing.T) {
 	}
 }
 
+// a merge that landed another head than the gated one leaves its pr labelled; every next merge waits on it
+func TestMergeAutoWaitsWhileAPrWearsTheBrakeLabel(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "7", "--apply")
+
+	want := "x lane merge-auto 8 --release-brake --dima-ok 8"
+	if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(envelopeOf(got).Error, "brake on") || !strings.Contains(envelopeOf(got).Error, want) {
+		t.Fatalf("exit %d, error %q, want the brake's wait naming #8 and %q", got.code, envelopeOf(got).Error, want)
+	}
+}
+
+func TestMergeAutoReleasesTheBrakeOnDimasTypedWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+	w.hub.pages[repoPath+"/issues/8/labels/"+brakeLabel] = `[]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply", "--release-brake", "--dima-ok", "8")
+
+	if released := w.hub.sent("DELETE " + repoPath + "/issues/8/labels/" + brakeLabel); got.code != 0 || len(released) != 1 || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, deletes %q, puts %q: want the label removed and no merge:\n%s", got.code, released, w.hub.sent("PUT "), got.stdout)
+	}
+}
+
+func TestMergeAutoReleasesTheBrakeOnlyOnDimasWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+
+	got := w.run(t, "8", "--apply", "--release-brake")
+
+	if got.code != 2 || len(w.hub.sent("DELETE ")) != 0 {
+		t.Fatalf("exit %d, deletes %q: want a usage refusal naming --dima-ok 8", got.code, w.hub.sent("DELETE "))
+	}
+}
+
 // brakeOnFor lands a merge-auto merge and its git revert inside brakeNow's 7 days, so the brake is on; it returns the revert
 func brakeOnFor(t *testing.T, w *mergeWorld) string {
 	t.Helper()
