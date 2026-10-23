@@ -61,6 +61,7 @@ In the plan file, then one chat message:
 - severity: 🔴 touches sign-in or data (read it) · 🟢 cosmetic (skim)
 - stated plainly: **an unanswered item counts as accepted**
 - the spend, the steer log, what the next plan changes
+- the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
 - then the return sections, every shift, one or two lines each, in plain words:
   - **how it went**: per lane, merged / parked / not run
   - **what waited on dima**: each wait, and how it resolved — his word, or a decision of cclio's with its reason
