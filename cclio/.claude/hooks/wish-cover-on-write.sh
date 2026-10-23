@@ -8,7 +8,11 @@ case "$file" in
 *) exit 0 ;;
 esac
 [ -f "$file" ] || { echo "wish-cover: $file not found, skipped"; exit 0; }
-line="$(head -n 10 "$file" | grep -iE '^wish: *(PK|FRM)-[0-9]+' | head -n 1)" || exit 0
+line="$(head -n 10 "$file" | grep -iE '^wish: *(PK|FRM)-[0-9]+' | head -n 1)" || {
+	head -n 10 "$file" | grep -qiE '^wish: *none *$' && exit 0
+	jq -n --arg reason "wish-cover: $file has no wish line in its first 10 lines — add \`wish: PK-N\` (or FRM-N), or \`wish: none\` when no wish of dima's stands behind it" '{decision: "block", reason: $reason}'
+	exit 0
+}
 id="$(grep -iEo 'PK-[0-9]+' <<<"$line" | head -n 1)" || id="$(grep -iEo 'FRM-[0-9]+' <<<"$line" | head -n 1)"
 command -v node >/dev/null || { echo "wish-cover: node missing, skipped"; exit 0; }
 out="$(node "$HOME/frame/cclio/script/wish-cover.ts" "$id" "$file" 2>&1)" && exit 0
