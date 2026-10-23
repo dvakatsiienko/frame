@@ -1,0 +1,2884 @@
+{
+  "id": "bXEok2dNa9qVWDE9",
+  "name": "🛼 crew and pm, end to end",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-23T13:03:06.050Z",
+  "updatedAt": "2026-10-23T13:05:24.654Z",
+  "isArchived": false,
+  "versionId": "632d47b0-3218-47e8-b7a9-2fbe1be69522",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "664f4bf6-f5f8-5d49-8f15-d907719d241f",
+      "name": "sticky 3:247",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1020
+      ],
+      "parameters": {
+        "content": "## ✈️ 2 — Preflight, every spawn, in order\nx:crew-lead § preflight · a spawn first reads models.md, briefing.md, watching.md, shared-tree.md",
+        "width": 1520,
+        "height": 1220,
+        "color": 6
+      }
+    },
+    {
+      "id": "11c13884-ba48-5034-8c7c-2e5f8225e69e",
+      "name": "sticky 6:294",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "content": "## 🚪 1 — Which door?\nx:crew-lead § the doors · disposable or watchable, never research vs code · one coder by default, two with a reason, never three",
+        "width": 1900,
+        "height": 940,
+        "color": 7
+      }
+    },
+    {
+      "id": "6d8b8f34-a737-5080-8020-c61f8c2d8ad4",
+      "name": "sticky 6:349",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        2300
+      ],
+      "parameters": {
+        "content": "## 📋 3 — The brief\nx:crew-lead briefing.md · what goes in, then every word checked before it is sent",
+        "width": 1520,
+        "height": 660,
+        "color": 5
+      }
+    },
+    {
+      "id": "dfaf39ad-6a38-5dca-9b51-a88501b2b369",
+      "name": "sticky 6:404",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        3040
+      ],
+      "parameters": {
+        "content": "## 🏃 4 — Running the lane\nbriefing § watching · watching.md · crew-dna · subscribe, never poll; three round trips, more means the brief was wrong",
+        "width": 1520,
+        "height": 660,
+        "color": 4
+      }
+    },
+    {
+      "id": "a50974e9-a7ed-585f-abac-59eef76f139a",
+      "name": "sticky 6:463",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        3800
+      ],
+      "parameters": {
+        "content": "## 🏁 5 — Ending\ncrew-dna · briefing § the pr · watching § stopping · a watch lives until its pr merges, never until its coder stops",
+        "width": 1520,
+        "height": 680,
+        "color": 2
+      }
+    },
+    {
+      "id": "5d1444b8-0553-5d26-a8b1-c372cb275a7c",
+      "name": "sticky 6:502",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        4540
+      ],
+      "parameters": {
+        "content": "## 🐝 6 — Subagents\nx:crew-subagent · open to every member · disposable: runs inside your session, dies with it",
+        "width": 1520,
+        "height": 660,
+        "color": 1
+      }
+    },
+    {
+      "id": "e5db780b-2a1a-5640-93e6-30cf38143b45",
+      "name": "sticky 6:549",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3760,
+        0
+      ],
+      "parameters": {
+        "content": "## 🧭 Legend",
+        "width": 380,
+        "height": 1580,
+        "color": 7
+      }
+    },
+    {
+      "id": "c80d4f0a-27fa-5e8e-b7e4-9b240252c054",
+      "name": "sticky 7:236",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        0
+      ],
+      "parameters": {
+        "content": "## 📬 1 — Intake: a drop becomes a pocket item\ncraft-fleet-flow stage 1 · craft-pm § wishes · habit-shared-files § the pocket · cclio:boot step 3",
+        "width": 1520,
+        "height": 660,
+        "color": 5
+      }
+    },
+    {
+      "id": "e6ff97c2-e74f-5586-adef-2bd93499748e",
+      "name": "sticky 23:298",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        740
+      ],
+      "parameters": {
+        "content": "## 🥊 2 — Shape: a wish becomes buildable\ncraft-fleet-flow stages 2–3 · root invariant 3 · cclio:shape-idea · grilling · craft-pm § wishes",
+        "width": 1520,
+        "height": 660,
+        "color": 6
+      }
+    },
+    {
+      "id": "e738a6a8-b260-5748-a4ac-a9e3c5597f7d",
+      "name": "sticky 23:361",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        1480
+      ],
+      "parameters": {
+        "content": "## 🎫 3 — Ticket: the want gets its linear home\ncraft-fleet-flow stage 4 · cclio:pm § the fields · pm/references/body.md · the sorting phase",
+        "width": 1520,
+        "height": 660,
+        "color": 5
+      }
+    },
+    {
+      "id": "6a11090d-9723-5f05-910a-73a63f01adc2",
+      "name": "sticky 23:424",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        2200
+      ],
+      "parameters": {
+        "content": "## 🛼 4 — Hand-off: a lane picks its path\ncraft-fleet-flow § freebie, quick lane, side lane, stage 5 · pm/references/body.md § ticket ↔ spec · x:crew-lead",
+        "width": 1520,
+        "height": 680,
+        "color": 6
+      }
+    },
+    {
+      "id": "b652e16c-e68f-5b1a-884b-aad46a084f69",
+      "name": "sticky 23:487",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        2940
+      ],
+      "parameters": {
+        "content": "## 🏁 5 — Land, look, fold: the wish reaches dima\ncraft-fleet-flow stages 8–10 · pm/references/closing.md · habit-shared-files · cclio:halt",
+        "width": 1520,
+        "height": 660,
+        "color": 5
+      }
+    },
+    {
+      "id": "0d9e6542-a3af-5c90-b094-d8d463732829",
+      "name": "sticky 30:434",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        -740
+      ],
+      "parameters": {
+        "content": "## 🧭 0 — Roadmap → milestone: what we work on, in what order\ndima-strategy § the roadmap · craft-pm § milestones first · cclio:pm (milestone fields) · boot's milestone-health block",
+        "width": 1520,
+        "height": 660,
+        "color": 5
+      }
+    },
+    {
+      "id": "83d9da6a-7d16-52fb-be62-ff5204e11c37",
+      "name": "sticky 7:232",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -200
+      ],
+      "parameters": {
+        "content": "# 🛼 the coordinator — how cclio spawns and runs the crew\nx:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-23",
+        "width": 1220,
+        "height": 200,
+        "color": 7
+      }
+    },
+    {
+      "id": "e5d38911-208c-569b-9863-406cf82daac9",
+      "name": "sticky 7:234",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        -940
+      ],
+      "parameters": {
+        "content": "# 🗺️ pm — how a wish travels to dima's hands\ncraft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-23 · ⚠️ = my reading, not in the files",
+        "width": 980,
+        "height": 200,
+        "color": 7
+      }
+    },
+    {
+      "id": "99326d0d-ce10-5a32-9f97-51139975a102",
+      "name": "sticky 37:474",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2360,
+        -1900
+      ],
+      "parameters": {
+        "content": "",
+        "width": 760,
+        "height": 400,
+        "color": 1
+      }
+    },
+    {
+      "id": "568a3eb1-f1c4-5164-b5a5-8eba745d4081",
+      "name": "sticky label-6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        1440
+      ],
+      "parameters": {
+        "content": "**yes**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "cbd7cb04-c708-5db9-95b6-21d35dbe43e7",
+      "name": "sticky label-13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        680,
+        120
+      ],
+      "parameters": {
+        "content": "**disposable**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "696cbf7e-7a79-530d-a8a1-e72a59294d09",
+      "name": "sticky label-14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        280
+      ],
+      "parameters": {
+        "content": "**watchable**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "810d79e9-56ac-5047-815a-88ac3c980035",
+      "name": "sticky label-25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        680,
+        3440
+      ],
+      "parameters": {
+        "content": "**stall**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "42ba73c3-a354-593b-83ed-b0804ec64228",
+      "name": "sticky label-26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        3440
+      ],
+      "parameters": {
+        "content": "**silent**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "a37756d8-566a-5866-89f9-d35b63c24b43",
+      "name": "sticky label-36",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        1120
+      ],
+      "parameters": {
+        "content": "**watchable: preflight**",
+        "width": 220,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "fee6d0cd-4cea-5ad8-8d31-1f7fef2283f2",
+      "name": "sticky label-37",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        2420
+      ],
+      "parameters": {
+        "content": "**brief written in step 7**",
+        "width": 240,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "84e3688f-b446-5729-b160-9754d212eb01",
+      "name": "sticky label-38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        3140
+      ],
+      "parameters": {
+        "content": "**spawned with the argv**",
+        "width": 220,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "2f362587-8c4e-535c-ace9-894d4a47826a",
+      "name": "sticky label-39",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        3920
+      ],
+      "parameters": {
+        "content": "**clean or stopped**",
+        "width": 180,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "190bd08d-efbb-51ba-85dc-78acbe57f06f",
+      "name": "sticky label-75",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        840
+      ],
+      "parameters": {
+        "content": "**folded and placed**",
+        "width": 200,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "993d3b3a-23da-5b18-9d4c-7d7afcda46d3",
+      "name": "sticky label-76",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        1580
+      ],
+      "parameters": {
+        "content": "**shaped**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "79ce1afd-229f-5497-a771-d928cea3e3fd",
+      "name": "sticky label-77",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        2320
+      ],
+      "parameters": {
+        "content": "**sealed exit lines**",
+        "width": 200,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "96fc3723-e0e4-518c-bac3-df54bfebe040",
+      "name": "sticky label-78",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        3040
+      ],
+      "parameters": {
+        "content": "**merged pr**",
+        "width": 160,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "4217c7e0-450e-546e-bb82-04f7054a7952",
+      "name": "sticky label-79",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        2460
+      ],
+      "parameters": {
+        "content": "**the crew runs it: brief → run → end**",
+        "width": 360,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "ee77617d-de3c-5926-a0b2-26815a69c51c",
+      "name": "sticky label-87",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        100
+      ],
+      "parameters": {
+        "content": "**folded and placed**",
+        "width": 200,
+        "height": 80,
+        "color": 3
+      }
+    },
+    {
+      "id": "51a0d616-1b32-5190-a256-7c0d04d53a5f",
+      "name": "♻️ 1 · reuse or spawn?",
+      "notesInFlow": true,
+      "notes": "the grid in models.md",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9e24d524-85f0-5052-8cfc-cd3c46e51b3b",
+      "name": "🔑 2 · trust key",
+      "notesInFlow": true,
+      "notes": "the exact folder in ~/.claude.json",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f56a8f8e-698c-57a0-81d7-ddd595e0501d",
+      "name": "🧊 3 · spare age",
+      "notesInFlow": true,
+      "notes": "a bg-spare over a day old → daemon stop",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0361bc06-12f9-5921-bf6c-94adf85b21f6",
+      "name": "🩺 4 · app essentials",
+      "notesInFlow": true,
+      "notes": "apps-essentials.ts passes",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "70c85d57-e01e-52a4-b140-44ed92aea576",
+      "name": "📂 5 · tier + cwd",
+      "notesInFlow": true,
+      "notes": "cd <repo> && claude --bg, one command",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        1480
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3b005f7d-eb70-5759-be84-16f51f197d66",
+      "name": "🪐 6 · verifier ask",
+      "notesInFlow": true,
+      "notes": "«spawn now? verifier yes/no» in orbit",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        1480
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "42b55f84-ed85-5228-8dc3-d2c8951b4724",
+      "name": "❓ exit lines sealed?",
+      "notesInFlow": true,
+      "notes": "no exit lines → no spawn",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        1480
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d7b9c5fd-0ec5-5ca4-9657-d2176db0746b",
+      "name": "📋 7 · brief file",
+      "notesInFlow": true,
+      "notes": "x brief check + wish-cover pass",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        1480
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0b7a7f71-7c5a-5edf-8324-a36a13924743",
+      "name": "⌨️ 8 · the argv",
+      "notesInFlow": true,
+      "notes": "-n, the prompt, then --remote-control",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        1760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "45922568-f2ce-59af-b12a-49d6a7de79ff",
+      "name": "🏷️ 9 · the name",
+      "notesInFlow": true,
+      "notes": "<mode> <role> <ticket> <role>: <what>",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        1760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9fa748bb-1f17-5199-8d44-eade7086fac4",
+      "name": "🎫 10 · ticket id",
+      "notesInFlow": true,
+      "notes": "rides the branch and the pr body",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        1760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3922cc8e-696c-5656-8af6-6edc03daf451",
+      "name": "🪪 11 · identity",
+      "notesInFlow": true,
+      "notes": "coder token, done-comment cap",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        1760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1bcc6749-c237-528a-8b51-ef021994915a",
+      "name": "🛼 12 · glide",
+      "notesInFlow": true,
+      "notes": "link the member to its lane card",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        2040
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "75939ec5-d615-55c9-9872-c6aa405ff8db",
+      "name": "🦉 work to hand off",
+      "notesInFlow": true,
+      "notes": "cclio has a job for someone",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5e24b4fa-b923-5db4-8df3-02430e99a87d",
+      "name": "❓ disposable or watchable?",
+      "notesInFlow": true,
+      "notes": "the one split that picks a door",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6d97406f-4908-5aa7-bef2-33b9e6f2f654",
+      "name": "🐝 disposable",
+      "notesInFlow": true,
+      "notes": "a subagent, fork or worktree agent → band 6",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "20f93840-df2c-5104-bcfb-829de3fd8fe7",
+      "name": "⌨️ claude --bg",
+      "notesInFlow": true,
+      "notes": "the default door for coding",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "8626121b-0c5e-566f-959d-08a7b22c3fa9",
+      "name": "🙋‍♂️ the Code-tab door",
+      "notesInFlow": true,
+      "notes": "dima opens it, pastes a brief pointer",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "361c20d9-315b-53ca-996c-ba2a2a8c5dfb",
+      "name": "🙋‍♂️ a mods coder",
+      "notesInFlow": true,
+      "notes": "spawned by dima only, in his own tab",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ac2636b0-8b08-5655-ac12-b915820f1b67",
+      "name": "☁️ claude --cloud",
+      "notesInFlow": true,
+      "notes": "an anthropic vm; cannot message back",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6e73334b-e432-588a-9b1e-64185b538158",
+      "name": "🍴 /fork",
+      "notesInFlow": true,
+      "notes": "dima's door: copies this thread",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a3b00e81-4bab-5138-b51e-03cdb44b2cb6",
+      "name": "🎼 the sidecars",
+      "notesInFlow": true,
+      "notes": "ccrow + composer start in cclio:boot",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        740
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "654ec1b5-72dd-5429-8a05-b95bb863f848",
+      "name": "♻️ a pick-up is a spawn",
+      "notesInFlow": true,
+      "notes": "its first message inits the role",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        740
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c1a71c54-696e-5675-b313-12ee8cbc859f",
+      "name": "📋 role contract first",
+      "notesInFlow": true,
+      "notes": "/x:crew-coder … — only the first slash expands",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        2500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "815178e9-2b08-5aa2-9904-ccd2283ea577",
+      "name": "📄 every other skill",
+      "notesInFlow": true,
+      "notes": "named in plain words",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        2500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9b8ba588-4250-56e8-a892-222a96b358e3",
+      "name": "🔎 names its verifier",
+      "notesInFlow": true,
+      "notes": "on a verifier yes",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        2500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "00bda979-7278-5767-a00c-8ab877c5ffc5",
+      "name": "🛑 a «not yours» fence",
+      "notesInFlow": true,
+      "notes": "what another member owns",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        2500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "53db0707-59d1-5b1e-b681-87a45be044f8",
+      "name": "📝 first reply: skills loaded",
+      "notesInFlow": true,
+      "notes": "one line per spawn → a test drive",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        2760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "81beed33-9d25-52ba-b7c8-47a054ff6bd5",
+      "name": "🧪 15 checks before sending",
+      "notesInFlow": true,
+      "notes": "every verb --help, fetch main first …",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        2760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "2f36c03c-b35d-5b61-9f88-1c2970875db4",
+      "name": "📄 context pointers",
+      "notesInFlow": true,
+      "notes": "never a restated ticket",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        2760
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f0d8f588-0ab8-553f-bacf-ffe34747178b",
+      "name": "🔧 the coder works",
+      "notesInFlow": true,
+      "notes": "its worktree (pr) or main (quick lane)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        3220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f614be94-28a6-5464-b85b-d44851baf126",
+      "name": "🔔 it pings",
+      "notesInFlow": true,
+      "notes": "[done] [blocked] [ask] [progress]",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        3220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "46011c3c-7406-5dd5-b9a5-21eae73aa9e9",
+      "name": "📡 pr-watch: «opened»",
+      "notesInFlow": true,
+      "notes": "cclio spawns the verifier",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        3220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "b708a94d-79b0-544f-b144-4dc386af0055",
+      "name": "🔁 coder ↔ verifier",
+      "notesInFlow": true,
+      "notes": "rounds, cap 3; cclio hears none",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        3220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "93f02284-3ed4-52d9-9b20-e72e419ef603",
+      "name": "🔔 an idle notice",
+      "notesInFlow": true,
+      "notes": "notify_when_idle, one-shot",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        3500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a9a28910-b844-5b24-9c51-a3f9908b1724",
+      "name": "🩺 idle-check.ts",
+      "notesInFlow": true,
+      "notes": "stall or fine?",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        3500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "24a86b1b-ca24-58cb-a946-f417c065bca6",
+      "name": "🦉 nudge it",
+      "notesInFlow": true,
+      "notes": "the next step, the same turn",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        3500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e66c30ed-97fb-5f96-be7a-870db9a75abc",
+      "name": "🙋‍♂️ still silent ~5 min",
+      "notesInFlow": true,
+      "notes": "dima, or re-brief / respawn",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        3500
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "eecb7d46-41c0-51b4-ad61-dcbc01186789",
+      "name": "✅ verifier clean",
+      "notesInFlow": true,
+      "notes": "recorded by pr-watch.sh --verified",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        4000
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "33436bfe-f684-565e-b861-311582d9ba94",
+      "name": "🦉 no review request",
+      "notesInFlow": true,
+      "notes": "dima is never added; the gate in pr-flow.md decides",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        4000
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "909ed22a-24a3-5f79-96b6-b287d70fc3d5",
+      "name": "🔀 merge",
+      "notesInFlow": true,
+      "notes": "by the gate in pr-flow.md; risky paths named; a self-edit or the brake waits for dima",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        4000
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "826d26a4-219b-5593-8a3a-d9d9a844ebc9",
+      "name": "🛑 claude stop <jobId>",
+      "notesInFlow": true,
+      "notes": "then ls: the registry file is gone",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        4000
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a9fbe7ec-2def-5559-9339-23fabcd60c01",
+      "name": "📝 retro + glide end",
+      "notesInFlow": true,
+      "notes": "beside the lane plan in ~/.local/state/x/lanes; the glide ends at siesta",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        4280
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6444ced3-62a2-5486-b50b-53d9f8261f95",
+      "name": "🦉 a chore or a read",
+      "notesInFlow": true,
+      "notes": "a big read, a bounded question",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        140,
+        4740
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a916f34a-4dc1-5d5a-9bb5-02d102a7537b",
+      "name": "❓ pick the card",
+      "notesInFlow": true,
+      "notes": "helper-lite · helper · researcher · retro · scout",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        4740
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "946e2e75-7ef3-5100-94e1-836b92c0b6fa",
+      "name": "⚙️ a lean start",
+      "notesInFlow": true,
+      "notes": "omitClaudeMd, effort medium",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        4740
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0bc03273-d4a2-5229-8da9-e13bc66de0bb",
+      "name": "🍴 a fork?",
+      "notesInFlow": true,
+      "notes": "only with why-fork:, or refused",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        4740
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "54773d0b-30a4-53ed-b14b-a50eefaa4d89",
+      "name": "✅ done",
+      "notesInFlow": true,
+      "notes": "answer read, checked, folded",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        5000
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "8206510f-f1cf-5515-8307-9bc86e3e839e",
+      "name": "📄 fan-out",
+      "notesInFlow": true,
+      "notes": "x10 ≈ 4× tokens, 5× faster; x25+ → Workflow",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        5000
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a41999f6-b5e0-51bf-b17a-07353b7a990d",
+      "name": "🙋‍♂️ dima",
+      "notesInFlow": true,
+      "notes": "decides or acts",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "10df0489-5368-592b-ab62-fcef2412aa51",
+      "name": "🦉 cclio",
+      "notesInFlow": true,
+      "notes": "does it",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        380
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3cd74193-9c23-5be5-96f6-0fc274ca0365",
+      "name": "⚙️ a script",
+      "notesInFlow": true,
+      "notes": "a hook or a check",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        580
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "99e23bae-5919-51e3-9bf2-7b981a077797",
+      "name": "🔧 a crew member",
+      "notesInFlow": true,
+      "notes": "coder, verifier, …",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        780
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "314917aa-2bb7-59ef-b911-acb832d389e4",
+      "name": "📄 a file",
+      "notesInFlow": true,
+      "notes": "a rule or a reference",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        980
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "80ec4fbb-3424-5cc2-9c18-37df9a4ddbbf",
+      "name": "🔔 an event",
+      "notesInFlow": true,
+      "notes": "a trigger",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        1180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "60859a58-57df-51f7-8ebf-b173dcf9a45c",
+      "name": "⚠️ a weak spot",
+      "notesInFlow": true,
+      "notes": "my reading, not in the files",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        1380
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "939792d9-1a15-5c9e-b376-649c620755e9",
+      "name": "🙋‍♂️ a drop",
+      "notesInFlow": true,
+      "notes": "inbox.md in the vault, or mid-prompt",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ae727233-20b3-5654-8ba7-3160d4ccce70",
+      "name": "🎼 composer grooms it",
+      "notesInFlow": true,
+      "notes": "every wish-bearing prompt; his raw words land in the notes at once",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "634a3ea2-3c0a-5216-8d2d-4f65d29e1773",
+      "name": "🦉 folded into W-lines",
+      "notesInFlow": true,
+      "notes": "his words, one point a line, ❓ for his questions; copied, never paraphrased",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "69d06184-04d6-53c7-8c90-e25519add25e",
+      "name": "🌠 a pocket item is born",
+      "notesInFlow": true,
+      "notes": "Backlog.md · pocket-add.ts · size + now/next/later",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "186e3ec9-614d-5e78-bed3-3c12bdf04949",
+      "name": "⚙️ pocket-check",
+      "notesInFlow": true,
+      "notes": "reds a breach: now ≤ 3, open ≤ 5, a stale state, a W-line unaccounted",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3be7f295-4a7c-5602-b2ac-fdc02c6221e2",
+      "name": "🐬 wishkeeper, boot mode",
+      "notesInFlow": true,
+      "notes": "every drop landed, kept in meaning",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "329cce86-934f-535b-91e8-ba9c74ceaee3",
+      "name": "❓ its fate, the turn it is born",
+      "notesInFlow": true,
+      "notes": "freebie (1–5 calls) now · today/tomorrow · a week out → linear, in its milestone; the ask names both",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5fc6b2b3-be8a-5d31-bdf9-281f0f7b2638",
+      "name": "✅ the pocket is today + tomorrow",
+      "notesInFlow": true,
+      "notes": "a week out → linear in its milestone; back only as a pointer",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e7a95439-70be-5ede-bc00-d3ba173e81f4",
+      "name": "🔔 bigger than a tweak",
+      "notesInFlow": true,
+      "notes": "a new app, a redesign, a real feature",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        920
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ea1d2938-0039-52ee-b6d6-4a76a950bc60",
+      "name": "🦉 cclio:shape-idea",
+      "notesInFlow": true,
+      "notes": "the want, a grill, prior art, the cut, the done test",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        920
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3ee1c7d7-9bf3-58ba-89ba-9fc2f1694290",
+      "name": "🔁 grill rounds",
+      "notesInFlow": true,
+      "notes": "matt's grilling: a proposal file, ccrow reviews it, the refined round prints once",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        920
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "232b9bab-ab63-542a-88c7-68484f69db88",
+      "name": "❓ «shaped»",
+      "notesInFlow": true,
+      "notes": "his word is the gate",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        920
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "31fc6763-a430-5573-8845-1ba823e65777",
+      "name": "🎨 design, when it earns it",
+      "notesInFlow": true,
+      "notes": "designer-interview → boards → his pick",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6b3d443a-b9a8-528e-bb5a-d00cee9fe9e8",
+      "name": "⚙️ wish-cover.ts + its hook",
+      "notesInFlow": true,
+      "notes": "a first use copies its W-lines word for word; reds a missing one or an unknown id",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2660,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3519139e-f357-5c58-bf8d-3ace9087d170",
+      "name": "✅ first use is word-checked",
+      "notesInFlow": true,
+      "notes": "was 9.4 % lost at the grill (10-21); the hook fires on every spec and proposal",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "bdde216c-e36c-5ee6-8d14-0049691249bd",
+      "name": "📄 ? lines answered",
+      "notesInFlow": true,
+      "notes": "a wish reaching to-spec with an open ? is the failure",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3420,
+        1200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c5a50981-0645-575c-8908-50e7cf23e330",
+      "name": "🦉 search before a create",
+      "notesInFlow": true,
+      "notes": "the dupe, the parent, the relations up front",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        1660
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "13555778-bb9a-5a31-9ace-fb71e08e714a",
+      "name": "🎫 born in Triage",
+      "notesInFlow": true,
+      "notes": "x as cclio, never --state; promotion is dima's",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        1660
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1fe6c38e-6e8e-5f77-b93f-6841f384516a",
+      "name": "📄 the body, a spec seed",
+      "notesInFlow": true,
+      "notes": "lane · wish block of W-lines · why · stories · decided · exit",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        1660
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "50dbabda-8f78-55c4-b1b0-02b9dda588fa",
+      "name": "🦉 every field, every touch",
+      "notesInFlow": true,
+      "notes": "role, kind, p3, size, project, parent, 🎑 milestone",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        1660
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e99128d5-7e22-59d4-a41d-1ae2ccbb364c",
+      "name": "🦉 cclio:shape-lane",
+      "notesInFlow": true,
+      "notes": "grill the ticket; the exit lines seal after the spec (PM 4)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        1940
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "67660246-14b4-523d-8de0-5f893738ac41",
+      "name": "⚙️ x brief preflight",
+      "notesInFlow": true,
+      "notes": "exit lines gradable; no exit lines, no spawn",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        1940
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1a4620b5-40a8-5f31-b9be-be97e3d5df96",
+      "name": "🙋‍♂️ the sorting phase",
+      "notesInFlow": true,
+      "notes": "cclio proposes the order, dima corrects it",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        1940
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "352608a5-97a6-55d0-8d6e-2eea72086e44",
+      "name": "✅ one home at a time",
+      "notesInFlow": true,
+      "notes": "pocket item → ticket: «ticket: FRM-N», closes with it the same turn",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        1940
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3bf71a21-11ef-52cc-9aba-24b570f5913a",
+      "name": "❓ which kind?",
+      "notesInFlow": true,
+      "notes": "freebie · quick lane side lane",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        2400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e1027a22-fa0f-57b1-b8a6-6eb81a70e73b",
+      "name": "📄 to-spec",
+      "notesInFlow": true,
+      "notes": ".scratch/<feature>/spec.md; wish: PK-N, its W-lines cited, wish-cover exit 0",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        2400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "cfcc6eb4-717c-52c2-a107-b73d7cd8b926",
+      "name": "🔧 the coder runs to-tickets",
+      "notesInFlow": true,
+      "notes": "slices in .scratch/<feature>/issues/, never linear",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        2400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "b976432b-a577-572c-a2c7-a2e508ab7343",
+      "name": "📋 x brief check + the verifier ask",
+      "notesInFlow": true,
+      "notes": "its one home: crew-lead → the crew column, 3 Brief",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        2400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6804c818-2ebd-5441-b7b1-87c58151c910",
+      "name": "📄 the lane plan → the glide card",
+      "notesInFlow": true,
+      "notes": "~/.local/state/x/lanes/<feature>/, outside every checkout; glide copies it (auto: FRM-410)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2260,
+        2680
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0cd81f58-f014-5cc1-96c1-307979c6b6f2",
+      "name": "✅ cclio seals the order",
+      "notesInFlow": true,
+      "notes": "the coder drafts lane-plan.md, cclio reorders against what comes next",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        2680
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "8c187fc5-d959-5670-8e3f-f1f607b74f1e",
+      "name": "✅ steers land in the file",
+      "notesInFlow": true,
+      "notes": "dima's, cclio's and proxied steers, asks, wisps → ## unsealed the same turn; cclio re-seals",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        2680
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c83ddfbf-75c3-58f7-ab6e-9bb38d48b3ab",
+      "name": "✅ one word per lane",
+      "notesInFlow": true,
+      "notes": "main lane ours · side lane (pr) · quick lane (no pr) · shift on afk",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        2680
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6eed9ce9-325f-5bdb-92f1-3f12fd546dc5",
+      "name": "🔀 land — cclio approves + merges",
+      "notesInFlow": true,
+      "notes": "verifier clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        3120
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "8aba067f-42e4-5b7b-ab61-bbf93d29c53e",
+      "name": "👀 the look card",
+      "notesInFlow": true,
+      "notes": "what, where, try, proven, not checked + a shot; risky paths named",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        3120
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1fc7a522-d278-5f8b-b820-40d381a24195",
+      "name": "🙋‍♂️ the ask-guard",
+      "notesInFlow": true,
+      "notes": "each ask of his printed with its home before a close",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        3120
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "31cb8e67-404d-507d-9b1d-744fa3711982",
+      "name": "🎫 close, with a closing word",
+      "notesInFlow": true,
+      "notes": "proposed, never performed; 3 auto-close cases",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        3120
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d7f32b82-45cc-581d-bc32-b4414296d16d",
+      "name": "🌠 its pocket item → done",
+      "notesInFlow": true,
+      "notes": "the same turn as its ticket's close; the halt files it",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        3400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "12a90ff4-aa95-5849-bad2-84e6299aba8b",
+      "name": "📝 fold the lesson",
+      "notesInFlow": true,
+      "notes": "a guard, a verb, a check, a ticket; the 🗺️ board redrawn once the steers land",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        3400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6d60af75-ad4f-51e6-97e5-26801d5db7a9",
+      "name": "⚙️ x fleet flow --days 14",
+      "notesInFlow": true,
+      "notes": "the done test: #dima-caught, #brief, pr median down",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        3400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "230fd606-0254-57a2-bfa4-d55697f0b86b",
+      "name": "✅ wish-loss guards",
+      "notesInFlow": true,
+      "notes": "M1 + M2 in pocket-check, the word hook; M3 weekly audit from 10-28",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        3400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "bee1ae16-1885-51a8-94e7-052ada69610d",
+      "name": "🧭 the roadmap initiative",
+      "notesInFlow": true,
+      "notes": "8 steps, the cli beside them; «now» names where we stand",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        -540
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6419fb25-2d78-5cb5-945c-5722e2816e83",
+      "name": "🙋‍♂️ a step opens on his tick",
+      "notesInFlow": true,
+      "notes": "a close asks «open N+1?»; then In Progress + its first milestone",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -540
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0cc49e89-88c5-5834-8c02-814e81e310cd",
+      "name": "📄 projects are standing",
+      "notesInFlow": true,
+      "notes": "linear's project complete is never used; only milestones complete",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        -540
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3a95bb9d-de52-5258-99ce-9d274a704335",
+      "name": "🎑 milestones first",
+      "notesInFlow": true,
+      "notes": "create, move, close ask «which milestone?»; a guard refuses a bare one (FRM-417, trial)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        -540
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "defbe375-7270-5372-937a-8b1e3b47a71c",
+      "name": "🎑 born at 2+ tickets",
+      "notesInFlow": true,
+      "notes": "one flow's related tickets, named by the outcome dima notices, never a number",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        -280
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3f4400df-8bb4-5f27-9b25-24d6a66d3f05",
+      "name": "⚙️ the boot's milestone health",
+      "notesInFlow": true,
+      "notes": "flags an empty one, an unplaced ticket, a number-name, more than 5 open",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -280
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9fb1ae0c-8fa4-5d31-866a-744cd7911f7d",
+      "name": "🙋‍♂️ an empty milestone",
+      "notesInFlow": true,
+      "notes": "linear computes done, no close: a ⚠️ delete ask, per milestone",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        -280
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "64a98ade-911e-52fd-9b04-98bd60a0f91c",
+      "name": "🎫 → band 1, the tickets",
+      "notesInFlow": true,
+      "notes": "a week out → linear, in its milestone; the pocket holds today",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        -280
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ee67c712-f379-5f41-b42a-4a2eb55cdaa0",
+      "name": "main lane - related?",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2460,
+        -1820
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a02ce05f-92a5-563e-afb5-9cf9aa4f77d9",
+      "name": "goes into pocket, but in what shape?",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        -1820
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "♻️ 1 · reuse or spawn?": {
+      "main": [
+        [
+          {
+            "node": "🔑 2 · trust key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔑 2 · trust key": {
+      "main": [
+        [
+          {
+            "node": "🧊 3 · spare age",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧊 3 · spare age": {
+      "main": [
+        [
+          {
+            "node": "🩺 4 · app essentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🩺 4 · app essentials": {
+      "main": [
+        [
+          {
+            "node": "📂 5 · tier + cwd",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📂 5 · tier + cwd": {
+      "main": [
+        [
+          {
+            "node": "🪐 6 · verifier ask",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🪐 6 · verifier ask": {
+      "main": [
+        [
+          {
+            "node": "❓ exit lines sealed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ exit lines sealed?": {
+      "main": [
+        [
+          {
+            "node": "📋 7 · brief file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 7 · brief file": {
+      "main": [
+        [
+          {
+            "node": "⌨️ 8 · the argv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⌨️ 8 · the argv": {
+      "main": [
+        [
+          {
+            "node": "🏷️ 9 · the name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🏷️ 9 · the name": {
+      "main": [
+        [
+          {
+            "node": "🎫 10 · ticket id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎫 10 · ticket id": {
+      "main": [
+        [
+          {
+            "node": "🪪 11 · identity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🪪 11 · identity": {
+      "main": [
+        [
+          {
+            "node": "🛼 12 · glide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 work to hand off": {
+      "main": [
+        [
+          {
+            "node": "❓ disposable or watchable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ disposable or watchable?": {
+      "main": [
+        [
+          {
+            "node": "🐝 disposable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "⌨️ claude --bg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 role contract first": {
+      "main": [
+        [
+          {
+            "node": "📄 every other skill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 every other skill": {
+      "main": [
+        [
+          {
+            "node": "🔎 names its verifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 names its verifier": {
+      "main": [
+        [
+          {
+            "node": "🛑 a «not yours» fence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧪 15 checks before sending": {
+      "main": [
+        [
+          {
+            "node": "📝 first reply: skills loaded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 context pointers": {
+      "main": [
+        [
+          {
+            "node": "🧪 15 checks before sending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛑 a «not yours» fence": {
+      "main": [
+        [
+          {
+            "node": "📄 context pointers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔧 the coder works": {
+      "main": [
+        [
+          {
+            "node": "🔔 it pings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔔 it pings": {
+      "main": [
+        [
+          {
+            "node": "📡 pr-watch: «opened»",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 pr-watch: «opened»": {
+      "main": [
+        [
+          {
+            "node": "🔁 coder ↔ verifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔔 an idle notice": {
+      "main": [
+        [
+          {
+            "node": "🩺 idle-check.ts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🩺 idle-check.ts": {
+      "main": [
+        [
+          {
+            "node": "🦉 nudge it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 nudge it": {
+      "main": [
+        [
+          {
+            "node": "🙋‍♂️ still silent ~5 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ verifier clean": {
+      "main": [
+        [
+          {
+            "node": "🦉 no review request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 no review request": {
+      "main": [
+        [
+          {
+            "node": "🔀 merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 merge": {
+      "main": [
+        [
+          {
+            "node": "🛑 claude stop <jobId>",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛑 claude stop <jobId>": {
+      "main": [
+        [
+          {
+            "node": "📝 retro + glide end",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 a chore or a read": {
+      "main": [
+        [
+          {
+            "node": "❓ pick the card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ pick the card": {
+      "main": [
+        [
+          {
+            "node": "⚙️ a lean start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ a lean start": {
+      "main": [
+        [
+          {
+            "node": "🍴 a fork?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 fan-out": {
+      "main": [
+        [
+          {
+            "node": "✅ done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🍴 a fork?": {
+      "main": [
+        [
+          {
+            "node": "📄 fan-out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⌨️ claude --bg": {
+      "main": [
+        [
+          {
+            "node": "♻️ 1 · reuse or spawn?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛼 12 · glide": {
+      "main": [
+        [
+          {
+            "node": "📋 role contract first",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 first reply: skills loaded": {
+      "main": [
+        [
+          {
+            "node": "🔧 the coder works",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔁 coder ↔ verifier": {
+      "main": [
+        [
+          {
+            "node": "✅ verifier clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🙋‍♂️ a drop": {
+      "main": [
+        [
+          {
+            "node": "🎼 composer grooms it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎼 composer grooms it": {
+      "main": [
+        [
+          {
+            "node": "🦉 folded into W-lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 folded into W-lines": {
+      "main": [
+        [
+          {
+            "node": "🌠 a pocket item is born",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌠 a pocket item is born": {
+      "main": [
+        [
+          {
+            "node": "⚙️ pocket-check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ pocket-check": {
+      "main": [
+        [
+          {
+            "node": "🐬 wishkeeper, boot mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🐬 wishkeeper, boot mode": {
+      "main": [
+        [
+          {
+            "node": "❓ its fate, the turn it is born",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ its fate, the turn it is born": {
+      "main": [
+        [
+          {
+            "node": "✅ the pocket is today + tomorrow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔔 bigger than a tweak": {
+      "main": [
+        [
+          {
+            "node": "🦉 cclio:shape-idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 cclio:shape-idea": {
+      "main": [
+        [
+          {
+            "node": "🔁 grill rounds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔁 grill rounds": {
+      "main": [
+        [
+          {
+            "node": "❓ «shaped»",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ «shaped»": {
+      "main": [
+        [
+          {
+            "node": "🎨 design, when it earns it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎨 design, when it earns it": {
+      "main": [
+        [
+          {
+            "node": "⚙️ wish-cover.ts + its hook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ wish-cover.ts + its hook": {
+      "main": [
+        [
+          {
+            "node": "✅ first use is word-checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ first use is word-checked": {
+      "main": [
+        [
+          {
+            "node": "📄 ? lines answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 search before a create": {
+      "main": [
+        [
+          {
+            "node": "🎫 born in Triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎫 born in Triage": {
+      "main": [
+        [
+          {
+            "node": "📄 the body, a spec seed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 the body, a spec seed": {
+      "main": [
+        [
+          {
+            "node": "🦉 every field, every touch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 every field, every touch": {
+      "main": [
+        [
+          {
+            "node": "🦉 cclio:shape-lane",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🦉 cclio:shape-lane": {
+      "main": [
+        [
+          {
+            "node": "⚙️ x brief preflight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ x brief preflight": {
+      "main": [
+        [
+          {
+            "node": "🙋‍♂️ the sorting phase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🙋‍♂️ the sorting phase": {
+      "main": [
+        [
+          {
+            "node": "✅ one home at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ which kind?": {
+      "main": [
+        [
+          {
+            "node": "📄 to-spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 to-spec": {
+      "main": [
+        [
+          {
+            "node": "🔧 the coder runs to-tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔧 the coder runs to-tickets": {
+      "main": [
+        [
+          {
+            "node": "📋 x brief check + the verifier ask",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 x brief check + the verifier ask": {
+      "main": [
+        [
+          {
+            "node": "📄 the lane plan → the glide card",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📋 role contract first",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 the lane plan → the glide card": {
+      "main": [
+        [
+          {
+            "node": "✅ cclio seals the order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ cclio seals the order": {
+      "main": [
+        [
+          {
+            "node": "✅ steers land in the file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ steers land in the file": {
+      "main": [
+        [
+          {
+            "node": "✅ one word per lane",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 land — cclio approves + merges": {
+      "main": [
+        [
+          {
+            "node": "👀 the look card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "👀 the look card": {
+      "main": [
+        [
+          {
+            "node": "🙋‍♂️ the ask-guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🙋‍♂️ the ask-guard": {
+      "main": [
+        [
+          {
+            "node": "🎫 close, with a closing word",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎫 close, with a closing word": {
+      "main": [
+        [
+          {
+            "node": "🌠 its pocket item → done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌠 its pocket item → done": {
+      "main": [
+        [
+          {
+            "node": "📝 fold the lesson",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 fold the lesson": {
+      "main": [
+        [
+          {
+            "node": "⚙️ x fleet flow --days 14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ x fleet flow --days 14": {
+      "main": [
+        [
+          {
+            "node": "✅ wish-loss guards",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ the pocket is today + tomorrow": {
+      "main": [
+        [
+          {
+            "node": "🔔 bigger than a tweak",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 ? lines answered": {
+      "main": [
+        [
+          {
+            "node": "🦉 search before a create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ one home at a time": {
+      "main": [
+        [
+          {
+            "node": "❓ which kind?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ one word per lane": {
+      "main": [
+        [
+          {
+            "node": "🔀 land — cclio approves + merges",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧭 the roadmap initiative": {
+      "main": [
+        [
+          {
+            "node": "🙋‍♂️ a step opens on his tick",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🙋‍♂️ a step opens on his tick": {
+      "main": [
+        [
+          {
+            "node": "📄 projects are standing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 projects are standing": {
+      "main": [
+        [
+          {
+            "node": "🎑 milestones first",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎑 milestones first": {
+      "main": [
+        [
+          {
+            "node": "🎑 born at 2+ tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎑 born at 2+ tickets": {
+      "main": [
+        [
+          {
+            "node": "⚙️ the boot's milestone health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ the boot's milestone health": {
+      "main": [
+        [
+          {
+            "node": "🙋‍♂️ an empty milestone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🙋‍♂️ an empty milestone": {
+      "main": [
+        [
+          {
+            "node": "🎫 → band 1, the tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎫 → band 1, the tickets": {
+      "main": [
+        [
+          {
+            "node": "🙋‍♂️ a drop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "main lane - related?": {
+      "main": [
+        [
+          {
+            "node": "goes into pocket, but in what shape?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "bXEok2dNa9qVWDE9",
+      "projectId": "JR9VXrCA97uZfOCc",
+      "project": {
+        "id": "JR9VXrCA97uZfOCc",
+        "name": "Dima Vakatsiienko <imagnum.satellite@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "55147807-e4bf-49e5-b2cc-01f3de0c8189",
+        "createdAt": "2026-10-18T14:42:54.736Z",
+        "updatedAt": "2026-10-18T14:57:16.416Z"
+      },
+      "createdAt": "2026-10-23T13:03:06.053Z",
+      "updatedAt": "2026-10-23T13:03:06.053Z"
+    }
+  ],
+  "activeVersion": null
+}

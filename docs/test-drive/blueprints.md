@@ -4,7 +4,7 @@ until: 2026-11-01
 dies-when: the verdict line below is written
 ---
 
-# 🗺️ blueprints — dima and cclio talk through pictures: n8n primary, Obsidian Canvas and draw.io for A/B
+# 🗺️ blueprints — dima and cclio talk through pictures: draw.io primary since 2026-10-23, n8n for automations
 
 Ticket: none
 
@@ -32,5 +32,7 @@ one line per automation: the duty it took over, that duty's cost before (tool ca
 ## rounds
 
 - 2026-10-18 · round 0, the pm flow (14 tiles) in all four tools · dima's edits read back right in draw.io, Canvas and n8n (a question tile, arrows, a sticky) · edit cost ~311 draw.io, ~131 n8n, ~94 Canvas, ~68 LikeC4 (tokens, bytes ÷ 3.5) · LikeC4 dropped: no tiles or arrows from its UI · first automation live: composer receipts → n8n webhook → data table, a test row read back
+
+- 2026-10-23 · the tool bench: the crew + pm board (107 tiles, 89 arrows, 13 sections) redrawn by three Opus 5.5 helpers from the FigJam REST export · draw.io 2:39 min, 27 calls, 78k tokens, every shape, colour and arrow label kept · Obsidian Canvas 3:43, 25 calls, 109k, no text size, no diamonds, 6 colours · n8n 6:00, 46 calls, 110k, no colours, no arrow labels, notes cut at ~32 chars · dima picked draw.io; n8n stays for automations
 
 ## verdict

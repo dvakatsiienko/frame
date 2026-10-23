@@ -2,20 +2,19 @@
 
 a **blueprint** is a picture of one part of our system — a flow, a structure, a map — that cclio draws and dima edits to show an idea; cclio reads his edit back and builds from it. the want and the decisions: `PRODUCT.md`.
 
-## the tools — a 2-week trial (`docs/test-drive/blueprints.md`)
+## the tools
 
-- **FigJam** leads for blueprints (dima, 2026-10-21, until the 10-22 bench): the figma mcp, craft in `cclio:author-blueprint`
-- **n8n** stays as our workflow automation tool, its blueprint role revisited after the bench: `http://localhost:5678`, run by pm2 as `x-n8n` (`schedule/jobs/x-n8n/`), data in `~/.local/share/x-n8n` (never in git)
+- **draw.io** is the blueprint tool (dima, 2026-10-23: the most faithful and cheapest of three, the bench in `docs/test-drive/blueprints.md`; why FigJam left: `docs/test-drive/figjam.md`): a `.drawio` here, built by a script so a redraw is one command; `drawio -x -f png -s 0.6 -o <png> <file>` renders the look (full size runs out of tile memory)
+- **n8n** is for automation workflows only: `http://localhost:5678`, run by pm2 as `x-n8n` (`schedule/jobs/x-n8n/`), data in `~/.local/share/x-n8n` (never in git)
   - cclio's door is the REST API: `script/op-run.sh` with `N8N_API_KEY` (`op://dev/n8n-local/credential`), header `X-N8N-API-KEY`; the CLI import overwrites dima's unsaved tab, so it is never used on a live flow
-  - a tile is a `n8n-nodes-base.noOp` node; a free comment is a sticky note; a rename rewrites the connections keyed by that name
-- **Obsidian Canvas** and **draw.io** are the A/B sides, drawn on dima's ask: a `.canvas` in the vault's `_hq/`, a `.drawio` here (`drawio -x --layout '[{"layout":"elkLayered"}]'` places the tiles)
+- **Obsidian Canvas**: an option for later; **FigJam**: back only if the Figma MCP cap lifts
 
 ## the mapped areas — the board is the design truth
 
 a mapped area's board is our main reference for its flow: a change may land in the files first, and the board is redrawn once all its steers and tweaks land, never forgotten (dima, 2026-10-22, PK-103 W94–W95); the skills stay what agents run. an area joins only once a board proved useful. guards: `cclio/script/blueprint-nudge.ts` (an edit of a mapped source names its board) and `blueprint-drift.ts` at every siesta and halt.
 
-- 🛼 crew and pm, end to end · https://www.figma.com/board/hVVKYtLdMTKASUS3mwG3Uz · sources: home/.claude/plugin-x/skills/crew-lead/, home/.claude/plugin-x/skills/crew-subagent/SKILL.md, home/.claude/plugin-x/skills/crew-dna/SKILL.md, cclio/memory/craft-pm.md, cclio/memory/craft-fleet-flow.md, cclio/plugin-cclio/skills/pm/
-- 📐 refresh-crew-coordinator, a run · https://www.figma.com/board/RAJ5NlCcJVqfWNjR0KiS35 · sources: recipes/refresh-crew-coordinator/recipe.md, cclio/plugin-cclio/skills/shape-recipe/SKILL.md
+- 🛼 crew and pm, end to end · `crew-pm-flow.drawio` (the FigJam original: https://www.figma.com/board/hVVKYtLdMTKASUS3mwG3Uz, frozen) · sources: home/.claude/plugin-x/skills/crew-lead/, home/.claude/plugin-x/skills/crew-subagent/SKILL.md, home/.claude/plugin-x/skills/crew-dna/SKILL.md, cclio/memory/craft-pm.md, cclio/memory/craft-fleet-flow.md, cclio/plugin-cclio/skills/pm/
+- 📐 refresh-crew-coordinator, a run · https://www.figma.com/board/RAJ5NlCcJVqfWNjR0KiS35 (FigJam, frozen; redrawn in draw.io at its next touch) · sources: recipes/refresh-crew-coordinator/recipe.md, cclio/plugin-cclio/skills/shape-recipe/SKILL.md
 
 ## the names
 
@@ -24,5 +23,5 @@ a mapped area's board is our main reference for its flow: a change may land in t
 ## the files
 
 - one blueprint per subject, its name self-descriptive for dima, entity-first: `<subject>-<kind>` (`pm-module-flow`)
-- every read of an n8n blueprint saves its export here as `<name>.n8n.json`, committed — git keeps the history the n8n database does not
+- a `.drawio` is committed after every redraw and after every read of dima's edit, so git keeps its history; an n8n automation saves its export here as `<name>.n8n.json` the same way
 - dima's edit is read back as a semantic diff (tiles, arrows, renames, moves), never as the raw json diff: n8n, draw.io and Obsidian all rewrite the whole file on save

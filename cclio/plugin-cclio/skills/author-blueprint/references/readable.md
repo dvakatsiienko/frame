@@ -4,14 +4,14 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 
 ## the layout
 - one idea per tile: a bold title line, a short detail line under it, never a sentence wrapped over three lines
-- big tiles and big text: on FigJam a tile ~520×160, a 26 px title, a 20 px detail, a 40 px section header; a section re-hugs its tiles + 48 px each edit
+- big tiles and big text: a tile ~520×160, a 26 px title, a 20 px detail, a 40 px section header; a section re-hugs its tiles + 48 px each edit
 - a long flow snakes, each row running the opposite way, so an arrow stays short and never crosses a tile; bands join by one arrow, section to section
 - a big flow is split into bands read one at a time, each titled with what it answers
 - arrows ELBOWED with fixed magnets (RIGHT → LEFT in a row, BOTTOM at a turn); no waypoints, a crossing moves a tile
 
 ## the names
 - every tile title opens with an emoji from the set below that names what it is about; the same thing gets the same emoji on every board
-- the board's name leads with its emoji: `🛼 crew-lead — how cclio spawns everyone`, set when the file is made (FigJam's api cannot rename a file later)
+- the board's name leads with its emoji: `🛼 crew-lead — how cclio spawns everyone`
 - a meaning missing from the set joins it here first, then is drawn
 
 ## the set: who acts

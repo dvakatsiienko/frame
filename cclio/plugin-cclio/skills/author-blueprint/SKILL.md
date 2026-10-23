@@ -13,13 +13,13 @@ a mapped area (`blueprints/AGENTS.md`) is planned on its board first, built afte
 
 1. read the real files first and map them one to one: a tile names its file, my own reading (a weak spot) is labelled so
 2. readable for dima, before the first tile: [references/readable.md](references/readable.md) — big tiles, one idea each, an emoji from its set opening every title and the board's name
-3. the tool: FigJam through the figma mcp, one band per `use_figma` call returning every id (the Figma token writes comments only); n8n through its api (`noOp` tiles, stickies, his Tidy up); Canvas or draw.io on his ask, draw.io laid out by `--layout '[{"layout":"elkLayered"}]'`
-4. done: the band checked by numbers (overlaps, text taller than its tile), then one `await section.screenshot()` inside the last `use_figma` (`get_figjam` and `get_screenshot` may spend the View seat's 20 MCP reads a month), fixed, then the link; an n8n board also saves `blueprints/<subject>-<kind>.n8n.json`
+3. the tool: draw.io (`blueprints/AGENTS.md` § the tools) — mxGraph XML written by a builder script beside the board, one stable id per cell (a prefix per section), a re-run replacing only its own section's cells so dima's tiles survive; `blueprints/crew-pm-flow.build.py` is the model (it rewrites the whole file, so it runs only before dima has edited it)
+4. done: the section checked by numbers (overlaps, text taller than its tile, every edge's ends exist), then `drawio -x -f png -s 0.6` and the png read, fixed, then the file path; a write while dima has it open in draw.io needs his reload
 
 ## read his edit back
 
-- his FigJam comments before every board edit, `~/frame/script/op-run.sh node ~/frame/cclio/script/blueprint-comments.ts` (no mcp tool shows them); each comment, sticky or tile of his that asks something is answered in the reply by its own words
-- n8n: GET the workflow and diff it against the last export semantically (tiles, renames, moves, arrows, sticky text), never the raw json; `/workflows/{id}/history` is the base when no export exists
+- before every board edit: the `.drawio` diffed against its last commit cell by cell (text with the label HTML stripped, geometry, edges, new and gone ids), never the raw xml; each tile or note of his that asks something is answered in the reply by its own words
+- n8n (automations only): GET the workflow and diff it against the last export semantically, never the raw json; `/workflows/{id}/history` is the base when no export exists
 - done: the new export committed beside the old one
 
 ## write without breaking him
