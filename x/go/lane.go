@@ -96,7 +96,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	for _, path := range paths {
 		if exists(path) || ok(git("ls-files", "--error-unmatch", "--", path)) {
 			present = append(present, path)
-		} else if words := strings.Fields(path); len(words) > 1 {
+		} else if words := strings.Fields(path); len(words) > 1 && !ok(git("cat-file", "-e", "HEAD:"+path)) {
 			// zsh hands a quoted "$paths" over as one argument; «nothing staged» hid that (2026-10-18)
 			return nil, usageFail(fmt.Sprintf("%q names no file: the path list arrived as one word", path),
 				"x lane commit "+msgFile+" -- "+strings.Join(words, " "))
@@ -732,6 +732,8 @@ func quotesKept(message, msgFile string, paths []string) (string, error) {
 }
 
 // a pnpm or turbo typecheck/test call on a run line; a comment or a `mods:test` never matches
+var lefthookCall = regexp.MustCompile(`(?m)^\s*\S*lefthook\s+run\s+"?pre-commit"?`)
+
 var hookJob = regexp.MustCompile(`(?:^|\s)(?:pnpm|turbo)(?:\s+(?:run|turbo|exec\s+turbo))?\s+(typecheck|test)(?:\s|'|$)`)
 
 // the jobs the repo's own pre-commit runs, only while its hook is installed and calls lefthook
@@ -745,7 +747,7 @@ func preCommitRuns(tree string) map[string]bool {
 	if info, err := os.Stat(hookPath); err != nil || info.Mode()&0o111 == 0 {
 		return runs
 	}
-	if hook, err := os.ReadFile(hookPath); err != nil || !strings.Contains(string(hook), "lefthook") {
+	if hook, err := os.ReadFile(hookPath); err != nil || !lefthookCall.Match(hook) {
 		return runs
 	}
 	var config []byte

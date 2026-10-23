@@ -296,8 +296,9 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 		both    = "pre-commit:\n  commands:\n    typecheck:\n      run: script/index-run.sh pnpm typecheck\n    test:\n      run: script/index-run.sh pnpm test\npre-push:\n  commands:\n    t:\n      run: pnpm test\n"
 		turbo   = "pre-commit:\n  jobs:\n    - name: typecheck-changed\n      run: pnpm turbo typecheck --filter='...[origin/main]'\n"
 		neither = "pre-commit:\n  commands:\n    # pnpm typecheck and pnpm test moved to pre-push\n    format:\n      run: pnpm exec biome check {staged_files}\n    mods:\n      run: pnpm mods:test\npre-push:\n  commands:\n    t:\n      run: pnpm typecheck && pnpm test\n"
-		wired   = "#!/bin/sh\n# lefthook shim\nexit 0\n"
+		wired   = "#!/bin/sh\ncall_lefthook() { :; }\ncall_lefthook run \"pre-commit\" \"$@\"\n"
 		other   = "#!/bin/sh\nexit 0\n"
+		mention = "#!/bin/sh\n# a lefthook shim, once\nexit 0\n"
 		notExec = "chmod-x:"
 	)
 	cases := []struct {
@@ -309,6 +310,7 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 		{"a turbo typecheck keeps test", turbo, wired, "src/a.ts", []string{"test"}},
 		{"no hook installed", both, "", "src/a.ts", []string{"typecheck", "test"}},
 		{"a hook not wired to lefthook", both, other, "src/a.ts", []string{"typecheck", "test"}},
+		{"a hook that only mentions lefthook", both, mention, "src/a.ts", []string{"typecheck", "test"}},
 		{"a hook git skips, no exec bit", both, notExec + wired, "src/a.ts", []string{"typecheck", "test"}},
 		{"a go path runs go test either way", both, wired, "mod/m.go", []string{"go"}},
 	}
@@ -651,6 +653,20 @@ func TestCommitTakesAFileWhoseNameHoldsASpace(t *testing.T) {
 
 	if got.code != 0 || gitT(t, target, "ls-files", "my notes.md") != "my notes.md" {
 		t.Fatalf("exit %d, want the spaced file committed\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitTakesAStagedDeleteOfASpacedFile(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "my notes.md"), "notes\n")
+	gitT(t, target, "add", ".")
+	gitT(t, target, "commit", "-q", "-m", "notes")
+	gitT(t, target, "rm", "-q", "my notes.md")
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "my notes.md")
+
+	if got.code != 0 || gitT(t, target, "ls-files", "my notes.md") != "" {
+		t.Fatalf("exit %d, want the delete committed\n%s", got.code, got.stdout)
 	}
 }
 
