@@ -79,6 +79,39 @@ func TestSetKeepsEveryLabelItWasNotToldToTouch(t *testing.T) {
 	}
 }
 
+func TestSetAddsEveryRepeatedLabelFlag(t *testing.T) {
+	const lookup = `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","priority":3,"state":{"name":"Todo"},
+		"team":{"id":"t-frm","states":{"nodes":[]}},"labels":{"nodes":[{"id":"l-human","name":"human"}]}},
+		"labels":{"nodes":[{"id":"l-agent","name":"agent","team":null},{"id":"l-feature","name":"feature","team":null},
+		{"id":"l-signed","name":"signed","team":null}]}}}`
+	for _, c := range []struct {
+		name  string
+		argv  []string
+		added string
+	}{
+		{"two repeats", []string{"--add-label", "agent", "--add-label", "feature"}, "[l-agent l-feature]"},
+		{"the sign beside another label", []string{"--add-label", "signed", "--add-label", "feature"}, "[l-signed l-feature]"},
+		{"a repeat beside a comma list", []string{"--add-label", "agent,feature", "--add-label", "signed"}, "[l-agent l-feature l-signed]"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := newFakeLinear(t, func(call gqlCall) string {
+				if strings.Contains(call.Query, "mutation") {
+					return `{"data":{"issueUpdate":{"success":true}}}`
+				}
+				return lookup
+			})
+			if _, got := runLinear(t, server, nil, append([]string{"linear", "set", "FRM-1"}, c.argv...)...); got.code != 0 {
+				t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+			}
+			input := updateInput(t, server)
+			if fmt.Sprint(input["addedLabelIds"]) != c.added || fmt.Sprint(input["removedLabelIds"]) != "[]" {
+				t.Errorf("added %v removed %v, want %s added and human kept", input["addedLabelIds"], input["removedLabelIds"], c.added)
+			}
+		})
+	}
+}
+
 func TestSetRefusesAnUnknownNameAndListsTheValidOnes(t *testing.T) {
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--state", "Doing")

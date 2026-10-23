@@ -27,6 +27,8 @@ type FlagSpec struct {
 	Type        string `json:"type"`
 	Value       string `json:"value,omitempty"`
 	Description string `json:"description"`
+	// a repeated string flag keeps every value, joined by commas; without it the last one wins
+	Repeats bool `json:"repeats,omitempty"`
 }
 
 type Verb struct {

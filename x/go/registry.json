@@ -584,7 +584,8 @@
             ],
             "flags": {
                 "add-label": {
-                    "description": "label names to add, comma-separated; every other label stays",
+                    "description": "label names to add, comma-separated or the flag repeated; every other label stays",
+                    "repeats": true,
                     "type": "string",
                     "value": "names"
                 },
@@ -624,7 +625,8 @@
                     "value": "name"
                 },
                 "remove-label": {
-                    "description": "label names to remove, comma-separated",
+                    "description": "label names to remove, comma-separated or the flag repeated",
+                    "repeats": true,
                     "type": "string",
                     "value": "names"
                 },

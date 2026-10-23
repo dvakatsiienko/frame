@@ -372,6 +372,7 @@
   - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|cclio`, `--add-label`, `--remove-label` — names, never ids
   - when it runs
   - then one lookup resolves every name and one `issueUpdate` lands them all; the envelope prints the actor and each change as `field: old → new`
+  - given `--add-label` or `--remove-label` repeated, comma lists or both, then every named label moves (FRM-415)
   - given `--add-label` or `--remove-label`, then only those labels move — the write carries the delta (`addedLabelIds`, `removedLabelIds`), so a label another writer adds in between survives
   - decision: deltas over the spec's full set, for that race (dima, 2026-10-07)
   - given a name the ticket's team or the workspace lacks, then exit 1 listing the valid names, and nothing is written; given no field at all, exit 2
