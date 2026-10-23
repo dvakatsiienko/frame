@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-23T10:36:00Z'
+updated_date: '2026-10-23T10:42:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -425,4 +425,6 @@ W146 medium 5, milestone close: not a big issue; ❓ why does the halt say miles
 W147 the review is very valuable info, but I'm too tired to process it tonight
 
 dima 2026-10-23 13:34, the second pm review (his words): «Before fixes, the PM module had drifted and had a lot of contradictions that we found during the initial review, based on my wishes and your own findings. We identified a number of weak spots by reading the contracts in files, in text, in memories and skills, and by using the actual blueprint, because the blueprint gives a high-level overview. After those fixes, we do another review round in exactly the same manner. It's not just a check for a check mark. The goal is to identify weak spots and find other spots and places for optimization: how to streamline the flow, find some redundant steps that could be overhead, and make Flow easier by just dropping them, merging, or moving, something like this. It is a full-scale review, not just for a check mark to proceed.» — and: «it's better to sync the current PM blueprint with the current state after our fixes» (done 13:35, board synced). 13:36: «let's do a review after a second wind … remember to save my ones about the rare review I just asked and asked previously as well, so after the second window, don't forget them.»
+
+dima 2026-10-23 13:40 (orbit steer on the after-pickup review): «Yes, but do not forget the details about a re-review. It's important.»
 <!-- SECTION:NOTES:END -->
