@@ -157,7 +157,7 @@ BANDS = [
             ("idea", 0, 0, "cclio", "🦉 shape-idea, a pick", "a new app, a feature, a changed product part: want + grill, prior art, the cut, the done test", "cclio:shape-idea steps 1–6"),
             ("out", 1, 0, "file", "📄 one shaped ticket", "wish, decided, the cut as out, the 🎯 done test; no files: PRODUCT.md is born at dispatch", "cclio:shape-idea step 7"),
             ("plain", 2, 0, "cclio", "🎫 plain work: a full ticket", "mechanical wishes skip shape-idea, folded straight into a full ticket, never a thin one", "craft-pm § wishes · cclio:pm"),
-            ("prep", 0, 1, "dima", "🙋‍♂️ «prep», «sign», «fast»", "or «next chunk»: a ticket or a pocket item goes to its sign", "cclio:shape-lane"),
+            ("prep", 0, 1, "dima", "🙋‍♂️ you start a sign", "you say «prep», «sign» or «next chunk» (or «fast» for many easy chunks); the ticket or pocket item enters shape-lane", "cclio:shape-lane"),
             ("read", 1, 1, "cclio", "🦉 read what is settled", "the wish block + decided, or the pocket notes; wish-cover.ts exits 0 on every round", "shape-lane § 0"),
             ("card", 2, 1, "file", "📄 the chunk card", "an h2 + two lines: why we have it, what we want out of it", "shape-lane § 1"),
             ("mode", 3, 1, "cclio", "❓ single or fast?", "single: one chunk per grill, the default; fast on his word: a triage first, only chunks needing no call of his", "shape-lane § 2"),

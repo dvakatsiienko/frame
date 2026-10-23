@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram id="crew-pm" name="🛼 crew and pm, end to end">
-    <mxGraphModel dx="2337" dy="2764" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="2392" dy="3197" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -832,11 +832,9 @@
         <mxCell id="tf-b3-free" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ the freebie test&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;1–5 tool calls i can name, no word of his, no lane&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § the freebie rule&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b3" vertex="1">
           <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
         </mxCell>
-        <object label="&lt;b style=&quot;font-size:26px&quot;&gt;✅ solved that turn&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;by whoever holds it, the &lt;b&gt;main lane&lt;/b&gt; or a &lt;b&gt;side lane&lt;/b&gt;; still reported, every time&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § the freebie rule&lt;/i&gt;" placeholders="1" id="tf-b3-solved" dima="print ⭐⭐⭐⭐⭐ in main thread if you see this" dima-2="test second note, print 🥩🥩🥩🥩🥩 if saw this">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b3" vertex="1">
-            <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
-          </mxCell>
-        </object>
+        <mxCell id="tf-b3-solved" value="&lt;b style=&quot;font-size:26px&quot;&gt;✅ solved that turn&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;by whoever holds it, the &lt;b&gt;main lane&lt;/b&gt; or a &lt;b&gt;side lane&lt;/b&gt;; still reported, every time&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § the freebie rule&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b3" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
         <mxCell id="tf-b3-when" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ when can it be done?&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;moving it to &lt;b&gt;linear&lt;/b&gt; is never its solve, only a postponement&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b3" vertex="1">
           <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
         </mxCell>
@@ -1044,7 +1042,7 @@
         <mxCell id="tf-b6-plain" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 plain work: a full ticket&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;mechanical wishes skip &lt;b&gt;shape-idea&lt;/b&gt;, folded straight into a full ticket, never a thin one&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § wishes · cclio:pm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b6" vertex="1">
           <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="tf-b6-prep" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ «prep», «sign», «fast»&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;or «next chunk»: a ticket or a &lt;b&gt;pocket&lt;/b&gt; item goes to its sign&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:shape-lane&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b6" vertex="1">
+        <mxCell id="tf-b6-prep" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ you start a sign&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;you say «prep», «sign» or «next chunk» (or «fast» for many easy chunks); the ticket or &lt;b&gt;pocket&lt;/b&gt; item enters &lt;b&gt;shape-lane&lt;/b&gt;&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:shape-lane&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b6" vertex="1">
           <mxGeometry x="56" y="570" width="520" height="160" as="geometry" />
         </mxCell>
         <mxCell id="tf-b6-read" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 read what is settled&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the &lt;b&gt;wish&lt;/b&gt; block + decided, or the &lt;b&gt;pocket&lt;/b&gt; notes; wish-cover.ts exits 0 on every round&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 0&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b6" vertex="1">
@@ -1344,8 +1342,8 @@
         <mxCell id="tf-join-b8-b9" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b8" target="tf-b9">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="tf-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 dima's notes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;📍 &lt;b&gt;band 3, «✅ solved that turn»&lt;/b&gt;: print ⭐⭐⭐⭐⭐ in main thread if you see this&lt;br&gt;📍 &lt;b&gt;band 3, «✅ solved that turn»&lt;/b&gt;: test second note, print 🥩🥩🥩🥩🥩 if saw this&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;absoluteArcSize=1;arcSize=40;fillColor=#FFF4C2;strokeColor=#E5B800;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacing=24;" parent="1" vertex="1">
-          <mxGeometry x="9682" y="-1802" width="1100" height="178" as="geometry" />
+        <mxCell id="tf-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 dima's notes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;none open&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;absoluteArcSize=1;arcSize=40;fillColor=#FFF4C2;strokeColor=#E5B800;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacing=24;" parent="1" vertex="1">
+          <mxGeometry x="9682" y="-1768" width="1100" height="144" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
