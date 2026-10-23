@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""«…» quotes (≥3 chars) and lines naming dima's word present at a git rev but gone from the working tree, per file.
+"""«…» quotes (≥3 chars) and lines attributed to dima («dima, <date>») present at a git rev but gone from the working tree, per file.
 usage: quote-diff.py [<rev>] <file>… — exit 0 none gone, 1 some gone, 2 a file could not be checked."""
 import os, re, subprocess, sys
 
@@ -28,7 +28,7 @@ for f in args:
         print(f"✗ {f}: not in {rev} ({rel}) — not checked"); failed += 1; continue
     new = norm(open(real).read()) if os.path.exists(real) else ""
     for line in shown.stdout.splitlines():
-        if re.search(r"\bdima\b|\bhis (want|call|word|order|verdict|spec)|binding", line, re.I) and norm(line.strip()) and norm(line.strip())[:60] not in new:
+        if re.search(r"\bdima,? \d{4}-\d{2}-\d{2}", line, re.I) and norm(line.strip()) and norm(line.strip())[:60] not in new:
             gone += 1
             print(f"{f}: [his line] {line.strip()[:160]}")
     for m in sorted(set(q.findall(shown.stdout))):
