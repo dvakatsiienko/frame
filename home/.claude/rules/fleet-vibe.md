@@ -41,6 +41,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   - **🦭 sealed** — a chunk whose spec and exit lines are written, at dispatch, before the coder starts
   - **🟢 greenlight** — cclio's yes on a coder's lane plan, after the spawn
   - **📐 spec** — a lane's technical synthesis of its chunks, exit lines inside; every lane with a member has one
+  - **🎯 done test** vs **exit lines** — the done test is dima's «how i'll know it works», in the ticket; exit lines are the verifier's checkable lines, in the spec, the done test seeding the last one
 
 ## fleet words — how he steers an agent
 <!-- sync: cw -->
