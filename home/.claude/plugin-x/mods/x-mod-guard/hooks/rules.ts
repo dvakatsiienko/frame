@@ -268,9 +268,10 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
                   : undefined;
         const inner = nested ? mergeWord(nested, c.dir) : undefined;
         if (inner) return inner;
-        // x takes its root flags (--apply, --board, --json) before the family too
-        const isMerge = words.some(
-            (w, i) => w === 'lane' && words[i + 1] === 'merge-auto',
+        // x's root booleans (--json, --board) sit before the family or between it and the verb
+        const bare = words.filter((w) => !w.startsWith('-'));
+        const isMerge = bare.some(
+            (w, i) => w === 'lane' && bare[i + 1] === 'merge-auto',
         );
         if (c.name !== 'x' || !isMerge) continue;
         const targets = words.flatMap((w, i) =>
