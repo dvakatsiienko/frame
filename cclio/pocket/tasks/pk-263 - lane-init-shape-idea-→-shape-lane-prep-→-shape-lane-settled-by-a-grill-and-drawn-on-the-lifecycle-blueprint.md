@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-23T12:50:00Z'
-updated_date: '2026-10-23T14:58:00Z'
+updated_date: '2026-10-23T15:47:00Z'
 labels:
   - m
 dependencies: []
@@ -450,4 +450,83 @@ For CLI lane, we somewhere have a skill to hunt CLI verb candidates (e.g., a ski
 
  
 As for CLI, I'd like you to go take a look at what issues we recently had as well. What are the good candidates for automation via CLI, considering what we are currently doing and were doing recently?
+
+2026-10-23 18:48 W143–W189 copied from the groom file (wishkeeper caught them missing)
+W143 (17:39) a shape idea is usually about non-mechanical stuff.
+W144 (17:39) «intricate» may not be the most correct word for what i mean. «intricate» means complexity, and i don't mean complex stuff. i just looked up a translator.
+W145 (17:39) what i mean: a more shaping idea is about ideas that seem better resolved granularly via a shape idea.
+W146 (17:39) the easiest separation to understand, i think, is mechanical versus non-mechanical (e.g., straightforward stuff).
+W147 (17:39) stuff that can be solved right away doesn't really need a shape idea.
+W148 (17:39) building a new app or a new feature most likely wants a shape idea; a change to an existing product part most likely wants a shape idea.
+W149 (17:39) example: Atelier can currently draw dioramas. if i asked you to add support for collage art to Atelier, that would also be a shape idea.
+W150 (17:39) how to properly describe what shape idea means, instead of making it related to «intricate wishes», so you would print a correct skill description for a shape idea so it fires correctly? ❓14
+W151 (17:39) maybe simpler: you just propose to me whether an incoming wish is a shape idea or not.
+W152 (17:39) if i pick a shape idea, we do a shape idea flow.
+W153 (17:39) if i skip a shape idea, it doesn't mean the ticket can land randomly and improperly shaped. it still has to be folded carefully, just in a non-groomed shape and without prior research and everything a shape idea assumes.
+W154 (17:39) shape-idea: does it have to contain a shape of actual resulting tickets (e.g., why, what, when, done test, the sections of the actual ticket body), or is that already covered by the other PM part? ❓15
+W155 (17:39) shape-lane, on «3. A chunk sized M gets split into smaller ones (asked in orbit)»: are you sure M is a good boundary to split a ticket? maybe L? ❓16
+W156 (17:39) what is the next size after M? why ask? ❓17
+W157 (17:39) if you split chunks into two small chunks, we will have too many grills, because each shape plane assumes a grill.
+W158 (17:39) i would prefer slightly bigger chunks than slightly smaller chunks, but not very large as well.
+W159 (17:39) shape-lane-dispatch should also be compatible with the shift lane, for example when AFK.
+W160 (17:39) the shape-lane's signed tickets must be compatible with the automated shape-lane dispatch (e.g., when a ticket is signed).
+W161 (17:39) you should be able to fully autonomously run a sequence of signed tickets via shape-lane-dispatch one by one, and nothing should block you.
+W162 (17:39) the idea of why i want this: i prep, for example, 10 signed chunks via shape-lane, then start a shift lane, for example in AFK mode.
+W163 (17:39) you should be able to continuously execute the previously signed chunk sequence one by one via the Shapeling dispatch flow.
+W164 (17:39) **🦭 sealed**, **signed**, **🟢 greenlight**: all in bold, always.
+W165 (17:39) maybe also add spec to fleet vibe, with emoji top 7 and bold too? ❓18
+W166 (17:39) since specs are related to everyone, it is worth having it global as well, so you don't forget about them.
+W167 (17:39) **🍫 chunk**: bold too.
+W168 (17:39) one more thing about chunk versus lane.
+W169 (17:39) equation: how does lane content get its chunk? for example, to dispatch a lane, do you take only one chunk for a lane or multiple chunks? ❓19
+W170 (17:39) our current approach looks to be different from what we invented: the current lane looks to have 4 tickets via the old system, but the entire lane content from 4 tickets seems to be a single chunk. something changed now.
+W171 (17:39) how will Glide look after this change, and what about size? ❓20
+W172 (17:39) the current chunk (e.g., old chunk) contains 4 tickets that the current lane executes, or is each ticket in CLI lane 1 in Glide a chunk? ❓21
+W173 (17:56) after we change this flow with the new skills, what will lanes look like? ❓22
+W174 (17:56) if we have 10 chunks and you dispatch the first chunk to a lane, how do you manage a glide over 10 planned chunks? ❓23
+W175 (17:56) do you shape it, dispatch one lane, and keep a sequence of chunks for a single lane? ❓24
+W176 (17:56) i think we can keep it as simple as it is, and each lane can be dynamic.
+W177 (17:56) before dispatching, we just think about how many chunks we can dispatch to a lane.
+W178 (17:56) for example, currently CLI lane 1 has 4 chunks. it was random. i don't remember why they are 4. we decided that yesterday.
+W179 (17:56) how is the quantity of chunks for a lane to be decided each time we want to start a lane? ❓25
+W180 (17:56) and if a lane is already started, it can have more chunks folded in, but only signed ones.
+W181 (17:56) after you build the new skills, all our previously prepped chunks get invalidated, and we need to re-sign them.
+W182 (17:56) re-sign them with a new flow? if so, yes, let's sign everything via the new flow. ❓26
+W183 (17:56) let's sign the most relevant and most useful CLI chunks, and all possible content for mods lane, so we could resolve all mods content in one sequence.
+W184 (17:56) for both lanes, CLI and mods, hunt for strays. maybe you folded some riders, wisps, wishes, everything somewhere, so nothing is lost.
+W185 (17:56) for CLI lane, we somewhere have a skill to hunt CLI verb candidates (e.g., a skill that checks if CLI does the right thing).
+W186 (17:56) before shaping, before signing CLI lane via new shape-lane, run that skill to hunt corrections to CLI lane content before we re-sign them via new flow.
+W187 (17:56) maybe we will find something more relevant than what we currently have.
+W188 (17:56) as for CLI, i'd like you to go take a look at what issues we recently had as well.
+W189 (17:56) what are the good candidates for automation via CLI, considering what we are currently doing and were doing recently? ❓27
+
+## ❓ asks
+
+❓1 (275) would a new linear label let you filter over prepped chunks to shape them?
+❓2 (279) how do you think «chunk» means: a ticket or a number of tickets?
+❓3 (279) what is a prep lane chunk?
+❓4 (279) can a chunk consist of multiple tickets?
+❓5 (286) are the skill names i proposed good?
+❓6 (287) is it worth having «chunk» at all, or maybe just «prepped tickets»?
+❓7 (289) let's have both? or discard one? propose.
+❓8 (331) a pocket item that becomes a 🔧 coder job: does it get a linear ticket first, or go straight to a spec?
+❓9 (336) how does shape-idea fit here?
+❓10 (336) print what shape-idea does now.
+❓11 (337) does the shape-idea → shape-lane-prep → shape-lane flow work?
+❓12 (16:52) q1: so you write product.md in shape-lane-dispatch, and the coder writes the rest after the spec is sealed?
+❓13 (16:52) q6: spec mandatory for everyone, even quick lane?
+❓14 (17:39) how to describe shape idea so a skill description fires right, not tied to «intricate wishes»?
+❓15 (17:39) shape-idea: does it contain the shape of resulting tickets (why, what, when, done test, body sections), or is that covered by the other PM part?
+❓16 (17:39) chunk sized M split in two: are you sure M is a good boundary, maybe L?
+❓17 (17:39) what is the next size after M? why ask?
+❓18 (17:39) spec to fleet vibe too, with emoji top 7 and bold?
+❓19 (17:39) how does lane content get its chunk? to dispatch a lane, one chunk or multiple?
+❓20 (17:39) how will Glide look after this change, and what about size?
+❓21 (17:39) does the current old chunk hold the 4 tickets the lane runs, or is each CLI lane 1 ticket in Glide a chunk?
+❓22 (17:56) after the flow change with the new skills, what will lanes look like?
+❓23 (17:56) with 10 chunks and the first dispatched to a lane, how do you manage a glide over 10 planned chunks?
+❓24 (17:56) shape it, dispatch one lane, and keep a sequence of chunks for a single lane?
+❓25 (17:56) how is the quantity of chunks for a lane decided each time we start a lane?
+❓26 (17:56) re-sign the invalidated chunks with a new flow, so sign everything via the new flow?
+❓27 (17:56) what are the good candidates for CLI automation, given what we are doing and did recently?
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-23T15:17:00Z'
-updated_date: '2026-10-23T15:42:00Z'
+updated_date: '2026-10-23T15:48:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -318,4 +318,14 @@ Caller, check these:
 2026-10-23 18:40 cli rider: `x lane merge-auto` has no door for dima's word — a self-edit always waits, so FRM-405's stack (exit 9) landed through `gh stack merge` after merge-auto's own checks passed. it needs a door for his word, and for a sign's pre-approval (dima's o96), e.g. a `--dima-ok <orbit id>` flag or reading the chunk's `## signed` merge line.
 
 2026-10-23 18:44 cli rider, first live catch of FRM-405's quote gate: it flagged craft-fleet-flow's old stage-5 line as «[his line]» though it holds no «» quote of dima's — it only names «dima's pick»; the line was written by cclio's build fork the same day. the gate should key on «» quotes (or a `dima, <date>:` attribution), not on the word «dima's». + verifier's 6 next-chunk asks are in ~/.local/state/x/lanes/cli-1/2026-10-23-FRM-405-verifier-retro.md § for the next cli chunk.
+
+2026-10-23 18:50 cclio, the 5 cli chunk candidates for the signing session (from the cli lane 1 retros, the coder's x architecture review and the drift check):
+1. x stats sees everything (S): `unused` skips dev-build lines (stats.go:110), so 4 `mods edit` verbs read dead while traces hold 1,281 calls — coder's review #1
+2. a faster x gate (S): 1 of 328 tests is t.Parallel; `x-go:test` reruns the whole suite under -tags nostacks (package.json:94) where `go vet -tags nostacks` already proves the seam; ~6 min a run today — coder + verifier
+3. merge-auto riders (S): a door for dima's word or a sign's `merge: pre-approved` on a self-edit (merge_auto.go:161,198); the `expected_head_sha` check after the async submit (verifier, gh-stack merge_async.go:88); the first live one-call stack merge (FRM-405 exit 9, unproven)
+4. FRM-383 `x verify red` / `x lane mutate` first (S): both verifiers hand-rolled ~35 mutations, 5 of 32 failed to compile and counted red — drift top 2 + verifier
+5. FRM-384 re-cut (S): the gate runner needs a new name (`lane gate` is taken), cut `x retro write` and the `x gh pr --merge` exit, drop the landed index.lock rider, add `lane push` without `--apply` on the coder's own branch — drift top 1
+held back: the `x pocket` family (M, drift top 3), split exec.go out of lane.go (XS) + one github door and one fake hub (S+M), `x lane stack restack` and `verify-tree --stack` (only if the stacked-prs trial goes on), probe bare/session (0 calls ever: point the rule at them or cut), `lane push` p50 22 s (frame's pre-push runner-twin)
+sources: ~/.local/state/x/lanes/cli-1/x-architecture-review-2026-10-23.md, the FRM-404/405 coder + verifier retros beside it (verifier § for the next cli chunk)
+done already: the `merged-by-x` label exists in frame and bytes
 <!-- SECTION:NOTES:END -->
