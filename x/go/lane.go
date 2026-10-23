@@ -96,7 +96,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	for _, path := range paths {
 		if exists(path) || ok(git("ls-files", "--error-unmatch", "--", path)) {
 			present = append(present, path)
-		} else if words := strings.Fields(path); len(words) > 1 {
+		} else if words := strings.Fields(path); len(words) > 1 && !ok(git("cat-file", "-e", "HEAD:"+path)) {
 			// zsh hands a quoted "$paths" over as one argument; «nothing staged» hid that (2026-10-18)
 			return nil, usageFail(fmt.Sprintf("%q names no file: the path list arrived as one word", path),
 				"x lane commit "+msgFile+" -- "+strings.Join(words, " "))
