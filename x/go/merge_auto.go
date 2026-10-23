@@ -156,7 +156,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	d.Checks = []mergeCheck{verifier, ci, threads}
-	self := ""
+	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
 		own, ownSelf, err := riskyPaths(api, n)
 		if err != nil {
@@ -164,12 +164,12 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 		// a stack's lower layers named theirs in the layers step; the card shows every layer's
 		d.Risky = append(own, d.Risky...)
-		if self, err = d.selfWait(pr, ownSelf); err != nil {
+		if selfWait, err = d.selfWait(pr, ownSelf); err != nil {
 			return "", err
 		}
 		switch {
-		case self != "":
-			return "", notHeld(self)
+		case selfWait != "":
+			return "", notHeld(selfWait)
 		case len(ownSelf) > 0:
 			return strings.Join(d.Risky, ", ") + " — " + d.Sign, nil
 		case len(d.Risky) == 0:
@@ -194,7 +194,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	d.Decision, d.Wait = decide(brake, self, needsApprove, verifier, ci, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, needsApprove, verifier, ci, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -203,12 +203,12 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the brake and a self-edit outrank every check; a bytes head missing only review:clean gets the approve
-func decide(brake, self string, needsApprove bool, verifier, ci, threads mergeCheck) (decision, wait string) {
+func decide(brake, selfWait string, needsApprove bool, verifier, ci, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
-	case self != "":
-		return "wait", self
+	case selfWait != "":
+		return "wait", selfWait
 	case verifier.OK && threads.OK && needsApprove:
 		return "approve", ""
 	}
@@ -243,12 +243,12 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	for _, path := range risky {
 		d.Risky = append(d.Risky, "#"+n+" "+path)
 	}
-	self, err := d.selfWait(pr, ownSelf)
+	selfWait, err := d.selfWait(pr, ownSelf)
 	if err != nil {
 		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
-	decision, wait := decide("", self, needsApprove, verifier, ci, threads)
+	decision, wait := decide("", selfWait, needsApprove, verifier, ci, threads)
 	switch decision {
 	case "merge":
 		return "", nil

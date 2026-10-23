@@ -158,11 +158,12 @@
   - given no run, a skipped or red required check, 0 required checks, an open thread, no verifier clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
   - given bytes' `review:clean` is the one required check missing and the ci review round ran on the branch, then it approves the head on dima's account, waits for `review:clean` to go green on it, then merges; before that round it waits and names `x lane review`
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
+  - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
-  - given a pr whose ticket (its `coder/<ID>-…` branch, else its body's `- ticket: <ID>` line) holds a `## signed` block with `merge: pre-approved`, and the ticket body above the block hashes to the block's last `· body <hash>` line
-  - when `x lane merge-auto <pr> --apply` runs from main's build on the verifier-clean pr that touches a self-edit path
+  - given a pr whose ticket (its `coder/<ID>-…` branch, else its body's `- ticket: <ID>` line) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
+  - when `x lane merge-auto <pr> --apply` runs from the main checkout on the verifier-clean pr that touches a self-edit path
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
-  - given the body edited after the last signed line, no `merge: pre-approved`, no `## signed` block, or a dev build of merge-auto, then it waits and names which, the re-sign included; the brake waits whatever the sign says
+  - given the body edited after the last signed line, a last sign with no `merge: pre-approved`, no `## signed` block, or a build whose `x/go` differs from origin/main, then it waits and names which, the re-sign included; the brake waits whatever the sign says
   - decision: the sign is read from the linear ticket, never the pr, whose body the coder writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as cclio signs (FRM-423 grill, o141)
 - ⬜ a self-edit with no pre-approved sign merges on dima's typed word
   - given a verifier-clean self-edit pr whose chunk holds no pre-approved sign
@@ -170,7 +171,6 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
-  - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ✅ `x lane rebase-main --apply` puts a coder branch on origin/main with no merge commit
   - given a `coder/*` branch behind origin/main with no conflict
   - when `x lane rebase-main --apply` runs

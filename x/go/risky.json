@@ -24,6 +24,7 @@
         "x/go/risky.json",
         "x/go/merge_auto.go",
         "x/go/merge_sign.go",
+        "x/bin/x",
         "x/go/gh.go",
         "x/go/keys.go"
     ]

@@ -256,6 +256,18 @@ export function rawPluginUpdate(
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
     for (const c of commands(parse(command), cwd)) {
         const words = c.args.map((w) => w.text);
+        // a nested shell's script, or an eval's words, is a command too
+        const dashC = SHELLS.has(c.name)
+            ? words.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
+            : -1;
+        const nested =
+            dashC >= 0
+                ? words[dashC + 1]
+                : c.name === 'eval'
+                  ? words.join(' ')
+                  : undefined;
+        const inner = nested ? mergeWord(nested, c.dir) : undefined;
+        if (inner) return inner;
         if (c.name !== 'x' || words[0] !== 'lane' || words[1] !== 'merge-auto')
             continue;
         const targets = words.flatMap((w, i) =>

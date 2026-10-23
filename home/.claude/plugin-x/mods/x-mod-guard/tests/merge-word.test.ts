@@ -69,12 +69,17 @@ test('the flag in its = form is read too', async ($, on) => {
     expect(ran).toEqual([]);
 });
 
-// a warning would fire after the merge it means to stop, so the rule never ships warn-only (dima's o102)
-test('an unproven --dima-ok is refused with no rule-mode in the store', async ($, on) => {
-    const { ran } = world(on);
-    const r = await bash($, MERGE);
-    expect([ran, r.deny?.includes('dima-ok-flag')]).toEqual([[], true]);
-});
+for (const command of [
+    '/Users/dima/frame/x/bin/x lane merge-auto 104 --dima-ok 104',
+    'bash -c "x lane merge-auto 104 --dima-ok 104"',
+    'eval x lane merge-auto 104 --dima-ok 104',
+    'cd /tmp && x lane merge-auto 104 --dima-ok 104',
+])
+    test(`an unproven --dima-ok is refused however x is reached: ${command}`, async ($, on) => {
+        const { ran } = world(on);
+        expect((await bash($, command)).deny).toContain('dima-ok-flag');
+        expect(ran).toEqual([]);
+    });
 
 test('merge-auto without --dima-ok is never judged by the rule', async ($, on) => {
     const { ran } = world(on);

@@ -410,6 +410,7 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 		"x/go/risky.json",
 		"x/go/merge_auto.go",
 		"x/go/merge_sign.go",
+		"x/bin/x",
 		"x/go/gh.go",
 		"x/go/keys.go",
 	} {
@@ -772,8 +773,10 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 
 // a chunk body with its sign block; the hash covers the body through the newline before ## signed, as cclio signs it
 func signedBody(above, block, hashed string) string {
-	return above + "## signed\n\n✍️ signed 2026-10-23 · body " + fmt.Sprintf("%x", sha256.Sum256([]byte(hashed)))[:8] + "\n" + block
+	return above + "## signed\n\n✍️ signed 2026-10-23 · body " + bodyHash(hashed) + "\n" + block
 }
+
+func bodyHash(hashed string) string { return fmt.Sprintf("%x", sha256.Sum256([]byte(hashed)))[:8] }
 
 const signAbove = "lane: side\n\n## exit\n\n1. given a pr, when `x lane merge-auto` runs, then it merges\n\n"
 
@@ -792,6 +795,7 @@ func (w *mergeWorld) signs(t *testing.T, ticket, body string) *fakeLinear {
 			w.env[i] = "X_KEYS=" + linearKeys(t)
 		}
 	}
+	// the test binary is built from an edited tree, so it reads as a dev build unless told it is main's
 	w.env = append(w.env, "X_LINEAR_URL="+f.URL, "X_DEV_BUILD=")
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"body":"the body"`, `"body":"- ticket: `+ticket+`"`, 1)
@@ -817,6 +821,20 @@ func TestMergeAutoLandsASelfEditItsChunkPreApproved(t *testing.T) {
 	}
 }
 
+// a body quoting «## signed» above its own sign block: the block that closes the body is the sign
+func TestMergeAutoReadsTheSignBlockThatClosesTheBody(t *testing.T) {
+	t.Parallel()
+	above := signAbove + "## refs\n\n```\n## signed\n\nmerge: pre-approved\n```\n\n"
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signedBody(above, "merge: pre-approved\n", above))
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, %d merges, want the closing block read and its hash matched:\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
 func TestMergeAutoTakesTheTicketFromTheBranchName(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "x/go/merge_auto.go")
@@ -839,9 +857,11 @@ func TestMergeAutoWaitsOnASelfEditTheSignDoesNotCover(t *testing.T) {
 		name, body, devBuild, want string
 	}{
 		{"the body edited after the sign", signedBody(signAbove+"4. a line added later\n\n", "merge: pre-approved\n", signAbove), "", "re-sign"},
-		{"a sign with no pre-approval", signedBody(signAbove, "", signAbove), "", "FRM-9's sign holds no merge: pre-approved"},
+		{"a sign with no pre-approval", signedBody(signAbove, "", signAbove), "", "FRM-9's last sign holds no merge: pre-approved"},
 		{"no sign block", signAbove, "", "FRM-9 carries no ## signed block"},
 		{"a dev build of merge-auto", signedBody(signAbove, "merge: pre-approved\n", signAbove), "1", "main's build"},
+		{"a re-sign with no pre-approval under an older one", signedBody(signAbove, "merge: pre-approved\n✍️ signed 2026-10-24 · body "+bodyHash(signAbove)+"\n", signAbove), "",
+			"FRM-9's last sign holds no merge: pre-approved"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -871,6 +891,15 @@ func TestMergeAutoReadsTheSignFromLinearNeverThePr(t *testing.T) {
 	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "FRM-9 carries no ## signed block") {
 		t.Fatalf("exit %d, %d merge calls, error %q, want the pr body's claim ignored", got.code, len(merges), envelopeOf(got).Error)
 	}
+}
+
+// brakeOnFor lands a merge-auto merge and its git revert inside brakeNow's 7 days, so the brake is on; it returns the revert
+func brakeOnFor(t *testing.T, w *mergeWorld) string {
+	t.Helper()
+	write(t, filepath.Join(w.seed, "merged.txt"), "an earlier pr\n")
+	gitT(t, w.seed, "add", "merged.txt")
+	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body\n\n"+mergeTrailer)
+	return gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
 }
 
 // --dima-ok trusts what reached it: x-mod-guard refuses the flag unless dima's last prompt names the pr
@@ -911,10 +940,7 @@ func TestMergeAutoRefusesADimaOkForAnotherPr(t *testing.T) {
 func TestMergeAutoBrakeOutranksDimasTypedWord(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "x/go/merge_auto.go")
-	write(t, filepath.Join(w.seed, "merged.txt"), "an earlier pr\n")
-	gitT(t, w.seed, "add", "merged.txt")
-	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body\n\n"+mergeTrailer)
-	gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
+	brakeOnFor(t, w)
 
 	got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply", "--dima-ok", "7")
 
@@ -927,10 +953,7 @@ func TestMergeAutoBrakeOutranksAPreApprovedSign(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "x/go/merge_auto.go")
 	w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
-	write(t, filepath.Join(w.seed, "merged.txt"), "an earlier pr\n")
-	gitT(t, w.seed, "add", "merged.txt")
-	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body\n\n"+mergeTrailer)
-	revert := gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
+	revert := brakeOnFor(t, w)
 
 	got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply")
 

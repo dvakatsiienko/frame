@@ -699,6 +699,7 @@ export const register: Register = (on) => {
             const said = `x-mod-guard stopped this one command. instead: ${bump.door}. why: ${bump.why}.`;
             return enforce(bump, `nothing in this command ran — ${said}`, said);
         }
+        // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
         if (word) {
             const { value: prompt = '' } = await $.state.get(PROMPT);
