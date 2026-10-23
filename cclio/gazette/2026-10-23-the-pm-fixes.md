@@ -60,7 +60,24 @@ posted: {health: no}
 - next: the first live shape-lane — 5 cli chunks from PK-265, then the main lane signed (trial), the tickets-flow board refresh, the pocket/linear grill
 - the coder takes its second wind and parks; the verifier is stopped
 
+⸻ upd 21:06
+
+## shipped
+- the first live shape-lane: 5 cli chunks for cli lane 2 in «🐉 review loop gets verbs», chained [FRM-422](https://linear.app/x-com/issue/FRM-422) → [FRM-423](https://linear.app/x-com/issue/FRM-423) → [FRM-383](https://linear.app/x-com/issue/FRM-383) → [FRM-384](https://linear.app/x-com/issue/FRM-384) → [FRM-424](https://linear.app/x-com/issue/FRM-424); all signed; FRM-422 dispatched to a fresh coder, its go gate 321 s → 39 s, #104 green on CI and in verify
+- `cclio:shape-lane` grills one chunk at a time; «fast» batches only chunks needing no call of dima's, self-grilled and fully groomed
+- plain and stacked pr modes: stacks stay an easy-to-delete add-on until their trial's verdict; 4 crew skills gained stacked-lane lines (per-layer retros, the rebase lift for a coder's own layers)
+- the main lane signed as one chunk (trial): [FRM-419](https://linear.app/x-com/issue/FRM-419), 6 steps; step 1, the tickets-flow board, redrawn for lane init with bold keywords, a «📝 dima's notes» tile and his ⌘M notes read back
+- glide lines lead with the ticket id; the pocket's phone mirror deleted everywhere; a same-turn freebie needs no pocket item
+
+## tricks gained
+- draw.io keeps comments only for Google Drive files; a ⌘M Edit Data field on a tile is the note door, one xmllint call reads them all
+- a pocket write takes 0.16 s; x-mod-guard's «held the foreground N s» hint is not a measure
+
+## state
+- next: the mods scope (49 items) ordered and cut to 5–7 chunks, fast triage, then shape-lane; tomorrow the pocket/linear grill from its prep file
+- cli lane 2: FRM-422 lands, the coder parks, then FRM-423 (stacked mode), park again, FRM-383 if time allows
+
 ## trail
-- shipped: lane init rebuilt (shape-idea → shape-lane ✍️ → dispatch 🦭), FRM-405 landed as a 4-layer stack, cli lane 1 done, draw.io adopted
-- open: 5 cli chunks to sign (PK-265), the main lane signed as a trial, the board refresh, the pocket/linear grill
-- state: second wind at 18:52; the coder parks, the verifier is stopped
+- shipped: the first live shape-lane (5 cli chunks signed), FRM-422's gate 321 s → 39 s, shape-lane single/fast, the board redrawn with notes, the main lane signed
+- open: the mods scope shape-lane, the pocket/linear grill, FRM-422 verify → FRM-423
+- state: second wind at 21:06; the cli lane runs on, members hold messages
