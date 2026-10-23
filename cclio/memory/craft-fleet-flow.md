@@ -34,7 +34,7 @@ the lane is the ticket's first body line, `lane: main|side|quick|shift`, the kin
 - **shape-lane signs**, over a ticket or a pocket item (the sign creates the linear ticket until the pocket/linear grill settles it): one or many chunks per grill round, a safety-net re-grill after shape-idea, the real shaping otherwise
 - **a sign carries what dispatch needs**: the done test, the milestone, the lane kind, the repo, the order among its siblings, and a merge pre-approval when the chunk edits the guards, the review workflows or merge-auto
 - **re-sign**: a change to a signed ticket — dima's new wish, cclio's extend, merge or split — gets a proposed re-sign, `shape-lane` again plus an appended `✍️ re-signed <date> — <what changed>` line; a tiny change may skip the grill, never the line; after dispatch a re-sign re-seals the spec
-- **a lane = one milestone's signed chunks**, in the milestone's order, one glide step each; a running lane takes a joiner only when it is signed and from the same milestone
+- **a lane = one milestone's signed chunks**, in their `blocks` order, one glide step each; a running lane takes a joiner only when it is signed and from the same milestone; a shift walks several milestones, one after another, in the initiative's milestone queue order (dima o112)
 - **📐 a spec on every lane with a member** — side, shift, quick, a designer or research lane; a quick lane needs no sign
 - **the main lane may be signed too** (a trial, dima o110, W140–W141): our own steps as one chunk, `lane: main`, no coder and no spec; its 🛼 glide card is its progress
 - **size**: a chunk is S by default, M allowed and watched as a trial (`memory/_reminders.md`); no split rule
