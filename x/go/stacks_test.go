@@ -294,6 +294,45 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 	}
 }
 
+// both layers of one signed chunk edit merge-auto: the sign covers each, read from linear once
+func TestMergeAutoLandsAStackItsChunkPreApproved(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, upperTicket string
+		lands             bool
+	}{
+		{"every layer names the signed chunk", "FRM-9", true},
+		{"the top layer names an unsigned ticket", "FRM-10", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			w := linkedMergeWorld(t)
+			f := w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/7/files"] = `[{"filename":"x/go/merge_auto.go","status":"modified"}]`
+			w.hub.pages[repoPath+"/pulls/8/files"] = w.hub.pages[repoPath+"/pulls/7/files"]
+			w.hub.pages[repoPath+"/pulls/8"] = strings.Replace(w.hub.pages[repoPath+"/pulls/8"], `"body":"b"`, `"body":"- ticket: `+c.upperTicket+`"`, 1)
+			w.hub.mu.Unlock()
+
+			got := w.run(t, "8", "--apply")
+
+			asyncs := w.hub.sent("PUT " + repoPath + "/pulls/8/merge-async")
+			if !c.lands {
+				if got.code != 1 || len(asyncs) != 0 || !strings.Contains(envelopeOf(got).Error, "FRM-10 carries no ## signed block") {
+					t.Fatalf("exit %d, %d async merges, error %q: want the unsigned layer's wait", got.code, len(asyncs), envelopeOf(got).Error)
+				}
+				return
+			}
+			if got.code != 0 || len(asyncs) != 1 {
+				t.Fatalf("exit %d, %d async merges, want the pre-approved stack landed in one call:\n%s", got.code, len(asyncs), got.stdout)
+			}
+			if reads := len(f.requests()); reads != 1 {
+				t.Errorf("%d linear reads, want the chunk's sign read once for both layers", reads)
+			}
+		})
+	}
+}
+
 func TestMergeAutoRefusesAStackWhoseLayerMovedAfterTheGate(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)

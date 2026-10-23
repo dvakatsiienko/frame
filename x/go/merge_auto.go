@@ -35,10 +35,12 @@ type mergeDecision struct {
 	Checks   []mergeCheck `json:"checks"`
 	Risky    []string     `json:"risky"`
 	Merged   string       `json:"merged,omitempty"`
+	Sign     string       `json:"sign,omitempty"`
 	title    string
 	body     string
 	layered  bool
 	heads    map[string]string // a stack's every gated head, pr → sha
+	signs    map[string]chunkSign
 	landed   string
 }
 
@@ -95,7 +97,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body}
+	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, signs: map[string]chunkSign{}}
 	trunk := pr.Base.Ref
 	if layers == nil {
 		r.skip("layers")
@@ -149,16 +151,22 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	d.Checks = []mergeCheck{verifier, ci, threads}
-	var self []string
+	self := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
 		own, ownSelf, err := riskyPaths(api, n)
-		// a stack's lower layers named theirs in the layers step; the card shows every layer's
-		d.Risky, self = append(own, d.Risky...), ownSelf
-		switch {
-		case err != nil:
+		if err != nil {
 			return "", err
-		case len(self) > 0:
-			return "", notHeld("self-edit: " + strings.Join(self, ", "))
+		}
+		// a stack's lower layers named theirs in the layers step; the card shows every layer's
+		d.Risky = append(own, d.Risky...)
+		if self, err = d.selfWait(pr, ownSelf); err != nil {
+			return "", err
+		}
+		switch {
+		case self != "":
+			return "", notHeld(self)
+		case len(ownSelf) > 0:
+			return strings.Join(d.Risky, ", ") + " — " + d.Sign, nil
 		case len(d.Risky) == 0:
 			return "none touched", nil
 		}
@@ -190,12 +198,12 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the brake and a self-edit outrank every check; a bytes head missing only review:clean gets the approve
-func decide(brake string, self []string, needsApprove bool, verifier, ci, threads mergeCheck) (decision, wait string) {
+func decide(brake, self string, needsApprove bool, verifier, ci, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
-	case len(self) > 0:
-		return "wait", "self-edit, needs dima's word — " + strings.Join(self, ", ")
+	case self != "":
+		return "wait", self
 	case verifier.OK && threads.OK && needsApprove:
 		return "approve", ""
 	}
@@ -223,12 +231,16 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	risky, self, err := riskyPaths(api, n)
+	risky, ownSelf, err := riskyPaths(api, n)
 	if err != nil {
 		return "", err
 	}
 	for _, path := range risky {
 		d.Risky = append(d.Risky, "#"+n+" "+path)
+	}
+	self, err := d.selfWait(pr, ownSelf)
+	if err != nil {
+		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
 	decision, wait := decide("", self, needsApprove, verifier, ci, threads)

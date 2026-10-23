@@ -271,7 +271,8 @@
             ],
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
-                "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read"
+                "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read",
+                "linear — a self-edit's chunk ticket, its ## signed block read"
             ]
         },
         {

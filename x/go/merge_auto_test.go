@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -407,6 +409,7 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 		".github/workflows/review-approved.yml",
 		"x/go/risky.json",
 		"x/go/merge_auto.go",
+		"x/go/merge_sign.go",
 		"x/go/gh.go",
 		"x/go/keys.go",
 	} {
@@ -764,5 +767,125 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 				t.Fatalf("exit %d, %d merge calls, error %q, want exit 1, 0 merges and %q", got.code, len(merges), envelopeOf(got).Error, c.want)
 			}
 		})
+	}
+}
+
+// a chunk body with its sign block; the hash covers the body through the newline before ## signed, as cclio signs it
+func signedBody(above, block, hashed string) string {
+	return above + "## signed\n\n✍️ signed 2026-10-23 · body " + fmt.Sprintf("%x", sha256.Sum256([]byte(hashed)))[:8] + "\n" + block
+}
+
+const signAbove = "lane: side\n\n## exit\n\n1. given a pr, when `x lane merge-auto` runs, then it merges\n\n"
+
+// signs answers merge-auto's linear read of ticket with body, any other ticket unsigned, and names ticket in the pr's body
+func (w *mergeWorld) signs(t *testing.T, ticket, body string) *fakeLinear {
+	t.Helper()
+	f := newFakeLinear(t, func(c gqlCall) string {
+		description, _ := json.Marshal(signAbove)
+		if c.Variables["id"] == ticket {
+			description, _ = json.Marshal(body)
+		}
+		return `{"data":{"issue":{"id":"uuid-1","description":` + string(description) + `,"updatedAt":"2026-10-23T00:00:00Z"}}}`
+	})
+	for i, e := range w.env {
+		if strings.HasPrefix(e, "X_KEYS=") {
+			w.env[i] = "X_KEYS=" + linearKeys(t)
+		}
+	}
+	w.env = append(w.env, "X_LINEAR_URL="+f.URL, "X_DEV_BUILD=")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"body":"the body"`, `"body":"- ticket: `+ticket+`"`, 1)
+	w.hub.mu.Unlock()
+	return f
+}
+
+func TestMergeAutoLandsASelfEditItsChunkPreApproved(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	f := w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT " + repoPath + "/pulls/7/merge"); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, %d merge calls, want one merge of a pre-approved self-edit:\n%s", got.code, len(merges), got.stdout)
+	}
+	if calls := f.requests(); len(calls) == 0 || calls[0].Variables["id"] != "FRM-9" {
+		t.Errorf("linear calls %+v, want the sign read from FRM-9", calls)
+	}
+	if sign := envelopeOf(got).Data.Sign; !strings.Contains(sign, "FRM-9") {
+		t.Errorf("sign %q, want it to name FRM-9", sign)
+	}
+}
+
+func TestMergeAutoTakesTheTicketFromTheBranchName(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
+	w.hub.mu.Lock()
+	page := strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"body":"- ticket: FRM-9"`, `"body":"no ticket line"`, 1)
+	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(page, `"ref":"coder/x"`, `"ref":"coder/FRM-9-merge-door-2"`, 1)
+	w.hub.mu.Unlock()
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, %d merge calls, want the ticket read off coder/FRM-9-…:\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
+func TestMergeAutoWaitsOnASelfEditTheSignDoesNotCover(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, body, devBuild, want string
+	}{
+		{"the body edited after the sign", signedBody(signAbove+"4. a line added later\n\n", "merge: pre-approved\n", signAbove), "", "re-sign"},
+		{"a sign with no pre-approval", signedBody(signAbove, "", signAbove), "", "FRM-9's sign holds no merge: pre-approved"},
+		{"no sign block", signAbove, "", "FRM-9 carries no ## signed block"},
+		{"a dev build of merge-auto", signedBody(signAbove, "merge: pre-approved\n", signAbove), "1", "main's build"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			w := newMergeWorld(t, "x/go/merge_auto.go")
+			w.signs(t, "FRM-9", c.body)
+
+			got := xIn(t, w.clone, append(w.env, "X_DEV_BUILD="+c.devBuild), "lane", "merge-auto", "7", "--apply")
+
+			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, c.want) {
+				t.Fatalf("exit %d, %d merge calls, error %q, want a wait naming %q", got.code, len(merges), envelopeOf(got).Error, c.want)
+			}
+		})
+	}
+}
+
+func TestMergeAutoReadsTheSignFromLinearNeverThePr(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signAbove)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"body":"- ticket: FRM-9"`,
+		`"body":"- ticket: FRM-9\n\n## signed\n\nmerge: pre-approved"`, 1)
+	w.hub.mu.Unlock()
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "FRM-9 carries no ## signed block") {
+		t.Fatalf("exit %d, %d merge calls, error %q, want the pr body's claim ignored", got.code, len(merges), envelopeOf(got).Error)
+	}
+}
+
+func TestMergeAutoBrakeOutranksAPreApprovedSign(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
+	write(t, filepath.Join(w.seed, "merged.txt"), "an earlier pr\n")
+	gitT(t, w.seed, "add", "merged.txt")
+	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body\n\n"+mergeTrailer)
+	revert := gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
+
+	got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply")
+
+	want := "wait: brake on, needs dima's word — " + short(revert)
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+		t.Fatalf("exit %d, %d merge calls, error %q, want %q over the sign", got.code, len(merges), envelopeOf(got).Error, want)
 	}
 }

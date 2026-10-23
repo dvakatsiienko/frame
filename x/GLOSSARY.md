@@ -54,7 +54,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **review round** — one successful ci review run on a pr in bytes, started by the review label; two per pr, a third only past dima's approval
 - **verifier clean** — the pr head the verifier said clean on, one per pr in `~/.claude/shelf/pr-verified.json`; it carries to a new head whose whole branch change keeps its patch-id (a rebase, a plain merge of main). a «clean» in a comment is never one
 - **risky path** — a changed path that can turn the checks themselves green (workflows, settings, memory files, secrets, deploy), listed in `x/go/risky.json`; `lane merge-auto` merges it and names it on its `risky:` line
-- **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word
+- **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word, unless its chunk's sign pre-approved it
+- **pre-approved sign** — a chunk ticket's `## signed` block holding `merge: pre-approved` while the body above it still hashes to its last `· body <hash>` line; it lets a self-edit of that chunk merge without dima's word, never past the brake
 - **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
 - **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; the verifier's bench, made by `lane verify-tree`
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
