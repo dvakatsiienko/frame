@@ -32,8 +32,7 @@ const (
 	lockPause = 200 * time.Millisecond
 )
 
-// laneAddOn is the one door from the core lane verbs to an add-on: the add-on's own file fills it at
-// init, and its zero value is the plain pr flow, so deleting that file leaves every core verb as it was
+// the one door from core to an add-on, filled at the add-on's init; its zero value is the plain flow
 var laneAddOn struct {
 	// the branch a pr opens onto; "" keeps main
 	prBase func(Flags) (string, error)
@@ -404,17 +403,17 @@ func prPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	base := "main"
-	if laneAddOn.prBase != nil {
-		onto, err := laneAddOn.prBase(flags)
-		if err != nil {
-			return nil, err
-		}
-		base = cmp.Or(onto, base)
-	}
 	r.Open(name)
 	var argv []string
+	base := "main"
 	if err := r.Step("plan", "checking the branch is pushed", func() (string, error) {
+		if laneAddOn.prBase != nil {
+			onto, err := laneAddOn.prBase(flags)
+			if err != nil {
+				return "", err
+			}
+			base = cmp.Or(onto, base)
+		}
 		remote, err := remoteSha(name)
 		if err != nil {
 			return "", err
@@ -444,9 +443,12 @@ func prOpen(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	name, argv := fields[1].value.(string), fields[0].value.([]string)
 	var url string
 	if err := r.Step("open", "gh pr create as x-coder-cc", func() (string, error) {
-		opened, err := ghCoder(argv...)
+		opened, err := ghRaw(argv...)
 		if err != nil {
 			return "", err
+		}
+		if !opened.ok {
+			return "", &Fail{Msg: "gh pr create failed — its output is above", Next: "gh pr view", Log: nonBlank(opened.log)}
 		}
 		url = opened.out
 		return url, nil

@@ -25,7 +25,7 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 
 ## stress list
 - `gh stack link` over `x lane` branches — the next multi-part coder lane, cut into 2–3 layers — open → merge time, review rounds per layer, stack-only hand steps
-- `x lane stack view` after `x lane stack link` — gh-stack's `link` keeps no local tracking (its own help), so `view` may print no stack — the first linked stack — prints the layers or not
+- `x lane stack view` after `x lane stack link` — view reads github's stacks api, since gh-stack's own `view` reads a local file its `link` never writes — the first linked stack — the layers print bottom-up or not
 - the clone-wide lock (#568) — a second coder in another worktree during the lane — blocked or not, minutes lost
 - verifier on one layer vs the whole stack — `x:crew-verifier` on layer 1, then the top — rounds, findings per layer
 - renovate moving main under an open stack — whichever 2–3-day merge lands — restack time, ci reruns

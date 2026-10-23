@@ -32,11 +32,26 @@ const ghStack = `'extension list'*) if [ -z "$FAKE_NO_STACK" ]; then printf 'gh 
 	9) echo "Stacked PRs are not enabled for this repository" >&2 ;;
 	esac
 	exit "${code:-0}" ;;
-'stack view --json'*) echo '{"trunk":"main","currentBranch":"coder/FRM-1-a-3","branches":[
-	{"name":"coder/FRM-1-a","pr":{"number":11,"state":"OPEN"}},
-	{"name":"coder/FRM-1-a-2","pr":{"number":12,"state":"OPEN"}},
-	{"name":"coder/FRM-1-a-3","pr":{"number":13,"state":"OPEN"}}]}' ;;
 'stack'*) echo "fake gh-stack: unexpected $*" >&2; exit 1 ;;`
+
+// github's side of a linked stack: the open prs, and the stacks api answering for the pr it is asked about
+func stackGithub(t *testing.T, clone string, stacks string) []string {
+	t.Helper()
+	origin := gitT(t, clone, "remote", "get-url", "origin")
+	gitT(t, clone, "remote", "set-url", "origin", "https://github.com/o/r.git")
+	gitT(t, clone, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
+	server, _ := fakeGithub(t, map[string]string{
+		repoPath + "/pulls":  `[{"number":12,"head":{"ref":"coder/FRM-1-a-2"}},{"number":13,"head":{"ref":"coder/FRM-1-a-3"}}]`,
+		repoPath + "/stacks": stacks,
+	})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+	return []string{"X_GITHUB_URL=" + server.URL, "X_KEYS=" + keys}
+}
+
+const linkedStack = `[{"number":4,"base":{"ref":"main"},"pull_requests":[
+	{"number":11,"state":"open","head":{"ref":"coder/FRM-1-a"}},
+	{"number":12,"state":"open","head":{"ref":"coder/FRM-1-a-2"}},
+	{"number":13,"state":"open","head":{"ref":"coder/FRM-1-a-3"}}]}]`
 
 func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
@@ -55,39 +70,43 @@ func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 	}
 }
 
-func TestStackViewPrintsTheLayersInOrder(t *testing.T) {
+// gh-stack's own view reads a local file its link never writes, so view asks github's stacks api
+func TestStackViewPrintsTheStackGithubHolds(t *testing.T) {
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
-	env, _ := ghRecorder(t, ghStack)
+	env := stackGithub(t, clone, linkedStack)
 
 	got := xIn(t, clone, env, "lane", "stack", "view")
 
-	a, b, c := strings.Index(got.stdout, `"coder/FRM-1-a"`), strings.Index(got.stdout, "coder/FRM-1-a-2"), strings.Index(got.stdout, "coder/FRM-1-a-3")
-	if got.code != 0 || a < 0 || !(a < b && b < c) {
-		t.Fatalf("exit %d, want the 3 layers bottom-up:\n%s", got.code, got.stdout)
+	a, b, c := strings.Index(got.stdout, `"coder/FRM-1-a"`), strings.Index(got.stdout, `"coder/FRM-1-a-2"`), strings.Index(got.stdout, `"coder/FRM-1-a-3"`)
+	if got.code != 0 || a < 0 || !(a < b && b < c) || !strings.Contains(got.stdout, `"pr":13`) {
+		t.Fatalf("exit %d, want the 3 layers bottom-up with their prs:\n%s", got.code, got.stdout)
 	}
 }
 
-func TestStackVerbsWithoutTheExtensionNameTheInstall(t *testing.T) {
+func TestStackViewOfAPrInNoStackNamesLink(t *testing.T) {
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	env := stackGithub(t, clone, `[]`)
+
+	got := xIn(t, clone, env, "lane", "stack", "view")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "#13") || got.next != "x lane stack link --apply" {
+		t.Fatalf("exit %d, next %q, want a failure naming #13 and the link verb\n%s", got.code, got.next, got.stdout)
+	}
+}
+
+func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
 	env, log := ghRecorder(t, ghStack)
 	env = append(env, "FAKE_NO_STACK=1")
 
-	for _, argv := range [][]string{{"lane", "stack", "link", "--apply"}, {"lane", "stack", "view"}} {
-		t.Run(argv[2], func(t *testing.T) {
-			got := xIn(t, clone, env, argv...)
+	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
 
-			if got.code == 0 || !strings.Contains(got.stdout, "gh extension install github/gh-stack") {
-				t.Fatalf("exit %d, want a failure naming the install:\n%s", got.code, got.stdout)
-			}
-		})
-	}
-	if strings.Contains(read(t, log), " stack ") {
-		t.Errorf("gh stack ran without the extension:\n%s", read(t, log))
+	if got.code == 0 || !strings.Contains(got.stdout, "gh extension install github/gh-stack") || strings.Contains(read(t, log), " stack ") {
+		t.Fatalf("exit %d, want a failure naming the install and no gh stack call:\n%s", got.code, got.stdout)
 	}
 }
 
-// linkWith runs stack link --apply on a 2-layer stack whose gh stack link exits as exits lists, the
-// last code repeating; sleeps run on the test clock. it returns the run and how many links ran
+// gh stack link exits as exits lists, the last code repeating; it returns the run and the link count
 func linkWith(t *testing.T, exits string) (ran, int) {
 	t.Helper()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
@@ -135,24 +154,76 @@ func TestStackLinkRefusesARepoWithoutStacksAtOnce(t *testing.T) {
 	}
 }
 
-func TestMergeAutoMergesAStackBottomUp(t *testing.T) {
+// a merge world where #7 (coder/x onto main) is the lower layer and #8 sits on base
+func stackedMergeWorld(t *testing.T, base string) *mergeWorld {
+	t.Helper()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.hub.mu.Lock()
+	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/pulls/8"] = `{"number":8,"title":"part 2","state":"open","merged":false,"body":"b",
-		"head":{"sha":"` + w.head + `","ref":"coder/x-2"},"base":{"ref":"coder/x"}}`
+		"head":{"sha":"` + w.head + `","ref":"coder/x-2"},"base":{"ref":"` + base + `"}}`
 	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"head":{"ref":"coder/y"}},{"number":7,"head":{"ref":"coder/x"}}]`
-	w.hub.mu.Unlock()
+	return w
+}
 
-	upper := w.run(t, "8", "--apply")
+func TestMergeAutoWaitsOnAnUpperLayerNamingTheLowerPr(t *testing.T) {
+	w := stackedMergeWorld(t, "coder/x")
 
-	if upper.code == 0 || !strings.Contains(upper.stdout, "#7") || len(w.hub.sent("PUT")) != 0 {
-		t.Fatalf("upper layer: exit %d, merges %q, want a wait naming #7 and no merge\n%s", upper.code, w.hub.sent("PUT"), upper.stdout)
+	got := w.run(t, "8", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "#7 (coder/x) merges first") || len(w.hub.sent("PUT")) != 0 {
+		t.Fatalf("exit %d, merges %q, want a wait naming #7 and no merge\n%s", got.code, w.hub.sent("PUT"), got.stdout)
 	}
+}
 
-	lower := w.run(t, "7", "--apply")
+func TestMergeAutoMergesTheLowerLayer(t *testing.T) {
+	w := stackedMergeWorld(t, "coder/x")
 
-	if merges := w.hub.sent("PUT " + repoPath + "/pulls/7/merge"); lower.code != 0 || len(merges) != 1 {
-		t.Fatalf("lower layer: exit %d, merges %q, want #7 merged\n%s", lower.code, merges, lower.stdout)
+	got := w.run(t, "7", "--apply")
+
+	if merges := w.hub.sent("PUT " + repoPath + "/pulls/7/merge"); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, merges %q, want #7 merged\n%s", got.code, merges, got.stdout)
+	}
+}
+
+func TestMergeAutoLeavesABaseWithNoOpenPrToTheChecks(t *testing.T) {
+	w := stackedMergeWorld(t, "release")
+
+	got := w.run(t, "8", "--apply")
+
+	if strings.Contains(got.stdout, "merges first") {
+		t.Fatalf("a base with no open pr read as a stack layer:\n%s", got.stdout)
+	}
+}
+
+func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
+	cases := []struct {
+		name, from string
+		branches   []string
+		want       string
+	}{
+		{"a slug ending in a number stays its own root", "coder/FRM-1-v-2", []string{"coder/FRM-1-v-2", "coder/FRM-1-v-2-2"}, "coder/FRM-1-v-2 coder/FRM-1-v-2-2"},
+		{"one layer is no stack", "coder/FRM-1-a", []string{"coder/FRM-1-a"}, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			clone := layers(t, c.branches...)
+			gitT(t, clone, "switch", "-q", c.from)
+			env, log := ghRecorder(t, ghStack)
+
+			got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
+
+			calls := ""
+			if exists(log) {
+				calls = read(t, log)
+			}
+			if c.want == "" && (got.code == 0 || !strings.Contains(got.stdout, "2 layers") || strings.Contains(calls, "stack link")) {
+				t.Fatalf("exit %d, want a refusal naming 2 layers and no link\n%s", got.code, got.stdout)
+			}
+			if c.want != "" && (got.code != 0 || !strings.Contains(calls, "stack link "+c.want+"\n")) {
+				t.Fatalf("exit %d, want one link of %q\n%s\n%s", got.code, c.want, got.stdout, calls)
+			}
+		})
 	}
 }
 

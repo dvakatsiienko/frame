@@ -23,8 +23,11 @@
             "hidden": true,
             "name": "lane stack view",
             "needsApply": false,
-            "purpose": "print the github stack this branch sits in, bottom-up, with each pr and state; hidden while stacks are on trial",
-            "steps": ["view"]
+            "purpose": "print the github stack this branch's pr sits in, bottom-up, with each pr and state; hidden while stacks are on trial",
+            "steps": ["pr", "view"],
+            "touches": [
+                "github — the stacks api and the open prs, read as the x-coder-cc app"
+            ]
         }
     ]
 }

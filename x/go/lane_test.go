@@ -557,6 +557,7 @@ func ghRecorder(t *testing.T, cases string) (env []string, log string) {
 const prCreated = `'pr create'*) echo https://github.com/o/r/pull/8 ;;`
 
 func bodyFile(t *testing.T) string {
+	t.Helper()
 	path := filepath.Join(t.TempDir(), "body.md")
 	write(t, path, "the body\n")
 	return path

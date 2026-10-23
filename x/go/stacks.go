@@ -1,8 +1,6 @@
 //go:build !nostacks
 
-// the gh stacks add-on: stacked prs through github's gh-stack extension. it reaches core only through
-// laneAddOn and adds its own verbs and flags at init; deleting this file, stacks.json and stacks_test.go
-// leaves the plain pr flow as it was, which `pnpm x-go:test` proves with -tags nostacks
+// the gh stacks add-on reaches core only through laneAddOn; `pnpm x-go:test` proves it with -tags nostacks
 package main
 
 import (
@@ -12,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -44,7 +43,7 @@ func init() {
 	laneAddOn.mergeWait = stackMergeWait
 }
 
-// a stack merges bottom-up, one layer per call: a pr onto another pr's branch waits for that pr
+// a pr onto another open pr's branch waits for that pr
 func stackMergeWait(repo string, pr pullHead) (string, error) {
 	if pr.Base.Ref == "main" {
 		return "", nil
@@ -64,7 +63,7 @@ func stackMergeWait(repo string, pr pullHead) (string, error) {
 			return fmt.Sprintf("#%d (%s) merges first: a stack merges bottom-up, one layer per call", below.Number, pr.Base.Ref), nil
 		}
 	}
-	return "its base " + pr.Base.Ref + " has no open pr; retarget it onto main first", nil
+	return "", nil
 }
 
 /* Verbs */
@@ -90,57 +89,92 @@ func askStackLink(plan any) string {
 
 func stackLink(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	names := plan.([]string)
-	if err := stackStep(r, "link", "gh stack link, bottom-up", append([]string{"link"}, names...)); err != nil {
+	if err := r.Step("link", "gh stack link, bottom-up", func() (string, error) {
+		got, err := stackCall(append([]string{"link"}, names...)...)
+		return got.out, err
+	}); err != nil {
 		return nil, err
 	}
 	r.Done(fmt.Sprintf("%d layers linked: %s", len(names), strings.Join(names, " → ")), "x lane stack view")
 	return ordered{{"layers", names}}, nil
 }
 
-type stackShown struct {
-	Trunk    string `json:"trunk"`
-	Branches []struct {
-		Name string `json:"name"`
-		PR   *struct {
-			Number int    `json:"number"`
-			State  string `json:"state"`
-		} `json:"pr,omitempty"`
-	} `json:"branches"`
+// one stack as github's stacks api answers it (the api gh-stack itself calls), prs bottom-up
+type remoteStack struct {
+	Number int `json:"number"`
+	Base   struct {
+		Ref string `json:"ref"`
+	} `json:"base"`
+	PullRequests []struct {
+		Number int    `json:"number"`
+		State  string `json:"state"`
+		Head   struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+	} `json:"pull_requests"`
 }
 
-func stackView(r *Run, _ []string, _ Flags) (any, error) {
+// gh-stack's own view reads a local stack file its link never writes, so x asks github
+func stackView(r *Run, _ []string, flags Flags) (any, error) {
 	name, err := branch()
 	if err != nil {
 		return nil, err
 	}
+	repo, err := repoOf(flags)
+	if err != nil {
+		return nil, err
+	}
 	r.Open(name)
-	var got result
-	if err := r.Step("view", "gh stack view --json", func() (string, error) {
-		got, err = stackCall("view", "--json")
-		return "", err
+	api := githubBase() + "/repos/" + repo
+	var n int
+	if err := r.Step("pr", "finding this branch's open pr", func() (string, error) {
+		var open []struct {
+			Number int `json:"number"`
+			Head   struct {
+				Ref string `json:"ref"`
+			} `json:"head"`
+		}
+		owner, _, _ := strings.Cut(repo, "/")
+		if _, err := ghFetch(asCoder, api+"/pulls?state=open&head="+url.QueryEscape(owner+":"+name), &open); err != nil {
+			return "", err
+		}
+		for _, pr := range open {
+			if pr.Head.Ref == name {
+				n = pr.Number
+				return fmt.Sprintf("#%d", n), nil
+			}
+		}
+		return "", &Fail{Refused: true, Msg: name + " has no open pr", Next: "x lane pr-open --apply --base <the layer below> <title> <body-file>"}
 	}); err != nil {
 		return nil, err
 	}
-	var shown stackShown
-	if err := json.Unmarshal([]byte(got.out), &shown); err != nil {
-		return nil, &Fail{Msg: "gh stack view printed no stack json: " + err.Error(), Next: "gh stack view", Log: nonBlank(got.log)}
-	}
-	lines := []string{shown.Trunk}
-	for _, layer := range shown.Branches {
-		line := "└ " + layer.Name
-		if layer.PR != nil {
-			line += fmt.Sprintf(" #%d %s", layer.PR.Number, strings.ToLower(layer.PR.State))
+	var stacks []remoteStack
+	if err := r.Step("view", "reading github's stack for the pr", func() (string, error) {
+		status, _, err := ghSend(asCoder, http.MethodGet, fmt.Sprintf("%s/stacks?pull_request=%d", api, n), nil, &stacks)
+		switch {
+		case status == http.StatusNotFound:
+			return "", &Fail{Refused: true, Msg: "stacked prs are not enabled for " + repo + " (the stacks api answered 404)", Next: "x lane pr-open --apply <title> <body-file>, a plain pr"}
+		case err != nil:
+			return "", err
+		case len(stacks) == 0:
+			return "", &Fail{Refused: true, Msg: fmt.Sprintf("#%d is in no stack", n), Next: "x lane stack link --apply"}
 		}
-		lines = append(lines, line)
+		return fmt.Sprintf("stack %d", stacks[0].Number), nil
+	}); err != nil {
+		return nil, err
+	}
+	stack := stacks[0]
+	lines := []string{stack.Base.Ref}
+	for _, pr := range stack.PullRequests {
+		lines = append(lines, fmt.Sprintf("└ %s #%d %s", pr.Head.Ref, pr.Number, pr.State))
 	}
 	r.Done(strings.Join(lines, "\n"), "")
-	return shown, nil
+	return ordered{{"pr", n}, {"stack", stack}}, nil
 }
 
 /* Layers */
 
-// a layer is the root branch or the root plus -2, -3…; the root is this branch less a -N suffix when
-// origin holds it, so a slug that ends in a number stays its own root
+// the root is this branch less a -N only when origin holds it, so a slug ending in a number stays its own root
 var layerSuffix = regexp.MustCompile(`-\d+$`)
 
 func stackLayers(name string) ([]string, error) {
@@ -161,8 +195,12 @@ func stackLayers(name string) ([]string, error) {
 		return nil, &Fail{Refused: true, Msg: "origin has no branch " + root, Next: "x lane push --apply"}
 	}
 	names := []string{root}
-	for n := 2; heads[fmt.Sprintf("%s-%d", root, n)]; n++ {
-		names = append(names, fmt.Sprintf("%s-%d", root, n))
+	for n := 2; ; n++ {
+		layer := fmt.Sprintf("%s-%d", root, n)
+		if !heads[layer] {
+			break
+		}
+		names = append(names, layer)
 	}
 	if len(names) < 2 {
 		return nil, &Fail{Refused: true, Msg: "a stack needs 2 layers; origin holds only " + root, Next: "push " + root + "-2, then x lane stack link --apply"}
@@ -172,19 +210,11 @@ func stackLayers(name string) ([]string, error) {
 
 /* gh stack */
 
-func stackStep(r *Run, step, label string, args []string) error {
-	return r.Step(step, label, func() (string, error) {
-		got, err := stackCall(args...)
-		return got.out, err
-	})
-}
-
-// gh-stack's exit codes (cmd/utils.go): its lock covers the whole clone, so another worktree's
-// command holds it for seconds (gh-stack#568, #570); a paused rebase holds it until someone finishes it
+// gh-stack's exit codes (its cmd/utils.go); the lock covers the whole clone (gh-stack#568)
 const (
 	stackRebasePaused = 7
 	stackLocked       = 8
-	stackOff          = 9
+	stackNotEnabled   = 9
 )
 
 const stackLockBudget = 2 * time.Minute
@@ -194,8 +224,6 @@ var (
 	pausedLog = regexp.MustCompile(`already in progress \((\S+)\)`)
 )
 
-// stackCall runs one `gh stack` as the coder app, after checking the extension is there; a held lock
-// is waited out with backoff up to stackLockBudget, a paused rebase or a repo without stacks refuses at once
 func stackCall(args ...string) (result, error) {
 	listed, err := ghCoder("extension", "list")
 	if err != nil {
@@ -235,8 +263,11 @@ func stackCall(args ...string) (result, error) {
 			}
 			return got, &Fail{Refused: true, Msg: "a gh stack rebase is paused in " + where + "; finish it there with gh stack rebase --continue, or drop it with gh stack rebase --abort",
 				Next: "gh stack rebase --continue, in " + where, Log: nonBlank(got.log)}
-		case code == stackOff:
-			repo, _ := mustGit("repo", "remote", "get-url", "origin")
+		case code == stackNotEnabled:
+			repo, err := repoOf(nil)
+			if err != nil {
+				repo, _ = mustGit("repo", "remote", "get-url", "origin")
+			}
 			return got, &Fail{Refused: true, Msg: "stacked prs are not enabled for " + cmp.Or(repo, "this repo") + " (the stacks api answered 404)",
 				Next: "x lane pr-open --apply <title> <body-file>, a plain pr", Log: nonBlank(got.log)}
 		}
@@ -244,7 +275,7 @@ func stackCall(args ...string) (result, error) {
 	}
 }
 
-// under X_TEST, X_FAKE_SLEEP turns the waits into a counted offset, so a test spends the budget in no time
+// under X_TEST, X_FAKE_SLEEP counts the waits instead of sleeping them
 type stackClock struct {
 	start   time.Time
 	skipped time.Duration
@@ -265,7 +296,6 @@ func (c *stackClock) sleep(d time.Duration) {
 	time.Sleep(d)
 }
 
-// --base must already sit on origin: gh would open the pr, and github would refuse it later
 func stackBase(flags Flags) (string, error) {
 	base, _ := flags["base"].(string)
 	if base == "" {
