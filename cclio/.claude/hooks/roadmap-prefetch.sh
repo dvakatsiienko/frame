@@ -73,6 +73,3 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
         ([$ms[] | select(.status != "done")] | length | select(. > 5) | "🟡 \($p): \(.) open milestones (aim for 4, 5 is fine)"))
   ] | if length == 0 then "🟢 milestones healthy" else .[] end)
 ' || echo "roadmap prefetch: linear unreachable"
-# bytes untouched a week is information, never a health issue: operational work comes first (dima, grill 7 Q5)
-age=$(( ( $(date +%s) - $(git -C "$HOME/projects/bytes" log -1 --format=%ct origin/main 2>/dev/null || date +%s) ) / 86400 ))
-[ "$age" -ge 7 ] && echo "📦 bytes untouched $age days — information only"

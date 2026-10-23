@@ -41,13 +41,12 @@ boot prefetch prints it; **that block answers «what's next».**
   2026-10-22, PK-103 round 3); a project's status follows the milestone queue, never the tick (grill 7 Q3)
 - **one initiative, its steps are the phases** (grill 7): the cross-project milestone order lives in the
   initiative body's `## the milestone queue`, reordered the turn he picks; the boot prints the phase,
-  the next 3 steps, the next 7 milestones and the health line (two queue checks, no clock; bytes
-  untouched 7+ days is information, never an issue)
+  the next 3 steps, the next 7 milestones and the health line (two queue checks, no clock)
 
 ## the branches — notes in `dima-strategy-branches.md`, read on demand
 
 the vector decides what comes first; these lines bind every report:
 
-- 📦 **bytes** — surface it in reports *especially* when nothing changed; 🚫 never fix it by adding bytes tickets, it needs sessions, not backlog; the honest test of the whole fleet effort: does bytes get touched more
+- 📦 **bytes** — no «bytes untouched» line in a report (dima, 2026-10-23: «drop habit of reminding that bytes is untouched»); 🚫 never fix it by adding bytes tickets, it needs sessions, not backlog; the honest test of the whole fleet effort: does bytes get touched more
 - 🤖 **fleet** — be an expert of yourself: every surface knows its own tools, config and vocabulary cold at session start; asking Dima what a label means is a bug
 - 🛠️ **harness** — the most seductive meta-work on the board: hold the tension out loud
