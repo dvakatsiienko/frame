@@ -34,6 +34,13 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   lane** is a coder on main without a pr, a verifier optional; a **shift** is a lane run from a written plan while his AFK tick is on, day or night alike; a shift
   asked with the tick off gets one line asking why. `cclio:shift` is the contract. a session name leads with
   its mode — `🌗` a side lane, `⚡` a quick lane, `🌘` shift — then the role: `🌘 🔧 sys code: wisps`.
+- lane init (dima, 2026-10-23, PK-263; the contract: `craft-fleet-flow`):
+  - **🍫 chunk** — one ticket a lane takes; a lane runs one or more in order, one glide step each
+  - **✍️ signed** — dima's yes on a chunk in `cclio:shape-lane`: a `signed` label, a dated `## signed` line; a change after it asks a re-sign
+  - **dispatch** — dima's pick of signed chunks, which starts their lane; «what can we dispatch?»
+  - **🦭 sealed** — a chunk whose spec and exit lines are written, at dispatch, before the coder starts
+  - **🟢 greenlight** — cclio's yes on a coder's lane plan, after the spawn
+  - **📐 spec** — a lane's technical synthesis of its chunks, exit lines inside; every lane with a member has one
 
 ## fleet words — how he steers an agent
 <!-- sync: cw -->
