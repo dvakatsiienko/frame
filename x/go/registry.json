@@ -283,7 +283,8 @@
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
                 "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read",
-                "linear — a self-edit's chunk ticket, its ## signed block read"
+                "linear — a self-edit's chunk ticket, its ## signed block read",
+                "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
         },
         {

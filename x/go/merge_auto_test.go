@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -95,6 +96,12 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			_, _ = w.Write([]byte(`{"message":"Server Error"}`))
 			return
 		}
+		if code, ok := strings.CutPrefix(body, "<status "); ok {
+			n, _ := strconv.Atoi(strings.TrimSuffix(code, ">"))
+			w.WriteHeader(n)
+			_, _ = w.Write([]byte(`{"message":"answered ` + code + `"}`))
+			return
+		}
 		_, _ = w.Write([]byte(body))
 	}))
 	t.Cleanup(server.Close)
@@ -119,9 +126,9 @@ const mergedSha = "cccccccccccccccccccccccccccccccccccccccc"
 // a pr world: a bare origin standing in for github.com/o/r, a clone cclio runs merge-auto in, the pr
 // branch coder/x touching the given paths, a verifier store, and the hub answering for #7 as all green
 type mergeWorld struct {
-	clone, origin, seed, head, store string
-	hub                              *hub
-	env                              []string
+	clone, origin, seed, head, store, state string
+	hub                                     *hub
+	env                                     []string
 }
 
 // moveHead pushes seed's coder/x and points the hub at its new head, every check green on it
@@ -193,9 +200,10 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 	write(t, store, `{"o/r#7":"`+head+`"}`)
 	bin := filepath.Join(t.TempDir(), "bin")
 	write(t, filepath.Join(bin, "gh"), "#!/bin/sh\n[ \"$1 $2\" = 'auth token' ] && echo gho_dima && exit 0\necho \"fake gh: $*\" >&2\nexit 1\n")
+	state := t.TempDir()
 	env := []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_GITHUB_URL=" + server.URL, "X_VERIFIED=" + store,
-		"X_KEYS=" + keysFixture(t, map[string]string{})}
-	return &mergeWorld{clone: clone, origin: origin, seed: seed, head: head, store: store, hub: h, env: env}
+		"X_KEYS=" + keysFixture(t, map[string]string{}), "X_STATE=" + state}
+	return &mergeWorld{clone: clone, origin: origin, seed: seed, head: head, store: store, state: state, hub: h, env: env}
 }
 
 func (w *mergeWorld) run(t *testing.T, args ...string) ran {
@@ -948,6 +956,57 @@ func TestMergeAutoReleasesTheBrakeOnDimasTypedWord(t *testing.T) {
 
 	if released := w.hub.sent("DELETE " + repoPath + "/issues/8/labels/" + brakeLabel); got.code != 0 || len(released) != 1 || len(w.hub.sent("PUT ")) != 0 {
 		t.Fatalf("exit %d, deletes %q, puts %q: want the label removed and no merge:\n%s", got.code, released, w.hub.sent("PUT "), got.stdout)
+	}
+}
+
+// the record names its pr; dima's typed release through the same door takes it off with the label
+func TestMergeAutoReleaseClearsTheBrakesOwnRecord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	record := filepath.Join(w.state, "merge-brake", "o_r.json")
+	write(t, record, `{"pr":"8","why":"merged a head its gate never read"}`)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues/8/labels/"+brakeLabel] = `[]`
+	w.hub.mu.Unlock()
+
+	held := w.run(t, "7", "--apply")
+	got := w.run(t, "8", "--apply", "--release-brake", "--dima-ok", "8")
+
+	if held.code != 1 || !strings.Contains(envelopeOf(held).Error, "brake on") {
+		t.Fatalf("exit %d, error %q: want the record to hold #7", held.code, envelopeOf(held).Error)
+	}
+	if got.code != 0 || exists(record) {
+		t.Fatalf("exit %d, record kept %v: want the release to take the record off\n%s", got.code, exists(record), got.stdout)
+	}
+}
+
+// a release names its pr: another pr's record stays, and so does its brake
+func TestMergeAutoReleaseKeepsAnotherPrsRecord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	record := filepath.Join(w.state, "merge-brake", "o_r.json")
+	write(t, record, `{"pr":"8","why":"merged a head its gate never read"}`)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues/9/labels/"+brakeLabel] = `[]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "9", "--apply", "--release-brake", "--dima-ok", "9")
+
+	if got.code != 0 || !exists(record) {
+		t.Fatalf("exit %d, record kept %v: want #9's release to leave #8's record\n%s", got.code, exists(record), got.stdout)
+	}
+}
+
+// a record merge-auto cannot read never reads as off
+func TestMergeAutoRefusesWhenTheBrakesOwnRecordIsUnreadable(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	write(t, filepath.Join(w.state, "merge-brake", "o_r.json"), "not json")
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code == 0 || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, puts %q: want no merge while the brake record is unreadable", got.code, w.hub.sent("PUT "))
 	}
 }
 

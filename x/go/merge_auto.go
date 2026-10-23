@@ -4,7 +4,9 @@ import (
 	"cmp"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -196,7 +198,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	brake := ""
 	if err := r.Step("brake", "looking for a revert of a merge-auto merge in 7 days", func() (string, error) {
 		var err error
-		brake, err = brakeOn(api, trunk)
+		brake, err = brakeOn(repo, trunk)
 		switch {
 		case err != nil:
 			return "", err
@@ -306,10 +308,24 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	if d.Decision == "release" {
 		if err := r.Step("brake", "removing the "+brakeLabel+" label, on dima's typed word", func() (string, error) {
 			status, _, err := ghSend(asDima, http.MethodDelete, api+"/issues/"+d.PR+"/labels/"+brakeLabel, nil, nil)
-			if status == http.StatusNotFound {
-				return "#" + d.PR + " wore no " + brakeLabel + " label", nil
+			if err != nil && status != http.StatusNotFound {
+				return "", err
 			}
-			return "#" + d.PR + " released", err
+			said := "#" + d.PR + " released"
+			if status == http.StatusNotFound {
+				said = "#" + d.PR + " wore no " + brakeLabel + " label"
+			}
+			if raw, err := os.ReadFile(brakeRecord(d.Repo)); err == nil {
+				var note brakeNote
+				// a record naming another pr is that pr's brake; an unreadable one goes with any release
+				if json.Unmarshal(raw, &note) != nil || note.PR == d.PR || note.PR == "" {
+					if err := os.Remove(brakeRecord(d.Repo)); err != nil {
+						return "", err
+					}
+					said += ", its record here removed"
+				}
+			}
+			return said, nil
 		}); err != nil {
 			return nil, err
 		}
@@ -487,10 +503,51 @@ func brakeLabelled(api string) (string, error) {
 	return "#" + n + " merged a head its gate never read; release once dima looked: " + releaseBrake(n), nil
 }
 
-// no stored state (grill, 2026-10-20); git's revert names the sha, github's revert button only the subject
-func brakeOn(api, base string) (string, error) {
+// the brake's own record on this mac, for a brake github refused to label (dima, o194)
+func brakeRecord(repo string) string {
+	return filepath.Join(stateDir(), "merge-brake", strings.ReplaceAll(repo, "/", "_")+".json")
+}
+
+type brakeNote struct {
+	PR  string `json:"pr"`
+	Why string `json:"why"`
+}
+
+func recordBrake(repo, n, why string) error {
+	raw, err := json.Marshal(brakeNote{PR: n, Why: why})
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(brakeRecord(repo)), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(brakeRecord(repo), raw, 0o644)
+}
+
+// a record merge-auto cannot read never reads as off
+func brakeRecorded(repo string) (string, error) {
+	raw, err := os.ReadFile(brakeRecord(repo))
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	var note brakeNote
+	if err := json.Unmarshal(raw, &note); err != nil || note.PR == "" {
+		return "", &Fail{Msg: "the brake record " + brakeRecord(repo) + " is unreadable, so the brake reads on", Next: "cat " + brakeRecord(repo)}
+	}
+	return "#" + note.PR + " " + note.Why + "; release once dima looked: " + releaseBrake(note.PR), nil
+}
+
+// the label, then this mac's record, then reverts; git's revert names the sha, github's revert button only the subject
+func brakeOn(repo, base string) (string, error) {
+	api := githubBase() + "/repos/" + repo
 	if labelled, err := brakeLabelled(api); err != nil || labelled != "" {
 		return labelled, err
+	}
+	if recorded, err := brakeRecorded(repo); err != nil || recorded != "" {
+		return recorded, err
 	}
 	if _, err := mustGit("brake", "fetch", "-q", "origin", base); err != nil {
 		return "", err

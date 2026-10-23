@@ -4,7 +4,9 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -235,7 +237,7 @@ func linkedMergeWorld(t *testing.T) *mergeWorld {
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
 		{"number":7,"state":"open","head":{"ref":"coder/x"}},{"number":8,"state":"open","head":{"ref":"coder/x-2"}}]}]`
 	w.hub.pages[repoPath+"/pulls/8/merge-async"] = `{"status":"pending","details":{"uuid":"u1"}}`
-	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + w.head + `"}}`
 	return w
 }
 
@@ -259,7 +261,7 @@ func TestMergeAutoLandsAStacksBottomLayerAsync(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
-	w.hub.pages[repoPath+"/pulls/7/merge-async"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.pages[repoPath+"/pulls/7/merge-async"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + w.head + `"}}`
 	w.hub.mu.Unlock()
 
 	got := w.run(t, "7", "--apply")
@@ -337,8 +339,8 @@ func TestMergeAutoBrakesOnTheHeadThePendingAnswerNamed(t *testing.T) {
 	}
 }
 
-// a mismatch whose label github refused leaves no brake behind, so the message says so and names the hand step
-func TestMergeAutoSaysTheBrakeIsOffWhenItsLabelFailed(t *testing.T) {
+// a mismatch whose label github refused still brakes: this mac's own record holds it, and the hand label step is named
+func TestMergeAutoBrakesFromItsOwnRecordWhenTheLabelFailed(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
@@ -346,6 +348,116 @@ func TestMergeAutoSaysTheBrakeIsOffWhenItsLabelFailed(t *testing.T) {
 	// the merged-by-x labels land before the merge; only the brake label after it fails
 	w.hub.pages["labels:"+brakeLabel] = serverDown
 	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "this mac's record") || got.next != "gh pr edit 8 --add-label "+brakeLabel {
+		t.Fatalf("exit %d, error %q, next %q: want the brake on from the record and the hand label step", got.code, msg, got.next)
+	}
+	puts := len(w.hub.sent("PUT "))
+
+	next := w.run(t, "7", "--apply")
+
+	if msg := envelopeOf(next).Error; next.code != 1 || !strings.Contains(msg, "brake on") || !strings.Contains(msg, releaseBrake("8")) || len(w.hub.sent("PUT ")) != puts {
+		t.Fatalf("exit %d, error %q: want the next merge held by the recorded brake, naming its release", next.code, msg)
+	}
+}
+
+// github's answer named no head it took and did not say nothing merged, so the gated head is unverified: said on
+// stderr, and the brake goes on
+func TestMergeAutoBrakesWhenTheStackMergeNamesNoHead(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, answer string }{
+		{"merged", `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`},
+		{"enqueued", `{"status":"enqueued","details":{}}`},
+		{"still pending at the budget", `{"status":"pending","details":{"uuid":"u1"}}`},
+		{"a status x does not know", `{"status":"queued","details":{}}`},
+		{"a poll that failed", serverDown},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			w := linkedMergeWorld(t)
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = c.answer
+			w.hub.mu.Unlock()
+
+			cmd := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+			cmd.Dir = w.clone
+			cmd.Env = append(append(cleanEnv(), "X_TEST=1", "X_FAKE_SLEEP=1"), w.env...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			code := exitOf(cmd.Run())
+
+			labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+			if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+				t.Fatalf("exit %d, stderr %q, label calls %q: want the merge called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
+			}
+			if !strings.Contains(stdout.String(), releaseBrake("8")) {
+				t.Errorf("want the release named as the next step\n%s", stdout.String())
+			}
+		})
+	}
+}
+
+// a submit github answered with no 2xx may still have taken the merge, so the gated head is unverified and the brake
+// goes on; only a 404, no async merge in the repo at all, takes nothing
+func TestMergeAutoBrakesWhenTheStackMergeSubmitFails(t *testing.T) {
+	t.Parallel()
+	for _, answer := range []string{serverDown, "<status 422>", "<status 502>"} {
+		t.Run(answer, func(t *testing.T) {
+			w := linkedMergeWorld(t)
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/8/merge-async"] = answer
+			w.hub.mu.Unlock()
+
+			cmd := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+			cmd.Dir = w.clone
+			cmd.Env = append(append(cleanEnv(), "X_TEST=1"), w.env...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			code := exitOf(cmd.Run())
+
+			labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+			if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+				t.Fatalf("exit %d, stderr %q, label calls %q: want the submit called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
+			}
+			if !strings.Contains(stdout.String(), releaseBrake("8")) {
+				t.Errorf("want the release named as the next step\n%s", stdout.String())
+			}
+		})
+	}
+}
+
+// a repo with no async merge answers 404 and takes nothing: a refusal, no brake
+func TestMergeAutoRefusesAStackMergeTheRepoHasNoDoorFor(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	delete(w.hub.pages, repoPath+"/pulls/8/merge-async")
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code == 0 || !strings.Contains(envelopeOf(got).Error, "no async merge") || exists(filepath.Join(w.state, "merge-brake")) ||
+		slices.ContainsFunc(w.hub.sent("POST "+repoPath+"/issues/8/labels"), func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+		t.Fatalf("exit %d, error %q: want a refusal and no brake", got.code, envelopeOf(got).Error)
+	}
+}
+
+// with the label refused and the record unwritable, nothing holds the brake: the message says so and names the hand step
+func TestMergeAutoSaysTheBrakeIsOffWhenItsRecordFailedToo(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + strings.Repeat("d", 40) + `"}}`
+	w.hub.pages["labels:"+brakeLabel] = serverDown
+	w.hub.mu.Unlock()
+	// the record's dir reads as empty and takes no write
+	dir := filepath.Join(w.state, "merge-brake")
+	if err := os.MkdirAll(dir, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(dir, 0o755) })
 
 	got := w.run(t, "8", "--apply")
 
@@ -545,6 +657,187 @@ func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
 				t.Fatalf("exit %d, want one link of %q\n%s\n%s", got.code, c.want, got.stdout, calls)
 			}
 		})
+	}
+}
+
+// a 2-layer stack on origin whose bottom layer gained a commit after the top was cut; the clone sits on the top
+func movedStack(t *testing.T, lowerFile, lowerBody string) string {
+	t.Helper()
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
+	write(t, filepath.Join(clone, lowerFile), lowerBody)
+	gitT(t, clone, "add", lowerFile)
+	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
+	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a-2")
+	return clone
+}
+
+func originHead(t *testing.T, clone, branch string) string {
+	t.Helper()
+	sha, _, _ := strings.Cut(gitT(t, clone, "ls-remote", "origin", "refs/heads/"+branch), "\t")
+	return sha
+}
+
+func TestRestackMergesEachLowerLayerUpAndPushes(t *testing.T) {
+	t.Parallel()
+	clone := movedStack(t, "lower.txt", "the fix\n")
+	lower := originHead(t, clone, "coder/FRM-1-a")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	upper := originHead(t, clone, "coder/FRM-1-a-2")
+	if got.code != 0 || gitT(t, clone, "merge-base", "--is-ancestor", lower, upper) != "" {
+		t.Fatalf("exit %d, want origin's top layer to hold the lower layer's %s\n%s", got.code, short(lower), got.stdout)
+	}
+	if branch := gitT(t, clone, "branch", "--show-current"); branch != "coder/FRM-1-a-2" {
+		t.Errorf("left on %s, want the branch restack started on", branch)
+	}
+}
+
+func TestRestackStopsAtALayerThatConflicts(t *testing.T) {
+	t.Parallel()
+	// the top layer's own file, changed under it in the lower layer
+	clone := movedStack(t, "coder-FRM-1-a-2.txt", "the lower layer's version\n")
+	before := originHead(t, clone, "coder/FRM-1-a-2")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-a-2") || !strings.Contains(got.stdout, "coder-FRM-1-a-2.txt") || originHead(t, clone, "coder/FRM-1-a-2") != before {
+		t.Fatalf("exit %d, want a stop naming the layer and the conflicted file, origin untouched\n%s", got.code, got.stdout)
+	}
+}
+
+// a stack's upper layer pushes onto its own branch, never onto the layer below or main
+func TestPushSendsAStackLayerToItsOwnBranch(t *testing.T) {
+	t.Parallel()
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	lower, main := originHead(t, clone, "coder/FRM-1-a"), originHead(t, clone, "main")
+	write(t, filepath.Join(clone, "upper.txt"), "more in the upper layer\n")
+	gitT(t, clone, "add", "upper.txt")
+	gitT(t, clone, "commit", "-q", "-m", "more in the upper layer")
+	sha := gitT(t, clone, "rev-parse", "HEAD")
+
+	got := xIn(t, clone, nil, "lane", "push", "--apply")
+
+	if got.code != 0 || originHead(t, clone, "coder/FRM-1-a-2") != sha || originHead(t, clone, "coder/FRM-1-a") != lower || originHead(t, clone, "main") != main {
+		t.Fatalf("exit %d, want only coder/FRM-1-a-2 moved to %s\n%s", got.code, short(sha), got.stdout)
+	}
+}
+
+func TestRestackRefusesATreeWithChanges(t *testing.T) {
+	t.Parallel()
+	clone := movedStack(t, "lower.txt", "the fix\n")
+	write(t, filepath.Join(clone, "coder-FRM-1-a-2.txt"), "an edit in flight\n")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "coder-FRM-1-a-2.txt") {
+		t.Fatalf("exit %d, want a refusal naming the changed file\n%s", got.code, got.stdout)
+	}
+}
+
+// a conflict high in the stack keeps the layers under it pushed, so the rerun after the fix goes through
+func TestRestackRerunsAfterAResolvedConflict(t *testing.T) {
+	t.Parallel()
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
+	write(t, filepath.Join(clone, "coder-FRM-1-a-3.txt"), "the lower layer's version\n")
+	gitT(t, clone, "add", ".")
+	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
+	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
+	lower := gitT(t, clone, "rev-parse", "HEAD")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a-3")
+
+	stopped := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if stopped.code == 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", lower, originHead(t, clone, "coder/FRM-1-a-2"))) {
+		t.Fatalf("exit %d, want a stop at the top layer with coder/FRM-1-a-2 already pushed\n%s", stopped.code, stopped.stdout)
+	}
+	write(t, filepath.Join(clone, "coder-FRM-1-a-3.txt"), "both versions\n")
+	gitT(t, clone, "add", "coder-FRM-1-a-3.txt")
+	gitT(t, clone, "commit", "-q", "--no-edit")
+	if pushed := xIn(t, clone, nil, "lane", "push", "--apply"); pushed.code != 0 {
+		t.Fatalf("the resolved layer's push: exit %d\n%s", pushed.code, pushed.stdout)
+	}
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want the rerun the stop named to go through\n%s", got.code, got.stdout)
+	}
+}
+
+// a layer checked out in another worktree cannot be switched to, so the plan refuses before any layer merges
+func TestRestackRefusesALayerAnotherWorktreeHolds(t *testing.T) {
+	t.Parallel()
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
+	write(t, filepath.Join(clone, "lower.txt"), "the fix\n")
+	gitT(t, clone, "add", "lower.txt")
+	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
+	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
+	gitT(t, clone, "worktree", "add", "-q", filepath.Join(t.TempDir(), "held"), "coder/FRM-1-a-3")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-a-3") || ok(gitIn(clone, "rev-parse", "-q", "--verify", "refs/heads/coder/FRM-1-a-2")) {
+		t.Fatalf("exit %d, want a refusal naming the held layer and no layer merged\n%s", got.code, got.stdout)
+	}
+}
+
+// a verifier checks a stack in one call: the top layer's tree, and every layer's pr, head and base
+func TestVerifyTreeWithStackSeedsTheTopAndListsEveryLayer(t *testing.T) {
+	t.Parallel()
+	main, prHead := verifyWorld(t)
+	lower := strings.Repeat("6", 40)
+	h := &hub{pages: map[string]string{
+		repoPath + "/stacks": `[{"number":5,"base":{"ref":"main"},"pull_requests":[
+			{"number":6,"state":"open","head":{"ref":"coder/x"}},{"number":7,"state":"open","head":{"ref":"coder/x-2"}}]}]`,
+		repoPath + "/pulls/6": `{"number":6,"state":"open","head":{"sha":"` + lower + `","ref":"coder/x"},"base":{"ref":"main"},"commits":2}`,
+		repoPath + "/pulls/7": `{"number":7,"state":"open","head":{"sha":"` + prHead + `","ref":"coder/x-2"},"base":{"ref":"coder/x"},"commits":1}`,
+	}}
+	server := h.serve(t)
+	env := append(tracing(t.TempDir()), "X_GITHUB_URL="+server.URL,
+		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"}))
+
+	got := xIn(t, main, env, "lane", "verify-tree", "--stack", "https://github.com/o/r/pull/7")
+
+	want := []string{"#6 coder/x onto main at " + short(lower) + ", adds 2 commits", "#7 coder/x-2 onto coder/x at " + short(prHead) + ", adds 1 commit"}
+	for _, line := range want {
+		if got.code != 0 || !strings.Contains(got.stdout, line) {
+			t.Fatalf("exit %d, want %q in the stack listing\n%s", got.code, line, got.stdout)
+		}
+	}
+	if !strings.Contains(got.stdout, "verify-pr-7") || strings.Index(got.stdout, want[0]) > strings.Index(got.stdout, want[1]) {
+		t.Errorf("want the top layer's tree and the layers bottom-up\n%s", got.stdout)
+	}
+}
+
+// a pr in no stack refuses before a tree is cut, so a refusal leaves nothing to clean up
+func TestVerifyTreeWithStackRefusesAPrInNoStackBeforeSeeding(t *testing.T) {
+	t.Parallel()
+	main, _ := verifyWorld(t)
+	h := &hub{pages: map[string]string{repoPath + "/stacks": `[]`}}
+	server := h.serve(t)
+	env := append(tracing(t.TempDir()), "X_GITHUB_URL="+server.URL,
+		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"}))
+
+	got := xIn(t, main, env, "lane", "verify-tree", "--stack", "https://github.com/o/r/pull/7")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "in no stack") || exists(filepath.Join(main, ".claude/worktrees/verify-pr-7")) {
+		t.Fatalf("exit %d, want a refusal and no tree seeded\n%s", got.code, got.stdout)
+	}
+}
+
+func TestVerifyTreeWithStackRefusesAMainSha(t *testing.T) {
+	t.Parallel()
+	main, _ := verifyWorld(t)
+
+	got := xIn(t, main, nil, "lane", "verify-tree", "--stack", "main:"+short(gitT(t, main, "rev-parse", "HEAD")))
+
+	if got.code != 2 {
+		t.Fatalf("exit %d, want a usage refusal: a stack is read from its top pr\n%s", got.code, got.stdout)
 	}
 }
 

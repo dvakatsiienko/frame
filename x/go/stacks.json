@@ -6,9 +6,25 @@
                 "type": "string",
                 "value": "branch"
             }
+        },
+        "lane verify-tree": {
+            "stack": {
+                "description": "the head is a stack's top pr: seed its tree, and list every layer under it bottom-up with its pr, head and base",
+                "type": "boolean"
+            }
         }
     },
     "verbs": [
+        {
+            "hidden": true,
+            "name": "lane restack",
+            "needsApply": true,
+            "purpose": "merge each lower layer of this branch's stack up into the next and push each moved one; hidden while stacks are on trial",
+            "steps": ["layers", "merge", "push", "verify"],
+            "touches": [
+                "origin — the stack's layer branches, pushed from the push home lane push uses"
+            ]
+        },
         {
             "hidden": true,
             "name": "lane stack link",
