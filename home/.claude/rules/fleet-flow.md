@@ -1,7 +1,7 @@
 # fleet flow — who talks to whom
 **scope:** the comms model between fleet members. the per-member contracts stay in their briefs
 (`x:crew-coder`, `x:crew-verifier`, `x:crew-lead`); this file is the map they hang on.
-**not here →** the path work takes (ten stages, five lanes, the done test) is the coordinator's: cclio memory, `craft-fleet-flow`. a member gets its lane as the brief's `lane:` line.
+**not here →** the path work takes (ten stages, three kinds of work, the done test) is the coordinator's: cclio memory, `craft-fleet-flow`. a member gets its lane as the brief's `lane:` line.
 
 ## the loop
 
@@ -16,7 +16,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from all
   - lands as: the board in dima's tab
 - **coder**
-  - talks to cclio on three events only: blocked, a proposal or decision for dima, done; the lane plan's quiet pings (`[ask] lane-plan ready to seal`, `[progress]`) slipstream beside them
+  - talks to cclio on four events that push: blocked, a proposal or decision for dima, `[ask] lane-plan ready to seal`, done; `[progress]` slipstreams beside them
   - talks to its verifier freely
   - hears from cclio, the verifier, and dima when he drops in
   - lands as: a linear comment + the done ping

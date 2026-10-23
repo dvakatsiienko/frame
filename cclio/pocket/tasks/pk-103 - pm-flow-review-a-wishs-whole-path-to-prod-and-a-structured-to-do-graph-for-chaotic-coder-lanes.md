@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-23T11:16:00Z'
+updated_date: '2026-10-23T11:25:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -520,4 +520,6 @@ W216 (14:12) standing tickets are almost always stories.
 W217 (14:12) okay, let's resolve these findings fully and print what is left in scope of pk103.
 W218 (14:12) print a slim, easy-to-read list.
 routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W181 (boot board, trophy-sys, FRM-417 shape, the budget hook), W206–W208 (PK-198). dropped as cclio's own lines he quoted with ←, never his wish: W163, W165, W166, W183–W189, W213. ❓1–❓22 answered in the thread the turn each came in.
+
+2026-10-23 14:27 dima on W6 (a name for chaotic lanes): «I thought we discarded chaotic lanes» — W6 settled as dropped; no lane kind is named chaotic.
 <!-- SECTION:NOTES:END -->
