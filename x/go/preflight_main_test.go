@@ -60,6 +60,26 @@ func TestPreflightReadsTheLaneSpecFromAWorktree(t *testing.T) {
 	}
 }
 
+// a worktree's spec for another feature never hides the main checkout's; a stale copy of the same section refuses
+func TestPreflightReadsTheMainCheckoutsSpecBesideAWorktreesOwn(t *testing.T) {
+	t.Parallel()
+	dir := preflightRepo(t)
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n")
+	tree := filepath.Join(t.TempDir(), "tree")
+	gitT(t, dir, "worktree", "add", "-q", "--detach", tree)
+	write(t, filepath.Join(tree, ".scratch/lane-9/spec.md"), "## FRM-9 — another chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
+	raw, _ := json.Marshal("## want\n\na thing\n")
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
+	})
+
+	_, got := runLinear(t, server, nil, "brief", "preflight", "FRM-1", "--repo", tree)
+
+	if got.code != 0 || !strings.Contains(got.stdout, ".scratch/lane-1/spec.md") {
+		t.Fatalf("exit %d, want main's spec read past the worktree's other one\n%s%s", got.code, got.stdout, got.stderr)
+	}
+}
+
 func TestPreflightRefusesATicketTwoLaneSpecsHold(t *testing.T) {
 	t.Parallel()
 	dir := preflightRepo(t)
