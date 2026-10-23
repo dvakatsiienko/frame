@@ -197,6 +197,11 @@
             "type": "command",
             "command": "bash ~/.claude/shelf/hooks/biome-format.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/shelf/hooks/memory-budget-warn.sh",
+            "timeout": 5
           }
         ]
       }
