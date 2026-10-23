@@ -19,12 +19,13 @@ dima, 2026-10-20: «i want a proper way to measure if stacked prs actually help 
 the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane over the docs, the users' reports and our own ci) is the day-0 pass; its distill is `docs/knowledge/pr-flow.md`. what it changes here: our medians are short (frame 22 min, bytes 87 min), so the gain to look for is smaller reviewable diffs, not speed; and four of our tools break on a stack before the first round can run.
 
 ## before round 1 — the blockers
-- `x lane pr-open` sets no base other than main · `x lane merge-main` merges where a stack wants a rebase · `x:crew-coder` forbids rebasing a pushed branch · `x lane push` does not force-push — the lane uses `gh stack link` over branches `x lane` made, and the coder's brief lifts the rebase rule for this lane only
+- ~~`x lane pr-open` sets no base other than main~~ — `--base` and `x lane stack link|view` landed with FRM-404 · `x lane merge-main` merges where a stack wants a rebase · `x:crew-coder` forbids rebasing a pushed branch · `x lane push` does not force-push — the lane uses `gh stack link` over branches `x lane` made, and the coder's brief lifts the rebase rule for this lane only
 - bytes' `review:clean` re-arms on every restack — FRM-401 decides first, or each restack costs a review round per layer
 - the setup chores, when FRM-404 lands (dima, 2026-10-20: «when we get closer to gh stacks, after the cli lane or along with it»): `gh extension install github/gh-stack`, its agent skill (`gh skill install github/gh-stack`), linear's «enable code reviews» setting checked; docs.github.com says stacks need «no setup or enablement», yet gh-stack exits 9 («Stacked PRs are not enabled for this repository») when the stacks api answers 404 — the first `gh stack` call in frame and bytes shows which holds
 
 ## stress list
 - `gh stack link` over `x lane` branches — the next multi-part coder lane, cut into 2–3 layers — open → merge time, review rounds per layer, stack-only hand steps
+- `x lane stack view` after `x lane stack link` — view reads github's stacks api, since gh-stack's own `view` reads a local file its `link` never writes — the first linked stack — the layers print bottom-up or not
 - the clone-wide lock (#568) — a second coder in another worktree during the lane — blocked or not, minutes lost
 - verifier on one layer vs the whole stack — `x:crew-verifier` on layer 1, then the top — rounds, findings per layer
 - renovate moving main under an open stack — whichever 2–3-day merge lands — restack time, ci reruns

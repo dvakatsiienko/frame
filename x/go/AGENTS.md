@@ -13,7 +13,7 @@ fleet sees whether the page earns its place.
 
 - `pnpm x-go:build` → `bin/x` (gitignored); the shim `../bin/x` runs the same build itself when a
   source file is newer. It pins `srcDir` to this dir: the binary finds the frame tree from there
-  (the token wrap for `pr-open`, the knowledge shelf), so a moved copy without the pin cannot. an uncommitted go edit is live for every session at once through the shim: land an `x/go` change fast, or build it in a worktree.
+  (the knowledge shelf), so a moved copy without the pin cannot. an uncommitted go edit is live for every session at once through the shim: land an `x/go` change fast, or build it in a worktree.
 - the shim also pins `devBuild=1` when `x/go` differs from its merge base with `origin/main` (an edit, an untracked file,
   an unpushed commit), so the trace marks the build a **dev build**; `pnpm x-go:build` never pins it,
   and the pin lasts until the next rebuild — a push alone does not clear it.
@@ -22,7 +22,7 @@ fleet sees whether the page earns its place.
 
 ## the contract
 
-- `go:embed` bakes `registry.json` into the binary, so the shim's rebuild picks up an edit to it; the verb rules and the `fixtures/calls.json` contract are `../AGENTS.md`'s.
+- `go:embed` bakes `registry.json` (and `risky.json`, `stacks.json`) into the binary; the shim rebuilds on any `*.json` here newer than the binary; the verb rules and the `fixtures/calls.json` contract are `../AGENTS.md`'s.
 - `store.go` is the handoff store's one door (ADR-0002); `store_test.go` reads every name in
   `script/lib/handoff-names.json`, so a grammar change edits that file first.
 - a verb's `replaces` is checked by `replaces_test.go` through `git grep` of each door's basename;

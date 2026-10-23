@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -30,6 +31,14 @@ const (
 	lockWait  = 30 * time.Second
 	lockPause = 200 * time.Millisecond
 )
+
+// the one door from core to an add-on, filled at the add-on's init; its zero value is the plain flow
+var laneAddOn struct {
+	// the branch a pr opens onto; "" keeps main
+	prBase func(Flags) (string, error)
+	// why merge-auto must leave this pr for now; "" lets the checks decide
+	mergeWait func(repo string, pr pullHead) (string, error)
+}
 
 /* Verbs */
 func commit(r *Run, args []string, flags Flags) (any, error) {
@@ -385,7 +394,7 @@ func pushRetrying(from string, args ...string) (result, int) {
 	}
 }
 
-func prPlan(r *Run, args []string, _ Flags) (any, error) {
+func prPlan(r *Run, args []string, flags Flags) (any, error) {
 	title, bodyFile := args[0], args[1]
 	if !exists(bodyFile) {
 		return nil, usageFail("no body file at "+bodyFile, "x lane pr-open <title> <body-file>")
@@ -396,7 +405,15 @@ func prPlan(r *Run, args []string, _ Flags) (any, error) {
 	}
 	r.Open(name)
 	var argv []string
+	base := "main"
 	if err := r.Step("plan", "checking the branch is pushed", func() (string, error) {
+		if laneAddOn.prBase != nil {
+			onto, err := laneAddOn.prBase(flags)
+			if err != nil {
+				return "", err
+			}
+			base = cmp.Or(onto, base)
+		}
 		remote, err := remoteSha(name)
 		if err != nil {
 			return "", err
@@ -408,25 +425,28 @@ func prPlan(r *Run, args []string, _ Flags) (any, error) {
 		if remote != sha {
 			return "", &Fail{Refused: true, Msg: "origin/" + name + " is not at HEAD", Next: "x lane push --apply"}
 		}
-		argv = []string{"pr", "create", "--base", "main", "--head", name, "--title", title, "--body-file", bodyFile}
-		return fmt.Sprintf("%s → main: %s", name, title), nil
+		argv = []string{"pr", "create", "--base", base, "--head", name, "--title", title, "--body-file", bodyFile}
+		return fmt.Sprintf("%s → %s: %s", name, base, title), nil
 	}); err != nil {
 		return nil, err
 	}
-	return ordered{{"argv", argv}, {"branch", name}}, nil
+	return ordered{{"argv", argv}, {"branch", name}, {"base", base}}, nil
 }
 
 func askPR(plan any) string {
-	return fmt.Sprintf("open a pr from %s onto main as x-coder-cc?", plan.(ordered)[1].value)
+	fields := plan.(ordered)
+	return fmt.Sprintf("open a pr from %s onto %s as x-coder-cc?", fields[1].value, fields[2].value)
 }
 
 func prOpen(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	name, argv := fields[1].value.(string), fields[0].value.([]string)
-	wrap := filepath.Join(sourceDir(), "../../home/.claude/plugin-x/bin/github-token-wrap")
 	var url string
 	if err := r.Step("open", "gh pr create as x-coder-cc", func() (string, error) {
-		opened, _ := run("", nil, "", wrap, argv...)
+		opened, err := ghRaw(argv...)
+		if err != nil {
+			return "", err
+		}
 		if !opened.ok {
 			return "", &Fail{Msg: "gh pr create failed — its output is above", Next: "gh pr view", Log: nonBlank(opened.log)}
 		}

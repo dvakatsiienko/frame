@@ -75,6 +75,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		if state != "open" {
 			return "", &Fail{Refused: true, Msg: "#" + n + " is " + state + ", nothing to merge", Next: "x gh pr " + n}
 		}
+		if laneAddOn.mergeWait != nil {
+			wait, err := laneAddOn.mergeWait(repo, pr)
+			if err != nil {
+				return "", err
+			}
+			if wait != "" {
+				return "", &Fail{Refused: true, Msg: "wait: " + wait, Next: "x lane merge-auto " + n}
+			}
+		}
 		return pr.Head.Ref + " at " + short(pr.Head.Sha), nil
 	}); err != nil {
 		return nil, err

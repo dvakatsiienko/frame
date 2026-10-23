@@ -163,6 +163,15 @@
   - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
   - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
+- ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
+  - given branch `coder/FRM-1-a-2` on top of `coder/FRM-1-a`, when `x lane pr-open --apply --base coder/FRM-1-a <title> <body-file>` runs, then one pr opens with base `coder/FRM-1-a`; a base origin lacks refuses before gh runs
+  - given layers `coder/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names the 3 bottom-up, and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`
+  - decision: view reads github, never `gh stack view`, which reads a local stack file its own link never writes (verifier round 1)
+  - given gh-stack's lock held (its exit 8), then the call is tried again with backoff for up to 2 minutes, then fails naming the lock; a paused stack rebase (exit 7) refuses after 1 call naming its worktree, `gh stack rebase --continue` and `--abort`; stacks off for the repo (exit 9) refuses at once naming it
+  - given no gh-stack extension, then `x lane stack link` exits 1 naming `gh extension install github/gh-stack`
+  - given a pr onto another open pr's branch, when `x lane merge-auto <pr>` runs, then it waits naming the lower pr; the lower one merges as any pr does; once the lower pr merged, the upper refuses until it is retargeted onto main; a base no pr owns is left to the checks
+  - given the add-on's files deleted, or `-tags nostacks`, then `go build` and `go test ./...` pass, which `pnpm x-go:test` proves on every run
+  - decision: an add-on behind `//go:build !nostacks`, reaching core only through `laneAddOn`, its verbs hidden from the overview while stacks are on trial (FRM-404; dima, 2026-10-20: «easy to delete»)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one

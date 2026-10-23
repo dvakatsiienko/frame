@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"strings"
 	"testing"
@@ -61,7 +62,16 @@ func TestMain(m *testing.M) {
 	xbin = filepath.Join(dir, "x")
 	// no child reads or writes dima's real ~/.local/state/x — a stats run there would trash real days
 	_ = os.Setenv("X_STATE", filepath.Join(dir, "state"))
-	if out, err := exec.Command("go", "build", "-tags", "xpanic", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
+	// the child carries this test binary's own tags, so `go test -tags nostacks` tests a binary without the add-on
+	tags := "xpanic"
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			if setting.Key == "-tags" && setting.Value != "" {
+				tags += "," + setting.Value
+			}
+		}
+	}
+	if out, err := exec.Command("go", "build", "-tags", tags, "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
 		panic(fmt.Sprintf("build: %v\n%s", err, out))
 	}
 	code := m.Run()

@@ -77,6 +77,7 @@ the checks a verifier or coder on `x` starts from.
 - `lane merge-auto` calls github as dima's `gh` login (`asDima` in `gh.go`), since the coder app has no `contents: write` and branch protection needs admin; it reads the brake and the patch-ids from the clone it runs in, after a fetch
 - `lane rebase-main` pushes from the push home `lane push` uses, with `--force-with-lease=refs/heads/<branch>:<read sha>`; its tests land a rival push through a real `post-rewrite` hook, the gap between the rebase and the push
 - a test fixture that pushes to a fake `github.com` origin sets `pushInsteadOf` beside `insteadOf`: dima's global gitconfig rewrites https pushes to ssh, and that outranks `insteadOf`
+- **the stacks add-on** (`go/stacks*`) sits behind `//go:build !nostacks`, reaching core only through `laneAddOn` in `lane.go`; `pnpm x-go:test` reruns with `-tags nostacks`, so a core reference to a stack symbol goes red. deleting it is those files plus that rerun
 - `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries; a 4xx or a hook refusal fails on the first
 
 <!-- moved from frame AGENTS.md in the 2026-10-11 sweep -->
