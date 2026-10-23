@@ -24,6 +24,9 @@ type hub struct {
 	auth      []string
 	head      string
 	onApprove func(h *hub)
+	// a path's answer from its second GET on: a push landing between two reads
+	later map[string]string
+	reads map[string]int
 }
 
 func (h *hub) serve(t *testing.T) *httptest.Server {
@@ -66,6 +69,12 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			w.Header().Set("Link", `<`+server.URL+r.URL.Path+`?per_page=100&page=2>; rel="next"`)
 		}
 		body, ok := h.pages[key]
+		if h.reads == nil {
+			h.reads = map[string]int{}
+		}
+		if h.reads[key]++; h.reads[key] > 1 && h.later[key] != "" {
+			body = h.later[key]
+		}
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			_, _ = w.Write([]byte(`{"message":"Not Found"}`))

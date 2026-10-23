@@ -35,6 +35,8 @@ type mergeDecision struct {
 	title    string
 	body     string
 	layered  bool
+	heads    map[string]string // a stack's every gated head, pr → sha
+	landed   string
 }
 
 type pullHead struct {
@@ -96,9 +98,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		r.skip("layers")
 	} else {
 		trunk, d.layered = layers.trunk, true
+		d.heads = map[string]string{n: pr.Head.Sha}
 		if err := r.Step("layers", "gating every layer under the pr", func() (string, error) {
 			for _, below := range layers.below {
-				wait, err := layerWait(repo, api, trunk, below)
+				wait, err := layerWait(repo, api, trunk, below, d)
 				if err != nil {
 					return "", err
 				}
@@ -145,8 +148,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	d.Checks = []mergeCheck{verifier, ci, threads}
 	var self []string
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
-		var err error
-		d.Risky, self, err = riskyPaths(api, n)
+		own, ownSelf, err := riskyPaths(api, n)
+		// a stack's lower layers named theirs in the layers step; the card shows every layer's
+		d.Risky, self = append(own, d.Risky...), ownSelf
 		switch {
 		case err != nil:
 			return "", err
@@ -201,11 +205,12 @@ func decide(brake string, self []string, needsApprove bool, verifier, ci, thread
 }
 
 // why a layer under the merged pr holds the merge, as the same gate reads it; "" when it passes
-func layerWait(repo, api, trunk, n string) (string, error) {
+func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	var pr pullHead
 	if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 		return "", err
 	}
+	d.heads[n] = pr.Head.Sha
 	verifier := verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
 	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
 	if err != nil {
@@ -215,9 +220,12 @@ func layerWait(repo, api, trunk, n string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, self, err := riskyPaths(api, n)
+	risky, self, err := riskyPaths(api, n)
 	if err != nil {
 		return "", err
+	}
+	for _, path := range risky {
+		d.Risky = append(d.Risky, "#"+n+" "+path)
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
 	decision, wait := decide("", self, needsApprove, verifier, ci, threads)
@@ -233,6 +241,21 @@ func layerWait(repo, api, trunk, n string) (string, error) {
 		}
 	}
 	return layer + " — " + wait, nil
+}
+
+// the async merge takes no sha to pin, so every gated head is read again right before it: a push since refuses
+func headsHeld(api string, heads map[string]string) error {
+	for n, gated := range heads {
+		var pr pullHead
+		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+			return err
+		}
+		if pr.Head.Sha != gated {
+			return &Fail{Refused: true, Msg: fmt.Sprintf("#%s moved from %s to %s after the gate read it; nothing merged", n, short(gated), short(pr.Head.Sha)),
+				Next: "x lane merge-auto <pr>, once the verifier cleared #" + n + "'s new head"}
+		}
+	}
+	return nil
 }
 
 func askMergeAuto(plan any) string {
@@ -253,7 +276,11 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
 		if d.layered && laneAddOn.mergeLayers != nil {
 			// a stacked pr refuses the plain endpoint (403); its layers land together or not at all
+			if err := headsHeld(api, d.heads); err != nil {
+				return "", err
+			}
 			shown, sha, err := laneAddOn.mergeLayers(d.Repo, d.PR)
+			d.landed = shown
 			d.Merged = sha
 			return shown, err
 		}
@@ -270,7 +297,11 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done("merged #"+d.PR+" at "+short(d.Merged)+"\n"+d.summary(), "")
+	result := "merged #" + d.PR + " at " + short(d.Merged)
+	if d.layered {
+		result = d.landed
+	}
+	r.Done(result+"\n"+d.summary(), "")
 	return d, nil
 }
 
