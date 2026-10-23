@@ -60,6 +60,7 @@ const modTestA = modsDir + "m/tests/a.test.ts"
 const modTestB = modsDir + "m/tests/b.test.ts"
 
 func TestModsEditPushLandsAGreenEdit(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	copyA := pullCopy(t, dir, env, modTestA)
 	write(t, copyA, "green, edited\n")
@@ -73,6 +74,7 @@ func TestModsEditPushLandsAGreenEdit(t *testing.T) {
 
 // exit 1: a red test keeps the edit out of the mod, and test shows the same red
 func TestModsEditPushRefusesARedTestAndWritesNothing(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	copyA := pullCopy(t, dir, env, modTestA)
 	write(t, copyA, "RED\n")
@@ -93,6 +95,7 @@ func TestModsEditPushRefusesARedTestAndWritesNothing(t *testing.T) {
 
 // exit 2b: a hooks file that does not parse is refused by the validator before any write, every test green (PK-64)
 func TestModsEditPushRefusesAnUnparseableHooksFileBeforeAnyWrite(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	copyHooks := pullCopy(t, dir, env, modHooks)
 	write(t, copyHooks, "export const register = () => { PARSE-ERROR\n")
@@ -109,6 +112,7 @@ func TestModsEditPushRefusesAnUnparseableHooksFileBeforeAnyWrite(t *testing.T) {
 
 // exit 2: an unpulled file in scratch, or a target the push cannot write as a file, refuses the whole push
 func TestModsEditPushWritesNothingWhenOnePathCannotLand(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, want string
 		setup      func(t *testing.T, dir string, env []string)
@@ -145,6 +149,7 @@ func TestModsEditPushWritesNothingWhenOnePathCannotLand(t *testing.T) {
 }
 
 func TestModsEditPushAddsAnUnpulledFileNamedWithAdd(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	copyA := pullCopy(t, dir, env, modTestA)
 	newPath := modsDir + "m/tests/c.test.ts"
@@ -159,6 +164,7 @@ func TestModsEditPushAddsAnUnpulledFileNamedWithAdd(t *testing.T) {
 
 // exit 2: a write that fails midway puts back every file written before it
 func TestModsEditPushRestoresEveryWrittenFileWhenAWriteFails(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	for _, path := range []string{modTestA, modTestB} {
 		write(t, pullCopy(t, dir, env, path), "green, edited\n")
@@ -180,6 +186,7 @@ func TestModsEditPushRestoresEveryWrittenFileWhenAWriteFails(t *testing.T) {
 }
 
 func TestModsEditPushRefusesAFileTheRepoChangedSinceThePull(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	write(t, pullCopy(t, dir, env, modTestA), "green, mine\n")
 	write(t, filepath.Join(dir, modTestA), "green, theirs\n")
@@ -193,6 +200,7 @@ func TestModsEditPushRefusesAFileTheRepoChangedSinceThePull(t *testing.T) {
 
 // exit 3: the edited tests run on HEAD's mod; one that errors there is «errored», never «failed», and nothing is written
 func TestModsEditTestAgainstHeadNamesFailedApartFromErrored(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 	write(t, pullCopy(t, dir, env, modTestA), "RED on HEAD\n")
 	write(t, pullCopy(t, dir, env, modTestB), "NO-IMPORT of a helper HEAD lacks\n")
@@ -214,6 +222,7 @@ func TestModsEditTestAgainstHeadNamesFailedApartFromErrored(t *testing.T) {
 }
 
 func TestModsEditPullRefusesAPathOutsideAMod(t *testing.T) {
+	t.Parallel()
 	dir, env := modsFixture(t)
 
 	got := xIn(t, dir, env, "mods", "edit", "pull", "readme.txt")
@@ -234,6 +243,7 @@ func anyStrings(v any) []string {
 
 // the sample the stash's pnpm mods:test parser (mods/test.ts outcome) is held to as well: both read it the same way
 func TestTestOutcomeReadsTheSharedSample(t *testing.T) {
+	t.Parallel()
 	raw, err := os.ReadFile("../../home/.claude/plugin-x/mods/plugin-test.sample.txt")
 	if err != nil {
 		t.Fatal(err)

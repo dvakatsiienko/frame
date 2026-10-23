@@ -35,6 +35,7 @@ func runBody(t *testing.T, server *fakeLinear, state string, argv ...string) (ma
 }
 
 func TestBodyPullsTheDescriptionToAFile(t *testing.T) {
+	t.Parallel()
 	var updated atomic.Value
 	updated.Store("2026-10-07T10:00:00.000Z")
 	server := bodyServer(t, &updated)
@@ -52,6 +53,7 @@ func TestBodyPullsTheDescriptionToAFile(t *testing.T) {
 }
 
 func TestBodySetWritesTheFileBackWhenTheTicketIsUnchanged(t *testing.T) {
+	t.Parallel()
 	var updated atomic.Value
 	updated.Store("2026-10-07T10:00:00.000Z")
 	server := bodyServer(t, &updated)
@@ -75,6 +77,7 @@ func TestBodySetWritesTheFileBackWhenTheTicketIsUnchanged(t *testing.T) {
 }
 
 func TestBodySetRefusesWhenTheTicketMovedSinceThePull(t *testing.T) {
+	t.Parallel()
 	var updated atomic.Value
 	updated.Store("2026-10-07T10:00:00.000Z")
 	server := bodyServer(t, &updated)
@@ -95,6 +98,7 @@ func TestBodySetRefusesWhenTheTicketMovedSinceThePull(t *testing.T) {
 }
 
 func TestBodySetRefusesWithoutAPull(t *testing.T) {
+	t.Parallel()
 	var updated atomic.Value
 	updated.Store("2026-10-07T10:00:00.000Z")
 	server := bodyServer(t, &updated)

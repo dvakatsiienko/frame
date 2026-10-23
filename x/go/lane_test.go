@@ -92,6 +92,7 @@ func xIn(t *testing.T, dir string, env []string, args ...string) ran {
 }
 
 func TestCommitReadsPathsFromTheRootInASubdir(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "sub/keep.txt"), "")
 	gitT(t, dir, "add", ".")
@@ -106,6 +107,7 @@ func TestCommitReadsPathsFromTheRootInASubdir(t *testing.T) {
 }
 
 func TestCommitOnRepoMainTakesOnlyTheNamedPaths(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "readme.txt"), "two\n")
 	write(t, filepath.Join(target, "other.txt"), "untouched\n")
@@ -121,6 +123,7 @@ func TestCommitOnRepoMainTakesOnlyTheNamedPaths(t *testing.T) {
 }
 
 func TestCommitRefusesARepoItMustNotTouch(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name  string
 		setup func(t *testing.T, dir string)
@@ -156,6 +159,7 @@ func TestCommitRefusesARepoItMustNotTouch(t *testing.T) {
 }
 
 func TestCommitFormatsTheNamedPathsWithTheRepoBiome(t *testing.T) {
+	t.Parallel()
 	biome, _ := filepath.Abs("../../node_modules/.bin/biome")
 	if _, err := os.Stat(biome); err != nil {
 		t.Skip("no biome in this tree: pnpm install")
@@ -190,6 +194,7 @@ func fakeClaude(t *testing.T, valid bool) (env []string, log string) {
 }
 
 func TestCommitValidatesTheModANamedPathSitsIn(t *testing.T) {
+	t.Parallel()
 	const path = "home/.claude/plugin-x/mods/m/hooks.ts"
 	for _, valid := range []bool{true, false} {
 		dir := repo(t)
@@ -235,6 +240,7 @@ func lockedWorktree(t *testing.T) string {
 }
 
 func TestCommitRefusesCiphertextAndNamesUnlock(t *testing.T) {
+	t.Parallel()
 	tree := lockedWorktree(t)
 	write(t, filepath.Join(tree, "readme.txt"), "two\n")
 
@@ -246,6 +252,7 @@ func TestCommitRefusesCiphertextAndNamesUnlock(t *testing.T) {
 }
 
 func TestCommitGatesOnTheCiJobsOnlyOnMain(t *testing.T) {
+	t.Parallel()
 	goTest := func(pass bool) string {
 		if pass {
 			return "package m\n\nimport \"testing\"\n\nfunc TestM(t *testing.T) {}\n"
@@ -292,6 +299,7 @@ func TestCommitGatesOnTheCiJobsOnlyOnMain(t *testing.T) {
 }
 
 func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
+	t.Parallel()
 	const (
 		both    = "pre-commit:\n  commands:\n    typecheck:\n      run: script/index-run.sh pnpm typecheck\n    test:\n      run: script/index-run.sh pnpm test\npre-push:\n  commands:\n    t:\n      run: pnpm test\n"
 		turbo   = "pre-commit:\n  jobs:\n    - name: typecheck-changed\n      run: pnpm turbo typecheck --filter='...[origin/main]'\n"
@@ -367,6 +375,7 @@ func quotedRules(t *testing.T, msg string) (dir string, got ran) {
 }
 
 func TestCommitStopsAChangedQuoteOfDimas(t *testing.T) {
+	t.Parallel()
 	dir, got := quotedRules(t, "📜 rules: reword\n")
 
 	if got.code == 0 || !strings.Contains(got.stdout, "«checks belong at commit»") || gitT(t, dir, "log", "-1", "--format=%s") != "seed" {
@@ -375,6 +384,7 @@ func TestCommitStopsAChangedQuoteOfDimas(t *testing.T) {
 }
 
 func TestCommitTakesAChangedQuoteOnceShown(t *testing.T) {
+	t.Parallel()
 	dir, got := quotedRules(t, "📜 rules: reword\n\nquotes: shown\n")
 
 	if got.code != 0 || !strings.Contains(gitT(t, dir, "log", "-1", "--format=%s"), "reword") {
@@ -383,6 +393,7 @@ func TestCommitTakesAChangedQuoteOnceShown(t *testing.T) {
 }
 
 func TestCommitTakesANewMemoryFile(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "rules/new.md"), "- dima: «a fresh quote»\n")
 
@@ -394,6 +405,7 @@ func TestCommitTakesANewMemoryFile(t *testing.T) {
 }
 
 func TestCommitStopsAQuoteChangedInARenamedFile(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "rules/a.md"), "- his word: «keep this line exactly as he said»\n")
 	gitT(t, dir, "add", ".")
@@ -411,6 +423,7 @@ func TestCommitStopsAQuoteChangedInARenamedFile(t *testing.T) {
 }
 
 func TestCommitStopsAQuoteGoneByDelete(t *testing.T) {
+	t.Parallel()
 	cases := []struct{ name, path string }{{"the file named", "rules/a.md"}, {"its dir named", "rules"}}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -430,6 +443,7 @@ func TestCommitStopsAQuoteGoneByDelete(t *testing.T) {
 }
 
 func TestUnlockTurnsCiphertextBackIntoPlaintext(t *testing.T) {
+	t.Parallel()
 	tree := lockedWorktree(t)
 
 	got := xIn(t, tree, nil, "lane", "unlock")
@@ -466,6 +480,7 @@ func flakyRemote(t *testing.T, status, fails int) (string, *atomic.Int32) {
 }
 
 func TestPushRetriesOnlyAServerError(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name          string
 		status, fails int
@@ -494,6 +509,7 @@ func TestPushRetriesOnlyAServerError(t *testing.T) {
 }
 
 func TestServerErrorKnowsGithubsWordsOverSsh(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, log string
 		retry     bool
@@ -516,6 +532,7 @@ func TestServerErrorKnowsGithubsWordsOverSsh(t *testing.T) {
 }
 
 func TestAGlobalFlagBeforeTheVerbStillFindsIt(t *testing.T) {
+	t.Parallel()
 	if got := xIn(t, repo(t), nil, "--json", "lane", "push"); got.code != 4 || got.next != "x lane push --apply" {
 		t.Fatalf("exit %d, next %q", got.code, got.next)
 	}
@@ -539,6 +556,7 @@ func fakeTree(t *testing.T, marker string) string {
 }
 
 func TestShimRunsTheNearestTreesBinary(t *testing.T) {
+	t.Parallel()
 	tree := fakeTree(t, "tree-local")
 	shim, _ := filepath.Abs("../bin/x")
 
@@ -552,6 +570,7 @@ func TestShimRunsTheNearestTreesBinary(t *testing.T) {
 }
 
 func TestShimPinsADevBuildWhenXGoDiffersFromOriginMain(t *testing.T) {
+	t.Parallel()
 	program := "package main\n\nimport \"fmt\"\n\nvar devBuild string\n\nfunc main() { fmt.Println(\"dev=\" + devBuild) }\n"
 	cases := []struct {
 		name, want string
@@ -598,6 +617,7 @@ func TestShimPinsADevBuildWhenXGoDiffersFromOriginMain(t *testing.T) {
 }
 
 func TestShimRebuildsABinaryOlderThanItsSource(t *testing.T) {
+	t.Parallel()
 	tree := fakeTree(t, "stale")
 	write(t, filepath.Join(tree, "x/go/main.go"), "package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Println(\"rebuilt\") }\n")
 
@@ -612,6 +632,7 @@ func TestShimRebuildsABinaryOlderThanItsSource(t *testing.T) {
 
 // a peer's git holds the index lock for 2 s, then lets go: the commit waits it out and lands
 func TestCommitWaitsOutABriefIndexLock(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "readme.txt"), "two\n")
 	lock := filepath.Join(target, ".git", "index.lock")
@@ -633,6 +654,7 @@ func TestCommitWaitsOutABriefIndexLock(t *testing.T) {
 
 // a lock nobody lets go of outlives the wait: the verb names it and its age, and leaves it where it is
 func TestCommitFailsOnAStaleIndexLockAndKeepsIt(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "readme.txt"), "two\n")
 	lock := filepath.Join(target, ".git", "index.lock")
@@ -652,6 +674,7 @@ func TestCommitFailsOnAStaleIndexLockAndKeepsIt(t *testing.T) {
 }
 
 func TestCommitNamesAPathListThatArrivedAsOneWord(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "a.ts"), "a\n")
 	write(t, filepath.Join(target, "b.ts"), "b\n")
@@ -664,6 +687,7 @@ func TestCommitNamesAPathListThatArrivedAsOneWord(t *testing.T) {
 }
 
 func TestCommitTakesAFileWhoseNameHoldsASpace(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "my notes.md"), "notes\n")
 
@@ -675,6 +699,7 @@ func TestCommitTakesAFileWhoseNameHoldsASpace(t *testing.T) {
 }
 
 func TestCommitTakesAStagedDeleteOfASpacedFile(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "my notes.md"), "notes\n")
 	gitT(t, target, "add", ".")
@@ -690,6 +715,7 @@ func TestCommitTakesAStagedDeleteOfASpacedFile(t *testing.T) {
 
 // no lock, no line: a commit that never waited says nothing about waiting
 func TestCommitWithNoIndexLockSaysNothingOfWaiting(t *testing.T) {
+	t.Parallel()
 	target := repo(t)
 	write(t, filepath.Join(target, "readme.txt"), "two\n")
 
@@ -740,6 +766,7 @@ func bodyFile(t *testing.T) string {
 }
 
 func TestPrOpenOpensOntoMain(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a")
 	env, log := ghRecorder(t, prCreated)
 

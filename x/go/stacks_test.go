@@ -10,6 +10,7 @@ import (
 )
 
 func TestPrOpenWithBaseOpensOntoTheLayerBelow(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
 	env, log := ghRecorder(t, prCreated)
 
@@ -71,6 +72,7 @@ func linkEnv(t *testing.T, clone string) (env []string, log string) {
 
 // by pr number: gh stack link pushes every branch it is named, and a frame worktree's push dies
 func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
 	env, log := linkEnv(t, clone)
 
@@ -89,6 +91,7 @@ func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 
 // gh-stack's own view reads a local file its link never writes, so view asks github's stacks api
 func TestStackViewPrintsTheStackGithubHolds(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
 	env := stackGithub(t, clone, linkedStack)
 
@@ -101,6 +104,7 @@ func TestStackViewPrintsTheStackGithubHolds(t *testing.T) {
 }
 
 func TestStackViewOfAPrInNoStackNamesLink(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
 	env := stackGithub(t, clone, `[]`)
 
@@ -112,6 +116,7 @@ func TestStackViewOfAPrInNoStackNamesLink(t *testing.T) {
 }
 
 func TestStackViewOnARepoWithoutStacksSaysSo(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
 	env := stackGithub(t, clone, "")
 
@@ -123,6 +128,7 @@ func TestStackViewOnARepoWithoutStacksSaysSo(t *testing.T) {
 }
 
 func TestStackViewShowsAMergedLayerAsMerged(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
 	env := stackGithub(t, clone, linkedStack)
 
@@ -134,6 +140,7 @@ func TestStackViewShowsAMergedLayerAsMerged(t *testing.T) {
 }
 
 func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
 	env, log := linkEnv(t, clone)
 	env = append(env, "FAKE_NO_STACK=1")
@@ -156,6 +163,7 @@ func linkWith(t *testing.T, exits string) (ran, int) {
 }
 
 func TestStackLinkRetriesAHeldLock(t *testing.T) {
+	t.Parallel()
 	got, calls := linkWith(t, "8 8 0")
 
 	if got.code != 0 || calls != 3 {
@@ -164,6 +172,7 @@ func TestStackLinkRetriesAHeldLock(t *testing.T) {
 }
 
 func TestStackLinkGivesUpOnTheLockAfterTwoMinutes(t *testing.T) {
+	t.Parallel()
 	start := time.Now()
 	got, calls := linkWith(t, "8")
 
@@ -176,6 +185,7 @@ func TestStackLinkGivesUpOnTheLockAfterTwoMinutes(t *testing.T) {
 }
 
 func TestStackLinkRefusesAPausedRebaseAtOnce(t *testing.T) {
+	t.Parallel()
 	got, calls := linkWith(t, "7")
 
 	for _, want := range []string{"/trees/w2", "gh stack rebase --continue", "gh stack rebase --abort"} {
@@ -186,6 +196,7 @@ func TestStackLinkRefusesAPausedRebaseAtOnce(t *testing.T) {
 }
 
 func TestStackLinkRefusesARepoWithoutStacksAtOnce(t *testing.T) {
+	t.Parallel()
 	got, calls := linkWith(t, "9")
 
 	if got.code == 0 || calls != 1 || !strings.Contains(got.stdout, "not enabled for o/r") {
@@ -227,6 +238,7 @@ func linkedMergeWorld(t *testing.T) *mergeWorld {
 }
 
 func TestMergeAutoLandsALinkedStackInOneCall(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 
 	got := w.run(t, "8", "--apply", "--json")
@@ -242,6 +254,7 @@ func TestMergeAutoLandsALinkedStackInOneCall(t *testing.T) {
 
 // the find on 2026-10-23: the plain endpoint answered 403 for #99, a stack's bottom layer
 func TestMergeAutoLandsAStacksBottomLayerAsync(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/pulls/7/merge-async"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
@@ -255,6 +268,7 @@ func TestMergeAutoLandsAStacksBottomLayerAsync(t *testing.T) {
 }
 
 func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, reason string
 		fail         func(w *mergeWorld)
@@ -281,6 +295,7 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 }
 
 func TestMergeAutoRefusesAStackWhoseLayerMovedAfterTheGate(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.later = map[string]string{repoPath + "/pulls/7": strings.ReplaceAll(w.hub.pages[repoPath+"/pulls/7"], w.head, strings.Repeat("d", 40))}
@@ -294,6 +309,7 @@ func TestMergeAutoRefusesAStackWhoseLayerMovedAfterTheGate(t *testing.T) {
 }
 
 func TestMergeAutoNamesALowerLayersRiskyPaths(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/pulls/7/files"] = `[{"filename":".github/workflows/ci.yml","status":"modified"}]`
@@ -307,6 +323,7 @@ func TestMergeAutoNamesALowerLayersRiskyPaths(t *testing.T) {
 }
 
 func TestMergeAutoSkipsAMergedLayerBelow(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
@@ -322,6 +339,7 @@ func TestMergeAutoSkipsAMergedLayerBelow(t *testing.T) {
 }
 
 func TestMergeAutoLabelsEveryStackLayerBeforeTheMerge(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 
 	got := w.run(t, "8", "--apply")
@@ -342,6 +360,7 @@ func TestMergeAutoLabelsEveryStackLayerBeforeTheMerge(t *testing.T) {
 }
 
 func TestMergeAutoReportsAFailedStackMerge(t *testing.T) {
+	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"failed","details":{"message":"merge conflict in #8"}}`
@@ -355,6 +374,7 @@ func TestMergeAutoReportsAFailedStackMerge(t *testing.T) {
 }
 
 func TestMergeAutoRefusesALayerWhoseLowerPrMerged(t *testing.T) {
+	t.Parallel()
 	w := stackedMergeWorld(t, "coder/x", lowerMerged)
 
 	got := w.run(t, "8", "--apply")
@@ -365,6 +385,7 @@ func TestMergeAutoRefusesALayerWhoseLowerPrMerged(t *testing.T) {
 }
 
 func TestMergeAutoWaitsOnAnUpperLayerNamingTheLowerPr(t *testing.T) {
+	t.Parallel()
 	w := stackedMergeWorld(t, "coder/x", lowerOpen)
 
 	got := w.run(t, "8", "--apply")
@@ -375,6 +396,7 @@ func TestMergeAutoWaitsOnAnUpperLayerNamingTheLowerPr(t *testing.T) {
 }
 
 func TestMergeAutoMergesTheLowerLayer(t *testing.T) {
+	t.Parallel()
 	w := stackedMergeWorld(t, "coder/x", lowerOpen)
 
 	got := w.run(t, "7", "--apply")
@@ -385,6 +407,7 @@ func TestMergeAutoMergesTheLowerLayer(t *testing.T) {
 }
 
 func TestMergeAutoLeavesABaseWithNoOpenPrToTheChecks(t *testing.T) {
+	t.Parallel()
 	w := stackedMergeWorld(t, "release", lowerOpen)
 	gitT(t, w.seed, "push", "-q", "origin", "main:release")
 
@@ -396,6 +419,7 @@ func TestMergeAutoLeavesABaseWithNoOpenPrToTheChecks(t *testing.T) {
 }
 
 func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, from string
 		branches   []string
@@ -427,6 +451,7 @@ func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
 }
 
 func TestPrOpenRefusesABaseMissingFromOrigin(t *testing.T) {
+	t.Parallel()
 	clone := layers(t, "coder/FRM-1-a")
 	env, log := ghRecorder(t, prCreated)
 

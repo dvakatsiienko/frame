@@ -190,7 +190,7 @@
   - decision: one atomic call per stack, never a layer per call — github merges a stack all-or-nothing (dima o83, 2026-10-23: «I vote for efficiency»)
   - given a stack merged by merge-auto and one of its squashes reverted on the trunk within 7 days (git revert or github's revert button), when merge-auto runs on any pr, then the brake is on and names the revert: every layer wears the `merged-by-x` label before the merge call, and the brake asks github whether a reverted commit's pr wears it
   - decision: a label on the pr over a local sha record — the async merge takes no message for the trailer, and a label lives on github, read the same from any machine, with nothing to drift (dima o-brake «b, record the shas», cclio's lean, 2026-10-23)
-  - given the add-on's files deleted, or `-tags nostacks`, then `go build` and `go test ./...` pass, which `pnpm x-go:test` proves on every run
+  - given the add-on's files deleted, or `-tags nostacks`, then `go build`, `go vet` and every lane-verb test pass, which `pnpm x-go:test` proves on every run (FRM-422)
   - decision: an add-on behind `//go:build !nostacks`, reaching core only through `laneAddOn`, its verbs hidden from the overview while stacks are on trial (FRM-404; dima, 2026-10-20: «easy to delete»)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
@@ -372,6 +372,7 @@
   - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|cclio`, `--add-label`, `--remove-label` — names, never ids
   - when it runs
   - then one lookup resolves every name and one `issueUpdate` lands them all; the envelope prints the actor and each change as `field: old → new`
+  - given `--add-label` or `--remove-label` repeated, comma lists or both, then every named label moves (FRM-415)
   - given `--add-label` or `--remove-label`, then only those labels move — the write carries the delta (`addedLabelIds`, `removedLabelIds`), so a label another writer adds in between survives
   - decision: deltas over the spec's full set, for that race (dima, 2026-10-07)
   - given a name the ticket's team or the workspace lacks, then exit 1 listing the valid names, and nothing is written; given no field at all, exit 2

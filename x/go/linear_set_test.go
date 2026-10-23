@@ -38,6 +38,7 @@ func updateInput(t *testing.T, server *fakeLinear) map[string]any {
 }
 
 func TestSetSendsEveryFieldResolvedInOneUpdate(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--state", "in progress", "--priority", "2",
 		"--estimate", "3", "--parent", "FRM-9", "--project", "cli", "--milestone", "v1", "--delegate", "coder")
@@ -65,6 +66,7 @@ func TestSetSendsEveryFieldResolvedInOneUpdate(t *testing.T) {
 }
 
 func TestSetKeepsEveryLabelItWasNotToldToTouch(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	if _, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--add-label", "Feature", "--remove-label", "human"); got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
@@ -79,7 +81,54 @@ func TestSetKeepsEveryLabelItWasNotToldToTouch(t *testing.T) {
 	}
 }
 
+func TestSetAddsEveryRepeatedLabelFlag(t *testing.T) {
+	t.Parallel()
+	const lookup = `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","priority":3,"state":{"name":"Todo"},
+		"team":{"id":"t-frm","states":{"nodes":[]}},"labels":{"nodes":[{"id":"l-human","name":"human"}]}},
+		"labels":{"nodes":[{"id":"l-agent","name":"agent","team":null},{"id":"l-feature","name":"feature","team":null},
+		{"id":"l-signed","name":"signed","team":null}]}}}`
+	for _, c := range []struct {
+		name  string
+		argv  []string
+		added string
+	}{
+		{"two repeats", []string{"--add-label", "agent", "--add-label", "feature"}, "[l-agent l-feature]"},
+		{"the sign beside another label", []string{"--add-label", "signed", "--add-label", "feature"}, "[l-signed l-feature]"},
+		{"a repeat beside a comma list", []string{"--add-label", "agent,feature", "--add-label", "signed"}, "[l-agent l-feature l-signed]"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := newFakeLinear(t, func(call gqlCall) string {
+				if strings.Contains(call.Query, "mutation") {
+					return `{"data":{"issueUpdate":{"success":true}}}`
+				}
+				return lookup
+			})
+			if _, got := runLinear(t, server, nil, append([]string{"linear", "set", "FRM-1"}, c.argv...)...); got.code != 0 {
+				t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+			}
+			input := updateInput(t, server)
+			if fmt.Sprint(input["addedLabelIds"]) != c.added || fmt.Sprint(input["removedLabelIds"]) != "[]" {
+				t.Errorf("added %v removed %v, want %s added and human kept", input["addedLabelIds"], input["removedLabelIds"], c.added)
+			}
+		})
+	}
+}
+
+func TestSetRemovesEveryRepeatedLabelFlag(t *testing.T) {
+	t.Parallel()
+	server := setServer(t)
+	if _, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--remove-label", "human", "--remove-label", "bug"); got.code != 0 {
+		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	input := updateInput(t, server)
+	if fmt.Sprint(input["removedLabelIds"]) != "[l-human l-bug]" || fmt.Sprint(input["addedLabelIds"]) != "[]" {
+		t.Errorf("removed %v added %v, want [l-human l-bug] removed and agent kept", input["removedLabelIds"], input["addedLabelIds"])
+	}
+}
+
 func TestSetRefusesAnUnknownNameAndListsTheValidOnes(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--state", "Doing")
 	msg := fmt.Sprint(envelope["error"])
@@ -92,6 +141,7 @@ func TestSetRefusesAnUnknownNameAndListsTheValidOnes(t *testing.T) {
 }
 
 func TestSetRefusesToRemoveALabelTheTicketLacks(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--remove-label", "nope")
 	if got.code != 1 || !strings.Contains(fmt.Sprint(envelope["error"]), "agent, human, bug") {
@@ -103,6 +153,7 @@ func TestSetRefusesToRemoveALabelTheTicketLacks(t *testing.T) {
 }
 
 func TestSetWithNoFieldIsUsage(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	if _, got := runLinear(t, server, nil, "linear", "set", "FRM-1"); got.code != 2 {
 		t.Errorf("exit %d, want 2", got.code)

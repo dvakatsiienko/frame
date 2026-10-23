@@ -39,6 +39,7 @@ func storeFiles(root string) []string {
 }
 
 func TestWriteLandsOnePrivateFileUnderTheGrammarsName(t *testing.T) {
+	t.Parallel()
 	root := filepath.Join(t.TempDir(), "store")
 
 	got := xStore(t, root, "# META\n\nbody\n", "handoff", "write", "--audience", "cclio", "--slug", "Pm Overhaul!", "--lane", "pm", "--author", "ccli")
@@ -58,6 +59,7 @@ func TestWriteLandsOnePrivateFileUnderTheGrammarsName(t *testing.T) {
 }
 
 func TestParseNameReadsTheSharedGrammar(t *testing.T) {
+	t.Parallel()
 	raw, err := os.ReadFile("../../script/lib/handoff-names.json")
 	if err != nil {
 		t.Fatal(err)
@@ -86,6 +88,7 @@ func TestParseNameReadsTheSharedGrammar(t *testing.T) {
 }
 
 func TestIngestWithNoReaderRefuses(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write(t, filepath.Join(root, "cw--pm--a--by-ccli--20261007T100000Z.md"), "# META\n")
 
@@ -99,6 +102,7 @@ func TestIngestWithNoReaderRefuses(t *testing.T) {
 }
 
 func TestWriteReplacesLeavesExactlyOneFile(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write(t, filepath.Join(root, "any--code--old-thread--by-cw--20261001T120000Z-shared.md"), "# META\nold\n")
 	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\nother\n")
@@ -117,6 +121,7 @@ func TestWriteReplacesLeavesExactlyOneFile(t *testing.T) {
 }
 
 func TestWriteNeverOverwritesACSTOfTheSameName(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	now := time.Now()
 	// the name carries the second it was written, so every second the write could land in is planted
@@ -137,6 +142,7 @@ func TestWriteNeverOverwritesACSTOfTheSameName(t *testing.T) {
 }
 
 func TestWriteReplacingNothingWritesNothing(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\n")
 
@@ -157,6 +163,7 @@ func threeStored(t *testing.T) string {
 }
 
 func TestDeleteAllTakesSharedFilesToo(t *testing.T) {
+	t.Parallel()
 	root := threeStored(t)
 
 	got := xStore(t, root, "", "handoff", "delete", "--all")
@@ -167,6 +174,7 @@ func TestDeleteAllTakesSharedFilesToo(t *testing.T) {
 }
 
 func TestDeleteOneSlugLeavesTheRestAlone(t *testing.T) {
+	t.Parallel()
 	root := threeStored(t)
 
 	got := xStore(t, root, "", "handoff", "delete", "three")
@@ -177,6 +185,7 @@ func TestDeleteOneSlugLeavesTheRestAlone(t *testing.T) {
 }
 
 func TestDeleteWithNoTargetRefuses(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write(t, filepath.Join(root, "any--code--only--by-cw--20261001T120000Z.md"), "# META\n")
 
@@ -186,6 +195,7 @@ func TestDeleteWithNoTargetRefuses(t *testing.T) {
 }
 
 func TestAgeReadsMinutesThenHoursThenDays(t *testing.T) {
+	t.Parallel()
 	now := time.Now()
 	cases := []struct {
 		ago   time.Duration
@@ -206,6 +216,7 @@ func TestAgeReadsMinutesThenHoursThenDays(t *testing.T) {
 }
 
 func TestRunIDReadsTheValueNotTheMarkerLabel(t *testing.T) {
+	t.Parallel()
 	cases := map[string]string{
 		"# META\n\nrun id: cc·20261007·plain":                    "cc·20261007·plain",
 		"# META\n\n- **run marker** — run id: **cc·x**":          "cc·x",
@@ -226,6 +237,7 @@ func TestRunIDReadsTheValueNotTheMarkerLabel(t *testing.T) {
 }
 
 func TestMetaBlockEndsAtTheNextTopHeading(t *testing.T) {
+	t.Parallel()
 	meta := metaBlock("# META\n\nrun id: **cc·x**\n\n# G\n\ngoal.\n")
 	if meta == nil || *meta != "# META\n\nrun id: **cc·x**" {
 		t.Fatalf("got %v", meta)
@@ -236,6 +248,7 @@ func TestMetaBlockEndsAtTheNextTopHeading(t *testing.T) {
 }
 
 func TestListingKeepsHandoffsOnlyNewestFirst(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	now := time.Now()
 	for file, ago := range map[string]time.Duration{"cclio-first-20260831T120000Z.md": 30 * time.Minute, "any-second-20260831T120000Z.md": 5 * time.Minute} {
@@ -259,6 +272,7 @@ func TestListingKeepsHandoffsOnlyNewestFirst(t *testing.T) {
 }
 
 func TestIngestNeverTakesAnotherAgentsHandoffUnnamed(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write(t, filepath.Join(root, "cclio-theirs-20260831T120000Z.md"), "# META\n")
 	env := []string{"HANDOFF_STORE_ROOT=" + root}

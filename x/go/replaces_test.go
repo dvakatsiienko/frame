@@ -18,6 +18,7 @@ var notCallers = []string{":!x/go/registry.json", ":!docs/adr", ":!cclio/gazette
 
 // a verb is done when its old door is dead: the file it replaces is gone and nothing tracked still calls it
 func TestReplacedDoorsAreDead(t *testing.T) {
+	t.Parallel()
 	root, _ := filepath.Abs("../..")
 	checked := map[string]bool{}
 	for _, verb := range verbs {

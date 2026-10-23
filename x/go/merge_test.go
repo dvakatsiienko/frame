@@ -9,6 +9,7 @@ import (
 
 // an untracked file in the way: git refuses the merge, and nothing conflicts
 func TestMergeMainNamesGitsOwnLineWhenItFailsWithoutConflicts(t *testing.T) {
+	t.Parallel()
 	origin := repo(t)
 	clone := filepath.Join(t.TempDir(), "clone")
 	gitT(t, origin, "clone", "-q", origin, clone)

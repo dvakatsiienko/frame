@@ -40,6 +40,7 @@ if [ "$2" = update ] && [ -n "$FAKE_TO" ]; then echo "$FAKE_TO" > "$FAKE_LOG.ver
 }
 
 func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, manifest, before, after string
 	}{
@@ -70,6 +71,7 @@ func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
 }
 
 func TestPluginBumpRefusesInAWorktree(t *testing.T) {
+	t.Parallel()
 	dir, _, log, env := pluginFixture(t)
 	tree := filepath.Join(t.TempDir(), "wt")
 	gitT(t, dir, "worktree", "add", "-q", "-b", "side", tree)
@@ -88,6 +90,7 @@ func TestPluginBumpRefusesInAWorktree(t *testing.T) {
 }
 
 func TestPluginBumpFailsWhenTheCacheLacksTheNewVersion(t *testing.T) {
+	t.Parallel()
 	for _, stale := range []bool{false, true} {
 		t.Run(map[bool]string{false: "nothing installed", true: "a stale dir for the version"}[stale], func(t *testing.T) {
 			dir, cache, _, env := pluginFixture(t)
@@ -105,6 +108,7 @@ func TestPluginBumpFailsWhenTheCacheLacksTheNewVersion(t *testing.T) {
 }
 
 func TestPluginBumpOfAPluginNotInstalledFromItsMarketplaceBumpsOnly(t *testing.T) {
+	t.Parallel()
 	dir, _, log, env := pluginFixture(t)
 
 	got := xIn(t, dir, env(""), "plugin", "bump", "loose", "--apply")
@@ -118,6 +122,7 @@ func TestPluginBumpOfAPluginNotInstalledFromItsMarketplaceBumpsOnly(t *testing.T
 }
 
 func TestPluginBumpRefusesATreeItsMarketplaceDoesNotRead(t *testing.T) {
+	t.Parallel()
 	dir, _, log, env := pluginFixture(t)
 	manifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
 	was, _ := os.ReadFile(manifest)
@@ -130,6 +135,7 @@ func TestPluginBumpRefusesATreeItsMarketplaceDoesNotRead(t *testing.T) {
 }
 
 func TestPluginBumpRefusesANameNobodyCarries(t *testing.T) {
+	t.Parallel()
 	dir, _, _, env := pluginFixture(t)
 
 	got := xIn(t, dir, env(""), "plugin", "bump", "nope", "--apply")
@@ -140,6 +146,7 @@ func TestPluginBumpRefusesANameNobodyCarries(t *testing.T) {
 }
 
 func TestSchemaPluginListsBump(t *testing.T) {
+	t.Parallel()
 	if got := xIn(t, t.TempDir(), nil, "schema", "plugin"); got.code != 0 || !strings.Contains(got.stdout, `"plugin bump"`) {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
 	}

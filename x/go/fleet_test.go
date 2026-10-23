@@ -58,6 +58,7 @@ func flowCounts(t *testing.T, lines ...any) flowTranscripts {
 }
 
 func TestFlawlogCountsTaggedLinesInTheWindow(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "2026-10-05-day.md"), strings.Join([]string{
 		"# flawlog — 2026-10-05",
@@ -87,6 +88,7 @@ func TestFlawlogCountsTaggedLinesInTheWindow(t *testing.T) {
 }
 
 func TestMedianMinutesTakesTheMiddlePR(t *testing.T) {
+	t.Parallel()
 	pr := func(minutes int) mergedPR {
 		at := time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC)
 		return mergedPR{CreatedAt: at, MergedAt: at.Add(time.Duration(minutes) * time.Minute)}
@@ -112,6 +114,7 @@ func TestMedianMinutesTakesTheMiddlePR(t *testing.T) {
 }
 
 func TestFixed1RoundsLikeJavascriptToFixed(t *testing.T) {
+	t.Parallel()
 	// node: (0.15).toFixed(1) "0.1", (0.25).toFixed(1) "0.3", (1.05).toFixed(1) "1.1", (2.449).toFixed(1) "2.4"
 	cases := []struct {
 		in   float64
@@ -125,6 +128,7 @@ func TestFixed1RoundsLikeJavascriptToFixed(t *testing.T) {
 }
 
 func TestFlowCountsABareCCRun(t *testing.T) {
+	// serial: t.Setenv(HOME) — the flow counts read transcripts from the process HOME
 	cases := []struct {
 		name string
 		line map[string]any
@@ -145,6 +149,7 @@ func TestFlowCountsABareCCRun(t *testing.T) {
 }
 
 func TestFlowMarksACrewLoadByWhetherAMessageNamedIt(t *testing.T) {
+	// serial: t.Setenv(HOME) — the flow counts read transcripts from the process HOME
 	cases := []struct {
 		name, said           string
 		briefLed, falseFires int
@@ -163,6 +168,7 @@ func TestFlowMarksACrewLoadByWhetherAMessageNamedIt(t *testing.T) {
 }
 
 func TestFlowCountsReadsOfEachKnowledgeFile(t *testing.T) {
+	// serial: t.Setenv(HOME) — the flow counts read transcripts from the process HOME
 	got := flowCounts(t, called("Read", map[string]any{"file_path": "/Users/dima/frame/docs/knowledge/go-charm.md"}, flowAt))
 	want := `[{"file":"go-charm.md","count":1},{"file":"authoring-skill.md","count":0}]`
 	if marshal(got.reads) != want {
@@ -171,6 +177,7 @@ func TestFlowCountsReadsOfEachKnowledgeFile(t *testing.T) {
 }
 
 func TestGuardDaySumsTheDaysKeysOfEveryGuardStore(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "x-mod-guard_inline-abc.json"), `{"day:2026-10-05:a1":{"refused":9,"escaped":9},`+
 		`"day:2026-10-06:a1":{"refused":2,"escaped":1},"day:2026-10-06:b2":{"refused":1,"escaped":0},"event:1:a1":{"kind":"refused"}}`)
@@ -185,6 +192,7 @@ func TestGuardDaySumsTheDaysKeysOfEveryGuardStore(t *testing.T) {
 }
 
 func TestGuardDaySumsEachRuleAcrossSessions(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "x-mod-guard_inline-abc.json"), `{`+
 		`"day:2026-10-06:a1":{"escaped":1,"refused":2,"rules":{"rm":{"escaped":1,"refused":0},"overwrite":{"escaped":0,"refused":2}}},`+
@@ -214,6 +222,7 @@ func opsSessionOf(t *testing.T, lines ...any) opsSession {
 }
 
 func TestOpsCountsAStepOnceWhenItsMessageIDRepeats(t *testing.T) {
+	t.Parallel()
 	usage := map[string]int{"input_tokens": 10, "output_tokens": 5}
 	s := opsSessionOf(t, assistantStep("m1", "2026-10-07T10:00:00Z", usage, "tool_use"), assistantStep("m1", "2026-10-07T10:00:01Z", usage, "tool_use"))
 	if s.Steps != 1 || s.Tokens != 15 {
@@ -222,6 +231,7 @@ func TestOpsCountsAStepOnceWhenItsMessageIDRepeats(t *testing.T) {
 }
 
 func TestOpsSumsInputCacheAndOutputTokens(t *testing.T) {
+	t.Parallel()
 	usage := map[string]int{"input_tokens": 1, "cache_creation_input_tokens": 100, "cache_read_input_tokens": 1000, "output_tokens": 10}
 	if s := opsSessionOf(t, assistantStep("m1", "2026-10-07T10:00:00Z", usage, "end_turn")); s.Tokens != 1111 {
 		t.Errorf("tokens %d, want 1111", s.Tokens)
@@ -229,6 +239,7 @@ func TestOpsSumsInputCacheAndOutputTokens(t *testing.T) {
 }
 
 func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
+	t.Parallel()
 	boot := map[string]any{"type": "user", "timestamp": "2026-10-07T10:00:00Z", "cwd": "/Users/dima/frame/cclio",
 		"message": map[string]any{"content": "<command-name>/cclio:boot</command-name><command-args>mini</command-args>"}}
 	usage := map[string]int{"output_tokens": 10}
@@ -242,6 +253,7 @@ func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
 }
 
 func TestOpsCountsCodeEditsAndSkipsTheSidechain(t *testing.T) {
+	t.Parallel()
 	edit := func(file string, sidechain bool) map[string]any {
 		return map[string]any{"type": "assistant", "timestamp": flowAt, "isSidechain": sidechain, "message": map[string]any{
 			"id": "m-" + file, "content": []any{map[string]any{"type": "tool_use", "name": "Edit", "input": map[string]any{"file_path": file}}}}}
@@ -253,6 +265,7 @@ func TestOpsCountsCodeEditsAndSkipsTheSidechain(t *testing.T) {
 }
 
 func TestRoundHalfUpRoundsAHalfUp(t *testing.T) {
+	t.Parallel()
 	// node: Math.round(2.5) 3, Math.round(2.49) 2
 	if roundHalfUp(2.5) != 3 || roundHalfUp(2.49) != 2 {
 		t.Errorf("roundHalfUp(2.5) = %d, roundHalfUp(2.49) = %d", roundHalfUp(2.5), roundHalfUp(2.49))
@@ -260,6 +273,7 @@ func TestRoundHalfUpRoundsAHalfUp(t *testing.T) {
 }
 
 func TestOpsAddsTheCoderAndVerifierOfOneTicket(t *testing.T) {
+	t.Parallel()
 	usage := map[string]int{"output_tokens": 100}
 	of := func(title, start, end string) opsSession {
 		return opsSessionOf(t, map[string]any{"type": "custom-title", "customTitle": title},
@@ -275,6 +289,7 @@ func TestOpsAddsTheCoderAndVerifierOfOneTicket(t *testing.T) {
 }
 
 func TestSizeMissesFlagAClosedTicketPastItsLine(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name  string
 		turns int
@@ -298,6 +313,7 @@ func TestSizeMissesFlagAClosedTicketPastItsLine(t *testing.T) {
 }
 
 func TestCoderTurnsSumEverySessionOfATicketAndSkipTheVerifier(t *testing.T) {
+	t.Parallel()
 	turns := coderTurns([]opsSession{
 		{Role: "coder", Ticket: "FRM-9", Steps: 300},
 		{Role: "coder", Ticket: "FRM-9", Steps: 200},
@@ -342,6 +358,7 @@ func opsSizeData(t *testing.T, home string, server *fakeLinear) map[string]any {
 }
 
 func TestFleetOpsPrintsAClosedTicketPastItsSizeAsAMiss(t *testing.T) {
+	t.Parallel()
 	home, server := opsWorld(t, 600, sizedS("completed", time.Now()))
 	if got, want := marshal(opsSizeData(t, home, server)["size_misses"]), `[{"line":400,"size":"S","ticket":"FRM-9","turns":600}]`; got != want {
 		t.Errorf("size_misses %s, want %s", got, want)
@@ -349,6 +366,7 @@ func TestFleetOpsPrintsAClosedTicketPastItsSizeAsAMiss(t *testing.T) {
 }
 
 func TestFleetOpsLeavesOutATicketClosedBeforeTheWindow(t *testing.T) {
+	t.Parallel()
 	home, server := opsWorld(t, 600, sizedS("completed", time.Now().Add(-72*time.Hour)))
 	if got := marshal(opsSizeData(t, home, server)["size_misses"]); got != `[]` {
 		t.Errorf("size_misses %s — a miss the last halt already reported came back", got)
@@ -356,6 +374,7 @@ func TestFleetOpsLeavesOutATicketClosedBeforeTheWindow(t *testing.T) {
 }
 
 func TestFleetOpsNamesASizeCheckLinearCouldNotAnswer(t *testing.T) {
+	t.Parallel()
 	home, server := opsWorld(t, 600, "not json")
 	if data := opsSizeData(t, home, server); data["size_error"] == nil || marshal(data["size_misses"]) != `[]` {
 		t.Errorf("size_error %v, size_misses %s — want the error named and no misses", data["size_error"], marshal(data["size_misses"]))
@@ -363,6 +382,7 @@ func TestFleetOpsNamesASizeCheckLinearCouldNotAnswer(t *testing.T) {
 }
 
 func TestFleetOpsPrintsNoSizeSectionWithoutAClosedTicket(t *testing.T) {
+	t.Parallel()
 	home, server := opsWorld(t, 600, sizedS("started", time.Time{}))
 	_, got := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0", "--board")
 	if asked := len(server.requests()); asked != 1 || strings.Contains(got.stdout+got.stderr, "size misses") {
@@ -371,6 +391,7 @@ func TestFleetOpsPrintsNoSizeSectionWithoutAClosedTicket(t *testing.T) {
 }
 
 func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
+	t.Parallel()
 	opening := said("<command-name>/x:crew-coder</command-name> FRM-1")
 	read := called("Read", map[string]any{"file_path": "/x/crew-coder/how-you-work.md"}, "2026-10-05T10:01:00.000Z")
 	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-05T10:02:00.000Z")
@@ -402,6 +423,7 @@ func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
 }
 
 func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
+	t.Parallel()
 	opening := said("<command-name>/x:crew-coder</command-name> FRM-1")
 	at := "2026-10-05T10:02:00.000Z"
 	path := filepath.Join(t.TempDir(), "session.jsonl")
@@ -419,6 +441,7 @@ func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
 }
 
 func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
+	t.Parallel()
 	path := filepath.Join(t.TempDir(), "session.jsonl")
 	write(t, path, jsonLines(t, said("spawn a coder with /x:crew-coder")))
 	if _, ok := auditSession(path); ok {

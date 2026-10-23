@@ -10,6 +10,7 @@ import (
 )
 
 func TestCommitTakesItsMessageOnStdin(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "readme.txt"), "piped\n")
 	c := exec.Command(xbin, "lane", "commit", "-", "--", "readme.txt")
@@ -27,6 +28,7 @@ func TestCommitTakesItsMessageOnStdin(t *testing.T) {
 }
 
 func TestCommitRefusesAnEmptyStdinMessage(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "readme.txt"), "piped\n")
 	c := exec.Command(xbin, "lane", "commit", "-", "--", "readme.txt")
@@ -40,6 +42,7 @@ func TestCommitRefusesAnEmptyStdinMessage(t *testing.T) {
 }
 
 func TestHookFailKeepsOnlyTheLinesThatSayWhy(t *testing.T) {
+	t.Parallel()
 	log := strings.Repeat("│  some-check (skip) no matching staged files\n", 40) +
 		"lane gate: a.md grows by 3 lines — groom it\nexit status 1\n" +
 		strings.Repeat("summary: (done in 0.15 seconds)\n", 5)

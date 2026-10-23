@@ -250,6 +250,8 @@ func leaf(m mode, verb Verb) *cobra.Command {
 		spec := verb.Flags[own]
 		if spec.Type == "boolean" {
 			c.Flags().Bool(own, false, spec.Description)
+		} else if spec.Repeats {
+			c.Flags().StringArray(own, nil, spec.Description)
 		} else {
 			c.Flags().String(own, "", spec.Description)
 		}
@@ -614,6 +616,9 @@ func help(m mode, words []string) int {
 func flagValue(f *pflag.Flag) any {
 	if f.Value.Type() == "bool" {
 		return f.Value.String() == "true"
+	}
+	if values, ok := f.Value.(pflag.SliceValue); ok {
+		return strings.Join(values.GetSlice(), ",")
 	}
 	return f.Value.String()
 }

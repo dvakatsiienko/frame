@@ -10,6 +10,7 @@ import (
 
 // every verb answers --help with its usage and schema with its own entry, both in the envelope
 func TestEveryVerbHasHelpAndSchema(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	for _, verb := range verbs {
 		help := xIn(t, dir, nil, append(strings.Fields(verb.Name), "--help", "--json")...)
@@ -30,6 +31,7 @@ func TestEveryVerbHasHelpAndSchema(t *testing.T) {
 }
 
 func TestSchemaNamesWhatAVerbTouchesAndReplaces(t *testing.T) {
+	t.Parallel()
 	got := xIn(t, t.TempDir(), nil, "schema", "handoff", "write")
 
 	listed, _ := got.data["verbs"].([]any)
@@ -43,6 +45,7 @@ func TestSchemaNamesWhatAVerbTouchesAndReplaces(t *testing.T) {
 }
 
 func TestBareHiddenFamilyPrintsItsHelp(t *testing.T) {
+	t.Parallel()
 	got := xIn(t, t.TempDir(), nil, "trace")
 
 	groups, _ := got.data["groups"].(map[string]any)
@@ -76,6 +79,7 @@ func read(t *testing.T, path string) string {
 }
 
 func TestHoldUnstagedHidesOtherWorkFromTheHooks(t *testing.T) {
+	t.Parallel()
 	gate := "test -e wip/draft.txt && exit 1; exit 0"
 	without, _ := gatedRepo(t, gate)
 	if got := xIn(t, without, nil, "lane", "commit", message(t), "--", "readme.txt"); got.code != 1 {
@@ -100,6 +104,7 @@ func TestHoldUnstagedHidesOtherWorkFromTheHooks(t *testing.T) {
 }
 
 func TestHoldUnstagedPutsFilesBackWhenTheHookRefuses(t *testing.T) {
+	t.Parallel()
 	dir, _ := gatedRepo(t, "exit 1")
 
 	got := xIn(t, dir, nil, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
@@ -114,6 +119,7 @@ func TestHoldUnstagedPutsFilesBackWhenTheHookRefuses(t *testing.T) {
 
 // git status lists paths sorted; an unstaged edit that sorts first starts the output with a space
 func TestHoldUnstagedReadsAnEditThatSortsFirst(t *testing.T) {
+	t.Parallel()
 	dir, _ := gatedRepo(t, "grep -q wip a-first.txt && exit 1; exit 0")
 	write(t, filepath.Join(dir, "a-first.txt"), "committed\n")
 	gitT(t, dir, "add", "a-first.txt")
@@ -128,6 +134,7 @@ func TestHoldUnstagedReadsAnEditThatSortsFirst(t *testing.T) {
 }
 
 func TestHoldThatFailsMidwayLeavesUntakenFilesAlone(t *testing.T) {
+	t.Parallel()
 	dir, _ := gatedRepo(t, "exit 0")
 	// porcelain lists tracked edits first, sorted: tracked.txt is taken, m/locked.txt cannot move (its dir is
 	// read-only), and zz-later.txt is never taken
@@ -157,6 +164,7 @@ func TestHoldThatFailsMidwayLeavesUntakenFilesAlone(t *testing.T) {
 }
 
 func TestBriefCheckSkipsAnEmptyCodeSpan(t *testing.T) {
+	t.Parallel()
 	brief := filepath.Join(t.TempDir(), "brief.md")
 	write(t, brief, "a blank ` ` span, then `readme.txt`\n")
 
@@ -166,6 +174,7 @@ func TestBriefCheckSkipsAnEmptyCodeSpan(t *testing.T) {
 }
 
 func TestBriefCheckReadsAFileNamedWithALineOrAnAnchor(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "src/brief.go"), "package main\n")
 	write(t, filepath.Join(dir, "FTR.md"), "# map\n")
@@ -178,6 +187,7 @@ func TestBriefCheckReadsAFileNamedWithALineOrAnAnchor(t *testing.T) {
 }
 
 func TestBriefCheckReadsASlashCommandAsNoPath(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	for _, token := range []string{"/clear", "/mcp", "/cclio:boot", "/x:handoff-ingest"} {
 		if kind, why := missing(token, dir, nil); kind != "" {
@@ -190,6 +200,7 @@ func TestBriefCheckReadsASlashCommandAsNoPath(t *testing.T) {
 }
 
 func TestHoldUnstagedHoldsANestedRepo(t *testing.T) {
+	t.Parallel()
 	dir, _ := gatedRepo(t, "test -e sub && exit 1; exit 0")
 	write(t, filepath.Join(dir, "sub/inner.txt"), "nested\n")
 	gitT(t, filepath.Join(dir, "sub"), "init", "-q")
@@ -202,6 +213,7 @@ func TestHoldUnstagedHoldsANestedRepo(t *testing.T) {
 }
 
 func TestHoldUnstagedKeepsADeletionDeleted(t *testing.T) {
+	t.Parallel()
 	dir, seen := gatedRepo(t, "test -e gone.txt || exit 1; exit 0")
 	write(t, filepath.Join(dir, "gone.txt"), "tracked\n")
 	gitT(t, dir, "add", "gone.txt")
@@ -221,6 +233,7 @@ func TestHoldUnstagedKeepsADeletionDeleted(t *testing.T) {
 }
 
 func TestBriefLintRules(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, brief string
 		finds       bool
@@ -270,6 +283,7 @@ func TestBriefLintRules(t *testing.T) {
 }
 
 func TestBriefCheckNamesATicketLinearCannotFind(t *testing.T) {
+	t.Parallel()
 	bin := t.TempDir()
 	write(t, filepath.Join(bin, "linear"), "#!/bin/sh\necho '{\"errors\":[{\"message\":\"Entity not found: Issue\",\"path\":[\"t1\"]}],\"data\":null}'\n")
 	brief := filepath.Join(t.TempDir(), "brief.md")
@@ -283,6 +297,7 @@ func TestBriefCheckNamesATicketLinearCannotFind(t *testing.T) {
 }
 
 func TestBriefCheckStampsAPass(t *testing.T) {
+	t.Parallel()
 	state, brief := t.TempDir(), filepath.Join(t.TempDir(), "brief.md")
 	write(t, brief, "read `readme.txt`\n")
 
@@ -294,6 +309,7 @@ func TestBriefCheckStampsAPass(t *testing.T) {
 }
 
 func TestBriefCheckPassesWhatExistsInOtherShapes(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, "package.json"), `{"scripts":{"test":"vitest"}}`)
 	write(t, filepath.Join(dir, "node_modules/.bin/vitest"), "#!/bin/sh\n")
@@ -305,12 +321,14 @@ func TestBriefCheckPassesWhatExistsInOtherShapes(t *testing.T) {
 }
 
 func TestApplyIsRefusedWhereItMeansNothing(t *testing.T) {
+	t.Parallel()
 	if got := xIn(t, repo(t), nil, "knowledge", "list", "--apply"); got.code != 2 {
 		t.Fatalf("exit %d, want a usage error", got.code)
 	}
 }
 
 func TestIngestThatCannotTrashKeepsTheFile(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write(t, filepath.Join(root, "any-probe-20260831T120000Z.md"), "# META\n")
 	if err := os.Chmod(root, 0o500); err != nil {
@@ -326,6 +344,7 @@ func TestIngestThatCannotTrashKeepsTheFile(t *testing.T) {
 }
 
 func TestBriefCheckNamesAMissingPath(t *testing.T) {
+	t.Parallel()
 	brief := filepath.Join(t.TempDir(), "brief.md")
 	write(t, brief, "read `readme.txt` and `docs/gone.md`\n")
 
@@ -337,6 +356,7 @@ func TestBriefCheckNamesAMissingPath(t *testing.T) {
 }
 
 func TestALongReadOpensAPagerThatQQuits(t *testing.T) {
+	t.Parallel()
 	dir := world(t)
 	read := call{ID: "pager", Mode: "tty", Argv: []string{"knowledge", "read", "spawn"}, Rows: 12, Keys: []string{"j", "q"}}
 
@@ -357,6 +377,7 @@ func claudeCalls(t *testing.T, dir string) []string {
 }
 
 func TestProbeBareAsksWithNoSetupFromOutsideAnyRepo(t *testing.T) {
+	t.Parallel()
 	dir := world(t)
 	env := []string{"PATH=" + dir + "/bin:" + os.Getenv("PATH")}
 
@@ -377,6 +398,7 @@ func TestProbeBareAsksWithNoSetupFromOutsideAnyRepo(t *testing.T) {
 }
 
 func TestProbeSessionResumesItsOwnSession(t *testing.T) {
+	t.Parallel()
 	dir := world(t)
 	env := []string{"PATH=" + dir + "/bin:" + os.Getenv("PATH"), "X_STATE=" + filepath.Join(dir, "state")}
 	settings := filepath.Join(dir, "probe-settings.json")
@@ -399,6 +421,7 @@ func TestProbeSessionResumesItsOwnSession(t *testing.T) {
 }
 
 func TestKnowledgeReadLogsTheRead(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	root, _ := filepath.Abs("../fixtures/knowledge")
 

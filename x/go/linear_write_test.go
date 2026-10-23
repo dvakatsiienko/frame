@@ -17,6 +17,7 @@ func okAnswer(call gqlCall) string {
 }
 
 func TestLinkSendsOneRelationPerTargetInOneRequest(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, okAnswer)
 	envelope, got := runLinear(t, server, nil, "linear", "link", "FRM-1", "blocks", "FRM-2", "FRM-3")
 	if got.code != 0 {
@@ -41,6 +42,7 @@ func TestLinkSendsOneRelationPerTargetInOneRequest(t *testing.T) {
 }
 
 func TestLinkRefusesAKindLinearDoesNotHave(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, okAnswer)
 	envelope, got := runLinear(t, server, nil, "linear", "link", "FRM-1", "fixes", "FRM-2")
 	if got.code != 2 || !strings.Contains(fmt.Sprint(envelope["error"]), "blocks, related, duplicate") {
@@ -52,6 +54,7 @@ func TestLinkRefusesAKindLinearDoesNotHave(t *testing.T) {
 }
 
 func TestCommentSendsTheFileByteForByte(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, func(gqlCall) string {
 		return `{"data":{"commentCreate":{"success":true,"comment":{"url":"https://linear.app/x-com/issue/FRM-1#comment-1"}}}}`
 	})
@@ -90,6 +93,7 @@ func updateServer(projects, initiatives string) func(gqlCall) string {
 }
 
 func TestUpdateOnAProjectNeverReadsInitiatives(t *testing.T) {
+	t.Parallel()
 	file := filepath.Join(t.TempDir(), "u.md")
 	write(t, file, "the week")
 	server := newFakeLinear(t, updateServer(`{"id":"p-cli","name":"cli"}`, "denied"))
@@ -104,6 +108,7 @@ func TestUpdateOnAProjectNeverReadsInitiatives(t *testing.T) {
 }
 
 func TestUpdatePostsToTheProjectOrTheInitiativeTheNameFinds(t *testing.T) {
+	t.Parallel()
 	file := filepath.Join(t.TempDir(), "u.md")
 	write(t, file, "the week")
 	cases := []struct {
@@ -131,6 +136,7 @@ func TestUpdatePostsToTheProjectOrTheInitiativeTheNameFinds(t *testing.T) {
 }
 
 func TestUpdateNamesAMissingProjectWhenInitiativesAreDenied(t *testing.T) {
+	t.Parallel()
 	file := filepath.Join(t.TempDir(), "u.md")
 	write(t, file, "the week")
 	server := newFakeLinear(t, updateServer(``, "denied"))
@@ -143,6 +149,7 @@ func TestUpdateNamesAMissingProjectWhenInitiativesAreDenied(t *testing.T) {
 }
 
 func TestUpdateRefusesANameItCannotPinDown(t *testing.T) {
+	t.Parallel()
 	file := filepath.Join(t.TempDir(), "u.md")
 	write(t, file, "the week")
 	for name, reply := range map[string][2]string{

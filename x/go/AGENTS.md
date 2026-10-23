@@ -19,6 +19,7 @@ fleet sees whether the page earns its place.
   and the pin lasts until the next rebuild — a push alone does not clear it.
 - `pnpm x-go:test` — the gate, run in ci; the frame commit hooks never run it, so run it before
   every commit here. `x:guide-go` holds the go craft (gofmt, vet, staticcheck, table tests).
+- every test opens with `t.Parallel()`; one that cannot opens with a `// serial: <why>` line instead (a `t.Setenv`, a `t.Chdir`) — go panics on a `t.Setenv` in a parallel test, so a missed one shows itself. this is what keeps the gate near 1 minute (FRM-422)
 
 ## the contract
 

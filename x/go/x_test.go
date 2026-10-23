@@ -219,6 +219,7 @@ func filterEnv(env []string) []string {
 // every call in calls.json is the contract: a pipe or an agent gets one envelope line, a terminal gets
 // the human view; both end on the call's exit code
 func TestFixtureCallsHoldTheContract(t *testing.T) {
+	t.Parallel()
 	bin := xbin
 	byID := map[string]call{}
 	for _, c := range fixtures(t) {
@@ -271,6 +272,7 @@ func TestFixtureCallsHoldTheContract(t *testing.T) {
 }
 
 func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
+	t.Parallel()
 	bin, dir := xbin, world(t)
 	hook := filepath.Join(dir, "repo/.git/hooks/pre-commit")
 	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
@@ -291,6 +293,7 @@ func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
 }
 
 func TestEveryVerbBelongsToAListedFamily(t *testing.T) {
+	t.Parallel()
 	for _, verb := range verbs {
 		if family := familyOf(verb.Family()); family.Gist == "" || family.Example == "" {
 			t.Errorf("%s: family %s has no gist or example in registry.json", verb.Name, verb.Family())
@@ -299,6 +302,7 @@ func TestEveryVerbBelongsToAListedFamily(t *testing.T) {
 }
 
 func TestRegistryAndImplementationsMatch(t *testing.T) {
+	t.Parallel()
 	named := map[string]bool{}
 	for _, verb := range verbs {
 		named[verb.Name] = true
@@ -318,6 +322,7 @@ func TestRegistryAndImplementationsMatch(t *testing.T) {
 }
 
 func TestLintRefusesAVagueWordBesidePunctuation(t *testing.T) {
+	t.Parallel()
 	problems := lintPurpose(Verb{Name: "lane tidy", Purpose: "handles, then tidies the worktree before a push"})
 	if len(problems) == 0 {
 		t.Fatal("«handles,» passed the lint; the TS lint refuses it")
@@ -325,6 +330,7 @@ func TestLintRefusesAVagueWordBesidePunctuation(t *testing.T) {
 }
 
 func TestPurposesPassTheLint(t *testing.T) {
+	t.Parallel()
 	for _, verb := range verbs {
 		if problems := lintPurpose(verb); len(problems) > 0 {
 			t.Errorf("%s: %s", verb.Name, strings.Join(problems, "; "))
