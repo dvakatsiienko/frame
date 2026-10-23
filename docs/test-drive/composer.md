@@ -101,6 +101,9 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-20 · inbox-prep · 1 · 0 · inbox-composer.md written, 38/38 content lines verbatim, 9 items, 23 asks; PK-90 homed for W1, cw memory not homed (PK-196 body differs)
 - 2026-10-21 · inbox-prep · 1 · 0 · inbox-prep: 5 items, 9 asks, inbox-prep-check 12/12 exit 0, inbox-composer.md written, inbox.md untouched, no commit
 - 2026-10-22 · inbox-prep · 1 · 0 · inbox-composer.md 4 items 5 asks check 8/8
+- 2026-10-23 · pocket-write · 1 · 0 · PK-261 → done, note appended
+- 2026-10-23 · prompt-groom · 1 · 0 · W148-W218 + ❓1-22, 12 entries, file groom-2026-10-23.md
+- 2026-10-23 · prompt-groom · 1 · 0 · pk263 groom: W1-W85, asks 1-11, 0 dup ids; W22/W23 kept pending ← rule
 
 ## rounds
 

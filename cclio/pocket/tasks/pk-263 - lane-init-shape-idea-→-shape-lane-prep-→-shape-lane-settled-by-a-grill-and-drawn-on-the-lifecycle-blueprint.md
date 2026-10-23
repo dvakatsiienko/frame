@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-23T12:50:00Z'
-updated_date: '2026-10-23T13:29:00Z'
+updated_date: '2026-10-23T13:36:00Z'
 labels:
   - m
 dependencies: []
@@ -251,4 +251,7 @@ W84 consult with cCRO.
 >
 
 2026-10-23 16:30 cclio, settled by his ticks: Q1 shape-lane (with dima) + shape-lane-dispatch (cclio); Q2 «chunk» = one signed ticket, emoji 🍫; Q3 ✍️ signed (his yes, a linear label) → 🦭 sealed (spec + exit lines + lane plan ready, in the lane folder; «seal» keeps today's meaning) → dispatched (lane started); Q4 a `## signed` block, one appended line per sign or re-sign. round 2 open: shape-idea's output (a ticket? where PRODUCT.md, FTR, glossary go), a quick lane without a sign, a stale sign at dispatch, the spawn ask folded into the dispatch pick, two chunks in parallel, a pocket item signed into linear (W69). then wishkeeper over the change, then the full flow printed per skill (dima 16:29).
+
+W85 once we groom ourselves, do a wishkeeper over this change, because it kind of matters.
+2026-10-23 16:33 dima, raw: «so PRODUCT.md and rest of docs that currently shape-idea procues are better to be written via shape-lane (when applicable, optional. or not optional?)? or when?» · «I approve issue posting it right away. Send me a link after it is created.» · «and whats wrong? why ticket is created?» (posted: https://github.com/github/gh-stack/issues/587)
 <!-- SECTION:NOTES:END -->
