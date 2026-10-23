@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T18:47:00Z'
+updated_date: '2026-10-23T10:36:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -423,4 +423,6 @@ W144 high 5, the pocket contradiction: I'm too tired to think about it — move 
 W145 medium 4, «three events only» vs quiet pings: ❓ so the silent-mode contracts are off? how to optimize it? I want coders to send cclio only push messages that matter; everything else slipstreamed
 W146 medium 5, milestone close: not a big issue; ❓ why does the halt say milestones close on my call? just tell me about a milestone closing as information, never as an approval
 W147 the review is very valuable info, but I'm too tired to process it tonight
+
+dima 2026-10-23 13:34, the second pm review (his words): «Before fixes, the PM module had drifted and had a lot of contradictions that we found during the initial review, based on my wishes and your own findings. We identified a number of weak spots by reading the contracts in files, in text, in memories and skills, and by using the actual blueprint, because the blueprint gives a high-level overview. After those fixes, we do another review round in exactly the same manner. It's not just a check for a check mark. The goal is to identify weak spots and find other spots and places for optimization: how to streamline the flow, find some redundant steps that could be overhead, and make Flow easier by just dropping them, merging, or moving, something like this. It is a full-scale review, not just for a check mark to proceed.» — and: «it's better to sync the current PM blueprint with the current state after our fixes» (done 13:35, board synced). 13:36: «let's do a review after a second wind … remember to save my ones about the rare review I just asked and asked previously as well, so after the second window, don't forget them.»
 <!-- SECTION:NOTES:END -->

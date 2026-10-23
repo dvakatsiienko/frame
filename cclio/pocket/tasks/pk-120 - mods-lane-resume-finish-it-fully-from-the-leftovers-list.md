@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: waiting
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-21T13:10:00Z'
+updated_date: '2026-10-23T09:56:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -45,4 +45,6 @@ rider (dima o31, 16:31): the second-wind op takes a required pending: field, onl
 2026-10-21 15:35 rider (6), dima's word 11:35: «I saw you proposed e.isReadOnly. let's try borrow». try it: a tool.check hook in x-mod-guard reading e.isReadOnly (cc 2.1.304). cclio's one-line objection: guard decides on the paths a command writes (writtenPaths, rules/overwrite.ts:45), the flag gives no paths, so it may delete nothing — the try settles it.
 
 2026-10-21 16:11 the evergreen source lane moved: docs/research/evergreen-borrows-2026-10-21.md.
+
+rider 2026-10-23: FRM-417 (x-mod-guard: milestone-less linear create/move refused) — in the 🐋 mods lane 1 landed milestone, shaped by cclio:shape-lane, exit lines sealed before the lane spawns (dima 12:55).
 <!-- SECTION:NOTES:END -->

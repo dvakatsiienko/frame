@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-10-21T17:50:00Z'
-updated_date: '2026-10-23T09:31:00Z'
+updated_date: '2026-10-23T09:42:00Z'
 due_date: '2026-10-23'
 labels:
   - s
@@ -30,4 +30,6 @@ parked: worked at the 10-22 low tide beside PK-244 (dima o126: fixes 1–3 tomor
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
 
 ticket: FRM-416 — moved to linear 2026-10-23 on dima's o1 tick; the pocket item dies here.
+
+close: FRM-416 done in place 2026-10-23 (freebie, dima o7).
 <!-- SECTION:NOTES:END -->

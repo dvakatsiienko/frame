@@ -4,8 +4,8 @@ title: composer on Sonnet 5.5 — shape-idea over its contract after the trial v
 status: waiting
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-22T18:52:00Z'
-due_date: '2026-10-23'
+updated_date: '2026-10-23T09:40:00Z'
+due_date: '2026-10-29'
 labels:
   - m
 dependencies: []
@@ -38,4 +38,6 @@ inbox 10-16, idea in his words: composer on Haiku 5.5 overlaps helper-lite; prom
 2026-10-22 18:3x grill 5 Q3 (PK-103, o41 ✓): the model test rides this item — one job (grooming one inbox, and one first-use transform) run on Haiku 5.5 and on Sonnet 5.5, scored by wish-cover against the same W-lines; the 1.4 % vs 9.4 % pair compared two jobs, never two models
 
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
+
+2026-10-23 dima (o6): stays in the pocket, due thursday 10-29.
 <!-- SECTION:NOTES:END -->
