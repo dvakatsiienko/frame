@@ -1,9 +1,10 @@
 ---
 id: PK-273
 title: 'x lane gate --held: gate a stack layer before it waits unpushed'
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-23T20:33:00Z'
+updated_date: '2026-10-23T20:34:00Z'
 due_date: '2026-10-24'
 labels:
   - xs

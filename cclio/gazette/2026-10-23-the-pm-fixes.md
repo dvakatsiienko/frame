@@ -2,7 +2,7 @@
 date: 2026-10-23
 slug: the-pm-fixes
 tickets: [FRM-266, FRM-415, FRM-416, FRM-417, FRM-418, FRM-419, FRM-410]
-posted: {health: no}
+posted: {health: yes}
 ---
 
 # 🗞️ cclio's gazette · the pm fixes
@@ -81,3 +81,25 @@ posted: {health: no}
 - shipped: the first live shape-lane (5 cli chunks signed), FRM-422's gate 321 s → 39 s, shape-lane single/fast, the board redrawn with notes, the main lane signed
 - open: the mods scope shape-lane, the pocket/linear grill, FRM-422 verify → FRM-423
 - state: second wind at 21:06; the cli lane runs on, members hold messages
+
+⸻ upd 23:35
+
+## shipped
+- cli lane 2 ran two chunks and parked: [FRM-422](https://linear.app/x-com/issue/FRM-422) the go gate ~5.5 min → ~50 s with `-race` clean; [FRM-423](https://linear.app/x-com/issue/FRM-423) `merge-auto` lands a chunk dima pre-approved at the sign — pr 0 #105, then a 2-layer stack #106 → #107 landed by one `x lane merge-auto --apply 107`, the want line live
+- the merge brake fails closed: a refused label, a missing head sha, a failed submit each turn it on (dima o194, o195)
+- the mods scope, 51 items, cut into 7 signed chunks over two milestones: «🐋 safer, quieter mods» ([FRM-425](https://linear.app/x-com/issue/FRM-425), [FRM-427](https://linear.app/x-com/issue/FRM-427), [FRM-428](https://linear.app/x-com/issue/FRM-428)) and the new «🐋 the board reads true» ([FRM-426](https://linear.app/x-com/issue/FRM-426), [FRM-429](https://linear.app/x-com/issue/FRM-429), [FRM-430](https://linear.app/x-com/issue/FRM-430) fork-guard, [FRM-431](https://linear.app/x-com/issue/FRM-431)); a wishkeeper + ccrow review folded before the last signs
+- canceled: [FRM-420](https://linear.app/x-com/issue/FRM-420) (guide-conventions split, low value), [FRM-421](https://linear.app/x-com/issue/FRM-421) (afk digest, dima: «I'll just ask you around»)
+- the quote gate keys on «» quotes and dated «dima, <date>» lines; a pocket or memory commit now runs the retired-door test
+
+## tricks gained
+- a held `[progress]` ping hid two coder questions tonight; a question rides `[ask]` (crew-dna), and FRM-429 pushes one through
+- M chunks stay (dima 22:24): useful while he is afk; FRM-423 is the first data point — 3 prs, one usage-limit pause, one second wind
+
+## state
+- cli lane 2 parked with FRM-383, FRM-384, FRM-424 signed; the mods lane dispatches FRM-425 first
+- tomorrow: dima's two questions (scope growth from retros, stacked prs' worth), then the pocket/linear grill
+
+## trail
+- shipped: FRM-422 and FRM-423 landed (a stack in one merge-auto call, the brake fails closed), the mods scope as 7 signed chunks over two milestones
+- open: dima's two questions (scope growth, stacked prs' worth), the pocket/linear grill, the mods lane dispatch
+- state: cli lane 2 parked; halt at 23:35

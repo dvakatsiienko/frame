@@ -1,10 +1,10 @@
 ---
 id: PK-271
 title: 'dima''s 10-23 questions: scope growth from retros, and stacked PRs'' worth'
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-23T20:31:00Z'
-updated_date: '2026-10-23T20:32:00Z'
+updated_date: '2026-10-23T20:34:00Z'
 due_date: '2026-10-26'
 labels:
   - s

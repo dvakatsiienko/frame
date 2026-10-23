@@ -4,6 +4,10 @@
 - shipped: the first live shape-lane (5 cli chunks signed), FRM-422's gate 321 s → 39 s, shape-lane single/fast, the board redrawn with notes, the main lane signed
 - open: the mods scope shape-lane, the pocket/linear grill, FRM-422 verify → FRM-423
 - state: second wind at 21:06; the cli lane runs on, members hold messages
+⸻ upd 23:35
+- shipped: FRM-422 and FRM-423 landed (a stack in one merge-auto call, the brake fails closed), the mods scope as 7 signed chunks over two milestones
+- open: dima's two questions (scope growth, stacked prs' worth), the pocket/linear grill, the mods lane dispatch
+- state: cli lane 2 parked; halt at 23:35
 
 ## 2026-10-22-the-pm-revamp
 - shipped: pm revamp (wishes copied, pocket today-and-tomorrow, milestones first), cli lane 1 chunks 1–2 merged, trial spawn gate

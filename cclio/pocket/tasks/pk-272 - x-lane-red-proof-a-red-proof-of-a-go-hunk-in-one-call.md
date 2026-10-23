@@ -1,9 +1,10 @@
 ---
 id: PK-272
 title: 'x lane red-proof: a red proof of a go hunk in one call'
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-23T20:33:00Z'
+updated_date: '2026-10-23T20:34:00Z'
 due_date: '2026-10-26'
 labels:
   - s
