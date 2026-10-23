@@ -133,7 +133,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("quotes", "dima's quoted lines in memory, skill and rules files", func() (string, error) {
-		return quotesKept(message, msgFile, present)
+		return quotesKept(message, msgFile, paths)
 	}); err != nil {
 		return nil, err
 	}
@@ -698,6 +698,7 @@ var (
 
 // a «» line of dima's in a memory file twice went through as «not his» (2026-10-15), so a gone one stops the commit
 func quotesKept(message, msgFile string, paths []string) (string, error) {
+	// the named paths, never only those on disk: a moved file's old path carries the quotes HEAD holds
 	staged, err := mustGit("quotes", append([]string{"diff", "--cached", "--name-only", "--"}, paths...)...)
 	if err != nil {
 		return "", err

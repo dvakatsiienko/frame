@@ -393,6 +393,23 @@ func TestCommitTakesANewMemoryFile(t *testing.T) {
 	}
 }
 
+func TestCommitStopsAQuoteChangedInARenamedFile(t *testing.T) {
+	dir := repo(t)
+	write(t, filepath.Join(dir, "rules/a.md"), "- his word: «keep this line exactly as he said»\n")
+	gitT(t, dir, "add", ".")
+	gitT(t, dir, "commit", "-q", "-m", "seed")
+	gitT(t, dir, "mv", "rules/a.md", "rules/b.md")
+	write(t, filepath.Join(dir, "rules/b.md"), "- his word: «keep this line roughly as he said»\n")
+
+	// a user's diff.renames reads the move as one new file; the gate must not care
+	renames := []string{"GIT_CONFIG_COUNT=2", "GIT_CONFIG_KEY_1=diff.renames", "GIT_CONFIG_VALUE_1=true"}
+	got := xIn(t, dir, renames, "lane", "commit", message(t), "--", "rules/a.md", "rules/b.md")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "«keep this line exactly as he said»") {
+		t.Fatalf("exit %d, want the renamed file's changed quote named\n%s", got.code, got.stdout)
+	}
+}
+
 func TestCommitStopsAQuoteGoneByDelete(t *testing.T) {
 	cases := []struct{ name, path string }{{"the file named", "rules/a.md"}, {"its dir named", "rules"}}
 	for _, c := range cases {
