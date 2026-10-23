@@ -20,7 +20,8 @@ func samePath(a, b string) bool {
 func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	target, help := args[0], "x lane verify-tree --help"
 	stacked, _ := flags["stack"].(bool)
-	if stacked && prURL.FindStringSubmatch(target) == nil {
+	pr := prURL.FindStringSubmatch(target)
+	if stacked && pr == nil {
 		return nil, usageFail("--stack reads a stack from its top pr's url, not "+target, "x lane verify-tree --stack <top pr url>")
 	}
 	tree, err := top()
@@ -36,7 +37,7 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	// each form answers its tree name and how its head is read once fetched
 	var name string
 	var resolve func() (string, error)
-	if match := prURL.FindStringSubmatch(target); match != nil {
+	if match := pr; match != nil {
 		repo, err := repoOf(flags)
 		if err != nil {
 			return nil, err
@@ -68,6 +69,13 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 		}
 	} else {
 		return nil, usageFail(target+" is neither a pr url nor main:<sha>", help)
+	}
+	// the stack is read before a tree is cut, so a pr in no stack leaves nothing behind
+	var layers []string
+	if stacked && laneAddOn.stackShown != nil {
+		if layers, err = laneAddOn.stackShown(pr[1], pr[2]); err != nil {
+			return nil, err
+		}
 	}
 	path := filepath.Join(main, ".claude/worktrees", name)
 	r.Open(name)
@@ -102,13 +110,6 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	}
 	if err := seedTree(r, path, main); err != nil {
 		return nil, err
-	}
-	var layers []string
-	if stacked && laneAddOn.stackShown != nil {
-		match := prURL.FindStringSubmatch(target)
-		if layers, err = laneAddOn.stackShown(match[1], match[2]); err != nil {
-			return nil, err
-		}
 	}
 	r.Done(strings.Join(append([]string{"seeded " + path + " at " + short(sha)}, layers...), "\n"), "cd "+path)
 	if stacked {

@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -65,11 +66,14 @@ func stackShown(repo, n string) ([]string, error) {
 		if layer.State != "open" || layer.MergedAt != nil {
 			continue
 		}
-		var pr pullHead
+		var pr struct {
+			pullHead
+			Commits int `json:"commits"`
+		}
 		if _, err := ghFetch(asCoder, fmt.Sprintf("%s/pulls/%d", api, layer.Number), &pr); err != nil {
 			return nil, err
 		}
-		lines = append(lines, fmt.Sprintf("#%d %s onto %s at %s", layer.Number, pr.Head.Ref, pr.Base.Ref, short(pr.Head.Sha)))
+		lines = append(lines, fmt.Sprintf("#%d %s onto %s at %s, adds %s", layer.Number, pr.Head.Ref, pr.Base.Ref, short(pr.Head.Sha), plural(pr.Commits, "commit")))
 		if strconv.Itoa(layer.Number) == n {
 			return lines, nil
 		}
@@ -384,6 +388,10 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 					Next: "git switch " + layer + " && x lane push --apply"}
 			}
 		}
+		if held := heldElsewhere(t.Layers[1:]); held != "" {
+			return "", &Fail{Refused: true, Msg: held + ": a restack switches to each upper layer, and git refuses a branch another worktree holds",
+				Next: "git -C <that worktree> switch --detach"}
+		}
 		if t.from, _, err = pushHome(); err != nil {
 			return "", err
 		}
@@ -412,9 +420,11 @@ func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			merged, _ := git("merge", "-q", "--no-edit", "-m", "restack: merge "+short(below)+" into "+layer, below)
 			if !merged.ok {
 				conflicts, _ := git("diff", "--name-only", "--diff-filter=U")
-				return "", &Fail{Msg: layer + " conflicts with the layer below in " + strings.ReplaceAll(or(conflicts.out, "no file"), "\n", ", ") +
-					" — the tree is on " + layer + " mid-merge: resolve, git add, git merge --continue, then x lane restack --apply again; or git merge --abort",
+				stop := &Fail{Msg: layer + " conflicts with the layer below in " + strings.ReplaceAll(or(conflicts.out, "no file"), "\n", ", ") +
+					" — the tree is on " + layer + " mid-merge: resolve, git add, git merge --continue, x lane push --apply, then x lane restack --apply again; or git merge --abort",
 					Next: "git merge --continue", Log: nonBlank(merged.log)}
+				// the layers under it merged clean: pushed now, a rerun reads them equal to origin
+				return "", errors.Join(t.push(moved), stop)
 			}
 			sha, err := head()
 			if err != nil {
@@ -434,14 +444,9 @@ func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("push", "pushing each moved layer, leased on the sha read", func() (string, error) {
-		for _, layer := range t.Layers[1:] {
-			sha, ok := moved[layer]
-			if !ok {
-				continue
-			}
-			if pushed, _ := pushRetrying(t.from, "--force-with-lease=refs/heads/"+layer+":"+t.Leases[layer], sha+":refs/heads/"+layer); !pushed.ok {
-				return "", &Fail{Msg: "the push of " + layer + " failed — the git and hook output is above", Next: "x lane restack --apply", Log: nonBlank(pushed.log)}
-			}
+		if err := t.push(moved); err != nil {
+			_, back := mustGit("switch", "switch", "-q", t.Branch)
+			return "", errors.Join(err, back)
 		}
 		return plural(len(moved), "layer") + " pushed", nil
 	}); err != nil {
@@ -460,6 +465,37 @@ func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}
 	r.Done(plural(len(moved), "layer")+" restacked: "+strings.Join(t.Layers, " → "), "")
 	return ordered{{"layers", t.Layers}, {"moved", moved}}, nil
+}
+
+// a plain push: each merge descends from the sha read, so origin moving since is a non-fast-forward git refuses
+func (t *restackTarget) push(moved map[string]string) error {
+	for _, layer := range t.Layers[1:] {
+		sha, ok := moved[layer]
+		if !ok {
+			continue
+		}
+		if pushed, _ := pushRetrying(t.from, sha+":refs/heads/"+layer); !pushed.ok {
+			return &Fail{Msg: "the push of " + layer + " failed — origin moved since the read, or a hook refused; the output is above", Next: "x lane restack --apply", Log: nonBlank(pushed.log)}
+		}
+	}
+	return nil
+}
+
+// the first of these branches another worktree has checked out, with that worktree's path
+func heldElsewhere(branches []string) string {
+	here, _ := top()
+	list, _ := git("worktree", "list", "--porcelain")
+	path := ""
+	for line := range strings.SplitSeq(list.out, "\n") {
+		if p, ok := strings.CutPrefix(line, "worktree "); ok {
+			path = p
+		}
+		ref, ok := strings.CutPrefix(line, "branch refs/heads/")
+		if ok && !samePath(path, here) && slices.Contains(branches, ref) {
+			return ref + " is checked out in " + path
+		}
+	}
+	return ""
 }
 
 /* Layers */

@@ -34,7 +34,12 @@ func TestEveryLanePrVerbHasACaseInBothPrModes(t *testing.T) {
 			}
 		}
 	}
-	for _, mode := range []string{"plain", "stacked"} {
+	modes := []string{"plain", "stacked"}
+	// built out, or with the add-on's files deleted, the stacked half drops away and the plain half still holds
+	if laneAddOn.stackShown == nil {
+		modes = modes[:1]
+	}
+	for _, mode := range modes {
 		for _, verb := range prVerbs {
 			if !covered[mode][verb] {
 				t.Errorf("x lane %s has no test case in %s pr mode", verb, mode)
