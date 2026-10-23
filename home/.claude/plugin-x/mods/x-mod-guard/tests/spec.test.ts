@@ -4,10 +4,11 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
-// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane § 2.5), warn-only until its verifier says clean
+// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane-dispatch § 6), warn-only until its verifier says clean
 
 const CODER = '☕️ 🔧 coder: mods';
-const NOTE = 'a 3+-item job goes through a spec (cclio:shape-lane § 2.5)';
+const NOTE =
+    'a 3+-item job goes through a spec (cclio:shape-lane-dispatch § 6)';
 const JOB = 'round 5:\n1. the meter\n2. the card\n3. the glide step';
 
 function world(on: On) {

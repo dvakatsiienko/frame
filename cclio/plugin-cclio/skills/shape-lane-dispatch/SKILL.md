@@ -8,7 +8,7 @@ the machine part of lane init, cclio's alone: dima signed the chunks in `cclio:s
 
 ## 1 · the offer
 
-«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker and no `lane: main` (ours, never a coder's), grouped by milestone, each with its sign age; a lane is one milestone's chunks, ordered by their `blocks` chain (the coder's ticket order inside a chunk is its lane plan). his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket.
+«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker and no `lane: main` (ours, never a coder's), grouped by milestone, each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane is one milestone's chunks, ordered by their `blocks` chain (the coder's ticket order inside a chunk is its lane plan). his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket.
 
 ## 2 · the spec
 

@@ -1,4 +1,4 @@
-// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane § 2.5); a list in a «>» quote or a code fence
+// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane-dispatch § 6); a list in a «>» quote or a code fence
 // is someone's words, never the job — an item starts its line, so a quoted one never counts
 const TO_CODER = /🔧|\bcoder\b/i;
 const SPEC_PATH = /\.scratch\/[^\s/]+\/spec\.md\b/;
@@ -7,7 +7,7 @@ const FENCE = /^\s*(```|~~~)/;
 const ITEMS_MIN = 3;
 
 export const SPEC_WHY =
-    'a 3+-item job goes through a spec (cclio:shape-lane § 2.5)';
+    'a 3+-item job goes through a spec (cclio:shape-lane-dispatch § 6)';
 export const SPEC_DOOR =
     'write the job to .scratch/<feature>/spec.md and send its path';
 

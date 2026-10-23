@@ -27,7 +27,7 @@ the lane is the ticket's first body line, `lane: main|side|quick|shift`, the kin
 
 ## lane init — the contract (dima, 2026-10-23, PK-263)
 
-🌠 wish → shape-idea, when picked → a shaped ticket → shape-lane → **✍️ signed** → **dispatch** → **🦭 sealed** → the coder starts → **🟢 greenlight** → build
+🌠 wish → shape-idea, when picked → a shaped ticket → shape-lane → **✍️ signed** → his pick → **🦭 sealed** (spec + exit lines, before the coder starts) → **🚀 dispatched** (the coder starts) → **🟢 greenlight** → build
 
 - **where each thing lives**: the ticket holds the wish, the 🎯 done test and the `## signed` block (format: `cclio:pm` `references/body.md`); the 📐 spec (`.scratch/<feature>/spec.md`) holds the how and the exit lines; the lane plan holds the order of the coder's tickets
 - **shape-idea is a pick**: the wish fold proposes «shape-idea or not» per wish (`craft-pm` § wishes) — a new app, a new feature or a change to how a product part works goes through it; plain, mechanical work becomes a full ticket straight away
