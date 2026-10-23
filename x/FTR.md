@@ -105,6 +105,12 @@
   - then it waits until the lock goes, up to 30 s, and the commit lands with one «index lock held, waited n s» line
   - given the lock outlives the wait, then the verb fails naming the lock's path and age, and the lock stays
   - decision: the verb never deletes a lock — a stale one is a crashed git, the caller's to check (PK-97)
+- ⬜ `x lane commit` stops a changed quote of dima's in a memory, skill or rules file
+  - given a staged `rules/`, `rules-lazy/`, `skills/`, `memory/` markdown file, or a `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, whose «» quoted lines changed against HEAD (`cclio/script/quote-diff.py`)
+  - when `x lane commit` runs
+  - then it refuses before the hooks, naming each gone quote, and HEAD does not move
+  - given the message carries a line `quotes: shown`, then it commits
+  - decision: x only calls the script and never edits it — the script is cclio's
 - ✅ `x lane commit` adds `ftr: none` when an app's code moves without its ftr
   - given a commit whose named paths change an app's code (the paths `x lane gate`'s ftr half counts) and not that app's `FTR.md`
   - when `x lane commit` runs

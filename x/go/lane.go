@@ -132,6 +132,11 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	if err := r.Step("quotes", "dima's quoted lines in memory, skill and rules files", func() (string, error) {
+		return quotesKept(message, msgFile, present)
+	}); err != nil {
+		return nil, err
+	}
 	var copied string
 	if err := r.Step("ftr", "an app's code staged without its FTR.md", func() (string, error) {
 		raw, err := os.ReadFile(message)
@@ -683,6 +688,37 @@ func ciJobs(tree string, paths []string) []ciJob {
 		}
 	}
 	return jobs
+}
+
+var (
+	memoryFile  = regexp.MustCompile(`(^|/)(rules|rules-lazy|skills|memory)/.*\.md$|(^|/)(SKILL|AGENTS|CLAUDE)\.md$`)
+	quotesShown = regexp.MustCompile(`(?m)^quotes: shown\s*$`)
+)
+
+// a «» line of dima's in a memory file twice went through as «not his» (2026-10-15), so a gone one stops the commit
+func quotesKept(message, msgFile string, paths []string) (string, error) {
+	var files []string
+	for _, path := range paths {
+		if memoryFile.MatchString(filepath.ToSlash(path)) && exists(path) {
+			files = append(files, path)
+		}
+	}
+	if len(files) == 0 {
+		return "no memory, skill or rules file", nil
+	}
+	script := filepath.Join(sourceDir(), "../../cclio/script/quote-diff.py")
+	if !exists(script) {
+		return "not checked: no " + home(script), nil
+	}
+	checked, _ := run("", nil, "", "python3", append([]string{script, "HEAD"}, files...)...)
+	if checked.ok {
+		return plural(len(files), "file") + ", every quote kept", nil
+	}
+	if raw, _ := os.ReadFile(message); quotesShown.Match(raw) {
+		return "quotes: shown — " + plural(len(files), "file") + " passed with gone quotes", nil
+	}
+	return "", &Fail{Refused: true, Msg: "a quote of dima's changed or went; show him each line, then add «quotes: shown» to the message:\n" + checked.out,
+		Next: "x lane commit " + msgFile + " -- <paths>, its message carrying quotes: shown"}
 }
 
 // a pnpm or turbo typecheck/test call on a run line; a comment or a `mods:test` never matches

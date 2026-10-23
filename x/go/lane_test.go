@@ -344,6 +344,35 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 	}
 }
 
+// a repo whose rules file holds one of dima's quotes, then the commit's message and the quote edited
+func quotedRules(t *testing.T, msg string) (dir string, got ran) {
+	t.Helper()
+	dir = repo(t)
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong at commit»\n- a plain line\n")
+	gitT(t, dir, "add", ".")
+	gitT(t, dir, "commit", "-q", "-m", "seed")
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong anywhere»\n- a plain line\n")
+	file := filepath.Join(t.TempDir(), "msg.txt")
+	write(t, file, msg)
+	return dir, xIn(t, dir, nil, "lane", "commit", file, "--", "rules/a.md")
+}
+
+func TestCommitStopsAChangedQuoteOfDimas(t *testing.T) {
+	dir, got := quotedRules(t, "📜 rules: reword\n")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "«checks belong at commit»") || gitT(t, dir, "log", "-1", "--format=%s") != "seed" {
+		t.Fatalf("exit %d, want a refusal naming the gone quote and no commit\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitTakesAChangedQuoteOnceShown(t *testing.T) {
+	dir, got := quotedRules(t, "📜 rules: reword\n\nquotes: shown\n")
+
+	if got.code != 0 || !strings.Contains(gitT(t, dir, "log", "-1", "--format=%s"), "reword") {
+		t.Fatalf("exit %d, want the commit with quotes: shown\n%s", got.code, got.stdout)
+	}
+}
+
 func TestUnlockTurnsCiphertextBackIntoPlaintext(t *testing.T) {
 	tree := lockedWorktree(t)
 
