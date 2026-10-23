@@ -17,6 +17,8 @@ fleet sees whether the page earns its place.
 - the shim also pins `devBuild=1` when `x/go` differs from its merge base with `origin/main` (an edit, an untracked file,
   an unpushed commit), so the trace marks the build a **dev build**; `pnpm x-go:build` never pins it,
   and the pin lasts until the next rebuild — a push alone does not clear it.
+- merge-auto lands a pre-approved self-edit only from a build that is not dev: the pin, and `x/go` in `srcDir` read
+  against origin/main (`isDevBuild`, `merge_sign.go`); a test binary always reads dev, so its tests set `X_DEV_BUILD=` under `X_TEST`
 - `pnpm x-go:test` — the gate, run in ci; the frame commit hooks never run it, so run it before
   every commit here. `x:guide-go` holds the go craft (gofmt, vet, staticcheck, table tests).
 - every test opens with `t.Parallel()`; one that cannot opens with a `// serial: <why>` line instead (a `t.Setenv`, a `t.Chdir`) — go panics on a `t.Setenv` in a parallel test, so a missed one shows itself. this is what keeps the gate near 1 minute (FRM-422)

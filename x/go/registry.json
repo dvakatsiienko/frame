@@ -255,6 +255,13 @@
                     "name": "pr"
                 }
             ],
+            "flags": {
+                "dima-ok": {
+                    "description": "dima's word on a self-edit with no pre-approved sign: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; never lifts the brake",
+                    "type": "string",
+                    "value": "pr"
+                }
+            },
             "name": "lane merge-auto",
             "needsApply": true,
             "purpose": "merge a pr once its head is verifier-clean, required checks green and threads closed; else wait and name why",
@@ -271,7 +278,8 @@
             ],
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
-                "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read"
+                "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read",
+                "linear — a self-edit's chunk ticket, its ## signed block read"
             ]
         },
         {
