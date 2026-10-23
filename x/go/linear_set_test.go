@@ -115,6 +115,18 @@ func TestSetAddsEveryRepeatedLabelFlag(t *testing.T) {
 	}
 }
 
+func TestSetRemovesEveryRepeatedLabelFlag(t *testing.T) {
+	t.Parallel()
+	server := setServer(t)
+	if _, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--remove-label", "human", "--remove-label", "bug"); got.code != 0 {
+		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	input := updateInput(t, server)
+	if fmt.Sprint(input["removedLabelIds"]) != "[l-human l-bug]" || fmt.Sprint(input["addedLabelIds"]) != "[]" {
+		t.Errorf("removed %v added %v, want [l-human l-bug] removed and agent kept", input["removedLabelIds"], input["addedLabelIds"])
+	}
+}
+
 func TestSetRefusesAnUnknownNameAndListsTheValidOnes(t *testing.T) {
 	t.Parallel()
 	server := setServer(t)
