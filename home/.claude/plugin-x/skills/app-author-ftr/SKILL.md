@@ -88,7 +88,7 @@ losing variant's line is deleted.
 ## map-first — a new ask becomes a ftr line before anything else
 
 - a product-shaped ask from dima (a feature, a change, a bug he saw) lands as a ftr line first:
-  🧭 for new behaviour, 🐞 on the existing line for a bug. the ticket and the spawn ask only name
+  🧭 for new behaviour, 🐞 on the existing line for a bug. the ticket and the lane's spec only name
   the lines to build; they never restate them. non-product work (a script, a hazard line) stays a
   ticket bullet.
 - **write the line where the ftr is live.** while a coder's branch is open, the ftr in its worktree
@@ -108,10 +108,10 @@ losing variant's line is deleted.
 
 ## exit lines
 
-- an app with an ftr takes its exit lines from the ftr: the spawn ask names the lines to build,
+- an app with an ftr takes its exit lines from the ftr: the lane's spec names the lines to build,
   and the verifier reads their given/when/then plus the pr's own map diff
   (`git diff origin/main... -- FTR.md`) — every line the pr adds or flips is an exit line.
-  the ask may add steering lines on top; product behaviour never lives only in ticket prose.
+  the spec may add steering lines on top; product behaviour never lives only in ticket prose.
 - the verifier checks each line, its status, that its `makes:` output exists as written, and
   that every domain word the line uses is defined.
 - at close, cclio greps the pr's commits for `ftr: none` (`x lane commit` stamps it on a skip; a question, never a pass): each hit gets one question — «no feature

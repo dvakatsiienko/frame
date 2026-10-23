@@ -2,7 +2,7 @@
 
 ## the brief
 
-- **the role contract opens it** — a fresh `--bg` spawn's prompt starts `/x:crew-coder …` (or `/x:crew-verifier …`), and the slash expands; a running session gets it by a `SendMessage` saying «load the `x:crew-coder` skill», since a slash in a message never expands (`author-memory/references/skill.md` § placeholders). cclio adds only the job (a spec path when it has 3+ items, `cclio:shape-lane` § 2.5), the ticket, its own registry name, and any skill the work drifts into.
+- **the role contract opens it** — a fresh `--bg` spawn's prompt starts `/x:crew-coder …` (or `/x:crew-verifier …`), and the slash expands; a running session gets it by a `SendMessage` saying «load the `x:crew-coder` skill», since a slash in a message never expands (`author-memory/references/skill.md` § placeholders). cclio adds only the job (the lane's spec path, `cclio:shape-lane-dispatch` § 2), the ticket, its own registry name, and any skill the work drifts into.
 - **every other skill rides plain words that name it** — only the prompt's first slash expands, so the brief repeats the role in plain words as if the slash never expanded («use the crew-coder skill») and names the rest the same way: «use the guide-go skill to …», never «follow our go rules». a complete brief mutes the skill router, so an unnamed skill is an unloaded one. each spawn's first reply lists the skills it loaded; one line per spawn, named vs loaded, goes to `docs/test-drive/skill-named-load.md`.
 - **on a verifier yes, the coder's brief names its verifier** `🌗 🔎 <T> verify: #<pr>` (`verify: main` on a quick lane), the number added once the pr exists; a coder with no verifier named hands its pr straight to dima.
 - 🚧 **a `not yours: …` line** — what another member owns, written as a fence («crossing it is a stop and a question»), so a coder never duplicates or crosses it; the exit lines are the termination half.
@@ -38,7 +38,7 @@
 
 - message the member whenever; it pings on the events `x:crew-dna` names. `git diff` in its cwd beats any message. doneness is a written marker (the final commit and the report), never transcript archaeology. subscribe, never poll. budget three round trips; more means the brief was wrong.
 - **every «please test» carries the exact port link, and a screenshot's url is read before its report is relayed**.
-- **a steer to a running member is a message**; the brief file is frozen at spawn, an edit to it reaches nobody. to a lane coder, every steer, ask or wisp also lands under its lane plan's `## unsealed` the same turn, and the message names that line.
+- **a steer to a running member is a message**; the brief file is frozen at spawn, an edit to it reaches nobody. to a lane coder, every steer, ask or wisp also lands under its lane plan's `## not greenlit` the same turn, and the message names that line.
 - **a relay to a member names the source it was read from**; a claim about a repo's behaviour opens that repo's `AGENTS.md` first.
 - **a message stating a result goes after the command's output**, never in the same batch.
 - **a timeout is not proof of failure** — `ListAgents` before a respawn; a blind retry double-runs the work.

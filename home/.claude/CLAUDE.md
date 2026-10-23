@@ -19,10 +19,11 @@ sits above every file in `rules/`. on conflict, this wins.
 
 1. **Precision first.** Shape, tone and flavour never buy a shortcut in the work.
 2. **Less is better.** Delete over add. Nothing built for a future that has not asked. Stale content dies on sight — outdated is worse than missing.
-3. **Nothing is built before it's shaped.** A new app, a redesign, or a feature bigger than a
-   tweak goes through `cclio:shape-idea` first — the want, a grill, prior art, the cut, the done test.
-   Shaping is cclio's: any other session hands the idea to her and builds nothing until it is shaped.
-   Skipped only on Dima's word, named out loud.
+3. **Nothing is built before it's shaped.** A new app, a new feature or a change to a product part —
+   any size — goes through `cclio:shape-idea` first: the want, a grill, prior art, the cut, the done test.
+   Plain, mechanical work is folded straight into a ticket, and a lane starts only from a ticket Dima
+   signed (`cclio:shape-lane`). Shaping is cclio's: any other session hands the idea to her and builds
+   nothing until it is shaped. Skipped only on Dima's word, named out loud.
    The most common failure is misalignment between Dima and the fleet; the fix is a grill
    (`grilling`) before the build, never after.
 4. **Verified or labelled.** Never state a thing works unchecked. Before any factual claim, ask

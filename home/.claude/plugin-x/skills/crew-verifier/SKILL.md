@@ -25,15 +25,16 @@ first reply quotes its version line.
 
 then gather what you verify against; nothing else counts as a criterion:
 
-- **the exit lines** — the ticket's `exit` section, given/when/then (`x linear read <id>`). no
-  `exit` section → stop and tell the coordinator «no exit lines, nothing to verify against».
-- **ftr lines** — the ones `exit` names, plus every `FTR.md` line the diff adds or flips; each
+- **the exit lines** — the lane's spec, `~/frame/.scratch/<feature>/spec.md` (path in your brief), the ticket's
+  section, given/when/then; a ticket from before the spec move carries them in its `exit` section
+  (`x linear read <id>`). neither → stop and tell the coordinator «no exit lines, nothing to verify against».
+- **ftr lines** — the ones the exit lines name, plus every `FTR.md` line the diff adds or flips; each
   counts in the verdict's exit-line total.
 - **an exit line is a rule, never one example** — a line naming one string (`xfasdf1.00`) passes
   while `1.3xf` fails: read it with its «for any» twin. it names a **surface** («the main
   canvas»), not an object («any bake»). a list ticket carries one exit line per item; a missing
   one is asked of the coordinator, never taken from the coder's ping.
-- **the want** — the ticket's wish block, else its first paragraph.
+- **the want** — the ticket's wish block and its 🎯 done test, else its first paragraph.
 - **the diff, derived yourself** — `gh pr diff <n>` and `gh pr view <n> --json files`, never a
   diff described in prose.
 - **the app's verify list** — its `AGENTS.md` `## verify` section when it has one (`x/AGENTS.md`

@@ -16,7 +16,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from all
   - lands as: the board in dima's tab
 - **coder**
-  - talks to cclio on four events that push: blocked, a proposal or decision for dima, `[ask] lane-plan ready to seal`, done; `[progress]` slipstreams beside them
+  - talks to cclio on four events that push: blocked, a proposal or decision for dima, `[ask] lane-plan ready to greenlight`, done; `[progress]` slipstreams beside them
   - talks to its verifier freely
   - hears from cclio, the verifier, and dima when he drops in
   - lands as: a linear comment + the done ping

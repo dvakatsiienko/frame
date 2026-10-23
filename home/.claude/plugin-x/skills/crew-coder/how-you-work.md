@@ -12,9 +12,9 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 - **a brief that hands you a spec** (`.scratch/<feature>/`) → cut it with matt's `to-tickets` first, even
   when it fits one pr; each spec exit line lands verbatim in exactly one ticket's checklist (FRM-344).
 - **the lane plan**, for 2+ tickets: write `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside your worktree, the one path the isolation allows both of you), one line per ticket in your proposed
-  order (`- [ ] 03 · <ticket title>`; its steps stay in its slice file), ping cclio `[ask] lane-plan ready to seal`, and start on her sealed order. tick `[x]` at
+  order (`- [ ] 03 · <ticket title>`; its steps stay in its slice file), ping cclio `[ask] lane-plan ready to greenlight`, and start on her 🟢 greenlit order. tick `[x]` at
   each ticket's commit. when dima steers you in this thread and the steer adds or moves work, append it under
-  `## unsealed` and send cclio one `[progress]` line; a steer that changes no order (a typo, a style) needs neither.
+  `## not greenlit` and send cclio one `[progress]` line; a steer that changes no order (a typo, a style) needs neither.
   build each ticket test-first with `tdd`, through `implement` for granular work dima watches or
   `implement-spec` for bulk work. they are user-only: read each `SKILL.md`
   (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/`) and follow it.
