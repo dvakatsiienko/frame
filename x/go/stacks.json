@@ -19,7 +19,7 @@
             "hidden": true,
             "name": "lane restack",
             "needsApply": true,
-            "purpose": "merge each lower layer of this branch's stack up into the next, bottom-up, and push every moved layer; hidden while stacks are on trial",
+            "purpose": "merge each lower layer of this branch's stack up into the next and push each moved one; hidden while stacks are on trial",
             "steps": ["layers", "merge", "push", "verify"],
             "touches": [
                 "origin — the stack's layer branches, pushed from the push home lane push uses"
