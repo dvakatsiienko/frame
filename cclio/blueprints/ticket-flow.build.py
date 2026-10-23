@@ -257,10 +257,26 @@ def style(**kv):
     return ";".join(f"{k}={v}" for k, v in kv.items()) + ";"
 
 
+# the fleet's words, bold wherever a tile's detail names them (dima's shot, 2026-10-23 20:15: bold keywords read easier)
+KEYWORDS = sorted([
+    "shape-idea", "shape-lane-dispatch", "shape-lane", "dispatch", "dispatched", "signed", "sealed", "greenlight",
+    "spec", "exit lines", "lane plan", "done test", "pocket", "linear", "inbox", "wish", "freebie", "milestone",
+    "coder", "verifier", "glide", "orbit", "composer", "ccrow", "wishkeeper", "re-sign", "main lane", "side lane",
+], key=len, reverse=True)
+BOLD = re.compile(r"(?<![\w./-])(" + "|".join(re.escape(k) for k in KEYWORDS) + r")(?![\w./-])")
+# dima's notes: Edit Data fields `dima`, `dima-2`, … on any cell; kept through a redraw and listed in one tile
+NOTE = re.compile(r"^dima(-\d+)?$")
+OBJECT = re.compile(r'\n\s*<object\b[^>]*\bid="(tf-[^"]*)"[^>]*>.*?</object>', re.S)
+
+
+def bolded(text):
+    return BOLD.sub(r"<b>\1</b>", html.escape(text))
+
+
 def label(title, detail, source):
     return (
         f'<b style="font-size:26px">{html.escape(title)}</b>'
-        f'<br><span style="font-size:20px">{html.escape(detail)}</span>'
+        f'<br><span style="font-size:20px">{bolded(detail)}</span>'
         f'<br><i style="font-size:16px;color:#5C5C5C">{html.escape(source)}</i>'
     )
 
@@ -289,11 +305,43 @@ def text_style(size, bold):
     )
 
 
+NOTES = {}  # cell id → {field: note}, read from the file before the section is rebuilt
+
+
 def add(root, cid, parent, value, st, x, y, w, h, **extra):
-    cell = ET.SubElement(root, "mxCell", id=cid, value=value, style=st, parent=parent, **extra)
+    if cid in NOTES:
+        holder = ET.SubElement(root, "object", label=value, placeholders="1", id=cid, **NOTES[cid])
+        cell = ET.SubElement(holder, "mxCell", style=st, parent=parent, **extra)
+    else:
+        cell = ET.SubElement(root, "mxCell", id=cid, value=value, style=st, parent=parent, **extra)
     geo = ET.SubElement(cell, "mxGeometry", x=str(x), y=str(y), width=str(w), height=str(h))
     geo.set("as", "geometry")
     return cell
+
+
+def read_notes(root):
+    """Every note on the board, in reading order: (cell id, its title, field, note)."""
+    found = []
+    for obj in root.iter("object"):
+        fields = {k: v for k, v in obj.attrib.items() if NOTE.match(k)}
+        if not fields:
+            continue
+        title = re.sub(r"<[^>]+>", " ", obj.get("label", "")).split("  ")[0].strip() or obj.get("id")
+        if obj.get("id", "").startswith(PREFIX):
+            NOTES[obj.get("id")] = fields
+        found += [(obj.get("id"), html.unescape(title), k, v) for k, v in sorted(fields.items())]
+    return found
+
+
+def notes_tile(root, notes):
+    lines = [f"<b>{html.escape(title)}</b> — {html.escape(note)}" for _, title, _, note in notes] or ["none open"]
+    body = "<br>".join(lines)
+    height = 110 + 34 * len(lines)
+    add(root, f"{PREFIX}notes", "1",
+        f'<b style="font-size:26px">📝 dima\'s notes</b><br><span style="font-size:20px">{body}</span>',
+        "rounded=1;" + style(whiteSpace="wrap", html=1, align="left", verticalAlign="top", absoluteArcSize=1, arcSize=40,
+            fillColor="#FFF4C2", strokeColor="#E5B800", strokeWidth=3, fontFamily=FONT, fontColor="#1E1E1E", spacing=24),
+        ORIGIN_X + BAND_W - 1100, ORIGIN_Y - height - 40, 1100, height, vertex="1")
 
 
 def edge(root, cid, src, dst, value, st):
@@ -351,7 +399,8 @@ def build(root):
 
 
 def absolute_boxes(root):
-    cells = {c.get("id"): c for c in root.iter("mxCell")}
+    # a noted cell is an <object> holding an id-less mxCell
+    cells = {c.get("id"): (c if c.tag == "mxCell" else c.find("mxCell")) for c in root if c.get("id")}
     def position(cell):
         geo = cell.find("mxGeometry")
         x, y = float(geo.get("x", 0)), float(geo.get("y", 0))
@@ -412,10 +461,12 @@ def check(root, tiles):
 def main():
     # a text splice, never a re-serialise: every other cell keeps its bytes (ET would re-escape &#39;)
     text = open(TARGET, encoding="utf-8").read()
-    text = OURS.sub("", text)
+    notes = read_notes(ET.fromstring(text).find("diagram/mxGraphModel/root"))
+    text = OBJECT.sub("", OURS.sub("", text))
     root = ET.fromstring(text).find("diagram/mxGraphModel/root")
     before = len(root)
     tiles = build(root)
+    notes_tile(root, notes)
     problems, tile_count, weak, edge_count = check(root, tiles)
     for problem in problems:
         print(f"🔴 {problem}")
