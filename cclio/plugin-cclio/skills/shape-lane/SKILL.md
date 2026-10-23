@@ -1,5 +1,5 @@
 ---
-description: load on dima's «prep», «sign», «re-sign», «grill <ticket>», «next chunk», «shape-lane» — a ticket or a pocket item to grill and sign before a lane, one chunk or a batch of many.
+description: load on dima's «prep», «sign», «re-sign», «grill <ticket>», «next chunk», «shape-lane», «fast» — a ticket or a pocket item to grill and sign before a lane, one chunk at a time, or many at once in fast mode.
 ---
 
 # /cclio:shape-lane — dima's ✍️ sign on a chunk
@@ -28,7 +28,8 @@ a card is an h2 heading and two plain lines: no fence (a fence means «copy me»
 
 load `mattpocock-skills:grilling` and run its ❓ round as written — the frontier only, no shape of our own (`habit-dima-comms` § grill) — whole in the reply and as orbit asks (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»). orbit is the only answer door: no pre-filled answer fence in the reply (reply-check blocks one).
 
-- **a batch signs in one session**: one round carries the frontier of every chunk under prep, each question naming its chunk (dima: prep 10 or even 20 up front)
+- **single mode is the default**: one chunk per grill, the chunks one after another, ten tickets are ten grills in a row (dima, 2026-10-23: «if we prep chunks like this, 5 at once, each chunk loses precision»)
+- **fast mode, on his word «fast»**: many chunks prepped at once, speed traded for precision but still leaning to precision. first a triage prints, one line per chunk with its reason, and he may move any: a chunk fits fast only when it needs no decision of his beyond the § 3 fields; the rest go to single mode after. a fast chunk is still fully groomed: i run the grilling skill on it myself, ask its questions and answer them, and its body is complete before the sign
 - a chunk has no split rule: S by default, M allowed and watched as a trial
 - his answers fold into the ticket's `decided` the same turn
 
@@ -38,7 +39,7 @@ dispatch runs without dima, a shift included, so before the sign the ticket hold
 
 ## 4 · the sign
 
-the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). then one orbit ask per chunk, `✍️ sign FRM-N: <title>`, its pick naming the § 3 fields; his tick IS the sign, a steer instead takes that chunk back into the grill; a batch is one ask per chunk, ticked in one go. on his tick: `x linear set FRM-N --add-label signed`, and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
+the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). then one orbit ask per chunk, `✍️ sign FRM-N: <title>`, its pick naming the § 3 fields; his tick IS the sign, a steer instead takes that chunk back into the grill; several ready chunks are one ask each, ticked in one go. on his tick: `x linear set FRM-N --add-label signed`, and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides the cli lane (PK-265)
 
