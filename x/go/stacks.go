@@ -124,15 +124,18 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	case err != nil:
 		return "", "", err
 	}
+	// the first answer naming the head github took holds: a later answer may name none
+	took := res.Details.ExpectedHead
 	clock := newStackClock()
 	for res.Status == "pending" && clock.elapsed() < stackMergeBudget {
 		clock.sleep(2 * time.Second)
 		if _, err := ghFetch(asDima, api+"/"+res.Details.UUID, &res); err != nil {
 			return "", "", err
 		}
+		took = cmp.Or(took, res.Details.ExpectedHead)
 	}
-	if got := res.Details.ExpectedHead; got != "" && got != head {
-		return "", "", headMismatch(repo, n, head, got)
+	if took != "" && took != head {
+		return "", "", headMismatch(repo, n, res.Status, head, took)
 	}
 	switch res.Status {
 	case "merged":
@@ -145,12 +148,15 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	return "", "", &Fail{Msg: fmt.Sprintf("the stack merge is still %s after %s", res.Status, stackMergeBudget), Next: "x lane stack view"}
 }
 
-// gh-stack's own merge compares the same field (merge_async.go:88); the label is the brake every next run reads
-func headMismatch(repo, n, gated, merged string) error {
-	said := fmt.Sprintf("⚠ the stack merge of #%s took head %s, not the gated %s: the brake is on, nothing else merges until dima looks", n, short(merged), short(gated))
+// gh-stack's own merge compares the same field (merge_async.go:88); the label is the brake every next run reads,
+// so a label github refused leaves no brake, and the message says so
+func headMismatch(repo, n, status, gated, merged string) error {
+	said := fmt.Sprintf("⚠ the stack merge of #%s (%s) reports head %s, not the gated %s", n, status, short(merged), short(gated))
 	if _, _, err := ghSend(asDima, http.MethodPost, githubBase()+"/repos/"+repo+"/issues/"+n+"/labels", map[string][]string{"labels": {brakeLabel}}, nil); err != nil {
-		said += "; the " + brakeLabel + " label failed too: " + err.Error()
+		said += "; the brake is NOT on — github refused its " + brakeLabel + " label (" + err.Error() + "), set it by hand before any other merge"
+		return &Fail{Msg: said, Log: []string{said}, Next: "gh pr edit " + n + " --add-label " + brakeLabel}
 	}
+	said += ": the brake is on, nothing else merges until dima looks"
 	return &Fail{Msg: said, Log: []string{said}, Next: releaseBrake(n)}
 }
 

@@ -29,12 +29,33 @@ func TestPreflightReadsTheExitLinesFromTheLaneSpec(t *testing.T) {
 	}
 }
 
+// the spec holds FRM-8's section above, so FRM-1's first exit line sits on the spec's line 13
 func TestPreflightLintsTheLaneSpecsExitLines(t *testing.T) {
 	t.Parallel()
-	got := preflightSpec(t, "## FRM-1 — this chunk\n\n### exit lines\n\n1. `x lane unlock --dry` prints ok\n")
+	got := preflightSpec(t, "## FRM-1 — this chunk\n\n### exit lines\n\n1. `x lane unlock --dry` prints ok\n2. a redesign of the gate, `x lane unlock` prints ok\n")
 
-	if got.code == 0 || !strings.Contains(got.stdout, "flag --dry") {
-		t.Fatalf("exit %d, want the spec's exit line linted\n%s%s", got.code, got.stdout, got.stderr)
+	for _, want := range []string{"line 13: flag --dry", "redesign (spec)", "spec.md § FRM-1"} {
+		if got.code == 0 || !strings.Contains(got.stdout, want) {
+			t.Fatalf("exit %d, want %q: the spec's lines linted at the spec's own line numbers\n%s%s", got.code, want, got.stdout, got.stderr)
+		}
+	}
+}
+
+func TestPreflightRefusesATicketTwoLaneSpecsHold(t *testing.T) {
+	t.Parallel()
+	dir := preflightRepo(t)
+	for _, lane := range []string{"lane-1", "lane-2"} {
+		write(t, filepath.Join(dir, ".scratch", lane, "spec.md"), "## FRM-1 — a chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
+	}
+	raw, _ := json.Marshal("## want\n\na thing\n")
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
+	})
+
+	_, got := runLinear(t, server, nil, "brief", "preflight", "FRM-1", "--repo", dir)
+
+	if got.code == 0 || !strings.Contains(got.stdout, "lane-1") || !strings.Contains(got.stdout, "lane-2") {
+		t.Fatalf("exit %d, want a refusal naming both specs\n%s", got.code, got.stdout)
 	}
 }
 

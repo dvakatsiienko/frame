@@ -52,19 +52,35 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	// the exit lines bind where the seal wrote them: the lane spec's section for this ticket, else the ticket's own
-	exitText, from := body, id
-	if path, section := laneSpecSection(repo, id); section != "" {
-		exitText, from = section, home(path)+" § "+id
+	exitText, from, fix := body, id, "x linear body "+id
+	paths, section := laneSpecSection(repo, id)
+	if len(paths) > 1 {
+		shown := make([]string, len(paths))
+		for i, p := range paths {
+			shown[i] = home(p)
+		}
+		return nil, &Fail{Refused: true, Msg: id + " has a section in " + plural(len(paths), "lane spec") + ": " + strings.Join(shown, ", ") + " — one spec binds a ticket",
+			Next: "remove the stale section, then x brief preflight " + id}
+	}
+	if section != "" {
+		exitText, from, fix = section, home(paths[0])+" § "+id, "edit "+home(paths[0])
 	}
 	lines := briefLines(exitText)
 
 	var found []finding
 	exits := 0
 	if err := r.Step("lint", "the exit lines and the grill words", func() (string, error) {
-		// the raw lines, headings included: a heading is the likeliest place for «redesign»
-		for i, text := range strings.Split(body, "\n") {
-			if grill := grillWord.FindString(quotedText.ReplaceAllString(text, "")); grill != "" {
-				found = append(found, finding{i + 1, "grill", grill, "a simplify / redesign / rework wants a grill before a lane"})
+		// the raw lines, headings included: a heading is the likeliest place for «redesign»; the spec's section too
+		sources := []struct{ text, where string }{{body, ""}}
+		if exitText != body {
+			sources = append(sources, struct{ text, where string }{exitText, " (spec)"})
+			sources[0].where = " (ticket)"
+		}
+		for _, source := range sources {
+			for i, text := range strings.Split(source.text, "\n") {
+				if grill := grillWord.FindString(quotedText.ReplaceAllString(text, "")); grill != "" {
+					found = append(found, finding{i + 1, "grill", grill + source.where, "a simplify / redesign / rework wants a grill before a lane"})
+				}
 			}
 		}
 		for _, line := range lines {
@@ -134,7 +150,7 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	slices.SortStableFunc(found, func(a, b finding) int { return cmp.Compare(lineOrLast(a), lineOrLast(b)) })
 	if len(found) > 0 {
 		r.Show(findingRows(found, r.board.inner()-nameCell-2), nameCell+2)
-		msg := []string{plural(len(found), "problem") + " in " + id}
+		msg := []string{plural(len(found), "problem") + " in " + from}
 		for _, f := range found {
 			if f.Line == 0 {
 				msg = append(msg, fmt.Sprintf("%s commit %s — %s", f.Kind, f.What, f.Why))
@@ -142,14 +158,15 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 			}
 			msg = append(msg, fmt.Sprintf("line %d: %s %s — %s", f.Line, f.Kind, f.What, f.Why))
 		}
-		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: "x linear body " + id}
+		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: fix}
 	}
 	r.Done(fmt.Sprintf("ok: %s from %s, numbered, each with a surface", plural(exits, "exit line"), from), "")
 	return ordered{{"ticket", id}, {"exits", exits}, {"from", from}, {"repo", repo}}, nil
 }
 
-// the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id; "" when no spec holds one
-func laneSpecSection(repo, id string) (path, section string) {
+// the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id, blank lines standing in
+// for the file above it so a finding's line is the spec's own; paths names every spec holding one
+func laneSpecSection(repo, id string) (paths []string, section string) {
 	specs, _ := filepath.Glob(filepath.Join(repo, ".scratch", "*", "spec.md"))
 	head := regexp.MustCompile(`(?m)^## ` + regexp.QuoteMeta(id) + `\b.*$`)
 	for _, spec := range specs {
@@ -162,13 +179,17 @@ func laneSpecSection(repo, id string) (path, section string) {
 		if at == nil {
 			continue
 		}
+		paths = append(paths, spec)
+		if section != "" {
+			continue
+		}
 		rest := text[at[1]:]
 		if next := nextHeading.FindStringIndex(rest); next != nil {
 			rest = rest[:next[0]]
 		}
-		return spec, text[at[0]:at[1]] + rest
+		section = strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest
 	}
-	return "", ""
+	return paths, section
 }
 
 // xCommandFindings checks every `x …` command the exit lines name against the registry, statically:

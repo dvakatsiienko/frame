@@ -321,6 +321,39 @@ func TestMergeAutoBrakesWhenTheStackMergedAnotherHead(t *testing.T) {
 	}
 }
 
+// the pending answer may be the only one naming the head github took; the poll's answer must not erase it
+func TestMergeAutoBrakesOnTheHeadThePendingAnswerNamed(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async"] = `{"status":"pending","details":{"uuid":"u1","expected_head_sha":"` + strings.Repeat("d", 40) + `"}}`
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":""}}`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code != 1 || !strings.Contains(envelopeOf(got).Error, "brake is on") {
+		t.Fatalf("exit %d, error %q: want the pending answer's head mismatch to brake", got.code, envelopeOf(got).Error)
+	}
+}
+
+// a mismatch whose label github refused leaves no brake behind, so the message says so and names the hand step
+func TestMergeAutoSaysTheBrakeIsOffWhenItsLabelFailed(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + strings.Repeat("d", 40) + `"}}`
+	// the merged-by-x labels land before the merge; only the brake label after it fails
+	w.hub.pages["labels:"+brakeLabel] = serverDown
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "NOT on") || got.next != "gh pr edit 8 --add-label "+brakeLabel {
+		t.Fatalf("exit %d, error %q, next %q: want the brake named off and the hand label step", got.code, msg, got.next)
+	}
+}
+
 // a linked stack whose two layers both edit merge-auto, #7 naming FRM-9 (pre-approved) and #8 naming upper
 func selfEditStack(t *testing.T, upper string) (*mergeWorld, *fakeLinear) {
 	t.Helper()

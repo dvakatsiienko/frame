@@ -476,13 +476,11 @@ func brakeLabelled(api string) (string, error) {
 	var labelled []struct {
 		Number int `json:"number"`
 	}
-	status, _, err := ghSend(asDima, http.MethodGet, api+"/issues?state=all&labels="+brakeLabel, nil, &labelled)
-	switch {
-	case status == http.StatusNotFound:
-		return "", nil
-	case err != nil:
+	// a brake merge-auto cannot read never reads as off: any failure, a 404 included, stops the merge
+	if _, err := ghFetch(asDima, api+"/issues?state=all&labels="+brakeLabel, &labelled); err != nil {
 		return "", err
-	case len(labelled) == 0:
+	}
+	if len(labelled) == 0 {
 		return "", nil
 	}
 	n := fmt.Sprint(labelled[0].Number)
