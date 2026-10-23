@@ -208,6 +208,7 @@
   - given dima looked, when `x lane merge-auto <pr> --release-brake --dima-ok <pr>` runs, then the label comes off and nothing merges; without `--dima-ok` it exits 2, and x-mod-guard lets the flag through only on his typed prompt naming the pr (FRM-423 grill, o142)
   - given the add-on's files deleted, or `-tags nostacks`, then `go build`, `go vet` and every lane-verb test pass, which `pnpm x-go:test` proves on every run (FRM-422)
   - decision: an add-on behind `//go:build !nostacks`, reaching core only through `laneAddOn`, its verbs hidden from the overview while stacks are on trial (FRM-404; dima, 2026-10-20: «easy to delete»)
+  - decision: two pr modes, plain in core and stacked in the add-on; stacked support never breaks a plain pr, and the «easy to delete» clauses stay until the stacked-prs trial's verdict (dima, o127, o128; `PRODUCT.md` § two pr modes)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one
@@ -294,6 +295,9 @@
   - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
   - given a clean ticket, then it prints ok
   - decision: a path counts as shipped only through a commit for this ticket, never by existing — most exit lines edit files main has (cclio, 2026-10-09)
+- ⬜ `x brief preflight <ticket>` reads the exit lines from the lane spec when one holds the ticket
+  - given a `.scratch/<feature>/spec.md` in the repo with a `## <ticket> —` section, when `x brief preflight <ticket>` runs, then it lints that section's exit lines instead of the ticket's, and its ok names the spec it read; with no such section, the ticket's own exit lines as before
+  - decision: the spec binds, so a seal no longer copies its exit lines into the ticket (FRM-423 grill)
 - ✅ `x brief preflight <ticket>` checks every `x` verb and flag an exit line names, statically
   - given an exit section whose backticks or fenced lines name an `x` verb, a sub-verb or a flag the registry lacks (`x lane gaet`, `x lane gate --dry`)
   - when `x brief preflight <ticket>` runs

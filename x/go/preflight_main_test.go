@@ -1,9 +1,42 @@
 package main
 
 import (
+	"encoding/json"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+// a ticket whose exit lines live only in the lane's spec, the section a seal writes under .scratch/<feature>/
+func preflightSpec(t *testing.T, section string) asRun {
+	t.Helper()
+	dir := preflightRepo(t)
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-8 — another chunk\n\n### exit lines\n\n1. `x lane gate --dry` is not this ticket's\n\n"+section)
+	raw, _ := json.Marshal("## want\n\na thing\n\n## signed\n\n✍️ signed\n")
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
+	})
+	_, got := runLinear(t, server, nil, "brief", "preflight", "FRM-1", "--repo", dir)
+	return got
+}
+
+func TestPreflightReadsTheExitLinesFromTheLaneSpec(t *testing.T) {
+	t.Parallel()
+	got := preflightSpec(t, "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n")
+
+	if got.code != 0 || !strings.Contains(got.stdout, ".scratch/lane-1/spec.md") {
+		t.Fatalf("exit %d, want a pass naming the spec it read\n%s%s", got.code, got.stdout, got.stderr)
+	}
+}
+
+func TestPreflightLintsTheLaneSpecsExitLines(t *testing.T) {
+	t.Parallel()
+	got := preflightSpec(t, "## FRM-1 — this chunk\n\n### exit lines\n\n1. `x lane unlock --dry` prints ok\n")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "flag --dry") {
+		t.Fatalf("exit %d, want the spec's exit line linted\n%s%s", got.code, got.stdout, got.stderr)
+	}
+}
 
 // a verb main already has is a finding only on a line that claims to add it
 func TestPreflightFlagsAVerbOnMainOnlyWhereTheLineClaimsToAddIt(t *testing.T) {

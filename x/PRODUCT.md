@@ -47,6 +47,12 @@ a verb lives in x only when all three hold:
 - **a thin verb lives while telemetry shows it used** — dima, 2026-10-07: «even if cli cmd is very basic and just a listing like x handoffs list — it is still good to have because it allows to see doors … not always for perf gains - for colocation purposes». colocation is the reason, `x stats` is the proof
 - **hiding is for the caller, never for the fixer** — `x schema <verb>` prints the verb's source dir, the stores and files it touches, and the script it replaced; `--help` stays the pretty day-to-day view
 
+## two pr modes — plain and stacked (FRM-423, 2026-10-23)
+
+- the lane verbs serve two pr modes: plain prs onto main, and stacked prs (a github stack, one pr per layer) that `x lane merge-auto` lands in one call
+- stacked support never interferes with or breaks plain pr support (dima, o127); `pnpm x-go:test` proves the lane verbs built without it on every run
+- easy to delete: stacked prs live in the add-on behind `//go:build !nostacks`, out of core, on a 2-week trial — useful, the easy-to-delete clauses go; dead weight, the add-on goes (dima, o127, o128). this section keeps its «easy to delete» until the trial's verdict
+
 ## a verb is done when its old door is dead (2026-10-07)
 
 a ported verb names what it replaces (`replaces:` in its registry entry); a contract test stays red while that file exists or anything still calls it. `x handoffs` (now `x handoff`) shipped without it and gained zero callers — dima: «creating dead cli families and verbs is not about optimization».

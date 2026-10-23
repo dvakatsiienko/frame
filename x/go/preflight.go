@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -50,7 +51,12 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	lines := briefLines(body)
+	// the exit lines bind where the seal wrote them: the lane spec's section for this ticket, else the ticket's own
+	exitText, from := body, id
+	if path, section := laneSpecSection(repo, id); section != "" {
+		exitText, from = section, home(path)+" § "+id
+	}
+	lines := briefLines(exitText)
 
 	var found []finding
 	exits := 0
@@ -86,7 +92,7 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 
 	if err := r.Step("verbs", "each x verb and flag the exit lines name", func() (string, error) {
 		before := len(found)
-		found = append(found, xCommandFindings(body, verbs)...)
+		found = append(found, xCommandFindings(exitText, verbs)...)
 		return plural(len(found)-before, "finding"), nil
 	}); err != nil {
 		return nil, err
@@ -138,8 +144,31 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		}
 		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: "x linear body " + id}
 	}
-	r.Done(fmt.Sprintf("ok: %s, numbered, each with a surface", plural(exits, "exit line")), "")
-	return ordered{{"ticket", id}, {"exits", exits}, {"repo", repo}}, nil
+	r.Done(fmt.Sprintf("ok: %s from %s, numbered, each with a surface", plural(exits, "exit line"), from), "")
+	return ordered{{"ticket", id}, {"exits", exits}, {"from", from}, {"repo", repo}}, nil
+}
+
+// the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id; "" when no spec holds one
+func laneSpecSection(repo, id string) (path, section string) {
+	specs, _ := filepath.Glob(filepath.Join(repo, ".scratch", "*", "spec.md"))
+	head := regexp.MustCompile(`(?m)^## ` + regexp.QuoteMeta(id) + `\b.*$`)
+	for _, spec := range specs {
+		raw, err := os.ReadFile(spec)
+		if err != nil {
+			continue
+		}
+		text := string(raw)
+		at := head.FindStringIndex(text)
+		if at == nil {
+			continue
+		}
+		rest := text[at[1]:]
+		if next := nextHeading.FindStringIndex(rest); next != nil {
+			rest = rest[:next[0]]
+		}
+		return spec, text[at[0]:at[1]] + rest
+	}
+	return "", ""
 }
 
 // xCommandFindings checks every `x …` command the exit lines name against the registry, statically:
