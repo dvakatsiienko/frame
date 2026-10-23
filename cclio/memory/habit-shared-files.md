@@ -12,11 +12,10 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 **a note is appended, never replaced**: `backlog task edit <id> --append-notes "…"`; `pocket-check` reds a note line lost since HEAD.
 <!-- failure: a `--notes` close replaced PK-90's and PK-141's notes, dima's quoted steers (memory-sweep log, wishkeeper siesta rounds 7–13); `--notes` replaces every note -->
 
-**checked and emptied before linear**; it holds ticketless by-hand work too. an item points at its
-linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
+**checked and emptied before linear**; it holds ticketless by-hand work too. every inbox
 item lands here at parse time, before any resolution; a resolved item is set `done`, and the halt files it (`backlog task archive`) after the day's gazette post carries it.
 **what the pocket is for** (dima, 2026-10-22, PK-103 round 2; it replaces his 10-10 «it goes to linear only on his word that it may wait»): cclio's today-and-tomorrow working set, as empty as possible — by-hand tickets, to-dos born in place, the small and slightly bigger things solvable today or tomorrow, plus at most one long main-lane ticket that runs for days by design (the memory sweep took 5–7). anything a week out, or waiting on a lane or a date, moves to linear by default, into its milestone (`craft-pm` § milestones first), and the pocket item dies. linear is the long shelf and the roadmap tools; the pocket is fast, local and sequential for a main lane that gets steered all day. moving an item to linear is never its solve, only a postponement (dima, 2026-10-10), so the freebie test runs first. the way back: a linear ticket enters the pocket only when the main lane takes it for today or tomorrow, as a pointer item (`ticket: FRM-N`); a coder lane's tickets never do, its `lane-plan.md` holds them (dima, 2026-10-22, PK-103 grill 5).
-**the birth gate** (dima, 2026-10-10, after a 60-item pocket ate a whole day; retuned 2026-10-22): an item gets its fate the turn it is born, and an ask of his born anywhere — a grill, a sweep plan, a log or test-drive line — is born here too, never with that line as its only home — the freebie test (`craft-pm` § the freebie rule) passes → solved that turn; else it stays as today-and-tomorrow work, moves to linear, waits with its `**waiting for:**` first line and a due date, or is born with a `parked: <reason>` line. a done item is set `done` the turn it closes and filed by the halt — he reads the pocket often, a stale state is not allowed. `pocket-check` reds every breach and runs on every status move (`onStatusChange`, a notification when red); a red pocket runs before the main lane.
+**the birth gate** (dima, 2026-10-10, after a 60-item pocket ate a whole day; retuned 2026-10-22): an item gets its fate the turn it is born, and an ask of his born anywhere — a grill, a sweep plan, a log or test-drive line — is born here too, never with that line as its only home — the freebie test (`craft-pm` § the freebie rule) passes → solved that turn; else it stays as today-and-tomorrow work, moves to linear, waits with its `**waiting for:**` first line and a due date when the wait ends today or tomorrow (a longer wait is linear's, above), or is born with a `parked: <reason>` line. a done item is set `done` the turn it closes and filed by the halt — he reads the pocket often, a stale state is not allowed. `pocket-check` reds every breach and runs on every status move (`onStatusChange`, a notification when red); a red pocket runs before the main lane.
 **a pocket write with its fields known goes to composer as a `pocket-write` chore**; a write that needs wording stays mine.
 <!-- 2026-10-14, dima: 1 of ~6 pocket writes went to composer that day -->
 
@@ -25,8 +24,8 @@ item lands here at parse time, before any resolution; a resolved item is set `do
 ## the stash hierarchy — dima's, 2026-09-27
 
 Keep-in-mind stashes, all with one job: nothing he wants solved lands on a long shelf and gets
-forgotten. Linear is the long shelf — a ticket parked there is invisible at the next boot; a stash
-line is in front of cclio every boot.
+forgotten. Linear is the long shelf, in front of cclio at every boot through the milestone queue; a
+ticket outside any milestone is the one that goes unseen.
 
 - **reminders** (`memory/_reminders.md`) — a date or a condition: «in 2 days», «before we halt»,
   «when cc ships X, test it with me».
