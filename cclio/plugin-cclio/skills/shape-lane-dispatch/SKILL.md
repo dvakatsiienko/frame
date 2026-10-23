@@ -25,7 +25,7 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 ## 4 · the seal
 
-`x brief preflight` passes. until preflight reads the spec (a cli rider in PK-265), the exit lines are also copied under the ticket's `## exit`, opened by «a copy of the spec, for preflight», and re-copied at every re-seal so the copy never goes stale. a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the lines: a line its rules forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 **sealed**, N exit lines`.
+`x brief preflight` passes; it reads the exit lines from the spec (FRM-423). a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the lines: a line its rules forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 **sealed**, N exit lines`.
 
 ## 5 · the spawn and the greenlight
 

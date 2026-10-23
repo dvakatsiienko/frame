@@ -1,9 +1,10 @@
 ---
 id: PK-268
 title: 'x brief check: one shared path parser, called by x-mod-guard''s brief rule'
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-23T18:41:00Z'
+updated_date: '2026-10-23T20:07:00Z'
 due_date: '2026-10-26'
 labels:
   - s
