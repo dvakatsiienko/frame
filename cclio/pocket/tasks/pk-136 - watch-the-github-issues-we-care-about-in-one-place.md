@@ -1,10 +1,10 @@
 ---
 id: PK-136
 title: watch the github issues we care about in one place
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-14 17:35'
-updated_date: '2026-10-22T18:52:00Z'
+updated_date: '2026-10-23T09:23:00Z'
 due_date: '2026-10-23'
 labels:
   - m
@@ -35,4 +35,6 @@ parked: dima's word, «not now» (2026-10-14)
 2026-10-18: priority now → next — it is waiting on the x-changedetector verdict, and the now cap holds today's three items.
 
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
+
+2026-10-23: solved by x-changedetector, adopted 10-22 (docs/test-drive/x-changedetector.md § verdict): every watched issue in one place, read at every boot. dima's o1 tick moved the dues; this one closes instead.
 <!-- SECTION:NOTES:END -->

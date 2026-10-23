@@ -3,10 +3,10 @@ id: PK-247
 title: >-
   memory budget: warn right after an edit pushes a budgeted file past its
   memory-budgets.tsv row
-status: open
+status: done
 assignee: []
 created_date: '2026-10-21T17:50:00Z'
-updated_date: '2026-10-22T18:52:00Z'
+updated_date: '2026-10-23T09:31:00Z'
 due_date: '2026-10-23'
 labels:
   - s
@@ -28,4 +28,6 @@ retro 2026-10-21 #2 (o126): two over-budget skill files cost 2 refused commits (
 parked: worked at the 10-22 low tide beside PK-244 (dima o126: fixes 1–3 tomorrow)
 
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
+
+ticket: FRM-416 — moved to linear 2026-10-23 on dima's o1 tick; the pocket item dies here.
 <!-- SECTION:NOTES:END -->
