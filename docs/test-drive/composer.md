@@ -104,6 +104,11 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-23 · pocket-write · 1 · 0 · PK-261 → done, note appended
 - 2026-10-23 · prompt-groom · 1 · 0 · W148-W218 + ❓1-22, 12 entries, file groom-2026-10-23.md
 - 2026-10-23 · prompt-groom · 1 · 0 · pk263 groom: W1-W85, asks 1-11, 0 dup ids; W22/W23 kept pending ← rule
+- 2026-10-23 · prompt-groom · 2 · 0 · pk263 16:52 fold: W97-W113, asks 12-13, W86-W96 unused
+- 2026-10-23 · pocket-write · 1 · 0 · PK-264 x-mod-holds wisp: notes line appended, pocket-check green (66 tasks)
+- 2026-10-23 · prompt-groom · 1 · 0 · PK-263 17:39 entry: W143–W172, ❓14–❓21, raw entry appended to notes
+- 2026-10-23 · prompt-groom · 1 · 0 · 17:56 entry folded into PK-263 (W173–W189, ❓22–❓27); raw appended to notes; 149 W-lines, 0 dups, 27 asks
+- 2026-10-23 · pocket-write · 1 · 0 · PK-120 (mods lane) + PK-265 (re-sign item) notes appended; pocket-check green 67 tasks
 
 ## rounds
 

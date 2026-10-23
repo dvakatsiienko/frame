@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-23T12:50:00Z'
-updated_date: '2026-10-23T13:36:00Z'
+updated_date: '2026-10-23T14:58:00Z'
 labels:
   - m
 dependencies: []
@@ -254,4 +254,200 @@ W84 consult with cCRO.
 
 W85 once we groom ourselves, do a wishkeeper over this change, because it kind of matters.
 2026-10-23 16:33 dima, raw: «so PRODUCT.md and rest of docs that currently shape-idea procues are better to be written via shape-lane (when applicable, optional. or not optional?)? or when?» · «I approve issue posting it right away. Send me a link after it is created.» · «and whats wrong? why ticket is created?» (posted: https://github.com/github/gh-stack/issues/587)
+
+2026-10-23 16:40 cclio, the 16:29 + 16:33 drops folded (raw above):
+W86 why does today's shape-idea not create a ticket out of an idea, but create PRODUCT.md, a features doc and glossary words right away, upfront? isn't it too quick?
+W87 i do not propose my idea as the right one. i expect you will propose your own ideas on how to make this work.
+W88 shape-idea is a skill that makes a solid ticket be born out of my wish. how, then, will tickets be born out of my wishes?
+W89 shape-idea is optional: a ticket can be created without it when the wish is simple, like a mechanical one.
+W90 if it is more intricate — a feature, a product, or a technical one i want to shape granularly — we run shape-idea over it.
+W91 PRODUCT.md, feature docs and glossary words are still needed. if we cut them out of shape-idea, where do they belong? how to not forget about them?
+W92 let's not rush with everything. first settle the changes to the skills we grill on now.
+W93 after everything is completed, print me the full flow in this thread, with all steps for each skill: shape-idea, shape-lane, shape-lane-dispatch.
+W94 ensure the flow is good, covers everything and all cases, and we don't miss anything.
+W95 also answer what to do with PRODUCT.md and the other things shape-idea does now.
+W96 so PRODUCT.md and the rest of the docs shape-idea produces now are better written via shape-lane (when applicable)? optional, or not optional? or when?
+
+2026-10-23 16:52 cclio, grill round 2 settled by his ticks + words (raw: prompts 2026-10-23.md:437):
+- Q1 shape-idea ends in one shaped ticket, no files; PRODUCT.md written by cclio in shape-lane-dispatch (only when the chunk makes an app or changes what it is); FTR lines + glossary by the coder during the build, after the spec is sealed (x lane gate holds them)
+- Q2 a sign never expires; any change to a signed ticket's body is a drift signal: cclio always proposes a re-sign when a signed ticket would change — dima extends it with wishes, cclio extends, merges or splits it; re-sign = shape-lane run over it again with the new scope; a tiny change may skip it; a signed chunk is ideally dispatched as is. to-spec finding a broken decision also comes back as a re-sign
+- Q3 the dispatch pick is the spawn word; verifier by default, a quick lane's pick adds yes/no
+- Q4 several chunks: one lane in order, one spec, one coder; parallel side lanes possible, not preferred now (noise, the 5h window)
+- Q5 shape-lane can run over a pocket item and the sign creates the linear ticket — temporary, revised in the pocket/linear contract grill right after this one
+- Q6 open: dima proposes a spec mandatory on every lane, quick included, to avoid drift; cclio agrees (follow in orbit)
+
+2026-10-23 16:54 cclio, Q6 settled by his tick: a spec is mandatory on every lane, quick included; exit lines live only in the spec; a freebie (no lane) stays spec-free — this replaces W48's «quick lane can have spec optionally». round 2 closed; next: wishkeeper over the settled change, then the full flow printed per skill.
+
+2026-10-23 17:02 cclio, two folds that missed this item (wishkeeper caught both). the 16:17 drop, raw (prompts 2026-10-23.md:356–394):
+> ## 16:17
+> 
+> shape-idea
+> 
+> 1. Your want, folded into numbered lines, with the first round of questions.
+> 2. More question rounds until the open decisions are settled.
+> 3. Prior art: build or reuse, and a library per part.
+> 4. Sharpening, plus a blind plan critic.
+> 5. The cut: the smallest useful version and what’s left out. ← Can you explain more about what this line means? What is the cut? 
+> 6. The done test, as given/when/then lines. ← I think done test is fine at this stage because done test is the other thing from exit lines. Done test and exit lines are different things, correct? 
+> 7. The outputs: `PRODUCT.md`, a features doc, glossary words.
+> 
+> 
+> shape-idea — is when I think I invented something new or told you my wish, Shape Idea is intended to formulate an initial ticket. It can also be born as a result of an inbox drop or my random prompt during the day, for example.
+> Why have it? Because my prompts are raw, and Shape Idea is intended to actually formulate a good, solid ticket out of my plain wish. That's why we have a grill and research for prior art, optionally. It can be applied to either a small, mid-size, or big wish.
+> Not all tickets want a Shape Idea, but when we actually run Shape Idea, I think it is for when my wish is for something intricate and non-standard. For example, if I would ask you that I want our Atelier app to support collage drawings aside from diorama drawings, that would be a good idea to be run over Shape Idea. If I would ask you, for example, to add a dark/light theme to any kind of app, that could be folded into a ticket without shape-idea. 
+> 
+> so shape-idea → shape-lane-prep → shape-lane works then. but shape-idea is optional, because shape-lane-prep can be run over tech stuff. for example your wants about CLI (exhausting fleet-hazards and coder/verifier retros wishes, or my randomly asked smaller wishes about mods).
+> 
+> Q1. what about this? propose if good or not.
+> 
+> * shape-lane ← my part
+> * shape-lane-dispatch ← your part (Because you do both shaping and dispatching, but shaping is done on your side (e.g., creating a spec)
+>    * or even shape-lane-spec-dispatch?
+> 
+> 
+> q3. what about «signed»? 
+> 
+> * signed chunks are after shape-lane with me. e.g. signed by me.
+> * sealed — after you shape-lane-dispatch (before dispatching)
+> * once sealed (exit lines written) — dispatching means side lane started
+> 
+> 
+> 
+> clear all n8n flows that are not settled/notused/was for testing.
+> 
+> i picked draw.io. set it as main blueprint tool of choice for now (unless we find better one or figjam will become accessible for us). n8n stays only for automation workflows. obsidian canvas is an option for later if we want, otherwise not used. only draw.io is main blueprint tool.
+
+the 16:52 drop, raw (prompts :437):
+> ## 16:52
+> 
+> q1. so you write product.md in scope of shape-lane-dispatch, and coder writes the rest after spec is sealed? Ok.
+> 
+> q2. yes, but if a signed ticket body is changed after it was signed, it is a pointer of possible drift. re-signing is preferable, you should always propose me re-signing. what is re-signing? running shape-lane over it again (with additional content/scope). if a change is tiny, re-signing maybe omitted. but you should propose re-sign if the ticket is already signed and i ask you to extend it with additional wishes. or if you want to extend it yourself or merge for example, or split etc. a signed chunk ideally would be just executed (dipsatched). signed tickets are not preferred to change after they are signed.
+> 
+> q4. yes. paralel side lanes are possible, not preferable atm. too much noise, and 5h burns fast.
+> 
+> q5. Yes, but this is temporary because our contract between Pocket and Linear is still raw and up to be revamped after we solve the current grill. This can change. For now, let's keep it like this, and let's revise it immediately with the ongoing grill over the Pocket/Linear contract. 
+> 
+> q6. Well, I was just printing an idea. Maybe let's make spec mandatory for everyone? Even for small asks, just to avoid drifts, because as you see, the ticketing flow is kind of tricky and has a lot of conditions. To avoid the additional back and forth, maybe just have spec mandatory for everyone, even for quick lane?
+> 
+
+lines W97–W113, composer's groom of 16:52 (copied from .scratch/dima-intervenes/runs/groom-pk263.md):
+W97 (16:52) so you write product.md in scope of shape-lane-dispatch, and coder writes the rest after spec is sealed? ok. ❓12
+W98 (16:52) yes, but if a signed ticket body is changed after it was signed, it is a pointer of possible drift.
+W99 (16:52) re-signing is preferable, you should always propose me re-signing.
+W100 (16:52) what is re-signing? running shape-lane over it again (with additional content/scope).
+W101 (16:52) if a change is tiny, re-signing maybe omitted.
+W102 (16:52) but you should propose re-sign if the ticket is already signed and i ask you to extend it with additional wishes.
+W103 (16:52) or if you want to extend it yourself or merge for example, or split etc.
+W104 (16:52) a signed chunk ideally would be just executed (dispatched).
+W105 (16:52) signed tickets are not preferred to change after they are signed.
+W106 (16:52) parallel side lanes are possible, not preferable atm.
+W107 (16:52) too much noise, and 5h burns fast.
+W108 (16:52) yes, but this is temporary because our contract between Pocket and Linear is still raw and up to be revamped after we solve the current grill.
+W109 (16:52) this can change.
+W110 (16:52) for now, let's keep it like this, and let's revise it immediately with the ongoing grill over the Pocket/Linear contract.
+W111 (16:52) well, i was just printing an idea.
+W112 (16:52) maybe let's make spec mandatory for everyone? ❓13
+W113 (16:52) to avoid the additional back and forth, and because the ticketing flow is kind of tricky and has a lot of conditions, to avoid drifts, even for small asks.
+
+lines W114–W128, the 16:17 drop folded:
+W114 shape-idea step 5, the cut: can you explain more about what this line means? what is the cut? ❓
+W115 i think the done test is fine at this stage, because the done test is a different thing from exit lines. done test and exit lines are different things, correct? ❓
+W116 shape-idea is for when i think i invented something new or told you my wish; it is intended to formulate an initial ticket.
+W117 it can also be born from an inbox drop or my random prompt during the day.
+W118 why have it? my prompts are raw, and shape-idea formulates a good, solid ticket out of my plain wish; that's why it has a grill and, optionally, research for prior art.
+W119 it can be applied to a small, mid-size or big wish.
+W120 not all tickets want a shape-idea; we run it when my wish is for something intricate and non-standard.
+W121 for example, atelier supporting collage drawings beside diorama drawings → shape-idea; a dark/light theme for any app → folded into a ticket without shape-idea.
+W122 so shape-idea → shape-lane-prep → shape-lane works, but shape-idea is optional, because shape-lane-prep can run over tech stuff: your wants about the cli (exhausting fleet-hazards and coder/verifier retro wishes) or my small random wishes about mods.
+W123 shape-lane ← my part; shape-lane-dispatch ← your part, because you do both shaping and dispatching, but the shaping on your side is creating a spec. or even shape-lane-spec-dispatch? ❓
+W124 signed chunks come after shape-lane with me, signed by me.
+W125 sealed — after you run shape-lane-dispatch, before dispatching.
+W126 once sealed (exit lines written), dispatching means the side lane started.
+W127 clear all n8n flows that are not settled, not used, or were for testing.
+W128 i picked draw.io: the main blueprint tool for now, unless we find a better one or figjam becomes accessible. n8n stays only for automation workflows. obsidian canvas is an option for later, otherwise unused.
+
+2026-10-23 17:12 dima's orbit steers on grill round 3, raw:
+> o76 Q1: «Well, yes, it works. The only concern is that you have two seals now: When you seal exit lines before handing them over to the coder. After the coder receives your seal, it spec creates two tickets and hands you over his tickets for your seal. Maybe then find a better way, a better name for one of the seals, so there are not two seals?»
+> o77 Q2: «Quicklane can do one type of stuff without a signed ticket/signed chunk, but Quicklane must have a spec in any case, even for small stuff. Spec costs nothing, but it's a format, and the format is important to have consistently every time.»
+> o78 Q3: «Well, I'm not sure about this. Probably this will work. I think I feel that this can somehow be simplified, but I don't know how currently because there is a lot of stuff at this moment. We will implement Speak app V2 soon, so we can test out this and print a word on the ongoing Speak app V2 resume when we resume Speak app V2. Remind me to test out this product MD creation phase and designer participation. Flow, take a look at it and see if it can be optimized somehow, because from what I saw from your proposal, you propose to temporarily spawn a designer during shape idea just to shape idea.»
+> o79 Q4: «Yes, and shape-idea is mostly related to my wishes, rarely to some under-the-hood stuff (e.g., mechanical stuff). The rest of the mechanical stuff can be straightforwardly resolved without shape-idea (e.g., without grain roll). Grill and prior art research, and a lot of my attention, can be turned into a ticket right away. This then settles a shape plane because a shape plane is kind of isomorphic in the way that we invented it. A shape plane can be run to sign any kind of ticket: the ticket that was previously created via shape-idea, or any kind of ticket, actually, because a shape plane is actually also a grill. If we first shape-idea, we do a grill, and then if we do a shape lane right afterwards, we do another grill. A shape lane is kind of a safety net. It just regrills an already grilled ticket if it was created via shape-idea. It allows us to catch errors, maybe we miss something, or we will figure out something else interesting. If a ticket was not created via shape-idea, then a shape lane serves as actual ticket shaping, grooming, and grilling to formulate it properly before you dispatch it via a shape lane.»
+
+W129 two seals now: you seal exit lines before handing them to the coder; the coder runs to-tickets and hands you its tickets for your seal. find a better name for one of the seals, so there are not two. ❓
+W130 a quick lane can do one kind of work without a signed chunk, but it must have a spec in any case, even for small stuff.
+W131 a spec costs nothing, but it is a format, and the format is important to have consistently every time.
+W132 the designer step: probably this works, but i feel it can be simplified; i don't know how yet, there is a lot of stuff right now.
+W133 we implement speak v2 soon: test this there, and remind me when speak v2 resumes to test the PRODUCT.md creation phase and the designer's part.
+W134 look at that flow and see if it can be optimized: your proposal spawns a designer during shape-idea just to shape the idea.
+W135 shape-idea is mostly for my wishes, rarely for under-the-hood stuff; mechanical stuff is resolved straightforwardly without it.
+W136 grill, prior-art research and a lot of my attention can be turned into a ticket right away.
+W137 shape-lane is isomorphic: it can sign any ticket — one made by shape-idea, or any other — because shape-lane is also a grill.
+W138 after shape-idea, shape-lane grills again: a safety net that re-grills an already grilled ticket, to catch errors, something we missed, or something interesting.
+W139 for a ticket not born from shape-idea, shape-lane is the actual shaping, grooming and grilling that formulates it properly before you dispatch it.
+
+2026-10-23 17:13 cclio, round 3 settled: Q1 a chunk is 🦭 sealed when its spec + exit lines are written, before dispatch — one of the two seals gets a new name (top 7 next round); Q2 a quick lane needs no sign but always has a spec; Q3 designer after shape-idea, before the sign, as a trial: tested on speak v2 (reminder set), simpler shape sought; Q4 invariant 3 reworded at the build: shape-idea for an intricate or non-standard wish of his, any size; shape-lane grills every ticket before its sign — a safety net after shape-idea, the real shaping without it.
+
+2026-10-23 17:13 dima, raw (prompts :461): «* A shift follows the same sign and spec rules. The main lane is mine and has no 🔧 coder, so it has no spec. ←Yes, but it doesn't mean we shouldn't structure our main lane as well. I've just figured out that our plans are actually pretty chaotic too, and we drift often. Optionally, we can try an approach where we shape our main lane as well. Let's try it at some point, maybe even today when we finalize this part.»
+W140 the main lane has no coder, but that doesn't mean we shouldn't structure it too: our plans are pretty chaotic and we drift often.
+W141 optionally, try shaping our main lane as well — at some point, maybe even today, when we finalize this part.
+
+2026-10-23 17:18 dima (o76 steer): «maybe «greenlight» ?» → settled: the chunk is 🦭 sealed when its spec + exit lines are written (before dispatch); cclio's approval of the coder's lane plan after the spawn is 🟢 greenlight (the act; the plan is «greenlit»), replacing the second «seal» — the build renames the lane-plan seal in its homes (crew-coder how-you-work, crew-lead briefing, fleet-flow, shape-lane, the `[ask] lane-plan ready to seal` ping, the `## unsealed` section).
+W142 maybe «greenlight»?
+
+## 17:39
+
+shape-idea (only for an intricate wish) ← 
+
+<pasted_content id="69eb">
+I'm not very good at English, and "intricate" may not be the most correct word for what I mean. In my mind, a shape idea is usually about non-mechanical stuff. "Intricate" means complexity. I just looked up a translator. I don't mean complex stuff. What I mean is that a more shaping idea is about ideas that seem to be better resolved granularly via a shape idea.
+
+For example, the easiest separation to understand it, I think, is mechanical versus non-mechanical (e.g., straightforward stuff). Obviously, stuff that can be solved right away doesn't really need a shape idea, but building a new app or a new feature most likely wants a shape idea. A change to an existing product part most likely wants a shape idea.
+
+For example, with Atelier, Atelier currently can draw dioramas. If I asked you to add support for collage art to Atelier, then it would also be a shape idea. How to properly describe it so you would print a correct skill description for a shape idea so it fires correctly? Maybe just make it simpler: you just propose to me whether it is a shape idea or not a shape idea for my incoming wishes? If I pick a shape idea, then we do a shape idea flow. If I skip a shape idea, it doesn't mean that the ticket can land randomly and improperly shaped. To say, it still has to be folded carefully, just in a non-groomed shape and without prior research and everything that a shape idea assumes.
+</pasted_content id="69eb">
+
+ 
+How to properly describe what shape IDI means instead of making it related to "intricate wishes"? 
+
+shape-idea ← Does it have to contain a shape of actual resulting tickets (e.g., why, what, when, and done test, e.g., the sections of the actual ticket body), or is that already covered by the other PM part? 
+
+shape-lane
+
+3. A chunk sized M gets split into smaller ones (asked in orbit). ← Are you sure M is a good boundary to split a ticket? Maybe L? What is the next size after M? Why ask? If you will split chunks into two small chunks, we will have too many grills because each shape plane assumes a grill. I would prefer slightly bigger chunks than slightly smaller chunks, but not very large as well. 
+
+shape-lane-dispatch ← Shape lane dispatch should also be compatible with the shift lane, for example, when AFK. The shape lane's signed tickets must be compatible with the automated shape lane dispatch (e.g., when a ticket is signed). You should be able to fully autonomously run a sequence of signed tickets via ShapeLane Dispatch one by one, and nothing should block you. This is an idea of why I want to prep, for example, 10 signed chunks via Shape Lane, then start a shift lane, for example, in AFK mode. You should be able to continuously execute the previously signed chunk sequence one by one via the Shapeling dispatch flow. 
+
+🦭 sealed , signed, 🟢 greenlight ← all in bold, always. maybe also add spec to fleet vibe? + emoji top7 and also bold? I think, since specs are related to everyone, it is worth having it global as well. It would be easier for you to not forget about them too. 
+🍫 chunk ← bold too
+
+--
+One more thing about chunk versus lane. 
+
+<pasted_content id="69eb">
+I'll better describe it to clarify upfront, because we may talk about slightly different things again.
+
+Equation: How lane content gets its chunk? For example, to dispatch a lane, you take only one chunk for a lane or multiple chunks? Our current approach looks to be different from what we invented, because the current lane looks to have 4 tickets via the old system, but the entire lane content from 4 tickets seems to be a single chunk. Something changed now.
+
+How will Glide look after this change, and what about size? The current chunk (e.g., old chunk) currently contains 4 tickets that the current lane executes? Or is each ticket in CLI lane 1 in Glide a chunk?
+</pasted_content id="69eb">
+
+## 17:56
+
+Also, about lanes: after we change this flow with new skills, what will lanes look like? If, for example, we have 10 chunks and you dispatch a first chunk to a lane, how do you manage a glide in terms of 10 plan chunks? Do you shape it, dispatch one lane, and just have a sequence of chunks for a single lane?
+
+I think we can keep it as simple as it is, and each lane can be dynamic. Before dispatching, we just think about how many chunks we can dispatch to a lane. For example, currently, CLI lane 1 has 4 chunks. It was random. I don't remember why they are 4. We decided that yesterday. How is the quantity of chunks for a lane to be decided each time we want to start a lane? 
+
+And if a lane is already started, it can have the possibility to have more chunks folded in, but only signed ones. 
+--
+
+<pasted_content id="69eb">
+After you build new skills that we built, all our previously prepped chunks get invalidated, and we need to re-sign them (e.g., sign them initially with a new flow? If so, then yes, let's sign everything via new flow).
+
+Let's sign the most relevant and most useful CLI chunks and all possible content for mods lane, so we could resolve all mods content in one sequence. For both lanes, CLI and mods lane, hunt for strays. Maybe you folded somewhere some riders, wisps, wishes, everything, so nothing is lost.
+
+For CLI lane, we somewhere have a skill to hunt CLI verb candidates (e.g., a skill that checks if CLI does the right thing). Before shaping, before signing CLI lane via new shape lane, run that skill to hunt corrections to CLI lane content before we re-sign them via new flow. Maybe we will find something more relevant than what we currently have.
+</pasted_content id="69eb">
+
+ 
+As for CLI, I'd like you to go take a look at what issues we recently had as well. What are the good candidates for automation via CLI, considering what we are currently doing and were doing recently?
 <!-- SECTION:NOTES:END -->
