@@ -5300,6 +5300,26 @@ export const register: Register = (on) => {
                                                 gap={1}
                                                 // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
                                                 key={`lane:${lane.id}:${i}`}>
+                                                <Box flexShrink={0}>
+                                                    <Text
+                                                        dimColor={item.isDone}>
+                                                        {item.isDone
+                                                            ? '✅'
+                                                            : i === lane.current
+                                                              ? '➡️'
+                                                              : '⬜'}{' '}
+                                                    </Text>
+                                                </Box>
+                                                {/* the ticket leads the step's text (dima's shot, 2026-10-23 19:44) */}
+                                                {item.ticket ? (
+                                                    <Box flexShrink={0}>
+                                                        <Link
+                                                            href={`https://linear.app/x-com/issue/${item.ticket}`}
+                                                            key={`lane:${lane.id}:t:${i}`}>
+                                                            {item.ticket}
+                                                        </Link>
+                                                    </Box>
+                                                ) : null}
                                                 {/* the step's text gives way first: the link, tick and steer keep their room (dima's shots, 17:41, 17:46) */}
                                                 <Box
                                                     flexShrink={1}
@@ -5310,23 +5330,9 @@ export const register: Register = (on) => {
                                                         }
                                                         dimColor={item.isDone}
                                                         wrap='truncate-end'>
-                                                        {item.isDone
-                                                            ? '✅'
-                                                            : i === lane.current
-                                                              ? '➡️'
-                                                              : '⬜'}{' '}
                                                         {item.text}
                                                     </Text>
                                                 </Box>
-                                                {item.ticket ? (
-                                                    <Box flexShrink={0}>
-                                                        <Link
-                                                            href={`https://linear.app/x-com/issue/${item.ticket}`}
-                                                            key={`lane:${lane.id}:t:${i}`}>
-                                                            {item.ticket}
-                                                        </Link>
-                                                    </Box>
-                                                ) : null}
                                                 {/* tick leads, the steer follows, on the step's own line after its link (dima's shot, 17:46) */}
                                                 {i === lane.current ? (
                                                     <Box

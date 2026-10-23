@@ -332,7 +332,7 @@ test('a card lists every step in order, done ones kept, the current marked', asy
     await create($);
     await lane($, { act: 'step', current: 1, id: 'l1' });
     expect(await laneText(ui)).toMatch(
-        /🛼 glide: mods settings.*✅ shape the settings pane.*➡️ the board in cards.*⬜ guard rules/su,
+        /🛼 glide: mods settings.*✅ shape the settings pane.*➡️ .*FRM-391the board in cards.*⬜ guard rules/su,
     );
 });
 
@@ -548,7 +548,9 @@ test("a finished lane stays, all done, across turn ends until the end call (dima
     const finished = await laneText(ui);
     await lane($, { act: 'end', id: 'l1' });
     expect([finished, await laneText(ui)]).toEqual([
-        expect.stringMatching(/✅ shape.*✅ the board.*✅ guard rules/su),
+        expect.stringMatching(
+            /✅ shape.*✅ .*FRM-391the board.*✅ guard rules/su,
+        ),
         undefined,
     ]);
 });
@@ -936,7 +938,7 @@ test('every board card folds by one rule: open until folded, a member subcard fo
     ]);
 });
 
-test("the current step's tick and steer sit on its own line after its link, tick first (dima's shots, 17:41, 17:46)", async ($, on) => {
+test("the current step's ticket leads its text, the tick and steer follow on its own line, tick first (dima's shots, 17:41, 17:46, 19:44)", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -945,7 +947,7 @@ test("the current step's tick and steer sit on its own line after its link, tick
     const step = await ui.find({ key: 'lane:l1:1', type: 'Box' });
     expect([step?.props.flexDirection, step?.text]).toEqual([
         'row',
-        expect.stringMatching(/^➡️ the board in cards.*FRM-391🛎️ tick$/u),
+        expect.stringMatching(/^➡️ .*FRM-391the board in cards🛎️ tick$/u),
     ]);
 });
 
