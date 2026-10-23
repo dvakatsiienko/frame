@@ -686,6 +686,8 @@ func ciJobs(tree string, paths []string) []ciJob {
 }
 
 // a pnpm or turbo typecheck/test call on a run line; a comment or a `mods:test` never matches
+var lefthookCall = regexp.MustCompile(`(?m)^\s*\S*lefthook\s+run\s+"?pre-commit"?`)
+
 var hookJob = regexp.MustCompile(`(?:^|\s)(?:pnpm|turbo)(?:\s+(?:run|turbo|exec\s+turbo))?\s+(typecheck|test)(?:\s|'|$)`)
 
 // the jobs the repo's own pre-commit runs, only while its hook is installed and calls lefthook
@@ -699,7 +701,7 @@ func preCommitRuns(tree string) map[string]bool {
 	if info, err := os.Stat(hookPath); err != nil || info.Mode()&0o111 == 0 {
 		return runs
 	}
-	if hook, err := os.ReadFile(hookPath); err != nil || !strings.Contains(string(hook), "lefthook") {
+	if hook, err := os.ReadFile(hookPath); err != nil || !lefthookCall.Match(hook) {
 		return runs
 	}
 	var config []byte
