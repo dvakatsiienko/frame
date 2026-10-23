@@ -178,7 +178,10 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	// only github's own «failed» says nothing merged; any other answer with no head may still land one
 	case took == "" && (res.Status != "failed" || polled != nil):
 		said := fmt.Sprintf("⚠ the stack merge of #%s (%s) named no head it took, so the gated %s is unverified", n, res.Status, short(head))
-		return "", "", errors.Join(polled, brakeAfter(repo, n, "merged a head github never named", said))
+		if polled != nil {
+			said = fmt.Sprintf("⚠ the stack merge of #%s went unread (its poll failed: %v), so the gated %s is unverified", n, polled, short(head))
+		}
+		return "", "", brakeAfter(repo, n, "merged a head github never named", said)
 	case polled != nil:
 		return "", "", polled
 	}

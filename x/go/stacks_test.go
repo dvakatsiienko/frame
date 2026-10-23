@@ -372,6 +372,7 @@ func TestMergeAutoBrakesWhenTheStackMergeNamesNoHead(t *testing.T) {
 		{"enqueued", `{"status":"enqueued","details":{}}`},
 		{"still pending at the budget", `{"status":"pending","details":{"uuid":"u1"}}`},
 		{"a status x does not know", `{"status":"queued","details":{}}`},
+		{"a poll that failed", serverDown},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -390,6 +391,9 @@ func TestMergeAutoBrakesWhenTheStackMergeNamesNoHead(t *testing.T) {
 			labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
 			if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
 				t.Fatalf("exit %d, stderr %q, label calls %q: want the merge called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
+			}
+			if !strings.Contains(stdout.String(), releaseBrake("8")) {
+				t.Errorf("want the release named as the next step\n%s", stdout.String())
 			}
 		})
 	}
