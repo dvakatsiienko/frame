@@ -709,6 +709,513 @@
         <mxCell id="kclTkWSHnZiVo3e1CkZm-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="draw tickets flow somewhere here" vertex="1">
           <mxGeometry height="60" width="120" x="6859" y="-1584" as="geometry" />
         </mxCell>
+        <mxCell id="tf-title" value="🗺️ tickets flow — how a ticket lives today, across the pocket and linear" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=48;fontStyle=1;fontColor=#1E1E1E;" parent="1" vertex="1">
+          <mxGeometry x="7056" y="-1584" width="1900" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-subtitle" value="the files as they read on 2026-10-23, not a redesign · ⚠️ red tiles are my reading, every other tile names its file" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=24;fontStyle=0;fontColor=#1E1E1E;" parent="1" vertex="1">
+          <mxGeometry x="7056" y="-1510" width="1500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="-1424" width="3782" height="786" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-head" value="🚪 1 — a drop is born: how does his want enter?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b1" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-src" value="habit-shared-files § the obsidian channel · cclio:boot step 3 · craft-pm § wishes · craft-fleet-flow stage 1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b1" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-drop" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔔 dima drops a want&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a line in the vault inbox from his phone, or a mid-session prompt&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;_hq/inbox.md · boot step 3&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#B3B3B3;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-groom" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎼 composer grooms it&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;inbox-prep at boot → inbox-composer.md; a prompt → a quiet prompt-groom chore&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;boot step 3 · craft-pm § wishes&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-parse" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 the parse&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;EVERY item, the smallest aside too, gets a pocket item and its place in the order&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;boot step 3 · fleet-flow stage 1&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-wlines" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 numbered W-lines&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;his fold, one point per line W1…, ❓ marks his questions; the raw drop stays in the notes&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § wishes&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="1946" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-keeper" value="&lt;b style=&quot;font-size:26px&quot;&gt;🐬 wishkeeper checks meaning&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;every ask of the raw inbox kept in meaning, not only present&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;boot step 3 (step 8&amp;#x27;s brief)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-elsewhere" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔔 an ask born elsewhere&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a grill, a sweep plan, a log or test-drive line: born in the pocket too&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the birth gate&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#B3B3B3;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-cover" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ wish-cover.ts&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;every first use copies only the W-lines it settles; exits 0 before it ships&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § wishes&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b1" vertex="1">
+          <mxGeometry x="1946" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-e-drop-groom" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1-drop" target="tf-b1-groom">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-e-groom-parse" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1-groom" target="tf-b1-parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-e-parse-wlines" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1-parse" target="tf-b1-wlines">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-e-groom-keeper" value="checked" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1-groom" target="tf-b1-keeper">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-e-elsewhere-parse" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1-elsewhere" target="tf-b1-parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b1-e-wlines-cover" value="at first use" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1-wlines" target="tf-b1-cover">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="-478" width="3782" height="786" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-head" value="📋 2 — the pocket item: what holds it in shape?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b2" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-src" value="habit-shared-files § the pocket · script/pocket-add.ts · pocket-move.ts · pocket-check.ts · backlog.config.yml" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b2" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-chore" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎼 a pocket-write chore&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a write with its fields known goes to composer; one that needs wording stays cclio&amp;#x27;s&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-add" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-add.ts&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;born green: open, a priority band + ordinal, a type, one size; xs due +1 day, s +3&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;script/pocket-add.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-item" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 the item, pk-N&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a Backlog.md task: open · claimed · waiting · done; size xs · s · m&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pocket/tasks/ · backlog.config.yml&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-move" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-move.ts&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;now · next · later: to the end of that band&amp;#x27;s order (ordinal 1000·10^band)&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;script/pocket-move.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="1946" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-shape" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-check: the shape&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;fields from the config, one size, ordinal in its band, a wish has W-lines, no note line lost&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;script/pocket-check.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="2576" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-clock" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-check: the clock&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;now ≤ 3 · open ≤ 5 · untouched &amp;gt; 1 day · due passed · waiting needs its line + a due&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;runs at boot, after add and move, on each status move&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="2576" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 notes, appended only&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;--append-notes, never --notes; his raw drop and quoted steers live here&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-mirror" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the phone mirror&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;pocket.md in the vault, read-only: a phone edit is lost, his asks go to the inbox&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;.claude/hooks/pocket-mirror.sh&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-w-size" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ a size the config lacks&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the contract lists xs · s · m · l; the config holds xs · s · m, so an l item reds&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · habit-shared-files vs backlog.config.yml&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b2" vertex="1">
+          <mxGeometry x="3206" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-chore-add" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-chore" target="tf-b2-add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-add-item" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-add" target="tf-b2-item">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-item-move" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-item" target="tf-b2-move">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-move-shape" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-move" target="tf-b2-shape">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-shape-clock" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-shape" target="tf-b2-clock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-item-notes" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.6;exitY=1;exitDx=0;exitDy=0;entryX=0.6;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-item" target="tf-b2-notes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-e-item-mirror" value="mirrored" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-item" target="tf-b2-mirror">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b2-w-w-size-shape" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b2-w-size" target="tf-b2-shape">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-join-b1-b2" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b1" target="tf-b2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="468" width="3782" height="1526" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-head" value="❓ 3 — the birth gate: where does an item go, the turn it is born?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b3" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-src" value="habit-shared-files § the birth gate · craft-pm § the freebie rule · pocket-check.ts · cclio:halt phase 4" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b3" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-free" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ the freebie test&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;1–5 tool calls i can name, no word of his, no lane&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § the freebie rule&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-solved" value="&lt;b style=&quot;font-size:26px&quot;&gt;✅ solved that turn&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;by whoever holds it, the main lane or a side lane; still reported, every time&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § the freebie rule&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-when" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ when can it be done?&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;moving it to linear is never its solve, only a postponement&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-w-fate" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ two fates for a non-freebie&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;craft-pm: born parked; the pocket contract: stays, linear, waiting or parked&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · craft-pm vs habit-shared-files&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-stays" value="&lt;b style=&quot;font-size:26px&quot;&gt;🏃 stays: today or tomorrow&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;by-hand work, small things, plus at most one long main-lane ticket&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="56" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-linear" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 → linear, in its milestone&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a week out, or waiting on a lane or a date; the pocket item dies&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files · craft-pm § milestones&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="686" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-wait" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔔 waiting&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a «waiting for:» first line + a due date, when the wait ends today or tomorrow&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files · pocket-check.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="1316" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-park" value="&lt;b style=&quot;font-size:26px&quot;&gt;🛑 parked&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;born with a «parked: &amp;lt;reason&amp;gt;» line; a «can&amp;#x27;t» names the probe it ran&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files · pocket-check.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="1946" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-count" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ born parked, solved today&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the halt counts parked items done that day: each one the gate should have solved&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 4 · craft-pm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="2576" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-w-horizon" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ the horizon has no check&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;45 of 65 items wait, 33 on a lane or a ticket; pocket-check wants a due, never how near&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · pocket-check.ts, pocket/tasks/ on 10-23&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b3" vertex="1">
+          <mxGeometry x="1316" y="1310" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-free-solved" value="yes" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-free" target="tf-b3-solved">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-free-when" value="no" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-free" target="tf-b3-when">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-when-stays" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-when" target="tf-b3-stays">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-when-linear" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-when" target="tf-b3-linear">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-when-wait" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-when" target="tf-b3-wait">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-when-park" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-when" target="tf-b3-park">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-e-park-count" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3-park" target="tf-b3-count">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-w-w-fate-when" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b3-w-fate" target="tf-b3-when">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b3-w-w-horizon-wait" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b3-w-horizon" target="tf-b3-wait">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-join-b2-b3" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2" target="tf-b3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="2154" width="3782" height="786" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-head" value="🎫 4 — the linear ticket: what does a ticket carry?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b4" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-src" value="cclio:pm SKILL.md + references/body.md · craft-pm § fold or drop, § milestones first · habit-shared-files § the pocket" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b4" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-search" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 search before create&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the dupe, the right parent and relations; the run marker + the title stem&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § fold or drop · body.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-triage" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 born in Triage&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;x as cclio -- linear issue create, never --state; a ticket must earn existence&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:pm § the door · craft-pm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-mile" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎑 milestone first&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;«which milestone?» on create, move, close; a guard refuses a bare create (FRM-417)&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § milestones first&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-fields" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 every field&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;role · kind · p3 · size XS·S·M like FRM-N · project · parent · milestone · delegate&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:pm § the fields&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="1946" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-body" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 the body, a spec seed&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;lane · wish W-lines · dima notes · why · stories · proposed · decided · open · exit · out · refs&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pm references/body.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="2576" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-gate" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ the assumption gate&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a fact dima never said → needs human + a ? line; to-spec only with open empty&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:pm § the fields · body.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="2576" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-promote" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ out of Triage is his&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;dima promotes it; a human ticket is his to start&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:pm § the door&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="1946" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-pointer" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 back as a pointer item&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;only when the main lane takes it for today or tomorrow: «ticket: FRM-N»&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-w-pointer" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ a pointer, or dead?&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;craft-pm: the item becomes a pointer the moment a ticket exists; the contract: it dies&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · craft-pm § wishes vs habit-shared-files&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-standing" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 a standing story&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an empty body, no comments; each round is a child ticket with the wish, pr and report&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pm references/body.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b4" vertex="1">
+          <mxGeometry x="56" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-search-triage" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-search" target="tf-b4-triage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-triage-mile" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-triage" target="tf-b4-mile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-mile-fields" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-mile" target="tf-b4-fields">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-fields-body" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-fields" target="tf-b4-body">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-body-gate" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-body" target="tf-b4-gate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-gate-promote" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-gate" target="tf-b4-promote">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-promote-pointer" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-promote" target="tf-b4-pointer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-e-triage-standing" value="or a story" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4-triage" target="tf-b4-standing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b4-w-w-pointer-pointer" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b4-w-pointer" target="tf-b4-pointer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-join-b3-b4" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b3" target="tf-b4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="3100" width="3782" height="1156" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-head" value="🍴 5 — shaping: what turns a ticket into a lane?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b5" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-src" value="cclio:shape-idea · cclio:shape-lane (+ exit-lines.md) · craft-fleet-flow stages 2–4 · pm references/body.md" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b5" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-idea" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 shape-idea, optional&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an intricate wish: want + grill, prior art, sharpen, the cut, the done test&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:shape-idea steps 1–6&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-out" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 its outputs&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;PRODUCT.md, an FTR.md draft, GLOSSARY.md words, ADRs&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:shape-idea step 7&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-shaped" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ «shaped»&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;only then design or code; a step is skipped only on his word&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-idea · fleet-flow stages 2–3&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-prep" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ «prep», «grill FRM-N»&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;or «next chunk»: a chunk is picked for a lane&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:shape-lane&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="56" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-read" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 read what is settled&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the wish block + decided, or the pocket notes before a ticket, never both&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 0 · wish-cover.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-card" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 the chunk card&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an h2 + two lines: why we have it, what we want out of it&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 1&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-grill" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ the grill&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;matt&amp;#x27;s ❓ rounds, the frontier only; his orbit answers fold into decided&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 2&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="1946" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-spec" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 the spec&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;side lanes, coder jobs of 3+: .scratch/&amp;lt;feature&amp;gt;/spec.md, «wish: FRM-N»&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 2.5 · body.md (a quick lane skips it)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="2576" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-w-park" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ a spec can sit for days&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;nothing ages an undispatched spec; cli lane 1&amp;#x27;s has sat since 10-20&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · shape-lane § 2.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="3206" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-exit" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 the exit lines&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;3–6 given/when/then in the ticket&amp;#x27;s exit, sealed from the spec; the want line last&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 3 · exit-lines.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="2576" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-w-exit" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ exit lines in two homes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the ticket&amp;#x27;s exit section and the spec, which the coder cuts into slice checklists&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · shape-lane § 2.5, § 3&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="3206" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-critic" value="&lt;b style=&quot;font-size:26px&quot;&gt;🐦‍⬛ the blind critic&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;ccrow:plan-critique sees only the want + the lines; each finding folded&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 3&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="1946" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-seal" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the seal&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;x brief preflight passes; the print collapses to «🔒 N exit lines, sealed»&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 4&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="1316" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-ask" value="&lt;b style=&quot;font-size:26px&quot;&gt;🪐 the spawn ask&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;its own orbit ask; the skill ends here, the spawn is x:crew-lead&amp;#x27;s&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b5" vertex="1">
+          <mxGeometry x="686" y="940" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-note" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 proposed redesign (PK-263)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;shape-lane splits into a prep with dima that signs a chunk, and a machine dispatch that writes the spec and exit lines — drawn after the grill&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;not today&amp;#x27;s flow&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#F2F2F2;strokeColor=#8C8C8C;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=1;" parent="tf-b5" vertex="1">
+          <mxGeometry x="2576" y="200" width="1150" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-idea-out" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-idea" target="tf-b5-out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-out-shaped" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-out" target="tf-b5-shaped">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-shaped-prep" value="then a prep" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-shaped" target="tf-b5-prep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-prep-read" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-prep" target="tf-b5-read">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-read-card" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-read" target="tf-b5-card">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-card-grill" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-card" target="tf-b5-grill">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-grill-spec" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-grill" target="tf-b5-spec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-spec-exit" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-spec" target="tf-b5-exit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-exit-critic" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-exit" target="tf-b5-critic">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-critic-seal" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-critic" target="tf-b5-seal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-e-seal-ask" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5-seal" target="tf-b5-ask">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-w-w-park-spec" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b5-w-park" target="tf-b5-spec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b5-w-w-exit-exit" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b5-w-exit" target="tf-b5-exit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-join-b4-b5" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b4" target="tf-b5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="4416" width="3782" height="786" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-head" value="🏃 6 — the lane: how does the ticket get built?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b6" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-src" value="x:crew-coder how-you-work.md · cclio:shape-lane § 2.5 · craft-fleet-flow stages 5–9, three kinds of work" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b6" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-kinds" value="&lt;b style=&quot;font-size:26px&quot;&gt;🛼 three kinds of work&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;freebie: in place · quick: on main, no pr · side: worktree, pr, verifier&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-fleet-flow&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-brief" value="&lt;b style=&quot;font-size:26px&quot;&gt;📋 brief and spawn&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;x brief check passes; a verifier by default, yes/no on a quick lane&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;fleet-flow stage 5 · x:crew-lead&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-cut" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔧 the coder cuts the spec&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;matt&amp;#x27;s to-tickets after reading the code, so the slices follow real seams&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;how-you-work.md · shape-lane § 2.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-slices" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 the slices&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;.scratch/&amp;lt;feature&amp;gt;/issues/, never linear; each spec exit line in one checklist&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;how-you-work.md · body.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="1946" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-plan" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 the lane plan&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;~/.local/state/x/lanes/&amp;lt;feature&amp;gt;/lane-plan.md, one line per ticket&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;how-you-work.md § the lane plan&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="2576" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-w-pocket" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ a pocket item → a coder job&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;no defined path: a lane&amp;#x27;s tickets never enter the pocket, nothing says how one leaves it&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · habit-shared-files, shape-lane § 2.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="3206" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-sealorder" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 cclio seals the order&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;at «[ask] lane-plan ready to seal»; re-sealed after a [progress] ping&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;shape-lane § 2.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="2576" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-w-glide" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ the glide card copies it&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;its ticket lines copied by hand at each seal and land, until FRM-410&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · shape-lane § 2.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="3206" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-build" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔧 build, test-first&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;tdd per ticket, [x] at its commit; his steers go under ## unsealed&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;how-you-work.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="1946" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-verify" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔎 the pr and the verifier&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the verifier says clean, or its round-3 stop goes to cclio&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;fleet-flow stages 6–7&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-land" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔀 land&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;cclio merges by the pr-flow gate; the spec dir moves to .scratch/_archive/&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;fleet-flow stage 8&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-look" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ the look card&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;what, where, try, proven, not checked; a shot for anything rendered&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;how-you-work.md · fleet-flow stage 9&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b6" vertex="1">
+          <mxGeometry x="56" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-kinds-brief" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-kinds" target="tf-b6-brief">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-brief-cut" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-brief" target="tf-b6-cut">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-cut-slices" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-cut" target="tf-b6-slices">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-slices-plan" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-slices" target="tf-b6-plan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-plan-sealorder" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-plan" target="tf-b6-sealorder">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-sealorder-build" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-sealorder" target="tf-b6-build">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-build-verify" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-build" target="tf-b6-verify">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-verify-land" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-verify" target="tf-b6-land">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-e-land-look" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6-land" target="tf-b6-look">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-w-w-pocket-plan" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b6-w-pocket" target="tf-b6-plan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b6-w-w-glide-sealorder" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b6-w-glide" target="tf-b6-sealorder">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-join-b5-b6" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b5" target="tf-b6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
+          <mxGeometry x="7000" y="5362" width="3782" height="786" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-head" value="🏁 7 — the end: how does a ticket close and leave?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b7" vertex="1">
+          <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-src" value="pm references/closing.md · craft-pm § the ask-guard · cclio:halt phases 0, 1.5, 3.5, 4.5 · pocket-check.ts" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b7" vertex="1">
+          <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-sweep" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the lingering sweep&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the halt lists In Progress + In Review; a merged pr with open asks → Todo&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 0&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-list" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 «closable, because …»&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;auto-close only stale, dupe, a freebie done in place; the rest wait for his word&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pm references/closing.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-guard" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ the ask-guard&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;each ask of his printed with its destination; no verdict, no close&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;closing.md · craft-pm § the ask-guard&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-closed" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 closed, a closing word&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;in the body; the milestone&amp;#x27;s count read the same turn&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;closing.md · craft-pm § milestones first&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="1946" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-pdone" value="&lt;b style=&quot;font-size:26px&quot;&gt;✅ the pointer set done&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the same turn, with a «close:» line citing each W-line&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;closing.md · pocket-check.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="2576" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-net" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-check&amp;#x27;s net&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an open item whose ticket linear closed reds: flip it to done&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pocket-check.ts · habit-shared-files&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="3206" y="200" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-archive" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the halt files it&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;backlog task archive, every done item; one listed past its day reds&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 1.5 · pocket-check.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="2576" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-w-order" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ filed before the gazette&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the contract files it after the gazette carries it; the halt archives at 1.5, posts at 4.5&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · habit-shared-files vs cclio:halt&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="3206" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-inbox" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the inbox reset&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;halt-sweep.ts copies his template over; it refuses a line without ✅&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 1.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="1946" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-linarch" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ x linear archive&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;closed tickets untouched for 14 days; the free plan caps at 250&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 3.5 · cclio:pm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-gazette" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 the gazette carries it&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the day&amp;#x27;s done items and the fleet ops numbers, posted at the halt&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 4.5&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;dashed=0;" parent="tf-b7" vertex="1">
+          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-sweep-list" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-sweep" target="tf-b7-list">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-list-guard" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-list" target="tf-b7-guard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-guard-closed" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-guard" target="tf-b7-closed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-closed-pdone" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-closed" target="tf-b7-pdone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-net-pdone" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-net" target="tf-b7-pdone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-pdone-archive" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-pdone" target="tf-b7-archive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-archive-inbox" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-archive" target="tf-b7-inbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-inbox-linarch" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-inbox" target="tf-b7-linarch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-e-linarch-gazette" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b7-linarch" target="tf-b7-gazette">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-b7-w-w-order-archive" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b7-w-order" target="tf-b7-archive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tf-join-b6-b7" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.03;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b6" target="tf-b7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
