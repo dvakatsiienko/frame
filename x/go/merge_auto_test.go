@@ -873,6 +873,56 @@ func TestMergeAutoReadsTheSignFromLinearNeverThePr(t *testing.T) {
 	}
 }
 
+// --dima-ok trusts what reached it: x-mod-guard refuses the flag unless dima's last prompt names the pr
+func TestMergeAutoLandsASelfEditOnDimasTypedWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply", "--dima-ok", "7")
+
+	if merges := w.hub.sent("PUT " + repoPath + "/pulls/7/merge"); got.code != 0 || len(merges) != 1 || !strings.Contains(envelopeOf(got).Data.Sign, "dima's word") {
+		t.Fatalf("exit %d, %d merges, sign %q: want the self-edit merged on dima's word:\n%s", got.code, len(merges), envelopeOf(got).Data.Sign, got.stdout)
+	}
+}
+
+func TestMergeAutoWaitNamesDimasTypedWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	want := "x lane merge-auto 7 --apply --dima-ok 7"
+	if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+		t.Fatalf("exit %d, error %q, want a wait naming %q", got.code, envelopeOf(got).Error, want)
+	}
+}
+
+func TestMergeAutoRefusesADimaOkForAnotherPr(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply", "--dima-ok", "8")
+
+	if got.code != 2 || len(w.hub.sent("")) != 0 {
+		t.Fatalf("exit %d, %d calls, want a usage refusal before any call:\n%s", got.code, len(w.hub.sent("")), got.stdout)
+	}
+}
+
+func TestMergeAutoBrakeOutranksDimasTypedWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	write(t, filepath.Join(w.seed, "merged.txt"), "an earlier pr\n")
+	gitT(t, w.seed, "add", "merged.txt")
+	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body\n\n"+mergeTrailer)
+	gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
+
+	got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply", "--dima-ok", "7")
+
+	if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(envelopeOf(got).Error, "brake on") {
+		t.Fatalf("exit %d, error %q, want the brake's wait over dima's typed word", got.code, envelopeOf(got).Error)
+	}
+}
+
 func TestMergeAutoBrakeOutranksAPreApprovedSign(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "x/go/merge_auto.go")

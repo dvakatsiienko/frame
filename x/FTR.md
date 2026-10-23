@@ -164,6 +164,12 @@
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
   - given the body edited after the last signed line, no `merge: pre-approved`, no `## signed` block, or a dev build of merge-auto, then it waits and names which, the re-sign included; the brake waits whatever the sign says
   - decision: the sign is read from the linear ticket, never the pr, whose body the coder writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as cclio signs (FRM-423 grill, o141)
+- ⬜ a self-edit with no pre-approved sign merges on dima's typed word
+  - given a verifier-clean self-edit pr whose chunk holds no pre-approved sign
+  - when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, which it does only when dima's own last typed prompt names that pr (`x-mod-guard/FTR.md`, the dima-ok-flag line)
+  - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
+  - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
+  - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ✅ `x lane rebase-main --apply` puts a coder branch on origin/main with no merge commit
   - given a `coder/*` branch behind origin/main with no conflict

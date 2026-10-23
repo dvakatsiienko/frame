@@ -13,6 +13,7 @@ import {
     check,
     foregroundClaude,
     installDirs,
+    mergeWord,
     message,
     namesWhole,
     rawLinear,
@@ -697,6 +698,21 @@ export const register: Register = (on) => {
         if (bump) {
             const said = `x-mod-guard stopped this one command. instead: ${bump.door}. why: ${bump.why}.`;
             return enforce(bump, `nothing in this command ran — ${said}`, said);
+        }
+        const word = mergeWord(typed, cwd);
+        if (word) {
+            const { value: prompt = '' } = await $.state.get(PROMPT);
+            const unproven = word.targets.filter(
+                (t) => !namesWhole(prompt, t) && !namesWhole(prompt, `#${t}`),
+            );
+            if (unproven.length) {
+                const said = `x-mod-guard stopped this one command. instead: ${word.door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
+                return enforce(
+                    { ...word, targets: unproven },
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+            }
         }
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused')

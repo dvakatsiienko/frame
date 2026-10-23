@@ -59,6 +59,11 @@ func (d *mergeDecision) selfWait(pr pullHead, self []string) (string, error) {
 	if len(self) == 0 {
 		return "", nil
 	}
+	// his word on the pr merged covers every layer under it: a stack lands whole
+	if d.dimaOK {
+		d.Sign = "dima's word on #" + d.PR + ", typed (--dima-ok)"
+		return "", nil
+	}
 	sign, err := signOf(pr, d.signs)
 	if err != nil {
 		return "", err
@@ -67,7 +72,8 @@ func (d *mergeDecision) selfWait(pr pullHead, self []string) (string, error) {
 		d.Sign = sign.detail
 		return "", nil
 	}
-	return "self-edit, needs dima's word — " + strings.Join(self, ", ") + "; " + sign.detail, nil
+	return "self-edit, needs dima's word — " + strings.Join(self, ", ") + "; " + sign.detail +
+		"; once his own prompt names #" + d.PR + ": x lane merge-auto " + d.PR + " --apply --dima-ok " + d.PR, nil
 }
 
 // the hash covers the body through the newline before ## signed, first 8 hex of its sha256, as cclio signs it;

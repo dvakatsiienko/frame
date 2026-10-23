@@ -196,6 +196,13 @@
   - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`
+- ⬜ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt names that pr (FRM-423)
+  - given a Bash call running `x lane merge-auto … --dima-ok <pr>` (or `--dima-ok=<pr>`)
+  - when dima's last prompt typed at the composer or sent over the bridge names the pr as a whole word, `104` or `#104`, by the same match as a dima-ok marker
+  - then it runs; when no such prompt exists, it names another number (`1041`, `#10`), or only a peer or a notification said it, then nothing runs and the refusal (rule `dima-ok-flag`) names the numbers his prompt lacks
+  - given `x lane merge-auto` with no `--dima-ok`, then the rule never judges it
+  - decision: x trusts a `--dima-ok` that reached it, since only this mod reads dima's last typed prompt; the flag never lifts merge-auto's brake (FRM-423 grill, o140)
+  - decision: a refusal from day one, never warn-only — a warning would run the merge it means to stop (dima's o102, the `foreground-claude` precedent)
 - ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched

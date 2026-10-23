@@ -41,6 +41,7 @@ type mergeDecision struct {
 	layered  bool
 	heads    map[string]string // a stack's every gated head, pr → sha
 	signs    map[string]chunkSign
+	dimaOK   bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
 	landed   string
 }
 
@@ -63,6 +64,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	n := args[0]
 	if !prNumber.MatchString(n) {
 		return nil, usageFail(n+" is not a pr number", "x lane merge-auto <pr number>")
+	}
+	word, _ := flags["dima-ok"].(string)
+	if word != "" && word != n {
+		return nil, usageFail("--dima-ok names #"+word+", this merge is #"+n+": dima's word counts for the pr it names", "x lane merge-auto "+n+" --apply --dima-ok "+n)
 	}
 	repo, err := repoOf(flags)
 	if err != nil {
@@ -97,7 +102,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, signs: map[string]chunkSign{}}
+	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, signs: map[string]chunkSign{}, dimaOK: word != ""}
 	trunk := pr.Base.Ref
 	if layers == nil {
 		r.skip("layers")

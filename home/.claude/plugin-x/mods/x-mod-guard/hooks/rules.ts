@@ -251,6 +251,31 @@ export function rawPluginUpdate(
     return undefined;
 }
 
+// x lane merge-auto trusts a --dima-ok <pr> that reached it, so this is the proof: dima's own last prompt names the pr
+// (FRM-423 o140, the guard's door); the caller checks the prompt
+export function mergeWord(command: string, cwd: string): Refusal | undefined {
+    for (const c of commands(parse(command), cwd)) {
+        const words = c.args.map((w) => w.text);
+        if (c.name !== 'x' || words[0] !== 'lane' || words[1] !== 'merge-auto')
+            continue;
+        const targets = words.flatMap((w, i) =>
+            w === '--dima-ok'
+                ? [words[i + 1] ?? '']
+                : w.startsWith('--dima-ok=')
+                  ? [w.slice('--dima-ok='.length)]
+                  : [],
+        );
+        if (!targets.length) continue;
+        return {
+            door: "ask dima; his own next prompt naming the pr (104 or #104) lets merge-auto's --dima-ok through. a bg session counts only what dima types into it himself",
+            rule: 'dima-ok-flag',
+            targets,
+            why: "merge-auto's --dima-ok stands for dima's word on a self-edit, and counts only when his last typed prompt names the pr",
+        };
+    }
+    return undefined;
+}
+
 // a member reads and comments on tickets through x linear, never the raw cli (FRM-398, rules-lazy/linear-flow.md);
 // cclio's own session is never asked, the caller checks the registry name
 export function rawLinear(command: string, cwd: string): Refusal | undefined {
