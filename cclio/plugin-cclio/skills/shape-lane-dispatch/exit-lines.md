@@ -1,11 +1,11 @@
 # exit lines — what a sealed line holds
 
-read at step 3 of `shape-lane`, before the first line is drafted. each rule is a round some coder or verifier once lost.
+read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each rule is a round some coder or verifier once lost.
 
 ## it names real things
 
 - every file, script, verb and term a line names is **grepped in the target repo** before the seal; a miss is rewritten. drafted from memory, 3 lines missed in one day: a 16 px piece atelier never had, a «manual» no file is called, «png» where atelier writes webp
-- a line names **behaviour, real commands and glossary words** (`pnpm typecheck`, `⇧F4`), never a file path: a side lane's lines are sealed from its spec (`shape-lane` § 2.5 runs before § 3), and matt's spec bans paths as stale-prone
+- a line names **behaviour, real commands and glossary words** (`pnpm typecheck`, `⇧F4`), never a file path: a lane's lines are written into its spec, and matt's spec bans paths as stale-prone
 - a line is **checked against main at prep time**: «ignoreBuildErrors gone» was already true there
 - a line that **rests on a fact about the world** (who refuses, which file outranks which, a count) carries the command and its output from seal time: «a repo top's shared settings outrank a subfolder's» was false, and FRM-366's line 2 was fixed after Done
 - **an A/B for dima's eye is sealed only after a one-shot measurement shows the options differ**: a worry (gpu, speed, size) is measured at seal, never handed to his eye as a test. FRM-391 exit 2 sent four frame rates to his band over a gpu worry; all four read 51–56 %, and he lost half an hour (2026-10-11)

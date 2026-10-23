@@ -1,0 +1,42 @@
+---
+description: load on dima's «what can we dispatch?», «dispatch», «start a lane», his pick of signed chunks, a shift starting from signed chunks, or a signed chunk joining a running lane — the spec, the exit lines, the seal and the spawn.
+---
+
+# /cclio:shape-lane-dispatch — signed chunks become a running lane
+
+the machine part of lane init, cclio's alone: dima signed the chunks in `cclio:shape-lane`, his pick starts them, and nothing below waits on him. the contract (the states, where each thing lives, a lane per milestone, shift safety) is `craft-fleet-flow` § lane init; a fix to how a lane starts lands here.
+
+## 1 · the offer
+
+«what can we dispatch?» → the signed chunks (`x linear list --team FRM --label signed`) with no open blocker, grouped by milestone, each with its sign age; a lane is one milestone's chunks in the milestone's order. his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket.
+
+## 2 · the spec
+
+read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain text):
+- the spec sits in `.scratch/<feature>/spec.md`, carries `wish: <ticket>`, one section per chunk; every lane with a member gets one, a quick lane too
+- the code is read against each chunk's `decided`: a signed decision the code has broken stops that chunk for a re-sign (`cclio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
+- `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
+
+## 3 · the exit lines
+
+read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines per chunk into the spec. the last line is the **want line**, seeded from the ticket's 🎯 done test: it replays dima's want or the incident behind the ticket, and the verifier grades it apart from the rest. dima reads only the want line, printed and counted per the trial in `docs/test-drive/want-line.md`. a line that carries a decision he never made parks the chunk for a re-sign. a chunk that makes or changes an app carries a line for its FTR lines and glossary words. a ticket whose script cclio's hooks call carries a line naming who wires it.
+
+then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.md`: 17 of 20 flagged lines passed the lint and missed the want): write the want plus the lines to a file and run `pnpm -C ~/frame ccrow:plan-critique <file>`; each finding is folded or answered in one line before the seal.
+
+## 4 · the seal
+
+`x brief preflight` passes. until preflight reads the spec (a cli rider in PK-265), the exit lines are also copied under the ticket's `## exit`, opened by «a copy of the spec, for preflight». a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the lines: a line its rules forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 N exit lines, sealed`.
+
+## 5 · the spawn and the greenlight
+
+- the spawn is `x:crew-lead`'s (load it): the brief's first step has the coder run `to-tickets` on the spec after reading the code, so the slices follow real seams; the brief says «skip the quiz step of to-tickets», since the sign settled the want; the slices go into `.scratch/<feature>/issues/`, never linear
+- the `signed` label comes off each dispatched chunk, and its `## signed` block gets `🚀 dispatched <YYYY-MM-DD>`; a cancelled chunk gets `🚫 cancelled <YYYY-MM-DD> — <why>`
+- **the lane plan**, `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside every checkout, so an isolated coder can write it and a decamp keeps it): the coder's side (the draft, the ticks, `## not greenlit`) is `x:crew-coder`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to greenlight` i reorder it against what comes after and 🟢 greenlight it — my word is final — and greenlight again on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies its ticket lines at each greenlight and land (by hand, until FRM-410). a lane of one ticket skips the file
+
+## 6 · while it runs
+
+- **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step; an unsigned one waits for its sign
+- **a wish of dima's mid-lane** goes into the spec with a proposed re-sign of its chunk, never as a bare message
+- **a park** — his weekly window out, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it
+
+**done** = each picked chunk has its spec section with sealed exit lines, its `🚀 dispatched` line, a spawned coder (a verifier unless his pick said no), and a greenlit lane plan.

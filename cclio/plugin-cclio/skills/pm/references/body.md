@@ -14,12 +14,13 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 - **proposed** — his vision of the solve, open until a grill moves a line to decided
 - **decided** — each call with its source (dima, a grill, an adr)
 - **open** — `?` lines; a ticket goes to `to-spec` only with this empty
-- **exit** — given/when/then (`cclio:shape-lane`)
+- **🎯 done test** — dima's «how i'll know it works», given/when/then; the exit lines live in the spec, written from it at dispatch (`craft-fleet-flow` § lane init)
 - **out** — out of scope and «decided against», so nobody re-proposes it
 - **refs** — research, designs, prior art
 - **closing word** — at close
+- **`## signed`** — the last section, appended to, never edited: `✍️ signed <YYYY-MM-DD>` at his sign (`cclio:shape-lane`), `✍️ re-signed <YYYY-MM-DD> — <what changed>`, `merge: pre-approved` when his sign covers the merge, `🚀 dispatched <YYYY-MM-DD>` or `🚫 cancelled <YYYY-MM-DD> — <why>` (`cclio:shape-lane-dispatch`)
 
-**the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»): the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch. the how is the body's `proposed` / `decided` until dispatch; `to-spec` then moves it into `.scratch/<feature>/spec.md`, which opens with `wish: FRM-N` in place of a problem statement, never restates the want, and cites the W-lines each part serves (`script/wish-cover.ts` exits 0 on it); steers on the how land in the spec, and its outcome folds into the closing word when the run lands. the run check, logged in `docs/test-drive/spec-pipeline.md`: «did `to-spec` need anything outside the body?» the slices `to-tickets` cuts live in `.scratch/<feature>/issues/`, never in linear.
+**the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»): the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch. the how is the body's `proposed` / `decided` until dispatch; `to-spec` then moves it into `.scratch/<feature>/spec.md`, beside the exit lines, which opens with `wish: FRM-N` in place of a problem statement, never restates the want, and cites the W-lines each part serves (`script/wish-cover.ts` exits 0 on it); steers on the how land in the spec, and its outcome folds into the closing word when the run lands. the run check, logged in `docs/test-drive/spec-pipeline.md`: «did `to-spec` need anything outside the body?» the slices `to-tickets` cuts live in `.scratch/<feature>/issues/`, never in linear.
 
 - 🚨 **dima's words never go into a comment**: the body is read by everyone, a comment by a
   graphql fetch. comments carry trail only — run stamps, «done, see commit», a member's done report

@@ -1,28 +1,28 @@
 ---
 name: shape-idea
-description: Load BEFORE anything new gets built or redesigned — «i want to build», «new app», «an idea», «should we build», «shape it», «shape-idea», «redesign», «re-shape», a feature bigger than a tweak — and before a designer brief is written. typed as `/cclio:shape-idea <idea or app>`.
+description: Load BEFORE a new app, a new feature or a change to how a product part works gets built — «i want to build», «new app», «new feature», «an idea», «should we build», «shape it», «shape-idea», «redesign», «re-shape» — when dima picks shape-idea for a wish, and before a designer brief is written. typed as `/cclio:shape-idea <idea or app>`.
 argument-hint: "<the idea, or an existing app to re-shape>"
 ---
 
-# shape-idea — nothing is built before it is shaped
+# shape-idea — a solid ticket out of dima's wish
 
-the phase between dima's idea and the first design or line of code. it makes sure we build the right
-thing, sharp, before any of it exists — tech debt born at the idea stage is the most expensive kind.
-an existing app runs it too (a **re-shape**) when it grew from a random ask and was never shaped.
+the phase between dima's raw wish and a ticket worth signing. it makes sure we build the right thing,
+sharp, before any of it exists — tech debt born at the idea stage is the most expensive kind. it fits
+non-mechanical work, better shaped granularly than solved straight: a new app, a new feature, a change
+to how an existing product part works (atelier drawing collages beside dioramas: yes; a dark/light
+theme: a plain ticket). the wish fold proposes «shape-idea or not» per wish and his pick decides
+(`craft-pm` § wishes). an existing app runs it too (a **re-shape**) when it grew from a random ask and was never shaped.
+the contract around it — the sign, dispatch, where every artifact lives — is `craft-fleet-flow` § lane init.
 
 dima owns the want and every verdict; you run the steps, one at a time, and stop after each for his
 word. skipping a step happens only on his word, named out loud.
 
 ## the steps
 
-1. **the want + the grill, one turn** (dima, 2026-10-21: the want alone was a turn too small) — the reply opens with his idea in his words, folded (`craft-pm` § wishes), bound for `PRODUCT.md`'s opening, and the grill's round 1 follows in the same reply; his answer to the round also says whether the quote means what he means.
+1. **the want + the grill, one turn** (dima, 2026-10-21: the want alone was a turn too small) — the reply opens with his idea in his words, folded (`craft-pm` § wishes), bound for the ticket's wish block, and the grill's round 1 follows in the same reply; his answer to the round also says whether the quote means what he means.
    - **the want is the source fold, whole**: the pocket or ticket wish plus its raw drop if still held, one point per numbered line (W1 …), never my shorter cut (10-21: a re-cut lost ~35 % of a wish)
    - **every ❓ cites the W-lines it settles**; an uncited line prints as «settled by the wish» or waits for the next round; `node script/wish-cover.ts <PK-N> <round>` exits 0 first
-2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together (what
-   matt's user-only `grill-with-docs` does), so every term the grill settles lands in `GLOSSARY.md`
-   and every hard decision in an ADR as it happens; in rounds, each round the whole frontier of open questions at once, until the open decisions are
-   settled or parked by name. always; skipped only on his word. a re-shape grills what exists: why,
-   for whom, what is missing, what should go. as a `mattpocock-skills:grilling` round (`habit-dima-comms` § grill).
+2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together, in rounds, each round the whole frontier of open questions at once (`habit-dima-comms` § grill), until the open decisions are settled or parked by name. every term the grill settles and every hard decision lands in the ticket (`decided`, a glossary line); the coder writes them into `GLOSSARY.md` and an ADR at the build. always; skipped only on his word. a re-shape grills what exists: why, for whom, what is missing, what should go.
 3. **prior art** — does it exist already, and can we use it instead of building?
    `advise-project-approach` for a plan or a stack; the research lanes (`x:research`) for
    the market. then the lib search: per part of the build (a waveform, a hotkey, a pan/zoom surface),
@@ -40,13 +40,8 @@ word. skipping a step happens only on his word, named out loud.
    it names the **polish tier**: an internal tool stops at «works and clear»; a showcase app
    (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the
    look comes from, and a reviewer who sees a generic look clicks away.
-6. **the done test** — how we will know it works, as given/when/then lines.
-7. **the outputs** — `PRODUCT.md` (why, who, the cut), an `FTR.md` draft from the done test (`x:app-author-ftr`),
-   `GLOSSARY.md` words (`domain-modeling`). a new app scaffolds through `x:app-setup-essentials`. a
-   re-shape of an existing app runs `domain-modeling` over its current code too, so the redesign
-   starts from the real terms (dima, 2026-10-06: every app goes through it, on its next touch).
-   a skill or a fleet tool outputs its `PRODUCT.md` and the `SKILL.md`; `FTR.md` and the glossary only when it is an app.
+6. **the done test** — how dima will know it works, as given/when/then lines: his 🎯, never the verifier's exit lines, which dispatch writes into the spec from it.
+7. **the ticket** — one shaped ticket, written through `cclio:pm` (its `references/body.md` owns the sections): the wish, why, stories, decided, the cut as `out` and the polish tier, the 🎯 done test, prior art and libs under `refs`. no files: `PRODUCT.md` is born at dispatch, the FTR lines and glossary words in the build (`craft-fleet-flow` § lane init). an app wish then goes to the designer before its sign (`x:crew-designer-interview` reads the ticket; a trial, tested on speak v2).
 
-**completion criterion:** step 7's outputs exist, dima said «shaped», and only then does
-design start (`x:crew-designer-interview`) or code (`x:crew-coder`). a design brief is written from
-these outputs, never from the original ask.
+**completion criterion:** the ticket exists with every section step 7 names, and dima said «shaped»; it
+goes to `cclio:shape-lane` for his sign, and nothing is designed or built from the original ask.

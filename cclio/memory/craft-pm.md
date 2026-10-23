@@ -43,15 +43,16 @@ comparison brief).
 - **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «always make sure my
   wishes are valid user stories, and cover all the essential questions to formulate the spec and the
   lane»): the fold reads the wish against the body shape — want, why, stories («as dima, i …»),
-  proposed, decided, exit, out — and every question the wish leaves open lands as a `?` line under
+  proposed, decided, the 🎯 done test, out — and every question the wish leaves open lands as a `?` line under
   it in the same turn, asked at the next siesta. a chaotic wish is normal; a wish that reaches
   `to-spec` with an open `?` is the failure.
+- **shape-idea or not, per wish** (dima, 2026-10-23, o91): the fold proposes it as an orbit ask — a new app, a new feature, or a change to how a product part works → `cclio:shape-idea`; plain, mechanical work → a full ticket folded straight away, never a thin one. his pick decides; the path after it is `craft-fleet-flow` § lane init.
 
 ## milestones first — initiatives → 🎑 milestones → our flow
 
 dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.» the pm's order for him and cclio; a lane's order is its `lane-plan.md`.
 
-- every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn
+- every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn. the answer is also «which lane?»: a lane takes one milestone's signed chunks (dima, o97; `craft-fleet-flow` § lane init)
 - a run-or-move ask names each item's freebie verdict and milestone; «move» is never the default pick. 🧪 a guard refuses a milestone-less create (FRM-417); if it spams milestones, it turns informative (dima, 2026-10-23)
 - a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `cclio:pm`, opened with the sorting phase
 - the cross-project order is the initiative's milestone queue: a switch moves one to its top, a born one joins it that turn
