@@ -29,7 +29,7 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 ## 5 · the spawn and the greenlight
 
-- the spawn is `x:crew-lead`'s (load it): the brief's first step has the coder run `to-tickets` on the spec after reading the code, so the slices follow real seams; the brief says «skip the quiz step of to-tickets», since the sign settled the want; the slices go into `.scratch/<feature>/issues/`, never linear
+- the spawn is `x:crew-lead`'s (load it): the brief's first step has the coder run `to-tickets` on the spec after reading the code, so the slices follow real seams; the brief says «skip the quiz step of to-tickets», since the sign settled the want; the slices go into its worktree `.scratch/<feature>/issues/`, never linear
 - the `signed` label comes off each dispatched chunk, and its `## signed` block gets `🚀 dispatched <YYYY-MM-DD>`; a cancelled chunk gets `🚫 cancelled <YYYY-MM-DD> — <why>`
 - **the lane plan**, `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside every checkout, so an isolated coder can write it and a decamp keeps it): the coder's side (the draft, the ticks, `## not greenlit`) is `x:crew-coder`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to greenlight` i reorder it against what comes after and 🟢 greenlight it — my word is final — and greenlight again on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies its ticket lines at each greenlight and land (by hand, until FRM-410). a lane of one ticket skips the file
 

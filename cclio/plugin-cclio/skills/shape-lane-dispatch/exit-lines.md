@@ -19,6 +19,8 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 - a line that says «any», «new», «a path» or «a lint» **lists its hostile twins**: file and dir, rename and move, quotes and «», one character (FRM-356, 359, 367 each lost a round to a twin)
 - a **cross-view claim is an equality**: «the same number on every view», never «the count is the headline everywhere» — the equality is where the bug was
 - a **rate bar names its minimum n**: «recall ≥ 95 %» on 9 prompts meant 9 of 9
+- a **count names its unit and the command that counts it**: «185 tests» was a count of names while 160 ran (FRM-422); «top-level passes in `go test -json`» leaves no room
+- a line that **proves a fix** says it goes red with the fix reverted: FRM-422's race line passed without proving the lock alone
 - a **baseline names its repo pairing and its filter**; a time window says today-inclusive and local
 - a line **built on a data field carries its one-command live count** in the ticket, and a parser line is tried against shapes counted from real data: «-dirty build» held literally while 665 of 665 trace lines were dirty
 
