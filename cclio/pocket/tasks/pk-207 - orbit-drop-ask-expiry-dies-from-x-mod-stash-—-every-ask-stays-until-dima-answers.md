@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-19 16:35'
-updated_date: '2026-10-19 16:35'
+updated_date: '2026-10-23T18:41:00Z'
 due_date: '2026-10-27'
 labels:
   - s
@@ -24,3 +24,9 @@ dima o91, 2026-10-19: «simply dropping a trial entry is not enough because that
 not a cclio freebie: ~30 lines across hooks/orbit.ts (15), hooks/register.tsx (9), types/stash.d.ts, FTR.md, GLOSSARY.md, plus the orbit tool's description (the dies field) and its tests.
 the trial: docs/test-drive/orbit-expiry.md — 0 wins, 1 miss (cclio set dies:3 on a real decision); dropped.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+ticket: FRM-427
+<!-- SECTION:NOTES:END -->

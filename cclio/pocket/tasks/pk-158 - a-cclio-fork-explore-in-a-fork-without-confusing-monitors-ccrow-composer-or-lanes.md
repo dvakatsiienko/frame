@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-21 10:54'
+updated_date: '2026-10-23T18:41:00Z'
 due_date: '2026-10-24'
 labels:
   - s
@@ -53,4 +53,6 @@ dima 10-16 18:47: «fork-guard: next boot, not today»
 2026-10-19 19:50: the «cclio-fb» session traced — it is boot-prefetch.sh's barrel probe (a haiku claude -p, ~75k ctx, the d03f3da question), run because the fork's SessionStart (source resume) fires the full boot-prefetch hook. done-test line: given a fork starts, then boot-prefetch skips (no barrel probe, no watch arming, no ccrow start).
 
 2026-10-21 13:56: due moved 10-20 → 10-24, the mods lane's date (PK-120), which it rides.
+
+ticket: FRM-430
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'x-mod-guard: nudge cclio toward helper-lite at the 3rd image Read in one
 status: waiting
 assignee: []
 created_date: '2026-10-15 17:10'
-updated_date: '2026-10-19 12:53'
+updated_date: '2026-10-23T18:41:00Z'
 due_date: '2026-10-24'
 labels:
   - s
@@ -27,4 +27,6 @@ dima, 2026-10-15: a mod-guard item that suggests to you to use helper-lite to re
 2026-10-15 halt flush (a repeat: 2 skipped delegations in a day): widen it — also nudge cclio at a find-and-replace (sd, a script) across 10+ paths, pointing to composer's bulk-replace
 
 10-19, dima asked whether agent.spawn could nudge coders toward subagents (scout, helper, helper-lite): no — agent.spawn fires only on a spawn that already happens (it can deny; since 2.1.300 rewrite only a workflow agent's prompt/model). the nudge door is tool.call: a context hint on the Nth Read/Grep/image in a turn, the way x-mod-guard hints land today. widen this item from images to coder reads → scout/helper-lite.
+
+ticket: FRM-428
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-19 12:39'
-updated_date: '2026-10-23T09:31:00Z'
+updated_date: '2026-10-23T18:41:00Z'
 due_date: '2026-10-25'
 labels:
   - s
@@ -30,4 +30,6 @@ upstream https://github.com/anthropics/claude-code/issues/99395 (desktop: the fi
 2026-10-21 14:14 dima: «continue the watch and fold workarounds for mods lane as another rider». 2 new workarounds on #99395 since 10-18: beatwiz 10-19 (the dropped click still raises ui.focus with origin person + the Button key → the plugin presses that Button itself, wrap els.Button in ui.render to keep each key); skrinjarf 10-20 (Linux, same bug; the desktop renderer builds each mod Button as a <button>, names the mechanism, links #99211 #103030 #101639). read both whole when the mods lane opens; the watch stays.
 
 dima 2026-10-23 12:30: orbit's buttons click on the first press, so the first-click bug may be fixed natively; he observes more. confirmed → this rider changes to: the mods coder removes every #99395 workaround, then the #99395 watch and its workarounds.md line go.
+
+ticket: FRM-426
 <!-- SECTION:NOTES:END -->
