@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-23T11:12:00Z'
+updated_date: '2026-10-23T11:16:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -482,4 +482,42 @@ dima 2026-10-23 13:40 (orbit steer on the after-pickup review): «Yes, but do no
 > constraint: free plan — 2 teams, 250 non-archived issues.
 > 
 > ⸻ 🪪 cc·20260819·batch1 · fable 5 · agent run stamp — please keep 🙏
+
+2026-10-23 14:18 cclio: today's pm prompts, groomed by composer (prompt-groom, 12 entries) — the pm-module lines, numbered:
+W164 (12:39) i did not ask to move tickets to linear, yet.
+W167 (12:39) this is an XS.
+W168 (12:39) wait, something is off.
+W169 (12:39) i think something is wrong with the habit.
+W170 (12:39) also, even if you move them yourself: on each linear move, look at a mil to attach to, or create a new one.
+W171 (12:39) just parking tickets like this creates another unstructured pile, now in linear.
+W172 (12:49) a guard: `x-mod-guard` refuses a linear create without `--milestone` in a project that has milestones.
+W173 (12:49) run-or-move asks also name the 🍀 freebie verdict and the milestone for each item.
+W174 (12:49) okay, let's try. but i think that if you block linear moves with the --milestone guard, you will be forced to spam milestones. without milestones you won't be able to do anything, and it will create a bunch of milestones. i think it's better than not having them at all.
+W175 (12:49) let's try like this. if it goes not well, i'll tell you, and you change this habit to be less restrictive; maybe the guard becomes informative, not blocking.
+W190 (13:27) the name is the fit test.
+W191 (13:27) when a new ticket doesn't fit the name, it goes to another milestone, so the name never needs to drift.
+W192 (13:27) tickets never move to a milestone just because the milestone name doesn't fit.
+W193 (13:27) milestone scope should be grouped by collocating related tickets inside a milestone, by flow type.
+W194 (13:27) for example, the Speak app v2 milestone has tickets for the Speak app v2 redesign, along with the wisp fixes, design v2, and the new features we planned.
+W195 (13:34) i think it's better to sync the current PM blueprint with the current state after our fixes.
+W196 (13:34) [pasted] a quick steer about what we are currently reviewing.
+W197 (13:34) [pasted] before fixes, the PM module had drifted and had a lot of contradictions we found during the initial review, based on my wishes and your own findings.
+W198 (13:34) [pasted] we identified a number of weak spots by reading the contracts in files, text, memories and skills, and by using the actual blueprint, because the blueprint gives a high-level overview.
+W199 (13:34) [pasted] after those fixes, we do another review round in exactly the same manner. it's not just a check for a check mark.
+W200 (13:34) [pasted] the goal is to identify weak spots and find other spots and places for optimization: how to streamline the flow, find redundant steps that could be overhead, and make Flow easier by dropping, merging, or moving them, something like this.
+W201 (13:34) [pasted] it is a full-scale review, not just for a check mark to proceed.
+W202 (13:36) and actually, let's do a review after a second wind.
+W203 (13:36) prepare everything, close all tails, and maybe do some freebies: everything mechanical we already decided, nothing needed from me.
+W204 (13:36) then second wind, and after that, a review.
+W205 (13:36) but remember to save my ones about the rare review i just asked and asked previously as well; after the second window, don't forget them.
+W209 (13:54) there is an issue with our current ticket flow.
+W210 (13:54) i spotted that you started to move tickets to Linear.
+W211 (14:01) if yes, print all tickets related to the entire PM module revamp, in a tidy, easy-to-read list, starting from the root tickets and ending with the smaller stray leave tickets.
+W212 (14:01) print a linear list first, then a pocket list.
+W214 (14:12) frm-72: clear its body entirely, because standing tickets' bodies should be clean and not cluttered.
+W215 (14:12) only non-standing story tickets can have some info describing the story to be resolved and closed, but standing tickets are not allowed a cluttered body if they are a story.
+W216 (14:12) standing tickets are almost always stories.
+W217 (14:12) okay, let's resolve these findings fully and print what is left in scope of pk103.
+W218 (14:12) print a slim, easy-to-read list.
+routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W181 (boot board, trophy-sys, FRM-417 shape, the budget hook), W206–W208 (PK-198). dropped as cclio's own lines he quoted with ←, never his wish: W163, W165, W166, W183–W189, W213. ❓1–❓22 answered in the thread the turn each came in.
 <!-- SECTION:NOTES:END -->
