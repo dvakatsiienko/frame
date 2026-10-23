@@ -4,7 +4,7 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
 
 ## the obsidian channel — his drops from mobile, in the vault's `_hq/`
 
-- `inbox.md` ends every session empty of content, his section headers kept (his reprint-saving skeleton); the paths, the read and the reset live where they run: `cclio:boot` step 3 and `cclio:halt` phase 1.5. `pocket.md` there is a read-only phone mirror (`.claude/hooks/pocket-mirror.sh`): a phone edit is lost, his asks go in the inbox.
+- `inbox.md` ends every session empty of content, his section headers kept (his reprint-saving skeleton); the paths, the read and the reset live where they run: `cclio:boot` step 3 and `cclio:halt` phase 1.5.
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)
 

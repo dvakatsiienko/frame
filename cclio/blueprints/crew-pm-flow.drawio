@@ -793,9 +793,6 @@
         <mxCell id="tf-b2-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 notes, appended only&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;--append-notes, never --notes; his raw drop and quoted steers live here&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;habit-shared-files § the pocket&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b2" vertex="1">
           <mxGeometry x="1316" y="570" width="520" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="tf-b2-mirror" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the phone mirror&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;pocket.md in the vault, read-only: a phone edit is lost, his asks go to the inbox&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;.claude/hooks/pocket-mirror.sh&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b2" vertex="1">
-          <mxGeometry x="686" y="570" width="520" height="160" as="geometry" />
-        </mxCell>
         <mxCell id="tf-b2-w-size" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚠️ a size the config lacks&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the contract and the config hold xs · s · m; pocket-add&amp;#x27;s usage still offers --size l, which reds&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;my reading · pocket-add.ts vs backlog.config.yml&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b2" vertex="1">
           <mxGeometry x="3206" y="200" width="520" height="160" as="geometry" />
         </mxCell>
@@ -815,9 +812,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b2-e-item-notes" value="" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.6;exitY=1;exitDx=0;exitDy=0;entryX=0.6;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-item" target="tf-b2-notes">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="tf-b2-e-item-mirror" value="mirrored" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=20;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" source="tf-b2-item" target="tf-b2-mirror">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b2-w-w-size-shape" value="" style="html=1;endArrow=none;startArrow=none;dashed=1;strokeColor=#E54D4D;strokeWidth=3;edgeStyle=none;" parent="1" edge="1" source="tf-b2-w-size" target="tf-b2-shape">

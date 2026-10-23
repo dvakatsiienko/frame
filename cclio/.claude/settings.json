@@ -135,11 +135,6 @@
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/cclio/.claude/hooks/pocket-mirror.sh",
-            "timeout": 10
-          },
-          {
-            "type": "command",
             "command": "pnpm -C /Users/dima/frame --silent ccrow:unvetted",
             "timeout": 10
           },
