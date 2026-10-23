@@ -168,6 +168,10 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 // for the file above it so a finding's line is the spec's own; paths names every spec holding one
 func laneSpecSection(repo, id string) (paths []string, section string) {
 	specs, _ := filepath.Glob(filepath.Join(repo, ".scratch", "*", "spec.md"))
+	// .scratch/ is gitignored, so a linked worktree holds none: the main checkout's specs bind there
+	if common, linked, err := worktreeOf(repo); len(specs) == 0 && err == nil && linked {
+		specs, _ = filepath.Glob(filepath.Join(filepath.Dir(common), ".scratch", "*", "spec.md"))
+	}
 	head := regexp.MustCompile(`(?m)^## ` + regexp.QuoteMeta(id) + `\b.*$`)
 	for _, spec := range specs {
 		raw, err := os.ReadFile(spec)

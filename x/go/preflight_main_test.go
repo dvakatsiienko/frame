@@ -41,6 +41,25 @@ func TestPreflightLintsTheLaneSpecsExitLines(t *testing.T) {
 	}
 }
 
+// .scratch/ is gitignored, so a worktree holds no spec: preflight there reads the main checkout's
+func TestPreflightReadsTheLaneSpecFromAWorktree(t *testing.T) {
+	t.Parallel()
+	dir := preflightRepo(t)
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n")
+	tree := filepath.Join(t.TempDir(), "tree")
+	gitT(t, dir, "worktree", "add", "-q", "--detach", tree)
+	raw, _ := json.Marshal("## want\n\na thing\n")
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
+	})
+
+	_, got := runLinear(t, server, nil, "brief", "preflight", "FRM-1", "--repo", tree)
+
+	if got.code != 0 || !strings.Contains(got.stdout, ".scratch/lane-1/spec.md") {
+		t.Fatalf("exit %d, want the main checkout's spec read from a worktree\n%s%s", got.code, got.stdout, got.stderr)
+	}
+}
+
 func TestPreflightRefusesATicketTwoLaneSpecsHold(t *testing.T) {
 	t.Parallel()
 	dir := preflightRepo(t)

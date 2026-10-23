@@ -957,8 +957,8 @@ func TestMergeAutoReleasesTheBrakeOnlyOnDimasWord(t *testing.T) {
 
 	got := w.run(t, "8", "--apply", "--release-brake")
 
-	if got.code != 2 || len(w.hub.sent("DELETE ")) != 0 {
-		t.Fatalf("exit %d, deletes %q: want a usage refusal naming --dima-ok 8", got.code, w.hub.sent("DELETE "))
+	if got.code != 2 || len(w.hub.sent("DELETE ")) != 0 || !strings.Contains(envelopeOf(got).Error, "only on dima's typed word") || got.next != "x lane merge-auto 8 --release-brake --dima-ok 8" {
+		t.Fatalf("exit %d, deletes %q, error %q, next %q: want the refusal naming dima's word and the exact release", got.code, w.hub.sent("DELETE "), envelopeOf(got).Error, got.next)
 	}
 }
 
