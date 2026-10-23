@@ -21,7 +21,7 @@ one short message, then straight into phase 1:
   closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
   with asks left open moves to Todo, never closes
 - **the stop list holds only members the fleet spawned with `--bg`**; a session the digest marks 👤 is dima's own (desktop or remote control) and stays as he left it.
-- **the coder roster, two questions per coder: retro filed in `~/.claude/shelf/retros/`? `claude stop <id>` done?** a coder
+- **the coder roster, two questions per coder: retro filed in `~/.local/state/x/lanes/<feature>/`? `claude stop <id>` done?** a coder
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
   calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +
   `kill -0 <pid>`) and written as dead when dead. **🎼 composer is on the roster too**: `claude stop <its id from claude agents --json>` beside ccrow's, the boot starts it fresh. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
@@ -73,7 +73,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 
 ## phase 3a — flawlog flush, the one stop
 read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/cclio:flawlog`.
-**the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
+**the retros, in the flush:** `ls ~/.local/state/x/lanes/*/*-retro.md ~/.claude/shelf/retros/` (the old home drains out) — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
 **the sweep, after the flush:** `node ~/frame/cclio/script/halt-sweep.ts --apply --only retention` — retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
 🚨 **the flush stops the halt**: print the proposal in a reply before any next-step box (the box ends the turn), wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before

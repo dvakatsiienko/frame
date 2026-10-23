@@ -40,7 +40,7 @@ this file says how every member does it. A section headed with roles binds only 
 
 **after a compaction**: re-read your role skill and this file before the next step.
 
-**the retro**: your last act, a file at `~/.claude/shelf/retros/<date>-<ticket>-<role>.md`, never a message <!-- mac -->
+**the retro**: your last act, a file at `~/.local/state/x/lanes/<feature>/<date>-<ticket>-<role>-retro.md` (no lane: `<ticket>` is the feature; outside every checkout, so a worktree can write it), never a message <!-- mac -->
 - at most 12 lines, most important first, walked through matt's retro categories; a brief's `focus:` line
   replaces your standing focus for that run
 - it names one automation candidate: a script, a verb or a guard
