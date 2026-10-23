@@ -37,19 +37,26 @@ const ghStack = `'extension list'*) if [ -z "$FAKE_NO_STACK" ]; then printf 'gh 
 // github's side of a linked stack: the open prs, and the stacks api answering for the pr it is asked about
 func stackGithub(t *testing.T, clone string, stacks string) []string {
 	t.Helper()
-	origin := gitT(t, clone, "remote", "get-url", "origin")
-	gitT(t, clone, "remote", "set-url", "origin", "https://github.com/o/r.git")
-	gitT(t, clone, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
-	server, _ := fakeGithub(t, map[string]string{
-		repoPath + "/pulls":  `[{"number":12,"head":{"ref":"coder/FRM-1-a-2"}},{"number":13,"head":{"ref":"coder/FRM-1-a-3"}}]`,
-		repoPath + "/stacks": stacks,
-	})
+	onGithub(t, clone)
+	pages := map[string]string{repoPath + "/pulls": `[{"number":12,"head":{"ref":"coder/FRM-1-a-2"}},{"number":13,"head":{"ref":"coder/FRM-1-a-3"}}]`}
+	if stacks != "" {
+		pages[repoPath+"/stacks"] = stacks
+	}
+	server, _ := fakeGithub(t, pages)
 	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
 	return []string{"X_GITHUB_URL=" + server.URL, "X_KEYS=" + keys}
 }
 
+// the clone's origin reads as github.com/o/r and still fetches from the bare fixture
+func onGithub(t *testing.T, clone string) {
+	t.Helper()
+	origin := gitT(t, clone, "remote", "get-url", "origin")
+	gitT(t, clone, "remote", "set-url", "origin", "https://github.com/o/r.git")
+	gitT(t, clone, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
+}
+
 const linkedStack = `[{"number":4,"base":{"ref":"main"},"pull_requests":[
-	{"number":11,"state":"open","head":{"ref":"coder/FRM-1-a"}},
+	{"number":11,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"coder/FRM-1-a"}},
 	{"number":12,"state":"open","head":{"ref":"coder/FRM-1-a-2"}},
 	{"number":13,"state":"open","head":{"ref":"coder/FRM-1-a-3"}}]}]`
 
@@ -94,6 +101,28 @@ func TestStackViewOfAPrInNoStackNamesLink(t *testing.T) {
 	}
 }
 
+func TestStackViewOnARepoWithoutStacksSaysSo(t *testing.T) {
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	env := stackGithub(t, clone, "")
+
+	got := xIn(t, clone, env, "lane", "stack", "view")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "stacks api answered 404 for o/r") {
+		t.Fatalf("exit %d, want a refusal naming the 404 and the repo\n%s", got.code, got.stdout)
+	}
+}
+
+func TestStackViewShowsAMergedLayerAsMerged(t *testing.T) {
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	env := stackGithub(t, clone, linkedStack)
+
+	got := xIn(t, clone, env, "lane", "stack", "view", "--board")
+
+	if got.code != 0 || !strings.Contains(sgr.ReplaceAllString(got.stdout, ""), "coder/FRM-1-a #11 merged") {
+		t.Fatalf("exit %d, want #11 shown merged:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
 	env, log := ghRecorder(t, ghStack)
@@ -110,6 +139,7 @@ func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 func linkWith(t *testing.T, exits string) (ran, int) {
 	t.Helper()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	onGithub(t, clone)
 	env, log := ghRecorder(t, ghStack)
 	env = append(env, "FAKE_DIR="+t.TempDir(), "FAKE_EXITS="+exits, "X_FAKE_SLEEP=1")
 	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
@@ -149,25 +179,41 @@ func TestStackLinkRefusesAPausedRebaseAtOnce(t *testing.T) {
 func TestStackLinkRefusesARepoWithoutStacksAtOnce(t *testing.T) {
 	got, calls := linkWith(t, "9")
 
-	if got.code == 0 || calls != 1 || !strings.Contains(got.stdout, "origin.git") {
+	if got.code == 0 || calls != 1 || !strings.Contains(got.stdout, "not enabled for o/r") {
 		t.Fatalf("exit %d after %d links, want 1 call and a refusal naming the repo\n%s", got.code, calls, got.stdout)
 	}
 }
 
-// a merge world where #7 (coder/x onto main) is the lower layer and #8 sits on base
-func stackedMergeWorld(t *testing.T, base string) *mergeWorld {
+const (
+	lowerOpen   = `{"number":7,"state":"open","head":{"ref":"coder/x"}}`
+	lowerMerged = `{"number":7,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"coder/x"}}`
+)
+
+// a merge world where #7 (coder/x onto main) is the lower layer, as lower says, and #8 sits on base
+func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 	t.Helper()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/pulls/8"] = `{"number":8,"title":"part 2","state":"open","merged":false,"body":"b",
 		"head":{"sha":"` + w.head + `","ref":"coder/x-2"},"base":{"ref":"` + base + `"}}`
-	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"head":{"ref":"coder/y"}},{"number":7,"head":{"ref":"coder/x"}}]`
+	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"state":"open","head":{"ref":"coder/y"}},` + lower + `]`
+	w.hub.pages[repoPath+"/pulls/8/files"] = w.hub.pages[repoPath+"/pulls/7/files"]
 	return w
 }
 
+func TestMergeAutoRefusesALayerWhoseLowerPrMerged(t *testing.T) {
+	w := stackedMergeWorld(t, "coder/x", lowerMerged)
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "#7 (coder/x) already merged") || len(w.hub.sent("PUT")) != 0 {
+		t.Fatalf("exit %d, merges %q, want a refusal naming the merged #7 and no merge\n%s", got.code, w.hub.sent("PUT"), got.stdout)
+	}
+}
+
 func TestMergeAutoWaitsOnAnUpperLayerNamingTheLowerPr(t *testing.T) {
-	w := stackedMergeWorld(t, "coder/x")
+	w := stackedMergeWorld(t, "coder/x", lowerOpen)
 
 	got := w.run(t, "8", "--apply")
 
@@ -177,7 +223,7 @@ func TestMergeAutoWaitsOnAnUpperLayerNamingTheLowerPr(t *testing.T) {
 }
 
 func TestMergeAutoMergesTheLowerLayer(t *testing.T) {
-	w := stackedMergeWorld(t, "coder/x")
+	w := stackedMergeWorld(t, "coder/x", lowerOpen)
 
 	got := w.run(t, "7", "--apply")
 
@@ -187,12 +233,13 @@ func TestMergeAutoMergesTheLowerLayer(t *testing.T) {
 }
 
 func TestMergeAutoLeavesABaseWithNoOpenPrToTheChecks(t *testing.T) {
-	w := stackedMergeWorld(t, "release")
+	w := stackedMergeWorld(t, "release", lowerOpen)
+	gitT(t, w.seed, "push", "-q", "origin", "main:release")
 
 	got := w.run(t, "8", "--apply")
 
-	if strings.Contains(got.stdout, "merges first") {
-		t.Fatalf("a base with no open pr read as a stack layer:\n%s", got.stdout)
+	if !strings.Contains(got.stdout, `"name":"verifier"`) {
+		t.Fatalf("merge-auto stopped before its checks on a base no pr owns:\n%s", got.stdout)
 	}
 }
 

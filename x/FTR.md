@@ -169,7 +169,7 @@
   - decision: view reads github, never `gh stack view`, which reads a local stack file its own link never writes (verifier round 1)
   - given gh-stack's lock held (its exit 8), then the call is tried again with backoff for up to 2 minutes, then fails naming the lock; a paused stack rebase (exit 7) refuses after 1 call naming its worktree, `gh stack rebase --continue` and `--abort`; stacks off for the repo (exit 9) refuses at once naming it
   - given no gh-stack extension, then `x lane stack link` exits 1 naming `gh extension install github/gh-stack`
-  - given a pr onto another open pr's branch, when `x lane merge-auto <pr>` runs, then it waits naming the lower pr; the lower one merges as any pr does
+  - given a pr onto another open pr's branch, when `x lane merge-auto <pr>` runs, then it waits naming the lower pr; the lower one merges as any pr does; once the lower pr merged, the upper refuses until it is retargeted onto main; a base no pr owns is left to the checks
   - given the add-on's files deleted, or `-tags nostacks`, then `go build` and `go test ./...` pass, which `pnpm x-go:test` proves on every run
   - decision: an add-on behind `//go:build !nostacks`, reaching core only through `laneAddOn`, its verbs hidden from the overview while stacks are on trial (FRM-404; dima, 2026-10-20: «easy to delete»)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list

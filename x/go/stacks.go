@@ -43,24 +43,30 @@ func init() {
 	laneAddOn.mergeWait = stackMergeWait
 }
 
-// a pr onto another open pr's branch waits for that pr
+// a pr onto another pr's branch waits for that pr; once it merged, its branch is a dead end until retargeted
 func stackMergeWait(repo string, pr pullHead) (string, error) {
 	if pr.Base.Ref == "main" {
 		return "", nil
 	}
 	owner, _, _ := strings.Cut(repo, "/")
-	var open []struct {
-		Number int `json:"number"`
-		Head   struct {
+	var below []struct {
+		Number   int     `json:"number"`
+		State    string  `json:"state"`
+		MergedAt *string `json:"merged_at"`
+		Head     struct {
 			Ref string `json:"ref"`
 		} `json:"head"`
 	}
-	if _, err := ghFetch(asDima, githubBase()+"/repos/"+repo+"/pulls?state=open&head="+url.QueryEscape(owner+":"+pr.Base.Ref), &open); err != nil {
+	if _, err := ghFetch(asDima, githubBase()+"/repos/"+repo+"/pulls?state=all&head="+url.QueryEscape(owner+":"+pr.Base.Ref), &below); err != nil {
 		return "", err
 	}
-	for _, below := range open {
-		if below.Head.Ref == pr.Base.Ref {
-			return fmt.Sprintf("#%d (%s) merges first: a stack merges bottom-up, one layer per call", below.Number, pr.Base.Ref), nil
+	for _, lower := range below {
+		switch {
+		case lower.Head.Ref != pr.Base.Ref:
+		case lower.State == "open":
+			return fmt.Sprintf("#%d (%s) merges first: a stack merges bottom-up, one layer per call", lower.Number, pr.Base.Ref), nil
+		case lower.MergedAt != nil:
+			return fmt.Sprintf("#%d (%s) already merged, so this pr would land on a dead branch; retarget it first: gh pr edit <this pr> --base main", lower.Number, pr.Base.Ref), nil
 		}
 	}
 	return "", nil
@@ -106,9 +112,10 @@ type remoteStack struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
 	PullRequests []struct {
-		Number int    `json:"number"`
-		State  string `json:"state"`
-		Head   struct {
+		Number   int     `json:"number"`
+		State    string  `json:"state"`
+		MergedAt *string `json:"merged_at"`
+		Head     struct {
 			Ref string `json:"ref"`
 		} `json:"head"`
 	} `json:"pull_requests"`
@@ -153,7 +160,7 @@ func stackView(r *Run, _ []string, flags Flags) (any, error) {
 		status, _, err := ghSend(asCoder, http.MethodGet, fmt.Sprintf("%s/stacks?pull_request=%d", api, n), nil, &stacks)
 		switch {
 		case status == http.StatusNotFound:
-			return "", &Fail{Refused: true, Msg: "stacked prs are not enabled for " + repo + " (the stacks api answered 404)", Next: "x lane pr-open --apply <title> <body-file>, a plain pr"}
+			return "", &Fail{Refused: true, Msg: "the stacks api answered 404 for " + repo + ": stacked prs are off there, or the coder app cannot read stacks", Next: "x lane pr-open --apply <title> <body-file>, a plain pr"}
 		case err != nil:
 			return "", err
 		case len(stacks) == 0:
@@ -166,7 +173,11 @@ func stackView(r *Run, _ []string, flags Flags) (any, error) {
 	stack := stacks[0]
 	lines := []string{stack.Base.Ref}
 	for _, pr := range stack.PullRequests {
-		lines = append(lines, fmt.Sprintf("└ %s #%d %s", pr.Head.Ref, pr.Number, pr.State))
+		state := pr.State
+		if pr.MergedAt != nil {
+			state = "merged"
+		}
+		lines = append(lines, fmt.Sprintf("└ %s #%d %s", pr.Head.Ref, pr.Number, state))
 	}
 	r.Done(strings.Join(lines, "\n"), "")
 	return ordered{{"pr", n}, {"stack", stack}}, nil
