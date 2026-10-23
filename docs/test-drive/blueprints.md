@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-01
 dies-when: the verdict line below is written
 ---
@@ -36,3 +36,5 @@ one line per automation: the duty it took over, that duty's cost before (tool ca
 - 2026-10-23 · the tool bench: the crew + pm board (107 tiles, 89 arrows, 13 sections) redrawn by three Opus 5.5 helpers from the FigJam REST export · draw.io 2:39 min, 27 calls, 78k tokens, every shape, colour and arrow label kept · Obsidian Canvas 3:43, 25 calls, 109k, no text size, no diamonds, 6 colours · n8n 6:00, 46 calls, 110k, no colours, no arrow labels, notes cut at ~32 chars · dima picked draw.io; n8n stays for automations
 
 ## verdict
+
+- 2026-10-23 · **adopted: draw.io is the blueprint tool, n8n for automations only** (dima, 16:17: «only draw.io is main blueprint tool», unless a better one turns up or FigJam becomes reachable; Obsidian Canvas an option for later). FigJam left at the Figma MCP cap (`figjam.md`). the boards and the doors: `cclio/blueprints/AGENTS.md`

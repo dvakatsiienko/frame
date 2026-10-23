@@ -1,4 +1,6 @@
 # blueprint comms — the scored shortlist
+📌 decided 2026-10-23: **draw.io** is the blueprint tool, n8n only for automations (`docs/test-drive/blueprints.md` § verdict); the FigJam line below is history.
+
 
 scored against the grill in `PRODUCT.md`: 3 = a text file in git, 4 = dima adds his own tiles and arrows, 5 = auto-layout. cost = cclio's estimated tokens for one edit set (3 renames, 1 new tile, 2 arrows), bytes ÷ 3.5, measured 2026-10-18.
 

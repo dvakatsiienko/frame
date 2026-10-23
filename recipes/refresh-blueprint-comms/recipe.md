@@ -33,7 +33,7 @@ dima's, 2026-10-21 (chat, folded, PK-243):
 ## the run
 
 - the tool must stay local, free, fast for cclio to read and edit, and editable by dima's drag — the grill in `cclio/blueprints/PRODUCT.md` is the bar every candidate is scored against; cost breaks ties
-- FigJam leads every vector while it is the blueprint tool dima leans to; n8n, Obsidian Canvas and draw.io wait for the bench (PK-243 W8)
+- draw.io leads every vector: the blueprint tool since the 10-23 bench (`docs/test-drive/blueprints.md` § verdict); n8n only for automations; FigJam and Obsidian Canvas are re-checked only when the run asks «is there a better one?»
 - suggest a run when: a blueprint trial ends, a tool on the list ships a major, or dima says a tool feels clunky
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
@@ -49,12 +49,12 @@ dima's, 2026-10-21 (chat, folded, PK-243):
 
 - new tools for agent-drawn, human-editable diagrams, flows, maps and mindmaps
 - automation features worth borrowing from flow tools, never adopted for their own sake
-- the cheapest way for an agent to draw and edit a FigJam board at the top quality bar: tokens per edit, calls per board, batching, what to read back and how small
-- a better door to FigJam than the figma mcp's plugin calls: a cli, the REST api, a plugin or a skill others use
+- the cheapest way for an agent to draw and edit a draw.io board at the top quality bar: tokens per edit, a builder script vs hand xml, what to read back and how small
+- draw.io doors others use: the desktop cli's export flags, mxGraph libraries, a skill or a plugin that writes `.drawio` well
 - layout that never crams: arrow routing, spacing, auto-layout, sections, how others keep agent-drawn boards clean
 - screenshots for an agent's read-back: the smallest size and region that still shows a clipped label or a crossing arrow
 - how to teach an agent to draw boards a human reads with pleasure: visual hierarchy, density, colour, type, emoji, the skills and prompts that already do it well
-- dima's FigJam comments read by cclio cheaply, every time, without his ask: the api, its scope and its cost
+- dima's edits and notes on a draw.io board read back cheaply, every time, without his ask: a semantic diff of the file against its last commit
 
 ### analysis
 
