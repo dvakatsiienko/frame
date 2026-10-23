@@ -45,6 +45,7 @@ func verifyWorld(t *testing.T) (main, prHead string) {
 }
 
 func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {
+	t.Parallel()
 	main, prHead := verifyWorld(t)
 	mainHead := gitT(t, main, "rev-parse", "HEAD")
 	cases := []struct{ name, arg, want, tree string }{
@@ -80,6 +81,7 @@ func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {
 
 // the next round on the same pr moves the verifier's own tree to the new head
 func TestVerifyTreeMovesItsTreeToANewHead(t *testing.T) {
+	t.Parallel()
 	main, _ := verifyWorld(t)
 	if got := xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7"); got.code != 0 {
 		t.Fatalf("control: the first run failed:\n%s", got.stdout)
@@ -102,6 +104,7 @@ func TestVerifyTreeMovesItsTreeToANewHead(t *testing.T) {
 }
 
 func TestVerifyTreeRefusesToMoveATreeWithChanges(t *testing.T) {
+	t.Parallel()
 	main, prHead := verifyWorld(t)
 	xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7")
 	tree := filepath.Join(main, ".claude/worktrees/verify-pr-7")
@@ -117,6 +120,7 @@ func TestVerifyTreeRefusesToMoveATreeWithChanges(t *testing.T) {
 
 // a plain dir at the tree's path is no worktree: git would walk up to the main checkout
 func TestVerifyTreeRefusesAPlainDirAtItsPath(t *testing.T) {
+	t.Parallel()
 	main, _ := verifyWorld(t)
 	write(t, filepath.Join(main, ".claude/worktrees/verify-pr-7/left.txt"), "an aborted add's leftovers\n")
 	before := gitT(t, main, "rev-parse", "--abbrev-ref", "HEAD")
@@ -129,6 +133,7 @@ func TestVerifyTreeRefusesAPlainDirAtItsPath(t *testing.T) {
 }
 
 func TestVerifyTreeRefusesAnythingButAPrUrlOrMainSha(t *testing.T) {
+	t.Parallel()
 	main, prHead := verifyWorld(t)
 	for _, arg := range []string{"7", "#7", "main", "main:zz", "https://github.com/o/r/issues/7", "https://github.com/other/r/pull/7", "main:" + prHead} {
 		t.Run(arg, func(t *testing.T) {

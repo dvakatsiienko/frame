@@ -17,6 +17,7 @@ func archiveServer(t *testing.T, more string) *fakeLinear {
 }
 
 func TestArchivePlansWithoutApplyAndWritesNothing(t *testing.T) {
+	t.Parallel()
 	server := archiveServer(t, "false")
 	envelope, got := runLinear(t, server, nil, "linear", "archive", "--days", "30")
 	if got.code != 4 || envelope["status"] != "confirm" {
@@ -35,6 +36,7 @@ func TestArchivePlansWithoutApplyAndWritesNothing(t *testing.T) {
 }
 
 func TestArchiveDrawsItsRunBoardOnATerminal(t *testing.T) {
+	t.Parallel()
 	server := archiveServer(t, "false")
 	out, code := runTTY(t, xbin, world(t), call{ID: "linear-archive-tty", Mode: "tty", Cols: 100, Stdin: "none",
 		Argv: []string{"linear", "archive"},
@@ -46,6 +48,7 @@ func TestArchiveDrawsItsRunBoardOnATerminal(t *testing.T) {
 }
 
 func TestArchiveWithApplyArchivesEveryPlannedTicketInOneRequest(t *testing.T) {
+	t.Parallel()
 	server := archiveServer(t, "true")
 	envelope, got := runLinear(t, server, nil, "linear", "archive", "--apply")
 	if got.code != 0 {

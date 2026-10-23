@@ -49,6 +49,7 @@ func calls(t *testing.T, dir string) string {
 }
 
 func TestReviewRequestsTheFirstRoundUnderTheCap(t *testing.T) {
+	t.Parallel()
 	env, dir := fakeGh(t, []string{`{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
 
 	got := xIn(t, t.TempDir(), env, "lane", "review", "7")
@@ -65,6 +66,7 @@ func TestReviewRequestsTheFirstRoundUnderTheCap(t *testing.T) {
 }
 
 func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
+	t.Parallel()
 	capped := []string{runOf(1, oldSha, "completed", "success")}
 	cases := []struct {
 		name   string
@@ -93,6 +95,7 @@ func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
 }
 
 func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
+	t.Parallel()
 	env, dir := fakeGh(t, []string{`{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
 
 	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_ADD_FAIL=1"), "lane", "review", "7")
@@ -106,6 +109,7 @@ func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
 }
 
 func TestReviewAtTheCapNamesCcliosApprovalAndRequestsNothing(t *testing.T) {
+	t.Parallel()
 	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "failure")})
 
 	got := xIn(t, t.TempDir(), env, "lane", "review", "7")
@@ -119,6 +123,7 @@ func TestReviewAtTheCapNamesCcliosApprovalAndRequestsNothing(t *testing.T) {
 }
 
 func TestPrBodyRefusesACallWithoutANumber(t *testing.T) {
+	t.Parallel()
 	env, dir := fakeGh(t, nil)
 	body := filepath.Join(t.TempDir(), "body.md")
 	write(t, body, "the body\n")
@@ -139,6 +144,7 @@ func TestPrBodyRefusesACallWithoutANumber(t *testing.T) {
 }
 
 func TestPrBodyWritesTheFileAndReadsItBack(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		mangle string
@@ -189,6 +195,7 @@ func runPreflight(t *testing.T, body string, id string) (map[string]any, asRun) 
 }
 
 func TestPreflightPassesACleanTicket(t *testing.T) {
+	t.Parallel()
 	body := "## want\n\nthe «redesign» word quoted is a name, not a plan\n\n## exit\n\n1. `x lane brand-new <pr>` (new) prints ok\n2. post-merge: dima reads the board\n"
 
 	_, got := runPreflight(t, body, "FRM-1")
@@ -199,6 +206,7 @@ func TestPreflightPassesACleanTicket(t *testing.T) {
 }
 
 func TestTwoOwnersNeedsACclioHalfAndAnother(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, group string
 		two         bool
@@ -220,6 +228,7 @@ func TestTwoOwnersNeedsACclioHalfAndAnother(t *testing.T) {
 
 // the push rule reads the real skill through the built x: a wrong root would switch it off with every stubbed test green
 func TestBriefCheckReadsTheCoderSkillsPushDoor(t *testing.T) {
+	t.Parallel()
 	brief := filepath.Join(t.TempDir(), "brief.md")
 	write(t, brief, "/x:crew-coder\ncclio pushes when you are done\n")
 
@@ -231,6 +240,7 @@ func TestBriefCheckReadsTheCoderSkillsPushDoor(t *testing.T) {
 }
 
 func TestPreflightRefusesATicketWithNoExitSection(t *testing.T) {
+	t.Parallel()
 	_, got := runPreflight(t, "## want\n\n- `x lane commit` grows a step\n", "FRM-1")
 
 	if got.code != 1 || !strings.Contains(got.stdout, "the ticket has no exit lines") {
@@ -239,6 +249,7 @@ func TestPreflightRefusesATicketWithNoExitSection(t *testing.T) {
 }
 
 func TestPreflightNamesEveryProblem(t *testing.T) {
+	t.Parallel()
 	body := "## the board redesign\n\nwe rework the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. adds `x lane unlock` for a locked tree\n4. `docs/shipped.md` says done\n5. `x:crew-coder`'s final step and cclio's pre-merge step name it\n"
 	want := []string{
 		"line 11: lint exit line — has two owners",

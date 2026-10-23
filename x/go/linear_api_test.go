@@ -23,6 +23,7 @@ func apiServer(t *testing.T, reply string) *fakeLinear {
 }
 
 func TestAPIPrintsLinearsReplyAsItCame(t *testing.T) {
+	t.Parallel()
 	reply := `{"data":{"viewer":{"name":"cclio"}}}`
 	server := apiServer(t, reply)
 	_, got := runLinear(t, server, nil, "linear", "api", "query { viewer { name } }")
@@ -32,6 +33,7 @@ func TestAPIPrintsLinearsReplyAsItCame(t *testing.T) {
 }
 
 func TestAPIEndsOneOnAGraphqlError(t *testing.T) {
+	t.Parallel()
 	server := apiServer(t, `{"errors":[{"message":"Cannot query field"}],"data":null}`)
 	_, got := runLinear(t, server, nil, "linear", "api", "query { nope }")
 	if got.code != 1 || !strings.Contains(got.stdout, "Cannot query field") {
@@ -40,6 +42,7 @@ func TestAPIEndsOneOnAGraphqlError(t *testing.T) {
 }
 
 func TestAPIRewritesATicketIdWhereAnIdGoes(t *testing.T) {
+	t.Parallel()
 	server := apiServer(t, `{"data":{"issueArchive":{"success":true}}}`)
 	query := `mutation { issueArchive(id: "FRM-1") { success } commentCreate(input: { issueId: "FRM-2", body: "see FRM-3, id: \"FRM-6\"" }) { success } ` +
 		`c: commentCreate(input: { issueId: "FRM-2", body: """see id: "FRM-7" here""" }) { success } ` +
@@ -70,6 +73,7 @@ func TestAPIRewritesATicketIdWhereAnIdGoes(t *testing.T) {
 }
 
 func TestAPIReadsAnIssueByItsIdentifierInOneRequest(t *testing.T) {
+	t.Parallel()
 	server := apiServer(t, `{"data":{"issue":{"title":"t"}}}`)
 	if _, got := runLinear(t, server, nil, "linear", "api", `query { issue(id: "FRM-1") { title } }`); got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
@@ -80,6 +84,7 @@ func TestAPIReadsAnIssueByItsIdentifierInOneRequest(t *testing.T) {
 }
 
 func TestAPITracesTheShapeNeverTheQuery(t *testing.T) {
+	t.Parallel()
 	server := apiServer(t, `{"data":{"a":{"id":"1"},"comments":{"nodes":[]}}}`)
 	_, got := runLinear(t, server, nil, "linear", "api", `query Mine($t: String!) { a: issue(id: "FRM-1") { title } comments(first: 5, filter: { body: { contains: "secret words" } }) { nodes { body } } }`, "--vars", `{"t":"x"}`)
 	if got.code != 0 {
@@ -96,6 +101,7 @@ func TestAPITracesTheShapeNeverTheQuery(t *testing.T) {
 }
 
 func TestSchemaNamesTheLinearRawDoorAndItsIdentity(t *testing.T) {
+	t.Parallel()
 	got := xIn(t, repo(t), nil, "schema", "linear")
 	if got.data["rawDoor"] != "x linear api" || !strings.Contains(fmt.Sprint(got.data["identity"]), "1password") {
 		t.Errorf("schema linear: rawDoor %v identity %v", got.data["rawDoor"], got.data["identity"])
@@ -103,6 +109,7 @@ func TestSchemaNamesTheLinearRawDoorAndItsIdentity(t *testing.T) {
 }
 
 func TestShapeSeesPastCommentsAndFragments(t *testing.T) {
+	t.Parallel()
 	cases := map[string]string{
 		"# archive the old one\nmutation { issueArchive(id: \"FRM-1\") { success } }": "mutation issueArchive",
 		`query { viewer { id } ... on Query { teams { nodes { id } } } ...Rest }`:     "query viewer",
@@ -116,6 +123,7 @@ func TestShapeSeesPastCommentsAndFragments(t *testing.T) {
 }
 
 func TestStatsRanksTheShapesTheRawDoorCarried(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	day := filepath.Join(state, "traces", time.Now().Format(time.DateOnly)+".jsonl")
 	line := func(shape string) string {

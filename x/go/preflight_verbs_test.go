@@ -10,6 +10,7 @@ func exitSection(lines ...string) string {
 }
 
 func TestXCommandFindingsChecksEachNamedVerbAndFlag(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name string
 		body string
@@ -54,6 +55,7 @@ func TestXCommandFindingsChecksEachNamedVerbAndFlag(t *testing.T) {
 
 // the want line: a sealed exit line naming a flag the registry lacks refuses the seal, through the built x
 func TestPreflightRefusesAnExitLineNamingAMissingFlag(t *testing.T) {
+	t.Parallel()
 	_, got := runPreflight(t, exitSection("1. `x lane gate --dry` prints ok"), "FRM-1")
 
 	if got.code == 0 || !strings.Contains(got.stdout, "line 3: flag --dry") {

@@ -35,6 +35,7 @@ func tracing(state string, env ...string) []string {
 }
 
 func TestACallLeavesOneTraceLine(t *testing.T) {
+	// serial: t.Setenv — the knowledge root and the forced panic reach the child through the process env
 	failingHook := func(t *testing.T, dir string) {
 		write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nexit 1\n")
 		write(t, filepath.Join(dir, "readme.txt"), "changed\n")
@@ -86,6 +87,7 @@ func TestACallLeavesOneTraceLine(t *testing.T) {
 }
 
 func TestTheTraceNamesItsCaller(t *testing.T) {
+	t.Parallel()
 	cowork := "CLAUDE_PLUGIN_ROOT=/Users/dima/Library/Application Support/Claude/local-agent-mode-sessions/9db8/479a/rpm/plugin_01"
 	cases := []struct {
 		caller string
@@ -118,6 +120,7 @@ func TestTheTraceNamesItsCaller(t *testing.T) {
 }
 
 func TestTheTraceKeepsIdsAndDropsText(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name string
 		argv []string
@@ -147,6 +150,7 @@ func TestTheTraceKeepsIdsAndDropsText(t *testing.T) {
 }
 
 func TestAVerbWithStepsTracesEachStepTime(t *testing.T) {
+	t.Parallel()
 	state, dir := t.TempDir(), repo(t)
 	write(t, filepath.Join(dir, "readme.txt"), "changed\n")
 	xIn(t, dir, tracing(state), "lane", "commit", message(t), "--", "readme.txt")
@@ -169,6 +173,7 @@ func TestAVerbWithStepsTracesEachStepTime(t *testing.T) {
 }
 
 func TestAnUnknownFlagStaysOutOfTheTrace(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	xIn(t, repo(t), tracing(state), "schema", "lane", "-sekritvalue", "-", "--level=short")
 	if lines := traces(t, state); len(lines) != 1 || marshal(lines[0]["x.flags"]) != `["level"]` {
@@ -177,6 +182,7 @@ func TestAnUnknownFlagStaysOutOfTheTrace(t *testing.T) {
 }
 
 func TestTheTraceCarriesTheAgentSession(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	xIn(t, repo(t), tracing(state, "CLAUDECODE=1", "CLAUDE_CODE_SESSION_ID=5f1c-test"), "schema", "lane")
 	if lines := traces(t, state); len(lines) != 1 || lines[0]["session.id"] != "5f1c-test" {
@@ -185,6 +191,7 @@ func TestTheTraceCarriesTheAgentSession(t *testing.T) {
 }
 
 func TestTheTraceNamesTheRepoOfAWorktreeByItsMainCheckout(t *testing.T) {
+	t.Parallel()
 	state, dir := t.TempDir(), repo(t)
 	tree := filepath.Join(dir, ".claude/worktrees/FRM-1-x")
 	gitT(t, dir, "worktree", "add", "-q", "-b", "coder/x", tree)
@@ -196,6 +203,7 @@ func TestTheTraceNamesTheRepoOfAWorktreeByItsMainCheckout(t *testing.T) {
 
 // a name is only ever a script the nearest package.json defines: a flag's value or free text never is
 func TestTraceRecordNamesOnlyARealScript(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name  string
 		typed []string
@@ -223,6 +231,7 @@ func TestTraceRecordNamesOnlyARealScript(t *testing.T) {
 }
 
 func TestTraceRecordWritesTheDispatchersLineShape(t *testing.T) {
+	t.Parallel()
 	state, dir := t.TempDir(), repo(t)
 	write(t, filepath.Join(dir, "package.json"), `{"scripts": {"x-go:test": "go test"}}`)
 	got := xIn(t, dir, tracing(state), "trace", "record", "--exit", "1", "--duration", "1500", "--", "pnpm", "run", "x-go:test", "--watch", "my notes")
@@ -248,6 +257,7 @@ func TestTraceRecordWritesTheDispatchersLineShape(t *testing.T) {
 }
 
 func TestTraceRecordStaysOutOfTheListings(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	overview := xIn(t, dir, nil, "--json")
 	stats := xIn(t, dir, nil, "stats")
@@ -260,6 +270,7 @@ func TestTraceRecordStaysOutOfTheListings(t *testing.T) {
 // each case types a command the hook must skip, then `pnpm x-go:test` that fails with exit 3; the fake x
 // logs its argv, so exactly one recorded line proves the skip without waiting on a silence
 func TestTheZshHookRecordsTheTypedPnpmScripts(t *testing.T) {
+	t.Parallel()
 	hook, _ := filepath.Abs("../../home/.config/zsh-custom/x-trace.zsh")
 	cases := []struct{ name, skipped, env string }{
 		{"a command that is not pnpm", "ls -la", ""},
@@ -299,6 +310,7 @@ func TestTheZshHookRecordsTheTypedPnpmScripts(t *testing.T) {
 }
 
 func TestATabCompletionWritesNoTrace(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	xIn(t, repo(t), tracing(state), "__complete", "lane", "")
 	if lines := traces(t, state); len(lines) != 0 {
@@ -307,6 +319,7 @@ func TestATabCompletionWritesNoTrace(t *testing.T) {
 }
 
 func TestTraceOffWritesNothing(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	xIn(t, repo(t), tracing(state, "X_TRACE=0"), "schema", "lane")
 	if entries, _ := filepath.Glob(filepath.Join(state, "*")); len(entries) != 0 {
@@ -315,6 +328,7 @@ func TestTraceOffWritesNothing(t *testing.T) {
 }
 
 func TestAnUnwritableTraceDirLeavesTheCallAlone(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	write(t, filepath.Join(state, "traces"), "a file where the dir should be\n")
 	if got := xIn(t, repo(t), tracing(state), "schema", "lane"); got.code != 0 || !strings.Contains(got.stdout, `"ok":true`) {

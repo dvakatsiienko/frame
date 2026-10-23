@@ -38,6 +38,7 @@ func updateInput(t *testing.T, server *fakeLinear) map[string]any {
 }
 
 func TestSetSendsEveryFieldResolvedInOneUpdate(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--state", "in progress", "--priority", "2",
 		"--estimate", "3", "--parent", "FRM-9", "--project", "cli", "--milestone", "v1", "--delegate", "coder")
@@ -65,6 +66,7 @@ func TestSetSendsEveryFieldResolvedInOneUpdate(t *testing.T) {
 }
 
 func TestSetKeepsEveryLabelItWasNotToldToTouch(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	if _, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--add-label", "Feature", "--remove-label", "human"); got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
@@ -80,6 +82,7 @@ func TestSetKeepsEveryLabelItWasNotToldToTouch(t *testing.T) {
 }
 
 func TestSetAddsEveryRepeatedLabelFlag(t *testing.T) {
+	t.Parallel()
 	const lookup = `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","priority":3,"state":{"name":"Todo"},
 		"team":{"id":"t-frm","states":{"nodes":[]}},"labels":{"nodes":[{"id":"l-human","name":"human"}]}},
 		"labels":{"nodes":[{"id":"l-agent","name":"agent","team":null},{"id":"l-feature","name":"feature","team":null},
@@ -113,6 +116,7 @@ func TestSetAddsEveryRepeatedLabelFlag(t *testing.T) {
 }
 
 func TestSetRefusesAnUnknownNameAndListsTheValidOnes(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--state", "Doing")
 	msg := fmt.Sprint(envelope["error"])
@@ -125,6 +129,7 @@ func TestSetRefusesAnUnknownNameAndListsTheValidOnes(t *testing.T) {
 }
 
 func TestSetRefusesToRemoveALabelTheTicketLacks(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	envelope, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--remove-label", "nope")
 	if got.code != 1 || !strings.Contains(fmt.Sprint(envelope["error"]), "agent, human, bug") {
@@ -136,6 +141,7 @@ func TestSetRefusesToRemoveALabelTheTicketLacks(t *testing.T) {
 }
 
 func TestSetWithNoFieldIsUsage(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	if _, got := runLinear(t, server, nil, "linear", "set", "FRM-1"); got.code != 2 {
 		t.Errorf("exit %d, want 2", got.code)

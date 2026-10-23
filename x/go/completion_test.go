@@ -15,6 +15,7 @@ import (
 
 // a real zsh on a pty: compinit, the generated script sourced, a line typed, then <Tab>
 func TestZshTabCompletesFromTheRegistry(t *testing.T) {
+	t.Parallel()
 	if _, err := exec.LookPath("zsh"); err != nil {
 		t.Skip("no zsh here")
 	}

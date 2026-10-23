@@ -9,6 +9,7 @@ import (
 )
 
 func TestBoardDrawsTheHumanViewInAnAgentEnv(t *testing.T) {
+	t.Parallel()
 	shelf := t.TempDir()
 	write(t, filepath.Join(shelf, "probe.md"), "# probe\n\na probe doc\n")
 	env := []string{"CLAUDECODE=1", "X_KNOWLEDGE_ROOT=" + shelf}
@@ -25,6 +26,7 @@ func TestBoardDrawsTheHumanViewInAnAgentEnv(t *testing.T) {
 }
 
 func TestJSONBesideBoardStillWins(t *testing.T) {
+	t.Parallel()
 	shelf := t.TempDir()
 	write(t, filepath.Join(shelf, "probe.md"), "# probe\n\na probe doc\n")
 
@@ -36,6 +38,7 @@ func TestJSONBesideBoardStillWins(t *testing.T) {
 }
 
 func TestBareXListsFamiliesWithVerbNamesOnly(t *testing.T) {
+	t.Parallel()
 	got := xIn(t, t.TempDir(), nil)
 
 	listed, _ := got.data["families"].([]any)
@@ -51,6 +54,7 @@ func TestBareXListsFamiliesWithVerbNamesOnly(t *testing.T) {
 }
 
 func TestAllListsEveryVerbWithItsPurpose(t *testing.T) {
+	t.Parallel()
 	got := xIn(t, t.TempDir(), nil, "--all")
 
 	groups, _ := got.data["groups"].(map[string]any)
@@ -68,6 +72,7 @@ func TestAllListsEveryVerbWithItsPurpose(t *testing.T) {
 }
 
 func TestBareXFitsOneScreen(t *testing.T) {
+	t.Parallel()
 	for _, cols := range []int{80, 120} {
 		dir := t.TempDir()
 		write(t, filepath.Join(dir, "repo", ".keep"), "")

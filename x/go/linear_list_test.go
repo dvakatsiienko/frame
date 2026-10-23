@@ -29,6 +29,7 @@ func filterOf(t *testing.T, call gqlCall) string {
 }
 
 func TestListSendsEachNamedFilterInOneRequest(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, listAnswer("false"))
 	envelope, got := runLinear(t, server, nil, "linear", "list", "--team", "FRM", "--state", "In Progress",
 		"--label", "agent,feature", "--project", "cli", "--milestone", "v1")
@@ -58,6 +59,7 @@ func TestListSendsEachNamedFilterInOneRequest(t *testing.T) {
 }
 
 func TestListWithNoStateLeavesClosedTicketsOut(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, listAnswer("false"))
 	if _, got := runLinear(t, server, nil, "linear", "list"); got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
@@ -68,6 +70,7 @@ func TestListWithNoStateLeavesClosedTicketsOut(t *testing.T) {
 }
 
 func TestListSearchSendsTheTerm(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, listAnswer("false"))
 	envelope, got := runLinear(t, server, nil, "linear", "list", "--search", "keychain cache")
 	if got.code != 0 {
@@ -83,6 +86,7 @@ func TestListSearchSendsTheTerm(t *testing.T) {
 }
 
 func TestAnEmptyListNamesTheNameLinearDoesNotKnow(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, func(call gqlCall) string {
 		if strings.Contains(call.Query, "workflowStates") {
 			return `{"data":{"state":{"nodes":[]},"label0":{"nodes":[{"id":"l1"}]}}}`
@@ -99,6 +103,7 @@ func TestAnEmptyListNamesTheNameLinearDoesNotKnow(t *testing.T) {
 }
 
 func TestAnEmptyListOfKnownNamesIsJustEmpty(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, func(call gqlCall) string {
 		if strings.Contains(call.Query, "workflowStates") {
 			return `{"data":{"state":{"nodes":[{"id":"s1"}]}}}`
@@ -112,6 +117,7 @@ func TestAnEmptyListOfKnownNamesIsJustEmpty(t *testing.T) {
 }
 
 func TestListMarksACappedPage(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, listAnswer("true"))
 	envelope, got := runLinear(t, server, nil, "linear", "list", "--team", "FRM")
 	if got.code != 0 {

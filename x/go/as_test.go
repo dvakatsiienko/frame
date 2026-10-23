@@ -66,6 +66,7 @@ func runAs(t *testing.T, env []string, argv ...string) asRun {
 const farFuture = "4102444800" // 2100-01-01
 
 func TestAsHandsTheMemberTokenToTheChildOnly(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, member, tool, envName, key, token string
 	}{
@@ -106,6 +107,7 @@ func TestAsHandsTheMemberTokenToTheChildOnly(t *testing.T) {
 }
 
 func TestAsMintsALinearTokenWhenTheCacheRunsOut(t *testing.T) {
+	t.Parallel()
 	var form url.Values
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = r.ParseForm()
@@ -134,6 +136,7 @@ func TestAsMintsALinearTokenWhenTheCacheRunsOut(t *testing.T) {
 }
 
 func TestAsNeverCachesATokenTheKeychainWouldSplit(t *testing.T) {
+	t.Parallel()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{"access_token":"tok with space","expires_in":2592000}`))
 	}))
@@ -152,6 +155,7 @@ func TestAsNeverCachesATokenTheKeychainWouldSplit(t *testing.T) {
 }
 
 func TestAsMintsAGithubTokenWithASignedAppJWT(t *testing.T) {
+	t.Parallel()
 	key, _ := rsa.GenerateKey(rand.Reader, 2048)
 	encoded := base64.StdEncoding.EncodeToString(pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}))
 	var verifyErr error
@@ -193,6 +197,7 @@ func TestAsMintsAGithubTokenWithASignedAppJWT(t *testing.T) {
 }
 
 func TestAsDimaOnGhRunsOnHisOwnLogin(t *testing.T) {
+	t.Parallel()
 	bin := t.TempDir()
 	seen := fakeTool(t, bin, "gh", "GH_TOKEN")
 	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keysFixture(t, map[string]string{}), "GH_TOKEN=ghs_an_app"},
@@ -207,6 +212,7 @@ func TestAsDimaOnGhRunsOnHisOwnLogin(t *testing.T) {
 var keyShapes = regexp.MustCompile(`lin_api_[A-Za-z0-9]{40}|lin_oauth_[A-Za-z0-9]{40,}|gh[spo]_[A-Za-z0-9]{36}|-----BEGIN [A-Z ]*PRIVATE KEY-----(?:\\n|\s)+[A-Za-z0-9+/=]{40}|LS0tLS1CRUdJTi[A-Za-z0-9+/=]{20,}`)
 
 func TestNoKeyLivesInARepoFile(t *testing.T) {
+	t.Parallel()
 	root, _ := filepath.Abs("../..")
 	cmd := exec.Command("git", "ls-files", "-z")
 	cmd.Dir, cmd.Env = root, cleanEnv()
@@ -229,6 +235,7 @@ func TestNoKeyLivesInARepoFile(t *testing.T) {
 }
 
 func TestAsEndsOnTheChildExitCode(t *testing.T) {
+	t.Parallel()
 	bin := t.TempDir()
 	fakeTool(t, bin, "linear", "LINEAR_API_KEY")
 	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-coder:x": farFuture + ":tok"})
@@ -240,6 +247,7 @@ func TestAsEndsOnTheChildExitCode(t *testing.T) {
 }
 
 func TestAsRefusesWhatItCannotRunWithUsage(t *testing.T) {
+	t.Parallel()
 	bin := t.TempDir()
 	fakeTool(t, bin, "linear", "LINEAR_API_KEY")
 	keys := keysFixture(t, map[string]string{})

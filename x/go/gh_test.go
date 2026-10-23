@@ -112,6 +112,7 @@ func bodies(comments []prComment) string {
 }
 
 func TestGhPrListsEachFeedNewestFirst(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
 	feeds := bodies(got.data.Comments) + "|" + bodies(got.data.Reviews) + "|" + bodies(got.data.ReviewComments)
@@ -121,6 +122,7 @@ func TestGhPrListsEachFeedNewestFirst(t *testing.T) {
 }
 
 func TestGhPrNamesTheLineAReviewCommentSitsOn(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
 	want := []prComment{{Where: "x/go/gh.go:9", Outdated: true}, {Where: "x/go/gh.go:42"}}
@@ -135,6 +137,7 @@ func TestGhPrNamesTheLineAReviewCommentSitsOn(t *testing.T) {
 }
 
 func TestGhPrReadsAsTheCoderApp(t *testing.T) {
+	t.Parallel()
 	_, auth := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
 	if len(auth) == 0 {
@@ -148,6 +151,7 @@ func TestGhPrReadsAsTheCoderApp(t *testing.T) {
 }
 
 func TestGhPrTakesTheNextSinceFromGithubsClock(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
 	if got.code != 0 || got.data.Read != "2026-10-09T14:00:00Z" {
@@ -156,6 +160,7 @@ func TestGhPrTakesTheNextSinceFromGithubsClock(t *testing.T) {
 }
 
 func TestGhPrNamesEachCheckByItsLatestState(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
 	want := []prCheck{{"Vercel", "success", "https://v/2"}, {"review", "in_progress", "https://ci/2"}, {"test", "failure", "https://ci/1"}}
@@ -170,6 +175,7 @@ func TestGhPrNamesEachCheckByItsLatestState(t *testing.T) {
 }
 
 func TestGhPrNeverPrintsTheDeployBots(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), []string{"CLAUDECODE="}, "7", "--repo", "o/r", "--board")
 
 	if got.code != 0 {
@@ -183,6 +189,7 @@ func TestGhPrNeverPrintsTheDeployBots(t *testing.T) {
 }
 
 func TestGhPrSinceKeepsOnlyNewerComments(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r", "--since", "2026-10-09T11:30:01Z")
 
 	all := bodies(got.data.Comments) + "|" + bodies(got.data.Reviews) + "|" + bodies(got.data.ReviewComments)
@@ -194,6 +201,7 @@ func TestGhPrSinceKeepsOnlyNewerComments(t *testing.T) {
 // github stamps whole seconds: a comment posted after a read, in the read's own second, carries the
 // cutoff's exact time, and the next poll must still print it
 func TestGhPrSinceKeepsACommentFromTheCutoffsOwnSecond(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r", "--since", "2026-10-09T11:30:00Z")
 
 	if b := bodies(got.data.ReviewComments); got.code != 0 || b != "why?,off by one" {
@@ -202,6 +210,7 @@ func TestGhPrSinceKeepsACommentFromTheCutoffsOwnSecond(t *testing.T) {
 }
 
 func TestGhPrSinceCountsAnEditedCommentByItsEdit(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r", "--since", "2026-10-09T13:15:00Z")
 
 	if b := bodies(got.data.Comments); got.code != 0 || b != "verdict: clean" {
@@ -210,6 +219,7 @@ func TestGhPrSinceCountsAnEditedCommentByItsEdit(t *testing.T) {
 }
 
 func TestGhPrPrintsJSONToAnAgentAndTheBoardOnAsk(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name  string
 		argv  []string
@@ -234,6 +244,7 @@ func TestGhPrPrintsJSONToAnAgentAndTheBoardOnAsk(t *testing.T) {
 }
 
 func TestGhPrRefusesBadInputWithAUsageExit(t *testing.T) {
+	t.Parallel()
 	cases := map[string][]string{
 		"a branch for the pr": {"coder/x", "--repo", "o/r"},
 		"a hash-led number":   {"#7", "--repo", "o/r"},
@@ -253,6 +264,7 @@ func TestGhPrRefusesBadInputWithAUsageExit(t *testing.T) {
 }
 
 func TestGhPrReadsTheRepoFromTheOriginRemote(t *testing.T) {
+	t.Parallel()
 	cases := []struct{ remote, insteadOf string }{
 		{"git@github.com:o/r.git", ""},
 		{"https://github.com/o/r", ""},
@@ -281,6 +293,7 @@ func TestGhPrReadsTheRepoFromTheOriginRemote(t *testing.T) {
 }
 
 func TestGhPrNamesAMissingPr(t *testing.T) {
+	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "8", "--repo", "o/r")
 
 	if got.code != 1 || !strings.Contains(got.output, "404") {

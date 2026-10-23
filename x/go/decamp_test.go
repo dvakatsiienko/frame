@@ -8,6 +8,7 @@ import (
 )
 
 func TestDecampPointsTheHookShimsBackAtTheMainCheckout(t *testing.T) {
+	t.Parallel()
 	main := repo(t)
 	tree := filepath.Join(t.TempDir(), "tree")
 	gitT(t, main, "worktree", "add", "-q", tree, "-b", "side")
@@ -34,6 +35,7 @@ func TestDecampPointsTheHookShimsBackAtTheMainCheckout(t *testing.T) {
 }
 
 func TestDecampFailsWhenTheShimStillPointsElsewhere(t *testing.T) {
+	t.Parallel()
 	main := repo(t)
 	tree := filepath.Join(t.TempDir(), "tree")
 	gitT(t, main, "worktree", "add", "-q", tree, "-b", "side")
@@ -53,6 +55,7 @@ func TestDecampFailsWhenTheShimStillPointsElsewhere(t *testing.T) {
 }
 
 func TestSeedRefusesTheMainCheckout(t *testing.T) {
+	t.Parallel()
 	if got := xIn(t, t.TempDir(), nil, "lane", "seed", repo(t)); got.code != 2 {
 		t.Fatalf("seeding the main checkout must be a usage error, exit %d\n%s", got.code, got.stdout)
 	}

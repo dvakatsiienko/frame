@@ -29,6 +29,7 @@ func plant(t *testing.T, state string, ago int, lines ...planted) string {
 }
 
 func TestStatsGivesEachVerbItsP50AndP95(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	var lines []planted
 	for ms := 1; ms <= 20; ms++ {
@@ -45,6 +46,7 @@ func TestStatsGivesEachVerbItsP50AndP95(t *testing.T) {
 }
 
 func TestStatsNamesTheVerbsWithNoCalls(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	plant(t, state, 0, planted{"schema", "cc", "", 3}, planted{"lane commit", "cc", "", 3})
 
@@ -64,6 +66,7 @@ func TestStatsNamesTheVerbsWithNoCalls(t *testing.T) {
 }
 
 func TestStatsTrashesDaysOlderThan90(t *testing.T) {
+	t.Parallel()
 	state, bin, bin2 := t.TempDir(), t.TempDir(), t.TempDir()
 	write(t, filepath.Join(bin, "trash"), "#!/bin/sh\nmv \"$@\" "+bin2+"/\n")
 	old := plant(t, state, 91, planted{"schema", "cc", "", 3})
@@ -83,6 +86,7 @@ func TestStatsTrashesDaysOlderThan90(t *testing.T) {
 }
 
 func TestStatsRefusesAWindowPastTheKeptDays(t *testing.T) {
+	t.Parallel()
 	got := xIn(t, repo(t), nil, "stats", "--days", "120")
 	if got.code != 2 || got.next != "x stats --days 90" {
 		t.Errorf("exit %d, next %q: %s", got.code, got.next, got.stdout)
@@ -90,6 +94,7 @@ func TestStatsRefusesAWindowPastTheKeptDays(t *testing.T) {
 }
 
 func TestStatsSkipsALineWithABlankName(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	plant(t, state, 0, planted{" ", "cc", "", 3}, planted{"schema", "cc", "", 3})
 	if got := xIn(t, repo(t), tracing(state), "stats"); got.code != 0 || marshal(got.data["calls"]) != "1" {
@@ -98,6 +103,7 @@ func TestStatsSkipsALineWithABlankName(t *testing.T) {
 }
 
 func TestStatsCountsALineWithNoCallerAsUnknown(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	plant(t, state, 0, planted{"schema", "", "", 3})
 	if got := xIn(t, repo(t), tracing(state), "stats"); marshal(got.data["callers"]) != `{"unknown":1}` {
@@ -106,6 +112,7 @@ func TestStatsCountsALineWithNoCallerAsUnknown(t *testing.T) {
 }
 
 func TestStatsCountsTheCallsInTheWindow(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	plant(t, state, 0,
 		planted{"schema", "cc", "", 10}, planted{"schema", "cc", "", 20},
@@ -132,6 +139,7 @@ func TestStatsCountsTheCallsInTheWindow(t *testing.T) {
 }
 
 func TestATraceLineSaysADevBuildWroteIt(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, pin string
 		dev       bool
@@ -160,6 +168,7 @@ func TestATraceLineSaysADevBuildWroteIt(t *testing.T) {
 }
 
 func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
+	t.Parallel()
 	state := t.TempDir()
 	plant(t, state, 1, planted{"schema", "cc", "", 3})
 	plant(t, state, 0, planted{"schema", "cc", "", 3})
@@ -176,6 +185,7 @@ func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
 }
 
 func TestStatsLeavesDevBuildsOutUnlessAsked(t *testing.T) {
+	t.Parallel()
 	dev := `{"name":"schema","duration_ms":3,"x.caller":"cc","service.version":"v1-go+abc1234","x.dev":true}` + "\n"
 	cases := []struct {
 		name, calls, days string

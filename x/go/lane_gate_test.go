@@ -54,6 +54,7 @@ func gate(t *testing.T, dir, msg string) ran {
 }
 
 func TestGateRefusesAContractChangeWithoutItsGlossary(t *testing.T) {
+	t.Parallel()
 	for _, file := range []string{"app/api.ts", "app/schema/user.json"} {
 		t.Run(file, func(t *testing.T) {
 			dir := gateRepo(t, map[string]string{file: "changed\n"})
@@ -68,6 +69,7 @@ func TestGateRefusesAContractChangeWithoutItsGlossary(t *testing.T) {
 }
 
 func TestGatePassesAContractChangeThatCarriesItsGlossaryOrAdr(t *testing.T) {
+	t.Parallel()
 	cases := map[string]map[string]string{
 		"glossary": {"app/api.ts": "changed\n", "app/GLOSSARY.md": "- **api** — the door, renamed\n"},
 		"adr":      {"app/api.ts": "changed\n", "app/adr/0002.md": "# two\n"},
@@ -84,6 +86,7 @@ func TestGatePassesAContractChangeThatCarriesItsGlossaryOrAdr(t *testing.T) {
 }
 
 func TestGateRefusesAContractFileRenamedAway(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, nil)
 	gitT(t, dir, "mv", "app/schema/user.json", "app/user.json")
 
@@ -95,6 +98,7 @@ func TestGateRefusesAContractFileRenamedAway(t *testing.T) {
 }
 
 func TestGatePassesAContractChangeTheMessageExplains(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"app/api.ts": "changed\n"})
 
 	got := gate(t, dir, "change\n\nglossary: unchanged — a comment moved\n")
@@ -105,6 +109,7 @@ func TestGatePassesAContractChangeTheMessageExplains(t *testing.T) {
 }
 
 func TestGateNudgesAContextWithAnEmptyContract(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"side/tool.sh": "echo changed\n"})
 
 	got := gate(t, dir, "change\n")
@@ -115,6 +120,7 @@ func TestGateNudgesAContextWithAnEmptyContract(t *testing.T) {
 }
 
 func TestGateStaysQuietForAContextWithNoContractLine(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"readme.txt": "changed\n"})
 
 	got := gate(t, dir, "change\n")
@@ -125,6 +131,7 @@ func TestGateStaysQuietForAContextWithNoContractLine(t *testing.T) {
 }
 
 func TestGateRefusesAListedPathThatIsGone(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, nil)
 	gitT(t, dir, "rm", "-q", "app/api.ts")
 
@@ -136,6 +143,7 @@ func TestGateRefusesAListedPathThatIsGone(t *testing.T) {
 }
 
 func TestGateRefusesASkillThatOnlyGrows(t *testing.T) {
+	t.Parallel()
 	cases := map[string]struct {
 		files map[string]string
 		code  int
@@ -160,6 +168,7 @@ func TestGateRefusesASkillThatOnlyGrows(t *testing.T) {
 }
 
 func TestGateReadsARenamedSkillFileByItsChange(t *testing.T) {
+	t.Parallel()
 	cases := map[string]struct {
 		from, to, body string
 		code           int
@@ -189,6 +198,7 @@ func TestGateReadsARenamedSkillFileByItsChange(t *testing.T) {
 }
 
 func TestGateTakesAnAsciiDashInAPassLine(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"app/api.ts": "changed\n"})
 
 	got := gate(t, dir, "change\n\nglossary: unchanged - a comment moved\n")
@@ -199,6 +209,7 @@ func TestGateTakesAnAsciiDashInAPassLine(t *testing.T) {
 }
 
 func TestGateCountsARemovedRuleLine(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"skills/guide-x/SKILL.md": "---\nname: x\n---\none\n"})
 	gitT(t, dir, "commit", "-q", "-m", "guide", "--no-verify")
 	write(t, filepath.Join(dir, "skills/guide-x/SKILL.md"), "name: x\none\na\nb\nc\n")
@@ -212,6 +223,7 @@ func TestGateCountsARemovedRuleLine(t *testing.T) {
 }
 
 func TestGateTracesARefusalAsRefused(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"app/api.ts": "changed\n"})
 	msg := filepath.Join(t.TempDir(), "COMMIT_EDITMSG")
 	write(t, msg, "change\n")
@@ -226,6 +238,7 @@ func TestGateTracesARefusalAsRefused(t *testing.T) {
 }
 
 func TestGatePassesAGrownSkillTheMessageGroomed(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"})
 
 	got := gate(t, dir, "change\n\ngroom: read whole — cut the old recipe\n")
@@ -236,6 +249,7 @@ func TestGatePassesAGrownSkillTheMessageGroomed(t *testing.T) {
 }
 
 func TestGateRefusesAppCodeWithoutItsFtr(t *testing.T) {
+	t.Parallel()
 	cases := map[string]struct {
 		files map[string]string
 		msg   string
@@ -266,6 +280,7 @@ func TestGateRefusesAppCodeWithoutItsFtr(t *testing.T) {
 }
 
 func TestGateReadsAMapThatLinksItsGlossaries(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, nil)
 	write(t, filepath.Join(dir, "GLOSSARY-MAP.md"), "# Context Map\n\n- [web](./web/GLOSSARY.md) — a site\n  - contract: none yet\n")
 	write(t, filepath.Join(dir, "web/GLOSSARY.md"), "- **page** — a page\n")
@@ -282,6 +297,7 @@ func TestGateReadsAMapThatLinksItsGlossaries(t *testing.T) {
 }
 
 func TestGateSkipsAMergeCommit(t *testing.T) {
+	t.Parallel()
 	dir := gateRepo(t, nil)
 	gitT(t, dir, "checkout", "-q", "-b", "side")
 	write(t, filepath.Join(dir, "app/api.ts"), "side\n")

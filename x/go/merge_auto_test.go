@@ -207,6 +207,7 @@ func envelopeOf(got ran) mergeEnvelope {
 }
 
 func TestMergeAutoMergesACleanGreenPrNamingTheThreeChecks(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 
 	got := w.run(t, "7", "--apply")
@@ -228,6 +229,7 @@ func TestMergeAutoMergesACleanGreenPrNamingTheThreeChecks(t *testing.T) {
 }
 
 func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.mainMoves(t, "one.txt")
 	w.mainMoves(t, "two.txt")
@@ -245,6 +247,7 @@ func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) 
 
 // lane merge-main's flow: main merged into the branch, nothing else touched — the clean carries
 func TestMergeAutoCarriesACleanAcrossAPlainMergeOfMain(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.mainMoves(t, "one.txt")
 	gitT(t, w.seed, "reset", "-q", "--hard", "origin/coder/x")
@@ -259,6 +262,7 @@ func TestMergeAutoCarriesACleanAcrossAPlainMergeOfMain(t *testing.T) {
 }
 
 func TestMergeAutoWaitsWhenTheBranchChangeIsNotTheVerifiedOne(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		change func(t *testing.T, w *mergeWorld)
@@ -300,6 +304,7 @@ func TestMergeAutoWaitsWhenTheBranchChangeIsNotTheVerifiedOne(t *testing.T) {
 }
 
 func TestMergeAutoWaitsWhenAPushChangedThePatchAfterTheClean(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	write(t, filepath.Join(w.seed, "script/foo.ts"), "an unreviewed fix\n")
 	gitT(t, w.seed, "commit", "-q", "-am", "unreviewed fix")
@@ -316,8 +321,11 @@ func TestMergeAutoWaitsWhenAPushChangedThePatchAfterTheClean(t *testing.T) {
 // the pr page still names the read head while github's branch moved on: the merge carries the read sha
 // and github refuses it, so nothing unread merges
 func TestMergeAutoPinsTheMergeToTheHeadItRead(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.mu.Lock()
 	w.hub.head = strings.Repeat("d", 40)
+	w.hub.mu.Unlock()
 
 	got := w.run(t, "7", "--apply")
 
@@ -328,6 +336,7 @@ func TestMergeAutoPinsTheMergeToTheHeadItRead(t *testing.T) {
 }
 
 func TestMergeAutoMergesARiskyPrNamingEachRiskyPath(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		paths  []string
@@ -349,9 +358,11 @@ func TestMergeAutoMergesARiskyPrNamingEachRiskyPath(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			w := newMergeWorld(t, c.paths...)
+			w.hub.mu.Lock()
 			for page, body := range c.files {
 				w.hub.pages[repoPath+"/pulls/7/files"+page] = body
 			}
+			w.hub.mu.Unlock()
 
 			got := w.run(t, "7", "--apply")
 
@@ -363,6 +374,7 @@ func TestMergeAutoMergesARiskyPrNamingEachRiskyPath(t *testing.T) {
 }
 
 func TestMergeAutoPrintsTheRiskyLineOnTheBoard(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, ".github/workflows/ci.yml")
 
 	got := xIn(t, w.clone, append(w.env, "CLAUDECODE="), "lane", "merge-auto", "7", "--apply", "--board")
@@ -373,6 +385,7 @@ func TestMergeAutoPrintsTheRiskyLineOnTheBoard(t *testing.T) {
 }
 
 func TestMergeAutoMarksACheckThatDoesNotHoldOnTheBoard(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	write(t, w.store, `{}`)
 
@@ -384,6 +397,7 @@ func TestMergeAutoMarksACheckThatDoesNotHoldOnTheBoard(t *testing.T) {
 }
 
 func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
+	t.Parallel()
 	for _, path := range []string{
 		"home/.claude/plugin-x/mods/x-mod-guard/guard.ts",
 		"cclio/.claude/hooks/pr-watch.sh",
@@ -428,6 +442,7 @@ func commitAt(t *testing.T, w *mergeWorld, date string, args ...string) string {
 const brakeNow = "2026-10-22T12:00:00Z"
 
 func TestMergeAutoBrakesForSevenDaysAfterARevertOfItsMerge(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name     string
 		revertAt string
@@ -466,6 +481,7 @@ func TestMergeAutoBrakesForSevenDaysAfterARevertOfItsMerge(t *testing.T) {
 // a stack lands through github's async merge, which takes no message, so its squash carries no trailer;
 // the brake finds it by the label merge-auto set on its pr
 func TestMergeAutoBrakesAfterARevertOfALabelledMerge(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		revert func(t *testing.T, w *mergeWorld, merged, at string) string
@@ -499,6 +515,7 @@ func TestMergeAutoBrakesAfterARevertOfALabelledMerge(t *testing.T) {
 const serverDown = "<500>"
 
 func TestMergeAutoRefusesWhenTheBrakeCannotAskGithub(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	write(t, filepath.Join(w.seed, "merged.txt"), "a stack layer\n")
 	gitT(t, w.seed, "add", "merged.txt")
@@ -516,6 +533,7 @@ func TestMergeAutoRefusesWhenTheBrakeCannotAskGithub(t *testing.T) {
 }
 
 func TestMergeAutoIgnoresARevertOfAHandMerge(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	write(t, filepath.Join(w.seed, "merged.txt"), "a hand merge\n")
 	gitT(t, w.seed, "add", "merged.txt")
@@ -544,6 +562,10 @@ func githubRevert(t *testing.T, w *mergeWorld, _, at string) string {
 // publish it green on the approved head
 func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
 	w := newMergeWorld(t, "apps/speak/src/a.ts")
+	// the server already runs: a write after it takes the lock, the only edge the race detector sees, since
+	// the request that reads it comes from a child process
+	w.hub.mu.Lock()
+	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build","review:clean"]}`
 	w.hub.pages[repoPath+"/actions/workflows/review.yml"] = `{"name":"review"}`
 	w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
@@ -560,6 +582,7 @@ func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
 }
 
 func TestMergeAutoMergesABytesHeadAfterItsApprove(t *testing.T) {
+	t.Parallel()
 	w := bytesWorld(t, true)
 
 	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
@@ -583,16 +606,21 @@ func TestMergeAutoMergesABytesHeadAfterItsApprove(t *testing.T) {
 }
 
 func TestMergeAutoApprovesNothingUnlessTheRestHolds(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		change func(t *testing.T, w *mergeWorld)
 	}{
 		{"the verifier is not clean", func(t *testing.T, w *mergeWorld) { write(t, w.store, `{}`) }},
 		{"a thread is open", func(_ *testing.T, w *mergeWorld) {
+			w.hub.mu.Lock()
+			defer w.hub.mu.Unlock()
 			w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[
 				{"isResolved":false,"path":"a.ts","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}}]}}}}}`
 		}},
 		{"no ci review round ran yet", func(_ *testing.T, w *mergeWorld) {
+			w.hub.mu.Lock()
+			defer w.hub.mu.Unlock()
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
 				{"head_branch":"other","status":"completed","conclusion":"success"},
 				{"head_branch":"coder/x","status":"in_progress","conclusion":null}]}`
@@ -613,6 +641,7 @@ func TestMergeAutoApprovesNothingUnlessTheRestHolds(t *testing.T) {
 }
 
 func TestMergeAutoStopsWhenReviewCleanNeverLands(t *testing.T) {
+	t.Parallel()
 	w := bytesWorld(t, false)
 
 	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms", "X_REVIEW_WAIT=200ms"), "lane", "merge-auto", "7", "--apply")
@@ -625,6 +654,7 @@ func TestMergeAutoStopsWhenReviewCleanNeverLands(t *testing.T) {
 // the want line: dima never presses approve — a low-risk pr and a risky one both merge in frame, with no
 // approve and no github auto-merge, and the risky one names its path
 func TestMergeAutoMergesWithoutDimasHand(t *testing.T) {
+	t.Parallel()
 	plain, risky := newMergeWorld(t, "script/foo.ts"), newMergeWorld(t, ".github/workflows/ci.yml")
 
 	gotPlain, gotRisky := plain.run(t, "7", "--apply"), risky.run(t, "7", "--apply")
@@ -641,6 +671,7 @@ func TestMergeAutoMergesWithoutDimasHand(t *testing.T) {
 }
 
 func TestMergeAutoDryRunRefusesAWait(t *testing.T) {
+	t.Parallel()
 	clean, waiting := newMergeWorld(t, "script/foo.ts"), newMergeWorld(t, "script/foo.ts")
 	write(t, waiting.store, `{}`)
 
@@ -655,8 +686,11 @@ func TestMergeAutoDryRunRefusesAWait(t *testing.T) {
 }
 
 func TestMergeAutoStopsWhenGithubCannotListTheThreads(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.mu.Lock()
 	w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":null}},"errors":[{"message":"Resource not accessible by integration"}]}`
+	w.hub.mu.Unlock()
 
 	got := w.run(t, "7", "--apply")
 
@@ -666,6 +700,7 @@ func TestMergeAutoStopsWhenGithubCannotListTheThreads(t *testing.T) {
 }
 
 func TestMergeAutoWaitCarriesTheChecksItRead(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, ".github/workflows/ci.yml")
 	write(t, w.store, `{}`)
 
@@ -678,6 +713,7 @@ func TestMergeAutoWaitCarriesTheChecksItRead(t *testing.T) {
 }
 
 func TestMergeAutoWaitNamesWhy(t *testing.T) {
+	t.Parallel()
 	runs := func(w *mergeWorld, body string) { w.hub.pages[repoPath+"/commits/"+w.head+"/check-runs"] = body }
 	cases := []struct {
 		name   string
@@ -717,7 +753,9 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			w := newMergeWorld(t, "script/foo.ts")
+			w.hub.mu.Lock()
 			c.change(w)
+			w.hub.mu.Unlock()
 
 			got := w.run(t, "7", "--apply")
 

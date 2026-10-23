@@ -157,6 +157,7 @@ func tickets(t *testing.T, envelope map[string]any) []map[string]any {
 }
 
 func TestReadBatchesEveryIdIntoOneRequest(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{
 		"FRM-1": {id: "FRM-1", title: "first"}, "FRM-2": {id: "FRM-2", title: "second"}, "FRM-3": {id: "FRM-3", title: "third"}}))
 	envelope, got := runLinear(t, server, nil, "linear", "read", "FRM-1", "FRM-2", "FRM-3")
@@ -176,6 +177,7 @@ func TestReadBatchesEveryIdIntoOneRequest(t *testing.T) {
 }
 
 func TestReadMarksACappedConnection(t *testing.T) {
+	t.Parallel()
 	full := conn{`{"name":"a"},{"name":"b"}`, "true"}
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t", labels: full}}))
 	envelope, got := runLinear(t, server, nil, "linear", "read", "FRM-1")
@@ -189,6 +191,7 @@ func TestReadMarksACappedConnection(t *testing.T) {
 }
 
 func TestReadAddsCommentsAndBothRelationSidesOnlyWhenAsked(t *testing.T) {
+	t.Parallel()
 	answer := readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t",
 		comments:  pageOf(`{"body":"later","createdAt":"2026-10-01T17:23:00Z","user":{"name":"Dima"},"botActor":null}`, `{"body":"first","createdAt":"2026-10-01T11:15:00Z","user":null,"botActor":{"name":"cclio"}}`),
 		relations: pageOf(`{"type":"blocks","relatedIssue":{"identifier":"FRM-5","title":"five","state":{"name":"Todo"}}}`),
@@ -223,6 +226,7 @@ func TestReadAddsCommentsAndBothRelationSidesOnlyWhenAsked(t *testing.T) {
 }
 
 func TestReadNamesAnIdLinearCannotFind(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t"}}))
 	envelope, got := runLinear(t, server, nil, "linear", "read", "FRM-1", "FRM-999")
 	if got.code != 1 || !strings.Contains(fmt.Sprint(envelope["error"]), "FRM-999") || strings.Contains(fmt.Sprint(envelope["error"]), "FRM-1 ") {
@@ -231,6 +235,7 @@ func TestReadNamesAnIdLinearCannotFind(t *testing.T) {
 }
 
 func TestReadRefusesAMalformedIdBeforeAnyRequest(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(nil))
 	for _, bad := range []string{"frm-1", "FRM1", "FRM-1; drop", "-", "FRM-1 FRM-2"} {
 		_, got := runLinear(t, server, nil, "linear", "read", bad)
@@ -244,6 +249,7 @@ func TestReadRefusesAMalformedIdBeforeAnyRequest(t *testing.T) {
 }
 
 func TestLinearActsAsCclioForAnAgentAndDimaOnHisOwn(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t"}}))
 	cases := []struct {
 		name string
@@ -284,6 +290,7 @@ func lineLengths(text string) []int {
 }
 
 func TestARevokedAppTokenIsMintedAgainOnce(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t"}}))
 	graphql := server.Config.Handler
 	// linear answers a revoked token with http 401 before any graphql; the oauth mint sits on the same origin
@@ -310,6 +317,7 @@ func TestARevokedAppTokenIsMintedAgainOnce(t *testing.T) {
 }
 
 func TestDimasKeyIsNeverCopiedIntoTheKeychain(t *testing.T) {
+	t.Parallel()
 	for name, status := range map[string]int{"a read": http.StatusOK, "a rejected read": http.StatusUnauthorized} {
 		t.Run(name, func(t *testing.T) {
 			server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t"}}))
@@ -335,6 +343,7 @@ func TestDimasKeyIsNeverCopiedIntoTheKeychain(t *testing.T) {
 }
 
 func TestOnlyDimasOwnTerminalActsAsDima(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t"}}))
 	dir := world(t)
 	_, code := runTTY(t, xbin, dir, call{ID: "linear-read-dima", Mode: "tty", Cols: 100,
@@ -349,6 +358,7 @@ func TestOnlyDimasOwnTerminalActsAsDima(t *testing.T) {
 }
 
 func TestReadSavesALinearUploadWithTheAuthItHolds(t *testing.T) {
+	t.Parallel()
 	var uploadAuth string
 	server := newFakeLinear(t, nil)
 	// linear's upload urls end in a uuid: the name comes from the link label or the attachment title
@@ -396,6 +406,7 @@ func TestReadSavesALinearUploadWithTheAuthItHolds(t *testing.T) {
 }
 
 func TestReadDrawsACardOnATerminal(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "the card title", description: "## body heading\n\nbody text"}}))
 	dir := world(t)
 	out, code := runTTY(t, xbin, dir, call{ID: "linear-read-card", Mode: "tty", Cols: 100, Stdin: "none",

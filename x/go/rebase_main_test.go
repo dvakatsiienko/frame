@@ -54,6 +54,7 @@ func remoteHead(t *testing.T, w *rebaseWorld, branch string) string {
 }
 
 func TestRebaseMainRefusesABranchOutsideCoder(t *testing.T) {
+	t.Parallel()
 	for _, branch := range []string{"main", "dima/try", "scratch/x"} {
 		t.Run(branch, func(t *testing.T) {
 			w := newRebaseWorld(t, "coder/x")
@@ -76,6 +77,7 @@ func TestRebaseMainRefusesABranchOutsideCoder(t *testing.T) {
 
 // a post-rewrite hook runs after the rebase and before the push: a teammate's push lands in that gap
 func TestRebaseMainKeepsAPushThatLandedAfterItsRead(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	gitT(t, w.side, "fetch", "-q", "origin")
@@ -96,6 +98,7 @@ func TestRebaseMainKeepsAPushThatLandedAfterItsRead(t *testing.T) {
 
 // the teammate pushed before the run: the lease matches the remote, so only an ancestry check keeps the push
 func TestRebaseMainRefusesWhenTheRemoteHoldsACommitHeadLacks(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	gitT(t, w.side, "fetch", "-q", "origin")
@@ -117,6 +120,7 @@ func TestRebaseMainRefusesWhenTheRemoteHoldsACommitHeadLacks(t *testing.T) {
 }
 
 func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "mine.txt", "main's version\n")
 
@@ -131,6 +135,7 @@ func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
 
 // the verifier's round 2 repro: a hand resolution and an unstaged edit sit in a paused rebase
 func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "mine.txt", "main's version\n")
 	w.run(t, "--apply")
@@ -154,6 +159,7 @@ func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
 
 // a rebase git refuses to start leaves nothing to abort, and the message says so
 func TestRebaseMainSaysARefusedRebaseDidNotStart(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	write(t, filepath.Join(w.clone, "mine.txt"), "an unstaged edit\n")
@@ -169,6 +175,7 @@ func TestRebaseMainSaysARefusedRebaseDidNotStart(t *testing.T) {
 
 // a server hook moves the ref after the push lands: the read-back must catch it
 func TestRebaseMainNamesARemoteThatDiffersAfterThePush(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	mainSha := remoteHead(t, w, "main")
@@ -183,6 +190,7 @@ func TestRebaseMainNamesARemoteThatDiffersAfterThePush(t *testing.T) {
 
 // the want line: main moves twice under a coder lane, and the branch never holds a merge commit
 func TestRebaseMainLeavesNoMergeCommitAcrossTwoMainMoves(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	for _, name := range []string{"one.txt", "two.txt"} {
 		w.mainMoves(t, name, name+"\n")
@@ -198,6 +206,7 @@ func TestRebaseMainLeavesNoMergeCommitAcrossTwoMainMoves(t *testing.T) {
 }
 
 func TestRebaseMainPutsTheBranchOnMainWithoutAMergeCommit(t *testing.T) {
+	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	w.mainMoves(t, "two.txt", "two\n")

@@ -16,6 +16,7 @@ func sessionsFixture(t *testing.T, name string) []string {
 }
 
 func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
+	t.Parallel()
 	cases := []struct{ name, session, want string }{
 		{"a member session acts as coder", "☕️ 🔧 FRM-399 code", "coder"},
 		{"a verifier is a member too", "☕️ 🔎 FRM-399 verify", "coder"},
@@ -38,6 +39,7 @@ func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
 }
 
 func TestSetTakesASizeWordForTheEstimate(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		given string
 		want  float64
@@ -56,6 +58,7 @@ func TestSetTakesASizeWordForTheEstimate(t *testing.T) {
 }
 
 func TestSetRefusesASizeItDoesNotKnowNamingTheSizes(t *testing.T) {
+	t.Parallel()
 	server := setServer(t)
 	_, got := runLinear(t, server, nil, "linear", "set", "FRM-1", "--estimate", "L")
 	if got.code != 2 || !strings.Contains(got.stdout, "XS · S · M") || len(server.requests()) > 1 {
@@ -64,6 +67,7 @@ func TestSetRefusesASizeItDoesNotKnowNamingTheSizes(t *testing.T) {
 }
 
 func TestReadPrintsTheSizeWord(t *testing.T) {
+	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "a sized ticket"}}))
 	envelope, got := runLinear(t, server, nil, "linear", "read", "FRM-1")
 	tickets, _ := envelope["data"].(map[string]any)["tickets"].([]any)
@@ -74,6 +78,7 @@ func TestReadPrintsTheSizeWord(t *testing.T) {
 
 // a ts test shelling to x under X_TEST inherits the caller's session id; it must never read the live registry
 func TestUnderXTestWithoutXSessionsTheLiveRegistryIsNeverRead(t *testing.T) {
+	t.Parallel()
 	home := t.TempDir()
 	write(t, filepath.Join(home, ".claude/sessions/1.json"), `{"sessionId":"s-1","name":"☕️ 🔧 coder","pid":1}`)
 	server := newFakeLinear(t, func(gqlCall) string {

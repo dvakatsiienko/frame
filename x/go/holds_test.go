@@ -23,6 +23,7 @@ func holdsStore(t *testing.T, dir string, landed bool, holder any) string {
 }
 
 func TestCommitRefusesAPathAnotherSessionHolds(t *testing.T) {
+	t.Parallel()
 	live := map[string]any{"idleSince": nil}
 	cases := []struct {
 		name, named, held string
@@ -51,6 +52,7 @@ func TestCommitRefusesAPathAnotherSessionHolds(t *testing.T) {
 }
 
 func TestCommitPassesAHoldThatNoLongerHolds(t *testing.T) {
+	t.Parallel()
 	idle := time.Now().Add(-31 * time.Minute).UnixMilli()
 	live := map[string]any{"idleSince": nil}
 	cases := []struct {
@@ -83,6 +85,7 @@ func TestCommitPassesAHoldThatNoLongerHolds(t *testing.T) {
 
 // macos's temp dir sits behind the /var → /private/var symlink, as the mod's realPath sees it
 func TestHeldKeyResolvesTheDirOfAFileNotWrittenYet(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	real, _ := filepath.EvalSymlinks(dir)
 	want := strings.ToLower(filepath.Join(real, "New/File.ts"))

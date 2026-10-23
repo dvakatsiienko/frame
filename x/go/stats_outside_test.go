@@ -26,6 +26,7 @@ func transcript(t *testing.T, home, name string, calls ...bashCall) {
 }
 
 func TestStatsOutsideRanksTheBashHeadsOfTheWindow(t *testing.T) {
+	t.Parallel()
 	home := t.TempDir()
 	transcript(t, home, "-Users-dima-frame/s1.jsonl",
 		bashCall{"a", "ls -la", 0}, bashCall{"b", "ls", 1}, bashCall{"c", "git log --oneline", 0},
@@ -45,6 +46,7 @@ func TestStatsOutsideRanksTheBashHeadsOfTheWindow(t *testing.T) {
 }
 
 func TestStatsOutsideKeepsTheTopHeads(t *testing.T) {
+	t.Parallel()
 	home := t.TempDir()
 	var calls []bashCall
 	for n := range 27 {
@@ -70,6 +72,7 @@ func TestStatsOutsideKeepsTheTopHeads(t *testing.T) {
 }
 
 func TestStatsOutsideTopIsAWholeNumber(t *testing.T) {
+	t.Parallel()
 	for _, value := range []string{"0", "-3", "ten"} {
 		t.Run(value, func(t *testing.T) {
 			got := xIn(t, repo(t), []string{"HOME=" + t.TempDir()}, "stats", "--outside", "--top", value)
@@ -83,6 +86,7 @@ func TestStatsOutsideTopIsAWholeNumber(t *testing.T) {
 
 // a head an x verb covers names that verb, so a census can tell a missing verb from an unused one
 func TestStatsOutsideNamesTheVerbThatCoversAHead(t *testing.T) {
+	t.Parallel()
 	// the dead doors come from the registry: a literal here would be a caller the dead-door test finds
 	read, _, _ := findVerb([]string{"linear", "read"})
 	script, name := read.Replaces[0], read.Replaces[len(read.Replaces)-1]
@@ -111,6 +115,7 @@ func TestStatsOutsideNamesTheVerbThatCoversAHead(t *testing.T) {
 }
 
 func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
+	t.Parallel()
 	cases := []struct{ command, head string }{
 		{"cd /a && rg foo", "rg"},
 		{"cd '/a b'; cd c && git -C /d log", "git log"},

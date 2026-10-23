@@ -15,6 +15,7 @@ func goBuild(tree string) ([]byte, error) {
 }
 
 func TestSeedCopiesAModsIgnoredTsconfigFromTheMainCheckout(t *testing.T) {
+	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, ".gitignore"), "mods/*/tsconfig.json\nmods/*/.claude-plugin/types/\n")
 	gitT(t, dir, "add", ".gitignore")
@@ -33,6 +34,7 @@ func TestSeedCopiesAModsIgnoredTsconfigFromTheMainCheckout(t *testing.T) {
 
 // unlock is the door out of a locked tree, so the shim that builds x there must not need git status
 func TestTheShimBuildsXInsideALockedWorktree(t *testing.T) {
+	t.Parallel()
 	tree := lockedWorktree(t)
 	shim, _ := os.ReadFile("../bin/x")
 	write(t, filepath.Join(tree, "x/bin/x"), string(shim))
@@ -53,6 +55,7 @@ func TestTheShimBuildsXInsideALockedWorktree(t *testing.T) {
 
 // go stamps vcs info through git status, which dies on the clean filter in a locked tree (exit 128)
 func TestGoBuildsInAHandMadeLockedWorktreeOnceUnlocked(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name string
 		run  func(t *testing.T, tree string) ran

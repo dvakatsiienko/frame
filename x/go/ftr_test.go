@@ -19,6 +19,7 @@ func ftrApp(t *testing.T) (dir, msg string) {
 }
 
 func TestCommitAddsFtrNoneWhenTheAppsFtrDidNotMove(t *testing.T) {
+	t.Parallel()
 	dir, msg := ftrApp(t)
 	write(t, filepath.Join(dir, "app/main.ts"), "export const a = 2;\n")
 
@@ -34,6 +35,7 @@ func TestCommitAddsFtrNoneWhenTheAppsFtrDidNotMove(t *testing.T) {
 }
 
 func TestCommitAddsNothingWhenTheFtrMoves(t *testing.T) {
+	t.Parallel()
 	dir, msg := ftrApp(t)
 	write(t, filepath.Join(dir, "app/main.ts"), "export const a = 2;\n")
 	write(t, filepath.Join(dir, "app/FTR.md"), "# app — features\n\n- ✅ a is two\n")
@@ -46,6 +48,7 @@ func TestCommitAddsNothingWhenTheFtrMoves(t *testing.T) {
 }
 
 func TestWithFtrNoneKeepsTheTrailerLast(t *testing.T) {
+	t.Parallel()
 	cases := []struct{ name, in, want string }{
 		{"a subject only", "fix\n", "fix\n\nftr: none\n"},
 		{"a body with no trailer", "fix\n\n- what\n", "fix\n\n- what\n\nftr: none\n"},

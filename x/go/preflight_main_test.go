@@ -7,6 +7,7 @@ import (
 
 // a verb main already has is a finding only on a line that claims to add it
 func TestPreflightFlagsAVerbOnMainOnlyWhereTheLineClaimsToAddIt(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, line string
 		flagged    bool
