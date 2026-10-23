@@ -23,9 +23,9 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 
 - 🚨 **dima's words never go into a comment**: the body is read by everyone, a comment by a
   graphql fetch. comments carry trail only — run stamps, «done, see commit», a member's done report
-- a `standing` ticket carries no comments: a round on it is a child ticket, which takes the state,
-  the pr and the done report; a coder brief names the child, never the
-  standing ticket (dima, 2026-09-30, BYT-105)
+- a `standing` ticket carries no comments and an empty body: a round on it is a child ticket, which takes
+  the wish, the state, the pr and the done report; a coder brief names the child, never the
+  standing ticket (dima, 2026-09-30, BYT-105). only a story that closes holds a body describing it (dima, 2026-10-23: «standing tickets are not allowed to have a cluttered body»)
 
 ## writing — pretty, short, true
 

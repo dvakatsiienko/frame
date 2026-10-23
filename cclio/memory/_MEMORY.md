@@ -21,7 +21,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 
 ## running the work
 - ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the ask-guard, the freebie rule; the ticket handbook is `cclio:pm`
-- 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, five lanes, each stage's gate and owner, the done test
+- 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, three kinds of work, each stage's gate and owner, the done test
 - ⭐ `x:crew-lead` (plain pointer, not imported: the lane craft loads on demand) — load it before a lane spawn, brief, watch or stop: a coder, verifier, designer, probe or cloud session
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn

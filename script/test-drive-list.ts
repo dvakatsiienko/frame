@@ -60,7 +60,7 @@ if (process.argv.includes('--spawn-hook')) {
     const file = command.match(
         /\$\((?:cat\s+|<\s*)['"]?([^)'"\s]+)['"]?\s*\)/,
     )?.[1];
-    const spawn = /\bclaude --bg\b/.test(command);
+    const spawn = spawnsMember(command);
     if (spawn && /\$\((?:cat\b|<)/.test(command) && !readable(file))
         deny(
             `the gate cannot read the brief file this spawn names (${file ?? 'unparsed'}) — pass it as "$(cat <path>)"`,
@@ -111,6 +111,57 @@ function deny(reason: string): never {
         }),
     );
     process.exit(0);
+}
+
+// a spawn is a command word `claude` carrying `--bg` or `--cloud` among its args; heredoc bodies and quoted strings are text, never commands
+function spawnsMember(command: string) {
+    const source = command.replace(
+        /(<<-?\s*(['"]?)(\w+)\2[^\n]*)\n[\s\S]*?\n[ \t]*\3(?=\n|$)/g,
+        '$1',
+    );
+    const segments: string[][] = [[]];
+    let word = '';
+    let isWord = false;
+    let quote = '';
+    const endWord = () => {
+        if (isWord) segments.at(-1)?.push(word);
+        word = '';
+        isWord = false;
+    };
+    for (let i = 0; i < source.length; i++) {
+        const c = source[i] ?? '';
+        if (quote === "'") {
+            if (c === "'") quote = '';
+            else word += c;
+        } else if (quote === '"') {
+            if (c === '"') quote = '';
+            else if (c === '\\') word += source[++i] ?? '';
+            else word += c;
+        } else if (c === '\\') {
+            word += source[++i] ?? '';
+            isWord = true;
+        } else if (c === "'" || c === '"') {
+            quote = c;
+            isWord = true;
+        } else if (/[;&|()`\n]/.test(c)) {
+            endWord();
+            segments.push([]);
+        } else if (/\s/.test(c)) {
+            endWord();
+        } else {
+            word += c;
+            isWord = true;
+        }
+    }
+    endWord();
+    return segments.some((words) => {
+        const start = words.findIndex((w) => !/^\w+=/.test(w));
+        const [bin, ...args] = start < 0 ? [] : words.slice(start);
+        return (
+            path.basename(bin ?? '') === 'claude' &&
+            args.some((a) => a === '--bg' || a === '--cloud')
+        );
+    });
 }
 
 function readable(file: string | undefined) {

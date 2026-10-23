@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-23T10:42:00Z'
+updated_date: '2026-10-23T11:12:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -427,4 +427,59 @@ W147 the review is very valuable info, but I'm too tired to process it tonight
 dima 2026-10-23 13:34, the second pm review (his words): «Before fixes, the PM module had drifted and had a lot of contradictions that we found during the initial review, based on my wishes and your own findings. We identified a number of weak spots by reading the contracts in files, in text, in memories and skills, and by using the actual blueprint, because the blueprint gives a high-level overview. After those fixes, we do another review round in exactly the same manner. It's not just a check for a check mark. The goal is to identify weak spots and find other spots and places for optimization: how to streamline the flow, find some redundant steps that could be overhead, and make Flow easier by just dropping them, merging, or moving, something like this. It is a full-scale review, not just for a check mark to proceed.» — and: «it's better to sync the current PM blueprint with the current state after our fixes» (done 13:35, board synced). 13:36: «let's do a review after a second wind … remember to save my ones about the rare review I just asked and asked previously as well, so after the second window, don't forget them.»
 
 dima 2026-10-23 13:40 (orbit steer on the after-pickup review): «Yes, but do not forget the details about a re-review. It's important.»
+
+2026-10-23 14:14 cclio: FRM-72's body, archived verbatim before dima's «clear its body entirely» (a standing story keeps a clean body). his 10-13 wish there is folded as W1–W98 above; every dima note had its route marked (FRM-408, crew-coder § 3, the rename part, lane-plan.md). the body as it stood:
+
+> lane: side lane — a dedicated review session right after the memory sweep is fully resolved (dima, 2026-10-13)
+> 
+> ## wish
+> 
+> dima, inbox 2026-10-13, folded: review my pm flow from A to B — how a wish of mine goes into prod. it's mostly about shape-idea and shape-lane, the process of shaping a wish into a spec so the flow is ready for coders.
+> 
+> the biggest failure point right now is our «quick lanes». in the 10-12 mods lane (one coder, the catch mod) you kept forwarding everything to the coder over cross-session messages — my steers, my asks, your own wants, the wisps either of us found. it works, but it's a failure point: a todo sent that way lives only in your context and the coder's, so it's easy to lose. in a chaotic lane like that the coder's pool keeps growing, his flow stays unstructured, and glide starts showing invalid data.
+> 
+> fix i propose: my wish (or a wisp you found) → `to-spec` → the coder runs `to-tickets` → you review and build an ordered, linear task graph for the coder, the plan's source of truth for everyone, easy for you to drive glide from. the tricky part is who orders the tickets: the coder knows the most efficient order for his own scope, you see what's planned after it. that conflict needs a grill.
+> 
+> also revisit the lane vocabulary: our lane, the main lane, the second lane, the parallel lane, the quick lane — i keep mixing them up. chaotic lanes like the mods one are natural, they come from real life, so harden them: name them, and always prep the coder's scope through `to-spec`.
+> 
+> TL;DR: define, harden and set in stone the to-spec → to-tickets flow.
+> 
+> * the 2026-10-22 revamp's wish, W1–W98 folded one point per line: cclio's pocket item PK-103 (too long to copy here; his raw drops sit in its notes)
+> 
+> ## dima notes
+> 
+> * 2026-10-13: the review waits for the memory sweep to be fully resolved; until then everything pm-shaped folds here
+> * 2026-10-13, the vocabulary revamp widens to fleet member names: ccrow → sidecrow (same emoji 🐦 ⬛), cclio → clio? 😜 — weigh the rename cost at the review (cclio's name is a dir, a plugin prefix, a session name the mods route by, every memory file)
+>   * → 2026-10-22 grill 5: joins the rename part, right after the pm revamp
+> * 2026-10-13, folded from the pocket (PK-85, dima's inbox 10-12): the review policy — what is the coder's and ci's self-review today, and how many rounds is ci capped at, 2? let it be one, and give the coder matt's code review: it runs beside coderabbit, waits for both, fixes as reviews arrive, grades each review's usefulness and quality into a log, then tells the verifier. why: ci review is slow, local is faster with fewer hops; ci stays the final gate, but patching should be robust and agile, so reviews move closer to coder + verifier
+>   * → 2026-10-22 grill 5: settled in place — the review policy now lives in `x:crew-coder` § 3 (the local pair per verifier round, one ci round at «final») (cclio, 2026-10-22)
+> * 2026-10-13, folded from the pocket (PK-86, dima's inbox 10-12): every cc thread knows its init ctx number (spawned, not yet prompted, just the number, e.g. 65k). memory and skills only grow, so folding is a time bomb the sweep is defusing now; cclio manages her own and the fleet's init numbers, traces them over time, spots growth and raises an alarm with proposals, never a bare report
+>   * → 2026-10-22 grill 5: its own fleet ticket, [FRM-408](https://linear.app/x-com/issue/FRM-408)
+> * 2026-10-13 trial evidence, cclio: since 14:15 the mods lane ran on one ordered to-do file (`.scratch/mods-l13/todo.md`, cclio owns the order, every steer, ask and wisp lands there as a numbered line before any message). todos 8–21 all landed as lines and glide followed the numbers; the x-mod-guard now warns when a 3+-item job goes to a coder without a spec path. a light version of the graph above, to weigh in the review
+>   * → 2026-10-22: done, grown into `.scratch/<feature>/lane-plan.md` (the coder drafts, cclio seals)
+> 
+> ## the standing story (older scope)
+> 
+> keep the tracker structure honest and the `cclio:pm` skill aligned with what actually lands. cclio owns pm; batches approved by dima before flush.
+> 
+> ## open
+> 
+> * project layout — cluster all DOT+BYT tickets by area (done + canceled count as evidence too), propose the shape
+> * priority discipline — keep p1 rare; urgents hunted every session, highs on board boots
+> * misplaced tickets — placement drift hunted at boots, fixed on approval
+> * model routing via labels — fable = writings/pm, opus = tech; keep labels honest on new tickets
+> * realign `x:pm` to decisions as they land
+> * body guardrails — the body shape (what · why · how · notes · closing word) now enforced via `x:pm`; 🧹 backlog batch-1 (28 marked) being chewed via the broom flow
+> * folded from the old worklog: emoji policy for labels/tickets · estimate discipline · BYT project census via gui
+> 
+> ## settled — do not re-litigate
+> 
+> * «story», never «epic» — one term
+> * assigned-to-dima = strictly his; unassigned = default, open to anyone (lives in the linear-flow rule)
+> * labels rethought + full color revamp; `memory` / `skill` added
+> * pm skill split → rules floor + x:pm handbook
+> 
+> constraint: free plan — 2 teams, 250 non-archived issues.
+> 
+> ⸻ 🪪 cc·20260819·batch1 · fable 5 · agent run stamp — please keep 🙏
 <!-- SECTION:NOTES:END -->

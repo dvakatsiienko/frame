@@ -20,11 +20,11 @@ recipes are [references/workspace.md](references/workspace.md).
   sides, several ids batched, a capped page named under `capped`
 - `list --team FRM --state <s> --label <l>` · `--search <w>`
 - `body FRM-N` saves the body to a file, `body FRM-N --set <file>` writes it back
-- `set FRM-N --state <s> --add-label <l>` — keeps every other label
+- `set FRM-N --state <s> --add-label <l> --milestone <name>` — keeps every other label
 - `link FRM-N blocks FRM-M` · `comment FRM-N --body-file f` · `update <project> --body-file f --health onTrack`
 - `archive --days 14`, then `--apply`
 - `api '<graphql>'` for the rest; `x schema linear` holds every flag
-- create has no verb: `x as cclio -- linear issue create … --description-file f`, never `--state` —
+- create has no verb: `x as cclio -- linear issue create … --milestone <name> --description-file f`, never `--state` —
   a new ticket is born in Triage, and promotion out of it is dima's (2026-08-31)
 - every call acts as the cclio app (`viewer` answers `cclio, app: true`); `--as coder` writes as the coder app
 
