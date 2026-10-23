@@ -43,7 +43,24 @@ posted: {health: no}
 - next: lane-init grill round 2 (shape-idea's output, where PRODUCT.md / FTR / glossary go), then wishkeeper, then the full flow printed per skill
 - FRM-405's stack waits on dima's word to trash a stray `.DS_Store` gh-stack trips on
 
+⸻ upd 18:52
+
+## shipped
+- lane init rebuilt on every surface (PK-263, 3 grill rounds): `cclio:shape-idea` ends in one ticket; `cclio:shape-lane` grills and takes dima's ✍️ sign; new `cclio:shape-lane-dispatch` seals the 📐 spec and starts the lane; the lane plan is 🟢 greenlit; `craft-fleet-flow` holds the contract; root invariant 3 reworded; the words in `rules/fleet-vibe.md` (🍫 chunk, ✍️ signed, dispatch, 🦭 sealed, 🟢 greenlight, 📐 spec, 🎯 done test, 🐦‍🔥 second wind); a `signed` label in FRM; wishkeeper's 18 findings and dima's 4 hardening ticks folded
+- [FRM-405](https://linear.app/x-com/issue/FRM-405) landed: a 4-layer stack (#99 → #100 → #101 → #103) in one atomic `gh stack merge`, merge-auto now merges a linked stack through github's async endpoint, the `merged-by-x` label lets the revert brake see it; cli lane 1 done (4/4), milestone «🐉 prs land themselves» complete
+- blueprints: draw.io adopted (trial verdict), FigJam/n8n test leftovers retired, 6 Figma watches removed
+- PK-265 holds the cli + mods re-sign plan: the drift check, a 25-stray hunt, the coder's x architecture review, 5 cli chunk candidates
+
+## tricks gained
+- github refuses the plain merge endpoint for a stacked pr (403); a stack merges all-or-nothing through the async endpoint
+- merge-auto has no door for dima's word on a self-edit; a pre-approved one lands by `gh stack merge` after its checks (a cli rider)
+- `x linear --as dima` creates what the cclio app may not (a label)
+
+## state
+- next: the first live shape-lane — 5 cli chunks from PK-265, then the main lane signed (trial), the tickets-flow board refresh, the pocket/linear grill
+- the coder takes its second wind and parks; the verifier is stopped
+
 ## trail
-- shipped: pm review 2 + batch 1 fixes, cuts round 1 (lane kinds), draw.io adopted, FRM-404 merged, lane-init round 1 settled
-- open: lane-init round 2 → wishkeeper → full flow print; FRM-405 stack link waits on the .DS_Store trash
-- state: second wind at 16:33; the FRM-404/405 coder and verifier keep running
+- shipped: lane init rebuilt (shape-idea → shape-lane ✍️ → dispatch 🦭), FRM-405 landed as a 4-layer stack, cli lane 1 done, draw.io adopted
+- open: 5 cli chunks to sign (PK-265), the main lane signed as a trial, the board refresh, the pocket/linear grill
+- state: second wind at 18:52; the coder parks, the verifier is stopped
