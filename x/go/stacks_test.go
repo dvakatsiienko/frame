@@ -236,7 +236,7 @@ func linkedMergeWorld(t *testing.T) *mergeWorld {
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
 		{"number":7,"state":"open","head":{"ref":"coder/x"}},{"number":8,"state":"open","head":{"ref":"coder/x-2"}}]}]`
 	w.hub.pages[repoPath+"/pulls/8/merge-async"] = `{"status":"pending","details":{"uuid":"u1"}}`
-	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + w.head + `"}}`
 	return w
 }
 
@@ -260,7 +260,7 @@ func TestMergeAutoLandsAStacksBottomLayerAsync(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
-	w.hub.pages[repoPath+"/pulls/7/merge-async"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.pages[repoPath+"/pulls/7/merge-async"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + w.head + `"}}`
 	w.hub.mu.Unlock()
 
 	got := w.run(t, "7", "--apply")
@@ -338,8 +338,8 @@ func TestMergeAutoBrakesOnTheHeadThePendingAnswerNamed(t *testing.T) {
 	}
 }
 
-// a mismatch whose label github refused leaves no brake behind, so the message says so and names the hand step
-func TestMergeAutoSaysTheBrakeIsOffWhenItsLabelFailed(t *testing.T) {
+// a mismatch whose label github refused still brakes: this mac's own record holds it, and the hand label step is named
+func TestMergeAutoBrakesFromItsOwnRecordWhenTheLabelFailed(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
@@ -350,8 +350,36 @@ func TestMergeAutoSaysTheBrakeIsOffWhenItsLabelFailed(t *testing.T) {
 
 	got := w.run(t, "8", "--apply")
 
-	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "NOT on") || got.next != "gh pr edit 8 --add-label "+brakeLabel {
-		t.Fatalf("exit %d, error %q, next %q: want the brake named off and the hand label step", got.code, msg, got.next)
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "this mac's record") || got.next != "gh pr edit 8 --add-label "+brakeLabel {
+		t.Fatalf("exit %d, error %q, next %q: want the brake on from the record and the hand label step", got.code, msg, got.next)
+	}
+	puts := len(w.hub.sent("PUT "))
+
+	next := w.run(t, "7", "--apply")
+
+	if msg := envelopeOf(next).Error; next.code != 1 || !strings.Contains(msg, "brake on") || !strings.Contains(msg, releaseBrake("8")) || len(w.hub.sent("PUT ")) != puts {
+		t.Fatalf("exit %d, error %q: want the next merge held by the recorded brake, naming its release", next.code, msg)
+	}
+}
+
+// github's answer named no head it took, so the gated head is unverified: said on stderr, and the brake goes on
+func TestMergeAutoBrakesWhenTheStackMergeNamesNoHead(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `"}}`
+	w.hub.mu.Unlock()
+
+	c := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+	c.Dir = w.clone
+	c.Env = append(append(cleanEnv(), "X_TEST=1"), w.env...)
+	var stdout, stderr bytes.Buffer
+	c.Stdout, c.Stderr = &stdout, &stderr
+	code := exitOf(c.Run())
+
+	labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+	if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+		t.Fatalf("exit %d, stderr %q, label calls %q: want the merge called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
 	}
 }
 

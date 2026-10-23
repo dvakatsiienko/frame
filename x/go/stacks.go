@@ -170,8 +170,14 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 		}
 		took = cmp.Or(took, res.Details.ExpectedHead)
 	}
-	if took != "" && took != head {
-		return "", "", headMismatch(repo, n, res.Status, head, took)
+	landed := res.Status == "merged" || res.Status == "enqueued"
+	switch {
+	case took != "" && took != head:
+		said := fmt.Sprintf("⚠ the stack merge of #%s (%s) reports head %s, not the gated %s", n, res.Status, short(took), short(head))
+		return "", "", brakeAfter(repo, n, "merged a head its gate never read", said)
+	case took == "" && landed:
+		said := fmt.Sprintf("⚠ the stack merge of #%s (%s) named no head it took, so the gated %s is unverified", n, res.Status, short(head))
+		return "", "", brakeAfter(repo, n, "merged a head github never named", said)
 	}
 	switch res.Status {
 	case "merged":
@@ -184,16 +190,21 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	return "", "", &Fail{Msg: fmt.Sprintf("the stack merge is still %s after %s", res.Status, stackMergeBudget), Next: "x lane stack view"}
 }
 
-// gh-stack's own merge compares the same field (merge_async.go:88); the label is the brake every next run reads,
-// so a label github refused leaves no brake, and the message says so
-func headMismatch(repo, n, status, gated, merged string) error {
-	said := fmt.Sprintf("⚠ the stack merge of #%s (%s) reports head %s, not the gated %s", n, status, short(merged), short(gated))
-	if _, _, err := ghSend(asDima, http.MethodPost, githubBase()+"/repos/"+repo+"/issues/"+n+"/labels", map[string][]string{"labels": {brakeLabel}}, nil); err != nil {
-		said += "; the brake is NOT on — github refused its " + brakeLabel + " label (" + err.Error() + "), set it by hand before any other merge"
-		return &Fail{Msg: said, Log: []string{said}, Next: "gh pr edit " + n + " --add-label " + brakeLabel}
+// gh-stack's own merge compares the same field (merge_async.go:88); the label is the brake every run reads,
+// and a label github refused falls back to this mac's record, so the brake never stays off
+func brakeAfter(repo, n, why, said string) error {
+	_, _, err := ghSend(asDima, http.MethodPost, githubBase()+"/repos/"+repo+"/issues/"+n+"/labels", map[string][]string{"labels": {brakeLabel}}, nil)
+	if err == nil {
+		said += ": the brake is on, nothing else merges until dima looks"
+		return &Fail{Msg: said, Log: []string{said}, Next: releaseBrake(n)}
 	}
-	said += ": the brake is on, nothing else merges until dima looks"
-	return &Fail{Msg: said, Log: []string{said}, Next: releaseBrake(n)}
+	labelStep := "gh pr edit " + n + " --add-label " + brakeLabel
+	if rerr := recordBrake(repo, n, why); rerr != nil {
+		said += "; the brake is NOT on — github refused its " + brakeLabel + " label (" + err.Error() + ") and its record here failed (" + rerr.Error() + "); set the label by hand before any other merge"
+		return &Fail{Msg: said, Log: []string{said}, Next: labelStep}
+	}
+	said += "; github refused the " + brakeLabel + " label (" + err.Error() + "), so the brake is on from this mac's record only; label the pr by hand so every other session sees it"
+	return &Fail{Msg: said, Log: []string{said}, Next: labelStep}
 }
 
 /* Verbs */

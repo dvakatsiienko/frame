@@ -61,7 +61,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
 - **stack** — prs that each open onto the branch of the one below, merged together in one async call up to the pr named; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)
 - **layer** — one pr's branch in a stack: the root `coder/<ticket>-<slug>`, then `-2`, `-3` on top
-- **brake** — every pr waiting for dima's word for 7 days after a merge-auto merge is reverted; read from git each run, never stored; a stack's squash, which carries no trailer, is known by its pr's `merged-by-x` label on github; a stack merge that landed another head than the gated one sets it too, through its pr's `merge-brake` label, until dima's typed word releases it
+- **brake** — every pr waiting for dima's word for 7 days after a merge-auto merge is reverted; read from git each run; a stack's squash, which carries no trailer, is known by its pr's `merged-by-x` label on github; a stack merge that landed another head than the gated one, or named no head at all, sets it too, through its pr's `merge-brake` label, until dima's typed word releases it; the one stored state is the mac's own record of a brake github refused to label
 - **judged commit** — the pr head the last review round read; a verdict is **stale** when the pr head moved past it
 - **comment feed** — one of the three places a pr's comments land: the conversation, reviews, and lines in the diff; the ci reviewer posts to a different one per round
 
