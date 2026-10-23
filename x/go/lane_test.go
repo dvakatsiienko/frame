@@ -379,6 +379,36 @@ func TestCommitTakesAChangedQuoteOnceShown(t *testing.T) {
 	}
 }
 
+func TestCommitTakesANewMemoryFile(t *testing.T) {
+	dir := repo(t)
+	write(t, filepath.Join(dir, "rules/new.md"), "- dima: «a fresh quote»\n")
+
+	got := xIn(t, dir, nil, "lane", "commit", message(t), "--", "rules/new.md")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want a new rules file committed: HEAD holds no quote it could lose\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitStopsAQuoteGoneByDelete(t *testing.T) {
+	cases := []struct{ name, path string }{{"the file named", "rules/a.md"}, {"its dir named", "rules"}}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := repo(t)
+			write(t, filepath.Join(dir, "rules/a.md"), "- dima: «checks belong at commit»\n")
+			gitT(t, dir, "add", ".")
+			gitT(t, dir, "commit", "-q", "-m", "seed")
+			_ = os.Remove(filepath.Join(dir, "rules/a.md"))
+
+			got := xIn(t, dir, nil, "lane", "commit", message(t), "--", c.path)
+
+			if got.code == 0 || !strings.Contains(got.stdout, "«checks belong at commit»") {
+				t.Fatalf("exit %d, want the deleted quote named\n%s", got.code, got.stdout)
+			}
+		})
+	}
+}
+
 func TestUnlockTurnsCiphertextBackIntoPlaintext(t *testing.T) {
 	tree := lockedWorktree(t)
 

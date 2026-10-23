@@ -178,7 +178,7 @@
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
   - given branch `coder/FRM-1-a-2` on top of `coder/FRM-1-a`, when `x lane pr-open --apply --base coder/FRM-1-a <title> <body-file>` runs, then one pr opens with base `coder/FRM-1-a`; a base origin lacks refuses before gh runs
-  - given layers `coder/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names the 3 bottom-up, and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`
+  - given layers `coder/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names their 3 open prs by number, bottom-up (gh-stack pushes a named branch, and a frame worktree's push dies at the mirror gate), and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`
   - decision: view reads github, never `gh stack view`, which reads a local stack file its own link never writes (verifier round 1)
   - given gh-stack's lock held (its exit 8), then the call is tried again with backoff for up to 2 minutes, then fails naming the lock; a paused stack rebase (exit 7) refuses after 1 call naming its worktree, `gh stack rebase --continue` and `--abort`; stacks off for the repo (exit 9) refuses at once naming it
   - given no gh-stack extension, then `x lane stack link` exits 1 naming `gh extension install github/gh-stack`

@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -73,8 +74,19 @@ func stackMergeWait(repo string, pr pullHead) (string, error) {
 }
 
 /* Verbs */
-func stackLinkPlan(r *Run, _ []string, _ Flags) (any, error) {
+type stackLayer struct {
+	Branch string `json:"branch"`
+	PR     int    `json:"pr"`
+}
+
+// gh stack link pushes every branch it is given, and a frame worktree's push dies at the mirror
+// gate, so the layers go in as their pr numbers, which it never pushes
+func stackLinkPlan(r *Run, _ []string, flags Flags) (any, error) {
 	name, err := branch()
+	if err != nil {
+		return nil, err
+	}
+	repo, err := repoOf(flags)
 	if err != nil {
 		return nil, err
 	}
@@ -86,23 +98,66 @@ func stackLinkPlan(r *Run, _ []string, _ Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	return names, nil
+	var layers []stackLayer
+	if err := r.Step("prs", "finding each layer's open pr", func() (string, error) {
+		var shown []string
+		for _, layer := range names {
+			n, err := openPR(repo, layer)
+			if err != nil {
+				return "", err
+			}
+			layers = append(layers, stackLayer{layer, n})
+			shown = append(shown, fmt.Sprintf("#%d", n))
+		}
+		return strings.Join(shown, " → "), nil
+	}); err != nil {
+		return nil, err
+	}
+	return layers, nil
 }
 
 func askStackLink(plan any) string {
-	return "link " + strings.Join(plan.([]string), " → ") + " into a github stack?"
+	var shown []string
+	for _, layer := range plan.([]stackLayer) {
+		shown = append(shown, fmt.Sprintf("#%d %s", layer.PR, layer.Branch))
+	}
+	return "link " + strings.Join(shown, " → ") + " into a github stack?"
 }
 
 func stackLink(r *Run, _ []string, _ Flags, plan any) (any, error) {
-	names := plan.([]string)
+	layers := plan.([]stackLayer)
+	args := []string{"link"}
+	for _, layer := range layers {
+		args = append(args, strconv.Itoa(layer.PR))
+	}
 	if err := r.Step("link", "gh stack link, bottom-up", func() (string, error) {
-		got, err := stackCall(append([]string{"link"}, names...)...)
+		got, err := stackCall(args...)
 		return got.out, err
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(fmt.Sprintf("%d layers linked: %s", len(names), strings.Join(names, " → ")), "x lane stack view")
-	return ordered{{"layers", names}}, nil
+	r.Done(fmt.Sprintf("%d layers linked: %s", len(layers), strings.Join(args[1:], " → ")), "x lane stack view")
+	return ordered{{"layers", layers}}, nil
+}
+
+// the open pr whose head is branch
+func openPR(repo, branch string) (int, error) {
+	var open []struct {
+		Number int `json:"number"`
+		Head   struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+	}
+	owner, _, _ := strings.Cut(repo, "/")
+	if _, err := ghFetch(asCoder, githubBase()+"/repos/"+repo+"/pulls?state=open&head="+url.QueryEscape(owner+":"+branch), &open); err != nil {
+		return 0, err
+	}
+	for _, pr := range open {
+		if pr.Head.Ref == branch {
+			return pr.Number, nil
+		}
+	}
+	return 0, &Fail{Refused: true, Msg: branch + " has no open pr", Next: "x lane pr-open --apply --base <the layer below> <title> <body-file>"}
 }
 
 // one stack as github's stacks api answers it (the api gh-stack itself calls), prs bottom-up
@@ -135,23 +190,8 @@ func stackView(r *Run, _ []string, flags Flags) (any, error) {
 	api := githubBase() + "/repos/" + repo
 	var n int
 	if err := r.Step("pr", "finding this branch's open pr", func() (string, error) {
-		var open []struct {
-			Number int `json:"number"`
-			Head   struct {
-				Ref string `json:"ref"`
-			} `json:"head"`
-		}
-		owner, _, _ := strings.Cut(repo, "/")
-		if _, err := ghFetch(asCoder, api+"/pulls?state=open&head="+url.QueryEscape(owner+":"+name), &open); err != nil {
-			return "", err
-		}
-		for _, pr := range open {
-			if pr.Head.Ref == name {
-				n = pr.Number
-				return fmt.Sprintf("#%d", n), nil
-			}
-		}
-		return "", &Fail{Refused: true, Msg: name + " has no open pr", Next: "x lane pr-open --apply --base <the layer below> <title> <body-file>"}
+		n, err = openPR(repo, name)
+		return fmt.Sprintf("#%d", n), err
 	}); err != nil {
 		return nil, err
 	}

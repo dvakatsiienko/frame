@@ -33,4 +33,13 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 
 ## rounds
 
+### round 1 — FRM-405, the x lane commit riders (2026-10-23, in progress)
+
+- layers: [#99](https://github.com/dvakatsiienko/frame/pull/99) `coder/FRM-405-riders` onto main → [#100](https://github.com/dvakatsiienko/frame/pull/100) `-2` → [#101](https://github.com/dvakatsiienko/frame/pull/101) `-3`; each opened with `x lane pr-open --base <layer below>`, no hand step
+- each layer is one rider, one exit line, one commit — the diffs read 1 concern each (+27, +91/−1, +67/−1 lines of go, tests included)
+- gh-stack v0.2.1 installed for this round (`gh extension install github/gh-stack`)
+- ⚠️ blocker: `x lane stack link --apply` failed inside gh-stack — «migrating stack state: worktree administration path "/Users/dima/frame/.git/worktrees/.DS_Store" is not a directory». a Finder file beside the worktree admin dirs; no upstream issue yet. dima trashed it (o64) and the issue is [gh-stack#587](https://github.com/github/gh-stack/issues/587) (o65)
+- ⚠️ blocker 2: `gh stack link` pushes every branch it is named, and a frame worktree's push dies at the mirror gate → `x lane stack link` now names the layers' open prs by number, which gh-stack never pushes (fixed in layer 3)
+- open → merge time, review rounds per layer, stack-only hand steps: filled at merge
+
 ## verdict

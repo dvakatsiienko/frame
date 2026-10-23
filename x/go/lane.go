@@ -691,15 +691,20 @@ func ciJobs(tree string, paths []string) []ciJob {
 }
 
 var (
-	memoryFile  = regexp.MustCompile(`(^|/)(rules|rules-lazy|skills|memory)/.*\.md$|(^|/)(SKILL|AGENTS|CLAUDE)\.md$`)
-	quotesShown = regexp.MustCompile(`(?m)^quotes: shown\s*$`)
+	memoryFile   = regexp.MustCompile(`(^|/)(rules|rules-lazy|skills|memory)/.*\.md$|(^|/)(SKILL|AGENTS|CLAUDE)\.md$`)
+	quotesShown  = regexp.MustCompile(`(?m)^quotes: shown\s*$`)
+	quoteSummary = regexp.MustCompile(`(?m)^(\d+) quote\(s\) gone`)
 )
 
 // a «» line of dima's in a memory file twice went through as «not his» (2026-10-15), so a gone one stops the commit
 func quotesKept(message, msgFile string, paths []string) (string, error) {
+	staged, err := mustGit("quotes", append([]string{"diff", "--cached", "--name-only", "--"}, paths...)...)
+	if err != nil {
+		return "", err
+	}
 	var files []string
-	for _, path := range paths {
-		if memoryFile.MatchString(filepath.ToSlash(path)) && exists(path) {
+	for path := range strings.Lines(staged) {
+		if path = strings.TrimSpace(path); memoryFile.MatchString(path) {
 			files = append(files, path)
 		}
 	}
@@ -710,12 +715,17 @@ func quotesKept(message, msgFile string, paths []string) (string, error) {
 	if !exists(script) {
 		return "not checked: no " + home(script), nil
 	}
+	// the summary line, never the exit: a new file exits 2 («not checked») and loses no quote
 	checked, _ := run("", nil, "", "python3", append([]string{script, "HEAD"}, files...)...)
-	if checked.ok {
+	summary := quoteSummary.FindStringSubmatch(checked.out)
+	switch {
+	case summary == nil:
+		return "", &Fail{Msg: "quote-diff printed no summary — its output is above", Next: "python3 " + home(script) + " HEAD <files>", Log: nonBlank(checked.log)}
+	case summary[1] == "0":
 		return plural(len(files), "file") + ", every quote kept", nil
 	}
 	if raw, _ := os.ReadFile(message); quotesShown.Match(raw) {
-		return "quotes: shown — " + plural(len(files), "file") + " passed with gone quotes", nil
+		return "quotes: shown — " + summary[1] + " gone quotes passed", nil
 	}
 	return "", &Fail{Refused: true, Msg: "a quote of dima's changed or went; show him each line, then add «quotes: shown» to the message:\n" + checked.out,
 		Next: "x lane commit " + msgFile + " -- <paths>, its message carrying quotes: shown"}
