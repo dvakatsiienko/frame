@@ -23,5 +23,5 @@ ordinal: 159000
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-**waiting for:** cli lane 2 (FRM-383, FRM-384) — «x go time: a verb that runs the x go gate nothing-touched, one-file-touched and on a throwaway GOCACHE, printing the three walls and per-package elapsed; the FRM-422 coder hand-rolled it twice (retro: ~/.local/state/x/lanes/cli-2/2026-10-23-FRM-422-coder-retro.md)»
+**waiting for:** cli lane 2 (FRM-383, FRM-384) — «x go time: a verb that runs `pnpm x-go:test` nothing-touched, one-file-touched and on a throwaway GOCACHE, printing the three walls and per-package elapsed; the FRM-422 coder hand-rolled it twice (retro: ~/.local/state/x/lanes/cli-2/2026-10-23-FRM-422-coder-retro.md)»
 <!-- SECTION:NOTES:END -->
