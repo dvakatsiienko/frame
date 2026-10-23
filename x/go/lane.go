@@ -36,8 +36,17 @@ const (
 var laneAddOn struct {
 	// the branch a pr opens onto; "" keeps main
 	prBase func(Flags) (string, error)
-	// why merge-auto must leave this pr for now; "" lets the checks decide
-	mergeWait func(repo string, pr pullHead) (string, error)
+	// the layers a pr merges with; nil for a plain pr
+	layersOf func(repo, n string, pr pullHead) (*prLayers, error)
+	// lands a pr and every layer below it in one call
+	mergeLayers func(repo, n string) (merged, sha string, err error)
+}
+
+// a pr that merges together with the layers under it
+type prLayers struct {
+	trunk string   // where every layer lands
+	below []string // the open layers under the pr, bottom-up
+	wait  string   // why it cannot merge now; "" lets the checks decide
 }
 
 /* Verbs */

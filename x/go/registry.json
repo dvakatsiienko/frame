@@ -260,6 +260,7 @@
             "purpose": "merge a pr once its head is verifier-clean, required checks green and threads closed; else wait and name why",
             "steps": [
                 "pr",
+                "layers",
                 "verifier",
                 "ci",
                 "threads",

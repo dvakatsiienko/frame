@@ -41,14 +41,42 @@ func init() {
 	impls["lane stack link"] = Impl{Plan: stackLinkPlan, Apply: stackLink, Undone: "no stack was linked", Ask: askStackLink}
 	impls["lane stack view"] = Impl{Run: stackView}
 	laneAddOn.prBase = stackBase
-	laneAddOn.mergeWait = stackMergeWait
+	laneAddOn.layersOf = stackLayersOf
+	laneAddOn.mergeLayers = stackMerge
 }
 
-// a pr onto another pr's branch waits for that pr; once it merged, its branch is a dead end until retargeted
-func stackMergeWait(repo string, pr pullHead) (string, error) {
-	if pr.Base.Ref == "main" {
-		return "", nil
+// a pr in a github stack merges with every open layer under it; a pr onto another pr's branch with no
+// github stack waits for that pr, and once it merged, its branch is a dead end until retargeted
+func stackLayersOf(repo, n string, pr pullHead) (*prLayers, error) {
+	var stacks []remoteStack
+	status, _, err := ghSend(asDima, http.MethodGet, githubBase()+"/repos/"+repo+"/stacks?pull_request="+n, nil, &stacks)
+	switch {
+	case status == http.StatusNotFound:
+	case err != nil:
+		return nil, err
+	case len(stacks) > 0:
+		layers := &prLayers{trunk: stacks[0].Base.Ref, below: []string{}}
+		for _, layer := range stacks[0].PullRequests {
+			if strconv.Itoa(layer.Number) == n {
+				return layers, nil
+			}
+			if layer.State == "open" && layer.MergedAt == nil {
+				layers.below = append(layers.below, strconv.Itoa(layer.Number))
+			}
+		}
+		return nil, &Fail{Msg: fmt.Sprintf("github's stack %d does not list #%s", stacks[0].Number, n), Next: "x lane stack view"}
 	}
+	if pr.Base.Ref == "main" {
+		return nil, nil
+	}
+	wait, err := unlinkedWait(repo, pr)
+	if err != nil || wait == "" {
+		return nil, err
+	}
+	return &prLayers{wait: wait}, nil
+}
+
+func unlinkedWait(repo string, pr pullHead) (string, error) {
 	owner, _, _ := strings.Cut(repo, "/")
 	var below []struct {
 		Number   int     `json:"number"`
@@ -71,6 +99,45 @@ func stackMergeWait(repo string, pr pullHead) (string, error) {
 		}
 	}
 	return "", nil
+}
+
+const stackMergeBudget = 10 * time.Minute
+
+// github's async merge, the one door a stacked pr takes: every open layer up to n lands at once or none does.
+// it takes no commit message, so these squashes carry no merge-auto trailer for the brake to find
+func stackMerge(repo, n string) (merged, sha string, err error) {
+	api := githubBase() + "/repos/" + repo + "/pulls/" + n + "/merge-async"
+	var res struct {
+		Status  string `json:"status"`
+		Details struct {
+			UUID    string `json:"uuid"`
+			SHA     string `json:"sha"`
+			Message string `json:"message"`
+		} `json:"details"`
+	}
+	status, _, err := ghSend(asDima, http.MethodPut, api, map[string]string{"merge_method": "squash", "merge_action": "default"}, &res)
+	switch {
+	case status == http.StatusNotFound:
+		return "", "", &Fail{Refused: true, Msg: "github has no async merge for " + repo + ", so a stacked pr cannot merge here", Next: "gh stack merge " + n}
+	case err != nil:
+		return "", "", err
+	}
+	clock := newStackClock()
+	for res.Status == "pending" && clock.elapsed() < stackMergeBudget {
+		clock.sleep(2 * time.Second)
+		if _, err := ghFetch(asDima, api+"/"+res.Details.UUID, &res); err != nil {
+			return "", "", err
+		}
+	}
+	switch res.Status {
+	case "merged":
+		return "#" + n + " and every layer under it → " + short(res.Details.SHA), res.Details.SHA, nil
+	case "enqueued":
+		return "#" + n + " and every layer under it are in the merge queue", "", nil
+	case "failed":
+		return "", "", &Fail{Msg: "the stack merge failed, nothing merged: " + res.Details.Message, Next: "x lane stack view"}
+	}
+	return "", "", &Fail{Msg: fmt.Sprintf("the stack merge is still %s after %s", res.Status, stackMergeBudget), Next: "x lane stack view"}
 }
 
 /* Verbs */

@@ -34,6 +34,7 @@ type mergeDecision struct {
 	Merged   string       `json:"merged,omitempty"`
 	title    string
 	body     string
+	layered  bool
 }
 
 type pullHead struct {
@@ -64,6 +65,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	r.Open("#" + n + " " + repo)
 
 	var pr pullHead
+	var layers *prLayers
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
@@ -75,13 +77,13 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		if state != "open" {
 			return "", &Fail{Refused: true, Msg: "#" + n + " is " + state + ", nothing to merge", Next: "x gh pr " + n}
 		}
-		if laneAddOn.mergeWait != nil {
-			wait, err := laneAddOn.mergeWait(repo, pr)
-			if err != nil {
+		if laneAddOn.layersOf != nil {
+			var err error
+			if layers, err = laneAddOn.layersOf(repo, n, pr); err != nil {
 				return "", err
 			}
-			if wait != "" {
-				return "", &Fail{Refused: true, Msg: "wait: " + wait, Next: "x lane merge-auto " + n}
+			if layers != nil && layers.wait != "" {
+				return "", &Fail{Refused: true, Msg: "wait: " + layers.wait, Next: "x lane merge-auto " + n}
 			}
 		}
 		return pr.Head.Ref + " at " + short(pr.Head.Sha), nil
@@ -89,6 +91,29 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body}
+	trunk := pr.Base.Ref
+	if layers == nil {
+		r.skip("layers")
+	} else {
+		trunk, d.layered = layers.trunk, true
+		if err := r.Step("layers", "gating every layer under the pr", func() (string, error) {
+			for _, below := range layers.below {
+				wait, err := layerWait(repo, api, trunk, below)
+				if err != nil {
+					return "", err
+				}
+				if wait != "" {
+					return "", &Fail{Refused: true, Msg: "wait: " + wait + " — a stack merges all of its layers at once", Next: "x lane merge-auto " + n}
+				}
+			}
+			if len(layers.below) == 0 {
+				return "the bottom layer, onto " + trunk, nil
+			}
+			return "#" + strings.Join(layers.below, ", #") + " clean, green, threadless", nil
+		}); err != nil {
+			return nil, err
+		}
+	}
 
 	var verifier, ci, threads mergeCheck
 	if err := r.Step("verifier", "reading the verifier's clean", func() (string, error) {
@@ -100,7 +125,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	needsApprove := false
 	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
 		var err error
-		ci, needsApprove, err = ciCheck(api, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha)
+		ci, needsApprove, err = ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
 		if err != nil || needsApprove {
 			return ci.Detail, err
 		}
@@ -137,7 +162,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	brake := ""
 	if err := r.Step("brake", "looking for a revert of a merge-auto merge in 7 days", func() (string, error) {
 		var err error
-		brake, err = brakeOn(pr.Base.Ref)
+		brake, err = brakeOn(trunk)
 		switch {
 		case err != nil:
 			return "", err
@@ -175,6 +200,41 @@ func decide(brake string, self []string, needsApprove bool, verifier, ci, thread
 	return "merge", ""
 }
 
+// why a layer under the merged pr holds the merge, as the same gate reads it; "" when it passes
+func layerWait(repo, api, trunk, n string) (string, error) {
+	var pr pullHead
+	if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+		return "", err
+	}
+	verifier := verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
+	if err != nil {
+		return "", err
+	}
+	threads, err := threadsCheck(repo, n)
+	if err != nil {
+		return "", err
+	}
+	_, self, err := riskyPaths(api, n)
+	if err != nil {
+		return "", err
+	}
+	layer := "#" + n + " (" + pr.Head.Ref + ")"
+	decision, wait := decide("", self, needsApprove, verifier, ci, threads)
+	switch decision {
+	case "merge":
+		return "", nil
+	case "approve":
+		return layer + " needs its review:clean first: x lane merge-auto --apply " + n, nil
+	}
+	for _, c := range []mergeCheck{verifier, ci, threads} {
+		if !c.OK && c.Detail == wait {
+			wait = c.Name + ": " + wait
+		}
+	}
+	return layer + " — " + wait, nil
+}
+
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
 	return "merge #" + d.PR + " at " + short(d.Head) + "?"
@@ -191,6 +251,12 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
+		if d.layered && laneAddOn.mergeLayers != nil {
+			// a stacked pr refuses the plain endpoint (403); its layers land together or not at all
+			shown, sha, err := laneAddOn.mergeLayers(d.Repo, d.PR)
+			d.Merged = sha
+			return shown, err
+		}
 		var merged struct {
 			Sha string `json:"sha"`
 		}
