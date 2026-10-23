@@ -257,9 +257,13 @@
             ],
             "flags": {
                 "dima-ok": {
-                    "description": "dima's word on a self-edit with no pre-approved sign: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; never lifts the brake",
+                    "description": "dima's word on a self-edit with no pre-approved sign: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; a merge it never lifts the brake for, a --release-brake it releases",
                     "type": "string",
                     "value": "pr"
+                },
+                "release-brake": {
+                    "description": "remove the merge-brake label from the pr instead of merging, once dima looked at the head mismatch that set it; needs --dima-ok <pr>",
+                    "type": "boolean"
                 }
             },
             "name": "lane merge-auto",

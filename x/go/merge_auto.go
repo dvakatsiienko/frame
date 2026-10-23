@@ -20,6 +20,9 @@ const mergeTrailer = "Merged-by: x lane merge-auto"
 // the mark of a merge whose commit carries no trailer (github's async merge takes no message)
 const mergedLabel = "merged-by-x"
 
+// the mark of a merge that landed another head than the one the gate read: the brake, until dima's typed word
+const brakeLabel = "merge-brake"
+
 type mergeCheck struct {
 	Name   string `json:"name"`
 	OK     bool   `json:"ok"`
@@ -68,6 +71,17 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	word, _ := flags["dima-ok"].(string)
 	if word != "" && word != n {
 		return nil, usageFail("--dima-ok names #"+word+", this merge is #"+n+": dima's word counts for the pr it names", "x lane merge-auto "+n+" --apply --dima-ok "+n)
+	}
+	if release, _ := flags["release-brake"].(bool); release {
+		if word == "" {
+			return nil, usageFail("the brake is released only on dima's typed word", releaseBrake(n))
+		}
+		repo, err := repoOf(flags)
+		if err != nil {
+			return nil, err
+		}
+		r.Open("#" + n + " " + repo)
+		return &mergeDecision{Repo: repo, PR: n, Decision: "release", Risky: []string{}}, nil
 	}
 	repo, err := repoOf(flags)
 	if err != nil {
@@ -280,12 +294,28 @@ func headsHeld(api string, heads map[string]string) error {
 
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
+	if d.Decision == "release" {
+		return "release the brake #" + d.PR + " holds?"
+	}
 	return "merge #" + d.PR + " at " + short(d.Head) + "?"
 }
 
 func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	d := plan.(*mergeDecision)
 	api := githubBase() + "/repos/" + d.Repo
+	if d.Decision == "release" {
+		if err := r.Step("brake", "removing the "+brakeLabel+" label, on dima's typed word", func() (string, error) {
+			status, _, err := ghSend(asDima, http.MethodDelete, api+"/issues/"+d.PR+"/labels/"+brakeLabel, nil, nil)
+			if status == http.StatusNotFound {
+				return "#" + d.PR + " wore no " + brakeLabel + " label", nil
+			}
+			return "#" + d.PR + " released", err
+		}); err != nil {
+			return nil, err
+		}
+		r.Done("brake released on #"+d.PR, "")
+		return d, nil
+	}
 	if d.Decision != "approve" {
 		r.skip("approve")
 	} else if err := r.Step("approve", "approving the head on dima's account, then waiting for review:clean", func() (string, error) {
@@ -305,7 +335,7 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 					return "", err
 				}
 			}
-			shown, sha, err := laneAddOn.mergeLayers(d.Repo, d.PR)
+			shown, sha, err := laneAddOn.mergeLayers(d.Repo, d.PR, d.Head)
 			d.landed = shown
 			d.Merged = sha
 			return shown, err
@@ -437,8 +467,31 @@ var (
 	revertsSubject = regexp.MustCompile(`^Revert "(.+)"`)
 )
 
+func releaseBrake(n string) string {
+	return "x lane merge-auto " + n + " --release-brake --dima-ok " + n
+}
+
+// a pr wearing the brake label: a merge that landed another head than the gate read
+func brakeLabelled(api string) (string, error) {
+	var labelled []struct {
+		Number int `json:"number"`
+	}
+	// a brake merge-auto cannot read never reads as off: any failure, a 404 included, stops the merge
+	if _, err := ghFetch(asDima, api+"/issues?state=all&labels="+brakeLabel, &labelled); err != nil {
+		return "", err
+	}
+	if len(labelled) == 0 {
+		return "", nil
+	}
+	n := fmt.Sprint(labelled[0].Number)
+	return "#" + n + " merged a head its gate never read; release once dima looked: " + releaseBrake(n), nil
+}
+
 // no stored state (grill, 2026-10-20); git's revert names the sha, github's revert button only the subject
 func brakeOn(api, base string) (string, error) {
+	if labelled, err := brakeLabelled(api); err != nil || labelled != "" {
+		return labelled, err
+	}
 	if _, err := mustGit("brake", "fetch", "-q", "origin", base); err != nil {
 		return "", err
 	}

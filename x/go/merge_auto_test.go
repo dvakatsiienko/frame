@@ -61,6 +61,11 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			_, _ = w.Write([]byte(`{"state":"APPROVED"}`))
 			return
 		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/labels"):
+			if h.pages["labels"] == serverDown || (h.pages["labels:"+brakeLabel] == serverDown && strings.Contains(string(raw), brakeLabel)) {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(`{"message":"Server Error"}`))
+				return
+			}
 			_, _ = w.Write([]byte(`[]`))
 			return
 		case r.Method == http.MethodPost && r.URL.Path == "/graphql":
@@ -179,7 +184,8 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 			{"name":"test","status":"completed","conclusion":"success","html_url":"https://ci/1"},
 			{"name":"build","status":"completed","conclusion":"success","html_url":"https://ci/2"}]}`,
 		repoPath + "/commits/" + head + "/statuses": `[]`,
-		"graphql": `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[]}}}}}`,
+		"graphql":            `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[]}}}}}`,
+		repoPath + "/issues": `[]`,
 	}}
 	server := h.serve(t)
 
@@ -890,6 +896,69 @@ func TestMergeAutoReadsTheSignFromLinearNeverThePr(t *testing.T) {
 
 	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "FRM-9 carries no ## signed block") {
 		t.Fatalf("exit %d, %d merge calls, error %q, want the pr body's claim ignored", got.code, len(merges), envelopeOf(got).Error)
+	}
+}
+
+// a merge that landed another head than the gated one leaves its pr labelled; every next merge waits on it
+func TestMergeAutoWaitsWhileAPrWearsTheBrakeLabel(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "7", "--apply")
+
+	want := "x lane merge-auto 8 --release-brake --dima-ok 8"
+	if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(envelopeOf(got).Error, "brake on") || !strings.Contains(envelopeOf(got).Error, want) {
+		t.Fatalf("exit %d, error %q, want the brake's wait naming #8 and %q", got.code, envelopeOf(got).Error, want)
+	}
+}
+
+// a brake merge-auto cannot read must never read as off
+func TestMergeAutoRefusesWhenTheBrakeLabelCannotBeRead(t *testing.T) {
+	t.Parallel()
+	for _, page := range []string{serverDown, ""} {
+		w := newMergeWorld(t, "script/foo.ts")
+		w.hub.mu.Lock()
+		if page == "" {
+			delete(w.hub.pages, repoPath+"/issues")
+		} else {
+			w.hub.pages[repoPath+"/issues"] = page
+		}
+		w.hub.mu.Unlock()
+
+		got := w.run(t, "7", "--apply")
+
+		if got.code == 0 || len(w.hub.sent("PUT ")) != 0 {
+			t.Fatalf("issues page %q: exit %d, puts %q, want no merge while the brake label is unread", page, got.code, w.hub.sent("PUT "))
+		}
+	}
+}
+
+func TestMergeAutoReleasesTheBrakeOnDimasTypedWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+	w.hub.pages[repoPath+"/issues/8/labels/"+brakeLabel] = `[]`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply", "--release-brake", "--dima-ok", "8")
+
+	if released := w.hub.sent("DELETE " + repoPath + "/issues/8/labels/" + brakeLabel); got.code != 0 || len(released) != 1 || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, deletes %q, puts %q: want the label removed and no merge:\n%s", got.code, released, w.hub.sent("PUT "), got.stdout)
+	}
+}
+
+func TestMergeAutoReleasesTheBrakeOnlyOnDimasWord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+
+	got := w.run(t, "8", "--apply", "--release-brake")
+
+	if got.code != 2 || len(w.hub.sent("DELETE ")) != 0 || !strings.Contains(envelopeOf(got).Error, "only on dima's typed word") || got.next != "x lane merge-auto 8 --release-brake --dima-ok 8" {
+		t.Fatalf("exit %d, deletes %q, error %q, next %q: want the refusal naming dima's word and the exact release", got.code, w.hub.sent("DELETE "), envelopeOf(got).Error, got.next)
 	}
 }
 

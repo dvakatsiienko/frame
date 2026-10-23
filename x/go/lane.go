@@ -39,7 +39,7 @@ var laneAddOn struct {
 	// the layers a pr merges with; nil for a plain pr
 	layersOf func(repo, n string, pr pullHead) (*prLayers, error)
 	// lands a pr and every layer below it in one call
-	mergeLayers func(repo, n string) (merged, sha string, err error)
+	mergeLayers func(repo, n, head string) (merged, sha string, err error)
 }
 
 // a pr that merges together with the layers under it

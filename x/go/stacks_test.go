@@ -3,6 +3,8 @@
 package main
 
 import (
+	"bytes"
+	"os/exec"
 	"slices"
 	"strings"
 	"testing"
@@ -291,6 +293,64 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 				t.Fatalf("exit %d, puts %q: want no merge and a wait naming #7 and %q\n%s", got.code, w.hub.sent("PUT"), c.reason, got.stdout)
 			}
 		})
+	}
+}
+
+// github merged a head the gate never read: loud on stderr, and the brake goes on for every next merge
+func TestMergeAutoBrakesWhenTheStackMergedAnotherHead(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	moved := strings.Repeat("d", 40)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + moved + `"}}`
+	w.hub.mu.Unlock()
+
+	c := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+	c.Dir = w.clone
+	c.Env = append(append(cleanEnv(), "X_TEST=1"), w.env...)
+	var stdout, stderr bytes.Buffer
+	c.Stdout, c.Stderr = &stdout, &stderr
+	code := exitOf(c.Run())
+
+	labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+	if code != 1 || !strings.Contains(stderr.String(), short(moved)) || !strings.Contains(stderr.String(), short(w.head)) {
+		t.Fatalf("exit %d, stderr %q: want a loud mismatch naming %s and %s", code, stderr.String(), short(moved), short(w.head))
+	}
+	if !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+		t.Errorf("label calls %q, want #8 marked %s", labelled, brakeLabel)
+	}
+}
+
+// the pending answer may be the only one naming the head github took; the poll's answer must not erase it
+func TestMergeAutoBrakesOnTheHeadThePendingAnswerNamed(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async"] = `{"status":"pending","details":{"uuid":"u1","expected_head_sha":"` + strings.Repeat("d", 40) + `"}}`
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":""}}`
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code != 1 || !strings.Contains(envelopeOf(got).Error, "brake is on") {
+		t.Fatalf("exit %d, error %q: want the pending answer's head mismatch to brake", got.code, envelopeOf(got).Error)
+	}
+}
+
+// a mismatch whose label github refused leaves no brake behind, so the message says so and names the hand step
+func TestMergeAutoSaysTheBrakeIsOffWhenItsLabelFailed(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + strings.Repeat("d", 40) + `"}}`
+	// the merged-by-x labels land before the merge; only the brake label after it fails
+	w.hub.pages["labels:"+brakeLabel] = serverDown
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "NOT on") || got.next != "gh pr edit 8 --add-label "+brakeLabel {
+		t.Fatalf("exit %d, error %q, next %q: want the brake named off and the hand label step", got.code, msg, got.next)
 	}
 }
 
