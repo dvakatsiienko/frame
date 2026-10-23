@@ -4,7 +4,7 @@ set -uo pipefail
 event="$(cat)"
 file="$(jq -r '.tool_input.file_path // ""' <<<"$event")"
 case "$file" in
-*/.scratch/*/spec.md | */.scratch/spec.md | */.scratch/*-proposal.md) ;;
+*/.scratch/*/spec.md | */.scratch/spec.md | */.scratch/*-proposal.md | */.scratch/*-review.md | */scratchpad/*brief*.md) ;;
 *) exit 0 ;;
 esac
 [ -f "$file" ] || { echo "wish-cover: $file not found, skipped"; exit 0; }

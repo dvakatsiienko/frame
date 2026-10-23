@@ -64,8 +64,7 @@ yours to supply. **«Proceed with FRM-N» means: examine the ticket, examine the
 proposed approach, get the word — THEN execute.** It never means hunt-and-close in one turn.
 
 - resolve-in-place is for **freebies** (§ the freebie rule), done instead of folded — and still reported, every time
-- **grooming walks carry a standing eval**: each ticket gets a «resolvable in place?» check —
-  by cclio or (preferred) a spun opus coder — offered proactively, dima's word executes it
+- **grooming walks run the freebie test on each ticket** (§ the freebie rule): a pass is solved in the walk and reported; the rest list for dima's word
 - the tell this exists: a session fixed and closed two tickets upfront where Dima expected a
   proposal; his read — *«proactivity is a nice thing but not always»*
 

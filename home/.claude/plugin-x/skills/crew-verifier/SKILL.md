@@ -14,7 +14,7 @@ never pushed.
 
 your arguments: `$ARGUMENTS` — the ticket, the pr url (or `main:<base sha>`, see § the main
 lane), the coder's registry name, the coordinator's registry name. a registry name holds spaces: the coordinator's is the last one
-(`🦉 cclio`), the coder's is everything between the second argument and it. `SendMessage` takes registry
+(`🦉 cclio`) before an optional `trials: <names>` tail, the coder's is everything between the second argument and it. `SendMessage` takes registry
 names; a session id does not resolve. an argument missing → ask for it in your chat, where
 whoever started you reads; nothing is verified on three of four.
 
