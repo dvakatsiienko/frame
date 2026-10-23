@@ -42,7 +42,7 @@ the grill and the groom come first: the chunk is healthy — good content, a goo
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109): a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny`; a guard in `x linear body --set` that enforces it rides the cli lane (PK-265)
 
-- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit; the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed>`; a tiny change may skip the grill, never the line
+- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit; the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed>`; a tiny change may skip the grill, never the line; after 🚀 the `signed` label stays off and dispatch § 6 re-seals
 - **a pocket item**: the sign creates its linear ticket through `cclio:pm`, in its milestone, and the pocket item becomes a pointer, `ticket: FRM-N` (temporary until the pocket/linear grill)
 
 **done** = every chunk of the session carries the `signed` label and a dated `## signed` line, with every § 3 field present. «grilled» without the sign is reported as not signed. what follows is dima's «what can we dispatch?» — `cclio:shape-lane-dispatch`.

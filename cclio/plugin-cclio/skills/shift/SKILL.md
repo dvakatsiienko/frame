@@ -7,7 +7,8 @@ argument-hint: "<plan file>"
 
 A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits. A shift
 **decides, logs and continues**. The plan file is the authority; the last shift file in
-`cclio/shifts/` is the template.
+`cclio/shifts/` is the template. A shift over ✍️ signed chunks names them in its plan and runs each through
+`cclio:shape-lane-dispatch` in their order (lane init's contract: `craft-fleet-flow` § lane init) — nothing in it waits on dima.
 
 ## presence — his afk switch drives it (dima, 2026-10-22, PK-103 W107, W108)
 
@@ -43,7 +44,8 @@ Every decision is one of three:
 
 - **reversible** → take the default, log `decided: X — undo: Y`, continue
 - **irreversible or external** (a merge, a delete, prod, a message, a setting) → park it with its
-  reason, never block other work on it
+  reason, never block other work on it; a merge is no park: a clean pr lands by the gate, and a self-edit lands when its
+  chunk's `## signed` carries `merge: pre-approved`
 - **taste** → build one default, flag it for the report
 
 - a coder's premise doubt is built and flagged the same minute, never found at review

@@ -8,7 +8,7 @@ the machine part of lane init, cclio's alone: dima signed the chunks in `cclio:s
 
 ## 1 · the offer
 
-«what can we dispatch?» → the signed chunks (`x linear list --team FRM --label signed`) with no open blocker, grouped by milestone, each with its sign age; a lane is one milestone's chunks in the milestone's order. his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket.
+«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker and no `lane: main` (ours, never a coder's), grouped by milestone, each with its sign age; a lane is one milestone's chunks, ordered by their `blocks` chain (the coder's ticket order inside a chunk is its lane plan). his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket.
 
 ## 2 · the spec
 
@@ -25,7 +25,7 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 ## 4 · the seal
 
-`x brief preflight` passes. until preflight reads the spec (a cli rider in PK-265), the exit lines are also copied under the ticket's `## exit`, opened by «a copy of the spec, for preflight». a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the lines: a line its rules forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 N exit lines, sealed`.
+`x brief preflight` passes. until preflight reads the spec (a cli rider in PK-265), the exit lines are also copied under the ticket's `## exit`, opened by «a copy of the spec, for preflight», and re-copied at every re-seal so the copy never goes stale. a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the lines: a line its rules forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 **sealed**, N exit lines`.
 
 ## 5 · the spawn and the greenlight
 
@@ -35,8 +35,9 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 ## 6 · while it runs
 
-- **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step; an unsigned one waits for its sign
-- **a wish of dima's mid-lane** goes into the spec with a proposed re-sign of its chunk, never as a bare message
+- **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step, and the coder hears it as a steer naming that section plus a `## not greenlit` line, then re-runs `to-tickets` on it; an unsigned one waits for its sign
+- **a wish of dima's mid-lane** goes into the spec with a proposed re-sign of its chunk, never as a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message
+- **a re-sign after 🚀** never puts the `signed` label back (the chunk is running): it re-runs § 3–4 for that chunk — re-seal the spec section and its preflight copy — and steers the coder to the changed lines
 - **a park** — his weekly window out, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it
 
 **done** = each picked chunk has its spec section with sealed exit lines, its `🚀 dispatched` line, a spawned coder (a verifier unless his pick said no), and a greenlit lane plan.

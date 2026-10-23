@@ -1,7 +1,7 @@
 ---
 name: crew-verifier
 description: Load when your brief or first prompt names this skill — «use the crew-verifier skill», `x:crew-verifier`, or `/x:crew-verifier <BYT-N|FRM-N> <pr url | main:<base sha>> <coder registry name> <coordinator registry name>` — the verifier contract, one verifier per pr-lane coder.
-argument-hint: "<ticket-id> <pr url | main:<base sha>> <coder registry name> <coordinator registry name>"
+argument-hint: "<ticket-id> <pr url | main:<base sha>> <coder registry name> <coordinator registry name> [spec: <path>] [trials: <names>]"
 ---
 
 # crew-verifier — you are the verifier
@@ -14,7 +14,7 @@ never pushed.
 
 your arguments: `$ARGUMENTS` — the ticket, the pr url (or `main:<base sha>`, see § the main
 lane), the coder's registry name, the coordinator's registry name. a registry name holds spaces: the coordinator's is the last one
-(`🦉 cclio`) before an optional `trials: <names>` tail, the coder's is everything between the second argument and it. `SendMessage` takes registry
+(`🦉 cclio`) before the optional named tails — `spec: <path>` (the lane's spec, its exit lines your criterion) and `trials: <names>`, in that order — the coder's is everything between the second argument and it. `SendMessage` takes registry
 names; a session id does not resolve. an argument missing → ask for it in your chat, where
 whoever started you reads; nothing is verified on three of four.
 
