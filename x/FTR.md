@@ -75,6 +75,11 @@
 ## lane — git
 
 - ✅ `x lane commit` commits only the named paths and prints the new sha
+- ⬜ `x lane commit` names a path list that arrived as one word
+  - given one path argument holding a space that names no file
+  - when `x lane commit <msg> -- "a.ts b.ts"` runs
+  - then it exits 2 saying the list arrived as one word, its next command splitting the words
+  - given a real file whose name holds a space, then it commits it
 - ✅ `x lane commit` refuses a mod that fails `claude plugin validate`
   - given a named path sits under `home/.claude/plugin-x/mods/<mod>/`
   - when `claude plugin validate` on that mod's dir fails

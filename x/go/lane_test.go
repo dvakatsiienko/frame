@@ -512,6 +512,43 @@ func TestCommitFailsOnAStaleIndexLockAndKeepsIt(t *testing.T) {
 	}
 }
 
+func TestCommitNamesAPathListThatArrivedAsOneWord(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "a.ts"), "a\n")
+	write(t, filepath.Join(target, "b.ts"), "b\n")
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "a.ts b.ts")
+
+	if got.code != 2 || !strings.Contains(got.stdout, "arrived as one word") || !strings.Contains(got.next, "-- a.ts b.ts") {
+		t.Fatalf("exit %d, next %q, want a usage error naming the one-word list\n%s", got.code, got.next, got.stdout)
+	}
+}
+
+func TestCommitTakesAFileWhoseNameHoldsASpace(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "my notes.md"), "notes\n")
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "my notes.md")
+
+	if got.code != 0 || gitT(t, target, "ls-files", "my notes.md") != "my notes.md" {
+		t.Fatalf("exit %d, want the spaced file committed\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitTakesAStagedDeleteOfASpacedFile(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "my notes.md"), "notes\n")
+	gitT(t, target, "add", ".")
+	gitT(t, target, "commit", "-q", "-m", "notes")
+	gitT(t, target, "rm", "-q", "my notes.md")
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "my notes.md")
+
+	if got.code != 0 || gitT(t, target, "ls-files", "my notes.md") != "" {
+		t.Fatalf("exit %d, want the delete committed\n%s", got.code, got.stdout)
+	}
+}
+
 // no lock, no line: a commit that never waited says nothing about waiting
 func TestCommitWithNoIndexLockSaysNothingOfWaiting(t *testing.T) {
 	target := repo(t)
