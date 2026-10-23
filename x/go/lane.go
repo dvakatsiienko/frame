@@ -693,6 +693,10 @@ var hookJob = regexp.MustCompile(`(?:^|\s)(?:pnpm|turbo)(?:\s+(?:run|turbo|exec\
 // the jobs the repo's own pre-commit runs, only while its hook is installed and calls lefthook
 func preCommitRuns(tree string) map[string]bool {
 	runs := map[string]bool{}
+	// lefthook's own off switch: its hook then exits 0 and runs nothing
+	if off := os.Getenv("LEFTHOOK"); off == "0" || off == "false" {
+		return runs
+	}
 	hookPath, err := mustGitIn(tree, "hook", "rev-parse", "--path-format=absolute", "--git-path", "hooks/pre-commit")
 	if err != nil {
 		return runs

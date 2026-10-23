@@ -302,17 +302,18 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 		notExec = "chmod-x:"
 	)
 	cases := []struct {
-		name, config, hook, path string
-		want                     []string
+		name, config, hook, path, env string
+		want                          []string
 	}{
-		{"frame's pre-commit runs both", both, wired, "src/a.ts", nil},
-		{"a pre-commit running neither", neither, wired, "src/a.ts", []string{"typecheck", "test"}},
-		{"a turbo typecheck keeps test", turbo, wired, "src/a.ts", []string{"test"}},
-		{"no hook installed", both, "", "src/a.ts", []string{"typecheck", "test"}},
-		{"a hook not wired to lefthook", both, other, "src/a.ts", []string{"typecheck", "test"}},
-		{"a hook that only mentions lefthook", both, mention, "src/a.ts", []string{"typecheck", "test"}},
-		{"a hook git skips, no exec bit", both, notExec + wired, "src/a.ts", []string{"typecheck", "test"}},
-		{"a go path runs go test either way", both, wired, "mod/m.go", []string{"go"}},
+		{"frame's pre-commit runs both", both, wired, "src/a.ts", "", nil},
+		{"a pre-commit running neither", neither, wired, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a turbo typecheck keeps test", turbo, wired, "src/a.ts", "", []string{"test"}},
+		{"no hook installed", both, "", "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a hook not wired to lefthook", both, other, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a hook that only mentions lefthook", both, mention, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"a hook git skips, no exec bit", both, notExec + wired, "src/a.ts", "", []string{"typecheck", "test"}},
+		{"lefthook switched off in the env", both, wired, "src/a.ts", "LEFTHOOK=0", []string{"typecheck", "test"}},
+		{"a go path runs go test either way", both, wired, "mod/m.go", "", []string{"go"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -337,7 +338,7 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 			}
 			write(t, filepath.Join(dir, c.path), body)
 
-			got := xIn(t, dir, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, "lane", "commit", message(t), "--", c.path)
+			got := xIn(t, dir, []string{"GIT_CONFIG_GLOBAL=/dev/null", c.env}, "lane", "commit", message(t), "--", c.path)
 
 			var ran []string
 			for _, job := range []string{"typecheck", "test", "go"} {
