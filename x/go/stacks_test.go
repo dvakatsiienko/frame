@@ -321,6 +321,26 @@ func TestMergeAutoSkipsAMergedLayerBelow(t *testing.T) {
 	}
 }
 
+func TestMergeAutoLabelsEveryStackLayerBeforeTheMerge(t *testing.T) {
+	w := linkedMergeWorld(t)
+
+	got := w.run(t, "8", "--apply")
+
+	w.hub.mu.Lock()
+	calls := slices.Clone(w.hub.calls)
+	w.hub.mu.Unlock()
+	at := func(prefix string) int {
+		return slices.IndexFunc(calls, func(c string) bool { return strings.HasPrefix(c, prefix) })
+	}
+	merge := at("PUT " + repoPath + "/pulls/8/merge-async")
+	for _, n := range []string{"7", "8"} {
+		label := at("POST " + repoPath + "/issues/" + n + "/labels")
+		if got.code != 0 || label < 0 || label > merge || !strings.Contains(calls[label], mergedLabel) {
+			t.Fatalf("exit %d, #%s label call at %d, merge at %d: want every layer labelled %s first\n%s", got.code, n, label, merge, mergedLabel, got.stdout)
+		}
+	}
+}
+
 func TestMergeAutoReportsAFailedStackMerge(t *testing.T) {
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()

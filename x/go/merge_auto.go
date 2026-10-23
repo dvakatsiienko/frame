@@ -17,6 +17,9 @@ import (
 // github's own auto-merge is never turned on: a stack cannot take it (gh-stack#504)
 const mergeTrailer = "Merged-by: x lane merge-auto"
 
+// the mark of a merge whose commit carries no trailer (github's async merge takes no message)
+const mergedLabel = "merged-by-x"
+
 type mergeCheck struct {
 	Name   string `json:"name"`
 	OK     bool   `json:"ok"`
@@ -166,7 +169,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	brake := ""
 	if err := r.Step("brake", "looking for a revert of a merge-auto merge in 7 days", func() (string, error) {
 		var err error
-		brake, err = brakeOn(trunk)
+		brake, err = brakeOn(api, trunk)
 		switch {
 		case err != nil:
 			return "", err
@@ -278,6 +281,12 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			// a stacked pr refuses the plain endpoint (403); its layers land together or not at all
 			if err := headsHeld(api, d.heads); err != nil {
 				return "", err
+			}
+			// before the merge, so a stack that lands always wears it; a label on a pr that then fails to merge is harmless
+			for n := range d.heads {
+				if _, _, err := ghSend(asDima, http.MethodPost, api+"/issues/"+n+"/labels", map[string][]string{"labels": {mergedLabel}}, nil); err != nil {
+					return "", err
+				}
 			}
 			shown, sha, err := laneAddOn.mergeLayers(d.Repo, d.PR)
 			d.landed = shown
@@ -412,7 +421,7 @@ var (
 )
 
 // no stored state (grill, 2026-10-20); git's revert names the sha, github's revert button only the subject
-func brakeOn(base string) (string, error) {
+func brakeOn(api, base string) (string, error) {
 	if _, err := mustGit("brake", "fetch", "-q", "origin", base); err != nil {
 		return "", err
 	}
@@ -425,9 +434,6 @@ func brakeOn(base string) (string, error) {
 		sha, subject, _ := strings.Cut(strings.TrimSpace(line), "\x00")
 		merged[sha], merged[subject] = true, true
 	}
-	if len(merged) == 0 {
-		return "", nil
-	}
 	since := clock().Add(-brakeFor).Format(time.RFC3339)
 	recent, err := mustGit("brake", "log", "origin/"+base, "--since="+since, "--format=%H%x00%B%x1e")
 	if err != nil {
@@ -435,14 +441,65 @@ func brakeOn(base string) (string, error) {
 	}
 	for record := range strings.SplitSeq(recent, "\x1e") {
 		sha, message, _ := strings.Cut(strings.TrimSpace(record), "\x00")
-		if match := revertsSha.FindStringSubmatch(message); match != nil && merged[match[1]] {
-			return short(sha) + " reverts " + short(match[1]), nil
+		if match := revertsSha.FindStringSubmatch(message); match != nil {
+			ours, err := mergedByX(api, merged, match[1], "/commits/"+match[1]+"/pulls")
+			if err != nil || ours {
+				return short(sha) + " reverts " + short(match[1]), err
+			}
 		}
-		if match := revertsSubject.FindStringSubmatch(message); match != nil && merged[match[1]] {
-			return short(sha) + " reverts «" + match[1] + "»", nil
+		if match := revertsSubject.FindStringSubmatch(message); match != nil {
+			pr := ""
+			if n := prOfSubject.FindStringSubmatch(match[1]); n != nil {
+				pr = "/pulls/" + n[1]
+			}
+			ours, err := mergedByX(api, merged, match[1], pr)
+			if err != nil || ours {
+				return short(sha) + " reverts «" + match[1] + "»", err
+			}
 		}
 	}
 	return "", nil
+}
+
+var prOfSubject = regexp.MustCompile(`\(#(\d+)\)$`)
+
+// a reverted commit is merge-auto's when it carries the trailer, or when github says its pr wears the label
+func mergedByX(api string, trailered map[string]bool, key, path string) (bool, error) {
+	if trailered[key] {
+		return true, nil
+	}
+	if path == "" {
+		return false, nil
+	}
+	type labelled struct {
+		Labels []struct {
+			Name string `json:"name"`
+		} `json:"labels"`
+	}
+	var prs []labelled
+	var target any = &prs
+	var one labelled
+	if strings.HasPrefix(path, "/pulls/") {
+		target = &one
+	}
+	status, _, err := ghSend(asDima, http.MethodGet, api+path, nil, target)
+	switch {
+	case status == http.StatusNotFound:
+		return false, nil
+	case err != nil:
+		return false, err
+	}
+	if target == &one {
+		prs = []labelled{one}
+	}
+	for _, pr := range prs {
+		for _, label := range pr.Labels {
+			if label.Name == mergedLabel {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 func clock() time.Time {
