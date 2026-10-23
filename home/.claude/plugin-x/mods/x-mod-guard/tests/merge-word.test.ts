@@ -73,6 +73,8 @@ for (const command of [
     '/Users/dima/frame/x/bin/x lane merge-auto 104 --dima-ok 104',
     'bash -c "x lane merge-auto 104 --dima-ok 104"',
     'eval x lane merge-auto 104 --dima-ok 104',
+    'x --apply lane merge-auto 104 --dima-ok 104',
+    'x --board --json lane merge-auto 104 --dima-ok 104',
     'cd /tmp && x lane merge-auto 104 --dima-ok 104',
 ])
     test(`an unproven --dima-ok is refused however x is reached: ${command}`, async ($, on) => {

@@ -268,8 +268,11 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
                   : undefined;
         const inner = nested ? mergeWord(nested, c.dir) : undefined;
         if (inner) return inner;
-        if (c.name !== 'x' || words[0] !== 'lane' || words[1] !== 'merge-auto')
-            continue;
+        // x takes its root flags (--apply, --board, --json) before the family too
+        const isMerge = words.some(
+            (w, i) => w === 'lane' && words[i + 1] === 'merge-auto',
+        );
+        if (c.name !== 'x' || !isMerge) continue;
         const targets = words.flatMap((w, i) =>
             w === '--dima-ok'
                 ? [words[i + 1] ?? '']

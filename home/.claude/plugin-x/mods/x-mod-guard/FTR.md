@@ -203,6 +203,8 @@
   - given `x lane merge-auto` with no `--dima-ok`, then the rule never judges it
   - decision: x trusts a `--dima-ok` that reached it, since only this mod reads dima's last typed prompt; the flag never lifts merge-auto's brake (FRM-423 grill, o140)
   - decision: a refusal from day one, never warn-only — a warning would run the merge it means to stop (dima's o102, the `foreground-claude` precedent)
+  - given x's root flags before the family (`x --apply lane merge-auto …`), a full path to x, `bash -c` or `eval`, then the rule judges it the same
+  - known gap: a deliberate evasion every guard rule shares slips it — a command piped into `sh`, the flag held in a variable, a script run by path (FRM-423 verifier, round 1)
 - ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
