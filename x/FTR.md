@@ -165,6 +165,8 @@
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
   - given the body edited after the last signed line, a last sign with no `merge: pre-approved`, no `## signed` block, or a build whose `x/go` differs from origin/main, then it waits and names which, the re-sign included; the brake waits whatever the sign says
   - decision: the sign is read from the linear ticket, never the pr, whose body the coder writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as cclio signs (FRM-423 grill, o141)
+  - decision: cclio's merge-auto runs from `~/frame`, main's build — a pr head's own binary could drop any check inside it, so the main checkout is the guard, the dev-build wait its backstop (cclio, FRM-423 pr 0)
+  - known gap: which ticket is read comes from the pr's branch name or body, both the coder's to write, so nothing binds a pr to the chunk it names; the verifier checks the pr against its chunk (accepted for the mvp, cclio, FRM-423 pr 0)
 - ⬜ a self-edit with no pre-approved sign merges on dima's typed word
   - given a verifier-clean self-edit pr whose chunk holds no pre-approved sign
   - when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, which it does only when dima's own last typed prompt names that pr (`x-mod-guard/FTR.md`, the dima-ok-flag line)
