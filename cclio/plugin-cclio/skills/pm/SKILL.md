@@ -58,7 +58,8 @@ traps:
   dima never said makes the ticket `needs human`, the fact a `?` line in the body. it blocks the
   size, never the capture: the ticket is still born, fully fielded
 - a new milestone is appended last: set its `sortOrder` the same turn and read the order back
-- a milestone's name: `<emoji> <the done state, ≤4 words>`, lowercase, the emoji naming its kind, one per kind across projects: 🐉 tooling and the cli; 🫟 a design or redesign; 🪸 a merge or a move; 🌞 a ship to dima's hands; 🧞‍♂️ a trial; 🐋 memory and the fleet's own flow (dima, 2026-10-22, PK-103 W98, on trial) — `🐉 cli lane 1 sealed`, `🫟 speak v2 shipped`; its description opens with its done test (≤255 chars)
+- a milestone's name: `<emoji> <the done state, ≤4 words>`, lowercase, the emoji naming its kind, one per kind across projects: 🐉 tooling and the cli; 🫟 a design or redesign; 🪸 a merge or a move; 🌞 a ship to dima's hands; 🧞‍♂️ a trial; 🐋 memory and the fleet's own flow (dima, 2026-10-22, PK-103 W98, on trial) — `🐉 prs land themselves`, `🌞 speak v2 shipped`; its description opens with its done test (≤255 chars)
+- the name is the outcome dima notices, never a lane or step number (the boot flags one); the scope gathers one flow's related tickets — speak v2 holds its redesign, wisps, design and new features together — so the name stays wide enough for the whole family (dima, 2026-10-23: «Milestone scope should be grouped by collocating related tickets together inside of a milestone by a flow type»)
 - a project, a term or a label group that changes lands with its glossary or TRK line in the same batch
 - 250 non-archived tickets is the free plan's cap: resolve faster than create, one fuller ticket
   over strands, archive closed work; near 200 → propose a restructure pass
