@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -93,6 +94,12 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 		if body == serverDown {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(`{"message":"Server Error"}`))
+			return
+		}
+		if code, ok := strings.CutPrefix(body, "<status "); ok {
+			n, _ := strconv.Atoi(strings.TrimSuffix(code, ">"))
+			w.WriteHeader(n)
+			_, _ = w.Write([]byte(`{"message":"answered ` + code + `"}`))
 			return
 		}
 		_, _ = w.Write([]byte(body))

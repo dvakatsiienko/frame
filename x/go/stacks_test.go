@@ -399,6 +399,51 @@ func TestMergeAutoBrakesWhenTheStackMergeNamesNoHead(t *testing.T) {
 	}
 }
 
+// a submit github answered with no 2xx may still have taken the merge, so the gated head is unverified and the brake
+// goes on; only a 404, no async merge in the repo at all, takes nothing
+func TestMergeAutoBrakesWhenTheStackMergeSubmitFails(t *testing.T) {
+	t.Parallel()
+	for _, answer := range []string{serverDown, "<status 422>", "<status 502>"} {
+		t.Run(answer, func(t *testing.T) {
+			w := linkedMergeWorld(t)
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/8/merge-async"] = answer
+			w.hub.mu.Unlock()
+
+			cmd := exec.Command(xbin, "lane", "merge-auto", "8", "--apply")
+			cmd.Dir = w.clone
+			cmd.Env = append(append(cleanEnv(), "X_TEST=1"), w.env...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			code := exitOf(cmd.Run())
+
+			labelled := w.hub.sent("POST " + repoPath + "/issues/8/labels")
+			if code != 1 || !strings.Contains(stderr.String(), "unverified") || !slices.ContainsFunc(labelled, func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+				t.Fatalf("exit %d, stderr %q, label calls %q: want the submit called unverified and #8 marked %s", code, stderr.String(), labelled, brakeLabel)
+			}
+			if !strings.Contains(stdout.String(), releaseBrake("8")) {
+				t.Errorf("want the release named as the next step\n%s", stdout.String())
+			}
+		})
+	}
+}
+
+// a repo with no async merge answers 404 and takes nothing: a refusal, no brake
+func TestMergeAutoRefusesAStackMergeTheRepoHasNoDoorFor(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	delete(w.hub.pages, repoPath+"/pulls/8/merge-async")
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code == 0 || !strings.Contains(envelopeOf(got).Error, "no async merge") || exists(filepath.Join(w.state, "merge-brake")) ||
+		slices.ContainsFunc(w.hub.sent("POST "+repoPath+"/issues/8/labels"), func(call string) bool { return strings.Contains(call, `"`+brakeLabel+`"`) }) {
+		t.Fatalf("exit %d, error %q: want a refusal and no brake", got.code, envelopeOf(got).Error)
+	}
+}
+
 // with the label refused and the record unwritable, nothing holds the brake: the message says so and names the hand step
 func TestMergeAutoSaysTheBrakeIsOffWhenItsRecordFailedToo(t *testing.T) {
 	t.Parallel()

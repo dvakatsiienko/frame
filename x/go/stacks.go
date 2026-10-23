@@ -157,8 +157,10 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	switch {
 	case status == http.StatusNotFound:
 		return "", "", &Fail{Refused: true, Msg: "github has no async merge for " + repo + ", so a stacked pr cannot merge here", Next: "gh stack merge " + n}
+	// any other failed submit may still have reached github and taken the merge (dima, o195)
 	case err != nil:
-		return "", "", err
+		said := fmt.Sprintf("⚠ the stack merge submit of #%s failed (%v), so whether github took the gated %s is unverified", n, err, short(head))
+		return "", "", brakeAfter(repo, n, "a merge submit github may have taken", said)
 	}
 	// the first answer naming the head github took holds: a later answer may name none
 	took := res.Details.ExpectedHead
