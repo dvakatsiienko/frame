@@ -7,8 +7,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-20 16:49'
-updated_date: '2026-10-22T18:52:00Z'
-due_date: '2026-10-23'
+updated_date: '2026-10-23T15:56:00Z'
+due_date: '2026-10-24'
 labels:
   - m
 dependencies: []
@@ -33,4 +33,6 @@ dima, 2026-10-20, folded: «1. /low-tide over everything, including the grills p
 2026-10-21 20:35 halt: steps 1–2 done; 3 (pm revamp, PK-103 W1–W13) and 4 run 10-22, then the 4-tool + kit bench (PK-243 W8, W16), then the crew-coordinator board refresh (W17)
 
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
+
+2026-10-23 18:56 cclio: due moved to 10-24; its plan is carried by the CST pm-revamp-checkpoint-3, it closes at the halt.
 <!-- SECTION:NOTES:END -->

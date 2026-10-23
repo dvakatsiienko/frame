@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-23T15:17:00Z'
-updated_date: '2026-10-23T15:48:00Z'
+updated_date: '2026-10-23T15:56:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -328,4 +328,6 @@ Caller, check these:
 held back: the `x pocket` family (M, drift top 3), split exec.go out of lane.go (XS) + one github door and one fake hub (S+M), `x lane stack restack` and `verify-tree --stack` (only if the stacked-prs trial goes on), probe bare/session (0 calls ever: point the rule at them or cut), `lane push` p50 22 s (frame's pre-push runner-twin)
 sources: ~/.local/state/x/lanes/cli-1/x-architecture-review-2026-10-23.md, the FRM-404/405 coder + verifier retros beside it (verifier § for the next cli chunk)
 done already: the `merged-by-x` label exists in frame and bytes
+
+2026-10-23 18:56 cclio: dima 18:37 pulled the 5 cli chunks forward — they are signed right after the 18:5x second wind (o115); only the mods lane and the rest of the cli wait for the pm module. cli rider (shape-lane § 4, dima o109): a guard in `x linear body --set` refuses a write to a ticket labelled `signed` unless the body gains a `## signed` line.
 <!-- SECTION:NOTES:END -->

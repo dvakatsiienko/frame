@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T17:05:00Z'
-updated_date: '2026-10-23T15:28:00Z'
-due_date: '2026-10-23'
+updated_date: '2026-10-23T15:56:00Z'
+due_date: '2026-10-27'
 labels:
   - m
 dependencies: []
@@ -53,4 +53,6 @@ W17 dima, 20:31 (o121): the recipe board 📐 refresh-crew-coordinator is NOT re
 2026-10-22 15:05 dima: W8+W16 (the 4-tool drawing bench + moves-kit A/B) and W17 (refresh-crew-coordinator board v2) move to tomorrow at least — «move these 2 at least for tomorrow»
 
 2026-10-23 18:35 cclio, the blueprint-tool cleanup (dima 16:29): the 4-tool bench ran (draw.io 27 calls/78k, Canvas 25/109k, n8n 46/110k), dima picked draw.io; W5 «FigJam first» is dead (FigJam dropped at the Figma MCP cap). the recipe's vectors now lead with draw.io. left in this item: W1 grow the habit gradually, W4 the efficiency vector, W6 smaller screenshots, W7 groom + rerun the recipe — now aimed at draw.io.
+
+2026-10-23 18:56 cclio: due moved 10-23 → 10-27; the recipe wants left (W4, W7) ride the tickets-flow board refresh, the next board touch.
 <!-- SECTION:NOTES:END -->
