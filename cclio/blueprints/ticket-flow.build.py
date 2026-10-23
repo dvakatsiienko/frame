@@ -334,7 +334,10 @@ def read_notes(root):
 
 
 def notes_tile(root, notes):
-    lines = [f"<b>{html.escape(title)}</b> — {html.escape(note)}" for _, title, _, note in notes] or ["none open"]
+    def where(cid, title):
+        band = re.match(rf"{PREFIX}b(\d+)-", cid or "")
+        return f"band {band.group(1)}, «{title}»" if band else f"«{title}»"
+    lines = [f"📍 <b>{html.escape(where(cid, title))}</b>: {html.escape(note)}" for cid, title, _, note in notes] or ["none open"]
     body = "<br>".join(lines)
     height = 110 + 34 * len(lines)
     add(root, f"{PREFIX}notes", "1",
