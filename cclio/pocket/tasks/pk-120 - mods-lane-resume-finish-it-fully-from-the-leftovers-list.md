@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: waiting
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-23T09:56:00Z'
+updated_date: '2026-10-23T11:49:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -47,4 +47,6 @@ rider (dima o31, 16:31): the second-wind op takes a required pending: field, onl
 2026-10-21 16:11 the evergreen source lane moved: docs/research/evergreen-borrows-2026-10-21.md.
 
 rider 2026-10-23: FRM-417 (x-mod-guard: milestone-less linear create/move refused) — in the 🐋 mods lane 1 landed milestone, shaped by cclio:shape-lane, exit lines sealed before the lane spawns (dima 12:55).
+
+2026-10-23 14:55 cclio: dima's want for this lane, moved from FRM-304's body (cleared, standing): «we have more ideas for mods … let's exhaust the full list, until there's nothing else useful to do with mods» — 14:46: it means solving all existing mods tickets, not a recipe. FRM-304's other lines: the afk digest was cclio's idea (dropped), the own-agents.md ask is done (mods/AGENTS.md); the old body sits in ~/.local/state/cclio/standing-bodies-2026-10-23.md
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 
 `to-spec` runs on the body alone (dima, 2026-10-07). in order, a small ticket filling only the lines it has:
 
-- `lane: <name>` — the first line
+- `lane: main|side|quick|shift` — the first line, the kind word only
 - **wish** — dima's words, folded (`cclio/memory/craft-pm.md` § wishes), one point per numbered W-line; his raw drop stays in the pocket notes, linked (`craft-pm` § wishes)
 - **dima notes** — his later asks, notes and verdicts on the ticket, folded and dated; the ask-guard reads them before any close
 - **why** — what hurts today

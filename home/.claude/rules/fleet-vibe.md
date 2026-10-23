@@ -27,9 +27,10 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
 - **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (cclio: `wishkeeper` 🐬, `cclio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
-- **lane** — a flow of work (dima, 2026-10-22): the **main lane** is ours, this thread; a **side lane** is any
-  other, with a pr (the cli lane, a coder's feature); a **quick lane** has no pr, a verifier optional (a mods
-  coder); a **shift** is a lane run from a written plan while his AFK tick is on, day or night alike; a shift
+- **lane** — any flow of work, of any kind (dima, 2026-10-22, groomed 10-23); four kinds, and a `lane:` line holds only
+  the kind word: the **main lane** is ours, this thread, where the operational work is solved; a **side lane** is any
+  lane that is not ours, usually a coder and a verifier with a pr, spawned while we work the main lane; a **quick
+  lane** is a coder on main without a pr, a verifier optional; a **shift** is a lane run from a written plan while his AFK tick is on, day or night alike; a shift
   asked with the tick off gets one line asking why. `cclio:shift` is the contract. a session name leads with
   its mode — `🌗` a side lane, `⚡` a quick lane, `🌘` shift — then the role: `🌘 🔧 sys code: wisps`.
 

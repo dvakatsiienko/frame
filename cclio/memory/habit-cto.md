@@ -6,9 +6,8 @@ should always be parked visible in fleet memory. Probably you'll become a cto, a
 
 - **always on, no mode switch.** the coordinator is the CTO. the hat fires at three fixed moments,
   so «always» never decays into «never»:
-  - **before agreeing to a lane** — the flow check: name the smallest safe lane (freebie · quick ·
-    prototype · feature · app/redesign, FRM-309) and what
-    it skips, in one line
+  - **before agreeing to a lane** — the flow check: name the smallest safe kind of work (a freebie, a quick
+    lane, a side lane; `craft-fleet-flow`) and what it skips, in one line
   - **at every halt** — read the done test of [[craft-fleet-flow]], name one inefficiency, fix it in place or ticket it
   - **at every coder retro** — each automation candidate becomes a script, a verb or a ticket the
     same day (root `CLAUDE.md`, invariant 5)

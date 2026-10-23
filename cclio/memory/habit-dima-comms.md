@@ -51,7 +51,7 @@ floods; no other member prints one.
 
 **What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him (10-16: the step-10 list and the top-seven names were both lost that way), so the closing message carries it whole.
 
-**A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
+**A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture
 is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. Dima
 reads the thread cold from another window; findings staggered across turns are findings he has

@@ -1,6 +1,6 @@
 ---
 name: crew-lead
-description: Load BEFORE a lane spawn, brief, watch or stop — a coder, verifier, designer, probe or cloud session — «spawn», «brief a coder», «verifier yes/no», a stalled or idle member, «stop the coder». Not for a subagent (`x:crew-subagent`) or cclio's sidecars ccrow and composer (`cclio:boot`).
+description: Load BEFORE a lane spawn, brief, watch or stop — a coder, verifier, designer, probe or cloud session — «spawn», «brief a coder», «spawn ask», a stalled or idle member, «stop the coder». Not for a subagent (`x:crew-subagent`) or cclio's sidecars ccrow and composer (`cclio:boot`).
 ---
 
 # crew-lead — spawning and running a lane crew
@@ -53,7 +53,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **spare age** — every `--bg` spawn claims a pre-warmed `claude bg-spare`, and a day-old spare once booted a coder without the repo's root `AGENTS.md`. `ps -o pid,lstart,command -ax | grep '[b]g-spare'`; older than a day → `claude daemon stop --keep-workers`, then spawn. the brief's «name your loaded AGENTS.md paths» line is the belt.
 - **app essentials** — the target app passes `node ~/projects/bytes/script/apps-essentials.ts --app <app>` (`x:app-setup-essentials`); a red row is filled before the spawn, or the brief says which row the coder fills first. a 🟡 row rides the brief too, after the app's wisps.
 - **tier and cwd** — code, a repo, a real filesystem ⇒ a real session, launched as `cd <target repo> && claude --bg …` in one command: the only door that derives its stack from cwd.
-- **the verifier ask** — dima's call before every coder spawn: one orbit ask carrying the sealed exit lines as a count with the ticket link, «spawn <ticket> now? verifier: yes/no», asked when `cclio:shape-lane` ends; this line is its one home. no exit lines, no spawn. freebies and dima-mode coders get no verifier.
+- **the spawn ask** — dima's call before every coder spawn: one orbit ask carrying the sealed exit lines as a count with the ticket link, «spawn <ticket> now?», asked when `cclio:shape-lane` ends; this line is its one home. no exit lines, no spawn. a coder gets a verifier by default; only a quick lane's ask adds «verifier: yes/no», and dima says himself when he wants none elsewhere (2026-10-23). freebies and dima-mode coders get no verifier.
 - **the brief file** — written to cclio's scratchpad, opening `/x:crew-coder BYT-N <job> coordinator: <cclio registry name>`; `x brief check --repo <repo> <file>` passes before the spawn, and for a job born in the pocket `node ~/frame/cclio/script/wish-cover.ts <PK-N> <file>` too. an inline brief is refused by `x-mod-guard`. cclio's spawn is refused until the brief names every live trial whose `fits:` matches the member (`script/test-drive-list.ts --spawn-hook`): each with how the lane uses it, or «trial skipped: <name> — <why>»; a verifier's argv carries the same names after its four arguments, behind the word `trials:`.
 - **the argv** — literal, `-n` before the prompt, the prompt before `--remote-control` (the flag once ate a 1.5 kB brief as its rc label):
   - side lane: `cd <repo> && claude --bg -n '🌗 🔧 BYT-N code: <what>' --model opus --effort medium "$(cat <brief file>)" --remote-control`
