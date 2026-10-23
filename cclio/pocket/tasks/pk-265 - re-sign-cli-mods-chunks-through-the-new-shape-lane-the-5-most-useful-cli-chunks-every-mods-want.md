@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-23T15:17:00Z'
-updated_date: '2026-10-23T15:28:00Z'
+updated_date: '2026-10-23T15:42:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -90,7 +90,7 @@ Chunks under review: FRM-383 FRM-384 FRM-360 FRM-387 FRM-414 FRM-415. Inputs (al
 - `knowledge`: **keep until day 30** — 2 verbs, 1 run, unproven; FRM-360 already moved its screen off `knowledge read` because of that count (FRM-360 decided, 2026-10-09)
 - `schema`, `completion`, `stats`: **merge into `x`** — 3 one-verb families (28, 2, 14 runs); PRODUCT.md:81 drafts them as one `x` family (schema, stats, completion)
 - `plugin`: **keep** — 1 verb, 79 runs. Gap: `claude plugin` 75 raw (14 days); which subcommands is not known «?» (the 6-day sample shows only `list` ×6)
-- `mods`: **keep** (unproven) — 4 verbs, 0 runs. Gaps: `pnpm mods:live` 65 raw and `scratch-edit` 105 raw (14 days). `scratch-edit` is the old door that `mods edit pull` replaces (registry `replaces:`); `bin/scratch-edit` is gone from `plugin-x/bin` as of 2026-10-23, so those heads may be older calls or come from another path «?»
+- `mods`: **keep** (unproven) — 4 verbs, 0 runs. Gaps: `pnpm mods:live` 65 raw and `the old scratch editor (the `mods edit pull` replaced door)` 105 raw (14 days). `the old scratch editor (the `mods edit pull` replaced door)` is the old door that `mods edit pull` replaces (registry `replaces:`); `bin/the old scratch editor (the `mods edit pull` replaced door)` is gone from `plugin-x/bin` as of 2026-10-23, so those heads may be older calls or come from another path «?»
 - no family: `backlog` 546 (14 days), 266 (7 days). This is the largest raw head with no family, and the gap behind candidate 3 below
 
 ## chunks
@@ -314,4 +314,8 @@ Caller, check these:
 - FRM-409 and FRM-410 are children of FRM-304 but not in the milestone.
 
 2026-10-23 18:28 cli rider: `x brief preflight` reads the ticket's `## exit` (x/go/preflight.go:69-80); it should read the lane's spec. until then shape-lane-dispatch copies the exit lines into the ticket (its § 4 bridge).
+
+2026-10-23 18:40 cli rider: `x lane merge-auto` has no door for dima's word — a self-edit always waits, so FRM-405's stack (exit 9) landed through `gh stack merge` after merge-auto's own checks passed. it needs a door for his word, and for a sign's pre-approval (dima's o96), e.g. a `--dima-ok <orbit id>` flag or reading the chunk's `## signed` merge line.
+
+2026-10-23 18:44 cli rider, first live catch of FRM-405's quote gate: it flagged craft-fleet-flow's old stage-5 line as «[his line]» though it holds no «» quote of dima's — it only names «dima's pick»; the line was written by cclio's build fork the same day. the gate should key on «» quotes (or a `dima, <date>:` attribution), not on the word «dima's». + verifier's 6 next-chunk asks are in ~/.local/state/x/lanes/cli-1/2026-10-23-FRM-405-verifier-retro.md § for the next cli chunk.
 <!-- SECTION:NOTES:END -->
