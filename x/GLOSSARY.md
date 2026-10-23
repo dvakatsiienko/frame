@@ -57,6 +57,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word
 - **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
 - **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; the verifier's bench, made by `lane verify-tree`
+- **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
 - **stack** — prs that each open onto the branch of the one below, merged bottom-up; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)
 - **layer** — one pr's branch in a stack: the root `coder/<ticket>-<slug>`, then `-2`, `-3` on top
 - **brake** — every pr waiting for dima's word for 7 days after a merge-auto merge is reverted; read from git each run, never stored

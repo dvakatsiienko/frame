@@ -38,7 +38,8 @@ const ghStack = `'extension list'*) if [ -z "$FAKE_NO_STACK" ]; then printf 'gh 
 func stackGithub(t *testing.T, clone string, stacks string) []string {
 	t.Helper()
 	onGithub(t, clone)
-	pages := map[string]string{repoPath + "/pulls": `[{"number":12,"head":{"ref":"coder/FRM-1-a-2"}},{"number":13,"head":{"ref":"coder/FRM-1-a-3"}}]`}
+	pages := map[string]string{repoPath + "/pulls": `[{"number":11,"head":{"ref":"coder/FRM-1-a"}},{"number":12,"head":{"ref":"coder/FRM-1-a-2"}},
+		{"number":13,"head":{"ref":"coder/FRM-1-a-3"}},{"number":21,"head":{"ref":"coder/FRM-1-v-2"}},{"number":22,"head":{"ref":"coder/FRM-1-v-2-2"}}]`}
 	if stacks != "" {
 		pages[repoPath+"/stacks"] = stacks
 	}
@@ -60,9 +61,17 @@ const linkedStack = `[{"number":4,"base":{"ref":"main"},"pull_requests":[
 	{"number":12,"state":"open","head":{"ref":"coder/FRM-1-a-2"}},
 	{"number":13,"state":"open","head":{"ref":"coder/FRM-1-a-3"}}]}]`
 
+// linkEnv is a gh with the extension plus github answering the layers' prs
+func linkEnv(t *testing.T, clone string) (env []string, log string) {
+	t.Helper()
+	env, log = ghRecorder(t, ghStack)
+	return append(env, stackGithub(t, clone, "")...), log
+}
+
+// by pr number: gh stack link pushes every branch it is named, and a frame worktree's push dies
 func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
-	env, log := ghRecorder(t, ghStack)
+	env, log := linkEnv(t, clone)
 
 	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
 
@@ -72,7 +81,7 @@ func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 			links = append(links, strings.TrimSpace(line))
 		}
 	}
-	if want := "ghs_coder stack link coder/FRM-1-a coder/FRM-1-a-2 coder/FRM-1-a-3"; got.code != 0 || len(links) != 1 || links[0] != want {
+	if want := "ghs_coder stack link 11 12 13"; got.code != 0 || len(links) != 1 || links[0] != want {
 		t.Fatalf("exit %d, stack link calls %q, want [%q]\n%s", got.code, links, want, got.stdout)
 	}
 }
@@ -125,7 +134,7 @@ func TestStackViewShowsAMergedLayerAsMerged(t *testing.T) {
 
 func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
-	env, log := ghRecorder(t, ghStack)
+	env, log := linkEnv(t, clone)
 	env = append(env, "FAKE_NO_STACK=1")
 
 	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
@@ -139,8 +148,7 @@ func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 func linkWith(t *testing.T, exits string) (ran, int) {
 	t.Helper()
 	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
-	onGithub(t, clone)
-	env, log := ghRecorder(t, ghStack)
+	env, log := linkEnv(t, clone)
 	env = append(env, "FAKE_DIR="+t.TempDir(), "FAKE_EXITS="+exits, "X_FAKE_SLEEP=1")
 	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
 	return got, strings.Count(read(t, log), " stack link ")
@@ -249,14 +257,14 @@ func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
 		branches   []string
 		want       string
 	}{
-		{"a slug ending in a number stays its own root", "coder/FRM-1-v-2", []string{"coder/FRM-1-v-2", "coder/FRM-1-v-2-2"}, "coder/FRM-1-v-2 coder/FRM-1-v-2-2"},
+		{"a slug ending in a number stays its own root", "coder/FRM-1-v-2", []string{"coder/FRM-1-v-2", "coder/FRM-1-v-2-2"}, "21 22"},
 		{"one layer is no stack", "coder/FRM-1-a", []string{"coder/FRM-1-a"}, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			clone := layers(t, c.branches...)
 			gitT(t, clone, "switch", "-q", c.from)
-			env, log := ghRecorder(t, ghStack)
+			env, log := linkEnv(t, clone)
 
 			got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
 

@@ -353,6 +353,82 @@ func TestCommitOnMainLeavesToThePreCommitTheJobsItRuns(t *testing.T) {
 	}
 }
 
+// a repo whose rules file holds one of dima's quotes, then the commit's message and the quote edited
+func quotedRules(t *testing.T, msg string) (dir string, got ran) {
+	t.Helper()
+	dir = repo(t)
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong at commit»\n- a plain line\n")
+	gitT(t, dir, "add", ".")
+	gitT(t, dir, "commit", "-q", "-m", "seed")
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong anywhere»\n- a plain line\n")
+	file := filepath.Join(t.TempDir(), "msg.txt")
+	write(t, file, msg)
+	return dir, xIn(t, dir, nil, "lane", "commit", file, "--", "rules/a.md")
+}
+
+func TestCommitStopsAChangedQuoteOfDimas(t *testing.T) {
+	dir, got := quotedRules(t, "📜 rules: reword\n")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "«checks belong at commit»") || gitT(t, dir, "log", "-1", "--format=%s") != "seed" {
+		t.Fatalf("exit %d, want a refusal naming the gone quote and no commit\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitTakesAChangedQuoteOnceShown(t *testing.T) {
+	dir, got := quotedRules(t, "📜 rules: reword\n\nquotes: shown\n")
+
+	if got.code != 0 || !strings.Contains(gitT(t, dir, "log", "-1", "--format=%s"), "reword") {
+		t.Fatalf("exit %d, want the commit with quotes: shown\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitTakesANewMemoryFile(t *testing.T) {
+	dir := repo(t)
+	write(t, filepath.Join(dir, "rules/new.md"), "- dima: «a fresh quote»\n")
+
+	got := xIn(t, dir, nil, "lane", "commit", message(t), "--", "rules/new.md")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want a new rules file committed: HEAD holds no quote it could lose\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitStopsAQuoteChangedInARenamedFile(t *testing.T) {
+	dir := repo(t)
+	write(t, filepath.Join(dir, "rules/a.md"), "- his word: «keep this line exactly as he said»\n")
+	gitT(t, dir, "add", ".")
+	gitT(t, dir, "commit", "-q", "-m", "seed")
+	gitT(t, dir, "mv", "rules/a.md", "rules/b.md")
+	write(t, filepath.Join(dir, "rules/b.md"), "- his word: «keep this line roughly as he said»\n")
+
+	// a user's diff.renames reads the move as one new file; the gate must not care
+	renames := []string{"GIT_CONFIG_COUNT=2", "GIT_CONFIG_KEY_1=diff.renames", "GIT_CONFIG_VALUE_1=true"}
+	got := xIn(t, dir, renames, "lane", "commit", message(t), "--", "rules/a.md", "rules/b.md")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "«keep this line exactly as he said»") {
+		t.Fatalf("exit %d, want the renamed file's changed quote named\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitStopsAQuoteGoneByDelete(t *testing.T) {
+	cases := []struct{ name, path string }{{"the file named", "rules/a.md"}, {"its dir named", "rules"}}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := repo(t)
+			write(t, filepath.Join(dir, "rules/a.md"), "- dima: «checks belong at commit»\n")
+			gitT(t, dir, "add", ".")
+			gitT(t, dir, "commit", "-q", "-m", "seed")
+			_ = os.Remove(filepath.Join(dir, "rules/a.md"))
+
+			got := xIn(t, dir, nil, "lane", "commit", message(t), "--", c.path)
+
+			if got.code == 0 || !strings.Contains(got.stdout, "«checks belong at commit»") {
+				t.Fatalf("exit %d, want the deleted quote named\n%s", got.code, got.stdout)
+			}
+		})
+	}
+}
+
 func TestUnlockTurnsCiphertextBackIntoPlaintext(t *testing.T) {
 	tree := lockedWorktree(t)
 
