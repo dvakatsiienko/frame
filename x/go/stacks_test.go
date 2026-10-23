@@ -597,6 +597,23 @@ func TestRestackStopsAtALayerThatConflicts(t *testing.T) {
 	}
 }
 
+// a stack's upper layer pushes onto its own branch, never onto the layer below or main
+func TestPushSendsAStackLayerToItsOwnBranch(t *testing.T) {
+	t.Parallel()
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	lower, main := originHead(t, clone, "coder/FRM-1-a"), originHead(t, clone, "main")
+	write(t, filepath.Join(clone, "upper.txt"), "more in the upper layer\n")
+	gitT(t, clone, "add", "upper.txt")
+	gitT(t, clone, "commit", "-q", "-m", "more in the upper layer")
+	sha := gitT(t, clone, "rev-parse", "HEAD")
+
+	got := xIn(t, clone, nil, "lane", "push", "--apply")
+
+	if got.code != 0 || originHead(t, clone, "coder/FRM-1-a-2") != sha || originHead(t, clone, "coder/FRM-1-a") != lower || originHead(t, clone, "main") != main {
+		t.Fatalf("exit %d, want only coder/FRM-1-a-2 moved to %s\n%s", got.code, short(sha), got.stdout)
+	}
+}
+
 func TestRestackRefusesATreeWithChanges(t *testing.T) {
 	t.Parallel()
 	clone := movedStack(t, "lower.txt", "the fix\n")

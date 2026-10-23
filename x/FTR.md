@@ -208,6 +208,9 @@
   - given dima looked, when `x lane merge-auto <pr> --release-brake --dima-ok <pr>` runs, then the label comes off and nothing merges; without `--dima-ok` it exits 2, and x-mod-guard lets the flag through only on his typed prompt naming the pr (FRM-423 grill, o142)
   - given the add-on's files deleted, or `-tags nostacks`, then `go build`, `go vet` and every lane-verb test pass, which `pnpm x-go:test` proves on every run (FRM-422)
   - decision: an add-on behind `//go:build !nostacks`, reaching core only through `laneAddOn`, its verbs hidden from the overview while stacks are on trial (FRM-404; dima, 2026-10-20: «easy to delete»)
+  - given a stack whose lower layer moved, when `x lane restack --apply` runs on any layer, then each lower layer is merged up into the next, bottom-up, and every moved layer is pushed leased on the sha read; a conflict stops on that layer mid-merge naming the files; a dirty tree, a stopped rebase or merge, or a layer whose local copy differs from origin refuses before any merge
+  - given a stack's top pr, when `x lane verify-tree --stack <top pr url>` runs, then the top layer's tree is seeded and every open layer under it prints bottom-up with its pr, head and base; a `main:<sha>` head exits 2
+  - given the lane pr verbs pr-open, merge-auto, push and restack, then a contract test reds any verb with no test case in plain mode (a file that builds without the add-on) or in stacked mode (a file behind the build tag)
   - decision: two pr modes, plain in core and stacked in the add-on; stacked support never breaks a plain pr, and the «easy to delete» clauses stay until the stacked-prs trial's verdict (dima, o127, o128; `PRODUCT.md` § two pr modes)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
