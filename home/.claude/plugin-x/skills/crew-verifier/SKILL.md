@@ -25,7 +25,7 @@ first reply quotes its version line.
 
 then gather what you verify against; nothing else counts as a criterion:
 
-- **the exit lines** — the lane's spec, `~/frame/.scratch/<feature>/spec.md` (path in your brief), the ticket's
+- **the exit lines** — the lane's spec, `~/frame/.scratch/<feature>/spec.md` (the `spec:` word in your argv), the ticket's
   section, given/when/then; a ticket from before the spec move carries them in its `exit` section
   (`x linear read <id>`). neither → stop and tell the coordinator «no exit lines, nothing to verify against».
 - **ftr lines** — the ones the exit lines name, plus every `FTR.md` line the diff adds or flips; each
