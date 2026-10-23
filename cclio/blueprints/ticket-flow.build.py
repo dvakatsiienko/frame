@@ -39,7 +39,6 @@ KIND = {
     "file": ("#FFECBD", "#FFC943"),
     "event": ("#D9D9D9", "#B3B3B3"),
     "weak": ("#FFDBDB", "#E54D4D"),
-    "note": ("#F2F2F2", "#8C8C8C"),
 }
 
 # a tile: (id, col, row, kind, title, detail, file); a band: (id, header, sources, tiles, edges)
@@ -76,7 +75,7 @@ BANDS = [
             ("clock", 4, 1, "script", "⚙️ pocket-check: the clock", "now ≤ 3 · open ≤ 5 · untouched > 1 day · due passed · waiting needs its line + a due", "runs at boot, after add and move, on each status move"),
             ("notes", 2, 1, "file", "📄 notes, appended only", "--append-notes, never --notes; his raw drop and quoted steers live here", "habit-shared-files § the pocket"),
             ("mirror", 1, 1, "script", "⚙️ the phone mirror", "pocket.md in the vault, read-only: a phone edit is lost, his asks go to the inbox", ".claude/hooks/pocket-mirror.sh"),
-            ("w-size", 5, 0, "weak", "⚠️ a size the config lacks", "the contract lists xs · s · m · l; the config holds xs · s · m, so an l item reds", "my reading · habit-shared-files vs backlog.config.yml"),
+            ("w-size", 5, 0, "weak", "⚠️ a size the config lacks", "the contract and the config hold xs · s · m; pocket-add's usage still offers --size l, which reds", "my reading · pocket-add.ts vs backlog.config.yml"),
         ],
         [
             ("chore", "add", "R", "L", ""), ("add", "item", "R", "L", ""), ("item", "move", "R", "L", ""),
@@ -115,11 +114,11 @@ BANDS = [
             ("triage", 1, 0, "cclio", "🎫 born in Triage", "x as cclio -- linear issue create, never --state; a ticket must earn existence", "cclio:pm § the door · craft-pm"),
             ("mile", 2, 0, "cclio", "🎑 milestone first", "«which milestone?» on create, move, close; a guard refuses a bare create (FRM-417)", "craft-pm § milestones first"),
             ("fields", 3, 0, "file", "📄 every field", "role · kind · p3 · size XS·S·M like FRM-N · project · parent · milestone · delegate", "cclio:pm § the fields"),
-            ("body", 4, 0, "file", "📄 the body, a spec seed", "lane · wish W-lines · dima notes · why · stories · proposed · decided · open · exit · out · refs", "pm references/body.md"),
+            ("body", 4, 0, "file", "📄 the body, a spec seed", "lane · wish · dima notes · why · stories · proposed · decided · open · 🎯 done test · out · refs · ## signed", "pm references/body.md"),
             ("gate", 4, 1, "cclio", "❓ the assumption gate", "a fact dima never said → needs human + a ? line; to-spec only with open empty", "cclio:pm § the fields · body.md"),
             ("promote", 3, 1, "dima", "🙋‍♂️ out of Triage is his", "dima promotes it; a human ticket is his to start", "cclio:pm § the door"),
             ("pointer", 2, 1, "cclio", "🎫 back as a pointer item", "only when the main lane takes it for today or tomorrow: «ticket: FRM-N»", "habit-shared-files § the pocket"),
-            ("w-pointer", 1, 1, "weak", "⚠️ a pointer, or dead?", "craft-pm: the item becomes a pointer the moment a ticket exists; the contract: it dies", "my reading · craft-pm § wishes vs habit-shared-files"),
+            ("w-pointer", 1, 1, "weak", "⚠️ pocket ↔ linear: open, the next grill", "pointer or dies? craft-pm and the sign: a pointer; the pocket contract: it dies", "FRM-419 step 2 · craft-pm vs habit-shared-files"),
             ("standing", 0, 1, "cclio", "🎫 a standing story", "an empty body, no comments; each round is a child ticket with the wish, pr and report", "pm references/body.md"),
         ],
         [
@@ -130,58 +129,104 @@ BANDS = [
         [("w-pointer", "pointer")],
     ),
     (
-        "b5", "🍴 5 — shaping: what turns a ticket into a lane?",
-        "cclio:shape-idea · cclio:shape-lane (+ exit-lines.md) · craft-fleet-flow stages 2–4 · pm references/body.md",
+        "b5", "🧭 5 — lane init: which states does a chunk walk?",
+        "craft-fleet-flow § lane init · rules/fleet-vibe.md lane-init words · pm references/body.md",
         [
-            ("idea", 0, 0, "cclio", "🦉 shape-idea, optional", "an intricate wish: want + grill, prior art, sharpen, the cut, the done test", "cclio:shape-idea steps 1–6"),
-            ("out", 1, 0, "file", "📄 its outputs", "PRODUCT.md, an FTR.md draft, GLOSSARY.md words, ADRs", "cclio:shape-idea step 7"),
-            ("shaped", 2, 0, "dima", "🙋‍♂️ «shaped»", "only then design or code; a step is skipped only on his word", "shape-idea · fleet-flow stages 2–3"),
-            ("prep", 0, 1, "dima", "🙋‍♂️ «prep», «grill FRM-N»", "or «next chunk»: a chunk is picked for a lane", "cclio:shape-lane"),
-            ("read", 1, 1, "cclio", "🦉 read what is settled", "the wish block + decided, or the pocket notes before a ticket, never both", "shape-lane § 0 · wish-cover.ts"),
+            ("wish", 0, 0, "event", "🌠 a wish", "his words, folded into W-lines; the fold proposes «shape-idea or not»", "craft-pm § wishes"),
+            ("shaped", 1, 0, "file", "🎫 a shaped ticket", "through shape-idea when he picks it, else folded straight into a full ticket", "fleet-flow § lane init"),
+            ("signed", 2, 0, "dima", "✍️ signed", "his tick in shape-lane: the signed label + a dated, hashed ## signed line", "cclio:shape-lane § 4"),
+            ("pick", 3, 0, "dima", "🙋‍♂️ his pick", "«what can we dispatch?» — his pick is the spawn word, no second ask", "shape-lane-dispatch § 1"),
+            ("sealed", 4, 0, "script", "🦭 sealed", "spec + exit lines written and preflight green, before the coder starts", "shape-lane-dispatch § 2–4"),
+            ("dispatched", 5, 0, "member", "🚀 dispatched", "the coder starts; the signed label comes off", "shape-lane-dispatch § 5"),
+            ("green", 5, 1, "cclio", "🟢 greenlight", "cclio's yes on the coder's lane plan, after the spawn", "shape-lane-dispatch § 5"),
+            ("build", 4, 1, "member", "🔧 build", "the lane runs (band 8)", "fleet-flow stages 6–9"),
+            ("t-ticket", 0, 1, "file", "🎫 the ticket holds", "the wish, the 🎯 done test, the ## signed block", "fleet-flow § lane init · body.md"),
+            ("t-spec", 1, 1, "file", "📐 the spec holds", "the how and the exit lines: .scratch/<feature>/spec.md", "fleet-flow § lane init"),
+            ("t-plan", 2, 1, "file", "📄 the lane plan holds", "the order of the coder's tickets", "fleet-flow § lane init"),
+        ],
+        [
+            ("wish", "shaped", "R", "L", ""), ("shaped", "signed", "R", "L", ""), ("signed", "pick", "R", "L", ""),
+            ("pick", "sealed", "R", "L", ""), ("sealed", "dispatched", "R", "L", ""), ("dispatched", "green", "B", "T", ""),
+            ("green", "build", "L", "R", ""),
+        ],
+        [],
+    ),
+    (
+        "b6", "✍️ 6 — shaping and the sign: who says yes?",
+        "cclio:shape-idea · cclio:shape-lane · craft-pm § wishes · craft-fleet-flow stages 2–4",
+        [
+            ("idea", 0, 0, "cclio", "🦉 shape-idea, a pick", "a new app, a feature, a changed product part: want + grill, prior art, the cut, the done test", "cclio:shape-idea steps 1–6"),
+            ("out", 1, 0, "file", "📄 one shaped ticket", "wish, decided, the cut as out, the 🎯 done test; no files: PRODUCT.md is born at dispatch", "cclio:shape-idea step 7"),
+            ("plain", 2, 0, "cclio", "🎫 plain work: a full ticket", "mechanical wishes skip shape-idea, folded straight into a full ticket, never a thin one", "craft-pm § wishes · cclio:pm"),
+            ("prep", 0, 1, "dima", "🙋‍♂️ «prep», «sign», «fast»", "or «next chunk»: a ticket or a pocket item goes to its sign", "cclio:shape-lane"),
+            ("read", 1, 1, "cclio", "🦉 read what is settled", "the wish block + decided, or the pocket notes; wish-cover.ts exits 0 on every round", "shape-lane § 0"),
             ("card", 2, 1, "file", "📄 the chunk card", "an h2 + two lines: why we have it, what we want out of it", "shape-lane § 1"),
-            ("grill", 3, 1, "dima", "🙋‍♂️ the grill", "matt's ❓ rounds, the frontier only; his orbit answers fold into decided", "shape-lane § 2"),
-            ("spec", 4, 1, "file", "📄 the spec", "side lanes, coder jobs of 3+: .scratch/<feature>/spec.md, «wish: FRM-N»", "shape-lane § 2.5 · body.md (a quick lane skips it)"),
-            ("w-park", 5, 1, "weak", "⚠️ a spec can sit for days", "nothing ages an undispatched spec; cli lane 1's has sat since 10-20", "my reading · shape-lane § 2.5"),
-            ("exit", 4, 2, "cclio", "🦉 the exit lines", "3–6 given/when/then in the ticket's exit, sealed from the spec; the want line last", "shape-lane § 3 · exit-lines.md"),
-            ("w-exit", 5, 2, "weak", "⚠️ exit lines in two homes", "the ticket's exit section and the spec, which the coder cuts into slice checklists", "my reading · shape-lane § 2.5, § 3"),
-            ("critic", 3, 2, "member", "🐦‍⬛ the blind critic", "ccrow:plan-critique sees only the want + the lines; each finding folded", "shape-lane § 3"),
-            ("seal", 2, 2, "script", "⚙️ the seal", "x brief preflight passes; the print collapses to «🔒 N exit lines, sealed»", "shape-lane § 4"),
-            ("ask", 1, 2, "cclio", "🪐 the spawn ask", "its own orbit ask; the skill ends here, the spawn is x:crew-lead's", "shape-lane § 5"),
+            ("mode", 3, 1, "cclio", "❓ single or fast?", "single: one chunk per grill, the default; fast on his word: a triage first, only chunks needing no call of his", "shape-lane § 2"),
+            ("grill", 4, 1, "dima", "🙋‍♂️ the grill", "matt's ❓ rounds, the frontier only; a fast chunk is self-grilled by cclio, fully groomed", "shape-lane § 2"),
+            ("fields", 5, 1, "file", "📄 what the sign carries", "done test · milestone · lane kind · repo · blocks order · merge: pre-approved for guards or merge-auto", "shape-lane § 3"),
+            ("sign", 5, 2, "dima", "✍️ his tick is the sign", "one orbit ask per chunk; a steer instead takes it back into the grill", "shape-lane § 4"),
+            ("block", 4, 2, "file", "📄 the ## signed block", "«✍️ signed <date> · body <hash>», appended, never edited; every later body write adds a line", "shape-lane § 4 · body.md"),
+            ("resign", 3, 2, "cclio", "🔁 a re-sign", "a changed signed ticket goes through shape-lane again; a tiny change skips the grill, never the line", "shape-lane § 4 · fleet-flow § lane init"),
+            ("w-hash", 2, 2, "weak", "⚠️ nothing enforces the line", "a body write without its ## signed line shows only at dispatch's hash check; the guard rides FRM-384", "my reading · shape-lane § 4"),
+            ("main", 0, 2, "cclio", "🐋 the main lane signs too", "our own steps as one chunk, lane: main, no coder, no spec; glide is its progress — a trial (FRM-419)", "fleet-flow § lane init"),
         ],
         [
-            ("idea", "out", "R", "L", ""), ("out", "shaped", "R", "L", ""), ("shaped", "prep", "B", "T", "then a prep"),
-            ("prep", "read", "R", "L", ""), ("read", "card", "R", "L", ""), ("card", "grill", "R", "L", ""),
-            ("grill", "spec", "R", "L", ""), ("spec", "exit", "B", "T", ""), ("exit", "critic", "L", "R", ""),
-            ("critic", "seal", "L", "R", ""), ("seal", "ask", "L", "R", ""),
+            ("idea", "out", "R", "L", ""), ("out", "prep", "B", "T", "shaped"), ("plain", "prep", "B", "T", "or plain"),
+            ("prep", "read", "R", "L", ""), ("read", "card", "R", "L", ""), ("card", "mode", "R", "L", ""),
+            ("mode", "grill", "R", "L", ""), ("grill", "fields", "R", "L", ""), ("fields", "sign", "B", "T", ""),
+            ("sign", "block", "L", "R", ""), ("block", "resign", "L", "R", "a change after"),
         ],
-        [("w-park", "spec"), ("w-exit", "exit")],
+        [("w-hash", "resign")],
     ),
     (
-        "b6", "🏃 6 — the lane: how does the ticket get built?",
-        "x:crew-coder how-you-work.md · cclio:shape-lane § 2.5 · craft-fleet-flow stages 5–9, three kinds of work",
+        "b7", "🚀 7 — dispatch: how does a signed chunk become a running lane?",
+        "cclio:shape-lane-dispatch (+ exit-lines.md) · x:crew-lead · craft-fleet-flow § lane init, stage 5",
         [
-            ("kinds", 0, 0, "file", "🛼 three kinds of work", "freebie: in place · quick: on main, no pr · side: worktree, pr, verifier", "craft-fleet-flow"),
-            ("brief", 1, 0, "cclio", "📋 brief and spawn", "x brief check passes; a verifier by default, yes/no on a quick lane", "fleet-flow stage 5 · x:crew-lead"),
-            ("cut", 2, 0, "member", "🔧 the coder cuts the spec", "matt's to-tickets after reading the code, so the slices follow real seams", "how-you-work.md · shape-lane § 2.5"),
-            ("slices", 3, 0, "file", "📄 the slices", ".scratch/<feature>/issues/, never linear; each spec exit line in one checklist", "how-you-work.md · body.md"),
-            ("plan", 4, 0, "file", "📄 the lane plan", "~/.local/state/x/lanes/<feature>/lane-plan.md, one line per ticket", "how-you-work.md § the lane plan"),
-            ("w-pocket", 5, 0, "weak", "⚠️ a pocket item → a coder job", "no defined path: a lane's tickets never enter the pocket, nothing says how one leaves it", "my reading · habit-shared-files, shape-lane § 2.5"),
-            ("sealorder", 4, 1, "cclio", "🦉 cclio seals the order", "at «[ask] lane-plan ready to seal»; re-sealed after a [progress] ping", "shape-lane § 2.5"),
-            ("w-glide", 5, 1, "weak", "⚠️ the glide card copies it", "its ticket lines copied by hand at each seal and land, until FRM-410", "my reading · shape-lane § 2.5"),
-            ("build", 3, 1, "member", "🔧 build, test-first", "tdd per ticket, [x] at its commit; his steers go under ## unsealed", "how-you-work.md"),
-            ("verify", 2, 1, "member", "🔎 the pr and the verifier", "the verifier says clean, or its round-3 stop goes to cclio", "fleet-flow stages 6–7"),
-            ("land", 1, 1, "cclio", "🔀 land", "cclio merges by the pr-flow gate; the spec dir moves to .scratch/_archive/", "fleet-flow stage 8"),
-            ("look", 0, 1, "dima", "🙋‍♂️ the look card", "what, where, try, proven, not checked; a shot for anything rendered", "how-you-work.md · fleet-flow stage 9"),
+            ("offer", 0, 0, "dima", "🙋‍♂️ «what can we dispatch?»", "signed, unblocked chunks by milestone; a hash off its last sign line → a re-sign", "shape-lane-dispatch § 1"),
+            ("lane", 1, 0, "file", "🛼 a lane = one milestone", "its signed chunks in blocks order, one glide step each; a shift walks milestones in queue order", "fleet-flow § lane init"),
+            ("spec", 2, 0, "file", "📐 the spec", ".scratch/<feature>/spec.md, wish: FRM-N, a section per chunk; PRODUCT.md for an app, skill or tool", "shape-lane-dispatch § 2 · to-spec"),
+            ("exit", 3, 0, "cclio", "🦉 the exit lines", "3–6 given/when/then per chunk, the want line last, seeded from the 🎯 done test", "dispatch § 3 · exit-lines.md"),
+            ("critic", 4, 0, "member", "🐦‍⬛ the blind critic", "ccrow:plan-critique sees only the want + the lines; each finding folded", "shape-lane-dispatch § 3"),
+            ("seal", 5, 0, "script", "🦭 the seal", "x brief preflight passes; the print collapses to «🦭 sealed, N exit lines»", "shape-lane-dispatch § 4"),
+            ("w-exit", 5, 1, "weak", "⚠️ exit lines in two homes", "the spec binds, preflight reads the ticket's ## exit, so the seal copies them in until FRM-423", "my reading · dispatch § 4"),
+            ("spawn", 4, 1, "cclio", "📋 the spawn", "x:crew-lead: a fresh coder, a verifier by default; the brief runs to-tickets first, its quiz skipped", "shape-lane-dispatch § 5"),
+            ("dispatched", 3, 1, "file", "🚀 dispatched", "the signed label off, «🚀 dispatched <date>» appended to ## signed", "shape-lane-dispatch § 5"),
+            ("plan", 2, 1, "file", "📄 the lane plan", "~/.local/state/x/lanes/<feature>/lane-plan.md: the coder's ticket order", "dispatch § 5 · how-you-work.md"),
+            ("green", 1, 1, "cclio", "🟢 the greenlight", "cclio reorders it against what comes next, final word; again after a [progress] ping", "shape-lane-dispatch § 5"),
+            ("joiner", 0, 1, "cclio", "➕ a joiner", "a signed chunk of the same milestone: a new spec section, a glide step, a steer", "shape-lane-dispatch § 6"),
+            ("park", 0, 2, "cclio", "🅿️ a park", "a call only dima can make parks the chunk, its reason in the spec; a shift takes the next", "dispatch § 6 · fleet-flow § lane init"),
+            ("w-glide", 1, 2, "weak", "⚠️ the glide card copies it", "its ticket lines copied by hand at each greenlight and land, until FRM-410", "my reading · dispatch § 5"),
         ],
         [
-            ("kinds", "brief", "R", "L", ""), ("brief", "cut", "R", "L", ""), ("cut", "slices", "R", "L", ""),
-            ("slices", "plan", "R", "L", ""), ("plan", "sealorder", "B", "T", ""), ("sealorder", "build", "L", "R", ""),
-            ("build", "verify", "L", "R", ""), ("verify", "land", "L", "R", ""), ("land", "look", "L", "R", ""),
+            ("offer", "lane", "R", "L", ""), ("lane", "spec", "R", "L", ""), ("spec", "exit", "R", "L", ""),
+            ("exit", "critic", "R", "L", ""), ("critic", "seal", "R", "L", ""), ("seal", "spawn", "B2", "T", ""),
+            ("spawn", "dispatched", "L", "R", ""), ("dispatched", "plan", "L", "R", ""), ("plan", "green", "L", "R", ""),
+            ("green", "joiner", "L", "R", "while it runs"), ("joiner", "park", "B", "T", "or"),
         ],
-        [("w-pocket", "plan"), ("w-glide", "sealorder")],
+        [("w-exit", "seal"), ("w-glide", "green")],
     ),
     (
-        "b7", "🏁 7 — the end: how does a ticket close and leave?",
+        "b8", "🏃 8 — the lane: how does the ticket get built?",
+        "x:crew-coder how-you-work.md · craft-fleet-flow stages 6–9, three kinds of work · docs/knowledge/pr-flow.md",
+        [
+            ("kinds", 0, 0, "file", "🛼 three kinds of work", "freebie: in place · quick: on main, no pr, no sign · side and shift: worktree, pr, verifier", "craft-fleet-flow"),
+            ("cut", 1, 0, "member", "🔧 the coder cuts the spec", "matt's to-tickets after reading the code, so the slices follow real seams", "how-you-work.md · dispatch § 5"),
+            ("slices", 2, 0, "file", "📄 the slices", ".scratch/<feature>/issues/, never linear; each exit line in one checklist", "how-you-work.md · body.md"),
+            ("build", 3, 0, "member", "🔧 build, test-first", "tdd per ticket, [x] at its commit; his steers land under ## not greenlit", "how-you-work.md"),
+            ("verify", 4, 0, "member", "🔎 the pr and the verifier", "the verifier says clean, or its round-3 stop goes to cclio", "fleet-flow stages 6–7"),
+            ("land", 5, 0, "cclio", "🔀 land", "cclio merges by the pr-flow gate; a self-edit waits for dima unless his sign pre-approved it", "fleet-flow stage 8"),
+            ("w-merge", 5, 1, "weak", "⚠️ merge-auto takes no word", "a pre-approved self-edit lands by a hand gh merge, until FRM-423", "my reading · fleet-flow stage 8"),
+            ("look", 4, 1, "dima", "🙋‍♂️ the look card", "what, where, try, proven, not checked; a shot for anything rendered", "how-you-work.md · fleet-flow stage 9"),
+            ("modes", 3, 1, "file", "🔀 plain or stacked prs", "plain is the default; stacks an easy-to-delete add-on on trial, never breaking plain", "pr-flow.md · x/AGENTS.md · BYT-98"),
+        ],
+        [
+            ("kinds", "cut", "R", "L", ""), ("cut", "slices", "R", "L", ""), ("slices", "build", "R", "L", ""),
+            ("build", "verify", "R", "L", ""), ("verify", "land", "R", "L", ""), ("land", "look", "B2", "T", ""),
+        ],
+        [("w-merge", "land")],
+    ),
+    (
+        "b9", "🏁 9 — the end: how does a ticket close and leave?",
         "pm references/closing.md · craft-pm § the ask-guard · cclio:halt phases 0, 1.5, 3.5, 4.5 · pocket-check.ts",
         [
             ("sweep", 0, 0, "script", "⚙️ the lingering sweep", "the halt lists In Progress + In Review; a merged pr with open asks → Todo", "cclio:halt phase 0"),
@@ -204,14 +249,6 @@ BANDS = [
         [("w-order", "archive")],
     ),
 ]
-
-NOTE = (
-    "note", 4, 0, 2,
-    "📄 proposed redesign (PK-263)",
-    "shape-lane splits into a prep with dima that signs a chunk, and a machine dispatch that writes the spec and exit lines — drawn after the grill",
-    "not today's flow",
-)
-NOTE_BAND = "b5"
 
 MAGNET = {"R": (1, 0.5), "L": (0, 0.5), "T": (0.5, 0), "B": (0.5, 1),
           "B2": (0.2, 1), "B6": (0.6, 1), "T6": (0.6, 0)}
@@ -238,12 +275,11 @@ def text_height(title, detail, source, width):
     return 1.2 * (26 * lines(title, 15) + 20 * lines(detail, 10) + 16 * lines(source, 8.2)) + 16
 
 
-def tile_style(kind, dashed=False):
+def tile_style(kind):
     fill, stroke = KIND[kind]
     return "rounded=1;" + style(
         whiteSpace="wrap", html=1, absoluteArcSize=1, arcSize=80, fillColor=fill, strokeColor=stroke,
         strokeWidth=3, fontFamily=FONT, fontColor="#1E1E1E", spacingLeft=20, spacingRight=20, spacing=8,
-        dashed=1 if dashed else 0,
     )
 
 
@@ -286,7 +322,7 @@ def build(root):
     add(root, "tf-title", "1", "🗺️ tickets flow — how a ticket lives today, across the pocket and linear",
         text_style(48, True), ORIGIN_X + PAD, ORIGIN_Y, 1900, 58, vertex="1")
     add(root, "tf-subtitle", "1",
-        "the files as they read on 2026-10-23, not a redesign · ⚠️ red tiles are my reading, every other tile names its file",
+        "the files as they read on 2026-10-23 evening, lane init built · ⚠️ red tiles are my reading, every other tile names its file",
         text_style(24, False), ORIGIN_X + PAD, ORIGIN_Y + 74, 1500, 30, vertex="1")
     y = ORIGIN_Y + 160
     previous = None
@@ -298,16 +334,10 @@ def build(root):
             fillColor="#EFF4FF", strokeColor="#CED2DB", strokeWidth=2, noLabel=1), ORIGIN_X, y, BAND_W, height, vertex="1")
         add(root, f"{bid}-head", bid, header, text_style(40, True), PAD, 40, 2400, 48, vertex="1")
         add(root, f"{bid}-src", bid, sources, text_style(22, False), PAD, 100, 2400, 27, vertex="1")
-        placed = [(*t, 1) for t in band_tiles]
-        if band_id == NOTE_BAND:
-            nid, col, row, span, title, detail, source = NOTE
-            placed.append((nid, col, row, "note", title, detail, source, span))
-        for tid, col, row, kind, title, detail, source, span in placed:
+        for tid, col, row, kind, title, detail, source in band_tiles:
             x, ty = PAD + col * COL_STEP, ROW0 + row * ROW_STEP
-            w = TILE_W + (span - 1) * COL_STEP
-            add(root, f"{bid}-{tid}", bid, label(title, detail, source), tile_style(kind, dashed=kind == "note"),
-                x, ty, w, TILE_H, vertex="1")
-            tiles[f"{bid}-{tid}"] = (bid, ORIGIN_X + x, y + ty, w, TILE_H, text_height(title, detail, source, w))
+            add(root, f"{bid}-{tid}", bid, label(title, detail, source), tile_style(kind), x, ty, TILE_W, TILE_H, vertex="1")
+            tiles[f"{bid}-{tid}"] = (bid, ORIGIN_X + x, y + ty, TILE_W, TILE_H, text_height(title, detail, source, TILE_W))
         for src, dst, exit_m, entry_m, value in edges:
             edge(root, f"{bid}-e-{src}-{dst}", f"{bid}-{src}", f"{bid}-{dst}", value, arrow_style(exit_m, entry_m))
         for weak, target in weak_links:
