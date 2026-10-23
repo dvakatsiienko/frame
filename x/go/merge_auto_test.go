@@ -83,6 +83,11 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			_, _ = w.Write([]byte(`{"message":"Not Found"}`))
 			return
 		}
+		if body == serverDown {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"message":"Server Error"}`))
+			return
+		}
 		_, _ = w.Write([]byte(body))
 	}))
 	t.Cleanup(server.Close)
@@ -487,6 +492,26 @@ func TestMergeAutoBrakesAfterARevertOfALabelledMerge(t *testing.T) {
 				t.Fatalf("exit %d, error %q, want %q", got.code, envelopeOf(got).Error, want)
 			}
 		})
+	}
+}
+
+// a hub page holding this answers 500
+const serverDown = "<500>"
+
+func TestMergeAutoRefusesWhenTheBrakeCannotAskGithub(t *testing.T) {
+	w := newMergeWorld(t, "script/foo.ts")
+	write(t, filepath.Join(w.seed, "merged.txt"), "a stack layer\n")
+	gitT(t, w.seed, "add", "merged.txt")
+	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/commits/"+merged+"/pulls"] = serverDown
+	w.hub.mu.Unlock()
+	gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
+
+	got := xIn(t, w.clone, append(w.env, "X_NOW="+brakeNow), "lane", "merge-auto", "7", "--apply")
+
+	if got.code == 0 || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, puts %q: want a refusal when the brake's lookup fails, never a merge\n%s", got.code, w.hub.sent("PUT "), got.stdout)
 	}
 }
 
