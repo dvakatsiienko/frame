@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-10-27
 dies-when: the verdict line below is written
 ---
@@ -43,3 +43,4 @@ dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the pretties
 
 ## verdict
 - 2026-10-21 · the blueprint recipe run on the crew board: 1 probe + 1 fix call, eval and inline section screenshot proven, the numbers audit found 0 overlaps over 55 tiles and 1 diagonal STRAIGHT arrow, fixed by magnets · ~28 mcp calls today, no cap hit · baseline for the 10-22 pm board: count calls per band, get_figjam/get_screenshot reads, crossings and overflows the audit catches before dima looks, and his read («reads well» or not)
+- 2026-10-23 · **dropped**: the kill rule fired — at 14:14 `use_figma` answered «You've reached the Figma MCP tool call limit on the Starter plan» mid-fix (no count, no reset date). View seat = 20 calls/month on any plan (developers.figma.com rate-limits page); REST still reads the board (200, 107 shapes) but writes no nodes. dima, 14:34: a limit reached this fast means FigJam doesn't fit us (his «I want to buy a Figma plan» read as «don't want», wispr); the crew + pm board moves to draw.io, Obsidian canvas or n8n after a three-way bench
