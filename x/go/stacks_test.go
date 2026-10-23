@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -545,6 +546,105 @@ func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
 				t.Fatalf("exit %d, want one link of %q\n%s\n%s", got.code, c.want, got.stdout, calls)
 			}
 		})
+	}
+}
+
+// a 2-layer stack on origin whose bottom layer gained a commit after the top was cut; the clone sits on the top
+func movedStack(t *testing.T, lowerFile, lowerBody string) string {
+	t.Helper()
+	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
+	write(t, filepath.Join(clone, lowerFile), lowerBody)
+	gitT(t, clone, "add", lowerFile)
+	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
+	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
+	gitT(t, clone, "switch", "-q", "coder/FRM-1-a-2")
+	return clone
+}
+
+func originHead(t *testing.T, clone, branch string) string {
+	t.Helper()
+	sha, _, _ := strings.Cut(gitT(t, clone, "ls-remote", "origin", "refs/heads/"+branch), "\t")
+	return sha
+}
+
+func TestRestackMergesEachLowerLayerUpAndPushes(t *testing.T) {
+	t.Parallel()
+	clone := movedStack(t, "lower.txt", "the fix\n")
+	lower := originHead(t, clone, "coder/FRM-1-a")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	upper := originHead(t, clone, "coder/FRM-1-a-2")
+	if got.code != 0 || gitT(t, clone, "merge-base", "--is-ancestor", lower, upper) != "" {
+		t.Fatalf("exit %d, want origin's top layer to hold the lower layer's %s\n%s", got.code, short(lower), got.stdout)
+	}
+	if branch := gitT(t, clone, "branch", "--show-current"); branch != "coder/FRM-1-a-2" {
+		t.Errorf("left on %s, want the branch restack started on", branch)
+	}
+}
+
+func TestRestackStopsAtALayerThatConflicts(t *testing.T) {
+	t.Parallel()
+	// the top layer's own file, changed under it in the lower layer
+	clone := movedStack(t, "coder-FRM-1-a-2.txt", "the lower layer's version\n")
+	before := originHead(t, clone, "coder/FRM-1-a-2")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-a-2") || !strings.Contains(got.stdout, "coder-FRM-1-a-2.txt") || originHead(t, clone, "coder/FRM-1-a-2") != before {
+		t.Fatalf("exit %d, want a stop naming the layer and the conflicted file, origin untouched\n%s", got.code, got.stdout)
+	}
+}
+
+func TestRestackRefusesATreeWithChanges(t *testing.T) {
+	t.Parallel()
+	clone := movedStack(t, "lower.txt", "the fix\n")
+	write(t, filepath.Join(clone, "coder-FRM-1-a-2.txt"), "an edit in flight\n")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "coder-FRM-1-a-2.txt") {
+		t.Fatalf("exit %d, want a refusal naming the changed file\n%s", got.code, got.stdout)
+	}
+}
+
+// a verifier checks a stack in one call: the top layer's tree, and every layer's pr, head and base
+func TestVerifyTreeWithStackSeedsTheTopAndListsEveryLayer(t *testing.T) {
+	t.Parallel()
+	main, prHead := verifyWorld(t)
+	lower := strings.Repeat("6", 40)
+	h := &hub{pages: map[string]string{
+		repoPath + "/stacks": `[{"number":5,"base":{"ref":"main"},"pull_requests":[
+			{"number":6,"state":"open","head":{"ref":"coder/x"}},{"number":7,"state":"open","head":{"ref":"coder/x-2"}}]}]`,
+		repoPath + "/pulls/6": `{"number":6,"state":"open","head":{"sha":"` + lower + `","ref":"coder/x"},"base":{"ref":"main"}}`,
+		repoPath + "/pulls/7": `{"number":7,"state":"open","head":{"sha":"` + prHead + `","ref":"coder/x-2"},"base":{"ref":"coder/x"}}`,
+	}}
+	server := h.serve(t)
+	env := append(tracing(t.TempDir()), "X_GITHUB_URL="+server.URL,
+		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"}))
+
+	got := xIn(t, main, env, "lane", "verify-tree", "--stack", "https://github.com/o/r/pull/7")
+
+	want := []string{"#6 coder/x onto main at " + short(lower), "#7 coder/x-2 onto coder/x at " + short(prHead)}
+	for _, line := range want {
+		if got.code != 0 || !strings.Contains(got.stdout, line) {
+			t.Fatalf("exit %d, want %q in the stack listing\n%s", got.code, line, got.stdout)
+		}
+	}
+	if !strings.Contains(got.stdout, "verify-pr-7") || strings.Index(got.stdout, want[0]) > strings.Index(got.stdout, want[1]) {
+		t.Errorf("want the top layer's tree and the layers bottom-up\n%s", got.stdout)
+	}
+}
+
+func TestVerifyTreeWithStackRefusesAMainSha(t *testing.T) {
+	t.Parallel()
+	main, _ := verifyWorld(t)
+
+	got := xIn(t, main, nil, "lane", "verify-tree", "--stack", "main:"+short(gitT(t, main, "rev-parse", "HEAD")))
+
+	if got.code != 2 {
+		t.Fatalf("exit %d, want a usage refusal: a stack is read from its top pr\n%s", got.code, got.stdout)
 	}
 }
 

@@ -40,6 +40,8 @@ var laneAddOn struct {
 	layersOf func(repo, n string, pr pullHead) (*prLayers, error)
 	// lands a pr and every layer below it in one call
 	mergeLayers func(repo, n, head string) (merged, sha string, err error)
+	// one line per layer of the stack a pr tops, bottom-up: its pr, head and base
+	stackShown func(repo, n string) ([]string, error)
 }
 
 // a pr that merges together with the layers under it

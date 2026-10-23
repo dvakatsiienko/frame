@@ -3,6 +3,7 @@ package main
 import (
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -18,6 +19,10 @@ func samePath(a, b string) bool {
 
 func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	target, help := args[0], "x lane verify-tree --help"
+	stacked, _ := flags["stack"].(bool)
+	if stacked && prURL.FindStringSubmatch(target) == nil {
+		return nil, usageFail("--stack reads a stack from its top pr's url, not "+target, "x lane verify-tree --stack <top pr url>")
+	}
 	tree, err := top()
 	if err != nil {
 		return nil, err
@@ -98,6 +103,16 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	if err := seedTree(r, path, main); err != nil {
 		return nil, err
 	}
-	r.Done("seeded "+path+" at "+short(sha), "cd "+path)
+	var layers []string
+	if stacked && laneAddOn.stackShown != nil {
+		match := prURL.FindStringSubmatch(target)
+		if layers, err = laneAddOn.stackShown(match[1], match[2]); err != nil {
+			return nil, err
+		}
+	}
+	r.Done(strings.Join(append([]string{"seeded " + path + " at " + short(sha)}, layers...), "\n"), "cd "+path)
+	if stacked {
+		return ordered{{"tree", path}, {"sha", sha}, {"layers", layers}}, nil
+	}
 	return ordered{{"tree", path}, {"sha", sha}}, nil
 }

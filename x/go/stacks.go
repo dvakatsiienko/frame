@@ -40,9 +40,41 @@ func init() {
 	}
 	impls["lane stack link"] = Impl{Plan: stackLinkPlan, Apply: stackLink, Undone: "no stack was linked", Ask: askStackLink}
 	impls["lane stack view"] = Impl{Run: stackView}
+	impls["lane restack"] = Impl{Plan: restackPlan, Apply: restack, Undone: "no layer was merged or pushed", Ask: askRestack}
 	laneAddOn.prBase = stackBase
 	laneAddOn.layersOf = stackLayersOf
 	laneAddOn.mergeLayers = stackMerge
+	laneAddOn.stackShown = stackShown
+}
+
+// the stack a pr tops, read from github's stacks api, one line per open layer up to it, bottom-up
+func stackShown(repo, n string) ([]string, error) {
+	api := githubBase() + "/repos/" + repo
+	var stacks []remoteStack
+	status, _, err := ghSend(asCoder, http.MethodGet, api+"/stacks?pull_request="+n, nil, &stacks)
+	switch {
+	case status == http.StatusNotFound:
+		return nil, &Fail{Refused: true, Msg: "the stacks api answered 404 for " + repo + ": no stacks there to read", Next: "x lane verify-tree <pr url>, one layer"}
+	case err != nil:
+		return nil, err
+	case len(stacks) == 0:
+		return nil, &Fail{Refused: true, Msg: "#" + n + " is in no stack", Next: "x lane verify-tree <pr url>, one layer"}
+	}
+	var lines []string
+	for _, layer := range stacks[0].PullRequests {
+		if layer.State != "open" || layer.MergedAt != nil {
+			continue
+		}
+		var pr pullHead
+		if _, err := ghFetch(asCoder, fmt.Sprintf("%s/pulls/%d", api, layer.Number), &pr); err != nil {
+			return nil, err
+		}
+		lines = append(lines, fmt.Sprintf("#%d %s onto %s at %s", layer.Number, pr.Head.Ref, pr.Base.Ref, short(pr.Head.Sha)))
+		if strconv.Itoa(layer.Number) == n {
+			return lines, nil
+		}
+	}
+	return nil, &Fail{Msg: fmt.Sprintf("github's stack %d does not list #%s among its open layers", stacks[0].Number, n), Next: "x lane stack view"}
 }
 
 // a pr in a github stack merges with every open layer under it; a pr onto another pr's branch with no
@@ -308,6 +340,126 @@ func stackView(r *Run, _ []string, flags Flags) (any, error) {
 	}
 	r.Done(strings.Join(lines, "\n"), "")
 	return ordered{{"pr", n}, {"stack", stack}}, nil
+}
+
+/* Restack */
+
+type restackTarget struct {
+	Branch string            `json:"branch"`
+	Layers []string          `json:"layers"`
+	Leases map[string]string `json:"leases"`
+	from   string
+}
+
+// a layer on origin whose local copy differs would lose a commit to the merge or push a stale one, so it refuses
+func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
+	if name, paused := pausedRebase(); paused {
+		return nil, &Fail{Refused: true, Msg: "a rebase of " + name + " is stopped here; finish it with git rebase --continue, or git rebase --abort", Next: "git rebase --continue"}
+	}
+	if merging, _ := git("rev-parse", "-q", "--verify", "MERGE_HEAD"); merging.ok {
+		return nil, &Fail{Refused: true, Msg: "a merge is stopped here; finish it with git merge --continue, or git merge --abort", Next: "git merge --continue"}
+	}
+	if dirty, _ := git("status", "--porcelain", "--untracked-files=no"); dirty.out != "" {
+		return nil, &Fail{Refused: true, Msg: "the tree holds changes a restack would carry between layers:\n" + dirty.out, Next: "x lane commit <msg-file> -- <paths>"}
+	}
+	name, err := branch()
+	if err != nil {
+		return nil, err
+	}
+	r.Open(name)
+	t := &restackTarget{Branch: name, Leases: map[string]string{}}
+	if err := r.Step("layers", "reading this branch's layers on origin", func() (string, error) {
+		if t.Layers, err = stackLayers(name); err != nil {
+			return "", err
+		}
+		if _, err := mustGit("fetch", append([]string{"fetch", "-q", "origin"}, t.Layers...)...); err != nil {
+			return "", err
+		}
+		for _, layer := range t.Layers {
+			if t.Leases[layer], err = remoteSha(layer); err != nil {
+				return "", err
+			}
+			if local, _ := git("rev-parse", "-q", "--verify", "refs/heads/"+layer); local.ok && local.out != t.Leases[layer] {
+				return "", &Fail{Refused: true, Msg: fmt.Sprintf("%s is %s here and %s on origin: push it, or take origin's, before a restack", layer, short(local.out), short(t.Leases[layer])),
+					Next: "git switch " + layer + " && x lane push --apply"}
+			}
+		}
+		if t.from, _, err = pushHome(); err != nil {
+			return "", err
+		}
+		return strings.Join(t.Layers, " → "), nil
+	}); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func askRestack(plan any) string {
+	return "merge each layer up into the next and push: " + strings.Join(plan.(*restackTarget).Layers, " → ") + "?"
+}
+
+// a merge, never a rebase: the layers' pushed history stays, and a reviewer's clean carries by patch-id
+func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
+	t := plan.(*restackTarget)
+	moved := map[string]string{}
+	if err := r.Step("merge", "merging each lower layer up into the next", func() (string, error) {
+		below := t.Leases[t.Layers[0]]
+		var shown []string
+		for _, layer := range t.Layers[1:] {
+			if _, err := mustGit("switch", "switch", "-q", "-C", layer, t.Leases[layer]); err != nil {
+				return "", err
+			}
+			merged, _ := git("merge", "-q", "--no-edit", "-m", "restack: merge "+short(below)+" into "+layer, below)
+			if !merged.ok {
+				conflicts, _ := git("diff", "--name-only", "--diff-filter=U")
+				return "", &Fail{Msg: layer + " conflicts with the layer below in " + strings.ReplaceAll(or(conflicts.out, "no file"), "\n", ", ") +
+					" — the tree is on " + layer + " mid-merge: resolve, git add, git merge --continue, then x lane restack --apply again; or git merge --abort",
+					Next: "git merge --continue", Log: nonBlank(merged.log)}
+			}
+			sha, err := head()
+			if err != nil {
+				return "", err
+			}
+			if sha != t.Leases[layer] {
+				moved[layer] = sha
+				shown = append(shown, layer+" → "+short(sha))
+			}
+			below = sha
+		}
+		if len(shown) == 0 {
+			return "every layer already holds the one below", nil
+		}
+		return strings.Join(shown, ", "), nil
+	}); err != nil {
+		return nil, err
+	}
+	if err := r.Step("push", "pushing each moved layer, leased on the sha read", func() (string, error) {
+		for _, layer := range t.Layers[1:] {
+			sha, ok := moved[layer]
+			if !ok {
+				continue
+			}
+			if pushed, _ := pushRetrying(t.from, "--force-with-lease=refs/heads/"+layer+":"+t.Leases[layer], sha+":refs/heads/"+layer); !pushed.ok {
+				return "", &Fail{Msg: "the push of " + layer + " failed — the git and hook output is above", Next: "x lane restack --apply", Log: nonBlank(pushed.log)}
+			}
+		}
+		return plural(len(moved), "layer") + " pushed", nil
+	}); err != nil {
+		return nil, err
+	}
+	if err := r.Step("verify", "reading the remote back, then the branch restack started on", func() (string, error) {
+		for layer, sha := range moved {
+			if remote, err := remoteSha(layer); err != nil || remote != sha {
+				return "", errors.Join(err, &Fail{Msg: fmt.Sprintf("origin/%s is %s, the restack made %s", layer, short(remote), short(sha)), Next: "x lane restack --apply"})
+			}
+		}
+		_, err := mustGit("switch", "switch", "-q", t.Branch)
+		return "on " + t.Branch, err
+	}); err != nil {
+		return nil, err
+	}
+	r.Done(plural(len(moved), "layer")+" restacked: "+strings.Join(t.Layers, " → "), "")
+	return ordered{{"layers", t.Layers}, {"moved", moved}}, nil
 }
 
 /* Layers */
