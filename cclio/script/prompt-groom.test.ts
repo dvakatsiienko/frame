@@ -125,6 +125,8 @@ describe('--linear, with a stubbed x', () => {
                         ...process.env,
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         PROMPT_GROOM_DIR: grooms,
+                        // UTC+14 keeps the fixture's 2026-10-25 14:50 in the past on any CI clock
+                        TZ: 'Pacific/Kiritimati',
                     },
                 },
             );
