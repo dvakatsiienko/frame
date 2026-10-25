@@ -4,7 +4,7 @@ title: composer on Sonnet 5.5 — shape-idea over its contract after the trial v
 status: waiting
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-23T09:40:00Z'
+updated_date: '2026-10-25T11:47:00Z'
 due_date: '2026-10-29'
 labels:
   - m
@@ -40,4 +40,6 @@ inbox 10-16, idea in his words: composer on Haiku 5.5 overlaps helper-lite; prom
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
 
 2026-10-23 dima (o6): stays in the pocket, due thursday 10-29.
+
+kept: 2026-10-25 — dima 10-22: keep it by hand in the pocket (migration Q5: his ideas may stay)
 <!-- SECTION:NOTES:END -->

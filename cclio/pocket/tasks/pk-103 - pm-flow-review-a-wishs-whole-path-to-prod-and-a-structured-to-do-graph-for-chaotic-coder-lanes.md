@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-25T11:30:00Z'
+updated_date: '2026-10-25T11:47:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -551,4 +551,6 @@ W235 (2026-10-25 13:18, dima): ❓ the pocket's 5-item cap — after the contrac
 W236 (2026-10-25 13:30, dima, on Q4): make the migration careful: we already signed chunks for the ongoing mods lane, and for the cli lane too, so don't break that; after the migration, every lane's signed chunks stay ready to dispatch
 W237 (2026-10-25 13:30, dima, on the branch badge): ❓ why can't it be done now? I don't like creating new tickets while solving existing ones; possible to solve now?
 close-round: grill 1 settled 2026-10-25 13:30 — Q1–Q6 all yes as recommended (W219–W235)
+
+kept: 2026-10-25 — FRM-419 step 4 maps these W-lines next; this item dies the turn that step lands
 <!-- SECTION:NOTES:END -->

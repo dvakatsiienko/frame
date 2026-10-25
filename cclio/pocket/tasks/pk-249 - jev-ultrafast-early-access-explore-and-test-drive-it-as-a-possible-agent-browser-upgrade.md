@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-22T11:46:00Z'
-updated_date: '2026-10-25T10:30:00Z'
+updated_date: '2026-10-25T11:47:00Z'
 due_date: '2026-10-25'
 labels:
   - s
@@ -35,4 +35,6 @@ W4 keep the ticket at hand, in the pocket
 re-fold 10-22 (wishkeeper): W4 reads «keep the ticket at hand, in the pocket»; «not linear» is cclio's reading, not his words.
 plan: 1 x:research the repo + docs (what it is, auth, price, how it differs from agent-browser) · 2 cclio:shape-test-drive birth with a test card · 3 one round: the x:browser-headless essentials checks on one bytes app, both tools · done test: a verdict line (adopt as agent-browser's upgrade, keep both, drop)
 parked: the pocket/linear grill (FRM-419 step 2, 2026-10-25) decides its home
+
+kept: 2026-10-25 — dima: «keep the ticket at hand, in the pocket» (migration Q5)
 <!-- SECTION:NOTES:END -->
