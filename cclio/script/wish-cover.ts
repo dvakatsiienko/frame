@@ -1,4 +1,5 @@
-// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the one pocket item whose «ticket:» line names it; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the one pocket item whose «ticket:» or «moved to linear:» line names it, else to the ticket's «## wish» block (x linear read); reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
@@ -6,13 +7,18 @@ const pocketDirs = ['pocket/tasks', 'pocket/archive/tasks'];
 
 export function wishLines(item: string) {
     const lines = new Map<string, string>();
-    for (const match of item.matchAll(/^\s*-?\s*(W\d+)\b\s*(.*)$/gm)) {
+    for (const match of item.matchAll(/^\s*[-*]?\s*(W\d+)\b[ \t]*(.*)$/gm)) {
         const [, id, text] = match;
         // a leading «(Q1)» or «(band 4)» is cclio's source tag, never his words
         if (id && !lines.has(id))
             lines.set(id, (text ?? '').replace(/^\(.*?\)\s*/, '').trim());
     }
     return lines;
+}
+
+// the «## wish» block of a ticket body, up to the next heading
+export function wishBlock(body: string) {
+    return /^## wish\s*$([\s\S]*?)(?=^## |(?![\s\S]))/im.exec(body)?.[1] ?? '';
 }
 
 // a single id; the ends of a range like «W1–W3» cite nothing
@@ -39,6 +45,7 @@ export function missingText(item: string, drafts: string[]) {
     return [...citedIds(joined)].flatMap((id): [string, string][] => {
         const text = lines.get(id);
         if (text === undefined) return [[id, '(no such W-line in the item)']];
+        if (text === '') return [[id, '']];
         return body.includes(normalize(text)) ? [] : [[id, text]];
     });
 }
@@ -58,9 +65,9 @@ function pocketItems(root: string) {
     });
 }
 
-// the PK ids of the pocket items whose «ticket:» line names this FRM id
+// the PK ids of the pocket items whose «ticket:» or «moved to linear:» line names this FRM id
 export function itemsForTicket(items: [string, string][], ticket: string) {
-    const line = new RegExp(`^ticket: *${ticket}\\b`, 'im');
+    const line = new RegExp(`^(?:ticket|moved to linear): *${ticket}\\b`, 'im');
     return items
         .filter(([, text]) => line.test(text))
         .map(([file]) => file.split(' - ')[0]?.toUpperCase() ?? file);
@@ -75,7 +82,7 @@ function readItem(items: [string, string][], id: string) {
 if (import.meta.main) {
     const args = process.argv.slice(2);
     const all = args.includes('--all');
-    let [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
+    const [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
     if (!id || draftPaths.length === 0) {
         console.error(
             'usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…>',
@@ -83,17 +90,33 @@ if (import.meta.main) {
         process.exit(2);
     }
     const items = pocketItems(path.resolve(import.meta.dirname, '..'));
+    let item: string | undefined;
     if (/^FRM-\d+$/i.test(id)) {
         const owners = itemsForTicket(items, id);
-        if (owners.length !== 1) {
+        if (owners.length > 1) {
             console.error(
-                `${id}: ${owners.length === 0 ? 'no pocket item carries it' : `several pocket items carry it (${owners.join(', ')})`} — name the PK id on the wish line`,
+                `${id}: several pocket items carry it (${owners.join(', ')}) — name the PK id on the wish line`,
             );
             process.exit(2);
         }
-        id = owners[0] as string;
+        item = owners[0] && readItem(items, owners[0]);
+        if (item === undefined || wishLines(item).size === 0) {
+            try {
+                const read = JSON.parse(
+                    execFileSync('x', ['linear', 'read', id], {
+                        encoding: 'utf8',
+                        timeout: 15_000,
+                    }),
+                );
+                item = wishBlock(read.data.tickets[0].description ?? '');
+            } catch (error) {
+                console.error(`${id}: x linear read failed — ${error}`);
+                process.exit(2);
+            }
+        }
+    } else {
+        item = readItem(items, id);
     }
-    const item = readItem(items, id);
     if (item === undefined) {
         console.error(`${id}: no pocket item`);
         process.exit(2);
@@ -111,7 +134,11 @@ if (import.meta.main) {
     }
     const missing = missingText(item, drafts);
     for (const [lineId, text] of missing)
-        console.log(`✗ ${lineId} text missing: ${text.slice(0, 60)}`);
+        console.log(
+            text === ''
+                ? `✗ ${lineId} has no text`
+                : `✗ ${lineId} text missing: ${text.slice(0, 60)}`,
+        );
     const uncited = all ? uncovered(item, drafts) : [];
     for (const [lineId, text] of uncited)
         console.log(`✗ ${lineId} uncited: ${text.slice(0, 60)}`);

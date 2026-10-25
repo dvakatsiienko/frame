@@ -15,7 +15,7 @@ var (
 	nextHeading    = regexp.MustCompile(`(?m)^## `)
 	signedBodyHash = regexp.MustCompile(`· body ([0-9a-f]{8})\s*$`)
 	preApproved    = regexp.MustCompile(`(?m)^merge: pre-approved\s*$`)
-	lastSign       = regexp.MustCompile(`(?m)^✍️ signed\b`)
+	lastSign       = regexp.MustCompile(`(?m)^✍️ (?:re-)?signed\b`)
 )
 
 // what a chunk's sign says about a self-edit; held lets it merge without dima's word

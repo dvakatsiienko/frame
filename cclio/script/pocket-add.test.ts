@@ -1,6 +1,18 @@
 import { describe, expect, test } from 'vitest';
 
-import { ordinalFor } from './pocket-add.ts';
+import { ordinalFor, searchTerm } from './pocket-add.ts';
+
+describe('searchTerm', () => {
+    test('keeps the first three words over 4 characters', () => {
+        expect(searchTerm('fix the broken pocket search for everyone')).toBe(
+            'broken pocket search',
+        );
+    });
+
+    test('is empty when no word is over 4 characters', () => {
+        expect(searchTerm('fix the bug now')).toBe('');
+    });
+});
 
 describe('ordinalFor', () => {
     test('places an item after the last one in its priority band', () => {

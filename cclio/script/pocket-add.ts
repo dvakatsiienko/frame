@@ -26,6 +26,15 @@ export function ordinalFor(
     return next < ceiling ? next : ceiling - 1;
 }
 
+// the first three words over 4 characters; empty when the title has none
+export function searchTerm(title: string) {
+    return title
+        .split(/\s+/)
+        .filter((w) => w.length > 4)
+        .slice(0, 3)
+        .join(' ');
+}
+
 export function ordinals(skip?: string) {
     const dir = path.join(pocket, 'pocket/tasks');
     return readdirSync(dir)
@@ -47,7 +56,7 @@ if (import.meta.main) {
         options: {
             desc: { short: 'd', type: 'string' },
             due: { type: 'string' },
-            priority: { default: 'later', type: 'string' },
+            priority: { default: 'next', type: 'string' },
             size: { default: 's', type: 'string' },
             top: { type: 'boolean' },
             type: { default: 'task', type: 'string' },
@@ -68,28 +77,31 @@ if (import.meta.main) {
     }
     const due = values.due;
     // the birth test (dima, 2026-10-25): linear may already own this outcome; a nudge, never a stop — the inbox net lands every item
-    try {
-        const words = title
-            .split(/\s+/)
-            .filter((w) => w.length > 4)
-            .slice(0, 3)
-            .join(' ');
-        const out = execFileSync(
-            'x',
-            ['linear', 'list', '--search', words, '--json'],
-            { encoding: 'utf8', timeout: 15000 },
-        );
-        const hits = (JSON.parse(out).data?.tickets ?? [])
-            .filter(
-                (t: { stateType?: string }) =>
-                    !['completed', 'canceled'].includes(t.stateType ?? ''),
-            )
-            .slice(0, 3);
-        for (const hit of hits)
-            console.error(
-                `↪ linear may own this: ${hit.id} ${hit.title} — home it there, or keep it here with a note why`,
+    const words = searchTerm(title);
+    if (!words)
+        console.error('linear: no search words in the title, not checked');
+    else
+        try {
+            const out = execFileSync(
+                'x',
+                ['linear', 'list', '--search', words, '--json'],
+                { encoding: 'utf8', timeout: 15000 },
             );
-    } catch {}
+            const hits = (JSON.parse(out).data?.tickets ?? [])
+                .filter(
+                    (t: { stateType?: string }) =>
+                        !['completed', 'canceled'].includes(t.stateType ?? ''),
+                )
+                .slice(0, 3);
+            for (const hit of hits)
+                console.error(
+                    `↪ linear may own this: ${hit.id} ${hit.title} — home it there, or keep it here with a note why`,
+                );
+        } catch (error) {
+            console.error(
+                `linear: not checked — ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`,
+            );
+        }
     const args = [
         'task',
         'create',

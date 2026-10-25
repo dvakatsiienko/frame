@@ -876,6 +876,8 @@ func TestMergeAutoWaitsOnASelfEditTheSignDoesNotCover(t *testing.T) {
 		{"a dev build of merge-auto", signedBody(signAbove, "merge: pre-approved\n", signAbove), "1", "main's build"},
 		{"a re-sign with no pre-approval under an older one", signedBody(signAbove, "merge: pre-approved\n✍️ signed 2026-10-24 · body "+bodyHash(signAbove)+"\n", signAbove), "",
 			"FRM-9's last sign holds no merge: pre-approved"},
+		{"a re-signed line, as written, voids an older pre-approval", signedBody(signAbove, "merge: pre-approved\n✍️ re-signed 2026-10-25 — scope grew · body "+bodyHash(signAbove)+"\n", signAbove), "",
+			"FRM-9's last sign holds no merge: pre-approved"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

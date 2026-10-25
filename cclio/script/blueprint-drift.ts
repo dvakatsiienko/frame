@@ -1,5 +1,6 @@
 // which mapped boards a day's commits touched: a board's sources (cclio/blueprints/AGENTS.md § the mapped areas) against git
-// usage: node blueprint-drift.ts [--since <git date, default: each board file's last commit>]
+// usage: node blueprint-drift.ts [--since <git date, default: each board file's last commit, a url board's `drawn:` date>]
+// exits 1 when any board is stale
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -16,6 +17,7 @@ export function mappedBoards() {
         ([, name, where = '', sources]) => {
             const file = where.match(/`([^`]+\.(?:drawio|excalidraw))`/)?.[1];
             return {
+                drawn: where.match(/drawn: (\d{4}-\d{2}-\d{2})/)?.[1],
                 file: file ? `cclio/blueprints/${file}` : undefined,
                 name: name ?? '',
                 sources: (sources ?? '').split(', ').map((s) => s.trim()),
@@ -33,6 +35,20 @@ function lastCommit(file: string) {
             encoding: 'utf8',
         },
     ).trim();
+}
+
+// where a board's drift window opens: --since wins; a board file's last commit; a url board's `drawn:` date.
+// no date to start from is a stale verdict («never drawn», «no drawn date»), never a quiet green
+export function drawnSince(
+    board: { drawn?: string; file?: string },
+    commit: string,
+    sinceArg?: string,
+): { since: string } | { stale: string } {
+    if (sinceArg) return { since: sinceArg };
+    if (board.file) {
+        return commit ? { since: commit } : { stale: 'never drawn' };
+    }
+    return board.drawn ? { since: board.drawn } : { stale: 'no drawn date' };
 }
 
 // a source ending in «/» maps its whole dir; any other maps one file, both relative to ~/frame
@@ -55,8 +71,17 @@ if (import.meta.main) {
 
     let stale = 0;
     for (const board of boards) {
-        const since =
-            sinceArg ?? (board.file && lastCommit(board.file)) ?? 'midnight';
+        const window = drawnSince(
+            board,
+            board.file && !sinceArg ? lastCommit(board.file) : '',
+            sinceArg,
+        );
+        if ('stale' in window) {
+            stale++;
+            console.log(`🟡 ${board.name} · ${board.url} · ${window.stale}`);
+            continue;
+        }
+        const { since } = window;
         const changed = execFileSync(
             'git',
             [
@@ -86,4 +111,5 @@ if (import.meta.main) {
             ? `${stale} of ${boards.length} board(s) to re-check: sources changed after the board`
             : `🟢 ${boards.length} board(s), no source changed after its board`,
     );
+    if (stale) process.exitCode = 1;
 }

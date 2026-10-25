@@ -1,6 +1,6 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM> [--date YYYY-MM-DD]   cut the raw prompt, start composer if down, print the chore brief
-//        node prompt-groom.ts --check <file…>               red each W-line stamped today with no groom (the halt: today's linear bodies)
+//        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
 import { execFileSync } from 'node:child_process';
 import {
     existsSync,
@@ -17,12 +17,19 @@ const promptDir =
 const groomDir =
     process.env.PROMPT_GROOM_DIR ??
     path.join(home, '.local/state/cclio/grooms');
-// the check binds folds made after it landed (dima's o61–o63, 2026-10-25)
+// the check binds every fold from the day the rules landed (dima's o61–o63) through today
+// FRM-418's rule landed 2026-10-25 14:50; an earlier prompt was never groomed by design
 const RULES_FROM = '2026-10-25 14:50';
 const STAMP =
     /^\s*(?:[*-]\s+)?W\d+ \((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}), dima\b/gm;
 
 export type Groomed = (day: string, hhmm: string) => boolean;
+
+export function dayBefore(day: string) {
+    const date = new Date(`${day}T12:00:00`);
+    date.setDate(date.getDate() - 1);
+    return date.toLocaleDateString('sv');
+}
 
 export const groomFile = (day: string, hhmm: string, kind: 'raw' | 'groomed') =>
     path.join(groomDir, `${day}-${hhmm.replace(':', '')}.${kind}.md`);
@@ -37,15 +44,17 @@ export function ungroomedStamps(
     day: string,
     isGroomed: Groomed = groomedOnDisk,
 ) {
+    // a prompt of an earlier day names its date, so the chore command can take --date
     const times = new Set<string>();
     for (const [, date, hhmm] of text.matchAll(STAMP))
         if (
-            date === day &&
+            date &&
             hhmm &&
             `${date} ${hhmm}` >= RULES_FROM &&
-            !isGroomed(day, hhmm)
+            date <= day &&
+            !isGroomed(date, hhmm)
         )
-            times.add(hhmm);
+            times.add(date === day ? hhmm : `${hhmm} --date ${date}`);
     return [...times];
 }
 
@@ -120,7 +129,7 @@ if (import.meta.main) {
     const args = process.argv.slice(2);
     if (args[0] === '--check' || args[0] === '--linear') {
         const day = new Date().toLocaleDateString('sv');
-        // --linear: every ticket updated today, a newly born one included (the halt's door)
+        // --linear: every ticket updated yesterday or today, a newly born one included (the halt's door; a halt after midnight still sees the day before)
         const sources: [string, string][] =
             args[0] === '--linear'
                 ? (
@@ -130,7 +139,7 @@ if (import.meta.main) {
                               [
                                   'linear',
                                   'api',
-                                  `{ issues(first: 250, filter: { updatedAt: { gte: "${day}" } }) { nodes { identifier description } } }`,
+                                  `{ issues(first: 250, filter: { updatedAt: { gte: "${dayBefore(day)}" } }) { nodes { identifier description } } }`,
                               ],
                               { encoding: 'utf8' },
                           ),
@@ -151,7 +160,7 @@ if (import.meta.main) {
         }
         if (red === 0)
             console.log(
-                `🟢 ${sources.length} source(s): every W-line stamped today was groomed`,
+                `🟢 ${sources.length} source(s): every W-line stamped since the rules start was groomed`,
             );
         process.exitCode = red ? 1 : 0;
     } else {

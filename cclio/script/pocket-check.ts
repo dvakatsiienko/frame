@@ -22,7 +22,10 @@ const CAP_FREE_TITLE = /^🧬 evergreen turn/;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
-const TICKET_LINE = /\b(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gi;
+const TICKET_LINE =
+    /^[ \t]*(?:- )?(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gim;
+const ZONED_STAMP = /(?:Z|[+-]\d{2}:?\d{2})$/;
+const ITEM_PREFIX = /^pk-\d+ /i;
 
 export function checkPocket(
     configText: string,
@@ -57,12 +60,10 @@ export function checkPocket(
             );
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
-        const touched = (
-            front.scalars.updated_date ||
-            front.scalars.created_date ||
-            ''
-        ).slice(0, 10);
-        const born = (front.scalars.created_date ?? '').slice(0, 10);
+        const touched = localDay(
+            front.scalars.updated_date || front.scalars.created_date || '',
+        );
+        const born = localDay(front.scalars.created_date ?? '');
         const wishIds = [...wishLines(text).keys()];
         if (
             front.scalars.type === 'wish' &&
@@ -173,6 +174,13 @@ export function checkPocket(
     return problems;
 }
 
+// a UTC stamp (`…Z`) is read on the local calendar, like `today`
+function localDay(stamp: string): string {
+    return ZONED_STAMP.test(stamp)
+        ? new Date(stamp).toLocaleDateString('sv')
+        : stamp.slice(0, 10);
+}
+
 function daysBefore(day: string, days: number): string {
     const date = new Date(`${day}T12:00:00Z`);
     date.setUTCDate(date.getUTCDate() - days);
@@ -230,9 +238,64 @@ function noteLines(text: string): string[] {
         .filter(Boolean);
 }
 
-function headText(path: string): string {
+// the file-level reds: what HEAD had and the disk no longer shows, in the tasks dir and the archive
+export function auditAgainstHead(
+    tasks: Task[],
+    archive: Task[],
+    head: Head,
+): string[] {
+    const problems: string[] = [];
+    const idOf = (name: string) => name.split(' ')[0];
+    for (const { name, text } of tasks)
+        for (const line of newUnstamped(text, head.text('tasks', name)))
+            problems.push(
+                `${idOf(name)}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «W<n> (<date> <HH:MM>, dima)»`,
+            );
+    for (const [dir, files] of [
+        ['tasks', tasks],
+        ['archive', archive],
+    ] as const)
+        for (const { name, text } of files) {
+            // an item archived this step has no archive copy at HEAD: its pre-move tasks copy is the baseline
+            const prefix = name.match(ITEM_PREFIX)?.[0].toLowerCase();
+            const before = head.names.find(
+                (file) => prefix && file.toLowerCase().startsWith(prefix),
+            );
+            const lost = lostNoteLines(
+                text,
+                head.text(dir, name) ||
+                    (dir === 'archive' && before
+                        ? head.text('tasks', before)
+                        : ''),
+            );
+            if (lost.length > 0)
+                problems.push(
+                    `${idOf(name)}: ${lost.length} note line(s) gone since HEAD — a close appends (\`--append-notes\`); restore from \`git show HEAD:\``,
+                );
+        }
+    const here = new Set(tasks.map((file) => file.name));
+    for (const name of head.names.filter((file) => !here.has(file))) {
+        const prefix = (name.match(ITEM_PREFIX)?.[0] ?? name).toLowerCase();
+        const moved = archive.find((file) =>
+            file.name.toLowerCase().startsWith(prefix),
+        );
+        const closed =
+            frontmatter(moved?.text ?? '').scalars.status === 'done' &&
+            (wishLines(moved?.text ?? '').size === 0 ||
+                noteLines(moved?.text ?? '').some((line) =>
+                    CLOSE_LINE.test(line),
+                ));
+        if (!closed)
+            problems.push(
+                `${idOf(name)?.toUpperCase()}: left the tasks dir without being done and closed — restore it or close it with a close: line`,
+            );
+    }
+    return problems;
+}
+
+function gitAtHead(args: string[]): string {
     try {
-        return execFileSync('git', ['show', `HEAD:./${path}`], {
+        return execFileSync('git', args, {
             cwd: join(import.meta.dirname, '..'),
             encoding: 'utf8',
             stdio: ['ignore', 'pipe', 'ignore'],
@@ -240,6 +303,17 @@ function headText(path: string): string {
     } catch {
         return '';
     }
+}
+
+function readDir(dir: string): Task[] {
+    return existsSync(dir)
+        ? readdirSync(dir)
+              .filter((name) => name.endsWith('.md'))
+              .map((name) => ({
+                  name,
+                  text: readFileSync(join(dir, name), 'utf8'),
+              }))
+        : [];
 }
 
 function firstDescriptionLine(text: string): string {
@@ -254,9 +328,7 @@ function unquote(value: string): string {
 if (import.meta.main) {
     const root = join(import.meta.dirname, '..');
     const dir = join(root, 'pocket', 'tasks');
-    const tasks = readdirSync(dir)
-        .filter((name) => name.endsWith('.md'))
-        .map((name) => ({ name, text: readFileSync(join(dir, name), 'utf8') }));
+    const tasks = readDir(dir);
     const today = new Date().toLocaleDateString('sv');
     const stamp = join(root, 'pocket', 'last-triage.txt');
     if (process.argv.includes('--triaged')) writeFileSync(stamp, `${today}\n`);
@@ -269,18 +341,27 @@ if (import.meta.main) {
         today,
         lastTriage,
     );
-    for (const { name, text } of tasks) {
-        const head = headText(join('pocket', 'tasks', name));
-        for (const line of newUnstamped(text, head))
-            problems.push(
-                `${name.split(' ')[0]}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «W<n> (<date> <HH:MM>, dima)»`,
-            );
-        const lost = lostNoteLines(text, head);
-        if (lost.length > 0)
-            problems.push(
-                `${name.split(' ')[0]}: ${lost.length} note line(s) gone since HEAD — a close appends (\`--append-notes\`); restore from \`git show HEAD:\``,
-            );
-    }
+    problems.push(
+        ...auditAgainstHead(
+            tasks,
+            readDir(join(root, 'pocket', 'archive', 'tasks')),
+            {
+                names: gitAtHead([
+                    'ls-tree',
+                    '-z',
+                    '--name-only',
+                    'HEAD:./pocket/tasks/',
+                ])
+                    .split('\0')
+                    .filter((name) => name.endsWith('.md')),
+                text: (dir, name) =>
+                    gitAtHead([
+                        'show',
+                        `HEAD:./${join('pocket', dir === 'tasks' ? 'tasks' : 'archive/tasks', name)}`,
+                    ]),
+            },
+        ),
+    );
     if (problems.length === 0)
         console.log(`pocket: ${tasks.length} tasks, all checks green`);
     for (const problem of problems) console.log(`🔴 ${problem}`);
@@ -288,6 +369,11 @@ if (import.meta.main) {
 }
 
 /* Types */
+
+interface Head {
+    names: string[];
+    text: (dir: 'tasks' | 'archive', name: string) => string;
+}
 
 interface Task {
     name: string;

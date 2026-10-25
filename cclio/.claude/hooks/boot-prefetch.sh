@@ -347,7 +347,7 @@ if out=$(node "$HOME/frame/cclio/script/pocket-check.ts" 2>&1); then
   echo "$out"
 elif [ -n "$out" ] && [ -z "$(printf '%s\n' "$out" | grep -v '^🔴 ')" ]; then
   echo "🔴 $(printf '%s\n' "$out" | wc -l | tr -d ' ') items off contract — \`node ~/frame/cclio/script/pocket-check.ts\` lists them"
-  printf '%s\n' "$out" | sed 's/^🔴 [^:]*: //' | sort | uniq -c | sort -rn | head -5
+  printf '%s\n' "$out" | head -5
 else
   fail "pocket-check could not run: $(printf '%s' "$out" | head -1)"
 fi

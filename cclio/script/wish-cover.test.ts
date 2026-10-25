@@ -5,6 +5,8 @@ import {
     itemsForTicket,
     missingText,
     uncovered,
+    wishBlock,
+    wishLines,
 } from './wish-cover.ts';
 
 const item = [
@@ -75,5 +77,41 @@ describe('wish-cover', () => {
         expect(missingText(item, ['W9 made up']).map(([id]) => id)).toEqual([
             'W9',
         ]);
+    });
+
+    test('a «moved to linear:» line links a pocket item to its ticket', () => {
+        const items: [string, string][] = [
+            ['pk-7 - a.md', 'moved to linear: FRM-366, a live input'],
+            ['pk-8 - b.md', 'ticket: FRM-367'],
+        ];
+        expect(itemsForTicket(items, 'FRM-366')).toEqual(['PK-7']);
+    });
+
+    test('a ticket body gives its W-lines from the wish block only', () => {
+        const body = [
+            '## goal',
+            '* W1 not in the block',
+            '## wish',
+            '',
+            'PK-103 settles:',
+            '* W13 the board first',
+            '* W14 topic to review',
+            '## notes',
+            '* W15 after the block',
+        ].join('\n');
+        expect([...wishLines(wishBlock(body))]).toEqual([
+            ['W13', 'the board first'],
+            ['W14', 'topic to review'],
+        ]);
+    });
+
+    test('a body with no wish block holds no W-lines', () => {
+        expect(wishLines(wishBlock('## goal\n* W1 x')).size).toBe(0);
+    });
+
+    test('reds a cited W-line with empty text', () => {
+        expect(
+            missingText('- W7\n- W8 real words', ['W7 W8 real words']),
+        ).toEqual([['W7', '']]);
     });
 });

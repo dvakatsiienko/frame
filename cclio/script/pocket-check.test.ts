@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
-import { checkPocket, lostNoteLines } from './pocket-check.ts';
+import {
+    auditAgainstHead,
+    checkPocket,
+    lostNoteLines,
+} from './pocket-check.ts';
 
 const config = [
     'statuses: ["open", "claimed", "waiting", "done"]',
@@ -60,6 +64,35 @@ describe('checkPocket', () => {
         expect(checkPocket(config, [pointing], today)).toEqual([
             'PK-1: carries ticket FRM-371 yet is open: the item dies the turn its ticket is born, set it done',
         ]);
+    });
+
+    test('a ticket mentioned mid-line is no ticket line', () => {
+        const prose = task({}, 'related: an old ticket: FRM-371');
+        expect(checkPocket(config, [prose], today)).toEqual([]);
+    });
+
+    test('a bulleted ticket line goes red', () => {
+        const bullet = task({}, 'body\n  - ticket: FRM-371');
+        expect(checkPocket(config, [bullet], today)).toEqual([
+            'PK-1: carries ticket FRM-371 yet is open: the item dies the turn its ticket is born, set it done',
+        ]);
+    });
+
+    test('a UTC updated_date is read on the local calendar day', () => {
+        const zone = process.env.TZ;
+        process.env.TZ = 'Pacific/Auckland';
+        try {
+            // 2026-10-24 20:00 UTC is already 10-25 in Auckland, so it is done today
+            const doneToday = task({
+                labels: [],
+                status: 'done',
+                updated_date: '2026-10-24T20:00:00Z',
+            });
+            expect(checkPocket(config, [doneToday], '2026-10-25')).toEqual([]);
+        } finally {
+            if (zone === undefined) delete process.env.TZ;
+            else process.env.TZ = zone;
+        }
     });
 
     test('an open task kept for a named ticket step passes', () => {
@@ -401,6 +434,92 @@ describe('lostNoteLines', () => {
 
     test('a task with no notes at HEAD has nothing to lose', () => {
         expect(lostNoteLines(notes('done'), 'no notes here')).toEqual([]);
+    });
+});
+
+describe('auditAgainstHead', () => {
+    const file = (name: string, status: string, notes = '', wishes = '') => ({
+        name,
+        text: `---\nstatus: ${status}\n---\n\n<!-- SECTION:DESCRIPTION:BEGIN -->\n${wishes}\n<!-- SECTION:DESCRIPTION:END -->\n<!-- SECTION:NOTES:BEGIN -->\n${notes}\n<!-- SECTION:NOTES:END -->\n`,
+    });
+    const head = (names: string[], texts: Record<string, string> = {}) => ({
+        names,
+        text: (dir: string, name: string) => texts[`${dir}/${name}`] ?? '',
+    });
+    const left =
+        'PK-5: left the tasks dir without being done and closed — restore it or close it with a close: line';
+
+    test('an item gone from tasks and absent from the archive goes red', () => {
+        expect(auditAgainstHead([], [], head(['pk-5 - gone.md']))).toEqual([
+            left,
+        ]);
+    });
+
+    test('an item archived while still open goes red', () => {
+        expect(
+            auditAgainstHead(
+                [],
+                [file('pk-5 - gone.md', 'open')],
+                head(['pk-5 - gone.md']),
+            ),
+        ).toEqual([left]);
+    });
+
+    test('a done item with W-lines archived without a close: line goes red', () => {
+        const wished = file('pk-5 - gone.md', 'done', '', '- W1 a wish');
+        expect(
+            auditAgainstHead([], [wished], head(['pk-5 - gone.md'])),
+        ).toEqual([left]);
+    });
+
+    test('a done item with a close: line archived under a new slug passes', () => {
+        const closed = file(
+            'pk-5 - renamed.md',
+            'done',
+            'close: W1 done',
+            '- W1 a wish',
+        );
+        expect(
+            auditAgainstHead([], [closed], head(['pk-5 - gone.md'])),
+        ).toEqual([]);
+    });
+
+    test('an item still in tasks is not gone', () => {
+        expect(
+            auditAgainstHead(
+                [file('pk-5 - gone.md', 'open')],
+                [],
+                head(['pk-5 - gone.md']),
+            ),
+        ).toEqual([]);
+    });
+
+    test('an item archived with its notes wiped in one step goes red', () => {
+        const archived = file('pk-5 - renamed.md', 'done', 'done');
+        const was = file('pk-5 - gone.md', 'done', 'dima: «keep it»').text;
+        expect(
+            auditAgainstHead(
+                [],
+                [archived],
+                head(['pk-5 - gone.md'], { 'tasks/pk-5 - gone.md': was }),
+            ),
+        ).toEqual([
+            'pk-5: 1 note line(s) gone since HEAD — a close appends (`--append-notes`); restore from `git show HEAD:`',
+        ]);
+    });
+
+    test('an archived item that lost a note line since HEAD goes red', () => {
+        const archived = file('pk-5 - gone.md', 'done', 'done');
+        const was = file('pk-5 - gone.md', 'done', 'dima: «keep it»').text;
+        expect(
+            auditAgainstHead(
+                [],
+                [archived],
+                head([], { 'archive/pk-5 - gone.md': was }),
+            ),
+        ).toEqual([
+            'pk-5: 1 note line(s) gone since HEAD — a close appends (`--append-notes`); restore from `git show HEAD:`',
+        ]);
     });
 });
 
