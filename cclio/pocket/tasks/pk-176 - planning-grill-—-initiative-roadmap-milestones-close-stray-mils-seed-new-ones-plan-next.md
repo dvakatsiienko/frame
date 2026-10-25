@@ -6,8 +6,8 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-20 12:04'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -33,4 +33,5 @@ ids for the two meta wants: oxc/vp = BYT-38 (and FRM-148), pnpm→bun = FRM-148 
 18:40, dima o67: «let's do both after big tickets are done» — the planning grill waits for the big tickets (FRM-219, FRM-270); re-dated 10-21 → 10-24. the 10-18 parked line (until the weekly reset) is past.
 
 2026-10-20 15:03 dima: the «after the big tickets» park is undone (it was this one and PK-196) — pull it close.
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

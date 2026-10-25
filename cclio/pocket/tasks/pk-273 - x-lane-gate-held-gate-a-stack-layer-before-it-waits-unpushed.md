@@ -4,8 +4,8 @@ title: 'x lane gate --held: gate a stack layer before it waits unpushed'
 status: waiting
 assignee: []
 created_date: '2026-10-23T20:33:00Z'
-updated_date: '2026-10-23T20:34:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - xs
 dependencies: []
@@ -20,3 +20,9 @@ ordinal: 166000
 **waiting for:** a cli lane chunk
 FRM-423 coder retro: a purpose lint red surfaced only after a rebase, the layer had sat local ~1 h
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+<!-- SECTION:NOTES:END -->

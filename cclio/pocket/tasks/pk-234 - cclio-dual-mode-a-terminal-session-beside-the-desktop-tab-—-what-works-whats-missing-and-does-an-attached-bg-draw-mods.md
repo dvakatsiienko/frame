@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T11:40:00Z'
-updated_date: '2026-10-21T15:10:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,5 @@ dima, 2026-10-21 14:40, folded: in a native terminal (no desktop app) mods work 
 parked: rides the low tide beside ccrow's dual-mode (o2)
 
 **waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

@@ -6,8 +6,8 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-23T18:41:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -55,4 +55,5 @@ dima 10-16 18:47: «fork-guard: next boot, not today»
 2026-10-21 13:56: due moved 10-20 → 10-24, the mods lane's date (PK-120), which it rides.
 
 ticket: FRM-430
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

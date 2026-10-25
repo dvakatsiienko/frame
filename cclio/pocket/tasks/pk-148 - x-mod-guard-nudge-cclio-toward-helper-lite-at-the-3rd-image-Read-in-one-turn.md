@@ -4,8 +4,8 @@ title: 'x-mod-guard: nudge cclio toward helper-lite at the 3rd image Read in one
 status: waiting
 assignee: []
 created_date: '2026-10-15 17:10'
-updated_date: '2026-10-23T18:41:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,5 @@ dima, 2026-10-15: a mod-guard item that suggests to you to use helper-lite to re
 10-19, dima asked whether agent.spawn could nudge coders toward subagents (scout, helper, helper-lite): no — agent.spawn fires only on a spawn that already happens (it can deny; since 2.1.300 rewrite only a workflow agent's prompt/model). the nudge door is tool.call: a context hint on the Nth Read/Grep/image in a turn, the way x-mod-guard hints land today. widen this item from images to coder reads → scout/helper-lite.
 
 ticket: FRM-428
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

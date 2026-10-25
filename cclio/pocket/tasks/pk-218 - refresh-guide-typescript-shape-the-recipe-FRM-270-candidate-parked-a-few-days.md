@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-20 13:08'
-updated_date: '2026-10-22T11:50:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,5 @@ dima 2026-10-20 (o23): «as for guide typescript, park it for now. let's do it a
 **waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 
 parked: dima o23, 10-20 — «park it for now, do it after a few days»; due 10-24
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

@@ -4,8 +4,8 @@ title: price a skill eval before running one
 status: waiting
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-18 13:40'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,5 @@ pocket 31 · status line was: `open · test-drive` · parked until the budget al
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); evals only on his word
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

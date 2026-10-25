@@ -4,8 +4,8 @@ title: "the band's \U0001F52D strip prints member names bold, like the reply"
 status: waiting
 assignee: []
 created_date: '2026-10-16 14:17'
-updated_date: '2026-10-23T18:41:00Z'
-due_date: '2026-10-23'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,5 @@ done when: a 🔭 line with a bold member name shows bold in the band, red-prove
 
 <!-- SECTION:NOTES:BEGIN -->
 ticket: FRM-426
+re-dated 2026-10-25 from 2026-10-23: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

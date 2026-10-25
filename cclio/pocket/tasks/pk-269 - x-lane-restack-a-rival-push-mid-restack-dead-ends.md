@@ -4,8 +4,8 @@ title: 'x lane restack: a rival push mid-restack dead-ends'
 status: waiting
 assignee: []
 created_date: '2026-10-23T20:05:00Z'
-updated_date: '2026-10-23T20:33:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - xs
 dependencies: []
@@ -25,4 +25,5 @@ FRM-423 #107 verifier, accepted for the mvp by dima o196: a rival push mid-resta
 
 <!-- SECTION:NOTES:BEGIN -->
 more from the FRM-423 retros: restack --take-origin <layer>; x lane stack link names a stray non-dir under .git/worktrees/ and its trash step; a seed check refusing to finish while .git/hooks/* names a worktree path
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

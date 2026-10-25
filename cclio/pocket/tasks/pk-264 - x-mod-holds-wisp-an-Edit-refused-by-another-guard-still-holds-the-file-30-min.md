@@ -4,8 +4,8 @@ title: 'x-mod-holds wisp: an Edit refused by another guard still holds the file 
 status: waiting
 assignee: []
 created_date: '2026-10-23T13:58:00Z'
-updated_date: '2026-10-23T18:41:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - xs
 dependencies: []
@@ -27,4 +27,5 @@ the FRM-404 verifier (2026-10-23 16:53) had its Edit of docs/test-drive/verifier
 **waiting for:** the next mods coder lane (PK-120) — a rider there.
 
 ticket: FRM-428
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

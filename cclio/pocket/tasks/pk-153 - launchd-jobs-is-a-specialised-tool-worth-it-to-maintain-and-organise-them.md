@@ -4,8 +4,8 @@ title: 'launchd jobs: is a specialised tool worth it to maintain and organise th
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-16 12:23'
-due_date: '2026-10-23'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - xs
 dependencies: []
@@ -37,4 +37,5 @@ answered 10-16 (researcher, cclio/.scratch/launchd-tools.md): no tool worth swit
 2026-10-16 15:02: x-cc-otel runs on pm2 started by its own launchd job (pm2.dima.plist, fixed to stable paths, dima-owned); the reboot-shaped tcc probe read «unknown» = plain launchd, so the earlier «granted» was cclio's session. LaunchManager (brew, dima trusted the tap) and Launchyard (notarized, /Applications) are both installed for his A/B. rounds in docs/test-drive/pm2.md.
 
 2026-10-16 15:23: dima picked Launchyard (docs/test-drive/launchyard.md, to 10-23); LaunchManager uninstalled with --zap on his word (sean10000/tap stays tapped + trusted, listed for the halt). pm2-logrotate installed (5M, keep 7, gzip) so the tap's per-export log line is capped. not proven yet: pm2 starting the tap at a real login — a login round is owed in pm2.md.
+re-dated 2026-10-25 from 2026-10-23: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

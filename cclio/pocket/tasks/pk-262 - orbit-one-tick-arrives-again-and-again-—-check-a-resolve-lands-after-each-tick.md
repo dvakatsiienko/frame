@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-23T10:48:00Z'
-updated_date: '2026-10-23T18:41:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - xs
 dependencies: []
@@ -26,4 +26,5 @@ parked: a mods-lane investigation (x-mod-stash), not a freebie: the cause is unr
 
 <!-- SECTION:NOTES:BEGIN -->
 ticket: FRM-426
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

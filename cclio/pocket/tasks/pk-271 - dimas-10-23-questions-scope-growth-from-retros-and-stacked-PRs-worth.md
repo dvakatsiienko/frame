@@ -1,10 +1,10 @@
 ---
 id: PK-271
 title: 'dima''s 10-23 questions: scope growth from retros, and stacked PRs'' worth'
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-23T20:31:00Z'
-updated_date: '2026-10-23T20:34:00Z'
+updated_date: '2026-10-25T10:30:00Z'
 due_date: '2026-10-26'
 labels:
   - s
@@ -38,4 +38,7 @@ I'm already playing a game, so not able to communicate. A few things that I want
 </pasted_content id="69eb">
 
 wire+
+
+2026-10-25 boot: Q1 and Q2 answered on the board (numbers: .scratch/boot-2026-10-25/q1-scope.md, docs/test-drive/stacked-prs.md round 1); W9: the first instruction stood. closed on dima's o2 tick.
+close: W1 W2 W3 W4 W5 W6 W7 W8 done — answered on the 2026-10-25 boot board; W9 done — the first instruction stood
 <!-- SECTION:NOTES:END -->

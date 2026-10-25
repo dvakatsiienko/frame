@@ -4,8 +4,8 @@ title: 'deepsec security scanner + a video: look up, learn, adopt or test drive'
 status: open
 assignee: []
 created_date: '2026-10-21 10:55'
-updated_date: '2026-10-21T14:43:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -32,4 +32,5 @@ parked: behind PK-223, dima's plan for 10-21 (low tide, then the coordinator and
 2026-10-21 15:43 dima: not x-com-chat (touched not soon) — atelier or trophy-sys. pick: trophy-sys — it has a server (src/server/routes.ts) holding a real secret, the PSN NPSSO token; atelier is a local-only vite tool. both are vite, so deepsec runs only its generic React/JS + server checks there. rides the next trophy-sys session (the redesign, BYT-86).
 
 **waiting for:** the trophy-sys redesign session (BYT-86) — the deepsec test drive rides it (dima, 15:43).
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

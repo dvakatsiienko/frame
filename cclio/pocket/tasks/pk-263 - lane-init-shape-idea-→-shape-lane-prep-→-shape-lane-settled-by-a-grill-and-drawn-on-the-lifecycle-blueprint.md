@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-23T12:50:00Z'
-updated_date: '2026-10-23T15:47:00Z'
+updated_date: '2026-10-25T10:30:00Z'
 labels:
   - m
 dependencies: []
@@ -529,4 +529,5 @@ W189 (17:56) what are the good candidates for automation via CLI, considering wh
 ❓25 (17:56) how is the quantity of chunks for a lane decided each time we start a lane?
 ❓26 (17:56) re-sign the invalidated chunks with a new flow, so sign everything via the new flow?
 ❓27 (17:56) what are the good candidates for CLI automation, given what we are doing and did recently?
+parked: the pocket/linear grill (FRM-419 step 2, 2026-10-25) decides its home
 <!-- SECTION:NOTES:END -->

@@ -6,8 +6,8 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-23T20:05:00Z'
-updated_date: '2026-10-23T20:07:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - xs
 dependencies: []
@@ -22,3 +22,9 @@ ordinal: 163000
 **waiting for:** a cli lane chunk
 FRM-423 #107 verifier, accepted for the mvp by dima o196: the pr-mode contract test counts a comment naming a verb as that verb's test case.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+<!-- SECTION:NOTES:END -->

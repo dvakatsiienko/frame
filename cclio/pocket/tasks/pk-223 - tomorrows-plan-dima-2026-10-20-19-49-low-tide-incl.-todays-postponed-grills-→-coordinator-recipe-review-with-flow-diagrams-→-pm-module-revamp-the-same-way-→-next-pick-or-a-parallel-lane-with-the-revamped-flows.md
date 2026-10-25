@@ -7,8 +7,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-20 16:49'
-updated_date: '2026-10-23T15:56:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - m
 dependencies: []
@@ -35,4 +35,6 @@ dima, 2026-10-20, folded: «1. /low-tide over everything, including the grills p
 2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
 
 2026-10-23 18:56 cclio: due moved to 10-24; its plan is carried by the CST pm-revamp-checkpoint-3, it closes at the halt.
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+parked: the pocket/linear grill (FRM-419 step 2, 2026-10-25) decides its home
 <!-- SECTION:NOTES:END -->

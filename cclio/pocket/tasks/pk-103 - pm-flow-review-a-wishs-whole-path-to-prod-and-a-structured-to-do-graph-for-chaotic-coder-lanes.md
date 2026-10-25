@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-23T18:02:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - m
 dependencies: []
@@ -526,4 +526,5 @@ routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W1
 2026-10-23 20:53 dima's pocket ↔ linear drop for tomorrow's grill (no action tonight): raw in ~/.local/state/cclio/prompts/2026-10-23.md:747; the prep with cclio's ideas: ~/frame/.scratch/dima-intervenes/runs/pocket-linear-grill-prep.md
 
 2026-10-23 21:03 timing probe: one append-notes, measured for the pocket/linear grill
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

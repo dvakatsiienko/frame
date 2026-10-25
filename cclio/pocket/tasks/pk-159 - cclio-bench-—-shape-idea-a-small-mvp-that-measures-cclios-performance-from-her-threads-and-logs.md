@@ -6,8 +6,8 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-16 10:57'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - m
 dependencies: []
@@ -27,4 +27,5 @@ inbox 10-16, wish: build a solid cclio bench, not too complex — a script, reci
 
 <!-- SECTION:NOTES:BEGIN -->
 10-16: OpenTelemetry is a bench input — proposal in cclio/.scratch/otel/proposal.md (cost, active time, cache hits, tool decisions per role).
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

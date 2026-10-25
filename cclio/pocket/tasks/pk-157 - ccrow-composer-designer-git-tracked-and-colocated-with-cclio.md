@@ -4,8 +4,8 @@ title: 'ccrow, composer, designer: git-tracked and colocated with cclio'
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-21 10:54'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -37,4 +37,5 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 2026-10-19 19:19: unparked (the reset passed); claimed → open — the claim from 10-16 was never released when it parked (dima caught it). next: the claudeMdExcludes probe, right after PK-158
 
 2026-10-21 13:56: due moved 10-20 → 10-24, the mods lane's date (PK-120); it still waits on PK-158's build.
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->

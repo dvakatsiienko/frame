@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T12:06:00Z'
-updated_date: '2026-10-21T15:10:00Z'
-due_date: '2026-10-24'
+updated_date: '2026-10-25T10:30:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -30,4 +30,5 @@ parked: rides the low tide beside PK-233 (ccrow ledger)
 2026-10-21 15:12 correction: my 14:15 «a running session's skill list is fixed when it starts» was wrong — this session got mid-session skill-list reminders (neuroarxiv appeared at 14:46), so a list change can reach a running session. second candidate (ccrow, inference): her cd calls at 13:58 and 15:10 landed as «Environment update» lines in her transcript. probe both.
 
 **waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
+re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 <!-- SECTION:NOTES:END -->
