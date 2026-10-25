@@ -24,7 +24,7 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   .data as $d |
   "-- the roadmap board: copy it as is into the opening reply, drift line as fixed (dima, 2026-10-25) --",
   ([$d.initiative.content | split("\n")[] | select(test("^[0-9]+\\. "))
-    | {n: capture("^(?<n>[0-9]+)\\. ").n, p: (sub("^[0-9]+\\. "; "") | split(" — ")[0]), what: (sub("^[0-9]+\\. "; "") | split(" — ")[1] // ""), done: test("\\(done [0-9]")}
+    | {n: capture("^(?<n>[0-9]+)\\. ").n, p: (sub("^[0-9]+\\. "; "") | split(" — ")[0]), what: (sub("^[0-9]+\\. "; "") | split(" — ")[1] // "" | gsub(" ?\\((\\[[^]]+\\]\\([^)]+\\)(, )?)+\\)"; "") | gsub("\\[(?<t>[^]]+)\\]\\([^)]+\\)"; "\\(.t)")), done: test("\\(done [0-9]")}
     | select(.done | not)]) as $steps |
   ([($d.initiative.content | split("## the milestone queue")[1] // "" | split("\n## ")[0] // "" | split("\n")[])
     | select(startswith("* ") and contains(" · ")) | sub("^\\* "; "") | split(" · ")

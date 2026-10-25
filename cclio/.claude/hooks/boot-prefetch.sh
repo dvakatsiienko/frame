@@ -278,27 +278,6 @@ else
   fail "x-changedetector: GET /api/v1/watch failed (app down, or the key in $CD_STORE moved)"
 fi
 
-echo "-- parallel monitors (pull-only: unseen events print once, ids land in parallel-monitor-seen.txt) --"
-SEEN="$HOME/.claude/shelf/parallel-monitor-seen.txt"
-touch "$SEEN"
-if events=$(timeout 40 "$HOME/frame/script/op-run.sh" bash -c '
-  set -o pipefail
-  parallel-cli monitor list --json | jq -r ".monitors[] | [.monitor_id, .settings.query] | @tsv" |
-  while IFS="	" read -r id query; do
-    parallel-cli monitor events "$id" --json |
-      jq -c --arg q "$query" ".events[] | {id: .event_id, date: .event_date, q: \$q, text: .output.content}"
-  done' 2>/dev/null); then
-  new=$(printf '%s\n' "$events" | jq -c --rawfile seen "$SEEN" 'select(.id as $i | $seen | split("\n") | index($i) | not)')
-  if [ -z "$new" ]; then
-    echo "no unseen events"
-  else
-    printf '%s\n' "$new" | jq -r '"📡 \(.date) · \(.q[:70]) — \(.text)"'
-    printf '%s\n' "$new" | jq -r .id >>"$SEEN"
-  fi
-else
-  fail "parallel monitors: query did not run"
-fi
-
 echo "-- settings.json symlink --"
 if [ -L "$HOME/.claude/settings.json" ]; then
   echo "symlink OK"
