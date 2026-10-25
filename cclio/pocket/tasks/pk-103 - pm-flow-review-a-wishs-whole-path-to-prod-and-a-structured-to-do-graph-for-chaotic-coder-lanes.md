@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-25T11:47:00Z'
+updated_date: '2026-10-25T13:03:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -553,4 +553,8 @@ W237 (2026-10-25 13:30, dima, on the branch badge): ❓ why can't it be done now
 close-round: grill 1 settled 2026-10-25 13:30 — Q1–Q6 all yes as recommended (W219–W235)
 
 kept: 2026-10-25 — FRM-419 step 4 maps these W-lines next; this item dies the turn that step lands
+
+W238 (2026-10-25 14:55, dima): pm revamp scope: i once asked about entity renames; the lane names are fixed, so that part is done
+W239 (2026-10-25 14:55, dima): i also plan a small rename of fleet members: you, ccrow, maybe composer, maybe someone else
+W240 (2026-10-25 14:55, dima): not to do now, planning only, so it isn't lost; ❓ where is that info stored? — answered 14:57: PK-103's notes; it rides FRM-419 step 6 (o65)
 <!-- SECTION:NOTES:END -->

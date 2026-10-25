@@ -406,3 +406,25 @@ describe('lostNoteLines', () => {
         expect(lostNoteLines(notes('done'), 'no notes here')).toEqual([]);
     });
 });
+
+describe('the prompt groom (FRM-418)', () => {
+    const day = '2026-10-26';
+    const folded = task(
+        { updated_date: `${day} 09:30` },
+        'ticket: FRM-1\n\nW301 (2026-10-26 09:12, dima): a fold',
+    );
+
+    test('a W-line stamped today with no groom reds, naming the prompt time', () => {
+        expect(
+            checkPocket(config, [folded], day, new Set(), day, () => false),
+        ).toEqual([
+            expect.stringContaining("dima's 09:12 prompt folded with no groom"),
+        ]);
+    });
+
+    test('a groomed one stays green', () => {
+        expect(
+            checkPocket(config, [folded], day, new Set(), day, () => true),
+        ).toEqual([]);
+    });
+});

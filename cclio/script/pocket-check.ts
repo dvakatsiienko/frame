@@ -2,6 +2,11 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import {
+    type Groomed,
+    groomedOnDisk,
+    ungroomedStamps,
+} from './prompt-groom.ts';
 import { citedIds, wishLines } from './wish-cover.ts';
 
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
@@ -24,6 +29,7 @@ export function checkPocket(
     today: string,
     closedTickets: ReadonlySet<string> = new Set(),
     lastTriage = '',
+    isGroomed: Groomed = groomedOnDisk,
 ): string[] {
     const config = {
         labels: listOf(configText, 'labels'),
@@ -64,6 +70,10 @@ export function checkPocket(
             wishIds.length === 0
         )
             report('wish born without W-lines: fold it into W1… lines');
+        for (const hhmm of ungroomedStamps(text, today, isGroomed))
+            report(
+                `W-lines of dima's ${hhmm} prompt folded with no groom (FRM-418): \`node script/prompt-groom.ts ${hhmm}\`, then refold from the groomed file`,
+            );
         if (
             status === 'done' &&
             (born >= WISH_RULES_FROM || touched >= WISH_RULES_FROM)
