@@ -47,7 +47,7 @@ is his: read-only, never edited. an item without a home is not deleted: it gets 
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless main-lane work, folds into the linear ticket that owns it, or becomes one; then it prunes the pocket: every `done` item is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
 inbox clears — before the CST is written.
-**the groom check** (FRM-418): `find ~/.local/state/x/linear/bodies -newermt "$(date +%F)" -name '*.md' -exec node ~/frame/cclio/script/prompt-groom.ts --check {} +` — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST.
+**the groom check** (FRM-418): `node ~/frame/cclio/script/prompt-groom.ts --linear` reads every ticket updated today, a new one included — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked

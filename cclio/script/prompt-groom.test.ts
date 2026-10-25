@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { rawPromptAt, ungroomedStamps } from './prompt-groom.ts';
+import { newUnstamped, rawPromptAt, ungroomedStamps } from './prompt-groom.ts';
 
 const day = '2026-10-26';
 
@@ -45,7 +45,31 @@ describe('rawPromptAt', () => {
         expect(rawPromptAt(file, '09:12')).toBe('first prompt\nsecond line');
     });
 
+    test('every prompt of one minute comes back, the second wish included', () => {
+        const twice =
+            '## 14:01\n\nproceed\n\n## 14:01\n\nalso look at tldraw\n\n';
+        expect(rawPromptAt(twice, '14:01')).toBe(
+            'proceed\n\n---\n\nalso look at tldraw',
+        );
+    });
+
     test('a time with no head returns undefined', () => {
         expect(rawPromptAt(file, '11:00')).toBeUndefined();
+    });
+});
+
+describe('newUnstamped', () => {
+    const head = 'W1 an old unstamped line\n';
+
+    test('a W-line added since HEAD with no stamp is named', () => {
+        expect(newUnstamped(`${head}W2 a fresh fold\n`, head)).toEqual([
+            'W2 a fresh fold',
+        ]);
+    });
+
+    test('a stamped new line and an old unstamped one pass', () => {
+        expect(
+            newUnstamped(`${head}W2 (2026-10-26 09:12, dima): stamped\n`, head),
+        ).toEqual([]);
     });
 });

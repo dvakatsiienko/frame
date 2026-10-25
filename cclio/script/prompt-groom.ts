@@ -49,10 +49,25 @@ export function ungroomedStamps(
     return [...times];
 }
 
+// the groom unit is a minute: every prompt saved under that head, so a wish in the second one is groomed too
 export function rawPromptAt(dayFile: string, hhmm: string) {
-    const blocks = dayFile.split(/^## /m);
-    const block = blocks.find((b) => b.startsWith(`${hhmm}\n`));
-    return block?.slice(hhmm.length).trim() || undefined;
+    const prompts = dayFile
+        .split(/^## /m)
+        .filter((b) => b.startsWith(`${hhmm}\n`))
+        .map((b) => b.slice(hhmm.length).trim())
+        .filter(Boolean);
+    return prompts.length > 0 ? prompts.join('\n\n---\n\n') : undefined;
+}
+
+const W_LINE = /^\s*(?:[*-]\s+)?W\d+\b.*$/gm;
+
+// a W-line added since HEAD must carry its prompt's stamp, or it slips past the groom check
+export function newUnstamped(text: string, head: string) {
+    const before = new Set(head.match(W_LINE) ?? []);
+    return (text.match(W_LINE) ?? []).filter(
+        (line) =>
+            !before.has(line) && !new RegExp(STAMP.source, 'm').test(line),
+    );
 }
 
 function composerUp() {
@@ -103,23 +118,40 @@ function startComposer() {
 
 if (import.meta.main) {
     const args = process.argv.slice(2);
-    if (args[0] === '--check') {
+    if (args[0] === '--check' || args[0] === '--linear') {
         const day = new Date().toLocaleDateString('sv');
+        // --linear: every ticket updated today, a newly born one included (the halt's door)
+        const sources: [string, string][] =
+            args[0] === '--linear'
+                ? (
+                      JSON.parse(
+                          execFileSync(
+                              'x',
+                              [
+                                  'linear',
+                                  'api',
+                                  `{ issues(first: 250, filter: { updatedAt: { gte: "${day}" } }) { nodes { identifier description } } }`,
+                              ],
+                              { encoding: 'utf8' },
+                          ),
+                      ).data.issues.nodes as {
+                          identifier: string;
+                          description: string | null;
+                      }[]
+                  ).map((n) => [n.identifier, n.description ?? ''])
+                : args.slice(1).map((f) => [f, readFileSync(f, 'utf8')]);
         let red = 0;
-        for (const file of args.slice(1)) {
-            for (const hhmm of ungroomedStamps(
-                readFileSync(file, 'utf8'),
-                day,
-            )) {
+        for (const [name, text] of sources) {
+            for (const hhmm of ungroomedStamps(text, day)) {
                 red++;
                 console.log(
-                    `🔴 ${file}: W-lines of the ${hhmm} prompt folded with no groom — node script/prompt-groom.ts ${hhmm}, then refold from the groomed file`,
+                    `🔴 ${name}: W-lines of the ${hhmm} prompt folded with no groom — node script/prompt-groom.ts ${hhmm}, then refold from the groomed file`,
                 );
             }
         }
         if (red === 0)
             console.log(
-                `🟢 ${args.length - 1} file(s): every W-line stamped today was groomed`,
+                `🟢 ${sources.length} source(s): every W-line stamped today was groomed`,
             );
         process.exitCode = red ? 1 : 0;
     } else {

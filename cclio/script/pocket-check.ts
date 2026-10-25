@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import {
     type Groomed,
     groomedOnDisk,
+    newUnstamped,
     ungroomedStamps,
 } from './prompt-groom.ts';
 import { citedIds, wishLines } from './wish-cover.ts';
@@ -284,10 +285,12 @@ if (import.meta.main) {
         lastTriage,
     );
     for (const { name, text } of tasks) {
-        const lost = lostNoteLines(
-            text,
-            headText(join('pocket', 'tasks', name)),
-        );
+        const head = headText(join('pocket', 'tasks', name));
+        for (const line of newUnstamped(text, head))
+            problems.push(
+                `${name.split(' ')[0]}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «W<n> (<date> <HH:MM>, dima)»`,
+            );
+        const lost = lostNoteLines(text, head);
         if (lost.length > 0)
             problems.push(
                 `${name.split(' ')[0]}: ${lost.length} note line(s) gone since HEAD — a close appends (\`--append-notes\`); restore from \`git show HEAD:\``,
