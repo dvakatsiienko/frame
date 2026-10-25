@@ -49,7 +49,7 @@ BANDS = [
         "habit-shared-files § the obsidian channel · cclio:boot step 3 · craft-pm § wishes · craft-fleet-flow stage 1",
         [
             ("drop", 0, 0, "event", "🔔 dima drops a want", "a line in the vault inbox from his phone, or a mid-session prompt", "_hq/inbox.md · boot step 3"),
-            ("groom", 1, 0, "member", "🎼 composer grooms it", "inbox-prep at boot → inbox-composer.md; a prompt → a quiet prompt-groom chore", "boot step 3 · craft-pm § wishes"),
+            ("groom", 1, 0, "member", "🎼 composer grooms it", "inbox-prep at boot; a wish-bearing prompt → prompt-groom.ts before its fold, a miss reds in pocket-check", "boot step 3 · craft-pm § wishes · FRM-418"),
             ("parse", 2, 0, "cclio", "🦉 the parse", "EVERY item, the smallest aside too, gets a pocket item and its place in the order", "boot step 3 · fleet-flow stage 1"),
             ("wlines", 3, 0, "file", "📄 numbered W-lines", "his fold, one point per line W1…, ❓ marks his questions; the raw drop stays in the notes", "craft-pm § wishes"),
             ("keeper", 1, 1, "member", "🐬 wishkeeper checks meaning", "every ask of the raw inbox kept in meaning, not only present", "boot step 3 (step 8's brief)"),
