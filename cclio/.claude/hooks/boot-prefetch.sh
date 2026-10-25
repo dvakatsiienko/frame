@@ -361,7 +361,7 @@ echo "-- linear queues (signed = waiting for a lane; the list JSON carries no up
 dispatch=0 list_err=""
 for team in FRM BYT; do
   if listed=$(timeout 20 x linear list --team "$team" --label signed 2>&1); then
-    dispatch=$((dispatch + $(printf '%s' "$listed" | jq '[.data.tickets[] | select(.stateType != "completed" and .stateType != "canceled")] | length' 2>/dev/null || echo 0)))
+    dispatch=$((dispatch + $(printf '%s' "$listed" | jq '[.data.tickets[] | select(.stateType != "completed" and .stateType != "canceled" and .stateType != "started")] | length' 2>/dev/null || echo 0)))
   else
     list_err="$team: $(printf '%s' "$listed" | tail -1 | cut -c1-120)"
   fi

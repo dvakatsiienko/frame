@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="3:247" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F8F5FF;strokeColor=#D5D3DB;strokeWidth=2;noLabel=1;" value="2 Preflight" vertex="1">
-          <mxGeometry height="1561" width="2522" y="1351" as="geometry" />
+          <mxGeometry height="1561" width="2522" x="7104" y="1351" as="geometry" />
         </mxCell>
         <mxCell id="3:248" parent="3:247" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="✈️ 2 — Preflight, every spawn, in order" vertex="1">
           <mxGeometry height="48" width="752" x="56" y="44" as="geometry" />
@@ -53,7 +53,7 @@
           <mxGeometry height="160" width="520" x="1946" y="1345" as="geometry" />
         </mxCell>
         <mxCell id="6:294" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F9F9F9;strokeColor=#D6D6D6;strokeWidth=2;noLabel=1;" value="1 Door" vertex="1">
-          <mxGeometry height="1191" width="3152" as="geometry" />
+          <mxGeometry height="1191" width="3152" x="7104" as="geometry" />
         </mxCell>
         <mxCell id="6:295" parent="6:294" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🚪 1 — Which door?" vertex="1">
           <mxGeometry height="48" width="386" x="56" y="44" as="geometry" />
@@ -92,7 +92,7 @@
           <mxGeometry height="160" width="520" x="686" y="975" as="geometry" />
         </mxCell>
         <mxCell id="6:349" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F5FBFF;strokeColor=#D3D8DB;strokeWidth=2;noLabel=1;" value="3 Brief" vertex="1">
-          <mxGeometry height="821" width="2522" y="3072" as="geometry" />
+          <mxGeometry height="821" width="2522" x="7104" y="3072" as="geometry" />
         </mxCell>
         <mxCell id="6:350" parent="6:349" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="📋 3 — The brief" vertex="1">
           <mxGeometry height="48" width="321" x="56" y="44" as="geometry" />
@@ -122,7 +122,7 @@
           <mxGeometry height="160" width="520" x="1946" y="605" as="geometry" />
         </mxCell>
         <mxCell id="6:404" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EBFFEE;strokeColor=#CADBCD;strokeWidth=2;noLabel=1;" value="4 Run" vertex="1">
-          <mxGeometry height="866" width="2522" y="4053" as="geometry" />
+          <mxGeometry height="866" width="2522" x="7104" y="4053" as="geometry" />
         </mxCell>
         <mxCell id="6:405" parent="6:404" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🏃 4 — Running the lane" vertex="1">
           <mxGeometry height="48" width="473" x="56" y="44" as="geometry" />
@@ -155,7 +155,7 @@
           <mxGeometry height="160" width="520" x="1946" y="605" as="geometry" />
         </mxCell>
         <mxCell id="6:463" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#FFF7F0;strokeColor=#DBD4CE;strokeWidth=2;noLabel=1;" value="5 End" vertex="1">
-          <mxGeometry height="821" width="2522" y="5079" as="geometry" />
+          <mxGeometry height="821" width="2522" x="7104" y="5079" as="geometry" />
         </mxCell>
         <mxCell id="6:464" parent="6:463" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🏁 5 — Ending" vertex="1">
           <mxGeometry height="48" width="280" x="56" y="44" as="geometry" />
@@ -179,7 +179,7 @@
           <mxGeometry height="160" width="520" x="1946" y="605" as="geometry" />
         </mxCell>
         <mxCell id="6:502" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F1FEFD;strokeColor=#CFDADA;strokeWidth=2;noLabel=1;" value="6 Subagents" vertex="1">
-          <mxGeometry height="821" width="2522" y="6060" as="geometry" />
+          <mxGeometry height="821" width="2522" x="7104" y="6060" as="geometry" />
         </mxCell>
         <mxCell id="6:503" parent="6:502" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🐝 6 — Subagents" vertex="1">
           <mxGeometry height="48" width="356" x="56" y="44" as="geometry" />
@@ -206,7 +206,7 @@
           <mxGeometry height="160" width="520" x="1316" y="605" as="geometry" />
         </mxCell>
         <mxCell id="6:549" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#FFFFFF;strokeColor=#DBDBDB;strokeWidth=2;noLabel=1;" value="Legend" vertex="1">
-          <mxGeometry height="1498" width="632" x="6274" as="geometry" />
+          <mxGeometry height="1498" width="632" x="10656" as="geometry" />
         </mxCell>
         <mxCell id="6:550" parent="6:549" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🧭 Legend" vertex="1">
           <mxGeometry height="48" width="206" x="56" y="44" as="geometry" />
@@ -233,7 +233,7 @@
           <mxGeometry height="160" width="520" x="56" y="1290" as="geometry" />
         </mxCell>
         <mxCell id="7:236" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" value="PM 1 Intake" vertex="1">
-          <mxGeometry height="821" width="2522" x="3552" as="geometry" />
+          <mxGeometry height="821" width="2522" x="4182" as="geometry" />
         </mxCell>
         <mxCell id="23:232" parent="7:236" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="📬 1 — Intake: a drop becomes a pocket item" vertex="1">
           <mxGeometry height="48" width="865" x="56" y="44" as="geometry" />
@@ -266,7 +266,7 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="23:298" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F4F0FF;strokeColor=#D2CEDB;strokeWidth=2;noLabel=1;" value="PM 2 Shape" vertex="1">
-          <mxGeometry height="821" width="2522" x="3552" y="981" as="geometry" />
+          <mxGeometry height="821" width="2522" x="4182" y="981" as="geometry" />
         </mxCell>
         <mxCell id="23:299" parent="23:298" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🥊 2 — Shape: a wish becomes buildable" vertex="1">
           <mxGeometry height="48" width="793" x="56" y="44" as="geometry" />
@@ -299,7 +299,7 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="23:361" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" value="PM 3 Ticket" vertex="1">
-          <mxGeometry height="821" width="2522" x="3552" y="1962" as="geometry" />
+          <mxGeometry height="821" width="2522" x="4182" y="1962" as="geometry" />
         </mxCell>
         <mxCell id="23:362" parent="23:361" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🎫 3 — Ticket: the want gets its linear home" vertex="1">
           <mxGeometry height="48" width="853" x="56" y="44" as="geometry" />
@@ -332,7 +332,7 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="23:424" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F4F0FF;strokeColor=#D2CEDB;strokeWidth=2;noLabel=1;" value="PM 4 Hand-off" vertex="1">
-          <mxGeometry height="821" width="2522" x="3552" y="2943" as="geometry" />
+          <mxGeometry height="821" width="2522" x="4182" y="2943" as="geometry" />
         </mxCell>
         <mxCell id="23:425" parent="23:424" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🛼 4 — Hand-off: a lane picks its path" vertex="1">
           <mxGeometry height="48" width="731" x="56" y="44" as="geometry" />
@@ -365,7 +365,7 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="23:487" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" value="PM 5 Land and fold" vertex="1">
-          <mxGeometry height="821" width="2522" x="3552" y="3924" as="geometry" />
+          <mxGeometry height="821" width="2522" x="4182" y="3924" as="geometry" />
         </mxCell>
         <mxCell id="23:488" parent="23:487" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🏁 5 — Land, look, fold: the wish reaches dima" vertex="1">
           <mxGeometry height="48" width="898" x="56" y="44" as="geometry" />
@@ -398,7 +398,7 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="30:434" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" value="PM 0 Roadmap" vertex="1">
-          <mxGeometry height="821" width="2522" x="3552" y="-981" as="geometry" />
+          <mxGeometry height="821" width="2522" x="4182" y="-981" as="geometry" />
         </mxCell>
         <mxCell id="30:435" parent="30:434" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🧭 0 — Roadmap → milestone: what we work on, in what order" vertex="1">
           <mxGeometry height="48" width="1208" x="56" y="44" as="geometry" />
@@ -431,16 +431,16 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="7:232" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;" value="🛼 the coordinator — how cclio spawns and runs the crew" vertex="1">
-          <mxGeometry height="87" width="2031" y="-260" as="geometry" />
+          <mxGeometry height="87" width="2031" x="7104" y="-260" as="geometry" />
         </mxCell>
         <mxCell id="7:233" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;" value="x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-23" vertex="1">
-          <mxGeometry height="34" width="1258" y="-160" as="geometry" />
+          <mxGeometry height="34" width="1258" x="7104" y="-160" as="geometry" />
         </mxCell>
         <mxCell id="7:234" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;" value="🗺️ pm — how a wish travels to dima&#39;s hands" vertex="1">
-          <mxGeometry height="87" width="1539" x="3552" y="-1241" as="geometry" />
+          <mxGeometry height="87" width="1539" x="4182" y="-1241" as="geometry" />
         </mxCell>
         <mxCell id="7:235" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;" value="craft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-23 · ⚠️ = my reading, not in the files" vertex="1">
-          <mxGeometry height="34" width="1627" x="3552" y="-1141" as="geometry" />
+          <mxGeometry height="34" width="1627" x="4182" y="-1141" as="geometry" />
         </mxCell>
         <mxCell id="4:291" edge="1" parent="1" source="3:253" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="3:257" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -710,13 +710,13 @@
           <mxGeometry height="60" width="120" x="6859" y="-1584" as="geometry" />
         </mxCell>
         <mxCell id="tf-title" value="🗺️ tickets flow — how a ticket lives today, across the pocket and linear" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=48;fontStyle=1;fontColor=#1E1E1E;" parent="1" vertex="1">
-          <mxGeometry x="7056" y="-1584" width="1900" height="58" as="geometry" />
+          <mxGeometry x="56" y="-1584" width="1900" height="58" as="geometry" />
         </mxCell>
         <mxCell id="tf-subtitle" value="the files as they read on 2026-10-25, the pocket ↔ linear contract landed · ⚠️ red tiles are my reading, every other tile names its file" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=24;fontStyle=0;fontColor=#1E1E1E;" parent="1" vertex="1">
-          <mxGeometry x="7056" y="-1510" width="1500" height="30" as="geometry" />
+          <mxGeometry x="56" y="-1510" width="1500" height="30" as="geometry" />
         </mxCell>
         <mxCell id="tf-b1" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="-1424" width="3782" height="786" as="geometry" />
+          <mxGeometry x="0" y="-1424" width="3782" height="786" as="geometry" />
         </mxCell>
         <mxCell id="tf-b1-head" value="🚪 1 — a drop is born: how does his want enter?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b1" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -764,7 +764,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b2" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="-478" width="3782" height="786" as="geometry" />
+          <mxGeometry x="0" y="-478" width="3782" height="786" as="geometry" />
         </mxCell>
         <mxCell id="tf-b2-head" value="📋 2 — the pocket item: what holds it in shape?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b2" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -815,7 +815,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b3" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="468" width="3782" height="1526" as="geometry" />
+          <mxGeometry x="0" y="468" width="3782" height="1526" as="geometry" />
         </mxCell>
         <mxCell id="tf-b3-head" value="❓ 3 — the birth test: does linear already own this outcome?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b3" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -878,7 +878,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b4" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="2154" width="3782" height="786" as="geometry" />
+          <mxGeometry x="0" y="2154" width="3782" height="786" as="geometry" />
         </mxCell>
         <mxCell id="tf-b4-head" value="🎫 4 — the linear ticket: what does a ticket carry?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b4" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -941,7 +941,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b5" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="3100" width="3782" height="786" as="geometry" />
+          <mxGeometry x="0" y="3100" width="3782" height="786" as="geometry" />
         </mxCell>
         <mxCell id="tf-b5-head" value="🧭 5 — lane init: which states does a chunk walk?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b5" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -1007,7 +1007,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b6" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="4046" width="3782" height="1156" as="geometry" />
+          <mxGeometry x="0" y="4046" width="3782" height="1156" as="geometry" />
         </mxCell>
         <mxCell id="tf-b6-head" value="✍️ 6 — shaping and the sign: who says yes?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b6" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -1097,7 +1097,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b7" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="5362" width="3782" height="1156" as="geometry" />
+          <mxGeometry x="0" y="5362" width="3782" height="1156" as="geometry" />
         </mxCell>
         <mxCell id="tf-b7-head" value="🚀 7 — dispatch: how does a signed chunk become a running lane?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b7" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -1184,7 +1184,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b8" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="6678" width="3782" height="786" as="geometry" />
+          <mxGeometry x="0" y="6678" width="3782" height="786" as="geometry" />
         </mxCell>
         <mxCell id="tf-b8-head" value="🏃 8 — the lane: how does the ticket get built?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b8" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -1244,7 +1244,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-b9" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" parent="1" vertex="1">
-          <mxGeometry x="7000" y="7624" width="3782" height="786" as="geometry" />
+          <mxGeometry x="0" y="7624" width="3782" height="786" as="geometry" />
         </mxCell>
         <mxCell id="tf-b9-head" value="🏁 9 — the end: how does a ticket close and leave?" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" parent="tf-b9" vertex="1">
           <mxGeometry x="56" y="40" width="2400" height="48" as="geometry" />
@@ -1307,7 +1307,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="tf-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 dima's notes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;none open&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;absoluteArcSize=1;arcSize=40;fillColor=#FFF4C2;strokeColor=#E5B800;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacing=24;" parent="1" vertex="1">
-          <mxGeometry x="9682" y="-1768" width="1100" height="144" as="geometry" />
+          <mxGeometry x="2682" y="-1768" width="1100" height="144" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

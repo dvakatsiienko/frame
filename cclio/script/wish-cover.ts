@@ -1,4 +1,4 @@
-// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines and a draft citing none passes; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -129,14 +129,10 @@ if (import.meta.main) {
     }
     const drafts = draftPaths.map((p) => readFileSync(p, 'utf8'));
     if (wishLines(item).size === 0) {
-        if (isTicket && citedIds(drafts.join('\n')).size === 0) {
-            console.error(
-                `${id}: its wish block has no W-lines and the draft cites none — passed`,
-            );
-            process.exit(0);
-        }
         console.error(
-            `${id}: no W-lines — fold the wish into numbered W1… lines first`,
+            isTicket
+                ? `${id}: number the ticket's wish block into W1… lines first`
+                : `${id}: no W-lines — fold the wish into numbered W1… lines first`,
         );
         process.exit(2);
     }

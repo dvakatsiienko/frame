@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-25T14:12:00Z'
+updated_date: '2026-10-25T14:40:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -559,4 +559,6 @@ W239 (2026-10-25 14:55, dima): i also plan a small rename of fleet members: you,
 W240 (2026-10-25 14:55, dima): not to do now, planning only, so it isn't lost; ❓ where is that info stored? — answered 14:57: PK-103's notes; it rides FRM-419 step 6 (o65)
 
 kept: 2026-10-25 — FRM-72: FRM-419 step 4 maps these W-lines into it next; this item dies the turn that step lands
+
+held: 2026-10-25 — FRM-72 FRM-419 step 5 maps these W-lines into it next; this item dies the turn that step lands
 <!-- SECTION:NOTES:END -->

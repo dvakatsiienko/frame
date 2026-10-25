@@ -173,7 +173,7 @@ if (import.meta.main) {
                 );
             }
         }
-        if (args[0] === '--check' && existsSync(groomDir))
+        if (existsSync(groomDir))
             for (const file of strayRaws(readdirSync(groomDir), new Date())) {
                 red++;
                 console.log(

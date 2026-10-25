@@ -1,5 +1,12 @@
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
@@ -10,6 +17,7 @@ import {
     checkPocket,
     headFromGit,
     lostNoteLines,
+    unkeptStale,
 } from './pocket-check.ts';
 
 const config = [
@@ -49,18 +57,21 @@ describe('checkPocket', () => {
     });
 
     test("a «can't» park line goes red unless it names the probe it ran", () => {
-        const bare = task({}, "parked: a headless run can't queue a prompt");
+        const bare = task(
+            {},
+            "**waiting for:** a headless run can't queue a prompt",
+        );
         expect(checkPocket(config, [bare], today)).toEqual([
             "PK-1: a «can't» park or wait line names no probe: put the `command` it tried on that line",
         ]);
         const probed = task(
             {},
-            "parked: can't queue a prompt — `claude -p --input-format stream-json` showed it",
+            "**waiting for:** can't queue a prompt — `claude -p --input-format stream-json` showed it",
         );
         expect(checkPocket(config, [probed], today)).toEqual([]);
         const other = task(
             {},
-            "parked: after the sweep\nnote: we can't rush it",
+            "**waiting for:** after the sweep\nnote: we can't rush it",
         );
         expect(checkPocket(config, [other], today)).toEqual([]);
     });
@@ -101,32 +112,37 @@ describe('checkPocket', () => {
         }
     });
 
-    describe('a kept line', () => {
-        const carries = (kept: string) => task({}, `ticket: FRM-72\n\n${kept}`);
+    describe('a held line', () => {
+        const carries = (held: string) => task({}, `ticket: FRM-72\n\n${held}`);
         const red =
             'PK-1: carries ticket FRM-72 yet is open: the item dies the turn its ticket is born, set it done';
 
         test('a fresh one naming the item’s own ticket passes', () => {
-            const kept = carries('kept: 2026-10-08 — FRM-72 step 4 is next');
-            expect(checkPocket(config, [kept], today)).toEqual([]);
+            const held = carries('held: 2026-10-08 — FRM-72 step 4 is next');
+            expect(checkPocket(config, [held], today)).toEqual([]);
         });
 
         test('an old-dated one goes red', () => {
-            const kept = carries('kept: 2026-10-05 — FRM-72 step 4 is next');
-            expect(checkPocket(config, [kept], today)).toEqual([red]);
+            const held = carries('held: 2026-10-05 — FRM-72 step 4 is next');
+            expect(checkPocket(config, [held], today)).toEqual([red]);
         });
 
         test('one naming another ticket goes red', () => {
-            const kept = carries('kept: 2026-10-08 — FRM-419 step 4 is next');
+            const held = carries('held: 2026-10-08 — FRM-419 step 4 is next');
+            expect(checkPocket(config, [held], today)).toEqual([red]);
+        });
+
+        test('a kept line no longer holds a ticket', () => {
+            const kept = carries('kept: 2026-10-08 — FRM-72 step 4 is next');
             expect(checkPocket(config, [kept], today)).toEqual([red]);
         });
 
-        test('a closed ticket goes red even with a fresh kept line', () => {
-            const kept = carries('kept: 2026-10-08 — FRM-72 step 4 is next');
+        test('a closed ticket goes red even with a fresh held line', () => {
+            const held = carries('held: 2026-10-08 — FRM-72 step 4 is next');
             expect(
                 checkPocket(
                     config,
-                    [kept],
+                    [held],
                     today,
                     '',
                     () => true,
@@ -171,14 +187,20 @@ describe('checkPocket', () => {
         );
     });
 
-    test('a claimed item with a park line goes red, a parked open one passes', () => {
+    test("a parked line on a not-done item goes red: it is linear's", () => {
+        const red = ["PK-1: a parked item is linear's: move it there"];
         const body = 'parked: until the weekly reset';
+        for (const status of ['open', 'claimed'])
+            expect(
+                checkPocket(config, [task({ status }, body)], today),
+            ).toEqual(red);
         expect(
-            checkPocket(config, [task({ status: 'claimed' }, body)], today),
-        ).toEqual([
-            'PK-1: claimed and parked at once: a parked item releases its claim, set it open or waiting',
-        ]);
-        expect(checkPocket(config, [task({}, body)], today)).toEqual([]);
+            checkPocket(
+                config,
+                [task({ labels: [], status: 'done' }, body)],
+                today,
+            ),
+        ).toEqual([]);
     });
 
     test('a waiting task needs a check first line', () => {
@@ -291,11 +313,26 @@ describe('checkPocket', () => {
         ).toEqual([]);
     });
 
-    test('an open item due yesterday is no red: only a wait expires', () => {
+    test.each([
+        ['yesterday', '2026-10-08', true],
+        ['the day after tomorrow', '2026-10-11', true],
+        ['today', '2026-10-09', false],
+        ['tomorrow', '2026-10-10', false],
+    ])('a not-done item due %s: red is %s', (_, due, isRed) => {
+        expect(checkPocket(config, [task({ due_date: due })], today)).toEqual(
+            isRed
+                ? [
+                      `PK-1: due ${due} is outside today–tomorrow: work it, re-date it to tomorrow, or move it to linear`,
+                  ]
+                : [],
+        );
+    });
+
+    test('a done item with a stale due date is no due red', () => {
         expect(
             checkPocket(
                 config,
-                [task({ due_date: '2026-10-08', labels: ['s'] })],
+                [task({ due_date: '2026-10-01', labels: [], status: 'done' })],
                 today,
             ),
         ).toEqual([]);
@@ -364,6 +401,85 @@ describe('checkPocket', () => {
                 today,
             ),
         ).toEqual([]);
+    });
+});
+
+describe('the triage stamp (--triaged)', () => {
+    const stale = task({ id: 'PK-3', updated_date: '2026-10-05 09:00' });
+
+    test('a stale item without a kept line dated today is named', () => {
+        expect(unkeptStale([stale], today)).toEqual(['PK-3']);
+        expect(
+            unkeptStale(
+                [
+                    task(
+                        { id: 'PK-3', updated_date: '2026-10-05 09:00' },
+                        'kept: 2026-10-08 — still needed',
+                    ),
+                ],
+                today,
+            ),
+        ).toEqual(['PK-3']);
+    });
+
+    test('a kept line dated today, or a fresh item, is quiet', () => {
+        const kept = task(
+            { id: 'PK-3', updated_date: '2026-10-05 09:00' },
+            `kept: ${today} — still needed`,
+        );
+        expect(unkeptStale([kept, task({})], today)).toEqual([]);
+    });
+
+    describe('the cli, on a copy', () => {
+        const here = import.meta.dirname;
+        const run = (description: string) => {
+            const root = mkdtempSync(join(tmpdir(), 'pocket-triaged-'));
+            try {
+                mkdirSync(join(root, 'script'));
+                for (const file of [
+                    'pocket-check.ts',
+                    'prompt-groom.ts',
+                    'wish-cover.ts',
+                ])
+                    copyFileSync(join(here, file), join(root, 'script', file));
+                mkdirSync(join(root, 'pocket', 'tasks'), { recursive: true });
+                writeFileSync(join(root, 'backlog.config.yml'), config);
+                const day = new Date().toLocaleDateString('sv');
+                const old = task(
+                    { updated_date: '2000-01-01 09:00' },
+                    description.replace('TODAY', day),
+                );
+                writeFileSync(
+                    join(root, 'pocket', 'tasks', 'pk-1.md'),
+                    old.text,
+                );
+                const result = spawnSync(
+                    process.execPath,
+                    [join(root, 'script', 'pocket-check.ts'), '--triaged'],
+                    { encoding: 'utf8', env: gitEnv() },
+                );
+                return {
+                    result,
+                    stamped: existsSync(
+                        join(root, 'pocket', 'last-triage.txt'),
+                    ),
+                };
+            } finally {
+                rmSync(root, { force: true, recursive: true });
+            }
+        };
+
+        test('refuses with exit 1 and no stamp while a stale item lacks a kept line', () => {
+            const { result, stamped } = run('body');
+            expect(result.status).toBe(1);
+            expect(result.stdout).toContain('--triaged refused: PK-1');
+            expect(stamped).toBe(false);
+        });
+
+        test('stamps once the stale item carries a kept line dated today', () => {
+            const { stamped } = run('kept: TODAY — still needed');
+            expect(stamped).toBe(true);
+        });
     });
 });
 

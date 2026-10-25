@@ -1,5 +1,5 @@
 ---
-description: load on dima's «prep», «sign», «re-sign», «grill <ticket>», «next chunk», «shape-lane», «fast» — a ticket or a pocket item to grill and sign before a lane, one chunk at a time, or many at once in fast mode.
+description: load on dima's «prep», «sign», «re-sign», «grill <ticket>», «next chunk», «shape-lane», «fast» — a ticket to grill and sign before a lane, one chunk at a time, or many at once in fast mode.
 ---
 
 # /cclio:shape-lane — dima's ✍️ sign on a chunk
@@ -10,7 +10,7 @@ it runs over any ticket: a safety-net re-grill after `cclio:shape-idea`, the rea
 
 ## 0 · read what is settled
 
-read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question. every question cites the W-lines it settles; the round is written to its proposal file first, where the wish-cover hook reds a W-line it lost.
+read the ticket's wish block and its `decided` section before the first question. every question cites the W-lines it settles; the round is written to its proposal file first, where the wish-cover hook reds a W-line it lost.
 
 then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the chunk or is named in the grill. a small UI ask goes the `craft-fleet-flow` freebie way (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps»).
 
@@ -39,7 +39,7 @@ dispatch runs without dima, a shift included, so before the sign the ticket hold
 
 ## 4 · the sign
 
-the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask. on the sign: `x linear set FRM-N --add-label signed`, and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
+the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask. on the sign: `x linear set FRM-N --add-label signed --state Todo` (the sign is its promotion out of Triage), and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
 

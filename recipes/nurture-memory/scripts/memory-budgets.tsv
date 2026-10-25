@@ -7,7 +7,7 @@ cclio/memory/_MEMORY.md	6400	seed 2026-10-16, today's size + 15 %
 cclio/memory/_reminders.md	17500	seed 2026-10-16, today's size + 15 %
 cclio/memory/_roadmap.md	550	2026-10-23 raised: generated; milestone names now say their outcome in words (dima's o23)
 cclio/memory/craft-fleet-flow.md	7200	2026-10-23: lane init's one contract home (PK-263, dima o75), the rules moved here from the skills
-cclio/memory/craft-pm.md	9800	2026-10-23: «shape-idea or not» per wish (o91) + milestone = lane (o97)
+cclio/memory/craft-pm.md	9900	2026-10-25: ☘️ almost-freebie in the freebie rule (dima o77); 2026-10-23: «shape-idea or not» per wish (o91) + milestone = lane (o97)
 cclio/memory/dima-stories.md	11200	seed 2026-10-16, today's size + 15 %
 cclio/memory/dima-strategy-branches.md	3800	seed 2026-10-16, today's size + 15 %
 cclio/memory/dima-strategy.md	4300	seed 2026-10-16, today's size + 15 %
@@ -123,7 +123,7 @@ home/.claude/rules/fleet-identity.md	4500	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-mods.md	4500	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-output-format.md	14900	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-tooling.md	7000	seed 2026-10-16, today's size + 15 %
-home/.claude/rules/fleet-vibe.md	6300	2026-10-23: 🐦‍🔥 second wind (o84) + the six lane-init words (o93), all ticked by dima to print bold
+home/.claude/rules/fleet-vibe.md	6600	2026-10-25: ☘️ almost-freebie (dima o77); 2026-10-23: 🐦‍🔥 second wind (o84) + the six lane-init words (o93)
 home/.claude/rules/fleet-voice.md	2700	seed 2026-10-16, today's size + 15 %
 home/.claude/sline/AGENTS.md	900	seed 2026-10-16, today's size + 15 %
 home/.config/nvim/AGENTS.md	4200	seed 2026-10-16, today's size + 15 %

@@ -19,7 +19,7 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 **a pocket write with its fields known goes to composer as a `pocket-write` chore**; a write that needs wording stays mine.
 <!-- 2026-10-14, dima: 1 of ~6 pocket writes went to composer that day -->
 
-**an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item carrying one, unless a `kept:` line dated within 3 days names its own ticket and the step it waits for; a closed ticket reds it all the same (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
+**an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item carrying one, unless a `held: <date> — FRM-N <step>` line dated within 3 days names its own ticket and the step it waits for (dima o80; `kept:` is only a stale item that stays); a closed ticket reds it all the same (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
 
 ## the stash hierarchy — dima's, 2026-09-27
 

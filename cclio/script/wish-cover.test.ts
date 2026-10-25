@@ -218,10 +218,12 @@ describe('wish-cover', () => {
             expect(result.status).toBe(0);
         });
 
-        test('a block with no W-lines and a draft citing none passes with a note', () => {
+        test('a block with no W-lines exits 2 even when the draft cites none', () => {
             const result = run('## wish\n\nno W-lines here\n', 'plain draft');
-            expect(result.status).toBe(0);
-            expect(result.stderr).toContain('cites none');
+            expect(result.status).toBe(2);
+            expect(result.stderr).toContain(
+                "number the ticket's wish block into W1… lines first",
+            );
         });
     });
 

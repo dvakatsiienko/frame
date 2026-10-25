@@ -25,8 +25,10 @@ const CLOSE_LINE = /^close:/;
 // the one ticket-line shape, shared with wish-cover
 export const TICKET_LINE =
     /^[ \t]*(?:- )?(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gim;
-// a «kept:» line vouches for its own ticket only this long
-const KEPT_DAYS = 3;
+// a «held:» line vouches for its own ticket only this long
+const HELD_DAYS = 3;
+const HELD_LINE = /^held: (\d{4}-\d{2}-\d{2}) — (.*)$/gm;
+// a «kept:» line is a stale item's stay, dated the triage day
 const KEPT_LINE = /^kept: (\d{4}-\d{2}-\d{2}) — (.*)$/gm;
 const ZONED_STAMP = /(?:Z|[+-]\d{2}:?\d{2})$/;
 const ITEM_PREFIX = /^pk-\d+ /i;
@@ -47,7 +49,7 @@ export function checkPocket(
     };
     const problems: string[] = [];
     let nowCount = 0;
-    const stale: string[] = [];
+    const tomorrow = daysBefore(today, -1);
 
     for (const { name, text } of tasks) {
         const front = frontmatter(text);
@@ -101,16 +103,17 @@ export function checkPocket(
                 );
             continue;
         }
-        const parked = PARKED_LINE.test(text);
         const capFree = CAP_FREE_TITLE.test(front.scalars.title ?? '');
-        if (status === 'claimed' && parked)
-            report(
-                'claimed and parked at once: a parked item releases its claim, set it open or waiting',
-            );
+        // the notes are append-only history, so a dated park there is a past state; the description holds the live one
+        const live = (
+            text.split('<!-- SECTION:DESCRIPTION:BEGIN -->')[1] ?? ''
+        ).split('<!-- SECTION:DESCRIPTION:END -->')[0];
+        if (PARKED_LINE.test(live ?? ''))
+            report("a parked item is linear's: move it there");
 
         // one outcome, one store: the item dies the turn its ticket is born, not when it closes
-        const freshKept = [...text.matchAll(KEPT_LINE)]
-            .filter(([, day]) => (day ?? '') >= daysBefore(today, KEPT_DAYS))
+        const freshHeld = [...text.matchAll(HELD_LINE)]
+            .filter(([, day]) => (day ?? '') >= daysBefore(today, HELD_DAYS))
             .map(([, , why]) => why ?? '');
         for (const ticket of ticketsOf(text)) {
             if (closedTickets.has(ticket))
@@ -118,7 +121,7 @@ export function checkPocket(
                     `its ticket ${ticket} is closed in linear: flip it to done`,
                 );
             else if (
-                !freshKept.some((why) =>
+                !freshHeld.some((why) =>
                     new RegExp(`\\b${ticket}\\b`, 'i').test(why),
                 )
             )
@@ -168,7 +171,7 @@ export function checkPocket(
         const due = front.scalars.due_date;
         if (status === 'waiting' && !due)
             report('waiting without a due date: when does the wait expire?');
-        if (status === 'waiting' && due && due > daysBefore(today, -1))
+        if (status === 'waiting' && due && due > tomorrow)
             report(
                 `waits until ${due}: a wait past tomorrow is linear's (habit-shared-files § the pocket)`,
             );
@@ -176,17 +179,45 @@ export function checkPocket(
             report(
                 `expired on ${due}: the wait ended, work it or move it to linear`,
             );
-        if (!capFree && touched <= daysBefore(today, STALE_AFTER_DAYS))
-            stale.push(id);
+        if (status !== 'waiting' && due && (due < today || due > tomorrow))
+            report(
+                `due ${due} is outside today–tomorrow: work it, re-date it to tomorrow, or move it to linear`,
+            );
         if (priority === 'now' && !capFree) nowCount += 1;
     }
     if (nowCount > NOW_CAP)
         problems.push(`now holds ${nowCount} items, the cap is ${NOW_CAP}`);
+    const stale = staleItems(tasks, today).map((item) => item.id);
     if (stale.length > 0 && lastTriage <= daysBefore(today, TRIAGE_EVERY_DAYS))
         problems.push(
             `3-day triage due (last ${lastTriage || 'never'}): ${stale.join(', ')} untouched ${STALE_AFTER_DAYS}+ days — revalidate each by hand: a stayer gets «kept: <date> — <why>», the rest move to linear; then \`node script/pocket-check.ts --triaged\``,
         );
     return problems;
+}
+
+// the not-done items untouched for the stale window; the seeded evergreen turn is never stale
+function staleItems(tasks: Task[], today: string) {
+    return tasks.flatMap(({ name, text }) => {
+        const front = frontmatter(text);
+        const touched = localDay(
+            front.scalars.updated_date || front.scalars.created_date || '',
+        );
+        return front.scalars.status !== 'done' &&
+            !CAP_FREE_TITLE.test(front.scalars.title ?? '') &&
+            touched <= daysBefore(today, STALE_AFTER_DAYS)
+            ? [{ id: front.scalars.id ?? name, text }]
+            : [];
+    });
+}
+
+// the stale items the triage cannot stamp over: no `kept: <today> — …` line
+export function unkeptStale(tasks: Task[], today: string): string[] {
+    return staleItems(tasks, today)
+        .filter(
+            ({ text }) =>
+                ![...text.matchAll(KEPT_LINE)].some(([, day]) => day === today),
+        )
+        .map((item) => item.id);
 }
 
 // a UTC stamp (`…Z`) is read on the local calendar, like `today`
@@ -427,7 +458,16 @@ if (import.meta.main) {
     const tasks = readDir(dir);
     const today = new Date().toLocaleDateString('sv');
     const stamp = join(root, 'pocket', 'last-triage.txt');
-    if (process.argv.includes('--triaged')) writeFileSync(stamp, `${today}\n`);
+    if (process.argv.includes('--triaged')) {
+        const unkept = unkeptStale(tasks, today);
+        if (unkept.length > 0) {
+            console.log(
+                `🔴 --triaged refused: ${unkept.join(', ')} untouched ${STALE_AFTER_DAYS}+ days with no «kept: ${today} — <why>» line — add it, or move the item to linear`,
+            );
+            process.exit(1);
+        }
+        writeFileSync(stamp, `${today}\n`);
+    }
     const lastTriage = existsSync(stamp)
         ? readFileSync(stamp, 'utf8').trim()
         : '';

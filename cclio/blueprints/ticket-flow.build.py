@@ -21,7 +21,7 @@ OURS = re.compile(r'\n\s*<mxCell id="tf-[^"]*"(?:[^>]*/>|.*?</mxCell>)', re.S)
 
 # the section starts at dima's «draw tickets flow somewhere here» tile (6859, -1584, 120 wide),
 # just right of it, so the tile stays visible and the legend (x ≤ 6906) stays clear
-ORIGIN_X, ORIGIN_Y = 7000, -1584
+ORIGIN_X, ORIGIN_Y = 0, -1584
 TILE_W, TILE_H = 520, 160
 COL_STEP, ROW_STEP = 630, 370
 PAD, ROW0 = 56, 200

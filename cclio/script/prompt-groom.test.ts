@@ -1,3 +1,7 @@
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -90,6 +94,39 @@ describe('strayRaws', () => {
 
     test('a raw from before the rules start is never named', () => {
         expect(strayRaws(['2026-10-25-1440.raw.md'], now)).toEqual([]);
+    });
+});
+
+describe('--linear, with a stubbed x', () => {
+    test('a stray raw prompt reds under the halt’s door too', () => {
+        const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
+        try {
+            const grooms = join(root, 'grooms');
+            mkdirSync(grooms);
+            writeFileSync(join(grooms, '2026-10-25-1450.raw.md'), 'raw');
+            mkdirSync(join(root, 'bin'));
+            writeFileSync(
+                join(root, 'bin', 'x'),
+                `#!/bin/sh\necho '{"data":{"issues":{"nodes":[]}}}'\n`,
+                { mode: 0o755 },
+            );
+            const result = spawnSync(
+                process.execPath,
+                [join(import.meta.dirname, 'prompt-groom.ts'), '--linear'],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                        PROMPT_GROOM_DIR: grooms,
+                    },
+                },
+            );
+            expect(result.status).toBe(1);
+            expect(result.stdout).toContain('2026-10-25-1450.raw.md');
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
     });
 });
 
