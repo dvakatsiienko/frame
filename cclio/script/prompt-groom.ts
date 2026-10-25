@@ -7,7 +7,6 @@ import {
     mkdirSync,
     readFileSync,
     readdirSync,
-    statSync,
     writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -35,9 +34,15 @@ export function dayBefore(day: string) {
 export const groomFile = (day: string, hhmm: string, kind: 'raw' | 'groomed') =>
     path.join(groomDir, `${day}-${hhmm.replace(':', '')}.${kind}.md`);
 
+// a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
 export const groomedOnDisk: Groomed = (day, hhmm) => {
     const file = groomFile(day, hhmm, 'groomed');
-    return existsSync(file) && statSync(file).size > 0;
+    return (
+        existsSync(file) &&
+        readFileSync(file, 'utf8')
+            .matchAll(STAMP)
+            .some(([, date, time]) => date === day && time === hhmm)
+    );
 };
 
 export function ungroomedStamps(

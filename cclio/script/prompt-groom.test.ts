@@ -103,6 +103,48 @@ describe('strayRaws', () => {
     });
 });
 
+describe('--check against a groom file on disk', () => {
+    const folded = 'W1 (2026-10-25 15:00, dima): ship the exact words\n';
+
+    function check(groomed: string) {
+        const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
+        try {
+            writeFileSync(join(root, '2026-10-25-1500.groomed.md'), groomed);
+            writeFileSync(join(root, 'body.md'), folded);
+            return spawnSync(
+                process.execPath,
+                [
+                    join(import.meta.dirname, 'prompt-groom.ts'),
+                    '--check',
+                    join(root, 'body.md'),
+                ],
+                {
+                    encoding: 'utf8',
+                    env: { ...process.env, PROMPT_GROOM_DIR: root },
+                },
+            ).status;
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    }
+
+    test('a placeholder groom file reds', () => {
+        expect(check('todo\n')).toBe(1);
+    });
+
+    test('a groom with a W-line of the same stamp passes though the fold’s words differ', () => {
+        expect(
+            check('W1 (2026-10-25 15:00, dima): composed other words\n'),
+        ).toBe(0);
+    });
+
+    test('a groom stamped for another minute reds', () => {
+        expect(
+            check('W1 (2026-10-25 15:01, dima): ship the exact words\n'),
+        ).toBe(1);
+    });
+});
+
 describe('--linear, with a stubbed x', () => {
     test('a stray raw prompt reds under the halt’s door too', () => {
         const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));

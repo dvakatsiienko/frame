@@ -54,6 +54,40 @@ describe('pocket-check on a pocket write', () => {
         expect(run(bash('backlog task create "x"'), 'true')).toBe(undefined);
     });
 
+    test.each([
+        'backlog task archive PK-1',
+        'mv cclio/pocket/tasks/a.md cclio/pocket/archive/tasks/',
+        'trash cclio/pocket/tasks/a.md',
+        "sed -i '' s/a/b/ cclio/pocket/tasks/a.md",
+        'git restore cclio/pocket/tasks/a.md',
+        "perl -pi -e 's/a/b/' cclio/pocket/tasks/a.md",
+    ])('the write verb «%s» blocks on a red pocket', (command) => {
+        expect(run(bash(command), redCmd)?.decision).toBe('block');
+    });
+
+    test('an Edit of a pocket archive file blocks', () => {
+        const edit = {
+            tool_input: {
+                file_path: '/x/cclio/pocket/archive/tasks/pk-1 - a.md',
+            },
+            tool_name: 'Edit',
+        };
+        expect(run(edit, redCmd)?.decision).toBe('block');
+    });
+
+    test.each([
+        'grep -c x cclio/pocket/tasks/a.md',
+        'cat cclio/pocket/tasks/a.md',
+        "awk '$1 > 3' cclio/pocket/tasks/a.md",
+        'ls cclio/pocket/tasks 2>&1',
+    ])('the read «%s» stays silent on a red pocket', (command) => {
+        expect(run(bash(command), redCmd)).toBe(undefined);
+    });
+
+    test('a green check never blocks a write verb', () => {
+        expect(run(bash('backlog task archive PK-1'), 'true')).toBe(undefined);
+    });
+
     test('a write outside the pocket never runs the check', () => {
         expect(run(bash('backlog task list --plain'), redCmd)).toBe(undefined);
         expect(
