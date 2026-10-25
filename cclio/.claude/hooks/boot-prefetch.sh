@@ -357,6 +357,22 @@ for f in "$HOME"/frame/cclio/pocket/tasks/*.md; do
   awk '/^id: /{id=$2} /SECTION:DESCRIPTION:BEGIN/{getline; print "⏸️ " id " · " $0; exit}' "$f"
 done
 
+echo "-- linear queues (signed = waiting for a lane; the list JSON carries no updatedAt, so no age; to sign needs a body read per ticket: n/a) --"
+dispatch=0 list_err=""
+for team in FRM BYT; do
+  if listed=$(timeout 20 x linear list --team "$team" --label signed 2>&1); then
+    dispatch=$((dispatch + $(printf '%s' "$listed" | jq '[.data.tickets[] | select(.stateType != "completed" and .stateType != "canceled")] | length' 2>/dev/null || echo 0)))
+  else
+    list_err="$team: $(printf '%s' "$listed" | tail -1 | cut -c1-120)"
+  fi
+done
+[ -z "$list_err" ] && echo "✍️ to sign: n/a · 🚀 to dispatch: $dispatch" || fail "linear queues: could not read — $list_err"
+if back=$(timeout 20 x linear api 'query { issues(filter:{state:{type:{in:["unstarted","backlog","triage"]}}, description:{contains:"↩️ back to Todo"}}) { nodes { identifier } } }' 2>&1) && ids=$(printf '%s' "$back" | jq -r '.data.issues.nodes | map(.identifier) | join(", ")' 2>/dev/null); then
+  echo "↩️ back to Todo: ${ids:-none}"
+else
+  fail "linear queues: could not read — back to Todo: $(printf '%s' "$back" | tail -1 | cut -c1-120)"
+fi
+
 echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"
 today="$HOME/.claude/shelf/flawlog/$(date +%Y-%m-%d)"
 ls "$today"-*.md >/dev/null 2>&1 && echo "today's file exists" || echo "no file for today yet — open one at step 8"

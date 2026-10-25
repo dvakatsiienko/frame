@@ -31,13 +31,14 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 ## 5 · the spawn and the greenlight
 
 - the spawn is `x:crew-lead`'s (load it): the brief's first step has the coder run `to-tickets` on the spec after reading the code, so the slices follow real seams; the brief says «skip the quiz step of to-tickets», since the sign settled the want; the slices go into its worktree `.scratch/<feature>/issues/`, never linear
-- the `signed` label comes off each dispatched chunk, and its `## signed` block gets `🚀 dispatched <YYYY-MM-DD>`; a cancelled chunk gets `🚫 cancelled <YYYY-MM-DD> — <why>`
+- the `signed` label comes off each dispatched chunk, it moves to In Progress with the coder app as its delegate, and its `## signed` block gets `🚀 dispatched <YYYY-MM-DD>`; his sign was its promotion out of Triage
+- a cancelled signed chunk, before or after dispatch: the `signed` label off, Canceled through `cclio:pm`'s `references/closing.md`, and `🚫 cancelled <YYYY-MM-DD> — <why>` in its block
 - **the lane plan**, `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside every checkout, so an isolated coder can write it and a decamp keeps it): the coder's side (the draft, the ticks, `## not greenlit`) is `x:crew-coder`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to greenlight` i reorder it against what comes after and 🟢 greenlight it — my word is final — and greenlight again on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies its ticket lines at each greenlight and land (by hand, until FRM-410). a lane of one ticket skips the file
 
 ## 6 · while it runs
 
 - **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step, and the coder hears it as a steer naming that section plus a `## not greenlit` line, then re-runs `to-tickets` on it; an unsigned one waits for its sign
-- **a wish of dima's mid-lane** goes into the spec with a proposed re-sign of its chunk, never as a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message
+- **a wish of dima's mid-lane** goes into the ticket's wish block as W-lines, with a proposed re-sign of its chunk, and the spec section cites them; never a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running): it re-runs § 3–4 for that chunk — re-seal the spec section and its preflight copy — and steers the coder to the changed lines
 - **a park** — his weekly window out, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it
 

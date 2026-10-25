@@ -18330,8 +18330,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "«which milestone?» on create, move, close; a guard\nrefuses a bare create (FRM-417)",
-      "originalText": "«which milestone?» on create, move, close; a guard\nrefuses a bare create (FRM-417)",
+      "text": "«which milestone?» on create, move, close; a guard\non a bare create: planned (FRM-417)",
+      "originalText": "«which milestone?» on create, move, close; a guard\non a bare create: planned (FRM-417)",
       "fontSize": 20,
       "fontFamily": 2,
       "textAlign": "center",
@@ -19849,8 +19849,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "his tick in shape-lane: the signed label + a dated,\nhashed ## signed line",
-      "originalText": "his tick in shape-lane: the signed label + a dated,\nhashed ## signed line",
+      "text": "his whole answer to the grill: the signed label + a\ndated, hashed ## signed line",
+      "originalText": "his whole answer to the grill: the signed label + a\ndated, hashed ## signed line",
       "fontSize": 20,
       "fontFamily": 2,
       "textAlign": "center",
@@ -26764,8 +26764,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "a pre-approved self-edit lands by a hand gh merge;\nno ticket holds the rider yet",
-      "originalText": "a pre-approved self-edit lands by a hand gh merge;\nno ticket holds the rider yet",
+      "text": "a pre-approved self-edit lands by a hand gh merge;\nuntil FRM-458",
+      "originalText": "a pre-approved self-edit lands by a hand gh merge;\nuntil FRM-458",
       "fontSize": 20,
       "fontFamily": 2,
       "textAlign": "center",
@@ -27330,8 +27330,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "the halt lists In Progress + In Review; a merged pr\nwith open asks → Todo",
-      "originalText": "the halt lists In Progress + In Review; a merged pr\nwith open asks → Todo",
+      "text": "the halt lists In Progress; a merged pr with open\nasks → Todo, a ↩️ line names why and what is left",
+      "originalText": "the halt lists In Progress; a merged pr with open\nasks → Todo, a ↩️ line names why and what is left",
       "fontSize": 20,
       "fontFamily": 2,
       "textAlign": "center",
@@ -27886,7 +27886,7 @@
           "type": "arrow"
         },
         {
-          "id": "tf-b9-e-net-archive",
+          "id": "tf-b9-e-net-inbox",
           "type": "arrow"
         }
       ],
@@ -27962,8 +27962,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "a pocket item left open behind a closed ticket reds:\nset it done",
-      "originalText": "a pocket item left open behind a closed ticket reds:\nset it done",
+      "text": "an open item behind a ticket reds (a kept line holds\nit 3 days); a closed ticket always reds",
+      "originalText": "an open item behind a ticket reds (a kept line holds\nit 3 days); a closed ticket always reds",
       "fontSize": 20,
       "fontFamily": 2,
       "textAlign": "center",
@@ -28014,7 +28014,7 @@
     {
       "id": "tf-b9-archive",
       "type": "rectangle",
-      "x": 9576,
+      "x": 7686,
       "y": 8194,
       "width": 520,
       "height": 160,
@@ -28040,11 +28040,7 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "tf-b9-e-net-archive",
-          "type": "arrow"
-        },
-        {
-          "id": "tf-b9-e-archive-inbox",
+          "id": "tf-b9-e-gazette-archive",
           "type": "arrow"
         }
       ],
@@ -28055,7 +28051,7 @@
     {
       "id": "tf-b9-archive-t0",
       "type": "text",
-      "x": 9604,
+      "x": 7714,
       "y": 8226.85,
       "width": 464,
       "height": 29.9,
@@ -28094,7 +28090,7 @@
     {
       "id": "tf-b9-archive-t1",
       "type": "text",
-      "x": 9604,
+      "x": 7714,
       "y": 8256.75,
       "width": 464,
       "height": 46,
@@ -28120,8 +28116,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "backlog task archive, every done item; one listed\npast its day reds",
-      "originalText": "backlog task archive, every done item; one listed\npast its day reds",
+      "text": "backlog task archive, every done item the post\ncarried; one listed past its day reds",
+      "originalText": "backlog task archive, every done item the post\ncarried; one listed past its day reds",
       "fontSize": 20,
       "fontFamily": 2,
       "textAlign": "center",
@@ -28133,7 +28129,7 @@
     {
       "id": "tf-b9-archive-t2",
       "type": "text",
-      "x": 9604,
+      "x": 7714,
       "y": 8302.75,
       "width": 464,
       "height": 18.4,
@@ -28159,8 +28155,8 @@
       "updated": 1761390000000,
       "link": null,
       "locked": false,
-      "text": "cclio:halt phase 1.5 · pocket-check.ts",
-      "originalText": "cclio:halt phase 1.5 · pocket-check.ts",
+      "text": "cclio:halt phase 4.5 · pocket-check.ts",
+      "originalText": "cclio:halt phase 4.5 · pocket-check.ts",
       "fontSize": 16,
       "fontFamily": 2,
       "textAlign": "center",
@@ -28172,7 +28168,7 @@
     {
       "id": "tf-b9-inbox",
       "type": "rectangle",
-      "x": 8946,
+      "x": 9576,
       "y": 8194,
       "width": 520,
       "height": 160,
@@ -28198,7 +28194,7 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "tf-b9-e-archive-inbox",
+          "id": "tf-b9-e-net-inbox",
           "type": "arrow"
         },
         {
@@ -28213,7 +28209,7 @@
     {
       "id": "tf-b9-inbox-t0",
       "type": "text",
-      "x": 8974,
+      "x": 9604,
       "y": 8226.85,
       "width": 464,
       "height": 29.9,
@@ -28252,7 +28248,7 @@
     {
       "id": "tf-b9-inbox-t1",
       "type": "text",
-      "x": 8974,
+      "x": 9604,
       "y": 8256.75,
       "width": 464,
       "height": 46,
@@ -28291,7 +28287,7 @@
     {
       "id": "tf-b9-inbox-t2",
       "type": "text",
-      "x": 8974,
+      "x": 9604,
       "y": 8302.75,
       "width": 464,
       "height": 18.4,
@@ -28330,7 +28326,7 @@
     {
       "id": "tf-b9-linarch",
       "type": "rectangle",
-      "x": 8316,
+      "x": 8946,
       "y": 8194,
       "width": 520,
       "height": 160,
@@ -28371,7 +28367,7 @@
     {
       "id": "tf-b9-linarch-t0",
       "type": "text",
-      "x": 8344,
+      "x": 8974,
       "y": 8226.85,
       "width": 464,
       "height": 29.9,
@@ -28410,7 +28406,7 @@
     {
       "id": "tf-b9-linarch-t1",
       "type": "text",
-      "x": 8344,
+      "x": 8974,
       "y": 8256.75,
       "width": 464,
       "height": 46,
@@ -28449,7 +28445,7 @@
     {
       "id": "tf-b9-linarch-t2",
       "type": "text",
-      "x": 8344,
+      "x": 8974,
       "y": 8302.75,
       "width": 464,
       "height": 18.4,
@@ -28488,7 +28484,7 @@
     {
       "id": "tf-b9-gazette",
       "type": "rectangle",
-      "x": 7686,
+      "x": 8316,
       "y": 8194,
       "width": 520,
       "height": 160,
@@ -28516,6 +28512,10 @@
         {
           "id": "tf-b9-e-linarch-gazette",
           "type": "arrow"
+        },
+        {
+          "id": "tf-b9-e-gazette-archive",
+          "type": "arrow"
         }
       ],
       "updated": 1761390000000,
@@ -28525,7 +28525,7 @@
     {
       "id": "tf-b9-gazette-t0",
       "type": "text",
-      "x": 7714,
+      "x": 8344,
       "y": 8226.85,
       "width": 464,
       "height": 29.9,
@@ -28564,7 +28564,7 @@
     {
       "id": "tf-b9-gazette-t1",
       "type": "text",
-      "x": 7714,
+      "x": 8344,
       "y": 8256.75,
       "width": 464,
       "height": 46,
@@ -28603,7 +28603,7 @@
     {
       "id": "tf-b9-gazette-t2",
       "type": "text",
-      "x": 7714,
+      "x": 8344,
       "y": 8302.75,
       "width": 464,
       "height": 18.4,
@@ -40177,7 +40177,7 @@
       "lineHeight": 1.15
     },
     {
-      "id": "tf-b9-e-net-archive",
+      "id": "tf-b9-e-net-inbox",
       "type": "arrow",
       "x": 9836,
       "y": 7984,
@@ -40195,9 +40195,9 @@
       "frameId": null,
       "index": "c937",
       "roundness": null,
-      "seed": 712340104,
+      "seed": 812477900,
       "version": 1,
-      "versionNonce": 607706777,
+      "versionNonce": 3711978453,
       "isDeleted": false,
       "boundElements": [],
       "updated": 1761390000000,
@@ -40224,7 +40224,7 @@
         "gap": 1
       },
       "endBinding": {
-        "elementId": "tf-b9-archive",
+        "elementId": "tf-b9-inbox",
         "fixedPoint": [
           0.5,
           0
@@ -40240,7 +40240,7 @@
       "endIsSpecial": null
     },
     {
-      "id": "tf-b9-e-archive-inbox",
+      "id": "tf-b9-e-inbox-linarch",
       "type": "arrow",
       "x": 9576,
       "y": 8274,
@@ -40257,69 +40257,6 @@
       "groupIds": [],
       "frameId": null,
       "index": "c938",
-      "roundness": null,
-      "seed": 1522616881,
-      "version": 1,
-      "versionNonce": 4251450384,
-      "isDeleted": false,
-      "boundElements": [],
-      "updated": 1761390000000,
-      "link": null,
-      "locked": false,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          -110,
-          0
-        ]
-      ],
-      "lastCommittedPoint": null,
-      "startBinding": {
-        "elementId": "tf-b9-archive",
-        "fixedPoint": [
-          0,
-          0.5
-        ],
-        "focus": 0,
-        "gap": 1
-      },
-      "endBinding": {
-        "elementId": "tf-b9-inbox",
-        "fixedPoint": [
-          1,
-          0.5
-        ],
-        "focus": 0,
-        "gap": 1
-      },
-      "startArrowhead": null,
-      "endArrowhead": "arrow",
-      "elbowed": true,
-      "fixedSegments": null,
-      "startIsSpecial": null,
-      "endIsSpecial": null
-    },
-    {
-      "id": "tf-b9-e-inbox-linarch",
-      "type": "arrow",
-      "x": 8946,
-      "y": 8274,
-      "width": 110,
-      "height": 0,
-      "angle": 0,
-      "strokeColor": "#757575",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 3,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": "c939",
       "roundness": null,
       "seed": 3001822870,
       "version": 1,
@@ -40368,7 +40305,7 @@
     {
       "id": "tf-b9-e-linarch-gazette",
       "type": "arrow",
-      "x": 8316,
+      "x": 8946,
       "y": 8274,
       "width": 110,
       "height": 0,
@@ -40382,7 +40319,7 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "index": "c940",
+      "index": "c939",
       "roundness": null,
       "seed": 4256505808,
       "version": 1,
@@ -40414,6 +40351,69 @@
       },
       "endBinding": {
         "elementId": "tf-b9-gazette",
+        "fixedPoint": [
+          1,
+          0.5
+        ],
+        "focus": 0,
+        "gap": 1
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": true,
+      "fixedSegments": null,
+      "startIsSpecial": null,
+      "endIsSpecial": null
+    },
+    {
+      "id": "tf-b9-e-gazette-archive",
+      "type": "arrow",
+      "x": 8316,
+      "y": 8274,
+      "width": 110,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#757575",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 3,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "c940",
+      "roundness": null,
+      "seed": 4271854891,
+      "version": 1,
+      "versionNonce": 3578482774,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1761390000000,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -110,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "tf-b9-gazette",
+        "fixedPoint": [
+          0,
+          0.5
+        ],
+        "focus": 0,
+        "gap": 1
+      },
+      "endBinding": {
+        "elementId": "tf-b9-archive",
         "fixedPoint": [
           1,
           0.5

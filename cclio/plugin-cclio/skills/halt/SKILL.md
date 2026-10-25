@@ -16,10 +16,11 @@ one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a spawned session, an
   unanswered question put to dima, an unpushed commit
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
-  `x linear list --state "In Progress"` and `x linear list --state "In Review"` (ids, titles, labels)
+  `x linear list --state "In Progress"` (ids, titles, labels)
   — every hit without the `standing` label gets one line: «closable, because …» (his word
   closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
-  with asks left open moves to Todo, never closes
+  with asks left open moves to Todo, never closes, and its `## signed` block gets
+  `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again
 - **the stop list holds only members the fleet spawned with `--bg`**; a session the digest marks 👤 is dima's own (desktop or remote control) and stays as he left it.
 - **the coder roster, two questions per coder: retro filed in `~/.local/state/x/lanes/<feature>/`? `claude stop <id>` done?** a coder
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
@@ -47,7 +48,7 @@ is his: read-only, never edited. an item without a home is not deleted: it gets 
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless main-lane work, folds into the linear ticket that owns it, or becomes one; the day's `done` items stay listed for the gazette post (phase 4.5), which carries them and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
 inbox clears — before the CST is written.
-**the groom check** (FRM-418): `node ~/frame/cclio/script/prompt-groom.ts --linear` reads every ticket updated today, a new one included — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST.
+**the groom check** (FRM-418): `node ~/frame/cclio/script/prompt-groom.ts --linear` reads every ticket updated since yesterday, a new one included — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
@@ -74,6 +75,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 
 ## phase 3a — flawlog flush, the one stop
 read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/cclio:flawlog`.
+**the pocket asks, in the same proposal**: every move the day's birth-test sort makes on a line of his (to linear, folded, dropped) and every item marked done in doubt, one diff line each; his one yes covers them with the flawlog (`habit-shared-files` § the pocket).
 **the retros, in the flush:** `ls ~/.local/state/x/lanes/*/*-retro.md ~/.claude/shelf/retros/` (the old home drains out) — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
 **the sweep, after the flush:** `node ~/frame/cclio/script/halt-sweep.ts --apply --only retention` — retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
 🚨 **the flush stops the halt**: print the proposal in a reply before any next-step box (the box ends the turn), wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
