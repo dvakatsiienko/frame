@@ -17,7 +17,7 @@ command -v node >/dev/null || { jq -n '{systemMessage: "wish-cover: node missing
 # a lane spec holds a wish line per chunk section: every id in the file is checked against its own section
 reds=""
 for id in $(grep -iE '^wish: *(PK|FRM|BYT)-[0-9]+' "$file" | grep -iEo '(PK|FRM|BYT)-[0-9]+' | tr a-z A-Z | sort -u); do
-	out="$(node "$HOME/frame/cclio/script/wish-cover.ts" "$id" "$file" 2>&1)" && continue
+	out="$(node "$(dirname "$0")/../../script/wish-cover.ts" "$id" "$file" 2>&1)" && continue
 	[ $? -eq 1 ] || { jq -n --arg reason "wish-cover: could not run for $id on $file — ${out}" '{decision: "block", reason: $reason}'; exit 0; }
 	reds+="$(grep '^✗' <<<"$out")"$'\n'
 done

@@ -14,7 +14,7 @@ Bash)
 Edit | Write) jq -r '.tool_input.file_path // ""' <<<"$event" | grep -q '/pocket/' || exit 0 ;;
 *) exit 0 ;;
 esac
-check="${POCKET_CHECK_CMD:-node $HOME/frame/cclio/script/pocket-check.ts}"
+check="${POCKET_CHECK_CMD:-node $(dirname "$0")/../../script/pocket-check.ts}"
 out="$($check 2>&1)" && exit 0
 reds="$(grep '^🔴' <<<"$out" || printf '%s' "$out")"
 jq -n --arg reason "the pocket is red — fix it now: $reds" '{decision: "block", reason: $reason}'
