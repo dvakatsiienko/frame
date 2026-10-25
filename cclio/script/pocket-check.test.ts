@@ -95,12 +95,41 @@ describe('checkPocket', () => {
         }
     });
 
-    test('an open task kept for a named ticket step passes', () => {
-        const kept = task(
-            {},
-            'ticket: FRM-72\n\nkept: 2026-10-25 — FRM-419 step 4 maps these W-lines next',
-        );
-        expect(checkPocket(config, [kept], today)).toEqual([]);
+    describe('a kept line', () => {
+        const carries = (kept: string) => task({}, `ticket: FRM-72\n\n${kept}`);
+        const red =
+            'PK-1: carries ticket FRM-72 yet is open: the item dies the turn its ticket is born, set it done';
+
+        test('a fresh one naming the item’s own ticket passes', () => {
+            const kept = carries('kept: 2026-10-08 — FRM-72 step 4 is next');
+            expect(checkPocket(config, [kept], today)).toEqual([]);
+        });
+
+        test('an old-dated one goes red', () => {
+            const kept = carries('kept: 2026-10-05 — FRM-72 step 4 is next');
+            expect(checkPocket(config, [kept], today)).toEqual([red]);
+        });
+
+        test('one naming another ticket goes red', () => {
+            const kept = carries('kept: 2026-10-08 — FRM-419 step 4 is next');
+            expect(checkPocket(config, [kept], today)).toEqual([red]);
+        });
+
+        test('a closed ticket goes red even with a fresh kept line', () => {
+            const kept = carries('kept: 2026-10-08 — FRM-72 step 4 is next');
+            expect(
+                checkPocket(
+                    config,
+                    [kept],
+                    today,
+                    '',
+                    () => true,
+                    new Set(['FRM-72']),
+                ),
+            ).toEqual([
+                'PK-1: its ticket FRM-72 is closed in linear: flip it to done',
+            ]);
+        });
     });
 
     test('a done task carrying a ticket line passes', () => {

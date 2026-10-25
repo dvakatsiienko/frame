@@ -87,6 +87,27 @@ describe('wish-cover', () => {
         expect(itemsForTicket(items, 'FRM-366')).toEqual(['PK-7']);
     });
 
+    test('a bulleted ticket line links a pocket item to its ticket', () => {
+        const items: [string, string][] = [
+            ['pk-7 - a.md', 'body\n  - ticket: FRM-366'],
+        ];
+        expect(itemsForTicket(items, 'FRM-366')).toEqual(['PK-7']);
+    });
+
+    test.each([
+        ['a bare url', 'https://a.dev/x'],
+        ['an angle-bracket link', '[https://a.dev/x](<https://a.dev/x>)'],
+        ['a plain markdown link', '[https://a.dev/x](https://a.dev/x)'],
+        ['an autolink', '<https://a.dev/x>'],
+    ])('a url W-line matches %s in a linear body, both ways', (_, form) => {
+        expect(
+            missingText('- W1 see https://a.dev/x now', [`W1 see ${form} now`]),
+        ).toEqual([]);
+        expect(
+            missingText(`- W1 see ${form} now`, ['W1 see https://a.dev/x now']),
+        ).toEqual([]);
+    });
+
     test('a ticket body gives its W-lines from the wish block only', () => {
         const body = [
             '## goal',

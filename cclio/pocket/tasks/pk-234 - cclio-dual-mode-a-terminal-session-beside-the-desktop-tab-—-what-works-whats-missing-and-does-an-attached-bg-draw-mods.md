@@ -3,10 +3,10 @@ id: PK-234
 title: >-
   cclio dual-mode: a terminal session beside the desktop tab — what works,
   what's missing, and does an attached --bg draw mods
-status: open
+status: done
 assignee: []
 created_date: '2026-10-21T11:40:00Z'
-updated_date: '2026-10-25T10:30:00Z'
+updated_date: '2026-10-25T14:13:00Z'
 due_date: '2026-10-26'
 labels:
   - s
@@ -32,4 +32,7 @@ parked: rides the low tide beside ccrow's dual-mode (o2)
 
 **waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+
+ticket: FRM-457
+close: no W-lines — to FRM-457 (dima o75: actual, to be resolved)
 <!-- SECTION:NOTES:END -->

@@ -1,10 +1,10 @@
 ---
 id: PK-140
 title: composer on Sonnet 5.5 — shape-idea over its contract after the trial verdict
-status: open
+status: done
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-25T11:53:00Z'
+updated_date: '2026-10-25T14:13:00Z'
 due_date: '2026-10-29'
 labels:
   - m
@@ -44,4 +44,7 @@ inbox 10-16, idea in his words: composer on Haiku 5.5 overlaps helper-lite; prom
 kept: 2026-10-25 — dima 10-22: keep it by hand in the pocket (migration Q5: his ideas may stay)
 
 kept: 2026-10-25 (corrected) — on dima's 10-22 word «keep it by hand in the pocket» alone
+
+ticket: FRM-454
+close: no W-lines — to FRM-454 (dima o75: actual, to be resolved)
 <!-- SECTION:NOTES:END -->

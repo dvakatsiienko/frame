@@ -6,6 +6,7 @@ import {
     existsSync,
     mkdirSync,
     readFileSync,
+    readdirSync,
     statSync,
     writeFileSync,
 } from 'node:fs';
@@ -56,6 +57,20 @@ export function ungroomedStamps(
         )
             times.add(date === day ? hhmm : `${hhmm} --date ${date}`);
     return [...times];
+}
+
+// a raw prompt file from the rules start on, older than 10 minutes, with no groomed twin: the groom was started and never finished
+export function strayRaws(files: string[], now: Date) {
+    return files.filter((file) => {
+        const [, day, hh, mm] =
+            file.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})\.raw\.md$/) ?? [];
+        if (!day || `${day} ${hh}:${mm}` < RULES_FROM) return false;
+        const age = now.getTime() - new Date(`${day}T${hh}:${mm}:00`).getTime();
+        return (
+            age > 10 * 60_000 &&
+            !files.includes(file.replace('.raw.md', '.groomed.md'))
+        );
+    });
 }
 
 // the groom unit is a minute: every prompt saved under that head, so a wish in the second one is groomed too
@@ -158,6 +173,13 @@ if (import.meta.main) {
                 );
             }
         }
+        if (args[0] === '--check' && existsSync(groomDir))
+            for (const file of strayRaws(readdirSync(groomDir), new Date())) {
+                red++;
+                console.log(
+                    `🔴 ${file}: a raw prompt with no groomed twin after 10 minutes — finish the groom into ${file.replace('.raw.md', '.groomed.md')}`,
+                );
+            }
         if (red === 0)
             console.log(
                 `🟢 ${sources.length} source(s): every W-line stamped since the rules start was groomed`,

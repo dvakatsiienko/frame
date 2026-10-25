@@ -1,5 +1,5 @@
 #!/bin/bash
-# a .scratch spec or -proposal write that carries «wish: PK-N» or «wish: FRM-N» runs wish-cover and hands a red back to the session; never blocks the write
+# a .scratch spec or -proposal write that carries «wish: PK-N» or «wish: FRM-N» runs wish-cover and hands a red back to the session; a red, a missing wish line or a failed run blocks the write
 set -uo pipefail
 event="$(cat)"
 file="$(jq -r '.tool_input.file_path // ""' <<<"$event")"

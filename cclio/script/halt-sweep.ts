@@ -25,14 +25,17 @@ function gh(args: string[]): unknown {
 }
 
 // a content line is anything that is not blank, not the template's own text, and not under a ✅ line;
-// a ✅ line covers what follows it until the next template line (a header, a quote, a rule)
+// a ✅ line covers what follows it until the next blank line or template line (a header, a quote, a rule)
 export function unhandledLines(inbox: string, template: string): string[] {
     const own = new Set(template.split('\n').map((line) => line.trim()));
     let isHandled = false;
     const open: string[] = [];
     for (const line of inbox.split('\n')) {
         const text = line.trim();
-        if (!text) continue;
+        if (!text) {
+            isHandled = false;
+            continue;
+        }
         if (own.has(text)) isHandled = false;
         else if (text.startsWith('✅')) isHandled = true;
         else if (!isHandled) open.push(line);

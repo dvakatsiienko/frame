@@ -3,6 +3,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
+import { TICKET_LINE } from './pocket-check.ts';
+
 const pocketDirs = ['pocket/tasks', 'pocket/archive/tasks'];
 
 export function wishLines(item: string) {
@@ -30,6 +32,7 @@ export function citedIds(draft: string) {
 
 function normalize(text: string) {
     return text
+        .replace(/\[[^\]]*\]\(<?([^)>\s]+)>?\)|<(https?:[^>\s]+)>/g, '$1$2')
         .toLowerCase()
         .replace(/[«»“”]/g, '"')
         .replace(/[‘’]/g, "'")
@@ -67,9 +70,12 @@ function pocketItems(root: string) {
 
 // the PK ids of the pocket items whose «ticket:» or «moved to linear:» line names this FRM id
 export function itemsForTicket(items: [string, string][], ticket: string) {
-    const line = new RegExp(`^(?:ticket|moved to linear): *${ticket}\\b`, 'im');
     return items
-        .filter(([, text]) => line.test(text))
+        .filter(([, text]) =>
+            [...text.matchAll(TICKET_LINE)].some(
+                ([, id]) => id?.toUpperCase() === ticket.toUpperCase(),
+            ),
+        )
         .map(([file]) => file.split(' - ')[0]?.toUpperCase() ?? file);
 }
 

@@ -4,7 +4,7 @@ set -uo pipefail
 event="$(cat)"
 tool="$(jq -r '.tool_name // ""' <<<"$event")"
 case "$tool" in
-Bash) jq -r '.tool_input.command // ""' <<<"$event" | grep -qE 'backlog task (create|edit|archive|demote)|pocket/tasks' || exit 0 ;;
+Bash) jq -r '.tool_input.command // ""' <<<"$event" | grep -qE 'backlog task (create|edit|archive|demote)|pocket/(archive/)?tasks' || exit 0 ;;
 Edit | Write) jq -r '.tool_input.file_path // ""' <<<"$event" | grep -q '/pocket/' || exit 0 ;;
 *) exit 0 ;;
 esac

@@ -4,6 +4,7 @@ import {
     dayBefore,
     newUnstamped,
     rawPromptAt,
+    strayRaws,
     ungroomedStamps,
 } from './prompt-groom.ts';
 
@@ -62,6 +63,33 @@ describe('ungroomedStamps', () => {
         expect(ungroomedStamps(both, '2026-10-25', () => false)).toEqual([
             '15:00',
         ]);
+    });
+});
+
+describe('strayRaws', () => {
+    const now = new Date('2026-10-26T12:00:00');
+
+    test('a raw older than 10 minutes with no groomed twin is named', () => {
+        expect(strayRaws(['2026-10-26-1100.raw.md'], now)).toEqual([
+            '2026-10-26-1100.raw.md',
+        ]);
+    });
+
+    test('a groomed twin clears it', () => {
+        expect(
+            strayRaws(
+                ['2026-10-26-1100.raw.md', '2026-10-26-1100.groomed.md'],
+                now,
+            ),
+        ).toEqual([]);
+    });
+
+    test('a raw younger than 10 minutes waits', () => {
+        expect(strayRaws(['2026-10-26-1155.raw.md'], now)).toEqual([]);
+    });
+
+    test('a raw from before the rules start is never named', () => {
+        expect(strayRaws(['2026-10-25-1440.raw.md'], now)).toEqual([]);
     });
 });
 

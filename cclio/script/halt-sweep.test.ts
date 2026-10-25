@@ -29,8 +29,13 @@ describe('unhandledLines', () => {
     });
 
     test('a ✅ entry and its continuation lines pass', () => {
-        const handled = inbox('✅ **done**\nthe body\n\nmore body');
+        const handled = inbox('✅ **done**\nthe body\nmore body');
         expect(unhandledLines(handled, template)).toEqual([]);
+    });
+
+    test('a new line after a blank line below a ✅ entry is unhandled', () => {
+        const dropped = inbox('✅ **done**\nthe body\n\na new drop');
+        expect(unhandledLines(dropped, template)).toEqual(['a new drop']);
     });
 
     test('a pristine template passes', () => {

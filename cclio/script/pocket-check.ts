@@ -22,8 +22,12 @@ const CAP_FREE_TITLE = /^🧬 evergreen turn/;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
-const TICKET_LINE =
+// the one ticket-line shape, shared with wish-cover
+export const TICKET_LINE =
     /^[ \t]*(?:- )?(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gim;
+// a «kept:» line vouches for its own ticket only this long
+const KEPT_DAYS = 3;
+const KEPT_LINE = /^kept: (\d{4}-\d{2}-\d{2}) — (.*)$/gm;
 const ZONED_STAMP = /(?:Z|[+-]\d{2}:?\d{2})$/;
 const ITEM_PREFIX = /^pk-\d+ /i;
 
@@ -33,6 +37,7 @@ export function checkPocket(
     today: string,
     lastTriage = '',
     isGroomed: Groomed = groomedOnDisk,
+    closedTickets: ReadonlySet<string> = new Set(),
 ): string[] {
     const config = {
         labels: listOf(configText, 'labels'),
@@ -104,13 +109,23 @@ export function checkPocket(
             );
 
         // one outcome, one store: the item dies the turn its ticket is born, not when it closes
-        const keptForTicket =
-            /^kept: \d{4}-\d{2}-\d{2} — .*\b(?:FRM|BYT)-\d+/m.test(text);
-        for (const ticket of ticketsOf(text))
-            if (status !== 'done' && !keptForTicket)
+        const freshKept = [...text.matchAll(KEPT_LINE)]
+            .filter(([, day]) => (day ?? '') >= daysBefore(today, KEPT_DAYS))
+            .map(([, , why]) => why ?? '');
+        for (const ticket of ticketsOf(text)) {
+            if (closedTickets.has(ticket))
+                report(
+                    `its ticket ${ticket} is closed in linear: flip it to done`,
+                );
+            else if (
+                !freshKept.some((why) =>
+                    new RegExp(`\\b${ticket}\\b`, 'i').test(why),
+                )
+            )
                 report(
                     `carries ticket ${ticket} yet is ${status}: the item dies the turn its ticket is born, set it done`,
                 );
+        }
 
         if (!config.priorities.includes(priority))
             report(
@@ -190,6 +205,21 @@ function daysBefore(day: string, days: number): string {
 export function ticketsOf(text: string): string[] {
     return [...text.matchAll(TICKET_LINE)].map((match) =>
         (match[1] ?? '').toUpperCase(),
+    );
+}
+
+function closedOf(ids: string[]): Set<string> {
+    if (ids.length === 0) return new Set();
+    const out = execFileSync('x', ['linear', 'read', ...ids], {
+        encoding: 'utf8',
+    });
+    const tickets = (JSON.parse(out) as LinearRead).data.tickets;
+    return new Set(
+        tickets
+            .filter((ticket) =>
+                ['completed', 'canceled'].includes(ticket.stateType),
+            )
+            .map((ticket) => ticket.id),
     );
 }
 
@@ -335,11 +365,14 @@ if (import.meta.main) {
     const lastTriage = existsSync(stamp)
         ? readFileSync(stamp, 'utf8').trim()
         : '';
+    const open = tasks.filter(({ text }) => !/^status: done$/m.test(text));
     const problems = checkPocket(
         readFileSync(join(root, 'backlog.config.yml'), 'utf8'),
         tasks,
         today,
         lastTriage,
+        groomedOnDisk,
+        closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
     );
     problems.push(
         ...auditAgainstHead(
@@ -373,6 +406,10 @@ if (import.meta.main) {
 interface Head {
     names: string[];
     text: (dir: 'tasks' | 'archive', name: string) => string;
+}
+
+interface LinearRead {
+    data: { tickets: { id: string; stateType: string }[] };
 }
 
 interface Task {
