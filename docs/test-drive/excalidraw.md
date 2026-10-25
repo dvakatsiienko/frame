@@ -35,4 +35,6 @@ born 2026-10-25 from the PK-276 research and bench (dima: «let's try Excalidraw
 
 - 2026-10-25 · round 0, the bench: band 3 (9 tiles, 8 arrows) · render 1.0 s vs draw.io 3.3 s; 99 tiles 1.1 s vs 7.8 s · file 55 KB vs 12 KB (4.6×) · one tile moved: 92 diff lines vs 4 · no bold or italic; the CLI routes no arrow, Excalidraw's router ran in headless Chrome (a 14.6 MB bundle) · bench report: the helper's summary, `bench/` holds every file
 
+- 2026-10-25 · round 1, the PWA as his editor: the reshuffle and two redraws were written to `board.excalidraw` (committed 16:47) while his PWA tab held the file open · the tab never showed them until he reloaded, and a tile he dropped in the tab never reached the file · a miss against the stress list's «⌘O / ⌘S on a local file»: the PWA holds a copy, not a live view; each redraw needs his ⌘O, each edit of his his ⌘S
+
 ## verdict

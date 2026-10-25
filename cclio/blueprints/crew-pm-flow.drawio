@@ -706,9 +706,6 @@
         <mxCell id="30:489" edge="1" parent="1" source="30:434" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="7:236" value="folded and placed">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="kclTkWSHnZiVo3e1CkZm-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="draw tickets flow somewhere here" vertex="1">
-          <mxGeometry height="60" width="120" x="6859" y="-1584" as="geometry" />
-        </mxCell>
         <mxCell id="tf-title" value="🗺️ tickets flow — how a ticket lives today, across the pocket and linear" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=48;fontStyle=1;fontColor=#1E1E1E;" parent="1" vertex="1">
           <mxGeometry x="56" y="-1584" width="1900" height="58" as="geometry" />
         </mxCell>
