@@ -16,6 +16,7 @@ read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain te
 - the spec sits in `.scratch/<feature>/spec.md`, carries `wish: <ticket>`, one section per chunk; every lane with a member gets one, a quick lane too
 - the code is read against each chunk's `decided`: a signed decision the code has broken stops that chunk for a re-sign (`cclio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
+- every rider rides in the spec, named at dispatch or added as a steer; a rider found only in a commit is a verifier finding
 
 ## 3 · the exit lines
 
