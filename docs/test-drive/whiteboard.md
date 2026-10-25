@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-30
+until: 2026-10-31
 ---
 
 # test drive — dev.fast whiteboard

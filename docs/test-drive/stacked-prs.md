@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-03
+until: 2026-11-04
 dies-when: the verdict line below is written
 fits: coder
 ---
@@ -40,6 +40,8 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 - gh-stack v0.2.1 installed for this round (`gh extension install github/gh-stack`)
 - ⚠️ blocker: `x lane stack link --apply` failed inside gh-stack — «migrating stack state: worktree administration path "/Users/dima/frame/.git/worktrees/.DS_Store" is not a directory». a Finder file beside the worktree admin dirs; no upstream issue yet. dima trashed it (o64) and the issue is [gh-stack#587](https://github.com/github/gh-stack/issues/587) (o65)
 - ⚠️ blocker 2: `gh stack link` pushes every branch it is named, and a frame worktree's push dies at the mirror gate → `x lane stack link` now names the layers' open prs by number, which gh-stack never pushes (fixed in layer 3)
-- open → merge time, review rounds per layer, stack-only hand steps: filled at merge
+- open → merge: 2h20, 2h12, 2h02 per layer (all merged 15:33, blockers included); the plain FRM-422 pr (+418) took 69 min
+- FRM-423 (pr 0 + 2 layers, #105 → #106 → #107): 28, 68 and 43 min, one merge-auto call; the coder: worth it for dependent parts, ~28 min of stack-only hand steps, late scope adds misfit
+- reading after 2 stacks (cclio, 2026-10-25, inference): no speed gain at our medians; the gain is one concern per layer for the verifier, so a stack fits only one chunk with dependent parts big enough to split (a guess: over ~400 lines); shape-lane would mark it «stack: N layers» at the sign
 
 ## verdict

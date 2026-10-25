@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-28
+until: 2026-10-29
 ---
 
 # doc miss — does our own search miss docs often enough to earn a rag index?
