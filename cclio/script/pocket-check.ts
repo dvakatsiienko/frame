@@ -304,8 +304,23 @@ export function auditAgainstHead(
                 );
         }
     const here = new Set(tasks.map((file) => file.name));
+    const startsWithPrefix = (files: Task[], prefix: string) =>
+        files.some((file) => file.name.toLowerCase().startsWith(prefix));
+    const prefixOf = (name: string) =>
+        (name.match(ITEM_PREFIX)?.[0] ?? name).toLowerCase();
+    // a name gone from the archive is fine when its «pk-N » prefix lives on in the archive or the tasks dir
+    for (const name of head.archiveNames)
+        if (
+            !archive.some((file) => file.name === name) &&
+            !startsWithPrefix(archive, prefixOf(name)) &&
+            !startsWithPrefix(tasks, prefixOf(name))
+        )
+            problems.push(
+                `${idOf(name)?.toUpperCase()}: left the archive — restore it from \`git show HEAD:\``,
+            );
     for (const name of head.names.filter((file) => !here.has(file))) {
-        const prefix = (name.match(ITEM_PREFIX)?.[0] ?? name).toLowerCase();
+        const prefix = prefixOf(name);
+        if (startsWithPrefix(tasks, prefix)) continue;
         const moved = archive.find((file) =>
             file.name.toLowerCase().startsWith(prefix),
         );
@@ -323,16 +338,67 @@ export function auditAgainstHead(
     return problems;
 }
 
-function gitAtHead(args: string[]): string {
-    try {
-        return execFileSync('git', args, {
-            cwd: join(import.meta.dirname, '..'),
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore'],
-        });
-    } catch {
-        return '';
+// HEAD's pocket as the audit reads it: both name lists, and every blob from one `git cat-file --batch`
+export function headFromGit(
+    root: string,
+    env: NodeJS.ProcessEnv = process.env,
+): Head {
+    const git = (args: string[], input?: string) => {
+        try {
+            return execFileSync('git', args, {
+                cwd: root,
+                env,
+                input,
+                maxBuffer: 512 * 1024 * 1024,
+                stdio: ['pipe', 'pipe', 'ignore'],
+            });
+        } catch {
+            return Buffer.alloc(0);
+        }
+    };
+    const dirs = { archive: 'archive/tasks', tasks: 'tasks' } as const;
+    const namesIn = (dir: keyof typeof dirs) =>
+        git([
+            'ls-tree',
+            // without it ls-tree filters by the cwd prefix and lists nothing from cclio/
+            '--full-tree',
+            '-z',
+            '--name-only',
+            `HEAD:./pocket/${dirs[dir]}/`,
+        ])
+            .toString()
+            .split('\0')
+            .filter((name) => name.endsWith('.md'));
+    const names = namesIn('tasks');
+    const archiveNames = namesIn('archive');
+    const wanted = [
+        ...names.map((name) => ['tasks', name] as const),
+        ...archiveNames.map((name) => ['archive', name] as const),
+    ];
+    const reply = git(
+        ['cat-file', '--batch'],
+        wanted
+            .map(([dir, name]) => `HEAD:./pocket/${dirs[dir]}/${name}\n`)
+            .join(''),
+    );
+    const blobs = new Map<string, string>();
+    let pos = 0;
+    for (const [dir, name] of wanted) {
+        const key = `${dir}/${name}`;
+        const end = reply.indexOf('\n', pos);
+        if (end < 0) break;
+        const header = reply.toString('utf8', pos, end);
+        const size = header.endsWith(' missing')
+            ? 0
+            : Number(header.split(' ')[2]);
+        blobs.set(key, reply.toString('utf8', end + 1, end + 1 + size));
+        pos = end + 1 + size + (header.endsWith(' missing') ? 0 : 1);
     }
+    return {
+        archiveNames,
+        names,
+        text: (dir, name) => blobs.get(`${dir}/${name}`) ?? '',
+    };
 }
 
 function readDir(dir: string): Task[] {
@@ -378,23 +444,7 @@ if (import.meta.main) {
         ...auditAgainstHead(
             tasks,
             readDir(join(root, 'pocket', 'archive', 'tasks')),
-            {
-                names: gitAtHead([
-                    'ls-tree',
-                    // without it ls-tree filters by the cwd prefix and lists nothing from cclio/
-                    '--full-tree',
-                    '-z',
-                    '--name-only',
-                    'HEAD:./pocket/tasks/',
-                ])
-                    .split('\0')
-                    .filter((name) => name.endsWith('.md')),
-                text: (dir, name) =>
-                    gitAtHead([
-                        'show',
-                        `HEAD:./${join('pocket', dir === 'tasks' ? 'tasks' : 'archive/tasks', name)}`,
-                    ]),
-            },
+            headFromGit(root),
         ),
     );
     if (problems.length === 0)
@@ -406,6 +456,7 @@ if (import.meta.main) {
 /* Types */
 
 interface Head {
+    archiveNames: string[];
     names: string[];
     text: (dir: 'tasks' | 'archive', name: string) => string;
 }

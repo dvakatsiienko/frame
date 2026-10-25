@@ -1,8 +1,14 @@
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { gitEnv } from '../../script/lib/git-fixture.ts';
 import {
     auditAgainstHead,
     checkPocket,
+    headFromGit,
     lostNoteLines,
 } from './pocket-check.ts';
 
@@ -471,7 +477,12 @@ describe('auditAgainstHead', () => {
         name,
         text: `---\nstatus: ${status}\n---\n\n<!-- SECTION:DESCRIPTION:BEGIN -->\n${wishes}\n<!-- SECTION:DESCRIPTION:END -->\n<!-- SECTION:NOTES:BEGIN -->\n${notes}\n<!-- SECTION:NOTES:END -->\n`,
     });
-    const head = (names: string[], texts: Record<string, string> = {}) => ({
+    const head = (
+        names: string[],
+        texts: Record<string, string> = {},
+        archiveNames: string[] = [],
+    ) => ({
+        archiveNames,
         names,
         text: (dir: string, name: string) => texts[`${dir}/${name}`] ?? '',
     });
@@ -511,6 +522,86 @@ describe('auditAgainstHead', () => {
         expect(
             auditAgainstHead([], [closed], head(['pk-5 - gone.md'])),
         ).toEqual([]);
+    });
+
+    test('an archived file gone from the archive goes red', () => {
+        expect(
+            auditAgainstHead([], [], head([], {}, ['pk-265 - raw drops.md'])),
+        ).toEqual([
+            'PK-265: left the archive — restore it from `git show HEAD:`',
+        ]);
+    });
+
+    test('an archived file renamed in the archive or back into tasks is not gone', () => {
+        const archiveNames = ['pk-265 - raw drops.md'];
+        expect(
+            auditAgainstHead(
+                [],
+                [file('pk-265 - new slug.md', 'done')],
+                head([], {}, archiveNames),
+            ),
+        ).toEqual([]);
+        expect(
+            auditAgainstHead(
+                [file('pk-265 - new slug.md', 'open')],
+                [],
+                head([], {}, archiveNames),
+            ),
+        ).toEqual([]);
+    });
+
+    test('a task renamed in place keeps its prefix and is not gone', () => {
+        expect(
+            auditAgainstHead(
+                [file('pk-5 - new slug.md', 'open')],
+                [],
+                head(['pk-5 - gone.md']),
+            ),
+        ).toEqual([]);
+    });
+
+    test('the real git path: a committed task deleted afterwards goes red', () => {
+        const repo = mkdtempSync(join(tmpdir(), 'pocket-git-'));
+        try {
+            const root = join(repo, 'cclio');
+            const tasks = join(root, 'pocket', 'tasks');
+            const archive = join(root, 'pocket', 'archive', 'tasks');
+            mkdirSync(tasks, { recursive: true });
+            mkdirSync(archive, { recursive: true });
+            writeFileSync(join(tasks, 'pk-5 - gone.md'), 'x');
+            writeFileSync(join(archive, 'pk-6 - old.md'), 'y');
+            const noted = file('pk-7 - kept.md', 'done', 'dima: «keep it»');
+            writeFileSync(join(archive, noted.name), noted.text);
+            const git = (...args: string[]) =>
+                execFileSync(
+                    'git',
+                    [
+                        '-c',
+                        'user.name=t',
+                        '-c',
+                        'user.email=t@t',
+                        '-c',
+                        'commit.gpgsign=false',
+                        ...args,
+                    ],
+                    { cwd: repo, env: gitEnv(), stdio: 'ignore' },
+                );
+            git('init', '-q');
+            git('add', '.');
+            git('commit', '-q', '-m', 'seed');
+            rmSync(join(tasks, 'pk-5 - gone.md'));
+            rmSync(join(archive, 'pk-6 - old.md'));
+            const wiped = file(noted.name, 'done', 'done');
+            expect(
+                auditAgainstHead([], [wiped], headFromGit(root, gitEnv())),
+            ).toEqual([
+                'pk-7: 1 note line(s) gone since HEAD — a close appends (`--append-notes`); restore from `git show HEAD:`',
+                'PK-6: left the archive — restore it from `git show HEAD:`',
+                left,
+            ]);
+        } finally {
+            rmSync(repo, { force: true, recursive: true });
+        }
     });
 
     test('an item still in tasks is not gone', () => {

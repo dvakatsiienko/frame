@@ -1,4 +1,4 @@
-// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the one pocket item whose «ticket:» or «moved to linear:» line names it, else to the ticket's «## wish» block (x linear read); reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines and a draft citing none passes; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -13,7 +13,7 @@ export function wishLines(item: string) {
         const [, id, text] = match;
         // a leading «(Q1)» or «(band 4)» is cclio's source tag, never his words
         if (id && !lines.has(id))
-            lines.set(id, (text ?? '').replace(/^\(.*?\)\s*/, '').trim());
+            lines.set(id, (text ?? '').replace(/^\(.*?\)\s*:?\s*/, '').trim());
     }
     return lines;
 }
@@ -97,28 +97,28 @@ if (import.meta.main) {
     }
     const items = pocketItems(path.resolve(import.meta.dirname, '..'));
     let item: string | undefined;
-    if (/^FRM-\d+$/i.test(id)) {
-        const owners = itemsForTicket(items, id);
-        if (owners.length > 1) {
-            console.error(
-                `${id}: several pocket items carry it (${owners.join(', ')}) — name the PK id on the wish line`,
+    const isTicket = /^FRM-\d+$/i.test(id);
+    if (isTicket) {
+        try {
+            const read = JSON.parse(
+                execFileSync('x', ['linear', 'read', id], {
+                    encoding: 'utf8',
+                    timeout: 15_000,
+                }),
             );
+            item = wishBlock(read.data.tickets[0].description ?? '');
+        } catch (error) {
+            console.error(`${id}: x linear read failed — ${error}`);
             process.exit(2);
         }
-        item = owners[0] && readItem(items, owners[0]);
-        if (item === undefined || wishLines(item).size === 0) {
-            try {
-                const read = JSON.parse(
-                    execFileSync('x', ['linear', 'read', id], {
-                        encoding: 'utf8',
-                        timeout: 15_000,
-                    }),
-                );
-                item = wishBlock(read.data.tickets[0].description ?? '');
-            } catch (error) {
-                console.error(`${id}: x linear read failed — ${error}`);
-                process.exit(2);
-            }
+        // the ticket's block is the wish's home; one pocket item that carries it stands in only for a block with no W-lines
+        if (wishLines(item).size === 0) {
+            const owners = itemsForTicket(items, id);
+            const owned =
+                owners.length === 1 && owners[0]
+                    ? readItem(items, owners[0])
+                    : undefined;
+            item = owned ?? item;
         }
     } else {
         item = readItem(items, id);
@@ -127,13 +127,19 @@ if (import.meta.main) {
         console.error(`${id}: no pocket item`);
         process.exit(2);
     }
+    const drafts = draftPaths.map((p) => readFileSync(p, 'utf8'));
     if (wishLines(item).size === 0) {
+        if (isTicket && citedIds(drafts.join('\n')).size === 0) {
+            console.error(
+                `${id}: its wish block has no W-lines and the draft cites none — passed`,
+            );
+            process.exit(0);
+        }
         console.error(
             `${id}: no W-lines — fold the wish into numbered W1… lines first`,
         );
         process.exit(2);
     }
-    const drafts = draftPaths.map((p) => readFileSync(p, 'utf8'));
     if (citedIds(drafts.join('\n')).size === 0) {
         console.log(`✗ ${id}: cites no W-line`);
         process.exit(1);

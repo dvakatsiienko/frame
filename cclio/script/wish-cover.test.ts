@@ -1,3 +1,13 @@
+import { spawnSync } from 'node:child_process';
+import {
+    copyFileSync,
+    mkdirSync,
+    mkdtempSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -128,6 +138,91 @@ describe('wish-cover', () => {
 
     test('a body with no wish block holds no W-lines', () => {
         expect(wishLines(wishBlock('## goal\n* W1 x')).size).toBe(0);
+    });
+
+    test('a stamp and its colon are not part of the wish text', () => {
+        const stamped = '- W1 (2026-10-25 13:47, dima): ❓ why is it so';
+        expect(wishLines(stamped).get('W1')).toBe('❓ why is it so');
+        expect(missingText(stamped, ['W1 — ❓ why is it so'])).toEqual([]);
+    });
+
+    describe('the cli, on a copy with a stubbed x', () => {
+        const here = import.meta.dirname;
+        const ticketItem = (n: number, ticket: string, wish: string) =>
+            `---\nid: PK-${n}\n---\nticket: ${ticket}\n- ${wish}\n`;
+        const run = (ticketBody: string, draft: string, owners = 2) => {
+            const root = mkdtempSync(join(tmpdir(), 'wish-cover-'));
+            try {
+                mkdirSync(join(root, 'script'));
+                for (const file of [
+                    'wish-cover.ts',
+                    'pocket-check.ts',
+                    'prompt-groom.ts',
+                ])
+                    copyFileSync(join(here, file), join(root, 'script', file));
+                const tasks = join(root, 'pocket', 'tasks');
+                mkdirSync(tasks, { recursive: true });
+                mkdirSync(join(root, 'pocket', 'archive', 'tasks'), {
+                    recursive: true,
+                });
+                writeFileSync(
+                    join(tasks, 'pk-1 - a.md'),
+                    ticketItem(1, 'FRM-9', 'W1 pocket words'),
+                );
+                if (owners > 1)
+                    writeFileSync(
+                        join(tasks, 'pk-2 - b.md'),
+                        ticketItem(2, 'FRM-9', 'W1 other pocket words'),
+                    );
+                mkdirSync(join(root, 'bin'));
+                writeFileSync(
+                    join(root, 'bin', 'x'),
+                    `#!/bin/sh\ncat <<'EOF'\n${JSON.stringify({ data: { tickets: [{ description: ticketBody }] } })}\nEOF\n`,
+                    { mode: 0o755 },
+                );
+                writeFileSync(join(root, 'draft.md'), draft);
+                return spawnSync(
+                    process.execPath,
+                    [
+                        join(root, 'script', 'wish-cover.ts'),
+                        'FRM-9',
+                        join(root, 'draft.md'),
+                    ],
+                    {
+                        encoding: 'utf8',
+                        env: {
+                            ...process.env,
+                            PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                        },
+                    },
+                );
+            } finally {
+                rmSync(root, { force: true, recursive: true });
+            }
+        };
+
+        test('several pocket items carrying the ticket do not block', () => {
+            const result = run(
+                '## wish\n\n* W1 ticket words\n',
+                'W1 ticket words',
+            );
+            expect(result.status).toBe(0);
+        });
+
+        test('the ticket block wins over the one pocket item that carries it', () => {
+            const result = run(
+                '## wish\n\n* W1 ticket words\n',
+                'W1 ticket words',
+                1,
+            );
+            expect(result.status).toBe(0);
+        });
+
+        test('a block with no W-lines and a draft citing none passes with a note', () => {
+            const result = run('## wish\n\nno W-lines here\n', 'plain draft');
+            expect(result.status).toBe(0);
+            expect(result.stderr).toContain('cites none');
+        });
     });
 
     test('reds a cited W-line with empty text', () => {
