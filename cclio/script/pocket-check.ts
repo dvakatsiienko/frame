@@ -381,6 +381,8 @@ if (import.meta.main) {
             {
                 names: gitAtHead([
                     'ls-tree',
+                    // without it ls-tree filters by the cwd prefix and lists nothing from cclio/
+                    '--full-tree',
                     '-z',
                     '--name-only',
                     'HEAD:./pocket/tasks/',
