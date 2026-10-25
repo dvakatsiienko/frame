@@ -1,11 +1,8 @@
 name: review
 
-# The ci reviewer for frame: one round per PR at «final», started by the
-# `🤖 review:requested` label. The round itself — the cap, the reviewer, the
-# `review:clean` gate — lives in bytes' `review-round.yml`, shared by every
-# repo, so the reviewer app, its prompt and its gate never drift between them.
-# bytes' own `review.yml` carries the measured reasons for the shape below; this
-# file keeps the same trigger, concurrency key and job name on purpose.
+# The ci reviewer for frame, one round per PR at «final». The round lives in
+# bytes' `review-round.yml`, shared with bytes; bytes' own `review.yml` carries
+# the measured reasons for the trigger, concurrency key and job name kept here.
 #
 # 📌 Named `review.yml` on purpose: the cap counts successful runs of the
 # calling file, and `x lane review` reads `review.yml` runs in the repo it runs
@@ -27,7 +24,7 @@ jobs:
     if: >-
       github.event.action == 'labeled' &&
       github.event.label.name == '🤖 review:requested'
-    # Pinned to bytes `main`: a PR never runs its own copy of the round.
+    # At bytes `main`; that file's header says what the pin holds and what it does not.
     uses: dvakatsiienko/bytes/.github/workflows/review-round.yml@main
     # A called workflow can only narrow the token it is handed, so the caller
     # grants everything the round needs.
