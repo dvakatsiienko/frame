@@ -22,7 +22,7 @@ the vector in its description, which the boot prints and dima peeks at. [[dima-s
 
 ## 🧭 the roadmap — the order, and how to use it
 
-The order lives in the linear initiative «roadmap»: eight steps in its body plus the cli as a parallel track beside every step (dima, 2026-10-10: «make the cli run in parallel, along with everything else. we evolve the cli gradually»), every project attached,
+The order lives in the linear initiative «roadmap»: nine steps in its body plus the cli as a parallel track beside every step (dima, 2026-10-10: «make the cli run in parallel, along with everything else. we evolve the cli gradually»), every project attached,
 a project's status + start date mark where it sits, dependency edges say what unblocks what. The
 boot prefetch prints it; **that block answers «what's next».**
 
