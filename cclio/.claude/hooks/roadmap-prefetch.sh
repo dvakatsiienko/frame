@@ -22,33 +22,34 @@ fi
 linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\"]}}, projectMilestone: {null: true}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
 | jq -r '
   .data as $d |
-  "-- the roadmap board: print it pretty in the opening reply (grill 7, 2026-10-22) --",
+  "-- the roadmap board: copy it as is into the opening reply, drift line as fixed (dima, 2026-10-25) --",
   ([$d.initiative.content | split("\n")[] | select(test("^[0-9]+\\. "))
-    | {n: capture("^(?<n>[0-9]+)\\. ").n, p: (sub("^[0-9]+\\. "; "") | split(" — ")[0]), done: test("\\(done [0-9]")}
+    | {n: capture("^(?<n>[0-9]+)\\. ").n, p: (sub("^[0-9]+\\. "; "") | split(" — ")[0]), what: (sub("^[0-9]+\\. "; "") | split(" — ")[1] // ""), done: test("\\(done [0-9]")}
     | select(.done | not)]) as $steps |
   ([($d.initiative.content | split("## the milestone queue")[1] // "" | split("\n## ")[0] // "" | split("\n")[])
     | select(startswith("* ") and contains(" · ")) | sub("^\\* "; "") | split(" · ")
     | {name: (.[:-1] | join(" · ")), project: .[-1]}]) as $queue |
   [$queue[] as $q | $d.projectMilestones.nodes[] | select(.name == $q.name and .project.name == $q.project)] as $matched |
   ($matched | map(select(.status != "done"))) as $live |
-  "🧭 phase now: step \($steps[0].n // "?") · \($steps[0].p // "?") — now: \(($d.initiative.description // "") | capture("now: (?<n>[^.]*)").n // "?")",
-  "   next phases: \($steps[1:4] | map("\(.n) · \(.p)") | join(" → "))",
-  "🎑 next 7 milestones (the queue):",
-  ($live[:7] | to_entries[] | .value as $m
-    | "\([$m.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\($m.issues.nodes | length)" as $count
-    | (if ($m.name | test("^[a-z0-9]")) then "\($count) · \($m.name)" else ($m.name | capture("^(?<e>\\S+) (?<r>.*)$") | "\(.e) \($count) · \(.r)") end) as $head
-    | "   \(.key + 1). \($head) · \($m.project.name)"),
   ([$queue[] | . as $q | select([$d.projectMilestones.nodes[] | select(.name == $q.name and .project.name == $q.project)] | length == 0) | "\(.name) · \(.project)"]) as $ghosts |
   ([$d.projectMilestones.nodes[] | select(.status != "done") | . as $m | select([$queue[] | select(.name == $m.name and .project == $m.project.name)] | length == 0) | "\(.name) · \(.project.name)"]) as $unqueued |
   ([(if ($live[0].project.name // "") as $top | ([$steps[0].p, "cli"] | index($top)) == null then "the queue top (\($live[0].name // "none")) is off the now step and the cli track" else empty end),
     (if ($unqueued | length) > 0 then "open milestones missing from the queue: \($unqueued | join(", "))" else empty end),
     (if ($ghosts | length) > 0 then "queue lines matching no milestone: \($ghosts | join(", "))" else empty end)]) as $issues |
-  (if ($issues | length) == 0 then "🩺 health: on track" else "🩺 health: at risk — \($issues | join("; "))" end),
   ([$live[:7][].project.name] | unique) as $hot |
   ([$live[].project.name] | unique) as $queued |
   ([$d.initiative.projects.nodes[] | .name as $p
     | (if ($hot | index($p)) != null then "In Progress" elif ($queued | index($p)) != null then "Planned" else "Backlog" end) as $want
     | select(.status.name != $want) | "\($p) \(.status.name) → \($want)"]) as $drift |
+  "🧭 roadmap",
+  (if ($issues | length) == 0 then "✅ health on track" else "⚠️ health at risk — \($issues | join("; "))" end),
+  "🌔 now: step \($steps[0].n // "?"), \($steps[0].p // "?")\(if ($steps[0].what // "") != "" then " (\($steps[0].what))" else "" end); next: \($steps[1:4] | map(.p) | join(" → "))",
+  "**milestone queue**:",
+  "",
+  ($live[:7] | to_entries[] | .value as $m
+    | "\([$m.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\($m.issues.nodes | length)" as $count
+    | "\(.key + 1). \($m.name) \($count)"),
+  "",
   (if ($drift | length) > 0 then "🧾 status drift, fix it this turn: \($drift | join(" · "))" else empty end),
   "-- roadmap initiative (\($d.initiative.status)) --",
   $d.initiative.description,

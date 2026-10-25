@@ -109,8 +109,7 @@ the board, one message, short lines, **no queries here — pure assembly**:
 - 📝 `flawlog: <path>` — the day's file from step 7, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 7 shows as a missing line
 - ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
 - inbox status · handoffs pending · pocket depth + top item
-- 🧭 the prefetch's roadmap board, pretty: the phase now, the next 3 steps, the next 7 milestones with done
-  counts, 🩺 health, 🧾 drift fixed that turn (dima's o82); a step named in plain words, never a bare number (dima, 2026-10-23)
+- 🧭 the prefetch's roadmap board, copied as it prints (dima's template, 2026-10-25), plus `🧾 status drift fixed: <from → to>` when this turn fixed one; a step named in plain words, never a bare number (dima, 2026-10-23)
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
