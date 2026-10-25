@@ -10,7 +10,7 @@ it runs over any ticket: a safety-net re-grill after `cclio:shape-idea`, the rea
 
 ## 0 · read what is settled
 
-read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question. every question cites the W-lines it settles; `node script/wish-cover.ts <PK-N> <round>` exits 0 before the round prints.
+read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question. every question cites the W-lines it settles; the round is written to its proposal file first, where the wish-cover hook reds a W-line it lost.
 
 then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the chunk or is named in the grill. a small UI ask goes the `craft-fleet-flow` freebie way (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps»).
 
