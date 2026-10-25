@@ -46,6 +46,7 @@ var (
 	newMark    = regexp.MustCompile(`^\s*\((?:new|to build)\)`)
 	fileLike   = regexp.MustCompile(`^[\w.@~-]+\.(?:md|mdx|ts|tsx|js|mjs|go|json|jsonc|sh|zsh|yml|yaml|toml|swift|css|html|txt|plist|py|svg|png)$`)
 	lineRef    = regexp.MustCompile(`(:\d+(?:-\d+)?|#[\w-]+)$`)
+	npmScoped  = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
 	// a cc slash command (`/clear`, `/cclio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
 	jevWord           = regexp.MustCompile(`(?i)\bjev\b`)
@@ -275,6 +276,9 @@ func missing(token, repo string, files []string) (kind, why string) {
 // `brief.go:37` and `FTR.md#brief` name a file, so the line or the anchor comes off first
 func isPathLike(token string) bool {
 	bare := lineRef.ReplaceAllString(token, "")
+	if npmScoped.MatchString(bare) {
+		return false
+	}
 	return !strings.Contains(bare, " ") && (strings.Contains(bare, "/") || fileLike.MatchString(bare))
 }
 
