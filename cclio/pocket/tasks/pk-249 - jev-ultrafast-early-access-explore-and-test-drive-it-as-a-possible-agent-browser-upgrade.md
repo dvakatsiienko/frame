@@ -3,11 +3,11 @@ id: PK-249
 title: >-
   jev ultrafast early access: explore and test drive it as a possible
   agent-browser upgrade
-status: open
+status: done
 assignee: []
 created_date: '2026-10-22T11:46:00Z'
-updated_date: '2026-10-25T11:53:00Z'
-due_date: '2026-10-25'
+updated_date: '2026-10-25T14:00:00Z'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,11 @@ parked: the pocket/linear grill (FRM-419 step 2, 2026-10-25) decides its home
 kept: 2026-10-25 — dima: «keep the ticket at hand, in the pocket» (migration Q5)
 
 kept: 2026-10-25 (corrected) — on dima's word «keep the ticket at hand, in the pocket» alone; a test-drive home in docs/ waits for its round
+
+re-dated 2026-10-25 15:50 → 10-26: overdue at the second-wind pickup; work needs a research fan-out + a trial birth, weekly window at 92 %
+
+ticket: FRM-452
+close: W1–W4 moved to FRM-452 (jev judged milestone, dima o72 2026-10-25), with the reminder's repo item
+
+close: W1 moved, W2 moved, W3 moved, W4 moved — to FRM-452
 <!-- SECTION:NOTES:END -->

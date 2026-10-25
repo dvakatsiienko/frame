@@ -54,7 +54,7 @@ BANDS = [
             ("wlines", 3, 0, "file", "📄 numbered W-lines", "his fold, one point per line W1…, ❓ marks his questions; the raw drop stays in the notes", "craft-pm § wishes"),
             ("keeper", 1, 1, "member", "🐬 wishkeeper checks meaning", "every ask of the raw inbox kept in meaning, not only present", "boot step 3 (step 8's brief)"),
             ("elsewhere", 2, 1, "event", "🔔 an ask born elsewhere", "a grill, a sweep plan, a log or test-drive line: it gets a home too, never that line alone", "habit-shared-files § the pocket"),
-            ("cover", 3, 1, "script", "⚙️ wish-cover.ts", "every first use copies only the W-lines it settles; exits 0 before it ships", "craft-pm § wishes"),
+            ("cover", 3, 1, "script", "⚙️ wish-cover.ts", "a first use copies only the W-lines it settles, read from the pocket item or the ticket's wish block; its hook blocks a red", "craft-pm § wishes"),
         ],
         [
             ("drop", "groom", "R", "L", ""), ("groom", "parse", "R", "L", ""), ("parse", "wlines", "R", "L", ""),
@@ -72,7 +72,7 @@ BANDS = [
             ("item", 2, 0, "file", "📄 the item, pk-N", "a Backlog.md task: open · claimed · waiting · done; size xs · s · m", "pocket/tasks/ · backlog.config.yml"),
             ("move", 3, 0, "script", "⚙️ pocket-move.ts", "now · next · later: to the end of that band's order (ordinal 1000·10^band)", "script/pocket-move.ts"),
             ("shape", 4, 0, "script", "⚙️ pocket-check: the shape", "fields from the config, one size, ordinal in its band, a wish has W-lines, no note line lost", "script/pocket-check.ts"),
-            ("clock", 4, 1, "script", "⚙️ pocket-check: the clock", "now ≤ 3 · the 3-day triage due · a wait past tomorrow · a waiting item needs its line + a due · an open item behind a ticket", "runs at boot, after add and move, on each status move"),
+            ("clock", 4, 1, "script", "⚙️ pocket-check: the clock", "now ≤ 3 · triage due · a wait past tomorrow · an open item behind a ticket · an item leaving unclosed · lost notes, archive too", "runs at boot, after add and move, on each status move"),
             ("notes", 2, 1, "file", "📄 notes, appended only", "--append-notes, never --notes; his raw drop and quoted steers live here", "habit-shared-files § the pocket"),
         ],
         [
