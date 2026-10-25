@@ -139,6 +139,10 @@ export function checkPocket(
         const due = front.scalars.due_date;
         if (status === 'waiting' && !due)
             report('waiting without a due date: when does the wait expire?');
+        if (status === 'waiting' && due && due > daysBefore(today, -1))
+            report(
+                `waits until ${due}: a wait past tomorrow is linear's (habit-shared-files § the pocket)`,
+            );
         if (status === 'waiting' && due && due < today)
             report(
                 `expired on ${due}: the wait ended, work it or move it to linear`,

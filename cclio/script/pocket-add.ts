@@ -74,7 +74,12 @@ if (import.meta.main) {
             ['linear', 'list', '--search', words, '--json'],
             { encoding: 'utf8', timeout: 15000 },
         );
-        const hits = (JSON.parse(out).data?.tickets ?? []).slice(0, 3);
+        const hits = (JSON.parse(out).data?.tickets ?? [])
+            .filter(
+                (t: { stateType?: string }) =>
+                    !['completed', 'canceled'].includes(t.stateType ?? ''),
+            )
+            .slice(0, 3);
         for (const hit of hits)
             console.error(
                 `↪ linear may own this: ${hit.id} ${hit.title} — home it there, or keep it here with a note why`,

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-22T11:46:00Z'
-updated_date: '2026-10-25T11:47:00Z'
+updated_date: '2026-10-25T11:53:00Z'
 due_date: '2026-10-25'
 labels:
   - s
@@ -37,4 +37,6 @@ plan: 1 x:research the repo + docs (what it is, auth, price, how it differs from
 parked: the pocket/linear grill (FRM-419 step 2, 2026-10-25) decides its home
 
 kept: 2026-10-25 — dima: «keep the ticket at hand, in the pocket» (migration Q5)
+
+kept: 2026-10-25 (corrected) — on dima's word «keep the ticket at hand, in the pocket» alone; a test-drive home in docs/ waits for its round
 <!-- SECTION:NOTES:END -->

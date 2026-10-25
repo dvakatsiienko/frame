@@ -3,10 +3,10 @@ id: PK-159
 title: >-
   cclio bench — shape-idea: a small mvp that measures cclio's performance from
   her threads and logs
-status: waiting
+status: open
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-25T10:30:00Z'
+updated_date: '2026-10-25T11:53:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -28,4 +28,6 @@ inbox 10-16, wish: build a solid cclio bench, not too complex — a script, reci
 <!-- SECTION:NOTES:BEGIN -->
 10-16: OpenTelemetry is a bench input — proposal in cclio/.scratch/otel/proposal.md (cost, active time, cache hits, tool decisions per role).
 re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+
+kept: 2026-10-25 — cclio's own shapeless idea (Q5); no wait, worked when a window opens
 <!-- SECTION:NOTES:END -->

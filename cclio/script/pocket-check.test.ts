@@ -122,7 +122,7 @@ describe('checkPocket', () => {
                 config,
                 [
                     task(
-                        { due_date: '2026-10-12', status: 'waiting' },
+                        { due_date: '2026-10-10', status: 'waiting' },
                         '**waiting for:** gh pr view 1',
                     ),
                 ],
@@ -199,6 +199,33 @@ describe('checkPocket', () => {
         ).toEqual([]);
     });
 
+    test('a wait past tomorrow goes red: it belongs in linear', () => {
+        expect(
+            checkPocket(
+                config,
+                [
+                    task(
+                        { due_date: '2026-10-12', status: 'waiting' },
+                        '**waiting for:** gh pr view 1',
+                    ),
+                ],
+                today,
+            ).join('\n'),
+        ).toContain("a wait past tomorrow is linear's");
+        expect(
+            checkPocket(
+                config,
+                [
+                    task(
+                        { due_date: '2026-10-10', status: 'waiting' },
+                        '**waiting for:** gh pr view 1',
+                    ),
+                ],
+                today,
+            ),
+        ).toEqual([]);
+    });
+
     test('an open item due yesterday is no red: only a wait expires', () => {
         expect(
             checkPocket(
@@ -262,7 +289,7 @@ describe('checkPocket', () => {
                 [
                     task(
                         {
-                            due_date: '2026-10-12',
+                            due_date: '2026-10-10',
                             labels: ['s'],
                             status: 'waiting',
                         },
