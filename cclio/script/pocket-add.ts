@@ -55,9 +55,14 @@ if (import.meta.main) {
     });
     const [title] = positionals;
     const priority = values.priority as Priority;
-    if (!title || !PRIORITIES.includes(priority)) {
+    // the sizes backlog.config.yml labels; an l never lands, it is a linear ticket to split
+    if (
+        !title ||
+        !PRIORITIES.includes(priority) ||
+        !['xs', 's', 'm'].includes(values.size)
+    ) {
         console.error(
-            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m|l] [--priority now|next|later] [--top] [--type task] [--due YYYY-MM-DD]',
+            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m] [--priority now|next|later] [--top] [--type task] [--due YYYY-MM-DD]',
         );
         process.exit(2);
     }

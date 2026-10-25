@@ -45,7 +45,7 @@ every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item h
 (a pocket item, a ticket, an answer given, a fold), then the reset is `halt-sweep.ts`'s inbox part (his template copied over `inbox.md`, never a hand clear; composer's prepped `inbox-composer.md` trashed, rebuilt at the next boot): read its dry run now (`node ~/frame/cclio/script/halt-sweep.ts`), and right after the home check run `node ~/frame/cclio/script/halt-sweep.ts --apply --only inbox` (it refuses and exits 1, printing the lines, when `inbox.md` holds a line without a ✅: a drop that came in after the read). the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless main-lane work, folds into the linear ticket that owns it, or becomes one; then it prunes the pocket: every `done` item is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
+the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless main-lane work, folds into the linear ticket that owns it, or becomes one; the day's `done` items stay listed for the gazette post (phase 4.5), which carries them and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
 inbox clears — before the CST is written.
 **the groom check** (FRM-418): `node ~/frame/cclio/script/prompt-groom.ts --linear` reads every ticket updated today, a new one included — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
@@ -137,6 +137,7 @@ ticket ids as links in the `rules/fleet-output-format.md` form.
 ## phase 4.5 — the gazette 🗞️ (before the CST, always)
 
 run `/cclio:gazette` — its wire gate stops for dima's literal answer. the CST afterwards carries only what the gazette did not.
+right after the post, the pocket prunes: every `done` item the post carried is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it).
 
 ## phase 5 — handoff CST 📬
 **mandatory, never skipped.** cclio cannot see sibling sessions, so the CST is its ONLY

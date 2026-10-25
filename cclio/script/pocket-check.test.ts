@@ -12,10 +12,7 @@ const config = [
 const today = '2026-10-09';
 const wishConfig = config.replace('"idea"', '"idea", "wish"');
 
-function task(
-    fields: Record<string, string | string[]>,
-    description = 'ticket: FRM-1',
-) {
+function task(fields: Record<string, string | string[]>, description = 'body') {
     const rows = Object.entries({
         id: 'PK-1',
         labels: ['m'],
@@ -42,38 +39,43 @@ describe('checkPocket', () => {
     });
 
     test("a «can't» park line goes red unless it names the probe it ran", () => {
-        const bare = task(
-            {},
-            "ticket: FRM-1\nparked: a headless run can't queue a prompt",
-        );
+        const bare = task({}, "parked: a headless run can't queue a prompt");
         expect(checkPocket(config, [bare], today)).toEqual([
             "PK-1: a «can't» park or wait line names no probe: put the `command` it tried on that line",
         ]);
         const probed = task(
             {},
-            "ticket: FRM-1\nparked: can't queue a prompt — `claude -p --input-format stream-json` showed it",
+            "parked: can't queue a prompt — `claude -p --input-format stream-json` showed it",
         );
         expect(checkPocket(config, [probed], today)).toEqual([]);
         const other = task(
             {},
-            "ticket: FRM-1\nparked: after the sweep\nnote: we can't rush it",
+            "parked: after the sweep\nnote: we can't rush it",
         );
         expect(checkPocket(config, [other], today)).toEqual([]);
     });
 
-    test('an open task whose ticket linear closed goes red', () => {
+    test('an open task carrying a ticket line goes red', () => {
         const pointing = task({}, 'body\nticket: FRM-371 (the guard rule)');
-        expect(
-            checkPocket(config, [pointing], today, new Set(['FRM-371'])),
-        ).toEqual([
-            'PK-1: its ticket FRM-371 is closed in linear: flip it to done',
+        expect(checkPocket(config, [pointing], today)).toEqual([
+            'PK-1: carries ticket FRM-371 yet is open: the item dies the turn its ticket is born, set it done',
         ]);
+    });
+
+    test('an open task kept for a named ticket step passes', () => {
+        const kept = task(
+            {},
+            'ticket: FRM-72\n\nkept: 2026-10-25 — FRM-419 step 4 maps these W-lines next',
+        );
+        expect(checkPocket(config, [kept], today)).toEqual([]);
+    });
+
+    test('a done task carrying a ticket line passes', () => {
         expect(
             checkPocket(
                 config,
                 [task({ status: 'done' }, 'ticket: FRM-371')],
                 today,
-                new Set(['FRM-371']),
             ),
         ).toEqual([]);
     });
@@ -102,7 +104,7 @@ describe('checkPocket', () => {
     });
 
     test('a claimed item with a park line goes red, a parked open one passes', () => {
-        const body = 'ticket: FRM-1\nparked: until the weekly reset';
+        const body = 'parked: until the weekly reset';
         expect(
             checkPocket(config, [task({ status: 'claimed' }, body)], today),
         ).toEqual([
@@ -177,14 +179,10 @@ describe('checkPocket', () => {
 
     test('the 3-day triage names items untouched for 2+ days', () => {
         const old = task({ updated_date: '2026-10-07 09:00' });
-        expect(
-            checkPocket(config, [old], today, new Set(), '2026-10-06'),
-        ).toEqual([
+        expect(checkPocket(config, [old], today, '2026-10-06')).toEqual([
             '3-day triage due (last 2026-10-06): PK-1 untouched 2+ days — revalidate each by hand: a stayer gets «kept: <date> — <why>», the rest move to linear; then `node script/pocket-check.ts --triaged`',
         ]);
-        expect(
-            checkPocket(config, [old], today, new Set(), '2026-10-08'),
-        ).toEqual([]);
+        expect(checkPocket(config, [old], today, '2026-10-08')).toEqual([]);
     });
 
     test('a triage with nothing stale stays quiet', () => {
@@ -193,7 +191,6 @@ describe('checkPocket', () => {
                 config,
                 [task({ updated_date: '2026-10-08 09:00' })],
                 today,
-                new Set(),
                 '',
             ),
         ).toEqual([]);
@@ -411,20 +408,16 @@ describe('the prompt groom (FRM-418)', () => {
     const day = '2026-10-26';
     const folded = task(
         { updated_date: `${day} 09:30` },
-        'ticket: FRM-1\n\nW301 (2026-10-26 09:12, dima): a fold',
+        '\nW301 (2026-10-26 09:12, dima): a fold',
     );
 
     test('a W-line stamped today with no groom reds, naming the prompt time', () => {
-        expect(
-            checkPocket(config, [folded], day, new Set(), day, () => false),
-        ).toEqual([
+        expect(checkPocket(config, [folded], day, day, () => false)).toEqual([
             expect.stringContaining("dima's 09:12 prompt folded with no groom"),
         ]);
     });
 
     test('a groomed one stays green', () => {
-        expect(
-            checkPocket(config, [folded], day, new Set(), day, () => true),
-        ).toEqual([]);
+        expect(checkPocket(config, [folded], day, day, () => true)).toEqual([]);
     });
 });

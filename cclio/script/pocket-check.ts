@@ -28,7 +28,6 @@ export function checkPocket(
     configText: string,
     tasks: Task[],
     today: string,
-    closedTickets: ReadonlySet<string> = new Set(),
     lastTriage = '',
     isGroomed: Groomed = groomedOnDisk,
 ): string[] {
@@ -103,10 +102,13 @@ export function checkPocket(
                 'claimed and parked at once: a parked item releases its claim, set it open or waiting',
             );
 
+        // one outcome, one store: the item dies the turn its ticket is born, not when it closes
+        const keptForTicket =
+            /^kept: \d{4}-\d{2}-\d{2} — .*\b(?:FRM|BYT)-\d+/m.test(text);
         for (const ticket of ticketsOf(text))
-            if (closedTickets.has(ticket))
+            if (status !== 'done' && !keptForTicket)
                 report(
-                    `its ticket ${ticket} is closed in linear: flip it to done`,
+                    `carries ticket ${ticket} yet is ${status}: the item dies the turn its ticket is born, set it done`,
                 );
 
         if (!config.priorities.includes(priority))
@@ -180,21 +182,6 @@ function daysBefore(day: string, days: number): string {
 export function ticketsOf(text: string): string[] {
     return [...text.matchAll(TICKET_LINE)].map((match) =>
         (match[1] ?? '').toUpperCase(),
-    );
-}
-
-function closedOf(ids: string[]): Set<string> {
-    if (ids.length === 0) return new Set();
-    const out = execFileSync('x', ['linear', 'read', ...ids], {
-        encoding: 'utf8',
-    });
-    const tickets = (JSON.parse(out) as LinearRead).data.tickets;
-    return new Set(
-        tickets
-            .filter((ticket) =>
-                ['completed', 'canceled'].includes(ticket.stateType),
-            )
-            .map((ticket) => ticket.id),
     );
 }
 
@@ -276,12 +263,10 @@ if (import.meta.main) {
     const lastTriage = existsSync(stamp)
         ? readFileSync(stamp, 'utf8').trim()
         : '';
-    const open = tasks.filter(({ text }) => !/^status: done$/m.test(text));
     const problems = checkPocket(
         readFileSync(join(root, 'backlog.config.yml'), 'utf8'),
         tasks,
         today,
-        closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
         lastTriage,
     );
     for (const { name, text } of tasks) {
@@ -303,10 +288,6 @@ if (import.meta.main) {
 }
 
 /* Types */
-
-interface LinearRead {
-    data: { tickets: { id: string; stateType: string }[] };
-}
 
 interface Task {
     name: string;

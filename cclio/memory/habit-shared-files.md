@@ -8,7 +8,7 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)
 
-one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved between priorities by `node script/pocket-move.ts <PK-N> now|next|later`, both picking the band's ordinal; else `backlog task edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m · l; a spec-sized item gets its spec in the target repo's `.scratch/`.
+one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved between priorities by `node script/pocket-move.ts <PK-N> now|next|later`, both picking the band's ordinal; else `backlog task edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m; a spec-sized item gets its spec in the target repo's `.scratch/`.
 **a note is appended, never replaced**: `backlog task edit <id> --append-notes "…"`; `pocket-check` reds a note line lost since HEAD.
 <!-- failure: a `--notes` close replaced PK-90's and PK-141's notes, dima's quoted steers (memory-sweep log, wishkeeper siesta rounds 7–13); `--notes` replaces every note -->
 
@@ -19,7 +19,7 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 **a pocket write with its fields known goes to composer as a `pocket-write` chore**; a write that needs wording stays mine.
 <!-- 2026-10-14, dima: 1 of ~6 pocket writes went to composer that day -->
 
-**an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item whose ticket linear has closed (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
+**an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item carrying one, unless a dated `kept:` line names the ticket step it waits for (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
 
 ## the stash hierarchy — dima's, 2026-09-27
 

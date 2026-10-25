@@ -8,7 +8,7 @@ description: >-
 
 # cclio:pm — the tracker, run by cclio alone
 
-cclio does every linear write; members read, and post one done comment (`rules-lazy/linear-flow.md`
+cclio does every linear write; members read, and post a done report or a clean verdict (`rules-lazy/linear-flow.md`
 is their whole floor, and binds here too). the words — team, project, story, label group, role,
 size, run marker — are defined in `docs/tracker/GLOSSARY.md` and the TRK adrs, never restated here.
 every-turn judgment (fold or drop, wishes, the pace contract, the freebie rule) is `craft-pm`;
@@ -44,7 +44,7 @@ traps:
   on research); a blocker is a relation, never a role. a `human` ticket is dima's to start
 - **priority** p3; p1 only for a real interrupt, its reason and expiry in the body; p2 or p4 only when
   its importance truly differs; **size** XS · S · M naming its closest done ticket (`size: S, like FRM-372`);
-  XS (minutes, under ~80 coder turns) · S (one session, under ~400) · M (split it before a spawn),
+  XS (minutes, under ~80 coder turns) · S (one session, under ~400) · M (allowed, on trial: `craft-fleet-flow` § lane init),
   set as the word (`x linear set --estimate S`); L and XL are never set, an old 4 or 5 is resized when touched;
   **project**, unless it is a one-off or an idea pool; **parent** by the test «which story does it
   die with?», none → flat; **milestone** inherited from the parent
