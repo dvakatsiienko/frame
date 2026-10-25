@@ -1,14 +1,15 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { citedIds, wishLines } from './wish-cover.ts';
 
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
 const NOW_CAP = 3;
-const OPEN_CAP = 5;
+// the staleness triage (dima, 2026-10-25, W223): every 3 days, the items untouched for 2, revalidated by hand
+const TRIAGE_EVERY_DAYS = 3;
+const STALE_AFTER_DAYS = 2;
 const PARKED_LINE = /^parked:\s*\S/m;
-const EXPIRING = ['xs', 's'];
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 // the boot seeds it every evergreen day; counting it would trip the caps weekly by design
 const CAP_FREE_TITLE = /^🧬 evergreen turn/;
@@ -22,6 +23,7 @@ export function checkPocket(
     tasks: Task[],
     today: string,
     closedTickets: ReadonlySet<string> = new Set(),
+    lastTriage = '',
 ): string[] {
     const config = {
         labels: listOf(configText, 'labels'),
@@ -31,7 +33,7 @@ export function checkPocket(
     };
     const problems: string[] = [];
     let nowCount = 0;
-    let openCount = 0;
+    const stale: string[] = [];
 
     for (const { name, text } of tasks) {
         const front = frontmatter(text);
@@ -85,7 +87,6 @@ export function checkPocket(
         }
         const parked = PARKED_LINE.test(text);
         const capFree = CAP_FREE_TITLE.test(front.scalars.title ?? '');
-        if (status !== 'waiting' && !parked && !capFree) openCount += 1;
         if (status === 'claimed' && parked)
             report(
                 'claimed and parked at once: a parked item releases its claim, set it open or waiting',
@@ -136,30 +137,28 @@ export function checkPocket(
                 );
 
         const due = front.scalars.due_date;
-        const isExpiring = sizes.some((size) => EXPIRING.includes(size));
-        if (isExpiring && status !== 'waiting' && !due)
-            report('an xs/s item needs a due date');
         if (status === 'waiting' && !due)
             report('waiting without a due date: when does the wait expire?');
-        if (status !== 'waiting' && !parked && touched < dayBefore(today))
+        if (status === 'waiting' && due && due < today)
             report(
-                `untouched since ${touched || '?'}: work it, wait it or park it`,
+                `expired on ${due}: the wait ended, work it or move it to linear`,
             );
-        if (due && due < today) report(`expired on ${due}`);
+        if (!capFree && touched <= daysBefore(today, STALE_AFTER_DAYS))
+            stale.push(id);
         if (priority === 'now' && !capFree) nowCount += 1;
     }
     if (nowCount > NOW_CAP)
         problems.push(`now holds ${nowCount} items, the cap is ${NOW_CAP}`);
-    if (openCount > OPEN_CAP)
+    if (stale.length > 0 && lastTriage <= daysBefore(today, TRIAGE_EVERY_DAYS))
         problems.push(
-            `${openCount} open items, the cap is ${OPEN_CAP}: solve, ticket or park before the main lane`,
+            `3-day triage due (last ${lastTriage || 'never'}): ${stale.join(', ')} untouched ${STALE_AFTER_DAYS}+ days — revalidate each by hand: a stayer gets «kept: <date> — <why>», the rest move to linear; then \`node script/pocket-check.ts --triaged\``,
         );
     return problems;
 }
 
-function dayBefore(day: string): string {
+function daysBefore(day: string, days: number): string {
     const date = new Date(`${day}T12:00:00Z`);
-    date.setUTCDate(date.getUTCDate() - 1);
+    date.setUTCDate(date.getUTCDate() - days);
     return date.toISOString().slice(0, 10);
 }
 
@@ -257,12 +256,18 @@ if (import.meta.main) {
         .filter((name) => name.endsWith('.md'))
         .map((name) => ({ name, text: readFileSync(join(dir, name), 'utf8') }));
     const today = new Date().toLocaleDateString('sv');
+    const stamp = join(root, 'pocket', 'last-triage.txt');
+    if (process.argv.includes('--triaged')) writeFileSync(stamp, `${today}\n`);
+    const lastTriage = existsSync(stamp)
+        ? readFileSync(stamp, 'utf8').trim()
+        : '';
     const open = tasks.filter(({ text }) => !/^status: done$/m.test(text));
     const problems = checkPocket(
         readFileSync(join(root, 'backlog.config.yml'), 'utf8'),
         tasks,
         today,
         closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
+        lastTriage,
     );
     for (const { name, text } of tasks) {
         const lost = lostNoteLines(

@@ -1,5 +1,5 @@
 // a pocket item born green (PK-137): `backlog task create` sets none of the fields pocket-check requires, so this
-// wrapper fills them — status open, a priority with its ordinal band, a type, one size, a due date on xs/s
+// wrapper fills them — status open, a priority with its ordinal band, a type, one size; a due date only when asked
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -24,13 +24,6 @@ export function ordinalFor(
         );
     const next = (inBand.length ? Math.max(...inBand) : floor) + 1000;
     return next < ceiling ? next : ceiling - 1;
-}
-
-export function dueFor(size: string, today: string) {
-    if (size !== 'xs' && size !== 's') return undefined;
-    const day = new Date(`${today}T00:00:00Z`);
-    day.setUTCDate(day.getUTCDate() + (size === 'xs' ? 1 : 3));
-    return day.toISOString().slice(0, 10);
 }
 
 export function ordinals(skip?: string) {
@@ -68,8 +61,25 @@ if (import.meta.main) {
         );
         process.exit(2);
     }
-    const due =
-        values.due ?? dueFor(values.size, new Date().toLocaleDateString('sv'));
+    const due = values.due;
+    // the birth test (dima, 2026-10-25): linear may already own this outcome; a nudge, never a stop — the inbox net lands every item
+    try {
+        const words = title
+            .split(/\s+/)
+            .filter((w) => w.length > 4)
+            .slice(0, 3)
+            .join(' ');
+        const out = execFileSync(
+            'x',
+            ['linear', 'list', '--search', words, '--json'],
+            { encoding: 'utf8', timeout: 15000 },
+        );
+        const hits = (JSON.parse(out).data?.tickets ?? []).slice(0, 3);
+        for (const hit of hits)
+            console.error(
+                `↪ linear may own this: ${hit.id} ${hit.title} — home it there, or keep it here with a note why`,
+            );
+    } catch {}
     const args = [
         'task',
         'create',

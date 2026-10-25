@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-25T10:30:00Z'
+updated_date: '2026-10-25T11:30:00Z'
 due_date: '2026-10-26'
 labels:
   - m
@@ -527,4 +527,28 @@ routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W1
 
 2026-10-23 21:03 timing probe: one append-notes, measured for the pocket/linear grill
 re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+
+W219 (2026-10-25 13:06, dima, after two days of thinking): the pocket is cclio's by-hand ticket stash for quick iteration; it always holds the boot's inbox parse and the main lane's current scope ❓ does it hold anything else?
+W220 (2026-10-25, dima): ❓ side lane chunks are not a good fit for the pocket, even when we plan one now and dispatch it right after?
+W221 (2026-10-25, dima): cclio always pulls from the pocket first, then from linear — if nothing doable is left in the pocket, which should not be the case; the draw.io mini flow «your flow — how you pull tickets for main lane»; the pocket is officially cclio's primary by-hand stash, pulled from first
+W222 (2026-10-25, dima): the main lane's current scope is everything the main lane does right now, not what is planned; it can hold one or more related tickets; everything else goes to linear
+W223 (2026-10-25, dima): staleness protection, my idea: every 3 days cclio triages the current pocket items, tests whether an item went untouched (not edited or updated) for the last 2 days, then revalidates it by hand — is it allowed to stay? a main lane scope sometimes runs longer than 2–3 days and is still our main lane plan (the memory sweep took about 5–7 days), so items may stay longer
+W224 (2026-10-25, dima): the check is not mechanical — a reminder or a guard can be — because each item is revisited by hand to decide whether it may stay ❓ maybe a staleness field is needed?
+W225 (2026-10-25, dima): linear holds everything planned for any time that is not the main lane's current progress; nothing ever goes from linear to the pocket
+W226 (2026-10-25, dima): the main lane runs: pull the main lane scope from the pocket first, always, then pull from linear; this way the pocket stays empty
+W227 (2026-10-25, dima): the flaw I feel: the main lane scope split between pocket items and linear items — scope preplanned long ago in linear, while we start something locally in the pocket because main lane activity may live there; e.g. after a milestone I say «let's continue with speak», ask to run the refresh text-to-speech recipe, cclio pockets it, but speak v2 already has linear tickets → a double home, or simply a wrong pick of home. this is not wanted ❓ how to solve this case gracefully?
+W228 (2026-10-25, dima): ❓ propose yourself: did I miss something, will it work, can it be better, or is a totally different approach better? look at the draw.io mini flow; consult ccrow proactively, it is an important topic; wishkeeper once we settle an idea, before and after the build
+
+W229 (2026-10-25 13:17, dima): ❓ maybe we can keep questions, ideas and test drives in the pocket? they probably won't hurt
+W230 (2026-10-25, dima): my initial idea of the pocket was your robust, by-hand stash, and I still want that; today it holds a mess, so we are cutting it, and with it we agree to use linear more practically, which is the correct decision; my want for your agile, fast, by-hand pocket stash is still present
+W231 (2026-10-25, dima): first optimize and remove the mess so your pocket is clean; then see what the good picks to stay in the pocket are: everything that creates no mess and improves your access and convenience by being parked in the pocket stays there
+W232 (2026-10-25, dima): first priority is removing the mess; the existing pocket items that shouldn't be in the pocket — agreed, let's solve them somehow; first finalize and update the proposal with all the reviews
+W233 (2026-10-25, dima): ❓ how many pocket items die if the first two chunks of the mods lane land?
+W234 (2026-10-25, dima): ❓ why don't I see the grilling body about pocket/linear in the main thread? I only have its questions in orbit
+
+W235 (2026-10-25 13:18, dima): ❓ the pocket's 5-item cap — after the contract changes and the 3-day staleness review arrives, do we still need it? I think no: our approach is different, more than 5 pocket items are allowed, and unwanted items are tracked by the 3-day reviews
+
+W236 (2026-10-25 13:30, dima, on Q4): make the migration careful: we already signed chunks for the ongoing mods lane, and for the cli lane too, so don't break that; after the migration, every lane's signed chunks stay ready to dispatch
+W237 (2026-10-25 13:30, dima, on the branch badge): ❓ why can't it be done now? I don't like creating new tickets while solving existing ones; possible to solve now?
+close-round: grill 1 settled 2026-10-25 13:30 — Q1–Q6 all yes as recommended (W219–W235)
 <!-- SECTION:NOTES:END -->

@@ -84,7 +84,6 @@ describe('checkPocket', () => {
         ['an unknown type', { type: 'chore' }, 'type «chore»'],
         ['no size label', { labels: [] as string[] }, 'exactly one size label'],
         ['two size labels', { labels: ['s', 'm'] }, 'exactly one size label'],
-        ['an xs item with no due date', { labels: ['xs'] }, 'needs a due date'],
         [
             'a now item in the next band',
             { priority: 'now' },
@@ -92,8 +91,8 @@ describe('checkPocket', () => {
         ],
         ['a missing ordinal', { ordinal: '' }, 'ordinal missing'],
         [
-            'an expired item',
-            { due_date: '2026-10-08', labels: ['s'] },
+            'an expired wait',
+            { due_date: '2026-10-08', labels: ['s'], status: 'waiting' },
             'expired on 2026-10-08',
         ],
     ])('names %s', (_, fields, expected) => {
@@ -176,20 +175,35 @@ describe('checkPocket', () => {
         ).toEqual([]);
     });
 
-    test('an open task untouched for more than a day goes red', () => {
+    test('the 3-day triage names items untouched for 2+ days', () => {
+        const old = task({ updated_date: '2026-10-07 09:00' });
         expect(
-            checkPocket(
-                config,
-                [task({ updated_date: '2026-10-07 09:00' })],
-                today,
-            ),
+            checkPocket(config, [old], today, new Set(), '2026-10-06'),
         ).toEqual([
-            'PK-1: untouched since 2026-10-07: work it, wait it or park it',
+            '3-day triage due (last 2026-10-06): PK-1 untouched 2+ days — revalidate each by hand: a stayer gets «kept: <date> — <why>», the rest move to linear; then `node script/pocket-check.ts --triaged`',
         ]);
+        expect(
+            checkPocket(config, [old], today, new Set(), '2026-10-08'),
+        ).toEqual([]);
+    });
+
+    test('a triage with nothing stale stays quiet', () => {
         expect(
             checkPocket(
                 config,
                 [task({ updated_date: '2026-10-08 09:00' })],
+                today,
+                new Set(),
+                '',
+            ),
+        ).toEqual([]);
+    });
+
+    test('an open item due yesterday is no red: only a wait expires', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ due_date: '2026-10-08', labels: ['s'] })],
                 today,
             ),
         ).toEqual([]);
@@ -217,14 +231,7 @@ describe('checkPocket', () => {
         ]);
     });
 
-    test('a parked item stays out of the open cap', () => {
-        const six = Array.from({ length: 6 }, (_, n) =>
-            task({ id: `PK-${n}` }, n === 0 ? 'parked: waits on m1' : 'body'),
-        );
-        expect(checkPocket(config, six, today)).toEqual([]);
-    });
-
-    test('the seeded evergreen turn stays out of both caps', () => {
+    test('the seeded evergreen turn stays out of the now cap', () => {
         const items = Array.from({ length: 5 }, (_, n) =>
             task(
                 n < 3
@@ -241,14 +248,11 @@ describe('checkPocket', () => {
         expect(checkPocket(config, [...items, seed], today)).toEqual([]);
     });
 
-    test('more than five open items goes red', () => {
+    test('many open items are no red: the open cap is gone (dima, 2026-10-25)', () => {
         const six = Array.from({ length: 6 }, (_, n) =>
             task({ id: `PK-${n}` }),
         );
-        expect(checkPocket(config, six, today)).toEqual([
-            '6 open items, the cap is 5: solve, ticket or park before the main lane',
-        ]);
-        expect(checkPocket(config, six.slice(1), today)).toEqual([]);
+        expect(checkPocket(config, six, today)).toEqual([]);
     });
 
     test('a waiting small item needs its check, not a due date', () => {

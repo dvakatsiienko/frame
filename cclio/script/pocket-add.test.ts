@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { dueFor, ordinalFor } from './pocket-add.ts';
+import { ordinalFor } from './pocket-add.ts';
 
 describe('ordinalFor', () => {
     test('places an item after the last one in its priority band', () => {
@@ -21,17 +21,5 @@ describe('ordinalFor', () => {
 
     test('never leaves the band when it is full', () => {
         expect(ordinalFor([9900], 'now')).toBe(9999);
-    });
-});
-
-describe('dueFor', () => {
-    test('gives an xs item one day and an s item three', () => {
-        expect([dueFor('xs', '2026-10-14'), dueFor('s', '2026-10-30')]).toEqual(
-            ['2026-10-15', '2026-11-02'],
-        );
-    });
-
-    test('leaves an m item undated', () => {
-        expect(dueFor('m', '2026-10-14')).toBeUndefined();
     });
 });

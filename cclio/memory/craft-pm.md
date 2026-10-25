@@ -34,10 +34,10 @@ comparison brief).
 - 📌 **an old verbatim met on any touch is re-folded in the same edit** (dima, 2026-10-08: «i'd expect you to fix up my old clunky verbatims»): a quoted line of his with fluff or a misspelling, in any file you are editing anyway, gets the fold, and the edit is announced; never a re-cased identifier. a line he wrote into a file himself counts: dating it, moving it or quoting it is a touch (missed 2026-10-10 on the pocket recipe's two new want lines).
 - the fold sweep he asked for (2026-10-10, widened 2026-10-12: «I want my verbatims clear on all surfaces») rides the memory sweep: every quote of his in memory, rules, skills, recipes, docs, app product files, the pocket and linear bodies, folded file by file; dated history (the gazette, the flawlog) stays as written. done so far: memory, rules, recipes, pocket (10-11); linear's open tickets (10-12: 95 folds, 6 flagged). left: skills, docs, app product files.
 - **numbered at the parse, copied at every use** (dima, PK-240, PK-103: the pocket kept his points, first use lost 9.4 %, blurred 10.1 %; grooming lost 1.4 %, another job): the pocket item holds the fold one point per line, `W1 …`, his questions marked ❓; every first use — a grill round, a brief, a spec, my own in-place work — copies verbatim only the W-lines it settles, never a paraphrase or a range, and `node script/wish-cover.ts <PK-N> <draft…>` (it checks the words) exits 0 before it ships; a grill round goes through its proposal file (`habit-dima-comms` § grill).
-- **composer grooms every wish-bearing prompt, one mode** (dima, 2026-10-22): the inbox at the parse, a mainline prompt as a quiet `prompt-groom` chore on the raw line `prompt-raw-save` names; the groomed W-lines go to the pocket
+- **composer grooms every wish-bearing prompt, one mode** (dima, 2026-10-22): the inbox at the parse, a mainline prompt as a quiet `prompt-groom` chore on the raw line `prompt-raw-save` names; the groomed W-lines go to the work's home, pocket or linear
 - **the fold, never the wall**: a ticket's `wish` block is those W-lines; his raw drop stays in the pocket item's notes, linked by PK id (an archived item keeps it). a wish joining an old ticket adds its W-lines to the block, never a note.
 - **one home at a time**: inbox → pocket item → linear ticket. the moment a ticket exists, the pocket
-  item becomes a pointer to it (his raw drop stays in its notes), and the ticket body opens with a `wish` block in his cleaned words —
+  item dies with `ticket: FRM-N` and a `close:` line, his raw drop kept in its notes (dima, 2026-10-25), and the ticket body opens with a `wish` block in his cleaned words —
   linear is the human-readable record of his wants (reference, history, housekeeping).
 - **the ticket ↔ spec rule** lives in `cclio:pm`'s `references/body.md`: the want in the ticket, readable in size; the how and the machine detail in the spec, which points with `wish: FRM-N`.
 - **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «always make sure my
@@ -53,7 +53,7 @@ comparison brief).
 dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.» the pm's order for him and cclio; a lane's order is its `lane-plan.md`.
 
 - every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn. the answer is also «which lane?»: a lane takes one milestone's signed chunks (dima, o97; `craft-fleet-flow` § lane init)
-- a run-or-move ask names each item's freebie verdict and milestone; «move» is never the default pick. 🧪 a guard refuses a milestone-less create (FRM-417); if it spams milestones, it turns informative (dima, 2026-10-23)
+- a run-or-move ask names each item's freebie verdict and milestone; a wait on a lane, a window or a date defaults to linear (`habit-shared-files` § the pocket, dima 2026-10-25 Q2). 🧪 a guard refuses a milestone-less create (FRM-417); if it spams milestones, it turns informative (dima, 2026-10-23)
 - a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `cclio:pm`, opened with the sorting phase
 - the cross-project order is the initiative's milestone queue: a switch moves one to its top, a born one joins it that turn
 - about 4 open per project, soft; linear marks one done when its tickets close and has no close, so an empty one, unless just born, goes to him as a ⚠️ delete ask; the boot flags the rest
@@ -78,7 +78,7 @@ destination, and waits for his verdict on every one; «closable, because …» i
 ## the freebie rule — verdict before plan
 
 - **a small fix inside our own tooling is a freebie, done without asking** (dima, 2026-10-14: «you can do stuff like this as a freebie without asking me») — still reported, every time
-- **the freebie test counts tool calls, never minutes** (dima, 2026-10-22: models overestimate time): 1–5 tool calls i can name, no word of his, no lane → done that turn by whoever holds it, cclio (the main lane) or a side lane; else born with `parked: <reason>`; the halt counts what low tide solved that was born parked
+- **the freebie test counts tool calls, never minutes** (dima, 2026-10-22: models overestimate time): 1–5 tool calls i can name, no word of his, no lane → done that turn by whoever holds it, cclio (the main lane) or a side lane; else its home by the birth test (`habit-shared-files` § the pocket)
 
 Dima: *«if i ask for a freebie but it turns out not to be one — better tell me than try to solve it, because
 i often ask for "small things" without knowing the details. and if it turns out not to be a freebie, then
