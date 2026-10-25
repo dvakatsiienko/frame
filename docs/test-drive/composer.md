@@ -118,6 +118,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-23 · pocket-write · 1 · 0 · 13 ticket lines + PK-268 added; pocket-check green
 - 2026-10-23 · pocket-write · 2 · 0 · PK-269 + PK-270 created; pocket-check cap exit 1
 - 2026-10-23 · chore · 1 · 0 · prompt-groom 23:31 dictation: PK-271 created (pocket 271, size s), W1-W9 body, raw in notes; pocket-check green
+- 2026-10-25 · prompt-groom · 1 · 0 · W238-W242 + 1 ask, grooms/2026-10-25-1455.groomed.md
 
 ## rounds
 
