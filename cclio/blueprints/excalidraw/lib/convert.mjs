@@ -1,7 +1,8 @@
 // node lib/convert.mjs <in.drawio> <out.excalidraw>
 // Every draw.io cell becomes the Excalidraw element of the same id; a tile's text becomes grouped parts (<id>-t0...),
 // an edge label <id>-label, a dima* note <id>-note-<field>. Elbow arrows are routed by Excalidraw's own router.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { openChrome } from './chrome.mjs';
 import { parseDrawio } from './drawio.mjs';
@@ -286,6 +287,19 @@ const main = async () => {
         throw new Error(
             'usage: pnpm --dir out convert <in.drawio> <out.excalidraw>',
         );
+    const target = resolveArg(outArg);
+    // two writers share the board: dima saves it from the Excalidraw PWA, this script regenerates it; an uncommitted edit of his is never overwritten
+    if (existsSync(target)) {
+        const dirty = spawnSync(
+            'git',
+            ['-C', dirname(target), 'diff', '--quiet', 'HEAD', '--', target],
+            { stdio: 'ignore' },
+        ).status;
+        if (dirty !== 0)
+            throw new Error(
+                `${target} differs from its last commit — dima's edit? read it back (pnpm read-back) and fold it into the .drawio, or commit it, before a redraw`,
+            );
+    }
     const board = parseDrawio(readFileSync(resolveArg(inArg), 'utf8'));
     const { browser, page } = await openChrome();
     const elements = await convert(board, page);
