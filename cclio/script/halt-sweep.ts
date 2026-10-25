@@ -25,9 +25,17 @@ function gh(args: string[]): unknown {
 }
 
 // a content line is anything that is not blank, not the template's own text, and not under a ✅ line;
-// a ✅ line covers itself and the indented lines right under it, never an unindented one (a drop typed after the parse)
-export function unhandledLines(inbox: string, template: string): string[] {
+// a ✅ line covers itself and the indented lines right under it, never an unindented one (a drop typed after the parse);
+// a line that sits verbatim in composer's prepped inbox is handled too, a line typed after the prep never is
+export function unhandledLines(
+    inbox: string,
+    template: string,
+    prepped = '',
+): string[] {
     const own = new Set(template.split('\n').map((line) => line.trim()));
+    const preppedLines = new Set(
+        prepped.split('\n').map((line) => line.trim()),
+    );
     let isHandled = false;
     const open: string[] = [];
     for (const line of inbox.split('\n')) {
@@ -37,6 +45,7 @@ export function unhandledLines(inbox: string, template: string): string[] {
             continue;
         }
         if (own.has(text)) isHandled = false;
+        else if (preppedLines.has(text)) continue;
         else if (text.startsWith('✅')) isHandled = true;
         else if (!isHandled || !/^\s/.test(line)) {
             isHandled = false;
@@ -56,6 +65,7 @@ function inboxParts(apply: boolean) {
     const open = unhandledLines(
         readFileSync(inbox, 'utf8'),
         readFileSync(template, 'utf8'),
+        existsSync(composer) ? readFileSync(composer, 'utf8') : '',
     );
     if (open.length > 0) {
         console.log(

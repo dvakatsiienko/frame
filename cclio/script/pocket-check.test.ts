@@ -759,6 +759,49 @@ describe('auditAgainstHead', () => {
     });
 });
 
+describe('the closed-ticket net, with linear unreachable', () => {
+    test('a failing x skips the net with a yellow line and never crashes', () => {
+        const root = mkdtempSync(join(tmpdir(), 'pocket-linear-'));
+        try {
+            mkdirSync(join(root, 'script'));
+            for (const file of [
+                'pocket-check.ts',
+                'prompt-groom.ts',
+                'wish-cover.ts',
+            ])
+                copyFileSync(
+                    join(import.meta.dirname, file),
+                    join(root, 'script', file),
+                );
+            mkdirSync(join(root, 'pocket', 'tasks'), { recursive: true });
+            mkdirSync(join(root, 'bin'));
+            writeFileSync(join(root, 'bin', 'x'), '#!/bin/sh\nexit 1\n', {
+                mode: 0o755,
+            });
+            writeFileSync(join(root, 'backlog.config.yml'), config);
+            writeFileSync(
+                join(root, 'pocket', 'tasks', 'pk-1.md'),
+                task({}, 'ticket: FRM-72').text,
+            );
+            const result = spawnSync(
+                process.execPath,
+                [join(root, 'script', 'pocket-check.ts')],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...gitEnv(),
+                        PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                    },
+                },
+            );
+            expect(result.stderr).toContain('linear not read');
+            expect(result.stderr).not.toContain('Error');
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    });
+});
+
 describe('the prompt groom (FRM-418)', () => {
     const day = '2026-10-26';
     const folded = task(

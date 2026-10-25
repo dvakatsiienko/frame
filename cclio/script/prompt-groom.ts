@@ -22,7 +22,7 @@ const groomDir =
 // FRM-418's rule landed 2026-10-25 14:50; an earlier prompt was never groomed by design
 const RULES_FROM = '2026-10-25 14:50';
 const STAMP =
-    /^\s*(?:[*-]\s+)?W\d+ \((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}), dima\b/gm;
+    /^\s*(?:[*-]\s+)?W\d+ \((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima\b/gm;
 
 export type Groomed = (day: string, hhmm: string) => boolean;
 
@@ -51,6 +51,7 @@ export function ungroomedStamps(
         if (
             date &&
             hhmm &&
+            hhmm !== 'inbox' && // composer's inbox-prep covers an inbox stamp
             `${date} ${hhmm}` >= RULES_FROM &&
             date <= day &&
             !isGroomed(date, hhmm)

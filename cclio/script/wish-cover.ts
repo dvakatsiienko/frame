@@ -1,4 +1,4 @@
-// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+// usage: node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -28,6 +28,21 @@ const WISH_ID = /(?<!W?\d+\s*[–-]\s*)\bW\d+\b(?!\s*[–-]\s*W?\d)/g;
 
 export function citedIds(draft: string) {
     return new Set(draft.match(WISH_ID));
+}
+
+// a lane spec holds one section per chunk, each opening with its own «wish: <id>» line:
+// the parts of the draft under this id's wish lines (the text above the first one joins the first part); a draft with none of them is whole
+export function sectionsFor(draft: string, id: string) {
+    const parts = draft.split(/^(?=wish: *(?:PK|FRM|BYT)-\d+)/im);
+    const head = /^wish:/i.test(parts[0] ?? '') ? '' : (parts.shift() ?? '');
+    if (parts.length === 0) return draft;
+    const mine = new RegExp(`^wish: *${id}\\b`, 'i');
+    const picked = parts
+        .map((part, at) =>
+            mine.test(part) ? (at === 0 ? head : '') + part : '',
+        )
+        .filter(Boolean);
+    return picked.length > 0 ? picked.join('\n') : draft;
 }
 
 function normalize(text: string) {
@@ -97,7 +112,7 @@ if (import.meta.main) {
     }
     const items = pocketItems(path.resolve(import.meta.dirname, '..'));
     let item: string | undefined;
-    const isTicket = /^FRM-\d+$/i.test(id);
+    const isTicket = /^(FRM|BYT)-\d+$/i.test(id);
     if (isTicket) {
         try {
             const read = JSON.parse(
@@ -127,7 +142,9 @@ if (import.meta.main) {
         console.error(`${id}: no pocket item`);
         process.exit(2);
     }
-    const drafts = draftPaths.map((p) => readFileSync(p, 'utf8'));
+    const drafts = draftPaths.map((p) =>
+        sectionsFor(readFileSync(p, 'utf8'), id),
+    );
     if (wishLines(item).size === 0) {
         console.error(
             isTicket

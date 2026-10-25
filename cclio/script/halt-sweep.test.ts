@@ -43,6 +43,15 @@ describe('unhandledLines', () => {
         expect(unhandledLines(dropped, template)).toEqual(['a new drop']);
     });
 
+    test('lines in the prepped inbox pass, a line typed after the prep is refused', () => {
+        const prepped = inbox('**add this**\ntopic to review: x');
+        const drop = inbox('**add this**\ntopic to review: x\ntyped later');
+        expect(unhandledLines(drop, template, prepped)).toEqual([
+            'typed later',
+        ]);
+        expect(unhandledLines(drop, template)).toHaveLength(3);
+    });
+
     test('a pristine template passes', () => {
         expect(unhandledLines(template, template)).toEqual([]);
     });

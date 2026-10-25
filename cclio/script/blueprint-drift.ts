@@ -30,7 +30,7 @@ export function mappedBoards() {
 function lastCommit(file: string) {
     return execFileSync(
         'git',
-        ['-C', frame, 'log', '-1', '--format=%cI', '--', file],
+        ['-C', frame, 'log', '-1', '--format=%H', '--', file],
         {
             encoding: 'utf8',
         },
@@ -50,6 +50,10 @@ export function drawnSince(
     }
     return board.drawn ? { since: board.drawn } : { stale: 'no drawn date' };
 }
+
+// a board's own commit opens its window by sha, so sources committed together with the redraw do not count; a date is a --since
+export const logWindow = (since: string) =>
+    /^[0-9a-f]{40}$/.test(since) ? [`${since}..HEAD`] : [`--since=${since}`];
 
 // a source ending in «/» maps its whole dir; any other maps one file, both relative to ~/frame
 export function boardMaps(sources: string[], file: string) {
@@ -88,7 +92,7 @@ if (import.meta.main) {
                 '-C',
                 frame,
                 'log',
-                `--since=${since}`,
+                ...logWindow(since),
                 '--name-only',
                 '--format=',
             ],

@@ -8,14 +8,18 @@ case "$file" in
 *) exit 0 ;;
 esac
 [ -f "$file" ] || { jq -n --arg msg "wish-cover: $file not found, skipped" '{systemMessage: $msg}'; exit 0; }
-line="$(head -n 10 "$file" | grep -iE '^wish: *(PK|FRM)-[0-9]+' | head -n 1)" || {
+head -n 10 "$file" | grep -qiE '^wish: *(PK|FRM|BYT)-[0-9]+' || {
 	head -n 10 "$file" | grep -qiE '^wish: *none *$' && exit 0
-	jq -n --arg reason "wish-cover: $file has no wish line in its first 10 lines — add \`wish: PK-N\` (or FRM-N), or \`wish: none\` when no wish of dima's stands behind it" '{decision: "block", reason: $reason}'
+	jq -n --arg reason "wish-cover: $file has no wish line in its first 10 lines — add \`wish: PK-N\` (or FRM-N, BYT-N), or \`wish: none\` when no wish of dima's stands behind it" '{decision: "block", reason: $reason}'
 	exit 0
 }
-id="$(grep -iEo 'PK-[0-9]+' <<<"$line" | head -n 1)" || id="$(grep -iEo 'FRM-[0-9]+' <<<"$line" | head -n 1)"
 command -v node >/dev/null || { jq -n '{systemMessage: "wish-cover: node missing, skipped"}'; exit 0; }
-out="$(node "$HOME/frame/cclio/script/wish-cover.ts" "$id" "$file" 2>&1)" && exit 0
-[ $? -eq 1 ] || { jq -n --arg reason "wish-cover: could not run for $id on $file — ${out}" '{decision: "block", reason: $reason}'; exit 0; }
-reds="$(grep '^✗' <<<"$out")"
+# a lane spec holds a wish line per chunk section: every id in the file is checked against its own section
+reds=""
+for id in $(grep -iE '^wish: *(PK|FRM|BYT)-[0-9]+' "$file" | grep -iEo '(PK|FRM|BYT)-[0-9]+' | tr a-z A-Z | sort -u); do
+	out="$(node "$HOME/frame/cclio/script/wish-cover.ts" "$id" "$file" 2>&1)" && continue
+	[ $? -eq 1 ] || { jq -n --arg reason "wish-cover: could not run for $id on $file — ${out}" '{decision: "block", reason: $reason}'; exit 0; }
+	reds+="$(grep '^✗' <<<"$out")"$'\n'
+done
+[ -n "$reds" ] || exit 0
 jq -n --arg reason "wish-cover is red on $file — copy the wish's words verbatim: $reds" '{decision: "block", reason: $reason}'

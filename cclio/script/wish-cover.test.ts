@@ -14,6 +14,7 @@ import {
     citedIds,
     itemsForTicket,
     missingText,
+    sectionsFor,
     uncovered,
     wishBlock,
     wishLines,
@@ -26,6 +27,28 @@ const item = [
     '- W3 plain words, no tech overload',
     '- W4 you gain too',
 ].join('\n');
+
+describe('sectionsFor', () => {
+    const spec = [
+        'wish: FRM-450',
+        'chunk one',
+        '',
+        'wish: FRM-452',
+        'chunk two',
+    ].join('\n');
+
+    test('an id gets only the sections under its own wish line', () => {
+        expect(sectionsFor(spec, 'FRM-452')).toBe('wish: FRM-452\nchunk two');
+        expect(sectionsFor(spec, 'frm-450')).not.toContain('chunk two');
+    });
+
+    test('a BYT id splits like an FRM one, and a draft without wish lines stays whole', () => {
+        expect(sectionsFor('wish: BYT-9\nx\nwish: FRM-1\ny', 'BYT-9')).toBe(
+            'wish: BYT-9\nx\n',
+        );
+        expect(sectionsFor('no wish line', 'FRM-1')).toBe('no wish line');
+    });
+});
 
 describe('wish-cover', () => {
     test('passes a cited line copied verbatim', () => {

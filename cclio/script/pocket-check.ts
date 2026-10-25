@@ -241,10 +241,17 @@ export function ticketsOf(text: string): string[] {
 
 function closedOf(ids: string[]): Set<string> {
     if (ids.length === 0) return new Set();
-    const out = execFileSync('x', ['linear', 'read', ...ids], {
-        encoding: 'utf8',
-    });
-    const tickets = (JSON.parse(out) as LinearRead).data.tickets;
+    let tickets: LinearRead['data']['tickets'];
+    try {
+        const out = execFileSync('x', ['linear', 'read', ...ids], {
+            encoding: 'utf8',
+            timeout: 15_000,
+        });
+        tickets = (JSON.parse(out) as LinearRead).data.tickets;
+    } catch {
+        console.error('🟡 linear not read — the closed-ticket net skipped');
+        return new Set();
+    }
     return new Set(
         tickets
             .filter((ticket) =>
@@ -310,7 +317,7 @@ export function auditAgainstHead(
     for (const { name, text } of tasks)
         for (const line of newUnstamped(text, head.text('tasks', name)))
             problems.push(
-                `${idOf(name)}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «W<n> (<date> <HH:MM>, dima)»`,
+                `${idOf(name)}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «W<n> (<date> <HH:MM>, dima)» for a prompt, «W<n> (<date> inbox, dima)» for an inbox drop`,
             );
     for (const [dir, files] of [
         ['tasks', tasks],

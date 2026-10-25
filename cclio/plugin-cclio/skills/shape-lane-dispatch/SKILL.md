@@ -39,6 +39,7 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 - **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step, and the coder hears it as a steer naming that section plus a `## not greenlit` line, then re-runs `to-tickets` on it; an unsigned one waits for its sign
 - **a wish of dima's mid-lane** goes into the ticket's wish block as W-lines, with a proposed re-sign of its chunk, and the spec section cites them; never a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message
+- **a ↩️ back-to-Todo ticket** returns by a re-sign naming its left asks, which puts `signed` back so the offer carries it
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running): it re-runs § 3–4 for that chunk — re-seal the spec section and its preflight copy — and steers the coder to the changed lines
 - **a park** — his weekly window out, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it
 
