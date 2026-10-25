@@ -6,7 +6,7 @@ description: load on dima's «prep», «sign», «re-sign», «grill <ticket>»,
 
 dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». this is his part of lane init: a grill that ends in his ✍️ sign. the machine part — the spec, the exit lines, the spawn — is `cclio:shape-lane-dispatch`; the contract (the states, where each thing lives, re-sign, a lane per milestone) is `craft-fleet-flow` § lane init.
 
-it runs over any ticket: a safety-net re-grill after `cclio:shape-idea`, the real shaping for a ticket born without it. over a pocket item, the sign creates its linear ticket the same turn.
+it runs over any ticket: a safety-net re-grill after `cclio:shape-idea`, the real shaping for a ticket born without it.
 
 ## 0 · read what is settled
 
@@ -39,7 +39,7 @@ dispatch runs without dima, a shift included, so before the sign the ticket hold
 
 ## 4 · the sign
 
-the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). then one orbit ask per chunk, `✍️ sign FRM-N: <title>`, its pick naming the § 3 fields; his tick IS the sign, a steer instead takes that chunk back into the grill; several ready chunks are one ask each, ticked in one go. on his tick: `x linear set FRM-N --add-label signed`, and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
+the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask. on the sign: `x linear set FRM-N --add-label signed`, and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides the cli lane (FRM-424)
 
