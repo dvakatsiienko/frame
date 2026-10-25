@@ -41,9 +41,10 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   ([$d.initiative.projects.nodes[] | .name as $p
     | (if ($hot | index($p)) != null then "In Progress" elif ($queued | index($p)) != null then "Planned" else "Backlog" end) as $want
     | select(.status.name != $want) | "\($p) \(.status.name) → \($want)"]) as $drift |
-  "🧭 roadmap",
+  "### 🧭 roadmap",
   (if ($issues | length) == 0 then "✅ health on track" else "⚠️ health at risk — \($issues | join("; "))" end),
   "🌔 now: step \($steps[0].n // "?"), \($steps[0].p // "?")\(if ($steps[0].what // "") != "" then " (\($steps[0].what))" else "" end); next: \($steps[1:4] | map(.p) | join(" → "))",
+  "",
   "**milestone queue**:",
   "",
   ($live[:7] | to_entries[] | .value as $m
