@@ -87,6 +87,7 @@ caps), so a drag-and-drop view needs its own checks for those.
 ## habits
 
 - `--json` on every verb when the output feeds a decision.
+- a page that opens files through the browser's picker (excalidraw.com): override `window.showOpenFilePicker` to hand back the file, then press its Open; the picker itself never shows headless.
 - a chart or layout check runs at 390 / 768 / 1280 wide, and reads the console after.
 - a coder writes «verified in agent-browser: <what, at which widths>» in its report, or says
   «unverified in a browser» — never silence.
