@@ -22,6 +22,14 @@ describe('watch-nudge', () => {
         ).toEqual(['https://nomanssky.miraheze.org/wiki/Curiosities']);
     });
 
+    test('skips our own vercel deploys', () => {
+        expect(
+            upstreamLinks(
+                'deploy cv → Ready https://cv-5knakw64u-dima-vakatsiienkos-projects.vercel.app, see https://excalidraw.com',
+            ),
+        ).toEqual(['https://excalidraw.com']);
+    });
+
     test('drops a link whose api url is already watched', () => {
         expect(
             unwatched(

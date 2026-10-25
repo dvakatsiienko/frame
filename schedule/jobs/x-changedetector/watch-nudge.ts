@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import { apiKey, watchApi, watchFor } from './watch-add.ts';
 
 const ownOwners = ['dvakatsiienko'];
+// every preview and prod deploy of ours ends in the vercel team's name
+const ownVercelSuffix = '-dima-vakatsiienkos-projects.vercel.app';
 // our own surfaces and pages that are read, never followed
 const skipHosts = [
     'claude.ai',
@@ -26,7 +28,12 @@ export function upstreamLinks(text: string) {
     for (const [raw] of text.matchAll(/https?:\/\/[^\s<>«»"'`)\]]+/g)) {
         const link = raw.replace(/[.,;:!?]+$/, '');
         const url = URL.parse(link);
-        if (!url || skipHosts.includes(url.hostname)) continue;
+        if (
+            !url ||
+            skipHosts.includes(url.hostname) ||
+            url.hostname.endsWith(ownVercelSuffix)
+        )
+            continue;
         if (url.hostname === 'github.com') {
             const [owner, , kind] = url.pathname.split('/').slice(1);
             const isIssue = kind === 'issues' || kind === 'pull';
