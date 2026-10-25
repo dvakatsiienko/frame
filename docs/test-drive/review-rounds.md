@@ -34,5 +34,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-10-22 · frame#95 · matt's code-review, standards card (Opus 5.5) · 9 useful, 2 kept by choice · useful
 - 2026-10-22 · frame#95 · coderabbit · 2 of 2 useful (a graphql error read as 0 open threads, fail-open) · useful
 - 2026-10-23 · frame#104 · crew verifier (Opus 5.5) · 2 rounds, 1 of 1 useful (the built-out count padded 185 vs 160 run, caught by a `-json` recount); a round 4 min against 13 before, the gate ~49 s · useful
+- 2026-10-25 · bytes#130, bytes#132, frame#110 (FRM-411) · crew verifier (Opus 5.5) + the shared ci reviewer · 1 round each, all clean; 3 P2 notes useful (exit line 8 wording vs atelier, an unasked stryker rider, `x lane review` naming review-approved.yml on frame); the ci reviewer's first frame round clean on the new shared key · useful
 
 ## verdict
