@@ -7,6 +7,7 @@ a **blueprint** is a picture of one part of our system — a flow, a structure, 
 - **draw.io** is the blueprint tool (dima, 2026-10-23: the most faithful and cheapest of three, the bench in `docs/test-drive/blueprints.md`; why FigJam left: `docs/test-drive/figjam.md`): a `.drawio` here, built by a script so a redraw is one command; `drawio -x -f png -s 0.6 -o <png> <file>` renders the look (full size runs out of tile memory)
 - **n8n** is for automation workflows only: `http://localhost:5678`, run by pm2 as `x-n8n` (`schedule/jobs/x-n8n/`), data in `~/.local/share/x-n8n` (never in git)
   - cclio's door is the REST API: `script/op-run.sh` with `N8N_API_KEY` (`op://dev/n8n-local/credential`), header `X-N8N-API-KEY`; the CLI import overwrites dima's unsaved tab, so it is never used on a live flow
+- **Excalidraw**: on trial, `docs/test-drive/excalidraw.md` holds the setup (the toolchain in `excalidraw/`, the boards, how dima opens one); draw.io stays the fallback until its verdict
 - **Obsidian Canvas**: an option for later; **FigJam**: back only if the Figma MCP cap lifts
 
 ## the mapped areas — the board is the design truth
