@@ -1,0 +1,26 @@
+{
+    "name": "excalidraw-week",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build:router": "node lib/build-router.mjs",
+        "convert": "node lib/convert.mjs",
+        "render": "node lib/render.mjs",
+        "crossings": "node lib/crossings.mjs",
+        "read-back": "node lib/read-back.mjs",
+        "ticket-flow:build": "node ticket-flow/build.mjs",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@excalidraw/cli": "0.2.0",
+        "@excalidraw/excalidraw": "0.18.1",
+        "@xmldom/xmldom": "0.9.12",
+        "esbuild": "0.28.2",
+        "playwright-core": "1.63.0",
+        "react": "19.3.1",
+        "react-dom": "19.3.1"
+    },
+    "devDependencies": {
+        "vitest": "5.0.5"
+    }
+}

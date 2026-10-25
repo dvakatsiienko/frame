@@ -1,0 +1,4 @@
+node_modules/
+lib/editor.bundle.js
+*.png
+look/
