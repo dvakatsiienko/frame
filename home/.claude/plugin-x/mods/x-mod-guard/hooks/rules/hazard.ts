@@ -23,6 +23,29 @@ const ROOT_STEP = 'hand dima the step — these are his, in System Settings';
 const PRUNE = 'leave the prune to dima — name it in your report';
 const LINEAR = 'linear closes, never deletes — cancel it (state Canceled)';
 const DELETE = new Set(['delete', 'rm', 'remove']);
+// the railway commands with a delete verb, aliases included (`railway --help`, 2026-10-27)
+const RAILWAY_PARTS = new Set([
+    'bucket',
+    'buckets',
+    'domain',
+    'env',
+    'environment',
+    'fn',
+    'fns',
+    'func',
+    'funcs',
+    'function',
+    'functions',
+    'project',
+    'projects',
+    'service',
+    'var',
+    'variable',
+    'variables',
+    'vars',
+    'volume',
+    'volumes',
+]);
 // `~`, a dir above it, a dir right under it, or the obsidian vault root and above
 function isTopDir(path: string, ctx: Context) {
     const home = ctx.home;
@@ -123,8 +146,12 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
             `vercel ${ops.slice(0, vercelAt + 1).join(' ')}`,
             or(ops.slice(vercelAt + 1), 'vercel'),
         );
-    // `railway delete` takes the project; `railway <environment|variable|service|volume|…> delete` one part of it
-    const railwayAt = ops.slice(0, 2).findIndex((o) => DELETE.has(o));
+    // `railway delete` takes the project, `railway <part> delete` one part; `railway run rm` is a local command
+    const railwayAt = DELETE.has(ops[0] ?? '')
+        ? 0
+        : RAILWAY_PARTS.has(ops[0] ?? '') && DELETE.has(ops[1] ?? '')
+          ? 1
+          : -1;
     if (c.name === 'railway' && railwayAt >= 0)
         return remote(
             `railway ${ops.slice(0, railwayAt + 1).join(' ')}`,

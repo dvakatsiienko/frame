@@ -40,13 +40,23 @@ const PROJECTS = JSON.stringify({
     },
 });
 
-type World = { cwd: string; isLinearUp: boolean };
+// name: this session's name in cc's registry, when a test needs one
+type World = { cwd: string; isLinearUp: boolean; name?: string };
 
 function world(on: On, w: World = { cwd: '/repo', isLinearUp: true }) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
     const reads: string[][] = [];
+    const files: Record<string, string> = w.name
+        ? {
+              ...FILES,
+              '/home/.claude/sessions/1.json': JSON.stringify({
+                  name: w.name,
+                  sessionId: 'h1h1h1h1-0000',
+              }),
+          }
+        : FILES;
     answerPrompts(on);
     on('session.id', () => ({ value: 'h1h1h1h1-0000' }));
     on('session.cwd', () => ({ value: w.cwd }));
@@ -54,14 +64,14 @@ function world(on: On, w: World = { cwd: '/repo', isLinearUp: true }) {
     on('env.get', (_$, e) => ({
         value: e.name === 'HOME' ? '/home' : undefined,
     }));
-    on('fs.exists', (_$, e) => ({ value: e.path in FILES }));
+    on('fs.exists', (_$, e) => ({ value: e.path in files }));
     on('fs.read', (_$, e) =>
-        e.path in FILES
-            ? { value: FILES[e.path] as string }
+        e.path in files
+            ? { value: files[e.path] as string }
             : { deny: 'no such file' },
     );
     on('fs.list', (_$, e) => {
-        const names = Object.keys(FILES)
+        const names = Object.keys(files)
             .filter((p) => p.startsWith(`${e.path}/`))
             .map((p) => p.slice(e.path.length + 1))
             .filter((n) => !n.includes('/'));
@@ -124,7 +134,11 @@ for (const command of [
         ]);
     });
 
-for (const command of ['railway variables --kv', 'railway status'])
+for (const command of [
+    'railway variables --kv',
+    'railway status',
+    'railway run rm -rf dist',
+])
     test(`«${command}» runs`, async ($, on) => {
         const w = world(on);
         expect([w.ran, (await bash($, command)).deny]).toEqual([
@@ -203,6 +217,9 @@ for (const command of [
     'x linear set FRM-1 --project cli',
     `x linear api 'mutation { issueCreate(input: { teamId: "t", title: "x", projectId: "${CLI_ID}" }) { success } }'`,
     `x linear api 'mutation { issueUpdate(id: "FRM-1", input: { projectId: "${CLI_ID}" }) { success } }'`,
+    `x linear api --vars '{"p":"${CLI_ID}"}' 'mutation($p: String!) { issueCreate(input: { teamId: "t", title: "x", projectId: $p }) { success } }'`,
+    `x linear api 'mutation { issueCreate(input: { teamId: "t", title: "x", projectId: "${CLI_ID}", projectMilestoneId: null }) { success } }'`,
+    'linear --team FRM issue create --project cli -t x',
 ])
     test(`«${command}» is refused naming a milestone`, async ($, on) => {
         const w = world(on);
@@ -277,6 +294,28 @@ for (const [shape, message] of [
                 ),
             ]);
         });
+
+test("a verifier's findings to its coder are sent", async ($, on) => {
+    const w = world(on, {
+        cwd: '/repo',
+        isLinearUp: true,
+        name: '⚡ 🔎 FRM-425 verify: main',
+    });
+    const message = 'FRM-425 round 1:\n1. E3 fails from ~/frame';
+    expect([w.ran, (await send($, message, '🔧 coder')).deny]).toEqual([
+        [message],
+        undefined,
+    ]);
+});
+
+test('a ticket named only inside a quote leaves the 3+ rule', async ($, on) => {
+    const w = world(on);
+    const message = 'dima wrote:\n> FRM-1 looks done\n1. the meter';
+    expect([w.ran, (await send($, message, '🔧 coder')).deny]).toEqual([
+        [message],
+        undefined,
+    ]);
+});
 
 test('a ticket send naming its spec path is sent', async ($, on) => {
     const w = world(on);

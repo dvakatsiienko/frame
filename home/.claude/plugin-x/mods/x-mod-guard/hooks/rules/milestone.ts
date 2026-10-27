@@ -6,12 +6,13 @@ import {
     commands,
 } from './command.ts';
 
-// a ticket put into a project with milestones names one, or it drops off every milestone view (FRM-417); only new
-// creates and moves are read, so the tickets already sitting outside a milestone stay as they are
-export type ProjectMove = { project: string; hasMilestone: boolean };
+// only new creates and moves are read: tickets already outside a milestone stay as they are (FRM-417)
+type ProjectMove = { project: string; hasMilestone: boolean };
 
 const MUTATION = /\bissue(Create|Update)\b/;
-const PROJECT_ID = /\bprojectId["']?\s*:\s*["']([^"']+)["']/;
+// the project inline (`projectId: "<id>"`) or through a variable (`projectId: $p`, its value in --vars)
+const PROJECT_ID = /\bprojectId["']?\s*:\s*(?:["']([^"']+)["']|\$(\w+))/;
+const MILESTONE_ID = /\bprojectMilestoneId["']?\s*:\s*(?!null\b)\S/;
 
 export const MILESTONE_DOOR =
     'pick a milestone, or propose one: add --milestone "<name>" (projectMilestoneId in an api mutation)';
@@ -22,6 +23,16 @@ function flag(words: string[], name: string) {
     if (at < 0) return undefined;
     const word = words[at] ?? '';
     return word === name ? (words[at + 1] ?? '') : word.slice(name.length + 1);
+}
+
+function varValue(vars: string | undefined, name: string | undefined) {
+    if (!vars || !name) return undefined;
+    try {
+        const value = (JSON.parse(vars) as Record<string, unknown>)[name];
+        return typeof value === 'string' ? value : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 // the linear words a command runs: the raw cli, `x as <member> -- linear …`, or x's own `x linear …`
@@ -40,22 +51,19 @@ function projectMove(c: Command): ProjectMove | undefined {
     const linear = linearWords(c);
     if (!linear) return undefined;
     const { isX, words } = linear;
-    const verbs = words.filter(
-        (w, i) => !w.startsWith('-') && words[i - 1] !== '--as',
-    );
-    if (verbs[0] === 'api') {
+    // the verb follows any global flag and its value (`--as coder`, `--team FRM`)
+    const head = words.findIndex((w) => ['api', 'issue', 'set'].includes(w));
+    if (words[head] === 'api') {
         const text = words.join(' ');
-        const project = text.match(PROJECT_ID)?.[1];
+        const id = text.match(PROJECT_ID);
+        const project = id?.[1] ?? varValue(flag(words, '--vars'), id?.[2]);
         if (!MUTATION.test(text) || !project) return undefined;
-        return {
-            hasMilestone: /\bprojectMilestoneId\b/.test(text),
-            project,
-        };
+        return { hasMilestone: MILESTONE_ID.test(text), project };
     }
     const isMove = isX
-        ? verbs[0] === 'set'
-        : verbs[0] === 'issue' &&
-          ['create', 'update', 'edit'].includes(verbs[1] ?? '');
+        ? words[head] === 'set'
+        : words[head] === 'issue' &&
+          ['create', 'update', 'edit'].includes(words[head + 1] ?? '');
     const project = isMove ? flag(words, '--project') : undefined;
     if (!project) return undefined;
     return { hasMilestone: !!flag(words, '--milestone'), project };

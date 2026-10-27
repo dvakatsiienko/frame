@@ -8,7 +8,7 @@ import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
-import { SPEC_DOOR, SPEC_WHY, isSpecMissing } from './rules/spec.ts';
+import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
 import {
     addedPaths,
     check,
@@ -926,6 +926,12 @@ export const register: Register = (on) => {
             !isSpecMissing(to, message)
         )
             return next(e);
+        // a member's own traffic (a verifier's findings, a coder's «final») is a report, never a lane job
+        const sid = await $.session.id().catch(() => undefined);
+        const from = sid
+            ? await sessionName($, sid).catch(() => undefined)
+            : undefined;
+        if (from && TO_MEMBER.test(from)) return next(e);
         const isWarn = await isWarnOnly($, 'spec').catch(() => true);
         await record($, {
             command: `SendMessage → ${to}: ${message}`,

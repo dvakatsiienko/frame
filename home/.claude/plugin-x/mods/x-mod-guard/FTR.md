@@ -117,7 +117,7 @@
     - remote delete: `gh repo|release delete*`, `vercel rm|remove` and `vercel env rm`, `op <item|…> delete|rm|remove`, `security delete-*`, `linear issue delete`, an `issueDelete` mutation sent by `curl` or `linear`, `railway delete|rm` and `railway <environment|variable|service|volume|…> delete|rm|remove` (FRM-413)
     - top dir: `trash` of `/`, `~`, a dir above it, a dir right under it (`~/Documents`, `~/.config`) or the obsidian vault root; `defaults delete <domain>` with no key, or `-g` with none
   - then it is refused, and the reason opens with the door: «ask cclio» for a disk, a device, history or a remote delete; «hand dima the step» for `csrutil`, `spctl` and `tccutil`; «hand dima the command» for `sudo`; «leave the prune to dima — name it in your report»; `>>`, a new path or the Write tool for a redirect; `mv -n` / `cp -n` or trash the old file first; «cancel it» for a linear issue; trash the files inside, by name; one `defaults` key
-  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `railway variables --kv`, `railway status`, `trash` of a file in `~/Documents`, of one regular file right under `~` (a dotfile like `~/.zcompdump`; a symlink stays refused) or a note in the vault, `defaults delete <domain> <key>` (PK-167)
+  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `railway variables --kv`, `railway status`, `railway run rm …` (a local command), `trash` of a file in `~/Documents`, of one regular file right under `~` (a dotfile like `~/.zcompdump`; a symlink stays refused) or a note in the vault, `defaults delete <domain> <key>` (PK-167)
   - then `sudo` ahead of a floor command keeps the floor's door (`sudo rm` → trash)
   - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
   - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list); a file under a claude session's own scratchpad is never an overwrite (PK-138)
@@ -236,7 +236,7 @@
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
 
 - ✅ a linear ticket put into a project with milestones names one (FRM-417, FRM-425)
-  - given a Bash `linear issue create|update|edit --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId`
+  - given a Bash `linear issue create|update|edit --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` (inline, or `$p` with its value in `--vars`) — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId` (or `projectMilestoneId: null`)
   - and `<p>` (its name, slug or id) holds milestones, as one `x linear api` projects read says, kept in x-mod-guard's store for a day
   - when x-mod-guard reads it
   - then it is refused: «pick a milestone, or propose one»
@@ -250,7 +250,7 @@
   - given a `SendMessage` to a session whose name carries `🔧`, `🔎`, `coder` or `verifier`, with no `.scratch/<feature>/spec.md` path, holding lines that open with an item number (`1.` or `1)`) outside a code fence: 1 or more when it names a ticket (`FRM-N`, `BYT-N`), 3 or more when it names none
   - when x-mod-guard reads it
   - then it is refused unsent: «a lane job goes through a spec (cclio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
-  - given no item, 1 or 2 items with no ticket, a list in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), or a session not named a coder or verifier, then it is sent
+  - given no item, 1 or 2 items with no ticket, a list or a ticket in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), a session not named a coder or verifier, or a sender that is itself a coder or verifier (its findings, its «final»), then it is sent
   - decision: refuse, out of `WARN_ONLY`: FRM-425's verifier clean is the flip
   - decision: fail open — a message is never stopped by a broken check
 
