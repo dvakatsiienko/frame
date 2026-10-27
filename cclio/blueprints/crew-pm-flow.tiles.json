@@ -1,0 +1,3655 @@
+[
+    {
+        "attrs": {
+            "id": "3:247",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F8F5FF;strokeColor=#D5D3DB;strokeWidth=2;noLabel=1;",
+            "value": "2 Preflight",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "1561",
+            "width": "2522",
+            "x": "7104",
+            "y": "1351"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:248",
+            "parent": "3:247",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "✈️ 2 — Preflight, every spawn, in order",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "752",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:249",
+            "parent": "3:247",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
+            "value": "x:crew-lead § preflight · a spawn first reads models.md, briefing.md, watching.md, shared-tree.md",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "1022",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:253",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">♻️ 1 · reuse or spawn?</b><br><span style=\"font-size:20px\">the grid in models.md</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:257",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔑 2 · trust key</b><br><span style=\"font-size:20px\">the exact folder in ~/.claude.json</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:261",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🧊 3 · spare age</b><br><span style=\"font-size:20px\">a bg-spare over a day old → daemon stop</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:265",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🩺 4 · app essentials</b><br><span style=\"font-size:20px\">apps-essentials.ts passes</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:269",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📂 5 · tier + cwd</b><br><span style=\"font-size:20px\">cd &lt;repo&gt; &amp;&amp; claude --bg, one command</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:273",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🪐 6 · verifier ask</b><br><span style=\"font-size:20px\">«spawn now? verifier yes/no» in orbit</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:277",
+            "parent": "3:247",
+            "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">❓ exit lines sealed?</b><br><span style=\"font-size:20px\">no exit lines → no spawn</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "250",
+            "width": "520",
+            "x": "686",
+            "y": "560"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:281",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📋 7 · brief file</b><br><span style=\"font-size:20px\">x brief check + wish-cover pass</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:285",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⌨️ 8 · the argv</b><br><span style=\"font-size:20px\">-n, the prompt, then --remote-control</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:289",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🏷️ 9 · the name</b><br><span style=\"font-size:20px\">&lt;mode&gt; &lt;role&gt; &lt;ticket&gt; &lt;role&gt;: &lt;what&gt;</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:293",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎫 10 · ticket id</b><br><span style=\"font-size:20px\">rides the branch and the pr body</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:297",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🪪 11 · identity</b><br><span style=\"font-size:20px\">coder token, done-comment cap</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:301",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🛼 12 · glide</b><br><span style=\"font-size:20px\">link the member to its lane card</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "1345"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:294",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F9F9F9;strokeColor=#D6D6D6;strokeWidth=2;noLabel=1;",
+            "value": "1 Door",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "1191",
+            "width": "3152",
+            "x": "7104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:295",
+            "parent": "6:294",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🚪 1 — Which door?",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "386",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:296",
+            "parent": "6:294",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
+            "value": "x:crew-lead § the doors · disposable or watchable, never research vs code · one coder by default, two with a reason, never three",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "1337",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:297",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 work to hand off</b><br><span style=\"font-size:20px\">cclio has a job for someone</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:301",
+            "parent": "6:294",
+            "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">❓ disposable or watchable?</b><br><span style=\"font-size:20px\">the one split that picks a door</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "250",
+            "width": "520",
+            "x": "686",
+            "y": "190"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:305",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🐝 disposable</b><br><span style=\"font-size:20px\">a subagent, fork or worktree agent → band 6</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:309",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⌨️ claude --bg</b><br><span style=\"font-size:20px\">the default door for coding</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:313",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ the Code-tab door</b><br><span style=\"font-size:20px\">dima opens it, pastes a brief pointer</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:317",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">spawned by dima only, in his own tab</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:321",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">☁️ claude --cloud</b><br><span style=\"font-size:20px\">an anthropic vm; cannot message back</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:325",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🍴 /fork</b><br><span style=\"font-size:20px\">dima&#x27;s door: copies this thread</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "2576",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:329",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎼 the sidecars</b><br><span style=\"font-size:20px\">ccrow + composer start in cclio:boot</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:333",
+            "parent": "6:294",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">♻️ a pick-up is a spawn</b><br><span style=\"font-size:20px\">its first message inits the role</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:349",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F5FBFF;strokeColor=#D3D8DB;strokeWidth=2;noLabel=1;",
+            "value": "3 Brief",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "7104",
+            "y": "3072"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:350",
+            "parent": "6:349",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "📋 3 — The brief",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "321",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:351",
+            "parent": "6:349",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
+            "value": "x:crew-lead briefing.md · what goes in, then every word checked before it is sent",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "842",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:352",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📋 role contract first</b><br><span style=\"font-size:20px\">/x:crew-coder … — only the first slash expands</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:356",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 every other skill</b><br><span style=\"font-size:20px\">named in plain words</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:360",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔎 names its verifier</b><br><span style=\"font-size:20px\">on a verifier yes</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:364",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🛑 a «not yours» fence</b><br><span style=\"font-size:20px\">what another member owns</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:368",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📝 first reply: skills loaded</b><br><span style=\"font-size:20px\">one line per spawn → a test drive</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:372",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🧪 15 checks before sending</b><br><span style=\"font-size:20px\">every verb --help, fetch main first …</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:376",
+            "parent": "6:349",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 context pointers</b><br><span style=\"font-size:20px\">never a restated ticket</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:404",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EBFFEE;strokeColor=#CADBCD;strokeWidth=2;noLabel=1;",
+            "value": "4 Run",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "866",
+            "width": "2522",
+            "x": "7104",
+            "y": "4053"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:405",
+            "parent": "6:404",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🏃 4 — Running the lane",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "473",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:406",
+            "parent": "6:404",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
+            "value": "briefing § watching · watching.md · crew-dna · subscribe, never poll; three round trips, more means the brief was wrong",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "1243",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:407",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔧 the coder works</b><br><span style=\"font-size:20px\">its worktree (pr) or main (quick lane)</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:411",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔔 it pings</b><br><span style=\"font-size:20px\">[done] [blocked] [ask] [progress]</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:415",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📡 pr-watch: «opened»</b><br><span style=\"font-size:20px\">cclio spawns the verifier</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:419",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔁 coder ↔ verifier</b><br><span style=\"font-size:20px\">rounds, cap 3; cclio hears none</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:423",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#B3B3B3;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔔 an idle notice</b><br><span style=\"font-size:20px\">notify_when_idle, one-shot</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:427",
+            "parent": "6:404",
+            "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🩺 idle-check.ts</b><br><span style=\"font-size:20px\">stall or fine?</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "250",
+            "width": "520",
+            "x": "686",
+            "y": "560"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:431",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 nudge it</b><br><span style=\"font-size:20px\">the next step, the same turn</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:435",
+            "parent": "6:404",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ still silent ~5 min</b><br><span style=\"font-size:20px\">dima, or re-brief / respawn</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:463",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#FFF7F0;strokeColor=#DBD4CE;strokeWidth=2;noLabel=1;",
+            "value": "5 End",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "7104",
+            "y": "5079"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:464",
+            "parent": "6:463",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🏁 5 — Ending",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "280",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:465",
+            "parent": "6:463",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
+            "value": "crew-dna · briefing § the pr · watching § stopping · a watch lives until its pr merges, never until its coder stops",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "1140",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:466",
+            "parent": "6:463",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ verifier clean</b><br><span style=\"font-size:20px\">recorded by pr-watch.sh --verified</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:470",
+            "parent": "6:463",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 no review request</b><br><span style=\"font-size:20px\">dima is never added; the gate in pr-flow.md decides</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:474",
+            "parent": "6:463",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔀 merge</b><br><span style=\"font-size:20px\">by the gate in pr-flow.md; risky paths named; a self-edit or the brake waits for dima</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:478",
+            "parent": "6:463",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🛑 claude stop &lt;jobId&gt;</b><br><span style=\"font-size:20px\">then ls: the registry file is gone</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:482",
+            "parent": "6:463",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📝 retro + glide end</b><br><span style=\"font-size:20px\">beside the lane plan in ~/.local/state/x/lanes; the glide ends at siesta</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:502",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F1FEFD;strokeColor=#CFDADA;strokeWidth=2;noLabel=1;",
+            "value": "6 Subagents",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "7104",
+            "y": "6060"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:503",
+            "parent": "6:502",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🐝 6 — Subagents",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "356",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:504",
+            "parent": "6:502",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
+            "value": "x:crew-subagent · open to every member · disposable: runs inside your session, dies with it",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "949",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:505",
+            "parent": "6:502",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 a chore or a read</b><br><span style=\"font-size:20px\">a big read, a bounded question</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:509",
+            "parent": "6:502",
+            "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">❓ pick the card</b><br><span style=\"font-size:20px\">helper-lite · helper · researcher · retro · scout</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "250",
+            "width": "520",
+            "x": "686",
+            "y": "190"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:513",
+            "parent": "6:502",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ a lean start</b><br><span style=\"font-size:20px\">omitClaudeMd, effort medium</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:517",
+            "parent": "6:502",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🍴 a fork?</b><br><span style=\"font-size:20px\">only with why-fork:, or refused</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:521",
+            "parent": "6:502",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ done</b><br><span style=\"font-size:20px\">answer read, checked, folded</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:525",
+            "parent": "6:502",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 fan-out</b><br><span style=\"font-size:20px\">x10 ≈ 4× tokens, 5× faster; x25+ → Workflow</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:549",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#FFFFFF;strokeColor=#DBDBDB;strokeWidth=2;noLabel=1;",
+            "value": "Legend",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "1498",
+            "width": "632",
+            "x": "10656"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:550",
+            "parent": "6:549",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🧭 Legend",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "206",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:551",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ dima</b><br><span style=\"font-size:20px\">decides or acts</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "150"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:555",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 cclio</b><br><span style=\"font-size:20px\">does it</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "340"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:559",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ a script</b><br><span style=\"font-size:20px\">a hook or a check</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "530"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:563",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔧 a crew member</b><br><span style=\"font-size:20px\">coder, verifier, …</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "720"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:567",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 a file</b><br><span style=\"font-size:20px\">a rule or a reference</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "910"
+        }
+    },
+    {
+        "attrs": {
+            "id": "6:571",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#B3B3B3;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔔 an event</b><br><span style=\"font-size:20px\">a trigger</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "1100"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:294",
+            "parent": "6:549",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFDBDB;strokeColor=#E54D4D;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚠️ a weak spot</b><br><span style=\"font-size:20px\">my reading, not in the files</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "1290"
+        }
+    },
+    {
+        "attrs": {
+            "id": "7:236",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;",
+            "value": "PM 1 Intake",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "4182"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:232",
+            "parent": "7:236",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "📬 1 — Intake: a drop becomes a pocket item",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "865",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:233",
+            "parent": "7:236",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
+            "value": "craft-fleet-flow stage 1 · craft-pm § wishes · habit-shared-files § the pocket · cclio:boot step 3",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "978",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:234",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a drop</b><br><span style=\"font-size:20px\">inbox.md in the vault, or mid-prompt</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:238",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎼 composer grooms it</b><br><span style=\"font-size:20px\">every wish-bearing prompt; his raw words land in the notes at once</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:242",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 folded into W-lines</b><br><span style=\"font-size:20px\">his words, one point a line, ❓ for his questions; copied, never paraphrased</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:246",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🌠 a pocket item is born</b><br><span style=\"font-size:20px\">Backlog.md · pocket-add.ts · size + now/next/later</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:250",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ pocket-check</b><br><span style=\"font-size:20px\">reds a breach: now ≤ 3, open uncapped, a stale state, a W-line unaccounted, an open item behind a ticket</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:254",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🐬 wishkeeper, boot mode</b><br><span style=\"font-size:20px\">every drop landed, kept in meaning</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:258",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">❓ its home, at the halt&#x27;s sort</b><br><span style=\"font-size:20px\">freebie (1–5 calls) solved now · today/tomorrow stays · later → linear, in its milestone</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:262",
+            "parent": "7:236",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ the pocket is today + tomorrow</b><br><span style=\"font-size:20px\">later → linear in its milestone; nothing comes back from linear</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:298",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F4F0FF;strokeColor=#D2CEDB;strokeWidth=2;noLabel=1;",
+            "value": "PM 2 Shape",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "4182",
+            "y": "981"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:299",
+            "parent": "23:298",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🥊 2 — Shape: a wish becomes buildable",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "793",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:300",
+            "parent": "23:298",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
+            "value": "craft-fleet-flow stages 2–3 · root invariant 3 · cclio:shape-idea · grilling · craft-pm § wishes",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "938",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:301",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#8C8C8C;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔔 bigger than a tweak</b><br><span style=\"font-size:20px\">a new app, a redesign, a real feature</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:305",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 cclio:shape-idea</b><br><span style=\"font-size:20px\">the want, a grill, prior art, the cut, the done test</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:309",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔁 grill rounds</b><br><span style=\"font-size:20px\">matt&#x27;s grilling: a proposal file, ccrow reviews it, the refined round prints once</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:313",
+            "parent": "23:298",
+            "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">❓ «shaped»</b><br><span style=\"font-size:20px\">his word<br>is the gate</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "230",
+            "width": "560",
+            "x": "1926",
+            "y": "200"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:317",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎨 design, when it earns it</b><br><span style=\"font-size:20px\">designer-interview → boards → his pick</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:321",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ wish-cover.ts + its hook</b><br><span style=\"font-size:20px\">a first use copies its W-lines word for word, from the pocket or the ticket; reds a missing one</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:325",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ first use is word-checked</b><br><span style=\"font-size:20px\">was 9.4 % lost at the grill (10-21); the hook fires on every spec and proposal</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:329",
+            "parent": "23:298",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#E5B833;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 ? lines answered</b><br><span style=\"font-size:20px\">a wish reaching to-spec with an open ? is the failure</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:361",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;",
+            "value": "PM 3 Ticket",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "4182",
+            "y": "1962"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:362",
+            "parent": "23:361",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🎫 3 — Ticket: the want gets its linear home",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "853",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:363",
+            "parent": "23:361",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
+            "value": "craft-fleet-flow stage 4 · cclio:pm § the fields · pm/references/body.md · the sorting phase",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "939",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:364",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 search before a create</b><br><span style=\"font-size:20px\">the dupe, the parent, the relations up front</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:368",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎫 born in Triage</b><br><span style=\"font-size:20px\">x as cclio, never --state; promotion is dima&#x27;s</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:372",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#E5B833;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 the body, a spec seed</b><br><span style=\"font-size:20px\">lane · wish block of W-lines · why · stories · decided · exit</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:376",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 every field, every touch</b><br><span style=\"font-size:20px\">role, kind, p3, size, project, parent, 🎑 milestone</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:380",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🦉 cclio:shape-lane</b><br><span style=\"font-size:20px\">grill the ticket; the exit lines seal after the spec (PM 4)</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:384",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">exit lines gradable; no exit lines, no spawn</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:388",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ the sorting phase</b><br><span style=\"font-size:20px\">cclio proposes the order, dima corrects it</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:392",
+            "parent": "23:361",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ one home at a time</b><br><span style=\"font-size:20px\">pocket item → ticket: «ticket: FRM-N», dies the turn the ticket is born</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:424",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F4F0FF;strokeColor=#D2CEDB;strokeWidth=2;noLabel=1;",
+            "value": "PM 4 Hand-off",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "4182",
+            "y": "2943"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:425",
+            "parent": "23:424",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🛼 4 — Hand-off: a lane picks its path",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "731",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:426",
+            "parent": "23:424",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
+            "value": "craft-fleet-flow § freebie, quick lane, side lane, stage 5 · pm/references/body.md § ticket ↔ spec · x:crew-lead",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "1153",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:427",
+            "parent": "23:424",
+            "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">❓ which kind?</b><br><span style=\"font-size:20px\">freebie · quick lane<br>side lane</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "230",
+            "width": "560",
+            "x": "36",
+            "y": "200"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:431",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#E5B833;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 to-spec</b><br><span style=\"font-size:20px\">.scratch/&lt;feature&gt;/spec.md; wish: PK-N, its W-lines cited, wish-cover exit 0</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:435",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔧 the coder runs to-tickets</b><br><span style=\"font-size:20px\">slices in .scratch/&lt;feature&gt;/issues/, never linear</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:439",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📋 x brief check + the verifier ask</b><br><span style=\"font-size:20px\">its one home: crew-lead → the crew column, 3 Brief</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:443",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 the lane plan → the glide card</b><br><span style=\"font-size:20px\">~/.local/state/x/lanes/&lt;feature&gt;/, outside every checkout; glide copies it (auto: FRM-410)</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:447",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ cclio seals the order</b><br><span style=\"font-size:20px\">the coder drafts lane-plan.md, cclio reorders against what comes next</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:451",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ steers land in the file</b><br><span style=\"font-size:20px\">dima&#x27;s, cclio&#x27;s and proxied steers, asks, wisps → ## unsealed the same turn; cclio re-seals</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:455",
+            "parent": "23:424",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ one word per lane</b><br><span style=\"font-size:20px\">main lane ours · side lane (pr) · quick lane (no pr) · shift on afk</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:487",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;",
+            "value": "PM 5 Land and fold",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "4182",
+            "y": "3924"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:488",
+            "parent": "23:487",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🏁 5 — Land, look, fold: the wish reaches dima",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "898",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:489",
+            "parent": "23:487",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
+            "value": "craft-fleet-flow stages 8–10 · pm/references/closing.md · habit-shared-files · cclio:halt",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "895",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:490",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🔀 land — cclio approves + merges</b><br><span style=\"font-size:20px\">verifier clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:494",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">👀 the look card</b><br><span style=\"font-size:20px\">what, where, try, proven, not checked + a shot; risky paths named</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:498",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ the ask-guard</b><br><span style=\"font-size:20px\">each ask of his printed with its home before a close</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:502",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎫 close, with a closing word</b><br><span style=\"font-size:20px\">proposed, never performed; 3 auto-close cases</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:506",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🌠 its pocket item → done</b><br><span style=\"font-size:20px\">dead the turn its ticket was born: ticket: FRM-N + a close: line</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:510",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📝 fold the lesson</b><br><span style=\"font-size:20px\">a guard, a verb, a check, a ticket; the 🗺️ board redrawn once the steers land</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:514",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ x fleet flow --days 14</b><br><span style=\"font-size:20px\">the done test: #dima-caught, #brief, pr median down</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "23:518",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">✅ wish-loss guards</b><br><span style=\"font-size:20px\">M1 + M2 in pocket-check, the word hook; M3 weekly audit from 10-28</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:434",
+            "parent": "1",
+            "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;",
+            "value": "PM 0 Roadmap",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "821",
+            "width": "2522",
+            "x": "4182",
+            "y": "-981"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:435",
+            "parent": "30:434",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🧭 0 — Roadmap → milestone: what we work on, in what order",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "48",
+            "width": "1208",
+            "x": "56",
+            "y": "44"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:436",
+            "parent": "30:434",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
+            "value": "dima-strategy § the roadmap · craft-pm § milestones first · cclio:pm (milestone fields) · boot's milestone-health block",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "27",
+            "width": "1214",
+            "x": "56",
+            "y": "104"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:437",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🧭 the roadmap initiative</b><br><span style=\"font-size:20px\">8 steps, the cli beside them; «now» names where we stand</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:440",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a step opens on his tick</b><br><span style=\"font-size:20px\">a close asks «open N+1?»; then In Progress + its first milestone</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:443",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">📄 projects are standing</b><br><span style=\"font-size:20px\">linear&#x27;s project complete is never used; only milestones complete</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:446",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎑 milestones first</b><br><span style=\"font-size:20px\">create, move, close ask «which milestone?»; a guard refuses a bare one (FRM-417, trial)</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "235"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:449",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎑 born at 2+ tickets</b><br><span style=\"font-size:20px\">one flow&#x27;s related tickets, named by the outcome dima notices, never a number</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1946",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:452",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ the boot&#x27;s milestone health</b><br><span style=\"font-size:20px\">flags an empty one, an unplaced ticket, a number-name, more than 5 open</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:455",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ an empty milestone</b><br><span style=\"font-size:20px\">linear computes done, no close: a ⚠️ delete ask, per milestone</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "686",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "30:458",
+            "parent": "30:434",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🎫 → band 1, the tickets</b><br><span style=\"font-size:20px\">later → linear, in its milestone; the pocket holds today + tomorrow</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "7:232",
+            "parent": "1",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🛼 the coordinator — how cclio spawns and runs the crew",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "87",
+            "width": "2031",
+            "x": "7104",
+            "y": "-260"
+        }
+    },
+    {
+        "attrs": {
+            "id": "7:233",
+            "parent": "1",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
+            "value": "x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-23",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "34",
+            "width": "1258",
+            "x": "7104",
+            "y": "-160"
+        }
+    },
+    {
+        "attrs": {
+            "id": "7:234",
+            "parent": "1",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;",
+            "value": "🗺️ pm — how a wish travels to dima's hands",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "87",
+            "width": "1539",
+            "x": "4182",
+            "y": "-1241"
+        }
+    },
+    {
+        "attrs": {
+            "id": "7:235",
+            "parent": "1",
+            "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
+            "value": "craft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-23 · ⚠️ = my reading, not in the files",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "34",
+            "width": "1627",
+            "x": "4182",
+            "y": "-1141"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:291",
+            "parent": "1",
+            "source": "3:253",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:257",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:295",
+            "parent": "1",
+            "source": "3:257",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:261",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:299",
+            "parent": "1",
+            "source": "3:261",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:265",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:303",
+            "parent": "1",
+            "source": "3:265",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:269",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:307",
+            "parent": "1",
+            "source": "3:269",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:273",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:311",
+            "parent": "1",
+            "source": "3:273",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:277",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:315",
+            "parent": "1",
+            "source": "3:277",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:281",
+            "value": "yes"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:319",
+            "parent": "1",
+            "source": "3:281",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:285",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:323",
+            "parent": "1",
+            "source": "3:285",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:289",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:327",
+            "parent": "1",
+            "source": "3:289",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:293",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:331",
+            "parent": "1",
+            "source": "3:293",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:297",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "4:335",
+            "parent": "1",
+            "source": "3:297",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:301",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:337",
+            "parent": "1",
+            "source": "6:297",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:301",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:341",
+            "parent": "1",
+            "source": "6:301",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:305",
+            "value": "disposable"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:345",
+            "parent": "1",
+            "source": "6:301",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:309",
+            "value": "watchable"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:380",
+            "parent": "1",
+            "source": "6:352",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:356",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:384",
+            "parent": "1",
+            "source": "6:356",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:360",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:388",
+            "parent": "1",
+            "source": "6:360",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:364",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:400",
+            "parent": "1",
+            "source": "6:372",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:368",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:396",
+            "parent": "1",
+            "source": "6:376",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:372",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:392",
+            "parent": "1",
+            "source": "6:364",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:376",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:439",
+            "parent": "1",
+            "source": "6:407",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:411",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:443",
+            "parent": "1",
+            "source": "6:411",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:415",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:447",
+            "parent": "1",
+            "source": "6:415",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:419",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:451",
+            "parent": "1",
+            "source": "6:423",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:427",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:455",
+            "parent": "1",
+            "source": "6:427",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:431",
+            "value": "stall"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:459",
+            "parent": "1",
+            "source": "6:431",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:435",
+            "value": "silent"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:486",
+            "parent": "1",
+            "source": "6:466",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:470",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:490",
+            "parent": "1",
+            "source": "6:470",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:474",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:494",
+            "parent": "1",
+            "source": "6:474",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:478",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:498",
+            "parent": "1",
+            "source": "6:478",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:482",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:529",
+            "parent": "1",
+            "source": "6:505",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:509",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:533",
+            "parent": "1",
+            "source": "6:509",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:513",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:537",
+            "parent": "1",
+            "source": "6:513",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:517",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:545",
+            "parent": "1",
+            "source": "6:525",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:521",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:541",
+            "parent": "1",
+            "source": "6:517",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "6:525",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:266",
+            "parent": "1",
+            "source": "23:234",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:238",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:270",
+            "parent": "1",
+            "source": "23:238",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:242",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:274",
+            "parent": "1",
+            "source": "23:242",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:246",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:278",
+            "parent": "1",
+            "source": "23:246",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:250",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:282",
+            "parent": "1",
+            "source": "23:250",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:254",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:286",
+            "parent": "1",
+            "source": "23:254",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:258",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:290",
+            "parent": "1",
+            "source": "23:258",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:262",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:333",
+            "parent": "1",
+            "source": "23:301",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:305",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:337",
+            "parent": "1",
+            "source": "23:305",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:309",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:341",
+            "parent": "1",
+            "source": "23:309",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:313",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:345",
+            "parent": "1",
+            "source": "23:313",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:317",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:349",
+            "parent": "1",
+            "source": "23:317",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:321",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:353",
+            "parent": "1",
+            "source": "23:321",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:325",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:357",
+            "parent": "1",
+            "source": "23:325",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:329",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:396",
+            "parent": "1",
+            "source": "23:364",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:368",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:400",
+            "parent": "1",
+            "source": "23:368",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:372",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:404",
+            "parent": "1",
+            "source": "23:372",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:376",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:408",
+            "parent": "1",
+            "source": "23:376",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:380",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:412",
+            "parent": "1",
+            "source": "23:380",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:384",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:416",
+            "parent": "1",
+            "source": "23:384",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:388",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:420",
+            "parent": "1",
+            "source": "23:388",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:392",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:459",
+            "parent": "1",
+            "source": "23:427",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:431",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:463",
+            "parent": "1",
+            "source": "23:431",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:435",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:467",
+            "parent": "1",
+            "source": "23:435",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:439",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:471",
+            "parent": "1",
+            "source": "23:439",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:443",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:475",
+            "parent": "1",
+            "source": "23:443",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:447",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:479",
+            "parent": "1",
+            "source": "23:447",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:451",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:483",
+            "parent": "1",
+            "source": "23:451",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:455",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:522",
+            "parent": "1",
+            "source": "23:490",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:494",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:526",
+            "parent": "1",
+            "source": "23:494",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:498",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:530",
+            "parent": "1",
+            "source": "23:498",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:502",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:534",
+            "parent": "1",
+            "source": "23:502",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:506",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:538",
+            "parent": "1",
+            "source": "23:506",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:510",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:542",
+            "parent": "1",
+            "source": "23:510",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:514",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "23:546",
+            "parent": "1",
+            "source": "23:514",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "23:518",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:461",
+            "parent": "1",
+            "source": "30:437",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "30:440",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:465",
+            "parent": "1",
+            "source": "30:440",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "30:443",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:469",
+            "parent": "1",
+            "source": "30:443",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "30:446",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:473",
+            "parent": "1",
+            "source": "30:446",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "30:449",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:477",
+            "parent": "1",
+            "source": "30:449",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "30:452",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:481",
+            "parent": "1",
+            "source": "30:452",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "30:455",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:485",
+            "parent": "1",
+            "source": "30:455",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "30:458",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:575",
+            "parent": "1",
+            "source": "6:294",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:247",
+            "value": "watchable: preflight"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:579",
+            "parent": "1",
+            "source": "3:247",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:349",
+            "value": "brief written in step 7"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:583",
+            "parent": "1",
+            "source": "6:349",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:404",
+            "value": "spawned with the argv"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "6:587",
+            "parent": "1",
+            "source": "6:404",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "6:463",
+            "value": "clean or stopped"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "24:419",
+            "parent": "1",
+            "source": "7:236",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:298",
+            "value": "folded and placed"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "24:423",
+            "parent": "1",
+            "source": "23:298",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:361",
+            "value": "shaped"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "24:427",
+            "parent": "1",
+            "source": "23:361",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:424",
+            "value": "sealed exit lines"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "24:431",
+            "parent": "1",
+            "source": "23:424",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "23:487",
+            "value": "merged pr"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "24:435",
+            "parent": "1",
+            "source": "23:424",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+            "target": "6:349",
+            "value": "the crew runs it: brief → run → end"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "30:489",
+            "parent": "1",
+            "source": "30:434",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
+            "target": "7:236",
+            "value": "folded and placed"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    }
+]

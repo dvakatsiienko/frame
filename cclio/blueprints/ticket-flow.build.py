@@ -14,7 +14,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
-TARGET = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crew-pm-flow.drawio")
+TARGET = os.environ.get("PM_BOARD", os.path.join(os.path.dirname(os.path.abspath(__file__)), "crew-pm-flow.drawio"))
 PREFIX = "tf-"
 # one of our cells as text, self-closing or with its geometry inside (draw.io writes id first)
 OURS = re.compile(r'\n\s*<mxCell id="tf-[^"]*"(?:[^>]*/>|.*?</mxCell>)', re.S)

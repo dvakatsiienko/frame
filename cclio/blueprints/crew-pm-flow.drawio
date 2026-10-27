@@ -403,7 +403,7 @@
         <mxCell id="30:435" parent="30:434" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🧭 0 — Roadmap → milestone: what we work on, in what order" vertex="1">
           <mxGeometry height="48" width="1208" x="56" y="44" as="geometry" />
         </mxCell>
-        <mxCell id="30:436" parent="30:434" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" value="dima-strategy § the roadmap · craft-pm § milestones first · cclio:pm (milestone fields) · boot&#39;s milestone-health block" vertex="1">
+        <mxCell id="30:436" parent="30:434" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" value="dima-strategy § the roadmap · craft-pm § milestones first · cclio:pm (milestone fields) · boot's milestone-health block" vertex="1">
           <mxGeometry height="27" width="1214" x="56" y="104" as="geometry" />
         </mxCell>
         <mxCell id="30:437" parent="30:434" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🧭 the roadmap initiative&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;8 steps, the cli beside them; «now» names where we stand&lt;/span&gt;" vertex="1">
@@ -436,7 +436,7 @@
         <mxCell id="7:233" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;" value="x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-23" vertex="1">
           <mxGeometry height="34" width="1258" x="7104" y="-160" as="geometry" />
         </mxCell>
-        <mxCell id="7:234" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;" value="🗺️ pm — how a wish travels to dima&#39;s hands" vertex="1">
+        <mxCell id="7:234" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;" value="🗺️ pm — how a wish travels to dima's hands" vertex="1">
           <mxGeometry height="87" width="1539" x="4182" y="-1241" as="geometry" />
         </mxCell>
         <mxCell id="7:235" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;" value="craft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-23 · ⚠️ = my reading, not in the files" vertex="1">
