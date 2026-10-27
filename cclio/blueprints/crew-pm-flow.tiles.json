@@ -132,7 +132,7 @@
             "id": "3:273",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🪐 6 · verifier ask</b><br><span style=\"font-size:20px\">«spawn now? verifier yes/no» in orbit</span>",
+            "value": "<b style=\"font-size:26px\">🪐 6 · the spawn word</b><br><span style=\"font-size:20px\">his pick of signed chunks is the spawn; a quick lane's pick says verifier yes or no</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1441,7 +1441,7 @@
             "id": "23:301",
             "parent": "23:298",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#D9D9D9;strokeColor=#8C8C8C;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔔 bigger than a tweak</b><br><span style=\"font-size:20px\">a new app, a redesign, a real feature</span>",
+            "value": "<b style=\"font-size:26px\">🔔 shape-idea, a pick</b><br><span style=\"font-size:20px\">the fold proposes it per wish: a new app, a feature, a change to a product part</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1649,7 +1649,7 @@
             "id": "23:372",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#E5B833;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📄 the body, a spec seed</b><br><span style=\"font-size:20px\">lane · wish block of W-lines · why · stories · decided · exit</span>",
+            "value": "<b style=\"font-size:26px\">📄 the body, a spec seed</b><br><span style=\"font-size:20px\">lane · wish block of W-lines · why · stories · decided · 🎯 done test · out · refs · ## signed</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1681,7 +1681,7 @@
             "id": "23:380",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 cclio:shape-lane</b><br><span style=\"font-size:20px\">grill the ticket; the exit lines seal after the spec (PM 4)</span>",
+            "value": "<b style=\"font-size:26px\">🦉 cclio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks)</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1697,7 +1697,7 @@
             "id": "23:384",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">exit lines gradable; no exit lines, no spawn</span>",
+            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">🦭 the seal at dispatch: the spec's exit lines gradable; no exit lines, no spawn</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1809,7 +1809,7 @@
             "id": "23:431",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#E5B833;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📄 to-spec</b><br><span style=\"font-size:20px\">.scratch/&lt;feature&gt;/spec.md; wish: PK-N, its W-lines cited, wish-cover exit 0</span>",
+            "value": "<b style=\"font-size:26px\">📄 to-spec</b><br><span style=\"font-size:20px\">.scratch/&lt;feature&gt;/spec.md; wish: FRM-N, its W-lines cited, wish-cover exit 0</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1841,7 +1841,7 @@
             "id": "23:439",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📋 x brief check + the verifier ask</b><br><span style=\"font-size:20px\">its one home: crew-lead → the crew column, 3 Brief</span>",
+            "value": "<b style=\"font-size:26px\">📋 x brief check</b><br><span style=\"font-size:20px\">its one home: crew-lead → the crew column, 3 Brief</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1873,7 +1873,7 @@
             "id": "23:447",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ cclio seals the order</b><br><span style=\"font-size:20px\">the coder drafts lane-plan.md, cclio reorders against what comes next</span>",
+            "value": "<b style=\"font-size:26px\">✅ cclio 🟢 greenlights the order</b><br><span style=\"font-size:20px\">the coder drafts lane-plan.md, cclio reorders against what comes next</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1889,7 +1889,7 @@
             "id": "23:451",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ steers land in the file</b><br><span style=\"font-size:20px\">dima&#x27;s, cclio&#x27;s and proxied steers, asks, wisps → ## unsealed the same turn; cclio re-seals</span>",
+            "value": "<b style=\"font-size:26px\">✅ steers land in the file</b><br><span style=\"font-size:20px\">dima's, cclio's and proxied steers, asks, wisps → ## not greenlit the same turn; cclio greenlights again</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2145,7 +2145,7 @@
             "id": "30:437",
             "parent": "30:434",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🧭 the roadmap initiative</b><br><span style=\"font-size:20px\">8 steps, the cli beside them; «now» names where we stand</span>",
+            "value": "<b style=\"font-size:26px\">🧭 the roadmap initiative</b><br><span style=\"font-size:20px\">nine steps, the cli beside them; «now» names where we stand</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2161,7 +2161,7 @@
             "id": "30:440",
             "parent": "30:434",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a step opens on his tick</b><br><span style=\"font-size:20px\">a close asks «open N+1?»; then In Progress + its first milestone</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a step opens on his tick</b><br><span style=\"font-size:20px\">a close asks «open N+1?»; then its start date + first milestone, queued; status follows the queue</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2321,7 +2321,7 @@
             "id": "7:235",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
-            "value": "craft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-23 · ⚠️ = my reading, not in the files",
+            "value": "craft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-27 · ⚠️ = my reading, not in the files",
             "vertex": "1"
         },
         "geometry": {
@@ -3600,7 +3600,7 @@
             "source": "23:361",
             "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
             "target": "23:424",
-            "value": "sealed exit lines"
+            "value": "✍️ signed · his pick · 🦭 sealed"
         },
         "geometry": {
             "as": "geometry",
