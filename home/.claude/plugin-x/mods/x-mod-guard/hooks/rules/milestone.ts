@@ -52,7 +52,19 @@ function linearWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'linear') return { isX: false, words };
     if (c.name !== 'x') return undefined;
-    if (words[0] === 'linear') return { isX: true, words: words.slice(1) };
+    // x takes any flag before the family (`x --json linear …`, `x --as coder linear …`): every word ahead of `linear`
+    // is a flag or a flag's value
+    const family = words.findIndex(
+        (w, i) =>
+            w === 'linear' &&
+            words
+                .slice(0, i)
+                .every(
+                    (v, j) =>
+                        v.startsWith('-') || words[j - 1]?.startsWith('-'),
+                ),
+    );
+    if (family >= 0) return { isX: true, words: words.slice(family + 1) };
     const dash = words.indexOf('--');
     if (words[0] === 'as' && dash >= 0 && words[dash + 1] === 'linear')
         return { isX: false, words: words.slice(dash + 2) };

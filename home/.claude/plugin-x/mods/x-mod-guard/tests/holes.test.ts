@@ -235,6 +235,9 @@ for (const command of [
     'x linear --as=coder set FRM-1 --project cli',
     'x linear --as coder set FRM-1 --project cli',
     'x linear --board set FRM-1 --project cli',
+    'x --json linear set FRM-1 --project cli',
+    'x --as coder linear set FRM-1 --project cli',
+    'x --as=coder --json linear set FRM-1 --project cli',
     `x linear api 'mutation { issueCreate(input: { teamId: "t", title: "x", projectId: "${CLI_ID}" }) { success } }'`,
     `x linear api 'mutation { issueUpdate(id: "FRM-1", input: { projectId: "${CLI_ID}" }) { success } }'`,
     `x linear api --vars '{"p":"${CLI_ID}"}' 'mutation($p: String!) { issueCreate(input: { teamId: "t", title: "x", projectId: $p }) { success } }'`,
@@ -257,6 +260,7 @@ for (const command of [
     'x as coder -- linear issue create --project lab -t x',
     "rg -- '--project' .",
     'x linear list --search set --project cli',
+    'x lane commit msg.txt -- linear set --project cli',
 ])
     test(`«${command}» runs`, async ($, on) => {
         const w = world(on);
