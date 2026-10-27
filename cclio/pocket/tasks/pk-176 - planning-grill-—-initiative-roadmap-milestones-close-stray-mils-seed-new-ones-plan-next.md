@@ -7,7 +7,7 @@ status: waiting
 assignee: []
 created_date: '2026-10-18 13:41'
 updated_date: '2026-10-25T10:30:00Z'
-due_date: '2026-10-26'
+due_date: '2026-10-28'
 labels:
   - s
 dependencies: []
