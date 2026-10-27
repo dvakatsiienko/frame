@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 from datetime import date
 
 VERSIONS = os.environ.get("BOARD_VERSIONS", os.path.join(os.path.dirname(os.path.abspath(__file__)), "versions.json"))
@@ -27,13 +28,26 @@ def stamp(text: str, board: str, entry: dict) -> str:
     return head + cell + close + tail
 
 
+def committed() -> dict:
+    try:
+        repo = os.path.dirname(VERSIONS)
+        rel = subprocess.run(["git", "-C", repo, "ls-files", "--full-name", VERSIONS], capture_output=True, text=True, check=True).stdout.strip()
+        shown = subprocess.run(["git", "-C", repo, "show", f"HEAD:{rel}"], capture_output=True, text=True, check=True).stdout
+        return json.loads(shown) if rel else {}
+    except (subprocess.CalledProcessError, json.JSONDecodeError, OSError):
+        return {}
+
+
 def bump(board: str, path: str) -> str:
     text = LABEL.sub("", open(path, encoding="utf-8").read())
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
     versions = json.load(open(VERSIONS, encoding="utf-8")) if os.path.exists(VERSIONS) else {}
     entry = versions.get(board, {"version": 0, "hash": "", "at": ""})
+    # one bump per committed redraw: both builders of one redraw count from the committed entry
+    base = committed().get(board, entry)
     if entry["hash"] != digest:
-        entry = {"version": entry["version"] + 1, "hash": digest, "at": date.today().isoformat()}
+        version = base["version"] + 1 if base["hash"] != digest else base["version"]
+        entry = {"version": version, "hash": digest, "at": date.today().isoformat()}
         versions[board] = entry
         with open(VERSIONS, "w", encoding="utf-8") as out:
             json.dump(versions, out, indent=2, sort_keys=True, ensure_ascii=False)

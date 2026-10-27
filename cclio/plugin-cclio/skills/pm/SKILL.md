@@ -24,7 +24,7 @@ recipes are [references/workspace.md](references/workspace.md).
 - `link FRM-N blocks FRM-M` · `comment FRM-N --body-file f` · `update <project> --body-file f --health onTrack`
 - `archive --days 14`, then `--apply`
 - `api '<graphql>'` for the rest; `x schema linear` holds every flag
-- create has no verb: `x as cclio -- linear issue create … --milestone <name> --description-file f`, never `--state` —
+- create has no verb: `x as cclio -- linear issue create … --project <name> --milestone <name> --description-file f`, never `--state` —
   a new ticket is born in Triage, and promotion out of it is dima's (2026-08-31)
 - every call acts as the cclio app (`viewer` answers `cclio, app: true`); `--as coder` writes as the coder app
 
@@ -39,9 +39,8 @@ traps:
 
 ## every create and every update — the fields
 
-- **one role, one kind, every touch** (the label groups are exclusive): role by readiness and by
-  who waits — `agent`, `human`, `needs human` (an agent waits on dima), `needs agent` (dima waits
-  on research); a blocker is a relation, never a role. a `human` ticket is dima's to start
+- **one executor, one kind, every touch** (the label groups are exclusive, `docs/tracker/GLOSSARY.md` § label): executor `agent` or `human`; a blocker label only while blocked — `needs human` (an agent waits on dima), `needs agent` (dima waits
+  on research). a `human` ticket is dima's to start
 - **priority** p3; p1 only for a real interrupt, its reason and expiry in the body; p2 or p4 only when
   its importance truly differs; **size** XS · S · M naming its closest done ticket (`size: S, like FRM-372`);
   XS (minutes, under ~80 coder turns) · S (one session, under ~400) · M (allowed, on trial: `craft-fleet-flow` § lane init),

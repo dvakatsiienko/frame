@@ -835,6 +835,20 @@ func TestMergeAutoLandsASelfEditItsChunkPreApproved(t *testing.T) {
 	}
 }
 
+// a re-sign after a cancel restores the sign: the cancel sits above the sign that holds
+func TestMergeAutoLandsASelfEditReSignedAfterACancel(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	block := "merge: pre-approved\n🚫 cancelled 2026-10-26 — chunk dropped\n✍️ re-signed 2026-10-27 — back on · body " + bodyHash(signAbove) + "\nmerge: pre-approved\n"
+	w.signs(t, "FRM-9", signedBody(signAbove, block, signAbove))
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, %d merges, want a re-sign after a cancel to hold:\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
 // a body quoting «## signed» above its own sign block: the block that closes the body is the sign
 func TestMergeAutoReadsTheSignBlockThatClosesTheBody(t *testing.T) {
 	t.Parallel()
@@ -878,6 +892,8 @@ func TestMergeAutoWaitsOnASelfEditTheSignDoesNotCover(t *testing.T) {
 			"FRM-9's last sign holds no merge: pre-approved"},
 		{"a re-signed line, as written, voids an older pre-approval", signedBody(signAbove, "merge: pre-approved\n✍️ re-signed 2026-10-25 — scope grew · body "+bodyHash(signAbove)+"\n", signAbove), "",
 			"FRM-9's last sign holds no merge: pre-approved"},
+		{"a cancel after the last sign voids its pre-approval", signedBody(signAbove, "merge: pre-approved\n🚫 cancelled 2026-10-26 — chunk dropped\n", signAbove), "",
+			"FRM-9's last sign was cancelled"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

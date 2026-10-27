@@ -43,11 +43,12 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 Every decision is one of three:
 
 - **reversible** → take the default, log `decided: X — undo: Y`, continue
-- **irreversible or external** (a merge, a delete, prod, a message, a setting) → park it with its
+- **irreversible or external** (a merge, a delete, prod, a message, a setting, a move or drop of a line of dima's) → park it with its
   reason, never block other work on it; a merge is no park: a clean pr lands by the gate, and a self-edit lands when its
   chunk's `## signed` carries `merge: pre-approved`
 - **taste** → build one default, flag it for the report
 
+- a mods chunk parks with «needs dima's tab» (only he opens a mods tab); the next chunk runs
 - a coder's premise doubt is built and flagged the same minute, never found at review
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
@@ -61,7 +62,7 @@ In the plan file, then one chat message:
 - **≤ 3 decisions that matter**, one line each, with a ➡️
 - `kept as built: …` — everything else in one line, details in the file
 - severity: 🔴 touches sign-in or data (read it) · 🟢 cosmetic (skim)
-- stated plainly: **an unanswered item counts as accepted**
+- stated plainly: **an unanswered item counts as accepted**, except one that moves, defers or drops a line of his or closes a ticket: that waits for his verdict (`craft-pm` § the ask-guard)
 - the spend, the steer log, what the next plan changes
 - the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
 - then the return sections, every shift, one or two lines each, in plain words:

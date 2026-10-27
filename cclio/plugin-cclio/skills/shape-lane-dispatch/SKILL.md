@@ -8,7 +8,7 @@ the machine part of lane init, cclio's alone: dima signed the chunks in `cclio:s
 
 ## 1 · the offer
 
-«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker and no `lane: main` (ours, never a coder's), grouped by milestone, each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane is one milestone's chunks, ordered by their `blocks` chain (the coder's ticket order inside a chunk is its lane plan). his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket.
+«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker, no `lane: main` (ours, never a coder's) and no `human` or `needs human` label, grouped by milestone, each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane is one milestone's chunks, ordered by their `blocks` chain (the coder's ticket order inside a chunk is its lane plan). his pick is the spawn word: no second ask. a verifier comes by default; a quick lane's pick also says verifier yes or no. a quick lane needs no sign: he names the ticket, which promotes a Triage one (Todo).
 
 ## 2 · the spec
 
@@ -32,15 +32,15 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 - the spawn is `x:crew-lead`'s (load it): the brief's first step has the coder run `to-tickets` on the spec after reading the code, so the slices follow real seams; the brief says «skip the quiz step of to-tickets», since the sign settled the want; the slices go into its worktree `.scratch/<feature>/issues/`, never linear
 - the `signed` label comes off each dispatched chunk, it moves to In Progress with the coder app as its delegate, and its `## signed` block gets `🚀 dispatched <YYYY-MM-DD>`; his sign was its promotion out of Triage
-- a cancelled signed chunk, before or after dispatch: the `signed` label off, Canceled through `cclio:pm`'s `references/closing.md`, and `🚫 cancelled <YYYY-MM-DD> — <why>` in its block
+- a cancelled signed chunk, before or after dispatch: the `signed` label off, Canceled through `cclio:pm`'s `references/closing.md`, and `🚫 cancelled <YYYY-MM-DD> — <why>` in its block; after 🚀: stop its members (`x:crew-lead` watching), close its pr and decamp, drop its spec section, end its glide step
 - **the lane plan**, `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside every checkout, so an isolated coder can write it and a decamp keeps it): the coder's side (the draft, the ticks, `## not greenlit`) is `x:crew-coder`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to greenlight` i reorder it against what comes after and 🟢 greenlight it — my word is final — and greenlight again on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies its ticket lines at each greenlight and land (by hand, until FRM-410). a lane of one ticket skips the file
 
 ## 6 · while it runs
 
 - **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step, and the coder hears it as a steer naming that section plus a `## not greenlit` line, then re-runs `to-tickets` on it; an unsigned one waits for its sign
-- **a wish of dima's mid-lane** goes into the ticket's wish block as W-lines, with a proposed re-sign of its chunk, and the spec section cites them; never a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message
+- **a wish of dima's mid-lane** goes into the ticket's wish block as W-lines, with a proposed re-sign of its chunk, and the spec section cites them; never a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message; a one-chunk lane has no lane plan: its steer goes into the spec section
 - **a ↩️ back-to-Todo ticket** returns by a re-sign naming its left asks, which puts `signed` back so the offer carries it
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running), unless a ↩️ follows the 🚀 (the line above): it re-runs § 3–4 for that chunk (the spec section and its preflight copy) and steers the coder to the changed lines
-- **a park** — his weekly window out, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it
+- **a park** — his weekly window out, the 5h pace, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it; the next siesta back on pace resumes a pace park
 
 **done** = each picked chunk has its spec section with sealed exit lines, its `🚀 dispatched` line, a spawned coder (a verifier unless his pick said no), and a greenlit lane plan.

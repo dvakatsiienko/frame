@@ -19,7 +19,7 @@ one short message, then straight into phase 1:
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
   — every hit without the `standing` label gets one line: «closable, because …» (his word
-  closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
+  closes, with a closing word in the body) or «stays, because …». a ticket that landed (a merged pr, or a quick lane's push)
   with asks left open moves to Todo, never closes, and its `## signed` block gets
   `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again; its way back is a re-sign (`shape-lane-dispatch` § 6)
 - **the stop list holds only members the fleet spawned with `--bg`**; a session the digest marks 👤 is dima's own (desktop or remote control) and stays as he left it.

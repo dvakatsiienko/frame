@@ -113,7 +113,7 @@ BANDS = [
         [
             ("search", 0, 0, "cclio", "🦉 search before create", "the dupe, the right parent and relations; the run marker + the title stem", "craft-pm § fold or drop · body.md"),
             ("triage", 1, 0, "cclio", "🎫 born in Triage", "x as cclio -- linear issue create, never --state; a ticket must earn existence", "cclio:pm § the door · craft-pm"),
-            ("mile", 2, 0, "cclio", "🎑 milestone first", "«which milestone?» on create, move, close; a guard on a bare create: planned (FRM-417)", "craft-pm § milestones first"),
+            ("mile", 2, 0, "cclio", "🎑 milestone first", "«which milestone?» on create, move, close; x-mod-guard refuses a bare one (FRM-417)", "craft-pm § milestones first"),
             ("fields", 3, 0, "file", "📄 every field", "role · kind · p3 · size XS·S·M like FRM-N · project · parent · milestone · delegate", "cclio:pm § the fields"),
             ("body", 4, 0, "file", "📄 the body, a spec seed", "lane · wish · dima notes · why · stories · proposed · decided · open · 🎯 done test · out · refs · ## signed", "pm references/body.md"),
             ("gate", 4, 1, "cclio", "❓ the assumption gate", "a fact dima never said → needs human + a ? line; to-spec only with open empty", "cclio:pm § the fields · body.md"),
@@ -228,11 +228,11 @@ BANDS = [
         "b9", "🏁 9 — the end: how does a ticket close and leave?",
         "pm references/closing.md · craft-pm § the ask-guard · cclio:halt phases 0, 1.5, 3.5, 4.5 · pocket-check.ts",
         [
-            ("sweep", 0, 0, "script", "⚙️ the lingering sweep", "the halt lists In Progress; a merged pr with open asks → Todo, a ↩️ line names why and what is left", "cclio:halt phase 0"),
+            ("sweep", 0, 0, "script", "⚙️ the lingering sweep", "the halt lists In Progress; landed (a merged pr or a quick lane's push) with open asks → Todo, a ↩️ line names why and what is left", "cclio:halt phase 0"),
             ("list", 1, 0, "cclio", "🦉 «closable, because …»", "auto-close only stale, dupe, a freebie done in place; the rest wait for his word", "pm references/closing.md"),
             ("guard", 2, 0, "dima", "🙋‍♂️ the ask-guard", "each ask of his printed with its destination; no verdict, no close", "closing.md · craft-pm § the ask-guard"),
             ("closed", 3, 0, "cclio", "🎫 closed, a closing word", "in the body; the milestone's count read the same turn", "closing.md · craft-pm § milestones first"),
-            ("net", 4, 0, "script", "⚙️ pocket-check's net", "an open item behind a ticket reds (a kept line holds it 3 days); a closed ticket always reds", "pocket-check.ts · habit-shared-files"),
+            ("net", 4, 0, "script", "⚙️ pocket-check's net", "an open item behind a ticket reds (a held line holds it 3 days); a closed ticket always reds", "pocket-check.ts · habit-shared-files"),
             ("archive", 1, 1, "script", "⚙️ the halt files it", "backlog task archive, every done item the post carried; one listed past its day reds", "cclio:halt phase 4.5 · pocket-check.ts"),
             ("inbox", 4, 1, "script", "⚙️ the inbox reset", "halt-sweep.ts copies his template over; it refuses a line without ✅", "cclio:halt phase 1.5"),
             ("linarch", 3, 1, "script", "⚙️ x linear archive", "closed tickets untouched for 14 days; the free plan caps at 250", "cclio:halt phase 3.5 · cclio:pm"),

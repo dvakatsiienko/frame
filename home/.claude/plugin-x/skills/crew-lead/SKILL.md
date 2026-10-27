@@ -34,8 +34,9 @@ the split is **disposable vs watchable**, never research vs code.
   - 📌 desktop auto-archive ends a Code-tab session the moment its pr merges or closes; `--bg` and `--cloud` sessions stay. a job that may need rounds after its merge spawns `--bg`.
 - **a mods coder is spawned by dima, never by cclio** (dima, 2026-10-10): he watches mods live in the coder's own tab, and a `--bg` session shows no mods in the desktop app. the lane ends with the brief file, the ask «open a Code tab in `~/frame` and paste: <pointer>», and a second fence holding the tab name (`⚡ 🔧 <ticket> code: <what>`); then the pick-up below.
   - a mods lane is always a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live; its verifier is optional, his call per lane (dima, 2026-10-27)
+  - his tab, opened and archived by him (no `claude stop` id); a shift parks a mods chunk, «needs dima's tab» (until: the desktop app starts and stops native threads)
 - **cloud** (`claude --cloud`) — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
-- **`/fork [prompt]`** (dima's door) copies this conversation into a new background session; reach for it when the job needs this thread's context and the brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from cclio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).
+- **`/fork [prompt]`** (dima's door, his side research too) copies this conversation into a new background session; reach for it when the job needs this thread's context and the brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from cclio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).
 
 ### pick-ups and refreshes
 

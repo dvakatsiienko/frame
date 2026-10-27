@@ -24,6 +24,7 @@ work; `recipes/refresh-system-checkup/` sharpens it.
 - the log: one line per check per run in `~/frame/cclio/checkup/log.md`,
   `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: <what> | asked: <what> | —`. a check's «last red» is the
   newest 🔴 line for its id there, derived, never kept by hand; a check green for 90 days goes up for removal
+- a postponed run is one line too, `YYYY-MM-DD · postponed · 🟡 <his word> · next due YYYY-MM-DD`; the boot reads it and holds the DUE line until that date
 - the reply is one board: 🔴 first with what was fixed, then 🟡, then one count line of greens
 
 ## the checks

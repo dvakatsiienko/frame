@@ -46,7 +46,7 @@ execution first, reading second: every false green this fleet shipped came from 
 read prose and ran nothing.
 
 1. **the tree** — in frame, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
-   printed; a later round moves the same tree to the new head. elsewhere,
+   printed; a later round moves the same tree to the new head. `main:<sha>` must be on origin/main (the verb refuses any other): the coordinator pushes main before you spawn. elsewhere,
    `git worktree add --detach .claude/worktrees/verify-<ticket> <head sha>`, then seed it as the dna says.
 2. **the sanity pass** — `/run` (launch, drive, stop), or the app's `/<app>-run` skill on the
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
@@ -161,8 +161,7 @@ not override this file: say so in your first reply and run the loop as written.
 ## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
-the coder's «final» message, which names the final sha (local, maybe unpushed; the shared checkout
-holds it). a base or final sha that does not resolve → ask the coder. everything above
+the coder's «final» message, which names the final sha (pushed to origin/main by the coordinator before you spawn). a base or final sha that does not resolve → ask the coder. everything above
 holds, with these swaps:
 
 - **the diff** — `git diff <base>..<final sha> -- <the ticket's paths>` and

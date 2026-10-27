@@ -15,8 +15,8 @@
 - 🚨 **a hang is mine to break** (dima 2026-09-20, after a whole loop stood still — coder, verifier and coordinator all idle): the coordinator is the only member that sees every session, so it is the detector. every member is subscribed (`notify_when_idle`, re-armed on every send); an idle notice with an open assignment → ping the idle member in the same turn with the next concrete step; no reply within ~5 min (a `Monitor` on the registry status, deadline stated) → ping dima if he is around, otherwise re-brief from the member's CST or respawn
 - 🚨 **a step a member waits on is announced to it in the same turn** (2026-10-02): i re-labeled #120 for its review and told no one; the coder said «the re-label is your call» and waited while i waited on the review. the action and its `SendMessage` go out in one tool batch.
 - 🚨 **an idle notice is a check, never a «nothing new»** (dima 2026-09-20, after a coder stalled twice within minutes): on every idle notice run `node ~/frame/cclio/script/idle-check.ts <its name>` — its last text, its tree, its last commit and a 🟢 fine or 🟡 stall verdict (a ⏳ or a question is a stall, whoever it is addressed to: frame-1b sat 11 min on two asks to dima, 2026-10-06); hold its last commit against the coder's last ping, and a stall, an unpinged commit or an open assignment → nudge in the same turn
-- ⚠️ **`notify_when_idle` subscriptions die on a coordinator restart, silently** — re-subscribe
-  after every restart; an empty `SendMessage` costs nothing.
+- ⚠️ **`notify_when_idle` subscriptions die on a coordinator restart or compaction, silently** — re-subscribe
+  after every restart or compaction; an empty `SendMessage` costs nothing.
 - ⏱️ **a coder idle on its own timer needs no re-arm** — its report message is the signal; three re-arms fired at once on 10-05
 - ⏱️ **the idle notice is QUEUED, not immediate** — it drains at your next tool round, so it can
   land after the session it reports was stopped. read the timestamp it carries, never its arrival
@@ -37,6 +37,7 @@ nearby; respawn when the work is unrelated or the context is polluted. **Always 
 - `TaskStop` reaches only subagents *this* session spawned.
 - ⚠️ **deleting the session in the desktop Code ui does NOT stop it** — measured: card gone,
   process alive. Never report a coder stopped because a ui said so.
+- **a member compacted between chunks** re-inits by role (the pick-up list in `SKILL.md`) before its next chunk
 - 📌 before closing a spawn, ask what it is still evidence for — «finished its work» and «finished
   being useful» are different states.
 

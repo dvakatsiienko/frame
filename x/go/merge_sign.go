@@ -16,6 +16,7 @@ var (
 	signedBodyHash = regexp.MustCompile(`· body ([0-9a-f]{8})\s*$`)
 	preApproved    = regexp.MustCompile(`(?m)^merge: pre-approved\s*$`)
 	lastSign       = regexp.MustCompile(`(?m)^✍️ (?:re-)?signed\b`)
+	cancelled      = regexp.MustCompile(`(?m)^🚫 cancelled\b`)
 )
 
 // what a chunk's sign says about a self-edit; held lets it merge without dima's word
@@ -94,6 +95,10 @@ func readSign(ticket, body string) chunkSign {
 	since := block
 	if signs := lastSign.FindAllStringIndex(block, -1); signs != nil {
 		since = block[signs[len(signs)-1][0]:]
+	}
+	// a cancel after the last sign voids it; a later re-sign starts `since` past the cancel
+	if cancelled.MatchString(since) {
+		return chunkSign{detail: ticket + "'s last sign was cancelled (a 🚫 cancelled line follows it): re-sign it"}
 	}
 	if !preApproved.MatchString(since) {
 		return chunkSign{detail: ticket + "'s last sign holds no merge: pre-approved"}

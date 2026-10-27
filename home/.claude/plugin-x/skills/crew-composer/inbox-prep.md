@@ -33,6 +33,7 @@ not content: leave it out. each item becomes one block:
 - so every sentence of his lands in a bullet or an ask, spelling and grammar fixed; filler (openers, hedges) goes
   and a long sentence may be tightened, never in a machine way: his meaning, manner, jargon, vibe words and
   lowercase stay. the same rules groom a mainline prompt in a `prompt-groom` chore
+- a `prompt-groom` W-line is stamp-first: `W<n> (YYYY-MM-DD HH:MM, dima): text` (`inbox` in place of the time for an inbox day), never `W<n> · text (stamp)`
 - his voice, first person: «i want…», «my idea…», as he wrote it; never «he» or «dima»
 - a line he pasted from cclio's reply (the line above his `←`, a quoted board line) is context, never his words: it names what his line answers and gets no W-line
 - a question stays a question, in the asks and in the bullets: a suggestive one («map them yourself, rather than

@@ -31,6 +31,10 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from cclio (the brief) and dima
   - lands as: the canvas link, one line per take
 - **cw** — a peer: either side opens the exchange, the shared store carries the handoffs
+- **fork** (of a member)
+  - talks to dima in its own tab
+  - its closing report lists «dima's asks here» and every external write
+  - lands as: cclio folds the report when dima archives the fork
 - **cc cloud**
   - hears from cclio (the brief, then `SendMessage` steers)
   - cannot talk back yet

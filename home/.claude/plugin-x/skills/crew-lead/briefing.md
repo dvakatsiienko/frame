@@ -38,7 +38,7 @@
 
 - message the member whenever; it pings on the events `x:crew-dna` names. `git diff` in its cwd beats any message. doneness is a written marker (the final commit and the report), never transcript archaeology. subscribe, never poll. budget three round trips; more means the brief was wrong.
 - **every «please test» carries the exact port link, and a screenshot's url is read before its report is relayed**.
-- **a steer to a running member is a message**; the brief file is frozen at spawn, an edit to it reaches nobody. to a lane coder, every steer, ask or wisp also lands under its lane plan's `## not greenlit` the same turn, and the message names that line.
+- **a steer to a running member is a message**; the brief file is frozen at spawn, an edit to it reaches nobody. to a lane coder, every steer, ask or wisp also lands under its lane plan's `## not greenlit` the same turn, and the message names that line; a one-chunk lane has no lane plan, so the steer lands in the spec's section instead.
 - **a relay to a member names the source it was read from**; a claim about a repo's behaviour opens that repo's `AGENTS.md` first.
 - **a message stating a result goes after the command's output**, never in the same batch.
 - **a timeout is not proof of failure** — `ListAgents` before a respawn; a blind retry double-runs the work.
@@ -49,5 +49,5 @@
 - **a watch lives until its pr merges or closes, never until its coder stops** — `📡 pr-watch` (`~/frame/cclio/.claude/hooks/pr-watch.sh`, armed by `cclio:boot`) wakes cclio when a pr first appears («opened — spawn its verifier»), on a new commit, and once per head when green, so the verifier spawns off it within a minute and a spawn arms no watch of its own. a cloud report lands on a `cloud/<slug>` branch the same hook sees.
 - **one coder with two prs in sequence gets one verifier that takes them in turn**.
 - **before a merge, `review:clean` is green on the head**: the one ci round at «final», or past it cclio's `gh pr review --approve` on the verifier's clean; never a hand relabel.
-- **a verifier's cap stop goes to cclio**, who decides the merge and names it in the look card; dima is never added as reviewer (2026-10-22: he does not read prs).
+- **a verifier's cap stop goes to cclio**, who drives the side lane fully, decides the merge and tells dima the stop as info (dima, o60); dima is never added as reviewer (2026-10-22: he does not read prs).
 - **a ci reviewer's «clean» in under a minute on a big diff is a shallow pass**; the verifier's verdict decides, the ci reviewer is a second pair of eyes.

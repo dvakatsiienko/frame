@@ -37,20 +37,26 @@
         <mxCell id="3:281" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;📋 7 · brief file&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;x brief check + wish-cover pass&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
-        <mxCell id="3:285" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;⌨️ 8 · the argv&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;-n, the prompt, then --remote-control&lt;/span&gt;" vertex="1">
-          <mxGeometry height="160" width="520" x="56" y="975" as="geometry" />
-        </mxCell>
-        <mxCell id="3:289" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🏷️ 9 · the name&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;&amp;lt;mode&amp;gt; &amp;lt;role&amp;gt; &amp;lt;ticket&amp;gt; &amp;lt;role&amp;gt;: &amp;lt;what&amp;gt;&lt;/span&gt;" vertex="1">
+        <mxCell id="3:285" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;⌨️ 9 · the argv&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;-n, the prompt, then --remote-control&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="686" y="975" as="geometry" />
         </mxCell>
-        <mxCell id="3:293" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 10 · ticket id&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;rides the branch and the pr body&lt;/span&gt;" vertex="1">
+        <mxCell id="fx:pr-mode" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🔀 8 · pr mode&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;a side-lane or shift brief says plain or stacked (a trial, 2+ dependent parts)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="160" width="520" x="56" y="975" as="geometry" />
+        </mxCell>
+        <mxCell id="fx:e-pr-mode" edge="1" parent="1" source="fx:pr-mode" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="3:285" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3:289" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🏷️ 10 · the name&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;&amp;lt;mode&amp;gt; &amp;lt;role&amp;gt; &amp;lt;ticket&amp;gt; &amp;lt;role&amp;gt;: &amp;lt;what&amp;gt;&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="1316" y="975" as="geometry" />
         </mxCell>
-        <mxCell id="3:297" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🪪 11 · identity&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;coder token, done-comment cap&lt;/span&gt;" vertex="1">
+        <mxCell id="3:293" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 11 · ticket id&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;rides the branch and the pr body&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="1946" y="975" as="geometry" />
         </mxCell>
-        <mxCell id="3:301" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🛼 12 · glide&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;link the member to its lane card&lt;/span&gt;" vertex="1">
+        <mxCell id="3:297" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🪪 12 · identity&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;coder token, done-comment cap&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="1946" y="1345" as="geometry" />
+        </mxCell>
+        <mxCell id="3:301" parent="3:247" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🛼 13 · glide&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;link the member to its lane card&lt;/span&gt;" vertex="1">
+          <mxGeometry height="160" width="520" x="1316" y="1345" as="geometry" />
         </mxCell>
         <mxCell id="6:294" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F9F9F9;strokeColor=#D6D6D6;strokeWidth=2;noLabel=1;" value="1 Door" vertex="1">
           <mxGeometry height="1191" width="3152" x="7104" as="geometry" />
@@ -76,7 +82,7 @@
         <mxCell id="6:313" parent="6:294" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ the Code-tab door&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;dima opens it, pastes a brief pointer&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="686" y="605" as="geometry" />
         </mxCell>
-        <mxCell id="6:317" parent="6:294" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ a mods coder&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;spawned by dima in his own tab; always a quick lane on main: one chunk, then parks for the 5h pace&lt;/span&gt;" vertex="1">
+        <mxCell id="6:317" parent="6:294" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🙋‍♂️ a mods coder&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;always a quick lane on main: one chunk, then parks for the 5h pace&lt;br&gt;dima opens and archives the tab; a shift parks a mods chunk&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="1316" y="605" as="geometry" />
         </mxCell>
         <mxCell id="6:321" parent="6:294" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;☁️ claude --cloud&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an anthropic vm; cannot message back&lt;/span&gt;" vertex="1">
@@ -178,6 +184,12 @@
         <mxCell id="6:482" parent="6:463" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 retro + glide end&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;beside the lane plan in ~/.local/state/x/lanes; the glide ends at siesta&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="1946" y="605" as="geometry" />
         </mxCell>
+        <mxCell id="fx:quick-lane" parent="6:463" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚡ a quick lane, no pr&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;«final» → ⚡ 🔎 verify: main:&amp;lt;sha&amp;gt;, clean a Linear comment; then cclio pushes main&lt;/span&gt;" vertex="1">
+          <mxGeometry height="160" width="520" x="1316" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="fx:e-quick-lane" edge="1" parent="1" source="6:474" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="fx:quick-lane" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="6:502" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F1FEFD;strokeColor=#CFDADA;strokeWidth=2;noLabel=1;" value="6 Subagents" vertex="1">
           <mxGeometry height="821" width="2522" x="7104" y="6060" as="geometry" />
         </mxCell>
@@ -259,7 +271,7 @@
         <mxCell id="23:254" parent="7:236" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;🐬 wishkeeper, boot mode&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;every drop landed, kept in meaning&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="1316" y="605" as="geometry" />
         </mxCell>
-        <mxCell id="23:258" parent="7:236" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ its home, at the halt&amp;#x27;s sort&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;freebie (1–5 calls) solved now · today/tomorrow stays · later → linear, in its milestone&lt;/span&gt;" vertex="1">
+        <mxCell id="23:258" parent="7:236" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;❓ its home, at the halt&amp;#x27;s sort&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;linear owns it → a body line of its ticket · freebie (1–5 calls) solved now · today/tomorrow stays · later → linear&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="686" y="605" as="geometry" />
         </mxCell>
         <mxCell id="23:262" parent="7:236" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;✅ the pocket is today + tomorrow&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;later → linear in its milestone; nothing comes back from linear&lt;/span&gt;" vertex="1">
@@ -365,7 +377,7 @@
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
         </mxCell>
         <mxCell id="23:487" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" value="PM 5 Land and fold" vertex="1">
-          <mxGeometry height="821" width="2522" x="4182" y="3924" as="geometry" />
+          <mxGeometry height="1191" width="2522" x="4182" y="3924" as="geometry" />
         </mxCell>
         <mxCell id="23:488" parent="23:487" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;" value="🏁 5 — Land, look, fold: the wish reaches dima" vertex="1">
           <mxGeometry height="48" width="898" x="56" y="44" as="geometry" />
@@ -396,6 +408,12 @@
         </mxCell>
         <mxCell id="23:518" parent="23:487" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;✅ wish-loss guards&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;M1 + M2 in pocket-check, the word hook; M3 weekly audit from 10-28&lt;/span&gt;" vertex="1">
           <mxGeometry height="160" width="520" x="56" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="fx:sweep" parent="23:487" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the halt's lingering sweep&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;In Progress, landed, asks still open → Todo; a ↩️ line names why and what is left&lt;/span&gt;" vertex="1">
+          <mxGeometry height="160" width="520" x="56" y="975" as="geometry" />
+        </mxCell>
+        <mxCell id="fx:e-sweep" edge="1" parent="1" source="23:518" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="fx:sweep" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="30:434" parent="1" style="rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#EFF4FF;strokeColor=#CED2DB;strokeWidth=2;noLabel=1;" value="PM 0 Roadmap" vertex="1">
           <mxGeometry height="821" width="2522" x="4182" y="-981" as="geometry" />
@@ -463,7 +481,7 @@
         <mxCell id="4:315" edge="1" parent="1" source="3:277" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="3:281" value="yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="4:319" edge="1" parent="1" source="3:281" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="3:285" value="">
+        <mxCell id="4:319" edge="1" parent="1" source="3:281" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="fx:pr-mode" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="4:323" edge="1" parent="1" source="3:285" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="3:289" value="">
@@ -697,10 +715,13 @@
         <mxCell id="24:427" edge="1" parent="1" source="23:361" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="23:424" value="✍️ signed · his pick · 🦭 sealed">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="24:431" edge="1" parent="1" source="23:424" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="23:487" value="merged pr">
+        <mxCell id="24:431" edge="1" parent="1" source="23:424" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="23:487" value="landed (a merged pr, or a quick lane's push)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="24:435" edge="1" parent="1" source="23:424" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="6:349" value="the crew runs it: brief → run → end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fx:e-spawn" edge="1" parent="1" source="tf-b7-spawn" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;" target="3:273" value="his pick is the spawn">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="30:489" edge="1" parent="1" source="30:434" style="html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="7:236" value="folded and placed">
@@ -889,7 +910,7 @@
         <mxCell id="tf-b4-triage" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 born in Triage&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;x as cclio -- &lt;b&gt;linear&lt;/b&gt; issue create, never --state; a ticket must earn existence&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:pm § the door · craft-pm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b4" vertex="1">
           <mxGeometry x="686" y="200" width="520" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="tf-b4-mile" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎑 milestone first&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;«which &lt;b&gt;milestone&lt;/b&gt;?» on create, move, close; a guard on a bare create: planned (FRM-417)&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § milestones first&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b4" vertex="1">
+        <mxCell id="tf-b4-mile" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎑 milestone first&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;«which &lt;b&gt;milestone&lt;/b&gt;?» on create, move, close; x-mod-guard refuses a bare one (FRM-417)&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;craft-pm § milestones first&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b4" vertex="1">
           <mxGeometry x="1316" y="200" width="520" height="160" as="geometry" />
         </mxCell>
         <mxCell id="tf-b4-fields" value="&lt;b style=&quot;font-size:26px&quot;&gt;📄 every field&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;role · kind · p3 · size XS·S·M like FRM-N · project · parent · &lt;b&gt;milestone&lt;/b&gt; · delegate&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:pm § the fields&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b4" vertex="1">
@@ -1249,7 +1270,7 @@
         <mxCell id="tf-b9-src" value="pm references/closing.md · craft-pm § the ask-guard · cclio:halt phases 0, 1.5, 3.5, 4.5 · pocket-check.ts" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;" parent="tf-b9" vertex="1">
           <mxGeometry x="56" y="100" width="2400" height="27" as="geometry" />
         </mxCell>
-        <mxCell id="tf-b9-sweep" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the lingering sweep&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the halt lists In Progress; a merged pr with open asks → Todo, a ↩️ line names why and what is left&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 0&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
+        <mxCell id="tf-b9-sweep" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the lingering sweep&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;the halt lists In Progress; landed (a merged pr or a quick lane&amp;#x27;s push) with open asks → Todo, a ↩️ line names why and what is left&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 0&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
           <mxGeometry x="56" y="200" width="520" height="160" as="geometry" />
         </mxCell>
         <mxCell id="tf-b9-list" value="&lt;b style=&quot;font-size:26px&quot;&gt;🦉 «closable, because …»&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;auto-close only stale, dupe, a &lt;b&gt;freebie&lt;/b&gt; done in place; the rest wait for his word&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pm references/closing.md&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
@@ -1261,7 +1282,7 @@
         <mxCell id="tf-b9-closed" value="&lt;b style=&quot;font-size:26px&quot;&gt;🎫 closed, a closing word&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;in the body; the &lt;b&gt;milestone&lt;/b&gt;&amp;#x27;s count read the same turn&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;closing.md · craft-pm § milestones first&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
           <mxGeometry x="1946" y="200" width="520" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="tf-b9-net" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-check&amp;#x27;s net&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an open item behind a ticket reds (a kept line holds it 3 days); a closed ticket always reds&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pocket-check.ts · habit-shared-files&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
+        <mxCell id="tf-b9-net" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ pocket-check&amp;#x27;s net&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;an open item behind a ticket reds (a held line holds it 3 days); a closed ticket always reds&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;pocket-check.ts · habit-shared-files&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
           <mxGeometry x="2576" y="200" width="520" height="160" as="geometry" />
         </mxCell>
         <mxCell id="tf-b9-archive" value="&lt;b style=&quot;font-size:26px&quot;&gt;⚙️ the halt files it&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;backlog task archive, every done item the post carried; one listed past its day reds&lt;/span&gt;&lt;br&gt;&lt;i style=&quot;font-size:16px;color:#5C5C5C&quot;&gt;cclio:halt phase 4.5 · pocket-check.ts&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;" parent="tf-b9" vertex="1">
@@ -1306,7 +1327,7 @@
         <mxCell id="tf-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 dima's notes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;none open&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;absoluteArcSize=1;arcSize=40;fillColor=#FFF4C2;strokeColor=#E5B800;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacing=24;" parent="1" vertex="1">
           <mxGeometry x="2682" y="-1768" width="1100" height="144" as="geometry" />
         </mxCell>
-        <mxCell id="bv-label" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=0;fontColor=#444444;" value="v1 · 2026-10-27" vertex="1">
+        <mxCell id="bv-label" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=0;fontColor=#444444;" value="v2 · 2026-10-27" vertex="1">
           <mxGeometry height="48" width="420" x="9175" y="-221" as="geometry" />
         </mxCell>
       </root>

@@ -180,23 +180,7 @@
             "id": "3:285",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⌨️ 8 · the argv</b><br><span style=\"font-size:20px\">-n, the prompt, then --remote-control</span>",
-            "vertex": "1"
-        },
-        "geometry": {
-            "as": "geometry",
-            "height": "160",
-            "width": "520",
-            "x": "56",
-            "y": "975"
-        }
-    },
-    {
-        "attrs": {
-            "id": "3:289",
-            "parent": "3:247",
-            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🏷️ 9 · the name</b><br><span style=\"font-size:20px\">&lt;mode&gt; &lt;role&gt; &lt;ticket&gt; &lt;role&gt;: &lt;what&gt;</span>",
+            "value": "<b style=\"font-size:26px\">⌨️ 9 · the argv</b><br><span style=\"font-size:20px\">-n, the prompt, then --remote-control</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -209,10 +193,41 @@
     },
     {
         "attrs": {
-            "id": "3:293",
+            "id": "fx:pr-mode",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎫 10 · ticket id</b><br><span style=\"font-size:20px\">rides the branch and the pr body</span>",
+            "value": "<b style=\"font-size:26px\">🔀 8 · pr mode</b><br><span style=\"font-size:20px\">a side-lane or shift brief says plain or stacked (a trial, 2+ dependent parts)</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "fx:e-pr-mode",
+            "parent": "1",
+            "source": "fx:pr-mode",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:285",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:289",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🏷️ 10 · the name</b><br><span style=\"font-size:20px\">&lt;mode&gt; &lt;role&gt; &lt;ticket&gt; &lt;role&gt;: &lt;what&gt;</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -225,10 +240,10 @@
     },
     {
         "attrs": {
-            "id": "3:297",
+            "id": "3:293",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🪪 11 · identity</b><br><span style=\"font-size:20px\">coder token, done-comment cap</span>",
+            "value": "<b style=\"font-size:26px\">🎫 11 · ticket id</b><br><span style=\"font-size:20px\">rides the branch and the pr body</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -241,10 +256,10 @@
     },
     {
         "attrs": {
-            "id": "3:301",
+            "id": "3:297",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🛼 12 · glide</b><br><span style=\"font-size:20px\">link the member to its lane card</span>",
+            "value": "<b style=\"font-size:26px\">🪪 12 · identity</b><br><span style=\"font-size:20px\">coder token, done-comment cap</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -252,6 +267,22 @@
             "height": "160",
             "width": "520",
             "x": "1946",
+            "y": "1345"
+        }
+    },
+    {
+        "attrs": {
+            "id": "3:301",
+            "parent": "3:247",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">🛼 13 · glide</b><br><span style=\"font-size:20px\">link the member to its lane card</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
             "y": "1345"
         }
     },
@@ -387,7 +418,7 @@
             "id": "6:317",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">spawned by dima in his own tab; always a quick lane on main: one chunk, then parks for the 5h pace</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">always a quick lane on main: one chunk, then parks for the 5h pace<br>dima opens and archives the tab; a shift parks a mods chunk</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -928,6 +959,37 @@
     },
     {
         "attrs": {
+            "id": "fx:quick-lane",
+            "parent": "6:463",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚡ a quick lane, no pr</b><br><span style=\"font-size:20px\">«final» → ⚡ 🔎 verify: main:&lt;sha&gt;, clean a Linear comment; then cclio pushes main</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "1316",
+            "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "fx:e-quick-lane",
+            "parent": "1",
+            "source": "6:474",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "fx:quick-lane",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
             "id": "6:502",
             "parent": "1",
             "style": "rounded=1;absoluteArcSize=1;arcSize=24;container=1;collapsible=0;fillColor=#F1FEFD;strokeColor=#CFDADA;strokeWidth=2;noLabel=1;",
@@ -1361,7 +1423,7 @@
             "id": "23:258",
             "parent": "7:236",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">❓ its home, at the halt&#x27;s sort</b><br><span style=\"font-size:20px\">freebie (1–5 calls) solved now · today/tomorrow stays · later → linear, in its milestone</span>",
+            "value": "<b style=\"font-size:26px\">❓ its home, at the halt&#x27;s sort</b><br><span style=\"font-size:20px\">linear owns it → a body line of its ticket · freebie (1–5 calls) solved now · today/tomorrow stays · later → linear</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1926,7 +1988,7 @@
         },
         "geometry": {
             "as": "geometry",
-            "height": "821",
+            "height": "1191",
             "width": "2522",
             "x": "4182",
             "y": "3924"
@@ -2090,6 +2152,37 @@
             "width": "520",
             "x": "56",
             "y": "605"
+        }
+    },
+    {
+        "attrs": {
+            "id": "fx:sweep",
+            "parent": "23:487",
+            "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
+            "value": "<b style=\"font-size:26px\">⚙️ the halt's lingering sweep</b><br><span style=\"font-size:20px\">In Progress, landed, asks still open → Todo; a ↩️ line names why and what is left</span>",
+            "vertex": "1"
+        },
+        "geometry": {
+            "as": "geometry",
+            "height": "160",
+            "width": "520",
+            "x": "56",
+            "y": "975"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "fx:e-sweep",
+            "parent": "1",
+            "source": "23:518",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "fx:sweep",
+            "value": ""
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
         }
     },
     {
@@ -2444,7 +2537,7 @@
             "parent": "1",
             "source": "3:281",
             "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
-            "target": "3:285",
+            "target": "fx:pr-mode",
             "value": ""
         },
         "geometry": {
@@ -3615,7 +3708,7 @@
             "source": "23:424",
             "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;",
             "target": "23:487",
-            "value": "merged pr"
+            "value": "landed (a merged pr, or a quick lane's push)"
         },
         "geometry": {
             "as": "geometry",
@@ -3631,6 +3724,21 @@
             "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#757575;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
             "target": "6:349",
             "value": "the crew runs it: brief → run → end"
+        },
+        "geometry": {
+            "as": "geometry",
+            "relative": "1"
+        }
+    },
+    {
+        "attrs": {
+            "edge": "1",
+            "id": "fx:e-spawn",
+            "parent": "1",
+            "source": "tf-b7-spawn",
+            "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
+            "target": "3:273",
+            "value": "his pick is the spawn"
         },
         "geometry": {
             "as": "geometry",
