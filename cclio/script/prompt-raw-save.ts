@@ -11,15 +11,18 @@ const FLEET = [
     '<cross-session-message',
     '[Cross-session idle notice]',
     '<task-notification>',
-    '<system-reminder>',
     '<local-command',
     '<command-name>',
     '<command-message>',
 ];
+// the app prepends notices (a fork's turn end) to his own prompt, so a reminder block never decides whose it is
+const REMINDER = /<system-reminder>[\s\S]*?<\/system-reminder>/g;
 
-export function isDimas(prompt: string) {
-    const head = prompt.trimStart();
-    return head.length > 0 && !FLEET.some((mark) => head.startsWith(mark));
+export function dimasText(prompt: string) {
+    const text = prompt.replace(REMINDER, '').trim();
+    return text && !FLEET.some((mark) => text.startsWith(mark))
+        ? text
+        : undefined;
 }
 
 export function entryFor(prompt: string, at: Date) {
@@ -32,14 +35,15 @@ if (import.meta.main) {
     const { prompt = '' } = JSON.parse(readFileSync(0, 'utf8') || '{}') as {
         prompt?: string;
     };
-    if (isDimas(prompt)) {
+    const text = dimasText(prompt);
+    if (text) {
         const now = new Date();
         const file = path.join(dir, `${now.toLocaleDateString('sv')}.md`);
         mkdirSync(dir, { recursive: true });
         const line = existsSync(file)
             ? readFileSync(file, 'utf8').split('\n').length
             : 1;
-        appendFileSync(file, entryFor(prompt, now));
+        appendFileSync(file, entryFor(text, now));
         console.log(`raw saved · ${file}:${line}`);
     }
 }
