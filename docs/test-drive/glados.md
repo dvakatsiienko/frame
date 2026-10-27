@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-29
+until: 2026-11-03
 dies-when: the verdict line below is written
 ---
 
@@ -20,3 +20,4 @@ Ticket: none
 ## rounds
 
 ## verdict
+- 2026-10-27 · no-run round: the desktop ignores `cclio/.claude/settings.json` outputStyle, so cclio ran output-fun from day 0; set per session from today (dima's o13), the trial restarts at day 1, `until` → 2026-11-03

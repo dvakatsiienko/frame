@@ -1,6 +1,6 @@
 ---
-status: live
-until: 2026-10-26
+status: adopted
+until: 2026-10-27
 dies-when: the verdict line below is written
 ---
 
@@ -23,3 +23,5 @@ born 2026-10-16 on dima's pick (PK-153): he A/B'd [Launchyard](https://github.co
 ## rounds
 
 ## verdict
+
+- 2026-10-27 · **adopted** (dima, 15:15: «launchyard ← keep»): no rounds logged; his use of the window is the evidence

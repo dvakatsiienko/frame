@@ -121,6 +121,8 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-25 · prompt-groom · 1 · 0 · W238-W242 + 1 ask, grooms/2026-10-25-1455.groomed.md
 - 2026-10-25 · prompt-groom · 1 · 0 · groom-1541-1545 chore1 W241-W243 3 lines, 3 sentences mapped
 - 2026-10-25 · prompt-groom · 1 · 0 · groom-1541-1545 chore2 W244-W255 12 lines, all sentences mapped
+- 2026-10-27 · inbox-prep · 0 · 0 · consult 1: charter inbox-prep.md outside cclio/ not found, no grooming done
+- 2026-10-27 · inbox-prep · 1 · 0 · inbox-composer.md written, check 4/4, 4 items 3 asks
 
 ## rounds
 

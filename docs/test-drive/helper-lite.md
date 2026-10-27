@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-06
+until: 2026-11-07
 dies-when: the verdict line below is written (2026-11-05)
 fits: coder
 ---

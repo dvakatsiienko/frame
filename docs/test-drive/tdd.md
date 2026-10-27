@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-17
+until: 2026-11-18
 fits: coder
 ---
 

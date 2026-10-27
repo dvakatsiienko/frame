@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-02
+until: 2026-11-03
 fits: coder:ts
 ---
 

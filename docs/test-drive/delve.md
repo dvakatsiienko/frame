@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-31
+until: 2026-11-01
 fits: coder:go
 blind: true
 ---

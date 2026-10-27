@@ -1,6 +1,6 @@
 ---
-status: live
-until: 2026-10-26
+status: adopted
+until: 2026-10-27
 dies-when: the verdict line below is written
 ---
 
@@ -22,3 +22,5 @@ born 2026-10-16 on dima's «let's try x:top-seven. 7 items each time»: `x:top-s
 ## rounds
 
 ## verdict
+
+- 2026-10-27 · **adopted** (dima, 15:26: «adopt»): no rounds logged; seven candidates served every naming and emoji pick since 10-16

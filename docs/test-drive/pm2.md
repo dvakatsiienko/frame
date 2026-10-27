@@ -1,6 +1,6 @@
 ---
-status: live
-until: 2026-10-26
+status: adopted
+until: 2026-10-27
 dies-when: the verdict line below is written
 ---
 
@@ -43,3 +43,5 @@ day 0, 2026-10-16: three lanes (exa, parallel, opus source read), `cclio/.scratc
 - 2026-10-16 15:02 · `pm2 monit` vs `pm2 dashboard` · dima: they look identical · source `lib/binaries/CLI.js:830–846`: both call `pm2.dashboard()`; `pm2 imonit` is the legacy view
 
 ## verdict
+
+- 2026-10-27 · **adopted** (dima's o12 tick): pm2 runs x-cc-otel and x-n8n (`pm2 jlist` 15:27: both online, 2 and 1 restarts) plus pm2-logrotate; no round was logged after 10-16, its daily use is the evidence
