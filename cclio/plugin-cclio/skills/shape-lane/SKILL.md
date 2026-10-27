@@ -10,7 +10,7 @@ it runs over any ticket: a safety-net re-grill after `cclio:shape-idea`, the rea
 
 ## 0 · read what is settled
 
-read the ticket's wish block and its `decided` section before the first question. every question cites the W-lines it settles; the round is written to its proposal file first, where the wish-cover hook reds a W-line it lost.
+read the ticket's wish block and its `decided` section before the first question. every question cites the W-lines it settles; the round is written to its proposal file first, `.scratch/<ticket>/grill-<n>-proposal.md`, where the wish-cover hook reds a W-line it lost.
 
 then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the chunk or is named in the grill. a small UI ask goes the `craft-fleet-flow` freebie way (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps»).
 
@@ -43,7 +43,7 @@ the grill and the groom come first: the chunk is healthy — good content, a goo
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
 
-- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit; the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`; a tiny change may skip the grill, never the line; after 🚀 the `signed` label stays off and dispatch § 6 re-seals
+- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit; the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`; a tiny change may skip the grill, never the line; after 🚀 the `signed` label stays off and dispatch § 6 re-seals, unless a ↩️ follows the 🚀 (dispatch § 6)
 - **one birth door, the fold**: shape-lane runs over a ticket. a wish he wants signed on the spot folds into its ticket, and the grill and sign follow in the same turn, a few calls in a row, never a second turn
 
 **done** = every chunk of the session carries the `signed` label and a dated `## signed` line, with every § 3 field present. «grilled» without the sign is reported as not signed. what follows is dima's «what can we dispatch?» — `cclio:shape-lane-dispatch`.

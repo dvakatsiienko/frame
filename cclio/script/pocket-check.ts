@@ -316,16 +316,26 @@ function noteLines(text: string): string[] {
 export function lostSinceGreen(
     files: Task[],
     green: Record<string, string>,
+    isChanged: (file: Task) => boolean = () => true,
 ): string[] {
-    return files.flatMap(({ name, text }) => {
-        const id = greenKey(name);
-        const lost = lostNoteLines(text, green[id] ?? '');
+    const present = new Set(files.map(({ name }) => greenKey(name)));
+    const left = Object.keys(green)
+        .filter((id) => !present.has(id))
+        .map(
+            (id) =>
+                `${id.toUpperCase()}: left the pocket since the last green check — restore it, or close it with a close: line`,
+        );
+    const notes = files.flatMap((file) => {
+        const id = greenKey(file.name);
+        if (!isChanged(file)) return [];
+        const lost = lostNoteLines(file.text, green[id] ?? '');
         return lost.length > 0
             ? [
                   `${id}: ${lost.length} note line(s) gone since the last green check — a close appends (\`--append-notes\`)`,
               ]
             : [];
     });
+    return [...notes, ...left];
 }
 
 // keyed by «pk-N», so a retitled or archived item keeps its baseline
@@ -513,11 +523,12 @@ if (import.meta.main) {
         groomedOnDisk,
         closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
     );
+    const head = headFromGit(root);
     problems.push(
         ...auditAgainstHead(
             tasks,
             readDir(join(root, 'pocket', 'archive', 'tasks')),
-            headFromGit(root),
+            head,
         ),
     );
     const greenFile = join(root, '.scratch', 'pocket-green.json');
@@ -528,7 +539,15 @@ if (import.meta.main) {
           >)
         : {};
     const archived = readDir(join(root, 'pocket', 'archive', 'tasks'));
-    for (const problem of lostSinceGreen([...tasks, ...archived], green))
+    const drafts = readDir(join(root, 'pocket', 'drafts'));
+    const isChanged = (file: Task) =>
+        head.text(tasks.includes(file) ? 'tasks' : 'archive', file.name) !==
+        file.text;
+    for (const problem of lostSinceGreen(
+        [...tasks, ...archived, ...drafts],
+        green,
+        isChanged,
+    ))
         if (
             !problems.some((seen) =>
                 seen.startsWith(problem.slice(0, problem.indexOf(':') + 1)),

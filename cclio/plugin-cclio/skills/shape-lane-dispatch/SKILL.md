@@ -13,7 +13,7 @@ the machine part of lane init, cclio's alone: dima signed the chunks in `cclio:s
 ## 2 · the spec
 
 read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain text):
-- the spec sits in `.scratch/<feature>/spec.md`, carries `wish: <ticket>`, one section per chunk; every lane with a member gets one, a quick lane too
+- the spec sits in `.scratch/<feature>/spec.md`, one section per chunk, each section opening with its own `wish: <ticket>` line; every lane with a member gets one, a quick lane too
 - the code is read against each chunk's `decided`: a signed decision the code has broken stops that chunk for a re-sign (`cclio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
 - every rider rides in the spec, named at dispatch or added as a steer; a rider found only in a commit is a verifier finding
@@ -40,7 +40,7 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 - **a joiner**: a signed chunk of the same milestone joins a running lane as a new spec section and a new glide step, and the coder hears it as a steer naming that section plus a `## not greenlit` line, then re-runs `to-tickets` on it; an unsigned one waits for its sign
 - **a wish of dima's mid-lane** goes into the ticket's wish block as W-lines, with a proposed re-sign of its chunk, and the spec section cites them; never a bare message; any steer of 3+ items to a running coder goes into the spec too, a one-line fix stays a message
 - **a ↩️ back-to-Todo ticket** returns by a re-sign naming its left asks, which puts `signed` back so the offer carries it
-- **a re-sign after 🚀** never puts the `signed` label back (the chunk is running): it re-runs § 3–4 for that chunk — re-seal the spec section and its preflight copy — and steers the coder to the changed lines
+- **a re-sign after 🚀** never puts the `signed` label back (the chunk is running), unless a ↩️ follows the 🚀 (the line above): it re-runs § 3–4 for that chunk (the spec section and its preflight copy) and steers the coder to the changed lines
 - **a park** — his weekly window out, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it
 
 **done** = each picked chunk has its spec section with sealed exit lines, its `🚀 dispatched` line, a spawned coder (a verifier unless his pick said no), and a greenlit lane plan.

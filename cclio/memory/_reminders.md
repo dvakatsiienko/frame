@@ -49,7 +49,7 @@ Store contract: the `cclio:remind` skill. Both tiers die only when Dima drops th
 
 ⏰ 🦉🐞 the next cli lane: it runs the round of `docs/test-drive/delve.md` § what counts: the brief says nothing of delve, the question comes at his retro (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written; cli lane 1 (10-22) did not run it, so the next cli lane does (dima, 2026-10-18: «push 1week+») — set 2026-10-13 · due: 2026-10-25
 
-⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13 · due: 2026-10-27
+⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13 · due: 2026-10-29 (pushed 10-27, dima: «later, push 2+ days»)
 
 ⏰ 🦉💸 2026-11-03: dima turns off auto-renew on max $100 (≥24 h before the 11-05 renewal), billing settings; the 20× month starts fresh on 11-05 (dima o153, 2026-10-13) — set 2026-10-13 · due: 2026-11-03
 

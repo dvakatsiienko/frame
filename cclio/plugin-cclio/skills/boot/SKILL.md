@@ -39,8 +39,8 @@ and the next ticket from it; never re-query what it already printed.
   first, then `inbox.md` for the parse. step 8's wishkeeper brief adds the prep: every ask and idea of
   the raw inbox kept in meaning, not only present (the check proves presence alone); wishkeeper is the one meaning check, cclio scores nothing
 - the digest says clean or «N content lines». non-empty → read `inbox.md` (`/Users/dima/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq/`, beside its sibling `inbox-composer.md` and the template `inbox-template.md`, his and read-only; `habit-dima-comms` holds the creed): EVERY item —
-  smallest aside included — gets an item in the pocket (`node script/pocket-add.ts`; the contract: `habit-shared-files`), its fold one point per numbered W-line (`craft-pm` § wishes)
-  and its `ordinal`, and its inbox line a leading `✅ PK-N` (the halt reset reads it); resolution paced later. **deletion happens at the halt, never here.**
+  smallest aside included — gets an item in the pocket (`node script/pocket-add.ts`; the contract: `habit-shared-files`), its fold one point per numbered W-line headed `W<n> (<date> inbox, dima)` (`craft-pm` § wishes)
+  and its `ordinal`, the checked prep copied to `~/.local/state/cclio/grooms/<date>-inbox.groomed.md` (the groom check reads it), and its inbox line a leading `✅ PK-N` (the halt reset reads it); resolution paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
 ## 4. continuity
@@ -109,7 +109,7 @@ the board, one message, short lines, **no queries here — pure assembly**:
 - 🧭 the prefetch's roadmap board, copied as it prints (dima's template, 2026-10-25), plus `🧾 status drift fixed: <from → to>` when this turn fixed one; a step named in plain words, never a bare number (dima, 2026-10-23)
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
-  2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
+  2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), then the main lane's open linear tickets, top milestone first, lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs
 - 🥊 self-grill, last line (omit if nothing real)
 ---

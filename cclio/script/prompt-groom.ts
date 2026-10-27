@@ -35,13 +35,15 @@ export const groomFile = (day: string, hhmm: string, kind: 'raw' | 'groomed') =>
     path.join(groomDir, `${day}-${hhmm.replace(':', '')}.${kind}.md`);
 
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
+// an inbox day's groomed file is composer's checked prep, copied in at boot: it only has to exist
 export const groomedOnDisk: Groomed = (day, hhmm) => {
     const file = groomFile(day, hhmm, 'groomed');
     return (
         existsSync(file) &&
-        readFileSync(file, 'utf8')
-            .matchAll(STAMP)
-            .some(([, date, time]) => date === day && time === hhmm)
+        (hhmm === 'inbox' ||
+            readFileSync(file, 'utf8')
+                .matchAll(STAMP)
+                .some(([, date, time]) => date === day && time === hhmm))
     );
 };
 
@@ -56,7 +58,6 @@ export function ungroomedStamps(
         if (
             date &&
             hhmm &&
-            hhmm !== 'inbox' && // composer's inbox-prep covers an inbox stamp
             `${date} ${hhmm}` >= RULES_FROM &&
             date <= day &&
             !isGroomed(date, hhmm)

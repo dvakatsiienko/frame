@@ -3,10 +3,10 @@ id: PK-176
 title: >-
   planning grill — initiative, roadmap, milestones: close stray mils, seed new
   ones, plan next
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-25T10:30:00Z'
+updated_date: '2026-10-27T14:27:00Z'
 due_date: '2026-10-28'
 labels:
   - s
@@ -34,4 +34,7 @@ ids for the two meta wants: oxc/vp = BYT-38 (and FRM-148), pnpm→bun = FRM-148 
 
 2026-10-20 15:03 dima: the «after the big tickets» park is undone (it was this one and PK-196) — pull it close.
 re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+
+ticket: FRM-460
+close: moved to FRM-460 (dima o33, 2026-10-27: it rides the $200 month planning session); W1–W3 carried there verbatim, the «waiting for» park dropped (undone 10-20)
 <!-- SECTION:NOTES:END -->

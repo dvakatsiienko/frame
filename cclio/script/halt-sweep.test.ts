@@ -44,12 +44,36 @@ describe('unhandledLines', () => {
     });
 
     test('lines in the prepped inbox pass, a line typed after the prep is refused', () => {
-        const prepped = inbox('**add this**\ntopic to review: x');
+        const prepped = inbox(
+            '> [!quote]- original\n> **add this**\n> topic to review: x',
+        );
         const drop = inbox('**add this**\ntopic to review: x\ntyped later');
         expect(unhandledLines(drop, template, prepped)).toEqual([
             'typed later',
         ]);
         expect(unhandledLines(drop, template)).toHaveLength(3);
+    });
+
+    test('a numbered ✅ PK line is handled', () => {
+        const prepped = inbox('> [!quote]- original\n> 1. finish pm module');
+        const drop = inbox('1. ✅ PK-277 finish pm module');
+        expect(unhandledLines(drop, template, prepped)).toEqual([]);
+    });
+
+    test('an unmarked bold line and a plain line in the prep are handled', () => {
+        const prepped = inbox(
+            '> [!quote]- original\n> **dark board**\n> make it dark please',
+        );
+        const drop = inbox('**dark board**\nmake it dark please');
+        expect(unhandledLines(drop, template, prepped)).toEqual([]);
+    });
+
+    test('a listed line in neither the prep nor a ✅ is refused', () => {
+        const prepped = inbox('> [!quote]- original\n> **dark board**');
+        const drop = inbox('- something new');
+        expect(unhandledLines(drop, template, prepped)).toEqual([
+            '- something new',
+        ]);
     });
 
     test('a pristine template passes', () => {

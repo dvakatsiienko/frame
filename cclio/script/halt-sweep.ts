@@ -34,7 +34,9 @@ export function unhandledLines(
 ): string[] {
     const own = new Set(template.split('\n').map((line) => line.trim()));
     const preppedLines = new Set(
-        prepped.split('\n').map((line) => line.trim()),
+        prepped
+            .split('\n')
+            .map((line) => bareLine(line.trim().replace(/^> ?/, ''))),
     );
     let isHandled = false;
     const open: string[] = [];
@@ -45,8 +47,8 @@ export function unhandledLines(
             continue;
         }
         if (own.has(text)) isHandled = false;
-        else if (preppedLines.has(text)) continue;
-        else if (text.startsWith('✅')) isHandled = true;
+        else if (preppedLines.has(bareLine(text))) continue;
+        else if (/^\s*(?:\d+\.|[-*])?\s*✅/.test(text)) isHandled = true;
         else if (!isHandled || !/^\s/.test(line)) {
             isHandled = false;
             open.push(line);
@@ -54,6 +56,10 @@ export function unhandledLines(
     }
     return open;
 }
+
+// a line without its list marker and its «✅ PK-N» stamp: the shape composer's prep holds
+const bareLine = (text: string) =>
+    text.replace(/^(?:\d+\.|[-*])\s+/, '').replace(/^✅\s+PK-\d+\s+/, '');
 
 function inboxParts(apply: boolean) {
     const composer = join(HQ, 'inbox-composer.md');

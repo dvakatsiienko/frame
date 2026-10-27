@@ -61,6 +61,9 @@ describe('pocket-check on a pocket write', () => {
         "sed -i '' s/a/b/ cclio/pocket/tasks/a.md",
         'git restore cclio/pocket/tasks/a.md',
         "perl -pi -e 's/a/b/' cclio/pocket/tasks/a.md",
+        'git clean -fd cclio/pocket/tasks',
+        'find cclio/pocket/tasks -name "pk-9*" -delete',
+        'git stash push -- cclio/pocket',
     ])('the write verb «%s» blocks on a red pocket', (command) => {
         expect(run(bash(command), redCmd)?.decision).toBe('block');
     });

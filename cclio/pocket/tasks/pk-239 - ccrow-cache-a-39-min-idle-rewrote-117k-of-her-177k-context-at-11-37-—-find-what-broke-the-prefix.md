@@ -3,10 +3,10 @@ id: PK-239
 title: >-
   ccrow cache: a 39-min idle rewrote 117k of her 177k context at 11:37 — find
   what broke the prefix
-status: open
+status: done
 assignee: []
 created_date: '2026-10-21T12:06:00Z'
-updated_date: '2026-10-25T10:30:00Z'
+updated_date: '2026-10-27T14:27:00Z'
 due_date: '2026-10-28'
 labels:
   - s
@@ -31,4 +31,7 @@ parked: rides the low tide beside PK-233 (ccrow ledger)
 
 **waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
+
+ticket: FRM-461
+close: moved to FRM-461 (a wait on two lanes is linear's, round 4 wishkeeper); its why, both candidates and the probe carried there
 <!-- SECTION:NOTES:END -->

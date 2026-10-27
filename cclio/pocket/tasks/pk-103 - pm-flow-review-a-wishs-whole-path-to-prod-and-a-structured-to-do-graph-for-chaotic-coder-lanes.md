@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-25T14:40:00Z'
+updated_date: '2026-10-27T14:27:00Z'
 due_date: '2026-10-28'
 labels:
   - m
@@ -19,7 +19,7 @@ ordinal: 9999
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-ticket: FRM-72 · the pm module revamp, turn 2 of 2026-10-22 · his raw drops sit in the notes below
+ticket: FRM-419 · the pm module revamp (FRM-72's round, its W-lines' home) · his raw drops sit in the notes below
 W1 review the pm flow from A to B: how a wish of mine reaches prod — the shape-idea and shape-lane steps, a wish shaped into a spec that prepares the flow for coders, the lane-closing parts included
 W2 evaluate how good it is now: find the weak parts and gaps, find and apply shortcuts, cut redundancies — sharpen and smooth the pm and the coordinator/lead flows together, since they sit close
 W3 the biggest failure point: chaotic lanes like the 10-12 mods lane — my steers, my asks, cclio's wants and the wisps forwarded to the coder as cross-session messages, unstructured and easy to lose (they live only in two contexts), so glide shows invalid data
@@ -561,4 +561,6 @@ W240 (2026-10-25 14:55, dima): not to do now, planning only, so it isn't lost; �
 kept: 2026-10-25 — FRM-72: FRM-419 step 4 maps these W-lines into it next; this item dies the turn that step lands
 
 held: 2026-10-25 — FRM-72 FRM-419 step 5 maps these W-lines into it next; this item dies the turn that step lands
+
+held: 2026-10-27 — FRM-419 step 5 maps these W-lines into it next (the ticket line now names FRM-419: FRM-72 is the standing ticket, its body kept empty; round 4 wishkeeper)
 <!-- SECTION:NOTES:END -->

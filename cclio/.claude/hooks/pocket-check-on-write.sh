@@ -9,7 +9,7 @@ Bash)
 	cmd="$(jq -r '.tool_input.command // ""' <<<"$event" | sed -E 's#[0-9]*>>?[[:space:]]*/dev/null##g; s#[0-9]*>&[0-9]+##g')"
 	# write verbs only; a read (grep, cat, ls) of the pocket never fires it
 	grep -qE 'backlog task (create|edit|archive|demote)' <<<"$cmd" ||
-		{ grep -qE 'pocket/(archive/)?tasks' <<<"$cmd" && sed -E "s/\"[^\"]*\"/Q/g; s/'[^']*'/Q/g" <<<"$cmd" | grep -qE '(^|[[:space:];&|(])(mv|trash|rm|tee|cp)[[:space:]]|git[[:space:]]+(checkout|restore|stash|rm|mv)[[:space:]]|sed[[:space:]]+(-[a-zA-Z]*[[:space:]]+)*-i|perl[[:space:]]+-[a-z]*i|>[[:space:]]*[^&=[:space:]]'; } || exit 0
+		{ grep -qE 'pocket/(archive/)?tasks|pocket(/|[[:space:]]|$)' <<<"$cmd" && sed -E "s/\"[^\"]*\"/Q/g; s/'[^']*'/Q/g" <<<"$cmd" | grep -qE '(^|[[:space:];&|(])(mv|trash|rm|tee|cp)[[:space:]]|git[[:space:]]+(checkout|restore|stash|rm|mv)[[:space:]]|git[[:space:]]+clean|git[[:space:]]+stash[[:space:]]+push|[[:space:]]-delete([[:space:]]|$)|sed[[:space:]]+(-[a-zA-Z]*[[:space:]]+)*-i|perl[[:space:]]+-[a-z]*i|>[[:space:]]*[^&=[:space:]]'; } || exit 0
 	;;
 Edit | Write) jq -r '.tool_input.file_path // ""' <<<"$event" | grep -q '/pocket/' || exit 0 ;;
 *) exit 0 ;;

@@ -850,4 +850,23 @@ describe('lostSinceGreen', () => {
         const renamed = { ...item('replaced'), name: 'pk-7 - a new title.md' };
         expect(lostSinceGreen([renamed], green)).toHaveLength(1);
     });
+
+    test('a green item with no file anywhere reds as left the pocket', () => {
+        const green = { 'pk-9': item('x').text };
+        expect(lostSinceGreen([], green)).toEqual([
+            'PK-9: left the pocket since the last green check — restore it, or close it with a close: line',
+        ]);
+    });
+
+    test('a green item whose file is present is not left', () => {
+        const green = { 'pk-7': item('x').text };
+        expect(lostSinceGreen([item('x')], green)).toEqual([]);
+    });
+
+    test('an unchanged file with a lost note line passes', () => {
+        const green = { 'pk-7': item('his line').text };
+        expect(lostSinceGreen([item('replaced')], green, () => false)).toEqual(
+            [],
+        );
+    });
 });

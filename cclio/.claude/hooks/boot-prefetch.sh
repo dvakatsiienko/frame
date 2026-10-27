@@ -96,6 +96,11 @@ due_lines=$(grep '^⏰' "$reminders" 2>/dev/null | grep -v '^⏰📌' | while IF
   [ -n "$d" ] && [[ ! "$d" > "$today" ]] && printf '%s\n' "${line:0:220}"
 done)
 [ -n "$due_lines" ] && echo "$due_lines" || echo "none"
+# a dated ⏰ line with no due: field would sit silent forever
+while IFS= read -r line; do
+  grep -qE '^⏰ [^ ]+ [0-9]{4}-[0-9]{2}-[0-9]{2}:' <<<"$line" && ! grep -qE 'due: [0-9]{4}-[0-9]{2}-[0-9]{2}' <<<"$line" &&
+    fail "reminder with a date and no due: field: ${line:0:80}"
+done < <(grep '^⏰' "$reminders" 2>/dev/null | grep -v '^⏰📌')
 
 echo "-- fleet: live sessions · worktrees · coder prs --"
 # the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)

@@ -29,9 +29,19 @@ describe('ungroomedStamps', () => {
         ]);
     });
 
-    test('an inbox stamp needs no prompt groom', () => {
+    test('an inbox stamp reds until that day inbox is groomed', () => {
         const inbox = 'W306 (2026-10-26 inbox, dima): from the vault';
-        expect(ungroomedStamps(inbox, day, () => false)).toEqual([]);
+        expect(ungroomedStamps(inbox, day, () => false)).toEqual(['inbox']);
+        expect(ungroomedStamps(inbox, '2026-10-27', () => false)).toEqual([
+            'inbox --date 2026-10-26',
+        ]);
+        expect(
+            ungroomedStamps(
+                inbox,
+                day,
+                (d, hhmm) => d === day && hhmm === 'inbox',
+            ),
+        ).toEqual([]);
         expect(newUnstamped(`${inbox}\n`, '')).toEqual([]);
     });
 
