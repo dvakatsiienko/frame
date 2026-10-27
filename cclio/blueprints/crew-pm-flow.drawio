@@ -1306,6 +1306,9 @@
         <mxCell id="tf-notes" value="&lt;b style=&quot;font-size:26px&quot;&gt;📝 dima's notes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:20px&quot;&gt;none open&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;absoluteArcSize=1;arcSize=40;fillColor=#FFF4C2;strokeColor=#E5B800;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacing=24;" parent="1" vertex="1">
           <mxGeometry x="2682" y="-1768" width="1100" height="144" as="geometry" />
         </mxCell>
+        <mxCell id="bv-label" parent="1" style="strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=0;fontColor=#444444;" value="v1 · 2026-10-27" vertex="1">
+          <mxGeometry height="48" width="420" x="9175" y="-221" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
