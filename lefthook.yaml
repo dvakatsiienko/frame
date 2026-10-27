@@ -41,8 +41,8 @@ pre-commit:
       # merged bullets, a new memory file with no row, a row whose file is gone. no glob: the memory set lives in the script
       run: node recipes/nurture-memory/scripts/memory-lint.ts {staged_files}
     replaced-doors:
-      # a pocket or memory note naming a door x retired turned main red twice (2026-10-23); the go test was the only check
-      glob: "{cclio/pocket/**,cclio/memory/**}"
+      # a memory note naming a door x retired turned main red twice (2026-10-23); the pocket is history, its notes may quote a dead door
+      glob: "cclio/memory/**"
       run: script/index-run.sh sh -c 'cd x/go && GIT_CONFIG_GLOBAL=/dev/null go test -run TestReplacedDoorsAreDead .'
     git-crypt-rename:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
