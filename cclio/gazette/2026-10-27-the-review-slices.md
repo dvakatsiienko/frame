@@ -1,8 +1,8 @@
 ---
 date: 2026-10-27
 slug: the-review-slices
-tickets: [FRM-425, FRM-430, FRM-419, FRM-462, FRM-463, FRM-1, FRM-251]
-posted: {health: no}
+tickets: [FRM-425, FRM-430, FRM-419, FRM-462, FRM-463, FRM-1, FRM-251, FRM-427, FRM-464]
+posted: {health: yes}
 ---
 
 # 🗞️ cclio's gazette · the review slices
@@ -27,7 +27,25 @@ posted: {health: no}
 - mods lane parked after chunk 1 until the 5h pace allows; chunk 2 is FRM-427 + FRM-456 + FRM-463
 - next: slice (d), the whole board at once, a few rounds until no live high (W279–W280)
 
+⸻ upd 19:45
+
+**shipped**
+- slice (d) of [FRM-419](https://linear.app/x-com/issue/FRM-419), the whole board at once: two rounds, 0 high each, 7 mediums, all fixed; dima keeps it open for one final round tomorrow
+- [FRM-462](https://linear.app/x-com/issue/FRM-462): ~55 review leftovers fixed in place by five parallel helpers, each red then green; 9 code-sized or unprobed lines stay
+- `x lane merge-auto` no longer merges a chunk cancelled after its sign
+- the board shows its own version label, one bump per committed redraw (crew-pm-flow v2)
+- mods chunk 2 ([FRM-427](https://linear.app/x-com/issue/FRM-427) + FRM-456 + FRM-463) sealed: 10 exit lines, the blind critic's 5 findings folded, its brief checked
+- [FRM-464](https://linear.app/x-com/issue/FRM-464) born: the cclio side channel, a fork beside the main from tomorrow
+
+**tricks gained**
+- a desktop-native thread has no id for `claude stop`: dima opens and archives a mods coder's tab, and a shift parks a mods chunk
+- the codeberg mirror's two reds were codeberg's own 504; a rerun went green
+
+**state**
+- correction: the 2026-10-25 post's title said «hunted clean» against its own not-clean verdict
+- 5h window near 95 %, the halt ran lean (no retro gather, no research-stale scan)
+
 ## trail
-- shipped: fork-guard (FRM-430 closed), review slices (a)–(c) closed, the pocket's git net, the pm builder, mods chunk 1 (FRM-425)
-- open: slice (d) the whole board at once; FRM-462's ~40 leftovers; mods chunk 2
-- state: second wind at 18:55, 5h near 78 %
+- shipped: review slices (a)–(d) run, FRM-462's leftovers fixed in place, merge-auto respects a cancel, the board's version label, mods chunk 2 sealed
+- open: slice (d)'s final round after boot, mods chunk 2 dispatch, FRM-462's 9 code lines, the side-channel fork (FRM-464)
+- state: halted 19:45 at ~95 % of the 5h window
