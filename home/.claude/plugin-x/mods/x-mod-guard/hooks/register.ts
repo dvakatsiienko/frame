@@ -225,7 +225,10 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
+    'milestone',
+    'notes-replace',
     'raw-plugin-update',
+    'spec',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)

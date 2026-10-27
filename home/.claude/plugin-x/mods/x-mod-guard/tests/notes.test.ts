@@ -53,20 +53,26 @@ const bash = ($: Engine, command: string) =>
 
 const DOOR = 'backlog task edit SP-1 --append-notes';
 
-test('--notes over a task that holds notes is refused naming --append-notes', async ($, on) => {
+test('--notes over a task that holds notes runs, warned with the append door, while the rule is new', async ($, on) => {
     const w = world(on, { '/repo/.backlog/tasks': NOTED });
     const r = await bash($, "backlog task edit SP-1 --notes 'new'");
-    expect([w.ran, r.deny?.includes(DOOR)]).toEqual([[], true]);
+    expect([
+        w.ran.length,
+        r.deny,
+        r.context?.some((c) => c.includes(DOOR)),
+    ]).toEqual([1, undefined, true]);
 });
 
-test('--notes= over a task that holds notes is refused naming --append-notes', async ($, on) => {
+test('with the rule enforced, --notes over a task that holds notes is refused naming --append-notes', async ($, on) => {
     const w = world(on, { '/repo/.backlog/tasks': NOTED });
+    w.store.set('rule-mode:notes-replace', 'enforce');
     const r = await bash($, "backlog task edit SP-1 --notes='new'");
     expect([w.ran, r.deny?.includes(DOOR)]).toEqual([[], true]);
 });
 
 test('BACKLOG_CWD names the project whose task is read', async ($, on) => {
-    world(on, { '/proj/.backlog/tasks': NOTED });
+    const w = world(on, { '/proj/.backlog/tasks': NOTED });
+    w.store.set('rule-mode:notes-replace', 'enforce');
     const r = await bash(
         $,
         "BACKLOG_CWD=/proj backlog task edit SP-1 --notes 'n'",
@@ -98,6 +104,7 @@ for (const [shape, tasks, command] of [
 ] as const)
     test(`${shape} runs with no warning`, async ($, on) => {
         const w = world(on, { ...tasks });
+        w.store.set('rule-mode:notes-replace', 'enforce');
         const r = await bash($, command);
         expect([w.ran.length, r.deny, r.context ?? []]).toEqual([
             1,

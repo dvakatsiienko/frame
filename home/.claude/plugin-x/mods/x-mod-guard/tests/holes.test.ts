@@ -4,7 +4,9 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts, dimaSays } from './said.ts';
 import { liveStore } from './store.ts';
 
-// FRM-425: five holes x-mod-guard let through, each fed to the hook entry as the tool call it is
+// FRM-425: five holes x-mod-guard let through, each fed to the hook entry as the tool call it is; the three new rules
+// (milestone, notes-replace, spec) are warn-only until the verifier's clean, so `world` enforces them through the store
+const NEW_RULES = ['milestone', 'notes-replace', 'spec'];
 
 const POCKET = '/home/frame/cclio';
 const NOTED =
@@ -41,11 +43,18 @@ const PROJECTS = JSON.stringify({
 });
 
 // name: this session's name in cc's registry, when a test needs one
-type World = { cwd: string; isLinearUp: boolean; name?: string };
+type World = {
+    cwd: string;
+    isLinearUp: boolean;
+    name?: string;
+    isWarnStage?: boolean;
+};
 
 function world(on: On, w: World = { cwd: '/repo', isLinearUp: true }) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
+    if (!w.isWarnStage)
+        for (const rule of NEW_RULES) store.set(`rule-mode:${rule}`, 'enforce');
     const ran: string[] = [];
     const reads: string[][] = [];
     const files: Record<string, string> = w.name
@@ -374,4 +383,39 @@ test('want line: a one-item lane brief with no spec is refused with its door', a
         [],
         expect.stringContaining('.scratch/<feature>/spec.md'),
     ]);
+});
+
+// the warn stage: with no store setting each new rule runs the call and the model reads «would refuse» with its door
+for (const [rule, cwd, call, door] of [
+    [
+        'notes-replace',
+        POCKET,
+        'backlog task edit pk-103 --notes "x"',
+        '--append-notes',
+    ],
+    ['milestone', '/repo', 'x linear set FRM-1 --project cli', MILESTONE],
+] as const)
+    test(`warn stage: ${rule} runs the call with its would-refuse note`, async ($, on) => {
+        const w = world(on, { cwd, isLinearUp: true, isWarnStage: true });
+        const r = await bash($, call);
+        expect([
+            w.ran.length,
+            r.deny,
+            r.context?.some(
+                (c) => c.includes('would refuse') && c.includes(door),
+            ),
+        ]).toEqual([1, undefined, true]);
+    });
+
+test('warn stage: spec sends the ticket job with its would-refuse note', async ($, on) => {
+    const w = world(on, { cwd: '/repo', isLinearUp: true, isWarnStage: true });
+    const r = await send(
+        $,
+        'FRM-425 job:\n1. close the holes',
+        '🌗 🔧 FRM-425 code',
+    );
+    expect([
+        w.ran.length,
+        r.context?.some((c) => c.includes('would refuse') && c.includes(SPEC)),
+    ]).toEqual([1, true]);
 });
