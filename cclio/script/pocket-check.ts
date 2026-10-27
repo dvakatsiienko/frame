@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+    writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -306,6 +312,21 @@ function noteLines(text: string): string[] {
         .filter(Boolean);
 }
 
+// a note replaced between commits is invisible to HEAD: the last green run's copy is the second baseline
+export function lostSinceGreen(
+    tasks: Task[],
+    green: Record<string, string>,
+): string[] {
+    return tasks.flatMap(({ name, text }) => {
+        const lost = lostNoteLines(text, green[name] ?? '');
+        return lost.length > 0
+            ? [
+                  `${name.split(' ')[0]}: ${lost.length} note line(s) gone since the last green check — a close appends (\`--append-notes\`)`,
+              ]
+            : [];
+    });
+}
+
 // the file-level reds: what HEAD had and the disk no longer shows, in the tasks dir and the archive
 export function auditAgainstHead(
     tasks: Task[],
@@ -494,8 +515,30 @@ if (import.meta.main) {
             headFromGit(root),
         ),
     );
-    if (problems.length === 0)
+    const greenFile = join(root, '.scratch', 'pocket-green.json');
+    const green = existsSync(greenFile)
+        ? (JSON.parse(readFileSync(greenFile, 'utf8')) as Record<
+              string,
+              string
+          >)
+        : {};
+    for (const problem of lostSinceGreen(tasks, green))
+        if (
+            !problems.some((seen) =>
+                seen.startsWith(problem.slice(0, problem.indexOf(':') + 1)),
+            )
+        )
+            problems.push(problem);
+    if (problems.length === 0) {
+        mkdirSync(join(root, '.scratch'), { recursive: true });
+        writeFileSync(
+            greenFile,
+            JSON.stringify(
+                Object.fromEntries(tasks.map(({ name, text }) => [name, text])),
+            ),
+        );
         console.log(`pocket: ${tasks.length} tasks, all checks green`);
+    }
     for (const problem of problems) console.log(`🔴 ${problem}`);
     process.exitCode = problems.length === 0 ? 0 : 1;
 }
