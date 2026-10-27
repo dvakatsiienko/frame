@@ -23,7 +23,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 3. **the 5h window**: read it (`habit-ctx-load-balancing`)
 3.2 **ci reds**: the unseen rows of n8n's 🔴 ci watch, the same read as the boot digest's n8n section; a red gets one card line and a fix or an ask
 3.5 **the helper count**: `node ~/frame/cclio/script/helper-count.ts --since <last siesta, HH:MM local>` prints `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
-4. **check before acting**: every high finding from wishkeeper or ccrow, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`
+4. **check before acting**: every high finding from wishkeeper or ccrow, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
 5. **the card**, one reply when wishkeeper is back:
    - 🐬 **wishkeeper**: its top 5 and the count of the rest, or «no wishkeeper: small batch»
    - 🍀 **freebie**: what step 2.2 got done; a duplication finding offers `/simplify` here

@@ -38,7 +38,7 @@ the lane is the ticket's first body line, `lane: main|side|quick|shift`, the kin
 - **📐 a spec on every lane with a member** — side, shift, quick, a designer or research lane; a quick lane needs no sign
 - **the main lane may be signed too** (a trial, dima o110, W140–W141): our own steps as one chunk, `lane: main`, no coder and no spec; its 🛼 glide card is its progress
 - **size**: a chunk is S by default, M allowed and watched as a trial (`memory/_reminders.md`); no split rule
-- **dispatch is shift-safe**: anything that needs dima — a signed decision the code broke, a merge his sign did not pre-approve, a round-3 stop — parks that chunk with its reason in its spec, and the next signed chunk runs
+- **dispatch is shift-safe**: anything that needs dima — a signed decision the code broke, a merge his sign did not pre-approve, a roadblock — parks that chunk with its reason in its spec, and the next signed chunk runs; cclio drives the side lane fully and tells him as info, a round-3 stop included (dima, 2026-10-27, o60)
 - **the docs**: `PRODUCT.md` is written at dispatch when the chunk makes or changes an app, a skill or a fleet tool; the coder writes the FTR lines and glossary words in the build, held by `x lane gate`
 
 the done test, read at every halt with `x fleet flow --days 14`: the `#dima-caught` lines, the `#brief` lines and the pr open → merge median per repo all go down.

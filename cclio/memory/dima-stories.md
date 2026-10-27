@@ -53,3 +53,6 @@ shaping the blueprints tool, I leaned LikeC4 on my own edit cost: the model is t
 
 ## «I can't believe that» · 2026-10-19
 asked for mechanical work with no grilling, I scanned the pocket, found only grills and shapes, and reported that nothing was left. he did not believe it before any list arrived. linear held six — two scans, a sidebar move, a recipe hunt — and I had never opened it. his doubt arrived ahead of the reason: a «nothing left» from one store is a claim about that store only.
+
+## «maybe another round?» · 2026-10-27
+slice (b) of the pm review closed after round 2, though round 2 had found two highs and the gate closes only on a round with none. he asked for another round before any list of the fixes arrived. rounds 3 and 4 found two more each, all built by a probe with no live case, and his severity bar (o56) followed: a high is seen live or certain to recur. the same day, a «watches unchanged» proof that a fork stayed hidden turned out to read the length of an auth error string; the count was never taken.
