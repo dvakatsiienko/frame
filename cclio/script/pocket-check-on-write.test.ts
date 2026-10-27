@@ -34,7 +34,13 @@ writeFileSync(
     { mode: 0o755 },
 );
 
-function run(event: object, check: string) {
+const refusingStub = join(fixtures, 'refusing-stub.sh');
+writeFileSync(refusingStub, '#!/bin/sh\necho "gate red" >&2\nexit 1\n', {
+    mode: 0o755,
+});
+const lastCommit = join(fixtures, '.local/state/cclio/pocket-commits/last');
+
+function run(event: object, check: string, commit = commitStub) {
     rmSync(argvLog, { force: true });
     const out = spawnSync('bash', [hook], {
         encoding: 'utf8',
@@ -42,7 +48,7 @@ function run(event: object, check: string) {
             ...gitEnv(),
             HOME: fixtures,
             POCKET_CHECK_CMD: check,
-            POCKET_COMMIT_CMD: commitStub,
+            POCKET_COMMIT_CMD: commit,
         },
         input: JSON.stringify(event),
     }).stdout.trim();
@@ -164,6 +170,27 @@ describe('the pocket hook commits every pocket write', () => {
             'block',
         );
         expect(stubArgv()?.slice(1)).toEqual(['--', task]);
+    });
+
+    test.each([
+        'node script/pocket-add.ts "a wish" -d x --size s',
+        'node script/pocket-move.ts PK-7 now',
+    ])('the pocket door «%s» calls the commit', (command) => {
+        writeFileSync(join(frame, task), 'x');
+        run(bash(command), 'true');
+        expect(stubArgv()?.slice(1)).toEqual(['--', task]);
+    });
+
+    test('a refused commit reds the next pocket write on a green pocket', () => {
+        writeFileSync(join(frame, task), 'x');
+        rmSync(lastCommit, { force: true });
+        run(bash('backlog task edit 7 -s done'), 'true', refusingStub);
+        const pause = new Int32Array(new SharedArrayBuffer(4));
+        for (let wait = 0; wait < 40 && !existsSync(lastCommit); wait += 1)
+            Atomics.wait(pause, 0, 0, 50);
+        const out = run(bash('backlog task edit 7 -s done'), 'true');
+        expect(out?.reason).toContain('auto-commit was refused');
+        rmSync(lastCommit, { force: true });
     });
 
     test('a read never calls the commit', () => {
