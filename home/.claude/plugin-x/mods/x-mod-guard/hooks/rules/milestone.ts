@@ -10,6 +10,18 @@ import {
 type ProjectMove = { project: string; hasMilestone: boolean };
 
 const MUTATION = /\bissue(Create|Update)\b/;
+// `x schema linear`, 2026-10-27
+const X_VERBS = new Set([
+    'api',
+    'archive',
+    'body',
+    'comment',
+    'link',
+    'list',
+    'read',
+    'set',
+    'update',
+]);
 // the project inline (`projectId: "<id>"`) or through a variable (`projectId: $p`, its value in --vars)
 const PROJECT_ID = /\bprojectId["']?\s*:\s*(?:["']([^"']+)["']|\$(\w+))/;
 const MILESTONE_ID = /\bprojectMilestoneId["']?\s*:\s*(?!null\b)\S/;
@@ -51,11 +63,9 @@ function projectMove(c: Command): ProjectMove | undefined {
     const linear = linearWords(c);
     if (!linear) return undefined;
     const { isX, words } = linear;
-    // x's verb comes first, after an optional `--as <member>`; the raw cli's may follow a global flag (`--team FRM`)
+    // the verb may follow root flags (`--json`, `--as coder`, `--team FRM`); a later word that names a verb is a value
     const head = isX
-        ? words[0] === '--as'
-            ? 2
-            : 0
+        ? words.findIndex((w, i) => X_VERBS.has(w) && words[i - 1] !== '--as')
         : words.findIndex((w) => w === 'api' || w === 'issue');
     if (words[head] === 'api') {
         const text = words.join(' ');
