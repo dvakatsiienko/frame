@@ -54,7 +54,8 @@ announce)
 		[ -n "$sid" ] && ! grep -qx "$sid" "$seen" || continue
 		transcript=$(ls "$projects"/*/"$sid.jsonl" 2>/dev/null | head -1)
 		[ -n "$transcript" ] || continue
-		since=$(date -j -f '%F %H:%M' "$day $hm" +%s 2>/dev/null) || continue
+		# bsd date on the mac, gnu date on ci
+		since=$(date -j -f '%F %H:%M' "$day $hm" +%s 2>/dev/null || date -d "$day $hm" +%s 2>/dev/null) || continue
 		topic=$(jq -r --argjson since "$since" 'select(.type == "user" and (.message.content | type) == "string")
 			| select((.timestamp | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) >= $since)
 			| .message.content | select(test("^\\s*[<\\[]") | not) | split("\n")[0][0:60]' "$transcript" 2>/dev/null | head -1)
