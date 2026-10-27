@@ -123,7 +123,7 @@
           },
           {
             "type": "command",
-            "command": "node /Users/dima/frame/cclio/script/prompt-raw-save.ts",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/cclio/script/prompt-raw-save.ts'",
             "timeout": 5
           }
         ]
