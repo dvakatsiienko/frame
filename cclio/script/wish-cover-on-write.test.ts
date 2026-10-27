@@ -59,6 +59,22 @@ describe('wish-cover on a .scratch spec write', () => {
         expect(runOn('wish: none\n\n# spec\n')).toBeUndefined();
     });
 
+    test('wish: none does not exempt a later section that names a wish', () => {
+        const filler = '\n'.repeat(12);
+        const out = runOn(`wish: none\n${filler}wish: FRM-9\nW1 reworded\n`);
+        expect(out?.decision).toBe('block');
+        expect(out?.reason).toContain('✗ W1 text missing: the exact words');
+    });
+
+    test('a section whose wish line is a ticket link is checked against its own ticket', () => {
+        const linked = (words: string) =>
+            `wish: FRM-9\nW1 the exact words\n\nwish: [FRM-8](https://linear.app/x-com/issue/FRM-8)\nW1 ${words}\n`;
+        expect(runOn(linked('other words'))).toBeUndefined();
+        expect(runOn(linked('reworded'))?.reason).toContain(
+            '✗ W1 text missing: other words',
+        );
+    });
+
     test('a spec copying W1 verbatim is silent', () => {
         expect(
             runOn('wish: FRM-9\n\nW1 the exact words\n\n# spec\n'),

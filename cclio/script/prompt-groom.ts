@@ -20,10 +20,11 @@ const groomDir =
 // the check binds every fold from the day the rules landed (dima's o61–o63) through today
 // FRM-418's rule landed 2026-10-25 14:50; an earlier prompt was never groomed by design
 const RULES_FROM = '2026-10-25 14:50';
+// both shapes: composer's stamp-first `W<n> (<date> <HH:MM>, dima): text` and its drift `W<n> · text (<date> <HH:MM>, dima)`
 const STAMP =
-    /^\s*(?:[*-]\s+)?W\d+ \((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima\b/gm;
+    /^\s*(?:[*-]\s+)?W\d+(?: \(| · [^\n]*\()(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima\b/gm;
 
-export type Groomed = (day: string, hhmm: string) => boolean;
+export type Groomed = (day: string, hhmm: string, item: string) => boolean;
 
 export function dayBefore(day: string) {
     const date = new Date(`${day}T12:00:00`);
@@ -34,18 +35,39 @@ export function dayBefore(day: string) {
 export const groomFile = (day: string, hhmm: string, kind: 'raw' | 'groomed') =>
     path.join(groomDir, `${day}-${hhmm.replace(':', '')}.${kind}.md`);
 
+// a line without its quote marker and its list marker: the shape of composer's prep, which quotes the original drop
+const bare = (line: string) =>
+    line
+        .trim()
+        .replace(/^> ?/, '')
+        .replace(/^(?:\d+\.|[-*])\s+/, '');
+
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
-// an inbox day's groomed file is composer's checked prep, copied in at boot: it only has to exist
-export const groomedOnDisk: Groomed = (day, hhmm) => {
+// an inbox day's groomed file is composer's checked prep, copied in at boot: it must exist and carry every
+// `raw drop (<day> inbox, dima): …` note of the item, or an inbox stamp would pass a raw fold
+export const groomedOnDisk: Groomed = (day, hhmm, item) => {
     const file = groomFile(day, hhmm, 'groomed');
-    return (
-        existsSync(file) &&
-        (hhmm === 'inbox' ||
-            readFileSync(file, 'utf8')
-                .matchAll(STAMP)
-                .some(([, date, time]) => date === day && time === hhmm))
-    );
+    if (!existsSync(file)) return false;
+    const groomed = readFileSync(file, 'utf8');
+    if (hhmm === 'inbox') {
+        const drops = [
+            ...item.matchAll(
+                new RegExp(`^raw drop \\(${day} inbox, dima\\): (.+)$`, 'gm'),
+            ),
+        ].map(([, drop]) => bare(drop ?? ''));
+        const prep = groomed.split('\n').map(bare).join('\n');
+        return drops.length > 0 && drops.every((drop) => prep.includes(drop));
+    }
+    return groomed
+        .matchAll(STAMP)
+        .some(([, date, time]) => date === day && time === hhmm);
 };
+
+// the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of composer's prep
+export const groomStep = (hhmm: string) =>
+    hhmm.startsWith('inbox')
+        ? "copy that day's checked inbox-composer.md to grooms/<day>-inbox.groomed.md (boot step 3) with each item's `raw drop (<day> inbox, dima): …` note in it, or re-prep with composer"
+        : `run \`node script/prompt-groom.ts ${hhmm}\``;
 
 export function ungroomedStamps(
     text: string,
@@ -60,7 +82,7 @@ export function ungroomedStamps(
             hhmm &&
             `${date} ${hhmm}` >= RULES_FROM &&
             date <= day &&
-            !isGroomed(date, hhmm)
+            !isGroomed(date, hhmm, text)
         )
             times.add(date === day ? hhmm : `${hhmm} --date ${date}`);
     return [...times];
@@ -176,7 +198,7 @@ if (import.meta.main) {
             for (const hhmm of ungroomedStamps(text, day)) {
                 red++;
                 console.log(
-                    `🔴 ${name}: W-lines of the ${hhmm} prompt folded with no groom — node script/prompt-groom.ts ${hhmm}, then refold from the groomed file`,
+                    `🔴 ${name}: W-lines of the ${hhmm} prompt folded with no groom — ${groomStep(hhmm)}, then refold from the groomed file`,
                 );
             }
         }
@@ -203,6 +225,12 @@ if (import.meta.main) {
         const raw = existsSync(dayFile)
             ? rawPromptAt(readFileSync(dayFile, 'utf8'), hhmm)
             : undefined;
+        if (hhmm === 'inbox') {
+            console.error(
+                `an inbox has no raw prompt to cut: ${groomStep(hhmm)}`,
+            );
+            process.exit(1);
+        }
         if (!/^\d{2}:\d{2}$/.test(hhmm) || !raw) {
             console.error(
                 `no prompt of dima's at ${hhmm || '?'} in ${dayFile}`,

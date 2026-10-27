@@ -43,6 +43,21 @@ describe('sectionsFor', () => {
         expect(sectionsFor(spec, 'frm-450')).not.toContain('chunk two');
     });
 
+    test('a wish line written as a ticket link opens its own section', () => {
+        const linked = [
+            'wish: FRM-450',
+            'chunk one',
+            'wish: [FRM-452](https://linear.app/x-com/issue/FRM-452)',
+            'chunk two',
+        ].join('\n');
+        expect(sectionsFor(linked, 'FRM-452')).toBe(
+            'wish: [FRM-452](https://linear.app/x-com/issue/FRM-452)\nchunk two',
+        );
+        expect(sectionsFor(linked, 'FRM-450')).toBe(
+            'wish: FRM-450\nchunk one\n',
+        );
+    });
+
     test('a BYT id splits like an FRM one, and a draft without wish lines stays whole', () => {
         expect(sectionsFor('wish: BYT-9\nx\nwish: FRM-1\ny', 'BYT-9')).toBe(
             'wish: BYT-9\nx\n',

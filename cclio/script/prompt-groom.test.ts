@@ -45,6 +45,12 @@ describe('ungroomedStamps', () => {
         expect(newUnstamped(`${inbox}\n`, '')).toEqual([]);
     });
 
+    test('composer’s W<n> · text (stamp) shape reads like the stamp-first one', () => {
+        const drift = 'W7 · fold this one (2026-10-26 09:12, dima)';
+        expect(ungroomedStamps(drift, day, () => false)).toEqual(['09:12']);
+        expect(newUnstamped(`${drift}\n`, '')).toEqual([]);
+    });
+
     test('a groomed prompt time stays quiet', () => {
         expect(
             ungroomedStamps(text, day, (_, hhmm) => hhmm === '09:12'),
@@ -152,6 +158,65 @@ describe('--check against a groom file on disk', () => {
         expect(
             check('W1 (2026-10-25 15:01, dima): ship the exact words\n'),
         ).toBe(1);
+    });
+});
+
+describe('--check on an inbox stamp', () => {
+    const body = [
+        'W9 (2026-10-26 inbox, dima): finish the round',
+        'raw drop (2026-10-26 inbox, dima): 1. finish the round, if not finished',
+    ].join('\n');
+
+    function check(prep: string | undefined) {
+        const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
+        try {
+            if (prep !== undefined)
+                writeFileSync(join(root, '2026-10-26-inbox.groomed.md'), prep);
+            writeFileSync(join(root, 'body.md'), body);
+            return spawnSync(
+                process.execPath,
+                [
+                    join(import.meta.dirname, 'prompt-groom.ts'),
+                    '--check',
+                    join(root, 'body.md'),
+                ],
+                {
+                    encoding: 'utf8',
+                    env: { ...process.env, PROMPT_GROOM_DIR: root },
+                },
+            );
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    }
+
+    test('with no prep copy the red names the copy step, not a command that cannot work', () => {
+        const out = check(undefined);
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('inbox-composer.md');
+        expect(out.stdout).not.toContain('node script/prompt-groom.ts inbox');
+    });
+
+    test('a prep copy that quotes the item’s raw drop passes', () => {
+        expect(check('> 1. finish the round, if not finished\n').status).toBe(
+            0,
+        );
+    });
+
+    test('a prep copy without the item’s raw drop reds, though the file exists', () => {
+        expect(check('> 1. some other ask\n').status).toBe(1);
+    });
+});
+
+describe('prompt-groom inbox', () => {
+    test('the verb refuses an inbox with the copy step', () => {
+        const out = spawnSync(
+            process.execPath,
+            [join(import.meta.dirname, 'prompt-groom.ts'), 'inbox'],
+            { encoding: 'utf8' },
+        );
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('inbox-composer.md');
     });
 });
 

@@ -353,8 +353,9 @@ fi
 echo "-- pocket (Backlog.md, cclio/script/pocket-check.ts; a red is drift to fix today, not a broken boot) --"
 if out=$(node "$HOME/frame/cclio/script/pocket-check.ts" 2>&1); then
   echo "$out"
-elif [ -n "$out" ] && [ -z "$(printf '%s\n' "$out" | grep -v '^🔴 ')" ]; then
-  echo "🔴 $(printf '%s\n' "$out" | wc -l | tr -d ' ') items off contract — \`node ~/frame/cclio/script/pocket-check.ts\` lists them"
+elif [ -n "$out" ] && [ -z "$(printf '%s\n' "$out" | grep -vE '^(🔴|🟡) ')" ]; then
+  # a 🟡 line is a note beside the reds (linear not read), never a red of its own
+  echo "🔴 $(printf '%s\n' "$out" | grep -c '^🔴 ') items off contract — \`node ~/frame/cclio/script/pocket-check.ts\` lists them"
   printf '%s\n' "$out" | head -5
 else
   fail "pocket-check could not run: $(printf '%s' "$out" | head -1)"
@@ -375,10 +376,16 @@ for team in FRM BYT; do
   fi
 done
 [ -z "$list_err" ] && echo "✍️ to sign: n/a · 🚀 to dispatch: $dispatch" || fail "linear queues: could not read — $list_err"
-if back=$(timeout 20 x linear api 'query { issues(filter:{state:{type:{in:["unstarted","backlog","triage"]}}, description:{contains:"↩️ back to Todo"}}) { nodes { identifier } } }' 2>&1) && ids=$(printf '%s' "$back" | jq -r '.data.issues.nodes | map(.identifier) | join(", ")' 2>/dev/null); then
+if back=$(timeout 20 x linear api 'query { issues(filter:{state:{type:{in:["unstarted","backlog","triage"]}}, description:{contains:"↩️ back to Todo"}}) { nodes { identifier description } } }' 2>&1) && ids=$(printf '%s' "$back" | jq -r '.data.issues.nodes | map(select((.description | split("\n")) as $l | ([$l | to_entries[] | select(.value | contains("↩️ back to Todo")) | .key] | max) as $at | $l[$at + 1:] | any(.[]; test("✍️ (re-)?signed")) | not)) | map(.identifier) | join(", ")' 2>/dev/null); then
   echo "↩️ back to Todo: ${ids:-none}"
 else
   fail "linear queues: could not read — back to Todo: $(printf '%s' "$back" | tail -1 | cut -c1-120)"
+fi
+# the plan's slot after the pocket: the main lane's open tickets (body opens `lane: main`), top milestone first
+if main_lane=$(timeout 20 x linear api 'query { issues(first: 50, filter:{state:{type:{nin:["completed","canceled"]}}, description:{startsWith:"lane: main"}}) { nodes { identifier projectMilestone { name sortOrder } } } }' 2>&1) && main_ids=$(printf '%s' "$main_lane" | jq -r '.data.issues.nodes | sort_by(.projectMilestone.sortOrder // 1e9) | map("\(.identifier) (\(.projectMilestone.name // "no milestone"))") | join(", ")' 2>/dev/null); then
+  echo "main lane: ${main_ids:-none}"
+else
+  fail "linear queues: could not read — main lane: $(printf '%s' "$main_lane" | tail -1 | cut -c1-120)"
 fi
 
 echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"

@@ -39,10 +39,11 @@ export function citedIds(draft: string) {
 // a lane spec holds one section per chunk, each opening with its own «wish: <id>» line:
 // the parts of the draft under this id's wish lines (the text above the first one joins the first part); a draft with none of them is whole
 export function sectionsFor(draft: string, id: string) {
-    const parts = draft.split(/^(?=wish: *(?:PK|FRM|BYT)-\d+)/im);
+    // the id may be a ticket link: «wish: [FRM-4](https://…)»
+    const parts = draft.split(/^(?=wish: *\[?(?:PK|FRM|BYT)-\d+)/im);
     const head = /^wish:/i.test(parts[0] ?? '') ? '' : (parts.shift() ?? '');
     if (parts.length === 0) return draft;
-    const mine = new RegExp(`^wish: *${id}\\b`, 'i');
+    const mine = new RegExp(`^wish: *\\[?${id}\\b`, 'i');
     const picked = parts
         .map((part, at) =>
             mine.test(part) ? (at === 0 ? head : '') + part : '',

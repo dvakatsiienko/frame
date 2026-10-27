@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import {
     type Groomed,
+    groomStep,
     groomedOnDisk,
     newUnstamped,
     ungroomedStamps,
@@ -81,7 +82,7 @@ export function checkPocket(
             report('wish born without W-lines: fold it into W1… lines');
         for (const hhmm of ungroomedStamps(text, today, isGroomed))
             report(
-                `W-lines of dima's ${hhmm} prompt folded with no groom (FRM-418): \`node script/prompt-groom.ts ${hhmm}\`, then refold from the groomed file`,
+                `W-lines of dima's ${hhmm} prompt folded with no groom (FRM-418): ${groomStep(hhmm)}, then refold from the groomed file`,
             );
         if (
             status === 'done' &&
