@@ -280,6 +280,28 @@ test('«git commit -m "guard --project"» is not read as a linear call', async (
     ]);
 });
 
+// x takes a root flag anywhere before its family: each one × each family form, in either order of two
+const ROOT_FLAGS = ['--json', '--board', '--apply', '--as coder', '--as=coder'];
+const FAMILY_FORMS = [
+    'linear set FRM-1 --project cli',
+    'as coder -- linear issue create --project cli -t x',
+    'as coder -- linear issue update FRM-1 --project cli',
+    'as coder linear issue create --project cli -t x',
+    'as --json coder -- linear issue create --project cli -t x',
+    'as coder --board linear issue update FRM-1 --project cli',
+];
+for (const flag of ROOT_FLAGS)
+    for (const form of FAMILY_FORMS)
+        for (const command of [`x ${flag} ${form}`, `x ${flag} --json ${form}`])
+            test(`«${command}» is refused naming a milestone`, async ($, on) => {
+                const w = world(on);
+                const r = await bash($, command);
+                expect([w.ran, r.deny]).toEqual([
+                    [],
+                    expect.stringContaining(MILESTONE),
+                ]);
+            });
+
 test('with linear unreachable the create runs, warned that the milestone check was skipped', async ($, on) => {
     const w = world(on, { cwd: '/repo', isLinearUp: false });
     const r = await bash(

@@ -52,11 +52,11 @@ function linearWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'linear') return { isX: false, words };
     if (c.name !== 'x') return undefined;
-    // x takes any flag before the family (`x --json linear …`, `x --as coder linear …`): every word ahead of `linear`
-    // is a flag or a flag's value
+    // x takes any flag before its family (`x --json linear …`, `x --board as coder …`): the family is the first
+    // `linear` or `as` with only flags or flag values ahead of it
     const family = words.findIndex(
         (w, i) =>
-            w === 'linear' &&
+            (w === 'linear' || w === 'as') &&
             words
                 .slice(0, i)
                 .every(
@@ -64,11 +64,25 @@ function linearWords(c: Command) {
                         v.startsWith('-') || words[j - 1]?.startsWith('-'),
                 ),
     );
-    if (family >= 0) return { isX: true, words: words.slice(family + 1) };
-    const dash = words.indexOf('--');
-    if (words[0] === 'as' && dash >= 0 && words[dash + 1] === 'linear')
-        return { isX: false, words: words.slice(dash + 2) };
-    return undefined;
+    if (words[family] === 'linear')
+        return { isX: true, words: words.slice(family + 1) };
+    const raw = words[family] === 'as' ? afterMember(words, family + 1) : -1;
+    return words[raw] === 'linear'
+        ? { isX: false, words: words.slice(raw + 1) }
+        : undefined;
+}
+
+// `as <member> [--] <command…>`: its flags (`--json`, `--board`, `--help`) sit before or after the member, `--` is optional
+function afterMember(words: string[], from: number) {
+    let isMemberRead = false;
+    for (let i = from; i < words.length; i++) {
+        const w = words[i] ?? '';
+        if (w === '--') return i + 1;
+        if (w.startsWith('-')) continue;
+        if (isMemberRead) return i;
+        isMemberRead = true;
+    }
+    return -1;
 }
 
 function projectMove(c: Command): ProjectMove | undefined {
