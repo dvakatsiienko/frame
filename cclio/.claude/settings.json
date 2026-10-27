@@ -118,7 +118,7 @@
           },
           {
             "type": "command",
-            "command": "node /Users/dima/frame/schedule/jobs/x-changedetector/watch-nudge.ts",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/schedule/jobs/x-changedetector/watch-nudge.ts'",
             "timeout": 5
           },
           {
