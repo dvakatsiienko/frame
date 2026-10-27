@@ -589,6 +589,29 @@ describe('wish accounting', () => {
                 ),
             ).toEqual([]);
         });
+
+        test('«raw drop kept in the notes» drops no W-line', () => {
+            const kept = {
+                ...moved,
+                text: moved.text.replace(
+                    'close: W1 W2 moved to FRM-9',
+                    'close: W1 W2 moved to FRM-9, raw drop kept in the notes',
+                ),
+            };
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [kept],
+                    wishToday,
+                    '',
+                    () => true,
+                    new Set(),
+                    new Map([['FRM-9', '* W7 (x): keep the dark board']]),
+                ),
+            ).toEqual([
+                'PK-1: W2 moved to FRM-9 but not in its wish block: copy it there verbatim',
+            ]);
+        });
     });
 
     test('a close: line citing every W-id passes', () => {

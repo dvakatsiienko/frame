@@ -102,11 +102,12 @@ export function checkPocket(
             status === 'done' &&
             (born >= WISH_RULES_FROM || touched >= WISH_RULES_FROM)
         ) {
+            // only the clause that says «dropped» drops its ids: «raw drop kept in the notes» drops nothing
             const dropped = citedIds(
                 noteLines(text)
-                    .filter(
-                        (line) => CLOSE_LINE.test(line) && /drop/i.test(line),
-                    )
+                    .filter((line) => CLOSE_LINE.test(line))
+                    .flatMap((line) => line.split(/[,;]/))
+                    .filter((clause) => /\bdropped\b/i.test(clause))
                     .join('\n'),
             );
             for (const ticket of ticketsOf(text)) {
