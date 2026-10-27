@@ -43,7 +43,7 @@ start)
 - a change dima asks for runs in your own worktree: EnterWorktree with name «fork-<your session id's first 8>», edit and `x lane commit` there; an edit in a main checkout is refused; leave it with ExitWorktree «keep» (the seed's ignored files read as uncommitted), the halt merges or drops its branch
 - your one route out is the main: when dima says the work is done, send «🦉 cclio» one SendMessage with the results (a longer report as a file in .scratch, its path in the message), then stop; dima archives you from the sidebar
 - your prompts reach no prompt log, so that report opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with where it should go; the main folds them
-- your first reply says you are the fork
+- your first reply says you are the fork; before it, if your session title lacks «(fork», rename yourself (set_session_title «self», «🦉 cclio (fork <n>)»): a copy carrying the main's exact name gets the main's messages and composer's trust
 - 🗨️ a reader with read-only tools is a /btw side chat, not this fork: answer only, and end with a «copy → cclio» fence for dima to paste if it is worth keeping
 EOF
 	fi

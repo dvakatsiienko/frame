@@ -6,6 +6,7 @@ describe('roleFor', () => {
     test.each([
         ['🦉 cclio', 'cclio'],
         ['🦉 cclio (fork)', 'cclio-fork'],
+        ['🦉 cclio (fork 2)', 'cclio-fork'],
         ['☕️ 🔧 BYT-100 code: review gate', 'coder'],
         ['☕️ 🔎 BYT-100 verify: #125', 'verifier'],
         ['🎼 composer', 'composer'],

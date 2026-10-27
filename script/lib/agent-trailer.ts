@@ -1,7 +1,7 @@
 // the `Agent: <role> · <model>` trailer, derived from the session registry name and the transcript's model id
 // the desktop names a fork «<parent> (fork)»; its commits must never read as the parent's
 export function roleFor(sessionName: string): string {
-    const parent = sessionName.match(/^(.*?)\s*\(fork\)\s*$/)?.[1];
+    const parent = sessionName.match(/^(.*?)\s*\(fork[^)]*\)\s*$/)?.[1];
     if (parent !== undefined) return `${roleFor(parent)}-fork`;
     const glyph = ROLES.find(([mark]) => sessionName.includes(mark));
     if (glyph) return glyph[1];
