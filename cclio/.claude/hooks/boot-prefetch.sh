@@ -136,8 +136,11 @@ if [[ "$apps_line" == *"DUE today"* || "$security" -gt 0 ]]; then
     seeded && echo "🧬 evergreen turn: seeded on top of the pocket — turn 2 is evergreen (cclio:evergreen)" || fail "evergreen turn: pocket-add wrote nothing"
   fi
 fi
-last_checkup=$(grep -oE '^- [0-9]{4}-[0-9]{2}-[0-9]{2}' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | cut -c3- | sort | tail -1)
-if [ -z "$last_checkup" ]; then
+last_checkup=$(grep -v ' · postponed · ' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | grep -oE '^- [0-9]{4}-[0-9]{2}-[0-9]{2}' | cut -c3- | sort | tail -1)
+postponed_to=$(grep ' · postponed · ' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | grep -oE 'next due [0-9]{4}-[0-9]{2}-[0-9]{2}' | cut -c10- | sort | tail -1)
+if [ -n "$postponed_to" ] && [[ "$postponed_to" > "$(date +%F)" ]]; then
+  echo "checkup: last run ${last_checkup:-never} · postponed until $postponed_to"
+elif [ -z "$last_checkup" ]; then
   echo "checkup: never run · DUE — offer cclio:system-checkup on the board"
 elif [ $(( ( $(date +%s) - $(date -j -f %Y-%m-%d "$last_checkup" +%s) ) / 86400 )) -ge 7 ]; then
   echo "checkup: last run $last_checkup · DUE — offer cclio:system-checkup on the board"

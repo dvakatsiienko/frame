@@ -829,7 +829,7 @@ describe('lostSinceGreen', () => {
 
     test('a note line replaced after the last green check reds, though HEAD never held it', () => {
         const green = {
-            'pk-7 - x.md': item('kept: 2026-10-27 — his line').text,
+            'pk-7': item('kept: 2026-10-27 — his line').text,
         };
         expect(lostSinceGreen([item('replaced')], green)).toEqual([
             'pk-7: 1 note line(s) gone since the last green check — a close appends (`--append-notes`)',
@@ -837,11 +837,17 @@ describe('lostSinceGreen', () => {
     });
 
     test('an appended note passes', () => {
-        const green = { 'pk-7 - x.md': item('first').text };
+        const green = { 'pk-7': item('first').text };
         expect(lostSinceGreen([item('first\nsecond')], green)).toEqual([]);
     });
 
     test('an item the last green check never saw passes', () => {
         expect(lostSinceGreen([item('new')], {})).toEqual([]);
+    });
+
+    test('a retitled item keeps its baseline by its pk id', () => {
+        const green = { 'pk-7': item('his line').text };
+        const renamed = { ...item('replaced'), name: 'pk-7 - a new title.md' };
+        expect(lostSinceGreen([renamed], green)).toHaveLength(1);
     });
 });

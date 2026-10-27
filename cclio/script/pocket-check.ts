@@ -314,18 +314,23 @@ function noteLines(text: string): string[] {
 
 // a note replaced between commits is invisible to HEAD: the last green run's copy is the second baseline
 export function lostSinceGreen(
-    tasks: Task[],
+    files: Task[],
     green: Record<string, string>,
 ): string[] {
-    return tasks.flatMap(({ name, text }) => {
-        const lost = lostNoteLines(text, green[name] ?? '');
+    return files.flatMap(({ name, text }) => {
+        const id = greenKey(name);
+        const lost = lostNoteLines(text, green[id] ?? '');
         return lost.length > 0
             ? [
-                  `${name.split(' ')[0]}: ${lost.length} note line(s) gone since the last green check — a close appends (\`--append-notes\`)`,
+                  `${id}: ${lost.length} note line(s) gone since the last green check — a close appends (\`--append-notes\`)`,
               ]
             : [];
     });
 }
+
+// keyed by «pk-N», so a retitled or archived item keeps its baseline
+export const greenKey = (name: string) =>
+    (name.match(ITEM_PREFIX)?.[0] ?? name).trim().toLowerCase();
 
 // the file-level reds: what HEAD had and the disk no longer shows, in the tasks dir and the archive
 export function auditAgainstHead(
@@ -522,7 +527,8 @@ if (import.meta.main) {
               string
           >)
         : {};
-    for (const problem of lostSinceGreen(tasks, green))
+    const archived = readDir(join(root, 'pocket', 'archive', 'tasks'));
+    for (const problem of lostSinceGreen([...tasks, ...archived], green))
         if (
             !problems.some((seen) =>
                 seen.startsWith(problem.slice(0, problem.indexOf(':') + 1)),
@@ -530,13 +536,21 @@ if (import.meta.main) {
         )
             problems.push(problem);
     if (problems.length === 0) {
-        mkdirSync(join(root, '.scratch'), { recursive: true });
-        writeFileSync(
-            greenFile,
-            JSON.stringify(
-                Object.fromEntries(tasks.map(({ name, text }) => [name, text])),
+        const next = JSON.stringify(
+            Object.fromEntries(
+                [...archived, ...tasks].map(({ name, text }) => [
+                    greenKey(name),
+                    text,
+                ]),
             ),
         );
+        if (
+            !existsSync(greenFile) ||
+            readFileSync(greenFile, 'utf8') !== next
+        ) {
+            mkdirSync(join(root, '.scratch'), { recursive: true });
+            writeFileSync(greenFile, next);
+        }
         console.log(`pocket: ${tasks.length} tasks, all checks green`);
     }
     for (const problem of problems) console.log(`🔴 ${problem}`);
