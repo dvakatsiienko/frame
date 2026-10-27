@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-27T16:52:00Z'
-updated_date: '2026-10-27T16:52:00Z'
+updated_date: '2026-10-27T16:53:00Z'
 labels:
   - s
 dependencies: []
@@ -18,7 +18,6 @@ ordinal: 99999
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-- W281 (2026-10-27 18:50, dima): add support for versioning to a blueprint, so i see if it drifted
-- W282 (2026-10-27 18:50, dima): print the blueprint's latest version after each edit
-- ? shape-idea or a plain ticket: proposed in orbit
+- W282 · also: add support for versioning to a blueprint, so i see if it drifted, and print the blueprint's latest version after each edit. (2026-10-27 18:50, dima)
+- ? shape-idea or a plain ticket: proposed in orbit (o63)
 <!-- SECTION:DESCRIPTION:END -->
