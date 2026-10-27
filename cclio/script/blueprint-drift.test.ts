@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { drawnSince, logWindow } from './blueprint-drift.ts';
+import { drawnSince, logWindow, versionOf } from './blueprint-drift.ts';
 
 describe('logWindow', () => {
     test('a sha opens its window after that commit, a date is a --since', () => {
@@ -43,5 +43,17 @@ describe('drawnSince', () => {
                 '1 week ago',
             ),
         ).toEqual({ since: '1 week ago' });
+    });
+});
+
+describe('versionOf', () => {
+    test("a board's line carries its builder's version", () => {
+        expect(versionOf('excalidraw/crew-pm-flow/board.excalidraw')).toMatch(
+            /^ · v\d+ \(\d{4}-\d{2}-\d{2}\)$/,
+        );
+    });
+
+    test('a board with no version prints nothing extra', () => {
+        expect(versionOf('excalidraw/no-such-board/board.excalidraw')).toBe('');
     });
 });

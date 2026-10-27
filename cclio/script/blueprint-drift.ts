@@ -7,6 +7,20 @@ import path from 'node:path';
 
 export const frame = path.resolve(import.meta.dirname, '../..');
 
+// a board's version, bumped by its builder (cclio/blueprints/board_version.py); keyed by the board's dir name
+export function versionOf(url: string): string {
+    const file = path.join(frame, 'cclio/blueprints/versions.json');
+    const key = path.basename(path.dirname(url));
+    try {
+        const entry = JSON.parse(readFileSync(file, 'utf8'))[key] as
+            | { version: number; at: string }
+            | undefined;
+        return entry ? ` · v${entry.version} (${entry.at})` : '';
+    } catch {
+        return '';
+    }
+}
+
 export function mappedBoards() {
     const agents = readFileSync(
         path.join(frame, 'cclio/blueprints/AGENTS.md'),
@@ -107,7 +121,9 @@ if (import.meta.main) {
         ];
         if (hits.length === 0) continue;
         stale++;
-        console.log(`🟡 ${board.name} · ${board.url} · since ${since}`);
+        console.log(
+            `🟡 ${board.name}${versionOf(board.url)} · ${board.url} · since ${since}`,
+        );
         for (const file of hits) console.log(`   ${file}`);
     }
     console.log(

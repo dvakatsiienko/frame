@@ -6,7 +6,12 @@ One command:  python3 -I crew-pm-flow.build.py  (PM_BOARD=<file> points it at a 
 import json
 import os
 import re
+import sys
 import xml.etree.ElementTree as ET
+
+# -I keeps the script's own dir off sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import board_version  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TILES = os.path.join(HERE, "crew-pm-flow.tiles.json")
@@ -35,6 +40,7 @@ def main():
     text = text[:at] + "".join(cell_xml(t) for t in tiles) + text[at:]
     open(TARGET, "w", encoding="utf-8").write(text)
     print(f"{TARGET}: {len(tiles)} pm cells written")
+    board_version.bump("crew-pm-flow", TARGET)
 
 
 if __name__ == "__main__":

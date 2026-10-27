@@ -14,6 +14,10 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
+# -I keeps the script's own dir off sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import board_version  # noqa: E402
+
 TARGET = os.environ.get("PM_BOARD", os.path.join(os.path.dirname(os.path.abspath(__file__)), "crew-pm-flow.drawio"))
 PREFIX = "tf-"
 # one of our cells as text, self-closing or with its geometry inside (draw.io writes id first)
@@ -476,6 +480,7 @@ def main():
     head, close, tail = text.rpartition("\n      </root>")
     open(TARGET, "w", encoding="utf-8").write(head + block + close + tail)
     print(f"{TARGET}: {tile_count} tiles ({weak} weak spots), {edge_count} arrows, {len(BANDS)} bands, all checks green")
+    board_version.bump("crew-pm-flow", TARGET)
 
 
 if __name__ == "__main__":

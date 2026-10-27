@@ -2,7 +2,7 @@
 AGENTS.md	10900	seed 2026-10-16, today's size + 15 %
 cclio/.claude/agents/wishkeeper.md	5300	seed 2026-10-16, its size + 15 %
 cclio/AGENTS.md	3600	seed 2026-10-16, today's size + 15 %
-cclio/blueprints/AGENTS.md	3600	2026-10-25: the tickets-flow board's sources listed whole, so the drift check sees every file its tiles cite (round 2 finding)
+cclio/blueprints/AGENTS.md	3700	2026-10-27: the board version line (dima, W282); 2026-10-25: the tickets-flow board's sources listed whole, so the drift check sees every file its tiles cite (round 2 finding)
 cclio/memory/_MEMORY.md	6400	seed 2026-10-16, today's size + 15 %
 cclio/memory/_reminders.md	17500	seed 2026-10-16, today's size + 15 %
 cclio/memory/_roadmap.md	550	2026-10-23 raised: generated; milestone names now say their outcome in words (dima's o23)

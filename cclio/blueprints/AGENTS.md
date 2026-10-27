@@ -24,5 +24,6 @@ a mapped area's board is our main reference for its flow: a change may land in t
 ## the files
 
 - one blueprint per subject, its name self-descriptive for dima, entity-first: `<subject>-<kind>` (`pm-module-flow`)
+- a builder prints `🗺️ <board> v<N>` (`versions.json`, bumped on a byte change); the reply after a board edit quotes it (dima, W282)
 - a `.drawio` is committed after every redraw and after every read of dima's edit, so git keeps its history; an n8n automation saves its export here as `<name>.n8n.json` the same way
 - dima's edit is read back as a semantic diff (tiles, arrows, renames, moves), never as the raw json diff: n8n, draw.io and Obsidian all rewrite the whole file on save
