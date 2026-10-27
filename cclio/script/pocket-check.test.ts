@@ -17,7 +17,6 @@ import {
     checkPocket,
     headFromGit,
     lostNoteLines,
-    lostSinceGreen,
     unkeptStale,
 } from './pocket-check.ts';
 
@@ -818,55 +817,5 @@ describe('the prompt groom (FRM-418)', () => {
 
     test('a groomed one stays green', () => {
         expect(checkPocket(config, [folded], day, day, () => true)).toEqual([]);
-    });
-});
-
-describe('lostSinceGreen', () => {
-    const item = (notes: string) => ({
-        name: 'pk-7 - x.md',
-        text: `---\nstatus: open\n---\n<!-- SECTION:NOTES:BEGIN -->\n${notes}\n<!-- SECTION:NOTES:END -->\n`,
-    });
-
-    test('a note line replaced after the last green check reds, though HEAD never held it', () => {
-        const green = {
-            'pk-7': item('kept: 2026-10-27 — his line').text,
-        };
-        expect(lostSinceGreen([item('replaced')], green)).toEqual([
-            'pk-7: 1 note line(s) gone since the last green check — a close appends (`--append-notes`)',
-        ]);
-    });
-
-    test('an appended note passes', () => {
-        const green = { 'pk-7': item('first').text };
-        expect(lostSinceGreen([item('first\nsecond')], green)).toEqual([]);
-    });
-
-    test('an item the last green check never saw passes', () => {
-        expect(lostSinceGreen([item('new')], {})).toEqual([]);
-    });
-
-    test('a retitled item keeps its baseline by its pk id', () => {
-        const green = { 'pk-7': item('his line').text };
-        const renamed = { ...item('replaced'), name: 'pk-7 - a new title.md' };
-        expect(lostSinceGreen([renamed], green)).toHaveLength(1);
-    });
-
-    test('a green item with no file anywhere reds as left the pocket', () => {
-        const green = { 'pk-9': item('x').text };
-        expect(lostSinceGreen([], green)).toEqual([
-            'PK-9: left the pocket since the last green check — restore it, or close it with a close: line',
-        ]);
-    });
-
-    test('a green item whose file is present is not left', () => {
-        const green = { 'pk-7': item('x').text };
-        expect(lostSinceGreen([item('x')], green)).toEqual([]);
-    });
-
-    test('an unchanged file with a lost note line passes', () => {
-        const green = { 'pk-7': item('his line').text };
-        expect(lostSinceGreen([item('replaced')], green, () => false)).toEqual(
-            [],
-        );
     });
 });

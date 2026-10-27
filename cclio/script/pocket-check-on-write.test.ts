@@ -1,18 +1,49 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import {
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-const hook = join(
-    import.meta.dirname,
-    '../.claude/hooks/pocket-check-on-write.sh',
+import { gitEnv } from '../../script/lib/git-fixture.ts';
+
+const fixtures = mkdtempSync(join(tmpdir(), 'pocket-check-hook-'));
+// a throwaway frame: the hook copy two dirs under a git root, so it never reads or commits the real one
+const frame = join(fixtures, 'frame');
+const hook = join(frame, 'cclio/.claude/hooks/pocket-check-on-write.sh');
+mkdirSync(join(frame, 'cclio/.claude/hooks'), { recursive: true });
+mkdirSync(join(frame, 'cclio/pocket/tasks'), { recursive: true });
+copyFileSync(
+    join(import.meta.dirname, '../.claude/hooks/pocket-check-on-write.sh'),
+    hook,
+);
+// a commit gate runs this test inside a git hook, whose GIT_DIR would point every git call at the real repo
+spawnSync('git', ['init', '-q'], { cwd: frame, env: gitEnv() });
+const argvLog = join(fixtures, 'argv.txt');
+const commitStub = join(fixtures, 'commit-stub.sh');
+writeFileSync(
+    commitStub,
+    `#!/bin/sh\nfor a in "$@"; do printf '%s\\n' "$a"; done > "${argvLog}.tmp"\nmv "${argvLog}.tmp" "${argvLog}"\n`,
+    { mode: 0o755 },
 );
 
 function run(event: object, check: string) {
+    rmSync(argvLog, { force: true });
     const out = spawnSync('bash', [hook], {
         encoding: 'utf8',
-        env: { ...process.env, POCKET_CHECK_CMD: check },
+        env: {
+            ...gitEnv(),
+            HOME: fixtures,
+            POCKET_CHECK_CMD: check,
+            POCKET_COMMIT_CMD: commitStub,
+        },
         input: JSON.stringify(event),
     }).stdout.trim();
     return out
@@ -20,7 +51,16 @@ function run(event: object, check: string) {
         : undefined;
 }
 
-const fixtures = mkdtempSync(join(tmpdir(), 'pocket-check-hook-'));
+// the commit runs detached, so the stub's record lands after the hook returned
+function stubArgv(): string[] | undefined {
+    const pause = new Int32Array(new SharedArrayBuffer(4));
+    for (let wait = 0; wait < 40 && !existsSync(argvLog); wait += 1)
+        Atomics.wait(pause, 0, 0, 50);
+    return existsSync(argvLog)
+        ? readFileSync(argvLog, 'utf8').trimEnd().split('\n')
+        : undefined;
+}
+
 const redCmd = join(fixtures, 'red.sh');
 writeFileSync(
     redCmd,
@@ -102,5 +142,33 @@ describe('pocket-check on a pocket write', () => {
                 redCmd,
             ),
         ).toBe(undefined);
+    });
+});
+
+describe('the pocket hook commits every pocket write', () => {
+    const task = 'cclio/pocket/tasks/pk-7 — a b.md';
+
+    test('a pocket write calls the commit with the changed path as one argument', () => {
+        writeFileSync(join(frame, task), 'x');
+        run(bash('backlog task edit 7 -s done'), 'true');
+        const argv = stubArgv();
+        expect(argv?.slice(1)).toEqual(['--', task]);
+        expect(readFileSync(argv?.[0] ?? '', 'utf8')).toContain(
+            '📜 pocket: pk-7 (auto)',
+        );
+    });
+
+    test('a red check still blocks and still commits', () => {
+        writeFileSync(join(frame, task), 'x');
+        expect(run(bash('backlog task edit 7 -s done'), redCmd)?.decision).toBe(
+            'block',
+        );
+        expect(stubArgv()?.slice(1)).toEqual(['--', task]);
+    });
+
+    test('a read never calls the commit', () => {
+        writeFileSync(join(frame, task), 'x');
+        run(bash('grep -c x cclio/pocket/tasks/*.md'), redCmd);
+        expect(stubArgv()).toBe(undefined);
     });
 });

@@ -15,6 +15,36 @@ Edit | Write) jq -r '.tool_input.file_path // ""' <<<"$event" | grep -q '/pocket
 *) exit 0 ;;
 esac
 check="${POCKET_CHECK_CMD:-node $(dirname "$0")/../../script/pocket-check.ts}"
-out="$($check 2>&1)" && exit 0
+out="$($check 2>&1)"
+status=$?
+
+# every pocket write becomes a commit, green or red, so git is the net; it runs detached because a pocket-only `x lane commit` takes ~10 s
+root="$(git -C "$(dirname "$0")/../.." rev-parse --show-toplevel 2>/dev/null)"
+paths=()
+ids=()
+if [ -n "$root" ]; then
+	skip=0
+	while IFS= read -r -d '' entry; do
+		# a rename or copy lists its origin as a bare second entry
+		if [ "$skip" = 1 ]; then
+			paths+=("$entry")
+			skip=0
+			continue
+		fi
+		paths+=("${entry:3}")
+		[[ "${entry:0:1}" == [RC] ]] && skip=1
+		id="$(basename "${entry:3}" | grep -oiE '^pk-[0-9]+')" && ids+=("$id")
+	done < <(git -C "$root" status --porcelain -z -uall -- cclio/pocket)
+fi
+# the runner twin runs with an empty HOME: it skips the commit, the main checkout's session makes it
+if [ "${#paths[@]}" -gt 0 ] && [ -n "${HOME:-}" ]; then
+	state="$HOME/.local/state/cclio/pocket-commits"
+	mkdir -p "$state"
+	msg="$(mktemp "$state/msg.XXXXXX")"
+	printf '📜 pocket: %s (auto)\n\nthe pocket hook committed this pocket write\n' "$(IFS=,; printf '%s' "${ids[*]-}")" >"$msg"
+	(cd "$root" && nohup ${POCKET_COMMIT_CMD:-x lane commit} "$msg" -- "${paths[@]}" >>"$state/log.txt" 2>&1 </dev/null &)
+fi
+
+[ "$status" = 0 ] && exit 0
 reds="$(grep '^🔴' <<<"$out" || printf '%s' "$out")"
 jq -n --arg reason "the pocket is red — fix it now: $reds" '{decision: "block", reason: $reason}'
