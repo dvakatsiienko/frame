@@ -2193,7 +2193,7 @@
             "id": "30:446",
             "parent": "30:434",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎑 milestones first</b><br><span style=\"font-size:20px\">create, move, close ask «which milestone?»; a guard refuses a bare one (FRM-417, trial)</span>",
+            "value": "<b style=\"font-size:26px\">🎑 milestones first</b><br><span style=\"font-size:20px\">create, move, close ask «which milestone?»; x-mod-guard refuses a bare one where the project has milestones (FRM-417)</span>",
             "vertex": "1"
         },
         "geometry": {
