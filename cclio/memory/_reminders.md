@@ -49,11 +49,11 @@ Store contract: the `cclio:remind` skill. Both tiers die only when Dima drops th
 
 ⏰ 🦉🐞 the next cli lane: it runs the round of `docs/test-drive/delve.md` § what counts: the brief says nothing of delve, the question comes at his retro (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written; cli lane 1 (10-22) did not run it, so the next cli lane does (dima, 2026-10-18: «push 1week+») — set 2026-10-13 · due: 2026-10-25
 
-⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13
+⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13 · due: 2026-10-27
 
-⏰ 🦉💸 2026-11-03: dima turns off auto-renew on max $100 (≥24 h before the 11-05 renewal), billing settings; the 20× month starts fresh on 11-05 (dima o153, 2026-10-13) — set 2026-10-13
+⏰ 🦉💸 2026-11-03: dima turns off auto-renew on max $100 (≥24 h before the 11-05 renewal), billing settings; the 20× month starts fresh on 11-05 (dima o153, 2026-10-13) — set 2026-10-13 · due: 2026-11-03
 
-⏰ 🦉💸 2026-11-05: dima buys max 20× (~$240 with VAT), right after his weekly reset (Settings → Usage), then auto-renew off again; the month measures the real weekly cap vs 5× (~1.6–2.3× by user reports) — set 2026-10-13
+⏰ 🦉💸 2026-11-05: dima buys max 20× (~$240 with VAT), right after his weekly reset (Settings → Usage), then auto-renew off again; the month measures the real weekly cap vs 5× (~1.6–2.3× by user reports) — set 2026-10-13 · due: 2026-11-05
 
 ⏰ 🦉🧬 stryker resumes when [stryker-js#6210](https://github.com/stryker-mutator/stryker-js/issues/6210) closes fixed (watched in x-changedetector): then `pnpm up @stryker-mutator/core @stryker-mutator/vitest-runner`, rerun the day-0 round, unfreeze `docs/test-drive/stryker.md` and tell dima (his ask, 2026-10-15) — set 2026-10-15
 

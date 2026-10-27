@@ -123,6 +123,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-25 · prompt-groom · 1 · 0 · groom-1541-1545 chore2 W244-W255 12 lines, all sentences mapped
 - 2026-10-27 · inbox-prep · 0 · 0 · consult 1: charter inbox-prep.md outside cclio/ not found, no grooming done
 - 2026-10-27 · inbox-prep · 1 · 0 · inbox-composer.md written, check 4/4, 4 items 3 asks
+- 2026-10-27 · prompt-groom · 1 · 0 · 16:09 prompt groomed W265-W271, 11/11 sentences mapped
 
 ## rounds
 
@@ -140,3 +141,4 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 - 2026-10-20 · **adopted, then reopened the same hour** (dima, 15:59: «how much effort did composer save for yourself?» — never measured: the 10-14 attempt had no fixed ruler, and on 10-20 cclio routed only the inbox prep to composer and wrote every pocket item herself). the quality numbers stand: 49 rounds, 61 of 65 chores green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), inbox prep 79 → 86 over five rounds. the separate inbox-composer.md stays (dima, 2026-10-20: «let's keep both inbox files for now»). the start command and the receipt log stay in this file as the record.
 - 2026-10-22 · **adopted** (dima's o33): 61 of 65 chores green first pass, 1 rework (1.5 %); its grooming lost 1.4 % of his points against cclio's 9.4 % at first use (10-21 audit), so it becomes the one grooming runner; the effort it saves cclio was never measured on a fixed ruler — today's volume: 1 chore (the inbox prep)
+- 2026-10-27 · prompt-groom · 0 · 1 · 16:09 W265–W271: stamp at line end, not after the number (the check reads it first); two wispr mishears kept («worse»→worth, «math»→matt's), cclio reshaped
