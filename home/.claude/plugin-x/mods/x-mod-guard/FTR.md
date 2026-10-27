@@ -8,10 +8,10 @@
 ## every Bash call
 
 - ✅ a floor command is refused with its door
-  - given a Bash call runs one of: `rm` or `unlink` (also `xargs rm`, `find -delete`, `find -exec rm`); a kill by pattern (`pkill`, `killall`, a `kill` fed by `pgrep`, `ps`, `grep` or `awk`); `git reset --hard`, `git checkout --`, `.` or `-f`, `git restore` of the worktree, `git clean -f`, `git stash drop|clear`; `git push --force|-f|--force-with-lease|--delete` or a `+ref` / `:ref` refspec, `git branch -D` or `-d -f`, `git worktree remove|prune`; `--no-verify` or `--no-gpg-sign` on `git` or `x`, `git commit -n`, `-c commit.gpgsign=false`, `-c user.name|user.email`, `git config user.name|user.email <value>`; a `mv` in the obsidian vault; a `HOME=` override; `npm -g` or `--location=global`; `pip install`
+  - given a Bash call runs one of: `rm` or `unlink` (also `xargs rm`, `find -delete`, `find -exec rm`); a kill by pattern (`pkill`, `killall`, a `kill` fed by `pgrep`, `ps`, `grep` or `awk`); `git reset --hard`, `git checkout --`, `.` or `-f`, `git restore` of the worktree, `git clean -f`, `git stash drop|clear`; `git push --force|-f|--force-with-lease|--delete|--mirror` or a `+ref` / `:ref` refspec, `git branch -D` or `-d -f`, `git worktree remove|prune`; `--no-verify` or `--no-gpg-sign` on `git` or `x`, `git commit -n`, `-c commit.gpgsign=false`, `-c user.name|user.email`, `git config user.name|user.email <value>`; a `mv` in the obsidian vault; a `HOME=` override; `npm -g` or `--location=global`; `pip install`
   - and wherever it sits: behind `sudo -u <user>`, `env`, `timeout`, `nice`, `xargs`; inside `if`, `for`, `while`, `{ … }`; inside a `$( … )` or backticks, quoted or not; in a `bash -c` / `-lc` script or an `eval`
   - when x-mod-guard reads it
-  - then that one command is refused, and the reason opens with the door: `trash`, `claude stop <id>`, `git stash -u`, the `obsidian` cli, `uv pip install`, `brew` / `pnpm add -g`, a run without the flag, `x lane rebase-main` for a force-push (a coder/* branch; any other, «ask cclio») — and «ask cclio» only for a remote branch delete, a local branch delete, `git worktree remove|prune` and a x-mod-stash drop, where no safe door exists
+  - then that one command is refused, and the reason opens with the door: `trash`, `claude stop <id>`, `git stash -u`, the `obsidian` cli, `uv pip install`, `brew` / `pnpm add -g`, a run without the flag, `x lane rebase-main` for a force-push (a coder/* branch; any other, «ask cclio») — and «ask cclio» only for a mirror push (its escape names the remote, `# dima-ok: origin`), a remote branch delete, a local branch delete, `git worktree remove|prune` and a x-mod-stash drop, where no safe door exists
   - proven live 2026-10-05: a headless `claude -p --plugin-dir x-mod-guard` was told to `rm` a scratch file; the call was refused with the trash door, the file stayed, the event landed in x-mod-guard's store
   - decision: a refusal stops one command, never the session — no dialog, so a missed click can never stall a coder; the coder finds its own way around (dima, FRM-321)
   - decision: quoted text, heredoc bodies and comments are never read as commands — a commit message may name `rm -rf`
@@ -114,10 +114,10 @@
     - silent overwrite: a `>` (or `2>`, `&>`) redirect onto a file that exists, `: > file` included; `cp /dev/null <file>`; `mv`, or `cp -f`, onto a file that exists, or into a dir that holds a file of that name
     - history: `git filter-repo`, `git filter-branch`, `git gc --prune=now`
     - prune: `brew cleanup`, `pnpm store prune`, `docker system prune`, `crontab -r`
-    - remote delete: `gh repo|release delete*`, `vercel rm|remove` and `vercel env rm`, `op <item|…> delete|rm|remove`, `security delete-*`, `linear issue delete`, an `issueDelete` mutation sent by `curl` or `linear`
+    - remote delete: `gh repo|release delete*`, `vercel rm|remove` and `vercel env rm`, `op <item|…> delete|rm|remove`, `security delete-*`, `linear issue delete`, an `issueDelete` mutation sent by `curl` or `linear`, `railway delete|rm` and `railway <environment|variable|service|volume|…> delete|rm|remove` (FRM-413)
     - top dir: `trash` of `/`, `~`, a dir above it, a dir right under it (`~/Documents`, `~/.config`) or the obsidian vault root; `defaults delete <domain>` with no key, or `-g` with none
   - then it is refused, and the reason opens with the door: «ask cclio» for a disk, a device, history or a remote delete; «hand dima the step» for `csrutil`, `spctl` and `tccutil`; «hand dima the command» for `sudo`; «leave the prune to dima — name it in your report»; `>>`, a new path or the Write tool for a redirect; `mv -n` / `cp -n` or trash the old file first; «cancel it» for a linear issue; trash the files inside, by name; one `defaults` key
-  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `trash` of a file in `~/Documents`, of one regular file right under `~` (a dotfile like `~/.zcompdump`; a symlink stays refused) or a note in the vault, `defaults delete <domain> <key>` (PK-167)
+  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `railway variables --kv`, `railway status`, `trash` of a file in `~/Documents`, of one regular file right under `~` (a dotfile like `~/.zcompdump`; a symlink stays refused) or a note in the vault, `defaults delete <domain> <key>` (PK-167)
   - then `sudo` ahead of a floor command keeps the floor's door (`sudo rm` → trash)
   - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
   - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list); a file under a claude session's own scratchpad is never an overwrite (PK-138)
@@ -185,11 +185,11 @@
   - decision: every session, cclio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70)
 
-- ⬜ a backlog notes edit that would wipe notes names `--append-notes`, warn-only (PK-150)
-  - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above — holds text between its `SECTION:NOTES` markers
-  - then it runs, and the model reads «would refuse» with `backlog task edit <id> --append-notes <text>` named; with `rule-mode:notes-replace` = «enforce» nothing runs
+- ✅ a backlog notes edit that would wipe notes is refused naming `--append-notes` (PK-150, FRM-425)
+  - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (cclio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
+  - then nothing runs, and the refusal names `backlog task edit <id> --append-notes <text>`
   - given an empty notes block, no notes section, `--append-notes`, or an id no task file matches, then it runs unwarned
-  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the spec's «refused» waits for that clean
+  - decision: refuse, out of `WARN_ONLY`: the warn stage ran since the rule was built, and FRM-425's verifier clean is the flip
 
 - ✅ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
   - decision: warned for a week, refused from 2026-10-18 (dima's o234): 0 raw-linear warnings in the week's otel tap
@@ -235,14 +235,23 @@
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
 
+- ✅ a linear ticket put into a project with milestones names one (FRM-417, FRM-425)
+  - given a Bash `linear issue create|update|edit --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId`
+  - and `<p>` (its name, slug or id) holds milestones, as one `x linear api` projects read says, kept in x-mod-guard's store for a day
+  - when x-mod-guard reads it
+  - then it is refused: «pick a milestone, or propose one»
+  - given the same call with `--milestone "<name>"`, a create with no project, a project with no milestones, or a command that only mentions `--project` (`git commit -m "guard --project"`, `rg -- '--project' .`), then it runs
+  - given linear cannot be read, then it runs, and the model reads «the milestone check was skipped» naming the project
+  - decision: fail open on an unread linear, like pocket-check's closed-ticket net; tickets already outside a milestone are never read (dima's FRM-417 call)
+
 ## every SendMessage
 
-- ⬜ a coder's job of 3+ items goes through a spec, warn-only (dima's o143)
-  - given a `SendMessage` to a session whose name carries `🔧` or `coder`, holding 3 or more lines that open with an item number (`1.` or `1)`), outside a code fence, and no `.scratch/<feature>/spec.md` path
+- ✅ a lane job to a coder or verifier goes through a spec (dima's o143, FRM-425)
+  - given a `SendMessage` to a session whose name carries `🔧`, `🔎`, `coder` or `verifier`, with no `.scratch/<feature>/spec.md` path, holding lines that open with an item number (`1.` or `1)`) outside a code fence: 1 or more when it names a ticket (`FRM-N`, `BYT-N`), 3 or more when it names none
   - when x-mod-guard reads it
-  - then it is sent, the model gets «x-mod-guard would refuse this (rule spec, …): a 3+-item job goes through a spec (cclio:shape-lane-dispatch § 6); write the job to .scratch/<feature>/spec.md and send its path», and a `warned` guard event is kept
-  - given 1 or 2 items, a list in a `>` quote or a code fence, a spec path, or a session not named a coder, then it is sent unwarned
-  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); `rule-mode:spec` = «enforce» refuses it unsent
+  - then it is refused unsent: «a lane job goes through a spec (cclio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
+  - given no item, 1 or 2 items with no ticket, a list in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), or a session not named a coder or verifier, then it is sent
+  - decision: refuse, out of `WARN_ONLY`: FRM-425's verifier clean is the flip
   - decision: fail open — a message is never stopped by a broken check
 
 ## every Edit and Write

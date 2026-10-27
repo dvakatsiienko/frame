@@ -23,6 +23,10 @@ export type Context = {
     manifestDirs?: Set<string>;
     // the backlog tasks a `--notes` edit names whose file already holds notes, keyed by notes.ts's notedKey
     notedTasks?: Set<string>;
+    // the linear projects that hold milestones, each by id, name and slug, lowercased (milestone.ts)
+    milestoneProjects?: Set<string>;
+    // the projects a linear call moves tickets into while linear could not be read: the milestone check skipped them
+    milestoneUnread?: string[];
 };
 // a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
 export type Brief = { isCoder: boolean; isStamped: boolean };

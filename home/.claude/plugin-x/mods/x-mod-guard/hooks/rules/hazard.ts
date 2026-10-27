@@ -123,6 +123,13 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
             `vercel ${ops.slice(0, vercelAt + 1).join(' ')}`,
             or(ops.slice(vercelAt + 1), 'vercel'),
         );
+    // `railway delete` takes the project; `railway <environment|variable|service|volume|…> delete` one part of it
+    const railwayAt = ops.slice(0, 2).findIndex((o) => DELETE.has(o));
+    if (c.name === 'railway' && railwayAt >= 0)
+        return remote(
+            `railway ${ops.slice(0, railwayAt + 1).join(' ')}`,
+            or(ops.slice(railwayAt + 1), 'railway'),
+        );
     if (c.name === 'op' && DELETE.has(ops[1] ?? ''))
         return remote(`op ${ops[0]} ${ops[1]}`, or(ops.slice(2), 'op'));
     if (c.name === 'security' && /^delete-/.test(ops[0] ?? ''))

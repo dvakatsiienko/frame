@@ -4,6 +4,7 @@ import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { hints, slowHint, slowShapes } from './rules/hint.ts';
+import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
@@ -40,6 +41,19 @@ export type GuardEvent = {
 };
 
 type Tally = { refused: number; escaped: number; warned?: number };
+// what `x linear api` prints for PROJECTS_QUERY
+type ProjectsReply = {
+    data?: {
+        projects?: {
+            nodes?: {
+                id: string;
+                name: string;
+                slugId: string;
+                projectMilestones: { nodes: unknown[] };
+            }[];
+        };
+    };
+};
 // rules: the same tally split by the rule that fired, so noise and real catches separate
 export type DayCount = Tally & { rules?: Record<string, Tally> };
 
@@ -107,7 +121,16 @@ async function readBrief(
     };
 }
 
-// backlog finds its project from the root up; a task file is `<id> - <title>.md` under `.backlog/tasks` or `backlog/tasks`
+// the dir a repo's `backlog.config.yml` names as `backlog_directory` (cclio's pocket: `pocket`), else none
+async function backlogDir($: EngineInterface, dir: string) {
+    const config = await $.fs.read(`${dir}/backlog.config.yml`).catch(() => '');
+    return config
+        .match(/^backlog_directory:\s*["']?([^"'#\n]+?)["']?\s*(#.*)?$/m)?.[1]
+        ?.trim();
+}
+
+// backlog finds its project from the root up; a task file is `<id> - <title>.md` under the configured dir's `tasks`,
+// else `.backlog/tasks` or `backlog/tasks`
 async function isTaskNoted(
     $: EngineInterface,
     root: string,
@@ -116,7 +139,11 @@ async function isTaskNoted(
 ) {
     const prefix = `${id.toLowerCase()} - `;
     for (let dir = root; dir && dir !== '/' && dir !== home; ) {
-        for (const tasks of [`${dir}/.backlog/tasks`, `${dir}/backlog/tasks`]) {
+        const configured = await backlogDir($, dir);
+        const dirs = configured
+            ? [`${dir}/${configured}/tasks`]
+            : [`${dir}/.backlog/tasks`, `${dir}/backlog/tasks`];
+        for (const tasks of dirs) {
             const names = await $.fs.list(tasks).catch(() => undefined);
             if (!names) continue;
             const file = names.find((n) =>
@@ -198,9 +225,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
-    'notes-replace',
     'raw-plugin-update',
-    'spec',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
@@ -547,8 +572,52 @@ async function lookUp(
     for (const edit of notesEdits(command, cwd, ctx))
         if (await isTaskNoted($, edit.root, edit.id, ctx.home))
             notedTasks.add(notedKey(edit));
-    return { briefs, cleanTrees, kinds, manifestDirs, missing, notedTasks };
+    const moves = projectMoves(command, cwd);
+    const milestoneProjects = moves.length
+        ? await projectsWithMilestones($).catch(() => undefined)
+        : undefined;
+    return {
+        briefs,
+        cleanTrees,
+        kinds,
+        manifestDirs,
+        milestoneProjects,
+        milestoneUnread:
+            moves.length && !milestoneProjects
+                ? moves.map((m) => m.project)
+                : [],
+        missing,
+        notedTasks,
+    };
 }
+
+// the projects that hold milestones, read from linear once a day; it throws when linear cannot be read, and the call
+// then runs with a warn (fail open, like pocket-check's closed-ticket net)
+const MILESTONES = 'linear-milestones';
+const DAY_MS = 86_400_000;
+const PROJECTS_QUERY =
+    '{ projects(first: 250) { nodes { id name slugId projectMilestones(first: 1) { nodes { id } } } } }';
+async function projectsWithMilestones($: EngineInterface) {
+    const now = await $.clock.now();
+    const kept = (await $.store.get(MILESTONES).catch(() => undefined)) as
+        | { at: number; keys: string[] }
+        | undefined;
+    if (kept && now - kept.at < DAY_MS) return new Set(kept.keys);
+    const run = await $.process.run(['x', 'linear', 'api', PROJECTS_QUERY], {
+        timeoutMs: 8000,
+    });
+    if (run.exitCode !== 0) throw new Error(run.stderr);
+    const nodes = (JSON.parse(run.stdout) as ProjectsReply).data?.projects
+        ?.nodes;
+    if (!nodes) throw new Error('linear sent no projects');
+    const keys = nodes
+        .filter((n) => n.projectMilestones.nodes.length)
+        .flatMap((n) => [n.id, n.name, n.slugId].map((k) => k.toLowerCase()));
+    await $.store.set(MILESTONES, { at: now, keys });
+    return new Set(keys);
+}
+const milestoneSkipped = (projects: string[]) =>
+    `x-mod-guard: the milestone check was skipped — linear could not be read, so whether ${projects.join(', ')} holds milestones is unknown; name --milestone if it does`;
 
 // a foreground Bash that held the session over a minute is remembered by its shapes; the next foreground run of one
 // reads a hint toward run_in_background (dima's o113: the 2-minute gates of 10-14 added up)
@@ -591,10 +660,8 @@ export const register: Register = (on) => {
             isCclio: isUnder(root, `${home}/frame/cclio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
         };
-        const verdict = check(command, cwd, {
-            ...ctx,
-            ...(await lookUp($, command, cwd, ctx)),
-        });
+        const facts = await lookUp($, command, cwd, ctx);
+        const verdict = check(command, cwd, { ...ctx, ...facts });
         // a worktree session whose shell `cd`ed out (`cd ~/frame && …`) is refused for the wrong tree; the root still names its own
         const drift =
             root.includes('/.claude/worktrees/') &&
@@ -625,6 +692,9 @@ export const register: Register = (on) => {
                       ]
                     : []),
                 ...(drift && result.isError ? [drift] : []),
+                ...(facts.milestoneUnread?.length
+                    ? [milestoneSkipped(facts.milestoneUnread)]
+                    : []),
                 ...(isQuiet ? [] : hints(command, cwd, ctx)),
                 ...(isQuiet ? [] : slow),
             ];
