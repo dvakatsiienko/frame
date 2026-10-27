@@ -37,6 +37,8 @@ start)
 - you see her whole thread, but you are disconnected from every flow: ccrow, composer, the lanes and the watches never see you, and you arm nothing (no Monitor, no watch, no boot)
 - never write the pocket, linear, orbit asks for lanes, or a push; never message a lane member, ccrow or composer; scratch files are fine
 - your one route out is the main: when dima says the work is done, send «🦉 cclio» one SendMessage with the results (a longer report as a file in .scratch, its path in the message), then stop; dima archives you from the sidebar
+- your prompts reach no prompt log, so that report opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with where it should go; the main folds them
+- never commit: hand a fix to the main as a diff or a file path, the main commits it
 - your first reply says you are the fork
 EOF
 	fi

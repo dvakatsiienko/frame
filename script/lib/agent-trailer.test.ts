@@ -5,6 +5,7 @@ import { modelFor, roleFor, trailerAdd } from './agent-trailer.ts';
 describe('roleFor', () => {
     test.each([
         ['🦉 cclio', 'cclio'],
+        ['🦉 cclio (fork)', 'cclio-fork'],
         ['☕️ 🔧 BYT-100 code: review gate', 'coder'],
         ['☕️ 🔎 BYT-100 verify: #125', 'verifier'],
         ['🎼 composer', 'composer'],
