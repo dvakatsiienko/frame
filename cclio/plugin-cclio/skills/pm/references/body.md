@@ -8,7 +8,7 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 
 - `lane: main|side|quick|shift` — the first line, the kind word only; `repo: <name>` under it once signed (`cclio:shape-lane` § 3)
 - **wish** — dima's words, folded (`cclio/memory/craft-pm.md` § wishes), one point per numbered W-line; his raw drop stays in the pocket notes, linked (`craft-pm` § wishes)
-- **dima notes** — his later asks, notes and verdicts on the ticket, folded and dated; the ask-guard reads them before any close
+- **dima notes** — his later notes and verdicts, folded and dated, read by the ask-guard; a later ask joins the wish block as W-lines
 - **why** — what hurts today
 - **stories** — 3–8 lines, «as dima, i …»
 - **proposed** — his vision of the solve, open until a grill moves a line to decided

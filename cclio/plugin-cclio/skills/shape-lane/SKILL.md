@@ -35,7 +35,7 @@ load `mattpocock-skills:grilling` and run its ❓ round as written — the front
 
 ## 3 · what the sign carries
 
-dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane takes one milestone's chunks); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation); and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess.
+dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane takes one milestone's chunks); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess.
 
 ## 4 · the sign
 

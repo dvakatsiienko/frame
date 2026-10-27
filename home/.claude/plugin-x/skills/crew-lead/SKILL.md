@@ -65,7 +65,7 @@ the split is **disposable vs watchable**, never research vs code.
   - `spec:` is the lane's spec path, so the verifier grades the spec's exit lines; it comes after the four arguments, before `trials:`
   - the loop is `x:crew-dna` § the pr pair; a spawn note never says «report to me only», which overrides that loop
 - **names** — `<mode> <role emoji> <ticket> <role word>: <what>`. the mode leads: `🌗` a side lane, `⚡` a quick lane, `🌘` a shift (`cclio:shift`). role words: `🔧 code:` `🔬 research:` `🧪 probe:` `⏰ area:` `🔎 verify:` `☁️ cloud:`. a lane's unit is its ticket, a shift's its shift name, and a shift member pings only when fully done or blocked. `-n` is the registry name, typed for every child, probes and cloud sessions included; `--remote-control <name>` labels only the rc card. a brief names a member by its registry name, never a session id. a rename is a typed `/rename` inside that session; the `Agent` tool's `name` bans emoji, colons and spaces.
-- **ticket** — pass the id; the id rides the branch name and the pr body, never a closing keyword. cclio verifies, then closes, with the closing word in the body.
+- **ticket** — pass the id; the id rides the branch name and the pr body, never a closing keyword. cclio verifies, then proposes the close by `cclio:pm` `references/closing.md`; dima's word closes it, with the closing word in the body.
 - **identity** — the brief carries what `x:crew-coder` names: the coder token, the done-comment cap of § 6. dima on uncapped ones: «comments are poems for me».
 - **the glide** — the lane's 🛼 glide card links the member the turn it spawns (orbit op `glide`, act `link`, role `coder` or `verifier`, `session` = the id `claude --bg` prints); the next siesta or the halt ends it ([watching.md](watching.md)).
 
