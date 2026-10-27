@@ -1,0 +1,104 @@
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, test } from 'vitest';
+
+const GUARD = join(
+    import.meta.dirname,
+    '..',
+    '.claude',
+    'hooks',
+    'fork-guard.sh',
+);
+const DEAD_PID = '999999';
+
+function run(
+    args: string[],
+    pid: string,
+    state: string,
+    input = '{"session_id":"s-1","source":"startup"}',
+) {
+    return spawnSync('bash', [GUARD, ...args], {
+        encoding: 'utf8',
+        env: {
+            ...process.env,
+            FORK_GUARD_CC_PID: pid,
+            FORK_GUARD_STATE: state,
+        },
+        input,
+    });
+}
+
+describe('fork-guard', () => {
+    test('the first session to start becomes the main and records its pid', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        const out = run(['start'], String(process.pid), state);
+        expect(out.status).toBe(0);
+        expect(out.stdout).toBe('');
+        expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
+            `pid=${process.pid}`,
+        );
+    });
+
+    test('a second live session in the folder is a fork and gets the banner', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${process.pid}\nsession=s-main\n`,
+        );
+        const out = run(
+            ['start'],
+            String(process.ppid),
+            state,
+            '{"session_id":"s-fork","source":"resume"}',
+        );
+        expect(out.stdout).toContain('you are a fork of cclio');
+        expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
+            'session=s-main',
+        );
+    });
+
+    test('a session whose recorded main pid is dead takes over as the main', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${DEAD_PID}\nsession=s-old\n`,
+        );
+        const out = run(['start'], String(process.pid), state);
+        expect(out.stdout).toBe('');
+        expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
+            `pid=${process.pid}`,
+        );
+    });
+
+    test('main-only runs its command for the main and passes stdin through', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${process.pid}\nsession=s-main\n`,
+        );
+        const out = run(
+            ['main-only', '--', 'cat'],
+            String(process.pid),
+            state,
+            'hook-json',
+        );
+        expect(out.stdout).toBe('hook-json');
+    });
+
+    test('main-only skips its command in a fork', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${process.pid}\nsession=s-main\n`,
+        );
+        const out = run(
+            ['main-only', '--', 'echo', 'ran'],
+            String(process.ppid),
+            state,
+        );
+        expect(out.status).toBe(0);
+        expect(out.stdout).toBe('');
+    });
+});

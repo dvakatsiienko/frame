@@ -14,12 +14,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/cclio/.claude/hooks/session-probe.sh",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh start"
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/cclio/.claude/hooks/session-probe.sh'",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/cclio/.claude/hooks/boot-prefetch.sh"
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/cclio/.claude/hooks/boot-prefetch.sh'"
           }
         ]
       },
@@ -28,11 +32,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/cclio/.claude/hooks/shift-recompact.sh"
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/cclio/.claude/hooks/shift-recompact.sh'"
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/cclio/.claude/hooks/compact-carry.sh"
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/cclio/.claude/hooks/compact-carry.sh'"
           }
         ]
       }
@@ -43,13 +47,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
             "if": "Bash(gh pr merge*)",
             "timeout": 120
           },
           {
             "type": "command",
-            "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
             "if": "Bash(claude *)",
             "timeout": 30
           },
@@ -98,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
             "timeout": 30
           }
         ]
@@ -109,7 +113,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm -C /Users/dima/frame --silent ccrow:relay",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:relay'",
             "timeout": 10
           },
           {
@@ -130,17 +134,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {}",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {}'",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "pnpm -C /Users/dima/frame --silent ccrow:unvetted",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:unvetted'",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/cclio/.claude/hooks/session-probe.sh",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/cclio/.claude/hooks/session-probe.sh'",
             "timeout": 5
           }
         ]
@@ -151,7 +155,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {} --precompact",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {} --precompact'",
             "timeout": 30
           }
         ]
