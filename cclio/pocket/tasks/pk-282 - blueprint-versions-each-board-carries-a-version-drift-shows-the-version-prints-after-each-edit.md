@@ -18,6 +18,6 @@ ordinal: 99999
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-- W282 · also: add support for versioning to a blueprint, so i see if it drifted, and print the blueprint's latest version after each edit. (2026-10-27 18:50, dima)
+- W282 (2026-10-27 18:50, dima): add support for versioning to a blueprint, so i see if it drifted, and print the blueprint's latest version after each edit.
 - ? shape-idea or a plain ticket: proposed in orbit (o63)
 <!-- SECTION:DESCRIPTION:END -->
