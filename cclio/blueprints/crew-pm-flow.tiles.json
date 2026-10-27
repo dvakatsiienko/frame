@@ -387,7 +387,7 @@
             "id": "6:317",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">spawned by dima only, in his own tab</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">spawned by dima in his own tab; always a quick lane on main: one chunk, then parks for the 5h pace</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -419,7 +419,7 @@
             "id": "6:325",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🍴 /fork</b><br><span style=\"font-size:20px\">dima&#x27;s door: copies this thread</span>",
+            "value": "<b style=\"font-size:26px\">🍴 /fork or /btw</b><br><span style=\"font-size:20px\">dima's side-research door: banner, edits only in its own worktree, reports to the main; /btw from a fork is read-only</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -435,7 +435,7 @@
             "id": "6:329",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎼 the sidecars</b><br><span style=\"font-size:20px\">ccrow + composer start in cclio:boot</span>",
+            "value": "<b style=\"font-size:26px\">🎼 the sidecars</b><br><span style=\"font-size:20px\">ccrow + composer start in cclio:boot; composer takes chores only from «🦉 cclio» exactly</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -675,7 +675,7 @@
             "id": "6:407",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔧 the coder works</b><br><span style=\"font-size:20px\">its worktree (pr) or main (quick lane)</span>",
+            "value": "<b style=\"font-size:26px\">🔧 the coder works</b><br><span style=\"font-size:20px\">a side lane in its worktree (pr); a quick lane on main, committing as it goes, cclio pushes</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -707,7 +707,7 @@
             "id": "6:415",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📡 pr-watch: «opened»</b><br><span style=\"font-size:20px\">cclio spawns the verifier</span>",
+            "value": "<b style=\"font-size:26px\">📡 «opened» or «final»</b><br><span style=\"font-size:20px\">pr-watch on a side lane, the coder's «final» on a quick lane → cclio spawns the verifier (main:&lt;sha&gt;)</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -723,7 +723,7 @@
             "id": "6:419",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔁 coder ↔ verifier</b><br><span style=\"font-size:20px\">rounds, cap 3; cclio hears none</span>",
+            "value": "<b style=\"font-size:26px\">🔁 coder ↔ verifier</b><br><span style=\"font-size:20px\">rounds, cap 3; cclio hears none; a round-3 stop is cclio's call, told to dima as info</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -851,7 +851,7 @@
             "id": "6:466",
             "parent": "6:463",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ verifier clean</b><br><span style=\"font-size:20px\">recorded by pr-watch.sh --verified</span>",
+            "value": "<b style=\"font-size:26px\">✅ verifier clean</b><br><span style=\"font-size:20px\">pr-watch --verified on a pr; its exit line on a quick lane</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -883,7 +883,7 @@
             "id": "6:474",
             "parent": "6:463",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔀 merge</b><br><span style=\"font-size:20px\">by the gate in pr-flow.md; risky paths named; a self-edit or the brake waits for dima</span>",
+            "value": "<b style=\"font-size:26px\">🔀 land</b><br><span style=\"font-size:20px\">a pr merges by the gate in pr-flow.md, risky paths named, a self-edit or the brake waits for dima; a quick lane: cclio pushes main</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2289,7 +2289,7 @@
             "id": "7:233",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
-            "value": "x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-23",
+            "value": "x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-27",
             "vertex": "1"
         },
         "geometry": {
