@@ -553,6 +553,44 @@ describe('wish accounting', () => {
         ).toEqual([red]);
     });
 
+    describe('the copy into its ticket', () => {
+        const moved = task(
+            {
+                created_date: '2026-10-22 09:00',
+                status: 'done',
+                type: 'wish',
+                updated_date: '2026-10-22 09:00',
+            },
+            '- W1 keep the dark board\n- W2 and the halt view\nticket: FRM-9\n<!-- SECTION:NOTES:BEGIN -->\nclose: W1 W2 moved to FRM-9\n<!-- SECTION:NOTES:END -->',
+        );
+        const run = (block: string) =>
+            checkPocket(
+                wishConfig,
+                [moved],
+                wishToday,
+                '',
+                () => true,
+                new Set(),
+                new Map([['FRM-9', block]]),
+            );
+
+        test('a W-line missing from the ticket wish block goes red', () => {
+            expect(run('* W7 (2026-10-22, dima): keep the dark board')).toEqual(
+                [
+                    'PK-1: W2 moved to FRM-9 but not in its wish block: copy it there verbatim',
+                ],
+            );
+        });
+
+        test('every W-line copied, renumbered, passes', () => {
+            expect(
+                run(
+                    '* W7 (x): keep the dark board\n* W8 (x): and the halt view',
+                ),
+            ).toEqual([]);
+        });
+    });
+
     test('a close: line citing every W-id passes', () => {
         expect(
             checkPocket(

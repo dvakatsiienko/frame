@@ -8,7 +8,7 @@ import {
     newUnstamped,
     ungroomedStamps,
 } from './prompt-groom.ts';
-import { citedIds, wishLines } from './wish-cover.ts';
+import { citedIds, normalize, wishBlock, wishLines } from './wish-cover.ts';
 
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
 const NOW_CAP = 3;
@@ -40,6 +40,7 @@ export function checkPocket(
     lastTriage = '',
     isGroomed: Groomed = groomedOnDisk,
     closedTickets: ReadonlySet<string> = new Set(),
+    wishBlocks: ReadonlyMap<string, string> = new Map(),
 ): string[] {
     const config = {
         labels: listOf(configText, 'labels'),
@@ -95,6 +96,33 @@ export function checkPocket(
                 report(
                     'closed without accounting for W-lines: add a `close:` line citing each as done, moved or dropped',
                 );
+        }
+        // the pocket item dies when its ticket is born, so the copy into the ticket's wish block is the only home left
+        if (
+            status === 'done' &&
+            (born >= WISH_RULES_FROM || touched >= WISH_RULES_FROM)
+        ) {
+            const dropped = citedIds(
+                noteLines(text)
+                    .filter(
+                        (line) => CLOSE_LINE.test(line) && /drop/i.test(line),
+                    )
+                    .join('\n'),
+            );
+            for (const ticket of ticketsOf(text)) {
+                const block = wishBlocks.get(ticket);
+                if (block === undefined) continue;
+                const home = normalize(block);
+                for (const [wishId, words] of wishLines(text))
+                    if (
+                        words &&
+                        !dropped.has(wishId) &&
+                        !home.includes(normalize(words))
+                    )
+                        report(
+                            `${wishId} moved to ${ticket} but not in its wish block: copy it there verbatim`,
+                        );
+            }
         }
         if (status === 'done') {
             if (touched < today)
@@ -239,26 +267,33 @@ export function ticketsOf(text: string): string[] {
     );
 }
 
-function closedOf(ids: string[]): Set<string> {
-    if (ids.length === 0) return new Set();
-    let tickets: LinearRead['data']['tickets'];
-    try {
-        const out = execFileSync('x', ['linear', 'read', ...ids], {
-            encoding: 'utf8',
-            timeout: 15_000,
-        });
-        tickets = (JSON.parse(out) as LinearRead).data.tickets;
-    } catch {
-        console.error('🟡 linear not read — the closed-ticket net skipped');
-        return new Set();
-    }
-    return new Set(
-        tickets
-            .filter((ticket) =>
-                ['completed', 'canceled'].includes(ticket.stateType),
-            )
-            .map((ticket) => ticket.id),
-    );
+function readTickets(ids: string[]) {
+    let tickets: LinearRead['data']['tickets'] = [];
+    if (ids.length > 0)
+        try {
+            const out = execFileSync('x', ['linear', 'read', ...ids], {
+                encoding: 'utf8',
+                timeout: 15_000,
+            });
+            tickets = (JSON.parse(out) as LinearRead).data.tickets;
+        } catch {
+            console.error('🟡 linear not read — the ticket net skipped');
+        }
+    return {
+        closed: new Set(
+            tickets
+                .filter((ticket) =>
+                    ['completed', 'canceled'].includes(ticket.stateType),
+                )
+                .map((ticket) => ticket.id),
+        ),
+        wishBlocks: new Map(
+            tickets.map((ticket) => [
+                ticket.id,
+                wishBlock(ticket.description ?? ''),
+            ]),
+        ),
+    };
 }
 
 function listOf(configText: string, key: string): string[] {
@@ -478,14 +513,18 @@ if (import.meta.main) {
     const lastTriage = existsSync(stamp)
         ? readFileSync(stamp, 'utf8').trim()
         : '';
-    const open = tasks.filter(({ text }) => !/^status: done$/m.test(text));
+    // done items are read too: a done item still listed is the only witness of its W-lines' copy
+    const { closed, wishBlocks } = readTickets([
+        ...new Set(tasks.flatMap(({ text }) => ticketsOf(text))),
+    ]);
     const problems = checkPocket(
         readFileSync(join(root, 'backlog.config.yml'), 'utf8'),
         tasks,
         today,
         lastTriage,
         groomedOnDisk,
-        closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
+        closed,
+        wishBlocks,
     );
     const head = headFromGit(root);
     problems.push(
@@ -511,7 +550,9 @@ interface Head {
 }
 
 interface LinearRead {
-    data: { tickets: { id: string; stateType: string }[] };
+    data: {
+        tickets: { id: string; stateType: string; description?: string }[];
+    };
 }
 
 interface Task {

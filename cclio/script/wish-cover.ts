@@ -51,7 +51,7 @@ export function sectionsFor(draft: string, id: string) {
     return picked.length > 0 ? picked.join('\n') : draft;
 }
 
-function normalize(text: string) {
+export function normalize(text: string) {
     return text
         .replace(/\[[^\]]*\]\(<?([^)>\s]+)>?\)|<(https?:[^>\s]+)>/g, '$1$2')
         .toLowerCase()
