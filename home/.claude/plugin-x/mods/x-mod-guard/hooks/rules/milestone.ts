@@ -51,8 +51,12 @@ function projectMove(c: Command): ProjectMove | undefined {
     const linear = linearWords(c);
     if (!linear) return undefined;
     const { isX, words } = linear;
-    // the verb follows any global flag and its value (`--as coder`, `--team FRM`)
-    const head = words.findIndex((w) => ['api', 'issue', 'set'].includes(w));
+    // x's verb comes first, after an optional `--as <member>`; the raw cli's may follow a global flag (`--team FRM`)
+    const head = isX
+        ? words[0] === '--as'
+            ? 2
+            : 0
+        : words.findIndex((w) => w === 'api' || w === 'issue');
     if (words[head] === 'api') {
         const text = words.join(' ');
         const id = text.match(PROJECT_ID);

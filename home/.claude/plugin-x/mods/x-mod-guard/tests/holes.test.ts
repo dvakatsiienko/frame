@@ -133,6 +133,13 @@ for (const command of [
     'railway variable delete API_KEY',
     'railway service delete',
     'railway volume delete',
+    'railway ca delete a1',
+    'railway flag delete beta',
+    'railway sandbox destroy',
+    'railway sandbox rm',
+    'railway sbx delete',
+    'railway tcp-proxy delete',
+    'railway down',
 ])
     test(`«${command}» is refused as a remote delete`, async ($, on) => {
         const w = world(on);
@@ -245,6 +252,7 @@ for (const command of [
     'x as coder -- linear issue create -t x',
     'x as coder -- linear issue create --project lab -t x',
     "rg -- '--project' .",
+    'x linear list --search set --project cli',
 ])
     test(`«${command}» runs`, async ($, on) => {
         const w = world(on);

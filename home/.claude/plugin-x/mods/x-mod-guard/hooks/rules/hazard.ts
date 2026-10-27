@@ -23,13 +23,17 @@ const ROOT_STEP = 'hand dima the step — these are his, in System Settings';
 const PRUNE = 'leave the prune to dima — name it in your report';
 const LINEAR = 'linear closes, never deletes — cancel it (state Canceled)';
 const DELETE = new Set(['delete', 'rm', 'remove']);
-// the railway commands with a delete verb, aliases included (`railway --help`, 2026-10-27)
+// the railway commands with a delete verb, aliases included (`railway <cmd> --help`, 2026-10-27); a sandbox's is `destroy`
+const RAILWAY_DELETE = new Set([...DELETE, 'destroy']);
 const RAILWAY_PARTS = new Set([
     'bucket',
     'buckets',
+    'ca',
     'domain',
     'env',
     'environment',
+    'flag',
+    'flags',
     'fn',
     'fns',
     'func',
@@ -38,7 +42,11 @@ const RAILWAY_PARTS = new Set([
     'functions',
     'project',
     'projects',
+    'sandbox',
+    'sandboxes',
+    'sbx',
     'service',
+    'tcp-proxy',
     'var',
     'variable',
     'variables',
@@ -146,12 +154,15 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
             `vercel ${ops.slice(0, vercelAt + 1).join(' ')}`,
             or(ops.slice(vercelAt + 1), 'vercel'),
         );
-    // `railway delete` takes the project, `railway <part> delete` one part; `railway run rm` is a local command
-    const railwayAt = DELETE.has(ops[0] ?? '')
-        ? 0
-        : RAILWAY_PARTS.has(ops[0] ?? '') && DELETE.has(ops[1] ?? '')
-          ? 1
-          : -1;
+    // `railway delete` takes the project, `railway down` the latest deploy, `railway <part> delete` one part;
+    // `railway run rm` is a local command
+    const railwayAt =
+        DELETE.has(ops[0] ?? '') || ops[0] === 'down'
+            ? 0
+            : RAILWAY_PARTS.has(ops[0] ?? '') &&
+                RAILWAY_DELETE.has(ops[1] ?? '')
+              ? 1
+              : -1;
     if (c.name === 'railway' && railwayAt >= 0)
         return remote(
             `railway ${ops.slice(0, railwayAt + 1).join(' ')}`,
