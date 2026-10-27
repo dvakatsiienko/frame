@@ -185,11 +185,11 @@
   - decision: every session, cclio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70)
 
-- ⬜ a backlog notes edit that would wipe notes names `--append-notes`, warn-only (PK-150, FRM-425)
+- ✅ a backlog notes edit that would wipe notes is refused naming `--append-notes` (PK-150, FRM-425)
   - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (cclio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
-  - then it is refused naming `backlog task edit <id> --append-notes <text>` — in the warn stage it runs with that as its «would refuse» note
+  - then nothing runs, and the refusal names `backlog task edit <id> --append-notes <text>`
   - given an empty notes block, no notes section, `--append-notes`, or an id no task file matches, then it runs unwarned
-  - decision: warn-only (`WARN_ONLY`, o70, mods/AGENTS.md): the call runs and the model reads «would refuse» with the door; `rule-mode:notes-replace` = «enforce» refuses early; FRM-425's verifier clean flips it to refuse in its own commit
+  - decision: refuse: the warn stage ran until FRM-425's verifier clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
 
 - ✅ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
   - decision: warned for a week, refused from 2026-10-18 (dima's o234): 0 raw-linear warnings in the week's otel tap
@@ -235,24 +235,24 @@
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
 
-- ⬜ a linear ticket put into a project with milestones names one, warn-only (FRM-417, FRM-425)
+- ✅ a linear ticket put into a project with milestones names one (FRM-417, FRM-425)
   - given a Bash `linear issue create|update|edit --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` (inline, or `$p` with its value in `--vars`) — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId` (or `projectMilestoneId: null`)
   - and `<p>` (its name, slug or id) holds milestones, as one `x linear api` projects read says, kept in x-mod-guard's store for a day
   - when x-mod-guard reads it
   - then it is refused: «pick a milestone, or propose one»
   - given the same call with `--milestone "<name>"`, a create with no project, a project with no milestones, or a command that only mentions `--project` (`git commit -m "guard --project"`, `rg -- '--project' .`), then it runs
   - given linear cannot be read, then it runs, and the model reads «the milestone check was skipped» naming the project
-  - decision: warn-only (`WARN_ONLY`, o70, mods/AGENTS.md): the call runs and the model reads «would refuse» with the door; `rule-mode:milestone` = «enforce» refuses early; FRM-425's verifier clean flips it to refuse in its own commit
+  - decision: refuse: the warn stage ran until FRM-425's verifier clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open on an unread linear, like pocket-check's closed-ticket net; tickets already outside a milestone are never read (dima's FRM-417 call)
 
 ## every SendMessage
 
-- ⬜ a lane job to a coder or verifier goes through a spec, warn-only (dima's o143, FRM-425)
+- ✅ a lane job to a coder or verifier goes through a spec (dima's o143, FRM-425)
   - given a `SendMessage` to a session whose name carries `🔧`, `🔎`, `coder` or `verifier`, with no `.scratch/<feature>/spec.md` path, holding lines that open with an item number (`1.` or `1)`) outside a code fence: 1 or more when it names a ticket (`FRM-N`, `BYT-N`), 3 or more when it names none
   - when x-mod-guard reads it
-  - then it is refused unsent (in the warn stage: sent, with the «would refuse» note): «a lane job goes through a spec (cclio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
+  - then it is refused unsent: «a lane job goes through a spec (cclio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
   - given no item, 1 or 2 items with no ticket, a list or a ticket in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), a session not named a coder or verifier, or a sender that is itself a coder or verifier (its findings, its «final»), then it is sent
-  - decision: warn-only (`WARN_ONLY`, o70, mods/AGENTS.md): the call runs and the model reads «would refuse» with the door; `rule-mode:spec` = «enforce» refuses early; FRM-425's verifier clean flips it to refuse in its own commit
+  - decision: refuse: the warn stage ran until FRM-425's verifier clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open — a message is never stopped by a broken check
 
 ## every Edit and Write

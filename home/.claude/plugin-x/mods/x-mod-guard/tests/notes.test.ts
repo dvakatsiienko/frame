@@ -53,14 +53,10 @@ const bash = ($: Engine, command: string) =>
 
 const DOOR = 'backlog task edit SP-1 --append-notes';
 
-test('--notes over a task that holds notes runs, warned with the append door, while the rule is new', async ($, on) => {
+test('--notes over a task that holds notes is refused naming --append-notes', async ($, on) => {
     const w = world(on, { '/repo/.backlog/tasks': NOTED });
     const r = await bash($, "backlog task edit SP-1 --notes 'new'");
-    expect([
-        w.ran.length,
-        r.deny,
-        r.context?.some((c) => c.includes(DOOR)),
-    ]).toEqual([1, undefined, true]);
+    expect([w.ran, r.deny?.includes(DOOR)]).toEqual([[], true]);
 });
 
 test('with the rule enforced, --notes over a task that holds notes is refused naming --append-notes', async ($, on) => {

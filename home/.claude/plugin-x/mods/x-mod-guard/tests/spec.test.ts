@@ -4,7 +4,7 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
-// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane-dispatch § 2), warn-only until its verifier says clean
+// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane-dispatch § 2), refused unsent since FRM-425's verifier clean
 
 const CODER = '☕️ 🔧 coder: mods';
 const NOTE = 'a lane job goes through a spec (cclio:shape-lane-dispatch § 2)';
@@ -30,13 +30,13 @@ function world(on: On) {
 const send = ($: Engine, message: string, to = CODER) =>
     $.tool.call({ message, to, tool: 'SendMessage' } as never);
 
-const warned = (r: { context?: readonly string[] }) =>
-    (r.context ?? []).some((c) => c.includes(NOTE));
+const warned = (r: { context?: readonly string[]; deny?: string }) =>
+    [r.deny ?? '', ...(r.context ?? [])].some((c) => c.includes(NOTE));
 
-test('a 3-item job to a coder is sent with the would-refuse note', async ($, on) => {
+test('a 3-item job to a coder is refused unsent', async ($, on) => {
     const w = world(on);
     const r = await send($, JOB);
-    expect([w.sent, warned(r)]).toEqual([[JOB], true]);
+    expect([w.sent, warned(r)]).toEqual([[], true]);
 });
 
 test('a one-line message to a coder is sent unwarned', async ($, on) => {
@@ -74,7 +74,7 @@ test('a 3-item message to a session that is not a coder is sent unwarned', async
     expect(warned(await send($, JOB, '🦉 cclio'))).toBe(false);
 });
 
-test('the warn is kept as a warned guard event', async ($, on) => {
+test('the refusal is kept as a guard event', async ($, on) => {
     const { store } = world(on);
     await send($, JOB);
     expect(
