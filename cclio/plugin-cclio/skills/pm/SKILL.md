@@ -88,8 +88,9 @@ traps:
 dima, 2026-09-03: *«we plan a lot, and then when we get to a bunch, we have a pile of unsorted
 tickets.»* every new branch and milestone opens sorted: after its tickets exist and before any
 work, cclio proposes the order, dima corrects it, it lands in `sortOrder` (recipe in
-`references/workspace.md`). a milestone's `blocks` chain is the order, and its `sortOrder` is written from it at every sort and sign, so the boot's «next» and dispatch agree. priority stays importance, never sequence; re-sort when the milestone
-changes shape, never mid-ticket.
+`references/workspace.md`). a milestone's `blocks` chain is the order, and its `sortOrder` is
+written from it at every sort and sign, so the boot's «next» and dispatch agree. priority stays
+importance, never sequence; re-sort when the milestone changes shape, never mid-ticket.
 
 ## app stash pairs
 
