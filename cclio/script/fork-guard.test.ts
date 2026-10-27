@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { gitEnv } from '../../script/lib/git-fixture.ts';
+
 const GUARD = join(
     import.meta.dirname,
     '..',
@@ -113,6 +115,58 @@ describe('fork-guard', () => {
         expect(
             readFileSync(join(state, 'forks.log'), 'utf8').trim().split('\n'),
         ).toHaveLength(1);
+    });
+});
+
+describe('fork-guard fork-edit', () => {
+    const state = mkdtempSync(join(tmpdir(), 'fg-'));
+    writeFileSync(join(state, 'main-session'), `pid=${process.pid}\n`);
+    const repo = mkdtempSync(join(tmpdir(), 'fg-repo-'));
+    const git = (...args: string[]) =>
+        spawnSync('git', ['-C', repo, ...args], {
+            encoding: 'utf8',
+            env: gitEnv(),
+        });
+    git('init', '-q');
+    git(
+        '-c',
+        'user.email=t@t',
+        '-c',
+        'user.name=t',
+        'commit',
+        '-q',
+        '--allow-empty',
+        '-m',
+        'x',
+    );
+    const tree = `${repo}-wt`;
+    git('worktree', 'add', '-q', tree);
+    const edit = (pid: string, file: string) =>
+        run(
+            ['fork-edit'],
+            pid,
+            state,
+            JSON.stringify({
+                session_id: 'd1bbf86b-x',
+                tool_input: { file_path: file },
+            }),
+        ).stdout;
+
+    test('a fork editing a main checkout is refused, named by its worktree', () => {
+        expect(edit(String(process.ppid), join(repo, 'new/a.md'))).toContain(
+            '«fork-d1bbf86b»',
+        );
+    });
+
+    test('a fork inside its own worktree, or outside any repo, edits freely', () => {
+        expect(edit(String(process.ppid), join(tree, 'a.md'))).toBe('');
+        expect(edit(String(process.ppid), join(tmpdir(), 'scratch.md'))).toBe(
+            '',
+        );
+    });
+
+    test('the main edits its checkout freely', () => {
+        expect(edit(String(process.pid), join(repo, 'a.md'))).toBe('');
     });
 });
 

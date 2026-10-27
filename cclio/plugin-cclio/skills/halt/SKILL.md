@@ -15,6 +15,7 @@ turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes hi
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a spawned session, an
   unanswered question put to dima, an unpushed commit
+- **fork branches first**: `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged, kept or dropped on his word
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
   — every hit without the `standing` label gets one line: «closable, because …» (his word
