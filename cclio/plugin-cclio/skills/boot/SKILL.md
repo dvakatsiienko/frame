@@ -18,16 +18,13 @@ siesta after each (`habit-dima-comms`); heavy queries fire at the step that need
 📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
 ## 1. healthcheck — the digest, not a ritual
-the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
-inbox, the roadmap block, stuck reminders, live sessions · worktrees · coder prs, renovate
-counts, repos vs origin, the settings symlink, the flawlog tail. **one shell round at most:**
-- no `cclio boot digest` and no cclio memory in context → the tab's cwd is not `~/frame/cclio`: stop and tell dima to reopen it there, before any write (a boot from ccrow's dir fed her harvester, 2026-10-21)
-- digest older than 30 min (its header time vs now) or absent → re-run it: `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`.
-  fresh → zero shell rounds before the board.
-- a `🚨 FAIL ·` line → report it FIRST, before any work. a check that could not run prints FAIL, never
-  nothing — `=== all checks green ===` is the only green.
+the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context (its sections are the script's). **one shell round at most:**
+- no `cclio boot digest` and no cclio memory in context → the tab's cwd is not `~/frame/cclio`: stop and tell dima to reopen it there, before any write (a boot from ccrow's dir fed her harvester)
+- digest older than 30 min or absent → re-run `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`; fresh → zero shell rounds before the board.
+- a `🚨 FAIL ·` line → report it first, before any work; a check that could not run prints FAIL, and `=== all checks green ===` is the only green.
 - the barrel probe (`method-silent-failures`), silently: the board says «barrel probe ok»; a miss → the move `method-silent-failures` holds.
 - a new always-wanted check lands in the script, never in this file.
+- 🎭 `set_session_output_style` (`self`, `output-glados`), then `get_session` reads it back: the desktop ignores the project `outputStyle`
 
 ## 2. the roadmap block 🧭
 the prefetch prints the linear initiative «roadmap»: its status and nine-line body, the attached

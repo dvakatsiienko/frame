@@ -13,3 +13,4 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-10-19 · go-vulns · 🟢 · —
 - 2026-10-19 · naming-entity-first · 🟢 282 names, 0 lead with a verb · —
 - 2026-10-22 · agnix · 🟢 0 errors, 31 warnings, 45 info (v0.59.0) · —
+- 2026-10-27 · postponed · 🟡 dima: «postpone 4+ days, no capacity» · next due 2026-11-03

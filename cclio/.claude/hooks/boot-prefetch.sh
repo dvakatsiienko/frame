@@ -136,7 +136,7 @@ if [[ "$apps_line" == *"DUE today"* || "$security" -gt 0 ]]; then
     seeded && echo "🧬 evergreen turn: seeded on top of the pocket — turn 2 is evergreen (cclio:evergreen)" || fail "evergreen turn: pocket-add wrote nothing"
   fi
 fi
-last_checkup=$(grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | sort | tail -1)
+last_checkup=$(grep -oE '^- [0-9]{4}-[0-9]{2}-[0-9]{2}' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | cut -c3- | sort | tail -1)
 if [ -z "$last_checkup" ]; then
   echo "checkup: never run · DUE — offer cclio:system-checkup on the board"
 elif [ $(( ( $(date +%s) - $(date -j -f %Y-%m-%d "$last_checkup" +%s) ) / 86400 )) -ge 7 ]; then
