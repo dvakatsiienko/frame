@@ -18,6 +18,12 @@ export function wishLines(item: string) {
     return lines;
 }
 
+// a wish joining an old block that restarts at W1 hides its lines behind the first of each number
+export function repeatedIds(item: string) {
+    const ids = [...item.matchAll(/^\s*[-*]?\s*(W\d+)\b/gm)].map((m) => m[1]);
+    return [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
+}
+
 // the «## wish» block of a ticket body, up to the next heading
 export function wishBlock(body: string) {
     return /^## wish\s*$([\s\S]*?)(?=^## |(?![\s\S]))/im.exec(body)?.[1] ?? '';
@@ -152,6 +158,13 @@ if (import.meta.main) {
                 : `${id}: no W-lines — fold the wish into numbered W1… lines first`,
         );
         process.exit(2);
+    }
+    const repeated = repeatedIds(item);
+    if (repeated.length > 0) {
+        console.log(
+            `✗ ${id}: ${repeated.join(', ')} numbered twice — renumber the joined lines from the block's next free W`,
+        );
+        process.exit(1);
     }
     if (citedIds(drafts.join('\n')).size === 0) {
         console.log(`✗ ${id}: cites no W-line`);

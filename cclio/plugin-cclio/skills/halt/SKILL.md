@@ -16,7 +16,7 @@ one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a spawned session, an
   unanswered question put to dima, an unpushed commit
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
-  `x linear list --state "In Progress"` (ids, titles, labels)
+  `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
   — every hit without the `standing` label gets one line: «closable, because …» (his word
   closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
   with asks left open moves to Todo, never closes, and its `## signed` block gets

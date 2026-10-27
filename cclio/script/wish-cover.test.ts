@@ -14,6 +14,7 @@ import {
     citedIds,
     itemsForTicket,
     missingText,
+    repeatedIds,
     sectionsFor,
     uncovered,
     wishBlock,
@@ -47,6 +48,18 @@ describe('sectionsFor', () => {
             'wish: BYT-9\nx\n',
         );
         expect(sectionsFor('no wish line', 'FRM-1')).toBe('no wish line');
+    });
+});
+
+describe('repeatedIds', () => {
+    test('names a W number a joined wish reused', () => {
+        expect(repeatedIds(`${item}\n- W3 a joined ask of his`)).toEqual([
+            'W3',
+        ]);
+    });
+
+    test('a block numbered once passes', () => {
+        expect(repeatedIds(item)).toEqual([]);
     });
 });
 
