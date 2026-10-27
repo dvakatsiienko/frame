@@ -100,6 +100,10 @@ describe('wish-cover', () => {
         expect([...citedIds('settles W1–W3, W2-W4')]).toEqual([]);
     });
 
+    test('a bullet under a line ending in a digit is still cited', () => {
+        expect([...citedIds('wish: FRM-450\n- W3 his words')]).toEqual(['W3']);
+    });
+
     test('single ids across a draft are all cited', () => {
         expect([...citedIds('(W1, W2) and W4')]).toEqual(['W1', 'W2', 'W4']);
     });

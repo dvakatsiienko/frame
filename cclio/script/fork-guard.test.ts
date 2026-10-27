@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
@@ -100,5 +100,63 @@ describe('fork-guard', () => {
         );
         expect(out.status).toBe(0);
         expect(out.stdout).toBe('');
+    });
+
+    test("a fork's restart keeps its one forks.log line", () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${process.pid}\nsession=s-main\n`,
+        );
+        run(['start'], String(process.ppid), state);
+        run(['start'], String(process.ppid), state);
+        expect(
+            readFileSync(join(state, 'forks.log'), 'utf8').trim().split('\n'),
+        ).toHaveLength(1);
+    });
+});
+
+describe('fork-guard announce', () => {
+    const state = mkdtempSync(join(tmpdir(), 'fg-'));
+    const projects = mkdtempSync(join(tmpdir(), 'fg-p-'));
+    mkdirSync(join(projects, 'proj'));
+    writeFileSync(join(state, 'main-session'), `pid=${process.pid}\n`);
+    writeFileSync(join(state, 'forks.log'), 's-fork 2026-10-27 16:56\n');
+    const line = (at: string, content: string) =>
+        `${JSON.stringify({ message: { content }, timestamp: at, type: 'user' })}\n`;
+    const announce = () =>
+        spawnSync('bash', [GUARD, 'announce'], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                FORK_GUARD_CC_PID: String(process.pid),
+                FORK_GUARD_PROJECTS: projects,
+                FORK_GUARD_STATE: state,
+                TZ: 'UTC',
+            },
+        }).stdout;
+
+    test('names a fork by its first prompt after the fork, then never again', () => {
+        writeFileSync(
+            join(projects, 'proj', 's-fork.jsonl'),
+            line('2026-10-27T16:00:00.000Z', 'the main thread, copied') +
+                line('2026-10-27T16:57:00.000Z', '<system-reminder>x') +
+                line('2026-10-27T16:58:00.000Z', 'look at pm2\nmore'),
+        );
+        expect(announce()).toBe('🍴 fork «look at pm2» started 16:56\n');
+        expect(announce()).toBe('');
+    });
+
+    test('a fork never announces itself', () => {
+        expect(
+            spawnSync('bash', [GUARD, 'announce'], {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    FORK_GUARD_CC_PID: String(process.ppid),
+                    FORK_GUARD_STATE: mkdtempSync(join(tmpdir(), 'fg-')),
+                },
+            }).stdout,
+        ).toBe('');
     });
 });

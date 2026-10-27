@@ -1,6 +1,7 @@
 #!/bin/bash
 # a fork of cclio knows it is a fork, and wakes nothing of hers (FRM-430)
 # usage: fork-guard.sh start            SessionStart, first: record the main, or print the fork banner
+#        fork-guard.sh announce         UserPromptSubmit: the main names each new fork once
 #        fork-guard.sh main-only -- cmd  run cmd (stdin passed through) only in the main session
 set -uo pipefail
 state="${FORK_GUARD_STATE:-$HOME/.local/state/cclio}"
@@ -31,7 +32,9 @@ start)
 	if is_main; then
 		printf 'pid=%s\nsession=%s\n' "$me" "$session" >"$main_file"
 	else
-		printf '%s %s\n' "$session" "$(date '+%F %H:%M')" >>"$state/forks.log"
+		# a fork's /compact starts it again; it keeps its one line
+		grep -q "^$session " "$state/forks.log" 2>/dev/null ||
+			printf '%s %s\n' "$session" "$(date '+%F %H:%M')" >>"$state/forks.log"
 		cat <<'EOF'
 🍴 you are a fork of cclio, not the main. dima forked you to explore and prepare beside her:
 - you see her whole thread, but you are disconnected from every flow: ccrow, composer, the lanes and the watches never see you, and you arm nothing (no Monitor, no watch, no boot)
@@ -41,6 +44,25 @@ start)
 EOF
 	fi
 	;;
+announce)
+	# the main's prompt hook: one «🍴» line per fork, once it has a first prompt of dima's to name it by
+	is_main || exit 0
+	seen="$state/forks.seen"
+	touch "$seen"
+	projects="${FORK_GUARD_PROJECTS:-$HOME/.claude/projects}"
+	while read -r sid day hm; do
+		[ -n "$sid" ] && ! grep -qx "$sid" "$seen" || continue
+		transcript=$(ls "$projects"/*/"$sid.jsonl" 2>/dev/null | head -1)
+		[ -n "$transcript" ] || continue
+		since=$(date -j -f '%F %H:%M' "$day $hm" +%s 2>/dev/null) || continue
+		topic=$(jq -r --argjson since "$since" 'select(.type == "user" and (.message.content | type) == "string")
+			| select((.timestamp | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) >= $since)
+			| .message.content | select(test("^\\s*[<\\[]") | not) | split("\n")[0][0:60]' "$transcript" 2>/dev/null | head -1)
+		[ -n "$topic" ] || continue
+		printf '🍴 fork «%s» started %s\n' "$topic" "$hm"
+		echo "$sid" >>"$seen"
+	done <"$state/forks.log" 2>/dev/null
+	;;
 main-only)
 	shift
 	[ "${1:-}" = "--" ] && shift
@@ -49,7 +71,7 @@ main-only)
 	exec bash -c "$*"
 	;;
 *)
-	echo "usage: fork-guard.sh start | main-only -- <cmd>" >&2
+	echo "usage: fork-guard.sh start | announce | main-only -- <cmd>" >&2
 	exit 2
 	;;
 esac

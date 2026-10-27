@@ -29,8 +29,8 @@ export function wishBlock(body: string) {
     return /^## wish\s*$([\s\S]*?)(?=^## |(?![\s\S]))/im.exec(body)?.[1] ?? '';
 }
 
-// a single id; the ends of a range like «W1–W3» cite nothing
-const WISH_ID = /(?<!W?\d+\s*[–-]\s*)\bW\d+\b(?!\s*[–-]\s*W?\d)/g;
+// a single id; the ends of a range like «W1–W3» cite nothing, and a range never spans a line break
+const WISH_ID = /(?<!W?\d+[ \t]*[–-][ \t]*)\bW\d+\b(?![ \t]*[–-][ \t]*W?\d)/g;
 
 export function citedIds(draft: string) {
     return new Set(draft.match(WISH_ID));
