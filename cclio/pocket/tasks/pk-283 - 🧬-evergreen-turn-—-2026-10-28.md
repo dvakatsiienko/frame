@@ -4,7 +4,7 @@ title: 🧬 evergreen turn — 2026-10-28
 status: done
 assignee: []
 created_date: '2026-10-28T11:45:00Z'
-updated_date: '2026-10-28T12:53:00Z'
+updated_date: '2026-10-28T12:54:00Z'
 due_date: '2026-10-28'
 labels:
   - xs
@@ -30,4 +30,6 @@ W1 (2026-10-28 14:27, dima): something is wrong with evergreen — pnpm outdated
 refold: the W1 above is dima's 14:28 prompt, not 14:27; groomed as W306–W309 (W310 = the bytes commit, done). close: W306–W309 moved to PK-284 (evergreen v2, shaping); W310 done (bytes committed + pushed 14:28)
 
 close: W306–W309 moved to PK-284; W310 done (bytes pushed 14:28)
+
+close: W1 (= W306–W309) moved to PK-284
 <!-- SECTION:NOTES:END -->
