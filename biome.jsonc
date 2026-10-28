@@ -7,10 +7,18 @@
   // parser reads them as syntax errors until it is told. bytes gets this from ultracite;
   // frame extends only polished, so it says so itself.
   "css": { "parser": { "tailwindDirectives": true } },
+  // biome 2.6 formats markdown; the repo's markdown (memory, skills, the pocket) is hand-shaped and
+  // read as instructions, so a reflow is a memory edit, never a formatter's call
+  "markdown": { "formatter": { "enabled": false } },
   "files": {
     "ignoreUnknown": false,
     "includes": [
       "!**/public/**/*",
+      // biome 2.6 formats yaml (2 → 4-space indent), and yaml.formatter.enabled does not hold through
+      // this config's extends chain, so yaml stays out of biome as it was on 2.5: ci-binaries.test.ts
+      // reads ci.yml's job blocks by indent, and pnpm-lock.yaml is pnpm's to write
+      "!**/*.yml",
+      "!**/*.yaml",
       "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
       "!home/.claude/plugin-x/lsp/typescript-native", // vendored ts 7 lsp proxy, pinned sha — never reformatted
       "!.claude/worktrees", // coder worktrees carry their own biome.jsonc — a nested root otherwise
