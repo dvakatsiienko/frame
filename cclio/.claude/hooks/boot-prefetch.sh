@@ -106,7 +106,7 @@ echo "-- fleet: live sessions · worktrees · coder prs --"
 # the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)
 # a lane coder's desktop thread (a mods coder) is cclio's, archived at its lane's end; any other interactive non-cclio session is dima's: 👤, never on a stop list.
 # the rest of the fleet (coders, verifiers, probes) is spawned with --bg; ccrow is a desktop tab the halt stops, matched by name
-live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("ccrow") then " · the fleet'"'"'s — the halt stops her" elif (.name // "") | test("^(⚡|🌗|🌘) .* code:") then " · a lane coder cclio started — archived at its lane'"'"'s end" elif .kind == "interactive" and ((.name // "") | test("cclio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
+live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("ccrow") then " · the fleet'"'"'s — the halt stops her" elif (.name // "") | test("^(⚡|🌗|🌘) .* code:") and (.entrypoint // "") == "claude-desktop" then " · a lane coder cclio started — archived at its lane'"'"'s end" elif .kind == "interactive" and ((.name // "") | test("cclio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"
