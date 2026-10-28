@@ -14,6 +14,10 @@
     "ignoreUnknown": false,
     "includes": [
       "!**/public/**/*",
+      // biome 2.6 formats yaml (2 → 4-space indent) and 2.6.3 ignores yaml.formatter.enabled, so yaml
+      // stays out of biome as it was on 2.5: ci-binaries.test.ts reads ci.yml's job blocks by indent
+      "!**/*.yml",
+      "!**/*.yaml",
       "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
       "!home/.claude/plugin-x/lsp/typescript-native", // vendored ts 7 lsp proxy, pinned sha — never reformatted
       "!.claude/worktrees", // coder worktrees carry their own biome.jsonc — a nested root otherwise
