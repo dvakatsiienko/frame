@@ -25,8 +25,8 @@ cclio/memory/method-silent-failures.md	4200	seed 2026-10-16, today's size + 15 %
 cclio/memory/sys-boundaries.md	1400	seed 2026-10-16, today's size + 15 %
 cclio/memory/sys-settings-drift.md	1400	seed 2026-10-16, today's size + 15 %
 cclio/memory/sys-skills.md	1900	seed 2026-10-16, today's size + 15 %
-cclio/plugin-cclio/skills/author-blueprint/references/readable.md	2800	2026-10-23: dima's bold-keywords and notes-tile asks, two lines
 cclio/plugin-cclio/skills/author-blueprint/references/n8n.md	2700	seed 2026-10-18, born from the n8n research, its size + 15 %
+cclio/plugin-cclio/skills/author-blueprint/references/readable.md	2800	2026-10-23: dima's bold-keywords and notes-tile asks, two lines
 cclio/plugin-cclio/skills/author-blueprint/SKILL.md	2900	2026-10-21 raised: readable rules + the mapped-area line (dima)
 cclio/plugin-cclio/skills/boot/references/board.md	2200	seed 2026-10-16, its size + 15 %
 cclio/plugin-cclio/skills/boot/SKILL.md	14200	2026-10-28: +400 the weekly pass gets its duckdb door (pnpm memory:pass, dima o33); seed 2026-10-16, today's size + 15 %; +200 2026-10-27: round 4's inbox groom copy and the main lane's linear slot; +200 2026-10-28: FRM-464 side-item takeover
@@ -45,13 +45,13 @@ cclio/plugin-cclio/skills/pm/references/closing.md	1300	2026-10-27: the close te
 cclio/plugin-cclio/skills/pm/references/workspace.md	2700	seed 2026-10-16, its size + 15 %
 cclio/plugin-cclio/skills/pm/SKILL.md	13800	seed 2026-10-16, today's size + 15 %
 cclio/plugin-cclio/skills/remind/SKILL.md	2500	seed 2026-10-16, today's size + 15 %
-cclio/plugin-cclio/skills/side-channel/SKILL.md	1750	seed 2026-10-28, its size + 15 % (FRM-464)
 cclio/plugin-cclio/skills/shape-idea/SKILL.md	5500	2026-10-23: ends in one shaped ticket, the non-mechanical trigger (PK-263, o91)
-cclio/plugin-cclio/skills/shape-lane/SKILL.md	5700	seed 2026-10-16, today's size + 15 %; +100 2026-10-27: round 4's ↩️ route, per-chunk wish line and proposal path
 cclio/plugin-cclio/skills/shape-lane-dispatch/SKILL.md	6600	2026-10-25: dima's tickets-flow calls (o74): the linear state at dispatch, the cancel rule, a mid-lane wish in the ticket; +100 2026-10-27: round 4's ↩️ route, per-chunk wish line and proposal path; +300 2026-10-27: FRM-462's cancel-after-🚀, pace park and one-chunk steer lines
+cclio/plugin-cclio/skills/shape-lane/SKILL.md	5700	seed 2026-10-16, today's size + 15 %; +100 2026-10-27: round 4's ↩️ route, per-chunk wish line and proposal path
 cclio/plugin-cclio/skills/shape-recipe/SKILL.md	6800	seed 2026-10-16, today's size + 15 %
 cclio/plugin-cclio/skills/shape-test-drive/SKILL.md	5400	seed 2026-10-16, today's size + 15 %
 cclio/plugin-cclio/skills/shift/SKILL.md	5900	2026-10-23 raised: a shift runs signed chunks through dispatch, a pre-approved merge is no park (wishkeeper's lane-init pass); before: 2026-10-23 raised: dima's debrief line moved in from FRM-266 at its close (o16); +200 2026-10-27: FRM-462: a mods chunk parks, a line of dima's waits for his verdict
+cclio/plugin-cclio/skills/side-channel/SKILL.md	1750	seed 2026-10-28, its size + 15 % (FRM-464)
 cclio/plugin-cclio/skills/siesta/SKILL.md	4400	seed 2026-10-16, today's size + 15 %
 cclio/plugin-cclio/skills/system-checkup/SKILL.md	7600	2026-10-20: the recipe-candidates check joined (dima: FRM-270's scan on every checkup); before: 6900 for install-census moved from nurture-memory
 ccrow/AGENTS.md	11900	seed 2026-10-16, today's size + 15 %
@@ -114,6 +114,7 @@ home/.claude/rules-lazy/GLOSSARY.md	1000	seed 2026-10-16, today's size + 15 %
 home/.claude/rules-lazy/linear-flow.md	2400	seed 2026-10-16, today's size + 15 %
 home/.claude/rules-lazy/PRODUCT.md	3100	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/authoring-trigger.md	800	seed 2026-10-16, today's size + 15 %
+home/.claude/rules/biome-config.md	1800	seed 2026-10-28, its size + 15 %
 home/.claude/rules/code.md	3800	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/dima-signals.md	2000	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-doors.md	2500	seed 2026-10-16, today's size + 15 %
