@@ -426,9 +426,8 @@ const ISOLATED_DOOR =
     'x-mod-guard: write the command into a scratch script ($CLAUDE_JOB_DIR/tmp or the session scratchpad) and run that script by path; git itself goes through `x lane <verb>`';
 const IMAGE_FILE = /\.(png|jpe?g|gif|webp|heic|bmp|tiff?)$/i;
 const IMAGE_LIMIT = 3;
-// 5+ screenshots read for their data go to helper-lite (PK-148); cclio reads them herself and pays for each
-const IMAGE_NOTE =
-    'x-mod-guard: this is your 3rd image Read this turn — screenshots read for their data go to `helper-lite` cards, ≤20 a batch, transcribed to text (`rules/fleet-tooling.md`)';
+// screenshots read for their data go to helper-lite (PK-148); cclio reads them herself and pays for each
+const IMAGE_NOTE = `x-mod-guard: ${IMAGE_LIMIT} image Reads this turn — screenshots read for their data go to \`helper-lite\` cards, ≤20 a batch, transcribed to text (\`rules/fleet-tooling.md\`)`;
 // dima's ticks: x-mod-stash writes them into its own $.state from his 🛎️ press alone, and any plugin reads another's
 // value while only its owner writes it — so no Bash, Edit, Write or orbit op can forge one, and it is this session's
 // own (FRM-427); a tick still in its sending window is not his word yet
@@ -745,10 +744,6 @@ export const register: Register = (on) => {
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
-            await rememberHelps($, [
-                ...bareHelps(run, cwd),
-                ...verbHelps(command, cwd, { ...ctx, ...facts }),
-            ]);
             if (result.deny !== undefined)
                 return deny(
                     ISOLATED.test(result.deny)
@@ -756,6 +751,13 @@ export const register: Register = (on) => {
                         : result.deny,
                 );
             const isQuiet = await isSilent($, ctx.home);
+            // a quiet session spends no verb hint it never showed
+            await rememberHelps($, [
+                ...bareHelps(run, cwd),
+                ...(isQuiet
+                    ? []
+                    : verbHelps(command, cwd, { ...ctx, ...facts })),
+            ]);
             const context = [
                 ...(notes.length && !isQuiet
                     ? [

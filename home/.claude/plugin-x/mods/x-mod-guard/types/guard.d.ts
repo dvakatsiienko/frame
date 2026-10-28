@@ -4,7 +4,7 @@ declare module 'claude-code' {
         // seen: the real paths this session has Read, Edited or Written, so a Write over a tracked file it never read is refused
         // prompt: dima's last prompt typed at the composer or the bridge, the proof a # dima-ok marker needs
         // images: a cclio session's image Reads in the running turn, zeroed at each prompt
-        // helped: the clis whose bare --help ran this session, so their verb --help needs no hint
+        // helped: the clis whose bare --help ran, or whose verb --help hint already showed, this session
         // spent: the ticks a guarded command already ran on, `<ask id>@<tick time>:<what it authorized>`; a tick is spent per use
         'x-mod-guard': {
             edits: number;
