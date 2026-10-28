@@ -418,7 +418,7 @@
             "id": "6:317",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">always a quick lane on main: one chunk, then parks for the 5h pace<br>dima opens and archives the tab; a shift parks a mods chunk</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">always a quick lane on main: one chunk, then parks for the 5h pace<br>a desktop thread cclio opens with start_session and closes with archive_session; a shift parks a mods chunk</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -450,7 +450,7 @@
             "id": "6:325",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🍴 /fork or /btw</b><br><span style=\"font-size:20px\">dima's side-research door: banner, edits only in its own worktree, reports to the main; /btw from a fork is read-only</span>",
+            "value": "<b style=\"font-size:26px\">🍴 a side channel</b><br><span style=\"font-size:20px\">cclio:side-channel opens one, fresh or forked; banner, edits only in its own worktree, side-labelled pocket items, the boot takes them over</span>",
             "vertex": "1"
         },
         "geometry": {
