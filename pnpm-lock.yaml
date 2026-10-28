@@ -204,8 +204,8 @@ importers:
         specifier: 6.0.0
         version: 6.0.0
       biome-config-polished:
-        specifier: 0.0.9
-        version: 0.0.9(@biomejs/biome@2.6.3)
+        specifier: 0.0.10
+        version: 0.0.10(@biomejs/biome@2.6.3)
       colorjs.io:
         specifier: 0.7.1
         version: 0.7.1
@@ -1826,8 +1826,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  biome-config-polished@0.0.9:
-    resolution: {integrity: sha512-MX+Xwa7TUxgGsE+QKGu3SI5dfq0E29g2aVYtFmRdiDNkJwvMzST/tZV3+OoQ6VcjjqWlBFkFfLQu6nGm06sNEQ==}
+  biome-config-polished@0.0.10:
+    resolution: {integrity: sha512-YwOLtZO//cwzrUCKcE4lBv3LWJY9Tqqza2/mmzF4Nwvq7ZJOHBbJAVB+dQHtmdo44BQjPly/snN6Q5PHsOeScQ==}
     peerDependencies:
       '@biomejs/biome': '>=2.5.15'
 
@@ -4626,7 +4626,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.28: {}
 
-  biome-config-polished@0.0.9(@biomejs/biome@2.6.3):
+  biome-config-polished@0.0.10(@biomejs/biome@2.6.3):
     dependencies:
       '@biomejs/biome': 2.6.3
 
