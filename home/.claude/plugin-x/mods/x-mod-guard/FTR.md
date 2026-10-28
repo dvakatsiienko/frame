@@ -54,6 +54,10 @@
   - given `railway logs --help` and no bare `railway --help` this session, then it runs as typed and the model reads: `railway --help`, bare, lists its verbs — some clis run the verb under `<verb> --help`
   - given the cli's bare `--help` already ran, or its verb hint already fired this session, then no hint
   - given `x`, `gh`, `git` or `claude` (every verb parses `--help`), `obsidian` (refused instead), a script runner, or a shell word, then no hint
+- ⬜ a worktree command cc core refuses carries the scratch-script door (FRM-428 exit 4)
+  - given a worktree session's Bash names git or `github` where cc core's isolation check refuses it (a heredoc body, a `gh api repos/...` path), then the refusal the model reads is core's, followed by: write the command into a scratch script and run that script by path; git itself goes through `x lane <verb>`
+  - given a command core lets run, then no door
+  - decision: no hook overrides core's isolation verdict (dima's o26, 2026-10-28); the door rides core's own refusal, so it never fires where core would not refuse
 - ⬜ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
   - given a foreground Bash took over 60 s, when the same shape runs again, then no hint names «held the foreground» and the store keeps no `slow:` key
   - decision: the hint is deleted, not re-measured — 197 of 643 calls got it, 82 % under 30 s, none moved (dima's o82)

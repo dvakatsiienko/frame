@@ -419,6 +419,11 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const HELPED = { key: 'helped', plugin: 'x-mod-guard' } as const;
 const IMAGES = { key: 'images', plugin: 'x-mod-guard' } as const;
+// cc core refuses a worktree command naming git where it cannot prove the git stays in the tree — a heredoc body, a
+// `gh api` path — and no hook may override it (dima's o26); its refusal leaves with the door (fleet-hazards § the bash sandbox)
+const ISOLATED = /^This session is isolated in the worktree /;
+const ISOLATED_DOOR =
+    'x-mod-guard: write the command into a scratch script ($CLAUDE_JOB_DIR/tmp or the session scratchpad) and run that script by path; git itself goes through `x lane <verb>`';
 const IMAGE_FILE = /\.(png|jpe?g|gif|webp|heic|bmp|tiff?)$/i;
 const IMAGE_LIMIT = 3;
 // 5+ screenshots read for their data go to helper-lite (PK-148); cclio reads them herself and pays for each
@@ -744,7 +749,12 @@ export const register: Register = (on) => {
                 ...bareHelps(run, cwd),
                 ...verbHelps(command, cwd, { ...ctx, ...facts }),
             ]);
-            if (result.deny !== undefined) return deny(result.deny);
+            if (result.deny !== undefined)
+                return deny(
+                    ISOLATED.test(result.deny)
+                        ? `${result.deny} — ${ISOLATED_DOOR}`
+                        : result.deny,
+                );
             const isQuiet = await isSilent($, ctx.home);
             const context = [
                 ...(notes.length && !isQuiet
