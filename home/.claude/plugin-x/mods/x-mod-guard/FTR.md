@@ -93,9 +93,9 @@
 - ⬜ dima's tick on an orbit ask is his word (FRM-427, FRM-409)
   - given dima ticked an open ask whose text quotes every refusal target whole (`` ⚠️ mirror: `git push --mirror origin` ``), once its 5 s sending window passed
   - then the guarded command runs with no `# dima-ok` typed, and a marker his prompt never named runs too; the escape is kept with the ask's id
-  - then the tick is spent by its first use: a second run is refused; a tick quoting only part of a target (`git push --mirror` for target `origin`) proves nothing
+  - then the tick is spent by its first use for what it authorized (a target set, a pr, a sign): a second run is refused, while one ask quoting a guarded target and a pr carries each once (the 10-22 o4/o9 replay); a tick quoting only part of a target (`git push --mirror` for target `origin`) proves nothing
   - given a tick quoting a pr's url, then `x lane merge-auto <pr> --apply --dima-ok <pr>` runs, and a bare `x lane merge-auto <pr> --apply` runs with `--dima-ok <pr>` added; `--release-brake` still needs his typed word
-  - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>`
+  - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>:<what it authorized>`
   - given `x linear set <id> --add-label signed` (or `agent,signed`, `--add-label=signed`), or `x linear body <id> --set <file>` whose file holds a `✍️ signed` or `✍️ re-signed` line dated today, with no tick on a sign ask `✍️ sign <id>: <title>` — its id whole, so «FRM-14 …» or a rename ask naming the id proves nothing — then it is flagged, warn-only until the verifier's clean (rule `sign-untick`, o197); with that tick, it runs
   - decision: the record is x-mod-stash's `$.state` `ticks`, written only by his 🛎️ press; any plugin reads another's value while only its owner writes it, so no Bash, Edit, Write or orbit op forges one, a tick planted in the shared store is ignored, and a tick authorizes only its own session (cclio's greenlight, 2026-10-28)
   - makes: the last 20 prompts across sessions, each with its origin and every field (text cut to 80 code points), under `origins` in x-mod-guard's `$.store` — what the origin rules are measured against (FRM-358)

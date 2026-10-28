@@ -421,7 +421,13 @@ const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 // own (FRM-427); a tick still in its sending window is not his word yet
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
-async function tickFor($: EngineInterface, covers: (text: string) => boolean) {
+// a tick is spent per use: `scope` names what it authorized (a target set, a pr, a sign), so one ask quoting a guarded
+// target and a pr carries both once
+async function tickFor(
+    $: EngineInterface,
+    scope: string,
+    covers: (text: string) => boolean,
+) {
     const { value: ticks = [] } = await $.state
         .get(TICKS)
         .catch(() => ({ value: [] }));
@@ -432,13 +438,13 @@ async function tickFor($: EngineInterface, covers: (text: string) => boolean) {
         .find(
             (t) =>
                 t.at <= now &&
-                !spent.includes(`${t.id}@${t.at}`) &&
+                !spent.includes(`${t.id}@${t.at}:${scope}`) &&
                 covers(t.text),
         );
     if (tick)
         await $.state.set(
             SPENT,
-            [...spent, `${tick.id}@${tick.at}`].slice(-50),
+            [...spent, `${tick.id}@${tick.at}:${scope}`].slice(-50),
         );
     return tick;
 }
@@ -810,7 +816,7 @@ export const register: Register = (on) => {
         const pr = merge && mergeAutoPr(merge);
         const prTick = async () =>
             pr && !merge?.includes('--release-brake')
-                ? tickFor($, (text) => quotesPr(text, pr))
+                ? tickFor($, `pr:${pr}`, (text) => quotesPr(text, pr))
                 : undefined;
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
@@ -849,7 +855,9 @@ export const register: Register = (on) => {
         if (
             verdict.kind === 'run' &&
             isNewSign &&
-            !(await tickFor($, (text) => isSignAsk(text, sign.id)))
+            !(await tickFor($, `sign:${sign.id}`, (text) =>
+                isSignAsk(text, sign.id),
+            ))
         ) {
             const r = {
                 door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
@@ -865,7 +873,7 @@ export const register: Register = (on) => {
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
             const targets = [...new Set(found.flatMap((r) => r.targets))];
-            const tick = await tickFor($, (text) =>
+            const tick = await tickFor($, targets.join(' '), (text) =>
                 targets.every((t) => namesWhole(text, t)),
             );
             if (!tick)
@@ -890,7 +898,7 @@ export const register: Register = (on) => {
         ].filter((t) => !namesWhole(said, t));
         const unproven =
             named.length &&
-            (await tickFor($, (text) =>
+            (await tickFor($, named.join(' '), (text) =>
                 named.every((t) => namesWhole(text, t)),
             ))
                 ? []

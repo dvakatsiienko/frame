@@ -178,3 +178,21 @@ for (const [line, isFlagged] of [
         const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
         expect(signFlagged(r.context)).toBe(isFlagged);
     });
+
+// the want line, FRM-427 exit 10: the 10-22 o4/o9 case — one ask quoting a guarded target and the pr, ticked once — and
+// both doors pass with no typed turn; a tick spends per what it authorized, so one ask carries both
+test('the o4/o9 replay: one tick quoting a guarded target and a pr passes both doors', async ($, on) => {
+    const MERGE = 'x lane merge-auto 104 --apply --dima-ok 104';
+    const { ran } = world(on, [
+        tick(`⚠️ land ${PR}, then mirror: \`${MIRROR}\``),
+    ]);
+    const pushed = await bash($, MIRROR);
+    const merged = await bash($, MERGE);
+    const again = await bash($, MIRROR);
+    expect([pushed.deny, merged.deny, again.deny !== undefined, ran]).toEqual([
+        undefined,
+        undefined,
+        true,
+        [MIRROR, MERGE],
+    ]);
+});

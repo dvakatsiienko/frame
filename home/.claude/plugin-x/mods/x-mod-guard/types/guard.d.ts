@@ -3,7 +3,7 @@ declare module 'claude-code' {
         // a cclio session's code edits so far: one session's count, gone with it
         // seen: the real paths this session has Read, Edited or Written, so a Write over a tracked file it never read is refused
         // prompt: dima's last prompt typed at the composer or the bridge, the proof a # dima-ok marker needs
-        // spent: the ticks a guarded command already ran on, `<ask id>@<tick time>`; a tick is spent by its first use
+        // spent: the ticks a guarded command already ran on, `<ask id>@<tick time>:<what it authorized>`; a tick is spent per use
         'x-mod-guard': {
             edits: number;
             seen: string[];
