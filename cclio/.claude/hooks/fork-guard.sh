@@ -76,6 +76,8 @@ fork-edit | fork-bash)
 	# a linked worktree has its own git dir; a main checkout's git dir is the common one
 	in_main_checkout() {
 		local dir=$1 gitdir common
+		# a git hook's inherited GIT_DIR would answer for the hook's repo, not the edited file's
+		unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
 		while [ -n "$dir" ] && [ ! -d "$dir" ]; do dir=$(dirname "$dir"); done
 		gitdir=$(git -C "$dir" rev-parse --absolute-git-dir 2>/dev/null) || return 1
 		common=$(cd "$dir" && cd "$(git rev-parse --git-common-dir)" && pwd -P)
