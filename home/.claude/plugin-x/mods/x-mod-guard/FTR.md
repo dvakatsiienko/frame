@@ -41,10 +41,9 @@
 - ✅ an `rg` that skips dot dirs gets a `--hidden` hint (PK-139)
   - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
   - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
-- ✅ a foreground Bash that held the session over a minute hints its next foreground run (dima's o113)
-  - given a foreground Bash took over 60 s, then each of its shapes (`name first-operand`, shell glue like `cd` or `ls` left out) is kept in the store
-  - given a later foreground Bash runs a kept shape, then it runs as typed and the model reads: `<shape>` held the foreground <n> s last time — run it with run_in_background: true and keep working until it notifies
-  - given a run already in the background, then it is neither kept nor hinted
+- ⬜ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
+  - given a foreground Bash took over 60 s, when the same shape runs again, then no hint names «held the foreground» and the store keeps no `slow:` key
+  - decision: the hint is deleted, not re-measured — 197 of 643 calls got it, 82 % under 30 s, none moved (dima's o82)
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»
