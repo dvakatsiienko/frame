@@ -1199,6 +1199,22 @@ test('«back at the mac» ends mobile mode', async ($, on) => {
     expect(lastContext(w.contexts)).not.toContain('asks fence');
 });
 
+// FRM-456: his typed word ends the mode, as /mobile-mode off does
+for (const typed of ['Mobile mode off', 'ok, MOBILE MODE OFF now'])
+    test(`«${typed}» typed ends mobile mode`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await add($, ['push FRM-1', 'yes']);
+        await mobile($);
+        await say($, typed);
+        const same = lastContext(w.contexts);
+        await endTurn($);
+        await say($, 'hi');
+        expect([same, lastContext(w.contexts)]).not.toContainEqual(
+            expect.stringContaining('asks fence'),
+        );
+    });
+
 test('a 🛎️ press in orbit ends mobile mode', async ($, on) => {
     const w = world(on);
     await start($);

@@ -118,7 +118,7 @@ The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt b
 _Avoid_: prompt rewriter, polish
 
 **Mobile mode**:
-Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac», `/mobile-mode off` or a 🛎️, 🔁 or ↩️ press in orbit turns it off.
+Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac» or «mobile mode off» typed, `/mobile-mode off` or a 🛎️, 🔁 or ↩️ press in orbit turns it off.
 _Avoid_: phone mode, away mode
 
 **Asks fence**:

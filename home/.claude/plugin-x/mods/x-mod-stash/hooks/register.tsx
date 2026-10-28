@@ -345,7 +345,7 @@ const MOBILE_SKILL = /(^|:)mobile-mode$/;
 // cclio's halt skill: an ask added with `dies: "halt"` leaves when it expands
 const HALT_SKILL = /(^|:)halt$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
-const BACK_AT_MAC = /\bback at the mac\b/i;
+const BACK_AT_MAC = /\bback at the mac\b|\bmobile mode off\b/i;
 // the prompt enhancer: Haiku rewrites the box on a press; prev and new swap the two texts back with no call
 const ENHANCER = { key: 'enhancer', plugin: 'x-mod-stash' } as const;
 const ENHANCE_MODEL = 'claude-haiku-5-5';

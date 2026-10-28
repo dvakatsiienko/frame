@@ -574,7 +574,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the reminder lives in the mod and either switch triggers it; `x:mobile-mode` keeps only its phone bits and points at it — «buried, but fine if no one forgets it», so a test proves both switches inject it
 - ✅ mobile mode ends at the mac
   - given mobile mode is on
-  - when dima says «back at the mac», types `/mobile-mode off`, or presses 🛎️ or ↩️ in the board's orbit
+  - when dima says «back at the mac» or «mobile mode off» (any casing, FRM-456), types `/mobile-mode off`, or presses 🛎️ or ↩️ in the board's orbit
   - then the next prompt carries the orbit reminder again; a hot reload keeps the mode as it was
   - decision: only a 🛎️ or ↩️ press ends it; a steer, a speak press or a session row's ↗ never does (dima's o9, 2026-10-11 11:16)
 
