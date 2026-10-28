@@ -19,5 +19,6 @@ a side channel takes dima's side questions, research and fixes, so the main thre
    - fresh: context `fresh`, cwd `~/frame/cclio`, use_worktree false, prompt «greet dima in one line, then wait for his questions», background naming today's roadmap step and what he asked the channel for
    - forked: context `fork`, prompt «you are the side channel; greet dima in one line, then wait»
 3. done: the result names a started session; the reply links it, `[🦉 cclio (side)](#local_<id>)`, in one line
+4. while [FRM-464](https://linear.app/x-com/issue/FRM-464) is open: check the door against its `live checks` and tick its ⬜ in the body the same turn (until: FRM-464 closes, then this step goes)
 
 its pocket items carry `side` and come back at the next boot (`cclio:boot` § 3); its closing report reaches the main by SendMessage.
