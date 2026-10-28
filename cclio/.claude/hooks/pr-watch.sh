@@ -23,7 +23,7 @@ verified() { jq -r --arg k "$1" '.[$k] // ""' "$VERIFIED"; }
 pass() {
   for r in $REPOS; do
     gh pr list -R "$r" --state open --json number,title,url,headRefOid,author,statusCheckRollup,mergeStateStatus,mergeable \
-      --jq '.[] | select(.author.login != "app/renovate") | .mergeStateStatus as $ms
+      --jq '.[] | select(.author.login != "app/x-renovate") | .mergeStateStatus as $ms
         | [.number, .headRefOid[0:8], .url, .title,
            ([.statusCheckRollup[] | (.conclusion // .status)] | if length == 0 then "none"
              elif all(. == "SUCCESS" or . == "SKIPPED" or . == "NEUTRAL") then

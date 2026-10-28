@@ -118,7 +118,7 @@ done
 if [ -z "${COMPACT:-}" ]; then
 echo "-- renovate + the apps lane (cclio:evergreen) --"
 for repo in bytes frame; do
-  gh pr list -R "dvakatsiienko/$repo" --search 'author:app/renovate' --json number,createdAt 2>/dev/null \
+  gh pr list -R "dvakatsiienko/$repo" --search 'author:app/x-renovate' --json number,createdAt 2>/dev/null \
     | jq -r --arg r "$repo" 'if length == 0 then "\($r): 0" else "\($r): \(length) open · oldest \(min_by(.createdAt).createdAt[:10])" end' \
     || fail "gh unreachable for renovate/$repo"
 done
@@ -128,8 +128,8 @@ apps_line=$(jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
   "$HOME/frame/cclio/evergreen/sources.json") || fail "apps lane index unreadable"
 echo "$apps_line"
-security=$(gh pr list -R dvakatsiienko/frame --search 'author:app/renovate SECURITY in:title' --json number --jq length 2>/dev/null)
-security=$((security + $(gh pr list -R dvakatsiienko/bytes --search 'author:app/renovate SECURITY in:title' --json number --jq length 2>/dev/null || echo 0)))
+security=$(gh pr list -R dvakatsiienko/frame --search 'author:app/x-renovate SECURITY in:title' --json number --jq length 2>/dev/null)
+security=$((security + $(gh pr list -R dvakatsiienko/bytes --search 'author:app/x-renovate SECURITY in:title' --json number --jq length 2>/dev/null || echo 0)))
 # the board's order is the pocket's, so an evergreen day is a pocket item on top or it gets dropped (10-07, 10-14, 10-21)
 if [[ "$apps_line" == *"DUE today"* || "$security" -gt 0 ]]; then
   seeded() { BACKLOG_CWD="$HOME/frame/cclio" backlog task list --plain -s open 2>/dev/null | grep -q '🧬 evergreen turn'; }
