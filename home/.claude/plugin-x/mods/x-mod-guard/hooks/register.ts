@@ -418,6 +418,12 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const HELPED = { key: 'helped', plugin: 'x-mod-guard' } as const;
+const IMAGES = { key: 'images', plugin: 'x-mod-guard' } as const;
+const IMAGE_FILE = /\.(png|jpe?g|gif|webp|heic|bmp|tiff?)$/i;
+const IMAGE_LIMIT = 3;
+// 5+ screenshots read for their data go to helper-lite (PK-148); cclio reads them herself and pays for each
+const IMAGE_NOTE =
+    'x-mod-guard: this is your 3rd image Read this turn — screenshots read for their data go to `helper-lite` cards, ≤20 a batch, transcribed to text (`rules/fleet-tooling.md`)';
 // dima's ticks: x-mod-stash writes them into its own $.state from his 🛎️ press alone, and any plugin reads another's
 // value while only its owner writes it — so no Bash, Edit, Write or orbit op can forge one, and it is this session's
 // own (FRM-427); a tick still in its sending window is not his word yet
@@ -991,6 +997,32 @@ export const register: Register = (on) => {
         },
     );
 
+    on('tool.call', { tool: 'Read' }, async ($, e, next) => {
+        const result = await next(e);
+        const path = 'file_path' in e ? e.file_path : undefined;
+        if (
+            result.deny !== undefined ||
+            e.agentId !== undefined ||
+            typeof path !== 'string' ||
+            !IMAGE_FILE.test(path)
+        )
+            return result;
+        try {
+            const home = await $.env.get('HOME');
+            const root = await $.session.root().catch(() => $.session.cwd());
+            if (!isUnder(root, `${home}/frame/cclio`)) return result;
+            const n = ((await $.state.get(IMAGES)).value ?? 0) + 1;
+            await $.state.set(IMAGES, n);
+            if (n !== IMAGE_LIMIT || (await isSilent($, home))) return result;
+            return {
+                ...result,
+                context: [...(result.context ?? []), IMAGE_NOTE],
+            };
+        } catch {
+            return result;
+        }
+    });
+
     // an Edit or Write under a live mod's hooks/ waits for that mod's own tests to be green
     on(
         'tool.call',
@@ -1098,6 +1130,7 @@ export const register: Register = (on) => {
     });
 
     on('prompt.submit', async ($, e, next) => {
+        await $.state.set(IMAGES, 0).catch(() => undefined);
         if (TYPED_BY_DIMA.has(e.origin.kind)) {
             const sid = await $.session.id().catch(() => undefined);
             const isBg = sid

@@ -42,7 +42,7 @@
   - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
   - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
 - ⬜ a pipe into `jq` before `&&` gets a pipestatus hint (FRM-428, PK-188)
-  - given `gh api repos/x/y | jq .name && echo ok`, then it runs as typed and the model reads: the `&&` after `| jq` reads jq's exit, not the producer's — check `${pipestatus[1]}` (zsh) or start with `set -o pipefail`
+  - given `gh api repos/x/y | jq .name && echo ok`, then it runs as typed and the model reads: the `&&` after `| jq` reads jq's exit, not the producer's — check `$pipestatus[1]` (zsh) or start with `set -o pipefail`
   - given a pipe ending in `jq` with nothing after it, `;` after it, or a command naming `pipefail`, then no hint
 - ⬜ a silent curl into a pipe gets a `curl -f` hint (FRM-428, PK-188)
   - given `curl -s https://example.com | jq .`, then it runs as typed and the model reads: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)
@@ -291,6 +291,11 @@
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
+- ⬜ a cclio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
+  - given a session whose root is under `~/frame/cclio` reads its 3rd `.png` `.jpg` `.jpeg` `.gif` `.webp` `.heic` `.bmp` or `.tiff` in one turn (the main loop, never a subagent's)
+  - then the Read runs and the model gets one note naming `helper-lite` and `rules/fleet-tooling.md`; the 1st, 2nd and 4th get none
+  - given a new prompt, then the count starts over; given a text file or a session outside `~/frame/cclio`, then nothing is counted
+  - makes: a per-turn count in x-mod-guard's `$.state`
 - ✅ a Write over a tracked file this session never read is refused
   - given a session that has not Read, Edited or Written a file git tracks
   - when it Writes over that file
