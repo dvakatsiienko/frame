@@ -5,8 +5,8 @@ title: >-
   her threads and logs
 status: open
 assignee: []
-created_date: '2026-10-16 10:24'
-updated_date: '2026-10-25T11:53:00Z'
+created_date: 2026-10-16 10:24
+updated_date: '2026-10-28T12:51:00Z'
 due_date: '2026-10-28'
 labels:
   - m
@@ -30,4 +30,6 @@ inbox 10-16, wish: build a solid cclio bench, not too complex — a script, reci
 re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear grill (FRM-419 step 2) decides its home today
 
 kept: 2026-10-25 — cclio's own shapeless idea (Q5); no wait, worked when a window opens
+
+kept: 2026-10-28 — a later shape-idea wish that belongs in linear; it carries dima's words, so the move is asked at today's halt
 <!-- SECTION:NOTES:END -->
