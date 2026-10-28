@@ -171,7 +171,7 @@ test("the ctx bar's ramp reaches red at the compaction point", async ($, on) => 
     await measure($, 39, 35);
     const ui = await band($);
     const ctx = String((await ui.findAll({ type: 'Svg' }))[1]?.props.source);
-    const width = Number(ctx.match(/width="([\d.]+)"/)?.[1]);
+    const width = Number(ctx.match(/viewBox="0 0 ([\d.]+) /)?.[1]);
     const red = Number(ctx.match(/x2="([\d.]+)"/)?.[1]);
     expect(Math.round((red / width) * 100)).toBe(70);
 });
@@ -546,4 +546,22 @@ test('the breath speed knob stretches every spark: 0.25× runs twice as slow as 
         true,
         true,
     ]);
+});
+
+// dima's wisp, 10-28 15:19: the bars ended short of the % after a desktop update — the band knows only its columns, so a
+// pixel guess drifts; the drawing stretches to the slot instead, its grid kept
+test('each desktop bar fills its slot: width 100%, the grid stretched to it', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const ui = await band($);
+    const svgs = (await ui.findAll({ type: 'Svg' })).map(
+        (n) => String(n.props.source).match(/^<svg[^>]*>/)?.[0] ?? '',
+    );
+    expect(
+        svgs.map(
+            (t) =>
+                t.includes('width="100%"') &&
+                t.includes('preserveAspectRatio="none"'),
+        ),
+    ).toEqual([true, true]);
 });

@@ -2819,7 +2819,9 @@ export function meterSvg(
         });
     });
     return (
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${BAR_HEIGHT}" viewBox="0 0 ${w} ${BAR_HEIGHT}">` +
+        // the band knows only its columns, so the cell count is a guess: the drawing stretches to whatever the slot gives,
+        // never ending short of the % (dima's wisp, 10-28 15:19, after a desktop update moved the px a column)
+        `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="${BAR_HEIGHT}" viewBox="0 0 ${w} ${BAR_HEIGHT}" preserveAspectRatio="none">` +
         `<style>${BAR_STYLE}</style>` +
         `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
         '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
@@ -6560,19 +6562,23 @@ export const register: Register = (on) => {
                                     gap={1}
                                     justifyContent='space-between'>
                                     {Svg ? (
-                                        <Svg
-                                            alt={`${label} ${Math.round(bar.percent)}%`}
-                                            height={BAR_HEIGHT}
-                                            key={`${key}:svg`}
-                                            source={meterSvg(
-                                                bar.percent,
-                                                svgCells,
-                                                bar.mark,
-                                                bar.scale,
-                                                isBreathing ? now : undefined,
-                                                breathMs,
-                                            )}
-                                        />
+                                        <Box flexGrow={1} minWidth={0}>
+                                            <Svg
+                                                alt={`${label} ${Math.round(bar.percent)}%`}
+                                                height={BAR_HEIGHT}
+                                                key={`${key}:svg`}
+                                                source={meterSvg(
+                                                    bar.percent,
+                                                    svgCells,
+                                                    bar.mark,
+                                                    bar.scale,
+                                                    isBreathing
+                                                        ? now
+                                                        : undefined,
+                                                    breathMs,
+                                                )}
+                                            />
+                                        </Box>
                                     ) : null}
                                     <Box
                                         flexShrink={0}
