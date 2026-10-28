@@ -30,6 +30,7 @@ import {
     planNotes,
     planPrompt,
     prViewArgs,
+    proposalOf,
     readCharter,
     readLines,
     readTurn,
@@ -39,6 +40,34 @@ import {
     transcriptDelta,
     wakeLine,
 } from './lib.ts';
+
+describe('proposalOf reads a proposal written by Bash', () => {
+    test('a heredoc redirect into a proposal file wakes', () => {
+        expect(
+            proposalOf(
+                'Bash',
+                undefined,
+                "cat > .scratch/x/grill-1-proposal.md <<'EOF'",
+            ),
+        ).toEqual({ kind: 'proposal', path: '.scratch/x/grill-1-proposal.md' });
+    });
+
+    test('a tee into a proposal file wakes', () => {
+        expect(
+            proposalOf(
+                'Bash',
+                undefined,
+                'echo hi | tee -a /a/.scratch/b-proposal.md',
+            ),
+        ).toEqual({ kind: 'proposal', path: '/a/.scratch/b-proposal.md' });
+    });
+
+    test('a command that only reads a proposal file stays quiet', () => {
+        expect(
+            proposalOf('Bash', undefined, 'cat .scratch/x/grill-1-proposal.md'),
+        ).toBeUndefined();
+    });
+});
 
 const fixtures = join(import.meta.dirname, 'fixtures');
 const leavesDir = join(fixtures, 'leaves');

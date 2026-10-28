@@ -40,7 +40,11 @@ const sendVia = (name = SESSION_NAME) =>
 const input: HookInput = JSON.parse(readFileSync(0, 'utf8'));
 const decision =
     decisionOf(input.tool_input?.command ?? '') ??
-    proposalOf(input.tool_name, input.tool_input?.file_path);
+    proposalOf(
+        input.tool_name,
+        input.tool_input?.file_path,
+        input.tool_input?.command,
+    );
 if (
     decision &&
     input.transcript_path &&

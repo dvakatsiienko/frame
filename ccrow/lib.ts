@@ -680,9 +680,21 @@ export function decisionOf(line: string): Decision | undefined {
 export function proposalOf(
     tool: string | undefined,
     path: string | undefined,
+    command?: string,
 ): Decision | undefined {
     if ((tool === 'Write' || tool === 'Edit') && path && PROPOSAL.test(path))
         return { kind: 'proposal', path };
+    // a heredoc or tee writes the proposal from Bash: its target follows the redirect
+    if (tool === 'Bash' && command) {
+        const target = [
+            ...command.matchAll(
+                /(?:>>?|\btee(?: -a)?)\s*["']?([^\s"';&|<>]+)/g,
+            ),
+        ]
+            .map((match) => match[1] ?? '')
+            .find((candidate) => PROPOSAL.test(candidate));
+        if (target) return { kind: 'proposal', path: target };
+    }
 }
 
 const PROPOSAL = /(^|\/)\.scratch\/(.+\/)?[^/]+-proposal\.md$/;
