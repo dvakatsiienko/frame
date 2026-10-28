@@ -224,6 +224,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
+    'comment-midline',
     'frozen-lockfile',
     'raw-plugin-update',
 ]);

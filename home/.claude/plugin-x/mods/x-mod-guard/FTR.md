@@ -172,6 +172,12 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
+- ⬜ a `#` comment before `;`, `&&` or `||` is flagged, warn-only (FRM-463)
+  - given `echo a # deadline: 5 s; trash x`, `echo a # x && y` or `echo a # x || y`
+  - then the guard names the fix «move the comment to the line's end»: everything after an unquoted `#` is a comment, so the commands it hides never run
+  - given `echo a; trash x # deadline: 5 s`, `echo 'a # b; c'`, or a comment ending its line before the next one, then it runs unflagged
+  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); a comment of prose holding a `;` fires too (1 of 5 shapes in a 3-day replay, 16 fires in 16,275 calls)
+
 - ⬜ three slips get a hint line, the command runs as typed (PK-67, the 10-11 halt flush)
   - given an `sd`, `sed -i` or `python` write into a file under `~/frame` or `~/projects/bytes`, then the hint names `Edit`, which fires the format and hold hooks a scripted replace skips; an append, a redirect or a path outside the repos gets none
   - given `echo` of a json-ish argument (`{…"…`), then the hint names `printf '%s\n'` or `jq -n`: zsh's `echo` reads the escapes inside it

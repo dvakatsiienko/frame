@@ -204,6 +204,17 @@ export function lint(
     }
     return undefined;
 }
+// a `#` before `; cmd` comments out every command after it, with no error (FRM-463: a trash skipped silently)
+export function commentMidline(parsed: Parsed): Refusal | undefined {
+    const comment = parsed.comments.find((c) => /;|&&|\|\|/.test(c));
+    if (comment === undefined) return undefined;
+    return {
+        door: "move the comment to the line's end, after the last command",
+        rule: 'comment-midline',
+        targets: [`#${comment}`.trim()],
+        why: 'everything after an unquoted # is a comment, so the commands it hides never run',
+    };
+}
 export function unbraced(parsed: Parsed): Refusal | undefined {
     const [first] = parsed.unbraced;
     if (!first) return undefined;

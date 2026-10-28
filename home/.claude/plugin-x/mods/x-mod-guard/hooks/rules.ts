@@ -15,7 +15,7 @@ import {
 } from './rules/command.ts';
 import { floor } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
-import { background, lint, unbraced } from './rules/lint.ts';
+import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
@@ -139,7 +139,12 @@ export function refusals(
                 ...refusals(c.args.map((w) => w.text).join(' '), c.dir, ctx),
             );
     });
-    for (const r of [background(list), unbraced(parsed)]) if (r) out.push(r);
+    for (const r of [
+        background(list),
+        unbraced(parsed),
+        commentMidline(parsed),
+    ])
+        if (r) out.push(r);
     // one line per rule and target: a lint seen on every command of a pipeline is one finding
     return out.filter(
         (r, i) =>
