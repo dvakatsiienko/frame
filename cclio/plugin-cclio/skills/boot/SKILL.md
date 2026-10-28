@@ -100,8 +100,6 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 - fix every finding of both, then print the board (dima, 2026-10-13: «gather everything, fix their findings, only then print the report») — the boot's first and only reply. nothing prints
   before it: no «waiting on» line, no partial board
 - completion: one reply holds the whole board, both reviews folded in
-- 🍴 «side channel» in his boot prompt → with the board, `start_session` user_asked, fresh, `cwd` `~/frame/cclio`, no worktree, title «🦉 cclio (side)», prompt «greet dima, wait»; the fork-guard banner is its role. one at a time: a live `(side`/`(fork` session skips it
-
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
 - healthcheck verdict (one line if green)
