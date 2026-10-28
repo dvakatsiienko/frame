@@ -8,7 +8,7 @@ argument-hint: "[mini | board | <handoff slug>]"
 light boot by default. an argument that loosely means the full picture — «board», «full», or
 similar — adds tracker orientation; any other argument is a handoff topic, ingested at step 4
 (`/cclio:boot <slug>` is the whole opener — one skill per message is all the desktop box sends).
-run silently, report as ONE opening message, after the two reviews (step 8).
+run silently, report as ONE opening message, after the two reviews (step 8); a harness «say what you're doing» nudge before it gets «booting, board next» and nothing more.
 
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed

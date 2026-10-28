@@ -128,7 +128,17 @@ if (import.meta.main) {
                     timeout: 15_000,
                 }),
             );
-            item = wishBlock(read.data.tickets[0].description ?? '');
+            const ticket = read.data.tickets[0];
+            // a closed chunk's section in a lane spec is history: its wish was graded when it landed
+            if (
+                ['completed', 'canceled', 'duplicate'].includes(
+                    ticket.stateType,
+                )
+            ) {
+                console.log(`✓ ${id}: ${ticket.state}, skipped`);
+                process.exit(0);
+            }
+            item = wishBlock(ticket.description ?? '');
         } catch (error) {
             console.error(`${id}: x linear read failed — ${error}`);
             process.exit(2);

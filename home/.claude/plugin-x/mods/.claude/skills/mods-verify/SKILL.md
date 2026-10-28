@@ -23,3 +23,4 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 
 - most real findings come from mutations: swap one anchor, watch the test go red, restore it, through `red-proof` (FRM-382 verifier: 6 of 8 findings)
 - a mutation anchor matches a whole line, never a substring: `) : null}` matched a deeper-indented twin and broke the module load (FRM-382 coder)
+- every tick or marker door gets a mutation proving its refusal test bites, and every rewrite door a probe inside a compound line (`&&`, `|`, `#`, a newline) (FRM-427 verifier retro)
