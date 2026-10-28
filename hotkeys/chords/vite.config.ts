@@ -17,10 +17,10 @@ const devTitle = (): Plugin => ({
 });
 
 export default defineConfig({
-    // wgslVitePlugin turns a `.wgsl` import into the prepared ShaderSource vgpu 0.6 requires
     plugins: [
         vitePluginReact(),
         vitePluginTailwind(),
+        // turns a `.wgsl` import into the prepared ShaderSource vgpu 0.6 requires
         wgslVitePlugin(),
         devTitle(),
     ],

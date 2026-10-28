@@ -279,9 +279,6 @@ importers:
       '@tanstack/react-query':
         specifier: 5.104.5
         version: 5.104.5(@types/react@19.3.0)(react@19.3.1)
-      '@vgpu/wgsl':
-        specifier: 0.6.0
-        version: 0.6.0(@vgpu/adapter-node@0.6.0(supports-color@8.1.1))
       react:
         specifier: 19.3.1
         version: 19.3.1
@@ -292,6 +289,9 @@ importers:
         specifier: 0.6.0
         version: 0.6.0(supports-color@8.1.1)(three@0.186.0)
     devDependencies:
+      '@vgpu/wgsl':
+        specifier: 0.6.0
+        version: 0.6.0(@vgpu/adapter-node@0.6.0(supports-color@8.1.1))
       '@webgpu/types':
         specifier: 0.1.74
         version: 0.1.74

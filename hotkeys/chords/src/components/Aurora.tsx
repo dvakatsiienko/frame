@@ -13,7 +13,7 @@ import auroraShader from './aurora.wgsl';
 //
 // 📌 Two vgpu defaults differ from what this strip needs and are set explicitly below: a pass
 // clears with `target.clearColor`, which is OPAQUE BLACK by default, and this canvas has to
-// stay transparent; and the uv handed to the fragment runs the other way up (see the shader).
+// stay transparent; and the uv handed to the fragment runs the other way up (see `fs` in aurora.wgsl).
 //
 // The shader lives in `aurora.wgsl`: since vgpu 0.6 `effect()` takes only a prepared
 // ShaderSource, which `wgslVitePlugin` builds from the import at bundle time.
@@ -38,6 +38,12 @@ export const Aurora = (props: AuroraProps) => {
                 return;
             }
 
+            // since vgpu 0.6 a frame() after device loss throws at once; the strip goes still
+            // instead of throwing on every pointer move
+            void gpu.lost.then(() => {
+                drawRef.current = null;
+            });
+
             // clearColor is the one that bites: a pass clears with it by default, and vgpu's
             // default is opaque black. This strip is transparent everywhere the bands are not.
             const view = surface(gpu, element, {
@@ -50,8 +56,8 @@ export const Aurora = (props: AuroraProps) => {
                 label: 'aurora',
             });
 
-            // Bindings go by their WGSL name, so the struct above is the only place the
-            // uniform layout is written down — no Float32Array packed in field order.
+            // Bindings go by their WGSL name, so the `Uniforms` struct in aurora.wgsl is the only
+            // place the uniform layout is written down — no Float32Array packed in field order.
             drawRef.current = (time) => {
                 if (disposed) return;
 
