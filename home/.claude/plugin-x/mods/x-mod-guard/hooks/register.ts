@@ -3,7 +3,7 @@ import type { EngineInterface, Register } from 'claude-code';
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
 import { trashedPaths } from './rules/hazard.ts';
-import { hints } from './rules/hint.ts';
+import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
@@ -417,6 +417,7 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // dima's last prompt typed at the composer or sent over the bridge: a peer's message, a notification, a plugin's or an
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
+const HELPED = { key: 'helped', plugin: 'x-mod-guard' } as const;
 // dima's ticks: x-mod-stash writes them into its own $.state from his 🛎️ press alone, and any plugin reads another's
 // value while only its owner writes it — so no Bash, Edit, Write or orbit op can forge one, and it is this session's
 // own (FRM-427); a tick still in its sending window is not his word yet
@@ -631,6 +632,15 @@ async function lookUp(
     for (const edit of notesEdits(command, cwd, ctx))
         if (await isTaskNoted($, edit.root, edit.id, ctx.home))
             notedTasks.add(notedKey(edit));
+    const helpless = new Set<string>();
+    for (const path of helpScripts(command, cwd, ctx)) {
+        const source = await $.fs.read(path).catch(() => undefined);
+        if (source !== undefined && !/--help|['"]-h['"]/.test(source))
+            helpless.add(path);
+    }
+    const { value: helped = [] } = await $.state
+        .get(HELPED)
+        .catch(() => ({ value: [] }));
     const moves = projectMoves(command, cwd);
     const milestoneProjects = moves.length
         ? await projectsWithMilestones($).catch(() => undefined)
@@ -638,6 +648,8 @@ async function lookUp(
     return {
         briefs,
         cleanTrees,
+        helped: new Set(helped),
+        helpless,
         kinds,
         manifestDirs,
         milestoneProjects,
@@ -678,6 +690,16 @@ async function projectsWithMilestones($: EngineInterface) {
 const milestoneSkipped = (projects: string[]) =>
     `x-mod-guard: the milestone check was skipped — linear could not be read, so whether ${projects.join(', ')} holds milestones is unknown; name --milestone if it does`;
 
+async function rememberHelps($: EngineInterface, clis: string[]) {
+    if (!clis.length) return;
+    const { value = [] } = await $.state
+        .get(HELPED)
+        .catch(() => ({ value: [] }));
+    const fresh = clis.filter((c) => !value.includes(c));
+    if (fresh.length)
+        await $.state.set(HELPED, [...value, ...fresh]).catch(() => undefined);
+}
+
 export const register: Register = (on) => {
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
@@ -712,6 +734,10 @@ export const register: Register = (on) => {
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
+            await rememberHelps($, [
+                ...bareHelps(run, cwd),
+                ...verbHelps(command, cwd, { ...ctx, ...facts }),
+            ]);
             if (result.deny !== undefined) return deny(result.deny);
             const isQuiet = await isSilent($, ctx.home);
             const context = [
@@ -724,7 +750,7 @@ export const register: Register = (on) => {
                 ...(facts.milestoneUnread?.length
                     ? [milestoneSkipped(facts.milestoneUnread)]
                     : []),
-                ...(isQuiet ? [] : hints(command, cwd, ctx)),
+                ...(isQuiet ? [] : hints(command, cwd, { ...ctx, ...facts })),
             ];
             if (!context.length) return result;
             return {

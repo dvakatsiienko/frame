@@ -47,6 +47,13 @@
 - ⬜ a silent curl into a pipe gets a `curl -f` hint (FRM-428, PK-188)
   - given `curl -s https://example.com | jq .`, then it runs as typed and the model reads: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)
   - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
+- ⬜ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
+  - given `node ~/frame/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
+  - given a script whose source names a help flag, a run without `--help`, or a script outside `~/frame`, then no hint
+- ⬜ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
+  - given `railway logs --help` and no bare `railway --help` this session, then it runs as typed and the model reads: `railway --help`, bare, lists its verbs — some clis run the verb under `<verb> --help`
+  - given the cli's bare `--help` already ran, or its verb hint already fired this session, then no hint
+  - given `x`, `gh`, `git` or `claude` (every verb parses `--help`), `obsidian` (refused instead), a script runner, or a shell word, then no hint
 - ⬜ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
   - given a foreground Bash took over 60 s, when the same shape runs again, then no hint names «held the foreground» and the store keeps no `slow:` key
   - decision: the hint is deleted, not re-measured — 197 of 643 calls got it, 82 % under 30 s, none moved (dima's o82)

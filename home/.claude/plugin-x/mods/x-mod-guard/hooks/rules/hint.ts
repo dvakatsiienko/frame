@@ -34,10 +34,67 @@ const RG_HINT =
     'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
 // a pipe's exit is its last stage's: `gh api … | jq … && next` runs `next` after a failed gh api (PK-188)
 const PIPESTATUS_HINT =
-    "x-mod-guard hint: the `&&` after `| jq` reads jq's exit, not the producer's — check `${pipestatus[1]}` (zsh) or start with `set -o pipefail`";
+    "x-mod-guard hint: the `&&` after `| jq` reads jq's exit, not the producer's — check `$pipestatus[1]` (zsh) or start with `set -o pipefail`";
 // curl -s exits 0 on a 404 and pipes its error page on as data (PK-188)
 const CURL_FAIL_HINT =
     'x-mod-guard hint: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)';
+// a script that parses no help flag runs on `--help` (PK-208); some clis run the verb under `<cli> <verb> --help`
+// (obsidian deleted a note, fleet-hazards § the bash tool)
+const RUNNERS = new Set(['node', 'tsx', 'bun', 'deno', 'ts-node']);
+const SCRIPT = /\.(ts|mts|js|mjs)$/;
+const scriptHint = (path: string) =>
+    `x-mod-guard hint: \`${path.split('/').at(-1)}\`'s source names no help flag — \`--help\` runs it; read its header instead`;
+const verbHint = (cli: string) =>
+    `x-mod-guard hint: \`${cli} --help\`, bare, lists its verbs — some clis run the verb under \`<verb> --help\``;
+const isHelp = (args: Command['args']) =>
+    args.some((w) => w.text === '--help' || w.text === '-h');
+// the frame or cclio scripts a command runs with `--help` or `-h`, by real path
+export function helpScripts(command: string, cwd: string, ctx: Context) {
+    const out: string[] = [];
+    for (const c of commands(parse(command), cwd)) {
+        if (!isHelp(c.args)) continue;
+        const script = RUNNERS.has(c.name)
+            ? operands(c.args).find((o) => SCRIPT.test(o))
+            : SCRIPT.test(c.name)
+              ? c.name
+              : undefined;
+        if (!script) continue;
+        const path = resolve(script, c.dir, ctx);
+        if (ctx.home && path.startsWith(`${ctx.home}/frame/`)) out.push(path);
+    }
+    return out;
+}
+// cobra, commander or our own: every verb parses --help and only prints
+const HELP_SAFE = new Set(['x', 'gh', 'git', 'claude', 'obsidian']);
+const SHELL_WORDS = new Set(['for', 'case', 'select', 'function', 'in']);
+// the clis a command runs as `<cli> <verb> --help` that this session has not met yet: their hint fires once
+export function verbHelps(command: string, cwd: string, ctx: Context) {
+    const clis = new Set<string>();
+    for (const c of commands(parse(command), cwd))
+        if (
+            /^[A-Za-z][\w.-]*$/.test(c.name) &&
+            !SHELL_WORDS.has(c.name) &&
+            !HELP_SAFE.has(c.name) &&
+            !RUNNERS.has(c.name) &&
+            !SCRIPT.test(c.name) &&
+            !ctx.helped?.has(c.name) &&
+            c.args.some((w) => w.text === '--help') &&
+            operands(c.args).length
+        )
+            clis.add(c.name);
+    return [...clis];
+}
+// the clis a command runs with a bare `--help`, nothing else
+export function bareHelps(command: string, cwd: string) {
+    return commands(parse(command), cwd)
+        .filter(
+            (c) =>
+                c.name &&
+                c.args.length === 1 &&
+                (c.args[0]?.text === '--help' || c.args[0]?.text === '-h'),
+        )
+        .map((c) => c.name);
+}
 // rg's options that take the next word, and the ones that carry the pattern so no positional one comes first
 const RG_VALUE = new Set([
     '-e',
@@ -182,5 +239,8 @@ export function hints(command: string, cwd: string, ctx: Context) {
                 found.add(LANE_HINT);
         }
     }
+    for (const cli of verbHelps(command, cwd, ctx)) found.add(verbHint(cli));
+    for (const path of helpScripts(command, cwd, ctx))
+        if (ctx.helpless?.has(path)) found.add(scriptHint(path));
     return [...found];
 }
