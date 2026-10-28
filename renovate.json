@@ -1,62 +1,15 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "abandonmentThreshold": "1 year",
-    "commitMessagePrefix": "🌲 evergreen:",
-    "extends": ["config:recommended"],
+    "extends": ["github>dvakatsiienko/frame//renovate/default"],
     "gomod": {
         "enabled": true
     },
-    "internalChecksFilter": "strict",
-    "minimumReleaseAge": "3 days",
-    "osvVulnerabilityAlerts": true,
     "packageRules": [
-        {
-            "description": "toolchain pins are owned by `pnpm toolchain:sync` (installed node + pnpm are the truth): .node-version, packageManager and engines never move here — #41 re-pinned node to a patch fnm did not have",
-            "enabled": false,
-            "matchManagers": ["nodenv", "nvm"]
-        },
-        {
-            "description": "same contract for the manifest fields",
-            "enabled": false,
-            "matchDepTypes": [
-                "packageManager",
-                "engines",
-                "devEngines.runtime",
-                "devEngines.packageManager"
-            ]
-        },
-        {
-            "automerge": true,
-            "automergeType": "pr",
-            "description": "patches: one grouped pr overnight, automerged once ci is green",
-            "groupName": "patches",
-            "matchUpdateTypes": ["patch", "pin", "pinDigest", "digest"],
-            "schedule": ["* 0-5 * * *"]
-        },
-        {
-            "description": "minors: one grouped pr on wednesday morning, merged by hand",
-            "groupName": "minors",
-            "matchUpdateTypes": ["minor"],
-            "schedule": ["* 9-12 * * 3"]
-        },
-        {
-            "automerge": false,
-            "description": "0.x never automerges: semver lets a 0.x package break in a patch, so these ride the wednesday pr for a human to read. renovate's own matchUpdateTypes docs say to do this. last rule on purpose — later rules win, so this overrides the patch tier above. matchCurrentVersion prefers the locked version, so it catches a 0.x behind a range too.",
-            "groupName": "minors",
-            "matchCurrentVersion": "/^0\\./",
-            "schedule": ["* 9-12 * * 3"]
-        },
         {
             "allowedVersions": "<0.6.0",
             "description": "vgpu held on 0.5 until the chords lane ports Aurora.tsx to v2's prepared shaders (0.6 broke its typecheck, 2026-10-21); its line in FRM-277 (chords wisps) lifts this rule",
             "matchPackageNames": ["vgpu"]
         }
     ],
-    "postUpdateOptions": ["gomodTidy"],
-    "prCreation": "not-pending",
-    "rangeStrategy": "bump",
-    "semanticCommits": "disabled",
-    "separateMajorMinor": true,
-    "separateMinorPatch": true,
-    "timezone": "Europe/Kyiv"
+    "postUpdateOptions": ["gomodTidy"]
 }
