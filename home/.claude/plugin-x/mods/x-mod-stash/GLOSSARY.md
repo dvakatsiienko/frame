@@ -9,12 +9,8 @@ The shared row and the one store behind it; every feature below lives in it.
 _Avoid_: deck, band, dock
 
 **Ask**:
-An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it, or until its expiry.
+An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
 _Avoid_: question, todo, pending
-
-**Expiry** ⌛:
-When an ask dies on its own: «halt» (cclio's halt skill takes it) or N turns unpicked (it leaves at the end of the Nth turn after its own unless dima marked it).
-_Avoid_: timeout, ttl
 
 **Sending** 📨:
 The 5 s after dima ticks or replays an ask: the mark shows, no turn takes it yet, and a second press unsends it.

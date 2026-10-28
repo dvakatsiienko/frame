@@ -57,29 +57,12 @@ export function steered<T extends { steer?: string }>(x: T): T {
     ) as T;
 }
 
-// an orbit kept before prompts counted holds each `dies` as a turn end: its turns left become prompts left
-const prompted = (o: StashOrbit): StashOrbit =>
-    o.prompts !== undefined
-        ? o
-        : {
-              ...o,
-              asks: o.asks.map((a) =>
-                  typeof a.dies === 'number'
-                      ? { ...a, dies: Math.max(1, a.dies - o.turns) }
-                      : a,
-              ),
-              prompts: 0,
-          };
-
-export const steeredOrbit = (kept: StashOrbit): StashOrbit => {
-    const o = prompted(kept);
-    return {
-        ...o,
-        asks: o.asks.map(steered),
-        ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
-        ...(o.caught ? { caught: o.caught.map(steered) } : {}),
-    };
-};
+export const steeredOrbit = (o: StashOrbit): StashOrbit => ({
+    ...o,
+    asks: o.asks.map(steered),
+    ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
+    ...(o.caught ? { caught: o.caught.map(steered) } : {}),
+});
 
 // a piece kept before catch v2 has no kind and a turn count in `at`: it reads as a 💡 born at the load
 export const shelved = (x: OrbitCatch, now: number): OrbitCatch =>
@@ -110,23 +93,13 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
 }
 
 // the turn's answers leave, one with a closing word drawn dim one turn more; a marked ask it never resolved unlocks
-// and rides dima's next prompt; an unmarked ask whose `dies` prompt came leaves; an unmarked assumption leaves at its third
-// turn end, the turn it was made in counted; one sent back waits for his prompt
+// and rides dima's next prompt; an unmarked assumption leaves at its third turn end, the turn it was made in counted;
+// one sent back waits for his prompt
 export function turnEnded(o: StashOrbit): StashOrbit {
     return {
         ...o,
         asks: o.asks
-            .filter(
-                (a) =>
-                    !a.isClosed &&
-                    (!a.isResolved || a.word) &&
-                    !(
-                        typeof a.dies === 'number' &&
-                        !a.mark &&
-                        !a.isResolved &&
-                        (o.prompts ?? 0) >= a.dies
-                    ),
-            )
+            .filter((a) => !a.isClosed && (!a.isResolved || a.word))
             .map((a) => (a.isResolved ? { ...a, isClosed: true } : a))
             .map((a) => (a.isLocked ? { ...unsteer(a), isLocked: false } : a)),
         assumed: (o.assumed ?? []).filter(
@@ -137,26 +110,6 @@ export function turnEnded(o: StashOrbit): StashOrbit {
         ),
         turns: o.turns + 1,
     };
-}
-
-// cclio's halt: every ask born to die there leaves, unless a running turn holds it
-export const halted = (o: StashOrbit): StashOrbit => ({
-    ...o,
-    asks: o.asks.filter((a) => a.dies !== 'halt' || a.isLocked),
-});
-
-// an ask's expiry as the tool takes it: «halt», or 1–DIES_MAX of dima's prompts unpicked, counted from its birth
-export const DIES_MAX = 20;
-function diesOf(v: unknown, born: number): OrbitAsk['dies'] | 'bad' {
-    if (v === undefined || v === null || v === '') return undefined;
-    if (v === 'halt') return 'halt';
-    const n = typeof v === 'string' ? Number(v) : v;
-    return typeof n === 'number' &&
-        Number.isInteger(n) &&
-        n >= 1 &&
-        n <= DIES_MAX
-        ? born + n
-        : 'bad';
 }
 
 const markWord = (mark: OrbitAsk['mark']) =>
@@ -223,20 +176,37 @@ function overCap(op: string, texts: string[]) {
           };
 }
 
-// the tool's ops on orbit; `isTurn` decides whether a plan set now counts from this turn's end or the last one
+// a ticked ask shipped as picked, or changed with a new round beside it (PK-204: twice reported done narrower than ticked)
+const AS_TICKED = /\bas ticked\b/i;
+const CHANGED = /\bchanged:\s*\S/i;
+function tickedWord(
+    a: OrbitAsk,
+    word: string,
+    isAmended: boolean,
+): string | undefined {
+    if (a.mark !== 'accepted' || AS_TICKED.test(word)) return undefined;
+    if (!CHANGED.test(word))
+        return `orbit resolve: ${a.id} was ticked; its closing word says «as ticked» when it shipped as picked, or «changed: <what>» beside a follow or an add in the same call`;
+    if (!isAmended)
+        return `orbit resolve: ${a.id} «changed: …» needs a follow or an add in the same call (ops), so dima sees the new round`;
+    return undefined;
+}
+
+// the tool's ops on orbit; `isTurn` decides whether a plan set now counts from this turn's end or the last one;
+// `isAmended`: the same call carries a follow or an add, which a «changed:» resolve needs
 export function orbitOp(
     o: StashOrbit,
     input: Record<string, unknown>,
     isTurn: boolean,
     planMax: number = PLAN_MAX,
     now = 0,
+    isAmended = false,
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
         case 'add': {
             const raw = Array.isArray(input.asks) ? input.asks : [];
             const added: OrbitAsk[] = [];
             let next = o.next;
-            const born = o.prompts ?? 0;
             for (const item of raw) {
                 const v = (item ?? {}) as Record<string, unknown>;
                 const text = oneLine(v.text);
@@ -247,13 +217,7 @@ export function orbitOp(
                     return {
                         deny: `orbit add: link «${link.slice(0, 40)}» is neither an https url nor a file path (/… or ~/…)`,
                     };
-                const dies = diesOf(v.dies, born);
-                if (dies === 'bad')
-                    return {
-                        deny: `orbit add: dies «${String(v.dies).slice(0, 20)}» is neither "halt" nor a whole number of dima's prompts, 1–${DIES_MAX}`,
-                    };
                 added.push({
-                    ...(dies === undefined ? {} : { dies }),
                     hiddenNote: hiddenNote || undefined,
                     id: `o${next++}`,
                     ...(link ? { link } : {}),
@@ -381,6 +345,11 @@ export function orbitOp(
                 input.words && typeof input.words === 'object'
                     ? (input.words as Record<string, unknown>)
                     : {};
+            for (const a of o.asks) {
+                if (!ids.includes(a.id)) continue;
+                const deny = tickedWord(a, oneLine(words[a.id]), isAmended);
+                if (deny) return { deny };
+            }
             const asks = o.asks.map((a) => {
                 if (!ids.includes(a.id)) return a;
                 const word = oneLine(words[a.id]);

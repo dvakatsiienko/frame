@@ -136,8 +136,6 @@ export type OrbitAsk = {
     markedAt?: number;
     // a fresh mark is «sending» until this time (ms): a second press before it unsends it, and no turn takes it yet
     sendAt?: number;
-    // an expiry: «halt» leaves at cclio's halt, a number is dima's prompt count whose turn end takes it while still unmarked
-    dies?: 'halt' | number;
     // the closing word a resolve gave it («landed», «dropped: superseded by o58»)
     word?: string;
     // resolved with a word in a turn that has ended: drawn dim for one more turn, then it leaves
@@ -203,8 +201,6 @@ export type StashOrbit = {
     caught?: OrbitCatch[];
     next: number;
     turns: number;
-    // dima's own prompts sent while 💨 afk was not in effect: the clock an ask's `dies` counts on (o164/o165)
-    prompts?: number;
     plan?: StashPlan;
 };
 

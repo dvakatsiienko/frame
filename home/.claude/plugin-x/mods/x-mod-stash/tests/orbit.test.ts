@@ -435,7 +435,9 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
     await say($, 'go');
-    await orbit($, { ids: ['o1'], op: 'resolve' });
+    await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'as ticked' } });
+    await endTurn($);
+    await say($, 'next');
     await endTurn($);
     expect(await asksShown(ui)).toEqual(['o2']);
 });
@@ -478,127 +480,6 @@ test('an ask resolved with a closing word shows dim with it for one more turn, t
         await asksShown(ui),
     ]).toEqual([['o1'], true, []]);
 });
-
-// expiry counts dima's own prompts, never the session's turns (o164/o165): a member ping or a wake moves nothing
-const peerTurn = async ($: Engine) => {
-    await $.prompt.submit({
-        origin: { kind: 'peer' } as never,
-        text: '[progress] a member ping',
-        wait: false,
-    });
-    await endTurn($);
-};
-
-const diesTwo = ($: Engine) =>
-    orbit($, {
-        asks: [
-            { dies: 2, pick: 'yes', text: 'trash the probe' },
-            { dies: 2, pick: 'yes', text: 'rename the band' },
-        ],
-        op: 'add',
-    });
-
-test('an ask with dies: 2 reads «dies in 2 prompts» and outlives 5 member-woken turns', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await diesTwo($);
-    const label = await texts(ui);
-    for (let i = 0; i < 5; i++) await peerTurn($);
-    expect([
-        label.includes('⌛ dies in 2 prompts'),
-        await asksShown(ui),
-    ]).toEqual([true, ['o1', 'o2']]);
-});
-
-test("an unpicked ask with dies: 2 leaves with dima's second prompt; a ticked one stays", async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await diesTwo($);
-    await ui.press({ key: 'orbit:accepted:o2' });
-    const seen: string[][] = [];
-    for (let i = 0; i < 2; i++) {
-        await say($, 'go on');
-        await endTurn($);
-        seen.push((await asksShown(ui)) as string[]);
-    }
-    expect(seen).toEqual([['o1', 'o2'], ['o2']]);
-});
-
-test("an ask's expiry counts from dima's prompts at its birth, never the session's turns", async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    for (let i = 0; i < 3; i++) await say($, 'queued');
-    await endTurn($);
-    await diesTwo($);
-    await say($, 'go on');
-    await endTurn($);
-    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
-});
-
-test("with 💨 afk on, dima's prompts never count toward an ask's expiry", async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await diesTwo($);
-    w.store.set('afk', { at: 0, on: true });
-    await w.clock.advance(4_000);
-    for (let i = 0; i < 3; i++) {
-        await say($, 'go on');
-        await endTurn($);
-    }
-    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
-});
-
-test("an orbit kept before prompts counted keeps each ask's turns left as prompts", async ($, on) => {
-    world(on);
-    // the orbit a reload finds, until the start writes its migrated copy back
-    let kept: unknown = {
-        asks: [{ dies: 12, id: 'o1', pick: 'yes', text: 'kept' }],
-        next: 2,
-        turns: 10,
-    };
-    on('state.get', (_$, e, next) =>
-        e.key === 'orbit' ? { value: { value: kept, version: 1 } } : next(e),
-    );
-    on('state.set', (_$, e, next) => {
-        if (e.key !== 'orbit') return next(e);
-        kept = e.value;
-        return { value: { isSet: true, version: 2 } };
-    });
-    await start($);
-    const ui = await board($);
-    expect(await texts(ui)).toContain('⌛ dies in 2 prompts');
-});
-
-test('an ask with dies: "halt" leaves when the halt skill expands; the rest stay', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await orbit($, {
-        asks: [
-            { dies: 'halt', pick: 'yes', text: 'retro now?' },
-            { pick: 'yes', text: 'push FRM-1' },
-        ],
-        op: 'add',
-    });
-    expect(await texts(ui)).toContain('⌛ dies at halt');
-    await $.skill.prompt({ skill: 'cclio:halt', text: '# halt' } as never);
-    expect(await asksShown(ui)).toEqual(['o2']);
-});
-
-test('an ask whose dies is neither "halt" nor 1–20 turns is refused', async ($, on) => {
-    world(on);
-    await start($);
-    const r = await orbit($, {
-        asks: [{ dies: 'soon', pick: 'yes', text: 'retro now?' }],
-        op: 'add',
-    });
-    expect(r.deny).toMatch(/dies «soon» is neither "halt" nor a whole number/);
-});
-
 test("a follow-up clears dima's steer on the old question", async ($, on) => {
     world(on);
     await start($);
@@ -649,7 +530,9 @@ test('a tick while the turn runs reaches that turn, and its resolve takes it out
     await ui.press({ key: 'orbit:accepted:o1' });
     await w.clock.advance(5_000);
     const r = await $.tool.call({ command: 'sleep 20', tool: 'Bash' });
-    await orbit($, { ids: ['o1'], op: 'resolve' });
+    await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'as ticked' } });
+    await endTurn($);
+    await say($, 'next');
     await endTurn($);
     expect([(r.context ?? []).join('\n'), await asksShown(ui)]).toEqual([
         expect.stringMatching(
@@ -1938,6 +1821,7 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'items',
             'lines',
             'op',
+            'ops',
             'pick',
             'pieces',
             'role',
@@ -1952,10 +1836,145 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
         props.act?.enum,
     ]).toEqual([
         [],
-        ['dies', 'hiddenNote', 'link', 'pick', 'text'],
+        ['hiddenNote', 'link', 'pick', 'text'],
         ['hiddenNote', 'kind', 'text'],
         ['create', 'edit', 'link', 'step', 'end'],
     ]);
+});
+
+// PK-204: a resolve on a ticked ask says what shipped — «as ticked», or «changed: <what>» beside a new round
+const ticked = async ($: Engine, w: ReturnType<typeof world>) => {
+    const ui = await board($);
+    await add($, ['name the band', 'breathing bars']);
+    await say($, 'go');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
+    await $.tool.call({ command: 'true', tool: 'Bash' });
+    return ui;
+};
+
+for (const words of [{}, { o1: 'shipped' }, { o1: 'landed as planned' }])
+    test(`a ticked ask's resolve with neither «as ticked» nor «changed:» is refused: ${JSON.stringify(words)}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const ui = await ticked($, w);
+        const r = await orbit($, { ids: ['o1'], op: 'resolve', words });
+        await endTurn($);
+        expect([r.deny, await asksShown(ui)]).toEqual([
+            expect.stringMatching(/o1 was ticked.*as ticked.*changed:/),
+            ['o1'],
+        ]);
+    });
+
+test('a ticked ask resolved «as ticked» leaves', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await ticked($, w);
+    const r = await orbit($, {
+        ids: ['o1'],
+        op: 'resolve',
+        words: { o1: 'as ticked: renamed' },
+    });
+    await endTurn($);
+    await say($, 'next');
+    await endTurn($);
+    expect([r.deny, await asksShown(ui)]).toEqual([undefined, []]);
+});
+
+test('a ticked ask resolved «changed:» alone is refused, naming the follow', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ticked($, w);
+    const r = await orbit($, {
+        ids: ['o1'],
+        op: 'resolve',
+        words: { o1: 'changed: kept the old name' },
+    });
+    expect(r.deny).toMatch(/follow or an add in the same call/);
+});
+
+test('a ticked ask resolved «changed:» beside a follow lands both', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await ticked($, w);
+    const r = await orbit($, {
+        ops: [
+            {
+                ids: ['o1'],
+                op: 'resolve',
+                words: { o1: 'changed: the bars stay, the name moves' },
+            },
+            { id: 'o1', op: 'follow', pick: 'pulse', text: 'name the band v2' },
+        ],
+    });
+    expect([r.deny, await asksShown(ui), await texts(ui)]).toEqual([
+        undefined,
+        ['o1'],
+        expect.stringContaining('name the band v2'),
+    ]);
+});
+
+test('an unticked ask resolves with no word, as before', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['name the band', 'breathing bars']);
+    const r = await orbit($, { ids: ['o1'], op: 'resolve' });
+    expect(r.deny).toBeUndefined();
+});
+
+// o83: one call carries many ops; each reports, and a refused one leaves the rest landed
+test('one call carrying an add, a resolve and a plan lands all three', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    const r = await orbit($, {
+        ops: [
+            { asks: [{ pick: 'yes', text: 'trash the probe' }], op: 'add' },
+            { ids: ['o1'], op: 'resolve' },
+            { lines: ['now: build', 'next: test'], op: 'plan' },
+        ],
+    });
+    await endTurn($);
+    expect([
+        String(r.result),
+        await asksShown(ui),
+        (await texts(ui)).includes('now: build'),
+    ]).toEqual([
+        expect.stringMatching(
+            /1 add: added o2.*\n2 resolve: resolved o1\n3 plan: plan set/s,
+        ),
+        ['o2'],
+        true,
+    ]);
+});
+
+test('a call whose resolve is refused reports per op, the other ops landing', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await ticked($, w);
+    const r = await orbit($, {
+        ops: [
+            { asks: [{ pick: 'yes', text: 'trash the probe' }], op: 'add' },
+            { ids: ['o1'], op: 'resolve' },
+            { lines: ['now: build'], op: 'plan' },
+        ],
+    });
+    expect([String(r.result), await asksShown(ui)]).toEqual([
+        expect.stringMatching(
+            /2 resolve: refused — orbit resolve: o1 was ticked/,
+        ),
+        ['o1', 'o2'],
+    ]);
+});
+
+test('a call whose every op is refused is refused', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await orbit($, {
+        ops: [{ op: 'nope' }, { id: 'o9', op: 'follow' }],
+    });
+    expect(r.deny).toMatch(/1 nope: refused.*\n2 follow: refused/s);
 });
 
 test("every phase line keeps the same two arrow buttons; an end's dead one does nothing", async ($, on) => {

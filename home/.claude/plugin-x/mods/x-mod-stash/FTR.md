@@ -503,12 +503,14 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the ask collapses to two dim lines, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else) with its id and text, cut short, then `➡️ <word>` in bold under it, never cut — `✅ o1: <ask>` / `➡️ **landed**` (dima's shots, 20:37, 10-13 18:20)
   - when the turn ends, then it stays, dim, through the next turn; at that turn's end it leaves
   - decision: an ask resolved with no word leaves at its turn end as before (cclio's brief 8, 2026-10-12)
-- ⬜ an ask can carry an expiry
-  - given a session adds an ask with `dies: "halt"`, then its row reads `⌛ dies at halt`, and when cclio's halt skill expands, the ask leaves orbit, unless a running turn holds it
-  - given an ask added with `dies: 2`, then its row reads `⌛ dies in 2 prompts`, counting down to `⌛ dies this turn`; unmarked, it leaves at the end of the turn dima's second prompt after its birth starts; a 🛎️ or 🔁 keeps it and drops the ⌛
-  - and only dima's own prompts count: a member ping, an idle wake or a keep-hot turn moves nothing, and while 💨 afk is on his prompts don't count either; an orbit kept before this counts each ask's turns left as prompts left
-  - decision: expiry runs on dima's prompts, never the session's turns, so an ask waits for him however busy the session is (o164/o165)
-  - given a `dies` that is neither «halt» nor a whole number 1–20, then the tool refuses the add in one line
+- ⬜ a resolve on a ticked ask says what shipped (FRM-427, PK-204)
+  - given dima ticked an ask, when a session resolves it with a closing word holding neither «as ticked» nor «changed: <what>», or with none, then the tool refuses the resolve naming both words
+  - given the word holds «changed: <what>», then it passes only when the same call carries a follow or an add (`ops`); alone it is refused naming the follow
+  - given an ask nobody ticked, then it resolves with any word or none, as before
+  - decision: the ask expiry (`dies`, ⌛) left source: its trial won nothing (`docs/test-drive/orbit-expiry.md`, PK-207)
+- ⬜ one orbit call carries many ops (FRM-427, o83)
+  - given one call with `ops: [{ op: 'add', … }, { op: 'resolve', … }, { op: 'plan', … }]`, then all three land in order and the result reads one line per op
+  - given one op in it is refused, then the result names it «refused — <why>» and the others land; a call whose every op is refused is refused
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan
   - when any prompt goes to the session

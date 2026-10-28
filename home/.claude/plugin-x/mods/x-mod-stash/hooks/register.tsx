@@ -33,7 +33,6 @@ import {
     ORBIT_TOOL,
     PLAN_MAX,
     SEND_MS,
-    halted,
     hasPlanMark,
     isDue,
     isFresh,
@@ -342,8 +341,6 @@ const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
 const LANE_TICKET = /^[A-Z]{2,5}-\d+$/;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
-// cclio's halt skill: an ask added with `dies: "halt"` leaves when it expands
-const HALT_SKILL = /(^|:)halt$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b|\bmobile mode off\b/i;
 // the prompt enhancer: Haiku rewrites the box on a press; prev and new swap the two texts back with no call
@@ -374,14 +371,90 @@ const cardBorder = (surface: string) =>
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
     'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only. a --bg session has no board: its asks go to its coordinator.',
-    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click; dies: "halt" or N of dima's prompts unpicked, your own turns never count. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
-    'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave when it ends, a worded one shown dim a turn more.',
+    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
+    'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave at its end, a worded one dim a turn more. ticked: «as ticked», or «changed: <what>» plus a follow or add.',
+    'ops [{ op, … }]: several ops in one call, a result line each.',
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     'op catch, pieces [{ kind, text, hiddenNote }], clear [ids]: cclio only, her rules come from catch.md.',
-    `op plan, lines: your next ${PLAN_MAX} moves (now, next, then), each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a step whose text stays keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
+    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a step whose text stays keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
+
+// the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
+const ORBIT_PROPS = {
+    act: {
+        enum: ['create', 'edit', 'link', 'step', 'end'],
+        type: 'string',
+    },
+    asks: {
+        items: {
+            properties: {
+                hiddenNote: { type: 'string' },
+                link: { type: 'string' },
+                pick: { type: 'string' },
+                text: { type: 'string' },
+            },
+            required: ['text', 'pick'],
+            type: 'object',
+        },
+        type: 'array',
+    },
+    clear: { items: { type: 'string' }, type: 'array' },
+    current: { type: 'number' },
+    id: { type: 'string' },
+    ids: { items: { type: 'string' }, type: 'array' },
+    items: {
+        items: {
+            properties: {
+                done: { type: 'boolean' },
+                text: { type: 'string' },
+                ticket: { type: 'string' },
+            },
+            required: ['text'],
+            type: 'object',
+        },
+        type: 'array',
+    },
+    lines: { items: { type: 'string' }, type: 'array' },
+    op: {
+        enum: [
+            'add',
+            'assume',
+            'catch',
+            'resolve',
+            'follow',
+            'plan',
+            'glide',
+            'second-wind',
+        ],
+        type: 'string',
+    },
+    pick: { type: 'string' },
+    pieces: {
+        items: {
+            properties: {
+                hiddenNote: { type: 'string' },
+                kind: { type: 'string' },
+                text: { type: 'string' },
+            },
+            required: ['text'],
+            type: 'object',
+        },
+        type: 'array',
+    },
+    role: { enum: [...LANE_ROLES], type: 'string' },
+    session: { type: 'string' },
+    slug: { type: 'string' },
+    step: { type: 'number' },
+    text: { type: 'string' },
+    texts: { items: { type: 'string' }, type: 'array' },
+    title: { type: 'string' },
+    words: {
+        additionalProperties: { type: 'string' },
+        type: 'object',
+    },
+} as const;
 
 let selfId: string | undefined;
 // the id a /clear left, until the next load reads the new one and writes the successor
@@ -3297,6 +3370,91 @@ function waitsOf(
     return { wait: backgroundWait(tasks), waits: backgroundWaits(tasks) };
 }
 
+// one orbit op, as the tool takes it alone or as one item of `ops`
+async function orbitCall(
+    $: EngineInterface,
+    input: Record<string, unknown>,
+    isAmended: boolean,
+): Promise<{ result: string } | { deny: string }> {
+    const hidden = await partRefusal($, input.op);
+    if (hidden) return { deny: hidden };
+    if (input.op === 'second-wind') {
+        const r = await windReady($, input.slug);
+        return 'deny' in r ? r : { result: r.result };
+    }
+    if (input.op === 'glide') {
+        if (!(await isLaneOwner($)))
+            return {
+                deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
+            };
+        const before = await readLanes($);
+        // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id
+        const linkTo =
+            input.act === 'link' && typeof input.session === 'string'
+                ? memberOf(await registry($), input.session.trim())?.base.name
+                : undefined;
+        const op = glideOp(
+            before,
+            linkTo ? { ...input, session: linkTo } : input,
+            (await currentOrbit($)).turns,
+            await $.clock.now(),
+        );
+        if ('deny' in op) return { deny: op.deny };
+        // a steer was about the step it sat on: it drops when the lane's current step is another one — by its text, so
+        // an edit that only moves the step keeps dima's steer
+        const was = new Map(
+            before.map((l) => [l.id, l.items[l.current]?.text]),
+        );
+        for (const l of op.lanes)
+            if (was.has(l.id) && was.get(l.id) !== l.items[l.current]?.text) {
+                await $.store.delete(LANE_STEER + l.id);
+                await $.store
+                    .delete(LANE_STEER_OLD + l.id)
+                    .catch(() => undefined);
+            }
+        await writeLanes($, op.lanes);
+        isWorkTurn = true;
+        return { result: op.result };
+    }
+    // the turn as $.state holds it: a call that lands before a mid-turn reload's start reads a default isBusy
+    const isTurn = (await $.state.get(TURN)).value?.isBusy ?? isBusy;
+    // catch is cclio's shelf alone, known by her registry name at call time
+    if (input.op === 'catch' && !(await isLaneOwner($)))
+        return {
+            deny: `orbit catch: catch is ${LANE_OWNER}'s alone; this session is not her`,
+        };
+    const step = input.step;
+    const isPlan = input.op === 'plan';
+    if (
+        isPlan &&
+        step !== undefined &&
+        !(Number.isInteger(step) && (step as number) >= 0)
+    )
+        return {
+            deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
+        };
+    const op = orbitOp(
+        await currentOrbit($),
+        input,
+        isTurn,
+        await readNumber($, 'lines'),
+        await $.clock.now(),
+        isAmended,
+    );
+    if ('deny' in op) {
+        if (input.op === 'catch') await countCatch($, 'refused');
+        return { deny: op.deny };
+    }
+    await saveOrbit($, op.orbit);
+    const name = isPlan && step !== undefined && (await sessionName($));
+    if (name)
+        await $.store.set(LANE_STEP + bare(name), {
+            at: await $.clock.now(),
+            step,
+        });
+    return { result: op.result };
+}
+
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -3339,80 +3497,12 @@ export const register: Register = (on) => {
                 description: ORBIT_ABOUT,
                 inputSchema: {
                     properties: {
-                        act: {
-                            enum: ['create', 'edit', 'link', 'step', 'end'],
-                            type: 'string',
-                        },
-                        asks: {
-                            items: {
-                                properties: {
-                                    dies: { type: ['string', 'number'] },
-                                    hiddenNote: { type: 'string' },
-                                    link: { type: 'string' },
-                                    pick: { type: 'string' },
-                                    text: { type: 'string' },
-                                },
-                                required: ['text', 'pick'],
-                                type: 'object',
-                            },
+                        ...ORBIT_PROPS,
+                        ops: {
+                            items: { properties: ORBIT_PROPS, type: 'object' },
                             type: 'array',
-                        },
-                        clear: { items: { type: 'string' }, type: 'array' },
-                        current: { type: 'number' },
-                        id: { type: 'string' },
-                        ids: { items: { type: 'string' }, type: 'array' },
-                        items: {
-                            items: {
-                                properties: {
-                                    done: { type: 'boolean' },
-                                    text: { type: 'string' },
-                                    ticket: { type: 'string' },
-                                },
-                                required: ['text'],
-                                type: 'object',
-                            },
-                            type: 'array',
-                        },
-                        lines: { items: { type: 'string' }, type: 'array' },
-                        op: {
-                            enum: [
-                                'add',
-                                'assume',
-                                'catch',
-                                'resolve',
-                                'follow',
-                                'plan',
-                                'glide',
-                                'second-wind',
-                            ],
-                            type: 'string',
-                        },
-                        pick: { type: 'string' },
-                        pieces: {
-                            items: {
-                                properties: {
-                                    hiddenNote: { type: 'string' },
-                                    kind: { type: 'string' },
-                                    text: { type: 'string' },
-                                },
-                                required: ['text'],
-                                type: 'object',
-                            },
-                            type: 'array',
-                        },
-                        role: { enum: [...LANE_ROLES], type: 'string' },
-                        session: { type: 'string' },
-                        slug: { type: 'string' },
-                        step: { type: 'number' },
-                        text: { type: 'string' },
-                        texts: { items: { type: 'string' }, type: 'array' },
-                        title: { type: 'string' },
-                        words: {
-                            additionalProperties: { type: 'string' },
-                            type: 'object',
                         },
                     },
-                    required: ['op'],
                     type: 'object',
                 },
                 // loaded up front: behind ToolSearch a session met «add your asks to orbit» with no schema to call
@@ -3492,14 +3582,12 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off; a halt takes the asks born to die there
+    // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off
     on('skill.prompt', async ($, e, next) => {
         if (MOBILE_SKILL.test(e.skill))
             await $.state
                 .set(MOBILE, !MOBILE_OFF.test(e.text))
                 .catch(() => undefined);
-        if (HALT_SKILL.test(e.skill))
-            await saveOrbit($, halted(await currentOrbit($)));
         return next(e);
     });
 
@@ -3537,12 +3625,6 @@ export const register: Register = (on) => {
         await absorbMarks($);
         await currentOrbit($);
         const isOn = await partsShown($);
-        // an ask's expiry counts dima's own prompts, frozen while 💨 afk is in effect (o164/o165)
-        if (isUser && !(afk && isOn('stash.afk')))
-            await saveOrbit($, {
-                ...orbit,
-                prompts: (orbit.prompts ?? 0) + 1,
-            });
         const marked =
             isUserTurn && isOn('stash.orbit') ? orbit.asks.filter(isFresh) : [];
         // an assumption dima sent back joins his prompt once and leaves orbit
@@ -4588,14 +4670,6 @@ export const register: Register = (on) => {
                             </Text>
                         </Box>
                     );
-                    // an ask with an expiry says what it is beside its controls (dima, 20:37: «⌛ halt» did not read)
-                    const expiryText = (a: OrbitAsk) => {
-                        if (a.dies === 'halt') return '⌛ dies at halt';
-                        const left = (a.dies ?? 0) - (o.prompts ?? 0);
-                        return left < 1
-                            ? '⌛ dies this turn'
-                            : `⌛ dies in ${left} prompt${left === 1 ? '' : 's'}`;
-                    };
                     const askJSX = (
                         a: OrbitAsk,
                         i: number,
@@ -4658,11 +4732,6 @@ export const register: Register = (on) => {
                                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                                     {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
                                     {speakJSX(a.id, `${a.text}. ${a.pick}`)}
-                                    {door === ownDoor &&
-                                    a.dies !== undefined &&
-                                    !a.mark ? (
-                                        <Text dimColor>{expiryText(a)}</Text>
-                                    ) : null}
                                     {a.isLocked ? (
                                         a.steer ? (
                                             <Box flexShrink={1} minWidth={0}>
@@ -6108,102 +6177,39 @@ export const register: Register = (on) => {
     on('tool.call', async ($, e, next) => {
         await flushFields();
         if ((e.tool as string) === ORBIT_TOOL) {
-            const hidden = await partRefusal(
-                $,
-                (e as Record<string, unknown>).op,
-            );
-            if (hidden) return { deny: hidden };
-            if ((e as Record<string, unknown>).op === 'second-wind') {
-                const r = await windReady(
-                    $,
-                    (e as Record<string, unknown>).slug,
-                );
-                return 'deny' in r ? r : ({ result: r.result } as never);
-            }
-        }
-        if (
-            (e.tool as string) === ORBIT_TOOL &&
-            (e as Record<string, unknown>).op === 'glide'
-        ) {
-            if (!(await isLaneOwner($)))
-                return {
-                    deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
-                };
-            const before = await readLanes($);
             const input = e as Record<string, unknown>;
-            // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id
-            const linkTo =
-                input.act === 'link' && typeof input.session === 'string'
-                    ? memberOf(await registry($), input.session.trim())?.base
-                          .name
-                    : undefined;
-            const op = glideOp(
-                before,
-                linkTo ? { ...input, session: linkTo } : input,
-                (await currentOrbit($)).turns,
-                await $.clock.now(),
+            const ops = Array.isArray(input.ops)
+                ? input.ops.filter(
+                      (x): x is Record<string, unknown> =>
+                          typeof x === 'object' && x !== null,
+                  )
+                : [input];
+            if (!ops.length)
+                return { deny: 'orbit: ops needs one { op, … } or more' };
+            const isAmended = ops.some(
+                (x) => x.op === 'follow' || x.op === 'add',
             );
-            if ('deny' in op) return { deny: op.deny };
-            // a steer was about the step it sat on: it drops when the lane's current step is another one — by its text, so
-            // an edit that only moves the step keeps dima's steer
-            const was = new Map(
-                before.map((l) => [l.id, l.items[l.current]?.text]),
-            );
-            for (const l of op.lanes)
-                if (
-                    was.has(l.id) &&
-                    was.get(l.id) !== l.items[l.current]?.text
-                ) {
-                    await $.store.delete(LANE_STEER + l.id);
-                    await $.store
-                        .delete(LANE_STEER_OLD + l.id)
-                        .catch(() => undefined);
-                }
-            await writeLanes($, op.lanes);
-            isWorkTurn = true;
-            return { result: op.result } as never;
-        }
-        if ((e.tool as string) === ORBIT_TOOL) {
-            // the turn as $.state holds it: a call that lands before a mid-turn reload's start reads a default isBusy
-            const isTurn = (await $.state.get(TURN)).value?.isBusy ?? isBusy;
-            // catch is cclio's shelf alone, known by her registry name at call time
-            if (
-                (e as Record<string, unknown>).op === 'catch' &&
-                !(await isLaneOwner($))
-            )
-                return {
-                    deny: `orbit catch: catch is ${LANE_OWNER}'s alone; this session is not her`,
-                };
-            const step = (e as Record<string, unknown>).step;
-            const isPlan = (e as Record<string, unknown>).op === 'plan';
-            if (
-                isPlan &&
-                step !== undefined &&
-                !(Number.isInteger(step) && (step as number) >= 0)
-            )
-                return {
-                    deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
-                };
-            const op = orbitOp(
-                await currentOrbit($),
-                e as Record<string, unknown>,
-                isTurn,
-                await readNumber($, 'lines'),
-                await $.clock.now(),
-            );
-            if ('deny' in op) {
-                if ((e as Record<string, unknown>).op === 'catch')
-                    await countCatch($, 'refused');
-                return { deny: op.deny };
+            if (ops.length === 1) {
+                const r = await orbitCall(
+                    $,
+                    ops[0] as Record<string, unknown>,
+                    isAmended,
+                );
+                return ('deny' in r ? r : { result: r.result }) as never;
             }
-            await saveOrbit($, op.orbit);
-            const name = isPlan && step !== undefined && (await sessionName($));
-            if (name)
-                await $.store.set(LANE_STEP + bare(name), {
-                    at: await $.clock.now(),
-                    step,
-                });
-            return { result: op.result } as never;
+            const lines: string[] = [];
+            let landed = 0;
+            for (const [i, x] of ops.entries()) {
+                const r = await orbitCall($, x, isAmended);
+                if ('deny' in r)
+                    lines.push(`${i + 1} ${String(x.op)}: refused — ${r.deny}`);
+                else {
+                    landed++;
+                    lines.push(`${i + 1} ${String(x.op)}: ${r.result}`);
+                }
+            }
+            const text = lines.join('\n');
+            return (landed ? { result: text } : { deny: text }) as never;
         }
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
