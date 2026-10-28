@@ -47,6 +47,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh fork-bash"
+          },
+          {
+            "type": "command",
             "command": "/Users/dima/frame/cclio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
             "if": "Bash(gh pr merge*)",
             "timeout": 120
@@ -88,7 +92,7 @@
         ]
       },
       {
-        "matcher": "Write|Edit",
+        "matcher": "Bash|Write|Edit",
         "hooks": [
           {
             "type": "command",

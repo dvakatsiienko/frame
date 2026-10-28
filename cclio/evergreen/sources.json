@@ -2,7 +2,7 @@
     {
         "entry": "^v \\d+\\.\\d+ [A-Z][a-z]+ \\d{1,2}, \\d{4}$",
         "markedAt": "2026-10-28",
-        "marker": "v 2.8 October 14, 2026",
+        "marker": "v 2.9 October 22, 2026",
         "name": "raycast",
         "note": "entries by version + date; window management, extensions api, ai",
         "shape": "html",

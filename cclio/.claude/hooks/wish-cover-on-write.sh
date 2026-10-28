@@ -2,11 +2,26 @@
 # a .scratch spec or -proposal write that carries «wish: PK-N» or «wish: FRM-N» runs wish-cover and hands a red back to the session; a red, a missing wish line or a failed run blocks the write
 set -uo pipefail
 event="$(cat)"
+watched() {
+	case "$1" in
+	*/.scratch/*/spec.md | */.scratch/spec.md | */.scratch/*proposal*.md | */.scratch/*-review.md | */scratchpad/*brief*.md) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+# a Bash write (a heredoc, sd, cp) names its target in the command: every watched path in it is checked
+if [ "$(jq -r '.tool_name // ""' <<<"$event")" = "Bash" ]; then
+	cmd="$(jq -r '.tool_input.command // ""' <<<"$event")"
+	cwd="$(jq -r '.cwd // ""' <<<"$event")"
+	for tok in $(grep -oE "[^ \"'<>|;&]*\.md" <<<"$cmd" | sort -u); do
+		case "$tok" in /*) f="$tok" ;; "~"/*) f="$HOME/${tok#\~/}" ;; *) f="$cwd/$tok" ;; esac
+		watched "$f" && [ -f "$f" ] || continue
+		out="$(jq -n --arg f "$f" '{tool_name: "Write", tool_input: {file_path: $f}}' | "$0")"
+		[ -n "$out" ] && { echo "$out"; exit 0; }
+	done
+	exit 0
+fi
 file="$(jq -r '.tool_input.file_path // ""' <<<"$event")"
-case "$file" in
-*/.scratch/*/spec.md | */.scratch/spec.md | */.scratch/*proposal*.md | */.scratch/*-review.md | */scratchpad/*brief*.md) ;;
-*) exit 0 ;;
-esac
+watched "$file" || exit 0
 [ -f "$file" ] || { jq -n --arg msg "wish-cover: $file not found, skipped" '{systemMessage: $msg}'; exit 0; }
 # a wish line is «wish: FRM-N», or its linked form «wish: [FRM-N](url)»
 idline='^wish: *\[?(PK|FRM|BYT)-[0-9]+'

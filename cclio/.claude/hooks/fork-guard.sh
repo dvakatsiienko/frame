@@ -3,6 +3,7 @@
 # usage: fork-guard.sh start            SessionStart, first: record the main, or print the fork banner
 #        fork-guard.sh announce         UserPromptSubmit: the main names each new fork once
 #        fork-guard.sh fork-edit        PreToolUse Edit|Write: a fork edits only inside its own worktree
+#        fork-guard.sh fork-bash        PreToolUse Bash: the same for a shell write (a redirect, tee, an in-place verb)
 #        fork-guard.sh main-only -- cmd  run cmd (stdin passed through) only in the main session
 set -uo pipefail
 state="${FORK_GUARD_STATE:-$HOME/.local/state/cclio}"
@@ -68,17 +69,36 @@ announce)
 		echo "$sid" >>"$seen"
 	done <"$state/forks.log" 2>/dev/null
 	;;
-fork-edit)
-	# PreToolUse on Edit|Write: a fork edits only inside its own worktree, never a main checkout (FRM-430)
+fork-edit | fork-bash)
+	# PreToolUse: a fork writes only inside its own worktree, never a main checkout (FRM-430; Bash: FRM-462)
 	is_main && exit 0
 	input=$(cat)
-	file=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$input")
-	dir=$(dirname "$file")
-	while [ -n "$dir" ] && [ ! -d "$dir" ]; do dir=$(dirname "$dir"); done
-	gitdir=$(git -C "$dir" rev-parse --absolute-git-dir 2>/dev/null) || exit 0
-	common=$(cd "$dir" && cd "$(git rev-parse --git-common-dir)" && pwd -P)
 	# a linked worktree has its own git dir; a main checkout's git dir is the common one
-	[ "$gitdir" != "$common" ] && exit 0
+	in_main_checkout() {
+		local dir=$1 gitdir common
+		while [ -n "$dir" ] && [ ! -d "$dir" ]; do dir=$(dirname "$dir"); done
+		gitdir=$(git -C "$dir" rev-parse --absolute-git-dir 2>/dev/null) || return 1
+		common=$(cd "$dir" && cd "$(git rev-parse --git-common-dir)" && pwd -P)
+		[ "$gitdir" = "$common" ]
+	}
+	if [ "$1" = fork-edit ]; then
+		file=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$input")
+		in_main_checkout "$(dirname "$file")" || exit 0
+	else
+		cmd=$(jq -r '.tool_input.command // ""' <<<"$input")
+		cwd=$(jq -r '.cwd // ""' <<<"$input")
+		hit=""
+		# redirect and tee targets, resolved against the cwd
+		for t in $(grep -oE '(>>?|tee( -a)?) *[^ ;&|<>]+' <<<"$cmd" | sed -E 's/^(>>?|tee( -a)?) *//'); do
+			case "$t" in /dev/*) continue ;; /*) f=$t ;; "~"/*) f="$HOME/${t#\~/}" ;; *) f="$cwd/$t" ;; esac
+			in_main_checkout "$(dirname "$f")" && { hit=$f; break; }
+		done
+		# an in-place verb writes where the shell stands
+		if [ -z "$hit" ] && grep -qE '(^|[;&|] *)(sd|sed -i|mv|cp|trash|rm|git (commit|add|checkout|reset|stash)|x lane commit)( |$)' <<<"$cmd"; then
+			in_main_checkout "$cwd" && hit=$cwd
+		fi
+		[ -n "$hit" ] || exit 0
+	fi
 	sid=$(jq -r '.session_id // ""' <<<"$input" | cut -c1-8)
 	jq -n --arg why "a fork edits only inside its own worktree: call EnterWorktree with name «fork-$sid» first, then edit and commit there (x lane commit); the main merges its branch worktree-fork-$sid" \
 		'{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $why}}'
