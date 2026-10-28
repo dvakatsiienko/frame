@@ -1327,7 +1327,7 @@
             "id": "23:234",
             "parent": "7:236",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a drop</b><br><span style=\"font-size:20px\">inbox.md in the vault, or mid-prompt</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a drop</b><br><span style=\"font-size:20px\">inbox.md in the vault → always an item; mid-prompt → the birth test first</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2143,7 +2143,7 @@
             "id": "23:518",
             "parent": "23:487",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ wish-loss guards</b><br><span style=\"font-size:20px\">M1 + M2 in pocket-check, the word hook; M3 weekly audit from 10-28</span>",
+            "value": "<b style=\"font-size:26px\">🛡️ wish-loss guards</b><br><span style=\"font-size:20px\">M1 + M2 in pocket-check, the word hook; M3 weekly audit: ⏰ 11-02, not built yet</span>",
             "vertex": "1"
         },
         "geometry": {
