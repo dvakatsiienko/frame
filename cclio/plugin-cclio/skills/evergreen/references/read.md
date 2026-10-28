@@ -6,17 +6,25 @@ the `helper` card's whole brief (`cclio:evergreen` day flow, step 1): run §§ 1
 
 ```
 gh pr list -R dvakatsiienko/<repo> --search 'author:app/x-renovate' --json number,title,headRefName,createdAt,statusCheckRollup,body
-brew outdated --json=v2 --greedy   # the brew lane, same digest
-brew list --pinned
-pnpm -C ~/frame outdated -r --format json; pnpm -C ~/projects/bytes outdated -r --format json   # the truth the bot is judged against: after a round every repo package is current (dima, 2026-10-28); exit 1 means rows behind, never a failure
-pnpm ls -g --depth 0 --json         # the pnpm -g lane: every global's notes over the range read like renovate's; cclio runs `pnpm update -g --latest` after the digest (dima, 2026-10-28)
-(cd ~/frame/x/go && go list -m -u -json all); (cd ~/frame/home/.claude/sline && go list -m -u -json all)   # the go lane: direct modules behind, notes read; a quiet lane prints nothing
-uv tool list --outdated            # the uv lane: each tool's notes read; cclio runs `uv tool upgrade --all` after the digest
-fnm ls-remote --lts | tail -1; fnm current; pnpm --version   # the toolchain lane (dima, 2026-10-28): node's notes are read every run, upgraded only on his word when they bring something; pnpm is always upgraded (brew owns it); after either, `pnpm -C ~/frame toolchain:sync` repins both repos
-brew --version                     # brew ITSELF — a major is a digest line; auto-update once jumped 4 → 7 unseen
-gh issue list -R dvakatsiienko/<repo> --author app/x-renovate --search 'Dependency Dashboard' --json number,updatedAt,body   # its vulnerability and abandoned sections are digest lines; untouched for a day → a ⚠️ card first, renovate stopped (the boot digest reds it too)
-pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a wednesday passed since the last mark
+gh issue list -R dvakatsiienko/<repo> --author app/x-renovate --search 'Dependency Dashboard' --json number,updatedAt,body
+pnpm -C ~/frame outdated -r --format json; pnpm -C ~/projects/bytes outdated -r --format json
+brew outdated --json=v2 --greedy; brew list --pinned; brew --version
+pnpm ls -g --depth 0 --json
+(cd ~/frame/x/go && go list -m -u -json all); (cd ~/frame/home/.claude/sline && go list -m -u -json all)
+uv tool list --outdated
+fnm ls-remote --lts | tail -1; fnm current; pnpm --version
+pnpm skill:evergreen-apps
 ```
+
+the lanes, one line each; a quiet lane prints nothing:
+- **renovate** — tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`), age from `createdAt`, ci from `statusCheckRollup`; the dashboard's vulnerability and abandoned sections are digest lines, and a dashboard untouched for a day is a ⚠️ card first: renovate stopped (the boot digest reds it too)
+- **outdated** — the truth the bot is judged against: after a round every repo package is current (dima, 2026-10-28); exit 1 means rows behind, never a failure
+- **brew** — the same digest; brew itself too: a major is a digest line (auto-update once jumped 4 → 7 unseen)
+- **pnpm -g** — every global's notes over the range, read like renovate's
+- **go** — direct modules behind, notes read
+- **uv** — each tool's notes read
+- **toolchain** (dima, 2026-10-28) — node's notes read every run, upgraded only on his word when they bring something; pnpm always upgraded (brew owns it); after either, `pnpm -C ~/frame toolchain:sync` repins both repos
+- after the digest, cclio runs `pnpm update -g --latest` and `uv tool upgrade --all`
 
 **the apps lane** — the self-updating apps neither renovate nor brew reads. `cclio/evergreen/sources.json` is the index and the app list
 (one entry per app: changelog url, read shape, the `marker` = newest entry the last run saw); the
@@ -26,9 +34,6 @@ skip-proof: a run on any day prints everything since the last mark, and the boot
 lane` line says when it is due — **a wednesday has passed since the last mark** — the run fires by itself on a wednesday boot only; any other day it waits for the next wednesday, no ask. a dead url or a
 changed page shape is fixed in the index by hand, the run never searches. the os entries (`macos`, `ios`, `ipados`) are read first, every run, and print only on a new release: macOS is the system we run on, the phone and the iPad his supplementaries (dima, 2026-10-28). a new app = one hunted
 entry; a `⚠️ marker not found` line means the page changed shape — re-seed that marker.
-
-tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`),
-age from `createdAt`, ci from `statusCheckRollup`.
 
 ## 2. read the release — every lane, every updated entry
 
