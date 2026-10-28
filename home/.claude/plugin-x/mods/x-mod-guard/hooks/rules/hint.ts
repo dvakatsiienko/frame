@@ -32,6 +32,12 @@ const LOOP_HINT =
 // rg skips dot dirs: a «0 left» proof over frame missed 4 live pointers under home/.claude (PK-139, 2026-10-14)
 const RG_HINT =
     'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
+// a pipe's exit is its last stage's: `gh api … | jq … && next` runs `next` after a failed gh api (PK-188)
+const PIPESTATUS_HINT =
+    "x-mod-guard hint: the `&&` after `| jq` reads jq's exit, not the producer's — check `${pipestatus[1]}` (zsh) or start with `set -o pipefail`";
+// curl -s exits 0 on a 404 and pipes its error page on as data (PK-188)
+const CURL_FAIL_HINT =
+    'x-mod-guard hint: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)';
 // rg's options that take the next word, and the ones that carry the pattern so no positional one comes first
 const RG_VALUE = new Set([
     '-e',
@@ -138,7 +144,23 @@ export function hints(command: string, cwd: string, ctx: Context) {
         !/<\s*\/dev\/null/.test(command)
     )
         found.add(LOOP_HINT);
-    for (const c of all) {
+    const isPipefail = /\bpipefail\b|\bpipestatus\b/.test(command);
+    for (const [i, c] of all.entries()) {
+        if (
+            !isPipefail &&
+            c.name === 'jq' &&
+            c.sep === '&&' &&
+            all[i - 1]?.sep === '|'
+        )
+            found.add(PIPESTATUS_HINT);
+        if (
+            c.name === 'curl' &&
+            c.sep === '|' &&
+            hasFlag(c.args, ['--silent'], 's') &&
+            !hasFlag(c.args, ['--fail', '--fail-with-body'], 'f') &&
+            !hasFlag(c.args, ['--write-out'], 'w')
+        )
+            found.add(CURL_FAIL_HINT);
         if (c.name === 'echo' && operands(c.args).some(isJsonish))
             found.add(ECHO_JSON_HINT);
         const [sub, verb] = c.args.map((w) => w.text);

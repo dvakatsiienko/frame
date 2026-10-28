@@ -41,6 +41,12 @@
 - ✅ an `rg` that skips dot dirs gets a `--hidden` hint (PK-139)
   - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
   - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
+- ⬜ a pipe into `jq` before `&&` gets a pipestatus hint (FRM-428, PK-188)
+  - given `gh api repos/x/y | jq .name && echo ok`, then it runs as typed and the model reads: the `&&` after `| jq` reads jq's exit, not the producer's — check `${pipestatus[1]}` (zsh) or start with `set -o pipefail`
+  - given a pipe ending in `jq` with nothing after it, `;` after it, or a command naming `pipefail`, then no hint
+- ⬜ a silent curl into a pipe gets a `curl -f` hint (FRM-428, PK-188)
+  - given `curl -s https://example.com | jq .`, then it runs as typed and the model reads: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)
+  - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
 - ⬜ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
   - given a foreground Bash took over 60 s, when the same shape runs again, then no hint names «held the foreground» and the store keeps no `slow:` key
   - decision: the hint is deleted, not re-measured — 197 of 643 calls got it, 82 % under 30 s, none moved (dima's o82)
