@@ -423,10 +423,14 @@ const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
 // a tick is spent per use: `scope` names what it authorized (a target set, a pr, a sign), so one ask quoting a guarded
 // target and a pr carries both once
+// a target counts only quoted in the ask, inside a backtick span («quotes it verbatim», FRM-409)
+const quotesAll = (targets: string[]) => (t: Tick) =>
+    targets.every((x) => t.targets.some((q) => namesWhole(q, x)));
+type Tick = { id: string; text: string; targets: string[]; at: number };
 async function tickFor(
     $: EngineInterface,
     scope: string,
-    covers: (text: string) => boolean,
+    covers: (tick: Tick) => boolean,
 ) {
     const { value: ticks = [] } = await $.state
         .get(TICKS)
@@ -439,7 +443,7 @@ async function tickFor(
             (t) =>
                 t.at <= now &&
                 !spent.includes(`${t.id}@${t.at}:${scope}`) &&
-                covers(t.text),
+                covers(t),
         );
     if (tick)
         await $.state.set(
@@ -812,11 +816,11 @@ export const register: Register = (on) => {
             return enforce(bump, `nothing in this command ran — ${said}`, said);
         }
         // dima's tick on an ask quoting the pr is his word for merge-auto, never for the brake (FRM-427)
-        const merge = mergeAutoWords(typed, cwd);
-        const pr = merge && mergeAutoPr(merge);
+        const mergeArgs = mergeAutoWords(typed, cwd);
+        const pr = mergeArgs && mergeAutoPr(mergeArgs);
         const prTick = async () =>
-            pr && !merge?.includes('--release-brake')
-                ? tickFor($, `pr:${pr}`, (text) => quotesPr(text, pr))
+            pr && !mergeArgs?.includes('--release-brake')
+                ? tickFor($, `pr:${pr}`, (t) => quotesPr(t.text, pr))
                 : undefined;
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
@@ -837,7 +841,14 @@ export const register: Register = (on) => {
                     said,
                 );
             }
-        } else if (merge?.includes('--apply') && (await prTick())) {
+            // the flag goes on a plain call that would run anyway: appended past `&&`, `;`, a comment or a nested shell it
+            // lands outside merge-auto, and an early return there would skip the other refusals
+        } else if (
+            verdict.kind === 'run' &&
+            !/[;&|#\n`$()<>'"]/.test(command) &&
+            mergeArgs?.includes('--apply') &&
+            (await prTick())
+        ) {
             notes.push(
                 `dima's tick quotes pr ${pr}, so it carries his word: --dima-ok ${pr}`,
             );
@@ -855,8 +866,10 @@ export const register: Register = (on) => {
         if (
             verdict.kind === 'run' &&
             isNewSign &&
-            !(await tickFor($, `sign:${sign.id}`, (text) =>
-                isSignAsk(text, sign.id),
+            !(await tickFor(
+                $,
+                `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
+                (t) => isSignAsk(t.text, sign.id),
             ))
         ) {
             const r = {
@@ -873,8 +886,10 @@ export const register: Register = (on) => {
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
             const targets = [...new Set(found.flatMap((r) => r.targets))];
-            const tick = await tickFor($, targets.join(' '), (text) =>
-                targets.every((t) => namesWhole(text, t)),
+            const tick = await tickFor(
+                $,
+                targets.join(' '),
+                quotesAll(targets),
             );
             if (!tick)
                 return enforce(verdict.refusal, message(verdict.refusal));
@@ -898,9 +913,7 @@ export const register: Register = (on) => {
         ].filter((t) => !namesWhole(said, t));
         const unproven =
             named.length &&
-            (await tickFor($, named.join(' '), (text) =>
-                named.every((t) => namesWhole(text, t)),
-            ))
+            (await tickFor($, named.join(' '), quotesAll(named)))
                 ? []
                 : named;
         if (unproven.length) {

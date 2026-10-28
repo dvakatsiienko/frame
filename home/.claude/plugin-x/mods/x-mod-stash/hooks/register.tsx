@@ -1961,21 +1961,10 @@ async function stopRed($: EngineInterface, reply: string) {
     return reds.length ? reds.join('\n') : undefined;
 }
 
-async function isBgSelf($: EngineInterface) {
-    const pid = (await procNow($))?.pid;
-    if (!pid) return false;
-    const home = await $.env.get('HOME');
-    const raw = await $.fs
-        .read(`${home}/.claude/sessions/${pid}.json`)
-        .catch(() => undefined);
-    try {
-        return raw !== undefined && JSON.parse(raw)?.kind === 'bg';
-    } catch {
-        return false;
-    }
-}
-
-async function sessionName($: EngineInterface) {
+// this session's own registry entry, `~/.claude/sessions/<pid>.json`
+async function selfEntry(
+    $: EngineInterface,
+): Promise<{ kind?: unknown; name?: unknown } | undefined> {
     const pid = (await procNow($))?.pid;
     if (!pid) return undefined;
     const home = await $.env.get('HOME');
@@ -1984,11 +1973,19 @@ async function sessionName($: EngineInterface) {
         .catch(() => undefined);
     if (!raw) return undefined;
     try {
-        const { name } = JSON.parse(raw) as { name?: unknown };
-        return typeof name === 'string' && name ? name : undefined;
+        return JSON.parse(raw);
     } catch {
         return undefined;
     }
+}
+
+async function isBgSelf($: EngineInterface) {
+    return (await selfEntry($))?.kind === 'bg';
+}
+
+async function sessionName($: EngineInterface) {
+    const name = (await selfEntry($))?.name;
+    return typeof name === 'string' && name ? name : undefined;
 }
 
 // twin proc-of — a copy lives in x-mod-holds; the twins lint keeps them equal
@@ -6267,8 +6264,12 @@ export const register: Register = (on) => {
                 : [input];
             if (!ops.length)
                 return { deny: 'orbit: ops needs one { op, … } or more' };
+            // a «changed:» resolve needs a follow or an add that lands: each is tried on the orbit as it stands, op is pure
+            const was = await currentOrbit($);
             const isAmended = ops.some(
-                (x) => x.op === 'follow' || x.op === 'add',
+                (x) =>
+                    (x.op === 'follow' || x.op === 'add') &&
+                    !('deny' in orbitOp(was, x, true)),
             );
             if (ops.length === 1) {
                 const r = await orbitCall(

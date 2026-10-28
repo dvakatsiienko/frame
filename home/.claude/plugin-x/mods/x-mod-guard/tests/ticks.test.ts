@@ -196,3 +196,39 @@ test('the o4/o9 replay: one tick quoting a guarded target and a pr passes both d
         [MIRROR, MERGE],
     ]);
 });
+
+// review round 1: the merge-auto flag lands only on a plain call, never past a compound one's other refusals; a sign's
+// label and body each take the tick once; a target counts only quoted in backticks
+test('a compound merge-auto call never gets the flag appended', async ($, on) => {
+    const typed = 'x lane merge-auto 104 --apply && echo ok';
+    const { ran } = world(on, [tick(`merge ${PR}`)]);
+    await bash($, typed);
+    expect(ran).toEqual([typed]);
+});
+
+test('a ticked pr never runs a compound command past its other refusal', async ($, on) => {
+    const { ran } = world(on, [tick(`merge ${PR}`)]);
+    const r = await bash($, 'x lane merge-auto 104 --apply; rm -rf build');
+    expect([r.deny !== undefined, ran]).toEqual([true, []]);
+});
+
+test("one sign tick carries the label and the body's sign line", async ($, on) => {
+    world(on, [tick('✍️ sign FRM-1: orbit ticks')]);
+    on('fs.read', () => ({
+        value: `## signed\n\n✍️ signed ${today()} · body 1\n`,
+    }));
+    const label = await bash($, SIGN);
+    const body = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+    expect([signFlagged(label.context), signFlagged(body.context)]).toEqual([
+        false,
+        false,
+    ]);
+});
+
+test('a target named in prose but never quoted proves nothing', async ($, on) => {
+    const { ran } = world(on, [tick('⚠️ mirror the backup to origin')]);
+    expect([(await bash($, MIRROR)).deny !== undefined, ran]).toEqual([
+        true,
+        [],
+    ]);
+});

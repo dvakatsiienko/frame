@@ -2627,3 +2627,17 @@ test('a reply printing «❓ **Q2**» passes the Stop', async ($, on) => {
         (await stop($, '❓ **Q2** which door?\n- a) state\n- b) file')).block,
     ).toBeUndefined();
 });
+
+// review round 1: «changed:» needs a follow or an add that lands, never one the same call refuses
+test('a «changed:» resolve beside a refused follow is refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ticked($, w);
+    const r = await orbit($, {
+        ops: [
+            { ids: ['o1'], op: 'resolve', words: { o1: 'changed: renamed' } },
+            { id: 'o9', op: 'follow', pick: 'x', text: 'no such ask' },
+        ],
+    });
+    expect(r.deny).toMatch(/1 resolve: refused.*follow or an add/s);
+});

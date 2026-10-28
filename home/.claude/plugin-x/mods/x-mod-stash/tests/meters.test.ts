@@ -177,19 +177,27 @@ test("the ctx bar's ramp reaches red at the compaction point", async ($, on) => 
 });
 
 // dima's wisp (10-28): the mark drawn as a 2px bar across both rows read as a stray bar; it is a hollow cell in the grid
-test("the ctx bar's compaction mark is a hollow cell in each row, never a thin bar", async ($, on) => {
-    meters(on);
-    await measure($, 39, 35);
-    const ui = await band($);
-    const ctx = String((await ui.findAll({ type: 'Svg' }))[1]?.props.source);
-    const marks = [...ctx.matchAll(/<rect class="mark"[^>]*>/g)].map(
-        (m) => m[0],
-    );
-    expect([
-        marks.length,
-        marks.every((r) => r.includes('width="4"') && r.includes('height="4"')),
-    ]).toEqual([2, true]);
-});
+for (const [bar, at] of [
+    ['5h pace', 0],
+    ['ctx compaction', 1],
+] as const)
+    test(`the ${bar} mark is a hollow cell in each row, never a thin bar`, async ($, on) => {
+        meters(on);
+        await measure($, 10, 35);
+        const ui = await band($);
+        const svg = String(
+            (await ui.findAll({ type: 'Svg' }))[at]?.props.source,
+        );
+        const marks = [...svg.matchAll(/<rect class="mark"[^>]*>/g)].map(
+            (m) => m[0],
+        );
+        expect([
+            marks.length,
+            marks.every(
+                (r) => r.includes('width="4"') && r.includes('height="4"'),
+            ),
+        ]).toEqual([2, true]);
+    });
 
 test('an idle band takes the 5h reading another session wrote', async ($, on) => {
     const { clock, files } = meters(on);
