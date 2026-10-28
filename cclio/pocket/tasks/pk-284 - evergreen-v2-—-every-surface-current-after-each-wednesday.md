@@ -47,4 +47,6 @@ W305 (2026-10-28 14:51, dima): can i run it? to see how it works
 ticket: FRM-465
 
 close: W283–W311 moved to FRM-465 (W283 done: bytes pushed 14:28; W284/W300 done: stashes dropped; W298/W303–W305 answered in thread, toolchain lane in read.md)
+
+close: W306 W307 W308 W309 W285 W286 W287 W288 W289 W290 W291 W292 W294 W295 W296 W297 W298 W299 W303 W304 W305  moved to FRM-465
 <!-- SECTION:NOTES:END -->
