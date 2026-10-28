@@ -11,7 +11,7 @@
   - given a Bash call runs one of: `rm` or `unlink` (also `xargs rm`, `find -delete`, `find -exec rm`); a kill by pattern (`pkill`, `killall`, a `kill` fed by `pgrep`, `ps`, `grep` or `awk`); `git reset --hard`, `git checkout --`, `.` or `-f`, `git restore` of the worktree, `git clean -f`, `git stash drop|clear`; `git push --force|-f|--force-with-lease|--delete|--mirror` or a `+ref` / `:ref` refspec, `git branch -D` or `-d -f`, `git worktree remove|prune`; `--no-verify` or `--no-gpg-sign` on `git` or `x`, `git commit -n`, `-c commit.gpgsign=false`, `-c user.name|user.email`, `git config user.name|user.email <value>`; a `mv` in the obsidian vault; a `HOME=` override; `npm -g` or `--location=global`; `pip install`
   - and wherever it sits: behind `sudo -u <user>`, `env`, `timeout`, `nice`, `xargs`; inside `if`, `for`, `while`, `{ … }`; inside a `$( … )` or backticks, quoted or not; in a `bash -c` / `-lc` script or an `eval`
   - when x-mod-guard reads it
-  - then that one command is refused, and the reason opens with the door: `trash`, `claude stop <id>`, `git stash push -- <your paths>`, the `obsidian` cli, `uv pip install`, `brew` / `pnpm add -g`, a run without the flag, `x lane rebase-main` for a force-push (a coder/* branch; any other, «ask cclio») — and «ask cclio» only for a mirror push (its escape names the remote, `# dima-ok: origin`), a remote branch delete, a local branch delete, `git worktree remove|prune` and a x-mod-stash drop, where no safe door exists
+  - then that one command is refused, and the reason opens with the door: `trash`, `claude stop <id>`, `git stash push -u -- <your paths>`, the `obsidian` cli, `uv pip install`, `brew` / `pnpm add -g`, a run without the flag, `x lane rebase-main` for a force-push (a coder/* branch; any other, «ask cclio») — and «ask cclio» only for a mirror push (its escape names the remote, `# dima-ok: origin`), a remote branch delete, a local branch delete, `git worktree remove|prune` and a x-mod-stash drop, where no safe door exists
   - proven live 2026-10-05: a headless `claude -p --plugin-dir x-mod-guard` was told to `rm` a scratch file; the call was refused with the trash door, the file stayed, the event landed in x-mod-guard's store
   - decision: a refusal stops one command, never the session — no dialog, so a missed click can never stall a coder; the coder finds its own way around (dima, FRM-321)
   - decision: quoted text, heredoc bodies and comments are never read as commands — a commit message may name `rm -rf`
@@ -48,7 +48,7 @@
   - given `curl -s https://example.com | jq .`, then it runs as typed and the model reads: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)
   - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
 - ⬜ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
-  - given `node ~/frame/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
+  - given `node ~/frame/cclio/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
   - given a script whose source names a help flag, a run without `--help`, or a script outside `~/frame`, then no hint
 - ⬜ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
   - given `railway logs --help` and no bare `railway --help` this session, then it runs as typed and the model reads: `railway --help`, bare, lists its verbs — some clis run the verb under `<verb> --help`
@@ -327,7 +327,7 @@
   - then a hold whose holder sat idle 30 min, whose pid died, or whose landed file is clean in git does not refuse
   - then a relative path is read from the dir every `cd` before it left, the way every guard rule reads it
 - ⬜ a whole-tree `git stash` is refused while another session holds a file in that repo (FRM-428 rider, warn-only until its verifier says clean)
-  - given A holds `x.ts` in `/repo`, when B runs `git stash`, `git stash -u`, `git stash save …` or `git stash push` with no pathspec there, then it runs and the model reads that rule `stash-sweep` would refuse it, door `git stash push -- <your paths>`, naming A's file
+  - given A holds `x.ts` in `/repo`, when B runs `git stash`, `git stash -u`, `git stash save …` or `git stash push` with no pathspec there, then it runs and the model reads that rule `stash-sweep` would refuse it, door `git stash push -u -- <your paths>`, naming A's file
   - given a pathspec (`git stash push -- y.ts`), a read verb (`list`, `show`, `pop`, `apply`), another repo, or no live holder, then no warning
 - ✅ a Bash command the parser cannot read goes through
   - given A holds `x.ts`

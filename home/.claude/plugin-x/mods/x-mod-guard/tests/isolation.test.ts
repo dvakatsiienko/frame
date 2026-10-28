@@ -44,6 +44,21 @@ for (const typed of CORE_REFUSES)
         ]).toEqual([true, true]);
     });
 
+test("an isolated subagent's refusal carries the door too", async ($, on) => {
+    mock.clock(on, { now: 1_000_000 });
+    mock.store(on);
+    on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
+    on('session.cwd', () => ({ value: TREE }));
+    on('session.root', () => ({ value: TREE }));
+    on('env.get', () => ({ value: '/home' }));
+    on('fs.exists', () => ({ value: false }));
+    on('tool.call', () => ({
+        deny: CORE.replace('This session', 'This agent'),
+    }));
+    const r = await bash($, 'gh api repos/o/r/pulls/1/comments --jq length');
+    expect(r.deny?.includes('scratch script')).toBe(true);
+});
+
 test('a worktree command core lets run gets no door', async ($, on) => {
     world(on, false);
     const r = await bash($, 'gh api repos/o/r/pulls/1/comments --jq length');

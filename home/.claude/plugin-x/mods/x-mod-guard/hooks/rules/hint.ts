@@ -40,7 +40,17 @@ const CURL_FAIL_HINT =
     'x-mod-guard hint: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)';
 // a script that parses no help flag runs on `--help` (PK-208); some clis run the verb under `<cli> <verb> --help`
 // (obsidian deleted a note, fleet-hazards § the bash tool)
-const RUNNERS = new Set(['node', 'tsx', 'bun', 'deno', 'ts-node']);
+// the package runners hand --help to the package they run, never to themselves
+const RUNNERS = new Set([
+    'node',
+    'tsx',
+    'bun',
+    'deno',
+    'ts-node',
+    'npx',
+    'bunx',
+    'pnpx',
+]);
 const SCRIPT = /\.(ts|mts|js|mjs)$/;
 const scriptHint = (path: string) =>
     `x-mod-guard hint: \`${path.split('/').at(-1)}\`'s source names no help flag — \`--help\` runs it; read its header instead`;

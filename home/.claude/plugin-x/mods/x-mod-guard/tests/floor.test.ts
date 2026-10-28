@@ -40,16 +40,16 @@ const FAMILIES = [
     [
         'git reset --hard',
         'git reset --hard',
-        'git stash push -- <your paths>',
+        'git stash push -u -- <your paths>',
         'HEAD',
     ],
     [
         'git checkout --',
         'git checkout -- src/a.ts',
-        'git stash push -- <your paths>',
+        'git stash push -u -- <your paths>',
         'src/a.ts',
     ],
-    ['git clean -f', 'git clean -fd', 'git stash push -- <your paths>', '.'],
+    ['git clean -f', 'git clean -fd', 'git stash push -u -- <your paths>', '.'],
     ['git stash drop', 'git stash drop', 'ask cclio', 'stash@{0}'],
     [
         'force-push',
@@ -150,7 +150,7 @@ const SLIPS = [
     [
         'a substitution in double quotes',
         'x="$(git reset --hard)"',
-        'git stash push -- <your paths>',
+        'git stash push -u -- <your paths>',
     ],
     ['git commit -n', 'git commit -n -m x -- a.ts', 'without the flag'],
     ['sudo with a user', 'sudo -u root rm x', 'trash'],
@@ -172,7 +172,7 @@ const SLIPS = [
     [
         'git checkout -f',
         'git checkout -f main',
-        'git stash push -- <your paths>',
+        'git stash push -u -- <your paths>',
     ],
     ['git worktree prune', 'git worktree prune', 'ask cclio'],
     ['npm --location=global', 'npm install --location=global x', 'pnpm add -g'],

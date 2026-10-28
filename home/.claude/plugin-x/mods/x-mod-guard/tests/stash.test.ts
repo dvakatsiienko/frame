@@ -87,7 +87,7 @@ const swept = (context: readonly string[] | undefined) =>
     (context ?? []).filter(
         (l) =>
             l.includes('stash-sweep') &&
-            l.includes('git stash push -- <your paths>'),
+            l.includes('git stash push -u -- <your paths>'),
     ).length;
 
 // warn-only until its verifier says clean: the stash runs, the model reads what would have been refused

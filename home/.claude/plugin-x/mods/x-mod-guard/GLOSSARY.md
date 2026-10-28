@@ -17,7 +17,7 @@ One context line x-mod-guard adds to a command that runs as typed, naming the x 
 _Avoid_: nudge, tip, warning
 
 **Door**:
-The safe way to do what the refused command meant — `trash`, `git stash -u`, the Edit tool; «ask cclio» only where no safe way exists.
+The safe way to do what the refused command meant — `trash`, `git stash push -u -- <your paths>`, the Edit tool; «ask cclio» only where no safe way exists.
 _Avoid_: fix, alternative, suggestion
 
 **Floor command**:

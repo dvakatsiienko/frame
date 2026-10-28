@@ -105,6 +105,8 @@ const HELP_SAFE = [
     'claude plugin --help',
     'for f in a b; do x $f --help; done',
     '$R sync --help',
+    'npx biome check --help',
+    'bunx tsc --help',
 ] as const;
 for (const typed of HELP_SAFE)
     test(`no verb hint: ${typed}`, async ($, on) => {
