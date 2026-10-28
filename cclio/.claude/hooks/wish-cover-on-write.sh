@@ -4,7 +4,7 @@ set -uo pipefail
 event="$(cat)"
 watched() {
 	case "$1" in
-	*/.scratch/*/spec.md | */.scratch/spec.md | */.scratch/*proposal*.md | */.scratch/*-review.md | */scratchpad/*brief*.md) return 0 ;;
+	*/.scratch/*/spec.md | */.scratch/spec.md | */.scratch/*proposal*.md | */.scratch/*review*.md | */scratchpad/*brief*.md) return 0 ;;
 	*) return 1 ;;
 	esac
 }

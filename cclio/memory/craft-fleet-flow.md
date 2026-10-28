@@ -17,10 +17,10 @@ each stage names its gate, its owner, its door and its wait budget.
 7. **verify** — gate: the verifier says clean, or its round-3 stop goes to cclio; owner: the verifier; door: `x:crew-verifier`; wait: 3 rounds
 8. **land**
    - gate: merge state clean and the deploy Ready, where «no run» is never green
-   - owner: cclio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit and the brake waiting for dima unless his sign pre-approved the merge (dima, 2026-10-22: he does not read prs); cclio pushes
+   - owner: cclio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); cclio pushes
    - door: `x lane merge-auto` (it waits for ci and names why)
    - self-edit path: a self-edit his word or sign approved lands through `gh pr merge` (a stack: `gh stack merge <pr> --squash --yes`) once merge-auto's dry run passes every gate but its self-edit wait, on every layer, with `merged-by-x` labelled by hand
-   - the brake is never pre-approved, it stays his word each time (until: merge-auto takes his word, FRM-458)
+   - the brake is never pre-approved: his word each time, a tick quoting the pr carrying it (FRM-427)
    - archive step: the turn it lands, its spec dir moves to `.scratch/_archive/<feature>/` and its round line joins `docs/test-drive/review-rounds.md`
    - wait: the pr median
 9. **look** — gate: one look card (what, where, try, proven, not checked — never empty), with a shot for anything rendered; owner: dima; door: `SendUserFile`; wait: his next time at the keyboard
