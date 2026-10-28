@@ -90,13 +90,13 @@
   - then it is refused, naming the targets his prompt lacks (rule `dima-ok-unproven`); a peer's message, a task notification, an sdk or a plugin prompt never counts
   - makes: dima's last typed prompt in x-mod-guard's `$.state`, written only by its `prompt.submit` hook, so no tool call can forge it
   - decision: a model appended `# dima-ok:` on its own in a live probe and passed (2026-10-09); dima chose the proof, `$.state` over a file since no Bash parse can stop a write through a variable (FRM-356)
-- ⬜ dima's tick on an orbit ask is his word (FRM-427, FRM-409)
+- ✅ dima's tick on an orbit ask is his word (FRM-427, FRM-409)
   - given dima ticked an open ask whose text quotes every refusal target whole inside a backtick span (`` ⚠️ mirror: `git push --mirror origin` ``; «mirror the backup to origin», unquoted, proves nothing), once its 5 s sending window passed
   - then the guarded command runs with no `# dima-ok` typed, and a marker his prompt never named runs too; the escape is kept with the ask's id
   - then the tick is spent by its first use for what it authorized (a target set, a pr, a sign): a second run is refused, while one ask quoting a guarded target and a pr carries each once (the 10-22 o4/o9 replay); a tick quoting only part of a target (`git push --mirror` for target `origin`) proves nothing
   - given a tick quoting the pr's url in this repo (`github.com/<owner>/<name>/pull/<n>`, the repo the call's `--repo` names or the cwd's origin, as merge-auto reads it), then `x lane merge-auto <pr> --apply --dima-ok <pr>` runs, and a bare `x lane merge-auto <pr> --apply` runs with `--dima-ok <pr>` added right after the call's own words, so a following `&& echo merged` or `# ship it` keeps it (a call in a nested shell gets none); another repo's pr of the same number, or a bare `#<n>`, proves nothing; `--release-brake` still needs his typed word
   - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>:<what it authorized>`
-  - given `x linear set <id> --add-label signed` (or `agent,signed`, `--add-label=signed`), or `x linear body <id> --set <file>` whose file holds a `✍️ signed` or `✍️ re-signed` line dated today, with no tick on a sign ask `✍️ sign <id>: <title>` — its id whole, so «FRM-14 …» or a rename ask naming the id proves nothing — then it is flagged, warn-only until the verifier's clean (rule `sign-untick`, o197); with that tick, it runs, the label and the body's sign line each taking it once
+  - given `x linear set <id> --add-label signed` (or `agent,signed`, `--add-label=signed`), or `x linear body <id> --set <file>` whose file holds a `✍️ signed` or `✍️ re-signed` line dated today, with no tick on a sign ask `✍️ sign <id>: <title>` — its id whole, so «FRM-14 …» or a rename ask naming the id proves nothing — then it is refused (rule `sign-untick`, o197; warn-only until the verifier's clean, 2026-10-28); with that tick, it runs, the label and the body's sign line each taking it once
   - decision: the record is x-mod-stash's `$.state` `ticks`, written only by his 🛎️ press; any plugin reads another's value while only its owner writes it, so no Bash, Edit, Write or orbit op forges one, a tick planted in the shared store is ignored, and a tick authorizes only its own session (cclio's greenlight, 2026-10-28)
   - makes: the last 20 prompts across sessions, each with its origin and every field (text cut to 80 code points), under `origins` in x-mod-guard's `$.store` — what the origin rules are measured against (FRM-358)
   - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session cclio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
@@ -180,11 +180,11 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
-- ⬜ a `#` comment before `;`, `&&` or `||` is flagged, warn-only (FRM-463)
+- ✅ a `#` comment before `;`, `&&` or `||` is refused (FRM-463)
   - given `echo a # deadline: 5 s; trash x`, `echo a # x && y` or `echo a # x || y`
   - then the guard names the fix «move the comment to the line's end»: everything after an unquoted `#` is a comment, so the commands it hides never run
   - given `echo a; trash x # deadline: 5 s`, `echo 'a # b; c'`, or a comment ending its line before the next one, then it runs unflagged
-  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); a comment of prose holding a `;` fires too (1 of 5 shapes in a 3-day replay, 16 fires in 16,275 calls)
+  - decision: warn-only (`WARN_ONLY`) until the verifier's clean, refusing since (FRM-427 round 2, 2026-10-28); a comment of prose holding a `;` fires too (1 of 5 shapes in a 3-day replay, 16 fires in 16,275 calls)
 
 - ⬜ three slips get a hint line, the command runs as typed (PK-67, the 10-11 halt flush)
   - given an `sd`, `sed -i` or `python` write into a file under `~/frame` or `~/projects/bytes`, then the hint names `Edit`, which fires the format and hold hooks a scripted replace skips; an append, a redirect or a path outside the repos gets none

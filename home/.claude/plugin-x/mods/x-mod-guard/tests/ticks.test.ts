@@ -140,9 +140,9 @@ test('a tick quoting another pr proves nothing for this one', async ($, on) => {
 });
 
 // FRM-427 slice 06 (o197): a sign lands only on dima's tick on a sign ask, `✍️ sign <id>: <title>`, the id whole;
-// warn-only until the verifier's clean, so «refused» reads as the would-refuse note
-const signFlagged = (context: readonly string[] | undefined) =>
-    (context ?? []).some((l) => l.includes('rule sign-untick'));
+// refused since the verifier's clean (round 2), the refusal naming the sign ask to tick
+const signFlagged = (r: { deny?: string }) =>
+    (r.deny ?? '').includes('then sign');
 const SIGN = 'x linear set FRM-1 --add-label signed';
 
 for (const [why, ticks] of [
@@ -150,9 +150,9 @@ for (const [why, ticks] of [
     ['a tick on «FRM-14 …»', [tick('✍️ sign FRM-14: a longer ticket')]],
     ['a non-sign tick naming FRM-1', [tick('rename FRM-1 → orbit ticks')]],
 ] as const)
-    test(`a signed label with ${why} is flagged`, async ($, on) => {
+    test(`a signed label with ${why} is refused`, async ($, on) => {
         world(on, [...ticks]);
-        expect(signFlagged((await bash($, SIGN)).context)).toBe(true);
+        expect(signFlagged(await bash($, SIGN))).toBe(true);
     });
 
 for (const typed of [
@@ -160,16 +160,16 @@ for (const typed of [
     'x linear set FRM-1 --add-label agent,signed',
     'x linear set --add-label=signed FRM-1',
 ])
-    test(`a signed label on a sign tick naming FRM-1 runs unflagged: ${typed}`, async ($, on) => {
+    test(`a signed label on a sign tick naming FRM-1 runs: ${typed}`, async ($, on) => {
         const { ran } = world(on, [tick('✍️ sign FRM-1: orbit ticks')]);
         const r = await bash($, typed);
-        expect([signFlagged(r.context), ran]).toEqual([false, [typed]]);
+        expect([signFlagged(r), ran]).toEqual([false, [typed]]);
     });
 
-test('another label runs unflagged with no tick', async ($, on) => {
+test('another label runs with no tick', async ($, on) => {
     world(on);
     const r = await bash($, 'x linear set FRM-1 --add-label agent');
-    expect(signFlagged(r.context)).toBe(false);
+    expect(signFlagged(r)).toBe(false);
 });
 
 const today = () => {
@@ -182,13 +182,13 @@ for (const [line, isFlagged] of [
     [`✍️ re-signed ${today()} — a rider`, true],
     ['✍️ signed 2026-10-23 · body 5a0d10c0', false],
 ] as const)
-    test(`a body set holding «${line.slice(0, 22)}» is ${isFlagged ? 'flagged' : 'unflagged'} with no tick`, async ($, on) => {
+    test(`a body set holding «${line.slice(0, 22)}» is ${isFlagged ? 'refused' : 'run'} with no tick`, async ($, on) => {
         world(on);
         on('fs.read', () => ({
             value: `## wish\n\nx\n\n## signed\n\n${line}\n`,
         }));
         const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
-        expect(signFlagged(r.context)).toBe(isFlagged);
+        expect(signFlagged(r)).toBe(isFlagged);
     });
 
 // the want line, FRM-427 exit 10: the 10-22 o4/o9 case — one ask quoting a guarded target and the pr, ticked once — and
@@ -275,10 +275,7 @@ test("one sign tick carries the label and the body's sign line", async ($, on) =
     }));
     const label = await bash($, SIGN);
     const body = await bash($, 'x linear body FRM-1 --set /repo/b.md');
-    expect([signFlagged(label.context), signFlagged(body.context)]).toEqual([
-        false,
-        false,
-    ]);
+    expect([signFlagged(label), signFlagged(body)]).toEqual([false, false]);
 });
 
 test('a target named in prose but never quoted proves nothing', async ($, on) => {

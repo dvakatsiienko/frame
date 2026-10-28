@@ -20,21 +20,18 @@ function world(on: On) {
 
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, tool: 'Bash' });
-const flagged = (context: readonly string[] | undefined) =>
-    (context ?? []).some(
-        (l) =>
-            l.includes('rule comment-midline') &&
-            l.includes("move the comment to the line's end"),
-    );
+// refused since the verifier's clean (FRM-427, round 2), the fix named in the refusal
+const refused = (r: { deny?: string }) =>
+    (r.deny ?? '').includes("move the comment to the line's end");
 
 for (const typed of [
     'echo a # deadline: 5 s; trash x',
     'echo a # x && y',
     'echo a # x || y',
 ])
-    test(`a comment before more commands is flagged: ${typed}`, async ($, on) => {
-        world(on);
-        expect(flagged((await bash($, typed)).context)).toBe(true);
+    test(`a comment before more commands is refused: ${typed}`, async ($, on) => {
+        const w = world(on);
+        expect([refused(await bash($, typed)), w.ran]).toEqual([true, []]);
     });
 
 for (const typed of [
@@ -42,8 +39,8 @@ for (const typed of [
     "echo 'a # b; c'",
     'echo a # plain note\necho b && echo c',
 ])
-    test(`runs unflagged: ${JSON.stringify(typed)}`, async ($, on) => {
+    test(`runs unrefused: ${JSON.stringify(typed)}`, async ($, on) => {
         const w = world(on);
         const r = await bash($, typed);
-        expect([w.ran, flagged(r.context)]).toEqual([[typed], false]);
+        expect([w.ran, refused(r)]).toEqual([[typed], false]);
     });
