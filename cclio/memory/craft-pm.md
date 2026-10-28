@@ -52,7 +52,7 @@ comparison brief).
 
 dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.» the pm's order for him and cclio; a lane's order is its `lane-plan.md`.
 
-- every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn. the answer is also «which lane?»: a lane takes one milestone's signed chunks (dima, o97; `craft-fleet-flow` § lane init)
+- every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn. the answer is also «which lane?»: a lane walks its area's milestones' signed chunks, one milestone after another (dima o97, o46; `craft-fleet-flow` § lane init)
 - a run-or-move ask names each item's freebie verdict and milestone; a wait on a lane, a window or a date: see `habit-shared-files` § the pocket (dima 2026-10-25 Q2). `x-mod-guard` refuses a milestone-less create or move where the project has milestones (FRM-417, `milestone.ts`); none fits → propose one first; if the guard spams milestones, it turns informative (dima, 2026-10-23)
 - a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `cclio:pm`, opened with the sorting phase
 - the cross-project order is the initiative's milestone queue: a switch moves one to its top, a born one joins it that turn
