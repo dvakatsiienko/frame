@@ -33,7 +33,7 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 
 ## the bash tool
 
-- **a cli new to you is probed with a bare `<cli> --help`, never `<cli> <verb> --help`** — some clis run the verb and ignore the flag. guard: `x-mod-guard` for obsidian; any other unknown cli, none
+- **a cli new to you is probed with a bare `<cli> --help`, never `<cli> <verb> --help`** — some clis run the verb and ignore the flag. guard: `x-mod-guard` refuses it for obsidian and hints it, with the first run, for every other cli new to the session (FRM-428); partial, a hint never stops the run
 - **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the `x-mod-holds` lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits. guard: `x-mod-guard` refuses a Bash write to a file `x-mod-holds` holds; a Bash write still takes no hold and fires no format hook
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
 - **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
