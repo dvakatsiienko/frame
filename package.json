@@ -71,6 +71,7 @@
         "mods:typecheck": "node ./home/.claude/plugin-x/mods/typecheck.ts",
         "mods:writes": "node ./home/.claude/plugin-x/mods/writes.ts",
         "memory-load:replay": "python3 ./script/memory-load-replay.py",
+        "memory:pass": "node ./recipes/nurture-memory/scripts/memory-pass.ts",
         "memory-sync:map": "node ./script/memory-sync-map.ts",
         "memory-sync:copy": "node ./script/memory-sync-copy.ts",
         "notes-obsidian-recover": "node ./script/notes-obsidian-recover.ts",
