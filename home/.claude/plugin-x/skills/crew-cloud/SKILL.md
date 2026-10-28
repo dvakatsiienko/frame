@@ -95,10 +95,10 @@ coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
   `claude-code-on-the-web#archive-sessions`, read 2026-09-28) — no cli verb, no api. an idle
   session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
   closed → the session is archived by the coordinator, never left for dima (his call, 2026-09-28:
-  «if another army appears — you clean»): `claude-in-chrome` on claude.ai/code, after asking him
-  to have that tab open; one line per archived name in the reply. stopgap until a probe lands (the
-  web app answered «session couldn't be found» for a cli-made cloud session): dima archives in the
-  desktop sidebar, hover → archive.
+  «if another army appears — you clean»), one line per archived name in the reply. probed 2026-10-28 (FRM-442): a
+  cli-made cloud session opens on claude.ai/code in cclio's browser pane, but its row menu holds no
+  Archive, only Delete, which stays dima's word; until a door exists, cclio names each finished
+  session in the reply and dima archives it in the desktop sidebar, hover → archive.
 - the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: cclio reads the pr and writes the comment.
 
