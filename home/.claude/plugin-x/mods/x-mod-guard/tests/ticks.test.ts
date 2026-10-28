@@ -126,3 +126,55 @@ test('a tick quoting another pr proves nothing for this one', async ($, on) => {
         ['x lane merge-auto 104 --apply'],
     ]);
 });
+
+// FRM-427 slice 06 (o197): a sign lands only on dima's tick on a sign ask, `✍️ sign <id>: <title>`, the id whole;
+// warn-only until the verifier's clean, so «refused» reads as the would-refuse note
+const signFlagged = (context: readonly string[] | undefined) =>
+    (context ?? []).some((l) => l.includes('rule sign-untick'));
+const SIGN = 'x linear set FRM-1 --add-label signed';
+
+for (const [why, ticks] of [
+    ['no tick', []],
+    ['a tick on «FRM-14 …»', [tick('✍️ sign FRM-14: a longer ticket')]],
+    ['a non-sign tick naming FRM-1', [tick('rename FRM-1 → orbit ticks')]],
+] as const)
+    test(`a signed label with ${why} is flagged`, async ($, on) => {
+        world(on, [...ticks]);
+        expect(signFlagged((await bash($, SIGN)).context)).toBe(true);
+    });
+
+for (const typed of [
+    SIGN,
+    'x linear set FRM-1 --add-label agent,signed',
+    'x linear set --add-label=signed FRM-1',
+])
+    test(`a signed label on a sign tick naming FRM-1 runs unflagged: ${typed}`, async ($, on) => {
+        const { ran } = world(on, [tick('✍️ sign FRM-1: orbit ticks')]);
+        const r = await bash($, typed);
+        expect([signFlagged(r.context), ran]).toEqual([false, [typed]]);
+    });
+
+test('another label runs unflagged with no tick', async ($, on) => {
+    world(on);
+    const r = await bash($, 'x linear set FRM-1 --add-label agent');
+    expect(signFlagged(r.context)).toBe(false);
+});
+
+const today = () => {
+    const d = new Date(NOW);
+    const two = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+};
+for (const [line, isFlagged] of [
+    [`✍️ signed ${today()} · body 5a0d10c0`, true],
+    [`✍️ re-signed ${today()} — a rider`, true],
+    ['✍️ signed 2026-10-23 · body 5a0d10c0', false],
+] as const)
+    test(`a body set holding «${line.slice(0, 22)}» is ${isFlagged ? 'flagged' : 'unflagged'} with no tick`, async ($, on) => {
+        world(on);
+        on('fs.read', () => ({
+            value: `## wish\n\nx\n\n## signed\n\n${line}\n`,
+        }));
+        const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+        expect(signFlagged(r.context)).toBe(isFlagged);
+    });

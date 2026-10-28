@@ -14,6 +14,7 @@ import {
     check,
     foregroundClaude,
     installDirs,
+    isSignAsk,
     mergeAutoPr,
     mergeAutoWords,
     mergeWord,
@@ -24,6 +25,7 @@ import {
     rawPluginUpdate,
     refusals,
     removedTrees,
+    signWord,
 } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
@@ -230,6 +232,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'comment-midline',
     'frozen-lockfile',
+    'sign-untick',
     'raw-plugin-update',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
@@ -833,6 +836,29 @@ export const register: Register = (on) => {
                 `dima's tick quotes pr ${pr}, so it carries his word: --dima-ok ${pr}`,
             );
             return go(`${command} --dima-ok ${pr}`);
+        }
+        // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
+        const sign = signWord(typed, cwd, ctx);
+        const isNewSign =
+            sign !== undefined &&
+            (sign.file === undefined ||
+                new RegExp(
+                    `✍️ (re-)?signed ${day(await $.clock.now())}`,
+                    'u',
+                ).test(await $.fs.read(sign.file).catch(() => '')));
+        if (
+            verdict.kind === 'run' &&
+            isNewSign &&
+            !(await tickFor($, (text) => isSignAsk(text, sign.id)))
+        ) {
+            const r = {
+                door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
+                rule: 'sign-untick',
+                targets: [sign.id],
+                why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
+            };
+            const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
+            return enforce(r, `nothing in this command ran — ${said}`, said);
         }
         if (verdict.kind === 'run') return go();
         // dima's tick on an ask quoting every target is his word, no marker needed (FRM-427)

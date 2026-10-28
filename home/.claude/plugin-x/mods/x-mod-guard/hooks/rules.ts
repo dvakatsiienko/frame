@@ -295,6 +295,49 @@ export function mergeAutoPr(words: string[]) {
         .find((w) => !w.startsWith('-'));
     return pr?.match(/(\d+)\/?$/)?.[1];
 }
+// a sign on a ticket: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
+// reads for a sign line (FRM-427, o197)
+export function signWord(
+    command: string,
+    cwd: string,
+    ctx: Context = {},
+): { id: string; file?: string } | undefined {
+    for (const c of commands(parse(command), cwd)) {
+        const words = c.args.map((w) => w.text);
+        const bare = words.filter((w) => !w.startsWith('-'));
+        const at = bare.findIndex(
+            (w, i) =>
+                w === 'linear' &&
+                (bare[i + 1] === 'set' || bare[i + 1] === 'body'),
+        );
+        if (c.name !== 'x' || at < 0) continue;
+        // the ticket the verb acts on, never a --parent's
+        const id = words
+            .filter((w, i) => TICKET.test(w) && words[i - 1] !== '--parent')
+            .at(-1);
+        if (!id) continue;
+        const value = (flag: string) =>
+            words.flatMap((w, i) =>
+                w === flag
+                    ? [words[i + 1] ?? '']
+                    : w.startsWith(`${flag}=`)
+                      ? [w.slice(flag.length + 1)]
+                      : [],
+            );
+        if (bare[at + 1] === 'set') {
+            const added = value('--add-label').flatMap((v) => v.split(','));
+            if (added.some((l) => l.trim() === 'signed')) return { id };
+            continue;
+        }
+        const [file] = value('--set');
+        if (file) return { file: resolve(file, c.dir, ctx), id };
+    }
+    return undefined;
+}
+const TICKET = /^(FRM|BYT)-\d+$/;
+// a sign ask, `✍️ sign <id>: <title>`, its id matched whole
+export const isSignAsk = (text: string, id: string) =>
+    new RegExp(`(^|\\s)✍️ sign ${id}:`, 'u').test(text);
 // a tick quotes the pr when its text holds the pr's url or `#<n>` as a whole word (FRM-427)
 export const quotesPr = (text: string, pr: string) =>
     new RegExp(`/pull/${pr}(?!\\d)`).test(text) || namesWhole(text, `#${pr}`);
