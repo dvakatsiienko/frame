@@ -57,6 +57,8 @@ if (import.meta.main) {
             desc: { short: 'd', type: 'string' },
             due: { type: 'string' },
             priority: { default: 'next', type: 'string' },
+            // a side channel's item; the main's boot takes it over (FRM-464)
+            side: { type: 'boolean' },
             size: { default: 's', type: 'string' },
             top: { type: 'boolean' },
             type: { default: 'task', type: 'string' },
@@ -71,7 +73,7 @@ if (import.meta.main) {
         !['xs', 's', 'm'].includes(values.size)
     ) {
         console.error(
-            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m] [--priority now|next|later] [--top] [--type task] [--due YYYY-MM-DD]',
+            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m] [--priority now|next|later] [--top] [--side] [--type task] [--due YYYY-MM-DD]',
         );
         process.exit(2);
     }
@@ -109,7 +111,7 @@ if (import.meta.main) {
         '-s',
         'open',
         '-l',
-        values.size,
+        values.side ? `${values.size},side` : values.size,
         '--priority',
         priority,
         '--type',

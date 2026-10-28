@@ -42,6 +42,7 @@ and the next ticket from it; never re-query what it already printed.
   smallest aside included — gets an item in the pocket (`node script/pocket-add.ts`; the contract: `habit-shared-files`), its fold one point per numbered W-line headed `W<n> (<date> inbox, dima)` (`craft-pm` § wishes)
   and its `ordinal`, the checked prep copied to `~/.local/state/cclio/grooms/<date>-inbox.groomed.md` (the groom check reads it), and its inbox line a leading `✅ PK-N` (the halt reset reads it); resolution paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
+- 🍴 a side channel's pocket items are taken over: `backlog task list --labels side --plain`, each `backlog task edit <id> --remove-label side`, sorted like an inbox drop
 
 ## 4. continuity
 - 📬 **pending handoff addressed to you → PULL IT NOW** via `/x:handoff-ingest`; a topic
@@ -99,6 +100,7 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 - fix every finding of both, then print the board (dima, 2026-10-13: «gather everything, fix their findings, only then print the report») — the boot's first and only reply. nothing prints
   before it: no «waiting on» line, no partial board
 - completion: one reply holds the whole board, both reviews folded in
+- 🍴 «side channel» in his boot prompt → with the board, `start_session` user_asked, fresh, `cwd` `~/frame/cclio`, no worktree, title «🦉 cclio (side)», prompt «greet dima, wait»; the fork-guard banner is its role. one at a time: a live `(side`/`(fork` session skips it
 
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
