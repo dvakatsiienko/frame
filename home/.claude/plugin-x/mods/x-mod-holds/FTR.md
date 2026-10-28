@@ -24,6 +24,10 @@ two sessions, A and B, in one checkout.
   - decision: the holder is named by the first 8 characters of its session id; every session in one checkout shares the repo name
   - decision: the hold keeps the real path in its own case and git runs on it, so a symlinked leaf (`~/.claude/CLAUDE.md`) is held like its target
   - decision: the key is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
+- ⬜ an edit refused beneath the holds leaves no hold (FRM-428, PK-264)
+  - given A's first edit of `x.ts` is refused by a hook beneath (x-mod-guard)
+  - when B edits `x.ts`
+  - then the edit goes through; a hold A's earlier edit landed stays held
 - ✅ the holder keeps editing
   - given A holds `x.ts`
   - when A edits it again
