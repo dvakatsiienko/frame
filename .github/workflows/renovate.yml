@@ -1,0 +1,55 @@
+name: renovate
+
+# renovate runs here, on a free public-repo runner, instead of the Mend app: Mend's 3 GB box
+# died in bytes' `pnpm install --lockfile-only`, and nothing opened there for two weeks while
+# the digest read the silence as quiet. the rules live in `renovate/default.json` (frame) and
+# each repo's `renovate.json`; this file only decides WHEN renovate wakes.
+#
+# the cron is hourly on purpose: renovate's own `schedule` in the preset decides what opens,
+# so a late or skipped cron tick only delays, never moves, a window.
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: renovate log level
+        type: choice
+        options: [info, debug]
+        default: info
+      force:
+        description: ignore the schedules and open every pr now
+        type: boolean
+        default: false
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      # 📌 our own App's token, never `GITHUB_TOKEN`: a push made with `GITHUB_TOKEN` starts no
+      # workflow, so renovate's branches would carry no CI and `prCreation: not-pending` would
+      # hold every pr forever. its permissions are listed in the pr that added this file.
+      - id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_KEY }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: renovatebot/github-action@2804199d260ad00c1fae0e9e842888369391c776 # v46.3.10
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+        env:
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_FORCE: ${{ inputs.force && '{"schedule":[]}' || '{}' }}
