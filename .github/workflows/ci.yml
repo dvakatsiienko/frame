@@ -52,8 +52,11 @@ jobs:
       #
       # It cannot catch a semantically wrong config: a rule that parses fine and
       # matches nothing stays green here.
+      # the shared preset bytes extends is read only by renovate too; `--no-global` validates it as repo config
       - name: Validate renovate config
-        run: npx --yes --package renovate -- renovate-config-validator --strict
+        run: |
+          npx --yes --package renovate -- renovate-config-validator --strict
+          npx --yes --package renovate -- renovate-config-validator --strict --no-global renovate/default.json
 
       # `biome ci`, not the repo's own `check` script: that one is
       # `biome check --write`, which rewrites files rather than failing on them,
