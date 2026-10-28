@@ -300,3 +300,19 @@ for (const [age, isRun] of [
             isRun ? 1 : 0,
         ]);
     });
+
+// dima's tick on the verifier's ask (14:59): a tick unlocks a guarded command only when its ask quotes that whole
+// command, never just a target the refusal names
+for (const [quoted, isRun] of [
+    ['git push origin main', false],
+    ['git push --mirror origin', true],
+    ['git  push --mirror   origin', true],
+] as const)
+    test(`a tick quoting \`${quoted}\` ${isRun ? 'unlocks' : 'leaves refused'} a mirror push`, async ($, on) => {
+        const { ran } = world(on, [tick(`⚠️ push: \`${quoted}\``)]);
+        const r = await bash($, MIRROR);
+        expect([r.deny === undefined, ran.length]).toEqual([
+            isRun,
+            isRun ? 1 : 0,
+        ]);
+    });

@@ -424,11 +424,15 @@ const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
 // a tick counts for 2 h after its sending window: a yes for this afternoon's push never unlocks tonight's (dima's o2)
 const TICK_MS = 2 * 60 * 60 * 1000;
-// a tick is spent per use: `scope` names what it authorized (a target set, a pr, a sign), so one ask quoting a guarded
-// target and a pr carries both once
-// a target counts only quoted in the ask, inside a backtick span («quotes it verbatim», FRM-409)
-const quotesAll = (targets: string[]) => (t: Tick) =>
-    targets.every((x) => t.targets.some((q) => namesWhole(q, x)));
+// a tick is spent per use: `scope` names what it authorized (a command, a pr, a sign), so one ask quoting a guarded
+// command and a pr carries both once
+// the ask quotes the whole guarded command in one backtick span, spacing aside, never only a target its refusal names
+// (dima's tick on the verifier's ask, 2026-10-28: `git push origin main` never unlocks `git push --mirror origin`)
+const spaced = (text: string) => text.trim().replace(/\s+/g, ' ');
+const guardedOf = (command: string) =>
+    spaced(command.replace(/\s#\s*dima-ok:.*$/, ''));
+const quotesCommand = (command: string) => (t: Tick) =>
+    t.targets.some((q) => spaced(q) === guardedOf(command));
 type Tick = { id: string; text: string; targets: string[]; at: number };
 async function tickFor(
     $: EngineInterface,
@@ -908,8 +912,8 @@ export const register: Register = (on) => {
             const targets = [...new Set(found.flatMap((r) => r.targets))];
             const tick = await tickFor(
                 $,
-                targets.join(' '),
-                quotesAll(targets),
+                guardedOf(command),
+                quotesCommand(command),
             );
             if (!tick)
                 return enforce(verdict.refusal, message(verdict.refusal));
@@ -933,7 +937,7 @@ export const register: Register = (on) => {
         ].filter((t) => !namesWhole(said, t));
         const unproven =
             named.length &&
-            (await tickFor($, named.join(' '), quotesAll(named)))
+            (await tickFor($, guardedOf(command), quotesCommand(command)))
                 ? []
                 : named;
         if (unproven.length) {
