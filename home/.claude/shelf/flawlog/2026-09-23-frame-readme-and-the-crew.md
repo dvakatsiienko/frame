@@ -1,9 +1,0 @@
-# 2026-09-23 · frame readme, notifications, the space crew · full boot, frame's first day
-
-- the boot's step 8 (open today's flawlog) never ran — the board assembled, work started, and nothing checks the file exists; the digest even printed «no file for today yet». dima found it at the review. the boot needs a gate, not a reminder: step 7's board should carry a «flawlog: <path>» line that only exists once the file does
-- fixed: three ci reds on main in one day, one class — generated svg (banner, sline showcase, brand avatars) that biome's `ci` lints and the local hook never saw: lefthook's glob stopped at `{js,ts,tsx,json,jsonc,html,css}`. svg added to the glob; generated-art dirs excluded in biome.jsonc. lesson: a local gate must cover the same file set as ci's, or it is a different gate
-- fixed: reported cw's commit `425e107` as mine — cw committed at the same second, my commit failed on the hook, `git log -1` printed cw's hash and i relayed it. the check is `git log -1 --format='%h %s'` and reading the subject, never the hash alone (the cmt skill's completion criterion says so; i skipped the read)
-- edited frame's AGENTS.md («the readme stays true») without loading `writing-for-agents` first — the rule `authoring-memory-and-skills` names exactly this miss
-- vhs 0.12 exits 0 and writes no gif (vhs #787, the render context is cancelled before ffmpeg). frames + our own ffmpeg step is the workaround; the reminder watches the issue. environment fact
-- the first CI-watch background job asked for the run 15 s after the push, before github created it, and died on a 404 — a watcher must wait for the run to exist (poll `gh run list` for the head sha) before `gh run watch`
-- the avatar rounds: 12 renders to land a coder that did not read as a cat. pointed corners on a head read «cat» at 16 px every time; the dog signals are floppy ears, a muzzle, a tongue. a pixel sprite needs its species cue in the silhouette, not in the face
