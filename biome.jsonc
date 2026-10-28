@@ -3,22 +3,12 @@
 
   "extends": ["biome-config-polished"],
 
-  // `@theme`, `@source`, `@custom-variant` and friends are tailwind v4 at-rules, and the css
-  // parser reads them as syntax errors until it is told. bytes gets this from ultracite;
-  // frame extends only polished, so it says so itself.
-  "css": { "parser": { "tailwindDirectives": true } },
-  // biome 2.6 formats markdown; the repo's markdown (memory, skills, the pocket) is hand-shaped and
-  // read as instructions, so a reflow is a memory edit, never a formatter's call
-  "markdown": { "formatter": { "enabled": false } },
+  // tailwind directives, markdown and yaml left unformatted, the claude code file classes and vcs
+  // come from biome-config-polished; what stays here is frame's own paths
   "files": {
     "ignoreUnknown": false,
     "includes": [
       "!**/public/**/*",
-      // biome 2.6 formats yaml (2 → 4-space indent), and yaml.formatter.enabled does not hold through
-      // this config's extends chain, so yaml stays out of biome as it was on 2.5: ci-binaries.test.ts
-      // reads ci.yml's job blocks by indent, and pnpm-lock.yaml is pnpm's to write
-      "!**/*.yml",
-      "!**/*.yaml",
       "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
       "!home/.claude/plugin-x/lsp/typescript-native", // vendored ts 7 lsp proxy, pinned sha — never reformatted
       "!.claude/worktrees", // coder worktrees carry their own biome.jsonc — a nested root otherwise
@@ -33,13 +23,6 @@
 
       // Not ours to format — editor/app config consumed verbatim, and themes
       // whose diffs would be pure noise.
-      //
-      // The Claude Code entries are a CLASS, not a list: anything under a
-      // `.claude/` or `.claude-plugin/` directory is written by the CLI itself
-      // (plugin install, skill overrides, runtime settings). Formatting one
-      // starts a churn loop between two owners, and the loser is the pre-commit
-      // hook, which fails without printing an error. Globbed rather than
-      // enumerated so the next such file needs no edit here.
       "!**/import",
       // …except the raycast extensions under it: those are source we write here, not
       // config consumed verbatim. The blanket above had silently excluded them.
@@ -52,9 +35,6 @@
       "import/raycast/extensions",
       "import/raycast/extensions/**",
       "!home/.claude/themes",
-      "!**/.claude/*.json",
-      "!**/.claude-plugin",
-      "!**/skills-lock.json", // the `skills` cli's lockfile, same class
 
       // Same class, different author: the shelf holds what the AGENTS produce
       // — transcript metadata, flaw logs. Written by tools, read by tools, and
@@ -129,12 +109,5 @@
         }
       }
     }
-  ],
-
-  "vcs": {
-    "clientKind": "git",
-    "defaultBranch": "main",
-    "enabled": true,
-    "useIgnoreFile": true
-  }
+  ]
 }
