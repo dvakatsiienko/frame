@@ -437,8 +437,10 @@ describe('the triage stamp (--triaged)', () => {
             try {
                 mkdirSync(join(root, 'script'));
                 for (const file of [
+                    'chat-lines.ts',
                     'pocket-check.ts',
                     'prompt-groom.ts',
+                    'session-registry.ts',
                     'wish-cover.ts',
                 ])
                     copyFileSync(join(here, file), join(root, 'script', file));
@@ -826,8 +828,10 @@ describe('the closed-ticket net, with linear unreachable', () => {
         try {
             mkdirSync(join(root, 'script'));
             for (const file of [
+                'chat-lines.ts',
                 'pocket-check.ts',
                 'prompt-groom.ts',
+                'session-registry.ts',
                 'wish-cover.ts',
             ])
                 copyFileSync(
@@ -878,6 +882,43 @@ describe('the prompt groom (FRM-418)', () => {
 
     test('a groomed one stays green', () => {
         expect(checkPocket(config, [folded], day, day, () => true)).toEqual([]);
+    });
+
+    describe('an orbit steer (FRM-451)', () => {
+        const steered = task(
+            { updated_date: `${day} 09:30` },
+            '\nW302 (2026-10-26 09:15, dima, o69 steer): a steered wish',
+        );
+
+        test('a steer-stamped W-line with no groom reds, naming the id', () => {
+            expect(
+                checkPocket(config, [steered], day, day, () => false),
+            ).toEqual([expect.stringContaining("dima's o69 prompt")]);
+        });
+
+        test('with its groom file it stays green', () => {
+            expect(
+                checkPocket(
+                    config,
+                    [steered],
+                    day,
+                    day,
+                    (_, key) => key === 'o69',
+                ),
+            ).toEqual([]);
+        });
+
+        test('a minute groom does not stand in for the steer', () => {
+            expect(
+                checkPocket(
+                    config,
+                    [steered],
+                    day,
+                    day,
+                    (_, key) => key === '09:15',
+                ),
+            ).toEqual([expect.stringContaining('o69')]);
+        });
     });
 
     test("a side channel's item waits for the main's takeover, not a groom", () => {

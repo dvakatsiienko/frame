@@ -1,5 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
@@ -217,6 +224,73 @@ describe('prompt-groom inbox', () => {
         );
         expect(out.status).toBe(1);
         expect(out.stderr).toContain('inbox-composer.md');
+    });
+});
+
+describe('prompt-groom oN (FRM-451)', () => {
+    const steer = (id: string, text: string) =>
+        JSON.stringify({
+            attachment: { content: [`- ${id} · his steer: «${text}»`] },
+            timestamp: '2026-10-26T09:15:00Z',
+            type: 'attachment',
+        });
+
+    function groom(id: string) {
+        const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
+        try {
+            const grooms = join(root, 'grooms');
+            mkdirSync(join(root, 'bin'));
+            // composer is stubbed up, so nothing is spawned
+            writeFileSync(
+                join(root, 'bin', 'claude'),
+                `#!/bin/sh\necho '[{"name":"composer","status":"idle"}]'\n`,
+                { mode: 0o755 },
+            );
+            const transcript = join(root, 't.jsonl');
+            writeFileSync(
+                transcript,
+                `${steer('o68', 'other')}\n${steer('o69', 'ship it')}\n`,
+            );
+            const out = spawnSync(
+                process.execPath,
+                [
+                    join(import.meta.dirname, 'prompt-groom.ts'),
+                    id,
+                    '--date',
+                    day,
+                    '--transcript',
+                    transcript,
+                ],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                        PROMPT_GROOM_DIR: grooms,
+                    },
+                },
+            );
+            const rawFile = join(grooms, `${day}-${id}.raw.md`);
+            return {
+                out,
+                raw: existsSync(rawFile) && readFileSync(rawFile, 'utf8'),
+            };
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    }
+
+    test('cuts the steer into grooms/<day>-oN.raw.md and prints the chore', () => {
+        const { out, raw } = groom('o69');
+        expect(out.status).toBe(0);
+        expect(raw).toBe('ship it\n');
+        expect(out.stdout).toContain(`${day}-o69.groomed.md`);
+    });
+
+    test('an id the transcript lacks refuses', () => {
+        const { out } = groom('o70');
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('o70');
     });
 });
 

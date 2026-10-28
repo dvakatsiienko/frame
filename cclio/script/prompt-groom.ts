@@ -1,5 +1,5 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
-// usage: node prompt-groom.ts <HH:MM> [--date YYYY-MM-DD]   cut the raw prompt, start composer if down, print the chore brief
+// usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start composer if down, print the chore brief
 //        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
 import { execFileSync } from 'node:child_process';
 import {
@@ -7,9 +7,12 @@ import {
     mkdirSync,
     readFileSync,
     readdirSync,
+    statSync,
     writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
+
+import { steersOf } from './chat-lines.ts';
 
 const home = process.env.HOME ?? '';
 const promptDir =
@@ -22,7 +25,7 @@ const groomDir =
 const RULES_FROM = '2026-10-25 14:50';
 // both shapes: composer's stamp-first `W<n> (<date> <HH:MM>, dima): text` and its drift `W<n> · text (<date> <HH:MM>, dima)`
 const STAMP =
-    /^\s*(?:[*-]\s+)?W\d+(?: \(| · [^\n]*\()(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima\b/gm;
+    /^\s*(?:[*-]\s+)?W\d+(?: \(| · [^\n]*\()(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima(?:, (o\d+) steer)?/gm;
 
 export type Groomed = (day: string, hhmm: string, item: string) => boolean;
 
@@ -60,7 +63,7 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
     }
     return groomed
         .matchAll(STAMP)
-        .some(([, date, time]) => date === day && time === hhmm);
+        .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
 };
 
 // the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of composer's prep
@@ -76,15 +79,18 @@ export function ungroomedStamps(
 ) {
     // a prompt of an earlier day names its date, so the chore command can take --date
     const times = new Set<string>();
-    for (const [, date, hhmm] of text.matchAll(STAMP))
+    for (const [, date, hhmm, id] of text.matchAll(STAMP)) {
+        // an orbit steer is groomed by its id, not its minute
+        const key = id ?? hhmm;
         if (
             date &&
-            hhmm &&
+            key &&
             `${date} ${hhmm}` >= RULES_FROM &&
             date <= day &&
-            !isGroomed(date, hhmm, text)
+            !isGroomed(date, key, text)
         )
-            times.add(date === day ? hhmm : `${hhmm} --date ${date}`);
+            times.add(date === day ? key : `${key} --date ${date}`);
+    }
     return [...times];
 }
 
@@ -121,6 +127,23 @@ export function newUnstamped(text: string, head: string) {
         (line) =>
             !before.has(line) && !new RegExp(STAMP.source, 'm').test(line),
     );
+}
+
+// the newest steer of that id in cclio's transcript (the given one, else the newest under her project dir)
+function steerText(id: string, transcript?: string) {
+    const dir = path.join(home, '.claude/projects/-Users-dima-frame-cclio');
+    const file =
+        transcript ??
+        readdirSync(dir)
+            .filter((name) => name.endsWith('.jsonl'))
+            .map((name) => path.join(dir, name))
+            .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+    if (!file || !existsSync(file)) return undefined;
+    return readFileSync(file, 'utf8')
+        .split('\n')
+        .filter(Boolean)
+        .flatMap((row) => steersOf(JSON.parse(row)))
+        .findLast((steer) => steer.id === id)?.text;
 }
 
 function composerUp() {
@@ -222,18 +245,28 @@ if (import.meta.main) {
                 ? (args[dateAt + 1] ?? '')
                 : new Date().toLocaleDateString('sv');
         const dayFile = path.join(promptDir, `${day}.md`);
-        const raw = existsSync(dayFile)
-            ? rawPromptAt(readFileSync(dayFile, 'utf8'), hhmm)
-            : undefined;
+        // an orbit steer (o69) is cut from cclio's transcript, not the prompts file
+        const isSteer = /^o\d+$/.test(hhmm);
+        const transcriptAt = args.indexOf('--transcript');
+        const raw = isSteer
+            ? steerText(
+                  hhmm,
+                  transcriptAt >= 0 ? args[transcriptAt + 1] : undefined,
+              )
+            : existsSync(dayFile)
+              ? rawPromptAt(readFileSync(dayFile, 'utf8'), hhmm)
+              : undefined;
         if (hhmm === 'inbox') {
             console.error(
                 `an inbox has no raw prompt to cut: ${groomStep(hhmm)}`,
             );
             process.exit(1);
         }
-        if (!/^\d{2}:\d{2}$/.test(hhmm) || !raw) {
+        if (!(isSteer || /^\d{2}:\d{2}$/.test(hhmm)) || !raw) {
             console.error(
-                `no prompt of dima's at ${hhmm || '?'} in ${dayFile}`,
+                isSteer
+                    ? `no steer ${hhmm} in the transcript`
+                    : `no prompt of dima's at ${hhmm || '?'} in ${dayFile}`,
             );
             process.exit(1);
         }
@@ -242,7 +275,9 @@ if (import.meta.main) {
         writeFileSync(rawFile, `${raw}\n`);
         if (!composerUp()) startComposer();
         console.log(
-            `prompt-groom: dima's ${day} ${hhmm} prompt, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} ${hhmm}, dima)», first number <N>, written to ${groomFile(day, hhmm, 'groomed')}`,
+            isSteer
+                ? `prompt-groom: dima's ${day} ${hhmm} steer, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} <HH:MM>, dima, ${hhmm} steer)», first number <N>, written to ${groomFile(day, hhmm, 'groomed')}`
+                : `prompt-groom: dima's ${day} ${hhmm} prompt, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} ${hhmm}, dima)», first number <N>, written to ${groomFile(day, hhmm, 'groomed')}`,
         );
     }
 }

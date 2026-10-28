@@ -53,7 +53,7 @@ function typedOf(entry: Entry): string {
     return /^<(command-|local-command)/.test(raw) ? '' : raw.trim();
 }
 
-function steersOf(entry: Entry): { id: string; text: string }[] {
+export function steersOf(entry: Entry): { id: string; text: string }[] {
     const content = entry.attachment?.content;
     return (Array.isArray(content) ? content : []).flatMap((chunk) =>
         chunk.split('\n').flatMap((row) => {

@@ -213,6 +213,8 @@ describe('wish-cover', () => {
                     'wish-cover.ts',
                     'pocket-check.ts',
                     'prompt-groom.ts',
+                    'chat-lines.ts',
+                    'session-registry.ts',
                 ])
                     copyFileSync(join(here, file), join(root, 'script', file));
                 const tasks = join(root, 'pocket', 'tasks');
