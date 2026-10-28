@@ -8,6 +8,8 @@ the `helper` card's whole brief (`cclio:evergreen` day flow, step 1): run §§ 1
 gh pr list -R dvakatsiienko/<repo> --search 'author:app/renovate' --json number,title,headRefName,createdAt,statusCheckRollup,body
 brew outdated --json=v2 --greedy   # the brew lane, same digest
 brew list --pinned
+pnpm -C ~/frame outdated -r --format json; pnpm -C ~/projects/bytes outdated -r --format json   # the truth the bot is judged against: after a round every repo package is current (dima, 2026-10-28)
+gh issue list -R dvakatsiienko/<repo> --author app/renovate --search 'Dependency Dashboard' --json updatedAt   # older than 2 days → a ⚠️ card first: renovate stopped (bytes sat silent 10-13 → 10-28 under two digests)
 pnpm ls -g --depth 0 --json         # the pnpm -g lane: every global's notes over the range read like renovate's; cclio runs `pnpm update -g --latest` after the digest (dima, 2026-10-28)
 brew --version                     # brew ITSELF — a major is a digest line; auto-update once jumped 4 → 7 unseen
 gh issue list -R dvakatsiienko/<repo> --author app/renovate --search 'Dependency Dashboard' --json number,body   # its vulnerability and abandoned sections are digest lines
