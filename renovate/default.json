@@ -1,0 +1,77 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "abandonmentThreshold": "1 year",
+    "commitMessagePrefix": "🌲 evergreen:",
+    "description": "the shared preset frame and bytes extend (`github>dvakatsiienko/frame//renovate/default`); a repo's own renovate.json keeps only its holds and its own managers",
+    "extends": ["config:recommended"],
+    "gitIgnoredAuthors": ["29139614+renovate[bot]@users.noreply.github.com"],
+    "internalChecksFilter": "strict",
+    "minimumReleaseAge": "3 days",
+    "osvVulnerabilityAlerts": true,
+    "packageRules": [
+        {
+            "description": "toolchain pins are owned by `pnpm toolchain:sync` (installed node + pnpm are the truth): .node-version, packageManager and engines never move here — #41 re-pinned node to a patch fnm did not have",
+            "enabled": false,
+            "matchManagers": ["nodenv", "nvm"]
+        },
+        {
+            "description": "same contract for the manifest fields",
+            "enabled": false,
+            "matchDepTypes": [
+                "packageManager",
+                "engines",
+                "devEngines.runtime",
+                "devEngines.packageManager"
+            ]
+        },
+        {
+            "automerge": true,
+            "automergeType": "pr",
+            "description": "patches: one grouped pr overnight, automerged once ci is green; a repo whose merge deploys prod narrows the merge with its own automergeSchedule",
+            "groupName": "patches",
+            "matchUpdateTypes": ["patch", "pin", "pinDigest", "digest"],
+            "schedule": ["* 0-5 * * *"]
+        },
+        {
+            "description": "minors: one grouped pr on wednesday 07:00–12:00, merged by hand; the window is wide so a late hourly cron still lands in it",
+            "groupName": "minors",
+            "matchUpdateTypes": ["minor"],
+            "schedule": ["* 7-11 * * 3"]
+        },
+        {
+            "dependencyDashboardApproval": true,
+            "description": "majors open no pr: they wait on the dependency dashboard for the major round, which cclio runs on dima's word",
+            "matchUpdateTypes": ["major"]
+        },
+        {
+            "automerge": false,
+            "description": "0.x never automerges: semver lets a 0.x package break in a patch, so these ride the wednesday pr for a human to read. after the patch tier on purpose — later rules win, so this overrides it. matchCurrentVersion prefers the locked version, so it catches a 0.x behind a range too. a 0.x → 1.0 is a major and stays on the dashboard.",
+            "groupName": "minors",
+            "matchCurrentVersion": "/^0\\./",
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "pin",
+                "pinDigest",
+                "digest"
+            ],
+            "schedule": ["* 7-11 * * 3"]
+        },
+        {
+            "allowedVersions": "<8",
+            "description": "prisma held on 7: wait for the stable 8.0, npm's latest is an 8.0 rc (dima, 2026-10-28)",
+            "matchPackageNames": [
+                "prisma",
+                "@prisma/client",
+                "@prisma/adapter-better-sqlite3",
+                "@prisma/adapter-pg"
+            ]
+        }
+    ],
+    "prCreation": "not-pending",
+    "rangeStrategy": "bump",
+    "semanticCommits": "disabled",
+    "separateMajorMinor": true,
+    "separateMinorPatch": true,
+    "timezone": "Europe/Kyiv"
+}
