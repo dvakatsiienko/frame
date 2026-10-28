@@ -1,9 +1,10 @@
 ---
 id: PK-284
 title: evergreen v2 — every surface current after each wednesday
-status: open
+status: done
 assignee: []
 created_date: '2026-10-28T12:53:00Z'
+updated_date: '2026-10-28T13:21:00Z'
 labels:
   - m
 dependencies: []
@@ -39,3 +40,11 @@ W303 (2026-10-28 14:51, dima): toolchain:sync ← I currently have Node installe
 W304 (2026-10-28 14:51, dima): let's run it now.
 W305 (2026-10-28 14:51, dima): can i run it? to see how it works
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+ticket: FRM-465
+
+close: W283–W311 moved to FRM-465 (W283 done: bytes pushed 14:28; W284/W300 done: stashes dropped; W298/W303–W305 answered in thread, toolchain lane in read.md)
+<!-- SECTION:NOTES:END -->
