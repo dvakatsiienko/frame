@@ -548,9 +548,9 @@ test('the breath speed knob stretches every spark: 0.25× runs twice as slow as 
     ]);
 });
 
-// dima's wisp, 10-28 15:19: the bars ended short of the % after a desktop update — the band knows only its columns, so a
-// pixel guess drifts; the drawing stretches to the slot instead, its grid kept
-test('each desktop bar fills its slot: width 100%, the grid stretched to it', async ($, on) => {
+// dima's wisp, 10-28 15:19/15:24: the bars ended short of the % — the desktop clamps an Svg to its slot but never stretches
+// one, and a `width="100%"` drawing fell to the 300 px default; so each bar is drawn wider than its slot and squeezed in
+test('each desktop bar is drawn wider than its slot and squeezed into it', async ($, on) => {
     meters(on);
     await measure($, 39, 35);
     const ui = await band($);
@@ -560,7 +560,7 @@ test('each desktop bar fills its slot: width 100%, the grid stretched to it', as
     expect(
         svgs.map(
             (t) =>
-                t.includes('width="100%"') &&
+                Number(t.match(/ width="([\d.]+)"/)?.[1]) > 100 * 9 - 90 &&
                 t.includes('preserveAspectRatio="none"'),
         ),
     ).toEqual([true, true]);

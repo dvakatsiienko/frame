@@ -2819,9 +2819,9 @@ export function meterSvg(
         });
     });
     return (
-        // the band knows only its columns, so the cell count is a guess: the drawing stretches to whatever the slot gives,
-        // never ending short of the % (dima's wisp, 10-28 15:19, after a desktop update moved the px a column)
-        `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="${BAR_HEIGHT}" viewBox="0 0 ${w} ${BAR_HEIGHT}" preserveAspectRatio="none">` +
+        // the desktop clamps an Svg to its slot and never stretches one: the bar is drawn a little wider than the slot and
+        // squeezed in, so it always ends at the % (dima's wisp, 10-28; a `width="100%"` fell to the 300 px default)
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${BAR_HEIGHT}" viewBox="0 0 ${w} ${BAR_HEIGHT}" preserveAspectRatio="none">` +
         `<style>${BAR_STYLE}</style>` +
         `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
         '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
@@ -6516,11 +6516,12 @@ export const register: Register = (on) => {
                     const ctx = meter?.context;
                     const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
                     // the meters run the band's full width, one bar a row under the row (dima, 20:45: «bring back old wide meters»);
-                    // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot): the label, the % and gaps take ~90px
+                    // the band knows only its columns: 9.6 px a column overshoots every desktop seen (7.8 once, ~9 after the 10-28
+                    // update), and the slot clamps the bar back to its width
                     const svgCells = Math.max(
                         8,
                         Math.floor(
-                            (e.props.bodyColumns * 7.8 - 90) / CELL_STEP,
+                            (e.props.bodyColumns * 9.6 - 90) / CELL_STEP,
                         ),
                     );
                     const barJSX = (
