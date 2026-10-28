@@ -422,6 +422,8 @@ const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 // own (FRM-427); a tick still in its sending window is not his word yet
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
+// a tick counts for 2 h after its sending window: a yes for this afternoon's push never unlocks tonight's (dima's o2)
+const TICK_MS = 2 * 60 * 60 * 1000;
 // a tick is spent per use: `scope` names what it authorized (a target set, a pr, a sign), so one ask quoting a guarded
 // target and a pr carries both once
 // a target counts only quoted in the ask, inside a backtick span («quotes it verbatim», FRM-409)
@@ -443,6 +445,7 @@ async function tickFor(
         .find(
             (t) =>
                 t.at <= now &&
+                now - t.at <= TICK_MS &&
                 !spent.includes(`${t.id}@${t.at}:${scope}`) &&
                 covers(t),
         );

@@ -285,3 +285,18 @@ test('a target named in prose but never quoted proves nothing', async ($, on) =>
         [],
     ]);
 });
+
+// dima's o2 (2026-10-28 14:57): a tick counts for 2 h after its sending window, so a yes for this afternoon's push never
+// quietly unlocks tonight's
+for (const [age, isRun] of [
+    [2 * 3_600_000 - 1_000, true],
+    [2 * 3_600_000 + 1_000, false],
+] as const)
+    test(`a tick ${isRun ? 'just under' : 'just over'} 2 h old ${isRun ? 'still counts' : 'has expired'}`, async ($, on) => {
+        const { ran } = world(on, [tick(`⚠️ mirror: \`${MIRROR}\``, NOW - age)]);
+        const r = await bash($, MIRROR);
+        expect([r.deny === undefined, ran.length]).toEqual([
+            isRun,
+            isRun ? 1 : 0,
+        ]);
+    });
