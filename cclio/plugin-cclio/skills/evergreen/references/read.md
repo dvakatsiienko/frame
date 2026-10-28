@@ -13,7 +13,7 @@ gh issue list -R dvakatsiienko/<repo> --author app/renovate --search 'Dependency
 pnpm ls -g --depth 0 --json         # the pnpm -g lane: every global's notes over the range read like renovate's; cclio runs `pnpm update -g --latest` after the digest (dima, 2026-10-28)
 (cd ~/frame/x/go && go list -m -u -json all); (cd ~/frame/home/.claude/sline && go list -m -u -json all)   # the go lane: direct modules behind, notes read; a quiet lane prints nothing
 uv tool list --outdated            # the uv lane: each tool's notes read; cclio runs `uv tool upgrade --all` after the digest
-fnm ls-remote --lts | tail -1; fnm current; pnpm --version   # the toolchain lane: a newer node or pnpm → cclio installs it, then `pnpm -C ~/frame toolchain:sync` repins both repos
+fnm ls-remote --lts | tail -1; fnm current; pnpm --version   # the toolchain lane (dima, 2026-10-28): node's notes are read every run, upgraded only on his word when they bring something; pnpm is always upgraded (brew owns it); after either, `pnpm -C ~/frame toolchain:sync` repins both repos
 brew --version                     # brew ITSELF — a major is a digest line; auto-update once jumped 4 → 7 unseen
 gh issue list -R dvakatsiienko/<repo> --author app/renovate --search 'Dependency Dashboard' --json number,body   # its vulnerability and abandoned sections are digest lines
 pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a wednesday passed since the last mark
