@@ -48,11 +48,9 @@ function world(on: On) {
         },
     }));
     on('fs.read', (_$, e) =>
-        e.path.endsWith('/catch.md')
-            ? { value: 'CATCH RULES' }
-            : e.path in files
-              ? { value: files[e.path] ?? '' }
-              : { deny: 'no such file' },
+        e.path in files
+            ? { value: files[e.path] ?? '' }
+            : { deny: 'no such file' },
     );
     on('fs.write', (_$, e) => {
         files[e.path] = e.text;
@@ -177,21 +175,6 @@ const SCENARIOS: Record<string, Scenario> = {
         fire: ($) => say($, 'go'),
         op: { op: 'assume', texts: ['one more'] },
         trace: /wrong assumption/,
-    },
-    'stash.catch': {
-        arm: async ($, _w, ui) => {
-            await orbit($, {
-                op: 'catch',
-                pieces: [{ hiddenNote: 'n', kind: '💡', text: 'f1' }],
-            });
-            await ui.board.press({ key: 'orbit:think:c1' });
-        },
-        fire: ($) => say($, 'go'),
-        op: {
-            op: 'catch',
-            pieces: [{ hiddenNote: 'n', kind: '💡', text: 'f2' }],
-        },
-        trace: /🐠|CATCH RULES/,
     },
     'stash.cost': {
         // the world is cclio's session, and dima asks her about cost

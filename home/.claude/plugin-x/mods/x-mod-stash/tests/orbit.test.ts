@@ -1591,7 +1591,7 @@ test("orbit's description fits the 2048 chars cc shows the model, every op named
     const ops = [...described.matchAll(/^op (\w+)/gmu)].map((m) => m[1]);
     expect([described.length <= 2048, ops]).toEqual([
         true,
-        ['add', 'resolve', 'follow', 'assume', 'catch', 'plan', 'glide'],
+        ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);
 });
 
@@ -1877,7 +1877,7 @@ test('a phases steer alone never joins a turn', async ($, on) => {
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toMatch(/🌔 phases: dima/);
 });
 
-// the engine drops an argument its schema does not name: catch's `clear` reached no op until it joined (cclio, 21:08)
+// the engine drops an argument its schema does not name: an arg missing here reaches no op (cclio, 21:08)
 test("orbit's schema names every argument its ops read", async ($, on) => {
     world(on);
     await start($);
@@ -1888,7 +1888,6 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
         [
             'act',
             'asks',
-            'clear',
             'current',
             'id',
             'ids',
@@ -1897,7 +1896,6 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'op',
             'ops',
             'pick',
-            'pieces',
             'role',
             'session',
             'text',
@@ -1906,12 +1904,10 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'words',
         ].filter((name) => !(name in props)),
         inner('asks'),
-        inner('pieces'),
         props.act?.enum,
     ]).toEqual([
         [],
         ['hiddenNote', 'link', 'pick', 'text'],
-        ['hiddenNote', 'kind', 'text'],
         ['create', 'edit', 'link', 'step', 'end'],
     ]);
 });
@@ -2640,4 +2636,51 @@ test('a «changed:» resolve beside a refused follow is refused', async ($, on) 
         ],
     });
     expect(r.deny).toMatch(/1 resolve: refused.*follow or an add/s);
+});
+
+// dima, 2026-10-28 15:33: the 🐠 catch shelf is gone, settings row included — «full delete but surgical»
+test('orbit has no catch op: the schema names none, a call is refused as unknown', async ($, on) => {
+    world(on);
+    await start($);
+    const props = schema.properties ?? {};
+    const r = await orbit($, {
+        op: 'catch',
+        pieces: [{ hiddenNote: 'n', kind: '💡', text: 'f1' }],
+    });
+    expect([
+        (props.op?.enum ?? []).includes('catch'),
+        'pieces' in props || 'clear' in props,
+        /\bcatch\b/.test(described),
+        r.deny,
+    ]).toEqual([
+        false,
+        false,
+        false,
+        expect.stringMatching(/op is .*got «catch»/),
+    ]);
+});
+
+test('an orbit kept with caught pieces loads without them, and the board draws no 🐠', async ($, on) => {
+    world(on);
+    let kept: unknown = {
+        asks: [{ id: 'o1', pick: 'yes', text: 'push FRM-1' }],
+        caught: [{ at: 0, id: 'c2', kind: '💡', text: 'an old piece' }],
+        next: 3,
+        turns: 1,
+    };
+    on('state.get', (_$, e, next) =>
+        e.key === 'orbit' ? { value: { value: kept, version: 1 } } : next(e),
+    );
+    on('state.set', (_$, e, next) => {
+        if (e.key !== 'orbit') return next(e);
+        kept = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    const ui = await board($);
+    expect([
+        'caught' in (kept as object),
+        (await texts(ui)).includes('🐠'),
+        await asksShown(ui),
+    ]).toEqual([false, false, ['o1']]);
 });

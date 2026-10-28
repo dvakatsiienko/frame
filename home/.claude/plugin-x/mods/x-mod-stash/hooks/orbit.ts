@@ -3,7 +3,6 @@
 import type {
     OrbitAsk,
     OrbitAssumption,
-    OrbitCatch,
     StashOrbit,
     StashPlan,
 } from '../types/stash.d.ts';
@@ -19,13 +18,6 @@ export const ASSUMED_MAX = 3;
 // an ask's one link: an https url, or an absolute or home path to a file
 export const ASK_LINK = /^(https:\/\/|\/|~\/)\S+$/;
 export const ASSUMED_TURNS = 3;
-// 🐠 catch v2 (PK-96): catch.md's seven kinds, a piece ≤60 chars, 5 rows drawn and 7 held; the rules live in catch.md
-export const CATCH_KINDS = ['📍', '🧷', '✅', '🎯', '⏰', '💡', '📦'] as const;
-export const CATCH_TEXT_MAX = 60;
-export const CATCH_SHOWN = 5;
-export const CATCH_HELD_MAX = 7;
-// the kind a full shelf drops first, oldest first: a fact can be found again, a receipt or a reminder cannot
-const CATCH_DROPS = '💡';
 
 export const oneLine = (v: unknown) =>
     typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
@@ -57,16 +49,15 @@ export function steered<T extends { steer?: string }>(x: T): T {
     ) as T;
 }
 
-export const steeredOrbit = (o: StashOrbit): StashOrbit => ({
-    ...o,
-    asks: o.asks.map(steered),
-    ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
-    ...(o.caught ? { caught: o.caught.map(steered) } : {}),
-});
-
-// a piece kept before catch v2 has no kind and a turn count in `at`: it reads as a 💡 born at the load
-export const shelved = (x: OrbitCatch, now: number): OrbitCatch =>
-    x.kind ? x : { ...x, at: now, kind: CATCH_DROPS };
+// an orbit kept before the 🐠 catch shelf left (dima, 2026-10-28) drops its pieces at the load
+export const steeredOrbit = (kept: StashOrbit): StashOrbit => {
+    const { caught: _, ...o } = kept as StashOrbit & { caught?: unknown };
+    return {
+        ...o,
+        asks: o.asks.map(steered),
+        ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
+    };
+};
 
 // a steer the turn carried has gone out: its field clears for the next one, so a second tick never resends it
 const unsteer = <T extends { steer?: string }>(x: T): T => {
@@ -105,9 +96,6 @@ export function turnEnded(o: StashOrbit): StashOrbit {
         assumed: (o.assumed ?? []).filter(
             (x) => x.isWrong || o.turns + 2 - x.at < ASSUMED_TURNS,
         ),
-        caught: o.caught?.map((x) =>
-            x.isLocked ? { ...unsteer(x), isLocked: false } : x,
-        ),
         turns: o.turns + 1,
     };
 }
@@ -122,32 +110,6 @@ export const wrongText = (wrong: OrbitAssumption[]) =>
         ...wrong.map(
             (x) =>
                 `- ${x.id} wrong assumption: ${x.text}` +
-                (x.steer ? ` · his steer: «${x.steer.trim()}»` : ''),
-        ),
-    ].join('\n');
-
-// the 🤔 pieces no turn has taken yet
-export const isThought = (x: OrbitCatch) => Boolean(x.isAsked) && !x.isLocked;
-
-// a turn takes the 🤔 pieces once: they lock to it and stay held until dima clears them
-export function lockThought(o: StashOrbit, pieces: OrbitCatch[]): StashOrbit {
-    const ids = new Set(pieces.map((x) => x.id));
-    return {
-        ...o,
-        caught: o.caught?.map((x) =>
-            ids.has(x.id) ? { ...x, isAsked: false, isLocked: true } : x,
-        ),
-    };
-}
-
-// what the session reads for each 🤔: the piece, its hidden note, his steer
-export const thinkText = (pieces: OrbitCatch[]) =>
-    [
-        `🐠 catch: dima pressed 🤔 on ${pieces.length === 1 ? 'a piece' : `${pieces.length} pieces`}: explain each in this reply, plainly, with the why. the piece stays until he clears it.`,
-        ...pieces.map(
-            (x) =>
-                `- ${x.id}: ${x.text}` +
-                (x.hiddenNote ? ` · your note: «${x.hiddenNote}»` : '') +
                 (x.steer ? ` · his steer: «${x.steer.trim()}»` : ''),
         ),
     ].join('\n');
@@ -199,7 +161,6 @@ export function orbitOp(
     input: Record<string, unknown>,
     isTurn: boolean,
     planMax: number = PLAN_MAX,
-    now = 0,
     isAmended = false,
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
@@ -267,73 +228,6 @@ export function orbitOp(
                     next,
                 },
                 result: `assumed ${added.map((x) => x.id).join(', ')}; dima sees them under orbit`,
-            };
-        }
-        case 'catch': {
-            const raw = Array.isArray(input.pieces) ? input.pieces : [];
-            const clear = idsOf(input.clear);
-            const was = o.caught ?? [];
-            const unknown = clear.filter((id) => !was.some((x) => x.id === id));
-            if (unknown.length)
-                return {
-                    deny: `orbit catch: no piece ${unknown.join(', ')}; held: ${was.map((x) => x.id).join(', ') || 'none'}`,
-                };
-            let next = o.next;
-            const added: OrbitCatch[] = [];
-            for (const item of raw) {
-                const v = (item ?? {}) as Record<string, unknown>;
-                const text = oneLine(v.text);
-                if (!text) continue;
-                const kind = oneLine(v.kind);
-                if (!(CATCH_KINDS as readonly string[]).includes(kind))
-                    return {
-                        deny: `orbit catch: kind «${kind || 'none'}» is not one of ${CATCH_KINDS.join(' ')}; catch.md names them`,
-                    };
-                if ([...text].length > CATCH_TEXT_MAX)
-                    return {
-                        deny: `orbit catch: «${[...text].slice(0, 40).join('')}…» is ${[...text].length} chars; keep it ≤${CATCH_TEXT_MAX}, the why in hiddenNote`,
-                    };
-                const hiddenNote = oneLine(v.hiddenNote);
-                added.push({
-                    at: now,
-                    hiddenNote: hiddenNote || undefined,
-                    id: `c${next++}`,
-                    kind,
-                    text,
-                });
-            }
-            if (!added.length && !clear.length)
-                return {
-                    deny: 'orbit catch: pieces needs one { kind, text, hiddenNote } or more, or clear: [ids]',
-                };
-            // at the cap the oldest 💡 leaves; with none to drop the add is refused and nothing moves
-            let kept = was.filter((x) => !clear.includes(x.id));
-            const dropped: string[] = [];
-            while (kept.length + added.length > CATCH_HELD_MAX) {
-                const fact = kept.find(
-                    (x) =>
-                        (x.kind ?? CATCH_DROPS) === CATCH_DROPS && !x.isLocked,
-                );
-                if (!fact)
-                    return {
-                        deny: `orbit catch: ${kept.length} held, the cap is ${CATCH_HELD_MAX} and no ${CATCH_DROPS} to drop; clear one first`,
-                    };
-                dropped.push(fact.id);
-                kept = kept.filter((x) => x !== fact);
-            }
-            return {
-                orbit: { ...o, caught: [...kept, ...added], next },
-                result: [
-                    added.length
-                        ? `caught ${added.map((x) => x.id).join(', ')}; dima sees them under 🐠 catch, never repeat them in the reply`
-                        : '',
-                    clear.length ? `cleared ${clear.join(', ')}` : '',
-                    dropped.length
-                        ? `the cap dropped the oldest ${CATCH_DROPS}: ${dropped.join(', ')}`
-                        : '',
-                ]
-                    .filter(Boolean)
-                    .join('; '),
             };
         }
         case 'resolve': {
@@ -434,7 +328,7 @@ export function orbitOp(
         }
         default:
             return {
-                deny: `orbit: op is add, assume, catch, resolve, follow, plan or glide, got «${String(input.op)}»`,
+                deny: `orbit: op is add, assume, resolve, follow, plan or glide, got «${String(input.op)}»`,
             };
     }
 }

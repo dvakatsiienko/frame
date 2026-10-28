@@ -152,23 +152,6 @@ export type OrbitAssumption = {
     steer?: string;
 };
 
-// 🐠 a piece of cclio's keep-in-mind shelf (FRM-386, PK-96): one of catch.md's seven kinds, born at `at` (ms); 🤔 asks
-// for it to be explained, locked while a turn takes it; it stays until dima or cclio clears it
-export type OrbitCatch = {
-    id: string;
-    // one of CATCH_KINDS; a piece kept before the kinds has none and reads as 💡
-    kind?: string;
-    text: string;
-    hiddenNote?: string;
-    steer?: string;
-    at: number;
-    isAsked?: boolean;
-    isLocked?: boolean;
-};
-
-// the 🐠 catch experiment's counts for one day, read at its keep-or-kill
-export type CatchCount = { thinks: number; clears: number; refused: number };
-
 // quiet comms (PK-93): a [progress] ping from a member, held off cclio's thread until her next turn
 // `canary`: the nonce of a `/quiet-canary` test ping, so its run finds its own log lines
 export type QuietPing = {
@@ -207,7 +190,6 @@ export type StashTick = {
 export type StashOrbit = {
     asks: OrbitAsk[];
     assumed?: OrbitAssumption[];
-    caught?: OrbitCatch[];
     next: number;
     turns: number;
     plan?: StashPlan;

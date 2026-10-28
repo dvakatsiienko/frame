@@ -79,7 +79,7 @@ test('an unmarked assumption leaves at its third turn end, one sent back stays',
 
 test('an unknown op is told every op the tool takes', () => {
     expect(orbitOp(orbitOf(), { op: 'nope' }, false)).toEqual({
-        deny: 'orbit: op is add, assume, catch, resolve, follow, plan or glide, got «nope»',
+        deny: 'orbit: op is add, assume, resolve, follow, plan or glide, got «nope»',
     });
 });
 
@@ -92,19 +92,9 @@ test("a steer the turn carried clears at the turn's end; an unsent draft stays",
                 ask('o1', { isLocked: true, mark: 'accepted', steer: 'sent' }),
                 ask('o2', { steer: 'draft' }),
             ],
-            caught: [
-                { at: 1, id: 'c1', isLocked: true, steer: 'sent', text: 't' },
-                { at: 1, id: 'c2', steer: 'draft', text: 't' },
-            ],
         }),
     );
-    expect([
-        ended.asks.map((a) => a.steer),
-        ended.caught?.map((x) => x.steer),
-    ]).toEqual([
-        [undefined, 'draft'],
-        [undefined, 'draft'],
-    ]);
+    expect(ended.asks.map((a) => a.steer)).toEqual([undefined, 'draft']);
 });
 
 test('a text kept as «note» before the rename reads as its steer', () => {
@@ -126,12 +116,10 @@ test('an orbit kept before the rename keeps every held text as its steer', () =>
         ...orbitOf({ asks: [ask('o1')] }),
         asks: [{ ...ask('o1'), note: 'ask text' }],
         assumed: [{ at: 0, id: 'a1', note: 'assumed text', text: 't' }],
-        caught: [{ at: 0, id: 'c1', note: 'caught text', text: 't' }],
     } as unknown as StashOrbit;
     const o = steeredOrbit(legacy);
-    expect([
-        o.asks[0]?.steer,
-        o.assumed?.[0]?.steer,
-        o.caught?.[0]?.steer,
-    ]).toEqual(['ask text', 'assumed text', 'caught text']);
+    expect([o.asks[0]?.steer, o.assumed?.[0]?.steer]).toEqual([
+        'ask text',
+        'assumed text',
+    ]);
 });

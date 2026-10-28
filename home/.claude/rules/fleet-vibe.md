@@ -23,7 +23,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   and dima edits to show an idea; cclio reads the edit back and builds from it (dima, 2026-10-18).
   home: `cclio/blueprints/`.
 - **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`). <!-- cc -->
-- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push**. <!-- cc -->
+- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping; «slipstreamed» = delivered that way; its opposite is **push**. <!-- cc -->
 - **🐦‍🔥 second wind** — a session's context reset onto its own handoff: dima presses a session's 🐦‍🔥 on the board (or says the word), the session finishes its step, writes a CST, and the mod compacts and ingests it at the turn's end (`cclio:checkpoint` for cclio, x-mod-stash). <!-- cc -->
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
