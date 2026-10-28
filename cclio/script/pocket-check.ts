@@ -80,7 +80,9 @@ export function checkPocket(
             wishIds.length === 0
         )
             report('wish born without W-lines: fold it into W1… lines');
-        for (const hhmm of ungroomedStamps(text, today, isGroomed))
+        // a side channel's prompts reach no prompt log; the main folds its asks from the closing report (FRM-464)
+        const side = (front.lists.labels ?? []).includes('side');
+        for (const hhmm of side ? [] : ungroomedStamps(text, today, isGroomed))
             report(
                 `W-lines of dima's ${hhmm} prompt folded with no groom (FRM-418): ${groomStep(hhmm)}, then refold from the groomed file`,
             );

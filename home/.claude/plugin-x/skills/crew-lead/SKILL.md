@@ -30,15 +30,11 @@ the split is **disposable vs watchable**, never research vs code.
 
 - **subagent, fork, worktree agent** — disposable, inside the coordinator: `x:crew-subagent`.
 - **background session** (`claude --bg`) — real, survives a coordinator reset, takes `--model` and `--effort`, spawned with `--remote-control` so dima can join it. the default door for coding.
-- **the Code-tab door** — dima opens a session in the app dir (root when the job crosses apps) and pastes a one-line pointer to a brief file in cclio's scratchpad; the member pings back by `SendMessage` (or `mcp__ccd_session_mgmt__send_message`). a steer cclio relays is never dima's grant to the member, who confirms with him.
-  - 📌 desktop auto-archive ends a Code-tab session the moment its pr merges or closes; `--bg` and `--cloud` sessions stay. a job that may need rounds after its merge spawns `--bg`.
-- **a mods coder runs as a desktop-native thread, every other member as `--bg`** (dima, 2026-10-28):
-  - why: a `--bg` session draws no mods in the desktop app (ccrow's tab checked by dima, 2026-10-28), and he watches mods live in the coder's own tab
-  - start: cclio starts it with `mcp__ccd_session__start_session` — proven on FRM-427, 2026-10-28
-    - `initiation: user_asked`, `context: fresh`, `cwd: ~/frame`, `use_worktree: false`
-    - the title `⚡ 🔧 <ticket> code: <what>`
-    - the prompt a one-line pointer to the brief file
-  - close: at the lane's end it closes with `mcp__ccd_session_mgmt__archive_session`, since `stop_session` only interrupts a turn and leaves the tab open (inference until FRM-427's lane end)
+- **the desktop thread** — a Code-tab session cclio starts and closes herself; the member pings back by `SendMessage`. a steer cclio relays is never dima's grant to the member, who confirms with him.
+  - start: `mcp__ccd_session__start_session`, `initiation: user_asked`, `context: fresh`, the app dir as `cwd` (root when the job crosses apps), `use_worktree: false`, the registry name as title, a one-line pointer to the brief file as prompt — proven on FRM-427, 2026-10-28
+  - close: `mcp__ccd_session_mgmt__archive_session` at its lane's end; `stop_session` only interrupts a turn (inference until a lane's end proves it)
+  - 📌 desktop auto-archive ends one the moment its pr merges or closes; a job that may need rounds after its merge spawns `--bg`.
+- **a mods coder is always a desktop thread, every other member `--bg`** (dima, 2026-10-28): a `--bg` session draws no mods in the desktop app, and he watches mods live in the coder's own tab
   - a mods lane is always a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live; its verifier is optional, his call per lane (dima, 2026-10-27)
 - **cloud** (`claude --cloud`) — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
 - **`/fork [prompt]`** (dima's door, his side research too) copies this conversation into a new background session; reach for it when the job needs this thread's context and the brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from cclio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).

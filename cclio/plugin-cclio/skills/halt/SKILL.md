@@ -15,18 +15,17 @@ turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes hi
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a spawned session, an
   unanswered question put to dima, an unpushed commit
-- **fork branches first**: `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged, kept or dropped on his word
+- **side channels and forks first**: each live `(side` or `(fork` session (`list_sessions`) sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged, kept or dropped on his word
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
   — every hit without the `standing` label gets one line: «closable, because …» (his word
   closes, with a closing word in the body) or «stays, because …». a ticket that landed (a merged pr, or a quick lane's push)
   with asks left open moves to Todo, never closes, and its `## signed` block gets
   `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again; its way back is a re-sign (`shape-lane-dispatch` § 6)
-- **the stop list holds only members the fleet spawned with `--bg`**; a session the digest marks 👤 is dima's own (desktop or remote control) and stays as he left it.
-- **the coder roster, two questions per coder: retro filed in `~/.local/state/x/lanes/<feature>/`? `claude stop <id>` done?** a coder
-  has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
-  calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +
-  `kill -0 <pid>`) and written as dead when dead. **🎼 composer is on the roster too**: `claude stop <its id from claude agents --json>` beside ccrow's, the boot starts it fresh. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
+- **the stop list holds the `--bg` members and the lane coders' desktop threads** (the digest names them); a session it marks 👤 is dima's own and stays as he left it.
+- **the coder roster, two questions per coder: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
+  `claude agents --json` is the check, never memory. **a coder the CST
+  calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎼 composer is on the roster too**: `claude stop <its id>` beside ccrow's, the boot starts it fresh. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
   plan so it is not lost
 - sort each into **can land now** (small, finishable here) · **must park** (needs a resume
   note) · **already done**

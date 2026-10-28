@@ -879,4 +879,12 @@ describe('the prompt groom (FRM-418)', () => {
     test('a groomed one stays green', () => {
         expect(checkPocket(config, [folded], day, day, () => true)).toEqual([]);
     });
+
+    test("a side channel's item waits for the main's takeover, not a groom", () => {
+        const side = task(
+            { labels: ['m', 'side'], updated_date: `${day} 09:30` },
+            '\nW301 (2026-10-26 09:12, dima): a fold',
+        );
+        expect(checkPocket(config, [side], day, day, () => false)).toEqual([]);
+    });
 });
