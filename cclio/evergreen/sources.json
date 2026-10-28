@@ -1,7 +1,7 @@
 [
     {
         "entry": "^v \\d+\\.\\d+ [A-Z][a-z]+ \\d{1,2}, \\d{4}$",
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "v 2.8 October 14, 2026",
         "name": "raycast",
         "note": "entries by version + date; window management, extensions api, ai",
@@ -9,8 +9,8 @@
         "url": "https://www.raycast.com/changelog"
     },
     {
-        "markedAt": "2026-10-21",
-        "marker": "2.1.306",
+        "markedAt": "2026-10-28",
+        "marker": "2.1.312",
         "name": "claude-code",
         "note": "several drops a day; new settings keys, hooks, skills, agents — every notable entry gets the borrow thought",
         "shape": "github-changelog",
@@ -18,7 +18,7 @@
     },
     {
         "entry": "^[A-Z][a-z]+ \\d{1,2}, \\d{4}$",
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "October 19, 2026",
         "name": "wispr-flow",
         "note": "dated entries, desktop builds carry a version line; dictation + notetaker (installed 1.6.897)",
@@ -27,8 +27,8 @@
     },
     {
         "entry": "^[A-Z][a-z]{2} \\d{1,2}, \\d{4} · Changelog$",
-        "markedAt": "2026-10-21",
-        "marker": "Oct 16, 2026 · Changelog",
+        "markedAt": "2026-10-28",
+        "marker": "Oct 20, 2026 · Changelog",
         "name": "cursor",
         "note": "dated entries, no version; agent features, models, keybindings",
         "shape": "html",
@@ -36,8 +36,8 @@
     },
     {
         "entry": "^[A-Z][a-z]+ \\d{1,2}, \\d{4}$",
-        "markedAt": "2026-10-21",
-        "marker": "October 8, 2026",
+        "markedAt": "2026-10-28",
+        "marker": "October 22, 2026",
         "name": "linear",
         "note": "dated titled entries; api + cli + pm features that could fold into cclio:pm — every notable entry gets the borrow thought",
         "shape": "html",
@@ -45,8 +45,8 @@
     },
     {
         "entry": "^[A-Z][a-z]+ \\d{1,2}, \\d{4}$",
-        "markedAt": "2026-10-21",
-        "marker": "October 7, 2026",
+        "markedAt": "2026-10-28",
+        "marker": "October 21, 2026",
         "name": "claude-desktop",
         "note": "one page for every claude app; read the desktop + cowork lines only",
         "shape": "html",
@@ -54,7 +54,7 @@
     },
     {
         "entry": "^\\d+\\.\\d+\\.\\d+$",
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "3.0.2",
         "name": "superwhisper",
         "note": "version + date; modes, models",
@@ -62,8 +62,8 @@
         "url": "https://superwhisper.com/changelog"
     },
     {
-        "markedAt": "2026-10-21",
-        "marker": "2026-10-05",
+        "markedAt": "2026-10-28",
+        "marker": "2026-10-22",
         "name": "obsidian",
         "note": "releases api tags the public desktop builds; the html page leads with catalyst + mobile",
         "repo": "obsidianmd/obsidian-releases",
@@ -72,7 +72,7 @@
     },
     {
         "entry": "^[A-Z][a-z]+ \\d{1,2}, \\d{4}",
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "October 19, 2026",
         "name": "notion",
         "note": "version + date; agents, api — relevant to ntn and x:notes",
@@ -80,8 +80,8 @@
         "url": "https://www.notion.com/releases"
     },
     {
-        "markedAt": "2026-10-21",
-        "marker": "Things for OS 27",
+        "markedAt": "2026-10-28",
+        "marker": "Fri, 23 Oct 2026",
         "name": "things",
         "note": "no release-notes page; the blog rss announces versions",
         "shape": "rss",
@@ -89,15 +89,15 @@
     },
     {
         "entry": "^\\d+\\.\\d+(\\.\\d+)?$",
-        "markedAt": "2026-10-21",
-        "marker": "5.0.1",
+        "markedAt": "2026-10-28",
+        "marker": "5.0.2",
         "name": "cleanshot-x",
         "note": "version + date; hotkey + capture changes feed hotkeys/manual.ts",
         "shape": "html",
         "url": "https://cleanshot.com/changelog"
     },
     {
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "Tue, 20 Oct 2026",
         "name": "1password",
         "note": "official stable rss",
@@ -106,7 +106,7 @@
     },
     {
         "entry": "^Bartender \\d+\\.\\d+\\.\\d+$",
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "Bartender 7.1.0",
         "name": "bartender",
         "note": "per-major url — bump the path on the next major; versions without dates",
@@ -115,7 +115,7 @@
     },
     {
         "entry": "^[A-Z][a-z]+ \\d{1,2}, \\d{4}$",
-        "markedAt": "2026-10-21",
+        "markedAt": "2026-10-28",
         "marker": "September 3, 2026",
         "name": "newton",
         "note": "dated titled posts; dmg install, self-updates",
@@ -124,11 +124,38 @@
     },
     {
         "filter": "Stable Channel Update for Desktop",
-        "markedAt": "2026-10-21",
-        "marker": "2026-10-20T13:45",
+        "markedAt": "2026-10-28",
+        "marker": "2026-10-27T16:02",
         "name": "chrome",
         "note": "every channel mixed; titles repeat, so the marker is the entry date",
         "shape": "rss",
         "url": "http://feeds.feedburner.com/GoogleChromeReleases"
+    },
+    {
+        "entry": "^macOS \\d+(\\.\\d+)+$",
+        "markedAt": "2026-10-28",
+        "marker": "macOS 27.2",
+        "name": "macos",
+        "note": "apple's «what's new in the updates» page, newest first; the security notes are support.apple.com/en-us/100100",
+        "shape": "html",
+        "url": "https://support.apple.com/en-us/127257"
+    },
+    {
+        "entry": "^iOS 27(\\.\\d+)*( and iPadOS 27(\\.\\d+)*)?$",
+        "markedAt": "2026-10-28",
+        "marker": "iOS 27.2 and iPadOS 27.2",
+        "name": "ios",
+        "note": "apple security releases index (one row per release, ios + ipados share a row; the «about ios 27 updates» page repeats its nav as headings, so it cannot carry a marker); the prose is support.apple.com/en-us/149076",
+        "shape": "html",
+        "url": "https://support.apple.com/en-us/100100"
+    },
+    {
+        "entry": "^iOS 27(\\.\\d+)* and iPadOS 27(\\.\\d+)*$",
+        "markedAt": "2026-10-28",
+        "marker": "iPadOS 27.2",
+        "name": "ipados",
+        "note": "same security releases index as ios, rows that name iPadOS only (iOS-only releases like the iPhone Duo 27.1 are skipped); the prose is support.apple.com/en-us/149075",
+        "shape": "html",
+        "url": "https://support.apple.com/en-us/100100"
     }
 ]

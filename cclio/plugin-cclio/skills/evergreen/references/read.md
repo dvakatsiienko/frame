@@ -19,7 +19,7 @@ reader prints every entry newer than its marker, the skill judges, then cclio's 
 --mark` advances the markers (the helper card never runs it) — **after the digest went out, never before.** the markers make the lane
 skip-proof: a run on any day prints everything since the last mark, and the boot digest's `apps
 lane` line says when it is due — **a wednesday has passed since the last mark** — the run fires by itself on a wednesday boot only; any other day it waits for the next wednesday, no ask. a dead url or a
-changed page shape is fixed in the index by hand, the run never searches. a new app = one hunted
+changed page shape is fixed in the index by hand, the run never searches. the os entries (`macos`, `ios`, `ipados`) are read first, every run, and print only on a new release: macOS is the system we run on, the phone and the iPad his supplementaries (dima, 2026-10-28). a new app = one hunted
 entry; a `⚠️ marker not found` line means the page changed shape — re-seed that marker.
 
 tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`),

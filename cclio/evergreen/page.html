@@ -75,68 +75,75 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">🧬 evergreen · wed 21-10-2026</span>
+  <span class="eyebrow">🧬 evergreen · wed 28-10-2026</span>
   <h1>What updated, and what we can take from it</h1>
-  <p class="lede">The week since the 10-14 mark: four frame renovate PRs, brew, and fifteen apps read. Printed only when it brings a feature for Dima or the fleet, or breaks something of ours.</p>
+  <p class="lede">The week since the 10-21 mark: two frame renovate PRs, brew, eighteen apps, and for the first time the systems we run on: macOS, iOS and iPadOS 27.2.</p>
   <div class="counts">
-    <span class="count"><b>4</b> renovate PRs</span>
-    <span class="count"><b>3</b> merged</span>
-    <span class="count"><b>49</b> brew upgraded</span>
-    <span class="count"><b>15</b> apps read</span>
+    <span class="count"><b>2</b> renovate PRs</span>
+    <span class="count"><b>1</b> merged</span>
+    <span class="count"><b>79</b> brew upgraded</span>
+    <span class="count"><b>18</b> apps read</span>
+    <span class="count"><b>3</b> OS releases</span>
   </div>
 </header>
 
 <section>
-  <div class="warn"><b>vgpu 0.6 broke chords.</b> <a href="https://github.com/dvakatsiienko/frame/pull/94">frame #94</a> (the minors group) is red: <code>Aurora.tsx</code> passes a raw string where vgpu's v2 wants a prepared <code>ShaderSource</code>. vgpu is held below 0.6 in <code>renovate.json</code> so the rest of #94 can land; the port rides the chords lane (<a href="https://linear.app/x-com/issue/FRM-277">FRM-277</a>).</div>
+  <div class="warn"><b>biome 2.6 turned frame red.</b> <a href="https://github.com/dvakatsiienko/frame/pull/113">frame #113</a> (the minors group) fails <code>biome ci</code> with 639 errors. The sample in the log is mostly lint rules, not formatting: <code>noTemplateCurlyInString</code>, <code>noArrayIndexKey</code>, unused variables and imports. It needs a coder, and it waits until the mods lane ends, because a repo-wide reformat would collide with the mods coder committing on main.</div>
 </section>
 
 <section>
-  <div class="sec-head"><h2>🌟 The five worth reading</h2><p>each with its borrow and where it stands</p></div>
+  <div class="sec-head"><h2>🍎 The systems we run on</h2><p>new this week: read first every run, printed only on a new release</p></div>
   <div class="stars">
     <article class="card">
-      <div class="card-top"><h3><a href="https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md">Claude Code</a></h3><span class="ver">2.1.299 → <span class="to">2.1.306</span></span></div>
+      <div class="card-top"><h3><a href="https://support.apple.com/en-us/127257">macOS Golden Gate</a></h3><span class="ver">→ <span class="to">27.2</span> · 26 Oct</span></div>
       <ul class="facts">
-        <li>Mods: <code>decider: "person"</code>, <code>e.isReadOnly</code> on <code>tool.check</code>, <code>prompt.change</code>, <code>$.ui.view({ agentId })</code>, <code>virtualText</code>.</li>
-        <li><code>CLAUDE_CODE_AUTO_MODE_MODEL</code>, an Idle compaction row in <code>/config</code>, and <code>/auto-mode-setup</code>.</li>
-        <li>OTel: <code>tool_decision</code> gains <code>classifier_verdict</code> and <code>permission_mode</code>; <code>api_request</code> splits 5 m and 1 h cache writes.</li>
-        <li>Standalone Claude Design (claude.ai/design) closes by December 14, 2026; our designer uses the Design artifact type, so nothing moves.</li>
+        <li>Siri AI recalls past conversations; one Excluded Apps setting covers what Siri, Search and suggestions can see.</li>
+        <li><a href="https://support.apple.com/en-us/149521">Security notes</a>: about 263 CVEs. WebKit 16, Kernel 15, Spotlight 6, plus TCC, <code>zsh</code> sandbox, <code>libxpc</code>, <code>configd</code> and FileProvider fixes.</li>
+        <li>Closer privacy checks may bring new permission prompts for the terminal, Claude Code and Wispr Flow; a WindowServer fix touches apps that read keystrokes.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>four mod pieces ride the mods lane (taller orbit notes, an agent's transcript from the board, an ask count in the prompt box, the cache split). <code>e.isReadOnly</code> skipped: guard tracks written paths, it never asks «read-only?». <span class="chip next">mods lane rider</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>spot-check launchd jobs, the Obsidian vault's iCloud sync and the Wispr hotkey. <span class="chip next">queued</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/modelcontextprotocol/typescript-sdk/releases/tag/1.32.0">MCP SDK</a></h3><span class="ver">1.31.0 → <span class="to">1.32.0</span></span></div>
+      <div class="card-top"><h3><a href="https://support.apple.com/en-us/149076">iOS and iPadOS</a></h3><span class="ver">→ <span class="to">27.2</span> · 26 Oct</span></div>
       <ul class="facts">
-        <li>Fixes 4 advisories: task-store session leak, unbounded request memory, a redirect leaking headers cross-origin, bearer tokens with no audience check.</li>
-        <li>Adds <code>maxToolInputElements</code> and <code>expectedResource</code>, off by default.</li>
-        <li>We are not exposed: <code>mcp-x-cw</code> is stdio only.</li>
+        <li>The same Siri AI and Messages features; Siri AI is not available in the EU.</li>
+        <li>iPad: Write with Siri by trackpad hover, handwriting in Notes, easier side-by-side tiling.</li>
+        <li><a href="https://support.apple.com/en-us/149230">Security notes</a>: about 163 CVEs, WebKit 16 and Kernel 13. Nothing touches the mac setup.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>none needed. <span class="chip done">merged #92</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>none needed. <span class="chip done">read</span></span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>🌟 Worth reading</h2><p>each with its borrow and where it stands</p></div>
+  <div class="stars">
+    <article class="card">
+      <div class="card-top"><h3><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">Claude Code</a></h3><span class="ver">2.1.307 → <span class="to">2.1.312</span></span></div>
+      <ul class="facts">
+        <li>2.1.309: macOS sandbox fixes, shell startup files no longer run outside it.</li>
+        <li>2.1.310: a mod's <code>Image</code> draws in tmux, kitty, Ghostty and iTerm2.</li>
+        <li>2.1.311–312: Remote Control no longer hangs on «Connecting»; Write no longer overwrites a big CLAUDE.md read only in part.</li>
+        <li>2.1.307: a <code>claude_code.safety_event</code> OpenTelemetry event.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>a <code>safety_event</code> reader for the fleet's hooks. <span class="chip wait">dima's word</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/pnpm/pnpm/releases/tag/v12.14.0">pnpm</a></h3><span class="ver">12.11.2 → <span class="to">12.14.0</span></span></div>
+      <div class="card-top"><h3>Desktop session tools</h3><span class="ver">since <span class="to">10-15</span></span></div>
       <ul class="facts">
-        <li>12.12: <code>pnpm pipeline</code> shares results through a remote cache (a Turborepo-compatible server works).</li>
-        <li>12.12 fixes <code>dangerouslyAllowAllBuilds</code> running scripts that <code>allowBuilds</code> denies.</li>
-        <li>12.13 adds <code>pnpm profile</code>; 12.14 stops install waiting on the daily update check.</li>
+        <li>The desktop app lets one Code-tab session start another (<code>start_session</code>), replacing the older <code>spawn_task</code> chip between 10-05 and 10-15. No public release note names it.</li>
+        <li>A started session is a native Code tab, so it draws mods; <code>--bg</code> sessions still do not.</li>
+        <li><code>stop_session</code> only interrupts a turn; archiving closes the tab.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>explore in bytes only, then test drive or drop; frame would save nothing. <span class="chip next"><a href="https://linear.app/x-com/issue/BYT-128">BYT-128</a></span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>the mods coder is now started by cclio, closed by archive at the lane's end. <span class="chip done">FRM-427 started this way</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3><a href="https://www.raycast.com/changelog">Raycast</a></h3><span class="ver">2.5 → <span class="to">2.8</span></span></div>
+      <div class="card-top"><h3><a href="https://linear.app/changelog">Linear</a></h3><span class="ver">notes <span class="to">10-22</span></span></div>
       <ul class="facts">
-        <li>Memory: host process −50 % (2.6), idle launcher −35 % (2.7); file search up to 6× faster (2.8).</li>
-        <li>Send Element to AI and Send Window to AI (2.7).</li>
-        <li>Resize Window and Move Window take exact pixels as arguments (2.2).</li>
+        <li>Loops get Slack and GitHub triggers, templates and reasoning levels.</li>
+        <li>Linear Agent reads Figma files.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>Send Window to AI on a chord, and the exact-pixel resize as a scriptable hotkey target. <span class="chip next">queued</span></span></div>
-    </article>
-    <article class="card">
-      <div class="card-top"><h3><a href="https://www.notion.com/releases">Notion</a></h3><span class="ver">notes <span class="to">10-19</span></span></div>
-      <ul class="facts">
-        <li>Agents rebuilt: their own computer and browser, runs up to 24 h, a «Review for me» safety mode.</li>
-        <li>The hosted MCP edits pages in Markdown, applies partial edits with warnings, and searches page content.</li>
-      </ul>
-      <div class="borrow"><span class="k">borrow</span><span>probed: the MCP found 5 pages by content where <code>ntn</code> search matched titles only. MCP for search, <code>ntn</code> for writes. <span class="chip wait">dima's word</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>loop templates for the pm flow. <span class="chip wait">dima's word</span></span></div>
     </article>
   </div>
 </section>
@@ -144,26 +151,23 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
 <section>
   <div class="sec-head"><h2>📦 The renovate round</h2><p>frame; bytes had none</p></div>
   <div class="rows">
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/91">golang.org/x/sys</a><span class="ver">0.41 → <span class="to">0.44</span></span></div><div><p>Security: GO-2026-5024, a Windows-only truncation. <span class="chip done">merged</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/93">dnd-kit</a><span class="ver">0.5.0 → <span class="to">0.5.1</span></span></div><div><p>Fixes missed state updates when a draggable's props are first read on a later render. <span class="chip done">merged</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/colinhacks/zod/releases/tag/v4.6.0">zod</a><span class="ver">4.4.3 → <span class="to">4.6.7</span></span></div><div><p><code>.validate()</code> checks without building a result, up to 35× faster than <code>.safeParse().success</code>. 4.6.6 notes: six malicious commits hit zod's main on Sep 21, reverted the same day, never published. <span class="chip wait">in #94</span></p><p class="b">skipped: 10 files use zod, none on a hot path</p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/94">the rest of #94</a><span class="ver">8 bumps</span></div><div><p>raycast api 2.8, react-query, bubbletea 2.1 (agent status reporting), lefthook, style-dictionary, and sline's <code>go</code> 1.24 → 1.27, which needs a build check. <span class="chip wait">rebases without vgpu</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/112">golang.org/x/net</a><span class="ver">0.60 → <span class="to">0.62</span></span></div><div><p>Security: <a href="https://pkg.go.dev/vuln/GO-2026-6860">GO-2026-6860</a>, quadratic HTML text-node handling, a CPU and memory DoS. <span class="chip done">merged</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/113">the minors group</a><span class="ver">3 bumps</span></div><div><p>biome 2.6.3 (<code>biome migrate stylelint</code>, new nursery rules), playwright 1.64.1 (<code>page.webmcp</code>), raycast api 2.9.0. <span class="chip wait">after the mods lane</span></p></div></div>
   </div>
-  <p class="quiet">Abandoned per renovate (no release in a year): pflag, @types/culori, culori, node-emoji, utopia-core.</p>
+  <p class="quiet">Abandoned per renovate (no release in a year): pflag, @types/culori, culori, and two more.</p>
 </section>
 
 <section>
-  <div class="sec-head"><h2>📲 Apps lane, the rest</h2><p>markers advanced at this read</p></div>
+  <div class="sec-head"><h2>📲 Apps lane, the rest</h2><p>markers advance after this read</p></div>
   <div class="rows">
-    <div class="row"><div class="name"><a href="https://superwhisper.com/changelog">Superwhisper</a><span class="ver">2.19 → <span class="to">3.0.2</span></span></div><div><p>3.0 adds Meetings: record, transcribe and summarize with live speaker labels, cloud or local.</p></div></div>
-    <div class="row"><div class="name"><a href="https://cursor.com/changelog">Cursor</a><span class="ver">10-16</span></div><div><p>Cloud agents build interactive canvases; an Environments API in beta, up to 300 repos.</p></div></div>
-    <div class="row"><div class="name"><a href="https://releases.1password.com/mac/stable/index.xml">1Password</a><span class="ver">8.12.42</span></div><div><p>Environments feed up to 25 local <code>.env</code> destinations per computer.</p><p class="b">borrow: Environments + shell plugins could retire <code>op.env</code> and the <code>op-run</code> wrapper — shaped first (PK-235)</p></div></div>
-    <div class="row"><div class="name"><a href="https://www.macbartender.com/Bartender7/release_notes/">Bartender</a><span class="ver">7.0.4 → <span class="to">7.1.0</span></span></div><div><p>Config export and import, automatic backups, Bartender 6 preset import.</p></div></div>
-    <div class="row"><div class="name"><a href="https://wisprflow.ai/whats-new">Wispr Flow</a><span class="ver">10-19</span></div><div><p>Dark mode for the desktop app.</p></div></div>
-    <div class="row"><div class="name"><a href="https://chromereleases.googleblog.com/">Chrome</a><span class="ver">155 → <span class="to">156</span></span></div><div><p>156 stable on 10-20; its security list did not reach the read.</p></div></div>
+    <div class="row"><div class="name"><a href="https://www.raycast.com/changelog">Raycast</a><span class="ver">2.8 → <span class="to">2.9</span></span></div><div><p>Root Search up to 50 % faster; a Restart Frontmost App command.</p><p class="b">marker to re-seed: the page now dates 2.8 as October 16</p></div></div>
+    <div class="row"><div class="name"><a href="https://cursor.com/changelog">Cursor</a><span class="ver">10-20</span></div><div><p>Agent SDK: an agent is a folder, deployed with <code>agent-sdk deploy</code>.</p></div></div>
+    <div class="row"><div class="name"><a href="https://cleanshot.com/changelog">CleanShot X</a><span class="ver">→ <span class="to">5.0.2</span></span></div><div><p>Fixes Capture Text (OCR) on macOS 27.</p></div></div>
+    <div class="row"><div class="name"><a href="https://support.claude.com/en/articles/12138966-release-notes">Claude desktop</a><span class="ver">→ <span class="to">4.29.0</span></span></div><div><p>Claude Duet research preview for Pro and Max (10-21).</p></div></div>
+    <div class="row"><div class="name">Obsidian, Chrome</div><div><p>Obsidian 1.14.5 and Chrome 156's security list: notes not read this week.</p></div></div>
   </div>
-  <p class="quiet">Nothing new: Linear, Obsidian, Things, CleanShot X, Newton. Brew: 49 upgraded clean. Unread: the Claude desktop cask (2.99 → 3.16) and Chrome 156's security list; next week's read covers casks in use. Markers to re-seed: Raycast, Bartender.</p>
+  <p class="quiet">Nothing new: Wispr Flow, Superwhisper, Notion, 1Password, Bartender, Newton, Things. Brew: 79 upgraded clean; 13 self-updating casks left to their own updaters.</p>
 </section>
 
-<footer>Sources: each project's release page or changelog, read 21-10-2026 by the evergreen read; Notion's and Chrome's pages were cut short in the read.</footer>
+<footer>Sources: each project's release page or changelog and Apple's own support pages, read 28-10-2026 by the evergreen read.</footer>
 </div>
