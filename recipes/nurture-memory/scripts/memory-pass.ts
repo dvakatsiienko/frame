@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { deadPointers } from './memory-pointers.ts';
+
 const root = path.resolve(import.meta.dirname, '../../..');
 const { values } = parseArgs({
     options: {
@@ -109,34 +111,11 @@ execFileSync('duckdb', ['-no-agent', '-c', sql], { encoding: 'utf8' });
 const read = <T>(name: string) =>
     JSON.parse(readFileSync(path.join(dir, `${name}.json`), 'utf8')) as T[];
 
-const tracked = git('ls-files').split('\n');
-// a backticked path in an added line must exist, so a cut that moved a rule leaves no pointer into nothing
-const dead = rows
-    .filter((row) => row.added)
-    .flatMap((row) =>
-        [
-            ...row.text.matchAll(
-                /`((?:~\/|[\w.-]+\/)[\w./-]+\.(?:md|ts|sh|json|tsv|yml|yaml))`/g,
-            ),
-        ]
-            .map(([, target = '']) => target)
-            .filter((target) => {
-                const abs = target.startsWith('~/')
-                    ? path.join(process.env.HOME ?? '', target.slice(2))
-                    : target;
-                // a pointer in prose often names another skill's file by its tail (`references/body.md`)
-                return (
-                    ![
-                        abs,
-                        path.join(root, abs),
-                        path.join(root, path.dirname(row.file), abs),
-                        path.join(root, 'home/.claude', abs),
-                    ].some(existsSync) &&
-                    !tracked.some((file) => file.endsWith(`/${target}`))
-                );
-            })
-            .map((target) => ({ file: row.file, line: row.line, target })),
-    );
+// a cut that moved a rule leaves no pointer into nothing: paths and `name` § section pointers both resolve
+const dead = deadPointers(
+    root,
+    rows.filter((row) => row.added),
+);
 
 const [counts] = read<{ added: number; files: number }>('counts');
 const section = <T>(title: string, items: T[], show: (item: T) => string) =>
@@ -170,9 +149,9 @@ const report = [
         (b) => `${b.file} · ${b.bytes} / ${b.budget} B · ${b.pct} %`,
     ),
     section(
-        'dead pointers: a backticked path in an added line that does not exist',
+        'dead pointers: a path or `name` § section in an added line that does not land',
         dead,
-        (d) => `${d.file}:${d.line} → \`${d.target}\``,
+        (d) => `${d.file}:${d.line} → \`${d.target}\` · ${d.why}`,
     ),
 ].join('\n');
 
