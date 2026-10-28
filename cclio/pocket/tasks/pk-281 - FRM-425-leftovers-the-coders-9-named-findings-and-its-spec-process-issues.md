@@ -32,4 +32,6 @@ verifier retro (16:34, ~/.local/state/x/lanes/FRM-425/2026-10-27-FRM-425-verifie
 
 ticket: FRM-467
 close: W269–W271 → FRM-467 § riders (2026-10-28 tails hunt); the coderabbit pocket-green.json crash has no reader left
+
+close: W269 moved to FRM-467, W270 moved to FRM-467, W271 moved to FRM-467 (§ riders)
 <!-- SECTION:NOTES:END -->
