@@ -2720,8 +2720,8 @@ const CELL = { gap: 2, rows: 2, size: 5 } as const;
 const CELL_STEP = CELL.size + CELL.gap;
 export const BAR_HEIGHT = CELL.rows * CELL_STEP - CELL.gap;
 const BAR_STYLE =
-    ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:#7c7670}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}.ember{fill:#ffe08a}' +
-    '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{fill:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}.ember{fill:#fff1c2}}';
+    ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:none;stroke:#7c7670;stroke-width:1}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}.ember{fill:#ffe08a}' +
+    '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{stroke:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}.ember{fill:#fff1c2}}';
 export function meterSvg(
     percent: number,
     width: number,
@@ -2744,12 +2744,11 @@ export function meterSvg(
     };
     const cells = meterCells(percent, width, mark, scale).flatMap((c, i) => {
         const x = i * CELL_STEP;
-        if (c.kind === 'mark')
-            return [
-                `<rect class="mark" x="${x + 1.5}" y="0" width="2" height="${BAR_HEIGHT}" rx="1"/>`,
-            ];
+        // the mark is a hollow cell in the grid: a 2px bar across both rows read as a stray bar (dima's wisp, 10-28)
         return Array.from({ length: CELL.rows }, (_, r) => {
             const y = r * CELL_STEP;
+            if (c.kind === 'mark')
+                return `<rect class="mark" x="${x + 0.5}" y="${y + 0.5}" width="${CELL.size - 1}" height="${CELL.size - 1}" rx="1"/>`;
             return c.kind === 'fill'
                 ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>${sparkOf(i, x, y, r)}`
                 : `<rect class="off" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
