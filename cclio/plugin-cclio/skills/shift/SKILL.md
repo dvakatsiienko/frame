@@ -48,7 +48,7 @@ Every decision is one of three:
   chunk's `## signed` carries `merge: pre-approved`
 - **taste** → build one default, flag it for the report
 
-- a mods chunk parks with «needs dima's tab» (only he opens a mods tab); the next chunk runs
+- a mods chunk starts as a desktop-native thread like any mods coder (`x:crew-lead` § the doors), never `--bg`
 - a coder's premise doubt is built and flagged the same minute, never found at review
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
