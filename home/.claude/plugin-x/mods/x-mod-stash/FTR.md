@@ -492,6 +492,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given dima presses 🛎️ tick or 🔁 replay on an ask, on its own board or a glide card
   - then the button reads `📨 tick` (or `📨 replay`) for 5 s, then `✅ tick` (or `✅ replay`)
   - decision: a state changes only the button's icon, never its text (dima, 21:01)
+- ⬜ a 🛎️ tick on this board is written as dima's word (FRM-427)
+  - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time its sending window ends; x-mod-guard reads it
+  - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press inside the window takes it back; a 🔁 replay writes none
+  - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
+  - decision: a tick on a glide card, made in cclio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write
   - and a second press inside the 5 s unsends it: no turn ever takes it
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)

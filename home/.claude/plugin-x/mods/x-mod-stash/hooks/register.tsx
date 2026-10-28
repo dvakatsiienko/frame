@@ -22,6 +22,7 @@ import type {
     StashOrbit,
     StashPlan,
     StashQuiet,
+    StashTick,
     StashView,
     StashWind,
 } from '../types/stash.d.ts';
@@ -1392,6 +1393,33 @@ async function markAsks(
         a.isLocked || a.isResolved ? a : change(a),
     );
     await saveOrbit($, { ...o, asks });
+}
+
+// dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
+// a press that unticks, or a mark that never took, drops the ask's record
+const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
+const TICKS_KEPT = 20;
+const quotedOf = (text: string) =>
+    [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
+async function tickAsk($: EngineInterface, id: string) {
+    const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
+    const { value: kept = [] } = await $.state.get(TICKS);
+    const rest = kept.filter((t) => t.id !== id);
+    const isTicked = ask?.mark === 'accepted' && !ask.isLocked;
+    await $.state.set(
+        TICKS,
+        isTicked
+            ? [
+                  ...rest,
+                  {
+                      at: ask.sendAt ?? (await $.clock.now()),
+                      id,
+                      targets: quotedOf(ask.text),
+                      text: ask.text,
+                  } satisfies StashTick,
+              ].slice(-TICKS_KEPT)
+            : rest,
+    );
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
@@ -4478,6 +4506,7 @@ export const register: Register = (on) => {
                                     },
                                     true,
                                 );
+                                await tickAsk($, a.id);
                                 if (win)
                                     $.clock.after(win, () =>
                                         $.ui.invalidate('ui.render'),

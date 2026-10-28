@@ -1098,6 +1098,80 @@ for (const typed of ['Mobile mode off', 'ok, MOBILE MODE OFF now'])
         );
     });
 
+// FRM-427: dima's 🛎️ press is his word — the tick record lives in this mod's $.state, written by the press alone
+function tickLog(on: On) {
+    const writes: unknown[] = [];
+    on('state.set', (_$, e, next) => {
+        if (e.plugin === 'x-mod-stash' && e.key === 'ticks')
+            writes.push(e.value);
+        return next(e);
+    });
+    return writes;
+}
+
+test("a 🛎️ press writes the tick record: the ask's id, text, quoted targets and time", async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['⚠️ push `git push --mirror origin` to the backup', 'yes']);
+    const at = await w.clock.now();
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(writes.at(-1)).toEqual([
+        {
+            at: at + 5_000,
+            id: 'o1',
+            targets: ['git push --mirror origin'],
+            text: '⚠️ push `git push --mirror origin` to the backup',
+        },
+    ]);
+});
+
+test('a second 🛎️ press inside the sending window takes the tick back', async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(writes.at(-1)).toEqual([]);
+});
+
+test('a 🔁 replay press writes no tick', async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:rejected:o1' });
+    expect(writes.flat()).toEqual([]);
+});
+
+test("an agent's own orbit ops never write a tick", async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    await orbit($, {
+        ops: [
+            {
+                asks: [
+                    { mark: 'accepted', pick: 'yes', text: 'push `origin`' },
+                ],
+                op: 'add',
+            },
+            {
+                id: 'o1',
+                mark: 'accepted',
+                op: 'follow',
+                text: 'push `origin` now',
+            },
+            { ids: ['o1'], op: 'resolve' },
+        ],
+    });
+    expect(writes).toEqual([]);
+});
+
 test('a 🛎️ press in orbit ends mobile mode', async ($, on) => {
     const w = world(on);
     await start($);

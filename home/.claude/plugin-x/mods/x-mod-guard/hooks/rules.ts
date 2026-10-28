@@ -260,7 +260,11 @@ export function rawPluginUpdate(
 
 // x lane merge-auto trusts a --dima-ok <pr> that reached it, so this is the proof: dima's own last prompt names the pr
 // (FRM-423 o140, the guard's door); the caller checks the prompt
-export function mergeWord(command: string, cwd: string): Refusal | undefined {
+// the words of a command's `x lane merge-auto` call, one in a nested shell or an eval included
+export function mergeAutoWords(
+    command: string,
+    cwd: string,
+): string[] | undefined {
     for (const c of commands(parse(command), cwd)) {
         const words = c.args.map((w) => w.text);
         // a nested shell's script, or an eval's words, is a command too
@@ -273,30 +277,44 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
                 : c.name === 'eval'
                   ? words.join(' ')
                   : undefined;
-        const inner = nested ? mergeWord(nested, c.dir) : undefined;
+        const inner = nested ? mergeAutoWords(nested, c.dir) : undefined;
         if (inner) return inner;
         // x's root booleans (--json, --board) sit before the family or between it and the verb
         const bare = words.filter((w) => !w.startsWith('-'));
         const isMerge = bare.some(
             (w, i) => w === 'lane' && bare[i + 1] === 'merge-auto',
         );
-        if (c.name !== 'x' || !isMerge) continue;
-        const targets = words.flatMap((w, i) =>
-            w === '--dima-ok'
-                ? [words[i + 1] ?? '']
-                : w.startsWith('--dima-ok=')
-                  ? [w.slice('--dima-ok='.length)]
-                  : [],
-        );
-        if (!targets.length) continue;
-        return {
-            door: "ask dima; his own next prompt naming the pr (104 or #104) lets merge-auto's --dima-ok through. a bg session counts only what dima types into it himself",
-            rule: 'dima-ok-flag',
-            targets,
-            why: "merge-auto's --dima-ok stands for dima's word on a self-edit, and counts only when his last typed prompt names the pr",
-        };
+        if (c.name === 'x' && isMerge) return words;
     }
     return undefined;
+}
+// the pr a merge-auto call merges: the first bare word after the verb, a pr url read as its number
+export function mergeAutoPr(words: string[]) {
+    const pr = words
+        .slice(words.indexOf('merge-auto') + 1)
+        .find((w) => !w.startsWith('-'));
+    return pr?.match(/(\d+)\/?$/)?.[1];
+}
+// a tick quotes the pr when its text holds the pr's url or `#<n>` as a whole word (FRM-427)
+export const quotesPr = (text: string, pr: string) =>
+    new RegExp(`/pull/${pr}(?!\\d)`).test(text) || namesWhole(text, `#${pr}`);
+export function mergeWord(command: string, cwd: string): Refusal | undefined {
+    const words = mergeAutoWords(command, cwd);
+    if (!words) return undefined;
+    const targets = words.flatMap((w, i) =>
+        w === '--dima-ok'
+            ? [words[i + 1] ?? '']
+            : w.startsWith('--dima-ok=')
+              ? [w.slice('--dima-ok='.length)]
+              : [],
+    );
+    if (!targets.length) return undefined;
+    return {
+        door: "ask dima; his own next prompt naming the pr (104 or #104), or his tick on an orbit ask quoting the pr url, lets merge-auto's --dima-ok through. a bg session counts only what dima types into it himself",
+        rule: 'dima-ok-flag',
+        targets,
+        why: "merge-auto's --dima-ok stands for dima's word on a self-edit, and counts only when his last typed prompt names the pr or his tick quotes it",
+    };
 }
 
 // a member reads and comments on tickets through x linear, never the raw cli (FRM-398, rules-lazy/linear-flow.md);

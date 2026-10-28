@@ -193,6 +193,15 @@ export type QuietLogLine = {
 // the ledger: a member whose transcript sent cclio more pings than her quiet log holds since the window opened
 export type QuietGap = { from: string; sent: number; logged: number };
 
+// dima's tick on an ask, written only by his press: the ask's text, its backtick-quoted targets, and when it counts (once
+// its sending window passed); x-mod-guard reads it as his word for a guarded command (FRM-427)
+export type StashTick = {
+    id: string;
+    text: string;
+    targets: string[];
+    at: number;
+};
+
 // the session's orbit: its asks oldest first, the next id's number, the main turns ended so far, and the plan with
 // the turn count it was set at
 export type StashOrbit = {
@@ -279,6 +288,8 @@ declare module 'claude-code' {
             laneAsks: Record<string, PublishedAsk[]>;
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
+            // dima's ticks, newest last; any plugin reads them, only this mod's press handler writes them
+            ticks: StashTick[];
         };
     }
 }

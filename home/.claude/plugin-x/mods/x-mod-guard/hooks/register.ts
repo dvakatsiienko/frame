@@ -14,11 +14,15 @@ import {
     check,
     foregroundClaude,
     installDirs,
+    mergeAutoPr,
+    mergeAutoWords,
     mergeWord,
     message,
     namesWhole,
+    quotesPr,
     rawLinear,
     rawPluginUpdate,
+    refusals,
     removedTrees,
 } from './rules.ts';
 
@@ -409,6 +413,32 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // dima's last prompt typed at the composer or sent over the bridge: a peer's message, a notification, a plugin's or an
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
+// dima's ticks: x-mod-stash writes them into its own $.state from his 🛎️ press alone, and any plugin reads another's
+// value while only its owner writes it — so no Bash, Edit, Write or orbit op can forge one, and it is this session's
+// own (FRM-427); a tick still in its sending window is not his word yet
+const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
+const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
+async function tickFor($: EngineInterface, covers: (text: string) => boolean) {
+    const { value: ticks = [] } = await $.state
+        .get(TICKS)
+        .catch(() => ({ value: [] }));
+    const { value: spent = [] } = await $.state.get(SPENT);
+    const now = await $.clock.now();
+    const tick = [...ticks]
+        .reverse()
+        .find(
+            (t) =>
+                t.at <= now &&
+                !spent.includes(`${t.id}@${t.at}`) &&
+                covers(t.text),
+        );
+    if (tick)
+        await $.state.set(
+            SPENT,
+            [...spent, `${tick.id}@${tick.at}`].slice(-50),
+        );
+    return tick;
+}
 const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 // a --bg session's spawn prompt arrives as `composer` and dima's typing there as `bridge` (measured 2026-10-09, FRM-358),
 // so in a bg session only the bridge is his
@@ -674,13 +704,15 @@ export const register: Register = (on) => {
             deny: drift ? `${text} — ${drift}` : text,
         });
         // the model typed the old command: it is told what changed, or it reads a surprise
-        const go = async () => {
+        const go = async (run = command) => {
             const isForeground =
                 e.tool === 'Bash' && e.run_in_background !== true;
-            const shapes = isForeground ? slowShapes(command, cwd) : [];
+            const shapes = isForeground ? slowShapes(run, cwd) : [];
             const slow = await slowSeen($, shapes);
             const started = await $.clock.now().catch(() => undefined);
-            const result = await next(notes.length ? { ...e, command } : e);
+            const result = await next(
+                run !== typed ? { ...e, command: run } : e,
+            );
             const ended = await $.clock.now().catch(() => undefined);
             if (started !== undefined && ended !== undefined)
                 await rememberSlow($, shapes, ended - started);
@@ -689,7 +721,7 @@ export const register: Register = (on) => {
             const context = [
                 ...(notes.length && !isQuiet
                     ? [
-                          `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${command}`,
+                          `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${run}`,
                       ]
                     : []),
                 ...(drift && result.isError ? [drift] : []),
@@ -770,6 +802,13 @@ export const register: Register = (on) => {
             const said = `x-mod-guard stopped this one command. instead: ${bump.door}. why: ${bump.why}.`;
             return enforce(bump, `nothing in this command ran — ${said}`, said);
         }
+        // dima's tick on an ask quoting the pr is his word for merge-auto, never for the brake (FRM-427)
+        const merge = mergeAutoWords(typed, cwd);
+        const pr = merge && mergeAutoPr(merge);
+        const prTick = async () =>
+            pr && !merge?.includes('--release-brake')
+                ? tickFor($, (text) => quotesPr(text, pr))
+                : undefined;
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
         if (word) {
@@ -777,7 +816,11 @@ export const register: Register = (on) => {
             const unproven = word.targets.filter(
                 (t) => !namesWhole(prompt, t) && !namesWhole(prompt, `#${t}`),
             );
-            if (unproven.length) {
+            const isTicked =
+                unproven.length > 0 &&
+                unproven.every((t) => t.replace(/^#/, '') === pr) &&
+                (await prTick()) !== undefined;
+            if (unproven.length && !isTicked) {
                 const said = `x-mod-guard stopped this one command. instead: ${word.door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
                 return enforce(
                     { ...word, targets: unproven },
@@ -785,15 +828,47 @@ export const register: Register = (on) => {
                     said,
                 );
             }
+        } else if (merge?.includes('--apply') && (await prTick())) {
+            notes.push(
+                `dima's tick quotes pr ${pr}, so it carries his word: --dima-ok ${pr}`,
+            );
+            return go(`${command} --dima-ok ${pr}`);
         }
         if (verdict.kind === 'run') return go();
-        if (verdict.kind === 'refused')
-            return enforce(verdict.refusal, message(verdict.refusal));
-        // the marker is only a claim: dima's own last prompt must name every target the refusals named
+        // dima's tick on an ask quoting every target is his word, no marker needed (FRM-427)
+        if (verdict.kind === 'refused') {
+            const found = refusals(command, cwd, { ...ctx, ...facts });
+            const targets = [...new Set(found.flatMap((r) => r.targets))];
+            const tick = await tickFor($, (text) =>
+                targets.every((t) => namesWhole(text, t)),
+            );
+            if (!tick)
+                return enforce(verdict.refusal, message(verdict.refusal));
+            await record($, {
+                command,
+                door: `dima's tick on ${tick.id}`,
+                kind: 'escaped',
+                rule: [...new Set(found.map((r) => r.rule))].join(', '),
+                target: targets.join(', '),
+                why: tick.text,
+            });
+            $.ui.log(
+                `x-mod-guard: ran on dima's tick ${tick.id}: ${targets.join(', ')}`,
+            );
+            return go();
+        }
+        // the marker is only a claim: dima's own last prompt, or his tick, must name every target the refusals named
         const { value: said = '' } = await $.state.get(PROMPT);
-        const unproven = [
+        const named = [
             ...new Set(verdict.refusals.flatMap((r) => r.targets)),
         ].filter((t) => !namesWhole(said, t));
+        const unproven =
+            named.length &&
+            (await tickFor($, (text) =>
+                named.every((t) => namesWhole(text, t)),
+            ))
+                ? []
+                : named;
         if (unproven.length) {
             await record($, {
                 command,

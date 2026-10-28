@@ -90,6 +90,13 @@
   - then it is refused, naming the targets his prompt lacks (rule `dima-ok-unproven`); a peer's message, a task notification, an sdk or a plugin prompt never counts
   - makes: dima's last typed prompt in x-mod-guard's `$.state`, written only by its `prompt.submit` hook, so no tool call can forge it
   - decision: a model appended `# dima-ok:` on its own in a live probe and passed (2026-10-09); dima chose the proof, `$.state` over a file since no Bash parse can stop a write through a variable (FRM-356)
+- ⬜ dima's tick on an orbit ask is his word (FRM-427, FRM-409)
+  - given dima ticked an open ask whose text quotes every refusal target whole (`` ⚠️ mirror: `git push --mirror origin` ``), once its 5 s sending window passed
+  - then the guarded command runs with no `# dima-ok` typed, and a marker his prompt never named runs too; the escape is kept with the ask's id
+  - then the tick is spent by its first use: a second run is refused; a tick quoting only part of a target (`git push --mirror` for target `origin`) proves nothing
+  - given a tick quoting a pr's url, then `x lane merge-auto <pr> --apply --dima-ok <pr>` runs, and a bare `x lane merge-auto <pr> --apply` runs with `--dima-ok <pr>` added; `--release-brake` still needs his typed word
+  - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>`
+  - decision: the record is x-mod-stash's `$.state` `ticks`, written only by his 🛎️ press; any plugin reads another's value while only its owner writes it, so no Bash, Edit, Write or orbit op forges one, a tick planted in the shared store is ignored, and a tick authorizes only its own session (cclio's greenlight, 2026-10-28)
   - makes: the last 20 prompts across sessions, each with its origin and every field (text cut to 80 code points), under `origins` in x-mod-guard's `$.store` — what the origin rules are measured against (FRM-358)
   - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session cclio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
   - ⬜ in a session the registry marks `kind: bg`, only a `bridge` prompt counts as dima's; a `composer` one, the spawn prompt's kind there, never does (dima's pick, 2026-10-09, FRM-358)
