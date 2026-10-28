@@ -121,6 +121,14 @@ for repo in bytes frame; do
   gh pr list -R "dvakatsiienko/$repo" --search 'author:app/x-renovate' --json number,createdAt 2>/dev/null \
     | jq -r --arg r "$repo" 'if length == 0 then "\($r): 0" else "\($r): \(length) open · oldest \(min_by(.createdAt).createdAt[:10])" end' \
     || fail "gh unreachable for renovate/$repo"
+  # renovate runs hourly and touches its dashboard every run; a stale one means it stopped
+  # (Mend sat silent on bytes 10-13 → 10-28, and the digest read the silence as quiet)
+  dash=$(gh issue list -R "dvakatsiienko/$repo" --author app/x-renovate --search 'Dependency Dashboard' --json updatedAt 2>/dev/null | jq -r 'max_by(.updatedAt).updatedAt // empty')
+  if [ -z "$dash" ]; then
+    fail "renovate/$repo: no x-renovate dashboard — renovate never ran there"
+  elif [[ "$dash" < "$(date -u -v-1d +%Y-%m-%dT%H:%M:%SZ)" ]]; then
+    fail "renovate/$repo: dashboard last touched $dash — renovate stopped (gh run list -R dvakatsiienko/$repo -w renovate)"
+  fi
 done
 apps_line=$(jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | ($today | strptime("%Y-%m-%d") | mktime) as $t
