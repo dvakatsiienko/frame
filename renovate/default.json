@@ -3,7 +3,7 @@
     "abandonmentThreshold": "1 year",
     "commitMessagePrefix": "🌲 evergreen:",
     "description": "the shared preset frame and bytes extend (`github>dvakatsiienko/frame//renovate/default`); a repo's own renovate.json keeps only its holds and its own managers",
-    "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+    "extends": ["config:recommended"],
     "internalChecksFilter": "strict",
     "minimumReleaseAge": "3 days",
     "osvVulnerabilityAlerts": true,
