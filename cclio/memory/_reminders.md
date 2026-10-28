@@ -43,7 +43,6 @@ Store contract: the `cclio:remind` skill. Both tiers die only when Dima drops th
 
 ⏰ 🦡 before every halt: dima runs his own retro in this thread, and in ccrow's window he types «read /Users/dima/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md and run it over cclio's session from your packets; focus: <his steer>» (`ls ~/.claude/plugins/cache/mattpocock/mattpocock-skills/` names the version). cclio reminds him, then runs its own retro beside it, one flush. dima 2026-10-07: «yes remind me» · «i want to gather the retro from ccrow myself next time» — set 2026-10-07, moved from the pocket 2026-10-09
 
-⏰ 🦉📊 the #dima-caught recheck — 2026-10-25: `x fleet flow --days 14` vs today's 31 (baseline 23), tallied by type with a helper-lite this time; the 06.5 ledger line in `docs/test-drive/memory-sweep.md` names it. with it, count Agent + `run_in_background` calls per cclio session for 14 days vs the 14 before 10-11 (duckdb over transcripts) — root's parallel-work lines were cut to one on 10-11, dima: «let's try to delete and see how your performance changes» — set 2026-10-11 · due: 2026-10-25
 ⏰ 🦉🧠 when the jev router comes back on (credit ~10-18): the two «skills (jev router)» lines parked at the end of `~/frame/docs/knowledge/jev.md` go back into root `CLAUDE.md` § skills, after the skill router re-measure — set 2026-10-11 · due: 2026-11-03 (pushed 10-23, dima: until tuesday; 10-27: with the router re-measure)
 
 

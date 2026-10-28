@@ -62,7 +62,7 @@ type flowData struct {
 
 // the counts before tagging began (FRM-316), and each repo's pr median in minutes before the flow work
 var (
-	flowTags     = []tagCount{{Tag: "#dima-caught", Baseline: 23}, {Tag: "#brief", Baseline: 47}}
+	flowTags     = []tagCount{{Tag: "#dima-caught", Baseline: 60}, {Tag: "#brief", Baseline: 47}}
 	flowRepos    = []prMedian{{Repo: "frame", Baseline: 36}, {Repo: "bytes", Baseline: 25}}
 	crewSkills   = []string{"x:crew-coder", "x:crew-verifier"}
 	bareRun      = regexp.MustCompile(`\bclaude\b[^|;&\n]*--safe-mode`)
