@@ -23,7 +23,7 @@
   time (2.1.251).
 - 🚨 **remote control has ONE owner per session** (loser prints 4090). Start in the terminal, treat
   the desktop Code tab as join-only. 📌 handover direction untested — assert no cause.
-- 🚫 **a coder that needs the Browser pane runs as a desktop thread cclio starts** (§ the doors) — the pane exists only there (`x:browser-headless`); `agent-browser` works from any session.
+- **a coder that needs a browser runs `--bg` with `agent-browser`** (`x:browser-headless`), which works from any session; the Browser pane exists only in a desktop thread, and those are only the mods coder and cclio's side channels (dima o69)
 
 ## lifetime and stopping
 
