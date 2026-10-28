@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import vitePluginTailwind from '@tailwindcss/vite';
+import { wgslVitePlugin } from '@vgpu/wgsl/loader-vite';
 import vitePluginReact from '@vitejs/plugin-react';
 import { type Plugin, defineConfig } from 'vite';
 
@@ -16,7 +17,13 @@ const devTitle = (): Plugin => ({
 });
 
 export default defineConfig({
-    plugins: [vitePluginReact(), vitePluginTailwind(), devTitle()],
+    plugins: [
+        vitePluginReact(),
+        vitePluginTailwind(),
+        // turns a `.wgsl` import into the prepared ShaderSource vgpu 0.6 requires
+        wgslVitePlugin(),
+        devTitle(),
+    ],
     // `@/` is the house alias in every bytes app; `@hotkeys/` plays the role `@ui/kit/` does
     // there — a named door to code outside this package. Without it the same two modules wear
     // two spellings, `../../` from src and `../../../` from src/components.

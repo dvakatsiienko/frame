@@ -4,12 +4,5 @@
     "gomod": {
         "enabled": true
     },
-    "packageRules": [
-        {
-            "allowedVersions": "<0.6.0",
-            "description": "vgpu held on 0.5 until the chords lane ports Aurora.tsx to v2's prepared shaders (0.6 broke its typecheck, 2026-10-21); its line in FRM-277 (chords wisps) lifts this rule",
-            "matchPackageNames": ["vgpu"]
-        }
-    ],
     "postUpdateOptions": ["gomodTidy"]
 }
