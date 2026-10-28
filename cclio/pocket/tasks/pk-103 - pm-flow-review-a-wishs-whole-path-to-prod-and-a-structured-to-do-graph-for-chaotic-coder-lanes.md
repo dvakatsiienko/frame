@@ -5,8 +5,8 @@ title: >-
   chaotic coder lanes
 status: open
 assignee: []
-created_date: '2026-10-13 10:40'
-updated_date: '2026-10-27T14:27:00Z'
+created_date: 2026-10-13 10:40
+updated_date: '2026-10-28T16:36:00Z'
 due_date: '2026-10-28'
 labels:
   - m
@@ -563,4 +563,6 @@ kept: 2026-10-25 — FRM-72: FRM-419 step 4 maps these W-lines into it next; thi
 held: 2026-10-25 — FRM-72 FRM-419 step 5 maps these W-lines into it next; this item dies the turn that step lands
 
 held: 2026-10-27 — FRM-419 step 5 maps these W-lines into it next (the ticket line now names FRM-419: FRM-72 is the standing ticket, its body kept empty; round 4 wishkeeper)
+
+held: 2026-10-28 — FRM-419 steps 8 and 9 map these W-lines (round 1 done today, round 2 after the renames on 10-29)
 <!-- SECTION:NOTES:END -->
