@@ -14,8 +14,9 @@
     "ignoreUnknown": false,
     "includes": [
       "!**/public/**/*",
-      // biome 2.6 formats yaml (2 → 4-space indent) and 2.6.3 ignores yaml.formatter.enabled, so yaml
-      // stays out of biome as it was on 2.5: ci-binaries.test.ts reads ci.yml's job blocks by indent
+      // biome 2.6 formats yaml (2 → 4-space indent), and yaml.formatter.enabled does not hold through
+      // this config's extends chain, so yaml stays out of biome as it was on 2.5: ci-binaries.test.ts
+      // reads ci.yml's job blocks by indent, and pnpm-lock.yaml is pnpm's to write
       "!**/*.yml",
       "!**/*.yaml",
       "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
