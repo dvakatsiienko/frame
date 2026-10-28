@@ -41,10 +41,22 @@
 - ✅ an `rg` that skips dot dirs gets a `--hidden` hint (PK-139)
   - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
   - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
-- ✅ a foreground Bash that held the session over a minute hints its next foreground run (dima's o113)
-  - given a foreground Bash took over 60 s, then each of its shapes (`name first-operand`, shell glue like `cd` or `ls` left out) is kept in the store
-  - given a later foreground Bash runs a kept shape, then it runs as typed and the model reads: `<shape>` held the foreground <n> s last time — run it with run_in_background: true and keep working until it notifies
-  - given a run already in the background, then it is neither kept nor hinted
+- ⬜ a pipe into `jq` before `&&` gets a pipestatus hint (FRM-428, PK-188)
+  - given `gh api repos/x/y | jq .name && echo ok`, then it runs as typed and the model reads: the `&&` after `| jq` reads jq's exit, not the producer's — check `${pipestatus[1]}` (zsh) or start with `set -o pipefail`
+  - given a pipe ending in `jq` with nothing after it, `;` after it, or a command naming `pipefail`, then no hint
+- ⬜ a silent curl into a pipe gets a `curl -f` hint (FRM-428, PK-188)
+  - given `curl -s https://example.com | jq .`, then it runs as typed and the model reads: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)
+  - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
+- ⬜ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
+  - given `node ~/frame/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
+  - given a script whose source names a help flag, a run without `--help`, or a script outside `~/frame`, then no hint
+- ⬜ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
+  - given `railway logs --help` and no bare `railway --help` this session, then it runs as typed and the model reads: `railway --help`, bare, lists its verbs — some clis run the verb under `<verb> --help`
+  - given the cli's bare `--help` already ran, or its verb hint already fired this session, then no hint
+  - given `x`, `gh`, `git` or `claude` (every verb parses `--help`), `obsidian` (refused instead), a script runner, or a shell word, then no hint
+- ⬜ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
+  - given a foreground Bash took over 60 s, when the same shape runs again, then no hint names «held the foreground» and the store keeps no `slow:` key
+  - decision: the hint is deleted, not re-measured — 197 of 643 calls got it, 82 % under 30 s, none moved (dima's o82)
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»

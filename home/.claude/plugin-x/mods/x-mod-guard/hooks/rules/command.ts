@@ -27,6 +27,10 @@ export type Context = {
     milestoneProjects?: Set<string>;
     // the projects a linear call moves tickets into while linear could not be read: the milestone check skipped them
     milestoneUnread?: string[];
+    // the frame and cclio scripts a `--help` run names whose source parses no help flag, so `--help` runs them
+    helpless?: Set<string>;
+    // the clis whose bare `--help` already ran this session
+    helped?: Set<string>;
 };
 // a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
 export type Brief = { isCoder: boolean; isStamped: boolean };

@@ -332,7 +332,10 @@ export const register: Register = (on) => {
             );
             if (g.deny) return { deny: g.deny };
             const r = await next(e);
-            if (g.key && r.deny === undefined && !r.isError)
+            // a hook beneath refused the edit: no write came, so the hold this call took would only block a rival
+            if (g.key && r.deny !== undefined)
+                await $.store.delete(g.key).catch(() => undefined);
+            else if (g.key && !r.isError)
                 await land($, g.key).catch(() => undefined);
             return r;
         },

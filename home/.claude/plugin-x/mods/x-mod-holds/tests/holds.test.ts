@@ -29,6 +29,8 @@ function world(on: On) {
     const logs: string[] = [];
     // one-shot hooks into the middle of a claim: inside git rev-parse, inside the tool itself
     const fails = { next: false };
+    // a hook beneath (x-mod-guard) refuses the next call before the tool runs
+    const refuses = { next: false };
     const during: {
         revParse?: () => Promise<void>;
         tool?: () => Promise<void>;
@@ -96,6 +98,10 @@ function world(on: On) {
         return out('', state === 'modified' ? 1 : 0);
     });
     on('tool.call', async () => {
+        if (refuses.next) {
+            refuses.next = false;
+            return { deny: 'x-mod-guard stopped this one command' };
+        }
         await fire('tool');
         if (!fails.next) return { result: {}, text: 'done' };
         fails.next = false;
@@ -125,6 +131,7 @@ function world(on: On) {
         files,
         links,
         logs,
+        refuses,
     };
 }
 
@@ -198,6 +205,32 @@ test("a commit releases the holder's file", async ($, on) => {
     // A's hold is gone: the file is B's now
     await w.as($, A);
     expect((await edit($, w, '/repo/x.ts')).deny).toContain(B.slice(0, 8));
+});
+
+test('an edit refused beneath the holds leaves no hold', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    w.refuses.next = true;
+    const refused = await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect([refused.deny, (await edit($, w, '/repo/x.ts')).deny]).toEqual([
+        'x-mod-guard stopped this one command',
+        undefined,
+    ]);
+});
+
+test('a refused edit keeps the hold an earlier edit landed', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    w.refuses.next = true;
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
 });
 
 test('a commit releases a hold whose first edit failed', async ($, on) => {
