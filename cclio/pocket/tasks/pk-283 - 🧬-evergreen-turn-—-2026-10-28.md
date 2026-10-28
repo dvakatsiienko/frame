@@ -28,4 +28,6 @@ close: evergreen 10-28 — #112 merged, #113 held for the mods lane end, page v5
 W1 (2026-10-28 14:27, dima): something is wrong with evergreen — pnpm outdated -r in both frame and bytes shows a large outdated list; why does renovate not work? after each evergreen everything should be upgraded, the packages in each repo included, not just brew and pnpm. → read.md gathers pnpm outdated -r per repo and the dashboard's age (red past 2 days); bytes' renovate silence is orbit o7
 
 refold: the W1 above is dima's 14:28 prompt, not 14:27; groomed as W306–W309 (W310 = the bytes commit, done). close: W306–W309 moved to PK-284 (evergreen v2, shaping); W310 done (bytes committed + pushed 14:28)
+
+close: W306–W309 moved to PK-284; W310 done (bytes pushed 14:28)
 <!-- SECTION:NOTES:END -->
