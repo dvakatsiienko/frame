@@ -7,6 +7,9 @@
   // parser reads them as syntax errors until it is told. bytes gets this from ultracite;
   // frame extends only polished, so it says so itself.
   "css": { "parser": { "tailwindDirectives": true } },
+  // biome 2.6 formats markdown; the repo's markdown (memory, skills, the pocket) is hand-shaped and
+  // read as instructions, so a reflow is a memory edit, never a formatter's call
+  "markdown": { "formatter": { "enabled": false } },
   "files": {
     "ignoreUnknown": false,
     "includes": [
