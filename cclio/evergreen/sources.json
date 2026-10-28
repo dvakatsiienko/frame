@@ -152,7 +152,7 @@
     {
         "entry": "^iOS 27(\\.\\d+)* and iPadOS 27(\\.\\d+)*$",
         "markedAt": "2026-10-28",
-        "marker": "iPadOS 27.2",
+        "marker": "iOS 27.2 and iPadOS 27.2",
         "name": "ipados",
         "note": "same security releases index as ios, rows that name iPadOS only (iOS-only releases like the iPhone Duo 27.1 are skipped); the prose is support.apple.com/en-us/149075",
         "shape": "html",

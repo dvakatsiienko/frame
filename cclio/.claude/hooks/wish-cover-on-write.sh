@@ -15,6 +15,8 @@ if [ "$(jq -r '.tool_name // ""' <<<"$event")" = "Bash" ]; then
 	for tok in $(grep -oE "[^ \"'<>|;&]*\.md" <<<"$cmd" | sort -u); do
 		case "$tok" in /*) f="$tok" ;; "~"/*) f="$HOME/${tok#\~/}" ;; *) f="$cwd/$tok" ;; esac
 		watched "$f" && [ -f "$f" ] || continue
+		# a command that only names a spec (a read, a spawn argv) leaves its mtime old
+		[ $(($(date +%s) - $(stat -f %m "$f"))) -le 10 ] || continue
 		out="$(jq -n --arg f "$f" '{tool_name: "Write", tool_input: {file_path: $f}}' | "$0")"
 		[ -n "$out" ] && { echo "$out"; exit 0; }
 	done
