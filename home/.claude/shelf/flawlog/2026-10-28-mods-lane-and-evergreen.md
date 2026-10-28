@@ -1,0 +1,6 @@
+# flawlog 2026-10-28 · cc·20261022·pm-revamp (continues)
+
+- told dima «the 8 inbox lines came from before the reset, the boot prompt is the only drop» as fact — an inference; ccrow caught it (the prefetch counted 8 real lines at 13:45, inbox matched the template at 13:47, no sweep ran) · a possible lost drop · a count that changed under me is asked, never explained
+- orbit add refuses a link with spaces or a non-https scheme (an obsidian:// url, an iCloud path) · a vault file cannot be linked from an ask · a wisp for the mods lane
+- fixed: told dima obsidian's recovery store was compressed and unreadable — wrong, it is UTF-16 plain text in the leveldb log; wishkeeper found the 13:46 inbox snapshot (= the boot prompt, nothing lost) · a needless ask (o1) · grep a store in utf-16 before calling it unreadable
+- progress lines and a partial board went out before the boot board (13:48, 13:50, 13:56) — boot step 8 says nothing prints before it; partly forced by the harness's «say what you're doing» nudges · noise in his thread · open: the boot step and the harness nudge disagree — a rule fix, dima's call
