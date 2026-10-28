@@ -894,6 +894,8 @@ func TestMergeAutoWaitsOnASelfEditTheSignDoesNotCover(t *testing.T) {
 			"FRM-9's last sign holds no merge: pre-approved"},
 		{"a cancel after the last sign voids its pre-approval", signedBody(signAbove, "merge: pre-approved\n🚫 cancelled 2026-10-26 — chunk dropped\n", signAbove), "",
 			"FRM-9's last sign was cancelled"},
+		{"a re-sign pending after the last sign voids its pre-approval", signedBody(signAbove, "merge: pre-approved\n🚀 dispatched 2026-10-26\n✍️ re-sign pending 2026-10-27 — W2 moved the scope\n", signAbove), "",
+			"FRM-9's last sign waits for a re-sign"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

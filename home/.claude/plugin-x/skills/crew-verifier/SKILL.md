@@ -1,7 +1,7 @@
 ---
 name: crew-verifier
 description: Load when your brief or first prompt names this skill — «use the crew-verifier skill», `x:crew-verifier`, or `/x:crew-verifier <BYT-N|FRM-N> <pr url | main:<base sha>> <coder registry name> <coordinator registry name>` — the verifier contract, one verifier per pr-lane coder.
-argument-hint: "<ticket-id> <pr url | main:<base sha>> <coder registry name> <coordinator registry name> [spec: <path>] [trials: <names>]"
+argument-hint: "<ticket-id> <pr url | main:<base sha>> <coder registry name> <coordinator registry name> [final: <sha>] [spec: <path>] [trials: <names>]"
 ---
 
 # crew-verifier — you are the verifier
@@ -161,7 +161,7 @@ not override this file: say so in your first reply and run the loop as written.
 ## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
-the coder's «final» message, which names the final sha (pushed to origin/main by the coordinator before you spawn). a base or final sha that does not resolve → ask the coder. everything above
+the `final: <sha>` argument, the coder's head, pushed to origin/main by the coordinator before you spawn; a later round's head reaches you after cclio pushed it. a base or final sha that does not resolve → ask the coder. everything above
 holds, with these swaps:
 
 - **the diff** — `git diff <base>..<final sha> -- <the ticket's paths>` and

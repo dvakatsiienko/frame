@@ -65,7 +65,7 @@ this file says how every member does it. A section headed with roles binds only 
 
 **the loop**
 - the lane opens at the coder's first commit
-- rounds run coder ↔ verifier: cclio hears nothing per round, and the coder carries `clean`
+- rounds run coder ↔ verifier: cclio hears nothing per round, and the coder carries `clean`; on a quick lane each round's «round N on <sha>» goes to cclio too, who pushes main before the verifier reads it
 - the round cap: 3 rounds with a P0 or P1 finding, scope growth resets the count, the stop goes to cclio
 - a dispute goes to cclio with both sides in one message
 - after `clean`, cclio approves the head and merges; the look card reaches dima, never a review request
