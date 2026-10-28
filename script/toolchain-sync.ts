@@ -2,7 +2,7 @@
  * toolchain-sync — the installed node and pnpm are the source of truth for every
  * repo's runtime pins: `.node-version` (major only, so fnm resolves whatever patch is
  * installed), `packageManager` and `engines`. Renovate is told to leave those alone.
- * `--check` reports drift and exits 1; without it the files are rewritten.
+ * `--check` reports drift and exits 1; without it the files are rewritten and each lockfile refreshed.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -67,5 +67,15 @@ for (const repo of repos) {
         packageManager: want.packageManager,
     };
     writeFileSync(manifestFile, `${JSON.stringify(sorted, null, indent)}\n`);
+    // a pin bump alone reds ci's frozen install; CI=1 keeps the hook shims where they are
+    execFileSync(
+        'pnpm',
+        ['install', '--lockfile-only', '--no-frozen-lockfile'],
+        {
+            cwd: repo,
+            env: { ...process.env, CI: '1' },
+            stdio: 'inherit',
+        },
+    );
 }
 process.exit(check && drift > 0 ? 1 : 0);
