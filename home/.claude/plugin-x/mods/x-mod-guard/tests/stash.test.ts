@@ -90,7 +90,7 @@ const swept = (context: readonly string[] | undefined) =>
             l.includes('git stash push -u -- <your paths>'),
     ).length;
 
-// warn-only until its verifier says clean: the stash runs, the model reads what would have been refused
+// refused since its verifier's clean (FRM-428 round 2): nothing runs, the refusal names the door
 const SWEEPS = [
     'git stash',
     'git stash -u',
@@ -99,10 +99,14 @@ const SWEEPS = [
     'cd /repo && git stash push --include-untracked',
 ] as const;
 for (const typed of SWEEPS)
-    test(`a whole-tree stash while another session holds a file warns: ${typed}`, async ($, on) => {
+    test(`a whole-tree stash while another session holds a file is refused: ${typed}`, async ($, on) => {
         const w = world(on);
         const r = await bash($, typed);
-        expect([w.ran, swept(r.context)]).toEqual([[typed], 1]);
+        expect([
+            w.ran,
+            r.deny?.includes('git stash push -u -- <your paths>'),
+            r.deny?.includes('/repo/x.ts'),
+        ]).toEqual([[], true, true]);
     });
 
 const FINE = [

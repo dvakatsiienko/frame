@@ -326,9 +326,9 @@
   - decision: guard refuses it, so one Bash parser reads every command — x-mod-holds had a second, simpler one until FRM-350
   - then a hold whose holder sat idle 30 min, whose pid died, or whose landed file is clean in git does not refuse
   - then a relative path is read from the dir every `cd` before it left, the way every guard rule reads it
-- ⬜ a whole-tree `git stash` is refused while another session holds a file in that repo (FRM-428 rider, warn-only until its verifier says clean)
-  - given A holds `x.ts` in `/repo`, when B runs `git stash`, `git stash -u`, `git stash save …` or `git stash push` with no pathspec there, then it runs and the model reads that rule `stash-sweep` would refuse it, door `git stash push -u -- <your paths>`, naming A's file
-  - given a pathspec (`git stash push -- y.ts`), a read verb (`list`, `show`, `pop`, `apply`), another repo, or no live holder, then no warning
+- ✅ a whole-tree `git stash` is refused while another session holds a file in that repo (FRM-428 rider; verified clean round 2)
+  - given A holds `x.ts` in `/repo`, when B runs `git stash`, `git stash -u`, `git stash save …` or `git stash push` with no pathspec there, then nothing runs: rule `stash-sweep` refuses it, door `git stash push -u -- <your paths>`, naming A's file
+  - given a pathspec (`git stash push -- y.ts`), a read verb (`list`, `show`, `pop`, `apply`), another repo, or no live holder, then it runs
 - ✅ a Bash command the parser cannot read goes through
   - given A holds `x.ts`
   - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses
