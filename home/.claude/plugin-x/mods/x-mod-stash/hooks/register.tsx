@@ -580,6 +580,9 @@ let isNudged = false;
 // the phases nudge fires only on a turn that did real work: an edit, a spawn or a stop, a commit, a lane move — a q&a
 // turn keeps quiet and the 3-turn stale mark covers it (PK-70: 235 plan calls in a session, the nudge on every turn)
 let isWorkTurn = false;
+// this turn's wrap_up carried an ask, and the Q numbers its orbit adds opened with: the Stop checks read both (FRM-427)
+let isWrapAsked = false;
+let gridQs: string[] = [];
 const WORK_TOOLS = new Set([
     'Edit',
     'Write',
@@ -1938,6 +1941,40 @@ async function procNow($: EngineInterface) {
     return proc;
 }
 
+// the Stop's two reds, once a turn (FRM-427): a wrap_up ask while an orbit ask is open (PK-227, one home for the next
+// move), and an orbit add opening «Q<n>» whose round the reply never printed as «❓ **Q<n>**» (the 10-25 rider); a --bg
+// session draws no board, so its asks go to its coordinator and neither applies
+const WRAP_UP_TOOL = 'mcp__ccd_turn__wrap_up';
+async function stopRed($: EngineInterface, reply: string) {
+    if (!(await partsShown($))('stash.orbit') || (await isBgSelf($)))
+        return undefined;
+    const open = (await currentOrbit($)).asks.filter((a) => !a.isResolved);
+    const lost = gridQs.filter((n) => !reply.includes(`❓ **Q${n}**`));
+    const reds = [
+        isWrapAsked && open.length
+            ? `your wrap_up asks dima a question while orbit holds ${open.map((a) => `${a.id} «${a.text}»`).join(', ')} open: one home for the next move — resolve or follow the orbit ask, or drop the wrap_up ask`
+            : '',
+        lost.length
+            ? `you added ${lost.map((n) => `Q${n}`).join(', ')} to orbit, but the reply never printed ${lost.map((n) => `❓ **Q${n}**`).join(', ')}: a grill's asks go out with their round, so print the round in the reply`
+            : '',
+    ].filter(Boolean);
+    return reds.length ? reds.join('\n') : undefined;
+}
+
+async function isBgSelf($: EngineInterface) {
+    const pid = (await procNow($))?.pid;
+    if (!pid) return false;
+    const home = await $.env.get('HOME');
+    const raw = await $.fs
+        .read(`${home}/.claude/sessions/${pid}.json`)
+        .catch(() => undefined);
+    try {
+        return raw !== undefined && JSON.parse(raw)?.kind === 'bg';
+    } catch {
+        return false;
+    }
+}
+
 async function sessionName($: EngineInterface) {
     const pid = (await procNow($))?.pid;
     if (!pid) return undefined;
@@ -2552,6 +2589,8 @@ async function startTurn($: EngineInterface, text: string, isUser: boolean) {
     turnTools = 0;
     isNudged = false;
     isWorkTurn = false;
+    isWrapAsked = false;
+    gridQs = [];
     hotGen++;
     await load($);
     turnAfk = afk;
@@ -3473,6 +3512,15 @@ async function orbitCall(
         return { deny: op.deny };
     }
     await saveOrbit($, op.orbit);
+    if (input.op === 'add')
+        gridQs.push(
+            ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
+                const n = oneLine((x as { text?: unknown })?.text).match(
+                    /^Q(\d+)\b/,
+                )?.[1];
+                return n ? [n] : [];
+            }),
+        );
     const name = isPlan && step !== undefined && (await sessionName($));
     if (name)
         await $.store.set(LANE_STEP + bare(name), {
@@ -3818,6 +3866,11 @@ export const register: Register = (on) => {
 
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
+        const red = e.stop_hook_active
+            ? undefined
+            : await stopRed($, e.last_assistant_message ?? '');
+        isWrapAsked = false;
+        gridQs = [];
         // a keep-hot ping's one-character reply never clears what the session waits on; it only stamps the warm cache
         const was = pinged
             ? ((await $.store
@@ -3841,7 +3894,7 @@ export const register: Register = (on) => {
         isUserTurn = false;
         await keepTurn($);
         await load($);
-        return r;
+        return red ? { ...r, block: red } : r;
     });
 
     on('turn.complete', async ($, e, next) => {
@@ -6241,6 +6294,11 @@ export const register: Register = (on) => {
         }
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
+        if (
+            (e.tool as string) === WRAP_UP_TOOL &&
+            oneLine((e as Record<string, unknown>).ask)
+        )
+            isWrapAsked = true;
         if (
             isWork(
                 e.tool as string,

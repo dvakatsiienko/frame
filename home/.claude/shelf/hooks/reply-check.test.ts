@@ -235,14 +235,14 @@ describe('the grill-drift rule', () => {
 });
 
 // a turn as transcript lines: the prompt, then one assistant message per call list, each with its result
-const turnWith = (...messages: { id: string; calls: { name: string; card?: string }[] }[]) => {
+const turnWith = (...messages: { id: string; calls: { name: string; card?: string; input?: object }[] }[]) => {
     const path = join(mkdtempSync(join(tmpdir(), 'rc-')), 't.jsonl');
     const lines: unknown[] = [{ message: { content: 'proceed', role: 'user' }, type: 'user' }];
     for (const { id, calls } of messages) {
         lines.push({
             message: {
-                content: calls.map(({ name, card }) => ({
-                    input: card ? { subagent_type: card } : {},
+                content: calls.map(({ name, card, input }) => ({
+                    input: input ?? (card ? { subagent_type: card } : {}),
                     name,
                     type: 'tool_use',
                 })),
@@ -309,5 +309,31 @@ describe('the siesta freebie', () => {
     it('passes a turn with no wishkeeper, and a helper spawn alone', () => {
         stopAfter('done.', turnWith({ calls: [{ card: 'helper-lite', name: 'Agent' }], id: 'm1' }));
         expect(nextPrompt()).not.toContain('siesta freebie');
+    });
+});
+
+// FRM-427's rider (10-25): a promise lands with its call — «proposed in orbit» needs an orbit add that turn, «now reds» a command
+describe('a promise lands with its call', () => {
+    const ORBIT = 'mcp__x-mod-stash__orbit';
+    it('reminds when «proposed in orbit» rides a turn with no orbit add', () => {
+        stopAfter('the rename is proposed in orbit.', turnWith({ calls: [{ input: { op: 'plan' }, name: ORBIT }], id: 'm1' }));
+        expect(nextPrompt()).toContain('proposed in orbit');
+    });
+
+    it('passes «proposed in orbit» beside an add, alone or inside ops', () => {
+        for (const input of [{ op: 'add' }, { ops: [{ op: 'plan' }, { op: 'add' }] }]) {
+            stopAfter('the rename is proposed in orbit.', turnWith({ calls: [{ input, name: ORBIT }], id: 'm1' }));
+            expect(nextPrompt()).not.toContain('proposed in orbit');
+        }
+    });
+
+    it('reminds when «now reds» rides a turn that ran no command', () => {
+        stopAfter('the gate now reds on it.', turnWith({ calls: [{ name: 'Edit' }], id: 'm1' }));
+        expect(nextPrompt()).toContain('now reds');
+    });
+
+    it('passes «now reds» beside a Bash call', () => {
+        stopAfter('the gate now reds on it.', turnWith({ calls: [{ name: 'Bash' }], id: 'm1' }));
+        expect(nextPrompt()).not.toContain('now reds');
     });
 });

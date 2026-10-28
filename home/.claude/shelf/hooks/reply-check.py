@@ -263,6 +263,44 @@ def lone_wishkeeper(path: str) -> bool:
     return not work
 
 
+PROPOSED_IN_ORBIT = re.compile(r"\bproposed in orbit\b", re.I)
+NOW_REDS = re.compile(r"\bnow reds\b", re.I)
+
+
+def turn_calls(path: str) -> list[tuple[str, dict]]:
+    # the tool calls of the turn that just ended, as (name, input)
+    with open(path) as transcript:
+        lines = transcript.readlines()
+    calls: list[tuple[str, dict]] = []
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        message = entry.get("message") or {}
+        content = message.get("content")
+        if entry.get("type") == "user":
+            if not (isinstance(content, list) and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content)):
+                break
+            continue
+        if entry.get("type") == "assistant" and isinstance(content, list):
+            calls += [(b.get("name", ""), b.get("input") or {}) for b in content if isinstance(b, dict) and b.get("type") == "tool_use"]
+    return calls
+
+
+def empty_promises(path: str, reply: str) -> list[str]:
+    # a promise lands with its call (FRM-427's rider): «proposed in orbit» needs an orbit add, «now reds» a command
+    prose = FENCE.sub("", reply)
+    calls = turn_calls(path)
+    ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
+    found: list[str] = []
+    if PROPOSED_IN_ORBIT.search(prose) and not any(op.get("op") == "add" for op in ops):
+        found.append("proposed in orbit")
+    if NOW_REDS.search(prose) and not any(name in ("Bash", "Monitor") for name, _ in calls):
+        found.append("now reds")
+    return found
+
+
 MID_TEXT_MIN = 300
 LIST_LEAD = re.compile(r"^[\s\-*#>]*(?:\d+[.)]\s*)?")
 
@@ -354,6 +392,7 @@ def main() -> None:
         hits.append(("lone-wishkeeper", "siesta"))
     if path and os.path.exists(path):
         hits += [("unreached", head) for head in unreached(path, reply)]
+        hits += [("empty-promise", said) for said in empty_promises(path, reply)]
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
@@ -370,6 +409,8 @@ def main() -> None:
         reminds.append("wishkeeper ran alone — start the siesta freebie now (cclio:siesta step 2.2)")
     if by_rule("unreached"):
         reminds.append(f"text printed before a tool call never reached dima («{by_rule('unreached')[0]}…») — what he must read goes in the last message")
+    for said in by_rule("empty-promise"):
+        reminds.append(f"the reply says «{said}» with no {'orbit add' if said == 'proposed in orbit' else 'command'} that turn — a promise lands with its call")
     if by_rule("empty-reply"):
         reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
     if by_rule("wait-on-ccrow"):

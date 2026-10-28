@@ -513,6 +513,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given the word holds «changed: <what>», then it passes only when the same call carries a follow or an add (`ops`); alone it is refused naming the follow
   - given an ask nobody ticked, then it resolves with any word or none, as before
   - decision: the ask expiry (`dies`, ⌛) left source: its trial won nothing (`docs/test-drive/orbit-expiry.md`, PK-207)
+- ⬜ the Stop reds a turn that asks in two homes or skips its grill round (FRM-427, PK-227)
+  - given a turn whose `wrap_up` call sets its `ask` while this session's orbit holds an open ask, when the turn stops, then the Stop goes red once, naming the open ask
+  - given a turn that added an orbit ask opening «Q<n>» and a reply lacking «❓ **Q<n>**», then the Stop goes red naming the round; the add itself passes
+  - then it passes with no open ask, a wrap_up with no ask, a reply printing the round, in a `--bg` session, with `🪐 orbit` switched off, and on the turn the red woke (`stop_hook_active`), even when it repeats the wrap_up ask
+  - decision: both enforce from their commit, the signed decision (cclio's greenlight, option a, 2026-10-28)
 - ⬜ one orbit call carries many ops (FRM-427, o83)
   - given one call with `ops: [{ op: 'add', … }, { op: 'resolve', … }, { op: 'plan', … }]`, then all three land in order and the result reads one line per op
   - given one op in it is refused, then the result names it «refused — <why>» and the others land; a call whose every op is refused is refused

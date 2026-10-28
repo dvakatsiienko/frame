@@ -2509,3 +2509,121 @@ test('a cost question in a session that is not cclio carries no cost hint', asyn
     await say($, 'what does a cache read cost?');
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toMatch(/a cost question/);
 });
+
+// PK-227: one home for the next move — a wrap_up ask while an orbit ask is open reds the Stop once
+const WRAP_UP = 'mcp__ccd_turn__wrap_up';
+const stop = ($: Engine, text = 'done.', isActive = false) =>
+    $.classic.Stop({
+        last_assistant_message: text,
+        session_id: SID,
+        stop_hook_active: isActive,
+    } as never);
+const wrapUp = ($: Engine, ask?: string) =>
+    $.tool.call({
+        ...(ask ? { ask } : {}),
+        recap: 'shipped',
+        tool: WRAP_UP,
+    } as never);
+
+test('a wrap_up carrying an ask while an orbit ask is open reds the Stop, naming the ask', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await wrapUp($, 'Commit now?');
+    const r = await stop($);
+    expect(r.block).toMatch(/wrap_up.*o1.*push FRM-1/s);
+});
+
+for (const [why, run] of [
+    [
+        'no open orbit ask',
+        async ($: Engine) => {
+            await say($, 'go');
+            await wrapUp($, 'Commit now?');
+        },
+    ],
+    [
+        'a wrap_up with no ask',
+        async ($: Engine) => {
+            await add($, ['push FRM-1', 'yes']);
+            await say($, 'go');
+            await wrapUp($);
+        },
+    ],
+] as const)
+    test(`the Stop passes with ${why}`, async ($, on) => {
+        world(on);
+        await start($);
+        await run($);
+        expect((await stop($)).block).toBeUndefined();
+    });
+
+test('the turn right after its own red passes: no loop', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await wrapUp($, 'Commit now?');
+    await stop($);
+    // the continuation the red woke repeats the wrap_up ask; it still passes
+    await wrapUp($, 'Commit now?');
+    expect((await stop($, 'fixed.', true)).block).toBeUndefined();
+});
+
+test('a --bg session passes: its asks go to its coordinator', async ($, on) => {
+    world(on);
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: '4242\nMon Oct 12 15:00:00 2026\n',
+        },
+    }));
+    on('fs.read', (_$, e) =>
+        e.path === '/home/.claude/sessions/4242.json'
+            ? {
+                  value: JSON.stringify({
+                      kind: 'bg',
+                      name: 'probe',
+                      pid: 4242,
+                  }),
+              }
+            : { deny: 'no such file' },
+    );
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await wrapUp($, 'Commit now?');
+    expect((await stop($)).block).toBeUndefined();
+});
+
+// the 10-25 rider: a grill's Q asks go out with their round — an add opening «Q<n>» needs «❓ **Q<n>**» in the reply
+test('an orbit add opening «Q2» passes, and a reply lacking «❓ **Q2**» reds the Stop', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'grill me');
+    const r = await orbit($, {
+        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        op: 'add',
+    });
+    expect([r.deny, (await stop($, 'asked in orbit.')).block]).toEqual([
+        undefined,
+        expect.stringMatching(/Q2.*❓ \*\*Q2\*\*/s),
+    ]);
+});
+
+test('a reply printing «❓ **Q2**» passes the Stop', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'grill me');
+    await orbit($, {
+        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        op: 'add',
+    });
+    expect(
+        (await stop($, '❓ **Q2** which door?\n- a) state\n- b) file')).block,
+    ).toBeUndefined();
+});
