@@ -37,7 +37,8 @@ jobs:
     steps:
       # 📌 our own App's token, never `GITHUB_TOKEN`: a push made with `GITHUB_TOKEN` starts no
       # workflow, so renovate's branches would carry no CI and `prCreation: not-pending` would
-      # hold every pr forever. its permissions are listed in the pr that added this file.
+      # hold every pr forever. the app, `x-renovate`, is installed on frame and bytes only, with
+      # Contents, Pull requests, Issues, Workflows: write and Checks, Commit statuses: read.
       - id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:

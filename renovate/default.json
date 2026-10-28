@@ -3,7 +3,7 @@
     "abandonmentThreshold": "1 year",
     "commitMessagePrefix": "🌲 evergreen:",
     "description": "the shared preset frame and bytes extend (`github>dvakatsiienko/frame//renovate/default`); a repo's own renovate.json keeps only its holds and its own managers",
-    "extends": ["config:recommended"],
+    "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
     "internalChecksFilter": "strict",
     "minimumReleaseAge": "3 days",
     "osvVulnerabilityAlerts": true,
@@ -47,7 +47,13 @@
             "description": "0.x never automerges: semver lets a 0.x package break in a patch, so these ride the wednesday pr for a human to read. last rule on purpose — later rules win, so this overrides the patch tier above. matchCurrentVersion prefers the locked version, so it catches a 0.x behind a range too. a 0.x → 1.0 is a major and stays on the dashboard.",
             "groupName": "minors",
             "matchCurrentVersion": "/^0\\./",
-            "matchUpdateTypes": ["minor", "patch"],
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "pin",
+                "pinDigest",
+                "digest"
+            ],
             "schedule": ["* 7-11 * * 3"]
         }
     ],
