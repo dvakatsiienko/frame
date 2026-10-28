@@ -402,7 +402,7 @@
             "id": "6:313",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ the Code-tab door</b><br><span style=\"font-size:20px\">dima opens it, pastes a brief pointer</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ the desktop thread</b><br><span style=\"font-size:20px\">cclio starts it with start_session, archives it at the lane's end</span>",
             "vertex": "1"
         },
         "geometry": {
