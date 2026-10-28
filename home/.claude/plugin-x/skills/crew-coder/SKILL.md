@@ -78,7 +78,7 @@ brief says which, and when it does not, ask once, up front.
   the `x:cmt` shape, because the squash commit takes the title and body verbatim. its body follows
   `mattpocock-skills:pr` in ≤ ~25 lines, with `- ticket: <id>` and never a closing keyword (cclio closes after the merge, `x:cmt`).
   paste the url in your chat and your ping.
-- **on `main`**: a quick lane commits as it goes, its dispatch pick the word, and cclio pushes (dima, 2026-10-27, o59); dima mode commits only on his word. a push never asks (dima, 2026-10-22): frame any time; bytes `main` only when needed — the brief says so, or a live check needs it — since each push redeploys vercel; a bytes pr branch any time. `x lane commit <msg-file> <paths…>`
+- **on `main`**: a quick lane commits as it goes, its dispatch pick the word, and cclio pushes (dima, 2026-10-27, o59); dima mode commits only on his word. a push never asks (dima, 2026-10-22; the rule is `cclio/memory/habit-dima-comms.md` § commit and push never ask): bytes `main` only when the brief says so or a live check needs it. `x lane commit <msg-file> <paths…>`
   takes only your paths in a dirty shared checkout; when your change sits on someone's uncommitted hunks
   you cannot separate, carry them and name them in the body.
 - **the merge is cclio's**, on the verifier's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.

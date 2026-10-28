@@ -30,7 +30,7 @@ load `mattpocock-skills:grilling` and run its ❓ round as written — the front
 
 - **single mode is the default**: one chunk per grill, the chunks one after another, ten tickets are ten grills in a row (dima, 2026-10-23: «if we prep chunks like this, 5 at once, each chunk loses precision»)
 - **fast mode, on his word «fast»**: many chunks prepped at once, speed traded for precision but still leaning to precision. first a triage prints, one line per chunk with its reason, and he may move any: a chunk fits fast only when it needs no decision of his beyond the § 3 fields; the rest go to single mode after. a fast chunk is still fully groomed: i run the grilling skill on it myself, ask its questions and answer them, and its body is complete before the sign
-- a chunk has no split rule: S by default, M allowed and watched as a trial
+- a chunk's size and split rule: `craft-fleet-flow` § lane init (size)
 - his answers fold into the ticket's `decided` the same turn
 
 ## 3 · what the sign carries
@@ -39,7 +39,13 @@ dispatch runs without dima, a shift included, so before the sign the ticket hold
 
 ## 4 · the sign
 
-the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108). **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask. on the sign: `x linear set FRM-N --add-label signed --state Todo` (the sign is its promotion out of Triage), and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`; the hash is the first 8 of `shasum -a 256` over the body above `## signed`). a line in the block is never edited: history is how a lane gets debugged.
+the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108).
+
+- **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask
+- on the sign: `x linear set FRM-N --add-label signed --state Todo` (the sign is its promotion out of Triage)
+- and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `cclio:pm` `references/body.md`)
+  - the hash is the first 8 of `shasum -a 256` over the body above `## signed`
+  - a line in the block is never edited: history is how a lane gets debugged
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
 

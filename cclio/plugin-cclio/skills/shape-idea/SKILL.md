@@ -10,8 +10,8 @@ the phase between dima's raw wish and a ticket worth signing. it makes sure we b
 sharp, before any of it exists — tech debt born at the idea stage is the most expensive kind. it fits
 non-mechanical work, better shaped granularly than solved straight: a new app, a new feature, a change
 to how an existing product part works (atelier drawing collages beside dioramas: yes; a dark/light
-theme: a plain ticket). the wish fold proposes «shape-idea or not» per wish and his pick decides
-(`craft-pm` § wishes). an existing app runs it too (a **re-shape**) when it grew from a random ask and was never shaped.
+theme: a plain ticket). the wish fold proposes «shape-idea or not» per wish, his pick decides
+(rule: `craft-pm` § wishes). an existing app runs it too (a **re-shape**) when it grew from a random ask and was never shaped.
 the contract around it — the sign, dispatch, where every artifact lives — is `craft-fleet-flow` § lane init.
 
 dima owns the want and every verdict; you run the steps, one at a time, and stop after each for his

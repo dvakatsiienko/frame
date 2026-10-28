@@ -24,7 +24,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - talks to the coder; to cclio only on a dispute, a round-3 or not-checkable stop, or its exit line
   - hears from the coder
   - lands as: the coder carries `clean`; a dispute or a stop goes to cclio
-- **retros** — every member writes its retro beside its lane plan, `~/.local/state/x/lanes/<feature>/*-retro.md`, never as a message;
+- **retros** — every member writes its retro beside its lane plan (path: `crew-dna` skill § the retro), never as a message;
   cclio folds each when its lane ends, and the halt gathers what is left
 - **designer**
   - talks to cclio (one ping per spread) and to dima when he drops in

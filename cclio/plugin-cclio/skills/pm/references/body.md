@@ -6,7 +6,7 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 
 `to-spec` runs on the body alone (dima, 2026-10-07). in order, a small ticket filling only the lines it has:
 
-- `lane: main|side|quick|shift` — the first line, the kind word only; `repo: <name>` under it once signed (`cclio:shape-lane` § 3)
+- `lane: <kind>` (the four kinds: `fleet-vibe` § entities, lane) — the first line, the kind word only; `repo: <name>` under it once signed (`cclio:shape-lane` § 3)
 - **wish** — dima's words, folded (`cclio/memory/craft-pm.md` § wishes), one point per numbered W-line; his raw drop stays in the pocket notes, linked (`craft-pm` § wishes)
 - **dima notes** — his later notes and verdicts, folded and dated, read by the ask-guard; a later ask joins the wish block as W-lines
 - **why** — what hurts today
@@ -20,7 +20,13 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 - **closing word** — at close
 - **`## signed`** — the last section, appended to, never edited: `✍️ signed <YYYY-MM-DD> · body <hash>` at his sign (`cclio:shape-lane` § 4 owns the hash), `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`, `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`, `merge: pre-approved` when his sign covers the merge, `🚀 dispatched <YYYY-MM-DD>` or `🚫 cancelled <YYYY-MM-DD> — <why>` (`cclio:shape-lane-dispatch`), `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <asks>` (`cclio:halt`), `✍️ re-sign pending <YYYY-MM-DD> — <what changed>` when a scope moved after his sign: the chunk is blocked until his re-sign, asked in orbit the same turn (dima o66)
 
-**the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»): the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch — on a signed ticket with its `## signed` line in the same write (`cclio:shape-lane` § 4). the how is the body's `proposed` / `decided` until dispatch; `to-spec` then moves it into `.scratch/<feature>/spec.md`, beside the exit lines, each chunk section opening with its own `wish: FRM-N` in place of a problem statement, never restates the want, and cites the W-lines each part serves (`script/wish-cover.ts` exits 0 on it); steers on the how land in the spec, and its outcome folds into the closing word when the run lands. the run check, logged in `docs/test-drive/spec-pipeline.md`: «did `to-spec` need anything outside the body?» the slices `to-tickets` cuts live in the coder's worktree `.scratch/<feature>/issues/`, never in linear.
+**the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»):
+- want in the ticket: the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch — on a signed ticket with its `## signed` line in the same write (`cclio:shape-lane` § 4)
+- how to spec: the how is the body's `proposed` / `decided` until dispatch; `to-spec` then moves it into `.scratch/<feature>/spec.md`, beside the exit lines
+  - each chunk section opens with its own `wish: FRM-N` in place of a problem statement, never restates the want, and cites the W-lines each part serves (`script/wish-cover.ts` exits 0 on it)
+  - steers on the how land in the spec, and its outcome folds into the closing word when the run lands
+- run check, logged in `docs/test-drive/spec-pipeline.md`: «did `to-spec` need anything outside the body?»
+- slices: the slices `to-tickets` cuts live in the coder's worktree `.scratch/<feature>/issues/`, never in linear
 
 - 🚨 **dima's words never go into a comment**: the body is read by everyone, a comment by a
   graphql fetch. comments carry trail only — run stamps, «done, see commit», a member's done report
