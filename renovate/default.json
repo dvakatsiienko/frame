@@ -55,6 +55,16 @@
                 "digest"
             ],
             "schedule": ["* 7-11 * * 3"]
+        },
+        {
+            "allowedVersions": "<8",
+            "description": "prisma held on 7: wait for the stable 8.0, npm's latest is an 8.0 rc (dima, 2026-10-28)",
+            "matchPackageNames": [
+                "prisma",
+                "@prisma/client",
+                "@prisma/adapter-better-sqlite3",
+                "@prisma/adapter-pg"
+            ]
         }
     ],
     "prCreation": "not-pending",
