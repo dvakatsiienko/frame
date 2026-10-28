@@ -15,8 +15,9 @@ import {
     foregroundClaude,
     installDirs,
     isSignAsk,
+    mergeAutoCall,
     mergeAutoPr,
-    mergeAutoWords,
+    mergeAutoRepo,
     mergeWord,
     message,
     namesWhole,
@@ -24,8 +25,10 @@ import {
     rawLinear,
     rawPluginUpdate,
     refusals,
+    remoteSlug,
     removedTrees,
     signWord,
+    withDimaOk,
 } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
@@ -452,6 +455,13 @@ async function tickFor(
         );
     return tick;
 }
+// the github slug merge-auto reads when no --repo names one: the dir's origin, as x/go/gh.go repoOf does
+async function repoOf($: EngineInterface, dir: string) {
+    const r = await $.process
+        .run(['git', '-C', dir, 'remote', 'get-url', 'origin'])
+        .catch(() => undefined);
+    return r?.exitCode === 0 ? remoteSlug(r.stdout) : undefined;
+}
 const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 // a --bg session's spawn prompt arrives as `composer` and dima's typing there as `bridge` (measured 2026-10-09, FRM-358),
 // so in a bg session only the bridge is his
@@ -816,12 +826,21 @@ export const register: Register = (on) => {
             return enforce(bump, `nothing in this command ran — ${said}`, said);
         }
         // dima's tick on an ask quoting the pr is his word for merge-auto, never for the brake (FRM-427)
-        const mergeArgs = mergeAutoWords(typed, cwd);
+        const mergeCall = mergeAutoCall(typed, cwd);
+        const mergeArgs = mergeCall?.words;
         const pr = mergeArgs && mergeAutoPr(mergeArgs);
-        const prTick = async () =>
-            pr && !mergeArgs?.includes('--release-brake')
-                ? tickFor($, `pr:${pr}`, (t) => quotesPr(t.text, pr))
+        const prTick = async () => {
+            if (!mergeCall || !pr || mergeArgs?.includes('--release-brake'))
+                return undefined;
+            const repo =
+                mergeAutoRepo(mergeCall.words) ??
+                (await repoOf($, mergeCall.dir));
+            return repo
+                ? tickFor($, `pr:${repo}#${pr}`, (t) =>
+                      quotesPr(t.text, repo, pr),
+                  )
                 : undefined;
+        };
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
         if (word) {
@@ -841,18 +860,18 @@ export const register: Register = (on) => {
                     said,
                 );
             }
-            // the flag goes on a plain call that would run anyway: appended past `&&`, `;`, a comment or a nested shell it
-            // lands outside merge-auto, and an early return there would skip the other refusals
+            // the flag goes right after the call's own words, only on a command every other rule lets run
         } else if (
             verdict.kind === 'run' &&
-            !/[;&|#\n`$()<>'"]/.test(command) &&
+            pr &&
             mergeArgs?.includes('--apply') &&
+            withDimaOk(command, pr) !== undefined &&
             (await prTick())
         ) {
             notes.push(
                 `dima's tick quotes pr ${pr}, so it carries his word: --dima-ok ${pr}`,
             );
-            return go(`${command} --dima-ok ${pr}`);
+            return go(withDimaOk(command, pr));
         }
         // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
         const sign = signWord(typed, cwd, ctx);

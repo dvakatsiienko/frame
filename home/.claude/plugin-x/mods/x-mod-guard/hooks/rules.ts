@@ -260,11 +260,11 @@ export function rawPluginUpdate(
 
 // x lane merge-auto trusts a --dima-ok <pr> that reached it, so this is the proof: dima's own last prompt names the pr
 // (FRM-423 o140, the guard's door); the caller checks the prompt
-// the words of a command's `x lane merge-auto` call, one in a nested shell or an eval included
-export function mergeAutoWords(
+// a command's `x lane merge-auto` call, one in a nested shell or an eval included: its words and the dir it runs in
+export function mergeAutoCall(
     command: string,
     cwd: string,
-): string[] | undefined {
+): { words: string[]; dir: string } | undefined {
     for (const c of commands(parse(command), cwd)) {
         const words = c.args.map((w) => w.text);
         // a nested shell's script, or an eval's words, is a command too
@@ -277,17 +277,19 @@ export function mergeAutoWords(
                 : c.name === 'eval'
                   ? words.join(' ')
                   : undefined;
-        const inner = nested ? mergeAutoWords(nested, c.dir) : undefined;
+        const inner = nested ? mergeAutoCall(nested, c.dir) : undefined;
         if (inner) return inner;
         // x's root booleans (--json, --board) sit before the family or between it and the verb
         const bare = words.filter((w) => !w.startsWith('-'));
         const isMerge = bare.some(
             (w, i) => w === 'lane' && bare[i + 1] === 'merge-auto',
         );
-        if (c.name === 'x' && isMerge) return words;
+        if (c.name === 'x' && isMerge) return { dir: c.dir, words };
     }
     return undefined;
 }
+export const mergeAutoWords = (command: string, cwd: string) =>
+    mergeAutoCall(command, cwd)?.words;
 // the pr a merge-auto call merges: the first bare word after the verb, a pr url read as its number
 export function mergeAutoPr(words: string[]) {
     const pr = words
@@ -338,9 +340,39 @@ const TICKET = /^(FRM|BYT)-\d+$/;
 // a sign ask, `✍️ sign <id>: <title>`, its id matched whole
 export const isSignAsk = (text: string, id: string) =>
     new RegExp(`(^|\\s)✍️ sign ${id}:`, 'u').test(text);
-// a tick quotes the pr when its text holds the pr's url or `#<n>` as a whole word (FRM-427)
-export const quotesPr = (text: string, pr: string) =>
-    new RegExp(`/pull/${pr}(?!\\d)`).test(text) || namesWhole(text, `#${pr}`);
+// a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`; a bare `#<n>`
+// or another repo's pr of the same number proves nothing (FRM-427, verifier round 1)
+export const quotesPr = (text: string, repo: string, pr: string) =>
+    text.includes(`github.com/${repo}/pull/${pr}`) &&
+    !new RegExp(`github\\.com/${repo}/pull/${pr}\\d`).test(text);
+// the repo a merge-auto call merges in: its --repo, or the caller reads the cwd's origin
+export const mergeAutoRepo = (words: string[]) =>
+    words.flatMap((w, i) =>
+        w === '--repo'
+            ? [words[i + 1] ?? '']
+            : w.startsWith('--repo=')
+              ? [w.slice('--repo='.length)]
+              : [],
+    )[0];
+// the github slug in a remote url: `git@github.com:o/n.git`, `https://github.com/o/n`
+export const remoteSlug = (url: string) =>
+    url.trim().match(/github\.com[:/]([\w.-]+\/[\w.-]+?)(?:\.git)?\/?$/)?.[1];
+// `--dima-ok <pr>` added right after a top-level merge-auto call's own last word, so a following `&&`, `;` or comment
+// keeps it; a call in a nested shell, or one whose last word is not a plain word, gets none
+export function withDimaOk(command: string, pr: string) {
+    for (const seg of parse(command).segments) {
+        const words = seg.words.map((w) => w.text);
+        const bare = words.filter((w) => !w.startsWith('-'));
+        const isMerge =
+            words[0] === 'x' &&
+            bare.some((w, i) => w === 'lane' && bare[i + 1] === 'merge-auto');
+        const last = seg.words.at(-1);
+        if (!isMerge || last?.at === undefined) continue;
+        const end = last.at + last.text.length;
+        return `${command.slice(0, end)} --dima-ok ${pr}${command.slice(end)}`;
+    }
+    return undefined;
+}
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
     const words = mergeAutoWords(command, cwd);
     if (!words) return undefined;

@@ -24,6 +24,18 @@ function world(on: On, ticks: Tick[] = []) {
     on('env.get', () => ({ value: '/home' }));
     on('fs.exists', () => ({ value: false }));
     on('ui.log', () => ({ value: undefined }));
+    // the cwd's origin, which merge-auto reads its repo from when no --repo names one
+    on('process.run', (_$, e) => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: e.argv.includes('get-url')
+                ? 'git@github.com:dvakatsiienko/bytes.git\n'
+                : '',
+        },
+    }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
@@ -199,12 +211,56 @@ test('the o4/o9 replay: one tick quoting a guarded target and a pr passes both d
 
 // review round 1: the merge-auto flag lands only on a plain call, never past a compound one's other refusals; a sign's
 // label and body each take the tick once; a target counts only quoted in backticks
-test('a compound merge-auto call never gets the flag appended', async ($, on) => {
-    const typed = 'x lane merge-auto 104 --apply && echo ok';
-    const { ran } = world(on, [tick(`merge ${PR}`)]);
-    await bash($, typed);
-    expect(ran).toEqual([typed]);
-});
+// verifier round 1: the flag lands right after the merge-auto call's own words, never past `&&` or a comment
+for (const [typed, want] of [
+    [
+        'x lane merge-auto 104 --apply && echo merged',
+        'x lane merge-auto 104 --apply --dima-ok 104 && echo merged',
+    ],
+    [
+        'x lane merge-auto 104 --apply # ship it',
+        'x lane merge-auto 104 --apply --dima-ok 104 # ship it',
+    ],
+    [
+        "bash -c 'x lane merge-auto 104 --apply'",
+        "bash -c 'x lane merge-auto 104 --apply'",
+    ],
+] as const)
+    test(`the added --dima-ok lands on the merge-auto call: ${typed}`, async ($, on) => {
+        const { ran } = world(on, [tick(`merge ${PR}`)]);
+        await bash($, typed);
+        expect(ran).toEqual([want]);
+    });
+
+// verifier round 1: the tick's url names this repo — the cwd's origin, or the call's --repo
+for (const [why, text, typed, isRun] of [
+    [
+        'another repo, same number',
+        'merge https://github.com/dvakatsiienko/frame/pull/104',
+        'x lane merge-auto 104 --apply --dima-ok 104',
+        false,
+    ],
+    [
+        'a bare #104',
+        'merge #104',
+        'x lane merge-auto 104 --apply --dima-ok 104',
+        false,
+    ],
+    [
+        'the --repo it names',
+        'merge https://github.com/dvakatsiienko/frame/pull/104',
+        'x lane merge-auto 104 --repo dvakatsiienko/frame --apply --dima-ok 104',
+        true,
+    ],
+] as const)
+    test(`a pr tick quoting ${why} ${isRun ? 'proves' : 'proves nothing for'} the merge`, async ($, on) => {
+        const { ran } = world(on, [tick(text)]);
+        const r = await bash($, typed);
+        expect([r.deny === undefined, ran.length]).toEqual([
+            isRun,
+            isRun ? 1 : 0,
+        ]);
+    });
 
 test('a ticked pr never runs a compound command past its other refusal', async ($, on) => {
     const { ran } = world(on, [tick(`merge ${PR}`)]);
