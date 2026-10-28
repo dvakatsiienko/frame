@@ -1,3 +1,4 @@
+import { parse } from '../shell.ts';
 import {
     ASK,
     type Command,
@@ -7,6 +8,7 @@ import {
     STASH,
     TRASH,
     VAULT,
+    commands,
     gitDir,
     gitParts,
     hasFlag,
@@ -16,6 +18,56 @@ import {
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
 import { rewrite } from './rewrite.ts';
+
+// a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 verifier, the
+// 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds
+const STASH_READS = new Set([
+    'list',
+    'show',
+    'pop',
+    'apply',
+    'drop',
+    'clear',
+    'branch',
+    'create',
+    'store',
+]);
+const STASH_VALUE = new Set(['-m', '--message', '--pathspec-from-file']);
+export function stashSweeps(command: string, cwd: string, ctx: Context) {
+    const dirs: string[] = [];
+    for (const c of commands(parse(command), cwd)) {
+        if (c.name !== 'git') continue;
+        const { sub, subArgs } = gitParts(c.args);
+        if (sub !== 'stash') continue;
+        const words = subArgs.map((w) => w.text);
+        const verb = words.find((w) => !w.startsWith('-'));
+        if (verb && STASH_READS.has(verb)) continue;
+        if (
+            words.includes('--') ||
+            words.some((w) => w.startsWith('--pathspec-from-file'))
+        )
+            continue;
+        // a push names pathspecs after its flags; a bare stash and `save <message>` take none
+        const paths =
+            verb === 'push'
+                ? words
+                      .slice(words.indexOf('push') + 1)
+                      .filter(
+                          (w, i, all) =>
+                              !w.startsWith('-') &&
+                              !STASH_VALUE.has(all[i - 1] ?? ''),
+                      )
+                : [];
+        if (!paths.length) dirs.push(gitDir(c, ctx));
+    }
+    return dirs;
+}
+export const stashSweep = (dir: string, file: string): Refusal => ({
+    door: STASH,
+    rule: 'stash-sweep',
+    targets: [dir],
+    why: `a whole-tree git stash also sets aside ${file}, which another session holds`,
+});
 
 // what reads process ids by name
 const FINDERS = new Set(['pgrep', 'ps', 'pidof', 'lsof', 'grep', 'rg', 'awk']);

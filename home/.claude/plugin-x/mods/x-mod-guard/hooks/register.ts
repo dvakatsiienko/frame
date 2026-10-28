@@ -2,6 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
+import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { projectMoves } from './rules/milestone.ts';
@@ -234,6 +235,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
+    'stash-sweep',
     'raw-plugin-update',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
@@ -295,7 +297,7 @@ async function isSilent($: EngineInterface, home: string | undefined) {
 }
 const HOLD = 'hold:';
 const IDLE_MS = 30 * 60 * 1000;
-type Hold = { at: number; file: string; landed?: boolean };
+type Hold = { at: number; file: string; landed?: boolean; top?: string };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
 
 // twin dirname — a copy lives in x-mod-holds; the twins lint keeps them equal
@@ -349,14 +351,8 @@ async function isGone(
 }
 // twin end
 
-async function heldBy(
-    $: EngineInterface,
-    command: string,
-    cwd: string,
-    ctx: Context,
-): Promise<string | undefined> {
-    const paths = writtenPaths(command, cwd, ctx);
-    if (!paths.length) return undefined;
+// the holds another live session keeps, read from x-mod-holds' store file
+async function liveHolds($: EngineInterface, ctx: Context) {
     const dir = `${ctx.home}/.claude/plugins/store`;
     const held: Record<string, unknown> = {};
     for (const f of await $.fs.list(dir).catch(() => [])) {
@@ -370,26 +366,63 @@ async function heldBy(
     }
     const sid = await $.session.id();
     const now = await $.clock.now();
+    const live: { holder: string; hold: Hold; key: string; now: number }[] = [];
+    for (const [key, value] of Object.entries(held)) {
+        if (!key.startsWith(HOLD)) continue;
+        const cut = key.indexOf(':', HOLD.length);
+        const holder = key.slice(HOLD.length, cut);
+        if (holder === sid) continue;
+        const hold = value as Hold;
+        if (
+            await isReleased(
+                $,
+                held[`holder:${holder}`] as Holder | undefined,
+                hold,
+                now,
+            )
+        )
+            continue;
+        live.push({ hold, holder, key: key.slice(cut + 1), now });
+    }
+    return live;
+}
+
+async function heldBy(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+): Promise<string | undefined> {
+    const paths = writtenPaths(command, cwd, ctx);
+    if (!paths.length) return undefined;
+    const live = await liveHolds($, ctx);
     for (const path of paths) {
         const real = await realPath($, path);
-        for (const [key, value] of Object.entries(held)) {
-            if (!key.startsWith(HOLD)) continue;
-            const cut = key.indexOf(':', HOLD.length);
-            const holder = key.slice(HOLD.length, cut);
-            if (key.slice(cut + 1) !== real.key || holder === sid) continue;
-            const hold = value as Hold;
-            if (
-                await isReleased(
-                    $,
-                    held[`holder:${holder}`] as Holder | undefined,
-                    hold,
-                    now,
-                )
-            )
-                continue;
-            const mins = Math.round((now - hold.at) / 60000);
-            return `x-mod-holds: ${path} is held by session ${holder.slice(0, 8)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
-        }
+        const found = live.find((l) => l.key === real.key);
+        if (!found) continue;
+        const mins = Math.round((found.now - found.hold.at) / 60000);
+        return `x-mod-holds: ${path} is held by session ${found.holder.slice(0, 8)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
+    }
+    return undefined;
+}
+
+// a whole-tree stash in a repo where another live session holds a file sweeps that file too
+async function stashOver(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+) {
+    const dirs = stashSweeps(command, cwd, ctx);
+    if (!dirs.length) return undefined;
+    const live = await liveHolds($, ctx);
+    for (const dir of dirs) {
+        const found = live.find(
+            (l) =>
+                l.hold.top !== undefined &&
+                (dir === l.hold.top || dir.startsWith(`${l.hold.top}/`)),
+        );
+        if (found) return stashSweep(dir, found.hold.file);
     }
     return undefined;
 }
@@ -807,6 +840,15 @@ export const register: Register = (on) => {
         // a file another live session holds (x-mod-holds) is refused before any other rule; holds has no escape
         const held = await heldBy($, command, cwd, ctx).catch(() => undefined);
         if (held) return deny(held);
+        const sweep = await stashOver($, command, cwd, ctx).catch(
+            () => undefined,
+        );
+        if (sweep)
+            return enforce(
+                sweep,
+                `nothing in this command ran — x-mod-guard stopped this one command. instead: ${sweep.door}. why: ${sweep.why}.`,
+                `instead: ${sweep.door}. why: ${sweep.why}`,
+            );
         // a refusal, never a warning, so it stays out of WARN_ONLY: a warn would fire after the block it means to
         // prevent (dima's o102)
         const fg =

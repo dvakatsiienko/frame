@@ -217,7 +217,7 @@ export const or = (list: string[], fallback: string) =>
     list.length ? list : [fallback];
 export const TRASH = 'trash <path> — recoverable from the macos trash';
 export const STASH =
-    'git stash -u — it sets the work aside and keeps it recoverable';
+    'git stash push -- <your paths> — it sets only your work aside, recoverable';
 // the one door that is a person: nothing safe does the job
 export const ASK = 'no safe door here — ask cclio, naming the target';
 export const NEVER =
