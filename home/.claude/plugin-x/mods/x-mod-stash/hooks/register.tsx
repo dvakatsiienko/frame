@@ -66,7 +66,7 @@ import {
     unbold,
     waitSpans,
 } from './parse.ts';
-import { cleanTree } from './tree.ts';
+import { cleanTree, drawn } from './tree.ts';
 
 // x-mod-stash: dima's command center above the prompt, one row; FTR.md lists every feature.
 // orbit: the session's asks to dima and its plan, written through its own tool, ticked in the board; its open asks are
@@ -137,8 +137,6 @@ const BREATHE = 'breathe';
 const BREATH_SPEED = 'breath-speed';
 const PHASE_LINES = 'phase-lines';
 const SPEAK_ASSUMED = 'speak-assumed';
-// `/board steer`: the steer boxes take two lines instead of one wide line, the A/B dima judges by eye (FRM-431)
-const STEER_TWO = 'steer-two';
 // x-mod-guard reads this key from stash's store file: true drops its rewrite, hint and delegate notes, never a refusal
 const GUARD_SILENT = 'guard-silent';
 // quiet comms on or off, one switch for 🎛️ and `/quiet` alike; on by default, `off` is the revert (dima, 16:53)
@@ -163,7 +161,6 @@ const SWITCHES = {
     ring: { key: CTX_RING_KEY, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
-    steerTwo: { key: STEER_TWO, of: false },
     undo: { key: UNDO_WINDOW, of: true },
 } as const;
 const NUMBERS = {
@@ -4251,12 +4248,6 @@ export const register: Register = (on) => {
     });
 
     on('command.run', { command: 'board' }, async ($, e) => {
-        if (e.args.trim() === 'steer') {
-            const isTwo = await flipKnob($, 'steerTwo');
-            return {
-                text: `steer boxes take ${isTwo ? 'two lines' : 'one wide line'}`,
-            };
-        }
         if (e.args.trim() === 'breathe') {
             const isOn = await flipKnob($, 'always');
             return {
@@ -4765,7 +4756,6 @@ export const register: Register = (on) => {
                         (await $.state.get(VIEW)).value?.shown ?? {};
                     const isPartOn = (key: string) => boardShown[key] !== false;
                     const speakAssumed = await readSwitch($, 'speak');
-                    const steerRows = (await readSwitch($, 'steerTwo')) ? 2 : 1;
                     const folds = (await $.state.get(FOLDS)).value ?? {};
                     // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count
                     const foldedOf = (
@@ -4996,7 +4986,6 @@ export const register: Register = (on) => {
                                                     door.steer(a, value)
                                                 }
                                                 placeholder='steer'
-                                                rows={steerRows}
                                                 value={
                                                     field(
                                                         $,
@@ -5166,7 +5155,6 @@ export const register: Register = (on) => {
                                                                     )
                                                                 }
                                                                 placeholder='steer'
-                                                                rows={steerRows}
                                                                 value={
                                                                     field(
                                                                         $,
@@ -5381,147 +5369,162 @@ export const register: Register = (on) => {
                             isTaken: !n.isTaken || undefined,
                         }));
                     const laneJSX = isPartOn('stash.glide')
-                        ? lanes.map((lane) => (
-                              <Box
-                                  key={`lane:${lane.id}`}
-                                  {...cardProps}
-                                  marginTop={1}
-                                  rowGap={LINE_GAP}>
+                        ? lanes.map((lane) =>
+                              drawn(`lane ${lane.id}`, () => (
                                   <Box
-                                      flexDirection='row'
-                                      justifyContent='space-between'>
-                                      <Text
-                                          bold>{`🛼 glide: ${lane.title}${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : ''}`}</Text>
-                                      {foldJSX(`lane:${lane.id}`)}
-                                  </Box>
-                                  {isFolded(`lane:${lane.id}`)
-                                      ? null
-                                      : laneRows(lane).map(({ i, item }) => (
-                                            <Box
-                                                alignItems='center'
-                                                flexDirection='row'
-                                                gap={1}
-                                                // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
-                                                key={`lane:${lane.id}:${i}`}>
-                                                <Box flexShrink={0}>
-                                                    <Text
-                                                        dimColor={item.isDone}>
-                                                        {item.isDone
-                                                            ? '✅'
-                                                            : i === lane.current
-                                                              ? '➡️'
-                                                              : '⬜'}{' '}
-                                                    </Text>
-                                                </Box>
-                                                {/* the ticket leads the step's text (dima's shot, 2026-10-23 19:44) */}
-                                                {item.ticket ? (
-                                                    <Box flexShrink={0}>
-                                                        <Link
-                                                            href={`https://linear.app/x-com/issue/${item.ticket}`}
-                                                            key={`lane:${lane.id}:t:${i}`}>
-                                                            {item.ticket}
-                                                        </Link>
-                                                    </Box>
-                                                ) : null}
-                                                {/* the step's text gives way first: the link, tick and steer keep their room (dima's shots, 17:41, 17:46) */}
-                                                <Box
-                                                    flexShrink={1}
-                                                    minWidth={0}>
-                                                    <Text
-                                                        bold={
-                                                            i === lane.current
-                                                        }
-                                                        dimColor={item.isDone}
-                                                        wrap='truncate-end'>
-                                                        {item.text}
-                                                    </Text>
-                                                </Box>
-                                                {/* tick leads, the steer follows, on the step's own line after its link (dima's shot, 17:46) */}
-                                                {i === lane.current ? (
+                                      key={`lane:${lane.id}`}
+                                      {...cardProps}
+                                      marginTop={1}
+                                      rowGap={LINE_GAP}>
+                                      <Box
+                                          flexDirection='row'
+                                          justifyContent='space-between'>
+                                          <Text
+                                              bold>{`🛼 glide: ${lane.title}${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : ''}`}</Text>
+                                          {foldJSX(`lane:${lane.id}`)}
+                                      </Box>
+                                      {isFolded(`lane:${lane.id}`)
+                                          ? null
+                                          : laneRows(lane).map(
+                                                ({ i, item }) => (
                                                     <Box
                                                         alignItems='center'
                                                         flexDirection='row'
-                                                        flexGrow={1}
-                                                        flexShrink={0}
                                                         gap={1}
-                                                        key={`lane:${lane.id}:act`}
-                                                        minWidth={24}>
-                                                        {/* the steer waits as a draft until 🛎️ tick sends it; no replay, a steer has nothing to redo (dima, 20:51) */}
-                                                        <Button
-                                                            key={`lane:${lane.id}:take`}
-                                                            onPress={() =>
-                                                                void handleLaneTake(
-                                                                    lane.id,
-                                                                )
-                                                            }
-                                                            variant='primary'>
-                                                            {`${lane.isSteerTaken ? '✅' : '🛎️'} tick`}
-                                                        </Button>
-                                                        {Input ? (
-                                                            <Box
-                                                                flexGrow={1}
-                                                                minWidth={0}>
-                                                                <Input
-                                                                    key={
-                                                                        field(
-                                                                            $,
-                                                                            `lane:${lane.id}:steer`,
-                                                                            lane.steer ??
-                                                                                '',
-                                                                        ).key
+                                                        // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
+                                                        key={`lane:${lane.id}:${i}`}>
+                                                        <Box flexShrink={0}>
+                                                            <Text
+                                                                dimColor={
+                                                                    item.isDone
+                                                                }>
+                                                                {item.isDone
+                                                                    ? '✅'
+                                                                    : i ===
+                                                                        lane.current
+                                                                      ? '➡️'
+                                                                      : '⬜'}{' '}
+                                                            </Text>
+                                                        </Box>
+                                                        {/* the ticket leads the step's text (dima's shot, 2026-10-23 19:44) */}
+                                                        {item.ticket ? (
+                                                            <Box flexShrink={0}>
+                                                                <Link
+                                                                    href={`https://linear.app/x-com/issue/${item.ticket}`}
+                                                                    key={`lane:${lane.id}:t:${i}`}>
+                                                                    {
+                                                                        item.ticket
                                                                     }
-                                                                    onInput={(
-                                                                        value: string,
-                                                                    ) => {
-                                                                        field(
-                                                                            $,
-                                                                            `lane:${lane.id}:steer`,
-                                                                            lane.steer ??
-                                                                                '',
-                                                                        ).type(
-                                                                            value,
-                                                                            () => {
-                                                                                return handleLaneSteer(
-                                                                                    lane.id,
-                                                                                    value,
-                                                                                );
-                                                                            },
-                                                                        );
-                                                                    }}
-                                                                    onSubmit={(
-                                                                        value: string,
-                                                                    ) =>
-                                                                        void handleLaneSteer(
+                                                                </Link>
+                                                            </Box>
+                                                        ) : null}
+                                                        {/* the step's text gives way first: the link, tick and steer keep their room (dima's shots, 17:41, 17:46) */}
+                                                        <Box
+                                                            flexShrink={1}
+                                                            minWidth={0}>
+                                                            <Text
+                                                                bold={
+                                                                    i ===
+                                                                    lane.current
+                                                                }
+                                                                dimColor={
+                                                                    item.isDone
+                                                                }
+                                                                wrap='truncate-end'>
+                                                                {item.text}
+                                                            </Text>
+                                                        </Box>
+                                                        {/* tick leads, the steer follows, on the step's own line after its link (dima's shot, 17:46) */}
+                                                        {i === lane.current ? (
+                                                            <Box
+                                                                alignItems='center'
+                                                                flexDirection='row'
+                                                                flexGrow={1}
+                                                                flexShrink={0}
+                                                                gap={1}
+                                                                key={`lane:${lane.id}:act`}
+                                                                minWidth={24}>
+                                                                {/* the steer waits as a draft until 🛎️ tick sends it; no replay, a steer has nothing to redo (dima, 20:51) */}
+                                                                <Button
+                                                                    key={`lane:${lane.id}:take`}
+                                                                    onPress={() =>
+                                                                        void handleLaneTake(
                                                                             lane.id,
-                                                                            value,
                                                                         )
                                                                     }
-                                                                    placeholder='steer'
-                                                                    rows={
-                                                                        steerRows
-                                                                    }
-                                                                    value={
-                                                                        field(
-                                                                            $,
-                                                                            `lane:${lane.id}:steer`,
-                                                                            lane.steer ??
-                                                                                '',
-                                                                        ).value
-                                                                    }
-                                                                />
+                                                                    variant='primary'>
+                                                                    {`${lane.isSteerTaken ? '✅' : '🛎️'} tick`}
+                                                                </Button>
+                                                                {Input ? (
+                                                                    <Box
+                                                                        flexGrow={
+                                                                            1
+                                                                        }
+                                                                        minWidth={
+                                                                            0
+                                                                        }>
+                                                                        <Input
+                                                                            key={
+                                                                                field(
+                                                                                    $,
+                                                                                    `lane:${lane.id}:steer`,
+                                                                                    lane.steer ??
+                                                                                        '',
+                                                                                )
+                                                                                    .key
+                                                                            }
+                                                                            onInput={(
+                                                                                value: string,
+                                                                            ) => {
+                                                                                field(
+                                                                                    $,
+                                                                                    `lane:${lane.id}:steer`,
+                                                                                    lane.steer ??
+                                                                                        '',
+                                                                                ).type(
+                                                                                    value,
+                                                                                    () => {
+                                                                                        return handleLaneSteer(
+                                                                                            lane.id,
+                                                                                            value,
+                                                                                        );
+                                                                                    },
+                                                                                );
+                                                                            }}
+                                                                            onSubmit={(
+                                                                                value: string,
+                                                                            ) =>
+                                                                                void handleLaneSteer(
+                                                                                    lane.id,
+                                                                                    value,
+                                                                                )
+                                                                            }
+                                                                            placeholder='steer'
+                                                                            value={
+                                                                                field(
+                                                                                    $,
+                                                                                    `lane:${lane.id}:steer`,
+                                                                                    lane.steer ??
+                                                                                        '',
+                                                                                )
+                                                                                    .value
+                                                                            }
+                                                                        />
+                                                                    </Box>
+                                                                ) : null}
                                                             </Box>
                                                         ) : null}
                                                     </Box>
-                                                ) : null}
-                                            </Box>
-                                        ))}
-                                  {isFolded(`lane:${lane.id}`)
-                                      ? null
-                                      : LANE_ROLES.map((role) =>
-                                            memberJSX(lane, role),
-                                        )}
-                              </Box>
-                          ))
+                                                ),
+                                            )}
+                                      {isFolded(`lane:${lane.id}`)
+                                          ? null
+                                          : LANE_ROLES.map((role) =>
+                                                memberJSX(lane, role),
+                                            )}
+                                  </Box>
+                              )),
+                          )
                         : null;
                     // the lanes and the phases stick to the board's bottom, the lanes on top of the phases: a docked board fills its rows
                     // and a gap grows above them (dima, 11:07; the lanes, 20:12)
@@ -5602,7 +5605,6 @@ export const register: Register = (on) => {
                                                                   )
                                                               }
                                                               placeholder='steer'
-                                                              rows={steerRows}
                                                               value={
                                                                   field(
                                                                       $,

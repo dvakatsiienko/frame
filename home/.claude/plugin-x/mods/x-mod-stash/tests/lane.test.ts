@@ -1464,6 +1464,25 @@ test('a card of eleven steps draws the current one with its neighbours and says 
     ]).toEqual([true, true, true, false, false]);
 });
 
+test('a lane whose data breaks its draw blanks alone, the next lane draws', async ($, on) => {
+    const w = world(on, {
+        files: shelf(
+            keptLane({ items: [null] as never }),
+            keptLane({ id: 'l2', title: 'fine' }),
+        ),
+    });
+    await start($);
+    const ui = await board($);
+    await w.clock.advance(5_000);
+    expect([
+        (await ui.find({ key: 'broken:lane l1', type: 'Box' }))?.text,
+        await laneText(ui, 'l2'),
+    ]).toEqual([
+        '⚠ lane l1 could not draw',
+        expect.stringContaining('🛼 glide: fine'),
+    ]);
+});
+
 test('a card of seven steps draws all of them with no window label', async ($, on) => {
     const w = world(on);
     await start($);

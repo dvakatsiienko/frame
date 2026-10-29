@@ -11,6 +11,8 @@
   - given a reply or a store row carries a control character (a bell, a tab), then the band draws the text without it, never refused whole
   - given the band, the board or the settings pane throws while drawing, then one red line reads «⚠️ x-mod-stash: the <part> failed to draw, the debug log names why» and the error goes to the debug log
   - 📌 the throw path is unchecked: the test harness would not route a forced throw into the render
+  - given one glide card's data breaks its draw (a step that is null), then only that card is replaced by «⚠ lane <id> could not draw» and the next card draws
+  - given a node's child is no node (a function, a bare object, a non-finite number), then a «⚠ a node could not draw» line takes its place and its siblings draw
 
 - ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace and the time left, then the 🔭 mark; `🔥`, `⏰`, `💨`, `🎛️` and `🚦` hold the right edge, 🎛️ right before 🚦 (dima's o1, 15:38); the two meters run full width under it
   - decision: the readings pack left after the chips, the switches stay right (dima's o6, 22:03)
@@ -452,11 +454,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the board redraws and typing has gone quiet
   - then the box still shows the end he typed, never jumping to the start
   - and a card folded and opened again, or a board closed and opened again, draws the stored text
-  - and the box takes the row's width left after its buttons (dima, 2026-10-29: «the focus jumps … text boxes are too short»)
-- ⬜ `/board steer` tries the steer box at two lines
-  - given the board is open
-  - when dima runs `/board steer`
-  - then every steer box takes two lines instead of one wide line, and the same command puts it back; the pick between the two is his, from the board (FRM-431, grill 3 Q3: «A/B … dima prefers wider»)
+  - and the box takes the row's width left after its buttons, one wide line (dima, 2026-10-29: «the focus jumps … text boxes are too short»; his pick over two lines, 15:45: «try wide»)
 - ⬜ a glide card follows a lane plan file of any length
   - given a lane plan file of 11 numbered lines, ticked up to the fifth
   - when cclio creates a card naming it
