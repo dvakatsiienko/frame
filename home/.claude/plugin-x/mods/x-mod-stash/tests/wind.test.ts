@@ -103,7 +103,7 @@ const ready = ($: Engine, slug?: string, pending: string | null = 'none') =>
     } as never) as Promise<{ deny?: string; result?: unknown }>;
 
 const DIMAS_WORDS =
-    'a second wind is a graceful context refresh, a request, never urgent — the session and its codies resolve every subagent and park everything before the compact, so nothing is lost.';
+    'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
 
 const notes = (lines: string[]) => lines.filter((l) => l.includes('🐦‍🔥'));
 

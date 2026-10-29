@@ -90,3 +90,11 @@ test('«enforce» in the store refuses the job unsent', async ($, on) => {
     const r = await send($, JOB);
     expect([w.sent, r.deny]).toEqual([[], expect.stringContaining(NOTE)]);
 });
+
+// read-both: a session still named with a pre-10-29 member word is a member too
+for (const to of ['☕️ 🔧 coder: mods', '🌗 verifier: FRM-431'])
+    test(`a 3-item job to an old-named member is refused unsent: ${to}`, async ($, on) => {
+        const w = world(on);
+        const r = await send($, JOB, to);
+        expect([w.sent, warned(r)]).toEqual([[], true]);
+    });

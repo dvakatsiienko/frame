@@ -1136,7 +1136,10 @@ test('an edit keeps the lane id, its members (old role keys read as the new ones
         files: shelf(
             keptLane({
                 history: [{ act: 'create', at: 1, current: 0, done: 0 }],
-                members: { coder: 'c0c0c0c0-codie' }, // read-both
+                members: {
+                    coder: 'c0c0c0c0-codie',
+                    verifier: 'v0v0v0v0-sixth',
+                }, // read-both
             }),
         ),
     });
@@ -1147,7 +1150,7 @@ test('an edit keeps the lane id, its members (old role keys read as the new ones
         [
             'l1',
             'kept, renamed',
-            { codie: 'c0c0c0c0-codie' },
+            { codie: 'c0c0c0c0-codie', 'sixth-sense': 'v0v0v0v0-sixth' },
             ['create', 'edit'],
         ],
     );
@@ -1264,7 +1267,7 @@ const stepKey = (name: string) =>
     `lane-step:${name.replaceAll(/[\s\u200d]/g, '')}`;
 const fiveSteps = (done = 0) =>
     ['a', 'b', 'c', 'd', 'e'].map((text, i) => ({ isDone: i < done, text }));
-const coderLane = (over: Partial<KeptLane> = {}) =>
+const codieLane = (over: Partial<KeptLane> = {}) =>
     keptLane({ items: fiveSteps(), members: { codie: CODIE_NAME }, ...over });
 const pointerOf = (w: ReturnType<typeof world>) => {
     const l = kept(w)[0];
@@ -1297,7 +1300,7 @@ for (const step of [1.5, -1, '2'])
     });
 
 test("the linked codie's step 3 moves the lane while clio idles, and her next prompt hears it once", async ($, on) => {
-    const w = world(on, { files: shelf(coderLane()) });
+    const w = world(on, { files: shelf(codieLane()) });
     w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 3 });
     await start($);
     await w.clock.advance(5_000);
@@ -1315,7 +1318,7 @@ test("the linked codie's step 3 moves the lane while clio idles, and her next pr
 });
 
 test("a move reaches clio's running turn at her next tool call", async ($, on) => {
-    const w = world(on, { files: shelf(coderLane()) });
+    const w = world(on, { files: shelf(codieLane()) });
     w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 2 });
     await start($);
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
@@ -1327,7 +1330,7 @@ test("a move reaches clio's running turn at her next tool call", async ($, on) =
     ]);
 });
 
-const AT_3 = coderLane({
+const AT_3 = codieLane({
     current: 3,
     history: [{ act: 'step', at: NOW, current: 3, done: 3 }],
     items: fiveSteps(3),
@@ -1365,7 +1368,7 @@ for (const [why, lanes, key, step, shown] of [
     });
 
 test("clio's step back holds until the codie names a step again", async ($, on) => {
-    const w = world(on, { files: shelf(coderLane()) });
+    const w = world(on, { files: shelf(codieLane()) });
     w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 3 });
     await start($);
     await w.clock.advance(5_000);
