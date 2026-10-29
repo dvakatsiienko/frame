@@ -2689,14 +2689,6 @@ async function publish($: EngineInterface) {
             members: await members($).catch(() => undefined),
             ...((await isLaneOwner($))
                 ? {
-                      isOwner: true,
-                      quietGaps: (
-                          (await $.store
-                              .get(QUIET_GAP)
-                              .catch(() => undefined)) as
-                              | { gaps?: QuietGap[] }
-                              | undefined
-                      )?.gaps,
                       staleProbes: await staleProbes($, now).catch(
                           () => undefined,
                       ),
@@ -5783,47 +5775,9 @@ export const register: Register = (on) => {
                             {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
                         </Text>
                     ) : null;
-                    // the quiet comms card: held counts and real gaps, calm, never an alarm row or an orbit ask
-                    // cclio's held list holds every sender's pings: counted by sender, on her board only
-                    const heldBy = new Map<string, number>();
-                    const isOwnerBoard = board?.isOwner === true;
-                    if (isOwnerBoard)
-                        for (const m of board?.members ?? [])
-                            for (const p of m.held ?? [])
-                                heldBy.set(
-                                    p.from,
-                                    (heldBy.get(p.from) ?? 0) + 1,
-                                );
-                    const gaps = board?.quietGaps ?? [];
-                    const gapsJSX =
-                        heldBy.size || gaps.length ? (
-                            <Box
-                                key='quiet:card'
-                                {...cardProps}
-                                marginBottom={1}>
-                                <Text bold>🤫 quiet comms</Text>
-                                {[...heldBy].map(([from, count]) => (
-                                    <Text
-                                        dimColor
-                                        key={`quiet:held:${from}`}
-                                        wrap='truncate-end'>
-                                        {`${from} · ${count} held`}
-                                    </Text>
-                                ))}
-                                {gaps.map((g) => (
-                                    <Text
-                                        dimColor
-                                        key={`quiet:gap:${g.from}`}
-                                        wrap='truncate-end'>
-                                        {`${g.from} · a progress ping skipped the quiet hold (sent ${g.sent}, logged ${g.logged})`}
-                                    </Text>
-                                ))}
-                            </Box>
-                        ) : null;
                     const arranged = (top: RenderElement) => (
                         <Box flexDirection='column' minHeight={fill}>
                             {stripJSX}
-                            {gapsJSX}
                             {probesJSX}
                             {top}
                             {isPartOn('stash.orbit') ? orbitJSX : null}

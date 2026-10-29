@@ -51,7 +51,18 @@ function fleet(
     const runs: string[][] = [];
     if (files) on('fs.exists', (_$, e) => ({ value: files.includes(e.path) }));
     const clock = mock.clock(on, { now: NOW });
-    mock.store(on, store);
+    // a store in memory the test reads back: what the ledger wrote is the contract now that no card draws it
+    const kept = new Map<string, unknown>(Object.entries(store));
+    on('store.get', (_$, e) => ({ value: kept.get(e.key) }));
+    on('store.set', (_$, e) => {
+        kept.set(e.key, e.value);
+        return { value: undefined };
+    });
+    on('store.keys', () => ({ value: [...kept.keys()] }));
+    on('store.delete', (_$, e) => {
+        kept.delete(e.key);
+        return { value: undefined };
+    });
     on('session.id', () => ({ value: HERE }));
     on('env.get', () => ({ value: '/home' }));
     on('prompt.submit', (_$, e) => ({ text: e.text }));
@@ -113,7 +124,7 @@ function fleet(
             },
         };
     });
-    return { clock, runs };
+    return { clock, runs, store: kept };
 }
 
 // the board as the poll leaves it: a session start reads the registry into the view, then the pane draws it
@@ -1174,14 +1185,26 @@ const PEER_NAME = '☕️ 🔧 FRM-1 code: x';
 const gapRow = async (
     $: Engine,
     clock: { advance: (ms: number) => Promise<void> },
+    store: Map<string, unknown>,
 ) => {
-    const ui = await board($);
+    await board($);
     await clock.advance(9000);
-    return (await ui.find({ key: 'quiet:card', type: 'Box' }))?.text;
+    const gaps = (
+        store.get('quiet-gap') as { gaps?: QuietGapLine[] } | undefined
+    )?.gaps;
+    return gaps?.length
+        ? gaps
+              .map(
+                  (g) =>
+                      `${g.from} · a progress ping skipped the quiet hold (sent ${g.sent}, logged ${g.logged})`,
+              )
+              .join('\n')
+        : undefined;
 };
+type QuietGapLine = { from: string; logged: number; sent: number };
 
-test('a member that sent cclio more pings than her log holds draws a calm card, never a 🚨 row', async ($, on) => {
-    const { clock } = fleet(
+test('a member that sent cclio more pings than her log holds is a gap in the ledger, never a 🚨 row', async ($, on) => {
+    const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
         {
@@ -1191,16 +1214,16 @@ test('a member that sent cclio more pings than her log holds draws a calm card, 
     );
     const ui = await board($);
     await clock.advance(9000);
-    expect((await ui.find({ key: 'quiet:card', type: 'Box' }))?.text).toContain(
-        `${PEER_NAME} · a progress ping skipped the quiet hold (sent 2, logged 1)`,
-    );
-    expect(await ui.find({ text: /^🚨/, type: 'Text' })).toBeUndefined();
+    expect([
+        (store.get('quiet-gap') as { gaps: unknown[] } | undefined)?.gaps,
+        await ui.find({ text: /^🚨/, type: 'Text' }),
+    ]).toEqual([[{ from: PEER_NAME, logged: 1, sent: 2 }], undefined]);
 });
 
 const RENAMED = 'FRM-426 code: band and board read true';
 
 test('a member renamed mid-day keeps its logged pings, so the old name leaves no gap', async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
@@ -1213,11 +1236,11 @@ test('a member renamed mid-day keeps its logged pings, so the old name leaves no
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toBeUndefined();
+    expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
 test('a renamed member that sent more than its old-name lines hold still shows its gap', async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN)] },
         {
@@ -1225,11 +1248,11 @@ test('a renamed member that sent more than its old-name lines hold still shows i
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toContain('(sent 2, logged 1)');
+    expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
 });
 
 test("a log line carrying the sender's session id counts for it whatever name it was logged under", async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
@@ -1241,11 +1264,11 @@ test("a log line carrying the sender's session id counts for it whatever name it
         },
         { isOwner: true, sends: { [PEER]: [at(NOW - 30 * MIN)] } },
     );
-    expect(await gapRow($, clock)).toBeUndefined();
+    expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
 test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
         {
@@ -1253,11 +1276,11 @@ test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toBeUndefined();
+    expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
 test("a send before the day's first log line is not counted", async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
         {
@@ -1265,11 +1288,11 @@ test("a send before the day's first log line is not counted", async ($, on) => {
             sends: { [PEER]: [at(NOW - 40 * MIN), at(NOW - 30 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toBeUndefined();
+    expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
 test('a flushed line does not count as a logged delivery', async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
@@ -1282,16 +1305,16 @@ test('a flushed line does not count as a logged delivery', async ($, on) => {
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toContain('(sent 2, logged 1)');
+    expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
 });
 
 test("the ledger's gap stays off any board but cclio's", async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
         { sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] } },
     );
-    expect(await gapRow($, clock)).toBeUndefined();
+    expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
 // the stuck alarm: a held ping past the idle wait (10 min) + 2 min turns cclio's 🤫 n red
@@ -1312,7 +1335,7 @@ test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on)
 });
 
 test("ccrow's lines count for her though the log keeps the registry's split «🐦 ⬛» and the board the joined «🐦‍⬛»", async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
@@ -1326,7 +1349,7 @@ test("ccrow's lines count for her though the log keeps the registry's split «�
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toBeUndefined();
+    expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
 test('the terminal draws ctx as a fixed 10-wide bar', () => {
@@ -1635,36 +1658,35 @@ test("the cold composer sidecar shows ❄️, not ⚠ (dima's 10-15 screenshot)"
     expect([text.includes('❄️'), text.includes('⚠')]).toEqual([true, false]);
 });
 
-// FRM-429 exit 2 (FRM-412): held pings read as one calm card with each member's count
-test('held pings show as one calm card listing each member with its held count', async ($, on) => {
-    fleet(
+// FRM-429 exit 2 (dima's o56): no quiet-comms card draws on any board; held pings and ledger gaps stay in the store
+test('no quiet-comms card draws on cclio’s board, with pings held and a gap open', async ($, on) => {
+    const { clock, store } = fleet(
         on,
         {
             [`quiet-held:${HERE}`]: [
                 { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
-                { at: NOW - MIN, from: PEER_NAME, text: 'step 3' },
             ],
+            [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)],
         },
-        { isOwner: true },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
     );
     const ui = await board($);
-    const card = (await ui.find({ key: 'quiet:card', type: 'Box' }))?.text;
-    expect(card).toContain('🤫 quiet comms');
-    expect(card).toContain(`${PEER_NAME} · 2 held`);
-    expect(await ui.find({ text: /^🚨/, type: 'Text' })).toBeUndefined();
-});
-
-test('no held ping and no gap draws no quiet card', async ($, on) => {
-    fleet(on);
-    expect(
-        await (await board($)).find({ key: 'quiet:card', type: 'Box' }),
-    ).toBeUndefined();
+    await clock.advance(9000);
+    expect([
+        await ui.find({ key: 'quiet:card', type: 'Box' }),
+        await ui.find({ text: /quiet comms/, type: 'Text' }),
+        (store.get('quiet-gap') as { gaps: unknown[] } | undefined)?.gaps
+            .length,
+    ]).toEqual([undefined, undefined, 1]);
 });
 
 // FRM-412 exit 3: the cause of «holds 0» — a member renamed from ☕️ to 🌗 logged under both names, and the ledger
 // matched the log's name to the registry's exactly (10-22: 4 lines as ☕️, 9 as 🌗 for one coder)
 test('a member whose mode emoji changed keeps its logged pings counted: no gap', async ($, on) => {
-    const { clock } = fleet(
+    const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
@@ -1680,18 +1702,7 @@ test('a member whose mode emoji changed keeps its logged pings counted: no gap',
     const ui = await board($);
     await clock.advance(9000);
     expect([
-        await ui.find({ key: 'quiet:card', type: 'Box' }),
+        (store.get('quiet-gap') as { gaps: unknown[] } | undefined)?.gaps,
         await ui.find({ text: /^🚨/, type: 'Text' }),
-    ]).toEqual([undefined, undefined]);
-});
-
-test("a held ping shows no quiet card on a board that is not cclio's", async ($, on) => {
-    fleet(on, {
-        [`quiet-held:${HERE}`]: [
-            { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
-        ],
-    });
-    expect(
-        await (await board($)).find({ key: 'quiet:card', type: 'Box' }),
-    ).toBeUndefined();
+    ]).toEqual([[], undefined]);
 });
