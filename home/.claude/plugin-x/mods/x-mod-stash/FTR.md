@@ -396,8 +396,8 @@
   - decision: one path for every `$.state` part the board draws, since `$.state` starts empty in a new process; the rest of `$.state` is redrawn by the next poll or measure
 
 - ⬜ an ask carries one link dima opens in a click (brief 8)
-  - given cclio adds an ask with `link` — an https url, or a file path from `/` or `~/`
-  - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>`, a press opening the file through `open`; any other link is refused and no ask lands
+  - given cclio adds an ask with `link` — an https url, an `obsidian://` url, or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
+  - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>` (an obsidian url: its note), a press opening it through `open`; any other link (`http://`, `file://`, a bare word) is refused and no ask lands
   - and the link sits at the row's end, after the steer field, on every ask card: orbit's own and a glide card's (dima's shot, 2026-10-12 20:57: «first steer then file»)
   - and a glide card draws the same link on a member's ask
 - ⬜ the model reads orbit's whole tool description (dima's o50)

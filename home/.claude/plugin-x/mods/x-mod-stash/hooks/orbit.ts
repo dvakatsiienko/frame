@@ -15,8 +15,20 @@ export const CHANGED_MARK = '🆕';
 export const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
 export const ASSUMED_MAX = 3;
-// an ask's one link: an https url, or an absolute or home path to a file
-export const ASK_LINK = /^(https:\/\/|\/|~\/)\S+$/;
+// an ask's one link: an https url, an obsidian:// url, or an absolute or home path to a file, spaces allowed in the
+// path (an iCloud vault lives under «Mobile Documents»; FRM-426 rider)
+export const ASK_LINK = /^(?:https:\/\/\S+|obsidian:\/\/\S+|(?:\/|~\/).+)$/;
+// the label a non-https link draws: a path's file name, an obsidian url's note
+export function linkLabel(target: string) {
+    if (target.startsWith('obsidian://')) {
+        const file = target.match(/[?&]file=([^&]+)/)?.[1];
+        const note = file
+            ? decodeURIComponent(file).split('/').filter(Boolean).pop()
+            : undefined;
+        return note ?? 'obsidian';
+    }
+    return target.split('/').filter(Boolean).pop() ?? target;
+}
 export const ASSUMED_TURNS = 3;
 
 export const oneLine = (v: unknown) =>
@@ -184,7 +196,7 @@ export function orbitOp(
                 const link = oneLine(v.link);
                 if (link && !ASK_LINK.test(link))
                     return {
-                        deny: `orbit add: link «${link.slice(0, 40)}» is neither an https url nor a file path (/… or ~/…)`,
+                        deny: `orbit add: link «${link.slice(0, 40)}» is neither an https url, an obsidian:// url nor a file path (/… or ~/…)`,
                     };
                 added.push({
                     hiddenNote: hiddenNote || undefined,

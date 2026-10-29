@@ -1679,9 +1679,68 @@ test('a link that is neither an https url nor a file path is refused, and no ask
     await start($);
     const r = await addLinked($, 'javascript:alert(1)');
     expect([r.deny, w.store.has('asks:o1o1o1o1-orbit')]).toEqual([
-        'orbit add: link «javascript:alert(1)» is neither an https url nor a file path (/… or ~/…)',
+        'orbit add: link «javascript:alert(1)» is neither an https url, an obsidian:// url nor a file path (/… or ~/…)',
         false,
     ]);
+});
+
+// FRM-426 rider: a vault note can be linked from an ask
+function openRuns(on: On) {
+    const runs: string[][] = [];
+    on('process.run', (_$, e) => {
+        runs.push([...e.argv]);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: '',
+            },
+        };
+    });
+    return runs;
+}
+
+test("an ask's file link may hold spaces, as an iCloud vault path does", async ($, on) => {
+    world(on);
+    const runs = openRuns(on);
+    await start($);
+    const ui = await board($);
+    await addLinked(
+        $,
+        '~/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault/_hq/the inbox.md',
+    );
+    const label = (await ui.find({ key: 'ask:link:o1', type: 'Button' }))?.text;
+    await ui.press({ key: 'ask:link:o1' });
+    expect([label, runs.at(-1)]).toEqual([
+        '🔗 the inbox.md',
+        [
+            'open',
+            '/home/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault/_hq/the inbox.md',
+        ],
+    ]);
+});
+
+test("an ask's obsidian:// link opens through open, labelled by its note", async ($, on) => {
+    world(on);
+    const runs = openRuns(on);
+    await start($);
+    const ui = await board($);
+    const url = 'obsidian://open?vault=vault&file=_hq%2Finbox';
+    await addLinked($, url);
+    const label = (await ui.find({ key: 'ask:link:o1', type: 'Button' }))?.text;
+    await ui.press({ key: 'ask:link:o1' });
+    expect([label, runs.at(-1)]).toEqual(['🔗 inbox', ['open', url]]);
+});
+
+test('an http url, a file:// url and a bare word are still refused as links', async ($, on) => {
+    world(on);
+    await start($);
+    for (const link of ['http://x.test/a', 'file:///etc/passwd', 'inbox.md'])
+        expect((await addLinked($, link)).deny).toContain(
+            'is neither an https url',
+        );
 });
 
 test('the link rides the ask a glide card draws from the store', async ($, on) => {

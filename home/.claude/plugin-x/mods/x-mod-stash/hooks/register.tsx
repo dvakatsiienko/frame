@@ -36,6 +36,7 @@ import {
     isFresh,
     isSending,
     joinText,
+    linkLabel,
     lockJoined,
     moved,
     oneLine,
@@ -366,7 +367,7 @@ const cardBorder = (surface: string) =>
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
     'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only. a --bg session has no board: its asks go to its coordinator.',
-    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
+    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url, obsidian:// url or file path (spaces allowed) he opens in a click. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
     'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave at its end, a worded one dim a turn more. ticked: «as ticked», or «changed: <what>» plus a follow or add.',
     'ops [{ op, … }]: several ops in one call, a result line each.',
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
@@ -4569,7 +4570,7 @@ export const register: Register = (on) => {
                     // ⏸️ while speak reads, ▶️ when it is paused or quiet: a press pauses, resumes, or reads this row (dima, 15:51)
                     const isSpeaking =
                         (await $.state.get(SPEAKING)).value === true;
-                    // an ask's one link: a url opens as a link, a file path through `open` (a mod Link takes https only)
+                    // an ask's one link: an https url opens as a link, a file path or an obsidian:// url through `open` (a mod Link takes https only)
                     const askLinkJSX = (id: string, target: string) => {
                         return target.startsWith('https://') ? (
                             <Link href={target} key={`ask:link:${id}`}>
@@ -4580,7 +4581,7 @@ export const register: Register = (on) => {
                                 key={`ask:link:${id}`}
                                 onPress={() => void openPath($, target)}
                                 plain>
-                                {`🔗 ${basename(target)}`}
+                                {`🔗 ${linkLabel(target)}`}
                             </Button>
                         );
                     };
