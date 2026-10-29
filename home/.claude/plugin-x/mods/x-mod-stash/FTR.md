@@ -478,6 +478,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then cclio's reply in that turn covers it; only a keep-hot ping turn never takes a tick; a tick that lands too late for the turn stays ticked and joins the next prompt
   - proven live on the desktop 2026-10-10 20:40: dima ticked o21 while cclio ran a tool, and that same turn's reply answered it
   - decision: the tick rides the turn's next tool result as model-only context; one that no tool result reaches waits for dima's next prompt — a hidden appended message started a turn of its own when it landed after the turn's last read (dima, 20:31)
+  - given dima ticks an ask once and the turn that took it never resolves it, then the next three turns do not carry the tick again; a re-tick of the still-open ask arrives as a fresh tick (FRM-426, PK-262: a tick was delivered five times)
+  - given a remote mark from another board lands on an ask whose steer dima is typing, then his typed steer stays; the remote steer fills only an empty one (PK-149)
   - decision: any running turn takes a tick, not only one dima's prompt started — his o32 waited through 5+ tool calls of a task-notification turn (dima's o10, 2026-10-11 12:20)
   - decision: every orbit write reads the orbit back from `$.state` first — a reload landing at a turn's end ran `turn.complete` before `session.start` and saved an empty orbit (dima, 20:20: «coder wiped the orbit»)
 - ✅ marked asks lock while cclio works on them

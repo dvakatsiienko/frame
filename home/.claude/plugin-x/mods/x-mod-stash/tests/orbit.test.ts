@@ -553,7 +553,26 @@ test('a tick the running turn never reads starts no turn of its own', async ($, 
     expect([w.appended, w.contexts.length]).toEqual([[], 1]);
 });
 
-test('a tick the turn never answered stays marked and joins the next prompt', async ($, on) => {
+// how many prompts carried the o1 tick to the model
+const tickReads = (contexts: string[][]) =>
+    contexts.filter((c) => c.some((l) => l.includes('o1 🛎️ accepted'))).length;
+
+test('a tick the turn never answered reaches the model once, not on the next prompts', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await endTurn($);
+    for (const prompt of ['next', 'and next', 'and again']) {
+        await say($, prompt);
+        await endTurn($);
+    }
+    expect(tickReads(w.contexts)).toBe(1);
+});
+
+test('a re-tick of the still-open ask arrives as a fresh tick', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -562,7 +581,21 @@ test('a tick the turn never answered stays marked and joins the next prompt', as
     await ui.press({ key: 'orbit:accepted:o1' });
     await endTurn($);
     await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain('o1 🛎️ accepted');
+    await endTurn($);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'once more');
+    expect(tickReads(w.contexts)).toBe(2);
+});
+
+test('a remote mark landing while dima types a steer leaves his typed steer in its box', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
+    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
+    await w.clock.advance(5_000);
+    expect(savedSteer(w.store)).toBe('a heron');
 });
 
 test('every prompt reminds the session of its open asks and the tool', async ($, on) => {

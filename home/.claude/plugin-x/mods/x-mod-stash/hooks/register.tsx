@@ -1025,7 +1025,8 @@ async function marksOf($: EngineInterface, sid: string) {
     return marks;
 }
 
-// marks dima made on another board's glide card join this session's own orbit, as if made here
+// marks dima made on another board's glide card join this session's own orbit, as if made here; a steer typed here stays
+// in its box over the remote mark's (PK-149)
 async function absorbMarks($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
@@ -1046,7 +1047,7 @@ async function absorbMarks($: EngineInterface) {
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
                 sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
-                steer: m.steer,
+                steer: a.steer ?? m.steer,
             };
         }),
     });

@@ -56,7 +56,9 @@ test('a turn end drops the answered asks and unlocks the rest', () => {
             turns: 4,
         }),
     );
-    expect(ended.asks.map((a) => [a.id, a.isLocked])).toEqual([['o2', false]]);
+    expect(ended.asks.map((a) => [a.id, a.isLocked, a.mark])).toEqual([
+        ['o2', false, undefined],
+    ]);
     expect(ended.turns).toBe(5);
 });
 

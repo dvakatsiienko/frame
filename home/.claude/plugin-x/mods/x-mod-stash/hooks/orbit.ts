@@ -84,7 +84,7 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
 }
 
 // the turn's answers leave, one with a closing word drawn dim one turn more; a marked ask it never resolved unlocks
-// and rides dima's next prompt; an unmarked assumption leaves at its third turn end, the turn it was made in counted;
+// with its mark spent, so the tick reached the model once and a re-tick arrives fresh (PK-262); an unmarked assumption leaves at its third turn end, the turn it was made in counted;
 // one sent back waits for his prompt
 export function turnEnded(o: StashOrbit): StashOrbit {
     return {
@@ -92,7 +92,15 @@ export function turnEnded(o: StashOrbit): StashOrbit {
         asks: o.asks
             .filter((a) => !a.isClosed && (!a.isResolved || a.word))
             .map((a) => (a.isResolved ? { ...a, isClosed: true } : a))
-            .map((a) => (a.isLocked ? { ...unsteer(a), isLocked: false } : a)),
+            .map((a) =>
+                a.isLocked
+                    ? {
+                          ...unsteer(a),
+                          isLocked: false,
+                          mark: undefined,
+                      }
+                    : a,
+            ),
         assumed: (o.assumed ?? []).filter(
             (x) => x.isWrong || o.turns + 2 - x.at < ASSUMED_TURNS,
         ),
