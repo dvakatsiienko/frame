@@ -450,7 +450,14 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ⬜ a steer box keeps its view where he left it, and fills its row
   - given dima typed a long steer into a box on an ask or an assumption
   - when the board redraws and typing has gone quiet
-  - then the box still shows the end he typed, never jumping to the start; a board closed and opened again draws the stored text; the box takes the row's width left after its buttons (dima, 2026-10-29: «the focus jumps … text boxes are too short»)
+  - then the box still shows the end he typed, never jumping to the start
+  - and a card folded and opened again, or a board closed and opened again, draws the stored text
+  - and the box takes the row's width left after its buttons (dima, 2026-10-29: «the focus jumps … text boxes are too short»)
+- ⬜ a glide card follows a lane plan file of any length
+  - given a lane plan file of 11 numbered lines, ticked up to the fifth
+  - when cclio creates a card naming it
+  - then the card is taken, never refused, and draws the current step with its neighbours, its head saying «4–8 of 11»
+  - and a «[X]» ticks a step like «[x]»; a card of up to 7 steps draws all of them with no label
 - ✅ accept, reject, steer, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its steer, or presses check all

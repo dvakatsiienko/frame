@@ -1432,13 +1432,62 @@ test('a capital X ticks a step like x', async ($, on) => {
     ]);
 });
 
-test('a plan file grown past seven steps draws the first seven', async ($, on) => {
+test('a plan file grown past seven steps keeps every step and its pointer', async ($, on) => {
     const w = world(on);
     await start($);
     await linkedPlan($, w);
-    w.files[PLAN] = planText('x        ');
+    w.files[PLAN] = planText('xxxxxxx  ');
     await poll(w);
-    expect(kept(w)[0]?.items.length).toBe(7);
+    expect([kept(w)[0]?.items.length, kept(w)[0]?.current]).toEqual([9, 7]);
+});
+
+test('a create naming a plan of eleven steps is taken, never refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    expect(await linkedPlan($, w, ' '.repeat(11))).toBeUndefined();
+    expect(kept(w)[0]?.items.length).toBe(11);
+});
+
+test('a card of eleven steps draws the current one with its neighbours and says where it is', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await linkedPlan($, w, `${'x'.repeat(4)}${' '.repeat(7)}`);
+    await poll(w);
+    const text = (await laneText(ui)) ?? '';
+    expect([
+        text.includes('4–8 of 11'),
+        text.includes('step 5'),
+        text.includes('step 8'),
+        text.includes('step 3'),
+        text.includes('step 9'),
+    ]).toEqual([true, true, true, false, false]);
+});
+
+test('a card of seven steps draws all of them with no window label', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await linkedPlan($, w, 'x'.repeat(3) + ' '.repeat(4));
+    await poll(w);
+    expect(await laneText(ui)).not.toContain(' of 7');
+});
+
+test('a tick on the card after typing keeps the typed steer, not the published one', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    await start($);
+    const ui = await board($);
+    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.input({
+        key: 'lane:l1:coder:steer:o3',
+        kind: 'change',
+        text: 'new words',
+    });
+    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    expect(
+        (w.store.get(`marks:${CODER}:o3`) as { steer?: string })?.steer,
+    ).toBe('new words');
 });
 
 test('a missing plan file keeps the last state marked «plan file gone»', async ($, on) => {

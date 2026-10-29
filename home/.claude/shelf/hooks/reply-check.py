@@ -129,7 +129,7 @@ def door_claims(prose: str) -> list[str]:
 # the claim forms: «copied whole», a first-person «I checked / verified / proved», a label line «proven: …», and «verified by …».
 # the bare word was tried first: a week of 3,276 Stop turns flagged 22 replies, most relaying a member's verdict or a promise
 CHECKED_CLAIM = re.compile(
-    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|verified|proven|proved)\b(?!\s+(?:nothing|none|little)\b)|^\W*proven\s*[:—-]|\bverified\s+by\b",
+    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|verified|(?:proven|proved)(?!\s+(?:nothing|none|little)\b))\b|^\W*proven\s*[:—-]|\bverified\s+by\b",
     re.I | re.M,
 )
 # «not checked», «never verified», «isn't proven»: the word negated is a disclosure, not a claim
@@ -155,6 +155,7 @@ def unevidenced(path: str, reply: str) -> list[str]:
 # «round» alone is a verifier's or a review's too (the week replay: 31 of ~40 distinct hits), so a round counts beside «grill»
 GRILL_ASK_TEXT = re.compile(r"\bQ\d+\b|\bgrill\b[^\n]{0,40}\bround\b|\bround\b[^\n]{0,40}\bgrill\b", re.I)
 # the label may carry its title in the bold («❓ **Q5, build or reuse**», «❓ **Q1 - the birth test**»)
+Q_NUMBER = re.compile(r"\bQ(\d+)\b", re.I)
 GRILL_PRINTED_NUMBER = re.compile(r"^\W*❓\s*\*\*Q(\d+)\b", re.M)
 
 
@@ -164,7 +165,7 @@ def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]
     named = [t for t in texts if GRILL_ASK_TEXT.search(t)]
     printed = {int(n) for n in GRILL_PRINTED_NUMBER.findall(FENCE.sub("", reply))}
     # an ask naming Q3 needs its own «❓ **Q3**» line; a grill-round ask with no number needs any one
-    lost = [t for t in named if (({int(n) for n in re.findall(r"\bQ(\d+)\b", t, re.I)} - printed) if re.search(r"\bQ\d+\b", t, re.I) else not printed)]
+    lost = [t for t in named if (({int(n) for n in Q_NUMBER.findall(t)} - printed) if Q_NUMBER.search(t) else not printed)]
     return [lost[0][:40]] if lost else []
 
 

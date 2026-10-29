@@ -388,7 +388,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · text» lines are the steps, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · text» lines are the steps, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
@@ -516,7 +516,7 @@ export function fieldView(
     if (!isOwn && !isLag)
         return { isRemount: saved === draft.drawn, kind: 'outside' };
     // a text field never swaps its value for the stored one: the surface scrolls a field back to its start on any value
-    // change, equal text or not (dima, 10-29: «the focus jumps to the start» once the board redrew); a number is short
+    // change, equal text or not; a number is short, so it may snap back to the stored value
     if (isNumber && now - draft.at >= FIELD_QUIET_MS) return { kind: 'saved' };
     return {
         draft: isOwn && !draft.isLanded ? { ...draft, isLanded: true } : draft,
@@ -541,16 +541,17 @@ const isNumberField = (key: string) =>
 // what the trim cut (dima's wisp, 10-13 15:42); only spaces is no steer, and the model reads it trimmed
 const steerOf = (value: string) => (value.trim() ? value : undefined);
 function field($: EngineInterface, key: string, saved: string) {
+    const isNumber = isNumberField(key);
     const view = fieldView(
         drafts.get(key),
         saved,
         // clock-ok: a field draws in a sync render, where $.clock.now() cannot be awaited
         Date.now(),
-        isNumberField(key),
+        isNumber,
     );
     if (view.kind === 'held') drafts.set(key, view.draft);
     else drafts.delete(key);
-    if (view.kind === 'outside' && view.isRemount && !isNumberField(key))
+    if (view.kind === 'outside' && view.isRemount && !isNumber)
         remounts.set(key, (remounts.get(key) ?? 0) + 1);
     const value = view.kind === 'held' ? view.draft.drawn : saved;
     const gen = remounts.get(key);
@@ -1054,6 +1055,14 @@ async function marksOf($: EngineInterface, sid: string) {
     return marks;
 }
 
+// a steer typed into this session's own box a moment ago is newer than a card's edit that lands now
+const isTypedHere = (askId: string) =>
+    isTypingAt(
+        [drafts.get(`orbit:steer:${askId}`)?.at ?? 0],
+        // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
+        Date.now(),
+    );
+
 // marks dima made on another board's glide card join this session's own orbit, as if made here; a steer typed here stays
 // in its box over the remote mark's (PK-149)
 async function absorbMarks($: EngineInterface) {
@@ -1074,17 +1083,21 @@ async function absorbMarks($: EngineInterface) {
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
                 sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
-                steer: m.isSteerEdit ? m.steer : (a.steer ?? m.steer),
+                steer: isTypedHere(a.id)
+                    ? a.steer
+                    : m.isSteerEdit
+                      ? m.steer
+                      : (a.steer ?? m.steer),
             };
         }),
     });
     // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
-    // stays for the next take, and its card never sees the steer missing in between (dima, 10-29: typed text deleted)
+    // stays for the next take, and its card never sees the steer missing in between
     for (const [id, m] of Object.entries(marks)) {
-        const now = (await $.store
+        const stored = (await $.store
             .get(markKey(sid, id))
             .catch(() => undefined)) as RemoteMark | undefined;
-        if (now?.at === m.at)
+        if (stored?.at === m.at)
             await $.store.delete(markKey(sid, id)).catch(() => undefined);
     }
 }
@@ -1550,7 +1563,8 @@ function laneCreate(
         return {
             deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
         };
-    const items = laneItems(input.items);
+    // a lane plan file holds any number of steps: the card windows what it draws
+    const items = laneItems(input.items, plan ? Infinity : LANE_MAX);
     if (!Array.isArray(items)) return items;
     const id = `l${1 + Math.max(0, ...lanes.map((l) => Number(l.id.slice(1)) || 0))}`;
     const stepped = pointed(items, 0);
@@ -1661,13 +1675,11 @@ async function followPlans($: EngineInterface) {
             next.push(lane.isPlanGone ? lane : { ...lane, isPlanGone: true });
             continue;
         }
-        const steps = planSteps(text)
-            .slice(0, LANE_MAX)
-            .map((s) => ({
-                isDone: s.isDone,
-                text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
-                ...(ticketOf(s.text) ? { ticket: ticketOf(s.text) } : {}),
-            }));
+        const steps = planSteps(text).map((s) => ({
+            isDone: s.isDone,
+            text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
+            ...(ticketOf(s.text) ? { ticket: ticketOf(s.text) } : {}),
+        }));
         const items: LaneItem[] = steps.length ? steps : lane.items;
         const current = items.findIndex((x) => !x.isDone);
         const at = current < 0 ? items.length : current;
@@ -1726,12 +1738,33 @@ async function takeLaneMoves($: EngineInterface) {
     return held;
 }
 
-// a lane's steps as cclio sends them: 1 to LANE_MAX, each plain text ≤LANE_TEXT_MAX, an optional ticket id
-function laneItems(input: unknown): LaneItem[] | { deny: string } {
+// a card draws at most LANE_MAX rows: the current step with its neighbours, the rest named in the head
+const LANE_WINDOW = LANE_MAX - 2;
+function laneBounds(count: number, current: number) {
+    if (count <= LANE_MAX) return { from: 0, to: count };
+    const from = Math.min(Math.max(current - 1, 0), count - LANE_WINDOW);
+    return { from, to: from + LANE_WINDOW };
+}
+const laneRows = (lane: StashLane) => {
+    const { from, to } = laneBounds(lane.items.length, lane.current);
+    return lane.items.map((item, i) => ({ i, item })).slice(from, to);
+};
+const laneSpan = (lane: StashLane) => {
+    const { from, to } = laneBounds(lane.items.length, lane.current);
+    return lane.items.length > LANE_MAX
+        ? ` · ${from + 1}–${to} of ${lane.items.length}`
+        : '';
+};
+
+// a lane's steps as cclio sends them: 1 to `max`, each plain text ≤LANE_TEXT_MAX, an optional ticket id
+function laneItems(
+    input: unknown,
+    max = LANE_MAX,
+): LaneItem[] | { deny: string } {
     const raw = Array.isArray(input) ? input : [];
-    if (raw.length < 1 || raw.length > LANE_MAX)
+    if (raw.length < 1 || raw.length > max)
         return {
-            deny: `orbit glide: 1 to ${LANE_MAX} steps, got ${raw.length}`,
+            deny: `orbit glide: 1 to ${max} steps, got ${raw.length}`,
         };
     const items: LaneItem[] = [];
     for (const item of raw) {
@@ -2564,7 +2597,10 @@ let compactTrail: number[] = [];
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
     // a closed board unmounts its fields: the next open draws the stored text, not a held one
-    if (!isBoardOpen) drafts.clear();
+    if (!isBoardOpen && drafts.size) {
+        await flushFields();
+        drafts.clear();
+    }
     // a lane cclio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
     if (isBoardOpen) {
@@ -4741,6 +4777,9 @@ export const register: Register = (on) => {
                         <Button
                             key={`fold:${card}`}
                             onPress={async () => {
+                                // a fold remounts its fields: they draw the stored text again
+                                await flushFields();
+                                drafts.clear();
                                 const was =
                                     (await $.state.get(FOLDS)).value ?? {};
                                 await $.state.set(FOLDS, {
@@ -5176,8 +5215,10 @@ export const register: Register = (on) => {
                                 {isOpen
                                     ? asks.map((a, i) =>
                                           askJSX(a as OrbitAsk, i, {
-                                              mark: (x, mark) =>
-                                                  void markRemote(
+                                              // a press reads what was typed: the steer waiting for its pause saves first
+                                              mark: async (x, mark) => {
+                                                  await flushFields();
+                                                  await markRemote(
                                                       $,
                                                       markSid,
                                                       x,
@@ -5186,21 +5227,15 @@ export const register: Register = (on) => {
                                                               x.mark === mark
                                                                   ? undefined
                                                                   : mark,
-                                                          steer: x.steer,
                                                       },
-                                                  ),
+                                                  );
+                                              },
                                               prefix: card,
                                               steer: (x, value) =>
-                                                  void markRemote(
-                                                      $,
-                                                      markSid,
-                                                      x,
-                                                      {
-                                                          isSteerEdit: true,
-                                                          mark: x.mark,
-                                                          steer: steerOf(value),
-                                                      },
-                                                  ),
+                                                  markRemote($, markSid, x, {
+                                                      isSteerEdit: true,
+                                                      steer: steerOf(value),
+                                                  }),
                                           }),
                                       )
                                     : null}
@@ -5344,12 +5379,12 @@ export const register: Register = (on) => {
                                       flexDirection='row'
                                       justifyContent='space-between'>
                                       <Text
-                                          bold>{`🛼 glide: ${lane.title}${lane.isPlanGone ? ' · plan file gone' : ''}`}</Text>
+                                          bold>{`🛼 glide: ${lane.title}${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : ''}`}</Text>
                                       {foldJSX(`lane:${lane.id}`)}
                                   </Box>
                                   {isFolded(`lane:${lane.id}`)
                                       ? null
-                                      : lane.items.map((item, i) => (
+                                      : laneRows(lane).map(({ i, item }) => (
                                             <Box
                                                 alignItems='center'
                                                 flexDirection='row'

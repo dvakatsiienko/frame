@@ -348,8 +348,12 @@ describe('a checked claim with no evidence call (FRM-429)', () => {
         'Verified — the parse.',
         'I proved nothing yet.',
         'the build was checked against the spec.',
-    ])('passes «%s», a form the re-signed line does not name', (reply) => {
+    ])('passes «%s», a form outside the claim list', (reply) => {
         expect(loggedAfter(reply, noCalls)).toBe('');
+    });
+
+    it('still logs «I checked nothing broke», a claim with a negative object', () => {
+        expect(loggedAfter('I checked nothing broke.', noCalls)).toContain('unevidenced\t');
     });
 
     it('passes the word inside a fence or inline code', () => {
