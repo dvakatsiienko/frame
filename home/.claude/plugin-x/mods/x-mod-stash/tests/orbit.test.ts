@@ -1734,6 +1734,16 @@ test("an ask's obsidian:// link opens through open, labelled by its note", async
     expect([label, runs.at(-1)]).toEqual(['🔗 inbox', ['open', url]]);
 });
 
+test('an obsidian:// link with a stray % still draws, labelled by the raw note', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await addLinked($, 'obsidian://open?vault=v&file=100%');
+    expect((await ui.find({ key: 'ask:link:o1', type: 'Button' }))?.text).toBe(
+        '🔗 100%',
+    );
+});
+
 test('an http url, a file:// url and a bare word are still refused as links', async ($, on) => {
     world(on);
     await start($);

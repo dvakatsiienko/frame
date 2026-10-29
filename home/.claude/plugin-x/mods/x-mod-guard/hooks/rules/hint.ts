@@ -99,7 +99,7 @@ export function verbHelps(command: string, cwd: string, ctx: Context) {
             /^[A-Za-z][\w.-]*$/.test(cli) &&
             !SHELL_WORDS.has(cli) &&
             !HELP_SAFE.has(cli) &&
-            (ran || !RUNNERS.has(cli)) &&
+            !RUNNERS.has(cli) &&
             !SCRIPT.test(cli) &&
             !ctx.helped?.has(cli) &&
             c.args.some((w) => w.text === '--help') &&

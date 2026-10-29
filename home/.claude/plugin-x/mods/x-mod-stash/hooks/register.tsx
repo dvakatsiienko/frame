@@ -2935,8 +2935,9 @@ export const idleTint = (ms: number) =>
 export const markOf = (m: {
     isIdle: boolean;
     ms: number;
-    offPattern: boolean;
-}) => (m.offPattern ? '⚠' : m.isIdle && m.ms >= CACHE_TTL_MS ? '❄️' : undefined);
+    isOffPattern: boolean;
+}) =>
+    m.isOffPattern ? '⚠' : m.isIdle && m.ms >= CACHE_TTL_MS ? '❄️' : undefined;
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -3639,6 +3640,9 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields();
+        // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
+        if (e.origin?.kind === 'task-notification')
+            await settleTask($, e.text).catch(() => undefined);
         const isUser =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
@@ -5549,8 +5553,8 @@ export const register: Register = (on) => {
                         const ticket = ticketOf(m.name);
                         const mark = markOf({
                             isIdle: status.isIdle,
+                            isOffPattern: !!m.offPattern,
                             ms: sinceMs ?? 0,
-                            offPattern: !!m.offPattern,
                         });
                         const name = m.sid === me ? `${m.name} (here)` : m.name;
                         const line = m.tip

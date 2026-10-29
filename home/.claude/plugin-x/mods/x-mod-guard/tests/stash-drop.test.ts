@@ -25,6 +25,7 @@ function world(on: On, cwd = '/home/projects/frame') {
             stdout: `${e.argv[2] ?? cwd}\n`,
         },
     }));
+    on('turn.complete', () => ({ text: '' }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
@@ -73,6 +74,27 @@ test('a prompt naming x-mod-stash is not a word on the stash', async ($, on) => 
     const { ran } = world(on);
     await dimaSays($, 'x-mod-stash orbit tick is broken');
     expect((await bash($, 'git stash drop')).deny).toContain(THROWN);
+    expect(ran).toEqual([]);
+});
+
+test('a later turn keeps the refusal: his word holds for the turn he typed it in', async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, 'kill the stash in bytes git');
+    await $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    expect((await bash($, DROP_BYTES)).deny).toContain(THROWN);
+    expect(ran).toEqual([]);
+});
+
+test("a negated kill ask keeps the refusal: «don't drop the stash in bytes»", async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, "don't drop the stash in bytes");
+    expect((await bash($, DROP_BYTES)).deny).toContain(THROWN);
     expect(ran).toEqual([]);
 });
 

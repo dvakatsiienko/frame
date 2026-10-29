@@ -360,7 +360,22 @@ test('three tasks ended and one still running: only the running one reads as wai
     ]);
     expect(await wait(ui)).toBe('🔭 waiting on 🦅 scout +3');
     for (const [, text] of ENDED) await notice($, text);
-    expect(await wait(ui)).toBe('🔭 waiting on 🐬 wishkeeper');
+    expect(await wait(ui)).toBe(
+        '🔭 waiting on 🐬 wishkeeper (1 done, 2 failed)',
+    );
+});
+
+test('a notice that reaches the session as a prompt settles the task too', async ($, on) => {
+    world(on);
+    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    const ui = await band($);
+    await stopWith($, [task('a7a34037b01ca23ed', 'subagent', 'Read watches')]);
+    await $.prompt.submit({
+        origin: { kind: 'task-notification' },
+        text: completedAgent,
+        wait: false,
+    });
+    expect(await wait(ui)).toBe('🔭 🦅 scout done');
 });
 
 test('a notice for a task the reply never listed leaves the wait as it was', async ($, on) => {

@@ -22,10 +22,12 @@ export const ASK_LINK = /^(?:https:\/\/\S+|obsidian:\/\/\S+|(?:\/|~\/).+)$/;
 export function linkLabel(target: string) {
     if (target.startsWith('obsidian://')) {
         const file = target.match(/[?&]file=([^&]+)/)?.[1];
-        const note = file
-            ? decodeURIComponent(file).split('/').filter(Boolean).pop()
-            : undefined;
-        return note ?? 'obsidian';
+        // a stray % in the url must not throw into the board's draw
+        let decoded = file;
+        try {
+            decoded = file ? decodeURIComponent(file) : undefined;
+        } catch {}
+        return decoded?.split('/').filter(Boolean).pop() ?? 'obsidian';
     }
     return target.split('/').filter(Boolean).pop() ?? target;
 }

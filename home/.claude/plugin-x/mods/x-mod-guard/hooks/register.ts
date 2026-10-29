@@ -441,7 +441,7 @@ async function stashAllowed(
     if (!found.length || !found.every(isStashKill)) return undefined;
     const kills = stashKills(command, cwd, ctx);
     if (!kills.length) return undefined;
-    const { value: said = '' } = await $.state.get(PROMPT);
+    const { value: said = '' } = await $.state.get(TOLD);
     for (const k of kills) {
         const top = await $.process
             .run(['git', '-C', k.dir, 'rev-parse', '--show-toplevel'])
@@ -476,6 +476,7 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // dima's last prompt typed at the composer or sent over the bridge: a peer's message, a notification, a plugin's or an
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
+const TOLD = { key: 'told', plugin: 'x-mod-guard' } as const;
 const HELPED = { key: 'helped', plugin: 'x-mod-guard' } as const;
 const IMAGES = { key: 'images', plugin: 'x-mod-guard' } as const;
 // cc core refuses a worktree command naming git where it cannot prove the git stays in the tree — a heredoc body, a
@@ -1234,8 +1235,16 @@ export const register: Register = (on) => {
                 : false;
             if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
+            if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
+                await $.state.set(TOLD, e.text).catch(() => undefined);
         }
         await logOrigin($, e).catch(() => undefined);
+        return next(e);
+    });
+
+    // his word on the stash holds for the turn it was typed in (FRM-426 exit 1: «in this turn»)
+    on('turn.complete', async ($, e, next) => {
+        if (!e.agentId) await $.state.set(TOLD, '').catch(() => undefined);
         return next(e);
     });
 

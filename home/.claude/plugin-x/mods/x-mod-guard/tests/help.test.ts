@@ -119,6 +119,8 @@ for (const typed of [
     'pnpm dlx biome check --help',
     'npx biome check --help',
     'pnpx biome check --help',
+    'bunx biome check --help',
+    'pnpm exec biome check --help',
 ])
     test(`the verb hint names biome, never the runner: ${typed}`, async ($, on) => {
         world(on);
@@ -128,6 +130,16 @@ for (const typed of [
         expect(lines(r.context, '`npx --help`')).toEqual([]);
         expect(lines(r.context, '`pnpx --help`')).toEqual([]);
     });
+
+test('a script runner behind a package runner draws no hint: npx tsx script.ts --help', async ($, on) => {
+    world(on);
+    expect(
+        lines(
+            (await bash($, 'npx tsx script.ts --help')).context,
+            'lists its verbs',
+        ),
+    ).toEqual([]);
+});
 
 test('a package runner with no verb after the package draws no hint', async ($, on) => {
     world(on);

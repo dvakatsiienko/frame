@@ -17,7 +17,7 @@
   - decision: quoted text, heredoc bodies and comments are never read as commands — a commit message may name `rm -rf`
   - 📌 not read: a script piped into a shell (`curl … | sh`, `cat x | bash`); `rmdir`, `truncate`, `git worktree` moves
 - ✅ a stash drop runs on dima's own word naming the stash and the repo
-  - given dima's last typed prompt holds, in one sentence with no negation, the word «stash» (never inside `x-mod-stash`), a kill verb (drop, kill, delete, clear) and the repo's name
+  - given dima's prompt, typed in this turn (the word ends with the turn), holds, in one sentence with no negation, the word «stash» (never inside `x-mod-stash`), a kill verb (drop, kill, delete, clear) and the repo's name
   - when the session runs `git stash drop` in that repo (its toplevel, never the cwd)
   - then it runs; `git stash clear` needs «all» or «clear» in the sentence too; the same drop in another repo, a negated ask («don't touch the stash in bytes»), and any command with a nested shell stay refused (FRM-426)
 - ✅ a hazard shape is refused with its fix, and its near miss runs

@@ -278,8 +278,15 @@ export function backgroundWait(
     const tasks = all?.filter((t) => !isStandingWatch(t)) ?? [];
     const live = tasks.filter((t) => !t.state);
     const first = live[0];
+    // the ended ones beside it: «(2 done, 1 failed)», so a finished agent reads finished next to the one still running
+    const count = (state: 'done' | 'failed') =>
+        tasks.filter((t) => t.state === state).length;
+    const tally = [
+        count('done') && `${count('done')} done`,
+        count('failed') && `${count('failed')} failed`,
+    ].filter(Boolean);
     if (first)
-        return `waiting on ${named(first)}${live.length > 1 ? ` +${live.length - 1}` : ''}`;
+        return `waiting on ${named(first)}${live.length > 1 ? ` +${live.length - 1}` : ''}${tally.length ? ` (${tally.join(', ')})` : ''}`;
     const ended = tasks[0];
     if (!ended) return undefined;
     return `${named(ended)} ${ended.state}${tasks.length > 1 ? ` +${tasks.length - 1}` : ''}`;
