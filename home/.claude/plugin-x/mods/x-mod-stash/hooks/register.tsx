@@ -659,6 +659,9 @@ const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
 const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
+// a [progress] ping that asks dima something is pushed, never held: two coder questions sat unseen in held pings on
+// 2026-10-23. the list is dima's pick (o26, 2026-10-29) after a replay of 14 days of pings: a bare «?» was 4 false of 4
+const QUIET_PUSH = /(?<![\w-])(?:for dima|decisions|pick:|your call)(?![\w-])/i;
 // the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
 const QUIET_GAP = 'quiet-gap';
 const QUIET_CANARY = /^\s*\[progress\]\s*quiet canary ([\w-]+)/i;
@@ -4099,7 +4102,12 @@ export const register: Register = (on) => {
                 (await $.state.get(TURN).catch(() => undefined))?.value
                     ?.isBusy ?? isBusy;
             const line = { arm, at: now, from, tag, ...marks } as const;
-            if (isOn && !isMobile && tag === 'progress') {
+            if (
+                isOn &&
+                !isMobile &&
+                tag === 'progress' &&
+                !QUIET_PUSH.test(body)
+            ) {
                 const first =
                     body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
                 // consumed only once both the held list and its log line landed: a ping no store holds is a lost one

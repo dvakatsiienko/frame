@@ -641,6 +641,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - when a member's message opens with `[progress]`
   - then it is not queued and starts no turn; `[done]`, `[blocked]`, `[ask]` and an untagged ping pass as before; any other session holds nothing
   - decision: the tag decides, never a guess at the text — an untagged ping always passes (dima, 2026-10-12, the probe's «never hold blind»)
+  - and a `[progress]` ping holding «for dima», «decisions», «pick:» or «your call» (whole words, any case) is pushed, not held, so a question to dima wakes the coordinator's turn; a bare «?» never pushes (dima o26, 2026-10-29: of 81 pings in 14 days, a «?» pushed 4 and all 4 were false; FRM-429)
   - proven on the desktop 15:48: a held `[progress]` ping started no turn (the probe's open line)
 - 🧭 held pings reach cclio without a turn of their own
   - given pings are held

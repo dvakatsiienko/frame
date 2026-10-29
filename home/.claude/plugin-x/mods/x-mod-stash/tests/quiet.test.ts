@@ -172,6 +172,38 @@ test('a [done], [blocked] or [ask] ping passes', async ($, on) => {
     expect(w.queued).toHaveLength(3);
 });
 
+// FRM-429 exit 3 (dima o26): a [progress] ping that asks dima something is pushed and reaches the turn
+for (const marker of [
+    'for dima',
+    'decisions',
+    'pick:',
+    'your call',
+    'For Dima',
+])
+    test(`a [progress] ping holding «${marker}» is pushed, not held`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await ping(
+            $,
+            `[progress] step 2 landed. ${marker} on the cut`,
+        );
+        expect([r.consumed, w.queued]).toHaveLength(2);
+        expect(r.consumed).toBeUndefined();
+        expect(w.queued).toHaveLength(1);
+    });
+
+for (const plain of [
+    '[progress] step 2 landed. is it clean?',
+    '[progress] one decision i made: hidden verbs',
+    '[progress] the verifier picked: nothing',
+])
+    test(`a [progress] ping with no push marker stays held: ${plain.slice(11, 40)}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await ping($, plain);
+        expect([r.consumed !== undefined, w.queued]).toEqual([true, []]);
+    });
+
 test('an untagged ping passes, never held blind', async ($, on) => {
     const w = world(on);
     await start($);
