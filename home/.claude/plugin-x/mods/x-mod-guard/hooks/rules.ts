@@ -184,8 +184,16 @@ export function namesWhole(said: string, target: string) {
 // the repo, with no negation, lets `git stash drop` through in that repo; `clear` needs «all» or «clear» too (FRM-426)
 const word = (re: string) => new RegExp(`(?<![\\w-])(?:${re})(?![\\w-])`, 'i');
 const STASH_WORD = word('stash(?:es)?');
-const KILL_WORD = word('(?:drop|kill|delet|clear)\\w*');
-const ALL_WORD = word('all|clear');
+const KILL_WORD = word(
+    'drop(?:s|ped|ping)?|kill(?:s|ed|ing)?|delete(?:s|d)?|deleting|clear(?:s|ed|ing)?',
+);
+// «all the stashes» or «clear» itself: a bare «that's all» never widens a drop into a clear
+const ALL_WORD = word(
+    'clear|all (?:of )?(?:the )?stash(?:es)?|every stash|stash(?:es)? all',
+);
+// a command that points git at another dir by env or flag runs where the word never named
+const REDIRECTED =
+    /(?<![\w-])GIT_(?:DIR|WORK_TREE)=|--(?:git-dir|work-tree)(?![\w-])/;
 const NEGATED =
     /(?<![\w-])(?:do not|never|not|no|without|avoid|stop|leave)(?![\w-])|n['’]t(?![\w-])/i;
 export const isStashKill = (r: Refusal) =>
@@ -193,6 +201,7 @@ export const isStashKill = (r: Refusal) =>
 // every stash drop or clear of the command with the git dir it runs in; a command with a nested shell or eval names
 // none, since a script's stash drop could ride beside a plain one
 export function stashKills(command: string, cwd: string, ctx: Context = {}) {
+    if (REDIRECTED.test(command)) return [];
     const list = commands(parse(command), cwd);
     if (list.some((c) => SHELLS.has(c.name) || c.name === 'eval')) return [];
     return list.flatMap((c) => {

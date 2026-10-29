@@ -365,6 +365,20 @@ test('three tasks ended and one still running: only the running one reads as wai
     );
 });
 
+test('a Stop listing a task whose own status says it ended reads it done, not running', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await $.classic.Stop({
+        background_tasks: [
+            { ...task('t9', 'subagent', 'Read watches'), status: 'completed' },
+        ],
+        last_assistant_message: 'spawned it.',
+        session_id: SID,
+        stop_hook_active: false,
+    });
+    expect(await wait(ui)).toBe('🔭 🦅 scout done');
+});
+
 test('a notice that reaches the session as a prompt settles the task too', async ($, on) => {
     world(on);
     on('prompt.submit', (_$, e) => ({ text: e.text }));

@@ -98,6 +98,34 @@ test("a negated kill ask keeps the refusal: «don't drop the stash in bytes»", 
     expect(ran).toEqual([]);
 });
 
+for (const redirected of [
+    'GIT_DIR=/home/frame/.git git -C ~/projects/bytes stash drop',
+    'git --git-dir=/home/frame/.git -C ~/projects/bytes stash drop',
+    'git --work-tree=/home/frame -C ~/projects/bytes stash drop',
+])
+    test(`a drop pointed at another repo by env or flag stays refused: ${redirected.slice(0, 40)}`, async ($, on) => {
+        const { ran } = world(on);
+        await dimaSays($, 'kill the stash in bytes git');
+        expect((await bash($, redirected)).deny).toContain(THROWN);
+        expect(ran).toEqual([]);
+    });
+
+test("«that's all» never widens a drop into a stash clear", async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, "drop the stash in bytes, that's all");
+    expect(
+        (await bash($, 'git -C ~/projects/bytes stash clear')).deny,
+    ).toContain(THROWN);
+    expect(ran).toEqual([]);
+});
+
+test('«clearly» is not a kill verb', async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, 'clearly the bytes stash matters, build it');
+    expect((await bash($, DROP_BYTES)).deny).toContain(THROWN);
+    expect(ran).toEqual([]);
+});
+
 test('a negated ask keeps the refusal', async ($, on) => {
     const { ran } = world(on);
     await dimaSays($, "don't touch the stash in bytes");

@@ -3459,16 +3459,30 @@ function waitsOf(
     tasks: readonly BackgroundTask[] | undefined,
 ): Pick<Reply, 'wait' | 'waits' | 'tasks'> {
     if (said) return { wait: said };
+    // a Stop may still list a task whose own status says it ended: read as the end notice would
+    const ended = (status: string): BackgroundTask['state'] =>
+        /^(?:completed|failed|killed|stopped)/i.test(status)
+            ? /^completed/i.test(status)
+                ? 'done'
+                : 'failed'
+            : undefined;
+    const listed = tasks?.map((t) => ({
+        ...t,
+        state: ended((t as { status?: string }).status ?? '') ?? t.state,
+    }));
     return {
-        tasks: tasks?.map(({ agent_type, command, description, id, name }) => ({
-            agent_type,
-            command,
-            description,
-            id,
-            name,
-        })),
-        wait: backgroundWait(tasks),
-        waits: backgroundWaits(tasks),
+        tasks: listed?.map(
+            ({ agent_type, command, description, id, name, state }) => ({
+                agent_type,
+                command,
+                description,
+                id,
+                name,
+                ...(state ? { state } : {}),
+            }),
+        ),
+        wait: backgroundWait(listed),
+        waits: backgroundWaits(listed),
     };
 }
 
