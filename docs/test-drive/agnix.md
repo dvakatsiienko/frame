@@ -8,7 +8,7 @@ dies-when: the verdict line below is written
 
 Ticket: none (pocket PK-203, the system checkup)
 
-**test card:** we believe agnix catches config defects no check of ours sees (frontmatter that a strict parser rejects, settings keys cc ignores, hook schema slips) · we test it by running it as a `cclio:system-checkup` check over `~/frame` on every checkup run, and once over `~/projects/bytes` · we measure findings per run, real vs noise (each one opened at its spot), seconds, and how many real ones no check of ours caught · we're right if each run surfaces at least one real defect nobody else caught, or the noise stays under 50 % once our layout's false positives are suppressed in `.agnix.toml`
+**test card:** we believe agnix catches config defects no check of ours sees (frontmatter that a strict parser rejects, settings keys cc ignores, hook schema slips) · we test it by running it as a `clio:system-checkup` check over `~/frame` on every checkup run, and once over `~/projects/bytes` · we measure findings per run, real vs noise (each one opened at its spot), seconds, and how many real ones no check of ours caught · we're right if each run surfaces at least one real defect nobody else caught, or the noise stays under 50 % once our layout's false positives are suppressed in `.agnix.toml`
 **kill rule:** two runs in a row with only noise — drop it; it needs telemetry on, or a network call beyond the npm fetch — drop it
 
 the run: `npx -y agnix@<version> --target claude-code --format json .` from `~/frame` (flags before the path; read-only unless `--fix` is passed, telemetry off by default — `agnix telemetry status`).

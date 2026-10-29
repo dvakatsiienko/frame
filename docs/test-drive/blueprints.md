@@ -17,17 +17,17 @@ born 2026-10-18 from the viz-tool shape (PK-172, dima's inbox wish): 3 research 
 ## stress list
 
 - a rename in n8n: do the arrows keyed by that name survive
-- his unsaved tab while cclio writes through the REST API
+- his unsaved tab while clio writes through the REST API
 - the memory map, 50+ tiles: does Tidy up keep it readable
 - an A/B round: the same blueprint in all three, his pick
 - an automation that fails: does the run history show why
 
-## unload ledger — what each automation takes off cclio
+## unload ledger — what each automation takes off clio
 
 one line per automation: the duty it took over, that duty's cost before (tool calls and turns per session, from the transcripts via `duckdb`), the failure it removes, and the cost after. the trial's «does n8n unload the flow» verdict reads this, never a feeling.
 
 - 🔴 ci watch · before: the boot arms ci-watch (1 call), it fires on stale reds (10-18: one wake on 2-day-old runs, a re-arm call), dies at 6 h · removes: stale-red wakes, the 6 h death · after: 0 calls until ci-watch arming leaves the boot (dima's call: it also wakes a turn mid-session, n8n cannot)
-- 🎼📬 composer receipts · before: a bounced receipt meant the boot polled the vault file (10-18: ~80 s wait loop) · removes: a lost receipt · after: the digest prints them; the wait loop stays until the receipt is trusted
+- 🎼📬 helga receipts · before: a bounced receipt meant the boot polled the vault file (10-18: ~80 s wait loop) · removes: a lost receipt · after: the digest prints them; the wait loop stays until the receipt is trusted
 
 ## rounds
 

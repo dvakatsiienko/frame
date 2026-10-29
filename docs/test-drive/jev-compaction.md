@@ -3,7 +3,7 @@ status: frozen
 until: 2026-11-02
 ---
 
-# jev compaction — fast-jev-compaction on cclio checkpoints, vs the built-in summary
+# jev compaction — fast-jev-compaction on clio checkpoints, vs the built-in summary
 
 Ticket: [FRM-268](https://linear.app/x-com/issue/FRM-268)
 dies-when: the verdict line below is written (2026-10-31 — frozen with the jev credit 10-05 → ~10-18, dima) — adopted at cclio scope, or uninstalled
@@ -29,8 +29,8 @@ https://github.com/tamaratran/fast-jev-compaction»
 
 ## stress list
 
-- a checkpoint on a long cclio session (> 300k): seconds, the toast's «kept N/M messages», context after
-- the next turn after it: does cclio still name every open ⏳ ask and the live members without re-reading
+- a checkpoint on a long clio session (> 300k): seconds, the toast's «kept N/M messages», context after
+- the next turn after it: does clio still name every open ⏳ ask and the live members without re-reading
 - a short session: does it fall back to the built-in summary cleanly
 - a session heavy in pasted screenshots (images are not tool results)
 - the cost: jev requests and ¢ per compaction (the state is resent with every request)

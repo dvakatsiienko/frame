@@ -11,7 +11,7 @@ dima, 2026-10-12 (o92): «I generally don't like orbit items to expire at all, b
 
 ## the use, during the drive
 
-- cclio sets `dies` only on a next-move pick («next: siesta or the sweep?»), as `dies: 2`; a proposal, a decision or a grill question never expires
+- clio sets `dies` only on a next-move pick («next: siesta or the sweep?»), as `dies: 2`; a proposal, a decision or a grill question never expires
 - each round: an ask that expired, whether dima later asked about it (a miss) or never did (a win)
 
 ## the verdict question

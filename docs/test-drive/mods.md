@@ -16,7 +16,7 @@ Ticket: [FRM-303](https://linear.app/x-com/issue/FRM-303)
 ## stress list — one real try each
 
 - holds: two live sessions on one file, the second refused with the holder named · a Bash-written file (heredoc, `sd`) — the Edit/Write hook never sees it, so a hold is never taken: measure how often the fleet writes through Bash
-- holds across a `--bg` coder and cclio on frame main (the CST's mods-coder plan)
+- holds across a `--bg` codie and clio on frame main (the CST's mods-coder plan)
 - asks: the ⏳ block in stash matches the reply's bucket, resolved items leave (FRM-303 item 3)
 - keep-hot: a ping keeps the switch on (FRM-302 — 🔥 now lives in the stash store and survives a reload; the 10-04 untick came with no source edit in its window, so its trigger is unproven — a live tick through a ping is the check)
 - afk: on → a shift's pings go bare; off → the missed-brief prints
@@ -26,18 +26,18 @@ Ticket: [FRM-303](https://linear.app/x-com/issue/FRM-303)
 
 ## surface matrix — one sitting with dima (FRM-319)
 
-the coder cannot see a surface; dima walks each, ticks what holds, notes what does not. open one session per surface on frame, `/board` in each.
+codie cannot see a surface; dima walks each, ticks what holds, notes what does not. open one session per surface on frame, `/board` in each.
 
 - **terminal (iTerm2 or Ghostty, pointer reporting on)**
   - [x] the band draws one row: `⏳ n open`, `📋` `🔥` `💨` `🚦` and the folder
   - [x] hovering each control shows its card on the row, the toggles naming their next press
   - [x] a click on the band, then `c` copies the asks, `b` folds the board, `f` folds the asks
-  - [x] the board pane: cclio pinned and bold, aligned columns, `⏳ 0` dimmed, a 🔭 line under a waiting thread
+  - [x] the board pane: clio pinned and bold, aligned columns, `⏳ 0` dimmed, a 🔭 line under a waiting thread
   - [x] breather's band shows during a long turn and leaves when it ends
 - **desktop Code tab**
   - [x] the same band, the on-state toggles as a light chip, never black
   - [x] the key badges sit in the hover cards, none on the icons
-  - [x] a press on a board name (or cclio's `↗`) opens that session in the desktop
+  - [x] a press on a board name (or clio's `↗`) opens that session in the desktop
   - [x] a ticket link opens linear; `FRM-306` stays on one line
 - **Warp**
   - [x] the band draws and its hover cards show (Warp reported the pointer on 10-05)

@@ -13,7 +13,7 @@ born 2026-10-15 on dima's word (matt pocock's «mutation testing is awesome» sh
 our `red-proof` is the hand-run single mutant; stryker runs every mutant of a file.
 
 **test card:** we believe a mutation score shows which of our tests catch nothing, and agents write tighter tests
-from its survivor list · we test it by a run on `script/lib` modules a coder or cclio touched, survivors read and
+from its survivor list · we test it by a run on `script/lib` modules a codie or clio touched, survivors read and
 killed · we measure the mutation score before and after, minutes per run, tests added per survivor killed, false
 survivors (equivalent mutants) · we're right if a run names at least one real gap per module and stays under ~2 min
 on a touched file

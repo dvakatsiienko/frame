@@ -74,7 +74,7 @@ Ticket: none
 - effort `xhigh` · $1.00 flat · slowest fixed effort
 - effort `auto` (the default!) · metered: $0.10/ACU + $0.005/search + $0.02/email + $0.07/phone, default cap **$5** · variable-scope lists · ⚠️ omitting `effort` means metered up to $5 — on a $10/month free tier one careless call can eat half the month
 - effort `ultra` · metered, same rates, default cap **$20** · exhaustive lists, ~30 min typical, up to 3 h · a single default ultra run exceeds our whole free month; must carry `budget.maxCostDollars` ($1 minimum)
-- `budget.maxCostDollars` · $1–$100 · **auto and ultra only**; a fixed effort + budget → 400 (measured by cclio today)
+- `budget.maxCostDollars` · $1–$100 · **auto and ultra only**; a fixed effort + budget → 400 (measured by clio today)
 - `budget.maxDurationSeconds` · 300–10800 · **ultra only**; ends with `stopReason:"time_limit_reached"`
 - stop · `POST /agent/runs/{id}/stop` · keep partial results, bill to the stop · ultra only; `/cancel` discards
 - `stopReason` · `schema_satisfied` · `budget_reached` · `time_limit_reached` · `stopped` · `error` · `cancelled` · `schema_satisfied` still allows nulls in required fields — shape, not facts

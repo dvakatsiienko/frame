@@ -13,7 +13,7 @@ born 2026-10-16 on dima's tick (o14), from PK-153 (his inbox ask: is there a too
 **test card:** we believe pm2 makes a node daemon easier to run, read and restart than a hand-made plist · we test it by moving `x-cc-otel` onto it and reaching for it on every «is the tap up», «why did it stop», «restart it» ask · we measure the calls and seconds per ask against the launchd door (`launchctl print` + the log file), restarts survived, the tap's jsonl gaps · we're right if every such ask is one pm2 call, the tap survives a crash and a reboot, and no day loses telemetry
 **kill rule:** a telemetry gap pm2 caused, or `pm2 startup` fails to bring the tap back after a login
 
-dima's two questions the trial answers too: «I saw it has a pretty dashboard» (`pm2 monit` is the free terminal view; PM2 Plus, the web one, has no free plan — a free web dashboard is on the stress list) and «is it useful for yourself, or a terminal view meant for me?» (for cclio: `pm2 jlist` json, `pm2 logs <name> --nostream`, restart by name; the rounds measure it).
+dima's two questions the trial answers too: «I saw it has a pretty dashboard» (`pm2 monit` is the free terminal view; PM2 Plus, the web one, has no free plan — a free web dashboard is on the stress list) and «is it useful for yourself, or a terminal view meant for me?» (for clio: `pm2 jlist` json, `pm2 logs <name> --nostream`, restart by name; the rounds measure it).
 
 ## stress list
 

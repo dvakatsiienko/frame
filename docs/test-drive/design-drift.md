@@ -3,7 +3,7 @@ status: adopted
 until: 2026-10-14
 ---
 
-# design drift — a small UI ask on a designed app goes to a coder, no designer
+# design drift — a small UI ask on a designed app goes to a codie, no designer
 
 dima, 2026-10-11: «let's keep this trial reminding me to run a coder on applicable apps, and change it so it is not only for atelier but for any app that has its design … our design-covered apps are growing; use this trial on any app that is processed via the new design flow (`x:crew-designer`).»
 

@@ -14,10 +14,10 @@ window: 2026-10-06 → 2026-10-20 (two weeks). the fold: one line in `rules/flee
 ## stress list — one real use each
 
 - an «is it us or cc?» probe (the 10-06 fork gate took a 3-minute researcher)
-- a model A/B without our memory (the ccrow arms, FRM-327)
+- a model A/B without our memory (the crow arms, FRM-327)
 - an upstream bug repro on anthropics/claude-code
 - a blind lane (`advise-project-approach`)
-- the memory weight: bare `/context` vs a cclio boot (FRM-267)
+- the memory weight: bare `/context` vs a clio boot (FRM-267)
 
 ## the count
 

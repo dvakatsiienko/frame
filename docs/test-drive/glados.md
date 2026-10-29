@@ -4,11 +4,11 @@ until: 2026-11-03
 dies-when: the verdict line below is written
 ---
 
-# glados — a rare GLaDOS line over output-fun, in cclio's thread
+# glados — a rare GLaDOS line over output-fun, in clio's thread
 
 Ticket: none
 
-**test card:** we believe a rare, event-driven GLaDOS line brightens dima's day without slowing the work · we test it by running `output-glados` as cclio's style for 7 days · we measure per day: lines fired, the event behind each, any line fired mid-task or on a bad moment (a miss), dima's reaction (laughed, ignored, annoyed) · we're right if dima says it brightens the day and no line ever landed on a bad moment twice
+**test card:** we believe a rare, event-driven GLaDOS line brightens dima's day without slowing the work · we test it by running `output-glados` as clio's style for 7 days · we measure per day: lines fired, the event behind each, any line fired mid-task or on a bad moment (a miss), dima's reaction (laughed, ignored, annoyed) · we're right if dima says it brightens the day and no line ever landed on a bad moment twice
 **kill rule:** dima says it grates once, or two lines land on a bad moment — then trash `home/.claude/output-styles/output-glados.md` and drop the `outputStyle` line in `_clio/.claude/settings.json`
 
 ## stress list

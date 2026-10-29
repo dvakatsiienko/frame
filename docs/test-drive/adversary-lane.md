@@ -159,4 +159,4 @@ were wrong. the review is the gate, not the receipt.
 - how either behaves on a diff much larger than ~2900 lines
 - greptile's per-review cost in money
 
-**verdict — closed, cclio's pick, dima's tick (o151, 18:12):** a one-shot greptile vs coderabbit measurement (09-10); its numbers fed `review-stack`, and coderabbit runs on as its own test drive.
+**verdict — closed, clio's pick, dima's tick (o151, 18:12):** a one-shot greptile vs coderabbit measurement (09-10); its numbers fed `review-stack`, and coderabbit runs on as its own test drive.

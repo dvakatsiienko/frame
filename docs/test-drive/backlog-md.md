@@ -3,7 +3,7 @@ status: adopted
 until: 2026-10-11
 ---
 
-# test drive — Backlog.md as cclio's pocket
+# test drive — Backlog.md as clio's pocket
 
 Ticket: none · window 2026-10-09 → 2026-10-23 · verdict date lives here only
 

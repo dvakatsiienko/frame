@@ -4,7 +4,7 @@ until: 2026-10-11
 dies-when: dima picks the quick-lane default model
 ---
 
-# test drive — sonnet 5.5 as a quick-lane coder
+# test drive — sonnet 5.5 as a quick-lane codie
 
 Ticket: none (pocket PK-18)
 

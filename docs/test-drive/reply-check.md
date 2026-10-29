@@ -12,7 +12,7 @@ the drive answers one question per rule — does it fire, how often, and is a hi
 
 - bare ticket id · table · middot chain · circled digits · commit hash in prose — each rule: count over
   two weeks, and 5 hits read by hand for false positives
-- sessions it runs in: cclio and coders (user scope) — which members break which rule
+- sessions it runs in: clio and codies (user scope) — which members break which rule
 - latency: stays under 100 ms per stop
 
 ## the rule for the verdict (dima, 2026-10-02)

@@ -6,7 +6,7 @@ dies-when: the verdict line below is written
 
 # milestone-first — scoping the fleet's work through milestones before tickets and the pocket
 
-Ticket: FRM-72 (the pm story; dima's words: cclio pocket PK-103, W72, W74–W76)
+Ticket: FRM-72 (the pm story; dima's words: clio pocket PK-103, W72, W74–W76)
 
 born 2026-10-22 on dima's word (PK-103 W72): «once the pm revamp settles, review our milestones and start test-driving a milestone-first approach; a good way to scope through milestones may solve much of what follows, the pocket clutter included». the setup landed the same day: `craft-pm` § milestones first, the initiative's milestone queue and the boot's roadmap board (grill 7).
 

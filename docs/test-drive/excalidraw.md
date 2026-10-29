@@ -2,7 +2,7 @@
 status: live
 until: 2026-11-02
 dies-when: the verdict line below is written
-fits: cclio
+fits: clio
 ---
 
 # 🎨 excalidraw — the blueprint tool on trial against draw.io, local files, no Excalidraw+
@@ -11,7 +11,7 @@ Ticket: FRM-450
 
 born 2026-10-25 from the PK-276 research and bench (dima: «let's try Excalidraw for a week … let's try without comments»). the research and the bench: `~/.local/share/research-lanes/excalidraw/2026-10-25-vs-drawio/` (`web-digest.md`, `source-lane.md`, `bench/`). draw.io stays the fallback until the verdict.
 
-**test card:** we believe Excalidraw boards read better for dima and render faster, at an acceptable cost in file noise · we test it by moving both live boards over (the pm board, the tickets flow) and running the week's blueprint asks on Excalidraw only: every redraw, every read-back of his edit · we measure per round: cclio's tokens and tool calls to draw and to read back, render seconds, the read-back right (y/n), what got lost from the draw.io board, his look-and-feel word · we're right if every edit of his reads back right and he picks Excalidraw's look over draw.io's at the verdict
+**test card:** we believe Excalidraw boards read better for dima and render faster, at an acceptable cost in file noise · we test it by moving both live boards over (the pm board, the tickets flow) and running the week's blueprint asks on Excalidraw only: every redraw, every read-back of his edit · we measure per round: clio's tokens and tool calls to draw and to read back, render seconds, the read-back right (y/n), what got lost from the draw.io board, his look-and-feel word · we're right if every edit of his reads back right and he picks Excalidraw's look over draw.io's at the verdict
 
 **kill rule:** an edit of his read back wrong twice · a redraw costs more than twice the draw.io builder's calls three rounds running · he calls it clunky twice
 

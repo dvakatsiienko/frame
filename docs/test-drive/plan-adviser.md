@@ -1,7 +1,7 @@
 ---
 status: adopted
 until: 2026-10-11
-dies-when: FRM-287's verdict — the adviser lands in cclio:shape-idea (this log becomes its evidence) or is dropped
+dies-when: FRM-287's verdict — the adviser lands in clio:shape-idea (this log becomes its evidence) or is dropped
 ---
 
 # plan adviser — three critics on one build plan

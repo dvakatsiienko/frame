@@ -26,11 +26,11 @@ Ticket: none
 
 ## candidate uses — one real job each
 
-1. **a pr-lane coder** — [BYT-97](https://linear.app/x-com/issue/BYT-97) knip report, the first job
+1. **a pr-lane codie** — [BYT-97](https://linear.app/x-com/issue/BYT-97) knip report, the first job
 2. **a shift** — a planned bytes night runs in the cloud instead of on the mac (after FRM-266's armor)
 3. **parallel prs** — two independent tickets at once, one VM each
 4. **the opus research lane** — the second half of a `parallel` or `adhd` round, run in the cloud
-5. **the verifier** — `x:crew-verifier` on a pr, with browserbase for the exit lines (needs the key in the environment's api credentials)
+5. **sixth sense** — `x:crew-sixth-sense` on a pr, with browserbase for the exit lines (needs the key in the environment's api credentials)
 6. **post-deploy check** — a routine after a vercel deploy (`/schedule`, api trigger), checked through browserbase
 7. **a frame job** — proves the git-crypt read: a fresh clone commits normally around `gmail/blocklist.json`
 8. **plugin `x` in the VM** — the environment's setup script sparse-clones frame and installs `x` (probe 2: reachable + installs; the next-session load is unproven)

@@ -34,8 +34,8 @@ the question: apps evolve and drift from their prototypes. keep the design alive
 throwaways? dima's asks, near-verbatim:
 
 - how do other people solve it? does any modern llm-based dev flow work this way?
-- the live mode he would pick with no quota limit: every coder + verifier spawn also gets a designer; an ask («add a
-  button») goes to the designer first, dima approves the drawing, then the coder builds it
+- the live mode he would pick with no quota limit: every codie + sixth sense spawn also gets a designer; an ask («add a
+  button») goes to the designer first, dima approves the drawing, then codie builds it
 - his main concern is the token cost — without it, he would just adopt the live mode and test it in place
 - the flow is llm development **with a human in it**: dima is often present and steers designs and apps
 - a solid mock is expensive on his side too (he thinks through and picks an art direction each time), so he would not

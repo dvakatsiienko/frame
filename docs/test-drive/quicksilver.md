@@ -73,9 +73,9 @@ every round runs the same ask twice, the usual door and the qs door, and logs on
 
 ## stress list
 
-1. **`filter` repo files** — a coder asks «which of the ~190 files in `bytes/apps/atelier/src` touch take selection?». win: survivors ⊇ files the coder later edits, ≥70 % fewer tokens than an Explore agent. risk: literal reading misses an indirect file (a hook that re-exports).
+1. **`filter` repo files** — a codie asks «which of the ~190 files in `bytes/apps/atelier/src` touch take selection?». win: survivors ⊇ files codie later edits, ≥70 % fewer tokens than an Explore agent. risk: literal reading misses an indirect file (a hook that re-exports).
 2. **`rank` where-is-X** — «where is the npsso refresh handled in trophy-sys?», top 5. win: the real file at rank 1–3 in <10 s. risk: an `rg` on a good identifier ties it for free.
-3. **`filter --lines` ci log** — a verifier on a 3,000-line github actions log («does this line report the root failure, not a cascade?»). win: the real cause in the top 3. risk: 📌 expected to lose to `gh run view --log-failed` plus a grep, which is free and exact.
+3. **`filter --lines` ci log** — a sixth sense on a 3,000-line github actions log («does this line report the root failure, not a cascade?»). win: the real cause in the top 3. risk: 📌 expected to lose to `gh run view --log-failed` plus a grep, which is free and exact.
 4. **`classify` knip findings** — the 73 findings into `dead`, `false-positive`, `keep-exported`. win: ≥90 % agreement with claude's own labels on a 20-item sample. risk: 📌 expected loss — deciding «dead» needs cross-file reasoning jev cannot do.
 5. **`classify --labels-json` evergreen changelog** — which release-note entries are borrowable for us (`borrow`, `irrelevant`, `watch`). win: claude reads only `borrow` + `?`, nothing borrowable dropped. risk: subjective labels, the bench's weak spot.
 6. **`rank` flawlog vs rules** — per flawlog line, the top-3 rule chunks from `rules/` that already state it. win: dupes found that the flush agreed with. risk: paraphrase and indirection.
@@ -84,7 +84,7 @@ every round runs the same ask twice, the usual door and the qs door, and logs on
 9. **`find` in the chords press log** — «the press where a chord was dropped» in the jsonl. win: the right line in the top 5. risk: 📌 expected loss — the needle is structured (timestamps, keycodes); `jq` on fields is exact and free, and jev is weak on numbers.
 10. **`classify` linear staleness** — 100+ open tickets as `live`, `stale`, `dupe-ish`. win: matches a `board-sweep` verdict on ≥85 % at a fraction of its cost. risk: 📌 expected loss — staleness is dates plus repo state, jev's documented blind spots.
 11. **`ask` over a big doc** — «does this cc release note fix spares booting without AGENTS.md?» (the [#95589](https://github.com/anthropics/claude-code/issues/95589) watch) or «does this renovate changelog name a breaking change to X?». win: correct yes/no, claude opens only the positives. risk: a large irrelevant state lowers accuracy (jaggedness #5).
-12. **`filter` a coder transcript** — «is this turn dima steering the coder?» over a long session jsonl, for the retro. win: every steer found. risk: transcripts carry secrets and his words — see weak sides.
+12. **`filter` a codie transcript** — «is this turn dima steering the coder?» over a long session jsonl, for the retro. win: every steer found. risk: transcripts carry secrets and his words — see weak sides.
 
 ## weak sides
 

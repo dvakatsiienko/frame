@@ -1,7 +1,7 @@
 ---
 status: closed
 until: 2026-10-14
-dies-when: both measurement prs are scored and the two decisions (local order; greptile cli / ci / both) are written into `x:crew-coder`'s «final» chain — then the sheets fold into gh-stack-adoption's decision log and this file is deleted
+dies-when: both measurement prs are scored and the two decisions (local order; greptile cli / ci / both) are written into `x:crew-codie`'s «final» chain — then the sheets fold into gh-stack-adoption's decision log and this file is deleted
 ---
 
 # review stack — the measurement run

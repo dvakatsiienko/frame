@@ -13,8 +13,8 @@ explains the current topic visually: the smallest view that makes the point — 
 
 ## the cases — one real use each
 
-- a mechanism dima asks «how does it work?» about (today's: ccrow's wake → packet → socket → harvest loop)
-- a refactor's file shape before a coder spawns
+- a mechanism dima asks «how does it work?» about (today's: crow's wake → packet → socket → harvest loop)
+- a refactor's file shape before a codie spawns
 - a flow or state model (a mod's hooks, the fleet flow lanes)
 - vs a plain chat answer on the same question: which one landed faster for dima
 - vs the whiteboard ask (dev.fast): does show-me cover the «explain» half, leaving whiteboard the «think together» half?

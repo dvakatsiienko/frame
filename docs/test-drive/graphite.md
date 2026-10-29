@@ -12,13 +12,13 @@ dima, 2026-10-14: «I feel that Graphite will not prove itself either as an adve
 
 **frozen** until a lane has room for it: no capacity on 10-14; re-checked 11-05, when the bigger plan starts. the parallel adversary reviews before it are measured and closed in `review-stack.md` (greptile dropped, coderabbit adopted).
 
-**test card:** we believe graphite's review finds defects coderabbit and the verifier miss, and its stacks make many-lane work easier to land · we test it by one real multi-lane stretch on bytes: its review on 2 coder prs beside coderabbit, and one stack of 3 prs, then the same stack as github native stacked prs · we measure unique true findings, noise, minutes and cost per review; dima's minutes to review and merge a stack, rebase pain, ci runs per stack · we're right if graphite's review finds ≥1 unique true defect per pr on a free quota, or its stack beats github's native one on dima's merge minutes
+**test card:** we believe graphite's review finds defects coderabbit and sixth sense miss, and its stacks make many-lane work easier to land · we test it by one real multi-lane stretch on bytes: its review on 2 codie prs beside coderabbit, and one stack of 3 prs, then the same stack as github native stacked prs · we measure unique true findings, noise, minutes and cost per review; dima's minutes to review and merge a stack, rebase pain, ci runs per stack · we're right if graphite's review finds ≥1 unique true defect per pr on a free quota, or its stack beats github's native one on dima's merge minutes
 
 **kill rule:** no free quota for the review, and github's native stacks match graphite's in the first stack — drop it, keep the experience notes.
 
 ## stress list
 
-- graphite ai review on a coder pr — beside coderabbit's on the same head — unique, true, noise, minutes
+- graphite ai review on a codie pr — beside coderabbit's on the same head — unique, true, noise, minutes
 - a stack of 3 prs in graphite (`gt` cli) — dima's merge minutes, rebases, ci runs
 - the same stack in github native stacked prs — the same numbers
 - graphite's free quota — what it covers, where it stops

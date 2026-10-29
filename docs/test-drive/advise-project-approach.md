@@ -12,7 +12,7 @@ comparables → a recommendation with receipts, a first action that can be prove
 lookups that add nothing.
 
 **the question the test drive answers:** does it change a decision we would have made without it, at a cost worth
-paying? three real uses, then a verdict. adopted → evergreen's skills lane learns the cclio scope.
+paying? three real uses, then a verdict. adopted → evergreen's skills lane learns the clio scope.
 
 **where it fits:** a project-approach question — a stack, build-or-not, a vendor pick, a mid-build course
 correction. not a process question (round 1 showed its report shape bends there).

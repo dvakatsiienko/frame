@@ -1,13 +1,13 @@
 ---
 status: closed
 until: 2026-10-11
-dies-when: the pattern is understood and its answer lives in x:crew-coder or craft-spawning; until then one dated entry per case
+dies-when: the pattern is understood and its answer lives in x:crew-codie or craft-spawning; until then one dated entry per case
 ---
 
-# ctx-burn — coder context growth and window burn, one case per entry
+# ctx-burn — codie context growth and window burn, one case per entry
 
 dima's call (2026-09-12): no context ceilings, no turn caps, auto-compact stays at the max
-(~970k) so a coder never compacts mid-task. trace the cases here instead; when the pattern
+(~970k) so a codie never compacts mid-task. trace the cases here instead; when the pattern
 repeats, dig in. numbers come from the session jsonl (`.message.usage` per assistant turn),
 never from recall. the summing script: `jq` over `~/.claude/projects/<dir>/<session>.jsonl`,
 bucketed by 15 min.

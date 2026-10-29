@@ -10,7 +10,7 @@ Ticket: none
 
 born 2026-10-16 on dima's pick (PK-153): he A/B'd [Launchyard](https://github.com/jayhickey/Launchyard) v1.0.1 against [LaunchManager](https://github.com/Sean10000/LaunchManager) v1.7.1 and liked Launchyard; cclio's recommendation matched (notarized — `spctl` accepted, Developer ID Final Bits LLC; no admin prompt; no network calls; MIT). installed by hand into `/Applications` from the github release; LaunchManager was uninstalled the same day on dima's word («uninstall LaunchManager, keep Launchyard»). a sibling trial, `pm2.md`, ends the same day.
 
-**test card:** we believe one window that lists, starts, stops and shows logs for our ~10 jobs saves dima the `launchctl` + log-file hunt · we test it by dima opening it whenever he wonders «is X running / why did X stop», and cclio asking him to check a job there instead of pasting a command · we measure the asks it answered, the ones it could not (and why), any wrong state it showed · we're right if dima reaches for it on his own and it never shows a wrong state
+**test card:** we believe one window that lists, starts, stops and shows logs for our ~10 jobs saves dima the `launchctl` + log-file hunt · we test it by dima opening it whenever he wonders «is X running / why did X stop», and clio asking him to check a job there instead of pasting a command · we measure the asks it answered, the ones it could not (and why), any wrong state it showed · we're right if dima reaches for it on his own and it never shows a wrong state
 **kill rule:** a wrong running/stopped state, or an edit through the app that breaks a plist
 
 ## stress list

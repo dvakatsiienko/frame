@@ -23,7 +23,7 @@ a free, local, MIT desktop code-review canvas (a fork of VS Code's open-source c
 
 - review the cli a/b/c arms (FRM-284) when they report — two codebases, diagrams per arm
 - a scratchpad «show me how X works» beside `/show-me` on the same question
-- a pr review on a real coder pr
+- a pr review on a real codie pr
 - ⇧⌘C a block back to the agent and redraw
 - `whiteboard share` — what the link carries (an immutable copy anyone can download)
 

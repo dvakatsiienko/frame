@@ -14,7 +14,7 @@ review tools out there. i don't know why it performs not well. maybe free tier C
 review quality lower?»
 
 the question: why does coderabbit find nothing on our prs, when the other layers each find something only they see?
-crew-coder's rule cuts a layer with no unique finds after two real prs; this test drive decides with data instead.
+crew-codie's rule cuts a layer with no unique finds after two real prs; this test drive decides with data instead.
 
 ## day 0 — to read before the next round
 
@@ -24,7 +24,7 @@ crew-coder's rule cuts a layer with no unique finds after two real prs; this tes
   does the local cli see the whole branch or only the working diff?
 - its config: a `.coderabbit.yaml` with path instructions and review profile (chill / assertive) — we run defaults
 
-## stress list — one real pr each, unique finds counted against code-review, the verifier and the ci reviewer
+## stress list — one real pr each, unique finds counted against code-review, sixth sense and the ci reviewer
 
 - the local cli with defaults (today's lane)
 - the local cli with an assertive profile + path instructions

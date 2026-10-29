@@ -11,7 +11,7 @@ why (dima, 2026-10-06): «very-very useful». the question: does an outside read
 ## how it runs
 
 - 📌 changed 2026-10-07 (dima): no retro session, ever — a spawned reader pays the whole transcript again (an 800k coder → an 800k retro). coders and verifiers read the SKILL.md at their last act; cclio's runs in its own thread, typed by dima. the old shape, kept for the record: user-only (`disable-model-invocation`), so it ran through the spawn door: a `--bg` session whose prompt starts with `/mattpocock-skills:retro <transcript path>` — or dima types `/retro` in a session
-- at each halt: retro over the day's coder transcripts, beside the coders' self-retros; count findings each side, overlap, and how many dima keeps
+- at each halt: retro over the day's codie transcripts, beside the codies' self-retros; count findings each side, overlap, and how many dima keeps
 
 ## log
 

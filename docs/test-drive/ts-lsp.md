@@ -43,7 +43,7 @@ is … pull it into our stack and measure it under a weight for 2 weeks».
 ## measure
 
 `python3 docs/test-drive/ts-lsp/usage.py [since]` — LSP calls per session with the operation mix, beside
-the grep calls in the same session. read it at every halt; a coder retro names one case where LSP
+the grep calls in the same session. read it at every halt; a codie retro names one case where LSP
 beat grep or lost to it.
 
 ## log

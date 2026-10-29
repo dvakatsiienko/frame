@@ -25,14 +25,14 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - the fold pass covered memory, rules, recipes and the pocket, and «the sweep is done» let dima read linear as covered too; name which surfaces a pass did NOT touch (00:35)
 - a split by string index took the roadmap section and the pacing check off the boot; check every heading the proposal says stays (r31, wishkeeper)
 - an addition applied without its tick (r5, wishkeeper)
-- eleven rounds graded «keep unless proven dead» because the recipe never carried dima's 10-07 delete-first brief (r17–r28, ccrow)
+- eleven rounds graded «keep unless proven dead» because the recipe never carried dima's 10-07 delete-first brief (r17–r28, crow)
 - 27 files passed «read whole, unchanged» with the guides out of context (run #2's first pass)
 - a rough number (81.2k) turned into a target; it is a direction (dima, 00:00)
 
 ### tips
 - measure loaded bytes (column-0 comments stripped), never disk bytes alone
 - the quote gate before every apply: `python3 _clio/script/quote-diff.py HEAD <files>`
-- one proposal file per round wakes ccrow before dima's tick: two catches tonight (the 10-07 brief, A2)
+- one proposal file per round wakes crow before dima's tick: two catches tonight (the 10-07 brief, A2)
 - read the guides whole at every re-entry
 - a zsh script runs by path, never under `bash`
 
@@ -132,7 +132,7 @@ born place: a **terminal** `claude` in `~/frame/_clio` (not the Code tab), monit
 
 ### `/skill-doctor` (now the plugin manager's Stats tab, cc 2.1.292) · 7 days
 
-- most tokens attributed: `x:cmt` 162m (236×) · `x:ftr` 117m (27×) · `x:github-contrib` 116m (65×) · `x:guide-code` 113m (123×) · `crew-coder` 80m (44×) · `x:pm` 76m (135×) · `writing-for-agents` 57m (107×)
+- most tokens attributed: `x:cmt` 162m (236×) · `x:ftr` 117m (27×) · `x:github-contrib` 116m (65×) · `x:guide-code` 113m (123×) · `crew-codie` 80m (44×) · `x:pm` 76m (135×) · `writing-for-agents` 57m (107×)
 - heaviest listings (context every turn): `typesafe-ai` ~230 (4 uses) · `writing-for-humans` ~160 · `humanize` ~160 · `code-review` ~150 · `guide-conventions` ~130 · `guide-code` ~120 · `ai-check` ~120
 - plugins unused: `context7`, 15 days → feeds the ctx7 verdict (10-09)
 - 📌 «7d tokens» counts the whole session around a load, so `x:ftr` at 4.3m per load is likely context, not the skill itself (inference)
@@ -144,14 +144,14 @@ born place: a **terminal** `claude` in `~/frame/_clio` (not the Code tab), monit
 - specs are archived, never deleted → `docs/agents/issue-tracker.md`, pocket 34
 - the delete digest: yes — «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»
 - provenance light: «i agree if it makes sense to you»
-- `x:sweep-issues` + `cclio:report` deleted (their two ideas already live in `crew-verifier`) · audit slice 1: `_reminders` off the resident set
+- `x:sweep-issues` + `clio:report` deleted (their two ideas already live in `crew-sixth-sense`) · audit slice 1: `_reminders` off the resident set
 
 ## ledger — one line per phase (tool calls and agents read from the transcript with duckdb)
 
-- 01 baseline · 18:04–18:11 · 20 calls · 1 agent (prompt-audit, opus, 241k) · 5h 6 % at start · skip next time: the compacted-thread baseline — run the fresh boot first (ccrow's catch)
+- 01 baseline · 18:04–18:11 · 20 calls · 1 agent (prompt-audit, opus, 241k) · 5h 6 % at start · skip next time: the compacted-thread baseline — run the fresh boot first (crow's catch)
 - 02 research · 18:11–18:18 · 20 calls · 1 agent (researcher, 105k) + exa + parallel · 5h ~8 % at end · skip next time: nothing; the yt shelf + lanes ran clean
-- between · 18:18–19:16 · 62 calls · 0 cclio agents (coder + verifier as `--bg`, two terminal sessions by dima) · 5h ~37 % at end, mostly the FRM-340 loop · not sweep work: the telemetry lane, the doctors, verdict batches
-- 02 → 03 gap · 18:18–19:44 · **86 min** with phase 03 unopened while side asks shipped (a second cli coder, the doctor slice, hook and rule edits) — the number to beat next sweep; caught by ccrow. from here: coder pings get one line, new non-sweep asks go to the pocket unless dima says «now»
+- between · 18:18–19:16 · 62 calls · 0 clio agents (codie + sixth sense as `--bg`, two terminal sessions by dima) · 5h ~37 % at end, mostly the FRM-340 loop · not sweep work: the telemetry lane, the doctors, verdict batches
+- 02 → 03 gap · 18:18–19:44 · **86 min** with phase 03 unopened while side asks shipped (a second cli codie, the doctor slice, hook and rule edits) — the number to beat next sweep; caught by crow. from here: codie pings get one line, new non-sweep asks go to the pocket unless dima says «now»
 
 ### recipes as a feature · dima's verdicts · 2026-10-07 20:19
 

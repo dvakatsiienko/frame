@@ -11,8 +11,8 @@ why (dima, 2026-10-06): «it changes a coder's approach a lot» — a test drive
 
 ## how it runs
 
-- `x:crew-coder` names it for a ticket whose exit lines are tests (how-you-work.md); every coder report says whether it loaded
-- arm a vs arm b: tickets with tdd loaded vs comparable tickets without — the verifier's findings per ticket, rounds to clean, tests that were proven red, minutes
+- `x:crew-codie` names it for a ticket whose exit lines are tests (how-you-work.md); every codie report says whether it loaded
+- arm a vs arm b: tickets with tdd loaded vs comparable tickets without — sixth sense's findings per ticket, rounds to clean, tests that were proven red, minutes
 
 ## stress list
 

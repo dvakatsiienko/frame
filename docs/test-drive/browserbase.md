@@ -20,14 +20,14 @@ Ticket: none
 
 - strong: contexts (a login persists, encrypted, until deleted) · live view (a human takes over a live session for a login or 2FA, the agent continues) · replay + network/console inspector per session · CDP-standard, so `agent-browser` drives it with no new verbs
 - weak: the free hour is tiny against a 1-minute minimum · fetch runs no JS · functions have no secrets store and no cron · protected sites stay protected on free · real-user signal is thin (flaky on heavy SPAs, cost at scale)
-- 🚫 proxies, captcha solving and stealth against a site that blocks us are routing around a block — out for cclio whatever the plan
+- 🚫 proxies, captcha solving and stealth against a site that blocks us are routing around a block — out for clio whatever the plan
 
 ## stress list — one real fleet ask per feature
 
 1. **`agent-browser -p browserbase` from the mac** — the essentials on a bytes app at 390 / 1280; compare minutes, latency, parity with local
 2. **a cloud cc session drives it** — `claude --cloud` on bytes (no git-crypt there), key through the pro/max credential proxy, not an env var; the cloud VM has no full browser, so this is the pairing the test drive exists to prove
 3. **context + live view** — dima logs in once by hand to a site he owns an account on, the session closes with `persist: true`, a later session reuses it; measure how long the login survives
-4. **replay as visibility** — a verifier round in a browserbase session, dima watches the replay link instead of reading the report
+4. **replay as visibility** — a sixth sense round in a browserbase session, dima watches the replay link instead of reading the report
 5. **fetch / search vs `parallel-cli` / WebFetch** — the same 5 lookups through each, one of them a JS shell page
 6. **one function** — a tiny TypeScript probe deployed with `bb functions`, invoked over http; note what the missing secrets store costs
 7. **the 3 agent runs** — one extraction, one multi-step with a human checkpoint, one research; each beside the same task done by a cc session

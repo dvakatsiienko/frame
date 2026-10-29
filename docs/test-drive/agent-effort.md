@@ -8,7 +8,7 @@ Ticket: none
 
 # per-call effort on one-off subagents — does `high` pay over `medium`?
 
-the `Agent` tool takes `effort` per call since cc 2.1.292; the harness lets cclio pass it only where a
+the `Agent` tool takes `effort` per call since cc 2.1.292; the harness lets clio pass it only where a
 memory line names the effort — `craft-spawning`'s 🎚️ line (dima's yes, 2026-10-08). a one-off
 `general-purpose` agent otherwise inherits the session's effort.
 

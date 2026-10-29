@@ -10,7 +10,7 @@ Ticket: none
 
 dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the prettiest of all wireframing tools» · «can you use figjam more easily rather than spawning a claude -p, via yourself? yes, let's test drive it.»
 
-**test card:** we believe FigJam draws blueprints dima finds prettier and edits more gladly than n8n or obsidian canvas · we test it by drawing every blueprint of the week there too (first: the refresh-crew-coordinator recipe flow, PK-213), cclio calling the figma mcp straight from her session · we measure calls per blueprint, wall time, whether dima edits it, whether cclio reads his edit back right, and the starter plan's monthly call cap · we're right if dima picks FigJam over the other two for at least 2 of the week's blueprints and the cap never blocks a draw
+**test card:** we believe FigJam draws blueprints dima finds prettier and edits more gladly than n8n or obsidian canvas · we test it by drawing every blueprint of the week there too (first: the refresh-crew-coordinator recipe flow, PK-213), clio calling the figma mcp straight from her session · we measure calls per blueprint, wall time, whether dima edits it, whether clio reads his edit back right, and the starter plan's monthly call cap · we're right if dima picks FigJam over the other two for at least 2 of the week's blueprints and the cap never blocks a draw
 **kill rule:** the starter cap blocks a write mid-week, or a read-back of his edit loses what he changed
 
 ## setup
@@ -21,8 +21,8 @@ dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the pretties
 
 ## stress list
 - `generate_diagram` from mermaid — a recipe flow blueprint (PK-213) — calls, seconds, does it render
-- `use_figma` — dima's sticky or section added by hand, then cclio adds one beside it — calls, does layout hold
-- `get_figjam` — read back a board dima edited — what cclio reports vs what he changed
+- `use_figma` — dima's sticky or section added by hand, then clio adds one beside it — calls, does layout hold
+- `get_figjam` — read back a board dima edited — what clio reports vs what he changed
 - `get_screenshot` — the board as an image for a look card — size, readability
 - the starter cap — count every call of the week — calls used vs the 20
 
