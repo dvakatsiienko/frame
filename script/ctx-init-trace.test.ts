@@ -4,13 +4,18 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+    type Alarm,
     type Baseline,
     type TraceRow,
     alarmsOf,
     baselineOf,
+    causeOf,
+    growthOf,
+    lineOf,
     readTrace,
     scan,
     seatOf,
+    verbFor,
 } from './ctx-init-trace.ts';
 
 const AT = '2026-10-20T10:00:00.000Z';
@@ -230,5 +235,70 @@ describe('the slow creep check', () => {
 
     it('never fires the week-to-week check on it', () => {
         expect(kinds(rowsUpTo(5), baseline, at(5))).not.toContain('week');
+    });
+});
+
+describe('the alarm line names its cause and one proposal per file', () => {
+    const alarm = alarmsOf(weeks(100_000, 112_000), {}, NOW)[0] as Alarm;
+    const files = [
+        {
+            budget: 8_000,
+            bytes: 9_000,
+            file: 'home/.claude/rules/fleet-flow.md',
+            lines: 40,
+        },
+        { bytes: 5_000, file: 'cclio/memory/craft-pm.md', lines: 22 },
+        { budget: 4_000, bytes: 3_700, file: 'cclio/AGENTS.md', lines: 9 },
+        { bytes: 1_000, file: 'AGENTS.md', lines: 2 },
+    ];
+
+    it('names the grown files, three at most, with a verb each', () => {
+        expect(
+            lineOf(alarm, causeOf(alarm, weeks(100_000, 112_000), NOW, files)),
+        ).toBe(
+            '⚠ cclio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — grew most: home/.claude/rules/fleet-flow.md (+40 lines) → trim it; cclio/memory/craft-pm.md (+22 lines) → trim it; cclio/AGENTS.md (+9 lines) → raise its budget',
+        );
+    });
+
+    it('names the cc version instead when one changed in the window', () => {
+        const rows = weeks(100_000, 112_000).map((r) =>
+            NOW - Date.parse(r.at) < 7 * DAY ? { ...r, version: '2.1.312' } : r,
+        );
+        expect(lineOf(alarm, causeOf(alarm, rows, NOW, files))).toBe(
+            '⚠ cclio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — cc 2.1.309 → 2.1.312 landed in that window: nothing to trim, re-baseline?',
+        );
+    });
+
+    it('names no version for one that already ran in the week before', () => {
+        const rows = weeks(100_000, 112_000).map((r) => {
+            const age = (NOW - Date.parse(r.at)) / DAY;
+            return age < 7 || age > 9.5 ? { ...r, version: '2.1.312' } : r;
+        });
+        expect(causeOf(alarm, rows, NOW, files).kind).toBe('files');
+    });
+
+    it('reads only growing files out of the numstat, biggest first', () => {
+        expect(
+            growthOf(
+                '10\t2\ta.md\n3\t0\tb.md\n1\t9\tc.md\n-\t-\timg.png\n2\t0\ta.md\n',
+            ),
+        ).toEqual([
+            { file: 'a.md', lines: 10 },
+            { file: 'b.md', lines: 3 },
+        ]);
+    });
+
+    it.each([
+        ['cclio/memory/x.md', 9_000, 8_000, 'trim it'],
+        ['cclio/memory/x.md', 7_500, 8_000, 'raise its budget'],
+        [
+            'home/.claude/rules/x.md',
+            100,
+            undefined,
+            'move it to an on-demand skill',
+        ],
+        ['cclio/memory/x.md', 100, undefined, 'trim it'],
+    ])('%s at %i of %s: %s', (file, bytes, budget, verb) => {
+        expect(verbFor(file, bytes, budget)).toBe(verb);
     });
 });

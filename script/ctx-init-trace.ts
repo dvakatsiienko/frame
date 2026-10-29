@@ -204,6 +204,93 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
     return alarms;
 }
 
+// the memory a seat loads at boot: the files whose growth explains a rising starting context
+export const MEMORY_PATHS = [
+    'home/.claude/rules',
+    'home/.claude/CLAUDE.md',
+    'cclio/memory',
+    'cclio/AGENTS.md',
+    'home/.claude/plugin-x/skills',
+    'cclio/plugin-cclio/skills',
+    'AGENTS.md',
+    'home/.claude/settings.json',
+];
+
+// `git log --numstat --format=` output: lines added minus deleted per file, growing ones first
+export function growthOf(numstat: string) {
+    const grown = new Map<string, number>();
+    for (const line of numstat.split('\n')) {
+        const [added, deleted, file] = line.split('\t');
+        if (!file || added === '-' || deleted === '-') continue;
+        grown.set(
+            file,
+            (grown.get(file) ?? 0) + Number(added) - Number(deleted),
+        );
+    }
+    return [...grown.entries()]
+        .filter(([, lines]) => lines > 0)
+        .sort((a, b) => b[1] - a[1])
+        .map(([file, lines]) => ({ file, lines }));
+}
+
+// one verb per file: over its budget it is trimmed, a rule or an AGENTS.md moves to an on-demand skill, a file inside
+// 10 % of its budget has the budget raised; a file with no budget line is trimmed
+export function verbFor(file: string, bytes: number, budget?: number) {
+    if (budget && bytes > budget) return 'trim it';
+    if (budget && bytes >= budget * 0.9) return 'raise its budget';
+    if (/(^|\/)(rules\/|AGENTS\.md$|CLAUDE\.md$)/.test(file))
+        return 'move it to an on-demand skill';
+    return 'trim it';
+}
+
+// a cc version change inside the window is the cause when one falls there, else the memory files that grew most
+export function causeOf(
+    alarm: Alarm,
+    rows: TraceRow[],
+    now: number,
+    files: GrownFile[],
+): Cause {
+    const week = 7 * DAY;
+    const own = rows
+        .filter((r) => r.seat === alarm.seat && r.model === alarm.model)
+        .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+    const recent = own.filter((r) => now - Date.parse(r.at) < week);
+    const older = own.filter(
+        (r) =>
+            now - Date.parse(r.at) >= week &&
+            (alarm.kind !== 'week' || now - Date.parse(r.at) < 2 * week),
+    );
+    const to = recent.at(-1)?.version;
+    const from = older.at(-1)?.version;
+    if (to && from && to !== from && !older.some((r) => r.version === to))
+        return { from, kind: 'version', to };
+    return { files: files.slice(0, 3), kind: 'files' };
+}
+
+const kilo = (n: number) => `${Math.round(n / 1000)}k`;
+
+export function lineOf(alarm: Alarm, cause: Cause) {
+    const growth = Math.round((alarm.now / alarm.ref - 1) * 100);
+    const head = `${alarm.seat} (${alarm.model}): starting ctx ${kilo(alarm.now)}`;
+    const against = {
+        ceiling: `over its ceiling of ${kilo(alarm.ref)}`,
+        creep: `${growth} % over its baseline of ${kilo(alarm.ref)}`,
+        week: `${growth} % over ${kilo(alarm.ref)} the week before`,
+    }[alarm.kind];
+    const why =
+        cause.kind === 'version'
+            ? `cc ${cause.from} → ${cause.to} landed in that window: nothing to trim, re-baseline?`
+            : cause.files.length
+              ? `grew most: ${cause.files
+                    .map(
+                        (f) =>
+                            `${f.file} (+${f.lines} lines) → ${verbFor(f.file, f.bytes, f.budget)}`,
+                    )
+                    .join('; ')}`
+              : 'no memory file grew in that window: check the plugin and mcp configs';
+    return `⚠ ${head}, ${against} — ${why}`;
+}
+
 function parse(line: string) {
     try {
         return JSON.parse(line) as Entry;
@@ -226,6 +313,17 @@ if (import.meta.main) {
 }
 
 /* Types */
+
+export type GrownFile = {
+    bytes: number;
+    budget?: number;
+    file: string;
+    lines: number;
+};
+
+export type Cause =
+    | { files: GrownFile[]; kind: 'files' }
+    | { from: string; kind: 'version'; to: string };
 
 export type Seat =
     | 'cclio'
