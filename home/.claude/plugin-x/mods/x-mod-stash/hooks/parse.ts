@@ -175,16 +175,22 @@ export function boldFleetWords(text: string) {
     return { hits, text: lines.join('\n') };
 }
 
-// a reply line as a person reads it: links reduced to their labels, no bold or code marks, no list or heading marker
+// a reply line as a person reads it: links reduced to their labels, code marks and the list or heading marker dropped; **bold**
+// stays, so the names a reply marked reach the band bold (PK-164), unless a mark is left unpaired
 function plain(line: string) {
-    return line
+    const out = line
         .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-        .replace(/\*\*|`/g, '')
+        .replace(/`/g, '')
         .replace(/^\s*(?:[-*]|#+)\s+/, '')
         .trim();
+    return (out.match(/\*\*/g)?.length ?? 0) % 2
+        ? out.replaceAll('**', '')
+        : out;
 }
 
+const WAITING_ON = /^waiting on /i;
 // What a reply says its session waits on: the 🔭 lines that end it, joined; a 🔭 quoted earlier, or in a fence, is not one.
+// every «waiting on <who>» line without a «— how» tail merges into one, the holders split by commas (PK-160)
 export function parseWait(reply: string): string | undefined {
     const waits: string[] = [];
     for (const line of reply.trimEnd().split('\n').reverse()) {
@@ -193,8 +199,34 @@ export function parseWait(reply: string): string | undefined {
         if (!l.startsWith('🔭')) break;
         waits.unshift(plain(l.slice('🔭'.length)));
     }
-    return waits.length ? waits.join('; ') : undefined;
+    const parts: string[] = [];
+    let merged = -1;
+    for (const w of waits) {
+        if (!WAITING_ON.test(w) || w.includes(' — ')) parts.push(w);
+        else if (merged < 0) merged = parts.push(w) - 1;
+        else parts[merged] += `, ${w.replace(WAITING_ON, '')}`;
+    }
+    return parts.length ? parts.join('; ') : undefined;
 }
+
+// a wait part as its plain and bold spans: the names a reply marked **bold**, else the whole <who> of «waiting on <who>»
+// (a background task's name carries no mark); the «waiting on » head and a «— how» tail stay plain
+export function waitSpans(part: string): { text: string; isBold: boolean }[] {
+    const m = part.match(/^(waiting on )(.+?)( — .*)?$/iu);
+    const who = m ? (m[2] ?? '') : part;
+    const spans = who.includes('**')
+        ? who
+              .split(/\*\*(.+?)\*\*/)
+              .map((text, i) => ({ isBold: i % 2 === 1, text }))
+        : [{ isBold: !!m, text: who }];
+    return [
+        { isBold: false, text: m?.[1] ?? '' },
+        ...spans,
+        { isBold: false, text: m?.[3] ?? '' },
+    ].filter((span) => span.text);
+}
+
+export const unbold = (wait: string) => wait.replaceAll('**', '');
 
 // with no 🔭 line, the session's own background work is what it waits on: the first task in three words at most,
 // «waiting on <who>», and +n for the rest (dima's o88: short, nothing more); cclio's standing pr/ci watches

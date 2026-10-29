@@ -61,6 +61,8 @@ import {
     numberCircled,
     parseWait,
     ticketOf,
+    unbold,
+    waitSpans,
 } from './parse.ts';
 import { cleanTree } from './tree.ts';
 
@@ -5510,7 +5512,7 @@ export const register: Register = (on) => {
                         const name = m.sid === me ? `${m.name} (here)` : m.name;
                         const line = m.tip
                             ? `👀 ${m.tip}`
-                            : m.wait && `🔭 ${m.wait}`;
+                            : m.wait && `🔭 ${unbold(m.wait)}`;
                         // «opus 5.5 · medium» as kept: the model in words, its effort as cells beside it on the name's line
                         const [model, effort] = (m.model ?? '').split(' · ');
                         const level = effortLevel(effort);
@@ -5804,34 +5806,33 @@ export const register: Register = (on) => {
                                                     {'🔭 '}
                                                     {(m.wait ?? '')
                                                         .split('; ')
-                                                        .map((part, k) => {
-                                                            const w =
-                                                                part.match(
-                                                                    /^(waiting on )(.+?)( — .*)?$/u,
-                                                                );
-                                                            return (
-                                                                // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
-                                                                <Text
-                                                                    key={`w:${k}`}>
-                                                                    {k > 0
-                                                                        ? '; '
-                                                                        : ''}
-                                                                    {w
-                                                                        ? w[1]
-                                                                        : part}
-                                                                    {w ? (
-                                                                        <Text
-                                                                            bold>
-                                                                            {
-                                                                                w[2]
-                                                                            }
-                                                                        </Text>
-                                                                    ) : null}
-                                                                    {w?.[3] ??
-                                                                        ''}
-                                                                </Text>
-                                                            );
-                                                        })}
+                                                        .map((part, k) => (
+                                                            <Text
+                                                                key={`w:${k}`}>
+                                                                {k > 0
+                                                                    ? '; '
+                                                                    : ''}
+                                                                {waitSpans(
+                                                                    part,
+                                                                ).map(
+                                                                    (
+                                                                        span,
+                                                                        j,
+                                                                    ) =>
+                                                                        span.isBold ? (
+                                                                            <Text
+                                                                                bold
+                                                                                key={`s:${j}`}>
+                                                                                {
+                                                                                    span.text
+                                                                                }
+                                                                            </Text>
+                                                                        ) : (
+                                                                            span.text
+                                                                        ),
+                                                                )}
+                                                            </Text>
+                                                        ))}
                                                 </Text>
                                             </Box>
                                         ) : null}
@@ -6524,20 +6525,22 @@ export const register: Register = (on) => {
                     );
                     // each «waiting on <who>» part of a 🔭 wait prints <who> bold, its «— how» tail plain (dima, 2026-10-10 23:54)
                     const waitJSX = (wait: string) =>
-                        wait.split('; ').map((part, i) => {
-                            const m = part.match(
-                                /^(waiting on )(.+?)( — .*)?$/u,
-                            );
-                            return (
-                                // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
-                                <Text key={`wait:${i}`}>
-                                    {i > 0 ? '; ' : ''}
-                                    {m ? m[1] : part}
-                                    {m ? <Text bold>{m[2]}</Text> : null}
-                                    {m?.[3] ?? ''}
-                                </Text>
-                            );
-                        });
+                        wait.split('; ').map((part, i) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                            <Text key={`wait:${i}`}>
+                                {i > 0 ? '; ' : ''}
+                                {waitSpans(part).map((span, k) =>
+                                    span.isBold ? (
+                                        // biome-ignore lint/suspicious/noArrayIndexKey: a span's place in the part is its identity
+                                        <Text bold key={`span:${k}`}>
+                                            {span.text}
+                                        </Text>
+                                    ) : (
+                                        span.text
+                                    ),
+                                )}
+                            </Text>
+                        ));
                     const row = (
                         <Box
                             alignItems='center'

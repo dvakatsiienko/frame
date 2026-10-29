@@ -32,6 +32,7 @@
   - then the row's 🔭 mark, after the compaction point and in the theme grey, names the wait and how the answer arrives; with no wait it reads «🔭 not waiting»
   - decision: in the row, always drawn, darker than dim, so dima sees every session's state at a glance (dima's o7, 22:03)
   - decision: in each «waiting on <who>» part, <who> prints bold and a «— how» tail stays plain (dima, 2026-10-10 23:54)
+  - given a reply ends with `🔭 waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**`, or the same holders on separate «waiting on» lines, then the band prints one «waiting on» with the names comma-joined, each in real bold and never as asterisks; a name the reply did not mark keeps the whole <who> bold (FRM-426, PK-160, PK-164)
 - ✅ 🔭 names the session's background work when the reply sets no wait
   - given a reply ends with no 🔭 line while a background shell, monitor, subagent or workflow still runs
   - when the turn stops

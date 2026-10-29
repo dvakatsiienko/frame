@@ -371,3 +371,20 @@ test('a notice for a task the reply never listed leaves the wait as it was', asy
     await notice($, completedAgent);
     expect(await wait(ui)).toBe('🔭 waiting on 🦅 scout');
 });
+
+// FRM-426 (PK-160, PK-164): the band prints one «waiting on» with each marked name in real bold, never literal asterisks
+test('the band shows the holders comma-joined, each name bold', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await reply(
+        $,
+        'done.\n🔭 waiting on **🐬 wishkeeper**\n🔭 waiting on **🐝 researcher**, **🙋‍♂️ dima**',
+    );
+    expect(await wait(ui)).toBe(
+        '🔭 waiting on 🐬 wishkeeper, 🐝 researcher, 🙋‍♂️ dima',
+    );
+    const bold = (await ui.findAll({ type: 'Text' }))
+        .filter((t) => t.props.bold)
+        .map((t) => t.text);
+    expect(bold).toEqual(['🐬 wishkeeper', '🐝 researcher', '🙋‍♂️ dima']);
+});

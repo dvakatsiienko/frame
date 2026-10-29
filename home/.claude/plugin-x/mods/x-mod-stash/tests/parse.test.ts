@@ -1,6 +1,11 @@
 import { expect, test } from 'claude-code/testing';
 
-import { backgroundWait, isFleetName, parseWait } from '../hooks/parse.ts';
+import {
+    backgroundWait,
+    isFleetName,
+    parseWait,
+    waitSpans,
+} from '../hooks/parse.ts';
 
 test('a reply without a 🔭 line waits on nothing', () => {
     expect(parseWait('done.\n\n➡️ next')).toBe(undefined);
@@ -11,7 +16,7 @@ test('several 🔭 lines read as one wait', () => {
         parseWait(
             'x\n🔭 [🔎 ci](https://a) — the watcher\n🔭 **🦉 cclio** — a ping',
         ),
-    ).toBe('🔎 ci — the watcher; 🦉 cclio — a ping');
+    ).toBe('🔎 ci — the watcher; **🦉 cclio** — a ping');
 });
 
 test('a 🔭 line quoted before the end is not a wait', () => {
@@ -78,4 +83,49 @@ test('more background tasks add a count', () => {
             { description: 'build' },
         ]),
     ).toBe('waiting on critic +2');
+});
+
+// FRM-426 (PK-160, PK-164): one «waiting on», holders split by commas, the names a reply marked kept bold
+const HOLDERS = 'waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**';
+
+test('one 🔭 line of bold holders reads as it was written', () => {
+    expect(parseWait(`done.\n\n🔭 ${HOLDERS}`)).toBe(HOLDERS);
+});
+
+test('the same holders on separate waiting-on lines merge into one, comma-joined', () => {
+    expect(
+        parseWait(
+            'done.\n🔭 waiting on **🐬 wishkeeper**\n🔭 waiting on **🐝 researcher**\n🔭 waiting on **🙋‍♂️ dima**',
+        ),
+    ).toBe(HOLDERS);
+});
+
+test('a waiting-on line with a how tail stays its own part', () => {
+    expect(
+        parseWait(
+            'x\n🔭 waiting on **ci** — the watcher\n🔭 waiting on **dima**',
+        ),
+    ).toBe('waiting on **ci** — the watcher; waiting on **dima**');
+});
+
+test('an unpaired bold mark is dropped, never shown as asterisks', () => {
+    expect(parseWait('x\n🔭 waiting on **ci')).toBe('waiting on ci');
+});
+
+test('the marked names are the bold spans, the head and the commas plain', () => {
+    expect(waitSpans(HOLDERS)).toEqual([
+        { isBold: false, text: 'waiting on ' },
+        { isBold: true, text: '🐬 wishkeeper' },
+        { isBold: false, text: ', ' },
+        { isBold: true, text: '🐝 researcher' },
+        { isBold: false, text: ', ' },
+        { isBold: true, text: '🙋‍♂️ dima' },
+    ]);
+});
+
+test('an unmarked waiting-on keeps its whole <who> bold, as a background task reads', () => {
+    expect(waitSpans('waiting on 🦅 scout +1')).toEqual([
+        { isBold: false, text: 'waiting on ' },
+        { isBold: true, text: '🦅 scout +1' },
+    ]);
 });
