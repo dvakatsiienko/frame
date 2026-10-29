@@ -5,6 +5,7 @@
 # required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run), and once per head when
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
 # notice, so its brief ends by pushing its report there (x:crew-cloud). silence is the normal state.
+# a line starting «~ » is quiet: watch-once logs it and never wakes on it (the new-commit line: the verifier handles the head).
 # the watch belongs to the pr, never to the coder that opened it (2026-09-28: #112 sat green 30 min
 # after its coder's watch was stopped). a «ready» needs the verifier's clean on that very head: a pr whose
 # verified sha (written by the verifier, `--verified`) differs prints «unverified delta» instead (#82 merged
@@ -34,7 +35,7 @@ pass() {
       while IFS=$'\t' read -r n sha url title state conflict; do
         key="$r#$n"
         if [ "$(seen "$key:head")" != "$sha" ]; then
-          if [ -n "$(seen "$key:head")" ]; then echo "🟡 ${r#*/}#$n new commit $sha · $title · $url"
+          if [ -n "$(seen "$key:head")" ]; then echo "~ 🟡 ${r#*/}#$n new commit $sha · $title · $url"
           else echo "🔵 ${r#*/}#$n opened on $sha — spawn its verifier · $title · $url"; fi
           mark "$key:head" "$sha"
         fi
