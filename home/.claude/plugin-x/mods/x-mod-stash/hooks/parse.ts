@@ -309,6 +309,15 @@ export function noticeOf(
     return id && state ? { id, state } : undefined;
 }
 
+// a lane plan's steps: the numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text`; a nested, unnumbered or
+// any other checklist line moves nothing (FRM-429 exit 1)
+export function planSteps(text: string) {
+    return text.split('\n').flatMap((line) => {
+        const m = line.match(/^- \[( |x)\] \d+ · (.+?)\s*$/);
+        return m ? [{ isDone: m[1] === 'x', text: m[2] ?? '' }] : [];
+    });
+}
+
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 
 // `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»; a standing member keeps

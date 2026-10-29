@@ -214,6 +214,10 @@ export type StashLane = {
     id: string;
     title: string;
     items: LaneItem[];
+    // the lane plan file this card follows: its numbered lines are the steps, so a tick there moves the card (FRM-429)
+    plan?: string;
+    // the linked file could not be read: the card keeps its last state until the lane ends
+    isPlanGone?: boolean;
     // the step we are on; items.length once every step is done
     current: number;
     // cclio's orbit turn count when the pointer or a done flag last moved

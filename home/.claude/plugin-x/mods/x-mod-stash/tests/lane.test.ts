@@ -900,6 +900,8 @@ interface KeptLane {
     members: Record<string, string>;
     steer?: string;
     isSteerTaken?: boolean;
+    plan?: string;
+    isPlanGone?: boolean;
     history: {
         act: string;
         at: number;
@@ -1343,4 +1345,93 @@ test("cclio's step back holds until the coder names a step again", async ($, on)
     w.store.set(stepKey(CODER_NAME), { at: NOW + 10_001, step: 2 });
     await w.clock.advance(5_000);
     expect([held, pointerOf(w)[0]]).toEqual([1, 2]);
+});
+
+/* FRM-429 exit 1 — a glide card linked to its lane plan file moves on its own */
+
+const PLAN = '/home/.local/state/x/lanes/mods/lane-plan.md';
+const planText = (marks: string) =>
+    marks
+        .split('')
+        .map((m, i) => `- [${m}] 0${i + 1} · step ${i + 1}`)
+        .join('\n');
+const linkedPlan = async (
+    $: Engine,
+    w: ReturnType<typeof world>,
+    marks = '   ',
+) => {
+    w.files[PLAN] = planText(marks);
+    const r = await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+    });
+    return r.deny;
+};
+const poll = (w: ReturnType<typeof world>) => w.clock.advance(5_000);
+
+test('a create naming a lane plan takes its steps from the file', async ($, on) => {
+    const w = world(on);
+    await start($);
+    expect(await linkedPlan($, w, 'x  ')).toBeUndefined();
+    expect(kept(w)[0]?.items.map((i) => [i.text, i.isDone])).toEqual([
+        ['step 1', true],
+        ['step 2', false],
+        ['step 3', false],
+    ]);
+});
+
+test('a tick in the plan file moves the card to the first unticked line on the next poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    w.files[PLAN] = planText('xx ');
+    await poll(w);
+    expect(kept(w)[0]?.current).toBe(2);
+});
+
+test('an all-ticked plan file shows the lane done', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    w.files[PLAN] = planText('xxx');
+    await poll(w);
+    expect(kept(w)[0]?.current).toBe(3);
+});
+
+test('a nested or unnumbered checklist line moves nothing', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    w.files[PLAN] =
+        `${planText('x  ')}\n  - [x] 02 · nested\n- [x] no number\n- [x] 7 - dash`;
+    await poll(w);
+    expect(kept(w)[0]?.current).toBe(1);
+});
+
+test('a missing plan file keeps the last state marked «plan file gone»', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    delete w.files[PLAN];
+    await poll(w);
+    const l = kept(w)[0];
+    expect([l?.current, l?.isPlanGone]).toEqual([1, true]);
+});
+
+test('a hand step on a linked card is refused, naming the file', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    expect(await denied($, { act: 'step', current: 1, id: 'l1' })).toContain(
+        'lane-plan.md',
+    );
+});
+
+test('a card with no linked file stays hand-stepped', async ($, on) => {
+    world(on);
+    await start($);
+    await create($);
+    expect(
+        await denied($, { act: 'step', current: 1, id: 'l1' }),
+    ).toBeUndefined();
 });

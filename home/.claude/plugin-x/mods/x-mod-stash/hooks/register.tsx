@@ -61,6 +61,7 @@ import {
     noticeOf,
     numberCircled,
     parseWait,
+    planSteps,
     ticketOf,
     unbold,
     waitSpans,
@@ -387,7 +388,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a step whose text stays keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · text» lines are the steps, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
@@ -1403,6 +1404,10 @@ export function glideOp(
     // a card refreshed in place: the id, members and history stay; a step whose text survives keeps its done flag, and
     // the pointer lands on the first step not done (cclio's ask, 18:01: ending and re-creating lost all three)
     if (act === 'edit') {
+        if (lane.plan && input.items !== undefined)
+            return {
+                deny: `orbit glide: lane ${lane.id} follows ${lane.plan}; its steps are that file's lines, edit them there`,
+            };
         const title = oneLine(input.title) || lane.title;
         const fresh =
             input.items === undefined ? lane.items : laneItems(input.items);
@@ -1461,6 +1466,10 @@ export function glideOp(
             `lane ${lane.id}: ${role} is ${session}`,
         );
     }
+    if (lane.plan)
+        return {
+            deny: `orbit glide: lane ${lane.id} follows ${lane.plan}; tick the step there, a hand step is refused`,
+        };
     const at = input.current;
     if (
         typeof at !== 'number' ||
@@ -1516,6 +1525,11 @@ function laneCreate(
         return {
             deny: `orbit glide: lane ${open.id} «${open.title}» is still open: end it first (glide end ${open.id})`,
         };
+    const plan = oneLine(input.plan);
+    if (plan && !/^(?:\/|~\/)/.test(plan))
+        return {
+            deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
+        };
     const items = laneItems(input.items);
     if (!Array.isArray(items)) return items;
     const id = `l${1 + Math.max(0, ...lanes.map((l) => Number(l.id.slice(1)) || 0))}`;
@@ -1534,6 +1548,7 @@ function laneCreate(
         items: stepped.items,
         members: {},
         movedAt: turns,
+        ...(plan ? { plan } : {}),
         title,
     };
     return {
@@ -1561,7 +1576,7 @@ async function followCoders($: EngineInterface) {
     for (const lane of lanes) {
         const coder = lane.members.coder;
         const m =
-            lane.endedAt || !coder
+            lane.endedAt || lane.plan || !coder
                 ? undefined
                 : ((await $.store
                       .get(LANE_STEP + bare(coder))
@@ -1600,6 +1615,73 @@ async function followCoders($: EngineInterface) {
     if (!moves.length) return;
     await writeLanes($, next);
     await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
+}
+
+// a linked card is its lane plan file: each poll its numbered lines become the steps, the first unticked one the step we
+// are on, and a file that cannot be read leaves the last state marked until the lane ends (FRM-429 exit 1)
+async function followPlans($: EngineInterface) {
+    if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
+        return;
+    const lanes = await readLanes($);
+    if (!lanes.some((l) => l.plan && !l.endedAt)) return;
+    const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+    const now = await $.clock.now();
+    const turns = (await currentOrbit($)).turns;
+    let isChanged = false;
+    const next: StashLane[] = [];
+    for (const lane of lanes) {
+        if (!lane.plan || lane.endedAt) {
+            next.push(lane);
+            continue;
+        }
+        const text = await $.fs
+            .read(lane.plan.replace(/^~(?=\/)/, home))
+            .catch(() => undefined);
+        if (text === undefined) {
+            if (!lane.isPlanGone) isChanged = true;
+            next.push(lane.isPlanGone ? lane : { ...lane, isPlanGone: true });
+            continue;
+        }
+        const steps = planSteps(text).map((s) => ({
+            isDone: s.isDone,
+            text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
+            ...(s.text.match(/\b[A-Z]{2,5}-\d+\b/)
+                ? { ticket: s.text.match(/\b[A-Z]{2,5}-\d+\b/)?.[0] }
+                : {}),
+        }));
+        const items: LaneItem[] = steps.length ? steps : lane.items;
+        const current = items.findIndex((x) => !x.isDone);
+        const at = current < 0 ? items.length : current;
+        const same =
+            !lane.isPlanGone &&
+            at === lane.current &&
+            JSON.stringify(items) === JSON.stringify(lane.items);
+        if (same) {
+            next.push(lane);
+            continue;
+        }
+        isChanged = true;
+        const { isPlanGone: _, ...rest } = lane;
+        next.push({
+            ...rest,
+            current: at,
+            history:
+                at === lane.current
+                    ? lane.history
+                    : [
+                          ...lane.history,
+                          {
+                              act: 'plan',
+                              at: now,
+                              current: at,
+                              done: items.filter((x) => x.isDone).length,
+                          },
+                      ],
+            items,
+            movedAt: at === lane.current ? lane.movedAt : turns,
+        });
+    }
+    if (isChanged) await writeLanes($, next);
 }
 
 async function heldLaneMoves($: EngineInterface) {
@@ -3432,9 +3514,30 @@ async function orbitCall(
             input.act === 'link' && typeof input.session === 'string'
                 ? memberOf(await registry($), input.session.trim())?.base.name
                 : undefined;
+        // a create that names its lane plan takes its first steps from that file, so the card is never drawn from a guess
+        let given = linkTo ? { ...input, session: linkTo } : input;
+        if (input.act === 'create' && typeof input.plan === 'string') {
+            const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+            const text = await $.fs
+                .read(input.plan.replace(/^~(?=\/)/, home))
+                .catch(() => undefined);
+            if (text === undefined)
+                return {
+                    deny: `orbit glide: plan file ${input.plan} cannot be read`,
+                };
+            const steps = planSteps(text).map((s) => ({
+                done: s.isDone,
+                text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
+            }));
+            if (!steps.length)
+                return {
+                    deny: `orbit glide: ${input.plan} holds no numbered step line («- [ ] 01 · text»)`,
+                };
+            given = { ...given, items: steps };
+        }
         const op = glideOp(
             before,
-            linkTo ? { ...input, session: linkTo } : input,
+            given,
             (await currentOrbit($)).turns,
             await $.clock.now(),
         );
@@ -3607,6 +3710,7 @@ export const register: Register = (on) => {
                     await quietBooks($).catch(() => undefined);
                     await relayCcrowWake($).catch(() => undefined);
                     await followCoders($).catch(() => undefined);
+                    await followPlans($).catch(() => undefined);
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);
                     if (await isOpen($))
@@ -5177,7 +5281,7 @@ export const register: Register = (on) => {
                                       flexDirection='row'
                                       justifyContent='space-between'>
                                       <Text
-                                          bold>{`🛼 glide: ${lane.title}`}</Text>
+                                          bold>{`🛼 glide: ${lane.title}${lane.isPlanGone ? ' · plan file gone' : ''}`}</Text>
                                       {foldJSX(`lane:${lane.id}`)}
                                   </Box>
                                   {isFolded(`lane:${lane.id}`)

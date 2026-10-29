@@ -756,6 +756,11 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
   - and a step back moves the pointer back and reopens every step from it on (`current: 1` after `current: 2` once left «2 of 5 done», cclio 15:18)
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
+- ⬜ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
+  - given 🦉 cclio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
+  - when the coder ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
+  - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
+  - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
 - ⬜ a lane survives a reload, a compaction and a restart, and ends at cclio's siesta
   - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back
   - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — cclio's next siesta — takes it off and the file records `endedAt`
