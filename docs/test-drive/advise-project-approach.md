@@ -7,7 +7,7 @@ dies-when: a verdict line lands (adopted or dropped) after three real uses
 # advise-project-approach — on trial
 
 `AaravKashyap12/advise-project-approach` v0.7.2, installed 2026-09-27 at cclio scope through `npx skills`
-(upstream ships no marketplace; `cclio/skills-lock.json` pins it). a project-planning skill: intake →
+(upstream ships no marketplace; `_clio/skills-lock.json` pins it). a project-planning skill: intake →
 comparables → a recommendation with receipts, a first action that can be proven wrong, and a stop after two
 lookups that add nothing.
 

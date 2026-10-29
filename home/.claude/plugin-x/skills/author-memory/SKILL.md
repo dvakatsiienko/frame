@@ -19,7 +19,7 @@ the failure this prevents: a line landing where it was convenient instead of whe
 - `rules/` with `paths:` → a convention tied to a glob; an intention has no glob
 - a project `AGENTS.md` → wrong or meaningless in another repo
 - a nested `AGENTS.md` beside the code it covers → knowledge only that folder's work needs; it loads when the folder is touched (a Read, or a Bash read through our loader hook), so a split part that has a code folder goes there; a part triggered by root files (a manifest, a workflow) keeps a `docs/` file and a pointer naming those files
-- `cclio/memory/` → the coordinator only
+- `_clio/memory/` → the coordinator only
 - a skill → a procedure, or anything needed occasionally
 - a hook, `settings.json`, `permissions.deny` → anything that must happen; memory is context, never enforcement
 - `docs/` → long, occasional, a lookup
@@ -57,7 +57,7 @@ a communication file for an agent about to change code, never a README. under 20
 
 ## upkeep — mechanical, never an llm judge
 
-a named command → its `--help` holds the flag; a file → it exists; a ticket → its state matches the tense; a probe → rerun it; a groomed file → `python3 ~/frame/cclio/script/quote-diff.py HEAD <file>`, every quote of dima's restored or shown to him.
+a named command → its `--help` holds the flag; a file → it exists; a ticket → its state matches the tense; a probe → rerun it; a groomed file → `python3 ~/frame/_clio/script/quote-diff.py HEAD <file>`, every quote of dima's restored or shown to him.
 
 ## references
 

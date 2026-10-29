@@ -7,7 +7,7 @@
   - serves — http://127.0.0.1:7390 — the watch list, the diffs, and the api (GET /api/v1/watch)
   - watches — github issues and prs as api json filtered to state + labels + comments + updated_at, release feeds, pages
   - output — ~/.local/share/x-changedetector/daemon.log, daemon.err.log for stderr; the data dir is ~/.local/share/x-changedetector/data
-  - source — `uv tool install changedetection.io --python 3.12` (the binary in ~/.local/bin); the research: frame cclio/.scratch/research-watcher/
+  - source — `uv tool install changedetection.io --python 3.12` (the binary in ~/.local/bin); the research: frame _clio/.scratch/research-watcher/
   - setup — mkdir -p ~/.local/share/x-changedetector/data; launchd will not create a missing dir
   - gotcha — needs no permission; it binds 127.0.0.1 only, so nothing outside the mac reaches it
 -->

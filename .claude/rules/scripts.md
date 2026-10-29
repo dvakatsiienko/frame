@@ -22,5 +22,5 @@ paths:
 - **a frame script that spends money is tested from a copy with its spender stubbed** — a test never reaches the real paid api (FRM-352). guard: none
 
 <!--
-why here: moved out of frame AGENTS.md in the 2026-10-11 sweep; a frame rule loads on a read, `cat` or edit of a matching file, measured from a session started in cclio/ too (canary, sonnet, 2026-10-11).
+why here: moved out of frame AGENTS.md in the 2026-10-11 sweep; a frame rule loads on a read, `cat` or edit of a matching file, measured from a session started in _clio/ too (canary, sonnet, 2026-10-11).
 -->

@@ -112,7 +112,7 @@ type ticketSize struct {
 	Closed   bool
 }
 
-// the size lines in agent turns (cclio:pm, cclio/plugin-cclio/skills/pm/SKILL.md § the fields); M has none, it is split before a spawn
+// the size lines in agent turns (cclio:pm, _clio/plugin-clio/skills/pm/SKILL.md § the fields); M has none, it is split before a spawn
 var sizeLines = map[int]struct {
 	name string
 	line int
@@ -286,22 +286,26 @@ func parseOpsSession(lines [][]byte, path string) opsSession {
 }
 
 var (
-	ccrowTitle    = regexp.MustCompile(`(?i)ccrow`)
-	cclioTitle    = regexp.MustCompile(`(?i)cclio`)
-	cclioCwd      = regexp.MustCompile(`/frame/cclio(/|$)`)
+	ccrowTitle = regexp.MustCompile(`(?i)ccrow`)
+	cclioTitle = regexp.MustCompile(`(?i)cclio`)
+	cclioCwd   = regexp.MustCompile(
+		`/frame/(cclio|_clio)(/|$)`, // read-both: transcripts before the 10-29 rename ran in frame/cclio
+	)
 	probeTitle    = regexp.MustCompile(`(?i)🧪|probe`)
 	researchTitle = regexp.MustCompile(`(?i)🔬|adviser|research`)
 )
 
 func opsRole(cwd, firstCmd, path, title string) string {
 	switch {
-	case strings.Contains(title, "🔧") || firstCmd == "x:crew-coder":
+	case strings.Contains(title, "🔧") || firstCmd == "x:crew-codie" ||
+		firstCmd == "x:crew-coder": // read-both: the skill id before the 10-29 rename
 		return "coder"
-	case strings.Contains(title, "🔎") || firstCmd == "x:crew-verifier":
+	case strings.Contains(title, "🔎") || firstCmd == "x:crew-sixth-sense" ||
+		firstCmd == "x:crew-verifier": // read-both: the skill id before the 10-29 rename
 		return "verifier"
 	case ccrowTitle.MatchString(title):
 		return "ccrow"
-	case cclioTitle.MatchString(title) || title == "" && strings.HasSuffix(cwd, "/frame/cclio") || cclioCwd.MatchString(cwd):
+	case cclioTitle.MatchString(title) || cclioCwd.MatchString(cwd):
 		return "cclio"
 	case probeTitle.MatchString(title) || strings.Contains(path, "probe"):
 		return "probe"

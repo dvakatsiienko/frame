@@ -1,6 +1,6 @@
 /**
  * skill:evergreen-apps — the changelog delta of the self-updating apps renovate and brew never
- * see. `cclio/evergreen/sources.json` holds one entry per app: where its changelog lives, how to
+ * see. `_clio/evergreen/sources.json` holds one entry per app: where its changelog lives, how to
  * read it, and the newest entry the last run saw (`marker`). a run prints everything newer than
  * the marker, per app, for the evergreen skill to judge; `--mark` then advances every marker to
  * the newest entry seen and stamps `markedAt`, which the boot digest reads to say the lane is due.
@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const SOURCES = join(homedir(), 'frame/cclio/evergreen/sources.json');
+const SOURCES = join(homedir(), 'frame/_clio/evergreen/sources.json');
 const BODY_CAP = 1_500;
 const PAGE = 30;
 

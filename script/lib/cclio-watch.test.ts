@@ -8,7 +8,7 @@ import { gitEnv } from './git-fixture.ts';
 
 // cclio's two watches, run against a stub `gh`, `vercel` and `sleep` on PATH: `gh` answers from fixture json through
 // the script's own --jq program, so the jq the script ships is what is tested
-const HOOKS = resolve(import.meta.dirname, '../../cclio/.claude/hooks');
+const HOOKS = resolve(import.meta.dirname, '../../_clio/.claude/hooks');
 
 function bin(fixtures: Record<string, unknown>) {
     const dir = mkdtempSync(join(tmpdir(), 'cclio-watch-'));

@@ -21,7 +21,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   inbox's ✨ section is the drop point.
 - **blueprint** — a picture of one part of our system (a flow, a structure, a map) that cclio draws
   and dima edits to show an idea; cclio reads the edit back and builds from it (dima, 2026-10-18).
-  home: `cclio/blueprints/`.
+  home: `_clio/blueprints/`.
 - **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`). <!-- cc -->
 - **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping; «slipstreamed» = delivered that way; its opposite is **push**. <!-- cc -->
 - **🐦‍🔥 second wind** — a session's context reset onto its own handoff: dima presses a session's 🐦‍🔥 on the board (or says the word), the session finishes its step, writes a CST, and the mod compacts and ingests it at the turn's end (`cclio:checkpoint` for cclio, x-mod-stash). <!-- cc -->

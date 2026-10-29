@@ -30,7 +30,7 @@
 
 `home/.claude/` is the claude code setup every session reads: memories, rules, skills
 (`plugin-x`), hooks, output styles, and `sline`, the statusline.
-`cclio/` is the coordinator's home, the session that plans and routes work to background coders.
+`_clio/` is the coordinator's home, the session that plans and routes work to background coders.
 `x/` is `x`, the agent-first cli in go + charm: one verb registry, json for agents and boards for humans (`x lane` commits and pushes from a sandboxed worktree).
 `hotkeys/` maps every keyboard chord on the machine and serves `chords`, the map's app.
 `x-speak` (a `schedule/` daemon) reads the selected text aloud on F4 (with nothing selected it pauses / resumes, as ⇧F4 always does) and stops on F5,

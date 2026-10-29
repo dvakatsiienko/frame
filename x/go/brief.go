@@ -397,8 +397,8 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 		if line.exit && !surface.MatchString(line.group) {
 			found = append(found, finding{line.n, "lint", "exit line", "names no surface: a file, a port or a command in backticks"})
 		}
-		if line.exit && strings.Contains(line.group, "cclio/") {
-			found = append(found, finding{line.n, "lint", "cclio/", "a coder's exit line never points into cclio/"})
+		if line.exit && strings.Contains(line.group, "_clio/") {
+			found = append(found, finding{line.n, "lint", "_clio/", "a coder's exit line never points into _clio/"})
 		}
 		if relayed.MatchString(text) && !stampTime.MatchString(text) {
 			found = append(found, finding{line.n, "lint", "dima's approval", "a relayed approval is quoted with its time"})

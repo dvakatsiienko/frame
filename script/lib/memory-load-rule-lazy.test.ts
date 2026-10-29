@@ -182,7 +182,7 @@ describe('memory-load-rule-lazy', () => {
 
     it('loads linear-flow at the start of a cclio session', () => {
         const out = session().run({
-            cwd: '/Users/dima/frame/cclio',
+            cwd: '/Users/dima/frame/_clio',
             hook_event_name: 'SessionStart',
             source: 'startup',
         });

@@ -5,13 +5,13 @@ until: 2026-10-22
 
 # test drive — ccrow, cclio's parked adviser
 
-window: 2026-10-06 → 2026-10-20 (two weeks from the first live wake). ticket: [FRM-327](https://linear.app/x-com/issue/FRM-327). the build: `ccrow/AGENTS.md`.
+window: 2026-10-06 → 2026-10-20 (two weeks from the first live wake). ticket: [FRM-327](https://linear.app/x-com/issue/FRM-327). the build: `_crow/AGENTS.md`.
 
 ## the arms
 
 opus 5.5 medium vs fable 5.1 medium. live from day 1 since 2026-10-06 (dima: «enable it live, continue measures») — the paired silent phase ran day 1 only: notes were logged, not sent, and the other arm answers the same packet as a `claude -p` one-shot (a paired, blind comparison). days 4–7 live, alternating by day; from 2026-10-13 opus 5.5 medium only (dima: «change to opus 5.5 medium only»).
 
-## what each run logs (`~/.local/state/ccrow/notes.jsonl`)
+## what each run logs (`~/.local/state/crow/notes.jsonl`)
 
 arm, the exact model id from the transcript, effort, tokens in/out, seconds, mode, the note or `none`. verdicts: `pnpm ccrow:note-vet ok|miss <note-id> <why>` → `verdicts.jsonl`.
 
@@ -112,7 +112,7 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ## the reminder, moved here (2026-10-11, o139)
 
-⏰ 🔬 ccrow test drive, two weeks to 2026-10-20 — the parked adviser (FRM-327, `docs/test-drive/ccrow.md`); every halt reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl`, one log line per day; days 1–3 silent and paired, then live and alternating. on 10-20: keep (and pick the arm), reshape, or stop — and the mod (FRM-327 «later») only if it proved useful. dima 2026-10-06: «test drive for 2 weeks + measures» — set 2026-10-06
+⏰ 🔬 ccrow test drive, two weeks to 2026-10-20 — the parked adviser (FRM-327, `docs/test-drive/ccrow.md`); every halt reads `~/.local/state/crow/notes.jsonl` + `verdicts.jsonl`, one log line per day; days 1–3 silent and paired, then live and alternating. on 10-20: keep (and pick the arm), reshape, or stop — and the mod (FRM-327 «later») only if it proved useful. dima 2026-10-06: «test drive for 2 weeks + measures» — set 2026-10-06
 - 10-11 17:42 · ccrow wake 202610111736 (fable) · checkpoint 2's CST lost or staled 3 items (pm review's dedicated session, o74/o75, FRM-385's reseal); a firmer first-act is remember-harder; check the CST draft with wishkeeper before /compact · vetted ok · useful: becomes a cclio:checkpoint step (o143)
 
 ## verdict

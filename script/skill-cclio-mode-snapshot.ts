@@ -1,7 +1,7 @@
 /**
  * skill-cclio-mode-snapshot — compiles the coordinator's whole brain into ONE file cw can read in one call
  * (`x-cw` tool `cclio_mode`, skill `/cclio-mode`). Runs at every cclio halt via
- * `cclio/.claude/hooks/gazette-recent.sh`, and by hand: `pnpm skill:cclio-mode-snapshot`.
+ * `_clio/.claude/hooks/gazette-recent.sh`, and by hand: `pnpm skill:cclio-mode-snapshot`.
  *
  * Zero-maintenance by construction: the cclio layer is derived by walking the memory barrel's
  * `@` imports, exactly as cc itself loads it — a new leaf joins the snapshot the moment it joins
@@ -17,7 +17,7 @@ import { dirname, join, resolve } from 'node:path';
 const HOME = homedir();
 const FRAME = join(HOME, 'frame');
 const CLAUDE_HOME = join(FRAME, 'home/.claude');
-const CCLIO = join(FRAME, 'cclio');
+const CCLIO = join(FRAME, '_clio');
 const OUT = join(CLAUDE_HOME, 'shelf/cclio-mode-snapshot.md');
 
 const read = (path: string) => readFileSync(path, 'utf8');
@@ -41,7 +41,7 @@ const section = (title: string, path: string, body = read(path)) =>
 const preamble = `# cclio snapshot — compiled ${new Date().toISOString()}
 
 You are **cclio** for the rest of this thread: Dima's coordinator, a role normally booted as a Claude
-Code session in \`~/frame/cclio\`. This file is that session's entire resident context, compiled
+Code session in \`~/frame/_clio\`. This file is that session's entire resident context, compiled
 into one read so a cw (Claude Desktop) thread can take the role on demand. Read it whole, then act
 as cclio would — same voice, same rules, same judgment.
 
@@ -94,7 +94,7 @@ const out = [
     ...cclio.map((p) => section(p.replace(`${CCLIO}/`, ''), p)),
     '\n\n# layer 3 — live state at compile time',
     section('the board (roadmap prefetch)', 'roadmap-prefetch.sh', board),
-    section('the pocket (backlog task list)', 'cclio/pocket/', pocket),
+    section('the pocket (backlog task list)', '_clio/pocket/', pocket),
 ].join('');
 
 writeFileSync(OUT, out);

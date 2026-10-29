@@ -26,14 +26,14 @@ const MEMORY = [
     'home/.claude/CLAUDE.md',
     'home/.claude/rules/*.md',
     'home/.claude/rules-lazy/*.md',
-    'cclio/memory/*.md',
+    '_clio/memory/*.md',
     '*AGENTS.md',
     'home/.claude/plugin-x/skills/*/SKILL.md',
-    'cclio/plugin-cclio/skills/*/SKILL.md',
+    '_clio/plugin-clio/skills/*/SKILL.md',
     'home/.claude/plugin-x/skills/*/references/*.md',
-    'cclio/plugin-cclio/skills/*/references/*.md',
+    '_clio/plugin-clio/skills/*/references/*.md',
     'home/.claude/agents/*.md',
-    'cclio/.claude/agents/*.md',
+    '_clio/.claude/agents/*.md',
 ];
 const GROWTH = 1.15;
 const MERGED = /[\w.)»*]- [^\s-]|[^\s\d-]\d+\. \*\*/;

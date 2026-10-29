@@ -56,7 +56,7 @@
   - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
   - proof: tests/pipes.test.ts::a silent curl into a pipe runs with a curl -f hint; no curl -f hint
 - ✅ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
-  - given `node ~/frame/cclio/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
+  - given `node ~/frame/_clio/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
   - given a script whose source names a help flag, a run without `--help`, or a script outside `~/frame`, then no hint
   - proof: tests/help.test.ts::a frame script with no help flag, run with --help, gets a hint first; no script help hint
 - ✅ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
@@ -87,7 +87,7 @@
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
 - ✅ cclio cleans up its fleet's scratch without dima's word
-  - given a session rooted under `~/frame/cclio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
+  - given a session rooted under `~/frame/_clio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
   - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one
   - then a tree elsewhere, a `--force` remove, a `-D` naming any non-`scratch/` branch, and the same commands from any other session are still refused with «ask cclio»
   - decision: dima wants everything clear when he returns, parking only things like backup restores; a dirty tree keeps git's own refusal, so `--force` still asks (FRM-356, 2026-10-09)
@@ -311,15 +311,15 @@
 ## every Edit and Write
 
 - ✅ a cclio session gets one delegate hint at its 8th code edit
-  - given a session whose root is under `~/frame/cclio` (its start dir, which a shell `cd` never moves) makes its 8th `Edit`, `Write` or `MultiEdit` on a `.ts` `.tsx` `.go` `.sh` `.py` or `.swift` file
+  - given a session whose root is under `~/frame/_clio` (its start dir, which a shell `cd` never moves) makes its 8th `Edit`, `Write` or `MultiEdit` on a `.ts` `.tsx` `.go` `.sh` `.py` or `.swift` file
   - then the call runs and the model gets one note: «x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context»; later edits get none
-  - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
+  - given other file types, or a session outside `~/frame/_clio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
 - ✅ a cclio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
-  - given a session whose root is under `~/frame/cclio` reads its 3rd `.png` `.jpg` `.jpeg` `.gif` `.webp` `.heic` `.bmp` or `.tiff` in one turn (the main loop, never a subagent's)
+  - given a session whose root is under `~/frame/_clio` reads its 3rd `.png` `.jpg` `.jpeg` `.gif` `.webp` `.heic` `.bmp` or `.tiff` in one turn (the main loop, never a subagent's)
   - then the Read runs and the model gets one note naming `helper-lite` and `rules/fleet-tooling.md`; the 1st, 2nd and 4th get none
-  - given a new prompt, then the count starts over; given a text file or a session outside `~/frame/cclio`, then nothing is counted
+  - given a new prompt, then the count starts over; given a text file or a session outside `~/frame/_clio`, then nothing is counted
   - makes: a per-turn count in x-mod-guard's `$.state`
   - proof: tests/images.test.ts::cclio's 3rd image Read in a turn gets the helper-lite nudge, once; a new turn starts the image count over; a text Read never counts; a session booted anywhere else gets no nudge
 - ✅ a Write over a tracked file this session never read is refused

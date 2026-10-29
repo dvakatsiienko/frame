@@ -4,10 +4,10 @@ the one chore class where you write prose: a groomed, sorted copy of dima's `inb
 board instead of a raw drop. his file stays untouched; yours is its sibling.
 
 - read: `<_hq>/inbox.md`, re-read right before you write (icloud syncs whole files, last writer wins)
-- read: the pocket, `BACKLOG_CWD=~/frame/cclio backlog task list --plain`, to name homes
+- read: the pocket, `BACKLOG_CWD=~/frame/_clio backlog task list --plain`, to name homes
 - write: `<_hq>/inbox-composer.md`, whole-file; nothing else in the vault, no commit (the vault is not a repo)
 - `<_hq>` = `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
-- done: `node ~/frame/cclio/script/inbox-prep-check.ts` exits 0 (every content line of his sits verbatim in yours)
+- done: `node ~/frame/_clio/script/inbox-prep-check.ts` exits 0 (every content line of his sits verbatim in yours)
 
 ## an item
 

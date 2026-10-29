@@ -67,7 +67,7 @@ audit run 2026-10-21, read-only. 8 inbox items from 10-15 … 10-21, each worked
 - L0: the composer quote, W4 part 2 plus S1 (a9a89164…jsonl 2026-10-18T13:39:01Z, lines 43, 230–273)
 - L2: archive `pk-172 …md` at 1c9d3d02
 - L3: none
-- L4: the want in `cclio/blueprints/PRODUCT.md` (first commit d764aa12, 10-18 18:40), grill round 1 (2026-10-18T14:10:11Z) and the research top 7 (2026-10-18T14:25:44Z)
+- L4: the want in `_clio/blueprints/PRODUCT.md` (first commit d764aa12, 10-18 18:40), grill round 1 (2026-10-18T14:10:11Z) and the research top 7 (2026-10-18T14:25:44Z)
 
 - V1 «i lack such a tool … i want a tool like this for a long time» — kept · kept · n/a · kept
 - V2 «me: let's review and shake your pm module → you: draw … → i see visually» — kept · kept · n/a · kept

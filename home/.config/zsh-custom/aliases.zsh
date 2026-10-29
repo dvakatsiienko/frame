@@ -82,9 +82,9 @@ alias pnb='pnpm build'
 alias tb='turbo'
 
 # llms
-alias cc='claude --remote-control "🔧 codie"'
+alias cc='claude --remote-control "💻 cc"'
 alias cc-lean='(cd "$(mktemp -d)" && claude --safe-mode --strict-mcp-config)'
-alias cclio='cd ~/frame/cclio && claude --remote-control "🦉 cclio"'
-alias cclio-list='~/frame/cclio/.claude/hooks/boot-prefetch.sh'
+alias clio='cd ~/frame/_clio && claude --remote-control "🦉 clio"'
+alias clio-list='~/frame/_clio/.claude/hooks/boot-prefetch.sh'
 alias hk='pnpm --dir ~/frame --silent hotkeys:top'   # which chords + apps i actually use
-alias pk='BACKLOG_CWD=~/frame/cclio backlog'   # cclio's pocket (Backlog.md): pk board, pk search <word>
+alias pk='BACKLOG_CWD=~/frame/_clio backlog'   # cclio's pocket (Backlog.md): pk board, pk search <word>

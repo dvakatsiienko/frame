@@ -13,7 +13,7 @@
   - then linear-flow is in context before the reply, and the log shows `load linear-flow by prompt`
   - decision: a task notification counts as a prompt — `UserPromptSubmit` fires on it (probed live, 2026-10-04)
 - ✅ a cclio session loads linear-flow at its start
-  - given a session starts, clears or compacts in `cclio/`
+  - given a session starts, clears or compacts in `_clio/`
   - then linear-flow is in context before the first prompt, and the log shows `load linear-flow by project`
   - decision: cclio owns pm and boots with ticket ids already in context (its start hook, its gazette trail) — the replay found 17 replies naming a ticket before any other trigger, all in cclio
 - ✅ the first linear command waits for the rule

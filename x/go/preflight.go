@@ -375,12 +375,12 @@ func verbOf(token string, verbs []string) string {
 	return ""
 }
 
-// cclio's half beside a surface outside cclio/ (FRM-355's exit 6 always graded «pending»)
+// cclio's half beside a surface outside _clio/ (FRM-355's exit 6 always graded «pending»)
 func twoOwners(group string) bool {
-	// a quoted «cclio» is a word, never an owner; a backticked cclio/ path is cclio's half
+	// a quoted «cclio» is a word, never an owner; a backticked _clio/ path is cclio's half
 	cclios, others := cclioWord.MatchString(quotedText.ReplaceAllString(group, "")), false
 	for _, match := range codeSpan.FindAllStringSubmatch(group, -1) {
-		if strings.HasPrefix(strings.TrimSpace(match[1]), "cclio") {
+		if strings.HasPrefix(strings.TrimSpace(match[1]), "_clio/") {
 			cclios = true
 		} else {
 			others = true

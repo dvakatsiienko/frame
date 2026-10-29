@@ -212,9 +212,9 @@ func TestTwoOwnersNeedsACclioHalfAndAnother(t *testing.T) {
 		two         bool
 	}{
 		{"cclio's step beside a coder's skill", "6. `x:crew-coder`'s final step and cclio's pre-merge step name `x lane review`", true},
-		{"a cclio path beside a coder's path", "1. `cclio/docs/a.md` and `x/go/a.go` agree", true},
+		{"a cclio path beside a coder's path", "1. `_clio/docs/a.md` and `x/go/a.go` agree", true},
 		{"a quoted cclio word", "2. `x lane commit` refuses «cclio pushes»", false},
-		{"cclio's half alone", "3. `cclio/docs/a.md` holds the recipe", false},
+		{"cclio's half alone", "3. `_clio/docs/a.md` holds the recipe", false},
 		{"no cclio at all", "4. `x lane commit` prints the sha", false},
 	}
 	for _, c := range cases {

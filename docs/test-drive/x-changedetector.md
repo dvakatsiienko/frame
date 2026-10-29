@@ -10,7 +10,7 @@ Ticket: none
 
 born 2026-10-15 on dima's ask (PK-136): `schedule/jobs/x-changedetector/` (127.0.0.1:7390, data in
 `~/.local/share/x-changedetector/data`), installed with `uv tool install changedetection.io --python 3.12`. the research:
-`cclio/.scratch/research-watcher/` (3 lanes; parallel's monitors caught 1 of 6 events on 09-27, the bar).
+`_clio/.scratch/research-watcher/` (3 lanes; parallel's monitors caught 1 of 6 events on 09-27, the bar).
 
 **test card:** we believe one local watcher replaces the boot's gh watch, the release reminders and dima pasting links ·
 we test it by every github issue we follow (52 open, gathered from our files, the boot list, issues dima filed or

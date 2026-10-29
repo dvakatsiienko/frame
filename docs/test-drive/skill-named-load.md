@@ -16,4 +16,4 @@ the shape: the spawn prompt opens with the role slash (`/x:crew-coder …`); eve
 
 one line per spawn: date, member, named skills, loaded skills, misses
 
-- 2026-10-29 · ⚡ 🔧 mods lane 3 coder (FRM-426, desktop thread) · named: x:crew-coder, plugin-authoring, guide-typescript, mods/AGENTS.md, api-map · loaded (its first reply): x:crew-coder, crew-dna, how-you-work, plugin-authoring, guide-typescript, mods/AGENTS.md, api-map · misses 0 · extra: a pocket read under cclio/ autoloaded cclio AGENTS.md into it (it stayed the coder)
+- 2026-10-29 · ⚡ 🔧 mods lane 3 coder (FRM-426, desktop thread) · named: x:crew-coder, plugin-authoring, guide-typescript, mods/AGENTS.md, api-map · loaded (its first reply): x:crew-coder, crew-dna, how-you-work, plugin-authoring, guide-typescript, mods/AGENTS.md, api-map · misses 0 · extra: a pocket read under _clio/ autoloaded cclio AGENTS.md into it (it stayed the coder)

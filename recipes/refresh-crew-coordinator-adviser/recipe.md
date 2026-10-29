@@ -3,8 +3,8 @@ kind: refresh
 owner: coordinator
 artifacts:
   - home/.claude/plugin-x/skills/crew-adviser/SKILL.md
-  - ccrow/AGENTS.md
-  - ~/.local/state/ccrow/leaves.txt
+  - _crow/AGENTS.md
+  - ~/.local/state/crow/leaves.txt
   - docs/test-drive/ccrow.md
 script: none
 groomed: 2026-10-08 (dima)
@@ -28,7 +28,7 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 
 - suggest a run when: the trial verdict (2026-10-20), a new anthropic model ships, a cc change to mods, advisor or cross-session messaging
 
-1. **groom** (step 0 of `cclio:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `ccrow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
+1. **groom** (step 0 of `cclio:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `_crow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.
 3. **lanes, from one brief**: `researcher` (sources, papers, code) + `pnpm research:lanes` (exa + parallel) + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane landed or failed out loud. (template)
 4. **the built-in head-to-head**, only while `docs/test-drive/ccrow.md` has no `/advisor` verdict: a day of `/advisor fable` beside ccrow, both logging notes, acted-on and tokens. done: the verdict, or «settled <date>». (template)
@@ -46,7 +46,7 @@ the owner's vectors, in the outside world:
 - what a good adviser agent does: prior art on critic, reflection and devil's-advocate roles in multi-agent systems — when it speaks and when it says `none`, what it reads (timing, the operator's state, the thread's own numbers), how it earns trust; one bullet on the idea's standing (who runs one, who dropped it and why)
 - the communication model between an adviser and its coordinator: push (it reads the thread and speaks), pull (she asks), or both; message shape, cadence, what a note must carry to be acted on; what others built and where it broke
 - model + effort for an adviser role: stronger, weaker or equal to the coordinator — judged on our own data: a replay set built from `notes.jsonl` with known ok/miss, re-run per arm and effort (park: the eval set)
-- packet → accuracy: what context a critic needs to be right and what it fails on without it — images, the session id and cwd, a timestamp per message, the diff since the last wake (park: a packet checklist in `ccrow/AGENTS.md`)
+- packet → accuracy: what context a critic needs to be right and what it fails on without it — images, the session id and cwd, a timestamp per message, the diff since the last wake (park: a packet checklist in `_crow/AGENTS.md`)
 - interruption timing: when a critic holds a note and when it pushes it — natural breaks: a siesta, a commit, before a launch (park: a timing line in the charter)
 - evaluation without self-grading: counterfactual scoring of advice, and the bias when the advised grades the adviser (park: the vet protocol)
 - the built-in alternative: cc's `/advisor` and the api advisor tool — what they do that ccrow does not (timing, the reconcile line, the length cap, the pairing rule), what ccrow does that they cannot; feeds the head-to-head (step 4)
@@ -70,8 +70,8 @@ settled: «the comms model: pings or reads» — it reads her transcript on a wa
 ## artifacts
 
 - `x:crew-adviser` (`home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) — the seat's contract: hunts, bar, note shape, timing, modes; ccrow's boot prompt
-- `ccrow/AGENTS.md` — the mechanics and the facts that bite
-- `~/.local/state/ccrow/leaves.txt` — the memory slice it gets per wake
+- `_crow/AGENTS.md` — the mechanics and the facts that bite
+- `~/.local/state/crow/leaves.txt` — the memory slice it gets per wake
 - `docs/test-drive/ccrow.md` — the trial and its log
 
 ## findings

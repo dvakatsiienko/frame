@@ -11,7 +11,7 @@ when:
 
 ## core
 
-- the surfaces: `cc` (the mac cli, loads everything), cclio (cc in ~/frame/cclio + her barrel), Code-tab sessions (cc from the desktop + desktop-only MCP servers injected once at creation, never for `--bg` or a resume; the desktop's bundled cc can lag the terminal's, 2.1.295 vs 2.1.296 on 2026-10-12), `cc cloud` (no ~/.claude, no plugin-x, the repo's AGENTS.md only), `cw` (the Claude app: the x-cw plugin, no rules/, hooks or root CLAUDE.md)
+- the surfaces: `cc` (the mac cli, loads everything), cclio (cc in ~/frame/_clio + her barrel), Code-tab sessions (cc from the desktop + desktop-only MCP servers injected once at creation, never for `--bg` or a resume; the desktop's bundled cc can lag the terminal's, 2.1.295 vs 2.1.296 on 2026-10-12), `cc cloud` (no ~/.claude, no plugin-x, the repo's AGENTS.md only), `cw` (the Claude app: the x-cw plugin, no rules/, hooks or root CLAUDE.md)
 - memory per surface: cc files; cw `memory_*` entries through `x-cw:memory-update`; cloud none; a Projects mount is read by cloud threads only
 - who reaches whom: SendMessage reaches local, `--bg` and Code-tab sessions both ways; a cloud session takes a steer only as `claude -p "<msg>" --cloud <id>` and never messages back; a Projects coordinator cannot reach the mac
 - «harness» is reserved for the FRM-43 thread; `CLAUDE_CONFIG_DIR` is rejected for isolation (it leaks four ways)
@@ -40,7 +40,7 @@ since.
 
 - **`cc`** — the cli on the mac. Loads everything: root `CLAUDE.md`, `rules/` (lazy ones via
   `memory-load-rule-lazy`), `plugin-x` skills, the project `AGENTS.md`, hooks, output style.
-- **`cclio`** — a `cc` session booted in `~/frame/cclio`: the same, plus its `AGENTS.md`, the memory
+- **`cclio`** — a `cc` session booted in `~/frame/_clio`: the same, plus its `AGENTS.md`, the memory
   barrel and the boot ritual (`/cclio:boot <slug>`).
 - **Code-tab sessions** — `cc` born in the desktop Code tab. Same stack, plus the desktop-only MCP
   servers (Browser pane, Chrome bridge, scheduled-tasks, mcp-registry), injected **once at creation**,
@@ -61,7 +61,7 @@ since.
 ## Memory, per surface
 
 - `cc` — file-based: `~/.claude/projects/<slug>/memory/` + `MEMORY.md`; cclio's barrel lives in
-  `~/frame/cclio/memory/`. Agent + Dima edit.
+  `~/frame/_clio/memory/`. Agent + Dima edit.
 - `cw` — global memory entries the agent writes through `memory_write` / `memory_str_replace` /
   `memory_append` / `memory_delete`; every write goes through `x-cw:memory-update` **[docs: the
   skill]**. Larger context still arrives through handoff CSTs.
@@ -172,7 +172,7 @@ since.
   results come back in the next `user` line as `tool_result`. one model response is written as
   several `assistant` lines (one per content block) that share `.message.id` and repeat the same
   `.message.usage` — sum usage once per id, never per line (a per-line sum read ~4× too high,
-  2026-10-08). `x fleet ops` and `ccrow/harvest.ts` dedupe this way; `x/go/probe.go` reads
+  2026-10-08). `x fleet ops` and `_crow/harvest.ts` dedupe this way; `x/go/probe.go` reads
   one answer.
 - `~/.claude.json` is **state, not config** — rewritten whole from memory; hand edits mid-session get
   clobbered.

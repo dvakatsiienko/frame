@@ -216,7 +216,7 @@ test('a reply with no 🔭 line names its background work in the row', async ($,
 const standingWatch = (id: string) =>
     id === 'w1'
         ? {
-              command: '~/frame/cclio/.claude/hooks/watch-once.sh pr',
+              command: '~/frame/_clio/.claude/hooks/watch-once.sh pr',
               description: 'Arm the one-shot pr watch',
               id,
               status: 'running',
@@ -272,7 +272,7 @@ test('a watch named only by its watch-once.sh command is not a wait', async ($, 
     await $.classic.Stop({
         background_tasks: [
             {
-                command: '~/frame/cclio/.claude/hooks/watch-once.sh ci',
+                command: '~/frame/_clio/.claude/hooks/watch-once.sh ci',
                 description: 'Watch ci on the head once',
                 id: 'w3',
                 status: 'running',

@@ -12,8 +12,8 @@ const POINTERS = [
     'home/.claude/CLAUDE.md',
     'home/.claude/rules',
     'home/.claude/plugin-x/skills',
-    'cclio/plugin-cclio/skills',
-    'cclio/memory',
+    '_clio/plugin-clio/skills',
+    '_clio/memory',
     'recipes',
     'AGENTS.md',
 ];

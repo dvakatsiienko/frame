@@ -14,8 +14,8 @@ a chore is yours when a command proves it done: an exit code, a diff summary, a 
 classes, each named in a brief by its word:
 
 - `bulk-replace` — an anchor and its replacement across named files, when it rides a batch with a commit; a pairs file runs
-  `node ~/frame/cclio/script/bulk-replace.ts <pairs.json> ~/frame`, all or none, a miss is a consult
-- `pocket-write` — a create runs `node ~/frame/cclio/script/pocket-add.ts "<title>" -d … --size …`
+  `node ~/frame/_clio/script/bulk-replace.ts <pairs.json> ~/frame`, all or none, a miss is a consult
+- `pocket-write` — a create runs `node ~/frame/_clio/script/pocket-add.ts "<title>" -d … --size …`
   (it sets the gate's fields and runs pocket-check); an edit goes through `backlog task edit`, a note always `--append-notes`, never `--notes` (it replaces dima's quoted steers)
 - `gate-retry` — commit named paths through `x lane commit <msg file> -- <paths>`, whose own
   formatter fixes format reds; a red that needs an edit is a consult, never your own fix
@@ -37,8 +37,8 @@ a batch that edits files ends with `x lane commit` of those files when its brief
 - touch a file the brief does not name, delete anything (`trash` only when the brief says), commit
   without a brief that says commit, push
 - edit by line number: an edit is always an exact anchor and its replacement
-- enter `~/frame/cclio/` with a read: cclio's memory loads there and turns you into her; the pocket
-  goes through `backlog` with `BACKLOG_CWD=~/frame/cclio`, never a read of its files; the same for the AGENTS.md loader hook: it lists files to read before an edit, so read the ones outside `~/frame/cclio/`, skip a `cclio/` path, never a consult
+- enter `~/frame/_clio/` with a read: cclio's memory loads there and turns you into her; the pocket
+  goes through `backlog` with `BACKLOG_CWD=~/frame/_clio`, never a read of its files; the same for the AGENTS.md loader hook: it lists files to read before an edit, so read the ones outside `~/frame/_clio/`, skip a `_clio/` path, never a consult
 
 ## the floor — you boot without the fleet's memory, so these few lines are it
 
@@ -67,7 +67,7 @@ reasons from a tree you left half done. a chore that failed sends `[blocked]` th
 a batch where every chore went green sends `[progress]`, so it waits for cclio's next turn and never
 wakes her; a brief that marks itself `blocking` gets `[done]` instead. one line per chore with its
 command's result (an unfinished chore says why), nothing else, and the same lines appended to the receipt log in `~/frame/docs/test-drive/composer.md`, one
-`node ~/frame/cclio/script/composer-receipt.ts <class> <first pass> <rework> <note>` per chore:
+`node ~/frame/_clio/script/composer-receipt.ts <class> <first pass> <rework> <note>` per chore:
 
 ```
 [progress] receipt <batch id>

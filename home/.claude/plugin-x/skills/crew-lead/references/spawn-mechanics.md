@@ -239,7 +239,7 @@ directory in the brief, every path absolute.**
   inside — an agent ping is always distinguishable from a human one.
 - ✅ non-intrusive in practice. dima: *«does not look like spamming»*.
 - **a script can write to a session's inbox socket directly, no cc in between** [verified 2.1.291,
-  `ccrow/lib.ts` `sendLine`]: one newline-terminated json frame per connection —
+  `_crow/lib.ts` `sendLine`]: one newline-terminated json frame per connection —
 
       {"type":"user","message":{"content":"<text>"},"from_name":"<label>","priority":"next","uuid":"<uuid v4>"}
 
@@ -356,7 +356,7 @@ asked for the canary with no tools.
 
 ## 12. method lessons specific to probing spawns
 
-the general ones live in `cclio/memory/method-report-verify.md`. this subject's own:
+the general ones live in `_clio/memory/method-report-verify.md`. this subject's own:
 
 - 🚨 **a model's self-report of its own tool list is unreliable** — sessions answered yes to
   "do you have `ListAgents`" where it was absent. a **forced call** or a `ToolSearch` resolution

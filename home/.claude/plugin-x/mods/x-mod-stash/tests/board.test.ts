@@ -500,7 +500,7 @@ test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) 
             alive: [1, 2, 3],
             patch: { 3: { name: '🐦 ⬛ ccrow', sessionId: 'c3c3c3c3-crow' } },
             reads: {
-                '/home/.local/state/ccrow/notes.jsonl': JSON.stringify({
+                '/home/.local/state/crow/notes.jsonl': JSON.stringify({
                     at: new Date(NOW - MIN).toISOString(),
                     note: '- 👀 **for you:** read me aloud',
                 }),
@@ -524,7 +524,7 @@ test("ccrow's line leads with read and pause, and stop closes it (dima, 18:29)",
             alive: [1, 2, 3],
             patch: { 3: { name: '🐦 ⬛ ccrow', sessionId: 'c3c3c3c3-crow' } },
             reads: {
-                '/home/.local/state/ccrow/notes.jsonl': JSON.stringify({
+                '/home/.local/state/crow/notes.jsonl': JSON.stringify({
                     at: new Date(NOW - MIN).toISOString(),
                     note: '- 👀 **for you:** read me aloud',
                 }),
@@ -666,7 +666,7 @@ test("a row links the ticket in its session's name", async ($, on) => {
 
 // ccrow's notes file as her wakes write it: one json line per note, the 👀 «for you» line inside the note's text
 const crowNotes = (notes: { at: number; note: string }[]) => ({
-    '/home/.local/state/ccrow/notes.jsonl': notes
+    '/home/.local/state/crow/notes.jsonl': notes
         .map((n) =>
             JSON.stringify({ at: new Date(n.at).toISOString(), note: n.note }),
         )

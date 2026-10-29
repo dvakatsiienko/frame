@@ -2,10 +2,10 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - cclio/blueprints/comms.md
-  - cclio/blueprints/AGENTS.md
-  - cclio/plugin-cclio/skills/author-blueprint/SKILL.md
-  - cclio/plugin-cclio/skills/author-blueprint/references/readable.md
+  - _clio/blueprints/comms.md
+  - _clio/blueprints/AGENTS.md
+  - _clio/plugin-clio/skills/author-blueprint/SKILL.md
+  - _clio/plugin-clio/skills/author-blueprint/references/readable.md
 script: research:lanes
 groomed: 2026-10-21 (dima)
 ---
@@ -32,13 +32,13 @@ dima's, 2026-10-21 (chat, folded, PK-243):
 
 ## the run
 
-- the tool must stay local, free, fast for cclio to read and edit, and editable by dima's drag — the grill in `cclio/blueprints/PRODUCT.md` is the bar every candidate is scored against; cost breaks ties
+- the tool must stay local, free, fast for cclio to read and edit, and editable by dima's drag — the grill in `_clio/blueprints/PRODUCT.md` is the bar every candidate is scored against; cost breaks ties
 - draw.io leads every vector: the blueprint tool since the 10-23 bench (`docs/test-drive/blueprints.md` § verdict); n8n only for automations; FigJam and Obsidian Canvas are re-checked only when the run asks «is there a better one?»
 - suggest a run when: a blueprint trial ends, a tool on the list ships a major, or dima says a tool feels clunky
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. one research round per `x:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
-3. the hands-on round: every adopted find tried on the mapped boards (`cclio/blueprints/AGENTS.md`), the cost of one board edit measured before and after. done: each find kept with its numbers or dropped. (open)
+3. the hands-on round: every adopted find tried on the mapped boards (`_clio/blueprints/AGENTS.md`), the cost of one board edit measured before and after. done: each find kept with its numbers or dropped. (open)
 4. distill into every artifact (`cclio:shape-recipe` step 2). done: each touched or named «unchanged». (open)
 5. findings print; a tool ranking, when one is asked, in the `x:top-seven` shape. done: the print reached dima. (template)
 6. log today's line in `log.md`. done: the line is there. (open)
@@ -64,10 +64,10 @@ dima's, 2026-10-21 (chat, folded, PK-243):
 
 ## artifacts
 
-- `cclio/blueprints/comms.md` — the scored shortlist and its numbers; the distill rewrites it whole
-- `cclio/blueprints/AGENTS.md` — the tool doors; the distill touches only a door that changed
-- `cclio/plugin-cclio/skills/author-blueprint/SKILL.md` — the draw and read-back steps; the distill adds a step only when a find changes what cclio does every board
-- `cclio/plugin-cclio/skills/author-blueprint/references/readable.md` — the readability and efficiency craft; the distill merges the finds that held on the boards
+- `_clio/blueprints/comms.md` — the scored shortlist and its numbers; the distill rewrites it whole
+- `_clio/blueprints/AGENTS.md` — the tool doors; the distill touches only a door that changed
+- `_clio/plugin-clio/skills/author-blueprint/SKILL.md` — the draw and read-back steps; the distill adds a step only when a find changes what cclio does every board
+- `_clio/plugin-clio/skills/author-blueprint/references/readable.md` — the readability and efficiency craft; the distill merges the finds that held on the boards
 
 ## findings
 

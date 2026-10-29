@@ -1,0 +1,208 @@
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70"
+  },
+  "permissions": {
+    "additionalDirectories": [
+      "/Users/dima/frame"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh start"
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/session-probe.sh'",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/boot-prefetch.sh'"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/shift-recompact.sh'"
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/compact-carry.sh'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh fork-bash"
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
+            "if": "Bash(gh pr merge*)",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
+            "if": "Bash(claude *)",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node /Users/dima/frame/script/test-drive-list.ts --spawn-hook",
+            "if": "Bash(claude *)",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh fork-edit",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- /Users/dima/frame/_clio/.claude/hooks/pocket-check-on-write.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/wish-cover-on-write.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/dima/frame/_clio/script/blueprint-nudge.ts",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:relay'",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/schedule/jobs/x-changedetector/watch-nudge.ts'",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/prompt-raw-save.ts'",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh announce",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {}'",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:unvetted'",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/session-probe.sh'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {} --precompact'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "bashOutputMaxChars": 8000,
+  "outputStyle": "output-glados",
+  "enabledPlugins": {
+    "cclio@cclio": true,
+    "neuroarxiv@neuroarxiv": true,
+    "fast-jev-compaction@fast-jev-compaction": false,
+    "cc-plugin-you-should-know@builtin": false,
+    "x-cw@x-com": false
+  },
+  "extraKnownMarketplaces": {
+    "cclio": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/dima/frame/_clio/plugin-clio"
+      }
+    },
+    "neuroarxiv": {
+      "source": {
+        "source": "github",
+        "repo": "UditAkhourii/neuroarxiv"
+      },
+      "autoUpdate": true
+    }
+  }
+}

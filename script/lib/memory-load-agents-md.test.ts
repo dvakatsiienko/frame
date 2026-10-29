@@ -7,11 +7,11 @@ import { expect, it } from 'vitest';
 
 const hooks = join(import.meta.dirname, '../../home/.claude/shelf/hooks');
 
-// a home with frame/cclio as the session's project and frame/recipes beside it, each with its own AGENTS.md, and a
+// a home with frame/_clio as the session's project and frame/recipes beside it, each with its own AGENTS.md, and a
 // nested apps/a folder inside the project with one of its own
 function session() {
     const home = mkdtempSync(join(tmpdir(), 'agents-md-'));
-    const project = join(home, 'frame/cclio');
+    const project = join(home, 'frame/_clio');
     mkdirSync(project, { recursive: true });
     mkdirSync(join(home, 'frame/recipes'));
     writeFileSync(join(home, 'frame/AGENTS.md'), '# frame rules\n');

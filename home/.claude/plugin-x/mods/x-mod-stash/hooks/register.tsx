@@ -835,7 +835,7 @@ async function quietLedger($: EngineInterface, now: number) {
 // next poll
 async function relayCcrowWake($: EngineInterface) {
     if (!(await isLaneOwner($))) return;
-    const path = `${await $.env.get('HOME')}/.local/state/ccrow/relay.json`;
+    const path = `${await $.env.get('HOME')}/.local/state/crow/relay.json`;
     const raw = await $.fs.read(path).catch(() => undefined);
     if (!raw) return;
     let parked: Record<string, unknown> | null;
@@ -2597,7 +2597,7 @@ async function freshMeter($: EngineInterface) {
 // the engine's own compaction point as a % of the window, whatever set it: the project's override, or cc's default
 async function compactAtOf($: EngineInterface, window: number) {
     // the override as cc resolves it for this session: the settings merged for its project (cclio's 70 sits in
-    // ~/frame/cclio/.claude/settings.json), then the process env; the engine's breakdown reports its default either way
+    // ~/frame/_clio/.claude/settings.json), then the process env; the engine's breakdown reports its default either way
     const merged = await $.settings.read().catch(() => undefined);
     const set =
         (typeof merged?.env === 'object' && merged.env
@@ -2649,7 +2649,7 @@ async function setCompactAt(
         compactTrail.push(was.compactAt);
     compactTrail = isTyping ? [...compactTrail, typed.value] : [];
     // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
-    // later one (cclio's read ~/frame while it launched in ~/frame/cclio, 2026-10-09)
+    // later one (cclio's read ~/frame while it launched in ~/frame/_clio, 2026-10-09)
     const launchPid = (await procNow($))?.pid;
     const launched = launchPid
         ? await $.fs
@@ -2665,7 +2665,7 @@ async function setCompactAt(
     const dir = launched ?? projectDir;
     if (!dir) return keep('no project dir for this session');
     // a repo top's own settings.local.json outranks every subdir's, its shared settings.json does not (probed
-    // 2026-10-10): the top writes the shared file, so a subdir session (cclio in ~/frame/cclio) keeps its own value
+    // 2026-10-10): the top writes the shared file, so a subdir session (cclio in ~/frame/_clio) keeps its own value
     const root = (await $.session.repo().catch(() => undefined))?.root;
     const path = `${dir}/.claude/${dir === root ? 'settings.json' : 'settings.local.json'}`;
     let settings: Record<string, unknown> = {};
@@ -3361,7 +3361,7 @@ async function crowTip(
     now: number,
 ) {
     const raw = await $.fs
-        .read(`${home}/.local/state/ccrow/notes.jsonl`)
+        .read(`${home}/.local/state/crow/notes.jsonl`)
         .catch(() => '');
     for (const line of raw.trim().split('\n').reverse()) {
         try {

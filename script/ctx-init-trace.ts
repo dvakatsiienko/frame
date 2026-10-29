@@ -93,12 +93,21 @@ async function initRowOf(file: string, sid: string, dir: string) {
 }
 
 export function seatOf(dir: string, firstMessage: string): Seat {
-    if (firstMessage.includes('/x:crew-verifier')) return 'verifier';
-    if (firstMessage.includes('crew-coder')) return 'coder';
-    if (/^-Users-dima(-projects-dotfiles|-frame)-cclio$/.test(dir))
+    // read-both below: transcripts before the 10-29 rename carry the old skill ids and dirs
+    if (/\/x:crew-(verifier|sixth-sense)\b/.test(firstMessage))
+        // read-both
+        return 'verifier';
+    if (/crew-(coder|codie)\b/.test(firstMessage)) return 'coder'; // read-both
+    if (
+        /^-Users-dima(-projects-dotfiles-cclio|-frame-cclio|-frame--clio)$/.test(
+            dir,
+        )
+    )
+        // read-both
         return 'cclio';
-    if (dir.startsWith('-Users-dima--local-state-ccrow')) return 'ccrow';
-    if (dir.startsWith('-Users-dima--local-state-composer')) return 'composer';
+    if (/^-Users-dima--local-state-(ccrow|crow)/.test(dir)) return 'ccrow'; // read-both
+    if (/^-Users-dima--local-state-(composer|helga)/.test(dir))
+        return 'composer'; // read-both
     if (dir === '-Users-dima-frame') return 'cc';
     return 'other';
 }
@@ -218,10 +227,10 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
 const MEMORY_PATHS = [
     'home/.claude/rules',
     'home/.claude/CLAUDE.md',
-    'cclio/memory',
-    'cclio/AGENTS.md',
+    '_clio/memory',
+    '_clio/AGENTS.md',
     'home/.claude/plugin-x/skills',
-    'cclio/plugin-cclio/skills',
+    '_clio/plugin-clio/skills',
     'AGENTS.md',
     'home/.claude/settings.json',
 ];

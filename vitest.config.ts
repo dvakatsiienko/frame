@@ -11,8 +11,8 @@ export default defineConfig({
             '**/plugin-x/mods/*/**',
             // `cc` is a symlink to home/.claude: through it its 17 tests ran twice (332 listed → 315, 2026-10-08)
             'cc/**',
-            // its own pnpm root with its own deps: `pnpm -C cclio/blueprints/excalidraw test`
-            'cclio/blueprints/excalidraw/**',
+            // its own pnpm root with its own deps: `pnpm -C _clio/blueprints/excalidraw test`
+            '_clio/blueprints/excalidraw/**',
         ],
     },
 });

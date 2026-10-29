@@ -6,7 +6,7 @@
 
 <p align="center"><a href="https://github.com/dvakatsiienko/frame"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tour-frame-dark.svg"><img src="assets/tour-frame-light.svg" width="49%" alt="frame"></picture></a> <a href="https://github.com/dvakatsiienko/bytes"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tour-bytes-dark.svg"><img src="assets/tour-bytes-light.svg" width="49%" alt="bytes"></picture></a></p>
 
-### [this week, by the fleet](https://github.com/dvakatsiienko/frame/tree/main/cclio/gazette)
+### [this week, by the fleet](https://github.com/dvakatsiienko/frame/tree/main/_clio/gazette)
 
 <img src="assets/board.svg" width="100%" alt="fleet board: this week's agent commits, tickets and skills">
 <p align="center"><img src="assets/langs.svg" width="49%" alt="top languages"> <img src="assets/lazy.svg" width="49%" alt="commits by time of day"></p>

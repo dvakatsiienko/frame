@@ -4,7 +4,7 @@ dies-when: recipes/refresh-system-checkup is retired — until then it is that r
 
 Ticket: none (pocket PK-203)
 
-three lanes ran 2026-10-19 on cclio/.scratch/system-checkup/brief.md: this file is the opus source-reading lane; the exa and parallel lanes agreed on the checklist and split on the shape (parallel: user-only skill; opus: user-only blocks scheduled runs, so the cadence needs a model-invocable skill or a script).
+three lanes ran 2026-10-19 on _clio/.scratch/system-checkup/brief.md: this file is the opus source-reading lane; the exa and parallel lanes agreed on the checklist and split on the shape (parallel: user-only skill; opus: user-only blocks scheduled runs, so the cadence needs a model-invocable skill or a script).
 
 # system checkup — the source lane (opus)
 
@@ -37,7 +37,7 @@ How I ranked it **[inferred]**: practitioners say failure analysis pays off most
 
 Each line pairs a check with the local file that runs it. All files were read 2026-10-19.
 
-- 2 context weight → `~/frame/recipes/nurture-memory/scripts/memory-lint.ts` (a size budget per file, at commit, via `~/frame/lefthook.yaml:42`). `~/frame/cclio/.claude/hooks/boot-prefetch.sh:297-318` logs the spawn ctx to `shelf/barrel-probe.log`. The sweep ranks files resident × never-used (`recipe.md:110`).
+- 2 context weight → `~/frame/recipes/nurture-memory/scripts/memory-lint.ts` (a size budget per file, at commit, via `~/frame/lefthook.yaml:42`). `~/frame/_clio/.claude/hooks/boot-prefetch.sh:297-318` logs the spawn ctx to `shelf/barrel-probe.log`. The sweep ranks files resident × never-used (`recipe.md:110`).
 - 3 stale or contradictory → `~/frame/recipes/nurture-memory/recipe.md:113` (prompt-audit, step 7's cruft pass). This only runs during a sweep, not on a schedule.
 - 4 dead imports → the barrel probe proves the import chain loads in a fresh process (`boot-prefetch.sh:297-318`). Dead paths at commit are still open as pk-169.
 - 5 trigger accuracy → `~/frame/script/skill-route.ts` plus `script/jev-test.ts` fixtures; `~/frame/script/memory-load-replay.py` measures the lazy-rule hit rate. `claude plugin eval` is not run anywhere; pk-10 and pk-119 are open.
@@ -48,7 +48,7 @@ Each line pairs a check with the local file that runs it. All files were read 20
 - 12 secrets (one path only) → `~/frame/script/git-crypt-rename-check.ts`, at commit.
 - 13 eval regressions → `jev-test.ts`; `boot-prefetch.sh:320` `test-drive:check`; `shift-checkup.ts`.
 - 14 dependencies → `boot-prefetch.sh:108-125` (renovate counts, the evergreen apps lane, `govulncheck`); `~/frame/script/skill-evergreen-apps.ts`.
-- 15 processes and worktrees → `boot-prefetch.sh:94-106` (live sessions, bytes worktrees, coder PRs) and `:284-295` (stale warm spare); `~/frame/cclio/script/halt-sweep.ts`.
+- 15 processes and worktrees → `boot-prefetch.sh:94-106` (live sessions, bytes worktrees, coder PRs) and `:284-295` (stale warm spare); `~/frame/_clio/script/halt-sweep.ts`.
 - other drift → `boot-prefetch.sh:270` (settings symlink), `:139-168` (repos vs origin), `:170` (CI reds), `:176-187` (n8n tables), `:331` (pocket-check); `~/frame/script/fleet-hazards-check.ts` (a hazard line names its guard); `~/frame/script/x-cli-census.ts` (raw Bash heads no x verb covers).
 - the boot's own rule → `boot-prefetch.sh:5-6`: «a check that cannot run prints FAIL, never silence». That is the right base for a checkup.
 

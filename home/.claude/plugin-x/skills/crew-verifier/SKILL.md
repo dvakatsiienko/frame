@@ -144,7 +144,7 @@ are the dna's pr pair.
 ## exit
 
 - **record the clean** before it reaches the coder (a quick lane: § the quick lane):
-  `~/frame/cclio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>`. cclio's pr
+  `~/frame/_clio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>`. cclio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
 - **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
   plans without a word); the coordinator decamps it on dima's word. the coder's tree is the

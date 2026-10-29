@@ -5,7 +5,7 @@ artifacts:
   - docs/knowledge/fleet-operator-comms.md
   - home/.claude/rules/fleet-output-format.md
   - home/.claude/output-styles/output-fun.md
-  - cclio/memory/habit-dima-comms.md
+  - _clio/memory/habit-dima-comms.md
 script: none
 groomed: 2026-10-10 (dima)
 was: [refresh-comms, refresh-fleet-comms]
@@ -82,7 +82,7 @@ dima, 2026-10-10: «after we run this recipe first time, i get the most meaningf
 - `docs/knowledge/fleet-operator-comms.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
 - `home/.claude/rules/fleet-output-format.md` — the reply shape; the run proposes line changes, dima approves
 - `home/.claude/output-styles/output-fun.md` — the voice; same, his word only
-- `cclio/memory/habit-dima-comms.md` — cclio's pacing habits; proposals announced, edited on his word
+- `_clio/memory/habit-dima-comms.md` — cclio's pacing habits; proposals announced, edited on his word
 
 ## findings
 

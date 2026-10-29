@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { gitEnv } from '../../../script/lib/git-fixture.ts';
 
 const LINT = join(import.meta.dirname, 'memory-lint.ts');
-const LEAF = 'cclio/memory/leaf.md';
+const LEAF = '_clio/memory/leaf.md';
 const BUDGETS = 'recipes/nurture-memory/scripts/memory-budgets.tsv';
 // a hook run exports GIT_INDEX_FILE and friends; without this the fixture writes the real index
 const env = gitEnv();
@@ -20,7 +20,7 @@ function repo(leaf: string, budget: number) {
     const git = (...args: string[]) =>
         execFileSync('git', args, { cwd: dir, env, stdio: 'ignore' });
     git('init', '-q');
-    mkdirSync(join(dir, 'cclio/memory'), { recursive: true });
+    mkdirSync(join(dir, '_clio/memory'), { recursive: true });
     mkdirSync(join(dir, 'recipes/nurture-memory/scripts'), { recursive: true });
     writeFileSync(join(dir, LEAF), leaf);
     writeFileSync(join(dir, BUDGETS), `${LEAF}\t${budget}\tseed\n`);
@@ -91,17 +91,17 @@ describe('memory-lint', () => {
 
     it('warns on a backticked repo path that is not on disk, naming file:line, and still passes', () => {
         const r = repo('- one line\n', 500);
-        r.stage(LEAF, '- one line\n- see `cclio/memory/gone.md` for it\n');
+        r.stage(LEAF, '- one line\n- see `_clio/memory/gone.md` for it\n');
         const out = r.lint();
         expect(out.status).toBe(0);
         expect(out.stdout + out.stderr).toContain(
-            `${LEAF}:2: \`cclio/memory/gone.md\``,
+            `${LEAF}:2: \`_clio/memory/gone.md\``,
         );
     });
 
     it('resolves a backticked path from the file own folder', () => {
         const r = repo('- one line\n', 500);
-        r.stage('cclio/memory/recipes/near.md', 'x\n');
+        r.stage('_clio/memory/recipes/near.md', 'x\n');
         r.stage(LEAF, '- one line\n- see `recipes/near.md` beside it\n');
         const out = r.lint();
         expect(out.stdout + out.stderr).not.toContain('not on disk');
@@ -111,7 +111,7 @@ describe('memory-lint', () => {
         const r = repo('- one line\n', 500);
         r.stage(
             LEAF,
-            '- see `cclio/memory/leaf.md:1`, `cclio/memory/<name>.md`, `cclio/*.md`, `a/b`, `not/real.md` and `cclio/memory/x y`\n',
+            '- see `_clio/memory/leaf.md:1`, `_clio/memory/<name>.md`, `_clio/*.md`, `a/b`, `not/real.md` and `_clio/memory/x y`\n',
         );
         expect(r.lint().status).toBe(0);
     });
@@ -132,7 +132,7 @@ describe('memory-lint', () => {
     });
 
     it('warns with both locations on a 12+ word sentence in two files', () => {
-        const other = 'cclio/memory/other.md';
+        const other = '_clio/memory/other.md';
         const sentence =
             'the quick brown fox jumps over the lazy dog while the cat watches them closely.';
         const r = repo(`- ${sentence}\n`, 500);
@@ -144,8 +144,8 @@ describe('memory-lint', () => {
 
     it('stays silent on a short sentence in two files', () => {
         const r = repo('- a short repeated line here.\n', 500);
-        r.stage('cclio/memory/other.md', '- a short repeated line here.\n');
-        expect(r.lint('cclio/memory/other.md').stderr).not.toContain('⚠');
+        r.stage('_clio/memory/other.md', '- a short repeated line here.\n');
+        expect(r.lint('_clio/memory/other.md').stderr).not.toContain('⚠');
     });
 
     it('warns, never fails, on a closed ticket beside «waiting on»', () => {
@@ -173,8 +173,8 @@ describe('memory-lint', () => {
 
     it('stops a new memory file that has no budget row', () => {
         const r = repo('- one line\n', 500);
-        r.stage('cclio/memory/new-leaf.md', '- a new leaf\n');
-        expect(r.lint('cclio/memory/new-leaf.md').stderr).toContain(
+        r.stage('_clio/memory/new-leaf.md', '- a new leaf\n');
+        expect(r.lint('_clio/memory/new-leaf.md').stderr).toContain(
             'no budget row',
         );
     });
@@ -188,11 +188,11 @@ describe('memory-lint', () => {
     it('seeds only the missing rows and keeps a raise', () => {
         const r = repo('- one line\n', 500);
         r.stage(BUDGETS, `${LEAF}\t900\ta raise with its reason\n`);
-        r.stage('cclio/memory/new-leaf.md', '- a new leaf\n');
+        r.stage('_clio/memory/new-leaf.md', '- a new leaf\n');
         r.seed();
         expect(r.read(BUDGETS)).toContain(
             `${LEAF}\t900\ta raise with its reason`,
         );
-        expect(r.read(BUDGETS)).toContain('cclio/memory/new-leaf.md');
+        expect(r.read(BUDGETS)).toContain('_clio/memory/new-leaf.md');
     });
 });

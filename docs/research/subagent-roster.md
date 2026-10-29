@@ -5,7 +5,7 @@ Ticket: none
 
 # a baseline subagent roster for a solo fleet
 
-source-reading lane. every claim names its source; «?» marks what i could not verify. "our cards" are `/Users/dima/frame/home/.claude/agents/*.md` and `/Users/dima/frame/cclio/.claude/agents/checkup.md`.
+source-reading lane. every claim names its source; «?» marks what i could not verify. "our cards" are `/Users/dima/frame/home/.claude/agents/*.md` and `/Users/dima/frame/_clio/.claude/agents/checkup.md`.
 
 headline: keep all six cards. widen checkup so it reads the original wish and gives two verdicts (intent, quality) instead of adding a second reviewer. don't add a cleaner card; the bundled `/simplify` already does that job, run after review passes.
 

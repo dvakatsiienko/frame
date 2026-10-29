@@ -232,10 +232,10 @@
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it
   - makes: at a repo top, a change in the tracked `.claude/settings.json` that waits in git to be committed; anywhere else an untracked local file
-  - decision: a repo top's own local file outranks every subdir's, its shared file does not (probed 2026-10-10) — so frame's 92 sits in the shared file and cclio's 70 in `~/frame/cclio` wins for her (dima, 11:25: «for cclio, it should be tied to that 70 value, her local override»)
+  - decision: a repo top's own local file outranks every subdir's, its shared file does not (probed 2026-10-10) — so frame's 92 sits in the shared file and cclio's 70 in `~/frame/_clio` wins for her (dima, 11:25: «for cclio, it should be tied to that 70 value, her local override»)
   - when he types anything else, or the file is not a json object
   - then one red line under the meters says why, and the file stays untouched
-  - decision: the project is the dir the session launched in, as its registry entry's `cwd` names it (cclio's is `~/frame/cclio`), never the repo root and never user settings — every session in that dir shares the point
+  - decision: the project is the dir the session launched in, as its registry entry's `cwd` names it (cclio's is `~/frame/_clio`), never the repo root and never user settings — every session in that dir shares the point
   - decision: the registry's `cwd`, not `session.start`'s — cclio's session.start read `~/frame`, and dima's 90 landed in the repo root's file, lowering every `~/frame` session's point too (19:19)
   - proof: tests/meters.test.ts::typing a compaction point saves it with no Enter / a compaction point outside 10–99 is refused / a settings file that is not a json object is refused and left untouched, plus the repo-top and subdir cases
 - ✅ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json` on every measure whose rate limits moved, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it
@@ -300,7 +300,7 @@
   - given ccrow's newest note written today holds a `👀 **for you:** …` line, with or without a leading `- `
   - when the board draws
   - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, 🔊 ▶️ ⏹️ all before it, reading it through speak (dima's shots, 10-13 18:29, 19:40: «you forgot to move stop btn to the left too»); no other row ever carries it, and a tip from a past day never draws, even under 24 h old (dima, 10-13: yesterday's tip showed today)
-  - source: `~/.local/state/ccrow/notes.jsonl`, read by the poll for her row only
+  - source: `~/.local/state/crow/notes.jsonl`, read by the poll for her row only
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
   - proof: tests/board.test.ts::ccrow's row shows her newest 👀 for-you tip in the wait slot (+ tip over a day old leaves, from yesterday never draws, no bullet, no other row, ccrow's line leads with read and pause)
@@ -811,7 +811,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - then the board marks them stale and the session's reminder says so in one line
 
 - ✅ cclio's thread sends ccrow's wake itself (brief 8)
-  - given ccrow's wake script parked a wake for her desktop tab in `~/.local/state/ccrow/relay.json`
+  - given ccrow's wake script parked a wake for her desktop tab in `~/.local/state/crow/relay.json`
   - when cclio's poll next ticks, then x-mod-stash sends its line to ccrow's session id (`$.session.send`, no model, cclio sees nothing) and marks it `isSent`, so cclio's prompt hook only starts the harvester
   - given the send does not go out, then the wake stays parked and the next poll sends it; her prompt hook never asks her to forward it
   - decision: the old «forward this line» ask in cclio's context is retired — the mod-sent wake arrived from `x-mod-stash` and started ccrow's turn in her desktop tab (ccrow, 2026-10-12 19:21; brief 10 item 2)

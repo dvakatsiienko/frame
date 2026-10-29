@@ -8,8 +8,8 @@ cook here too. A mix.
 Main environment is macOS, managed by symlinks.
 This is where the agent system itself (currently Claude Code CLI) is developed (`home/.claude/`).
 
-🚫 **`cclio/` is the coordinator's home.** A session not booted as the coordinator never cds into
-or reads under `cclio/` — its memory autoloads and quietly rebrands whoever enters. Asked to boot as
+🚫 **`_clio/` is the coordinator's home.** A session not booted as the coordinator never cds into
+or reads under `_clio/` — its memory autoloads and quietly rebrands whoever enters. Asked to boot as
 cclio from here: load `x:cclio-mode`.
 
 ## the dotfiles
@@ -87,7 +87,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   past its `dies-when` means deleting or flagging it.
 - **Test drives** — `docs/test-drive/<subject>.md`, one file per tool or lane on trial (`parallel`, `review-stack`,
   `ctx-burn`, `notes-stack/` with its bench scripts). A test drive is a running measurement any session
-  may append a round to, so it lives here and never under `cclio/`; it closes with a verdict line
+  may append a round to, so it lives here and never under `_clio/`; it closes with a verdict line
   (adopted / dropped) and stays as the record. A research doc answers once; a test drive accumulates.
   Its flow is cclio's `cclio:shape-test-drive`; `pnpm test-drive:check` reds an overdue, undated or copied date.
 

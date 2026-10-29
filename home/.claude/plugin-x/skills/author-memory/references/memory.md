@@ -33,7 +33,7 @@ sibling to `skill.md`: that one is how to write a skill, this one is where anyth
 - **`rules/*.md` with `paths:`** — a convention tied to a kind of file or a directory. test: does a glob name when it matters? a topic or an intention has no glob
 - **`~/projects/AGENTS.md`** — every coding session, no coordinator; a deliberate stub today
 - **a project `AGENTS.md`** — that one project (`memory-project.md`). test: wrong or meaningless in another repo?
-- **`cclio/memory/*`** — the coordinator only. test: would a coder be misled by it?
+- **`_clio/memory/*`** — the coordinator only. test: would a coder be misled by it?
 - **a skill** — a procedure, or anything needed occasionally; on demand, never resident. test: would someone invoke it by name?
 - **a hook, `settings.json`, `permissions.deny`** — anything that must happen. «always» or «before every» is enforcement, and memory is context, not enforcement **[read]**
 
@@ -151,7 +151,7 @@ more specific wins, narrowest last: root `CLAUDE.md` → `rules/*.md` → `~/pro
 the mechanics above hold the wrong key, the import cost and the `MEMORY.md` cut; these bite on top:
 
 - ❗ **an `@import` path** resolves from the importing file: from `memory/_MEMORY.md` a sibling is `@leaf.md`, and `@memory/leaf.md` fails silently
-- ❗ **a hand-written barrel can lie** — `cclio/memory/` is index-authoritative, so a missing line disables a memory; cclio's barrel makes every leaf resident from turn one
+- ❗ **a hand-written barrel can lie** — `_clio/memory/` is index-authoritative, so a missing line disables a memory; cclio's barrel makes every leaf resident from turn one
 - ❗ **a subagent does not inherit the parent's cwd** — every path in a brief or a memfile is absolute
 
 ## how the files are organised

@@ -7,7 +7,7 @@
             "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?x\\s+lane\\s+pr-open\\b"
         ],
         "input": ["(?m)^\\s*- ticket:"],
-        "project": ["/cclio$"],
+        "project": ["/(cclio|_clio)$"],
         "prompt": ["\\b(?:FRM|BYT|DOT)-\\d+\\b", "linear\\.app/"],
         "signal": {
             "reply": [

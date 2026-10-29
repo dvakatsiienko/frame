@@ -8,7 +8,7 @@ dies-when: the verdict line below is written
 
 Ticket: none
 
-born 2026-10-16 on dima's tick (o14), from PK-153 (his inbox ask: is there a tool to maintain and organise our hand-made launchd jobs, agent-friendly and free). the first job moved: `x-cc-otel` (node, needs no tcc grant). the swift tcc jobs stay on launchd: the 10-16 throwaway probe (`cclio/.scratch/launchd-tools-r2/opus.md` § probe): straight under launchd it read «unknown» (its own responsible process, no grant); under pm2 it read «granted», but that pm2 was started from cclio's session and inherits the terminal's grants, so the pm2 half is inconclusive. how tcc judges a pm2 child after a reboot is unproven.
+born 2026-10-16 on dima's tick (o14), from PK-153 (his inbox ask: is there a tool to maintain and organise our hand-made launchd jobs, agent-friendly and free). the first job moved: `x-cc-otel` (node, needs no tcc grant). the swift tcc jobs stay on launchd: the 10-16 throwaway probe (`_clio/.scratch/launchd-tools-r2/opus.md` § probe): straight under launchd it read «unknown» (its own responsible process, no grant); under pm2 it read «granted», but that pm2 was started from cclio's session and inherits the terminal's grants, so the pm2 half is inconclusive. how tcc judges a pm2 child after a reboot is unproven.
 
 **test card:** we believe pm2 makes a node daemon easier to run, read and restart than a hand-made plist · we test it by moving `x-cc-otel` onto it and reaching for it on every «is the tap up», «why did it stop», «restart it» ask · we measure the calls and seconds per ask against the launchd door (`launchctl print` + the log file), restarts survived, the tap's jsonl gaps · we're right if every such ask is one pm2 call, the tap survives a crash and a reboot, and no day loses telemetry
 **kill rule:** a telemetry gap pm2 caused, or `pm2 startup` fails to bring the tap back after a login
@@ -17,7 +17,7 @@ dima's two questions the trial answers too: «I saw it has a pretty dashboard» 
 
 ## stress list
 
-day 0, 2026-10-16: three lanes (exa, parallel, opus source read), `cclio/.scratch/pm2-day0/`. pm2 7.0.4 here (stay ≥7.0.4: node 24.15 broke 7.0.1, [pm2#6111](https://github.com/Unitech/pm2/issues/6111)).
+day 0, 2026-10-16: three lanes (exa, parallel, opus source read), `_clio/.scratch/pm2-day0/`. pm2 7.0.4 here (stay ≥7.0.4: node 24.15 broke 7.0.1, [pm2#6111](https://github.com/Unitech/pm2/issues/6111)).
 
 - `pm2 startup` + `save`, reboot then log in — seconds from login to `:4318` answering; a LaunchAgent, so it starts at login, never before
 - the startup plist's pinned paths — the pnpm store path and `fnm/node-versions/v24.12.0` are frozen in; a node or pm2 upgrade, then a reboot: does the tap come back (y/n), `/tmp/com.PM2.err`

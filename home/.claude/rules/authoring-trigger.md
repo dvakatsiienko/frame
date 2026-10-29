@@ -6,7 +6,7 @@ paths:
   - "**/skills/**/*.md"
   - "**/commands/*.md"
   - "**/rules/*.md"
-  - "**/cclio/memory/*.md"
+  - "**/_clio/memory/*.md"
   - "**/recipes/*/recipe.md"
 ---
 

@@ -18,8 +18,8 @@
       "!speak/public/speak-*.svg", // the speak favicon, written by atelier:ship
       "!logos/marks", // brand marks and app icons fetched by art-kit logo.ts, byte-for-byte what the brand ships
       "!logos/data.gen.ts", // written by logos/build.ts
-      "!cclio/blueprints/*.n8n.json", // n8n workflow exports, byte-for-byte what its api returns
-      "!cclio/blueprints/excalidraw", // its own pnpm root; sorted keys would reorder the converter's elements and its diffs
+      "!_clio/blueprints/*.n8n.json", // n8n workflow exports, byte-for-byte what its api returns
+      "!_clio/blueprints/excalidraw", // its own pnpm root; sorted keys would reorder the converter's elements and its diffs
 
       // Not ours to format — editor/app config consumed verbatim, and themes
       // whose diffs would be pure noise.

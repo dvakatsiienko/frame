@@ -723,7 +723,7 @@ func quotesKept(message, msgFile string, paths []string) (string, error) {
 	if len(files) == 0 {
 		return "no memory, skill or rules file", nil
 	}
-	script := filepath.Join(sourceDir(), "../../cclio/script/quote-diff.py")
+	script := filepath.Join(sourceDir(), "../../_clio/script/quote-diff.py")
 	if !exists(script) {
 		return "not checked: no " + home(script), nil
 	}

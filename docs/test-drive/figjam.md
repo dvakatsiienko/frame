@@ -15,7 +15,7 @@ dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the pretties
 
 ## setup
 
-- the remote server `https://mcp.figma.com/mcp`, scoped local to `~/frame/cclio` and `~/frame/.scratch/figjam-probe` only (not user-wide, so no other session carries its tools)
+- the remote server `https://mcp.figma.com/mcp`, scoped local to `~/frame/_clio` and `~/frame/.scratch/figjam-probe` only (not user-wide, so no other session carries its tools)
 - figma account: Starter plan, View seat (whoami, 2026-10-20)
 - day 0 docs (researcher, 2026-10-20): the REST api writes no nodes; the remote mcp writes FigJam through `create_new_file`, `generate_diagram` (mermaid), `use_figma` (stickies, sections, connectors, shapes, tables); `get_figjam` reads the node tree back; drafts are unlimited on Starter, 3 team files; the docs disagree whether Starter can write and whether writes count against 20 calls a month
 

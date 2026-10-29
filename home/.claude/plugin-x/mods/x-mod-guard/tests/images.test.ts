@@ -32,7 +32,7 @@ const newTurn = ($: Engine) =>
     $.prompt.submit({ origin: { kind: 'composer' }, text: 'go', wait: false });
 
 test("cclio's 3rd image Read in a turn gets the helper-lite nudge, once", async ($, on) => {
-    world(on, '/home/frame/cclio');
+    world(on, '/home/frame/_clio');
     const counts: number[] = [];
     for (const f of ['a.png', 'b.jpg', 'c.jpeg', 'd.webp'])
         counts.push(nudges((await read($, `/tmp/shots/${f}`)).context));
@@ -40,7 +40,7 @@ test("cclio's 3rd image Read in a turn gets the helper-lite nudge, once", async 
 });
 
 test('a new turn starts the image count over', async ($, on) => {
-    world(on, '/home/frame/cclio');
+    world(on, '/home/frame/_clio');
     await read($, '/tmp/a.png');
     await read($, '/tmp/b.png');
     await newTurn($);
@@ -48,7 +48,7 @@ test('a new turn starts the image count over', async ($, on) => {
 });
 
 test('a text Read never counts as an image', async ($, on) => {
-    world(on, '/home/frame/cclio');
+    world(on, '/home/frame/_clio');
     await read($, '/tmp/a.png');
     await read($, '/tmp/b.md');
     expect(nudges((await read($, '/tmp/c.ts')).context)).toBe(0);

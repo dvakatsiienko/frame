@@ -1,0 +1,1320 @@
+import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import {
+    globSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
+import { connect } from 'node:net';
+import { homedir } from 'node:os';
+import { basename, join } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
+
+export const SESSION_NAME = '🐦‍⬛ ccrow';
+// CCROW_STATE_DIR moves every note, verdict and run off the real home, so a fixture never writes the live notes (FRM-339)
+export const STATE_DIR =
+    process.env.CCROW_STATE_DIR || join(homedir(), '.local/state/crow');
+const STORE_DIR = join(homedir(), '.claude/plugins/store');
+const HOT = 'hot:';
+export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
+export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
+export const USAGE_PATH = join(homedir(), '.claude/shelf/cc-usage-window.json');
+export const WAKE_GAP_MS = 30 * 60_000;
+export const MIN_STEPS = 10;
+export const SILENT_DAYS = 0; // dima 2026-10-06: live from day 1 — the silent notes were worth reading live
+const DELTA_MAX_CHARS = 60_000;
+const SESSIONS_DIR = join(homedir(), '.claude/sessions');
+
+export const armList = ['opus', 'fable'] as const;
+export const modeList = ['day', 'systematic', 'decision'] as const;
+
+export const armModels = {
+    fable: 'claude-fable-5-1',
+    opus: 'claude-opus-5-5',
+} as const satisfies Record<Arm, string>;
+
+// no user settings source: no user hooks, plugins or mods; disableAllHooks would block the mods in `pluginDirs` too (probed 2026-10-06)
+export function claudeArgs(
+    arm: Arm,
+    pluginDirs = '',
+    effort: Effort = 'medium',
+) {
+    return [
+        '--model',
+        armModels[arm],
+        '--effort',
+        effort,
+        '--setting-sources',
+        'project,local',
+        '--settings',
+        JSON.stringify({
+            crossSessionInbound: 'accept',
+            env: { CLAUDE_CODE_PLUGIN_DIRS: pluginDirs },
+            permissions: {
+                additionalDirectories: ['~'],
+                defaultMode: 'bypassPermissions',
+            },
+            skipDangerousModePermissionPrompt: true,
+        }),
+    ];
+}
+
+// the stash mod is found by its plugin name, never its dir: the dir gets renamed
+export function stashModOf(pluginDirs: string, home = homedir()) {
+    for (const entry of pluginDirs.split(':')) {
+        const dir = entry.replace(/^~(?=\/)/, home);
+        try {
+            const { name } = JSON.parse(
+                readFileSync(join(dir, '.claude-plugin/plugin.json'), 'utf8'),
+            );
+            if (typeof name === 'string' && /(^|-)stash$/.test(name))
+                return { dir, name };
+        } catch {}
+    }
+}
+
+export function userPluginDirs() {
+    const settings = JSON.parse(
+        readFileSync(join(homedir(), '.claude/settings.json'), 'utf8'),
+    );
+    return String(settings.env?.CLAUDE_CODE_PLUGIN_DIRS ?? '');
+}
+
+// $.store is one json file per plugin, shared by every session running it; the hash in its name is cc's
+export function storeOf(pluginName: string, storeDir = STORE_DIR) {
+    return globSync(`${pluginName}_inline-*.json`, { cwd: storeDir })
+        .map((f) => join(storeDir, f))
+        .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+}
+
+// stash's 🔥 keep-hot reads `hot:<sessionId>` at session.start; no `until`, so it never cools
+export function setHot(storePath: string, sessionId: string, now: number) {
+    const store = JSON.parse(readFileSync(storePath, 'utf8'));
+    store[HOT + sessionId] = { since: now };
+    writeFileSync(storePath, JSON.stringify(store));
+}
+
+export function clearHot(storePath: string, sessionId: string) {
+    const store = JSON.parse(readFileSync(storePath, 'utf8'));
+    delete store[HOT + sessionId];
+    writeFileSync(storePath, JSON.stringify(store));
+}
+
+// ccrow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
+// a /clear drops the boot prompt, so every wake line names the charter a fresh session reads first
+const CHARTER_PATH = join(
+    import.meta.dirname,
+    '../home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
+);
+
+export function readCharter() {
+    const skill = readFileSync(
+        new URL(
+            '../home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
+            import.meta.url,
+        ),
+        'utf8',
+    );
+    return skill.replace(/^---\n[\s\S]*?\n---\n+/, '');
+}
+
+export function isArm(value: string | undefined): value is Arm {
+    return armList.some((arm) => arm === value);
+}
+
+export function isMode(value: string | undefined): value is Mode {
+    return modeList.some((mode) => mode === value);
+}
+
+export function fail(line: string): never {
+    console.error(line);
+    process.exit(2);
+}
+
+export function readState(): State {
+    try {
+        const raw: Partial<State> = JSON.parse(
+            readFileSync(join(STATE_DIR, 'state.json'), 'utf8'),
+        );
+        return { ...raw, offsets: raw.offsets ?? {} };
+    } catch {
+        return { offsets: {} };
+    }
+}
+
+export function writeState(state: State) {
+    mkdirSync(STATE_DIR, { recursive: true });
+    writeFileSync(
+        join(STATE_DIR, 'state.json'),
+        `${JSON.stringify(state, null, 4)}\n`,
+    );
+}
+
+// the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ ccrow»
+const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
+
+// a coder whose cwd is ~/frame/_clio fires cclio's Stop hook too; only the coordinator's own thread wakes ccrow
+export function isCoordinatorTranscript(
+    transcriptPath: string,
+    sessionsDir = SESSIONS_DIR,
+) {
+    const sessionId = basename(transcriptPath, '.jsonl');
+    for (const file of readdirSync(sessionsDir)) {
+        if (!file.endsWith('.json')) continue;
+        try {
+            const entry: { name?: string; sessionId?: string } = JSON.parse(
+                readFileSync(join(sessionsDir, file), 'utf8'),
+            );
+            if (entry.sessionId !== sessionId) continue;
+            return bareName(entry.name ?? '')
+                .replace(/^\p{Extended_Pictographic}+/u, '')
+                .startsWith('cclio');
+        } catch {}
+    }
+    return false;
+}
+
+export function isAlive(pid: number) {
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+export function findSession(): LiveSession | undefined {
+    return findSessions()[0];
+}
+
+// a tab and a --bg ccrow alive together make every name match a coin flip
+export function oneCcrow(): LiveSession | undefined {
+    const live = findSessions();
+    if (live.length > 1)
+        fail(
+            `two ccrows are live (pids ${live.map((s) => s.pid).join(', ')}): stop the --bg one (pnpm ccrow:stop) or /clear the tab`,
+        );
+    return live[0];
+}
+
+export function findSessions(): LiveSession[] {
+    const found: LiveSession[] = [];
+    for (const file of readdirSync(SESSIONS_DIR)) {
+        if (!/^\d+\.json$/.test(file)) continue;
+        try {
+            const entry: Partial<LiveSession> = JSON.parse(
+                readFileSync(join(SESSIONS_DIR, file), 'utf8'),
+            );
+            // by name: a desktop tab has no job id, and a stored one outlives its session
+            const isOurs =
+                bareName(entry.name ?? '') === bareName(SESSION_NAME);
+            if (
+                isOurs &&
+                entry.pid &&
+                entry.cwd &&
+                entry.sessionId &&
+                entry.messagingSocketPath &&
+                isAlive(entry.pid)
+            ) {
+                found.push({
+                    cwd: entry.cwd,
+                    jobId: entry.jobId,
+                    messagingSocketPath: entry.messagingSocketPath,
+                    name: entry.name,
+                    pid: entry.pid,
+                    sessionId: entry.sessionId,
+                });
+            }
+        } catch {}
+    }
+    return found;
+}
+
+// with the user settings source off, the global rules/ dir is not read; a project rules dir is, but
+// only real files (a symlinked dir or file and an @-import outside the project load nothing, probed 2026-10-06)
+function copyRules() {
+    const from = join(homedir(), '.claude/rules');
+    const to = join(STATE_DIR, '.claude/rules');
+    mkdirSync(to, { recursive: true });
+    for (const name of readdirSync(from).filter((f) => f.endsWith('.md'))) {
+        writeFileSync(join(to, name), readFileSync(join(from, name)));
+    }
+}
+
+export async function startCcrow(arm: Arm) {
+    mkdirSync(STATE_DIR, { recursive: true });
+    copyRules();
+    const stash = stashModOf(userPluginDirs());
+    const result = spawnSync(
+        'claude',
+        [
+            '--bg',
+            '-n',
+            SESSION_NAME,
+            ...claudeArgs(arm, stash?.dir),
+            '--remote-control',
+            SESSION_NAME,
+            readCharter(),
+        ],
+        { cwd: STATE_DIR, encoding: 'utf8' },
+    );
+    if (result.error) fail(`cannot run claude: ${result.error.message}`);
+    const jobId = /backgrounded · (\S+)/.exec(
+        stripVTControlCharacters(result.stdout),
+    )?.[1];
+    if (result.status !== 0 || !jobId) {
+        fail(`claude --bg failed: ${(result.stderr || result.stdout).trim()}`);
+    }
+    writeState({ ...readState(), arm, jobId, startedAt: Date.now() });
+    console.log(
+        `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
+    );
+
+    // --bg ignores --session-id, so the id is known only once the registry lists ccrow
+    let live = findSession();
+    for (let i = 0; i < 30 && !live; i++) {
+        await sleep(1000);
+        live = findSession();
+    }
+    if (!live) {
+        console.log('🔥 off: ccrow not in the registry after 30 s');
+        return;
+    }
+    armHot(live.sessionId);
+}
+
+export function armHot(sessionId: string) {
+    const stash = stashModOf(userPluginDirs());
+    const store = stash && storeOf(stash.name);
+    if (!store) {
+        console.log('🔥 off: no stash mod or store file');
+        return;
+    }
+    setHot(store, sessionId, Date.now());
+    console.log(
+        `🔥 key hot:${sessionId} written; stash re-reads it at ccrow's next turn end and pings 50 min after`,
+    );
+}
+
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
+// a /clear or a reopened desktop tab starts a new transcript in ccrow's project dir; the newest is the live one
+export const RELAY_PATH = join(STATE_DIR, 'relay.json');
+
+// a wake parked past the gap advises on a dead state: a 10-13 20:28 wake reached the next day's ccrow (PK-129)
+export function dropStaleRelay(path = RELAY_PATH, now = Date.now()) {
+    const parkedAt = statSync(path, { throwIfNoEntry: false })?.mtimeMs;
+    if (parkedAt === undefined || now - parkedAt < WAKE_GAP_MS) return false;
+    rmSync(path);
+    return true;
+}
+export const HARVEST_DEADLINE_MS = 15 * 60_000;
+
+export function spawnHarvest(wake: Wake) {
+    spawnHarvester([wake.id, wake.mode, wake.phase]);
+}
+
+export function spawnHarvester(args: string[]) {
+    spawn(
+        process.execPath,
+        [new URL('harvest.ts', import.meta.url).pathname, ...args],
+        { detached: true, stdio: 'ignore' },
+    ).unref();
+}
+
+// the harvester finds ccrow's answer by this prefix; the evidence after it is free text
+export function reconcileMarker(noteId: string) {
+    return `reconcile ${noteId}:`;
+}
+
+export function newestTranscript() {
+    const dir = join(
+        homedir(),
+        '.claude/projects',
+        STATE_DIR.replaceAll(/[/.]/g, '-'),
+    );
+    try {
+        return globSync('*.jsonl', { cwd: dir })
+            .map((f) => join(dir, f))
+            .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+    } catch {}
+}
+
+// a terminal turn ends on turn_duration, a desktop tab's on stop_hook_summary (no turn_duration there)
+export function readTurn(path: string, marker: string): Run | undefined {
+    const entries = readLines(path).flatMap((line) => parseEntry(line) ?? []);
+    const start = entries.findIndex(
+        (entry) =>
+            entry.type === 'user' &&
+            JSON.stringify(entry.message?.content ?? '').includes(marker),
+    );
+    if (start === -1) return;
+    const end = entries.findIndex(
+        (entry, index) =>
+            index > start &&
+            entry.type === 'system' &&
+            (entry.subtype === 'turn_duration' ||
+                entry.subtype === 'stop_hook_summary'),
+    );
+    if (end === -1) return;
+    const usageById = new Map<string, Usage>();
+    let model: string | null = null;
+    let note = '';
+    for (const entry of entries.slice(start + 1, end)) {
+        if (entry.type !== 'assistant' || !entry.message) continue;
+        model = entry.message.model ?? model;
+        usageById.set(entry.message.id ?? '', entry.message.usage ?? {});
+        const content = entry.message.content;
+        for (const block of typeof content === 'string'
+            ? []
+            : (content ?? [])) {
+            if (block.type === 'text' && block.text?.trim())
+                note = block.text.trim();
+        }
+    }
+    const usages = [...usageById.values()];
+    return {
+        model,
+        note: note || 'none',
+        seconds: Math.round(
+            (entries[end]?.durationMs ??
+                Date.parse(entries[end]?.timestamp ?? '') -
+                    Date.parse(entries[start]?.timestamp ?? '')) / 1000,
+        ),
+        tokensIn: usages.reduce((sum, usage) => sum + tokensIn(usage), 0),
+        tokensOut: usages.reduce(
+            (sum, usage) => sum + (usage.output_tokens ?? 0),
+            0,
+        ),
+    };
+}
+
+export function transcriptPathOf(cwd: string, sessionId: string) {
+    return join(
+        homedir(),
+        '.claude/projects',
+        cwd.replaceAll(/[/.]/g, '-'),
+        `${sessionId}.jsonl`,
+    );
+}
+
+// a line still being written has no trailing newline yet; leave it for the next read
+export function readLines(path: string) {
+    const lines = readFileSync(path, 'utf8').split('\n');
+    lines.pop();
+    return lines.filter((line) => line.trim() !== '');
+}
+
+export function parseEntry(line: string): TranscriptEntry | undefined {
+    try {
+        return JSON.parse(line);
+    } catch {}
+}
+
+function textOf(content: TranscriptContent | undefined) {
+    if (typeof content === 'string') return content;
+    return (content ?? [])
+        .filter((block) => block.type === 'text')
+        .map((block) => block.text ?? '')
+        .join('\n');
+}
+
+function queuedText(prompt: TranscriptContent | undefined) {
+    if (typeof prompt === 'string') return prompt;
+    return (prompt ?? [])
+        .map((block) =>
+            block.type === 'image' ? '[image]' : (block.text ?? ''),
+        )
+        .filter(Boolean)
+        .join('\n');
+}
+
+const NOTIFICATION_MAX_CHARS = 2_000;
+
+// a task-notification carries a subagent's whole report; ccrow needs its gist and where the rest lives
+function capNotifications(text: string) {
+    let capped = 0;
+    const kept = text.replace(
+        /<task-notification>[\s\S]*?<\/task-notification>/g,
+        (block) => {
+            if (block.length <= NOTIFICATION_MAX_CHARS) return block;
+            capped++;
+            const file = /<output-file>([^<]*)<\/output-file>/.exec(block)?.[1];
+            return `${block.slice(0, NOTIFICATION_MAX_CHARS)} …[cut${file ? `; full: ${file}` : ''}]`;
+        },
+    );
+    return { capped, text: kept };
+}
+
+// the cut drops whole blocks from the head, so a packet never opens on an orphan fragment
+function lastBlocks(parts: string[]) {
+    const kept: string[] = [];
+    let size = 0;
+    for (const part of parts.toReversed()) {
+        if (size + part.length + 2 > DELTA_MAX_CHARS && kept.length > 0) break;
+        kept.unshift(part);
+        size += part.length + 2;
+    }
+    const text = kept.join('\n\n');
+    const dropped =
+        parts.length - kept.length + (text.length > DELTA_MAX_CHARS ? 1 : 0);
+    return { dropped, text: text.slice(-DELTA_MAX_CHARS) };
+}
+
+// ccrow times its sends off each block; a block whose entry has no timestamp prints none
+function headOf(who: string, timestamp?: string) {
+    const at = timestamp ? new Date(timestamp) : undefined;
+    return at && !Number.isNaN(at.getTime())
+        ? `## ${who} · ${pad(at.getHours())}:${pad(at.getMinutes())}`
+        : `## ${who}`;
+}
+
+// a compaction can re-append the old chain under its own uuids and stamps, so a line offset alone lets it back in
+export function transcriptDelta(lines: string[], fromLine: number) {
+    const stepIds = new Set<string>();
+    const parts: string[] = [];
+    let outputs = 0;
+    const seen = new Set(
+        lines.slice(0, fromLine).map((line) => parseEntry(line)?.uuid),
+    );
+    for (const entry of lines.slice(fromLine).map(parseEntry)) {
+        if (entry?.uuid) {
+            if (seen.has(entry.uuid)) continue;
+            seen.add(entry.uuid);
+        }
+        if (entry?.type === 'assistant') {
+            if (entry.message?.id) stepIds.add(entry.message.id);
+            const text = textOf(entry.message?.content).trim();
+            if (text)
+                parts.push(`${headOf('cclio', entry.timestamp)}\n${text}`);
+        }
+        // a message dima types while cclio is mid-turn lands as a queued_command attachment, never a user entry
+        if (
+            entry?.type === 'attachment' &&
+            entry.attachment?.type === 'queued_command'
+        ) {
+            const text = queuedText(entry.attachment.prompt).trim();
+            if (text && !text.includes('<cross-session-message'))
+                parts.push(`${headOf('dima', entry.timestamp)}\n${text}`);
+        }
+        // dima's orbit ticks and notes reach cclio only as hook context, never as a user entry
+        if (
+            entry?.type === 'attachment' &&
+            entry.attachment?.type === 'hook_additional_context'
+        ) {
+            const content = entry.attachment.content;
+            for (const line of typeof content === 'string'
+                ? [content]
+                : (content ?? [])) {
+                if (line.startsWith('orbit: dima marked'))
+                    parts.push(
+                        `${headOf('dima', entry.timestamp)}\n${line.trim()}`,
+                    );
+            }
+        }
+        if (entry?.type === 'user') {
+            const text = textOf(entry.message?.content).trim();
+            if (!text) continue;
+            const who = entry.origin?.kind === 'peer' ? 'peer' : 'dima';
+            if (who === 'dima' && (entry.isMeta || entry.isCompactSummary))
+                continue;
+            const notified = capNotifications(text);
+            outputs += notified.capped;
+            parts.push(`${headOf(who, entry.timestamp)}\n${notified.text}`);
+        }
+    }
+    const { dropped, text } = lastBlocks(parts);
+    return { cut: { blocks: dropped, outputs }, steps: stepIds.size, text };
+}
+
+// a packet that lost blocks or tool output names the transcript, so ccrow reads its tail only then
+export function cutLine(cut: Cut, transcriptPath: string) {
+    if (cut.blocks === 0 && cut.outputs === 0) return '';
+    return `cut: ${cut.blocks} older blocks dropped, ${cut.outputs} tool outputs capped · transcript ${transcriptPath}`;
+}
+
+export function resolveLeaves(patterns: string[], today: string) {
+    const found: string[] = [];
+    const missing: string[] = [];
+    for (const raw of patterns) {
+        const line = raw.trim();
+        if (!line || line.startsWith('#')) continue;
+        const isLatest = line.startsWith('latest ');
+        const pattern = (isLatest ? line.slice('latest '.length) : line)
+            .replaceAll('{today}', today)
+            .replace(/^~(?=\/)/, homedir());
+        const matches = globSync(pattern).filter((path) =>
+            statSync(path).isFile(),
+        );
+        if (matches.length === 0) {
+            missing.push(line);
+            continue;
+        }
+        if (isLatest) {
+            const newest = matches.toSorted(
+                (a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs,
+            )[0];
+            if (newest) found.push(newest);
+            continue;
+        }
+        found.push(...matches.toSorted());
+    }
+    return { found, missing };
+}
+
+// ccrow holds a leaf it read earlier in the same transcript; a /clear starts a new one and gets every leaf again
+export function leavesToSend(
+    paths: string[],
+    state: State,
+    ccrowTranscript: string | undefined,
+) {
+    const known =
+        state.leavesFor === ccrowTranscript ? (state.leafHashes ?? {}) : {};
+    const hashes: Record<string, string> = {};
+    const changed: string[] = [];
+    const unchanged: string[] = [];
+    for (const path of paths) {
+        hashes[path] = createHash('sha1')
+            .update(readFileSync(path))
+            .digest('hex');
+        (known[path] === hashes[path] ? unchanged : changed).push(path);
+    }
+    return { changed, hashes, unchanged };
+}
+
+export function buildPacket({
+    cut = '',
+    deltaText,
+    dir,
+    leaves,
+    ledger,
+    meter,
+    missing,
+    proposal,
+    unchanged = [],
+}: PacketInput) {
+    mkdirSync(dir, { recursive: true });
+    const proposalBlock = proposal
+        ? `## proposal · ${proposal}\n\n${readFileSync(proposal, 'utf8').trim()}`
+        : '';
+    const leafBlocks = leaves.map(
+        (path) => `## leaf · ${path}\n\n${readFileSync(path, 'utf8').trim()}`,
+    );
+    const unchangedNote = unchanged.length
+        ? `## leaves unchanged since your last read\n${unchanged.map((path) => `- ${path}`).join('\n')}`
+        : '';
+    const missingNote = missing.length
+        ? `## leaves with no match\n${missing.map((line) => `- ${line}`).join('\n')}`
+        : '';
+    const body = [
+        ...(ledger ? [ledger] : []),
+        ...(meter ? [meter] : []),
+        `# cclio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
+        proposalBlock,
+        ...leafBlocks,
+        unchangedNote,
+        missingNote,
+    ].filter(Boolean);
+    writeFileSync(join(dir, 'packet.md'), `${body.join('\n\n')}\n`);
+    return ['packet.md'];
+}
+
+// the words of each command in a shell line, quotes honoured, so a merge quoted in a commit message is no merge
+function shellCommands(line: string) {
+    const commands: string[][] = [];
+    let words: string[] = [];
+    let word = '';
+    let hasWord = false;
+    let quote = '';
+    const endWord = () => {
+        if (hasWord) words.push(word);
+        word = '';
+        hasWord = false;
+    };
+    const endCommand = () => {
+        endWord();
+        if (words.length) commands.push(words);
+        words = [];
+    };
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i] ?? '';
+        if (quote) {
+            if (char === quote) quote = '';
+            else if (char === '\\' && quote === '"') word += line[++i] ?? '';
+            else word += char;
+        } else if (char === '"' || char === "'") {
+            quote = char;
+            hasWord = true;
+        } else if (char === '\\') {
+            word += line[++i] ?? '';
+            hasWord = true;
+        } else if (/[;|&\n()]/.test(char)) {
+            endCommand();
+        } else if (/\s/.test(char)) {
+            endWord();
+        } else {
+            word += char;
+            hasWord = true;
+        }
+    }
+    endCommand();
+    return commands;
+}
+
+// a merge waits for ccrow's note; a member spawn wakes it and runs on; anything else is no decision
+export function decisionOf(line: string): Decision | undefined {
+    for (const command of shellCommands(line)) {
+        const words = command.slice(command.findIndex((w) => !/^\w+=/.test(w)));
+        if (words[0] === 'gh' && words[1] === 'pr' && words[2] === 'merge')
+            return { args: words.slice(3), kind: 'merge' };
+        if (words[0] === 'claude' && words.includes('--bg'))
+            return { kind: 'spawn' };
+    }
+}
+
+// a proposal cclio writes for dima wakes ccrow before he ticks it; any other write is no decision
+export function proposalOf(
+    tool: string | undefined,
+    path: string | undefined,
+    command?: string,
+): Decision | undefined {
+    if ((tool === 'Write' || tool === 'Edit') && path && PROPOSAL.test(path))
+        return { kind: 'proposal', path };
+    // a heredoc or tee writes the proposal from Bash: its target follows the redirect
+    if (tool === 'Bash' && command) {
+        const target = [
+            ...command.matchAll(
+                /(?:>>?|\btee(?: -a)?)\s*["']?([^\s"';&|<>]+)/g,
+            ),
+        ]
+            .map((match) => match[1] ?? '')
+            .find((candidate) => PROPOSAL.test(candidate));
+        if (target) return { kind: 'proposal', path: target };
+    }
+}
+
+const PROPOSAL = /(^|\/)\.scratch\/(.+\/)?[^/]+-proposal\.md$/;
+
+// a turn starts at a user entry with text (a prompt or a peer's message); a tool result carries none
+export function turnStartOf(lines: string[]) {
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const entry = parseEntry(lines[i] ?? '');
+        if (
+            entry?.type === 'user' &&
+            !entry.isMeta &&
+            textOf(entry.message?.content).trim()
+        )
+            return i;
+    }
+    return -1;
+}
+
+const MERGE_VALUE_FLAGS = new Set([
+    '-A',
+    '--author-email',
+    '-b',
+    '--body',
+    '-F',
+    '--body-file',
+    '--match-head-commit',
+    '-R',
+    '--repo',
+    '-t',
+    '--subject',
+]);
+
+// `gh pr view` takes the same selector and repo the merge was given
+export function prViewArgs(mergeArgs: string[]) {
+    let selector: string | undefined;
+    let repo: string | undefined;
+    for (let i = 0; i < mergeArgs.length; i++) {
+        const arg = mergeArgs[i] ?? '';
+        const [flag = '', inline] = arg.split(/=(.*)/s);
+        const value = inline ?? mergeArgs[i + 1];
+        if (flag === '-R' || flag === '--repo') repo = value;
+        if (MERGE_VALUE_FLAGS.has(flag) && inline === undefined) i++;
+        else if (!arg.startsWith('-')) selector ??= arg;
+    }
+    return [
+        'pr',
+        'view',
+        ...(selector ? [selector] : []),
+        ...(repo ? ['--repo', repo] : []),
+        '--json',
+        'number,headRefOid,url',
+    ];
+}
+
+const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
+
+// written by the verifier on clean (`pr-watch.sh --verified`), keyed `owner/repo#n`
+export function verifiedHead(key: string) {
+    try {
+        const sha: unknown = JSON.parse(readFileSync(VERIFIED_PATH, 'utf8'))[
+            key
+        ];
+        return typeof sha === 'string' && sha ? sha : undefined;
+    } catch {}
+}
+
+// one packet for any wake: the delta since the last one, plus the leaves changed since ccrow last read them
+export function packWake({
+    delta,
+    lines,
+    now,
+    proposal,
+    state,
+    transcriptPath,
+    wakeId,
+}: PackInput) {
+    let leafPatterns: string[] = [];
+    try {
+        leafPatterns = readFileSync(
+            join(STATE_DIR, 'leaves.txt'),
+            'utf8',
+        ).split('\n');
+    } catch {}
+    const leaves = resolveLeaves(leafPatterns, localDay(now));
+    const ccrowTranscript = newestTranscript();
+    const toSend = leavesToSend(leaves.found, state, ccrowTranscript);
+    const files = buildPacket({
+        cut: cutLine(delta.cut, transcriptPath),
+        deltaText: delta.text,
+        dir: join(STATE_DIR, 'packets', wakeId),
+        leaves: toSend.changed,
+        ledger: ledgerLine(now),
+        meter: meterLine(now),
+        missing: leaves.missing,
+        proposal,
+        unchanged: toSend.unchanged,
+    });
+    return {
+        files,
+        missing: leaves.missing,
+        state: {
+            ...state,
+            leafHashes: toSend.hashes,
+            leavesFor: ccrowTranscript,
+            offsets: { ...state.offsets, [transcriptPath]: lines.length },
+        } satisfies State,
+    };
+}
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+export function localDay(date: Date) {
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+export function wakeIdOf(date: Date) {
+    return `${localDay(date).replaceAll('-', '')}${pad(date.getHours())}${pad(date.getMinutes())}`;
+}
+
+export function wakeLine(wake: Wake) {
+    return `ccrow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${CHARTER_PATH}`;
+}
+
+export function dayOf(firstWakeAt: number, now: number) {
+    return Math.floor((now - firstWakeAt) / 86_400_000) + 1;
+}
+
+// dima, 2026-10-13: opus 5.5 medium only, the day alternation is gone
+export const liveArm: Arm = 'opus';
+
+export function sendLine(socketPath: string, text: string) {
+    const frame = JSON.stringify({
+        from_name: 'ccrow:wake',
+        message: { content: text },
+        priority: 'next',
+        type: 'user',
+        uuid: crypto.randomUUID(),
+    });
+    return new Promise<void>((resolve, reject) => {
+        const socket = connect({ path: socketPath });
+        socket.on('error', reject);
+        socket.on('connect', () => socket.end(`${frame}\n`, () => resolve()));
+    });
+}
+
+export function appendJsonl(
+    path: string,
+    value: Note | PlanNote | ReconcileNote | Verdict,
+) {
+    mkdirSync(STATE_DIR, { recursive: true });
+    writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
+}
+
+// two harvesters on one wake (a spawn decision) logged the same note twice on 10-21
+export function appendNoteOnce(path: string, value: Note | ReconcileNote) {
+    if (jsonlOf<{ id?: string }>(path).some((row) => row.id === value.id))
+        return;
+    appendJsonl(path, value);
+}
+
+// ccrow's day in one line: notes sent today, the last send's time, today's ok verdicts
+// the budget hunt quotes this line; x-mod-stash writes the file on every session.measure
+export function meterLine(now: Date, usagePath = USAGE_PATH) {
+    try {
+        const { rate_limits: limits, written_at: writtenAt } = JSON.parse(
+            readFileSync(usagePath, 'utf8'),
+        ) as UsageFile;
+        const fiveHour = limits?.five_hour;
+        const week = limits?.seven_day;
+        if (!fiveHour || !week) return '';
+        const hoursLeft = (at: number) =>
+            Math.max(0, Math.round((at * 1000 - now.getTime()) / 36e5));
+        const age = Math.round((now.getTime() - (writtenAt ?? 0) * 1000) / 6e4);
+        return `⏱️ 5h ${fiveHour.used_percentage} %, resets in ${hoursLeft(fiveHour.resets_at)} h | weekly ${week.used_percentage} %, resets in ${hoursLeft(week.resets_at)} h | read ${age} min ago`;
+    } catch {
+        return '';
+    }
+}
+
+export function ledgerLine(
+    now: Date,
+    notesPath = NOTES_PATH,
+    verdictsPath = VERDICTS_PATH,
+) {
+    const today = localDay(now);
+    const notes = jsonlOf<{ at?: string; channel?: string; note?: string }>(
+        notesPath,
+    )
+        .filter((n) => n.channel === 'session' && typeof n.note === 'string')
+        .map((n) => ({ at: new Date(n.at ?? 0), note: (n.note ?? '').trim() }));
+    const wouldSend = notes.filter((n) => n.note !== 'none' && n.note !== '');
+    // a held note opens with «🟡 held:» since 10-12; older ones end on «holdout»
+    const isHeld = (n: { note: string }) =>
+        /^🟡 held:/m.test(n.note) || /holdout\s*$/.test(n.note);
+    const sent = wouldSend.filter((n) => !isHeld(n));
+    const sentToday = sent.filter((n) => localDay(n.at) === today).length;
+    const last = sent.at(-1)?.at;
+    const hits = jsonlOf<{ at?: string; value?: string }>(verdictsPath).filter(
+        (v) => v.value === 'ok' && localDay(new Date(v.at ?? 0)) === today,
+    ).length;
+    return [
+        `📒 ${sentToday} sent today`,
+        `last ${last ? `${pad(last.getHours())}:${pad(last.getMinutes())}` : 'none'}`,
+        `🎯 ${hits} ok today`,
+    ].join(' | ');
+}
+
+function jsonlOf<T>(path: string): T[] {
+    let text = '';
+    try {
+        text = readFileSync(path, 'utf8');
+    } catch {
+        return [];
+    }
+    return text.split('\n').flatMap((line) => {
+        try {
+            return line.trim() ? [JSON.parse(line) as T] : [];
+        } catch {
+            return [];
+        }
+    });
+}
+
+export function tokensIn(usage: Usage) {
+    return (
+        (usage.input_tokens ?? 0) +
+        (usage.cache_read_input_tokens ?? 0) +
+        (usage.cache_creation_input_tokens ?? 0)
+    );
+}
+
+// a -p transcript has no turn_duration line; its assistant entries still name the model
+export function oneShotModel(cwd: string, sessionId: string) {
+    let model: string | null = null;
+    for (const line of readLines(transcriptPathOf(cwd, sessionId))) {
+        model = parseEntry(line)?.message?.model ?? model;
+    }
+    return model;
+}
+
+export const ONE_SHOT_DEADLINE_MS = 15 * 60_000;
+
+export async function runOneShot(
+    args: string[],
+    prompt: string,
+    cwd: string,
+): Promise<{ result: OneShotResult } | { error: string }> {
+    const child = spawn(
+        'claude',
+        ['-p', ...args, '--output-format', 'json', prompt],
+        { cwd },
+    );
+    const timer = setTimeout(() => child.kill(), ONE_SHOT_DEADLINE_MS);
+    let stdout = '';
+    child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+    });
+    const exit = await new Promise<string>((resolve) => {
+        child.on('error', (error) => resolve(error.message));
+        child.on('close', (code, signal) => resolve(`exit ${code ?? signal}`));
+    });
+    clearTimeout(timer);
+    let result: OneShotResult;
+    try {
+        result = JSON.parse(stdout);
+    } catch {
+        return { error: `no json (${exit}): ${stdout.slice(0, 200)}` };
+    }
+    if (result.is_error)
+        return { error: `is_error: ${String(result.result).slice(0, 200)}` };
+    return { result };
+}
+
+const blindHeading = /\b(want|constraints?|done test|not)\b/i;
+
+// pass 1 sees only the sections that say what is wanted, never how
+export function blindSections(plan: string) {
+    const kept: string[] = [];
+    let level = 0;
+    let keep = false;
+    let fenced = false;
+    for (const line of plan.split('\n')) {
+        if (/^\s*(```|~~~)/.test(line)) fenced = !fenced;
+        const heading = fenced ? null : /^(#{1,6})\s+(.*)$/.exec(line);
+        const depth = heading?.[1]?.length ?? 0;
+        if (heading && (!keep || depth <= level)) {
+            keep = blindHeading.test(heading[2] ?? '');
+            level = depth;
+        }
+        if (keep) kept.push(line);
+    }
+    return kept.join('\n').trim();
+}
+
+export function blindPrompt(sections: string) {
+    return `you are an outside adviser. someone wants the thing below built; no plan exists yet. you see the want, the constraints and the done test only.
+
+give, in under 300 words:
+- your top 3 approaches, one line each with its main tradeoff
+- the 5 likeliest ways any approach to this fails
+
+do not read files and do not ask questions; answer from the text.
+
+${sections}`;
+}
+
+export const PLAN_FINDINGS_MAX = 5;
+
+export function planPrompt(plan: string, blindTake: string) {
+    const blind = blindTake
+        ? `\n## your own take, written before you saw the plan\n\n${blindTake}\n`
+        : '';
+    return `you are an outside adviser arguing with a plan before anything is built. you were not in the room; the plan is all you get: do not read files and do not ask questions; answer from the text.
+
+work through this template, in order:
+1. predict the 3–5 likeliest problem areas before reading in detail
+2. a pre-mortem: assume this plan was executed exactly as written and failed — 5 concrete failure scenarios
+3. the strongest argument against each decision, and the alternative that was likely rejected
+4. what is missing
+5. the fragile assumptions, each rated high, medium or low
+6. a self-audit per finding: could the author refute it with context you lack? if yes, it moves to the open questions instead
+7. at most ${PLAN_FINDINGS_MAX} findings, each quoting the exact plan line it targets (copied verbatim, one line), with a cheap test that would confirm it
+8. a verdict: proceed, revise, investigate or reject. «no material objection» is an allowed answer — then findings may be empty
+${blind}
+## the plan
+
+${plan}`;
+}
+
+const strings = { items: { type: 'string' }, type: 'array' };
+const rated = { enum: ['high', 'medium', 'low'] };
+export const planSchema = {
+    additionalProperties: false,
+    properties: {
+        againstDecisions: {
+            items: {
+                additionalProperties: false,
+                properties: {
+                    alternative: { type: 'string' },
+                    argument: { type: 'string' },
+                    decision: { type: 'string' },
+                },
+                required: ['decision', 'argument', 'alternative'],
+                type: 'object',
+            },
+            type: 'array',
+        },
+        findings: {
+            items: {
+                additionalProperties: false,
+                properties: {
+                    problem: { type: 'string' },
+                    quote: { type: 'string' },
+                    severity: rated,
+                    test: { type: 'string' },
+                },
+                required: ['quote', 'problem', 'severity', 'test'],
+                type: 'object',
+            },
+            maxItems: PLAN_FINDINGS_MAX,
+            type: 'array',
+        },
+        fragileAssumptions: {
+            items: {
+                additionalProperties: false,
+                properties: {
+                    assumption: { type: 'string' },
+                    rating: rated,
+                },
+                required: ['assumption', 'rating'],
+                type: 'object',
+            },
+            type: 'array',
+        },
+        missing: strings,
+        noMaterialObjection: { type: 'boolean' },
+        openQuestions: strings,
+        preMortem: strings,
+        problemAreas: strings,
+        verdict: { enum: ['proceed', 'revise', 'investigate', 'reject'] },
+    },
+    required: [
+        'problemAreas',
+        'preMortem',
+        'againstDecisions',
+        'missing',
+        'fragileAssumptions',
+        'openQuestions',
+        'findings',
+        'verdict',
+        'noMaterialObjection',
+    ],
+    type: 'object',
+};
+
+const squash = (text: string) => text.replaceAll(/\s+/g, ' ').trim();
+
+// a finding counts as located only when its quote is really in the plan
+export function isLocated(plan: string, quote: string) {
+    const needle = squash(quote.replace(/^[\s>*-]+/, ''));
+    return needle.length > 0 && squash(plan).includes(needle);
+}
+
+export function planNotes(run: PlanRun, review: PlanReview): PlanNote[] {
+    const { planText, ...base } = run;
+    const shared = {
+        ...base,
+        channel: 'plan' as const,
+        noMaterialObjection: review.noMaterialObjection,
+        verdict: review.verdict,
+    };
+    // the schema caps findings, but the model's json is still untrusted input
+    const findings = review.findings.slice(0, PLAN_FINDINGS_MAX);
+    if (findings.length === 0)
+        return [{ ...shared, finding: null, id: `plan-${run.runId}-0` }];
+    return findings.map((finding, index) => ({
+        ...shared,
+        finding: { ...finding, located: isLocated(planText, finding.quote) },
+        id: `plan-${run.runId}-${index + 1}`,
+    }));
+}
+
+/* Types */
+
+export type Arm = (typeof armList)[number];
+export type Effort = 'medium' | 'high';
+export type Mode = (typeof modeList)[number];
+export type Phase = 'silent' | 'live';
+
+export interface Wake {
+    id: string;
+    mode: Mode;
+    phase: Phase;
+}
+
+export interface State {
+    arm?: Arm;
+    jobId?: string;
+    startedAt?: number;
+    firstWakeAt?: number;
+    lastWakeAt?: number;
+    offsets: Record<string, number>;
+    leafHashes?: Record<string, string>;
+    leavesFor?: string;
+}
+
+export interface LiveSession {
+    pid: number;
+    name?: string;
+    cwd: string;
+    sessionId: string;
+    jobId?: string;
+    messagingSocketPath: string;
+}
+
+export interface Usage {
+    input_tokens?: number;
+    output_tokens?: number;
+    cache_read_input_tokens?: number;
+    cache_creation_input_tokens?: number;
+}
+
+type TranscriptContent = string | { type: string; text?: string }[];
+
+export interface Run {
+    model: string | null;
+    note: string;
+    seconds: number;
+    tokensIn: number;
+    tokensOut: number;
+}
+
+export interface TranscriptEntry {
+    type?: string;
+    subtype?: string;
+    durationMs?: number;
+    timestamp?: string;
+    uuid?: string;
+    isMeta?: boolean;
+    isCompactSummary?: boolean;
+    origin?: { kind?: string };
+    attachment?: {
+        type?: string;
+        prompt?: TranscriptContent;
+        content?: string | string[];
+    };
+    message?: {
+        id?: string;
+        model?: string;
+        usage?: Usage;
+        content?: TranscriptContent;
+    };
+}
+
+export type Decision =
+    | { kind: 'merge'; args: string[] }
+    | { kind: 'spawn' }
+    | { kind: 'proposal'; path: string };
+
+interface PackInput {
+    delta: ReturnType<typeof transcriptDelta>;
+    lines: string[];
+    now: Date;
+    proposal?: string;
+    state: State;
+    transcriptPath: string;
+    wakeId: string;
+}
+
+export interface Cut {
+    blocks: number;
+    outputs: number;
+}
+
+interface UsageFile {
+    rate_limits?: Record<
+        'five_hour' | 'seven_day',
+        { used_percentage: number; resets_at: number } | undefined
+    >;
+    written_at?: number;
+}
+
+interface PacketInput {
+    cut?: string;
+    dir: string;
+    leaves: string[];
+    unchanged?: string[];
+    missing: string[];
+    proposal?: string;
+    ledger?: string;
+    meter?: string;
+    deltaText: string;
+}
+
+export interface Note {
+    id: string;
+    wakeId: string;
+    arm: Arm;
+    channel: 'session' | 'one-shot';
+    model: string | null;
+    effort: 'medium';
+    tokensIn: number;
+    tokensOut: number;
+    seconds: number;
+    mode: Mode;
+    phase: Phase;
+    note: string;
+    at: string;
+}
+
+export interface ReconcileNote extends Run {
+    id: string;
+    reconciles: string;
+    evidence: string;
+    arm: Arm;
+    channel: 'reconcile';
+    at: string;
+}
+
+export interface Verdict {
+    id: string;
+    value: 'ok' | 'miss';
+    why: string;
+    at: string;
+}
+
+export interface OneShotResult {
+    is_error?: boolean;
+    result?: string;
+    structured_output?: PlanReview;
+    session_id?: string;
+    duration_ms?: number;
+    total_cost_usd?: number;
+    usage?: Usage;
+}
+
+type Rating = 'high' | 'medium' | 'low';
+
+export interface PlanFinding {
+    quote: string;
+    problem: string;
+    severity: Rating;
+    test: string;
+}
+
+export interface PlanReview {
+    problemAreas: string[];
+    preMortem: string[];
+    againstDecisions: {
+        decision: string;
+        argument: string;
+        alternative: string;
+    }[];
+    missing: string[];
+    fragileAssumptions: { assumption: string; rating: Rating }[];
+    openQuestions: string[];
+    findings: PlanFinding[];
+    verdict: 'proceed' | 'revise' | 'investigate' | 'reject';
+    noMaterialObjection: boolean;
+}
+
+export interface PlanRun {
+    runId: string;
+    arm: Arm;
+    model: string | null;
+    effort: Effort;
+    plan: string;
+    planText: string;
+    costUsd: number;
+    tokensIn: number;
+    tokensOut: number;
+    seconds: number;
+    at: string;
+}
+
+// one line per finding; accepted is a `ccrow:note-vet` verdict on its id, never a field here
+export interface PlanNote extends Omit<PlanRun, 'planText'> {
+    id: string;
+    channel: 'plan';
+    verdict: PlanReview['verdict'];
+    noMaterialObjection: boolean;
+    finding: (PlanFinding & { located: boolean }) | null;
+}

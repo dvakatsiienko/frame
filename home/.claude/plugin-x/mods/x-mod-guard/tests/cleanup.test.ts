@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-const CCLIO = '/home/frame/cclio';
+const CCLIO = '/home/frame/_clio';
 
 // every tree is clean unless it holds `.scratch/` or its HEAD reaches a commit no branch does
 function world(

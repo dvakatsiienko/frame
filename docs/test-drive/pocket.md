@@ -8,7 +8,7 @@ dies-when: the pocket is kept or dropped at the verdict (2026-10-21)
 
 Ticket: none
 
-window: 2026-10-07 → 2026-10-21. the pocket (`cclio/pocket.md`) replaced the vault flowlog on 10-07: one ordered file, checked and emptied before linear. the want (dima, 10-07): «your pocket would contain current flow log content, but much better organized … you could easily edit it live via fs».
+window: 2026-10-07 → 2026-10-21. the pocket (`_clio/pocket.md`) replaced the vault flowlog on 10-07: one ordered file, checked and emptied before linear. the want (dima, 10-07): «your pocket would contain current flow log content, but much better organized … you could easily edit it live via fs».
 
 ## the numbers
 

@@ -101,7 +101,7 @@ function inOrder(items: string[], allowed: readonly string[]) {
 }
 
 const skillsDirs = {
-    cclio: path.join(root, 'cclio/plugin-cclio/skills'),
+    cclio: path.join(root, '_clio/plugin-clio/skills'),
     x: path.join(root, 'home/.claude/plugin-x/skills'),
 };
 const engine = readFileSync(
@@ -187,7 +187,7 @@ function artifactExists(artifact: string) {
         const dir =
             skill.plugin === 'x'
                 ? 'home/.claude/plugin-x/skills'
-                : 'cclio/plugin-cclio/skills';
+                : '_clio/plugin-clio/skills';
         return existsSync(path.join(root, dir, skill.name, 'SKILL.md'));
     }
     if (artifact.startsWith('~/frame/'))
@@ -399,11 +399,11 @@ test.each(recipes)('%s log.md has the log shape', (name) => {
 });
 
 const history = [
-    'cclio/gazette',
+    '_clio/gazette',
     'home/.claude/shelf',
     'docs/test-drive',
     'docs/research',
-    'cclio/memory/dima-stories.md',
+    '_clio/memory/dima-stories.md',
     'recipes/*/log.md',
     'recipes/*/recipe.md',
 ];

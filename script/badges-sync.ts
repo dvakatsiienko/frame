@@ -64,7 +64,7 @@ if (ciAt >= 0) {
 const skills = globSync(
     [
         'home/.claude/plugin-x/skills/*/SKILL.md',
-        'cclio/plugin-cclio/skills/*/SKILL.md',
+        '_clio/plugin-clio/skills/*/SKILL.md',
     ],
     {
         cwd: root,

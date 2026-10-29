@@ -9,7 +9,7 @@ dies-when: adhd is adopted as a user-only skill or dropped after the test-drive 
 Ticket: none
 
 **what:** [UditAkhourii/adhd](https://github.com/UditAkhourii/adhd) 0.1.4 — 5 isolated frame branches, then a critic that scores, flags traps and deepens the top 3. same author as `neuroarxiv`.
-**installed:** plugin `adhd@adhd`, cclio project scope (`cclio/.claude/settings.json`). the user-only lock is open: `skillOverrides` never reaches a plugin skill.
+**installed:** plugin `adhd@adhd`, cclio project scope (`_clio/.claude/settings.json`). the user-only lock is open: `skillOverrides` never reaches a plugin skill.
 **window:** 2026-09-28 → 2026-10-14 (extended a week on 10-06, dima: «the outputs were meh»). verdict on 10-14: adopt (keep, user-only) or drop (uninstall + marketplace remove).
 
 ## the protocol, every round
@@ -22,7 +22,7 @@ Ticket: none
 
 ## the lock — proven 2026-09-28
 
-`permissions.deny: ["Skill(adhd:adhd)"]` in `cclio/.claude/settings.json`: cclio's own Skill call returns «blocked by permission rules», dima's typed `/adhd:adhd` expands. the description stays in the skill listing (~100 tokens resident); the deny only stops the call.
+`permissions.deny: ["Skill(adhd:adhd)"]` in `_clio/.claude/settings.json`: cclio's own Skill call returns «blocked by permission rules», dima's typed `/adhd:adhd` expands. the description stays in the skill listing (~100 tokens resident); the deny only stops the call.
 
 ## the doors — measured 2026-09-28
 
@@ -48,7 +48,7 @@ Ticket: none
 <!-- date · ask · a/b winner · grade · wall s · 5h % delta · shipped? · note -->
 
 - **r1 · 2026-09-28 · name `~/.claude/shelf/usage.json`** — the skill procedure run by hand (the deny blocks cclio's Skill call; dima's typed run put the body in context). calibration «name this»: 3 frames × 4 ideas (game design · 3am on-call · 10-year-old), fresh `general-purpose` agents, deepen skipped for a name. **cost: ~94k tokens per branch, 6–8 s each, 282k total — 5h +1 %, week +1 %**; the output was ~150 tokens per branch, the rest is substrate (claude.md + rules reloaded per branch). baseline: `rate-limits.json` (cclio), `cc-usage.json` / `cc-fuel.json` (dima). adhd shortlist: ★ `allowance-jar` · `sline-limits`; traps: `pace-ghost` (the file holds limits, not pace), `nap-clock`, `headroom-5h-7d` (bakes the window set into the name), `*-bar` (a bar is the render, not the data). a/b winner: pending dima · shipped: dima picked his own `cc-usage-window.json` (neither baseline nor adhd) · note: `sline-limits` is the angle the baseline missed (name the writer, so a frozen file points at sline); `allowance` is the word the baseline missed (a budget that refills on a set day)
-- **r2 · 2026-10-01 · name the public speak app** — NOT a skill round: dima typed `/adhd:adhd` in a fresh frame session, but the plugin is enabled at cclio project scope only, so the session answered «`/adhd:adhd` isn't installed in this session» and named by a plain opus ask (blurt, earful, yap, spiel, earshot, earmark, hark, readout, lilt, audiate). verdict: miss on both plain lists, dima: «i did not liked neither suggested option. the closest are lilt and yap. but still meh» · wall s and 5h % not measured · shipped: no · note: a typed adhd round runs only in a session under `~/frame/cclio`; a naming round also needs the brief to carry what the product feels like, not only what it does
+- **r2 · 2026-10-01 · name the public speak app** — NOT a skill round: dima typed `/adhd:adhd` in a fresh frame session, but the plugin is enabled at cclio project scope only, so the session answered «`/adhd:adhd` isn't installed in this session» and named by a plain opus ask (blurt, earful, yap, spiel, earshot, earmark, hark, readout, lilt, audiate). verdict: miss on both plain lists, dima: «i did not liked neither suggested option. the closest are lilt and yap. but still meh» · wall s and 5h % not measured · shipped: no · note: a typed adhd round runs only in a session under `~/frame/_clio`; a naming round also needs the brief to carry what the product feels like, not only what it does
 - **r3 · 2026-10-02 · name the design comms app (`design-*`)** — the cli door, 5 frames × 3 ideas × top 3, 55 s, 5h +1 % (4 → 5). baseline (plain opus, same session, written first): ballot · loupe · forge · pins, pick `design-loupe`. adhd shortlist: ★ `design-parley` · `design-ring` · `design-pin`; traps: `design-asks` (too literal), `mailbox` (misses the spatial part), `latch` (binary, not a queue). a/b winner: baseline, blind · grade: baseline 7–8.5 per name, adhd 6 flat · shipped: `design-loupe` (the baseline pick) · note: adhd found the literal ring angle the baseline missed, but no name above the baseline's best
 - 2026-10-05 · naming the fleet cli (real ask) · cli door, 5 frames × 6 ideas, concurrency 2 (the default 4 died: «Claude Code process exited with code 1», a tiny probe passed) · 75 s · 5h window 21 → 22 % · 24 ideas, 13 traps · blind A/B: A = adhd (tap, nod, cil, via, kit), B = opus baseline (x, bosun, rig, tack, mate, crew) · dima liked from both: x, tap, nod, cil (+ his own xc, nd) — no single pick yet, no grade
 - 2026-10-05 · naming the fleet's delivery flow (real ask, wayfinder) · skill door (dima typed `/adhd:adhd`), 5 sonnet frames × 6 ideas in parallel (game design · logistics · 10-year-old · biology · remove-the-assumption), each 7–18 s; scoring + clusters + the top-3 deepen done in-context (a naming ask; the deepen agents skipped — calibration) · 30 ideas, 5 traps (stage, dock, digest, myelin, pass) · baseline (plain opus, written first, seen by dima): runway · relay · loom · track · tempo · kiln · forge · groove · shipyard → pick loom or track · adhd top 3: porch · arc ★ · bench · not blind (dima saw the baseline before the run) · dima's pick: neither — «fleet flow» stays for now («did not liked neither»); arc ★ was adhd's, loom/track mine
@@ -59,4 +59,4 @@ Ticket: none
 
 ## verdict
 
-- 2026-10-14 · **dropped** (dima, o91): «The idea is interesting, but it doesn't produce anything meaningful. I didn't like even one idea it produced.» plugin `adhd@adhd` uninstalled, marketplace `adhd` removed; the dead `Skill(adhd:adhd)` deny in `cclio/.claude/settings.json` left for dima's word (a permissions edit).
+- 2026-10-14 · **dropped** (dima, o91): «The idea is interesting, but it doesn't produce anything meaningful. I didn't like even one idea it produced.» plugin `adhd@adhd` uninstalled, marketplace `adhd` removed; the dead `Skill(adhd:adhd)` deny in `_clio/.claude/settings.json` left for dima's word (a permissions edit).

@@ -8,14 +8,14 @@ Ticket: none
 
 # 🎼 composer — cclio's Haiku 5.5 editing sidecar, on trial
 
-the charter: `x:crew-composer`. a parked `--bg` session on Haiku 5.5 medium, home `~/.local/state/composer/`,
+the charter: `x:crew-composer`. a parked `--bg` session on Haiku 5.5 medium, home `~/.local/state/helga/`,
 one working dir with cclio, receipts slipstreamed as `[progress]`. born 2026-10-14 on dima's word (PK-128,
 the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipes/refresh-crew-coordinator-composer`.
 
 ## the start
 
 - `claude --bg -n '🎼 composer' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"},"autoCompactWindow":130000,"env":{"CLAUDE_CODE_DISABLE_CLAUDE_MDS":"1"}}' "<boot prompt>" --remote-control` — no fleet memory since 2026-10-15 (the charter's floor section stands in; the env goes through `--settings`, a shell var never reaches a `--bg` session); the 130k window compacts near ~97k, under haiku's price line (dima's want, 2026-10-15; 100k thrashed: a ~75k boot refilled the window within 3 turns, 3 times in a row)
-  from `~/.local/state/composer/` — without the flag a `--bg` session's edits in the shared checkout are
+  from `~/.local/state/helga/` — without the flag a `--bg` session's edits in the shared checkout are
   refused until it isolates (ccrow, 2026-10-14); the flag replaced a home `.claude/settings.json` that was gone
   on 2026-10-15
 - the boot prompt is `x:crew-composer` as text, its frontmatter cut
@@ -54,12 +54,12 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 - date · class · first pass (green / red / consult) · rework (none / cclio fixed) · note
 - 2026-10-14 · bulk-replace · green · none · exact anchor, diff read whole
-- 2026-10-14 · pocket-write · green · none · my brief's `cd ~/frame/cclio` fired the AGENTS.md loader hook; composer refused the read, as its charter says — briefs pass `BACKLOG_CWD` without a cd
+- 2026-10-14 · pocket-write · green · none · my brief's `cd ~/frame/_clio` fired the AGENTS.md loader hook; composer refused the read, as its charter says — briefs pass `BACKLOG_CWD` without a cd
 - 2026-10-14 · gate-retry · green · none · commit 5c7702c on main, no worktree: bgIsolation none proven
 - 2026-10-14 · bulk-replace · green · none · b2 chore 1: census line appended under memory-sweep's last line, tail matches
 - 2026-10-14 · gate-retry · consult (cclio's brief broke hand-over) · cclio fixed · b2 chore 2: gate held the files cclio still held; she committed them, then the narrowed commit a9f9661 landed with the new subject
 - 2026-10-14 · trash (user skills) · green · none · b3 chore 1: five paths trashed, ~/.agents/skills and ~/.claude/skills left with greptile-cli and quicksilver
-- 2026-10-14 · lock file · consult (done check) · none · b3 chore 2: the three keys dropped, backup at ~/.local/state/composer/skill-lock.bak.json; greptile-cli was never a key in the lock, so the done check's «still listed» cannot pass
+- 2026-10-14 · lock file · consult (done check) · none · b3 chore 2: the three keys dropped, backup at ~/.local/state/helga/skill-lock.bak.json; greptile-cli was never a key in the lock, so the done check's «still listed» cannot pass
 - 2026-10-14 · trash (repo) · green · none · b3 chore 3: queue skill dir trashed, git shows its SKILL.md deleted
 - 2026-10-14 · bulk-replace · green · none · b3 chore 4: three anchors, each once, rg for /queue prints nothing
 - 2026-10-14 · gate-retry · green · none · b3 chore 5: commit a0a04d2 on main, subject as briefed
@@ -89,13 +89,13 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · pocket-write · 2 · 0 · PK-90 run #5 status and open screenshot case appended, backlog exit 0, pocket-check green
 - 2026-10-15 · pocket-write · yes · 0 · band-wisp PK-147 created, pocket-check green
 - 2026-10-15 · pocket-write · 1 · 0 · b-watch 1: PK-146 done, pocket-check green
-- 2026-10-15 · gate-retry · 0 · 0 · b-watch 2: consult, hook demanded cclio/AGENTS.md read; commit held
-- 2026-10-15 · gate-retry · consult · cclio fixed · b-watch chore 2: two causes — cclio's brief handed over a file she still held, and the kept AGENTS.md loader listed cclio/AGENTS.md to a memory-less composer; charter now skips the cclio/ read-list and limits gate-retry to unheld files
+- 2026-10-15 · gate-retry · 0 · 0 · b-watch 2: consult, hook demanded _clio/AGENTS.md read; commit held
+- 2026-10-15 · gate-retry · consult · cclio fixed · b-watch chore 2: two causes — cclio's brief handed over a file she still held, and the kept AGENTS.md loader listed _clio/AGENTS.md to a memory-less composer; charter now skips the _clio/ read-list and limits gate-retry to unheld files
 - 2026-10-15 · pocket-write · 1 · 0 · b-nudge 1: PK-148 created (x-mod-guard helper-lite nudge), pocket-check green
 - 2026-10-15 · pocket-write · 1 · 0 · b-guard 1: PK-150 created (x-mod-guard refuse --notes on task with notes)
 - 2026-10-15 · pocket-write · 0 · 0 · b-guard 2: PK-150 set waiting; pocket-check red: waiting without **waiting for:** first line; not fixed, consult
 - 2026-10-16 · inbox-prep · 0 · 1 · 9 items, 23 asks; check 42/42 exit 0; rework: 2 quoted lines mistyped, fixed
-- 2026-10-16 · anchor-edit · consult · n/a · s10r1 withdrawn by cclio: brief miss (cclio's), sent into cclio/ against floor; drafts not strict pairs; dry run caught parser gaps; nothing written
+- 2026-10-16 · anchor-edit · consult · n/a · s10r1 withdrawn by cclio: brief miss (cclio's), sent into _clio/ against floor; drafts not strict pairs; dry run caught parser gaps; nothing written
 - 2026-10-18 · inbox-prep · 1 · 0 · 102/102 verbatim, check exit 0; 11 items, 20 asks; homes PK-103, PK-142 on subject/body match
 - 2026-10-19 · inbox-prep · 1 · 0 · inbox-composer.md written, check 16/16, no commit
 - 2026-10-20 · inbox-prep · 1 · 0 · inbox-composer.md written, 38/38 content lines verbatim, 9 items, 23 asks; PK-90 homed for W1, cw memory not homed (PK-196 body differs)
@@ -121,7 +121,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-25 · prompt-groom · 1 · 0 · W238-W242 + 1 ask, grooms/2026-10-25-1455.groomed.md
 - 2026-10-25 · prompt-groom · 1 · 0 · groom-1541-1545 chore1 W241-W243 3 lines, 3 sentences mapped
 - 2026-10-25 · prompt-groom · 1 · 0 · groom-1541-1545 chore2 W244-W255 12 lines, all sentences mapped
-- 2026-10-27 · inbox-prep · 0 · 0 · consult 1: charter inbox-prep.md outside cclio/ not found, no grooming done
+- 2026-10-27 · inbox-prep · 0 · 0 · consult 1: charter inbox-prep.md outside _clio/ not found, no grooming done
 - 2026-10-27 · inbox-prep · 1 · 0 · inbox-composer.md written, check 4/4, 4 items 3 asks
 - 2026-10-27 · prompt-groom · 1 · 0 · 16:09 prompt groomed W265-W271, 11/11 sentences mapped
 - 2026-10-27 · prompt-groom · 1 · 0 · 17:16 prompt groomed W275-W278, 4/4 sentences mapped

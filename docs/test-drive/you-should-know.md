@@ -37,7 +37,7 @@ one line per round: date · session · card topic · useful / known / noise · t
 
 ## frozen, 2026-10-14 — an upstream bug
 
-meant to run in the desktop app, but it never does: its `turn.step` check passes only with a terminal surface or its own above-prompt render, which the desktop never reaches (0 of 16 big desktop sessions vs 32 terminal, 10-06 → 10-10). no desktop ban in the code. upstream: [claude-code#100843](https://github.com/anthropics/claude-code/issues/100843). off everywhere while frozen (dima, 2026-10-14: it may run in the background with no output); turned back on in `cclio/.claude/settings.json` when it thaws. thaws when #100843 closes fixed; the read: `.scratch/memory-sweep/you-should-know-desktop.md`.
+meant to run in the desktop app, but it never does: its `turn.step` check passes only with a terminal surface or its own above-prompt render, which the desktop never reaches (0 of 16 big desktop sessions vs 32 terminal, 10-06 → 10-10). no desktop ban in the code. upstream: [claude-code#100843](https://github.com/anthropics/claude-code/issues/100843). off everywhere while frozen (dima, 2026-10-14: it may run in the background with no output); turned back on in `_clio/.claude/settings.json` when it thaws. thaws when #100843 closes fixed; the read: `.scratch/memory-sweep/you-should-know-desktop.md`.
 
 ## verdict
 

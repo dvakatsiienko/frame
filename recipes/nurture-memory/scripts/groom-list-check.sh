@@ -34,7 +34,7 @@ if (( final )); then
   python3 -I - "$L" <<'EOF' || bad=1
 import os, re, sys
 home = os.path.expanduser('~')
-base = {'1': f'{home}/frame/home/.claude', '2': f'{home}/frame/home/.claude/rules', '3': f'{home}/frame/cclio',
+base = {'1': f'{home}/frame/home/.claude', '2': f'{home}/frame/home/.claude/rules', '3': f'{home}/frame/_clio',
         '4': f'{home}/frame', '5': f'{home}/projects', '6': f'{home}/frame', '7': f'{home}/frame'}
 sec, bad = None, 0
 merged = re.compile(r'[\w.)»*]- [^\s-]|[^\s\d-]\d+\. \*\*')
@@ -46,8 +46,8 @@ for line in open(sys.argv[1]):
     p = re.search(r'`([^`]+)`', line).group(1)
     if sec == '8':
         ns, name = p.split(':', 1)
-        path = f'{home}/frame/home/.claude/plugin-x/skills/{name}/SKILL.md' if ns == 'x' else f'{home}/frame/cclio/plugin-cclio/skills/{name}/SKILL.md'
-    elif p.startswith(('home/', 'docs/', 'cclio/', 'recipes/', 'x/', 'hotkeys/', 'import/', 'schedule/', 'gmail/', 'gifs/', 'speak/', 'ccrow/', '.claude/')):
+        path = f'{home}/frame/home/.claude/plugin-x/skills/{name}/SKILL.md' if ns == 'x' else f'{home}/frame/_clio/plugin-clio/skills/{name}/SKILL.md'
+    elif p.startswith(('home/', 'docs/', '_clio/', 'recipes/', 'x/', 'hotkeys/', 'import/', 'schedule/', 'gmail/', 'gifs/', 'speak/', '_crow/', '.claude/')):
         path = f'{home}/frame/{p}'
     elif sec == '2' and p.startswith('rules-lazy/'):
         path = f'{home}/frame/home/.claude/{p}'

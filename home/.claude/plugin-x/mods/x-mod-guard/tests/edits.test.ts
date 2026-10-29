@@ -22,7 +22,7 @@ const edit = ($: Engine, file: string) =>
     });
 
 test('the 8th code edit in a cclio session carries the delegate note, once', async ($, on) => {
-    world(on, '/home/frame/cclio');
+    world(on, '/home/frame/_clio');
     const notes: number[] = [];
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/x/a.ts');
@@ -32,7 +32,7 @@ test('the 8th code edit in a cclio session carries the delegate note, once', asy
 });
 
 test('the 8th edit still runs, never blocked', async ($, on) => {
-    world(on, '/home/frame/cclio');
+    world(on, '/home/frame/_clio');
     let r = await edit($, '/home/frame/x/a.ts');
     for (let i = 2; i <= 8; i++) r = await edit($, '/home/frame/x/a.ts');
     expect(r.deny).toBeUndefined();
@@ -40,15 +40,15 @@ test('the 8th edit still runs, never blocked', async ($, on) => {
 });
 
 test('edits to non-code files do not count', async ($, on) => {
-    world(on, '/home/frame/cclio');
+    world(on, '/home/frame/_clio');
     for (let i = 1; i <= 10; i++) {
-        const r = await edit($, '/home/frame/cclio/notes.md');
+        const r = await edit($, '/home/frame/_clio/notes.md');
         expect(r.context ?? []).toHaveLength(0);
     }
 });
 
 test("cclio cd'd into ~/frame still gets the note at the 8th edit", async ($, on) => {
-    world(on, '/home/frame', '/home/frame/cclio');
+    world(on, '/home/frame', '/home/frame/_clio');
     const notes: number[] = [];
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/x/a.ts');
@@ -58,7 +58,7 @@ test("cclio cd'd into ~/frame still gets the note at the 8th edit", async ($, on
 });
 
 test("a coder cd'd into cclio's dir gets no note", async ($, on) => {
-    world(on, '/home/frame/cclio', '/home/frame');
+    world(on, '/home/frame/_clio', '/home/frame');
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/x/a.ts');
         expect(r.context ?? []).toHaveLength(0);
@@ -76,7 +76,7 @@ test('a session outside cclio gets no note', async ($, on) => {
 test('the edit count leaves nothing in the shared store', async ($, on) => {
     const store = liveStore(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
-    on('session.cwd', () => ({ value: '/home/frame/cclio' }));
+    on('session.cwd', () => ({ value: '/home/frame/_clio' }));
     on('env.get', () => ({ value: '/home' }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
     await edit($, '/home/frame/x/a.ts');

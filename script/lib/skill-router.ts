@@ -44,7 +44,7 @@ export const mustNotMiss: readonly string[] = [
 ];
 
 const skillDirs = {
-    cclio: new URL('../../cclio/plugin-cclio/skills/', import.meta.url),
+    cclio: new URL('../../_clio/plugin-clio/skills/', import.meta.url),
     x: new URL('../../home/.claude/plugin-x/skills/', import.meta.url),
 };
 
@@ -94,14 +94,15 @@ export function rosterFrom(listing: ReadonlyMap<string, string>) {
 
 /** the replay's roster: the newest coordinator transcript that carries a listing */
 export function rosterLatest() {
-    const dir = join(
-        process.env.HOME ?? '',
-        '.claude/projects/-Users-dima-frame-cclio',
-    );
-    if (!existsSync(dir)) return { path: '-', roster: treeRoster };
-    const newest = readdirSync(dir)
-        .filter((f) => f.endsWith('.jsonl'))
-        .map((f) => join(dir, f))
+    // read-both: the live dir since the 10-29 move, and the old one for history
+    const newest = ['-Users-dima-frame--clio', '-Users-dima-frame-cclio']
+        .map((d) => join(process.env.HOME ?? '', '.claude/projects', d))
+        .filter((dir) => existsSync(dir))
+        .flatMap((dir) =>
+            readdirSync(dir)
+                .filter((f) => f.endsWith('.jsonl'))
+                .map((f) => join(dir, f)),
+        )
         .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
     for (const path of newest) {
         const { listing } = sessionRead(path);

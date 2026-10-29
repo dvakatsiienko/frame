@@ -6,7 +6,7 @@ import { liveStore } from './store.ts';
 
 // FRM-425: five holes x-mod-guard let through, each fed to the hook entry as the tool call it is
 
-const POCKET = '/home/frame/cclio';
+const POCKET = '/home/frame/_clio';
 const NOTED =
     '## Implementation Notes\n\n<!-- SECTION:NOTES:BEGIN -->\nfirst note\n<!-- SECTION:NOTES:END -->\n';
 const EMPTY =

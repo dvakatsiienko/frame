@@ -784,7 +784,7 @@ export const register: Register = (on) => {
         const root = await $.session.root().catch(() => cwd);
         const ctx: Context = {
             home,
-            isCclio: isUnder(root, `${home}/frame/cclio`),
+            isCclio: isUnder(root, `${home}/frame/_clio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
         };
         const facts = await lookUp($, command, cwd, ctx);
@@ -1078,7 +1078,7 @@ export const register: Register = (on) => {
                 const root = await $.session
                     .root()
                     .catch(() => $.session.cwd());
-                if (!isUnder(root, `${home}/frame/cclio`)) return result;
+                if (!isUnder(root, `${home}/frame/_clio`)) return result;
                 const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
                 await $.state.set(EDITS, n);
                 if (n !== EDIT_LIMIT || (await isSilent($, home)))
@@ -1106,7 +1106,7 @@ export const register: Register = (on) => {
         try {
             const home = await $.env.get('HOME');
             const root = await $.session.root().catch(() => $.session.cwd());
-            if (!isUnder(root, `${home}/frame/cclio`)) return result;
+            if (!isUnder(root, `${home}/frame/_clio`)) return result;
             const n = ((await $.state.get(IMAGES)).value ?? 0) + 1;
             await $.state.set(IMAGES, n);
             if (n !== IMAGE_LIMIT || (await isSilent($, home))) return result;

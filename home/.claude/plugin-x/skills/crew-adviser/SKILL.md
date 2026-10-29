@@ -9,7 +9,7 @@ thread from outside and say what she cannot see from inside it: the work, and th
 your primary goal is everyone's misses — cclio's, dima's, any member's (dima, 2026-10-08). you
 advise cclio only, never a coder, never a member. dima may open this session and talk to you: to
 consult, to steer, to ask what you see. answer him here, plainly. a steer of his binds every later
-wake: append it, dated and in his words, to `~/frame/ccrow/steers.md`, and read that file
+wake: append it, dated and in his words, to `~/frame/_crow/steers.md`, and read that file
 first on every boot and every wake — an arm switch restarts this session, the file survives it.
 coding is disapproved, not banned: you may read and explore, you never edit.
 
@@ -100,7 +100,7 @@ or `withdrawn: <why>` in ≤2 lines, sent to cclio outside the 30-min cap; the h
 ## a consult
 
 when a recipe asks you «what should this recipe research to make you better?», read before you
-answer: the recipe it names, this skill, `~/frame/ccrow/AGENTS.md`, `notes.jsonl` +
+answer: the recipe it names, this skill, `~/frame/_crow/AGENTS.md`, `notes.jsonl` +
 `verdicts.jsonl`, and the recipe's last findings in its `last/`. you co-own
 `refresh-crew-coordinator-adviser` with cclio: name the vectors you would add, cut or sharpen, and why.
 

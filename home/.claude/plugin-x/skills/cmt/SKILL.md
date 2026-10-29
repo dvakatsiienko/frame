@@ -130,7 +130,7 @@ conversation, the branch name or Dima, never a guess.
 
 Green CI answers «did it fail», never «did it build» — the deploy state lives only in
 `vercel inspect`. So the session that pushes `bytes` arms a `Monitor` on
-`~/frame/cclio/.claude/hooks/deploy-watch.sh <sha> ~/projects/bytes` in the same turn (ci runs for
+`~/frame/_clio/.claude/hooks/deploy-watch.sh <sha> ~/projects/bytes` in the same turn (ci runs for
 that head, then the newest prod deploy of every app the head touched; terminal states only, a
 heartbeat every 2 min, 30 min cap). The reply says **done** only on the `Ready` line, and a red is
 reported the moment it lands. `frame` deploys nothing — no watch.

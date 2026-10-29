@@ -240,7 +240,7 @@ func TestOpsSumsInputCacheAndOutputTokens(t *testing.T) {
 
 func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
 	t.Parallel()
-	boot := map[string]any{"type": "user", "timestamp": "2026-10-07T10:00:00Z", "cwd": "/Users/dima/frame/cclio",
+	boot := map[string]any{"type": "user", "timestamp": "2026-10-07T10:00:00Z", "cwd": "/Users/dima/frame/_clio",
 		"message": map[string]any{"content": "<command-name>/cclio:boot</command-name><command-args>mini</command-args>"}}
 	usage := map[string]int{"output_tokens": 10}
 	s := opsSessionOf(t, boot,
@@ -249,6 +249,15 @@ func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
 		assistantStep("m3", "2026-10-07T10:01:00Z", usage, "end_turn"))
 	if want := `{"kind":"mini","id":"a.jsonl","tokens":15,"seconds":30}`; s.Role != "cclio" || marshal(s.Boot) != want {
 		t.Errorf("role %s, boot %s, want %s", s.Role, marshal(s.Boot), want)
+	}
+}
+
+func TestOpsReadsBothCoordinatorCwds(t *testing.T) {
+	t.Parallel()
+	for _, cwd := range []string{"/Users/dima/frame/_clio", "/Users/dima/frame/cclio/script"} { // read-both
+		if got := opsRole(cwd, "", "a.jsonl", "untitled"); got != "cclio" {
+			t.Errorf("cwd %s: role %q, want the coordinator", cwd, got)
+		}
 	}
 }
 

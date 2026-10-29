@@ -1,6 +1,6 @@
 # card craft — how a subagent card earns its calls
 
-what the 2026-10-19 scout shaping learned, kept for every card and every `refresh-crew-coordinator` run. sources: `cclio/.scratch/shape-scout/` (research.md, neuroarxiv.md, critique.md, read-ceiling.md), archived with the lane.
+what the 2026-10-19 scout shaping learned, kept for every card and every `refresh-crew-coordinator` run. sources: `_clio/.scratch/shape-scout/` (research.md, neuroarxiv.md, critique.md, read-ceiling.md), archived with the lane.
 
 ## the description is the trigger
 

@@ -36,8 +36,8 @@ test('a fleet member prints bold with its badge', () => {
 });
 
 test("dima's name takes his badge, a path through a member's dir keeps its own", () => {
-    expect(boldFleetWords("dima's word, read cclio/AGENTS.md").text).toBe(
-        "**🙋‍♂️ dima**'s word, read cclio/AGENTS.md",
+    expect(boldFleetWords("dima's word, read _clio/AGENTS.md").text).toBe(
+        "**🙋‍♂️ dima**'s word, read _clio/AGENTS.md",
     );
 });
 

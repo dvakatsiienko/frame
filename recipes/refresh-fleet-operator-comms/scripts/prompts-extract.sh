@@ -7,7 +7,7 @@ since=$1 out=$2 chunks=${3:-4}
 mkdir -p "$out"
 raw="$out/prompts-raw.jsonl"
 : > "$raw"
-for dir in -Users-dima-frame-cclio -Users-dima-frame -Users-dima-projects-bytes -Users-dima; do
+for dir in -Users-dima-frame-cclio -Users-dima-frame--clio -Users-dima-frame -Users-dima-projects-bytes -Users-dima; do
   for f in "$HOME/.claude/projects/$dir"/*.jsonl; do
     [ -e "$f" ] || continue
     jq -c --arg p "$dir" 'select(.type=="user" and (.isMeta|not) and (.isSidechain|not) and (.entrypoint=="cli" or .entrypoint=="claude-desktop"))

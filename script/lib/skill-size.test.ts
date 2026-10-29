@@ -11,7 +11,7 @@ import { expect, test } from 'vitest';
 const reattachCap = 19_995;
 const margin = 1_000;
 const root = path.resolve(import.meta.dirname, '../..');
-const skillDirs = ['home/.claude/plugin-x/skills', 'cclio/plugin-cclio/skills'];
+const skillDirs = ['home/.claude/plugin-x/skills', '_clio/plugin-clio/skills'];
 
 const skills = skillDirs.flatMap((dir) =>
     readdirSync(path.join(root, dir), { withFileTypes: true })

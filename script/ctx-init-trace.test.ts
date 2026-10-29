@@ -151,6 +151,11 @@ describe('a session names its seat', () => {
         ['-Users-dima-frame-cclio', 'hi', 'cclio'],
         ['-Users-dima--local-state-ccrow-plans-2026', 'hi', 'ccrow'],
         ['-Users-dima--local-state-composer', 'hi', 'composer'],
+        ['-Users-dima-frame--clio', 'hi', 'cclio'],
+        ['-Users-dima--local-state-crow-plans-2026', 'hi', 'ccrow'],
+        ['-Users-dima--local-state-helga', 'hi', 'composer'],
+        ['-Users-dima-frame', 'use the crew-codie skill', 'coder'],
+        ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'verifier'],
         ['-Users-dima-frame', 'hi', 'cc'],
         ['-Users-dima-frame', 'use the crew-coder skill', 'coder'],
         ['-Users-dima-bytes', '/x:crew-verifier FRM-1', 'verifier'],
@@ -281,8 +286,8 @@ describe('the alarm line names its cause and one proposal per file', () => {
             file: 'home/.claude/rules/fleet-flow.md',
             lines: 40,
         },
-        { bytes: 5_000, file: 'cclio/memory/craft-pm.md', lines: 22 },
-        { budget: 4_000, bytes: 3_700, file: 'cclio/AGENTS.md', lines: 9 },
+        { bytes: 5_000, file: '_clio/memory/craft-pm.md', lines: 22 },
+        { budget: 4_000, bytes: 3_700, file: '_clio/AGENTS.md', lines: 9 },
         { bytes: 1_000, file: 'AGENTS.md', lines: 2 },
     ];
 
@@ -290,7 +295,7 @@ describe('the alarm line names its cause and one proposal per file', () => {
         expect(
             lineOf(alarm, causeOf(alarm, weeks(100_000, 112_000), NOW, files)),
         ).toBe(
-            '⚠ cclio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — grew most: home/.claude/rules/fleet-flow.md (+40 lines) → trim it; cclio/memory/craft-pm.md (+22 lines) → trim it; cclio/AGENTS.md (+9 lines) → raise its budget',
+            '⚠ cclio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — grew most: home/.claude/rules/fleet-flow.md (+40 lines) → trim it; _clio/memory/craft-pm.md (+22 lines) → trim it; _clio/AGENTS.md (+9 lines) → raise its budget',
         );
     });
 
@@ -323,15 +328,15 @@ describe('the alarm line names its cause and one proposal per file', () => {
     });
 
     it.each([
-        ['cclio/memory/x.md', 9_000, 8_000, 'trim it'],
-        ['cclio/memory/x.md', 7_500, 8_000, 'raise its budget'],
+        ['_clio/memory/x.md', 9_000, 8_000, 'trim it'],
+        ['_clio/memory/x.md', 7_500, 8_000, 'raise its budget'],
         [
             'home/.claude/rules/x.md',
             100,
             undefined,
             'move it to an on-demand skill',
         ],
-        ['cclio/memory/x.md', 100, undefined, 'trim it'],
+        ['_clio/memory/x.md', 100, undefined, 'trim it'],
     ])('%s at %i of %s: %s', (file, bytes, budget, verb) => {
         expect(verbFor(file, bytes, budget)).toBe(verb);
     });
@@ -364,13 +369,13 @@ describe('the boot digest', () => {
     });
 
     const grownFiles = () => [
-        { bytes: 900, file: 'cclio/memory/craft-pm.md', lines: 30 },
+        { bytes: 900, file: '_clio/memory/craft-pm.md', lines: 30 },
     ];
 
     it('names the grown memory file in the alarm line', () => {
         const lines = digestOf(weeks(100_000, 112_000), {}, NOW, grownFiles);
         expect(lines[1]).toContain(
-            'cclio/memory/craft-pm.md (+30 lines) → trim it',
+            '_clio/memory/craft-pm.md (+30 lines) → trim it',
         );
     });
 
@@ -391,7 +396,7 @@ describe('the cclio boot digest line', () => {
     const hook = readFileSync(
         path.join(
             import.meta.dirname,
-            '../cclio/.claude/hooks/boot-prefetch.sh',
+            '../_clio/.claude/hooks/boot-prefetch.sh',
         ),
         'utf8',
     );

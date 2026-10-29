@@ -12,7 +12,7 @@ Ticket: none
 **kill rule:** two rounds where the usual door answers as well for under 30 % more tokens, or no recipe reaches for it in 2 weeks — drop it; the free tier's 1,000 credits a month run out on one job — drop it
 
 ## day 0
-- the users and the docs pass is the 2026-10-18 research: `cclio/.scratch/research-firecrawl/` (opus, exa, parallel lanes; verdict: one narrow job, never a third search lane)
+- the users and the docs pass is the 2026-10-18 research: `_clio/.scratch/research-firecrawl/` (opus, exa, parallel lanes; verdict: one narrow job, never a third search lane)
 - key: `op://dev/firecrawl-golden/credential` → `FIRECRAWL_API_KEY` in frame `op.env`; probe 2026-10-19: one scrape 200, 16.8k chars of markdown, 1 credit
 
 ## stress list

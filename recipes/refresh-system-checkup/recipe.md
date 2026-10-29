@@ -26,7 +26,7 @@ dima's, 2026-10-19 (folded):
 
 ## the run
 
-- a new check is born only from a real miss (a 🔴 nobody caught, a flawlog line, a retro) or a practice the research shows paying off; a check green for 90 days in `cclio/checkup/log.md` is proposed for removal
+- a new check is born only from a real miss (a 🔴 nobody caught, a flawlog line, a retro) or a practice the research shows paying off; a check green for 90 days in `_clio/checkup/log.md` is proposed for removal
 - a check that already lives elsewhere joins by pointer, never by copy; the memory groom, `doctor prompt-audit` and `/skill-doctor` stay in `recipes/nurture-memory`
 - suggest a run when: a check has gone 90 days green, a checkup run misses something dima then catches, or a cc release adds a doctor-style built-in
 

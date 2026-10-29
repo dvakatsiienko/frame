@@ -8,7 +8,7 @@ dies-when: the verdict line below is written
 
 Ticket: none
 
-born 2026-10-18 from the viz-tool shape (PK-172, dima's inbox wish): 3 research lanes, 4 tools drawn, edited by dima and read back the same day; LikeC4 dropped. the home: `cclio/blueprints/`; the recipe: `recipes/refresh-blueprint-comms/`.
+born 2026-10-18 from the viz-tool shape (PK-172, dima's inbox wish): 3 research lanes, 4 tools drawn, edited by dima and read back the same day; LikeC4 dropped. the home: `_clio/blueprints/`; the recipe: `recipes/refresh-blueprint-comms/`.
 
 **test card:** we believe a shared, editable picture gets an idea between dima and cclio faster and clearer than prose · we test it by drawing every review dima asks for in n8n first (the pm module flow, cclio's memory structure, the fleet memory), and on his ask the same blueprint in Canvas or draw.io · we measure per round: cclio's tokens to draw and to read his edit back, his edit read back right (y/n), what got lost, his look-and-feel word, and every n8n automation that ran (n8n's own otel spans are a candidate source) · we're right if dima reaches for a blueprint on his own at least 3 times and every edit of his reads back right
 
@@ -37,4 +37,4 @@ one line per automation: the duty it took over, that duty's cost before (tool ca
 
 ## verdict
 
-- 2026-10-23 · **adopted: draw.io is the blueprint tool, n8n for automations only** (dima, 16:17: «only draw.io is main blueprint tool», unless a better one turns up or FigJam becomes reachable; Obsidian Canvas an option for later). FigJam left at the Figma MCP cap (`figjam.md`). the boards and the doors: `cclio/blueprints/AGENTS.md`
+- 2026-10-23 · **adopted: draw.io is the blueprint tool, n8n for automations only** (dima, 16:17: «only draw.io is main blueprint tool», unless a better one turns up or FigJam becomes reachable; Obsidian Canvas an option for later). FigJam left at the Figma MCP cap (`figjam.md`). the boards and the doors: `_clio/blueprints/AGENTS.md`

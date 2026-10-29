@@ -37,7 +37,7 @@ is … pull it into our stack and measure it under a weight for 2 weeks».
 - `workspaceSymbol` to find where a name is defined in an unfamiliar app
 - incoming calls on a hook or util before changing its signature
 - a worktree session (`.claude/worktrees/*`) — does the server resolve the tree's own files
-- a frame script (`script/*.ts`, cwd `~/frame/cclio`) — the launcher's walk-up from a subdir
+- a frame script (`script/*.ts`, cwd `~/frame/_clio`) — the launcher's walk-up from a subdir
 - cost: the server's memory on bytes (`ps -o rss` on the `tsc --lsp` pid) and its start time
 
 ## measure

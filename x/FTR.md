@@ -106,7 +106,7 @@
   - given the lock outlives the wait, then the verb fails naming the lock's path and age, and the lock stays
   - decision: the verb never deletes a lock — a stale one is a crashed git, the caller's to check (PK-97)
 - ⬜ `x lane commit` stops a changed quote of dima's in a memory, skill or rules file
-  - given a staged `rules/`, `rules-lazy/`, `skills/`, `memory/` markdown file, or a `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, whose «» quoted lines changed against HEAD (`cclio/script/quote-diff.py`)
+  - given a staged `rules/`, `rules-lazy/`, `skills/`, `memory/` markdown file, or a `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, whose «» quoted lines changed against HEAD (`_clio/script/quote-diff.py`)
   - when `x lane commit` runs
   - then it refuses before the hooks, naming each gone quote, and HEAD does not move
   - given the message carries a line `quotes: shown`, then it commits
@@ -289,7 +289,7 @@
   - when `x brief check <brief> --repo <path>` runs
   - then it fails and names each one with its line; a thing the brief asks to build passes when `(new)` follows it
 - ✅ `x brief check` lints the exit lines
-  - given a rate with no n, an exit line with no surface, an exit line into `cclio/`, a relayed approval with no time, jev with no budget, «cclio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
+  - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «cclio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
 - ✅ `x brief check` refuses a skill that waits on the user's approval
@@ -298,7 +298,7 @@
   - then a `quiz` finding names the skill on its line; with a skip line the brief passes
   - decision: a coder parked on four asks under `to-tickets`' quiz while dima was away (FRM-392, 2026-10-11 12:03)
 - ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
-  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
+  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `_clio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
   - when `x brief preflight <ticket>` runs
   - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
   - given a clean ticket, then it prints ok

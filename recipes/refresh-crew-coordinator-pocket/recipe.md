@@ -2,9 +2,9 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - cclio/script/pocket-check.ts
-  - cclio/memory/habit-shared-files.md
-  - cclio/backlog.config.yml
+  - _clio/script/pocket-check.ts
+  - _clio/memory/habit-shared-files.md
+  - _clio/backlog.config.yml
   - docs/test-drive/pocket.md
 script: none
 groomed: 2026-10-10 (dima)
@@ -28,8 +28,8 @@ born 2026-10-10 from PK-34.
 
 - suggest a run when: a Backlog.md minor release, `pocket-check` goes red twice in a week, or the pocket trial verdict (2026-10-21)
 
-1. **groom** (step 0 of `cclio:shape-recipe`): the vectors below against the last run's line and the birth gate in `cclio/memory/habit-shared-files.md`. done: dima's word, the stamp in frontmatter. (open)
-2. **own data first**: the analysis vectors, measured from `cclio/pocket/` (tasks, completed, archive) and its git history. done: the numbers in the findings print. (script)
+1. **groom** (step 0 of `cclio:shape-recipe`): the vectors below against the last run's line and the birth gate in `_clio/memory/habit-shared-files.md`. done: dima's word, the stamp in frontmatter. (open)
+2. **own data first**: the analysis vectors, measured from `_clio/pocket/` (tasks, completed, archive) and its git history. done: the numbers in the findings print. (script)
 3. **lanes, from one brief**: `researcher` + `pnpm research:lanes`, pointed at what step 2 showed broken. done: every lane landed or failed out loud. (template)
 4. **distill** into the artifacts: a gap closed by a Backlog.md feature replaces our own check, never sits beside it. done: each artifact touched or named «unchanged». (open)
 5. **log** today's line. done: `log.md` has it.
@@ -57,9 +57,9 @@ born 2026-10-10 from PK-34.
 
 ## artifacts
 
-- `cclio/script/pocket-check.ts` — the mechanical contract; a vector that finds a new drift kind becomes a check here
-- `cclio/memory/habit-shared-files.md` — the pocket's purpose and birth gate; changed only where the run proved a rule wrong
-- `cclio/backlog.config.yml` — statuses, types, size labels
+- `_clio/script/pocket-check.ts` — the mechanical contract; a vector that finds a new drift kind becomes a check here
+- `_clio/memory/habit-shared-files.md` — the pocket's purpose and birth gate; changed only where the run proved a rule wrong
+- `_clio/backlog.config.yml` — statuses, types, size labels
 - `docs/test-drive/pocket.md` — the trial and its numbers
 
 ## findings

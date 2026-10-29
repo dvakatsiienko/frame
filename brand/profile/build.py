@@ -64,7 +64,7 @@ def icon(n, k):
 FRUIT = '🍒 hey 🥝 привіт 🍓 привет 🫐 konnichiwa 🍀'
 TOUR_TITLE = 'around the camp'
 TOURS = [('frame', frame_icon), ('bytes', bytes_icon)]
-GAZETTE = f'{GH}/frame/tree/main/cclio/gazette'
+GAZETTE = f'{GH}/frame/tree/main/_clio/gazette'
 COLS = 18  # grid units: jotai's wordmark takes two, so 34 icons fill 17 + 17
 
 def picture(name, alt, width, light, dark=None):

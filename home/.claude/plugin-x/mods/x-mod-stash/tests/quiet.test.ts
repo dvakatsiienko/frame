@@ -17,7 +17,7 @@ const PID = 4242;
 function world(
     on: On,
     {
-        cwd = '/home/frame/cclio',
+        cwd = '/home/frame/_clio',
         name = '🦉 cclio',
         now = EVEN,
         // files beside the registry (ccrow's relay), and other live sessions as cc writes their registry files
@@ -210,7 +210,7 @@ test('an untagged ping passes, never held blind', async ($, on) => {
     expect(w.queued).toHaveLength(1);
 });
 
-test("cclio cd'd out of ~/frame/cclio still holds a [progress] ping", async ($, on) => {
+test("cclio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, on) => {
     const w = world(on, { cwd: '/home/frame/home/.claude/plugin-x/mods' });
     await start($);
     await ping($, '[progress] step 2 landed');
@@ -595,7 +595,7 @@ test('the ledger counts a send to cclio by her name, her socket or her session i
 
 /* brief 8 item 2: cclio's thread sends ccrow's wake itself */
 
-const RELAY = '/home/.local/state/ccrow/relay.json';
+const RELAY = '/home/.local/state/crow/relay.json';
 const CROW_SID = 'f9f9f9f9-crow';
 const WAKE = JSON.stringify({
     id: 'w1',

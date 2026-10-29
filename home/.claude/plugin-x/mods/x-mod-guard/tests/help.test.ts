@@ -3,7 +3,7 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 // frame's scripts as their source reads: pocket-add parses no help flag, so `--help` runs it
 const SOURCES: Record<string, string> = {
-    '/home/frame/cclio/script/siesta.ts': 'const flag = process.argv[2];\n',
+    '/home/frame/_clio/script/siesta.ts': 'const flag = process.argv[2];\n',
     '/home/frame/script/pocket-add.ts':
         'const [title] = process.argv.slice(2);\nadd(title);\n',
     '/home/frame/script/pocket-check.ts':
@@ -38,7 +38,7 @@ const lines = (context: readonly string[] | undefined, word: string) =>
 const SCRIPT_RUNS = [
     'node ~/frame/script/pocket-add.ts --help',
     'node script/pocket-add.ts -h',
-    'tsx /home/frame/cclio/script/siesta.ts --help',
+    'tsx /home/frame/_clio/script/siesta.ts --help',
 ] as const;
 for (const typed of SCRIPT_RUNS)
     test(`a frame script with no help flag, run with --help, gets a hint first: ${typed}`, async ($, on) => {

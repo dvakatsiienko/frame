@@ -8,7 +8,7 @@ import { join } from 'node:path';
 const home = homedir();
 const frame = join(home, 'frame');
 const crewHook = join(home, '.claude/shelf/hooks/crew-recompact.sh');
-const shiftHook = join(frame, 'cclio/.claude/hooks/shift-recompact.sh');
+const shiftHook = join(frame, '_clio/.claude/hooks/shift-recompact.sh');
 
 type Check = { name: string; why: string; run: () => string | true };
 
@@ -65,8 +65,8 @@ const checks: Check[] = [
     {
         name: 'shift recompact',
         run: () => {
-            if (!wired(join(frame, 'cclio/.claude/settings.json'), shiftHook))
-                return 'not wired as SessionStart:compact in cclio/.claude/settings.json';
+            if (!wired(join(frame, '_clio/.claude/settings.json'), shiftHook))
+                return 'not wired as SessionStart:compact in _clio/.claude/settings.json';
             const plan = (status: string) => {
                 const dir = mkdtempSync(join(scratch, 'plan-'));
                 writeFileSync(
@@ -92,7 +92,7 @@ const checks: Check[] = [
         run: () => {
             const out = spawnSync(
                 'grep',
-                ['-l', '^status: running', '-r', join(frame, 'cclio/shifts')],
+                ['-l', '^status: running', '-r', join(frame, '_clio/shifts')],
                 { encoding: 'utf8' },
             ).stdout.trim();
             const running = out ? out.split('\n') : [];
@@ -141,7 +141,7 @@ const checks: Check[] = [
         run: () => {
             const settings = JSON.parse(
                 readFileSync(
-                    join(frame, 'cclio/.claude/settings.json'),
+                    join(frame, '_clio/.claude/settings.json'),
                     'utf8',
                 ),
             );
@@ -159,7 +159,7 @@ const checks: Check[] = [
                 !/402|billing|credit/i.test(health.stdout + health.stderr);
             if (on === jevUp) return true;
             return on
-                ? 'on at cclio scope while jev refuses — a compaction would call a dead api; set it false in cclio/.claude/settings.json'
+                ? 'on at cclio scope while jev refuses — a compaction would call a dead api; set it false in _clio/.claude/settings.json'
                 : 'jev answers again — turn the plugin back on at cclio scope, its test drive prefers it';
         },
         why: 'jev compacts at 95 % keeping the last 10 messages when its credit is live; frozen, cc native autocompact + the shift recompact hook carry the shift',

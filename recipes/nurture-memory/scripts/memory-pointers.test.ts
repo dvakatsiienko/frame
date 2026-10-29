@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { deadPointers } from './memory-pointers.ts';
 
 const root = path.resolve(import.meta.dirname, '../../..');
-const at = (text: string, file = 'cclio/memory/craft-pm.md') => [
+const at = (text: string, file = '_clio/memory/craft-pm.md') => [
     { file, line: 1, text },
 ];
 

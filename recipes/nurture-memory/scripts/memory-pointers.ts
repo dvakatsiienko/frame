@@ -17,7 +17,7 @@ function nameCandidates(root: string, name: string) {
             ns[1] === 'cclio'
                 ? path.join(
                       root,
-                      'cclio/plugin-cclio/skills',
+                      '_clio/plugin-clio/skills',
                       ns[2] ?? '',
                       'SKILL.md',
                   )
@@ -30,8 +30,8 @@ function nameCandidates(root: string, name: string) {
         ];
     return [
         path.join(root, 'home/.claude/rules', `${name}.md`),
-        path.join(root, 'cclio/memory', `${name}.md`),
-        path.join(root, 'cclio/plugin-cclio/skills', name, 'SKILL.md'),
+        path.join(root, '_clio/memory', `${name}.md`),
+        path.join(root, '_clio/plugin-clio/skills', name, 'SKILL.md'),
         path.join(root, 'home/.claude/plugin-x/skills', name, 'SKILL.md'),
         path.join(root, 'home/.claude', name),
     ];

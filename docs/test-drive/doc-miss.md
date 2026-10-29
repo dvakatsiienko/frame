@@ -12,4 +12,4 @@ until: 2026-10-30
 - **verdict at the until date:** misses that recur on one kind of question → a build ticket under FRM-177; none or scattered → FRM-177 closes as not worth the effort
 
 ## misses
-- 2026-10-27 · composer's inbox-prep at boot searched for its own charter `inbox-prep.md` outside `cclio/` · `home/.claude/plugin-x/skills/crew-composer/inbox-prep.md` existed beside its `SKILL.md`, and its charter names no path to it · found by cclio's `find` after composer's consult
+- 2026-10-27 · composer's inbox-prep at boot searched for its own charter `inbox-prep.md` outside `_clio/` · `home/.claude/plugin-x/skills/crew-composer/inbox-prep.md` existed beside its `SKILL.md`, and its charter names no path to it · found by cclio's `find` after composer's consult

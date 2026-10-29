@@ -15,7 +15,7 @@ the source and record lane of the brief «can an agent coordinator write a ticke
 
 ## our record: the counts
 
-sample: the 10 tickets the brief named (`x linear read … --comments`, plus a read-only `x linear api` history query for edit times and actors). the delegation rule is «they are cclio's: dima never reviews them» (`cclio/plugin-cclio/skills/shape-lane/SKILL.md:33`), which landed in 76d05145 at 2026-10-09 17:30 +0300 (14:30Z).
+sample: the 10 tickets the brief named (`x linear read … --comments`, plus a read-only `x linear api` history query for edit times and actors). the delegation rule is «they are cclio's: dima never reviews them» (`_clio/plugin-clio/skills/shape-lane/SKILL.md:33`), which landed in 76d05145 at 2026-10-09 17:30 +0300 (14:30Z).
 
 ### lines sealed
 
@@ -65,7 +65,7 @@ sample: the 10 tickets the brief named (`x linear read … --comments`, plus a r
   - a proxy that proves little: 359 #3–4
   - two lines pulling apart: 373 #3
   - a split owner with no «cclio» word, a merge order, an over-literal line: 359 #5–6, 367 #6, 355 #3
-- the written rules already name several of these: «covers every case it means», «checked against the real surface», «carries its one-command live count» (`cclio/plugin-cclio/skills/shape-lane/exit-lines.md:10,15,19`). they are prose a model reads, not a gate. 359 #2 and 367 #3 broke the «every case» rule after it was written
+- the written rules already name several of these: «covers every case it means», «checked against the real surface», «carries its one-command live count» (`_clio/plugin-clio/skills/shape-lane/exit-lines.md:10,15,19`). they are prose a model reads, not a gate. 359 #2 and 367 #3 broke the «every case» rule after it was written
 - a small contradiction: `exit-lines.md:8` says a line names «never a file path», while preflight's surface rule is satisfied by «a path, a port or a command in backticks» (`preflight.go:70`)
 
 ## primary sources

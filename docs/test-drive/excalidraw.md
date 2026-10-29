@@ -17,8 +17,8 @@ born 2026-10-25 from the PK-276 research and bench (dima: «let's try Excalidraw
 
 ## the setup
 
-- the toolchain: `cclio/blueprints/excalidraw/`, its own pnpm root (`pnpm install` there; the router bundle is `pnpm build:router`); verbs `convert`, `render`, `crossings`, `read-back`, `ticket-flow:build`; `pnpm test` there, 43 tests (frame's root vitest skips the dir)
-- the boards: `cclio/blueprints/excalidraw/<board>/board.excalidraw`, converted from the draw.io board with `pnpm convert ../<board>.drawio <board>/board.excalidraw`
+- the toolchain: `_clio/blueprints/excalidraw/`, its own pnpm root (`pnpm install` there; the router bundle is `pnpm build:router`); verbs `convert`, `render`, `crossings`, `read-back`, `ticket-flow:build`; `pnpm test` there, 43 tests (frame's root vitest skips the dir)
+- the boards: `_clio/blueprints/excalidraw/<board>/board.excalidraw`, converted from the draw.io board with `pnpm convert ../<board>.drawio <board>/board.excalidraw`
 - dima opens a board in the excalidraw.com PWA: ⌘O the file, ⌘S saves back to it; his notes are text elements starting with 💬, read back by `pnpm read-back <before> <after>`
 
 ## stress list
