@@ -287,6 +287,61 @@ describe('the never-reached text', () => {
     });
 });
 
+// the log a reply leaves when its turn's transcript is known
+const loggedAfter = (reply: string, transcript: string) => {
+    const log = join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv');
+    execFileSync('python3', [HOOK], {
+        encoding: 'utf8',
+        env: { ...process.env, REPLY_CHECK_LOG: log, REPLY_CHECK_NOW: '15:10', REPLY_CHECK_REMIND: REMIND },
+        input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, transcript_path: transcript }),
+    });
+    try {
+        return readFileSync(log, 'utf8');
+    } catch {
+        return '';
+    }
+};
+const noCalls = turnWith();
+
+describe('the door claim with no source (PK-224)', () => {
+    it('logs a claim of how a door works with nothing beside it', () => {
+        expect(logged('the async api takes no commit message, so the squash keeps the title.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain('door-claim\t');
+    });
+
+    it('passes the same claim with a file, command or link beside it', () => {
+        for (const source of ['(`x/go/gh.go:42`)', '[the docs](https://docs.github.com/x)', 'https://docs.github.com/x']) {
+            expect(logged(`the async api takes no commit message ${source}.`, mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+        }
+    });
+
+    it('passes prose that only names a door', () => {
+        expect(logged('the cli lists every family; the plugin loads at start.', mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+    });
+});
+
+describe('a checked claim with no evidence call (FRM-429)', () => {
+    it.each(['the files are copied whole.', 'I checked the files.', 'I verified the files.', 'proven: the files match.', 'the table is verified by read-back.'])(
+        'logs «%s» in a turn with no evidence call',
+        (reply) => {
+            expect(loggedAfter(reply, noCalls)).toContain('unevidenced\t');
+        },
+    );
+
+    it.each(['Bash', 'Read', 'Grep', 'mcp__linear__get_issue'])('passes the same word in a turn with a %s call', (name) => {
+        expect(loggedAfter('I verified the files.', turnWith({ calls: [{ name }], id: 'm1' }))).toBe('');
+    });
+
+    it('passes «unverified», «verifier» and a disclosure like «not checked»', () => {
+        for (const reply of ['the claim is unverified.', 'the verifier ran.', 'not checked: the desktop look.', 'never verified live.', 'the verifier passed it, so it is verified clean.', 'a parse proven on one build fails on the other.']) {
+            expect(loggedAfter(reply, noCalls)).toBe('');
+        }
+    });
+
+    it('passes the word inside a fence or inline code', () => {
+        expect(loggedAfter('run `x verified`.\n```\nchecked\n```', noCalls)).toBe('');
+    });
+});
+
 describe('the siesta freebie', () => {
     it('reminds when the wishkeeper spawn is followed only by orbit and wrap-up', () => {
         const t = turnWith({ calls: [wishkeeper], id: 'm1' }, { calls: [{ name: 'mcp__x-mod-stash__orbit' }, { name: 'mcp__ccd_turn__wrap_up' }], id: 'm2' });

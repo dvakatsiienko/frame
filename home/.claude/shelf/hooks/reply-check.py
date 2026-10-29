@@ -111,6 +111,45 @@ def wide_claims(prose: str) -> list[str]:
     return [m.group(0) for para in re.split(r"\n\s*\n", prose) if "`" not in para for m in [WIDE_CLAIM.search(para)] if m]
 
 
+# a claim of how a door works (an api, a cli, a sync, an auth path) needs the file:line, command or doc it was read from beside it
+# in the same paragraph (PK-224, FRM-429): inline code, a link or a url is the source
+DOOR_NOUN = r"(?:api|cli|mcp|plugin|sync|auth(?:entication)?|endpoint|door|connector|webhook)"
+DOOR_CLAIM = re.compile(
+    rf"\b{DOOR_NOUN}\b[^.\n]{{0,50}}\b(?:takes no|needs|requires|only (?:takes|accepts|supports|works|reads|writes)|never (?:reads|writes|syncs|takes)|(?:does not|doesn't|cannot|can't) (?:support|take|read|write|sync|reach|accept)|has no (?:way|door|access)|is limited to)\b",
+    re.I,
+)
+SOURCE = re.compile(r"`|https?://|\]\(")
+
+
+def door_claims(prose: str) -> list[str]:
+    return [m.group(0)[:40] for para in re.split(r"\n\s*\n", prose) if not SOURCE.search(para) for m in [DOOR_CLAIM.search(para)] if m]
+
+
+# a claim stated as checked needs a command or read in the turn (the top #dima-caught type, flat at 10 vs 10, 2026-10-28).
+# the claim forms: «copied whole», a first-person «I checked / verified / proved», a label line «proven: …», and «verified by …».
+# the bare word was tried first: a week of 3,276 Stop turns flagged 22 replies, most relaying a member's verdict or a promise
+CHECKED_CLAIM = re.compile(
+    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|verified|proven|proved)\b|^\W*(?:checked|verified|proven)\s*[:—-]|\b(?:checked|verified|proven)\s+(?:by|with|against)\b",
+    re.I | re.M,
+)
+# «not checked», «never verified», «isn't proven»: the word negated is a disclosure, not a claim
+NEGATED_CLAIM = re.compile(r"\b(?:not|never|no|isn't|wasn't|aren't|weren't|n't|nothing|un)\s+(?:\w+\s+)?(?:copied whole|checked|verified|proven)\b", re.I)
+EVIDENCE = ("Bash", "Read", "Grep", "Glob", "Monitor")
+EVIDENCE_MCP = re.compile(r"^mcp__.*(?:read|get|list|search|query|fetch|find|status)", re.I)
+
+
+def claims_without_evidence(reply: str, calls: list[tuple[str, dict]]) -> list[str]:
+    prose = INLINE_CODE.sub("", FENCE.sub("", reply))
+    m = CHECKED_CLAIM.search(NEGATED_CLAIM.sub("", prose))
+    if not m or any(name in EVIDENCE or EVIDENCE_MCP.match(name) for name, _ in calls):
+        return []
+    return [m.group(0).strip().lower()]
+
+
+def unevidenced(path: str, reply: str) -> list[str]:
+    return claims_without_evidence(reply, turn_calls(path))
+
+
 def grill_drift(prose: str, session: str) -> str:
     # the reply's grill and its orbit asks are one list: the numbers must match (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
     head = GRILL_HEAD.search(prose)
@@ -358,6 +397,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("unglossed-id", token) for token in unglossed(prose)]
     found += [("unproven-cant", word) for word in unproven_cants(prose)]
     found += [("wide-claim", claim) for claim in wide_claims(prose)]
+    found += [("door-claim", claim) for claim in door_claims(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -393,6 +433,7 @@ def main() -> None:
     if path and os.path.exists(path):
         hits += [("unreached", head) for head in unreached(path, reply)]
         hits += [("empty-promise", said) for said in empty_promises(path, reply)]
+        hits += [("unevidenced", said) for said in unevidenced(path, reply)]
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
