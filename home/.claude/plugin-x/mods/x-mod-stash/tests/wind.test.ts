@@ -93,12 +93,17 @@ const endTurn = ($: Engine) =>
         turnId: 't',
     });
 
-const ready = ($: Engine, slug?: string) =>
+// the op names what is still pending; «none» is the only word that lets it compact
+const ready = ($: Engine, slug?: string, pending: string | null = 'none') =>
     $.tool.call({
         op: 'second-wind',
         tool: TOOL,
         ...(slug === undefined ? {} : { slug }),
+        ...(pending === null ? {} : { pending }),
     } as never) as Promise<{ deny?: string; result?: unknown }>;
+
+const W4 =
+    'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
 
 const notes = (lines: string[]) => lines.filter((l) => l.includes('🐦‍🔥'));
 
@@ -334,4 +339,98 @@ test('a compact keeps a wind that is refreshing, and a precompute keeps a writin
     w.store.set(`wind:${SID}`, { at: NOW, state: 'writing' });
     await compact($, 'precompute');
     expect([kept, w.store.has(`wind:${SID}`)]).toEqual([true, true]);
+});
+
+test('the op refuses with no pending field, and nothing compacts', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await ready($, SLUG, null);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([r.deny?.includes('\n'), r.deny, w.commands]).toEqual([
+        false,
+        expect.stringContaining('pending is required'),
+        [],
+    ]);
+});
+
+test('the op refuses a pending that names work, saying what is pending, and nothing compacts', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await ready($, SLUG, 'two subagents still running');
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([r.deny, w.commands]).toEqual([
+        expect.stringContaining('two subagents still running'),
+        [],
+    ]);
+});
+
+for (const [who, isOwner] of [
+    ['a coder', false],
+    ['cclio', true],
+] as const)
+    test(`${who}'s second wind note carries dima's words whole`, async ($, on) => {
+        const w = world(on, isOwner ? '🦉 cclio' : '☕️ 🔧 coder: mods');
+        w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+        await start($);
+        await say($);
+        expect(notes(w.lines).join('\n')).toContain(W4);
+    });
+
+test("a compact that ran, the wind's or a threshold one, is followed by one /reload-skills", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await compact($, 'auto');
+    await w.clock.advance(2_000);
+    expect(
+        w.commands.filter((c) => c.startsWith('/reload-skills')),
+    ).toHaveLength(1);
+});
+
+test('a precompute or a subagent compact reloads no skills', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await compact($, 'precompute');
+    await $.session.compact({
+        agentId: 'sub-1',
+        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+        trigger: 'auto',
+    } as never);
+    await w.clock.advance(2_000);
+    expect(w.commands.filter((c) => c.startsWith('/reload-skills'))).toEqual(
+        [],
+    );
+});
+
+for (const [what, call] of [
+    ['an agent', { tool: 'Agent' }],
+    [
+        'a background command',
+        { command: 'sleep 90', run_in_background: true, tool: 'Bash' },
+    ],
+] as const)
+    test(`${what} started after pending: none makes the wind refuse, and the next prompt says why`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await ready($, SLUG);
+        await $.tool.call(call as never);
+        await endTurn($);
+        await w.clock.advance(2_000);
+        await say($);
+        expect([
+            w.commands.filter((c) => c.startsWith('/compact')),
+            notes(w.lines).join('\n').includes('second wind refused'),
+            w.store.has(`wind:${SID}`),
+        ]).toEqual([[], true, false]);
+    });
+
+test('a foreground command started after pending: none does not block the wind', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ready($, SLUG);
+    await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect(w.commands.filter((c) => c.startsWith('/compact'))).toHaveLength(1);
 });

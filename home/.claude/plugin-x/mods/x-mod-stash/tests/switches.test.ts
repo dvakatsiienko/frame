@@ -256,7 +256,7 @@ const SCENARIOS: Record<string, Scenario> = {
             w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
         },
         fire: ($) => say($, 'go'),
-        op: { op: 'second-wind', slug: 'mods-l14-2' },
+        op: { op: 'second-wind', pending: 'none', slug: 'mods-l14-2' },
         trace: /second wind/,
     },
     'stash.waker': {

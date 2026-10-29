@@ -438,6 +438,7 @@ const ORBIT_PROPS = {
         ],
         type: 'string',
     },
+    pending: { type: 'string' },
     pick: { type: 'string' },
     plan: { type: 'string' },
     role: { enum: [...LANE_ROLES], type: 'string' },
@@ -649,18 +650,24 @@ export const WIND_EMOJI = {
     cancelled: '↩️',
     idle: '🐦‍🔥',
     refreshing: '🌀',
+    refused: '🛑',
     writing: '✍️',
 } as const;
 const WIND_SAY = {
     asked: 'asked, waits for its next turn',
     cancelled: 'cancelled, tells it at its next turn',
     refreshing: 'compacting onto its handoff',
+    refused: 'refused, work started after pending: none',
     writing: 'finishing its step, then its handoff',
 } as const;
-const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (a coder: x:crew-coder, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods coder; cclio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
-const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. finish the step you are on, nothing interrupts it; a member mid-round (a verifier's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
+const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (a coder: x:crew-coder, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods coder; cclio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+export const WIND_WORDS =
+    'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
+const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (a verifier's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
 // cclio's good stop is todo 16's nine steps (dima, 10-13)
-const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run cclio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run cclio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+const windRefused = (what: string) =>
+    `🐦‍🔥 second wind refused: ${what} started after you said pending: none, so nothing compacted. resolve it, then call ${ORBIT_TOOL} op second-wind again.`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
 // the turn's end lets the engine settle before the compact runs
@@ -2324,6 +2331,10 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
         } satisfies StashWind);
         return isOwner ? WIND_NOTE_OWNER : WIND_NOTE;
     }
+    if (was.state === 'refused') {
+        await $.store.delete(WIND + sid);
+        return windRefused(was.blocked ?? 'work');
+    }
     if (was.state !== 'cancelled') return undefined;
     await $.store.delete(WIND + sid);
     return WIND_CANCELLED;
@@ -2332,9 +2343,19 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
 // the op second-wind: the session names the handoff it wrote; the compact waits for this turn's end
 async function windReady(
     $: EngineInterface,
-    slug: unknown,
+    input: Record<string, unknown>,
 ): Promise<{ deny: string } | { result: string }> {
-    const name = typeof slug === 'string' ? slug.trim() : '';
+    const pending =
+        typeof input.pending === 'string' ? input.pending.trim() : '';
+    if (!pending)
+        return {
+            deny: 'orbit second-wind: pending is required: «none», or the work still pending (a subagent, a background job, a task not parked)',
+        };
+    if (pending.toLowerCase() !== 'none')
+        return {
+            deny: `orbit second-wind: not yet, pending: ${pending}; resolve it and park everything, then call again with pending: none`,
+        };
+    const name = typeof input.slug === 'string' ? input.slug.trim() : '';
     if (!/^[\w][\w.-]*$/.test(name))
         return {
             deny: 'orbit second-wind: name the handoff you just wrote, slug: "<lane or topic>-<n>"',
@@ -2368,12 +2389,42 @@ async function windOnCompact($: EngineInterface) {
     await $.store.delete(WIND + sid);
 }
 
+// work a session starts after it said pending: none and before the compact fires: an agent, a background command or session
+const BG_SESSION = /\bclaude\s+(?:-n\s+\S+.*\s)?--bg\b/;
+function windBlocker(tool: string, input: Record<string, unknown>) {
+    if (tool === 'Agent') return 'an agent';
+    if (tool !== 'Bash') return undefined;
+    if (input.run_in_background === true) return 'a background command';
+    return typeof input.command === 'string' && BG_SESSION.test(input.command)
+        ? 'a background session'
+        : undefined;
+}
+
+async function windBlock($: EngineInterface, e: Record<string, unknown>) {
+    const what = windBlocker(String(e.tool), e);
+    const sid = what ? await currentId($) : undefined;
+    const was = sid ? await windOf($, sid) : undefined;
+    if (!sid || !what || was?.state !== 'refreshing' || was.blocked) return;
+    await $.store.set(WIND + sid, {
+        ...was,
+        blocked: what,
+    } satisfies StashWind);
+}
+
 // at a main turn's end: a session that named its handoff compacts onto it, then ingests it, once
 async function windAfterTurn($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
     if (!sid || was?.state !== 'refreshing' || !was.slug) return;
     if (!(await partsShown($))('stash.second-wind')) return;
+    if (was.blocked) {
+        await $.store.set(WIND + sid, {
+            at: await $.clock.now(),
+            blocked: was.blocked,
+            state: 'refused',
+        } satisfies StashWind);
+        return;
+    }
     const slug = was.slug;
     $.clock.after(WIND_DELAY_MS, () => runWind($, sid, slug));
 }
@@ -3585,7 +3636,7 @@ async function orbitCall(
     const hidden = await partRefusal($, input.op);
     if (hidden) return { deny: hidden };
     if (input.op === 'second-wind') {
-        const r = await windReady($, input.slug);
+        const r = await windReady($, input);
         return 'deny' in r ? r : { result: r.result };
     }
     if (input.op === 'glide') {
@@ -4079,6 +4130,12 @@ export const register: Register = (on) => {
         if (!e.agentId && e.trigger !== 'precompute') {
             await windOnCompact($).catch(() => undefined);
             await load($);
+            // a compact keeps only some skills: the full list is sent again once it ends
+            $.clock.after(WIND_DELAY_MS, () =>
+                $.command
+                    .run({ args: '', command: 'reload-skills' })
+                    .catch(() => undefined),
+            );
         }
         return r;
     });
@@ -6290,6 +6347,7 @@ export const register: Register = (on) => {
         }
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
+        await windBlock($, e as Record<string, unknown>).catch(() => undefined);
         if (
             (e.tool as string) === WRAP_UP_TOOL &&
             oneLine((e as Record<string, unknown>).ask)

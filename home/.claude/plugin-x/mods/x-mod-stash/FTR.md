@@ -387,6 +387,15 @@
   - given it reads 🌀, then a press changes nothing
   - decision: no timer ever cancels or compacts: an idle session waits on 🥚 until its next turn (dima, o2; cclio 17:32)
   - decision: asked reads 🥚, the phoenix before it hatches: 📨 is the undo tick's (dima's emoji battle, o13, 19:14); the cancel reads ↩️ for the same reason (o13's follow, 19:26)
+- ⬜ a second wind compacts only when the session says nothing is pending
+  - given a session asked for a second wind, wrote its handoff and calls the orbit op `second-wind`
+  - when the call carries no `pending`, or a `pending` naming work, then it is refused in one line saying what is required or pending, and nothing compacts
+  - when it carries `pending: none`, then the mod compacts at the turn's end and ingests the handoff
+  - when an agent, a background command or a background session starts after `pending: none` and before the compact, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it
+  - then the note the session reads carries dima's words whole (W4, FRM-431), for a coder and for cclio alike
+- ⬜ every compact is followed by one `/reload-skills`
+  - given a compact ran in the main session (a second wind's, the threshold's or a typed one), not a precompute and not a subagent's
+  - when it ends, then the mod submits `/reload-skills` once, so the skill list is back
 - ⬜ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
   - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
 

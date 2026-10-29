@@ -64,9 +64,11 @@ export type StashMember = {
 // second wind for one session, a store key every board reads: asked from a board, writing once its turn carried the
 // note, refreshing once it named its handoff, cancelled when a second press took it back after the note went out
 export type StashWind = {
-    state: 'asked' | 'writing' | 'refreshing' | 'cancelled';
+    state: 'asked' | 'writing' | 'refreshing' | 'cancelled' | 'refused';
     at: number;
     slug?: string;
+    // work started after «pending: none» and before the compact: the wind refuses, and says what
+    blocked?: string;
 };
 
 // the band's two meters: this session's context against its compaction point, and the account's 5h window;
