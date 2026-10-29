@@ -202,14 +202,22 @@ export function parseWait(reply: string): string | undefined {
 const STANDING_WATCH = /^Arm the one-shot (?:pr|ci) watch/i;
 const isStandingWatch = (t: { description: string; command?: string }) =>
     t.command?.includes('watch-once.sh') || STANDING_WATCH.test(t.description);
-// every background task the session waits on, by its own name or description: the board's row lists them all (dima's o75)
+// a background task as the Stop event lists it, kept per reply; `state` is set once its end notice arrived
+export type BackgroundTask = {
+    id?: string;
+    name?: string;
+    description: string;
+    command?: string;
+    agent_type?: string;
+    state?: 'done' | 'failed';
+};
+
+// every background task the session still waits on, by its own name or description: the board's row lists them all (dima's o75)
 export function backgroundWaits(
-    all:
-        | readonly { name?: string; description: string; command?: string }[]
-        | undefined,
+    all: readonly BackgroundTask[] | undefined,
 ): string[] {
     return (all ?? [])
-        .filter((t) => !isStandingWatch(t))
+        .filter((t) => !isStandingWatch(t) && !t.state)
         .map((t) => (t.name ?? t.description).trim());
 }
 
@@ -223,29 +231,43 @@ const AGENT_BADGE: Record<string, string> = {
     wishkeeper: '🐬',
 };
 
+const named = (t: BackgroundTask) => {
+    const badge = t.agent_type && AGENT_BADGE[t.agent_type];
+    return badge
+        ? `${badge} ${t.agent_type}`
+        : (t.name ?? t.description).trim().split(/\s+/).slice(0, 3).join(' ');
+};
+
+// the tasks still running read «waiting on <who>»; with none left, the ones that ended read «<who> done» or «<who> failed»,
+// so a finished agent never shows as running (dima, 2026-10-15; PK-147)
 export function backgroundWait(
-    all:
-        | readonly {
-              name?: string;
-              description: string;
-              command?: string;
-              agent_type?: string;
-          }[]
-        | undefined,
+    all: readonly BackgroundTask[] | undefined,
 ): string | undefined {
     const tasks = all?.filter((t) => !isStandingWatch(t)) ?? [];
-    const first = tasks[0];
-    if (!first) return undefined;
-    const badge = first.agent_type && AGENT_BADGE[first.agent_type];
-    const who = badge
-        ? `${badge} ${first.agent_type}`
-        : (first.name ?? first.description)
-              .trim()
-              .split(/\s+/)
-              .slice(0, 3)
-              .join(' ');
-    const more = tasks.length > 1 ? ` +${tasks.length - 1}` : '';
-    return `waiting on ${who}${more}`;
+    const live = tasks.filter((t) => !t.state);
+    const first = live[0];
+    if (first)
+        return `waiting on ${named(first)}${live.length > 1 ? ` +${live.length - 1}` : ''}`;
+    const ended = tasks[0];
+    if (!ended) return undefined;
+    return `${named(ended)} ${ended.state}${tasks.length > 1 ? ` +${tasks.length - 1}` : ''}`;
+}
+
+// a task-notification delivery names the task that ended and how: completed is done, failed, killed and stopped are failed
+const ENDS = {
+    completed: 'done',
+    failed: 'failed',
+    killed: 'failed',
+    stopped: 'failed',
+} as const;
+export function noticeOf(
+    text: string,
+): { id: string; state: 'done' | 'failed' } | undefined {
+    if (!text.includes('<task-notification>')) return undefined;
+    const id = text.match(/<task-id>([^<]+)<\/task-id>/)?.[1];
+    const status = text.match(/<status>(\w+)<\/status>/)?.[1];
+    const state = status ? ENDS[status as keyof typeof ENDS] : undefined;
+    return id && state ? { id, state } : undefined;
 }
 
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];

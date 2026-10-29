@@ -48,6 +48,7 @@ import {
     wrongText,
 } from './orbit.ts';
 import {
+    type BackgroundTask,
     LEDGER_SENDS,
     backgroundWait,
     backgroundWaits,
@@ -56,6 +57,7 @@ import {
     dropWaitAside,
     isFleetName,
     linkTickets,
+    noticeOf,
     numberCircled,
     parseWait,
     ticketOf,
@@ -85,6 +87,8 @@ type Reply = {
     name?: string;
     wait?: string;
     waits?: string[];
+    // the background tasks the wait came from, so an end notice can settle one
+    tasks?: BackgroundTask[];
     ended?: number;
 };
 
@@ -3335,10 +3339,39 @@ function hoverTip(
 // a reply's own 🔭 line wins; else its background tasks, the first named for the band and all of them for the board
 function waitsOf(
     said: string | undefined,
-    tasks: Parameters<typeof backgroundWait>[0],
-): Pick<Reply, 'wait' | 'waits'> {
+    tasks: readonly BackgroundTask[] | undefined,
+): Pick<Reply, 'wait' | 'waits' | 'tasks'> {
     if (said) return { wait: said };
-    return { wait: backgroundWait(tasks), waits: backgroundWaits(tasks) };
+    return {
+        tasks: tasks?.map(({ agent_type, command, description, id, name }) => ({
+            agent_type,
+            command,
+            description,
+            id,
+            name,
+        })),
+        wait: backgroundWait(tasks),
+        waits: backgroundWaits(tasks),
+    };
+}
+
+// a background task's end notice: the task leaves the session's waits and the band reads it done or failed
+async function settleTask($: EngineInterface, text: string) {
+    const notice = noticeOf(text);
+    if (!notice) return;
+    const sid = await $.session.id();
+    const was = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    if (!was?.tasks?.some((t) => t.id === notice.id)) return;
+    const tasks = was.tasks.map((t) =>
+        t.id === notice.id ? { ...t, state: notice.state } : t,
+    );
+    await $.store.set(REPLY + sid, {
+        ...was,
+        tasks,
+        wait: backgroundWait(tasks),
+        waits: backgroundWaits(tasks),
+    } satisfies Reply);
+    await load($);
 }
 
 // one orbit op, as the tool takes it alone or as one item of `ops`
@@ -3870,6 +3903,10 @@ export const register: Register = (on) => {
     // quiet comms: a member's [progress] ping is held in cclio's thread, every other delivery passes and is logged
     on('session.receive', async ($, e, next) => {
         const kind = e.origin.kind;
+        if (kind === 'task-notification' && !e.agentId) {
+            await settleTask($, e.text).catch(() => undefined);
+            return next(e);
+        }
         if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
             return next(e);
         if (!(await isQuietHome($).catch(() => false))) return next(e);

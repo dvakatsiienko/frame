@@ -42,6 +42,7 @@
   - decision: the standing watches run all day and are no wait (dima's o52, 2026-10-11)
   - given several background tasks, then the band keeps «waiting on <first> +n» and the fleet board's row names every one by its own description, `; `-joined (dima's o75)
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
+  - given a listed task's end notice arrives (`completed`, `failed`, `killed` or `stopped`), then it leaves the waits: the row reads «waiting on <who>» for the tasks still running, and with none left «<who> done» or «<who> failed»; a notice for a task the reply never listed changes nothing (FRM-426, PK-147; fixtures are real notices in `tests/notices.ts`, the failed one a background command's, since no failed agent notice exists in ~1,500 transcripts)
 - ✅ a mid-turn reload keeps the turn and what only the band held
   - given a turn is running and dima's away digest shows
   - when a mod file is saved and x-mod-stash reloads mid-turn

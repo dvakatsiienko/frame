@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { completedAgent, failedCommand, killedAgent } from './notices.ts';
+
 const SID = 'b1b1b1b1-band';
 const TOOL = 'mcp__x-mod-stash__orbit';
 
@@ -300,4 +302,72 @@ test("the band's 🐦‍🔥 asks this session, and reads its state", async ($, 
         (await ui.find({ key: 'wind', type: 'Button' }))?.text,
         cards.includes('second wind: asked, waits for its next turn'),
     ]).toEqual(['🐦‍🔥', '🥚', true]);
+});
+
+// FRM-426 (PK-147): a background task's end notice settles it, so a finished agent never reads as running
+const task = (id: string, type: string, description: string) => ({
+    agent_type: type === 'subagent' ? 'scout' : undefined,
+    description,
+    id,
+    status: 'running',
+    type,
+});
+const ENDED = [
+    ['a7a34037b01ca23ed', completedAgent, 'subagent', '🦅 scout done'],
+    ['a4c6c8ac8c77cb247', killedAgent, 'subagent', '🦅 scout failed'],
+    ['bsn44h04g', failedCommand, 'shell', 'Serve atelier from failed'],
+] as const;
+const notice = ($: Engine, text: string) =>
+    $.session.receive({ origin: { kind: 'task-notification' }, text });
+const stopWith = ($: Engine, background_tasks: ReturnType<typeof task>[]) =>
+    $.classic.Stop({
+        background_tasks,
+        last_assistant_message: 'spawned them.',
+        session_id: SID,
+        stop_hook_active: false,
+    });
+const wait = async (ui: Awaited<ReturnType<typeof band>>) =>
+    (await ui.find({ text: /^🔭/, type: 'Text' }))?.text;
+
+for (const [id, text, type, said] of ENDED)
+    test(`a ${said.split(' ').at(-1)} task alone reads «${said}», no longer running`, async ($, on) => {
+        world(on);
+        on('session.receive', (_$, e) => ({ text: e.text }));
+        const ui = await band($);
+        await stopWith($, [
+            task(
+                id,
+                type,
+                type === 'shell'
+                    ? 'Serve atelier from the badge worktree'
+                    : 'Read changed watches',
+            ),
+        ]);
+        expect(await wait(ui)).toMatch(/^🔭 waiting on /);
+        await notice($, text);
+        expect(await wait(ui)).toBe(`🔭 ${said}`);
+    });
+
+test('three tasks ended and one still running: only the running one reads as waited on', async ($, on) => {
+    world(on);
+    on('session.receive', (_$, e) => ({ text: e.text }));
+    const ui = await band($);
+    await stopWith($, [
+        task('a7a34037b01ca23ed', 'subagent', 'Read changed watches'),
+        task('a4c6c8ac8c77cb247', 'subagent', 'Greptile local review'),
+        task('bsn44h04g', 'shell', 'Serve atelier from the badge worktree'),
+        { ...task('run1', 'subagent', 'critic'), agent_type: 'wishkeeper' },
+    ]);
+    expect(await wait(ui)).toBe('🔭 waiting on 🦅 scout +3');
+    for (const [, text] of ENDED) await notice($, text);
+    expect(await wait(ui)).toBe('🔭 waiting on 🐬 wishkeeper');
+});
+
+test('a notice for a task the reply never listed leaves the wait as it was', async ($, on) => {
+    world(on);
+    on('session.receive', (_$, e) => ({ text: e.text }));
+    const ui = await band($);
+    await stopWith($, [task('run1', 'subagent', 'critic')]);
+    await notice($, completedAgent);
+    expect(await wait(ui)).toBe('🔭 waiting on 🦅 scout');
 });
