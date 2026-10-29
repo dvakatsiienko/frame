@@ -150,6 +150,23 @@ def unevidenced(path: str, reply: str) -> list[str]:
     return claims_without_evidence(reply, turn_calls(path))
 
 
+# an orbit ask added for a grill round (its text names «Q<n>» or a round) with no «❓ **Q<n>**» line in the reply: dima sees the ask
+# on the board but never read the question (dima o18, 2026-10-29)
+# «round» alone is a verifier's or a review's too (the week replay: 31 of ~40 distinct hits), so a round counts beside «grill»
+GRILL_ASK_TEXT = re.compile(r"\bQ\d+\b|\bgrill\b[^\n]{0,40}\bround\b|\bround\b[^\n]{0,40}\bgrill\b", re.I)
+# the label may carry its title in the bold («❓ **Q5, build or reuse**», «❓ **Q1 - the birth test**»)
+GRILL_PRINTED = re.compile(r"^\W*❓\s*\*\*Q\d+\b", re.M)
+
+
+def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]:
+    ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
+    texts = [str(a.get("text", "")) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
+    named = [t for t in texts if GRILL_ASK_TEXT.search(t)]
+    if not named or GRILL_PRINTED.search(FENCE.sub("", reply)):
+        return []
+    return [named[0][:40]]
+
+
 def grill_drift(prose: str, session: str) -> str:
     # the reply's grill and its orbit asks are one list: the numbers must match (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
     head = GRILL_HEAD.search(prose)
@@ -434,6 +451,7 @@ def main() -> None:
         hits += [("unreached", head) for head in unreached(path, reply)]
         hits += [("empty-promise", said) for said in empty_promises(path, reply)]
         hits += [("unevidenced", said) for said in unevidenced(path, reply)]
+        hits += [("grill-unprinted", head) for head in grill_asks_unprinted(reply, turn_calls(path))]
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)

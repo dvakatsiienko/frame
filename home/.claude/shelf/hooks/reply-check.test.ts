@@ -342,6 +342,26 @@ describe('a checked claim with no evidence call (FRM-429)', () => {
     });
 });
 
+describe('a grill ask with no printed question (dima o18)', () => {
+    const grillAdd = (text: string) => turnWith({ calls: [{ input: { asks: [{ pick: 'a', text }], op: 'add' }, name: 'mcp__x-mod-stash__orbit' }], id: 'm1' });
+
+    it.each(['Q3 which lane first?', 'grill round 2: keep the card?'])('logs an orbit ask «%s» added with no ❓ **Q<n>** line', (text) => {
+        expect(loggedAfter('asked in orbit.', grillAdd(text))).toContain('grill-unprinted\t');
+    });
+
+    it.each(['❓ **Q3** which lane first?', '❓ **Q3, lane order**: which first?', '❓ **Q3 - lane order**: which first?'])(
+        'passes the same ask beside a printed «%s» line',
+        (line) => {
+            expect(loggedAfter(`🔥 grill:\n${line}`, grillAdd('Q3 which lane first?'))).toBe('');
+        },
+    );
+
+    it('passes an orbit ask that names no grill round or Q number, a verifier round included', () => {
+        expect(loggedAfter('asked.', grillAdd('push FRM-1?'))).toBe('');
+        expect(loggedAfter('asked.', grillAdd('close round 6 as the last of slice (a)?'))).toBe('');
+    });
+});
+
 describe('the siesta freebie', () => {
     it('reminds when the wishkeeper spawn is followed only by orbit and wrap-up', () => {
         const t = turnWith({ calls: [wishkeeper], id: 'm1' }, { calls: [{ name: 'mcp__x-mod-stash__orbit' }, { name: 'mcp__ccd_turn__wrap_up' }], id: 'm2' });
