@@ -33,19 +33,23 @@ The session's next moves, at most 7 (🎛️ shows 5 to 7), kept live in the boa
 _Avoid_: planned actions, next block, todo
 
 **Lane**:
-One piece of fleet work cclio runs, its whole scope as 1–5 plain steps, with its linked members (a coder, a verifier).
+One piece of fleet work cclio runs, its whole scope as 1–7 plain steps (any count from a linked lane plan), with its linked members (a coder, a verifier).
 _Avoid_: project, run
 
 **Glide** 🛼:
-A lane's progress card on every board: its steps in order, done ones kept, the current marked, its members' asks beneath; kept in one shelf file, written only by 🦉 cclio through orbit op `glide`, drawn until her siesta ends it.
+A lane's progress card on every board: its steps in order, done ones kept, the current marked, its members' asks beneath; kept in one shelf file, written only by 🦉 cclio through orbit op `glide`, drawn until her siesta ends it; a card past seven steps draws the current one with its neighbours and says «4–8 of 11».
 _Avoid_: lane tracker, lane card
 
 **Plan step**:
 The lane step a linked coder names with its plan (orbit `plan`, `step`), as its brief numbers them; cclio's stash moves the lane's pointer forward to it.
 _Avoid_: progress, mirror step
 
+**Lane plan**:
+The file of numbered `- [ ] NN · text` lines a glide card follows: a tick in it moves the card's pointer to the first unticked line, every ticked is the lane done, and the card refuses a hand step while it is linked.
+_Avoid_: checklist
+
 **Step**:
-One of a lane's 1–5 plain-word items; done steps stay listed, the current one is «← we are here».
+One of a lane's plain-word items; done steps stay listed ✅, the current one reads ➡️.
 _Avoid_: item, task, phase
 
 **Afk**:
