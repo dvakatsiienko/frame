@@ -235,6 +235,19 @@ describe('the growth alarm', () => {
     });
 });
 
+describe('the first-run baseline', () => {
+    it('sets each ceiling at the back data median plus 15 %', () => {
+        expect(baselineOf(weeks(100_000, 100_000))).toEqual({
+            'cclio|claude-opus-5-5': { ceiling: 115_000, median: 100_000 },
+        });
+    });
+
+    it('keeps a baseline already written, whatever the new data says', () => {
+        const kept = { 'cclio|claude-opus-5-5': { ceiling: 1, median: 1 } };
+        expect(baselineOf(weeks(100_000, 100_000), kept)).toEqual(kept);
+    });
+});
+
 describe('the slow creep check', () => {
     // a seat growing 4 % a week: the week-to-week check never fires, the baseline from the first run does by week 5
     const level = (w: number) => Math.round(100_000 * 1.04 ** w);
