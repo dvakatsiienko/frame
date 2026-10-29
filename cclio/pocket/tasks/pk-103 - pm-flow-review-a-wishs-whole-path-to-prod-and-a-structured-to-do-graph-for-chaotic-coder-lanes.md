@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-10-29T11:28:00Z'
+updated_date: '2026-10-29T11:47:00Z'
 due_date: '2026-10-29'
 labels:
   - m
@@ -565,4 +565,68 @@ held: 2026-10-25 — FRM-72 FRM-419 step 5 maps these W-lines into it next; this
 held: 2026-10-27 — FRM-419 step 5 maps these W-lines into it next (the ticket line now names FRM-419: FRM-72 is the standing ticket, its body kept empty; round 4 wishkeeper)
 
 held: 2026-10-28 — FRM-419 steps 8 and 9 map these W-lines (round 1 done today, round 2 after the renames on 10-29)
+
+W320 (2026-10-29 13:44, dima): yes, let's do it like this, but let's review lanes quickly, because we already did a grilling on the lanes' renaming and sanitization.
+W321 (2026-10-29 13:44, dima): we already improved it and did some cuts and alignments.
+W322 (2026-10-29 13:44, dima): currently we should have a few keywords:
+W323 (2026-10-29 13:44, dima): just lane: a lane means any activity on any thread.
+W324 (2026-10-29 13:44, dima): for example, the current thread is a lane, and the mods lane that is currently running is also a lane.
+W325 (2026-10-29 13:44, dima): differentiators: a main lane is always our lane here, a main lane where we solve main stuff with main cclio.
+W326 (2026-10-29 13:44, dima): there are side lanes: anything that is not a main lane is a side lane.
+W327 (2026-10-29 13:44, dima): for example, a current mods lane is a side lane.
+W328 (2026-10-29 13:44, dima): if you would ever spawn a CLI lane with a coder and an optional verifier, that would be a side lane as well.
+W329 (2026-10-29 13:44, dima): that is not a main lane.
+W330 (2026-10-29 13:44, dima): there is also a quick lane: a quick lane is a lane that is run directly on main, and an APR verifier is optional for a quick lane as well.
+W331 (2026-10-29 13:44, dima): there is also a shift, which is the rarest.
+W332 (2026-10-29 13:44, dima): we almost never start a shift lane.
+W333 (2026-10-29 13:44, dima): it just gets parked for now.
+W334 (2026-10-29 13:44, dima): i'm not sure if i still want it, but we have it.
+W335 (2026-10-29 13:44, dima): this is the current setup.
+W336 (2026-10-29 13:44, dima): go verify if i didn't miss anything.
+W337 (2026-10-29 13:44, dima): this is the lane set that we currently have.
+W338 (2026-10-29 13:44, dima): as for me, it's fine.
+W339 (2026-10-29 13:44, dima): i don't see anything redundant here, but check yourself.
+W340 (2026-10-29 13:44, dima): tell me if i missed something, or if any kind of lane is missing as the descriptor. ❓
+W341 (2026-10-29 13:44, dima): let's figure out if the lane question is solved, and either refine lane naming or mark it as done.
+W342 (2026-10-29 13:44, dima): the other renaming part is smaller: summoning vs spawning.
+W343 (2026-10-29 13:44, dima): i thought to have a separation in terminology.
+W344 (2026-10-29 13:44, dima): currently, we call everything spawning.
+W345 (2026-10-29 13:44, dima): for example, you spawn a subagent, a researcher, a helper, a secror (?), a coder, or a verifier.
+W346 (2026-10-29 13:44, dima): you spawn everyone.
+W347 (2026-10-29 13:44, dima): i was thinking to split verbs into summoning versus spawning, where summoning means creating a persistent thread either via the `-dbg` flag or via session start (e.g., create a desktop thread).
+W348 (2026-10-29 13:44, dima): the ones that you created today, your fork, and your side-lane coder on mods lane: this is all about summoning.
+W349 (2026-10-29 13:44, dima): for me as well, when i create a full-scale desktop thread, i summon a desktop thread, or i summon a thread in a terminal.
+W350 (2026-10-29 13:44, dima): spawning will be for smaller stuff instead, as subagents.
+W351 (2026-10-29 13:44, dima): for example, if you would ever want to start a helper subagent, it means that you spawn a helper subagent.
+W352 (2026-10-29 13:44, dima): the same for a researcher, for instance: creating a researcher subagent to research something means spawning a subagent.
+W353 (2026-10-29 13:44, dima): this way, by having two words, summoning and spawning, we will have a clear boundary between entity creation types.
+W354 (2026-10-29 13:44, dima): this is my proposal.
+W355 (2026-10-29 13:44, dima): tell me what you think and propose whether it is a good idea or not. ❓
+W356 (2026-10-29 13:44, dima): if the boundary i just described is good or not, also go check if i missed something, and propose an improvement, refinement, or better shape overall for this renaming part. ❓
+W357 (2026-10-29 13:44, dima): another idea i came up with yesterday evening.
+W358 (2026-10-29 13:44, dima): clio facility.
+W359 (2026-10-29 13:44, dima): want it? ❓
+W360 (2026-10-29 13:44, dima): it draws some of your areas via a new vibe word.
+W361 (2026-10-29 13:44, dima): which area does clio facility outline? ❓
+W362 (2026-10-29 13:44, dima): in my mind, by having a Clio facility vibe board, we could then easily refer to "Clio area of responsibility."
+W363 (2026-10-29 13:44, dima): it is just a description of the area you are operating in.
+W364 (2026-10-29 13:44, dima): as a simple example, i would treat a blueprint that you recently created that includes tickets flow, PM, and coordination flow.
+W365 (2026-10-29 13:44, dima): these are all parts of Clio facility because it's everything that you do and no one else does.
+W366 (2026-10-29 13:44, dima): this is my proposal to create a name for the area that you are operating in.
+W367 (2026-10-29 13:44, dima): let's grill on it too.
+W368 (2026-10-29 13:44, dima): propose what parts of stuff you want to be outlined in a Clio SA Clio facility, except for the one example i've just described about the blueprint. ❓
+W369 (2026-10-29 13:44, dima): also think critically about it, because i feel that, for a clear facility to correctly outline the correct scope that you are operating in, its description has to be present somewhere in your memory, at least maybe even in global memory.
+W370 (2026-10-29 13:44, dima): propose if this is ever needed. ❓
+W371 (2026-10-29 13:44, dima): this is another place to drift, because if your area of responsibilities changes or updates, then the Clio facility description has to be updated too.
+W372 (2026-10-29 13:44, dima): on the other hand, it can also be useful because it will serve as a part of your passport and may be useful to describe your identity.
+W373 (2026-10-29 13:44, dima): think critically about this and propose how to make it good, and tell if it is even worth it at all. ❓
+W374 (2026-10-29 13:44, dima): then there will be a bigger part.
+W375 (2026-10-29 13:44, dima): i propose to do some renaming of you, ccrow, and some other fleet members, but that is a little bit bigger part.
+W376 (2026-10-29 13:44, dima): let's first solve these questions, and then, when this part is fully solved, i will propose my proposition about further names of fleet members.
+W377 (2026-10-29 13:44, dima): this is because if we decide to rename even you, then it will happen in a lot of places.
+W378 (2026-10-29 13:44, dima): let's think carefully and decide who we want to rename overall.
+W379 (2026-10-29 13:44, dima): decide on new names, then flush all updates at once. ❗
+W380 (2026-10-29 13:44, dima): before starting, when we get to this part, print me all spawnable names that we have.
+W381 (2026-10-29 13:44, dima): everyone, including Clio, Cristicro, Composer, your fork, coder, verifier, crew lead, and all subagents.
+W382 (2026-10-29 13:44, dima): let's see a full picture of all crew members in Fleet and see how we can rename them.
 <!-- SECTION:NOTES:END -->
