@@ -137,6 +137,8 @@ const BREATHE = 'breathe';
 const BREATH_SPEED = 'breath-speed';
 const PHASE_LINES = 'phase-lines';
 const SPEAK_ASSUMED = 'speak-assumed';
+// `/board steer`: the steer boxes take two lines instead of one wide line, the A/B dima judges by eye (FRM-431)
+const STEER_TWO = 'steer-two';
 // x-mod-guard reads this key from stash's store file: true drops its rewrite, hint and delegate notes, never a refusal
 const GUARD_SILENT = 'guard-silent';
 // quiet comms on or off, one switch for 🎛️ and `/quiet` alike; on by default, `off` is the revert (dima, 16:53)
@@ -161,6 +163,7 @@ const SWITCHES = {
     ring: { key: CTX_RING_KEY, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
+    steerTwo: { key: STEER_TWO, of: false },
     undo: { key: UNDO_WINDOW, of: true },
 } as const;
 const NUMBERS = {
@@ -4248,6 +4251,12 @@ export const register: Register = (on) => {
     });
 
     on('command.run', { command: 'board' }, async ($, e) => {
+        if (e.args.trim() === 'steer') {
+            const isTwo = await flipKnob($, 'steerTwo');
+            return {
+                text: `steer boxes take ${isTwo ? 'two lines' : 'one wide line'}`,
+            };
+        }
         if (e.args.trim() === 'breathe') {
             const isOn = await flipKnob($, 'always');
             return {
@@ -4756,6 +4765,7 @@ export const register: Register = (on) => {
                         (await $.state.get(VIEW)).value?.shown ?? {};
                     const isPartOn = (key: string) => boardShown[key] !== false;
                     const speakAssumed = await readSwitch($, 'speak');
+                    const steerRows = (await readSwitch($, 'steerTwo')) ? 2 : 1;
                     const folds = (await $.state.get(FOLDS)).value ?? {};
                     // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count
                     const foldedOf = (
@@ -4986,6 +4996,7 @@ export const register: Register = (on) => {
                                                     door.steer(a, value)
                                                 }
                                                 placeholder='steer'
+                                                rows={steerRows}
                                                 value={
                                                     field(
                                                         $,
@@ -5155,6 +5166,7 @@ export const register: Register = (on) => {
                                                                     )
                                                                 }
                                                                 placeholder='steer'
+                                                                rows={steerRows}
                                                                 value={
                                                                     field(
                                                                         $,
@@ -5485,6 +5497,9 @@ export const register: Register = (on) => {
                                                                         )
                                                                     }
                                                                     placeholder='steer'
+                                                                    rows={
+                                                                        steerRows
+                                                                    }
                                                                     value={
                                                                         field(
                                                                             $,
@@ -5587,6 +5602,7 @@ export const register: Register = (on) => {
                                                                   )
                                                               }
                                                               placeholder='steer'
+                                                              rows={steerRows}
                                                               value={
                                                                   field(
                                                                       $,

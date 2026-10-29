@@ -617,6 +617,33 @@ test('a remote mark landing while dima types a steer leaves his typed steer in i
     expect(savedSteer(w.store)).toBe('a heron');
 });
 
+const steerRowsOf = async (ui: Awaited<ReturnType<typeof board>>) =>
+    (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.rows;
+
+test('/board steer flips the steer boxes between one wide line and two lines', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    const first = await steerRowsOf(ui);
+    const run = () =>
+        $.command.run({
+            args: 'steer',
+            command: 'board',
+            origin: { kind: 'composer' },
+            presentation: { columns: 80, isFullscreen: false },
+        });
+    const reply = await run();
+    const two = await steerRowsOf(ui);
+    await run();
+    expect([first, two, await steerRowsOf(ui), reply]).toEqual([
+        1,
+        2,
+        1,
+        { text: 'steer boxes take two lines' },
+    ]);
+});
+
 test('a card folded and opened again draws the saved steer, not the text from before he typed', async ($, on) => {
     const w = world(on);
     await start($);

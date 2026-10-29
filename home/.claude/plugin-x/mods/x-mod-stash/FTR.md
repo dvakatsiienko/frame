@@ -453,6 +453,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the box still shows the end he typed, never jumping to the start
   - and a card folded and opened again, or a board closed and opened again, draws the stored text
   - and the box takes the row's width left after its buttons (dima, 2026-10-29: «the focus jumps … text boxes are too short»)
+- ⬜ `/board steer` tries the steer box at two lines
+  - given the board is open
+  - when dima runs `/board steer`
+  - then every steer box takes two lines instead of one wide line, and the same command puts it back; the pick between the two is his, from the board (FRM-431, grill 3 Q3: «A/B … dima prefers wider»)
 - ⬜ a glide card follows a lane plan file of any length
   - given a lane plan file of 11 numbered lines, ticked up to the fifth
   - when cclio creates a card naming it
