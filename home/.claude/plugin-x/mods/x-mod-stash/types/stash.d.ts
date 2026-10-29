@@ -24,6 +24,8 @@ export type PublishedAsk = {
 export type RemoteMark = {
     mark?: 'accepted' | 'rejected';
     steer?: string;
+    // the steer was typed on that board, so it replaces the member's own instead of yielding to it
+    isSteerEdit?: boolean;
     at: number;
     // when the mark itself last changed, so a steer edit never restarts its sending window
     markAt?: number;

@@ -443,6 +443,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then its field is empty for the next steer, and a second tick never sends the old text again
   - decision: one name, «steer», for every text field dima types into on the board; an ask's hidden note stays a «note», it is the session's (dima's o57)
   - decision: a text kept under the old name, «note», reads as its steer after the reload: orbit's state, a glide mark, a lane's draft
+- ⬜ a steer typed on a glide card never loses text while the member takes it in
+  - given dima types a steer into a member's ask on another board's glide card
+  - when the member takes the card's mark into its orbit, or he types on while it does
+  - then the field keeps what he typed: the mark leaves only after the orbit holds it and only if it is still the one read, and a steer typed on the card replaces the member's own (dima, 2026-10-29: «text … gets occasionally deleted when I print too fast»)
 - ✅ accept, reject, steer, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its steer, or presses check all

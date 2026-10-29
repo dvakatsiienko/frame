@@ -1053,8 +1053,6 @@ async function absorbMarks($: EngineInterface) {
     if (!sid) return;
     const marks = await marksOf($, sid);
     if (!Object.keys(marks).length) return;
-    for (const id of Object.keys(marks))
-        await $.store.delete(markKey(sid, id)).catch(() => undefined);
     const o = await currentOrbit($);
     const win = await sendWindow($);
     await saveOrbit($, {
@@ -1068,10 +1066,19 @@ async function absorbMarks($: EngineInterface) {
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
                 sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
-                steer: a.steer ?? m.steer,
+                steer: m.isSteerEdit ? m.steer : (a.steer ?? m.steer),
             };
         }),
     });
+    // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
+    // stays for the next take, and its card never sees the steer missing in between (dima, 10-29: typed text deleted)
+    for (const [id, m] of Object.entries(marks)) {
+        const now = (await $.store
+            .get(markKey(sid, id))
+            .catch(() => undefined)) as RemoteMark | undefined;
+        if (now?.at === m.at)
+            await $.store.delete(markKey(sid, id)).catch(() => undefined);
+    }
 }
 
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
@@ -5173,6 +5180,7 @@ export const register: Register = (on) => {
                                                       markSid,
                                                       x,
                                                       {
+                                                          isSteerEdit: true,
                                                           mark: x.mark,
                                                           steer: steerOf(value),
                                                       },

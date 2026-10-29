@@ -25,13 +25,19 @@ function world(on: On) {
     });
     // a store in memory the test reads back: the shared store other sessions' boards count from
     const store = new Map<string, unknown>();
-    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    // a test's tap into the store calls, to land another board's write between two of them
+    const taps = { delete: (_key: string) => {}, get: (_key: string) => {} };
+    on('store.get', (_$, e) => {
+        taps.get(e.key);
+        return { value: store.get(e.key) };
+    });
     on('store.set', (_$, e) => {
         store.set(e.key, e.value);
         return { value: undefined };
     });
     on('store.keys', () => ({ value: [...store.keys()] }));
     on('store.delete', (_$, e) => {
+        taps.delete(e.key);
         store.delete(e.key);
         return { value: undefined };
     });
@@ -63,7 +69,7 @@ function world(on: On) {
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, store };
+    return { appended, clock, contexts, store, taps };
 }
 
 const start = ($: Engine) =>
@@ -596,6 +602,55 @@ test('a remote mark landing while dima types a steer leaves his typed steer in i
     w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
     await w.clock.advance(5_000);
     expect(savedSteer(w.store)).toBe('a heron');
+});
+
+test('a steer typed on another board replaces the one the ask already holds', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['name a bird', 'pelican']);
+    const ui = await board($);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
+    await w.clock.advance(5_000);
+    w.store.set(`marks:${SID}:o1`, {
+        at: w.clock.now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await w.clock.advance(5_000);
+    expect(savedSteer(w.store)).toBe('a swan');
+});
+
+test('a steer typed on another board while its mark is taken in survives for the next take', async ($, on) => {
+    const w = world(on);
+    const key = `marks:${SID}:o1`;
+    let reads = 0;
+    let isRaced = false;
+    const race = () => {
+        if (isRaced) return;
+        isRaced = true;
+        w.store.set(key, {
+            at: w.clock.now() + 1,
+            isSteerEdit: true,
+            steer: 'a swan again',
+        });
+    };
+    w.taps.get = (k) => {
+        if (k === key && ++reads === 2) race();
+    };
+    w.taps.delete = (k) => {
+        if (k === key) race();
+    };
+    await start($);
+    await add($, ['name a bird', 'pelican']);
+    w.store.set(key, {
+        at: w.clock.now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await w.clock.advance(5_000);
+    expect(isRaced).toBe(true);
+    await say($, 'next');
+    expect(savedSteer(w.store)).toBe('a swan again');
 });
 
 test('every prompt reminds the session of its open asks and the tool', async ($, on) => {
