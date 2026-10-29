@@ -36,8 +36,11 @@ func actorOf(flags Flags) (string, error) {
 	if os.Getenv("CLAUDECODE") == "" && os.Getenv("AI_AGENT") == "" && term.IsTerminal(os.Stdin.Fd()) {
 		return "dima", nil
 	}
-	if name, ok := sessionName(); ok && strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "") != "🦉clio" {
-		return "codie", nil
+	if name, ok := sessionName(); ok {
+		bare := strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "")
+		if bare != "🦉clio" && bare != "🦉cclio" { // read-both: a clio tab resumed under its old title
+			return "codie", nil
+		}
 	}
 	return "clio", nil
 }

@@ -69,6 +69,18 @@ test('a codie spawn with the brief inline is refused, asking for a brief file', 
     expect(w.ran).toEqual([]);
 });
 
+const OLD_SKILL = '/x:crew-coder'; // read-both: the skill id before 10-29
+
+test('a spawn naming the old skill id inline is refused too', async ($, on) => {
+    const w = world(on, {});
+    const r = await bash(
+        $,
+        `claude --bg -n codie '${OLD_SKILL} FRM-1 build the thing' --remote-control`,
+    );
+    expect(r.deny).toContain('write the brief to a file');
+    expect(w.ran).toEqual([]);
+});
+
 test('a claude --bg without /x:crew-codie runs', async ($, on) => {
     const w = world(on, {});
     const command = "claude --bg -n probe 'say ok'";

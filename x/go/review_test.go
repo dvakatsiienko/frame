@@ -216,6 +216,7 @@ func TestTwoOwnersNeedsAClioHalfAndAnother(t *testing.T) {
 		{"a quoted clio word", "2. `x lane commit` refuses «clio pushes»", false},
 		{"clio's half alone", "3. `_clio/docs/a.md` holds the recipe", false},
 		{"no clio at all", "4. `x lane commit` prints the sha", false},
+		{"clio beside her own skill", "5. clio confirms `clio:evergreen` seeded the turn", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

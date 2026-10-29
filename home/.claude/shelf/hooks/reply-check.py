@@ -20,7 +20,7 @@ MIDDOT = re.compile(r"\w[^\n·]*\s·\s[^\n·]*\w")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
 REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
 # a crow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
-WAIT_ON_CROW = re.compile(r"^\s*🔭.*crow.*$", re.M)
+WAIT_ON_CROW = re.compile(r"^\s*🔭.*\bc?crow\b.*$", re.M)  # read-both: ccrow too
 GRILL_ANSWER = re.compile(r"^\s*Q\d+\s*[:\-–]?\s*[a-e]\b", re.M)
 GRILL_HEAD = re.compile(r"^🔥 grill:.*$", re.M)
 GRILL_QUESTION = re.compile(r"^(\d+)\. \*\*", re.M)

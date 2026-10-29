@@ -44,7 +44,7 @@ for f in "$HOME"/.claude/shelf/handoffs/*.md; do
   # A whitelist, so an unparsed field can never wrongly claim a file is someone
   # else's and get it left behind forever.
   case "$audience" in
-    cloud-chat|cc) tag=" [for $audience — leave it]" ;;
+    cloud-chat|cc|cw|ccli) tag=" [for $audience — leave it]" ;; # read-both: x keeps old-audience CSTs addressed
     *) tag="" ;;
   esac
   age_min=$(( ( $(date +%s) - $(stat -f %m "$f") ) / 60 ))

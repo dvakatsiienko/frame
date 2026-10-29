@@ -13,6 +13,13 @@ describe('retiredHits', () => {
         ['a retired app slug', 'x-coder-cc posts it', 'x-coder-cc'],
         ['the old sync tag', '<!-- sync: cw -->', 'sync: cw'],
         ['any casing', 'CCLIO said so', 'CCLIO'],
+        [
+            'a form glued to an underscore',
+            'allow mcp__x-cw__handoff_save',
+            'x-cw',
+        ],
+        ['an old tool name', 'call cclio_mode first', 'cclio'],
+        ['the old helga skill id', 'load `x:crew-composer`', 'crew-composer'],
     ])('reds %s', (_, text, form) => {
         expect(
             retiredHits('docs/knowledge/x.md', at(text)).map((hit) => hit.form),

@@ -286,8 +286,8 @@ func parseOpsSession(lines [][]byte, path string) opsSession {
 }
 
 var (
-	crowTitle = regexp.MustCompile(`(?i)crow`)
-	clioTitle = regexp.MustCompile(`(?i)clio`)
+	crowTitle = regexp.MustCompile(`(?i)\bc?crow\b`) // read-both: ccrow titles before the 10-29 rename
+	clioTitle = regexp.MustCompile(`(?i)\bc?clio\b`) // read-both: cclio titles before the 10-29 rename
 	clioCwd   = regexp.MustCompile(
 		`/frame/(cclio|_clio)(/|$)`, // read-both: transcripts before the 10-29 rename ran in frame/cclio
 	)

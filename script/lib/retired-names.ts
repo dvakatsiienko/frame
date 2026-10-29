@@ -5,6 +5,7 @@ export const retiredForms = [
     'ccli',
     'crew-coder',
     'crew-verifier',
+    'crew-composer',
     'mcp-x-cw',
     'x-cw',
     'x-coder-cc',
@@ -13,7 +14,7 @@ export const retiredForms = [
 ] as const;
 
 const formPattern = new RegExp(
-    `(?<!\\w)(${retiredForms.map((form) => form.replace(/[-:]/g, '\\$&')).join('|')})(?!\\w)`,
+    `(?<![A-Za-z0-9])(${retiredForms.map((form) => form.replace(/[-:]/g, '\\$&')).join('|')})(?![A-Za-z0-9])`,
     'gi',
 );
 

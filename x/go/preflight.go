@@ -377,10 +377,10 @@ func verbOf(token string, verbs []string) string {
 
 // clio's half beside a surface outside _clio/ (FRM-355's exit 6 always graded «pending»)
 func twoOwners(group string) bool {
-	// a quoted «clio» is a word, never an owner; a backticked _clio/ path is clio's half
+	// a quoted «clio» is a word, never an owner; a backticked _clio/ path or clio:* skill is clio's half
 	clios, others := clioWord.MatchString(quotedText.ReplaceAllString(group, "")), false
 	for _, match := range codeSpan.FindAllStringSubmatch(group, -1) {
-		if strings.HasPrefix(strings.TrimSpace(match[1]), "_clio/") {
+		if span := strings.TrimSpace(match[1]); span == "clio" || strings.HasPrefix(span, "_clio/") || strings.HasPrefix(span, "clio:") {
 			clios = true
 		} else {
 			others = true

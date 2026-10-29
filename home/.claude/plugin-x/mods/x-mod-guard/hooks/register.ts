@@ -892,9 +892,10 @@ export const register: Register = (on) => {
         if (raw) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
+            const clioNames = ['🦉clio', '🦉cclio']; // read-both: a clio tab resumed under its old title
             if (
                 name !== undefined &&
-                name.replaceAll(/[\s\u200d]/g, '') !== '🦉clio'
+                !clioNames.includes(name.replaceAll(/[\s\u200d]/g, ''))
             ) {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
                 return enforce(

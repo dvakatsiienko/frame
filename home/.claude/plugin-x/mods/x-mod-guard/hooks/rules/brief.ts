@@ -36,7 +36,9 @@ export function brief(c: Command, ctx: Context): Refusal | undefined {
     const spawn = spawnBrief(c, ctx);
     if (!spawn) return undefined;
     const { dir, file } = spawn;
-    const isNamed = c.args.some((w) => w.text.includes(CODIE));
+    const isNamed = c.args.some(
+        (w) => w.text.includes(CODIE) || w.text.includes('/x:crew-coder'), // read-both: the skill id before 10-29
+    );
     if (!file)
         return isNamed
             ? {
