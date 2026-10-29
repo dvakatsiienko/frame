@@ -92,7 +92,7 @@ brief says which, and when it does not, ask once, up front.
 1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. running it once found 3 of 8 real defects that five reviewers and 61 tests missed. a live proof that writes
    shared pr state (the body, labels) is the verifier's; you prove locally.
 2. **the local review pair, in parallel**: `mattpocock-skills:code-review` over the branch (matt's standards and
-   spec review, each axis spawned on the `wisphunter` card by name; in a worktree where git is refused, hand it a diff file) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
+   spec review, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
    while its free quota lasts (`coderabbit review --usage`; none left → matt's code-review alone). fix what
    both find, push.
 3. **one local review per verifier round** (dima, 2026-10-22): before each verifier round after the first, the pair
