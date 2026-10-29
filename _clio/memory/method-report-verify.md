@@ -14,7 +14,7 @@ The failure shapes:
 - 🚨 **name the FIELD the test observed, never the behaviour class it seemed to settle.**
 
 - 🚨 **my own recall is a relay too.** a fact i remember (an api verb, a token lifetime, a
-  settings value) gets its source opened before it reaches dima or a coder — the same rule as
+  settings value) gets its source opened before it reaches dima or codie — the same rule as
   for a researcher's claim. the label «verified» is earned by the probe, never by confidence.
 - 🚨 **«not reproduced» is said only after the log window around the report is read** — gaps, bursts, the lines either side. a live probe measures now; the log measured then.
 - 🚨 **one observation carries more than one meaning.** before reporting a run as proof of X,

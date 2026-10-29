@@ -57,6 +57,6 @@ paths:
 - avoid continuously repainting CSS animations (pulse, shimmer, blur, spinners); they peg the GPU on high-refresh displays. a terminal band cannot load the gpu, so it never needs a frame-rate test.
 
 <!--
-why here: moved out of root CLAUDE.md in the 2026-10-11 sweep; a paths: rule loads on a Read, a Bash `cat` or an Edit of a matching file (measured 24/24, opus + sonnet, `recipes/nurture-memory/scripts/paths-probe.sh`; the code rule itself: `code-rule-probe.sh` beside it), so a coder gets it on its first code touch and a non-coding session never pays for it.
+why here: moved out of root CLAUDE.md in the 2026-10-11 sweep; a paths: rule loads on a Read, a Bash `cat` or an Edit of a matching file (measured 24/24, opus + sonnet, `recipes/nurture-memory/scripts/paths-probe.sh`; the code rule itself: `code-rule-probe.sh` beside it), so codie gets it on its first code touch and a non-coding session never pays for it.
 coverage: the globs list every code extension with files in frame and bytes (git ls-files count, 2026-10-11); a new language adds its glob here.
 -->

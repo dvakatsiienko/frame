@@ -11,7 +11,7 @@ repo with another tracker, or none, follows its own conventions.
 
 - **read**: `x linear read <ids…> --comments --relations` — the whole ticket in one call: body,
   labels, state, both relation sides, comments; several ids batched. old `DOT-N` ids resolve to `FRM-N`
-- **comment**: `x linear comment <id> --body-file <file>` — a coder's done report or a verifier's `clean` verdict,
+- **comment**: `x linear comment <id> --body-file <file>` — codie's done report or sixth sense's `clean` verdict,
   nothing else; a body goes through a file, never inline. dima's words or verdicts heard in your
   thread go to clio in your ping, never into a linear comment
 - `x schema linear` lists every verb; the raw `linear` cli and the Linear MCP are never a member's door

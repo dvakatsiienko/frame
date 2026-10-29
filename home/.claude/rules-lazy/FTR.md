@@ -1,7 +1,7 @@
 # rules-lazy — features
 
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
-- given/when/then lines are the verifier's exit lines
+- given/when/then lines are sixth sense's exit lines
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
@@ -32,7 +32,7 @@
 - ✅ a compaction reloads
   - given a session compacted after a load
   - then linear-flow loads again at the compaction, and `memory-load-agents-md` loads each `AGENTS.md` again at its next trigger
-  - decision: reload at the compaction, never at the next trigger — the replay found a coder naming its ticket a minute after a compaction, with no trigger in between
+  - decision: reload at the compaction, never at the next trigger — the replay found codie naming its ticket a minute after a compaction, with no trigger in between
 - ✅ a subagent loads on its own
   - given the parent session loaded linear-flow
   - when a subagent runs `linear`
@@ -46,10 +46,10 @@
   - when a reply names a ticket id, a `linear.app` link or a `- ticket:` line
   - then the Stop hook logs a miss
 - ✅ the replay gate
-  - given the last 14 days of clio and coder transcripts
+  - given the last 14 days of clio and codie transcripts
   - when `pnpm memory-load:replay --days 14` runs
   - then 100 % of linear signals come after a load; below that, fix a trigger or discard
-  - measured 2026-10-04, 314 sessions: clio 1648/1648 (1023 in replies), coder 284/284 (73 in replies); other sessions 345/346 — the one miss names a worktree path (`BYT-105-gremlins`) from `ps` output, not linear work
+  - measured 2026-10-04, 314 sessions: clio 1648/1648 (1023 in replies), codie 284/284 (73 in replies); other sessions 345/346 — the one miss names a worktree path (`BYT-105-gremlins`) from `ps` output, not linear work
   - a signal in a tool call is also a tool trigger, so it hits by construction; the replies are the real measure. subagent transcripts are not replayed
 
 ## the move

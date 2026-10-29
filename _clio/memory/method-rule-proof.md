@@ -3,7 +3,7 @@
 **The failure shape: a claim gets written, and nothing ever re-checks it.** A memfile has no
 expiry, a CST has no verify step — without a test, a fact and a fossil are indistinguishable.
 
-<!-- failure: three cases from one boot: a CST said a ticket needed nothing (Dima's comment sat on it a day); the same CST called a live coder stoppable; a reasoned no-assign rule in `x:cmt` stood for weeks while false -->
+<!-- failure: three cases from one boot: a CST said a ticket needed nothing (Dima's comment sat on it a day); the same CST called a live codie stoppable; a reasoned no-assign rule in `x:cmt` stood for weeks while false -->
 
 ## rules
 
@@ -29,7 +29,7 @@ when a rule is touched anyway.
 
 🎯 **A restart is proven by evidence stamped AFTER the process start, compared as numbers**: `stat` the process start, parse the evidence timestamp, compare.
 
-<!-- failure: a coder read five chords from the log tail and called a rebuild verified; every one was stamped before the restart (2026-09-19) -->
+<!-- failure: codie read five chords from the log tail and called a rebuild verified; every one was stamped before the restart (2026-09-19) -->
 
 🎯 **A check that encodes a rule is proven red and green on every branch of that rule**: name what else the claim covers,
 run one probe there, then write «proven».

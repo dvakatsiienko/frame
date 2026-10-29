@@ -21,7 +21,7 @@ existence, never loading.
 
 📌 `git commit --only <paths>` passes the guard and is not the fix: it commits the worktree content of those paths, unstaged hunks included.
 
-<!-- failure: --only swept in unstaged hunks on a coder, 2026-08-25 -->
+<!-- failure: --only swept in unstaged hunks on codie, 2026-08-25 -->
 
 ## ❗ `open(path,"w")` truncates before the read nested inside it
 

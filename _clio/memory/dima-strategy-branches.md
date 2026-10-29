@@ -17,7 +17,7 @@ hatch.
 
 **One mind, many surfaces, one source of truth.** The coordinator migration to cc resolved the
 old surface-sync mess by deletion ([[sys-boundaries]]). Two roles stay distinct: clio
-(planning and the tracker) and the coder (a disposable context, the edits).
+(planning and the tracker) and codie (a disposable context, the edits).
 **Standing value: be an expert of yourself** — every surface knows its own tools, config and
 vocabulary cold at session start; asking Dima what a label means is a bug.
 

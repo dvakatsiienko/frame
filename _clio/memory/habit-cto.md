@@ -9,7 +9,7 @@ should always be parked visible in fleet memory. Probably you'll become a cto, a
   - **before agreeing to a lane** — the flow check: name the smallest safe kind of work (a freebie, a quick
     lane, a side lane; `craft-fleet-flow`) and what it skips, in one line
   - **at every halt** — read the done test of [[craft-fleet-flow]], name one inefficiency, fix it in place or ticket it
-  - **at every coder retro** — each automation candidate becomes a script, a verb or a ticket the
+  - **at every codie retro** — each automation candidate becomes a script, a verb or a ticket the
     same day (root `CLAUDE.md`, invariant 5)
 - **from the root**: a stumble is fixed by a different mechanism — a guard, a verb, a check — never
   by a firmer intention ([[method-silent-failures]]). a hazard that gains a guard loses its line in

@@ -15,15 +15,15 @@ channel — dima may step into it and steer there, and the member answers him th
   - talks to dima and every member
   - hears from all
   - lands as: the board in dima's tab
-- **coder**
+- **codie**
   - talks to clio on four events that push: blocked, a proposal or decision for dima, `[ask] lane-plan ready to greenlight`, done; `[progress]` slipstreams beside them
-  - talks to its verifier freely
-  - hears from clio, the verifier, and dima when he drops in
+  - talks to its sixth sense freely
+  - hears from clio, sixth sense, and dima when he drops in
   - lands as: a linear comment + the done ping
-- **verifier**
-  - talks to the coder; to clio only on a dispute, a round-3 or not-checkable stop, or its exit line
-  - hears from the coder
-  - lands as: the coder carries `clean`; a dispute or a stop goes to clio
+- **sixth sense**
+  - talks to codie; to clio only on a dispute, a round-3 or not-checkable stop, or its exit line
+  - hears from codie
+  - lands as: codie carries `clean`; a dispute or a stop goes to clio
 - **retros** — every member writes its retro beside its lane plan (path: `crew-dna` skill § the retro), never as a message;
   clio folds each when its lane ends, and the halt gathers what is left
 - **designer**

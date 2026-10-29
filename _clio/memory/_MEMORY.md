@@ -22,7 +22,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## running the work
 - ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the ask-guard, the freebie rule; the ticket handbook is `clio:pm`
 - 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, three kinds of work, each stage's gate and owner, the done test
-- ⭐ `x:crew-lead` (plain pointer, not imported: the lane craft loads on demand) — load it before a lane spawn, brief, watch or stop: a coder, verifier, designer, probe or cloud session
+- ⭐ `x:crew-lead` (plain pointer, not imported: the lane craft loads on demand) — load it before a lane summon, brief, watch or stop: codie, sixth sense, designer, probe or cloud session
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
 - ⭐ @habit-dima-comms.md — how clio talks to dima: a fat drop in labeled sub-batches, the reply and grill shapes, asks in orbit repeated until he verdicts; a missed ask is the worst outcome
@@ -38,7 +38,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🧪 @habit-test-drive.md — a tool on trial is reached first on every fitting ask; its flow is `clio:shape-test-drive`
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
-- 💸 @habit-ctx-load-balancing.md — the 5h window paces the lanes: ahead of pace, the side lane parks after its chunk, one informative line to dima; read at every spawn, done and siesta; the weekly window is his
+- 💸 @habit-ctx-load-balancing.md — the 5h window paces the lanes: ahead of pace, the side lane parks after its chunk, one informative line to dima; read at every summon, done and siesta; the weekly window is his
 
 ## the system itself
 - @sys-skills.md — `x:*` runs anywhere, `clio:*` is coordinator-only; the test is WHERE it runs

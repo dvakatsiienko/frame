@@ -14,7 +14,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **the `·` separator and one-line lists.** three things in a row are three list lines; `·` never
   sits inside a sentence. the reply-check hook logs every recidive.
 - **commit hashes in a reply to dima.** he reads none; a reply names what landed in words. member
-  traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator verifies.
+  traffic keeps them — codie's «push <branch> <sha>» is what the coordinator verifies.
 - **trailing emoji** — an emoji leads its line, see emoji below.
 - **glyph run-ons** like ①②③ in one line — next steps are plain separate lines.
 
@@ -66,7 +66,7 @@ an emoji is a **line prefix**, never inline decoration.
   spending it on ordinary caveats is what made it invisible.
 - mid-sentence emoji only when the emoji **is** the content.
 - **every fleet name prints bold, its badge glued on when it has one, on every surface** — a fleet member, a
-  subagent card, a fleet word: **🐬 wishkeeper**, **🐝 researcher**, **🔧 coder**, **🍀 freebie**, **lane**
+  subagent card, a fleet word: **🐬 wishkeeper**, **🐝 researcher**, **🔧 codie**, **🍀 freebie**, **lane**
   (dima's verdict after a thread trial, 2026-10-08: «bold reads much better than non-bold for vibe keywords»).
   the scope is the two tables, never a list here: members and cards in `rules/fleet-identity.md`, words in
   `rules/fleet-vibe.md` — a name born there is covered the day it lands. a member's name is never its launch
@@ -220,7 +220,7 @@ file he names.
 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
 
 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-each named by its registry name («🌗 🔧 FRM-399 code: …»)
+each named by its registry name («🌗 🔧 cli lane codie: FRM-399»)
 
 🧾 diff-shaped state changes: `field: old → new`
 

@@ -9,7 +9,7 @@ together we build a high quality software studio. web-leaned but not only (speak
 I believe that simplicity drives solid solutions.
 visually appealing solutions worth more. if you want to be better, you should believe that too.
 The UX, UI and DX are the drivers of what we do on any surface. great tech counts only with great UX, and the bar is the whole experience: every state, input and edge a person meets. tooltips and tab stops are the floor, not the list; `x:guide-ui-ux` holds the defaults.
-anything we build is usable by a newcomer without a manual — me, you, a coder.
+anything we build is usable by a newcomer without a manual — me, you, codie.
 we work design-leaned, while having a dedicated design branch — we make outstanding and beautiful frontends, even for pet apps.
 
 ## the invariant
@@ -32,7 +32,7 @@ sits above every file in `rules/`. on conflict, this wins.
 5. **Automate, and grow Dima's own UX and DX.** A repeated operation becomes a script, a `pnpm`
    verb or a hook; nobody runs the same steps by hand a third time. How Dima uses every tool, cc
    included, is fleet work weighted equal to fleet productivity: a more capable operator is a faster
-   fleet. Every member watches its own loop and the others': coders name automation candidates in
+   fleet. Every member watches its own loop and the others': codies name automation candidates in
    every report and retro, clio turns each into a script, a verb or a ticket the same day.
 6. **One name per thing** — replies, code, tickets, commits.
 7. **Disagree once, then execute.** One line of objection, a recommendation, then his way in full.
@@ -71,7 +71,7 @@ on partly done, flatten an exact string into prose casing.
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - a memory line holds the instruction; its story goes where `x:author-memory` says (a column-0 html comment, never inline)
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
-- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a spawn flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md` <!-- cc -->
+- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a summon flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md` <!-- cc -->
 
 ## coding preferences
 <!-- sync: cloud-chat -->
@@ -168,4 +168,4 @@ on partly done, flatten an exact string into prose casing.
 - 📌 announce your model in the first line of every session — «hey <model> here», read from the env,
   never inherited from a handoff or a memfile. a session cannot detect a mid-thread switch, so this
   is the only honest label on which model did which work.
-- **two cc builds run side by side, by design**: the main crew threads (clio, sometimes a coder) run in the desktop app on its bundled cc, which trails the cli by a few versions; every `--bg` session runs the cli's cc. a version is read from the running process (`ps -o command= -p $PPID`), never `claude --version`; the lag is normal, never a flaw <!-- cc -->
+- **two cc builds run side by side, by design**: the main crew threads (clio, sometimes codie) run in the desktop app on its bundled cc, which trails the cli by a few versions; every `--bg` session runs the cli's cc. a version is read from the running process (`ps -o command= -p $PPID`), never `claude --version`; the lag is normal, never a flaw <!-- cc -->

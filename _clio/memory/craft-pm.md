@@ -87,8 +87,8 @@ it's large scope blur and drift.»*
 «easy way?» / «can we just» / «freebie?» ⇒ **answer the cost question first, in one line.** Easy, do
 it. Not easy, name what makes it hard and stop.
 
-- **research is allowed; briefing a coder is not.** Finding out what it would take is the work.
-  Handing that to a coder is where it becomes a build he never approved.
+- **research is allowed; briefing codie is not.** Finding out what it would take is the work.
+  Handing that to codie is where it becomes a build he never approved.
 - a freebie that grows mid-flight gets **pulled back**, not finished.
 - the tell is his own discomfort, voiced early: *«starts to sound more complicated than a freebie»*.
   The answer to that is never a defence of the plan.

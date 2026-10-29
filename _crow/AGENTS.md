@@ -27,16 +27,16 @@ skill reaches it as text. a contract change goes there, never here.
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
   packet as a `claude -p` one-shot.
 - `pnpm crow:decision` — clio's `PreToolUse` hook on Bash, filtered by `if` to `gh pr merge*` and `claude *`
-  (FRM-380). a merge or a `claude --bg` spawn gets a `mode decision` wake outside the gates (no 30-min gap, no step
+  (FRM-380). a merge or a `claude --bg` summon gets a `mode decision` wake outside the gates (no 30-min gap, no step
   count, `lastWakeAt` untouched); a push to main gets none. the merge line carries `merge <repo>#<n> · verified · head ·
-  note <path>`, the verified sha read from `~/.claude/shelf/pr-verified.json` (the verifier writes it through
+  note <path>`, the verified sha read from `~/.claude/shelf/pr-verified.json` (sixth sense writes it through
   `pr-watch.sh --verified`). a `--bg` crow gets the line on its socket and the merge waits ≤ 90 s for the note file;
   a tab gets none, so the first merge is denied with the line for clio to send with SendMessage by crow's registry name, and a rerun within 10 min
-  (`decisions/<repo>-<n>-<head>.json`) waits for the note instead. a spawn never waits. every failure exits 0 with
+  (`decisions/<repo>-<n>-<head>.json`) waits for the note instead. a summon never waits. every failure exits 0 with
   a context line: a PreToolUse exit 2 or timeout would block the merge.
   the same script is clio's `PostToolUse` hook on `Write|Edit` (FRM-396): a write to `.scratch/**/*-proposal.md` gets a
   `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
-  waits, like a spawn, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
+  waits, like a summon, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
   turn by clio's last prompt line, so a draft's later Edits stay quiet until her next prompt.
 - every packet opens with crow's ledger line: notes sent today, the last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
@@ -82,7 +82,7 @@ skill reaches it as text. a contract change goes there, never here.
   `@`-imports from outside the project all loaded nothing, so the start copies the rules in.
   a rule deleted upstream lingers there until removed by hand.
 - **`claude --bg` ignores `--session-id`** — the session id is known only from the registry
-  after the spawn. its stdout also colours the job id, so the parse strips ansi first.
+  after the summon. its stdout also colours the job id, so the parse strips ansi first.
 - **the registry entry goes ~2 s before the process** — `crow:stop` waits on the pid.
 - **the stash mod is found by its plugin name** (`stash` or `x-mod-stash`) in the user
   `CLAUDE_CODE_PLUGIN_DIRS`, never by its dir. its store is `~/.claude/plugins/store/<name>_inline-<hash>.json`,
@@ -102,5 +102,5 @@ skill reaches it as text. a contract change goes there, never here.
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second
   from both passing the 30-min gate.
 
-<!-- CROW_STATE_DIR: FRM-336's coder left 10 fixture notes in the real state dir; FRM-339 made it overridable, state-dir.test.ts holds it. -->
+<!-- CROW_STATE_DIR: FRM-336's codie left 10 fixture notes in the real state dir; FRM-339 made it overridable, state-dir.test.ts holds it. -->
 <!-- compaction replay: clio's 10-22 19:48 compact wrote 2,047 copies of lines 3+ before its boundary; the head-cut kept them and dropped the real 19:21–19:47 blocks from the 19:50 packet (PK-254). -->
