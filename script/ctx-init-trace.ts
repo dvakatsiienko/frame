@@ -98,13 +98,9 @@ export function seatOf(dir: string, firstMessage: string): Seat {
         // read-both
         return 'sixth-sense';
     if (/crew-(coder|codie)\b/.test(firstMessage)) return 'codie'; // read-both
-    if (
-        /^-Users-dima(-projects-dotfiles-cclio|-frame-cclio|-frame--clio)$/.test(
-            dir,
-        )
-    )
-        // read-both
-        return 'clio';
+    const clioDir =
+        /^-Users-dima(-projects-dotfiles-cclio|-frame-cclio|-frame--clio)$/; // read-both
+    if (clioDir.test(dir)) return 'clio';
     if (/^-Users-dima--local-state-(ccrow|crow)/.test(dir)) return 'crow'; // read-both
     if (/^-Users-dima--local-state-(composer|helga)/.test(dir)) return 'helga'; // read-both
     if (dir === '-Users-dima-frame') return 'cc';
@@ -113,8 +109,8 @@ export function seatOf(dir: string, firstMessage: string): Seat {
 
 // read-both: rows and baseline keys stored before the 10-29 rename carry the old seat names
 const PAST_SEATS: Record<string, Seat> = {
-    cclio: 'clio',
-    ccrow: 'crow',
+    cclio: 'clio', // read-both
+    ccrow: 'crow', // read-both
     coder: 'codie',
     composer: 'helga',
     verifier: 'sixth-sense',

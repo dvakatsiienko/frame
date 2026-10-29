@@ -22,9 +22,9 @@ duckdb -c "
 create table d as select * replace (t::timestamptz::timestamp as t), regexp_replace(txt,'\s+',' ','g') flat from read_json_auto('$raw')
   where t::timestamptz >= '$since'::timestamptz;
 create table u as select min(t) t, any_value(p) p, any_value(s) s, flat, max(img) img, length(flat) len from d
-  where flat not like '<%' and flat not like 'reply with only%' and flat not like 'PROBLEM:%' and flat not like 'you are crow%' and flat not like 'you are ccrow%'
+  where flat not like '<%' and flat not like 'reply with only%' and flat not like 'PROBLEM:%' and flat not like 'you are crow%' and flat not like 'you are ccrow%' -- read-both: prompts from before the 10-29 rename
     and flat not like 'This session is being continued%' and flat not like '[Request interrupted%' and flat not like 'The x-mod-stash%'
-    and flat <> 'ping' and flat not like 'HANDOFF%' and flat not like 'Caveat:%' and flat not like 'crow wake%' and flat not like 'ccrow wake%'
+    and flat <> 'ping' and flat not like 'HANDOFF%' and flat not like 'Caveat:%' and flat not like 'crow wake%' and flat not like 'ccrow wake%' -- read-both: prompts from before the 10-29 rename
   group by flat, date_trunc('minute', t);
 copy (select row_number() over (order by t) id, strftime(t,'%Y-%m-%d %H:%M') t, p, img, len, left(flat,600) txt from u order by t) to '$out/prompts.jsonl';"
 n=$(wc -l < "$out/prompts.jsonl" | tr -d ' ')

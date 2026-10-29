@@ -50,9 +50,9 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - the quiet-comms trial ends 2026-10-19: if `[progress]` holding is dropped then, helga's receipts
   wake clio and that cost joins this log
 
-## receipt log — one line per chore, its first pass, logged before cclio fixes anything
+## receipt log — one line per chore, its first pass, logged before clio fixes anything
 
-- date · class · first pass (green / red / consult) · rework (none / cclio fixed) · note
+- date · class · first pass (green / red / consult) · rework (none / clio fixed) · note
 - 2026-10-14 · bulk-replace · green · none · exact anchor, diff read whole
 - 2026-10-14 · pocket-write · green · none · my brief's `cd ~/frame/_clio` fired the AGENTS.md loader hook; composer refused the read, as its charter says — briefs pass `BACKLOG_CWD` without a cd
 - 2026-10-14 · gate-retry · green · none · commit 5c7702c on main, no worktree: bgIsolation none proven

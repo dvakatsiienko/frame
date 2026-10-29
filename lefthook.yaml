@@ -48,6 +48,10 @@ pre-commit:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
       # public main (2026-10-07). no glob: the moved file can live anywhere
       run: node script/git-crypt-rename-check.ts
+    retired-names:
+      # temporary: the 10-29 rename's retired forms in an added line red the commit, each hit logged to
+      # ~/.local/state/x/retired-names.log; 14 green days and a ticket removes it (spec o66). no glob: any file
+      run: node script/retired-names-check.ts
     chords-essentials:
       # chords is the one app outside bytes; the essentials list lives once, in bytes' checker
       # (BYT-111), so frame calls it by path. a mac without bytes checked out skips, never blocks.
