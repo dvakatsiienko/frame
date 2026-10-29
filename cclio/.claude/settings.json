@@ -187,7 +187,8 @@
     "cclio@cclio": true,
     "neuroarxiv@neuroarxiv": true,
     "fast-jev-compaction@fast-jev-compaction": false,
-    "cc-plugin-you-should-know@builtin": false
+    "cc-plugin-you-should-know@builtin": false,
+    "x-cw@x-com": false
   },
   "extraKnownMarketplaces": {
     "cclio": {
