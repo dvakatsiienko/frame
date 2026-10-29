@@ -669,6 +669,16 @@ test("the board's top strip counts the asks waiting on dima, per member, a marke
     ]).toEqual(['🙋 3 asks wait for you· 🔧 coder 3', true]);
 });
 
+test('a tick on the card reads 📨 tick while it is sending', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    await start($);
+    const ui = await board($);
+    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    expect(await subText(ui, 'coder')).toContain('📨 tick');
+});
+
 test('🛼 glide switched off draws no strip', async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODER, [ASK]);

@@ -335,6 +335,77 @@ test('a measure writes the 5h window to the usage file in seconds', async ($, on
     });
 });
 
+test('a seven-day window and the write time ride the usage file, and an unmoved limit rewrites nothing', async ($, on) => {
+    const { clock, files } = meters(on);
+    const limits = [
+        {
+            kind: 'five_hour' as const,
+            percentUsed: 39,
+            resetsAt: new Date(NOW + 3 * HOUR).toISOString(),
+        },
+        {
+            kind: 'seven_day' as const,
+            percentUsed: 12,
+            resetsAt: new Date(NOW + 48 * HOUR).toISOString(),
+        },
+    ];
+    const measureBoth = (changed: 'rateLimits' | 'context') =>
+        $.session.measure({
+            changed: [changed],
+            context: { percent: 35, tokens: 350_000, window: 1_000_000 },
+            rateLimits: limits,
+        });
+    await measureBoth('rateLimits');
+    const first = JSON.parse(files[USAGE] ?? '{}');
+    await clock.advance(10_000);
+    await measureBoth('context');
+    const second = JSON.parse(files[USAGE] ?? '{}');
+    expect([
+        first.rate_limits.seven_day,
+        first.written_at,
+        second.written_at,
+    ]).toEqual([
+        {
+            resets_at: Math.round((NOW + 48 * HOUR) / 1000),
+            used_percentage: 12,
+        },
+        Math.round(NOW / 1000),
+        Math.round(NOW / 1000),
+    ]);
+});
+
+test('a settings file that is not a json object is refused and left untouched', async ($, on) => {
+    const { files } = meters(on, { [SHARED]: '[1, 2]' });
+    await measure($, 39, 35);
+    await band($);
+    const ui = await settingsPane($);
+    await ui.input({ key: 'compact-at', kind: 'change', text: '85' });
+    expect([
+        files[SHARED],
+        (await part(
+            $,
+            /\/proj\/\.claude\/settings\.json is not a json object/,
+        )) !== 'no text',
+    ]).toEqual(['[1, 2]', true]);
+});
+
+test('every chip and reading in the row names itself on hover', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const ui = await band($);
+    const cards = (await ui.findAll({ type: 'Box' }))
+        .filter((n) => n.props.display === 'none')
+        .map((n) => n.text);
+    expect(cards).toEqual(
+        expect.arrayContaining([
+            expect.stringMatching(/the 5h pace$/),
+            'until the 5h window resets',
+            '5h window used',
+            'context window used',
+        ]),
+    );
+});
+
 test('typing a compaction point saves it with no Enter', async ($, on) => {
     const { files } = meters(on, { [SHARED]: '{}' });
     await measure($, 39, 35);

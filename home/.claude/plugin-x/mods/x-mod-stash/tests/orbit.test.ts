@@ -617,6 +617,74 @@ test('a remote mark landing while dima types a steer leaves his typed steer in i
     expect(savedSteer(w.store)).toBe('a heron');
 });
 
+test('every board card is bordered a soft grey on the desktop', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['a one', 'x']);
+    expect(
+        (await ui.find({ key: 'orbit', type: 'Box' }))?.props.borderColor,
+    ).toBe('#8080804d');
+});
+
+test('🔁 replay reads 📨 replay for 5 s, then ✅ replay', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:rejected:o1' });
+    const sending = (await ui.find({ key: 'orbit:rejected:o1' }))?.text;
+    await w.clock.advance(5_000);
+    expect([
+        sending,
+        (await ui.find({ key: 'orbit:rejected:o1' }))?.text,
+    ]).toEqual(['📨 replay', '✅ replay']);
+});
+
+test('the Stop passes with 🪐 orbit switched off, an ask open and a wrap_up ask', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    w.store.set('shown', { 'stash.orbit': false });
+    await say($, 'go');
+    await wrapUp($, 'Commit now?');
+    expect((await stop($)).block).toBeUndefined();
+});
+
+test('⏸️ on an assumption pauses speak, ⏹️ stops it', async ($, on) => {
+    const w = world(on);
+    const sent = speakStub(on, { paused: false, speaking: true });
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port');
+    await w.clock.advance(5_000);
+    await ui.press({ key: 'orbit:pause:a1' });
+    await ui.press({ key: 'orbit:stop:a1' });
+    expect(sent.filter((r) => r.op !== 'status')).toEqual([
+        { op: 'pause' },
+        { op: 'stop' },
+    ]);
+});
+
+test("an assumption's steer box is empty once ↩️ sent it back", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port');
+    await ui.press({ key: 'orbit:wrong:a1' });
+    await ui.input({
+        key: 'orbit:asteer:a1',
+        kind: 'change',
+        text: 'use 7374',
+    });
+    await say($, 'next');
+    await endTurn($);
+    expect(
+        (await ui.find({ key: 'orbit:asteer:a1', type: 'Input' }))?.props
+            .value ?? '',
+    ).toBe('');
+});
+
 test('a card folded and opened again draws the saved steer, not the text from before he typed', async ($, on) => {
     const w = world(on);
     await start($);

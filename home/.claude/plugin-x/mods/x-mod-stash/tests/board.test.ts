@@ -297,6 +297,21 @@ test('an idle session reads 💤 with its time, no word', async ($, on) => {
     );
 });
 
+test('a member that starts a turn changes its row within a few seconds', async ($, on) => {
+    const patch: Record<number, Record<string, unknown>> = {};
+    const { clock } = fleet(on, {}, { patch });
+    const ui = await board($);
+    const rowText = async () =>
+        (await ui.findAll({ type: 'Box' })).find((n) => n.key === `m:${PEER}`)
+            ?.text;
+    const before = await rowText();
+    patch[2] = { status: 'busy' };
+    await clock.advance(4_000);
+    expect([before?.includes('🐆'), (await rowText())?.includes('🐆')]).toEqual(
+        [false, true],
+    );
+});
+
 for (const [status, emoji] of [
     ['busy', '🐆'],
     ['waiting', '⏳'],
@@ -1494,6 +1509,24 @@ test('the ctx meter type is two buttons, one lit; pressing the lit one changes n
         ['knob:ctx-ring'],
         ['knob:ctx-bar'],
     ]);
+});
+
+const undoInputs = async (settings: Awaited<ReturnType<typeof settingsPane>>) =>
+    (await settings.findAll({ type: 'Input' }))
+        .filter((n) => n.key?.includes('undo'))
+        .map((n) => n.props.value);
+
+test('the undo delay field holds 5 by default, and is hidden with the switch off', async ($, on) => {
+    fleet(on);
+    await board($);
+    const on_ = await undoInputs(await settingsPane($));
+    expect(on_).toEqual(['5']);
+});
+
+test('with the undo switch off the delay field is not drawn', async ($, on) => {
+    fleet(on, { 'undo-window': false });
+    await board($);
+    expect(await undoInputs(await settingsPane($))).toEqual([]);
 });
 
 test('the undo delay field sits on the 📨 undo tick line, no label of its own', async ($, on) => {
