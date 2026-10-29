@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-// FRM-463: a `#` before `; cmd` comments out every command after it, with no error; warn-only until a verifier says clean
+// FRM-463: a `#` before `; cmd` comments out every command after it, with no error; warn-only until a sixth sense says clean
 function world(on: On) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
@@ -20,7 +20,7 @@ function world(on: On) {
 
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, tool: 'Bash' });
-// refused since the verifier's clean (FRM-427, round 2), the fix named in the refusal
+// refused since the sixth sense's clean (FRM-427, round 2), the fix named in the refusal
 const refused = (r: { deny?: string }) =>
     (r.deny ?? '').includes("move the comment to the line's end");
 

@@ -91,7 +91,7 @@ const FORK_WHY = 'a fork carries the whole parent context (~220k tokens)';
 const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: ${FORK_WHY}. a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
 // an Agent prompt naming a ticket id, a backticked path or file, or one of matt's skills is a brief (FRM-392); the id
 // shape copies brief.go's ticketID, which a mod cannot import. a SendMessage is never checked: reports name skills and
-// example paths on purpose, and the verifier's verdict was refused three times live (13:40)
+// example paths on purpose, and the sixth sense's verdict was refused three times live (13:40)
 const BRIEF_SIGN =
     /\b(?:FRM|BYT|DOT)-\d+\b|`[^`\n]*\/[^`\n]*`|`[\w.@~-]+\.[a-z]{1,5}`|\bmattpocock-skills:|\bmatt's `?[a-z]/;
 // of x brief check's findings only a missing path and a skill's user quiz refuse; a quoted code term is a message's own
@@ -129,7 +129,7 @@ async function readBrief(
         .join('');
     const state = (await $.env.get('X_STATE')) || `${home}/.local/state/x`;
     return {
-        isCoder: new TextDecoder().decode(bytes).includes('/x:crew-codie'),
+        isCodie: new TextDecoder().decode(bytes).includes('/x:crew-codie'),
         isStamped: await $.fs.exists(`${state}/briefs/${sum}.json`),
     };
 }
@@ -235,13 +235,13 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 });
 
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
-// verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
+// sixth sense says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
     'raw-plugin-update',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
-// any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
+// any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
 async function isWarnOnly($: EngineInterface, rule: string) {
     if (!WARN_ONLY.has(rule)) return false;
     return (
@@ -498,7 +498,7 @@ const TICK_MS = 2 * 60 * 60 * 1000;
 // a tick is spent per use: `scope` names what it authorized (a command, a pr, a sign), so one ask quoting a guarded
 // command and a pr carries both once
 // the ask quotes the whole guarded command in one backtick span, spacing aside, never only a target its refusal names
-// (dima's tick on the verifier's ask, 2026-10-28: `git push origin main` never unlocks `git push --mirror origin`)
+// (dima's tick on the sixth sense's ask, 2026-10-28: `git push origin main` never unlocks `git push --mirror origin`)
 const spaced = (text: string) => text.trim().replace(/\s+/g, ' ');
 const guardedOf = (command: string) =>
     spaced(command.replace(/\s#\s*dima-ok:.*$/, ''));

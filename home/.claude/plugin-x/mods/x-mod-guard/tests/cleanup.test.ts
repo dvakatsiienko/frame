@@ -47,7 +47,7 @@ for (const command of [
     'git -C /home/projects/bytes worktree remove /home/projects/bytes/.claude/worktrees/BYT-2-y',
     'git worktree remove /home/.claude/jobs/ab12/tmp/clone',
     'git branch -D scratch/probe scratch/night',
-    'git branch -d coder/FRM-1-x',
+    'git branch -d codie/FRM-1-x',
 ])
     test(`clio cleans up without dima's word: ${command}`, async ($, on) => {
         const { ran } = world(on, CLIO);
@@ -59,7 +59,7 @@ for (const command of [
     'git -C /home/frame worktree remove /home/projects/other',
     'git -C /home/frame worktree remove --force .claude/worktrees/FRM-1-x',
     'git -C /home/frame worktree remove .claude/worktrees',
-    'git branch -D coder/FRM-1-x',
+    'git branch -D codie/FRM-1-x',
     'git branch -D scratch/probe main',
 ])
     test(`clio still asks: ${command}`, async ($, on) => {

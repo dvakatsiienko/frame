@@ -135,7 +135,7 @@ const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
 
 // a cli member's message as the bridge delivers it
-const ping = ($: Engine, body: string, from = '☕️ 🔧 coder: mods') =>
+const ping = ($: Engine, body: string, from = '☕️ 🔧 codie: mods') =>
     $.session.receive({
         origin: { kind: 'peer' },
         text: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${from}" from-mode="bypass">\n${body}\n</cross-session-message>`,
@@ -194,7 +194,7 @@ for (const marker of [
 for (const plain of [
     '[progress] step 2 landed. is it clean?',
     '[progress] one decision i made: hidden verbs',
-    '[progress] the verifier picked: nothing',
+    '[progress] the sixth sense picked: nothing',
 ])
     test(`a [progress] ping with no push marker stays held: ${plain.slice(11, 40)}`, async ($, on) => {
         const w = world(on);
@@ -218,7 +218,7 @@ test("clio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, o
 });
 
 test('a session the registry names other than clio passes a [progress] ping, even in her dir', async ($, on) => {
-    const w = world(on, { name: '☕️ 🔧 coder: mods' });
+    const w = world(on, { name: '☕️ 🔧 codie: mods' });
     await start($);
     await ping($, '[progress] step 2 landed');
     expect(w.queued).toHaveLength(1);
@@ -318,7 +318,7 @@ test('a ledger gap rides the lane owner’s next prompt once, naming the member'
     const w = world(on);
     w.store.set('quiet-gap', {
         at: 1,
-        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 1, sent: 2 }],
+        gaps: [{ from: '☕️ 🔧 codie: mods', logged: 1, sent: 2 }],
     });
     await start($);
     await say($, 'status?');
@@ -326,7 +326,7 @@ test('a ledger gap rides the lane owner’s next prompt once, naming the member'
     await say($, 'and now?');
     expect([first, gapNote(w)]).toEqual([
         [
-            '🤫 quiet-comms ledger: ☕️ 🔧 coder: mods sent you 2 pings and your quiet log holds 1: 1 skipped the hold, check its log line.',
+            '🤫 quiet-comms ledger: ☕️ 🔧 codie: mods sent you 2 pings and your quiet log holds 1: 1 skipped the hold, check its log line.',
         ],
         [],
     ]);
@@ -336,13 +336,13 @@ test('a standing gap of the same size after one more send and one more line is n
     const w = world(on);
     w.store.set('quiet-gap', {
         at: 1,
-        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 23, sent: 24 }],
+        gaps: [{ from: '☕️ 🔧 codie: mods', logged: 23, sent: 24 }],
     });
     await start($);
     await say($, 'status?');
     w.store.set('quiet-gap', {
         at: 2,
-        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 24, sent: 25 }],
+        gaps: [{ from: '☕️ 🔧 codie: mods', logged: 24, sent: 25 }],
     });
     await say($, 'and now?');
     expect(gapNote(w)).toEqual([]);
@@ -350,7 +350,7 @@ test('a standing gap of the same size after one more send and one more line is n
 
 test('a gap that closes and opens again is told again', async ($, on) => {
     const w = world(on);
-    const gap = { from: '☕️ 🔧 coder: mods', logged: 1, sent: 2 };
+    const gap = { from: '☕️ 🔧 codie: mods', logged: 1, sent: 2 };
     w.store.set('quiet-gap', { at: 1, gaps: [gap] });
     await start($);
     await say($, 'status?');
@@ -365,13 +365,13 @@ test('a gap that grows is told again', async ($, on) => {
     const w = world(on);
     w.store.set('quiet-gap', {
         at: 1,
-        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 1, sent: 2 }],
+        gaps: [{ from: '☕️ 🔧 codie: mods', logged: 1, sent: 2 }],
     });
     await start($);
     await say($, 'status?');
     w.store.set('quiet-gap', {
         at: 2,
-        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 1, sent: 3 }],
+        gaps: [{ from: '☕️ 🔧 codie: mods', logged: 1, sent: 3 }],
     });
     await say($, 'and now?');
     expect(gapNote(w)).toHaveLength(1);
@@ -381,13 +381,13 @@ test('held pings ride the next prompt as one hidden block, once', async ($, on) 
     const w = world(on);
     await start($);
     await ping($, '[progress] step 2 landed\nthe detail line');
-    await ping($, '[progress] step 3 landed', '🔎 verifier');
+    await ping($, '[progress] step 3 landed', '🔎 sixth sense');
     await say($, 'status?');
     const first = held(w).join('\n');
     await say($, 'and now?');
     expect([first, held(w)]).toEqual([
         expect.stringMatching(
-            /2 held member pings.*☕️ 🔧 coder: mods: step 2 landed\n.*🔎 verifier: step 3 landed$/s,
+            /2 held member pings.*☕️ 🔧 codie: mods: step 2 landed\n.*🔎 sixth sense: step 3 landed$/s,
         ),
         [],
     ]);
@@ -425,15 +425,15 @@ test('each delivery logs its sender, tag, verdict and whether it started a turn'
     const w = world(on);
     await start($);
     await ping($, '[progress] step 2 landed');
-    await ping($, '[done] landed', '🔎 verifier');
+    await ping($, '[done] landed', '🔎 sixth sense');
     const day = new Date(EVEN).toISOString().slice(0, 10);
     expect(
         (w.store.get(`quiet-log:${day}`) as Record<string, unknown>[]).map(
             (l) => [l.from, l.tag, l.verdict, l.startedTurn, l.arm],
         ),
     ).toEqual([
-        ['☕️ 🔧 coder: mods', 'progress', 'held', false, 'on'],
-        ['🔎 verifier', 'done', 'passed', true, 'on'],
+        ['☕️ 🔧 codie: mods', 'progress', 'held', false, 'on'],
+        ['🔎 sixth sense', 'done', 'passed', true, 'on'],
     ]);
 });
 
@@ -447,8 +447,8 @@ test("the held pings reach the store for clio's sessions row", async ($, on) => 
             w.store.get(`quiet-held:${SID}`) as { from: string; text: string }[]
         ).map((p) => [p.from, p.text]),
     ).toEqual([
-        ['☕️ 🔧 coder: mods', 'a'],
-        ['☕️ 🔧 coder: mods', 'b'],
+        ['☕️ 🔧 codie: mods', 'a'],
+        ['☕️ 🔧 codie: mods', 'b'],
     ]);
 });
 
@@ -540,7 +540,7 @@ test("a canary ping's held and flushed lines carry its nonce", async ($, on) => 
 });
 
 test('/quiet-canary sends clio a [progress] ping with its nonce', async ($, on) => {
-    world(on, { name: '☕️ 🔧 coder: mods' });
+    world(on, { name: '☕️ 🔧 codie: mods' });
     const sent: { to: string; text: string }[] = [];
     on('session.send', (_$, e) => {
         sent.push({ text: e.text, to: e.to });
@@ -563,7 +563,7 @@ test('/quiet-canary sends clio a [progress] ping with its nonce', async ($, on) 
 });
 
 test('/quiet-canary says FAIL with the reason when the send bounces', async ($, on) => {
-    world(on, { name: '☕️ 🔧 coder: mods' });
+    world(on, { name: '☕️ 🔧 codie: mods' });
     on('session.send', () => ({ isDelivered: false, reason: 'not reachable' }));
     await start($);
     const r = await $.command.run({
@@ -587,7 +587,7 @@ test('the ledger counts a send to clio by her name, her socket or her session id
                 '{"summary":"s","to":"uds:/tmp/cc-socks/35832.sock","message":"x"}',
             ),
             sent('{"message":"x","to":"local_a955"}'),
-            sent('{"to":"🔎 verifier","message":"clio said so"}'),
+            sent('{"to":"🔎 sixth sense","message":"clio said so"}'),
             sent('{"to":"uds:/tmp/cc-socks/999.sock","message":"x"}'),
         ].map((l) => to.test(l)),
     ).toEqual([true, true, true, false, false]);
@@ -643,8 +643,8 @@ test('a wake already sent goes out once', async ($, on) => {
 
 /* o75: the quiet ledger's gaps and a stuck hold raise a native alarm */
 
-const CODER_SID = 'c0c0c0c0-coder';
-const coderPeer = { name: '☕️ 🔧 coder: mods', pid: 778, sessionId: CODER_SID };
+const CODIE_SID = 'c0c0c0c0-codie';
+const codiePeer = { name: '☕️ 🔧 codie: mods', pid: 778, sessionId: CODIE_SID };
 // the send timestamps the ledger's transcript grep returns, local time like EVEN
 const sendAt = (min: number) =>
     `2026-10-12T15:${String(min).padStart(2, '0')}:00.000`;
@@ -655,7 +655,7 @@ function alarmWorld(
 ) {
     const scripted: string[] = [];
     const w = world(on, {
-        peers: [coderPeer],
+        peers: [codiePeer],
         run: (argv) => {
             if (argv[0] === 'osascript') {
                 scripted.push(String(argv[3]));
@@ -688,8 +688,8 @@ test('a ledger gap raises one native alarm, through osascript when notify finds 
     await start($);
     await w.clock.advance(10 * MIN);
     expect([w.notified, w.scripted]).toEqual([
-        ['☕️ 🔧 coder: mods sent clio 1, her quiet log holds 0'],
-        ['☕️ 🔧 coder: mods sent clio 1, her quiet log holds 0'],
+        ['☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0'],
+        ['☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0'],
     ]);
 });
 
@@ -717,14 +717,14 @@ test('a held ping stuck past the idle wait + 2 min raises one alarm', async ($, 
     w.store.set(`quiet-held:${SID}`, [
         {
             at: EVEN - 13 * MIN,
-            from: '☕️ 🔧 coder: mods',
+            from: '☕️ 🔧 codie: mods',
             text: '[progress] a',
         },
     ]);
     await start($);
     await w.clock.advance(3 * MIN);
     expect(w.scripted).toEqual([
-        '1 held ping stuck 13 min, oldest from ☕️ 🔧 coder: mods',
+        '1 held ping stuck 13 min, oldest from ☕️ 🔧 codie: mods',
     ]);
 });
 
@@ -733,7 +733,7 @@ test('a held ping inside the idle wait + 2 min raises none', async ($, on) => {
     w.store.set(`quiet-held:${SID}`, [
         {
             at: EVEN - 11 * MIN,
-            from: '☕️ 🔧 coder: mods',
+            from: '☕️ 🔧 codie: mods',
             text: '[progress] a',
         },
     ]);
@@ -749,7 +749,7 @@ test('an alarm neither notify nor osascript can raise is logged, never thrown', 
     expect(
         w.logged.filter((l) => l.includes('quiet alarm not raised')),
     ).toEqual([
-        'x-mod-stash: quiet alarm not raised (notify: no-surface; osascript: exit 1): ☕️ 🔧 coder: mods sent clio 1, her quiet log holds 0',
+        'x-mod-stash: quiet alarm not raised (notify: no-surface; osascript: exit 1): ☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0',
     ]);
 });
 

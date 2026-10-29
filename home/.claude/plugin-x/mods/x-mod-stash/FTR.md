@@ -863,11 +863,11 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in clio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by clio's stash, never applied
 - ✅ a lane follows codie's plan step (todo 6, dima's 18:55 shot: «I want to see the coder's future progress»)
   - makes: a `lane-step:<registry name>` key in the store, `{ at, step }`, written only by that session's plan op
-  - given a lane with codie linked, when codie's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and clio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` codie, and clio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <coder>» once
+  - given a lane with codie linked, when codie's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and clio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` codie, and clio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <codie>» once
   - given the pointer at 3, when codie names 2, or the step count, or sixth sense, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays clio's act
   - and clio's step back holds until codie names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
   - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters codie's context — its brief numbers the steps
-  - proof: tests/lane.test.ts::a session's plan step lands in the store under its registry name; ::the linked coder's step 3 moves the lane while clio idles, and her next prompt hears it once; ::a move reaches clio's running turn at her…
+  - proof: tests/lane.test.ts::a session's plan step lands in the store under its registry name; ::the linked codie's step 3 moves the lane while clio idles, and her next prompt hears it once; ::a move reaches clio's running turn at her…
 - ✅ a glide card holds its members' asks (exit 3)
   - given a lane with linked codie and sixth sense, then a `🔧 codie · n asks` subcard sits above a `🔎 sixth sense · n asks` one, each folded by default with its own `📁`
   - and a subcard holding asks heads bold amber with a 🙋 — `🙋 🔧 codie · 1 ask` — the palette's `warn`, the one colour dima reads as «waits on you»; at 0 it reads plain (todo 28; dima, 19:45: «revert to previous layout and keep color update plus emoji»)
@@ -878,7 +878,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
   - decision: the wake carries the marks in its text — a prompt a mod submits skips that mod's own prompt.submit hook (step 0, cc 2.1.296)
-  - proof: tests/lane.test.ts::a coder subcard sits above a verifier subcard / the board's top strip counts the asks waiting on dima / unfolded, a subcard's rows are the member's own asks / a mark from a glide card joins the member's running turn / an idle member with marks wakes once — not asserted: the strip member's press scrolling the board (the harness raises no ui.scroll)
+  - proof: tests/lane.test.ts::a codie subcard sits above a sixth sense subcard / the board's top strip counts the asks waiting on dima / unfolded, a subcard's rows are the member's own asks / a mark from a glide card joins the member's running turn / an idle member with marks wakes once — not asserted: the strip member's press scrolling the board (the harness raises no ui.scroll)
 - ✅ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ tick, 🔁 replay, 🔊 and the steer
   - decision: the buttons never share the pick's line — exit 4's «one row» misread the 19:31 shot (dima, 20:23)
   - proof: tests/lane.test.ts::an ask's buttons sit on the line under its pick, never beside it

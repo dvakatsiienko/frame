@@ -201,7 +201,7 @@ for (const [why, input] of [
     });
 
 test('a session the registry does not name 🦉 clio is refused', async ($, on) => {
-    const w = world(on, { name: '☕️ 🔧 coder' });
+    const w = world(on, { name: '☕️ 🔧 codie' });
     await start($);
     expect([(await create($)).deny, w.files[FILE]]).toEqual([
         'orbit glide: only 🦉 clio writes the lanes; every board shows them',
@@ -340,7 +340,7 @@ test('a card lists every step in order, done ones kept, the current marked', asy
 });
 
 test("any session's board draws the lane clio wrote", async ($, on) => {
-    world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
+    world(on, { files: shelf(keptLane()), name: '☕️ 🔧 codie' });
     await start($);
     expect(await laneText(await board($))).toMatch(/🛼 glide: kept.*➡️ a/su);
 });
@@ -450,7 +450,7 @@ test("a steer taken while clio's turn runs joins it at her next tool call", asyn
 });
 
 test("a member's board takes a steer that reaches clio, never the member's own prompt", async ($, on) => {
-    const w = world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
+    const w = world(on, { files: shelf(keptLane()), name: '☕️ 🔧 codie' });
     await start($);
     const ui = await board($);
     await steer(ui, 'slow down');
@@ -579,7 +579,7 @@ test('an ended lane never comes back at a fresh start', async ($, on) => {
 test("nothing of a lane enters a member's model context", async ($, on) => {
     const w = world(on, {
         files: shelf(keptLane({ steer: 'n' })),
-        name: '☕️ 🔧 coder',
+        name: '☕️ 🔧 codie',
     });
     await start($);
     for (let i = 0; i < 9; i++) await endTurn($);
@@ -596,10 +596,10 @@ test('the 🛼 glide switch hides every glide card', async ($, on) => {
 
 /* exit 3 — the members' asks on the card */
 
-const CODER = 'c0c0c0c0-codie';
-const VERIFIER = 'v0v0v0v0-sixth';
+const CODIE = 'c0c0c0c0-codie';
+const SIXTH_SENSE = 'v0v0v0v0-sixth';
 const linked = () =>
-    shelf(keptLane({ members: { codie: CODER, 'sixth-sense': VERIFIER } }));
+    shelf(keptLane({ members: { codie: CODIE, 'sixth-sense': SIXTH_SENSE } }));
 const published = (
     w: ReturnType<typeof world>,
     sid: string,
@@ -617,8 +617,8 @@ const subText = async (ui: Board, role: string) =>
 
 test('a codie subcard sits above a sixth sense subcard, each folded to its count', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
-    published(w, VERIFIER, [ASK]);
+    published(w, CODIE, [ASK, { ...ASK, id: 'o4' }]);
+    published(w, SIXTH_SENSE, [ASK]);
     await start($);
     const text = await laneText(await board($));
     expect([
@@ -633,8 +633,8 @@ test('a codie subcard sits above a sixth sense subcard, each folded to its count
 
 test('a member with asks heads its subcard in bold amber with a 🙋; at 0 it reads plain, and no strip draws', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
-    published(w, VERIFIER, []);
+    published(w, CODIE, [ASK]);
+    published(w, SIXTH_SENSE, []);
     await start($);
     const ui = await board($);
     const head = async (text: string) => {
@@ -652,7 +652,7 @@ test('a member with asks heads its subcard in bold amber with a 🙋; at 0 it re
 
 test("at 0 asks the board's top has no strip", async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, []);
+    published(w, CODIE, []);
     await start($);
     expect(
         await (await board($)).find({ key: 'asks-strip', type: 'Box' }),
@@ -661,8 +661,8 @@ test("at 0 asks the board's top has no strip", async ($, on) => {
 
 test("the board's top strip counts the asks waiting on dima, per member, a marked one not counted", async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK, { ...ASK, id: 'o4' }, { ...ASK, id: 'o5' }]);
-    published(w, VERIFIER, [{ ...ASK, mark: 'accepted' }]);
+    published(w, CODIE, [ASK, { ...ASK, id: 'o4' }, { ...ASK, id: 'o5' }]);
+    published(w, SIXTH_SENSE, [{ ...ASK, mark: 'accepted' }]);
     await start($);
     const ui = await board($);
     const keys = (await ui.findAll({ type: 'Box' })).map((b) => b.key ?? '');
@@ -674,7 +674,7 @@ test("the board's top strip counts the asks waiting on dima, per member, a marke
 
 test('a tick on the card reads 📨 tick while it is sending', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
+    published(w, CODIE, [ASK]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
@@ -684,7 +684,7 @@ test('a tick on the card reads 📨 tick while it is sending', async ($, on) => 
 
 test('🛼 glide switched off draws no strip', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
+    published(w, CODIE, [ASK]);
     w.store.set('shown', { 'stash.glide': false });
     await start($);
     expect(
@@ -692,15 +692,15 @@ test('🛼 glide switched off draws no strip', async ($, on) => {
     ).toBe(undefined);
 });
 
-// todo 21: a /clear left the l14 card linked to the coder's old id, so its asks never drew there
+// todo 21: a /clear left the l14 card linked to the codie's old id, so its asks never drew there
 const OLD = 'o0o0o0o0-old';
 
 test('a member linked by an id it cleared away from keeps its asks on the card', async ($, on) => {
     const w = world(on, {
-        files: shelf(keptLane({ members: { coder: OLD } })),
+        files: shelf(keptLane({ members: { codie: OLD } })),
     });
-    w.store.set(`succ:${OLD}`, { at: 1, sid: CODER });
-    published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
+    w.store.set(`succ:${OLD}`, { at: 1, sid: CODIE });
+    published(w, CODIE, [ASK, { ...ASK, id: 'o4' }]);
     await start($);
     expect(await laneText(await board($))).toContain('🙋 🔧 codie · 2 asks');
 });
@@ -718,7 +718,7 @@ test('a /clear records the id the session goes on under', async ($, on) => {
 
 test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
+    published(w, CODIE, [ASK]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
@@ -729,20 +729,20 @@ test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
 
 test("a tick on the card waits in the store for the member's own stash", async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
+    published(w, CODIE, [ASK]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
     await ui.press({ key: 'lane:l1:codie:accepted:o3' });
     await w.clock.advance(5_000);
     expect([
-        (w.store.get(`marks:${CODER}:o3`) as { mark?: string })?.mark,
+        (w.store.get(`marks:${CODIE}:o3`) as { mark?: string })?.mark,
         await subText(ui, 'codie'),
     ]).toEqual(['accepted', expect.stringContaining('✅ tick')]);
 });
 
 async function memberWithAsk($: Engine, on: On) {
-    const w = world(on, { name: '☕️ 🔧 coder' });
+    const w = world(on, { name: '☕️ 🔧 codie' });
     await start($);
     await $.tool.call({
         asks: [{ pick: 'cut it', text: 'cut the second probe?' }],
@@ -939,7 +939,7 @@ interface KeptLane {
 
 test('every board card folds by one rule: open until folded, a member subcard folded until opened', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
+    published(w, CODIE, [ASK]);
     await start($);
     await $.tool.call({
         lines: ['probe: one'],
@@ -1027,13 +1027,13 @@ test('a lane steer ticked before the rename joins once, never again', async ($, 
 
 test('a glide mark saved before the steer rename clears for good when dima empties its steer', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
-    w.store.set(`marks:${CODER}:o3`, { at: 1, mark: 'accepted', note: 'old' });
+    published(w, CODIE, [ASK]);
+    w.store.set(`marks:${CODIE}:o3`, { at: 1, mark: 'accepted', note: 'old' });
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
     await ui.input({ key: 'lane:l1:codie:steer:o3', kind: 'submit', text: '' });
-    const m = w.store.get(`marks:${CODER}:o3`) as Record<string, unknown>;
+    const m = w.store.get(`marks:${CODIE}:o3`) as Record<string, unknown>;
     expect([m.mark, m.steer, 'note' in m]).toEqual([
         'accepted',
         undefined,
@@ -1043,17 +1043,17 @@ test('a glide mark saved before the steer rename clears for good when dima empti
 
 /* rider (clio's wisp, 18:01): a member is linked by its registry name, so its asks survive a /clear */
 
-const CODER_NAME = '☕️ 🔧 coder: mods';
-const coderAt = (sessionId: string, more: Record<string, unknown> = {}) => ({
+const CODIE_NAME = '☕️ 🔧 codie: mods';
+const codieAt = (sessionId: string, more: Record<string, unknown> = {}) => ({
     hostSessionId: 'local_94d65a2a',
-    name: CODER_NAME,
+    name: CODIE_NAME,
     pid: 5001,
     sessionId,
     ...more,
 });
 
 test("a link by the member's desktop id keeps its registry name", async ($, on) => {
-    const w = world(on, { peers: [coderAt(CODER)] });
+    const w = world(on, { peers: [codieAt(CODIE)] });
     await start($);
     await create($);
     await lane($, {
@@ -1062,11 +1062,11 @@ test("a link by the member's desktop id keeps its registry name", async ($, on) 
         role: 'codie',
         session: 'local_94d65a2a',
     });
-    expect(kept(w)[0]?.members.codie).toBe(CODER_NAME);
+    expect(kept(w)[0]?.members.codie).toBe(CODIE_NAME);
 });
 
 test("a link by an 8-char session prefix keeps the member's registry name", async ($, on) => {
-    const w = world(on, { peers: [coderAt(CODER)] });
+    const w = world(on, { peers: [codieAt(CODIE)] });
     await start($);
     await create($);
     await lane($, {
@@ -1075,13 +1075,13 @@ test("a link by an 8-char session prefix keeps the member's registry name", asyn
         role: 'codie',
         session: 'c0c0c0c0',
     });
-    expect(kept(w)[0]?.members.codie).toBe(CODER_NAME);
+    expect(kept(w)[0]?.members.codie).toBe(CODIE_NAME);
 });
 
 test("after a /clear mints a new session id, the card still shows the member's asks", async ($, on) => {
     const w = world(on, {
-        files: shelf(keptLane({ members: { coder: CODER_NAME } })),
-        peers: [coderAt('n3n3n3n3-after-clear')],
+        files: shelf(keptLane({ members: { codie: CODIE_NAME } })),
+        peers: [codieAt('n3n3n3n3-after-clear')],
     });
     published(w, 'n3n3n3n3-after-clear', [ASK]);
     await start($);
@@ -1091,8 +1091,8 @@ test("after a /clear mints a new session id, the card still shows the member's a
 
 test("a tick on the card reaches the member's session id of now", async ($, on) => {
     const w = world(on, {
-        files: shelf(keptLane({ members: { coder: CODER_NAME } })),
-        peers: [coderAt('n3n3n3n3-after-clear')],
+        files: shelf(keptLane({ members: { codie: CODIE_NAME } })),
+        peers: [codieAt('n3n3n3n3-after-clear')],
     });
     published(w, 'n3n3n3n3-after-clear', [ASK]);
     await start($);
@@ -1107,10 +1107,10 @@ test("a tick on the card reaches the member's session id of now", async ($, on) 
 
 test('two live sessions under one name: the card follows the newer', async ($, on) => {
     const w = world(on, {
-        files: shelf(keptLane({ members: { coder: CODER_NAME } })),
+        files: shelf(keptLane({ members: { codie: CODIE_NAME } })),
         peers: [
-            coderAt('o1o1o1o1-older', { pid: 5001, startedAt: 1 }),
-            coderAt('n2n2n2n2-newer', { pid: 5002, startedAt: 2 }),
+            codieAt('o1o1o1o1-older', { pid: 5001, startedAt: 1 }),
+            codieAt('n2n2n2n2-newer', { pid: 5002, startedAt: 2 }),
         ],
     });
     published(w, 'o1o1o1o1-older', [ASK]);
@@ -1136,7 +1136,7 @@ test('an edit keeps the lane id, its members (old role keys read as the new ones
         files: shelf(
             keptLane({
                 history: [{ act: 'create', at: 1, current: 0, done: 0 }],
-                members: { coder: 'c0c0c0c0-codie' },
+                members: { coder: 'c0c0c0c0-codie' }, // read-both
             }),
         ),
     });
@@ -1256,16 +1256,16 @@ test("a lane-order key a board left before o138 is dropped by clio's stash, neve
     ]).toEqual([false, ['a', 'b', 'c', 'd']]);
 });
 
-/* todo 6 — glide steps itself from the linked coder's plan step (spec exits 3–4) */
+/* todo 6 — glide steps itself from the linked codie's plan step (spec exits 3–4) */
 
-const STEP_VERIFIER = '⚡ 🔎 sixth sense: mods';
+const STEP_SIXTH_SENSE = '⚡ 🔎 sixth sense: mods';
 const NOW = new Date(2026, 9, 11, 18, 30).getTime();
 const stepKey = (name: string) =>
     `lane-step:${name.replaceAll(/[\s\u200d]/g, '')}`;
 const fiveSteps = (done = 0) =>
     ['a', 'b', 'c', 'd', 'e'].map((text, i) => ({ isDone: i < done, text }));
 const coderLane = (over: Partial<KeptLane> = {}) =>
-    keptLane({ items: fiveSteps(), members: { coder: CODER_NAME }, ...over });
+    keptLane({ items: fiveSteps(), members: { codie: CODIE_NAME }, ...over });
 const pointerOf = (w: ReturnType<typeof world>) => {
     const l = kept(w)[0];
     return [
@@ -1276,10 +1276,10 @@ const pointerOf = (w: ReturnType<typeof world>) => {
 };
 
 test("a session's plan step lands in the store under its registry name", async ($, on) => {
-    const w = world(on, { name: CODER_NAME });
+    const w = world(on, { name: CODIE_NAME });
     await start($);
     const r = await lane($, { lines: ['now: b'], op: 'plan', step: 2 });
-    expect([r.deny, w.store.get(stepKey(CODER_NAME))]).toEqual([
+    expect([r.deny, w.store.get(stepKey(CODIE_NAME))]).toEqual([
         undefined,
         { at: NOW, step: 2 },
     ]);
@@ -1287,42 +1287,42 @@ test("a session's plan step lands in the store under its registry name", async (
 
 for (const step of [1.5, -1, '2'])
     test(`a plan step of ${JSON.stringify(step)} is refused in one line`, async ($, on) => {
-        const w = world(on, { name: CODER_NAME });
+        const w = world(on, { name: CODIE_NAME });
         await start($);
         const r = await lane($, { lines: ['now: b'], op: 'plan', step });
-        expect([r.deny, w.store.has(stepKey(CODER_NAME))]).toEqual([
+        expect([r.deny, w.store.has(stepKey(CODIE_NAME))]).toEqual([
             'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
             false,
         ]);
     });
 
-test("the linked coder's step 3 moves the lane while clio idles, and her next prompt hears it once", async ($, on) => {
+test("the linked codie's step 3 moves the lane while clio idles, and her next prompt hears it once", async ($, on) => {
     const w = world(on, { files: shelf(coderLane()) });
-    w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 3 });
+    w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 3 });
     await start($);
     await w.clock.advance(5_000);
     const moved = pointerOf(w);
     await say($, 'hi');
     await say($, 'again');
-    const note = 'lane l1 «kept» moved to step 3 by ☕️ 🔧 coder: mods';
+    const note = 'lane l1 «kept» moved to step 3 by ☕️ 🔧 codie: mods';
     expect([
         moved,
         w.contexts.map((c) => c.filter((x) => x === note).length),
     ]).toEqual([
-        [3, [true, true, true, false, false], [CODER_NAME]],
+        [3, [true, true, true, false, false], [CODIE_NAME]],
         [1, 0],
     ]);
 });
 
 test("a move reaches clio's running turn at her next tool call", async ($, on) => {
     const w = world(on, { files: shelf(coderLane()) });
-    w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 2 });
+    w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 2 });
     await start($);
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
     expect([pointerOf(w)[0], r.context]).toEqual([
         2,
         expect.arrayContaining([
-            'lane l1 «kept» moved to step 2 by ☕️ 🔧 coder: mods',
+            'lane l1 «kept» moved to step 2 by ☕️ 🔧 codie: mods',
         ]),
     ]);
 });
@@ -1333,17 +1333,22 @@ const AT_3 = coderLane({
     items: fiveSteps(3),
 });
 for (const [why, lanes, key, step, shown] of [
-    ['the coder names a step behind the pointer', [AT_3], CODER_NAME, 2],
-    ['the coder names the step count', [AT_3], CODER_NAME, 5],
+    ['the codie names a step behind the pointer', [AT_3], CODIE_NAME, 2],
+    ['the codie names the step count', [AT_3], CODIE_NAME, 5],
     [
-        'the verifier names a step',
-        [{ ...AT_3, members: { coder: CODER_NAME, verifier: STEP_VERIFIER } }],
-        STEP_VERIFIER,
+        'the sixth sense names a step',
+        [
+            {
+                ...AT_3,
+                members: { codie: CODIE_NAME, 'sixth-sense': STEP_SIXTH_SENSE },
+            },
+        ],
+        STEP_SIXTH_SENSE,
         4,
     ],
-    ['an unlinked session names a step', [AT_3], '☕️ 🔧 coder: cli', 4],
-    ['the lane is ended', [{ ...AT_3, endedAt: NOW }], CODER_NAME, 4],
-    ['🛼 glide is switched off', [AT_3], CODER_NAME, 4, false],
+    ['an unlinked session names a step', [AT_3], '☕️ 🔧 codie: cli', 4],
+    ['the lane is ended', [{ ...AT_3, endedAt: NOW }], CODIE_NAME, 4],
+    ['🛼 glide is switched off', [AT_3], CODIE_NAME, 4, false],
 ] as const)
     test(`the pointer stays and the file gains nothing when ${why}`, async ($, on) => {
         const w = world(on, { files: shelf(...lanes) });
@@ -1359,15 +1364,15 @@ for (const [why, lanes, key, step, shown] of [
         ]).toEqual([true, false]);
     });
 
-test("clio's step back holds until the coder names a step again", async ($, on) => {
+test("clio's step back holds until the codie names a step again", async ($, on) => {
     const w = world(on, { files: shelf(coderLane()) });
-    w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 3 });
+    w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 3 });
     await start($);
     await w.clock.advance(5_000);
     await lane($, { act: 'step', current: 1, id: 'l1' });
     await w.clock.advance(5_000);
     const held = pointerOf(w)[0];
-    w.store.set(stepKey(CODER_NAME), { at: NOW + 10_001, step: 2 });
+    w.store.set(stepKey(CODIE_NAME), { at: NOW + 10_001, step: 2 });
     await w.clock.advance(5_000);
     expect([held, pointerOf(w)[0]]).toEqual([1, 2]);
 });
@@ -1507,7 +1512,7 @@ test('a card of seven steps draws all of them with no window label', async ($, o
 
 test('a tick on the card after typing keeps the typed steer, not the published one', async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODER, [ASK]);
+    published(w, CODIE, [ASK]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
@@ -1518,7 +1523,7 @@ test('a tick on the card after typing keeps the typed steer, not the published o
     });
     await ui.press({ key: 'lane:l1:codie:accepted:o3' });
     expect(
-        (w.store.get(`marks:${CODER}:o3`) as { steer?: string })?.steer,
+        (w.store.get(`marks:${CODIE}:o3`) as { steer?: string })?.steer,
     ).toBe('new words');
 });
 

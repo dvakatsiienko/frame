@@ -47,7 +47,7 @@ export function brief(c: Command, ctx: Context): Refusal | undefined {
               }
             : undefined;
     const found = ctx.briefs?.get(file.path);
-    if (!(isNamed || found?.isCoder) || found?.isStamped) return undefined;
+    if (!(isNamed || found?.isCodie) || found?.isStamped) return undefined;
     return {
         door: `x brief check ${file.path} --repo ${dir}, fix what it names, then spawn again`,
         rule: 'brief',

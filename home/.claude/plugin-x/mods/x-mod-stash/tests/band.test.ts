@@ -97,14 +97,14 @@ test('the 🔭 line prints who it waits on in bold', async ($, on) => {
     const ui = await band($);
     await reply(
         $,
-        'pushed.\n\n🔭 waiting on ci — the watcher wakes me\n🔭 waiting on 🔎 verifier',
+        'pushed.\n\n🔭 waiting on ci — the watcher wakes me\n🔭 waiting on 🔎 sixth sense',
     );
     expect(
         (await ui.findAll({ type: 'Text' }))
             .filter((t) => t.props.bold)
             .map((t) => t.text)
-            .filter((t) => ['ci', '🔎 verifier'].includes(t ?? '')),
-    ).toEqual(['ci', '🔎 verifier']);
+            .filter((t) => ['ci', '🔎 sixth sense'].includes(t ?? '')),
+    ).toEqual(['ci', '🔎 sixth sense']);
 });
 
 test('a control character in a reply never reaches the drawn band', async ($, on) => {

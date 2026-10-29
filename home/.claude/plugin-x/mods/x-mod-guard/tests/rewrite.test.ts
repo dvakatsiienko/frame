@@ -83,7 +83,7 @@ const KEPT = [
     "x linear api 'query { viewer { id } }'",
     "echo 'linear api is the raw door'",
     "cat <<'EOF'\nlinear api 'query { viewer { id } }'\nEOF",
-    "x as coder -- linear api 'query { viewer { id } }'",
+    "x as codie -- linear api 'query { viewer { id } }'",
     "x as clio -- linear api 'query { viewer { id } }'",
     'linear issue view FRM-1',
     'gh api repos/x/y/issues',

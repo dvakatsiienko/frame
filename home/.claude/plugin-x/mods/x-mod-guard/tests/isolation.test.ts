@@ -2,7 +2,7 @@ import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 const TREE = '/home/frame/.claude/worktrees/FRM-1-x';
-// cc core's own words for a worktree command it cannot prove stays in the tree (7 seen in coder transcripts)
+// cc core's own words for a worktree command it cannot prove stays in the tree (7 seen in codie transcripts)
 const CORE = `This session is isolated in the worktree ${TREE}, but this command names git in a form too complex to verify that it stays inside the worktree. Refusing to run it — a worktree-isolated session's git operations must target its own worktree.`;
 
 function world(on: On, refuses: boolean) {

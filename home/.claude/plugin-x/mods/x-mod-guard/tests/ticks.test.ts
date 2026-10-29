@@ -140,7 +140,7 @@ test('a tick quoting another pr proves nothing for this one', async ($, on) => {
 });
 
 // FRM-427 slice 06 (o197): a sign lands only on dima's tick on a sign ask, `✍️ sign <id>: <title>`, the id whole;
-// refused since the verifier's clean (round 2), the refusal naming the sign ask to tick
+// refused since the sixth sense's clean (round 2), the refusal naming the sign ask to tick
 const signFlagged = (r: { deny?: string }) =>
     (r.deny ?? '').includes('then sign');
 const SIGN = 'x linear set FRM-1 --add-label signed';
@@ -211,7 +211,7 @@ test('the o4/o9 replay: one tick quoting a guarded target and a pr passes both d
 
 // review round 1: the merge-auto flag lands only on a plain call, never past a compound one's other refusals; a sign's
 // label and body each take the tick once; a target counts only quoted in backticks
-// verifier round 1: the flag lands right after the merge-auto call's own words, never past `&&` or a comment
+// sixth sense round 1: the flag lands right after the merge-auto call's own words, never past `&&` or a comment
 for (const [typed, want] of [
     [
         'x lane merge-auto 104 --apply && echo merged',
@@ -232,7 +232,7 @@ for (const [typed, want] of [
         expect(ran).toEqual([want]);
     });
 
-// verifier round 1: the tick's url names this repo — the cwd's origin, or the call's --repo
+// sixth sense round 1: the tick's url names this repo — the cwd's origin, or the call's --repo
 for (const [why, text, typed, isRun] of [
     [
         'another repo, same number',
@@ -301,7 +301,7 @@ for (const [age, isRun] of [
         ]);
     });
 
-// dima's tick on the verifier's ask (14:59): a tick unlocks a guarded command only when its ask quotes that whole
+// dima's tick on the sixth sense's ask (14:59): a tick unlocks a guarded command only when its ask quotes that whole
 // command, never just a target the refusal names
 for (const [quoted, isRun] of [
     ['git push origin main', false],

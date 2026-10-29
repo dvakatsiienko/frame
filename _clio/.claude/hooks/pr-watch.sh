@@ -6,8 +6,8 @@
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
 # notice, so its brief ends by pushing its report there (x:crew-cloud). silence is the normal state.
 # a line starting «~ » is quiet: watch-once logs it and never wakes on it (the new-commit line: sixth sense handles the head).
-# the watch belongs to the pr, never to the coder that opened it (2026-09-28: #112 sat green 30 min
-# after its coder's watch was stopped). a «ready» needs the verifier's clean on that very head: a pr whose
+# the watch belongs to the pr, never to the codie that opened it (2026-09-28: #112 sat green 30 min
+# after its codie's watch was stopped). a «ready» needs sixth sense's clean on that very head: a pr whose
 # verified sha (written by sixth sense, `--verified`) differs prints «unverified delta» instead (#82 merged
 # two commits past its clean, FRM-380); a pr with no sixth sense record prints «ready» as before.
 

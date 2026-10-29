@@ -14,7 +14,7 @@ const SLUG = 'mods-l14-2';
 // `during` runs inside the compact, as a turn end that lands while it works would
 function world(
     on: On,
-    name = '☕️ 🔧 coder: mods',
+    name = '☕️ 🔧 codie: mods',
     handoffs = [SLUG],
     during?: () => Promise<unknown>,
 ) {
@@ -103,7 +103,7 @@ const ready = ($: Engine, slug?: string, pending: string | null = 'none') =>
     } as never) as Promise<{ deny?: string; result?: unknown }>;
 
 const DIMAS_WORDS =
-    'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
+    'a second wind is a graceful context refresh, a request, never urgent — the session and its codies resolve every subagent and park everything before the compact, so nothing is lost.';
 
 const notes = (lines: string[]) => lines.filter((l) => l.includes('🐦‍🔥'));
 
@@ -144,7 +144,7 @@ const INIT_LIST =
     /first first-act is your role's init list.*x:crew-codie, x:crew-dna read whole.*plugin-authoring.*clio: her boot/;
 
 for (const [who, name] of [
-    ['a coder', undefined],
+    ['a codie', undefined],
     ['clio', '🦉 clio'],
 ] as const)
     test(`${who}'s note makes the handoff open with the role's init list`, async ($, on) => {
@@ -367,11 +367,11 @@ test('the op refuses a pending that names work, saying what is pending, and noth
 });
 
 for (const [who, isOwner] of [
-    ['a coder', false],
+    ['a codie', false],
     ['clio', true],
 ] as const)
     test(`${who}'s second wind note carries dima's words whole`, async ($, on) => {
-        const w = world(on, isOwner ? '🦉 clio' : '☕️ 🔧 coder: mods');
+        const w = world(on, isOwner ? '🦉 clio' : '☕️ 🔧 codie: mods');
         w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
         await start($);
         await say($);

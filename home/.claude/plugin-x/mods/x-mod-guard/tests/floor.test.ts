@@ -59,9 +59,9 @@ const FAMILIES = [
     ],
     [
         'force-with-lease',
-        'git push --force-with-lease origin coder/x',
+        'git push --force-with-lease origin codie/x',
         'x lane rebase-main',
-        'origin coder/x',
+        'origin codie/x',
     ],
     ['git branch -D', 'git branch -D old', 'ask clio', 'old'],
     [

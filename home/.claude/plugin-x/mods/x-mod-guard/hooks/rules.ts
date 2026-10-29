@@ -386,7 +386,7 @@ const TICKET = /^(FRM|BYT)-\d+$/;
 export const isSignAsk = (text: string, id: string) =>
     new RegExp(`(^|\\s)✍️ sign ${id}:`, 'u').test(text);
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`; a bare `#<n>`
-// or another repo's pr of the same number proves nothing (FRM-427, verifier round 1)
+// or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1)
 export const quotesPr = (text: string, repo: string, pr: string) =>
     text.includes(`github.com/${repo}/pull/${pr}`) &&
     !new RegExp(`github\\.com/${repo}/pull/${pr}\\d`).test(text);

@@ -1479,7 +1479,7 @@ test('a ticket id in an ask opens its linear page', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
-    await add($, ['close FRM-381 after the verifier', 'yes']);
+    await add($, ['close FRM-381 after the sixth sense', 'yes']);
     expect(await hrefs(ui)).toContain('https://linear.app/x-com/issue/FRM-381');
 });
 
@@ -2376,7 +2376,7 @@ test("a closed ask leads with its word's emoji: dropped 🗑️, started ▶️,
     expect(
         [
             'dropped: superseded by o58',
-            'queued for the mods coder',
+            'queued for the mods codie',
             'started',
             'landed',
             'applied, quote gate clean',
@@ -2729,7 +2729,7 @@ test("held member pings come back when clio's session is resumed in a new proces
     const state = stateOf(on);
     await start($);
     const held = {
-        held: [{ at: 1, from: '☕️ 🔧 coder: mods', text: 'step 2 landed' }],
+        held: [{ at: 1, from: '☕️ 🔧 codie: mods', text: 'step 2 landed' }],
     };
     state.set('quiet', held);
     await quit($);

@@ -33,7 +33,7 @@ export type Context = {
     helped?: Set<string>;
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
-export type Brief = { isCoder: boolean; isStamped: boolean };
+export type Brief = { isCodie: boolean; isStamped: boolean };
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }

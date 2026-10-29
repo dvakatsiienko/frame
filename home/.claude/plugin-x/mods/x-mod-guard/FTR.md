@@ -304,7 +304,7 @@
   - given a `SendMessage` to a session whose name carries `🔧`, `🔎`, `codie` or `sixth sense` (or the older `coder`, `verifier`), with no `.scratch/<feature>/spec.md` path, holding lines that open with an item number (`1.` or `1)`) outside a code fence: 1 or more when it names a ticket (`FRM-N`, `BYT-N`), 3 or more when it names none
   - when x-mod-guard reads it
   - then it is refused unsent: «a lane job goes through a spec (clio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
-  - given no item, 1 or 2 items with no ticket, a list or a ticket in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), a session not named codie or sixth sense, or a sender that is itself a coder or verifier (its findings, its «final»), then it is sent
+  - given no item, 1 or 2 items with no ticket, a list or a ticket in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), a session not named codie or sixth sense, or a sender that is itself codie or sixth sense (its findings, its «final»), then it is sent
   - decision: refuse: the warn stage ran until FRM-425's sixth sense clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open — a message is never stopped by a broken check
 

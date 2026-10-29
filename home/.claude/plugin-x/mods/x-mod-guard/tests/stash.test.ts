@@ -90,7 +90,7 @@ const swept = (context: readonly string[] | undefined) =>
             l.includes('git stash push -u -- <your paths>'),
     ).length;
 
-// refused since its verifier's clean (FRM-428 round 2): nothing runs, the refusal names the door
+// refused since its sixth sense's clean (FRM-428 round 2): nothing runs, the refusal names the door
 const SWEEPS = [
     'git stash',
     'git stash -u',

@@ -57,7 +57,7 @@ test("clio cd'd into ~/frame still gets the note at the 8th edit", async ($, on)
     expect(notes).toEqual([8]);
 });
 
-test("a coder cd'd into clio's dir gets no note", async ($, on) => {
+test("a codie cd'd into clio's dir gets no note", async ($, on) => {
     world(on, '/home/frame/_clio', '/home/frame');
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/x/a.ts');

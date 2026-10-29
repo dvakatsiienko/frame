@@ -103,7 +103,7 @@ const PREFIX = 'asks:';
 const KEPT = 'kept:';
 const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 // `succ:<old id>` → the id a /clear continued under, so a lane linked by a session id follows it (todo 21: a clear left
-// the l14 card on the coder's old id, its asks gone from the card); dropped a week after it was written
+// the l14 card on the codie's old id, its asks gone from the card); dropped a week after it was written
 const SUCC = 'succ:';
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
@@ -340,8 +340,8 @@ const LANE_OWNER = '🦉 clio';
 const LANE_ROLES = ['codie', 'sixth-sense'] as const;
 // read-both: lanes linked before the 10-29 rename keep the old role keys; both words resolve
 const LANE_ROLE_OLD: Record<string, (typeof LANE_ROLES)[number]> = {
-    coder: 'codie',
-    verifier: 'sixth-sense',
+    coder: 'codie', // read-both
+    verifier: 'sixth-sense', // read-both
 };
 const LANE_MAX = 7;
 const LANE_TEXT_MAX = 60;
@@ -667,7 +667,7 @@ const WIND_SAY = {
 } as const;
 const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 export const WIND_WORDS =
-    'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
+    'a second wind is a graceful context refresh, a request, never urgent — the session and its codies resolve every subagent and park everything before the compact, so nothing is lost.';
 const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (sixth sense's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
 // clio's good stop is todo 16's nine steps (dima, 10-13)
 const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
@@ -3490,7 +3490,7 @@ const COLUMNS = {
 } as const;
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
-// a member is the name's last word: a coder named «… + crow at decisions» is not crow (2026-10-10)
+// a member is the name's last word: a codie named «… + crow at decisions» is not crow (2026-10-10)
 const isCoordinator = (name: string) => /(^|\s)clio$/.test(name);
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 const pinOf = (name: string) =>
@@ -4896,6 +4896,7 @@ export const register: Register = (on) => {
                     ) =>
                         kept[card] ??
                         /^(lane:[^:]+:(codie|sixth-sense|coder|verifier)|quiet:.+)$/.test(
+                            // read-both
                             card,
                         );
                     const flipFold = async (card: string) => {

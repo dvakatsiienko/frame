@@ -19,7 +19,7 @@ import {
 import { isOwnRepo } from './hazard.ts';
 import { rewrite } from './rewrite.ts';
 
-// a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 verifier, the
+// a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 sixth sense, the
 // 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds
 const STASH_READS = new Set([
     'list',

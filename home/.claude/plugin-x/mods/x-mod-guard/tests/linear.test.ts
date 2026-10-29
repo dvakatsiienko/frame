@@ -6,7 +6,7 @@ import { liveStore } from './store.ts';
 // FRM-398: a member reads and comments on tickets through x linear; the raw cli is refused with the door named
 const SID = 'm1m1m1m1-0000';
 
-function world(on: On, name: string | null = '☕️ 🔧 coder') {
+function world(on: On, name: string | null = '☕️ 🔧 codie') {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
@@ -82,7 +82,7 @@ test('a session the registry does not list runs it, fail open', async ($, on) =>
 
 for (const typed of [
     'x linear read FRM-1 --comments --relations',
-    'x linear comment FRM-1 --as coder --body-file f.md',
+    'x linear comment FRM-1 --as codie --body-file f.md',
     "echo 'linear issue view FRM-1'",
     'linear issue list',
 ])

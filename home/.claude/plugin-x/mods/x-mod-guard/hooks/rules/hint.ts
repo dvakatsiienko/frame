@@ -21,7 +21,7 @@ const LANE_HINT =
 const JQ_HINT =
     'x-mod-guard hint: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`';
 // PK-67 (the 10-11 halt flush): a scripted replace into a repo file skips the format and hold hooks Edit fires (5 slips
-// on 10-11); zsh's echo reads backslash escapes inside json (two verifiers); `claude -p` in a `while read` loop eats the
+// on 10-11); zsh's echo reads backslash escapes inside json (two sixth senses); `claude -p` in a `while read` loop eats the
 // loop's stdin (the 15:41 dima-caught)
 const EDIT_HINT =
     'x-mod-guard hint: a hand edit to a repo file goes through `Edit` — it fires the format and hold hooks a scripted replace skips; a bulk change across many files may stay one script';

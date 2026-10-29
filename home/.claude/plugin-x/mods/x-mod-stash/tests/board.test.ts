@@ -561,7 +561,7 @@ test('a row shows 🤫 n while its session holds n member pings, nothing at 0', 
 
 test('🤫 n opens the held pings: sender, age, first line', async ($, on) => {
     fleet(on, {
-        [`quiet-held:${HERE}`]: [held('🔎 verifier', 'round 2 clean', 3)],
+        [`quiet-held:${HERE}`]: [held('🔎 sixth sense', 'round 2 clean', 3)],
     });
     const ui = await board($);
     const closed = (await ui.findAll({ type: 'Text' })).some((t) =>
@@ -573,7 +573,7 @@ test('🤫 n opens the held pings: sender, age, first line', async ($, on) => {
     )?.text;
     expect([closed, line]).toEqual([
         false,
-        '🤫 🔎 verifier · 3m ago: round 2 clean',
+        '🤫 🔎 sixth sense · 3m ago: round 2 clean',
     ]);
 });
 
@@ -1370,7 +1370,7 @@ test('no member dot equals a state tint: ok, warn, hot, calm or accent', () => {
 });
 
 test('every dot comes from the palette, the same name keeping the same hue', () => {
-    const names = ['🦉 clio', '☕️ 🔧 coder', '🐦 ⬛ crow'];
+    const names = ['🦉 clio', '☕️ 🔧 codie', '🐦 ⬛ crow'];
     const hues = huesOf(names);
     expect([
         hues.every(
@@ -1682,7 +1682,7 @@ test('no quiet-comms card draws on clio’s board, with pings held and a gap ope
 });
 
 // FRM-412 exit 3: the cause of «holds 0» — a member renamed from ☕️ to 🌗 logged under both names, and the ledger
-// matched the log's name to the registry's exactly (10-22: 4 lines as ☕️, 9 as 🌗 for one coder)
+// matched the log's name to the registry's exactly (10-22: 4 lines as ☕️, 9 as 🌗 for one codie)
 test('a member whose mode emoji changed keeps its logged pings counted: no gap', async ($, on) => {
     const { clock, store } = fleet(
         on,

@@ -41,15 +41,15 @@ const bash = ($: Engine, command: string) =>
     $.tool.call({ command, tool: 'Bash' });
 
 const SPAWN =
-    'claude --bg -n coder --model opus "$(cat briefs/b.md)" --remote-control';
+    'claude --bg -n codie --model opus "$(cat briefs/b.md)" --remote-control';
 
-test('a coder spawn whose brief file has a stamp runs', async ($, on) => {
+test('a codie spawn whose brief file has a stamp runs', async ($, on) => {
     const w = world(on, { '/repo/briefs/b.md': BRIEF, [STAMP]: '{}' });
     expect((await bash($, SPAWN)).deny).toBeUndefined();
     expect(w.ran).toEqual([SPAWN]);
 });
 
-test('a coder spawn whose brief changed after its check is refused with the check door', async ($, on) => {
+test('a codie spawn whose brief changed after its check is refused with the check door', async ($, on) => {
     const w = world(on, {
         '/repo/briefs/b.md': BRIEF.replace('thing', 'thinG'),
         [STAMP]: '{}',
@@ -59,11 +59,11 @@ test('a coder spawn whose brief changed after its check is refused with the chec
     expect(w.ran).toEqual([]);
 });
 
-test('a coder spawn with the brief inline is refused, asking for a brief file', async ($, on) => {
+test('a codie spawn with the brief inline is refused, asking for a brief file', async ($, on) => {
     const w = world(on, {});
     const r = await bash(
         $,
-        "claude --bg -n coder '/x:crew-codie FRM-1 build the thing' --remote-control",
+        "claude --bg -n codie '/x:crew-codie FRM-1 build the thing' --remote-control",
     );
     expect(r.deny).toContain('write the brief to a file');
     expect(w.ran).toEqual([]);
@@ -76,7 +76,7 @@ test('a claude --bg without /x:crew-codie runs', async ($, on) => {
     expect(w.ran).toEqual([command]);
 });
 
-test('a coder spawn ending in a dima-ok marker runs', async ($, on) => {
+test('a codie spawn ending in a dima-ok marker runs', async ($, on) => {
     const w = world(on, {});
     const command =
         "claude --bg '/x:crew-codie FRM-1 fix' # dima-ok: inline-brief one-line hotfix";
@@ -87,7 +87,7 @@ test('a coder spawn ending in a dima-ok marker runs', async ($, on) => {
 
 test('a brief read through < whose file names /x:crew-codie is checked', async ($, on) => {
     const w = world(on, { '/repo/b.md': BRIEF });
-    const r = await bash($, 'cd /repo && claude --bg -n coder < b.md');
+    const r = await bash($, 'cd /repo && claude --bg -n codie < b.md');
     expect(r.deny).toContain('x brief check /repo/b.md --repo /repo');
     expect(w.ran).toEqual([]);
 });

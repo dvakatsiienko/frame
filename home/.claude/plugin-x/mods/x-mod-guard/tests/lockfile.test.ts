@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-// FRM-393: `CI=1` freezes pnpm's lockfile; a dep change under it ships half. warn-only until a verifier says clean (o70)
+// FRM-393: `CI=1` freezes pnpm's lockfile; a dep change under it ships half. warn-only until a sixth sense says clean (o70)
 function world(on: On, changed: string[] = []) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);

@@ -111,7 +111,7 @@ live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"
 for repo in bytes frame; do
-  prs=$(gh pr list -R "dvakatsiienko/$repo" --limit 200 --json number,title,headRefName --jq '.[] | select(.headRefName | test("^(codie|coder)/")) | "#\(.number) \(.headRefName) — \(.title)"' 2>/dev/null) || { fail "gh unreachable for $repo"; continue; }
+  prs=$(gh pr list -R "dvakatsiienko/$repo" --limit 200 --json number,title,headRefName --jq '.[] | select(.headRefName | test("^(codie|coder)/")) | "#\(.number) \(.headRefName) — \(.title)"' 2>/dev/null) || { fail "gh unreachable for $repo"; continue; } # read-both
   [ -n "$prs" ] && echo "$repo codie prs: $prs" || echo "$repo: no open codie prs"
 done
 
@@ -311,7 +311,7 @@ done
 # the running build, read from its own path: the desktop app bundles its own cc, so `claude --version` names the cli's, not this one
 ver=$(printf '%s' "$args" | grep -oE '(claude-code|versions)/[0-9]+\.[0-9]+\.[0-9]+' | head -1 | cut -d/ -f2)
 [ -n "$born" ] && echo "process $pid up ${age} (since ${born}) · cc ${ver:-unknown}" || echo "process: not found in the parent chain"
-# a `--bg` coder claims the daemon's pre-warmed spare; a day-old spare booted one without the repo AGENTS.md (2026-09-22)
+# a `--bg` codie claims the daemon's pre-warmed spare; a day-old spare booted one without the repo AGENTS.md (2026-09-22)
 live_pids=$(jq -r '.pid // empty' "$HOME"/.claude/sessions/*.json 2>/dev/null)
 spares=0
 while read -r spid slstart; do

@@ -3,7 +3,7 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { liveStore } from './store.ts';
 
-// FRM-389 exit 7: a raw plugin update names x plugin bump, every session's door; warn-only until its verifier
+// FRM-389 exit 7: a raw plugin update names x plugin bump, every session's door; warn-only until its sixth sense
 const SID = 'p1p1p1p1-0000';
 const DOOR = 'x plugin bump --apply <plugin>';
 
