@@ -41,7 +41,7 @@ the four vectors of the brief, in dima's wording, as written there:
 
 ### analysis
 
-- the flawlog `#dima-caught` lines since the last run: the verifier's true finds, false alarms and misses
+- the flawlog `#dima-caught` lines since the last run: sixth sense's true finds, false alarms and misses
 - **doors** (dima, 2026-10-07: «this is very useful data. how/where to automate this check?») — raw calls per external cli (`linear api`, `gh api`, `curl`, inline python) classified by operation; each class is a verb candidate. plus:
   - repeated chains: the same 2–3 command sequence across sessions
   - Bash writes: heredoc and python edits that skip `Edit`/`Write` and their hooks

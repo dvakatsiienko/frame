@@ -6,7 +6,7 @@ description: Load BEFORE any `gh pr` / `gh issue` command, before writing a PR t
 # github contributions
 
 conventions for pull requests and issues — the `gh` mechanics under the lanes in `x:cmt` and
-`x:crew-codie` (a coder's assignment lands as a PR by default; dima's own lane is `main`).
+`x:crew-codie` (codie's assignment lands as a PR by default; dima's own lane is `main`).
 
 ## pull requests
 
@@ -27,7 +27,7 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   against the source; fix real ones, dismiss false positives with a written reason; fix CI
   failures, distinguishing real breaks from infra flakes. nothing new → stay quiet. stop when
   the bots are green on the latest commit.
-- **the ci reviewer reads the diff and runs nothing** — no `node`, no tests. it finds reading bugs the verifier misses; the verifier stays the runtime check.
+- **the ci reviewer reads the diff and runs nothing** — no `node`, no tests. it finds reading bugs sixth sense misses; sixth sense stays the runtime check.
 - **the ci reviewer lands its verdict by editing its «working…» comment in place** — a watcher keyed on `created_at` never sees it; key on `updated_at`. `x gh pr --since` times a comment by its last edit.
 - **reading a reviewer, measured 2026-09-11**: the ci reviewer posts to a different endpoint per
   round — read all three (`issues/N/comments`, `pulls/N/reviews`, `pulls/N/comments`; `x gh pr <n>`
@@ -39,7 +39,7 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   reviewer on this head; the guard publishes `review:clean`, the required check on main —
   never created = blocked. a later push leaves it stale — `x lane review <pr>` names the judged commit and
   counts the rounds (one per pr, at «final»); past that round it names clio's approval on dima's
-  account after the verifier's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
+  account after sixth sense's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed (#79, two rounds
   with verdict lines); only a pr that edits `claude.yml` itself is unproven.

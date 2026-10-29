@@ -1,4 +1,4 @@
-# a stacked lane — read when the coder's pr is a stack layer
+# a stacked lane — read when codie's pr is a stack layer
 
 stacked prs are on trial (`docs/test-drive/stacked-prs.md`): the lane exists to measure them, so what the stack costs your rounds is data.
 

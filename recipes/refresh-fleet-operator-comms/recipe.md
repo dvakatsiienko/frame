@@ -71,7 +71,7 @@ dima, 2026-10-10: «after we run this recipe first time, i get the most meaningf
 - **pushback by published kind**: correction, rejection, failure report, comparable with the SWE-chat rates
 - **status lines vs his status-check prompts**: do the trackers answer «are bg agents ok?» before he asks
 - **re-asks against recorded decisions**: a re-ask matched to the pocket's decisions and memory, so the decision log gets consulted
-- **member reports that reach him**: the length of coder and verifier reports in his thread (an output style never reaches them)
+- **member reports that reach him**: the length of codie and sixth sense reports in his thread (an output style never reaches them)
 
 ### cut
 

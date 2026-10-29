@@ -168,7 +168,7 @@ dima, 2026-08-27, the purpose:
         - **a file changed after its groom** — its size on disk off its recorded after by more than 2 %: the lines added since the groom (`git log --since=<groom date> -p -- <file>`) get the lenses, the line its new bytes
         - **a file no line names** — born, moved or renamed during the sweep; each groomed or verdicted
         - the skills' verdicts live in the groom list's skills section, so one file holds every verdict
-      - **10.3 vertical rebucket**: a cross-file duplicate scan (a sentence of ≥12 words in 2+ resident or skill files); resident lines only one surface needs (clio-only in `rules/`, coder-only in root); skill lines restating resident memory — keep, move down, or cut
+      - **10.3 vertical rebucket**: a cross-file duplicate scan (a sentence of ≥12 words in 2+ resident or skill files); resident lines only one surface needs (clio-only in `rules/`, codie-only in root); skill lines restating resident memory — keep, move down, or cut
     - **the human gate**: pruning is never delegated; candidates go out as a digest:
       - ≤5 clusters per halt, related lines together; each line: the text quoted, why it goes (the kind above), the evidence (a grep, a ticket state, the guard's name, a load count), where the reason survives
       - dima answers per line: **yes** / **keep** / **later** — no «approve all», silence changes nothing

@@ -48,8 +48,8 @@ Every decision is one of three:
   chunk's `## signed` carries `merge: pre-approved`
 - **taste** → build one default, flag it for the report
 
-- a mods chunk starts as a desktop thread like any mods coder (`x:crew-lead` § the doors), never `--bg`
-- a coder's premise doubt is built and flagged the same minute, never found at review
+- a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
+- codie's premise doubt is built and flagged the same minute, never found at review
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
 - **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
@@ -70,7 +70,7 @@ In the plan file, then one chat message:
   - **what waited on dima**: each wait, and how it resolved — his word, or a decision of clio's with its reason
   - **compactions**: count, and what survived each
   - **failures**: ci, keys, access, permissions, the 5h window — each with its state now
-  - **merging**: count, and anything a checkup or a verifier held
+  - **merging**: count, and anything a checkup or a sixth sense held
   - **retros**: filed per member
   - **the flow**: planning, briefs, comms — good and off, with the fix for each off
   - **ticket readiness**: which tickets ran straight, which exit lines were rewritten mid-lane and why

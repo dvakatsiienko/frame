@@ -4,7 +4,7 @@ description: load on dima's «prep», «sign», «re-sign», «grill <ticket>»,
 
 # /clio:shape-lane — dima's ✍️ sign on a chunk
 
-dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». this is his part of lane init: a grill that ends in his ✍️ sign. the machine part — the spec, the exit lines, the spawn — is `clio:shape-lane-dispatch`; the contract (the states, where each thing lives, re-sign, a lane per milestone) is `craft-fleet-flow` § lane init.
+dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». this is his part of lane init: a grill that ends in his ✍️ sign. the machine part — the spec, the exit lines, the summon — is `clio:shape-lane-dispatch`; the contract (the states, where each thing lives, re-sign, a lane per milestone) is `craft-fleet-flow` § lane init.
 
 it runs over any ticket: a safety-net re-grill after `clio:shape-idea`, the real shaping for a ticket born without it.
 

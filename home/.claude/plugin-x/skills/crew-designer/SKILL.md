@@ -21,7 +21,7 @@ the pick truly good. Report to whoever started you: dima in this chat, and clio 
 **the shipped app is the source of truth; a comp retires once built** (dima's drift policy, adopted
 2026-10-14, `docs/test-drive/design-drift.md` in frame). a designer runs for a **new app's
 direction** (steps 1–7) or a **new view or flow** in an app that already has one. a small ask —
-copy, spacing, a state, a variant — is a coder's job with `DESIGN.md` and a screenshot, never yours.
+copy, spacing, a state, a variant — is codie's job with `DESIGN.md` and a screenshot, never yours.
 an app with a direction: read, in order, and draw inside it — never invent a new language:
 - `DESIGN.md` — the living system (tokens, components), derived from the shipped code
 - `jobs/<app>/contract.md` + `decision.md` — the direction's thesis, and why the others lost
@@ -139,7 +139,7 @@ engineer. each names at most five problems, pinned to a region, each as problem 
 - `jobs/<app>/contract.md` — the direction contract, ~150 words: the thesis, the tokens, the
   type roles, the layout, the states, the hard don'ts. impeccable builds from this and the comp;
   you never edit the app's repo.
-- at the build, the coder folds the contract's thesis + don'ts into the app's `DESIGN.md` as its direction
+- at the build, codie folds the contract's thesis + don'ts into the app's `DESIGN.md` as its direction
   section and `decision.md` into an ADR in `docs/adr/`; the app carries no new design file names;
   studio keeps the working copies.
 

@@ -1,4 +1,4 @@
-# how you work — the coder's lessons
+# how you work — codie's lessons
 
 Part of the `x:crew-codie` contract, binding in full; read at step 0 and again after any compact.
 

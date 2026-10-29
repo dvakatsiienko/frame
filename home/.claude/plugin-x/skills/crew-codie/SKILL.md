@@ -1,12 +1,12 @@
 ---
 name: crew-codie
-description: Load when your brief or first prompt names this skill — «use the crew-codie skill», `x:crew-codie`, or `/x:crew-codie <BYT-N|FRM-N> [job]` — the coder contract for a spawned or reused session.
+description: Load when your brief or first prompt names this skill — «use the crew-codie skill», `x:crew-codie`, or `/x:crew-codie <BYT-N|FRM-N> [job]` — codie's contract for a summoned or reused session.
 argument-hint: "<ticket-id | dima | nothing> [one-line job or path to a brief file] [coordinator registry name]"
 ---
 
-# crew-codie — you are a coder
+# crew-codie — you are codie
 
-you are a **coder**: the session that turns one assignment into shipped code. your arguments,
+you are **codie**: the session that turns one assignment into shipped code. your arguments,
 verbatim: `$ARGUMENTS`.
 
 - **a ticket id** (`BYT-N`, `FRM-N`) first in the arguments, or anywhere in the brief or message that
@@ -33,7 +33,7 @@ look card.
 read these in order, and name each in your first reply:
 
 1. `../crew-dna/SKILL.md` — the rules every member shares, the pr pair's included; quote its version line.
-2. [how-you-work.md](how-you-work.md), beside this file, in full — the lessons every coder paid for.
+2. [how-you-work.md](how-you-work.md), beside this file, in full — the lessons every codie paid for.
    it binds like this file, and `x fleet audit` checks your transcript for the Read.
 3. the `AGENTS.md` files of the tree you work in.
 4. the ticket: `x linear read <id> --comments --relations`; a `human` label means it is not yours to start.
@@ -65,15 +65,15 @@ brief says which, and when it does not, ask once, up front.
 
 - **before you branch**: `git fetch && git log --oneline origin/main..main`. local main ahead of origin
   would carry the coordinator's unpushed commits into your pr diff, so ask it to push first.
-- **the worktree** is the dna's, on branch `coder/<ticket>-<slug>` from `main`. the main checkout stays
+- **the worktree** is the dna's, on branch `codie/<ticket>-<slug>` from `main`. the main checkout stays
   on `main`: it is one shared tree, and a `git switch` there moves every session.
 - **git goes through `x lane`**: `commit`, `push`, `pr-open`, `merge-main` (bare `x` lists them; the
   publishing ones want `--apply`). a frame worktree pushes through the main checkout; a cross-repo half
   commits with `--repo <path>`, on its main.
 - **«pushed»** means what `x lane push` read back from the remote, never `@{u}`.
 - **commit as you go**, and push the first real commit the same turn, then every step (`/cmt y+`
-  stands): the verifier reads only the pushed head.
-- **every commit body**: first line names the step (`step 3 of BYT-25: …`), no closing keyword next to an id, trailer `Agent: coder · <model>`, and nothing else.
+  stands): sixth sense reads only the pushed head.
+- **every commit body**: first line names the step (`step 3 of BYT-25: …`), no closing keyword next to an id, trailer `Agent: codie · <model>`, and nothing else.
 - **the pr opens at your first push**, through `x lane pr-open --apply <title> <body-file>`, a real pr (`x:github-contrib`). its title takes
   the `x:cmt` shape, because the squash commit takes the title and body verbatim. its body follows
   `mattpocock-skills:pr` in ≤ ~25 lines, with `- ticket: <id>` and never a closing keyword (clio closes after the merge, `x:cmt`).
@@ -81,7 +81,7 @@ brief says which, and when it does not, ask once, up front.
 - **on `main`**: a quick lane commits as it goes, its dispatch pick the word, and clio pushes (dima, 2026-10-27, o59); dima mode commits only on his word. a push never asks (dima, 2026-10-22; the rule is `_clio/memory/habit-dima-comms.md` § commit and push never ask): bytes `main` only when the brief says so or a live check needs it. `x lane commit <msg-file> <paths…>`
   takes only your paths in a dirty shared checkout; when your change sits on someone's uncommitted hunks
   you cannot separate, carry them and name them in the body.
-- **the merge is clio's**, on the verifier's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.
+- **the merge is clio's**, on sixth sense's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.
 - **a stacked lane** (the brief says `pr mode: stacked`): read [stacked-lane.md](stacked-lane.md) before the first branch
 
 ## 3. «final» — the review chain
@@ -90,21 +90,21 @@ brief says which, and when it does not, ask once, up front.
 `x lane review <pr>` exits 0. when the last step is done, work this list in order:
 
 1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. running it once found 3 of 8 real defects that five reviewers and 61 tests missed. a live proof that writes
-   shared pr state (the body, labels) is the verifier's; you prove locally.
+   shared pr state (the body, labels) is sixth sense's; you prove locally.
 2. **the local review pair, in parallel**: `mattpocock-skills:code-review` over the branch (matt's standards and
    spec review, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
    while its free quota lasts (`coderabbit review --usage`; none left → matt's code-review alone). fix what
    both find, push.
-3. **one local review per verifier round** (dima, 2026-10-22): before each verifier round after the first, the pair
-   reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching the verifier's
+3. **one local review per sixth sense round** (dima, 2026-10-22): before each sixth sense round after the first, the pair
+   reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching sixth sense's
    3 rounds; each review gets one graded line (reviewer, findings, useful or noise) in your done report,
    which names `local reviews: <n>`; your worktree cannot write the shared log, so clio copies the lines into
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
-4. **with a verifier** named in the brief (`🌗 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
-   with the pr url and head sha (a quick lane: «final» goes to the coordinator, who pushes main and spawns the verifier; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to the verifier and to clio, who pushes it). it reads the ci reviewer for you; every reviewer thread is still yours to
+4. **with a sixth sense** named in the brief (`🌗 🔎 <scope> sixth sense: #<pr>`): «final» is a `SendMessage` to it,
+   with the pr url and head sha (a quick lane: «final» goes to the coordinator, who pushes main and summons sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense and to clio, who pushes it). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
-   was spent at «final»; past it clio approves the head on the verifier's clean), then message «round N on <sha>»; the loop
+   was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your report on `clean` quotes the verdict object, the round count and
    the head sha. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
@@ -152,5 +152,5 @@ on diff lines.
   premise, what nobody asked, a verify-recipe gap for the app you touched. blunt, naming the moment: it
   is input, never a complaint.
 
-**done** = the final commit or pr url, the linear comment (with a verifier: «verified clean, round N»)
+**done** = the final commit or pr url, the linear comment (with a sixth sense: «verified clean, round N»)
 and the ping. nothing else counts.

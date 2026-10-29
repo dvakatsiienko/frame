@@ -113,7 +113,7 @@ between. a release post on the project's blog beats the github release body when
 - **breaks** — nothing we use | <what>, <where>
 - **since** — <prev> shipped <date>, <n> months ago
 - 🔬 **deep** — 2–4 sentences with numbers. [source](url)
-- ➡️ merge | coder | hold
+- ➡️ merge | codie | hold
 
 🟠 <pkg> <from> → <to> — [repo #N](url), ci ✅
 - **brings** — …
@@ -141,7 +141,7 @@ between. a release post on the project's blog beats the github release body when
 ```
 
 - the labels are fixed words in a fixed order so his eye lands on the same spot per card.
-- a red ci on any tier → ⚠️ on the card and ➡️ coder. age ≥ 7 days unmerged → `⏳ 9d` before
+- a red ci on any tier → ⚠️ on the card and ➡️ codie. age ≥ 7 days unmerged → `⏳ 9d` before
   the name; the number is the reminder.
 - **pick, never paste.** the facts are the few a reader would want from the whole range; the
   release page is one click for the rest.

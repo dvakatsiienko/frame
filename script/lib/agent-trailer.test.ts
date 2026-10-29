@@ -8,8 +8,10 @@ describe('roleFor', () => {
         ['🦉 clio (fork)', 'clio-side'],
         ['🦉 clio (fork 2)', 'clio-side'],
         ['🦉 clio (side)', 'clio-side'],
-        ['☕️ 🔧 BYT-100 code: review gate', 'coder'],
-        ['☕️ 🔎 BYT-100 verify: #125', 'verifier'],
+        ['⚡ 🔧 codie: BYT-100', 'codie'],
+        ['☕️ 🔧 BYT-100 code: review gate', 'codie'],
+        ['🌗 🔎 cli lane sixth sense: #125', 'sixth-sense'],
+        ['☕️ 🔎 BYT-100 verify: #125', 'sixth-sense'],
         ['🎀 helga', 'helga'],
         ['frame-df', 'frame-df'],
     ])('reads the role of %s', (name, role) => {
@@ -35,7 +37,7 @@ describe('trailerAdd', () => {
     });
 
     test('leaves a message that already carries one', () => {
-        const message = '🔧 x: a change\n\nAgent: coder · Claude Sonnet 5.5\n';
+        const message = '🔧 x: a change\n\nAgent: codie · Claude Sonnet 5.5\n';
         expect(trailerAdd(message, 'clio', 'Claude Opus 5.5')).toBe(message);
     });
 });

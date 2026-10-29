@@ -59,15 +59,15 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 7. **the flow inventory** — every jev flow in the fleet on one list: owner, vet state, last tuned, weekly cost; a flow nobody reads or tunes is cut
 8. **the budget gate** — what stops a replay or a bulk run from overspending again (the 10-05 freeze: $4.43 in a day on a $5 monthly credit), which flows are fail-soft when the engine is down or out of credit, and which engine each flow could fall back to
 9. **never retire the seat for lack of prior art** — the field is young; a verdict on the seat names the engine it judged, and «retire» is a verdict on an engine, never on the operation
-10. **classification candidates from inside** — scan the flawlog and coder retros for judgment calls agents keep making by hand; each is a candidate flow
+10. **classification candidates from inside** — scan the flawlog and codie retros for judgment calls agents keep making by hand; each is a candidate flow
 
 ## artifacts
 
-- `docs/knowledge/jev.md`: the rules a coder loads when touching jev, the router, the vet policy, the sharpening loop; the rules move to a `guide-classification` skill once it exists
+- `docs/knowledge/jev.md`: the rules codie loads when touching jev, the router, the vet policy, the sharpening loop; the rules move to a `guide-classification` skill once it exists
 - `script/lib/jev-questions.ts` — every rubric, model pinned
 
 ## findings
 
 - print dima the delta: what to copy, what to drop, which flow to rebuild
 - the checklist, re-checked every run: the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named
-- the verify list for a jev change's verifier lives in `docs/knowledge/jev.md` (verify — what a jev change's verifier runs)
+- the verify list for a jev change's sixth sense lives in `docs/knowledge/jev.md` (verify — what a jev change's sixth sense runs)

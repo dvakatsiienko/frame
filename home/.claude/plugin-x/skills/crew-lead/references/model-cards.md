@@ -22,7 +22,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 - **price**: $4 in / $20 out, cache reads $0.20 (0.05×), writes $5 (5m) / $8 (1h); fast mode $8/$40 (API). 1M / 128K. **[vendor]**
 - **effort**: `medium` default and our baseline; `high` for scaffolding, migrations, cross-cutting refactors; `xhigh`/`max` only after a measured gain. medium matches opus 5 at high **[vendor]**; on the 5.5 charts high buys +3.5 to +6.7 points for ~35 % more cost **[bench]**.
-- **pick for**: every coder, the verifier, research synthesis, the lead over a crew.
+- **pick for**: every codie, sixth sense, research synthesis, the lead over a crew.
 - **never**: an unchecked inference stated as fact — it drops its own doubts **[vendor]**; a frontend with no design direction falls back on stock styles **[vendor]**.
 - **numbers**: CursorBench 4.0 52.5 % medium · 57.8 % max (Cursor) **[bench]**; AA index 51 medium, 85 tok/s **[bench]**; 16 of 18 research reports passed a sourcing grade **[vendor]**.
 
@@ -38,8 +38,8 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 - **price**: $2 / $10, cache reads $0.10 (0.05×, cut from $0.20 on 2026-10-07), writes $2.50 (5m). 1M / 128K. **[vendor]**
 - **effort**: `medium` in Claude Code, `high` on the API; never `low` for code (skips verification **[vendor]**), never `xhigh`/`max` (~193K tokens a task, dearer than opus max **[bench]**).
-- **pick for**: quick-lane coder (PK-47: clean, `docs/test-drive/sonnet-coder.md`) **[measured]**, `helper`, `scout`, retrieval lanes under an opus lead.
-- **never**: the main coder of a side lane, the sole verifier, design work.
+- **pick for**: quick-lane codie (PK-47: clean, `docs/test-drive/sonnet-coder.md`) **[measured]**, `helper`, `scout`, retrieval lanes under an opus lead.
+- **never**: the main codie of a side lane, the sole sixth sense, design work.
 - **numbers**: below opus at every matched effort — AA 41 vs 51 at medium **[bench]**; opus low (87.4 %) matched sonnet high (87.6 %) at +7 % cost per solved task **[vendor]**; review catch 6/13 vs opus 8/13 (CodeRabbit) **[bench]**.
 
 ## haiku-5.5 — `claude-haiku-5-5` · the worker

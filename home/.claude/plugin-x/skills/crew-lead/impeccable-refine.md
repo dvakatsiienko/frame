@@ -1,7 +1,7 @@
 # impeccable — the refinement recipe
 
 the shape that worked on chords (DOT-254, 2026-09-20): an existing ui dima likes, refined never
-redesigned, one coder, one verifier, dima judging every pass. a coder pointed here by its brief
+redesigned, one codie, one sixth sense, dima judging every pass. codie pointed here by its brief
 follows this file; it does not freestyle the tool. the tool's own docs stay the authority for a
 verb's mechanics — this file says which verbs, in which order, with which gates.
 
@@ -11,7 +11,7 @@ verb's mechanics — this file says which verbs, in which order, with which gate
    session. leave them for a design lane; `hook.quiet: true` in the app's `.impeccable/config.json`
    when their output floods.
 2. **`init` in the APP directory, run in the COORDINATOR's window with dima answering** — never
-   in the coder's session (dima 2026-09-20: the coder's noise and register made the interview
+   in codie's session (dima 2026-09-20: the coder's noise and register made the interview
    hard to follow; the coordinator's window is quiet and its answers land on his lane), never the
    repo root of a multi-tool repo (one product record over unrelated tools steers nothing). the six categories the README names are
    all in the template under other headings; **voice is the one init tends to skip** — ask it.
@@ -30,7 +30,7 @@ verb's mechanics — this file says which verbs, in which order, with which gate
 
 order for a refinement: `layout → typeset → harden → audit → polish`. skip `bolder`, `overdrive`,
 `delight`, `colorize`, `animate` unless the brief asks. `clarify` rides `polish` unless copy is
-the job. **tick each verb off a written list** — `audit` was skipped once by both coder and
+the job. **tick each verb off a written list** — `audit` was skipped once by both codie and
 coordinator counting step 0 as a pass.
 
 per pass:
@@ -45,7 +45,7 @@ per pass:
   with its reason in the ticket. prove the detector with a planted violation before trusting `[]`
 - one commit, gates green, the ping: sha · links · where to look
 
-## the verifier lane
+## the sixth sense lane
 
 - opens **at the end of the first verb**, not the phase (the HIGH sat four commits once)
 - exit lines are concrete observables («204 chords, 82 + 103 apps, 13 never pressed»), re-read
@@ -53,7 +53,7 @@ per pass:
 - the loop and its cap are `x:crew-dna`'s pr pair; a round that closes one scoped line is free; a finding that is a decision goes to dima as a look call
 - harness affordances on day one: a port override and a `--data-dir` so a round never writes to
   dima's real data; a write-path probe uses a key nothing is filed under
-- the adversarial review lane (coderabbit) runs before the verifier's first
+- the adversarial review lane (coderabbit) runs before sixth sense's first
   round, not when someone remembers (`x:crew-codie` § 3); a long-lived PR is a reason for MORE
   review, never less
 
@@ -66,7 +66,7 @@ standard `scrollbar-*` property is also set — one family only.
 
 ## measured costs (chords, 2026-09-20)
 
-- impeccable's share of an 800k coder context ≈ 35k tokens (≈ 4.4 %): the skill ×3, six
+- impeccable's share of an 800k codie context ≈ 35k tokens (≈ 4.4 %): the skill ×3, six
   references, one context dump. the cost was the measuring, not the skill.
-- a verb pass ≈ 25 tool calls; a verifier round ≈ 40 min, mostly setup until the harness
+- a verb pass ≈ 25 tool calls; a sixth sense round ≈ 40 min, mostly setup until the harness
   affordances exist, then near zero.

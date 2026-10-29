@@ -55,12 +55,12 @@ const checks: Check[] = [
             if (
                 !hookOut(crewHook, transcript('/x:crew-codie')).includes('STOP')
             )
-                return 'silent for a coder (green case)';
+                return 'silent for codie (green case)';
             if (hookOut(crewHook, transcript('/clio:boot')).trim())
                 return 'fires for a non-crew session (red case)';
             return true;
         },
-        why: 'a compaction re-attaches skills cut at ~20k chars, none on a resumed process — a coder, verifier or designer would lose its contract mid-shift',
+        why: 'a compaction re-attaches skills cut at ~20k chars, none on a resumed process — codie, sixth sense or a designer would lose its contract mid-shift',
     },
     {
         name: 'shift recompact',
@@ -121,7 +121,7 @@ const checks: Check[] = [
                 `${old.length} spare(s) older than a day — claude daemon stop --keep-workers`
             );
         },
-        why: 'a day-old pre-warmed spare booted a coder without the repo root AGENTS.md (#95589)',
+        why: 'a day-old pre-warmed spare booted codie without the repo root AGENTS.md (#95589)',
     },
     {
         name: '📡 pr-watch live',

@@ -1,6 +1,6 @@
 ---
 kind: refresh
-owner: [coder, coordinator]
+owner: [codie, coordinator]
 artifacts:
   - home/.claude/plugin-x/skills/guide-go/
   - docs/knowledge/go-charm.md
@@ -32,7 +32,7 @@ dima's, 2026-10-06:
 2. one research round per `x:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
 3. distill into `x:guide-go` and `charm.md` (`clio:shape-recipe` step 2). done: each touched or named «unchanged». (open)
 4. findings print. done: the proposal is printed. (template)
-5. dima's word → a coder lane, or the guide edit. done: the lane spawned or the guide edited. (open)
+5. dima's word → a codie lane, or the guide edit. done: the lane spawned or the guide edited. (open)
 6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
@@ -53,7 +53,7 @@ from the v1.1 coder's retro, 2026-10-06:
 
 ### analysis
 
-- go coder and verifier retros since the last run (`shelf/retros/*` on `x/go` tickets): every trap the guide did not warn of is a guide line
+- go codie and sixth sense retros since the last run (`shelf/retros/*` on `x/go` tickets): every trap the guide did not warn of is a guide line
 - `x --json` start-up time against the budget in `x/FTR.md`
 - the go gate (`pnpm x-go:gate`) green on the current toolchain
 - `go list -m -u all` in `x/go`: what is behind

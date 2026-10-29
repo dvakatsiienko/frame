@@ -7,15 +7,15 @@
 input=$(cat)
 wt=$(printf '%s' "$input" | jq -r '.tool_response.worktreePath // empty' 2>/dev/null)
 if [ -z "$wt" ] || [ ! -d "$wt" ]; then exit 0; fi
-# EnterWorktree names the branch worktree-<name> and has no prefix setting; a coder tree is named
-# <ticket>-<slug>, and the pr watch and `x lane` key on coder/* (FRM-297) — any other name keeps cc's branch
+# EnterWorktree names the branch worktree-<name> and has no prefix setting; a codie tree is named
+# <ticket>-<slug>, and the pr watch and `x lane` key on codie/* (and the older coder/*, FRM-297) — any other name keeps cc's branch
 branch=$(git -C "$wt" symbolic-ref --short -q HEAD)
 case $branch in
   worktree-*)
     name=${branch#worktree-}
     if printf '%s' "$name" | grep -Eq '^[A-Z]+-[0-9]+(-|$)'; then
-      git -C "$wt" branch -m "$branch" "coder/$name" 2>/dev/null \
-        || echo "branch rename to coder/$name failed in $wt — rename it by hand"
+      git -C "$wt" branch -m "$branch" "codie/$name" 2>/dev/null \
+        || echo "branch rename to codie/$name failed in $wt — rename it by hand"
     fi
     ;;
 esac

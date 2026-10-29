@@ -98,7 +98,7 @@ dima's, 2026-09-30:
   frame — every `~` line is a rebrand the vendored copy missed
 - hand-drawn strays: grep the repos for svg components with no `logos.json` entry (a mark drawn,
   not fetched)
-- coder retros that touched art: what the branch file left unclear
+- codie retros that touched art: what the branch file left unclear
 
 ## artifacts
 

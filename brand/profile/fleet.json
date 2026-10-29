@@ -5,7 +5,7 @@
     "ticketsClosed": 23,
     "ticketsPlanned": 6,
     "reviewer": "5 prs · 3 findings",
-    "verifier": "4 rounds · 1 finding",
+    "sixthSense": "4 rounds · 1 finding",
     "skills": 26,
     "langs": [["typescript", 58.4], ["shell", 17.2], ["swift", 11.6], ["python", 7.9], ["css", 4.9]],
     "lazy": [["morning", 372], ["daytime", 892], ["evening", 1383], ["night", 585]]

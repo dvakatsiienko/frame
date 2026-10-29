@@ -6,7 +6,7 @@ what the 2026-10-19 scout shaping learned, kept for every card and every `refres
 
 - the main agent picks a card from its description alone; name the situation it is in («before you read code you have not opened»), never only the task («grep for symbols»)
 - lead with «use proactively» plus the moment, then what comes back, then when not to call it
-- never name a job cc's own Agent tool text tells the model to keep («a few file reads or searches» → do it yourself): a card aimed there gets 0 calls (scout, 84 coder sessions, 21 days)
+- never name a job cc's own Agent tool text tells the model to keep («a few file reads or searches» → do it yourself): a card aimed there gets 0 calls (scout, 84 codie sessions, 21 days)
 - one trigger per card: two that can conflict («not opened this session» vs «a known file») make the pick inconsistent; the `when not` line breaks the tie
 - proven only by use: a bare cc run with 10 prompts of the right shape, the picks counted, or the transcript count after a week — reading a description never proves it fires
 
@@ -26,7 +26,7 @@ what the 2026-10-19 scout shaping learned, kept for every card and every `refres
 
 ## measure what a card saves before building reach
 
-- the ceiling first: what share of the callers' context the card could replace at most (scout: reads of never-edited files, 8 % of coder tool output, p90 22 %; the earlier 76 % counted base64 screenshots)
+- the ceiling first: what share of the callers' context the card could replace at most (scout: reads of never-edited files, 8 % of codie tool output, p90 22 %; the earlier 76 % counted base64 screenshots)
 - a nudge (a hook, a guard hint) is replayed over past transcripts before it is built: fires per session and the share of wrong fires (a pre-read hint: 9 fires in 87 sessions — not built)
-- the pass line is written before the trial: net tokens of card plus caller, quality (verifier rounds), never «the card got called»
+- the pass line is written before the trial: net tokens of card plus caller, quality (sixth sense rounds), never «the card got called»
 - a shaping plan goes through `pnpm -C ~/frame crow:plan-critique <file>` before the build

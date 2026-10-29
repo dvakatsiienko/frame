@@ -29,7 +29,7 @@ they live in `recipes/AGENTS.md` § the shared vectors, the recipe contract ever
 dima, 2026-10-08: «there are too many of them, so it is hard for me to update them all — you, the
 coordinator, should act in a special way here.» so:
 
-- **every recipe names its owner** in frontmatter — `owner: coordinator | coder | designer | fleet` —
+- **every recipe names its owner** in frontmatter — `owner: coordinator | codie | designer | fleet` —
   the role whose work the artifacts feed. dima writes the want; **the owner writes and grooms the
   vectors from its own seat**: «what would make me better at this job next week?» — never a list of
   topics about the subject

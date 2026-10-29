@@ -66,10 +66,10 @@ const branchOf = (tree: string) =>
         env,
     }).trim();
 
-it('renames a ticket-named worktree branch to coder/<ticket>-<slug>', () => {
+it('renames a ticket-named worktree branch to codie/<ticket>-<slug>', () => {
     const { tree } = fixture('worktree-FRM-297-branch-name');
     seed(tree);
-    expect(branchOf(tree)).toBe('coder/FRM-297-branch-name');
+    expect(branchOf(tree)).toBe('codie/FRM-297-branch-name');
 });
 
 it('keeps the branch of a worktree named without a ticket', () => {

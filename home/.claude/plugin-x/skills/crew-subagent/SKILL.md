@@ -1,6 +1,6 @@
 ---
 name: crew-subagent
-description: Load BEFORE any `Agent` or `Workflow` call, in any session — a helper, helper-lite, researcher, wisphunter, retro, scout or wishkeeper card, a fork, a worktree-isolated agent — and on «subagent», «delegate», «fan out». A crew lane member (coder, verifier, designer, probe, cloud session) is `x:crew-lead`.
+description: Load BEFORE any `Agent` or `Workflow` call, in any session — a helper, helper-lite, researcher, wisphunter, retro, scout or wishkeeper card, a fork, a worktree-isolated agent — and on «subagent», «delegate», «fan out». A crew lane member (codie, sixth sense, designer, probe, cloud session) is `x:crew-lead`.
 ---
 
 # crew-subagent — the open door, for every fleet member
@@ -22,7 +22,7 @@ a subagent is disposable: it runs inside your session, dies with it, and dima ca
 - **fan-out size** (measured 2026-10-15): x10 cards cost ~4× one card doing it whole and finish ~5× sooner; every card pays a ~12k floor, so a chunk under ~10k of real work is mostly floor. speed-bound fans out, cost-bound stays whole; x25+ goes to a `Workflow`, which shares the prefix cache between siblings (parallel `Agent` spawns share none), every `agent()` with `agentType: '<card>'` (the default workflow agent loads the whole fleet memory: 115k vs 7.5k)
 - **a haiku crew**: you plan and split the batches, `helper-lite` workers run at `medium` (they skip checks at `low`), you review every batch against a checklist naming the shared helpers each had to use
 - **a haiku worker owns no wait and no loop against an outside api**: you fetch, it reads what was fetched
-- **reuse is cold after 5 min**: a subagent writes the 5-min cache, so one revived by `SendMessage` minutes later rewrites its whole context — spawn fresh unless its knowledge is the job; the reuse math per model is the subagent row of [models.md](../crew-lead/models.md) § spawn or reuse
+- **reuse is cold after 5 min**: a subagent writes the 5-min cache, so one revived by `SendMessage` minutes later rewrites its whole context — spawn fresh unless its knowledge is the job; the reuse math per model is the subagent row of [models.md](../crew-lead/models.md) § summon or reuse
 
 ## when it is done
 

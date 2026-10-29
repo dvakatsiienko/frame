@@ -1,8 +1,8 @@
 # web ui essentials — the checks every web verify pass runs
 
-`run.sh` is the pass for one view, at both widths, in one line; the coder runs it before its ping,
-the verifier again, and the report quotes its line. A failure is a defect like any other: the coder
-fixes it, the verifier re-checks.
+`run.sh` is the pass for one view, at both widths, in one line; codie runs it before its ping,
+sixth sense again, and the report quotes its line. A failure is a defect like any other: codie
+fixes it, sixth sense re-checks.
 
 ```bash
 S=<this skill's base dir>/essentials

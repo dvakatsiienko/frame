@@ -26,7 +26,7 @@ ai are essentially free research tools).» dima, 2026-10-20: «i want to spawn o
 
 ## per surface
 
-- **cc anywhere** (a coder, a plain thread): the lanes command as above, the `researcher` agent as the source lane
+- **cc anywhere** (codie, a plain thread): the lanes command as above, the `researcher` agent as the source lane
 - **cloud chat**: the lanes run on dima's mac through Desktop Commander (the `mcp__remote-devices__` one), wrapped as `zsh -lc 'pnpm -C ~/frame --silent research:lanes <brief> <out>'`; the brief file is written there first; the source lane is cloud chat's own reading
 - **cloud code** (a claude.ai project thread, no `~/frame` in its container): the lanes run on the mac through the same `mcp__remote-devices__` Desktop Commander, launched detached — `zsh -lc 'cd ~/frame && nohup pnpm --silent research:lanes <brief> <out> > <dir>/run.log 2>&1 &'` — because a run outlives one tool call (measured 2026-10-20: exa 78 s, parallel 183 s, linkup 344 s); poll `run.log` for its `out:` line. brief and lanes live in `~/.local/share/research-lanes/<topic>/<date>-<slug>/`. the source lane is the general-purpose stand-in above, reading bot-blocked pages through `web-bot-blocked:fetch` on the mac; a bridge drop leaves the detached run going, read it once the link is back
 - **clio**: also the recipe step — a subject researched twice becomes a recipe (`clio:shape-recipe`), never a second one-off doc

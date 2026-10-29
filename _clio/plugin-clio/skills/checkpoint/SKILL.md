@@ -13,7 +13,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 ## 0. finish the topic, then stop taking new work and tell the fleet
 
 - **in a shift** (`clio:shift` § surviving a compaction): the topic is the current step, members are paused and carried, the flawlog flush and the after-pickup move go into the plan's `## log` for the report, and the compact door is the `second-wind` op with the CST slug
-- **a 🐦‍🔥 second wind is graceful, never urgent** (dima, 2026-10-14: «a request, not an ask to do it as soon as possible … gracefully prepare yourself: resolve all subagents and park all stuff before compacting, to avoid data loss») — the same for a coder's second wind
+- **a 🐦‍🔥 second wind is graceful, never urgent** (dima, 2026-10-14: «a request, not an ask to do it as soon as possible … gracefully prepare yourself: resolve all subagents and park all stuff before compacting, to avoid data loss») — the same for codie's second wind
 - **the topic in flight finishes whole first** (dima, 2026-10-15: «fully resolve composer and leave no tails, because splitting the composer part into two parts between compaction is not a good idea»): every lane and agent it started lands, its findings fold, its distill, print, log and commit run — however long that takes. the checkpoint starts only at the end of a topic, never in its middle
 - **only a topic not yet started waits**: it goes to the CST as a first-act; the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on), and the wishkeeper of the batch being closed is always waited for, never carried
 
@@ -43,7 +43,7 @@ member goes into the CST. crow pauses by file, not by message: `touch ~/.local/s
 - flawlog flush: one batched proposal, his one approve, execute (halt phase 3a); stories appended
 - milestones refreshed (halt phase 3.5)
 - gazette: `/clio:gazette` writes the ⸻ upd block; **no wire** unless he says so
-- **the coder roster**: retro received? still needed? a coder that is done is stopped now
+- **the codie roster**: retro received? still needed? a codie that is done is stopped now
   (`claude stop <id>`), never carried through a compact
 
 ## 3. the CST — fuller than a halt's
@@ -56,7 +56,7 @@ member goes into the CST. crow pauses by file, not by message: `touch ~/.local/s
   each hot topic with its current state and next move
 - **the drop list as pointers**: one line per dropped topic naming the file that holds it — a
   dropped topic is reachable, never remembered
-- the coder roster with ids and status
+- the codie roster with ids and status
 - the orbit asks as they last stood (orbit itself survives the compact in the mod's state)
 - **his chat lines since the last report**, each with its answer or «open»: `node ~/frame/_clio/script/chat-lines.ts --since-stamp` prints his typed lines and orbit steers since the last `📄 last report` stamp; an «open» line becomes a first-act, and the pickup answers each
 - **a running recipe** (a memory sweep above all): META first-act 1 is its re-entry rule, «read `recipes/<name>/recipe.md` whole and follow its re-entry»; it also names the brief the recipe was born from, and a step that needs its own session names that session
@@ -72,7 +72,7 @@ on a 🐦‍🔥 press: no fence; the `second-wind` op with the CST slug, and th
 📋 **copy → this session** 📋
 
 ```
-/compact keep the boot ingest, the inbox items and their homes, every open ask, the coder roster, the open orbit asks, the day's done asks and the flawlog habit (a #dima-caught catch gets its line the same turn); drop <his drop list, one clause each>
+/compact keep the boot ingest, the inbox items and their homes, every open ask, the codie roster, the open orbit asks, the day's done asks and the flawlog habit (a #dima-caught catch gets its line the same turn); drop <his drop list, one clause each>
 /x:handoff-ingest <runid>-checkpoint-<n>
 ```
 
@@ -87,5 +87,5 @@ handoffs, reminders).
 
 ## completion criterion
 
-the `/compact` line names every drop with its file, the CST is in the store, the coder roster is stopped or
+the `/compact` line names every drop with its file, the CST is in the store, the codie roster is stopped or
 carried on purpose, the after-pickup ask is in orbit, and the two-line fence (his word) or the `second-wind` op (a 🐦‍🔥 press) is the last act.

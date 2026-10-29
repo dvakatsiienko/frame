@@ -4,7 +4,7 @@ coordinator home for **clio** (cc orchestrator) — dima's coordinator brain run
 plain claude code cli session. lives inside the frame repo — frame is the fleet repo, and
 a fleet coordinator does not sit in a repo of its own.
 
-the coder-global memfile at `~/projects/CLAUDE.md` does not exist yet ([DOT-195](https://linear.app/x-com/issue/DOT-195)
+the codie-global memfile at `~/projects/CLAUDE.md` does not exist yet ([DOT-195](https://linear.app/x-com/issue/DOT-195)
 creates it). when it does, this path would start inheriting it — the fix then is relocating the
 whole repo (renamed from dotfiles to frame, 2026-09-23), not moving clio back out. see [DOT-202](https://linear.app/x-com/issue/DOT-202).
 

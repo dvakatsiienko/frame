@@ -20,7 +20,7 @@ nobody reads `--help` twice: check the list once per session before improvising 
 
 ## the essentials — run on every web ui change
 
-A coder before its ping and a verifier in every round run one command from this skill's base dir
+Codie before its ping and sixth sense in every round run one command from this skill's base dir
 on every view the change touched:
 
 ```bash
@@ -89,5 +89,5 @@ caps), so a drag-and-drop view needs its own checks for those.
 - `--json` on every verb when the output feeds a decision.
 - a page that opens files through the browser's picker (excalidraw.com): override `window.showOpenFilePicker` to hand back the file, then press its Open; the picker itself never shows headless.
 - a chart or layout check runs at 390 / 768 / 1280 wide, and reads the console after.
-- a coder writes «verified in agent-browser: <what, at which widths>» in its report, or says
+- codie writes «verified in agent-browser: <what, at which widths>» in its report, or says
   «unverified in a browser» — never silence.

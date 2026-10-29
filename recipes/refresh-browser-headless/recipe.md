@@ -1,6 +1,6 @@
 ---
 kind: refresh
-owner: [coder, coordinator]
+owner: [codie, coordinator]
 artifacts:
   - x:browser-headless
 script: none
@@ -39,7 +39,7 @@ his standing calls:
 - speed and tokens per check, so «more performant» carries a number
 
 ### analysis
-- what broke for us: flawlog lines naming a browser door, coder and verifier retros on ui checks
+- what broke for us: flawlog lines naming a browser door, codie and sixth sense retros on ui checks
 - the essentials against best practice: each check in `essentials/` still catching what it was written for
 
 ## artifacts

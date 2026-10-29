@@ -17,7 +17,7 @@ beforeAll(() => {
     );
     writeFileSync(
         path.join(root, 'docs/test-drive/fixture-trial.md'),
-        '---\nstatus: live\nuntil: 2099-01-01\nfits: coder\n---\nright if\n',
+        '---\nstatus: live\nuntil: 2099-01-01\nfits: codie\n---\nright if\n',
     );
     copy = path.join(root, 'script/test-drive-list.ts');
 });

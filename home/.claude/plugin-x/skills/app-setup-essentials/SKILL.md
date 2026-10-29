@@ -1,6 +1,6 @@
 ---
 name: app-setup-essentials
-description: Load BEFORE creating or wiring up an app — «new app», «scaffold an app», «add an app to bytes», «wire up the app», «app essentials», «apps:essentials is red», a new dir under bytes apps/ — and before a coder spawn into an app that fails the checker. Not for a question about an existing app.
+description: Load BEFORE creating or wiring up an app — «new app», «scaffold an app», «add an app to bytes», «wire up the app», «app essentials», «apps:essentials is red», a new dir under bytes apps/ — and before a codie summon into an app that fails the checker. Not for a question about an existing app.
 ---
 
 # app-essentials
@@ -23,8 +23,8 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 2. `x:app-author-ftr` drafts `FTR.md` from the running app. Every line starts ⬜ until its check runs.
 3. matt's `domain-modeling` writes `GLOSSARY.md` and `docs/adr/0001-*.md`, with the stack pick as ADR-0001.
 4. `/run-skill-generator <app>` makes `<app>-run`. It is user-invoked, so dima types it, or clio
-   spawns a one-shot session whose prompt is that command. Then write `<app>-verify` from it.
-   A tooling area that is not an app keeps an `<area>-verify` skill too, so a verifier's recipe lines have a home: `x-verify` (`x/`), `mods-verify` (`home/.claude/plugin-x/mods/`), `ci-verify` (bytes `.github`); the checker does not walk areas yet.
+   summons a one-shot session whose prompt is that command. Then write `<app>-verify` from it.
+   A tooling area that is not an app keeps an `<area>-verify` skill too, so sixth sense's recipe lines have a home: `x-verify` (`x/`), `mods-verify` (`home/.claude/plugin-x/mods/`), `ci-verify` (bytes `.github`); the checker does not walk areas yet.
 5. A ui app: impeccable `init` for `PRODUCT.md`, and `document` for `DESIGN.md` after the first build.
 6. Run the checker until it is green, then commit. The hook refuses a commit that leaves a gap.
 

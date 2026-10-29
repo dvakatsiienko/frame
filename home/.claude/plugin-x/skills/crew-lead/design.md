@@ -2,7 +2,7 @@
 
 read when a lane draws on a canvas or builds from a comp. the designer's own contract is `x:crew-designer`, the interview `x:crew-designer-interview`.
 
-🎨 **comp first** — a design job opens with a `design` canvas dima approves in the artifact; then `impeccable` builds the code from that comp: its finish-reviewer judges the build against the comp, its documenter derives `DESIGN.md` from the shipped code. one coder, both skills in sequence. the canvas lane touches no files; the build lane starts only after his word on the boards.
+🎨 **comp first** — a design job opens with a `design` canvas dima approves in the artifact; then `impeccable` builds the code from that comp: its finish-reviewer judges the build against the comp, its documenter derives `DESIGN.md` from the shipped code. one codie, both skills in sequence. the canvas lane touches no files; the build lane starts only after his word on the boards.
 - 📌 **the impeccable plugin stays on, user scope, no toggling** (dima, 2026-09-28: «i'd like to keep it enabled, do not like the hassle of toggling it»); bytes enables it at project scope anyway. its cost is a slower Stop after `.ts`/`.js` edits, never a block. a clean a/b needs the competing plugin disabled per lane: its `PostToolUse`/`Stop` hooks fire in every session.
 
 🖼️ **visual iteration runs in an artifact; main gets the pick** — and **one sample before the set**: one jar in the artifact would have caught what five jars built from a relayed spec did not. an Artifact `read` without `path` costs ~15k tokens; `list scope=files` + `read path=` is the route, the full read only the republish gate.

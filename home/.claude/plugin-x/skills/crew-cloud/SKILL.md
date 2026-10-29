@@ -1,11 +1,11 @@
 ---
 name: crew-cloud
-description: Load BEFORE any `claude --cloud` spawn — «run it in the cloud», «cloud session», «cloud coder», «offload to the cloud», «use the cloud credits», a `--teleport` read, a cloud session in ListAgents.
+description: Load BEFORE any `claude --cloud` summon — «run it in the cloud», «cloud session», «cloud codie», «offload to the cloud», «use the cloud credits», a `--teleport` read, a cloud session in ListAgents.
 ---
 
-# crew-cloud — a coder on an Anthropic VM
+# crew-cloud — codie on an Anthropic VM
 
-A cloud coder is a full cc session on a fresh Ubuntu VM. It clones the **pushed** branch of one
+A cloud codie is a full cc session on a fresh Ubuntu VM. It clones the **pushed** branch of one
 GitHub repo, runs while the mac sleeps, and dies when idle. It carries **nothing of ours**: no
 user `CLAUDE.md`, no rules, no plugin `x`, no memory, no 1password, no launchd. It does load the
 repo's own `AGENTS.md` / `CLAUDE.md`. So the brief carries the rest, and the PR carries the report.
@@ -40,13 +40,13 @@ file the brief points at committed and pushed. A brief that names an unpushed fi
 cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<🌗|🌘> ☁️ <ticket> cloud: <what>' --effort medium --cloud "<the brief>" </dev/null >/dev/null
 ```
 
-- **effort is medium by default**, like every coder and verifier (dima 2026-09-28); high only for
+- **effort is medium by default**, like every codie and sixth sense (dima 2026-09-28); high only for
   a big sweep or migration. (? unproven that
   `--effort` reaches the VM — the first job with it asks the session its effort through
   `--teleport`, then this line loses its `?`)
 
 - **`-n` comes before `--cloud`** — `--cloud` takes the brief as its own value; `--cloud -n …` dies
-  on «--cloud requires a description» (measured, `docs/test-drive/cc-cloud.md` round 1). the name is type-first like every spawn (`x:crew-lead`); an unnamed session titles
+  on «--cloud requires a description» (measured, `docs/test-drive/cc-cloud.md` round 1). the name is type-first like every summon (`x:crew-lead`); an unnamed session titles
   itself from the brief and is unfindable in the sidebar.
 - the log ends with `Created cloud session: <title>`, `View: <url>` and `Resume with: claude
   --teleport <session_id>`. Keep all three; the session shows in `ListAgents` as `cloud`.
@@ -54,28 +54,28 @@ cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<🌗|🌘> ☁�
 ## step 3 — the brief
 
 **In an environment that boots plugin `x` (see the setup script below), the prompt starts with
-the coder contract** — probe 4 (2026-09-28): a cloud prompt opening with `/x:crew-codie` arrives
-expanded, zero tool calls, the same door as a `--bg` spawn. Then only the cloud deltas follow:
+codie's contract** — probe 4 (2026-09-28): a cloud prompt opening with `/x:crew-codie` arrives
+expanded, zero tool calls, the same door as a `--bg` summon. Then only the cloud deltas follow:
 
 ```
 /x:crew-codie <BYT-N> <one-line job>
 cloud mode — you run on an anthropic vm, not the mac:
 - you cannot message anyone: skip every ping and SendMessage step; the pr body is your report, the exit lines graded ✅/❌ in it.
 - nobody answers questions: an open decision goes in the pr body as `? <question>`, and you take the safer option.
-- no worktree: you are already on a fresh clone; branch `coder/<BYT-N>-<slug>`, `CI=1 pnpm install`, push, open ONE pr with gh.
+- no worktree: you are already on a fresh clone; branch `codie/<BYT-N>-<slug>`, `CI=1 pnpm install`, push, open ONE pr with gh.
 - run everything in the foreground; the vm is reclaimed when idle.
 - your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — clio's pr-watch sees that branch; nothing else tells it you finished.
 ```
 
 **Without plugin `x` in the environment** (no setup script), the self-contained brief is
-[references/brief-no-plugin.md](references/brief-no-plugin.md): the coder contract and our
+[references/brief-no-plugin.md](references/brief-no-plugin.md): codie's contract and our
 coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
 
 ## step 4 — watch and read
 
 - **the pr is the signal.** arm the pr watch from `x:crew-lead`, keyed on the ticket id in the
   pr body (`gh pr list --state all --search '<BYT-N> in:body'`), never on the head branch: a cloud
-  session is pinned to its own `claude/<slug>` branch and ignores the brief's `coder/…` name.
+  session is pinned to its own `claude/<slug>` branch and ignores the brief's `codie/…` name.
 - **send** a steer with `claude -p "<msg>" --cloud <id>`, which lands as a task. a `SendMessage` reaches a cloud session only as information, never a task (2026-09-28).
 - 🚫 **it cannot answer by message** — ListAgents' own doc: a cloud session «cannot message any
   session back yet». never brief it to ping; never wait for one.
@@ -99,7 +99,7 @@ coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
   cli-made cloud session opens on claude.ai/code in clio's browser pane, but its row menu holds no
   Archive, only Delete, which stays dima's word; until a door exists, clio names each finished
   session in the reply and dima archives it in the desktop sidebar, hover → archive.
-- the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
+- sixth sense, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: clio reads the pr and writes the comment.
 
 ## the environment's setup script — plugin `x` in every cloud session

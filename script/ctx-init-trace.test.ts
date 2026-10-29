@@ -172,11 +172,11 @@ describe('a session names its seat', () => {
         ['-Users-dima-frame--clio', 'hi', 'clio'],
         ['-Users-dima--local-state-crow-plans-2026', 'hi', 'crow'],
         ['-Users-dima--local-state-helga', 'hi', 'helga'],
-        ['-Users-dima-frame', 'use the crew-codie skill', 'coder'],
-        ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'verifier'],
+        ['-Users-dima-frame', 'use the crew-codie skill', 'codie'],
+        ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'sixth-sense'],
         ['-Users-dima-frame', 'hi', 'cc'],
-        ['-Users-dima-frame', 'use the crew-codie skill', 'coder'],
-        ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'verifier'],
+        ['-Users-dima-frame', 'use the crew-codie skill', 'codie'],
+        ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'sixth-sense'],
         ['-Users-dima-bytes', 'hi', 'other'],
     ])('%s with «%s» is %s', (dir, first, seat) => {
         expect(seatOf(dir, first)).toBe(seat);
@@ -367,19 +367,19 @@ describe('the boot digest', () => {
         const rows = [
             ...[1, 2, 3].map((d) => ({
                 ...row(d, 100_000),
-                seat: 'coder' as const,
+                seat: 'codie' as const,
             })),
             ...[1, 2, 3].map((d) => row(d, 129_000)),
         ];
         expect(digestOf(rows, {}, NOW, none)).toEqual([
-            'starting ctx (net, newest 5 sessions): clio 129k opus-5-5 · coder 100k opus-5-5 · crow no session in 14 days · helga no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
+            'starting ctx (net, newest 5 sessions): clio 129k opus-5-5 · codie 100k opus-5-5 · crow no session in 14 days · helga no session in 14 days · sixth-sense no session in 14 days · cc no session in 14 days',
         ]);
     });
 
     it('adds the alarm line under it when a seat grew', () => {
         const rows = weeks(100_000, 112_000);
         expect(digestOf(rows, {}, NOW, none)).toEqual([
-            'starting ctx (net, newest 5 sessions): clio 112k opus-5-5 · crow no session in 14 days · helga no session in 14 days · coder no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
+            'starting ctx (net, newest 5 sessions): clio 112k opus-5-5 · crow no session in 14 days · helga no session in 14 days · codie no session in 14 days · sixth-sense no session in 14 days · cc no session in 14 days',
             expect.stringMatching(
                 /^⚠ clio \(claude-opus-5-5\): starting ctx 112k, 12 % over 100k/,
             ),

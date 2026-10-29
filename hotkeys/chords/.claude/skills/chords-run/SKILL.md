@@ -124,7 +124,7 @@ no tests, so a ui change is proven in agent-browser.
 
 stop only what you started:
 
-- a `run` pass stops what it started; a coder serving its tree for dima keeps it up until the worktree goes — the coder's contract (`x:crew-codie`), not this skill's
+- a `run` pass stops what it started; codie serving its tree for dima keeps it up until the worktree goes — codie's contract (`x:crew-codie`), not this skill's
 - everything else: TaskStop each background task id, then close the browser session and prove
   the ports are free
 

@@ -88,7 +88,7 @@ export function rosterFrom(listing: ReadonlyMap<string, string>) {
             excerpt: excerptOf(name),
             name,
         }));
-    // a tree skill the session was not shown (clio's in a coder session) cannot be loaded there
+    // a tree skill the session was not shown (clio's in a codie session) cannot be loaded there
     return [...treeRoster.filter((s) => listed.has(s.name)), ...others];
 }
 

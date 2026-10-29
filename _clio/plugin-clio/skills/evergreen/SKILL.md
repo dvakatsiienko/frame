@@ -40,7 +40,7 @@ weekly with brew, the skills lane and the plugins lane join the digest: read [re
 ## completion criterion
 
 every open renovate PR is a card or silent with a green ci; every card carries brings, breaks and, on a major, since;
-the breaks answer names the peer-range check; every ➡️ is one of merge / coder /
+the breaks answer names the peer-range check; every ➡️ is one of merge / codie /
 hold; on a wednesday every app in the index was read and is a line or silent, and the markers
 advanced after the digest; `brew upgrade` ran and its line is in the report; on «approve evergreen» every merge ran and the
 reply names what landed, what waits on a rebase, and the new prod deploy count.

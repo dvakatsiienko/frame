@@ -8,7 +8,7 @@ when:
 
 # monorepo — operating bytes with agents, pnpm + turborepo
 
-📌 parked shape (dima, 2026-10-13): most work still happens in frame, so how much lives here gets refined as the fleet moves closer to bytes. the baseline every bytes coder needs sits in bytes' `AGENTS.md`; this file is the expanded reference.
+📌 parked shape (dima, 2026-10-13): most work still happens in frame, so how much lives here gets refined as the fleet moves closer to bytes. the baseline every bytes codie needs sits in bytes' `AGENTS.md`; this file is the expanded reference.
 
 ## core
 

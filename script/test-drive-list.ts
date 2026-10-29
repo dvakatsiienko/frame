@@ -67,9 +67,9 @@ if (process.argv.includes('--spawn-hook')) {
         );
     const text = spawn ? briefText(command, file) : '';
     const role = /\/x:crew-(sixth-sense|verifier)\b/.test(text) // read-both
-        ? 'verifier'
+        ? 'sixth-sense'
         : /\/x:crew-(codie|coder)\b/.test(text) // read-both
-          ? 'coder'
+          ? 'codie'
           : '';
     const kinds = [
         role,

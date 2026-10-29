@@ -1,7 +1,7 @@
 ---
 status: live
 until: 2026-11-01
-fits: coder:go
+fits: codie:go
 blind: true
 ---
 

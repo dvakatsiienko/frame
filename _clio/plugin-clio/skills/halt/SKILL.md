@@ -13,7 +13,7 @@ description: >-
 turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes him type twice.
 
 one short message, then straight into phase 1:
-- name every **live** thread: a ticket In Progress, an unlanded edit, a spawned session, an
+- name every **live** thread: a ticket In Progress, an unlanded edit, a summoned session, an
   unanswered question put to dima, an unpushed commit
 - **side channels and forks first**: each live `(side` or `(fork` session (`list_sessions`) sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged now (`clio:side-channel`), kept or dropped only on his word
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
@@ -22,9 +22,9 @@ one short message, then straight into phase 1:
   closes, with a closing word in the body) or «stays, because …». a ticket that landed (a merged pr, or a quick lane's push)
   with asks left open moves to Todo, never closes, and its `## signed` block gets
   `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again; its way back is a re-sign (`shape-lane-dispatch` § 6)
-- **the stop list holds the `--bg` members and the lane coders' desktop threads** (the digest names them); a session it marks 👤 is dima's own and stays as he left it.
-- **the coder roster, two questions per coder: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
-  `claude agents --json` is the check, never memory. **a coder the CST
+- **the stop list holds the `--bg` members and the lane codies' desktop threads** (the digest names them); a session it marks 👤 is dima's own and stays as he left it.
+- **the codie roster, two questions per codie: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
+  `claude agents --json` is the check, never memory. **a codie the CST
   calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎀 helga is on the roster too**: `claude stop <its id>` beside crow's, the boot starts it fresh. **crow is on the roster too** — its stop is phase 5's last line, named in this
   plan so it is not lost
 - sort each into **can land now** (small, finishable here) · **must park** (needs a resume
@@ -49,7 +49,7 @@ goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without
 the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless main-lane work, folds into the linear ticket that owns it, or becomes one; the day's `done` items stay listed for the gazette post (phase 4.5), which carries them and the `x fleet ops --days 1` numbers (cost per ticket, clio code edits, boot cost); then the
 inbox clears — before the CST is written.
 **the groom check** (FRM-418): `node ~/frame/_clio/script/prompt-groom.ts --linear` reads every ticket updated since yesterday, a new one included — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST.
-**size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
+**size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's codie turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
 n8n's «📭 gh notifications sweep» (`_clio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (narrower than the sweep: it marks only merged or closed pr and ci threads read, never Done) (dry run, then `--apply`) does it by hand and the failure is one line in the board.
@@ -82,8 +82,8 @@ read the log, cluster, ONE batched proposal, ONE approval, execute and commit. s
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
 flawlog's drop pile.**verify recipes, in the flush:** a retro line naming a verify-recipe gap or a check worth adding is
-placed by clio into that app's `.claude/skills/verify/SKILL.md` in the flush — coders and
-verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
+placed by clio into that app's `.claude/skills/verify/SKILL.md` in the flush — codies and
+sixth senses only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
 **second sighting = teeth:** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush per `craft-fleet-flow` stage 10, never as a memory line. a stopgap memory line is written with `until: <ticket>`. **a fix that is a freebie (our own tooling, 1–5 tool calls) is solved in the flush, never filed** — the proposal marks it «solve now», his yes runs it before the gazette; only a fix bigger than a freebie gets a pocket item (filing one costs a file, a read and a close).
 **the redundancy hunt** (dima, 2026-10-07: «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»): every memory file and skill the flush or the day touched gets `recipes/nurture-memory/recipe.md` step 7's lenses; each finding joins the proposal. dima, 2026-10-11: «During the halt, you process retros gathered across the lanes and flush them into the corresponding skills and memory files. This causes the memory bloat we have right now, so this step in your halt is meant to stop endless memory growth.»
 **notes expire:** the sweep's `until-notes` part lists them (`halt-sweep.ts`, dry run); check each id's state; a line whose ticket closed goes into the proposal for deletion.
@@ -102,7 +102,7 @@ two sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after t
 `pnpm test-drive:check` (every trial's own `status:` and `until:`). ⏰ leads any line due within 3 days, and a
 red runs `clio:shape-test-drive` § 4; an item with no evidence today still gets its line — a trial nobody
 names is being dropped by default.
-**then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.
+**then the summon base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.
 
 ## phase 3.3 — one checkup slice 🩺
 

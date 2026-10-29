@@ -157,7 +157,7 @@ export function writeState(state: State) {
 // the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ crow»
 const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 
-// a coder whose cwd is ~/frame/_clio fires clio's Stop hook too; only the coordinator's own thread wakes crow
+// codie whose cwd is ~/frame/_clio fires clio's Stop hook too; only the coordinator's own thread wakes crow
 export function isCoordinatorTranscript(
     transcriptPath: string,
     sessionsDir = SESSIONS_DIR,
@@ -750,7 +750,7 @@ export function prViewArgs(mergeArgs: string[]) {
 
 const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
 
-// written by the verifier on clean (`pr-watch.sh --verified`), keyed `owner/repo#n`
+// written by sixth sense on clean (`pr-watch.sh --verified`), keyed `owner/repo#n`
 export function verifiedHead(key: string) {
     try {
         const sha: unknown = JSON.parse(readFileSync(VERIFIED_PATH, 'utf8'))[

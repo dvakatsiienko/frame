@@ -72,7 +72,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 
 1. every mod's FTR against reality — a ✅ line still passes, a 🧭 line still wanted, a 🐞 still open
 2. the test drive log (`docs/test-drive/mods.md`) — which mod fired for real, what it saved or broke
-3. the coder retros on mods work — each harness or api trap becomes an `AGENTS.md` line
+3. the codie retros on mods work — each harness or api trap becomes an `AGENTS.md` line
 4. built-in collisions — does cc now ship natively what a mod of ours does (the prompt suggestion did); then the mod yields or goes
 5. the api-map — re-read the types at every cc bump; grep the whole file for a capability before choosing one
 6. **a session-kind probe** — any filter on origin or session kind is probed once per kind: interactive, bg `sdk`, peer (the helga-only allow-list broke every bg session, FRM-303)

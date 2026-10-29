@@ -23,7 +23,7 @@ home/.claude/shelf/handoffs/
 home/.claude/shelf/boot-digest.stamp
 # sline rewrites it on every render
 home/.claude/shelf/cc-usage-window.json
-# runtime state the mods and hooks rewrite (x-mod-stash's glide lanes, pr-watch's verifier verdicts, the retired queue's file), untracked on purpose since 10-12
+# runtime state the mods and hooks rewrite (x-mod-stash's glide lanes, pr-watch's sixth sense verdicts, the retired queue's file), untracked on purpose since 10-12
 home/.claude/shelf/lanes.json
 home/.claude/shelf/lanes/
 home/.claude/shelf/pr-verified.json
@@ -139,7 +139,7 @@ home/.claude/.last-cleanup
 home/.claude/.last-update-result.json
 home/.claude/.update.lock
 
-# coder worktrees (embedded checkouts), the same location cc uses
+# codie worktrees (embedded checkouts), the same location cc uses
 .claude/worktrees/
 import/raycast/backups/*.rayconfig
 

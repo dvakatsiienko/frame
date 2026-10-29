@@ -55,7 +55,7 @@ def replay(path, rule, subagent=False):
             continue
         prompt = prompt_text(entry)
         if prompt is not None:
-            role = role or ("coder" if any(c in prompt for c in CODER) else "other")
+            role = role or ("codie" if any(c in prompt for c in CODER) else "other")
             loaded = loaded or (not subagent and bool(hook.prompt_trigger(rule, prompt)))
             continue
         if entry.get("type") != "assistant":
@@ -105,7 +105,7 @@ def main():
         missed += [(role, os.path.basename(path)[:8], *m) for m in misses]
     print(f"{args.rule} — {len(paths)} sessions, last {args.days} days")
     # a tool signal is also a tool trigger, so it hits by construction; replies are the real measure
-    for role in ("clio", "coder", "subagent", "other"):
+    for role in ("clio", "codie", "subagent", "other"):
         total = totals.get(role, {"sessions": 0, "text": 0, "tool_use": 0})
         lost = sum(1 for m in missed if m[0] == role)
         count = total["text"] + total["tool_use"]
@@ -118,8 +118,8 @@ def main():
     for role, session, stamp, kind, hit in missed:
         print(f"- {role} {session} {stamp} {kind}: {hit}")
     # a subagent's prompt loads nothing by design, so its rate is reported, not gated
-    gated = [m for m in missed if m[0] in ("clio", "coder")]
-    print(f"gate (clio + coder at 100 %): {'red' if gated else 'green'}")
+    gated = [m for m in missed if m[0] in ("clio", "codie")]
+    print(f"gate (clio + codie at 100 %): {'red' if gated else 'green'}")
     sys.exit(1 if gated else 0)
 
 

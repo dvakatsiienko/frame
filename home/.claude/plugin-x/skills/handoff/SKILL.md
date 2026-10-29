@@ -21,8 +21,8 @@ timestamp; never build a path by hand. Each verb answers in one json envelope: t
 is `data.path`, a refusal is `error` plus the `next` command.
 
 `<audience>` = who the CST is FOR: nobody in particular → `any`; a specific agent → its seat's token:
-`clio`, `coder`, `verifier`, `designer`, `crow`, `cloud-chat`, and `cc` only for a plain session with no seat.
-a member handing off to its own successor names its own seat (a coder's CST is `coder`). `--shared` when
+`clio`, `codie`, `sixth-sense`, `designer`, `crow`, `cloud-chat`, and `cc` only for a plain session with no seat.
+a member handing off to its own successor names its own seat (codie's CST is `codie`). `--shared` when
 several threads will pull it.
 
 `--author` = who is WRITING it — this session's own token, always passed. `--lane` = the kind of
@@ -108,7 +108,7 @@ claude --bg --name "<short descriptive name>" "<CST, prefixed with: You are a co
 ```
 
 Always pass `--name`. No file is written (the CST rides the prompt), so the spec's REDACT rule
-applies in full. One line: spawned `<name>`; manage via `claude agents`.
+applies in full. One line: summoned `<name>`; manage via `claude agents`.
 
 ## Trigger D — `/handoff <session> [focus]` (push to a live peer)
 

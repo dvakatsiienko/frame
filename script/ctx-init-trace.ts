@@ -96,8 +96,8 @@ export function seatOf(dir: string, firstMessage: string): Seat {
     // read-both below: transcripts before the 10-29 rename carry the old skill ids and dirs
     if (/\/x:crew-(verifier|sixth-sense)\b/.test(firstMessage))
         // read-both
-        return 'verifier';
-    if (/crew-(coder|codie)\b/.test(firstMessage)) return 'coder'; // read-both
+        return 'sixth-sense';
+    if (/crew-(coder|codie)\b/.test(firstMessage)) return 'codie'; // read-both
     if (
         /^-Users-dima(-projects-dotfiles-cclio|-frame-cclio|-frame--clio)$/.test(
             dir,
@@ -115,7 +115,9 @@ export function seatOf(dir: string, firstMessage: string): Seat {
 const PAST_SEATS: Record<string, Seat> = {
     cclio: 'clio',
     ccrow: 'crow',
+    coder: 'codie',
     composer: 'helga',
+    verifier: 'sixth-sense',
 }; // read-both
 const seatNow = (seat: string) => PAST_SEATS[seat] ?? (seat as Seat);
 
@@ -318,7 +320,14 @@ export function lineOf(alarm: Alarm, cause: Cause) {
     return `⚠ ${head}, ${against} — ${why}`;
 }
 
-const SEAT_ORDER: Seat[] = ['clio', 'crow', 'helga', 'coder', 'verifier', 'cc'];
+const SEAT_ORDER: Seat[] = [
+    'clio',
+    'crow',
+    'helga',
+    'codie',
+    'sixth-sense',
+    'cc',
+];
 const DIGEST_DAYS = 14;
 const DIGEST_SESSIONS = 5;
 
@@ -472,10 +481,10 @@ export type Seat =
     | 'clio'
     | 'crow'
     | 'cc'
-    | 'coder'
+    | 'codie'
     | 'helga'
     | 'other'
-    | 'verifier';
+    | 'sixth-sense';
 
 export type Baseline = Record<string, { ceiling: number; median: number }>;
 

@@ -95,7 +95,7 @@ in skill bodies use bare skill names; translate with your own prefix.
   when the writer did not say. A listing reads it back as `<lane> lane · by <author> · <topic>`.
   - Two legacy shapes still parse: `<audience>-<topic>-<ts>` and a timestamp-first name. Neither
     carries a lane or an author, so both report `any` for those. Nothing writes them any more.
-- **Audience** — one lowercase token naming the agent a CST is written FOR: `clio`, `cloud-chat`, `cc`, `coder`, `verifier`, `designer`, `crow`, or **`any`** when it is for whoever picks it up next. A session knows its own
+- **Audience** — one lowercase token naming the agent a CST is written FOR: `clio`, `cloud-chat`, `cc`, `codie`, `sixth-sense`, `designer`, `crow`, or **`any`** when it is for whoever picks it up next. A session knows its own
   token; `any` matches every reader.
   - 🚨 **A pull NEVER ingests a file addressed to another agent.** It reports what it found and
     whose it is, and stops. Forcing one is possible by naming its slug explicitly — that is the
@@ -122,7 +122,7 @@ in skill bodies use bare skill names; translate with your own prefix.
 them.** Tickets by query, sessions by pid, files by `ls`. A CST is written at one moment and read at
 another; between those the board moved, the user acted, a process died. Two wrong states shipped in
 one handoff before this rule existed: a ticket described as unblocked that the user had commented on,
-and a coder described as stoppable that was already believed dead and was in fact alive. Cost of the
+and codie described as stoppable that was already believed dead and was in fact alive. Cost of the
 check is a few shell calls; cost of skipping it is work done against a fiction.
 
 📌 This applies to S and META only. R and D are the user's words and decisions — those are honoured,

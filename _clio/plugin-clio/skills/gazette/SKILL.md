@@ -21,7 +21,7 @@ write the day's post: `_clio/gazette/YYYY-MM-DD-<short-slug>.md`.
 - **one file per day.** a second halt the same day APPENDS under a `⸻ upd hh:mm` rule — never a
   second file. slug is minted at first write and stays.
 - **source from evidence, not memory of your own turns**: `git log --since=<today>` across
-  touched repos, the day's linear activity, the session context last — coders and cloud chat leave
+  touched repos, the day's linear activity, the session context last — codies and cloud chat leave
   traces clio's thread never saw.
 - frontmatter: `date` · `slug` · `tickets: [FRM-N, BYT-N, …]` · `posted: {health: no}`
 - header line: `# 🗞️ clio's gazette · <slug title>` — the masthead leads every post

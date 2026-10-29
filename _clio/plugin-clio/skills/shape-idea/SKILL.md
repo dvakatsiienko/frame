@@ -22,7 +22,7 @@ word. skipping a step happens only on his word, named out loud.
 1. **the want + the grill, one turn** (dima, 2026-10-21: the want alone was a turn too small) — the reply opens with his idea in his words, folded (`craft-pm` § wishes), bound for the ticket's wish block, and the grill's round 1 follows in the same reply; his answer to the round also says whether the quote means what he means.
    - **the want is the source fold, whole**: the pocket or ticket wish plus its raw drop if still held, one point per numbered line (W1 …), never my shorter cut (10-21: a re-cut lost ~35 % of a wish)
    - **every ❓ cites the W-lines it settles**; an uncited line prints as «settled by the wish» or waits for the next round; `node script/wish-cover.ts <PK-N|FRM-N> <round>` exits 0 first
-2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together, in rounds, each round the whole frontier of open questions at once (`habit-dima-comms` § grill), until the open decisions are settled or parked by name. every term the grill settles and every hard decision lands in the ticket (`decided`, a glossary line); the coder writes them into `GLOSSARY.md` and an ADR at the build. always; skipped only on his word. a re-shape grills what exists: why, for whom, what is missing, what should go.
+2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together, in rounds, each round the whole frontier of open questions at once (`habit-dima-comms` § grill), until the open decisions are settled or parked by name. every term the grill settles and every hard decision lands in the ticket (`decided`, a glossary line); codie writes them into `GLOSSARY.md` and an ADR at the build. always; skipped only on his word. a re-shape grills what exists: why, for whom, what is missing, what should go.
 3. **prior art** — does it exist already, and can we use it instead of building?
    `advise-project-approach` for a plan or a stack; the research lanes (`x:research`) for
    the market. then the lib search: per part of the build (a waveform, a hotkey, a pan/zoom surface),
@@ -40,7 +40,7 @@ word. skipping a step happens only on his word, named out loud.
    it names the **polish tier**: an internal tool stops at «works and clear»; a showcase app
    (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the
    look comes from, and a reviewer who sees a generic look clicks away.
-6. **the done test** — how dima will know it works, as given/when/then lines: his 🎯, never the verifier's exit lines, which dispatch writes into the spec from it.
+6. **the done test** — how dima will know it works, as given/when/then lines: his 🎯, never sixth sense's exit lines, which dispatch writes into the spec from it.
 7. **the ticket** — one shaped ticket, written through `clio:pm` (its `references/body.md` owns the sections): the wish, why, stories, decided, the cut as `out` and the polish tier, the 🎯 done test, prior art and libs under `refs`; a pocket item behind it dies that turn, `ticket: FRM-N` and a `close:` line. no files: `PRODUCT.md` is born at dispatch, the FTR lines and glossary words in the build (`craft-fleet-flow` § lane init). an app wish then goes to the designer before its sign (`x:crew-designer-interview` reads the ticket; a trial, tested on speak v2).
 
 **completion criterion:** the ticket exists with every section step 7 names, and dima said «shaped»; it

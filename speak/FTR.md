@@ -3,7 +3,7 @@
 claims: `schedule/jobs/x-speak/`
 
 - 🧭 asked, not built yet · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in `speak-verify` · 🔎 dima used it and it holds
-- given/when/then lines are the verifier's exit lines
+- given/when/then lines are sixth sense's exit lines
 - makes: lines name what a feature leaves behind
 - decision: lines record a choice and its reason
 

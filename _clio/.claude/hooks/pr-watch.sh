@@ -1,15 +1,15 @@
 #!/bin/bash
 # pr-watch — every open non-renovate pr in frame + bytes, and every cloud/* report branch, as lines.
-# a pr prints when it first appears (so the verifier spawns off this watch, no per-spawn Monitor), when its head moves (a new commit), once per head when github calls it mergeable
+# a pr prints when it first appears (so sixth sense is summoned off this watch, no per-summon Monitor), when its head moves (a new commit), once per head when github calls it mergeable
 # (mergeStateStatus CLEAN — «ready to merge»), and once per head when its checks are green but a
 # required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run), and once per head when
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
 # notice, so its brief ends by pushing its report there (x:crew-cloud). silence is the normal state.
-# a line starting «~ » is quiet: watch-once logs it and never wakes on it (the new-commit line: the verifier handles the head).
+# a line starting «~ » is quiet: watch-once logs it and never wakes on it (the new-commit line: sixth sense handles the head).
 # the watch belongs to the pr, never to the coder that opened it (2026-09-28: #112 sat green 30 min
 # after its coder's watch was stopped). a «ready» needs the verifier's clean on that very head: a pr whose
-# verified sha (written by the verifier, `--verified`) differs prints «unverified delta» instead (#82 merged
-# two commits past its clean, FRM-380); a pr with no verifier record prints «ready» as before.
+# verified sha (written by sixth sense, `--verified`) differs prints «unverified delta» instead (#82 merged
+# two commits past its clean, FRM-380); a pr with no sixth sense record prints «ready» as before.
 
 REPOS="dvakatsiienko/frame dvakatsiienko/bytes"
 SEEN="$HOME/.claude/shelf/pr-watch-seen.json"
@@ -36,14 +36,14 @@ pass() {
         key="$r#$n"
         if [ "$(seen "$key:head")" != "$sha" ]; then
           if [ -n "$(seen "$key:head")" ]; then echo "~ 🟡 ${r#*/}#$n new commit $sha · $title · $url"
-          else echo "🔵 ${r#*/}#$n opened on $sha — spawn its verifier · $title · $url"; fi
+          else echo "🔵 ${r#*/}#$n opened on $sha — summon its sixth sense · $title · $url"; fi
           mark "$key:head" "$sha"
         fi
         # keyed on head and verified sha both: a clean that lands after a delta line still prints «ready»
         v=$(verified "$key")
         if [ "$state" = green ] && [ "$(seen "$key:green")" != "$sha@$v" ]; then
           if [ -n "$v" ] && [ "${v:0:8}" != "$sha" ]; then
-            echo "🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — the verifier never saw this head · $title · $url"
+            echo "🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — sixth sense never saw this head · $title · $url"
           else
             echo "🟢 ${r#*/}#$n green on $sha, ready to merge · $title · $url"
           fi

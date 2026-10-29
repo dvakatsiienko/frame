@@ -1,7 +1,7 @@
 ---
 status: live
 until: 2026-11-03
-fits: coder:ts
+fits: codie:ts
 ---
 
 # test drive — the TypeScript LSP (native TS 7 server)

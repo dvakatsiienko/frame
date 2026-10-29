@@ -102,17 +102,17 @@ while IFS= read -r line; do
     fail "reminder with a date and no due: field: ${line:0:80}"
 done < <(grep '^⏰' "$reminders" 2>/dev/null | grep -v '^⏰📌')
 
-echo "-- fleet: live sessions · worktrees · coder prs --"
+echo "-- fleet: live sessions · worktrees · codie prs --"
 # the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)
-# a lane coder's desktop thread (a mods coder) is clio's, archived at its lane's end; any other interactive non-clio session is dima's: 👤, never on a stop list.
-# the rest of the fleet (coders, verifiers, probes) is spawned with --bg; crow is a desktop tab the halt stops, matched by name
-live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("crow") then " · the fleet'"'"'s — the halt stops her" elif (.name // "") | test("^(⚡|🌗|🌘) .* code:") and (.entrypoint // "") == "claude-desktop" then " · a lane coder clio started — archived at its lane'"'"'s end" elif .kind == "interactive" and ((.name // "") | test("clio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
+# a lane codie's desktop thread (a mods codie) is clio's, archived at its lane's end; any other interactive non-clio session is dima's: 👤, never on a stop list.
+# the rest of the fleet (codies, sixth senses, probes) is summoned with --bg; crow is a desktop tab the halt stops, matched by name
+live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("crow") then " · the fleet'"'"'s — the halt stops her" elif (.name // "") | test("^(⚡️?|🌗|🌘) .* (codie|code):") and (.entrypoint // "") == "claude-desktop" then " · a lane codie clio started — archived at its lane'"'"'s end" elif .kind == "interactive" and ((.name // "") | test("clio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"
 for repo in bytes frame; do
-  prs=$(gh pr list -R "dvakatsiienko/$repo" --search 'head:coder/' --json number,title,headRefName --jq '.[] | "#\(.number) \(.headRefName) — \(.title)"' 2>/dev/null) || { fail "gh unreachable for $repo"; continue; }
-  [ -n "$prs" ] && echo "$repo coder prs: $prs" || echo "$repo: no open coder prs"
+  prs=$(gh pr list -R "dvakatsiienko/$repo" --limit 200 --json number,title,headRefName --jq '.[] | select(.headRefName | test("^(codie|coder)/")) | "#\(.number) \(.headRefName) — \(.title)"' 2>/dev/null) || { fail "gh unreachable for $repo"; continue; }
+  [ -n "$prs" ] && echo "$repo codie prs: $prs" || echo "$repo: no open codie prs"
 done
 
 if [ -z "${COMPACT:-}" ]; then
@@ -320,7 +320,7 @@ while read -r spid slstart; do
   spares=$((spares + 1))
   born_s=$(date -j -f '%a %b %d %T %Y' "$slstart" +%s 2>/dev/null || echo 0)
   hours=$(( ( $(date +%s) - born_s ) / 3600 ))
-  flag=""; [ "$hours" -gt 6 ] && flag="⚠️ stale spare — a --bg coder claimed now boots without the repo AGENTS.md; refresh before spawning · "
+  flag=""; [ "$hours" -gt 6 ] && flag="⚠️ stale spare — a --bg codie claimed now boots without the repo AGENTS.md; refresh before spawning · "
   echo "${flag}warm spare $spid · born $slstart · age ${hours}h"
 done < <(ps -o pid=,lstart=,command= -ax | awk '/claude bg-spare/ && !/awk/ {print $1, $2, $3, $4, $5, $6}')
 [ "$spares" = 0 ] && echo "no warm spare"

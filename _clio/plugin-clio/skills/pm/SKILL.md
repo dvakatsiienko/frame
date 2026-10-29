@@ -26,7 +26,7 @@ recipes are [references/workspace.md](references/workspace.md).
 - `api '<graphql>'` for the rest; `x schema linear` holds every flag
 - create has no verb: `x as clio -- linear issue create … --project <name> --milestone <name> --description-file f`, never `--state` —
   a new ticket is born in Triage, and promotion out of it is dima's (2026-08-31)
-- every call acts as the clio app (`viewer` answers `clio, app: true`); `--as coder` writes as the coder app
+- every call acts as the clio app (`viewer` answers `clio, app: true`); `--as codie` writes as the codie app
 
 traps:
 - the raw cli's `issue update --label` replaces every label
@@ -43,14 +43,14 @@ traps:
   on research). a `human` ticket is dima's to start
 - **priority** p3; p1 only for a real interrupt, its reason and expiry in the body; p2 or p4 only when
   its importance truly differs; **size** XS · S · M naming its closest done ticket (`size: S, like FRM-372`);
-  XS (minutes, under ~80 coder turns) · S (one session, under ~400) · M (allowed, on trial: `craft-fleet-flow` § lane init),
+  XS (minutes, under ~80 codie turns) · S (one session, under ~400) · M (allowed, on trial: `craft-fleet-flow` § lane init),
   set as the word (`x linear set --estimate S`); L and XL are never set, an old 4 or 5 is resized when touched;
   **project**, unless it is a one-off or an idea pool; **parent** by the test «which story does it
   die with?», none → flat; **milestone** inherited from the parent
 - **an assignee carries no meaning**: Linear may assign dima through a linked commit, and that is fine
   (dima, 2026-10-15); his own tickets carry the `human` label. the delegate says who works it:
-  clio starts it → `delegateId` clio (`0e9bab8b-1e99-4d9c-90f8-57ce3166ca7a`); handed to a
-  coder → the coder app (`195a6ec0-ed0c-4519-9750-948eac4e5e00`)
+  clio starts it → `delegateId` clio (`0e9bab8b-1e99-4d9c-90f8-57ce3166ca7a`); handed to
+  codie → the codie app (`195a6ec0-ed0c-4519-9750-948eac4e5e00`)
 - **work starts** → In Progress the same turn, and the sline pin:
   `printf '{"session_id":"%s","prompt":"claim FRM-N"}' "$CLAUDE_CODE_SESSION_ID" | ~/.claude/shelf/hooks/sline-focus.sh`
 - **the assumption gate**: write the size, then list what you had to believe to reach it; a fact
@@ -100,7 +100,7 @@ same brief, first. `standing` is for the fleet's records (pm, memory, nvim, skil
 
 ## the app identity — notifications
 
-every app write notifies dima: linear treats clio and coder as other people (2026-09-28: 68 unread
+every app write notifies dima: linear treats clio and codie as other people (2026-09-28: 68 unread
 in two days, all ours). clio comments when something waits on dima, or to stash what the fleet
 will need later; trail that the gazette or a pr already carries stays out. dima wants the
 notifications, just not the spam — marking them read for him is parked, his call.

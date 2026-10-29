@@ -13,14 +13,14 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 
 ## the names
 - every tile title opens with an emoji from the set below that names what it is about; the same thing gets the same emoji on every board
-- the board's name leads with its emoji: `🛼 crew-lead — how clio spawns everyone`
+- the board's name leads with its emoji: `🛼 crew-lead — how clio summons everyone`
 - a meaning missing from the set joins it here first, then is drawn
 
 ## the set: who acts
 - 🙋‍♂️ dima decides or acts
 - 🦉 clio does it
 - ⚙️ a script, a hook or a check runs it
-- 🔧 coder · 🔎 verifier · 🎨 designer · 🐝 researcher · 🐜 helper · 🪶 helper-lite · 🦅 scout · 🐬 wishkeeper · 🐦‍⬛ crow · 🎀 helga · 🐠 fresh-eyes
+- 🔧 codie · 🔎 sixth sense · 🎨 designer · 🐝 researcher · 🐜 helper · 🪶 helper-lite · 🦅 scout · 🐬 wishkeeper · 🐦‍⬛ crow · 🎀 helga · 🐠 fresh-eyes
 
 ## the set: what a tile is
 - ❓ a decision (a diamond)
@@ -40,9 +40,9 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 - 📝 a retro or a log line
 - ⚠️ a weak spot (my reading)
 
-## the set: the steps of a spawn
+## the set: the steps of a summon
 - ✈️ preflight
-- ♻️ reuse or spawn
+- ♻️ reuse or summon
 - 🔑 a trust key or a secret
 - 🧊 a pre-warmed spare
 - 🩺 a health check, app essentials

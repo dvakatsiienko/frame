@@ -1,6 +1,6 @@
 ---
 name: speak-verify
-description: Load BEFORE you verify a change to speak, the voice admin — «verify speak», «check the voice admin», a coder or verifier round on `speak/`, an ftr line under speak to flip.
+description: Load BEFORE you verify a change to speak, the voice admin — «verify speak», «check the voice admin», a codie or sixth sense round on `speak/`, an ftr line under speak to flip.
 ---
 
 # speak-verify

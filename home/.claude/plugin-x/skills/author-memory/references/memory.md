@@ -33,14 +33,14 @@ sibling to `skill.md`: that one is how to write a skill, this one is where anyth
 - **`rules/*.md` with `paths:`** — a convention tied to a kind of file or a directory. test: does a glob name when it matters? a topic or an intention has no glob
 - **`~/projects/AGENTS.md`** — every coding session, no coordinator; a deliberate stub today
 - **a project `AGENTS.md`** — that one project (`memory-project.md`). test: wrong or meaningless in another repo?
-- **`_clio/memory/*`** — the coordinator only. test: would a coder be misled by it?
+- **`_clio/memory/*`** — the coordinator only. test: would codie be misled by it?
 - **a skill** — a procedure, or anything needed occasionally; on demand, never resident. test: would someone invoke it by name?
 - **a hook, `settings.json`, `permissions.deny`** — anything that must happen. «always» or «before every» is enforcement, and memory is context, not enforcement **[read]**
 
-📌 pnpm feels coder-specific, but any session may run it, so it lives in `rules/fleet-tooling.md`; a trap that bit 2+ repos goes to `rules/fleet-hazards.md`.
+📌 pnpm feels codie-specific, but any session may run it, so it lives in `rules/fleet-tooling.md`; a trap that bit 2+ repos goes to `rules/fleet-hazards.md`.
 
 📌 **anything only one surface needs is a peek-on-demand doc, never a rule** — every other surface pays for it resident.
-<!-- failure: fleet-identity.md grew fat with per-surface capabilities; every coder paid for surfaces it will never be; `dispatch.md` cost every bytes coder ~2.1k tokens. -->
+<!-- failure: fleet-identity.md grew fat with per-surface capabilities; every codie paid for surfaces it will never be; `dispatch.md` cost every bytes codie ~2.1k tokens. -->
 
 🚨 **memory supplies knowledge, never capability. [measured]** a line asking the agent to act on the system names the exact call, or the job moves to `settings.json`, a hook or `permissions.deny`. dima: *«test failed = you can't. it only creates a mess in memory file.»*
 <!-- failure: a root registry of switched-off mcps; no `claude mcp enable` exists and a server binds only at session start, so it bought awareness of a wall at full resident cost. -->

@@ -20,7 +20,7 @@
             "id": "3:248",
             "parent": "3:247",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=40;fontStyle=1;fontColor=#1E1E1E;",
-            "value": "✈️ 2 — Preflight, every spawn, in order",
+            "value": "✈️ 2 — Preflight, every summon, in order",
             "vertex": "1"
         },
         "geometry": {
@@ -36,7 +36,7 @@
             "id": "3:249",
             "parent": "3:247",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
-            "value": "x:crew-lead § preflight · a spawn first reads models.md, briefing.md, watching.md, shared-tree.md",
+            "value": "x:crew-lead § preflight · a summon first reads models.md, briefing.md, watching.md, shared-tree.md",
             "vertex": "1"
         },
         "geometry": {
@@ -52,7 +52,7 @@
             "id": "3:253",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">♻️ 1 · reuse or spawn?</b><br><span style=\"font-size:20px\">the grid in models.md</span>",
+            "value": "<b style=\"font-size:26px\">♻️ 1 · reuse or summon?</b><br><span style=\"font-size:20px\">the grid in models.md</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -132,7 +132,7 @@
             "id": "3:273",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🪐 6 · the spawn word</b><br><span style=\"font-size:20px\">his pick of signed chunks is the spawn; a quick lane's pick says verifier yes or no</span>",
+            "value": "<b style=\"font-size:26px\">🪐 6 · the summon word</b><br><span style=\"font-size:20px\">his pick of signed chunks is the summon; a quick lane's pick says sixth sense yes or no</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -148,7 +148,7 @@
             "id": "3:277",
             "parent": "3:247",
             "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">❓ exit lines sealed?</b><br><span style=\"font-size:20px\">no exit lines → no spawn</span>",
+            "value": "<b style=\"font-size:26px\">❓ exit lines sealed?</b><br><span style=\"font-size:20px\">no exit lines → no summon</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -259,7 +259,7 @@
             "id": "3:297",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🪪 12 · identity</b><br><span style=\"font-size:20px\">coder token, done-comment cap</span>",
+            "value": "<b style=\"font-size:26px\">🪪 12 · identity</b><br><span style=\"font-size:20px\">codie token, done-comment cap</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -322,7 +322,7 @@
             "id": "6:296",
             "parent": "6:294",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
-            "value": "x:crew-lead § the doors · disposable or watchable, never research vs code · one coder by default, two with a reason, never three",
+            "value": "x:crew-lead § the doors · disposable or watchable, never research vs code · one codie by default, two with a reason, never three",
             "vertex": "1"
         },
         "geometry": {
@@ -418,7 +418,7 @@
             "id": "6:317",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">always a quick lane on main, one coder for the area's chunks<br>a desktop thread clio opens with start_session and closes with archive_session, in a shift too</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods codie</b><br><span style=\"font-size:20px\">always a quick lane on main, one codie for the area's chunks<br>a desktop thread clio opens with start_session and closes with archive_session, in a shift too</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -482,7 +482,7 @@
             "id": "6:333",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">♻️ a pick-up is a spawn</b><br><span style=\"font-size:20px\">its first message inits the role</span>",
+            "value": "<b style=\"font-size:26px\">♻️ a pick-up is a summon</b><br><span style=\"font-size:20px\">its first message inits the role</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -578,7 +578,7 @@
             "id": "6:360",
             "parent": "6:349",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔎 names its verifier</b><br><span style=\"font-size:20px\">on a verifier yes</span>",
+            "value": "<b style=\"font-size:26px\">🔎 names its sixth sense</b><br><span style=\"font-size:20px\">on a sixth sense yes</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -610,7 +610,7 @@
             "id": "6:368",
             "parent": "6:349",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📝 first reply: skills loaded</b><br><span style=\"font-size:20px\">one line per spawn → a test drive</span>",
+            "value": "<b style=\"font-size:26px\">📝 first reply: skills loaded</b><br><span style=\"font-size:20px\">one line per summon → a test drive</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -706,7 +706,7 @@
             "id": "6:407",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔧 the coder works</b><br><span style=\"font-size:20px\">a side lane in its worktree (pr); a quick lane on main, committing as it goes, clio pushes</span>",
+            "value": "<b style=\"font-size:26px\">🔧 codie works</b><br><span style=\"font-size:20px\">a side lane in its worktree (pr); a quick lane on main, committing as it goes, clio pushes</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -738,7 +738,7 @@
             "id": "6:415",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📡 «opened» or «final»</b><br><span style=\"font-size:20px\">pr-watch on a side lane, the coder's «final» on a quick lane → clio spawns the verifier (main:&lt;sha&gt;)</span>",
+            "value": "<b style=\"font-size:26px\">📡 «opened» or «final»</b><br><span style=\"font-size:20px\">pr-watch on a side lane, codie's «final» on a quick lane → clio summons sixth sense (main:&lt;sha&gt;)</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -754,7 +754,7 @@
             "id": "6:419",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔁 coder ↔ verifier</b><br><span style=\"font-size:20px\">rounds, cap 3; clio hears none; a round-3 stop is clio's call, told to dima as info</span>",
+            "value": "<b style=\"font-size:26px\">🔁 codie ↔ sixth sense</b><br><span style=\"font-size:20px\">rounds, cap 3; clio hears none; a round-3 stop is clio's call, told to dima as info</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -866,7 +866,7 @@
             "id": "6:465",
             "parent": "6:463",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#444444;",
-            "value": "crew-dna · briefing § the pr · watching § stopping · a watch lives until its pr merges, never until its coder stops",
+            "value": "crew-dna · briefing § the pr · watching § stopping · a watch lives until its pr merges, never until its codie stops",
             "vertex": "1"
         },
         "geometry": {
@@ -882,7 +882,7 @@
             "id": "6:466",
             "parent": "6:463",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ verifier clean</b><br><span style=\"font-size:20px\">pr-watch --verified on a pr; its exit line on a quick lane</span>",
+            "value": "<b style=\"font-size:26px\">✅ sixth sense clean</b><br><span style=\"font-size:20px\">pr-watch --verified on a pr; its exit line on a quick lane</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -962,7 +962,7 @@
             "id": "fx:quick-lane",
             "parent": "6:463",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⚡ a quick lane, no pr</b><br><span style=\"font-size:20px\">«final» → clio pushes main → ⚡ 🔎 verify: main:&lt;base&gt; final:&lt;sha&gt;; each round's head pushed first, clean a Linear comment</span>",
+            "value": "<b style=\"font-size:26px\">⚡ a quick lane, no pr</b><br><span style=\"font-size:20px\">«final» → clio pushes main → ⚡ 🔎 sixth sense: main:&lt;base&gt; final:&lt;sha&gt;; each round's head pushed first, clean a Linear comment</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1216,7 +1216,7 @@
             "id": "6:563",
             "parent": "6:549",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔧 a crew member</b><br><span style=\"font-size:20px\">coder, verifier, …</span>",
+            "value": "<b style=\"font-size:26px\">🔧 a crew member</b><br><span style=\"font-size:20px\">codie, sixth sense, …</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1759,7 +1759,7 @@
             "id": "23:384",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">🦭 the seal at dispatch: the spec's exit lines gradable; no exit lines, no spawn</span>",
+            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">🦭 the seal at dispatch: the spec's exit lines gradable; no exit lines, no summon</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1887,7 +1887,7 @@
             "id": "23:435",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔧 the coder runs to-tickets</b><br><span style=\"font-size:20px\">slices in .scratch/&lt;feature&gt;/issues/, never linear</span>",
+            "value": "<b style=\"font-size:26px\">🔧 codie runs to-tickets</b><br><span style=\"font-size:20px\">slices in .scratch/&lt;feature&gt;/issues/, never linear</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1935,7 +1935,7 @@
             "id": "23:447",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ clio 🟢 greenlights the order</b><br><span style=\"font-size:20px\">the coder drafts lane-plan.md, clio reorders against what comes next</span>",
+            "value": "<b style=\"font-size:26px\">✅ clio 🟢 greenlights the order</b><br><span style=\"font-size:20px\">codie drafts lane-plan.md, clio reorders against what comes next</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2031,7 +2031,7 @@
             "id": "23:490",
             "parent": "23:487",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔀 land — clio approves + merges</b><br><span style=\"font-size:20px\">verifier clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima</span>",
+            "value": "<b style=\"font-size:26px\">🔀 land — clio approves + merges</b><br><span style=\"font-size:20px\">sixth sense clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2366,7 +2366,7 @@
             "id": "7:232",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;",
-            "value": "🛼 the coordinator — how clio spawns and runs the crew",
+            "value": "🛼 the coordinator — how clio summons and runs the crew",
             "vertex": "1"
         },
         "geometry": {
@@ -3633,7 +3633,7 @@
             "source": "6:349",
             "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
             "target": "6:404",
-            "value": "spawned with the argv"
+            "value": "summoned with the argv"
         },
         "geometry": {
             "as": "geometry",
@@ -3738,7 +3738,7 @@
             "source": "tf-b7-spawn",
             "style": "html=1;endArrow=open;endSize=14;startArrow=none;rounded=0;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontSize=22;fontStyle=1;fontColor=#1E1E1E;labelBackgroundColor=#FFFFFF;edgeStyle=none;",
             "target": "3:273",
-            "value": "his pick is the spawn"
+            "value": "his pick is the summon"
         },
         "geometry": {
             "as": "geometry",

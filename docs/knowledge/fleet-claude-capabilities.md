@@ -72,7 +72,7 @@ since.
 ## Who can spawn or operate whom
 
 - **Dima** — anything.
-- **`cc` / clio** — local sessions and worktrees; `claude --bg` coders (take model and effort, survive
+- **`cc` / clio** — local sessions and worktrees; `claude --bg` codies (take model and effort, survive
   a coordinator reset); `/fork`; **cloud sessions** via `claude --cloud` wrapped in `script` (it refuses
   a non-tty) **[verified, `x:crew-cloud`]**; subagents through `Agent` (no effort flag — an agent file's
   `effort:` pins it, e.g. `home/.claude/agents/helper.md`).

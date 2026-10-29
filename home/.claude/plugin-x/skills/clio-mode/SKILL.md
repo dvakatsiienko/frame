@@ -1,6 +1,6 @@
 ---
 name: clio-mode
-description: Load when dima types /x:clio-mode, says «clio mode», «become clio», «be mini-you», «turn into clio» — a session outside ~/frame/_clio (a coder in bytes or frame, a quickie). «full» loads her whole memory.
+description: Load when dima types /x:clio-mode, says «clio mode», «become clio», «be mini-you», «turn into clio» — a session outside ~/frame/_clio (codie in bytes or frame, a quickie). «full» loads her whole memory.
 ---
 
 # clio-mode — any session becomes mini-clio

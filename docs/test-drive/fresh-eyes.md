@@ -2,7 +2,7 @@
 status: live
 until: 2026-11-06
 dies-when: the verdict line below is written
-fits: verifier
+fits: sixth-sense
 ---
 
 # fresh-eyes — the blind first-time-user subagent card 🐠
@@ -11,7 +11,7 @@ Ticket: FRM-407
 
 **built:** 2026-10-21, [FRM-407](https://linear.app/x-com/issue/FRM-407) (the shape lives in the ticket); `until:` is 14 days from the build. until moved 2026-10-29 (dima o36): the trial resumes on speak v2's first screen PR, the next web lane. open: the planted-confusion run and a first real app run.
 
-**test card:** we believe fresh-eyes finds where a first-time user gets lost that the verifier and dima's own look miss · we test it by on-demand runs on apps without a login (chords, speak, atelier) whenever a screen changes · we measure per goal: stuck spots, true or false by dima's call, the 2-of-3 agreement rate, the control run's false spots, tokens and dollars for the 3 parallel runs, wall time · we're right if at least 1 true stumble the verifier missed turns up per 3 goals, at most 1 in 3 reported spots is false, and one goal costs under 10 minutes of wall time
+**test card:** we believe fresh-eyes finds where a first-time user gets lost that sixth sense and dima's own look miss · we test it by on-demand runs on apps without a login (chords, speak, atelier) whenever a screen changes · we measure per goal: stuck spots, true or false by dima's call, the 2-of-3 agreement rate, the control run's false spots, tokens and dollars for the 3 parallel runs, wall time · we're right if at least 1 true stumble sixth sense missed turns up per 3 goals, at most 1 in 3 reported spots is false, and one goal costs under 10 minutes of wall time
 **kill rule:** 3 goals in a row with no true spot, or the control run flags a false spot twice
 **at the verdict:** adopted → rethink the code-review card's name, wisphunter vs sharp-eyes as fresh-eyes' pair (dima, 2026-10-29, FRM-455)
 

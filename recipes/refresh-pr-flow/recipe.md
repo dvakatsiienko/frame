@@ -1,6 +1,6 @@
 ---
 kind: refresh
-owner: [coder, coordinator]
+owner: [codie, coordinator]
 artifacts:
   - docs/knowledge/pr-flow.md
   - x:crew-codie
@@ -37,9 +37,9 @@ his standing calls:
 
 ## the run
 
-- stacked prs are tried by hand on a real coder job, never inside an automated sweep (his 09-26 call)
-- each coder lane that opened a pr proposes this recipe's vector changes in its retro (the coder seat)
-- suggest a run when: `gh stack` ships a release, or a coder lane's pr took more than 3 review rounds
+- stacked prs are tried by hand on a real codie job, never inside an automated sweep (his 09-26 call)
+- each codie lane that opened a pr proposes this recipe's vector changes in its retro (the codie seat)
+- suggest a run when: `gh stack` ships a release, or a codie lane's pr took more than 3 review rounds
 
 1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)
 2. **research** — the brief from `pnpm recipe:brief refresh-pr-flow`; `pnpm research:lanes <brief> <out>` + an opus source lane (gh and linear docs, our ci workflows). done: every lane returned or marked failed. (script)
@@ -50,7 +50,7 @@ his standing calls:
 
 ### research
 - stacked prs with agents, any tool: the best tools and practices that make stack operations simple for an agent — a hunt, never a fixed pair
-- github stacks (`gh stack`): how an agent drives it with no prompt, how a verifier reviews one layer against the whole stack — until tested and adopted
+- github stacks (`gh stack`): how an agent drives it with no prompt, how sixth sense reviews one layer against the whole stack — until tested and adopted
 - the worth of stacks: the gain and the maintenance burden against plain prs, as others measured it
 - ai code review in practice: what the best teams automate and what still needs a human, by risk tier
 - ci on stacks: required checks per layer, a restack re-running ci, renovate moving main under an open stack
@@ -58,7 +58,7 @@ his standing calls:
 
 ### analysis
 - the stacked-prs test drive's rounds since the last run: gain against burden, read against its card
-- our pr medians per repo (`x fleet flow --days 14`) and the review rounds per coder pr since the last run
+- our pr medians per repo (`x fleet flow --days 14`) and the review rounds per codie pr since the last run
 - every hazard, guard and `x lane` verb that assumes one pr per branch — would a stack break it?
 
 ## artifacts

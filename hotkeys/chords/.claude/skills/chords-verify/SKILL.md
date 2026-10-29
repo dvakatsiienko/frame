@@ -1,6 +1,6 @@
 ---
 name: chords-verify
-description: Load AFTER any change under `hotkeys/chords/` or `hotkeys/serve.ts`, before its report or commit — «verify chords», «/verify», «prove the board», «check the cap renders», a verifier round on a chords pr.
+description: Load AFTER any change under `hotkeys/chords/` or `hotkeys/serve.ts`, before its report or commit — «verify chords», «/verify», «prove the board», «check the cap renders», a sixth sense round on a chords pr.
 ---
 
 # chords-verify

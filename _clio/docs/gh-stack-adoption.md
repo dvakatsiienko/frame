@@ -1,12 +1,12 @@
 # gh-stack adoption — the plan
 
-**owner:** clio · **audience:** clio + every coder briefed into this area
+**owner:** clio · **audience:** clio + every codie briefed into this area
 **status:** locked 2026-09-08 · steps 0–2 done, step 3 wired 2026-09-09 (greptile app + cli + filters), measurement run pending (step 3b; overnight pre-run 2026-09-10 folded)
 
 **dies when:** step 5 closes — we land on gh stacks and dima approves it. at that moment this
 doc is **deleted**, not archived. what survives it moves first:
 
-- the coder guardrails (see [where the coder will struggle](#where-the-coder-will-struggle)) fold into `x:crew-codie`
+- the codie guardrails (see [where codie will struggle](#where-codie-will-struggle)) fold into `x:crew-codie`
 - the stack hazards fold into `rules/fleet-hazards.md` as a new section
 - the open probes that got answers fold into the gazette's «tricks gained»
 - the probes that never got answers get raised once, then dropped
@@ -26,7 +26,7 @@ his framing rather than a paraphrase of it. **his words outrank any restatement 
 
 - *«recently we adopted PR-first start. and now considering stacked PR's.»*
 - *«with chaotic nature of our flow, and frequent surface are switching i suppose stacked PR's is
-  the solution»* — the observed symptom: ~3-4 PRs in one day, one merged, the coder drifted.
+  the solution»* — the observed symptom: ~3-4 PRs in one day, one merged, codie drifted.
 - the two needs, as he framed them: **1. stacked PR's · 2. adversary code review on ci**
 
 **the hard constraints**
@@ -105,7 +105,7 @@ next round starts here instead of from a fresh prompt:
 - a step's exit criteria are the checkbox. an unmet criterion is not «mostly done».
 - ❓ marks a claim nobody has verified. **never quote one as fact** — it is a probe with a home in
   [open probes](#open-probes).
-- 📌 marks a thing that will bite. 🚨 marks a thing that will bite the coder specifically.
+- 📌 marks a thing that will bite. 🚨 marks a thing that will bite codie specifically.
 
 ---
 
@@ -113,8 +113,8 @@ next round starts here instead of from a fresh prompt:
 
 three layers of review, cheapest first, each one allowed to fail open:
 
-1. **local, by the coder, before the push** — `coderabbit` CLI, then `claude /code-review`
-2. **ci, on the pull request** — the claude code action, triggered explicitly by the coder
+1. **local, by codie, before the push** — `coderabbit` CLI, then `claude /code-review`
+2. **ci, on the pull request** — the claude code action, triggered explicitly by codie
 3. **dima** — reading a pr that two layers already cleaned
 
 and underneath it, **stacked pull requests** so dependent work stops racing the merge queue.
@@ -157,7 +157,7 @@ actions minutes are unlimited on public repos, and `bytes` + `dotfiles` are publ
 - [x] `claude setup-token` locally to mint the oauth token → repo secret `CLAUDE_CODE_OAUTH_TOKEN` (bytes, 2026-09-09)
 - [x] the claude github app installed on all repos; the workflow is hand-written (bytes #63): `review` job = code-review plugin on `@claude review`, `assist` job = interactive on any other `@claude`; opus-5 `--effort high`, `--max-turns 30`; the round-2 rule: re-review only after a critical/warning fix, cap 2, then `--add-reviewer dvakatsiienko`
 - 🚨 **before merging the workflow pr, add `allowed_bots`.** the action rejects bot actors on every
-  event. `x-coder-bot[bot]` opens the coder's PRs and `renovate[bot]` opens the evergreen ones —
+  event. `x-codie-cc[bot]` opens codie's PRs and `renovate[bot]` opens the evergreen ones —
   **without this line the action reviews nothing our lane actually produces.**
 - set the trigger (see [the trigger question](#the-trigger-question) — option b is locked, c is the
   live alternative)
@@ -165,7 +165,7 @@ actions minutes are unlimited on public repos, and `bytes` + `dotfiles` are publ
   push cancels a running review instead of stacking two
 - repeat in `dotfiles` only after `bytes` is proven
 
-**proves it:** open a throwaway pr from a `coder/*` branch pushed by `x-coder-bot`, trigger the
+**proves it:** open a throwaway pr from a `codie/*` branch pushed by `x-codie-cc`, trigger the
 review, and see an inline comment land. **a summary comment saying «no issues» also proves it** —
 that is the documented shape when it finds nothing.
 
@@ -189,7 +189,7 @@ that is the documented shape when it finds nothing.
 
 ## step 2 — the local guard
 
-- [ ] **goal:** the coder cleans its own work before ci ever sees it.
+- [ ] **goal:** codie cleans its own work before ci ever sees it.
 
 **why:** the cheapest review is the one that happens before the push. and this is already the 🔧
 item on the queue — *«matt's `code-review` runs BEFORE the last push: review → fix → push → report
@@ -199,7 +199,7 @@ ready»*.
 
 - [x] `brew install coderabbit` (cask, 0.7.6, in the Brewfile), authenticated 2026-09-09
 - [x] the fall-through + chain written into `x:crew-codie` 0.11.46
-- wire it into the coder's done-sequence with `--agent` (structured findings for agents; 0.7.6 —
+- wire it into codie's done-sequence with `--agent` (structured findings for agents; 0.7.6 —
   `--prompt-only` no longer exists) and `-c CLAUDE.md` so house rules reach the review.
   📌 probe on the first real run: `coderabbit review --show-prompts` — does the yaml or
   `CLAUDE.md` get read without `-c`?
@@ -213,7 +213,7 @@ ready»*.
 2. `claude /code-review` — unmetered on the subscription
 3. push, then trigger the ci review
 
-**proves it:** a coder's done-report names both local passes and what each returned, and the ci
+**proves it:** codie's done-report names both local passes and what each returned, and the ci
 review afterwards finds nothing the local passes should have caught.
 
 **exit:** two consecutive assignments where the ci review adds something *new* rather than
@@ -282,7 +282,7 @@ an adoption.
 
 **moves**
 
-- `gt` CLI, one real stack on the next multi-layer coder assignment — **not a synthetic test**
+- `gt` CLI, one real stack on the next multi-layer codie assignment — **not a synthetic test**
 - graphite's ai review **on** (dima's amendment: he wants the full picture, not stacks only)
 - 📌 hobby's review quota is *«limited ai reviews»* with **no published number**. «it ran out after
   N» is a valid measurement and should be recorded as one.
@@ -307,18 +307,18 @@ since 2026-07-30, rolled out to **all repositories**, **no plan restriction** �
 
 **prerequisites, before the first stack**
 
-- 📌 **name stacked branches under `coder/`** — e.g. `coder/BYT-N-<slug>-1`, `-2`, `-3`. the
-  `vercel.json` deployment gate on `coder/*` then already covers them and **no new gate is needed**.
+- 📌 **name stacked branches under `codie/`** — e.g. `codie/BYT-N-<slug>-1`, `-2`, `-3`. the
+  `vercel.json` deployment gate on `codie/*` then already covers them and **no new gate is needed**.
   a distinct `stack/*` prefix would need its own gate in all six `vercel.json` first.
-- **one worktree per stack, not per layer.** the coder moves between layers with
+- **one worktree per stack, not per layer.** codie moves between layers with
   `gh stack up` / `down` / `checkout` inside one worktree at `<repo>/.claude/worktrees/`.
-- resolve ❓ the `.git/gh-stack` worktree question before two coders ever stack in one repo.
+- resolve ❓ the `.git/gh-stack` worktree question before two codies ever stack in one repo.
 
 **moves**
 
 - `gh extension install github/gh-stack` (needs `gh` ≥ 2.0)
 - the same assignment shape as step 4 — same depth, same repo — so the comparison is real
-- the coder's stack verbs: `init` → `add` → `submit` → `rebase` → `push` → `merge`
+- codie's stack verbs: `init` → `add` → `submit` → `rebase` → `push` → `merge`
 
 **proves it**
 
@@ -367,7 +367,7 @@ org mid-test adds a variable to the measurement.
   git-lfs, **and url redirects from the old path**
 - breaks: **github pages does not redirect** · read-only collaborators are dropped · issue types may
   be dropped
-- 📌 **the real cost is re-pointing, not git**: vercel ×6, mend/renovate, `x-coder-bot`,
+- 📌 **the real cost is re-pointing, not git**: vercel ×6, mend/renovate, `x-codie-cc`,
   `TURBO_TEAM`, the linear link, remotes. **one afternoon each way.** an empty org costs nothing —
   blacksmith missing is not a wasted move, re-pointing twice would be.
 
@@ -384,15 +384,15 @@ bot still working, and a measured before/after on ci wall-clock.
 
 ## the trigger question
 
-**the problem:** the coder pushes freely as it works. every push is a `synchronize` event. the
+**the problem:** codie pushes freely as it works. every push is a `synchronize` event. the
 shipped review workflow fires on every one of them, so the reviewer reads unfinished work and burns
-runs. we want the review to run **once, when the coder says it is ready**.
+runs. we want the review to run **once, when codie says it is ready**.
 
 three options. **c is locked (dima, 2026-09-09: labels are friction; one workflow covers review + assist); b is the fallback.**
 
 **a — draft → ready for review**
 
-- coder opens a draft, pushes freely (claude skips drafts by design), last act is `gh pr ready`
+- codie opens a draft, pushes freely (claude skips drafts by design), last act is `gh pr ready`
 - the `ready_for_review` event fires the review
 - ➕ fully native, zero extra config
 - ➖ 🚨 **collides with a standing rule** — `x:crew-codie` says *«real PR at first push, never a
@@ -403,18 +403,18 @@ three options. **c is locked (dima, 2026-09-09: labels are friction; one workflo
 
 - workflow triggers on `pull_request: types: [labeled]`, guarded by
   `if: github.event.label.name == 'review'`
-- coder's final act: `gh pr edit --add-label review`
+- codie's final act: `gh pr edit --add-label review`
 - ➕ keeps a real pr live from the first push
 - ➕ «ready» becomes an explicit, visible state on the pr timeline
 - ➕ **remove-and-re-add the label is a clean re-trigger** — which also solves the round-2 problem
-- ➖ one more coder habit to teach, and a label taxonomy to maintain
+- ➖ one more codie habit to teach, and a label taxonomy to maintain
 
 **c — `@claude review` comment · LOCKED — bytes #63**
 
 - the review workflow triggers on `issue_comment: types: [created]`, guarded by
   `if: contains(github.event.comment.body, '@claude review')`, still passing the `/code-review`
   prompt so it runs the same skill in automation mode
-- coder's final act: `gh pr comment --body "@claude review"`
+- codie's final act: `gh pr comment --body "@claude review"`
 - ➕ no new label taxonomy
 - ➕ re-review is just another comment — the most natural round-2 handle of the three
 - ➖ the readiness signal lives in the comment thread, not as pr state
@@ -452,15 +452,15 @@ and the [public preview thread](https://github.com/orgs/community/discussions/20
 
 **the one that matters most**
 
-- 🚨 **stacks fix dependency, not chaos.** the drift dima hit — 3-4 independent PRs, one merged, the
-  coder's base gone stale — is *not* what a stack solves. stacking independent work **invents** a
+- 🚨 **stacks fix dependency, not chaos.** the drift dima hit — 3-4 independent PRs, one merged,
+  codie's base gone stale — is *not* what a stack solves. stacking independent work **invents** a
   dependency: layer 2 cannot merge until layer 1 does, and one stuck pr blocks everything above it.
   **the declaration of what depends on what happens before the first branch.**
 
 **the mechanics that break**
 
 - 🚨 **lower-layer changes do not propagate by themselves.** after committing to layer 1 you must run
-  `gh stack rebase --upstack`. this is the first thing a coder will get wrong.
+  `gh stack rebase --upstack`. this is the first thing codie will get wrong.
 - ⚠️ **server-side rebases produce unsigned commits.** rebasing from the pr interface runs on
   github's servers and does not sign. **always `gh stack rebase` locally, then `gh stack push`.**
   the preview thread's «all my commits went unverified» reports are this.
@@ -488,7 +488,7 @@ and the [public preview thread](https://github.com/orgs/community/discussions/20
 
 - 📌 **ci fan-out**: a cascading rebase pushes every branch above the merged one, so each fires
   `synchronize` — and therefore a **review per layer, per merge**. previews are already gated on
-  `coder/*`; keeping stacked branches under that prefix keeps them gated too. **the review trigger
+  `codie/*`; keeping stacked branches under that prefix keeps them gated too. **the review trigger
   is what still needs gating**, and the label/comment trigger solves it as a side effect.
 - 📌 actions minutes are **unlimited on public repos**, so the fan-out costs wall-clock and noise,
   not money — until step 6 makes anything private.
@@ -509,7 +509,7 @@ and the [public preview thread](https://github.com/orgs/community/discussions/20
 
 ---
 
-## where the coder will struggle
+## where codie will struggle
 
 these are **assumptions**, not measurements. each one is a guardrail candidate for `x:crew-codie`,
 and each should be **tested during the window** — a guardrail that never fired is a guardrail to
@@ -528,7 +528,7 @@ delete, not to keep.
    `yolo` are suspended while a stack is active** — a deliberate carve-out from the fleet
    vocabulary, and it must be said out loud in the brief because those words normally mean go.
 3. 🚨 **stacks work that is not dependent.** it will stack whatever it happens to do next.
-   → **guardrail:** the layers are declared in the assignment before the first branch. if the coder
+   → **guardrail:** the layers are declared in the assignment before the first branch. if codie
    discovers mid-flight that a layer is independent, **it stops and reports** — it does not
    restructure silently.
 4. **closes a middle pr** when it decides a layer is unneeded, blocking everything above.
@@ -541,9 +541,9 @@ delete, not to keep.
 7. **reports «stack merged» when the merge stopped mid-stack.**
    → **guardrail:** `gh stack view` after every merge. three ends, not two — merged, failed, or
    partially landed.
-8. **two coders stacking in one repo.** `bytes` is one shared checkout and ❓ the stack state may be
+8. **two codies stacking in one repo.** `bytes` is one shared checkout and ❓ the stack state may be
    shared across worktrees.
-   → **guardrail:** one active stack per repo. a second coder gets a different repo or waits.
+   → **guardrail:** one active stack per repo. a second codie gets a different repo or waits.
 
 **review loop**
 
@@ -553,7 +553,7 @@ delete, not to keep.
 10. 🚨 **waits on a rate-limited review tool**, blocking the foreground.
     → **guardrail:** a tool that rate-limits is skipped, named in the report, never waited on.
 11. **loops «until LGTM» forever.**
-    → **guardrail:** **cap at 2 rounds**, then report and stop. the spawning rule already says three
+    → **guardrail:** **cap at 2 rounds**, then report and stop. the summoning rule already says three
     round trips means the brief was wrong.
 12. **assumes the ci review re-fires after a fix push.** ❓ anthropic's doc says claude skips PRs it
     has already commented on.
@@ -565,7 +565,7 @@ delete, not to keep.
 
 **reporting**
 
-14. **relays a reviewer's finding as fact.** a bot's comment is a candidate, same as a coder's
+14. **relays a reviewer's finding as fact.** a bot's comment is a candidate, same as codie's
     report.
     → **guardrail:** the done-report pairs every claim with the command that proved it — already the
     🔧 queue item, and stacks make it matter more because a claim can now be true on one layer and
@@ -578,7 +578,7 @@ delete, not to keep.
 each needs one command or one run to settle. **none may be quoted as fact until then.**
 
 - ❓ **`.git/gh-stack` and worktrees** — worktrees share the common git dir, so is stack state shared
-  across `<repo>/.claude/worktrees/` or per-tree? decides whether two coders can ever stack in
+  across `<repo>/.claude/worktrees/` or per-tree? decides whether two codies can ever stack in
   `bytes`. **probe before step 5's first stack.**
 - ❓ **`rebase.updateRefs` × `gh stack rebase`** — two cascading-ref mechanisms on the same branches.
 - ❓ **does the claude action re-review after a fix push?** the doc says it skips PRs it already

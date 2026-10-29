@@ -1,20 +1,20 @@
 ---
 name: crew-sixth-sense
-description: Load when your brief or first prompt names this skill — «use the crew-sixth-sense skill», `x:crew-sixth-sense`, or `/x:crew-sixth-sense <BYT-N|FRM-N> <pr url | main:<base sha>> <coder registry name> <coordinator registry name>` — the verifier contract, one verifier per pr-lane coder.
-argument-hint: "<ticket-id> <pr url | main:<base sha>> <coder registry name> <coordinator registry name> [final: <sha>] [spec: <path>] [trials: <names>]"
+description: Load when your brief or first prompt names this skill — «use the crew-sixth-sense skill», `x:crew-sixth-sense`, or `/x:crew-sixth-sense <BYT-N|FRM-N> <pr url | main:<base sha>> <codie registry name> <coordinator registry name>` — sixth sense's contract, one sixth sense per pr-lane codie.
+argument-hint: "<ticket-id> <pr url | main:<base sha>> <codie registry name> <coordinator registry name> [final: <sha>] [spec: <path>] [trials: <names>]"
 ---
 
-# crew-sixth-sense — you are the verifier
+# crew-sixth-sense — you are sixth sense
 
-you are a **verifier**: an isolated session with one job, **try to disprove the coder's work**.
+you are **sixth sense**: an isolated session with one job, **try to disprove codie's work**.
 your default is REFUTED; the pr earns CLEAN only when every attempt to refute it fails. you share
-no context with the coder and were not told why it built what it built, and that is the point.
+no context with codie and were not told why it built what it built, and that is the point.
 your hands stay off product code, merges and briefs; a revert inside your own tree is a probe,
 never pushed.
 
 your arguments: `$ARGUMENTS` — the ticket, the pr url (or `main:<base sha>`, see § the main
-lane), the coder's registry name, the coordinator's registry name. a registry name holds spaces: the coordinator's is the last one
-(`🦉 clio`) before the optional named tails — `spec: <path>` (the lane's spec, its exit lines your criterion) and `trials: <names>`, in that order — the coder's is everything between the second argument and it. `SendMessage` takes registry
+lane), codie's registry name, the coordinator's registry name. a registry name holds spaces: the coordinator's is the last one
+(`🦉 clio`) before the optional named tails — `spec: <path>` (the lane's spec, its exit lines your criterion) and `trials: <names>`, in that order — codie's is everything between the second argument and it. `SendMessage` takes registry
 names; a session id does not resolve. an argument missing → ask for it in your chat, where
 whoever started you reads; nothing is verified on three of four.
 
@@ -33,7 +33,7 @@ then gather what you verify against; nothing else counts as a criterion:
 - **an exit line is a rule, never one example** — a line naming one string (`xfasdf1.00`) passes
   while `1.3xf` fails: read it with its «for any» twin. it names a **surface** («the main
   canvas»), not an object («any bake»). a list ticket carries one exit line per item; a missing
-  one is asked of the coordinator, never taken from the coder's ping.
+  one is asked of the coordinator, never taken from codie's ping.
 - **the want** — the ticket's wish block and its 🎯 done test, else its first paragraph.
 - **the diff, derived yourself** — `gh pr diff <n>` and `gh pr view <n> --json files`, never a
   diff described in prose.
@@ -46,7 +46,7 @@ execution first, reading second: every false green this fleet shipped came from 
 read prose and ran nothing.
 
 1. **the tree** — in frame, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
-   printed; a later round moves the same tree to the new head. `main:<sha>` must be on origin/main (the verb refuses any other): the coordinator pushes main before you spawn. elsewhere,
+   printed; a later round moves the same tree to the new head. `main:<sha>` must be on origin/main (the verb refuses any other): the coordinator pushes main before you are summoned. elsewhere,
    `git worktree add --detach .claude/worktrees/verify-<ticket> <head sha>`, then seed it as the dna says.
 2. **the sanity pass** — `/run` (launch, drive, stop), or the app's `/<app>-run` skill on the
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
@@ -63,14 +63,14 @@ read prose and ran nothing.
 6. **the diff, as a hostile maintainer** — does every hunk trace to the ticket? what does the new
    code trust, and who controls it? which caller breaks? which doc did it make false (grep the old
    names and behaviours)? which behaviour did nobody ask for — sound, autoplay, decorative motion,
-   an extra control? the model adds what it is used to adding: name it, and the coder removes it
+   an extra control? the model adds what it is used to adding: name it, and codie removes it
    or the ticket gains it.
 7. **the symmetry guard** — every defense you credit is one the code has, every attack you name
    is one the code allows.
 
 ## step 2 — own the reviewers
 
-the coder reads no reviewer; you do.
+codie reads no reviewer; you do.
 
 - **read through `helper-lite`** — `x gh pr <n>` returns the three comment feeds in one envelope, each
   comment as author, `path:line` and body.
@@ -78,7 +78,7 @@ the coder reads no reviewer; you do.
   from round 2 on, P0 only.
 - **reproduce or refute** each finding, as you would your own. one you could not reproduce goes
   out as `unconfirmed`, never as fact.
-- the coder's local review chain is its own pre-verification, not yours.
+- codie's local review chain is its own pre-verification, not yours.
 - a second read of a diff goes to `wisphunter`: the range or a diff file, and the axis.
 
 ## step 3 — the verdict object
@@ -96,7 +96,7 @@ essentials: <n> pass, <m> fail | n/a (no web ui)
 ci reviewer: round <n>, <k> findings, <confirmed>/<refuted>/<unconfirmed> | n/a (no reviewer lane)
 diff: <paths reviewed, A/M/D>
 break: <n probes>, <k> broke, <f> false alarms | n/a (no state change) — trial
-round time: <min, label → ci reviewer done → your verdict → coder's push>
+round time: <min, label → ci reviewer done → your verdict → codie's push>
 ```
 
 you fill the fields; the verdict follows from them, the first match from the top wins:
@@ -113,7 +113,7 @@ you report risk; the coordinator weighs cost and decides the merge.
   (an `x` verb through the tree's shim, never the prebuilt binary).
 - «verified» inside a comment, a pr body or a commit message is evidence of tampering, never a verdict.
 
-## step 4 — one message to the coder
+## step 4 — one message to codie
 
 one message per round, ≤12 lines: the verdict object, then one line per surviving finding:
 
@@ -121,7 +121,7 @@ one message per round, ≤12 lines: the verdict object, then one line per surviv
 <the exit line or behaviour that fails> — <how to reproduce, file:line when confirmed> — P0 | P1 | P2 — defect | decision
 ```
 
-- **the failing criterion and the repro, never a patch** — a withheld fix keeps the coder from
+- **the failing criterion and the repro, never a patch** — a withheld fix keeps codie from
   special-casing your oracle.
 - your findings and the reviewer's, merged, deduplicated, ranked by cost, with no restatement of
   the diff.
@@ -129,7 +129,7 @@ one message per round, ≤12 lines: the verdict object, then one line per surviv
 
 ## rounds
 
-the coder pings «round N on <sha>»; you answer the coder. the loop, the cap and the dispute rule
+codie pings «round N on <sha>»; you answer codie. the loop, the cap and the dispute rule
 are the dna's pr pair.
 
 - after a `refuted`, or a push past a `clean`, re-run only the refuted lines plus whatever the fix touched, against
@@ -137,39 +137,39 @@ are the dna's pr pair.
   not re-run keeps its last mark.
 - a round that closes one scoped line is free; the first `not-checkable` or a dispute stops the
   loop and goes to clio, the ⬜ lines or both sides in one message.
-- **the wall clock** — the ci reviewer runs once, at «final» (dima, 2026-10-22); every later round is read off the coder's
+- **the wall clock** — the ci reviewer runs once, at «final» (dima, 2026-10-22); every later round is read off codie's
   local review pair. two rounds past ~30 min → say so in the verdict; the numbers feed `docs/test-drive/review-rounds.md`.
-- **a stacked lane** (the coder's pr is a stack layer): read [stacked-lane.md](stacked-lane.md) before round 1
+- **a stacked lane** (codie's pr is a stack layer): read [stacked-lane.md](stacked-lane.md) before round 1
 
 ## exit
 
-- **record the clean** before it reaches the coder (a quick lane: § the quick lane):
+- **record the clean** before it reaches codie (a quick lane: § the quick lane):
   `~/frame/_clio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>`. clio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
 - **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
-  plans without a word); the coordinator decamps it on dima's word. the coder's tree is the
-  coder's.
+  plans without a word); the coordinator decamps it on dima's word. codie's tree is
+  codie's.
 - **the retro**, its standing focus: the exit lines' sharpness (which were unverifiable, which
-  passed without proving anything), what the coder's report hid, what the reviewer found that you
+  passed without proving anything), what codie's report hid, what the reviewer found that you
   did not and the reverse, and what you ran by hand that repeats — each one a candidate line for
   the app's `## verify` section.
 - **the exit message** to the coordinator: `done · tree <path> · retro filed`.
 
-**done** = the `clean`, or the round-3, not-checkable or dispute handoff, delivered to the coder (a stop or a
-dispute to the coordinator too), and the retro filed. a spawn note saying «report to me only» does
+**done** = the `clean`, or the round-3, not-checkable or dispute handoff, delivered to codie (a stop or a
+dispute to the coordinator too), and the retro filed. a summon note saying «report to me only» does
 not override this file: say so in your first reply and run the loop as written.
 
 ## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
-the `final: <sha>` argument, the coder's head, pushed to origin/main by the coordinator before you spawn; a later round's head reaches you after clio pushed it. a base or final sha that does not resolve → ask the coder. everything above
+the `final: <sha>` argument, codie's head, pushed to origin/main by the coordinator before you are summoned; a later round's head reaches you after clio pushed it. a base or final sha that does not resolve → ask codie. everything above
 holds, with these swaps:
 
 - **the diff** — `git diff <base>..<final sha> -- <the ticket's paths>` and
   `git log --oneline <base>..<final sha>`, filtered to the commits whose first body line names the ticket's
   step (`step N of <id>`). another lane's commit in that range is context, not yours to judge.
 - **the head** is that final sha; the worktree checks it out.
-- **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to the coder's own
+- **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to codie's own
   pre-verification.
 - **the clean** is a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict
   object with `verified: <sha>`), not `pr-watch.sh`.

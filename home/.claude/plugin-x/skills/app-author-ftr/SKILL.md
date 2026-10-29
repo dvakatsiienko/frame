@@ -1,6 +1,6 @@
 ---
 name: app-author-ftr
-description: Load BEFORE reading or writing an app's ftr — «ftr», «features doc», «the ftr», `FTR.md`, «what does <feature> do», «draft the ftr», «ftr lines», «map lines», exit lines for an app that has an ftr, a coder or verifier brief that names ftr lines. Not for `PRODUCT.md` or `DESIGN.md`.
+description: Load BEFORE reading or writing an app's ftr — «ftr», «features doc», «the ftr», `FTR.md`, «what does <feature> do», «draft the ftr», «ftr lines», «map lines», exit lines for an app that has an ftr, a codie or sixth sense brief that names ftr lines. Not for `PRODUCT.md` or `DESIGN.md`.
 argument-hint: "[draft|update|read] <app dir>"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "[draft|update|read] <app dir>"
 
 An app's product docs are three files with two owners. The **map** is ours: one line per feature,
 each line a check the app must pass. It answers «what does X do» in one read and supplies the
-exit lines a verifier checks.
+exit lines sixth sense checks.
 
 ## the files
 
@@ -26,7 +26,7 @@ The ftr opens with a 4-line legend, then groups features under `## <route> — <
 
 ```md
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
-- given/when/then lines are the verifier's exit lines
+- given/when/then lines are sixth sense's exit lines
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
@@ -64,8 +64,8 @@ losing variant's line is deleted.
 - **dima** — the whole map, to answer «what does X do».
 - **a designer session** — the sections for the views in scope, plus `PRODUCT.md` and `DESIGN.md`,
   before any new design or tweak.
-- **a coder** — only the section its brief names by heading.
-- **a verifier** — the given/when/then lines of the features in scope. Those are its exit lines.
+- **codie** — only the section its brief names by heading.
+- **sixth sense** — the given/when/then lines of the features in scope. Those are its exit lines.
 
 ## draft — an app with no map yet
 
@@ -91,9 +91,9 @@ losing variant's line is deleted.
   🧭 for new behaviour, 🐞 on the existing line for a bug. the ticket and the lane's spec only name
   the lines to build; they never restate them. non-product work (a script, a hazard line) stays a
   ticket bullet.
-- **write the line where the ftr is live.** while a coder's branch is open, the ftr in its worktree
-  is the live copy: the line goes to the coder as a message, never onto main, where it collides
-  with the coder's flips. no branch open → main.
+- **write the line where the ftr is live.** while codie's branch is open, the ftr in its worktree
+  is the live copy: the line goes to codie as a message, never onto main, where it collides
+  with codie's flips. no branch open → main.
 
 ## update — every change to what the app does
 
@@ -103,16 +103,16 @@ losing variant's line is deleted.
 - status flips once, in the pr's last commit: each line whose check now passes in the verify
   recipe goes to ✅, a line that fails goes to 🐞. flipping per step forces partial staging.
 - ✅ → 🔎 when dima says a feature holds after using it (a screenshot, «works», «✓») — clio flips
-  that line the same turn, on main or through the live coder. nobody else sets 🔎.
+  that line the same turn, on main or through the live codie. nobody else sets 🔎.
 - a choice dima made about a feature → a `decision:` line under it.
 
 ## exit lines
 
 - an app with an ftr takes its exit lines from the ftr: the lane's spec names the lines to build,
-  and the verifier reads their given/when/then plus the pr's own map diff
+  and sixth sense reads their given/when/then plus the pr's own map diff
   (`git diff origin/main... -- FTR.md`) — every line the pr adds or flips is an exit line.
   the spec may add steering lines on top; product behaviour never lives only in ticket prose.
-- the verifier checks each line, its status, that its `makes:` output exists as written, and
+- sixth sense checks each line, its status, that its `makes:` output exists as written, and
   that every domain word the line uses is defined.
 - at close, clio greps the pr's commits for `ftr: none` (`x lane commit` stamps it on a skip; a question, never a pass): each hit gets one question — «no feature
   changed?» — before the merge.

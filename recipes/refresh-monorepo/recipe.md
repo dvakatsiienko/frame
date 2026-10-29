@@ -1,6 +1,6 @@
 ---
 kind: refresh
-owner: [coder, coordinator]
+owner: [codie, coordinator]
 artifacts:
   - docs/knowledge/monorepo.md
   - ~/projects/bytes/AGENTS.md
@@ -11,7 +11,7 @@ was: [refresh-branch-monorepo]
 
 # refresh-monorepo
 
-keeps the fleet operating a monorepo efficiently with agents: the baseline every bytes coder reads, the expanded monorepo knowledge, and the wins that land each run, sharpened against turborepo. born 2026-10-05.
+keeps the fleet operating a monorepo efficiently with agents: the baseline every bytes codie reads, the expanded monorepo knowledge, and the wins that land each run, sharpened against turborepo. born 2026-10-05.
 
 ## the want
 
@@ -32,12 +32,12 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 ## the run
 
 - a run's gains never stay parked: each small win lands in the run itself; a bigger one becomes a dated pocket item, never only a ticket line; the print names what landed
-- each bytes coder lane proposes this recipe's vector changes at its end (the coder seat)
+- each bytes codie lane proposes this recipe's vector changes at its end (the codie seat)
 - suggest a run when: a turbo minor ships
 
 1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)
 2. **research** — the brief from `pnpm recipe:brief refresh-monorepo`; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + bytes, measured). done: every lane returned or marked failed. (script)
-3. **distill** — the baseline into bytes' `AGENTS.md` (short, every coder reads it), the rest into `docs/knowledge/monorepo.md`; raw lane output stays in `last/` until the next run's distill. done: both read and touched, or named «unchanged». (open)
+3. **distill** — the baseline into bytes' `AGENTS.md` (short, every codie reads it), the rest into `docs/knowledge/monorepo.md`; raw lane output stays in `last/` until the next run's distill. done: both read and touched, or named «unchanged». (open)
 4. **land** — every small win done in the run; the rest dated pocket items. done: each win landed or dated. (open)
 5. **findings** — the print, naming what landed. done: printed. (template)
 6. **log** today's line in `log.md`. done: the line is there. (open)
@@ -47,13 +47,13 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 ### research
 
 1. **efficient agentic monorepo use** — how teams run a pnpm + turborepo monorepo with coding agents: what works, the measured gains, the agent loop
-2. **the coder's loop** — what a coder runs before a commit or a pr in a turbo monorepo: affected gates, `turbo query affected`, caching across worktrees
+2. **codie's loop** — what codie runs before a commit or a pr in a turbo monorepo: affected gates, `turbo query affected`, caching across worktrees
 3. **turborepo for a coordinator** — turbo scripts and workflows as an orchestration layer for fleet jobs (dima's inference, tested here): task graphs, `turbo watch`, generators, tags
 4. **power usage** — task graphs as agent gates, local and remote cache, boundaries, `futureFlags`, task `description`s, the turbo ai guide and its agent skill
 5. **pitfalls and don'ts** — cache poisoning, env vars outside the hash, worktrees sharing a cache (absolute paths in outputs), lockfile churn marking everything affected, context bloat
 6. **easy wins** — the few changes with the most gain per effort, ranked
 7. **scheduling** — re-check each turbo minor: still no time-based runs?
-8. **agent layout** — settings scoping in worktrees, per-task context, gates only for what a coder touched
+8. **agent layout** — settings scoping in worktrees, per-task context, gates only for what codie touched
 
 ### analysis
 
@@ -61,7 +61,7 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 2. the lockfile fallback — `turbo query affected` on the last lockfile commits: still all packages?
 3. worktree health — does a fresh bytes worktree pass its gates today
 4. turbo version vs latest, and what the next minor changes
-5. what tripped bytes coders since the last run — the flawlog's bytes lines and the coder retros
+5. what tripped bytes codies since the last run — the flawlog's bytes lines and the codie retros
 
 ### cut
 
@@ -69,7 +69,7 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 
 ## artifacts
 
-- `~/projects/bytes/AGENTS.md` — § «operating this monorepo with agents»: the baseline every bytes coder loads; short, the distill adds or cuts lines there only
+- `~/projects/bytes/AGENTS.md` — § «operating this monorepo with agents»: the baseline every bytes codie loads; short, the distill adds or cuts lines there only
 - `docs/knowledge/monorepo.md` — the expanded reference (core first, then what we have, then the next bump); its open wins sit in [BYT-125](https://linear.app/x-com/issue/BYT-125)
 
 ## findings

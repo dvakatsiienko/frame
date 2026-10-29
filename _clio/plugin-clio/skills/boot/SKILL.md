@@ -54,10 +54,10 @@ and the next ticket from it; never re-query what it already printed.
   skill's): never ingest a CST addressed to another agent — report whose it is and leave it.
 - active run id from the last CST META → continue it, never mint one mid-story. a CST marked
   FROZEN is not the active one.
-- the digest lists live sessions and open `coder/*` prs; a coder alive with one → arm the merge monitor: a
-  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice) polling `gh pr list --state merged --search 'head:coder/'` every 60 s and running
-  `gprune -d` on each new merge — **only while the owning coder is idle** (`claude agents --json`
-  status; busy → wait a tick, retry): a merge that races the coder's tail push removes its worktree under a live push. clio merges and cleans; the monitor dies
+- the digest lists live sessions and open `codie/*` (or older `coder/*`) prs; codie alive with one → arm the merge monitor: a
+  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice) polling `gh pr list --state merged --search 'head:codie/'` and `'head:coder/'` every 60 s and running
+  `gprune -d` on each new merge — **only while the owning codie is idle** (`claude agents --json`
+  status; busy → wait a tick, retry): a merge that races codie's tail push removes its worktree under a live push. clio merges and cleans; the monitor dies
   with the session.
 - 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so pr-watch and ci-watch run only when clio arms them; ci-watch is the only thing that wakes a turn on a new red, n8n's 🔴 ci watch is the record the digest reads, an n8n → mod bridge is parked (dima, 2026-10-18). the digest's `watches: N of 2 running` line counts them; arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/_clio/.claude/hooks/watch-once.sh ~/frame/_clio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running».
 - 🐦‍⬛ **crow lives one clio session**, in either mode (`_crow/AGENTS.md` § how it runs): dima says he opened her desktop tab → `pnpm -C ~/frame crow:keep-cache-hot`; otherwise `pnpm -C ~/frame crow:start opus` — a `--bg` session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops a `--bg` one. a pick-up of either sidecar after dima reinits it: crow boots from `_crow/AGENTS.md` + the `x:crew-adviser` charter, helga from `x:crew-helga`.
@@ -127,7 +127,7 @@ message, **no cst ingest, no pocket parse** — the inbox stays his file.
 1. healthcheck (step 1, unchanged)
 2. inbox: read only, propose the order of what he names; an item done in this session gets a ✅
    in place. nothing copied into the pocket, nothing folded
-3. merge monitor — only when a coder with an open `coder/*` pr is alive (step 4's monitor line)
+3. merge monitor — only when codie with an open `codie/*` pr is alive (step 4's monitor line)
 4. open renovate count (step 4's last line; the digest waits for his word)
 5. stuck reminders (step 5)
 6. self-grill (step 6)

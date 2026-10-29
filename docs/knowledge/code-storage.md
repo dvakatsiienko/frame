@@ -26,7 +26,7 @@ then codeberg, radicle, sourcehut, gitea cloud
 
 ## beyond git
 
-- jj (jujutsu) is the agents' favourite: no staging area, `jj undo` for any operation, conflicts stored in commits so a rebase never stalls; runs on a git repo. our test drive waits for the next bytes coder (pocket PK-114); frame stays on git (git-crypt, inference)
+- jj (jujutsu) is the agents' favourite: no staging area, `jj undo` for any operation, conflicts stored in commits so a rebase never stalls; runs on a git repo. our test drive waits for the next bytes codie (pocket PK-114); frame stays on git (git-crypt, inference)
 
 ## runs
 

@@ -8,7 +8,7 @@ description: >-
 
 `crew-dna v2 · reef-08` ← quote this line in your first reply.
 
-You are a fleet member: a claude code session clio spawned or briefed. Your role skill says what you do;
+You are a fleet member: a claude code session clio summoned or briefed. Your role skill says what you do;
 this file says how every member does it. A section headed with roles binds only those roles.
 
 ## every member
@@ -17,7 +17,7 @@ this file says how every member does it. A section headed with roles binds only 
 - the first reply names the memory files you loaded and this file's version line
 - clio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
-- a ping to clio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping waits for her next turn (quiet comms), so a question or a decision for dima never rides one: it goes as `[ask]`; a coder in a lane sends one `[progress]` line per finished step
+- a ping to clio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping waits for her next turn (quiet comms), so a question or a decision for dima never rides one: it goes as `[ask]`; codie in a lane sends one `[progress]` line per finished step
 - every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
@@ -47,7 +47,7 @@ this file says how every member does it. A section headed with roles binds only 
 - a trial you rode gets a «trials» line each, outside the 12: your impression in plain words (helped, got in the way), keep or drop, one suggestion — dima reads these to judge the trial
 - a stacked lane appends its «stack» block at every layer's land, not only at the lane's end, so the trial reads each layer while the lane runs (dima, 2026-10-23); the block's shape is your role skill's
 
-## coder · verifier · designer
+## codie · sixth sense · designer
 
 - the brief against the world: one line «brief says X, <source> says Y», then follow the brief
 - a judgment call you are stuck on goes to clio with the options and your pick
@@ -56,7 +56,7 @@ this file says how every member does it. A section headed with roles binds only 
 - an app with `FTR.md` → load `x:app-author-ftr` before reading or writing its lines
 - outward-facing text (a pr body for another repo, an email) goes through `x:writing-for-humans`; our own tickets and comments follow `fleet-output-format`
 
-## coder · verifier — the pr pair
+## codie · sixth sense — the pr pair
 
 **identity**
 - linear: read with `x linear read`, write only your one comment with `x linear comment <id>` (`rules-lazy/linear-flow.md`) <!-- mac -->
@@ -64,12 +64,12 @@ this file says how every member does it. A section headed with roles binds only 
 - every comment notifies dima: one per assignment
 
 **the loop**
-- the lane opens at the coder's first commit
-- rounds run coder ↔ verifier: clio hears nothing per round, and the coder carries `clean`; on a quick lane each round's «round N on <sha>» goes to clio too, who pushes main before the verifier reads it
+- the lane opens at codie's first commit
+- rounds run codie ↔ sixth sense: clio hears nothing per round, and codie carries `clean`; on a quick lane each round's «round N on <sha>» goes to clio too, who pushes main before sixth sense reads it
 - the round cap: 3 rounds with a P0 or P1 finding, scope growth resets the count, the stop goes to clio
 - a dispute goes to clio with both sides in one message
 - after `clean`, clio approves the head and merges; the look card reaches dima, never a review request
-- on a quick lane the verifier's one linear write is its `clean` verdict comment; on a side lane it writes none (`pr-watch.sh --verified`); the coder's done comment says «verified clean, round N»
+- on a quick lane sixth sense's one linear write is its `clean` verdict comment; on a side lane it writes none (`pr-watch.sh --verified`); codie's done comment says «verified clean, round N»
 
 **proof**
 - a worktree: `EnterWorktree` (it seeds itself), or by hand `git worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main`, in frame with the two git-crypt `-c` flags (`x/AGENTS.md` § lane); then `pnpm worktree:seed` in bytes, `x lane seed <path>` in frame <!-- mac -->

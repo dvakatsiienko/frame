@@ -48,7 +48,7 @@ describe('crew-dna-cloud', () => {
     it('prints the real dna as its own lines, unaltered and in order, with no tag left', () => {
         const out = print();
         expect(out).not.toContain('<!-- mac -->');
-        expect(out).toContain('## coder · verifier — the pr pair');
+        expect(out).toContain('## codie · sixth sense — the pr pair');
         const source = readFileSync(dnaFile, 'utf8').split('\n');
         let cursor = 0;
         for (const line of out.split('\n')) {

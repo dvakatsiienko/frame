@@ -182,7 +182,6 @@
     ]
   },
   "bashOutputMaxChars": 8000,
-  "outputStyle": "output-glados",
   "enabledPlugins": {
     "clio@clio": true,
     "neuroarxiv@neuroarxiv": true,
@@ -204,5 +203,6 @@
       },
       "autoUpdate": true
     }
-  }
+  },
+  "outputStyle": "output-glados"
 }

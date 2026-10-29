@@ -1,7 +1,7 @@
 ---
 status: live
 until: 2026-11-18
-fits: coder
+fits: codie
 ---
 
 # test drive — mattpocock tdd

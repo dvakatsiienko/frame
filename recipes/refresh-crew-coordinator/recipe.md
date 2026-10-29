@@ -101,8 +101,8 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 **craft — the coordinator:**
 - how a coordinator agent should work in general and coordinate efficiently: planning, routing work to members, gates, comms, attention economy with the operator
 - the adviser: read `refresh-crew-coordinator-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
-- the full crew: which roles a mature agent team has, against ours (coder, verifier, designer, classifier, crow, the ci reviewers coderabbit + cc); which we lack. the crew checklist re-runs every run, even when the last said «nothing missing» — the field moves
-- per seat: each crew role (coder, verifier, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `helper-lite`, `scout`, `wishkeeper`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
+- the full crew: which roles a mature agent team has, against ours (codie, sixth sense, designer, classifier, crow, the ci reviewers coderabbit + cc); which we lack. the crew checklist re-runs every run, even when the last said «nothing missing» — the field moves
+- per seat: each crew role (codie, sixth sense, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `helper-lite`, `scout`, `wishkeeper`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
 - the subagent roster against outside practice: which in-session subagent roles mature setups run (anthropic's own cards and plugins, public `<repo>/.claude/agents/` collections, multi-agent frameworks), which jobs our cards miss, which overlap enough to merge; seed: `docs/research/subagent-roster.md` (dima, 2026-10-10)
 - the review shape: what a review subagent reads (the wish and spec, not only the diff), its output cap, its model tier, checking a finding at its cited line before acting, and whether cleanup is a separate pass (`/simplify`) — measured where a source measured it
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
@@ -120,7 +120,7 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 - the spawn doors and what each sets (model, effort, memory, cwd): the `Agent` tool, agent files (`researcher`, `helper`, `retro`), fork (and its env gate), `Workflow` `agent()`, implement-spec subagents, `claude --bg`, `--cloud`, a Code-tab session's `SendMessage`
 - the lifecycle end to end: spawn init (preflight, brief, trust, spare age), watching (idle notices, stalls), winddown (stop, worktree, registry), the retro collected and folded
 - the long-context probe (10-needle recall + one edit at 100k / 400k / 800k) at every model bump
-- watch, not a vector: the clio-stack bleed into a `--bg` session — unreproduced since 2026-09-02; a coder's first-reply AGENTS.md line is the detector
+- watch, not a vector: the clio-stack bleed into a `--bg` session — unreproduced since 2026-09-02; codie's first-reply AGENTS.md line is the detector
 
 - probe: claude-code#88822 — does a subagent's final report still come back as a bare pointer, body lost (auto-closed stale 2026-10-15; reproduces → refile with a fresh repro)
 - probe: the auto-compact threshold — `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, `autoCompactWindow`, `--autocompact` (`spawn-mechanics.md`), and where quality drops; the 600–700k manual checkpoint stays until then
@@ -148,7 +148,7 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 - capabilities, benchmarks, price, latency (tok/s, TTFT), context, lifecycle — per model in scope. price: input, 5m and 1h cache writes, the cache-hit multiplier per model, output, long-context billing
 - **effort levels per model:** the supported levels, the vendor default per surface (API vs Claude Code), the vendor's starting points per task type, the lowest-reasoning setting, any independent effort-vs-score and effort-vs-cost curve
 - **model per job:** one verdict per model with evidence for each job we spawn — coding, verifying, codebase exploration, mechanical edits under opus review, research by genre — plus what it must NOT be used for; the output is the task → model map in `models.md`
-- the cards against the ladder: every agent card (`helper`, `researcher`, `retro`, `helper-lite`, `scout`, `wishkeeper`), every crew skill (coder, verifier, designer), crow and clio — model + effort as settled today, re-checked against this run's task → model map; a mismatch is a finding with its evidence, never a silent flip
+- the cards against the ladder: every agent card (`helper`, `researcher`, `retro`, `helper-lite`, `scout`, `wishkeeper`), every crew skill (codie, sixth sense, designer), crow and clio — model + effort as settled today, re-checked against this run's task → model map; a mismatch is a finding with its evidence, never a silent flip
 - the spawn base from our own data: first-request `cache_read` / `cache_creation` per spawn door from transcripts (duckdb) and `x` traces, measured instead of assumed
 
 ### analysis
@@ -173,7 +173,7 @@ on top of the shared three:
 - `home/.claude/rules/fleet-identity.md` — the crew list; a role added or retired is his word first
 - `home/.claude/agents/` — the global cards; a card's frontmatter or body changes through the memory-edit habit, a new or retired card is his word first
 - `_clio/.claude/agents/` — clio's own cards (wishkeeper); same rule
-- `x:crew-sixth-sense` — the verifier contract; changed only when a run proves a change worth its cost (dima, 2026-10-21), through the memory-edit habit
+- `x:crew-sixth-sense` — the sixth sense contract; changed only when a run proves a change worth its cost (dima, 2026-10-21), through the memory-edit habit
 
 ## findings
 

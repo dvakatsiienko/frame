@@ -101,18 +101,18 @@ the door for all coding work: real, watchable, outlives the session that started
 - **model and effort are both flags, both honoured** [verified 2.1.283] — `--model opus --effort low`
   wrote `effort=low model=claude-opus-5-5` onto every assistant record (`claude-opus-5` on 2.1.258).
   - ⚠️ **always pass `--model`** — the settings default moved (fable until 09-24, `opus[1m]` at
-    `effortLevel: high` on 2026-09-27) and a spawn must not ride it silently.
+    `effortLevel: high` on 2026-09-27) and a summon must not ride it silently.
 - 🚨 **`--bg` now checks workspace trust** [docs, changelog 2.1.281] — in a directory that has not
   passed the trust prompt it asks first, or **exits when not run interactively**. a subdirectory of
   a trusted repo counts: `~/frame/docs` (no trust entry of its own, `~/frame` trusted) launched
-  from a non-tty shell [verified 2.1.283]. a shift spawning into a new repo trusts it first.
+  from a non-tty shell [verified 2.1.283]. a shift summoning into a new repo trusts it first.
 - **a bg session can be retired by the daemon** [inferred — binary strings only]: the build names
   retire reasons `stale-spare`, `empty-idle`, `empty-idle-grace`, `abandoned-stale`, `max session
-  age`. which of them hits a live idle coder is unmeasured.
+  age`. which of them hits a live idle codie is unmeasured.
 - **`-n <name>` sets the registry name** [verified] — free-form, emoji and spaces allowed.
   `--remote-control [name]` labels only the rc card; an unnamed session names itself from its
   first turn. a rename afterwards is a typed `/rename` inside the session (`claude attach <id>`);
-  a spawned coder has no tool for it.
+  a summoned codie has no tool for it.
 - **`remoteControlAtStartup: true` is inherited — no flag needed** [verified]. the registry entry
   gains a `bridgeSessionId`; the log shows a `claude.ai/code/session_…` link.
 - **a detached daemon, not a child process** [verified]. the process is
@@ -174,7 +174,7 @@ at `~/frame`, carried `cclio/AGENTS.md` and every memory leaf — two builds in 
 🚨 **reversed 2.1.251** (re-derive from own cwd), which had reversed 2.1.239 (inherit). three
 builds, three answers — never write a brief that depends on either.
 🎯 **consequence:** a subagent or workflow agent spawned by clio wears the coordinator's brain
-on this build, and no `cd` sheds it. a coder that must think as a plain session goes through
+on this build, and no `cd` sheds it. a codie that must think as a plain session goes through
 `claude --bg` from the target repo — the only door that derives from cwd.
 - **`omitClaudeMd`** in agent frontmatter runs a card without user, project and local CLAUDE.md
   files [verified by size 2026-10-15: 8–10k first request against 82–117k, §12] — the lever that sheds
@@ -258,7 +258,7 @@ directory in the brief, every path absolute.**
 
 **not executed, deliberately.** everything here is [schema]/[docs]: runs on anthropic machines,
 visible at claude.ai/code, model and effort settable, non-blocking, stopped by the user.
-🚨 **nobody in the fleet can spawn one — only dima.** help takes `--cloud
+🚨 **nobody in the fleet can summon one — only dima.** help takes `--cloud
 [description|session_id|url]`; a prior-art claim that `--cloud` refuses `--print` dates from
 2026-08-15 and is stale until re-run.
 
@@ -267,9 +267,9 @@ visible at claude.ai/code, model and effort settable, non-blocking, stopped by t
 moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none of them changes a spawn decision on its own. re-probe with the suite in §13.
 
 - ⭐ **background sessions are ADOPTABLE** — anything reading `~/.claude/sessions/` can brief a
-  coder it never spawned. Never respawn to escape a lost parent; delivery is proven, correctness is
+  codie it never summoned. Never re-summon to escape a lost parent; delivery is proven, correctness is
   a separate check.
-- ✅ **clio spawns `--bg` coders from either birth, terminal or Code tab** — measured 2026-09-07: a Code-tab-born session's child booted on `Claude Max`, wrote a file, bridged rc. the desktop env markers (`CLAUDE_CODE_ENTRYPOINT=claude-desktop`, `ANTHROPIC_BASE_URL`) are harmless. an auth error on spawn means cc is signed out, not a broken door — probe: `claude -p --model haiku 'reply: alive'`.
+- ✅ **clio summons `--bg` codies from either birth, terminal or Code tab** — measured 2026-09-07: a Code-tab-born session's child booted on `Claude Max`, wrote a file, bridged rc. the desktop env markers (`CLAUDE_CODE_ENTRYPOINT=claude-desktop`, `ANTHROPIC_BASE_URL`) are harmless. an auth error on summon means cc is signed out, not a broken door — probe: `claude -p --model haiku 'reply: alive'`.
 - **cloud is receive-only** and cli → cloud delivery is unverified — a one-way pipe plus a shared
   store, never a handshake.
 - **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299 from flag, project and user settings; 2.1.304 from user settings]:
@@ -299,7 +299,7 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   (registry cwd `~/frame`, clio leaves loaded) did not reproduce: two `--bg` probes on 2.1.258
   from `~/frame` and `~/frame/docs` loaded nothing under `cclio/`. 1 bleed in 3 bg launches
   across two builds; the daemon recording the first `--bg` call's cwd (§5) is the remaining
-  suspect. **a bg coder's brief asks it to name its loaded CLAUDE.md paths in its first reply** —
+  suspect. **a bg codie's brief asks it to name its loaded CLAUDE.md paths in its first reply** —
   the only detector. 2.1.283: a third clean `--bg` (from `~/frame/docs`, nothing under
   `cclio/`), so 1 bleed in 4 launches across three builds.
 - ⚠️ **the daemon spare that booted without the root `AGENTS.md`** (upstream
@@ -309,7 +309,7 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   (fresh spare, clean — the known-good side). the day-old side needs a spare left warm for 24 h
   and then claimed; that probe costs a day of waiting, not a session. the build names a
   `stale-spare` retire reason [inferred, strings only], which may be the upstream fix or may be
-  older. the spawn preflight in `x:crew-lead` stays until a day-old claim is measured.
+  older. the summon preflight in `x:crew-lead` stays until a day-old claim is measured.
 
 ## 11b. compaction — the hooks an unattended member leans on
 

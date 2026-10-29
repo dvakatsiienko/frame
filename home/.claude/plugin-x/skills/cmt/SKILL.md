@@ -1,6 +1,6 @@
 ---
 name: cmt
-description: «/cmt», «commit», «slay» — load on sight, even mid-sentence or after another instruction («approve, /cmt y, and next», «ask coder to sync, then commit and slay», «you can commit them too», «vibe», «mana»). Load EVERY time a git commit is about to be created, in any repo.
+description: «/cmt», «commit», «slay» — load on sight, even mid-sentence or after another instruction («approve, /cmt y, and next», «ask codie to sync, then commit and slay», «you can commit them too», «vibe», «mana»). Load EVERY time a git commit is about to be created, in any repo.
 argument-hint: "[y|y+] [push|push+] [correction…]"
 ---
 
@@ -94,10 +94,10 @@ In `frame` and `bytes` the `commit-msg` hook stamps it (`script/commit-agent-tra
 - Hyphen bullets, one change per line, `subject: what changed`; `→` for before/after
   (`- model: sonnet → fable-5`). Prose paragraphs only for single-concern commits needing a why.
 - 📦 bodies: `pkg old → new` lines + `- regenerate pnpm-lock.yaml`.
-- End: the trailer `Agent: <role> · <model>` (`Agent: coder · Claude Fable 5.1`), stamped by the
+- End: the trailer `Agent: <role> · <model>` (`Agent: codie · Claude Fable 5.1`), stamped by the
   hook where it runs, one spelling. No `Co-Authored-By`, no `Claude-Session:` (Dima: useless to both sides; a
   `commit-msg` hook strips it in `frame` and `bytes`).
-- A coder's step-commit names its step in the first body line (`step 3 of BYT-25: …`) so an
+- Codie's step-commit names its step in the first body line (`step 3 of BYT-25: …`) so an
   interleaved `main` still reads as a sequence.
 
 <!-- twelve trailer spellings once made `git who` a zoo (2026-09-03). -->
@@ -105,7 +105,7 @@ In `frame` and `bytes` the `commit-msg` hook stamps it (`script/commit-agent-tra
 ## 5 · Linear and the parser traps
 
 A commit carries **no ticket line**: a PR is what links to Linear — its branch name
-(`coder/<ticket>-<slug>`) and one `- ticket: FRM-N` line in its body; the id comes from the
+(`codie/<ticket>-<slug>`) and one `- ticket: FRM-N` line in its body; the id comes from the
 conversation, the branch name or Dima, never a guess.
 
 - **no closing keyword next to an id** — `close(s|d)` `fix(es|ed)` `resolve(s|d)` `complete(s|d)`:
@@ -120,7 +120,7 @@ conversation, the branch name or Dima, never a guess.
 ### The lanes
 
 - **default: `main`** — no branch, no PR, the commit body carries everything
-- **a coder lane: a PR** in its own worktree — the flow is `x:crew-codie`; the branch name `coder/<ticket>-<slug>` links it in Linear by itself, and its
+- **a codie lane: a PR** in its own worktree — the flow is `x:crew-codie`; the branch name `codie/<ticket>-<slug>` links it in Linear by itself, and its
   url reaches Dima as a one-click link the moment it prints
 - **any other PR** (`claude/…` cloud branches, one Dima opens) — the same `- ticket:` line in its
   body, never a closing keyword; a branch never checked out here is worded with `gh pr edit`, never by rewriting

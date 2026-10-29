@@ -39,7 +39,7 @@ frontmatter, in this order:
 
 ```yaml
 kind: refresh | nurture   # research → distill · groom an existing system
-owner: <seat> | [<seat>, coordinator]   # coordinator | coder | designer | fleet: the seat whose work the artifacts feed
+owner: <seat> | [<seat>, coordinator]   # coordinator | codie | designer | fleet: the seat whose work the artifacts feed
 artifacts: [<path or x:skill>, …]
 script: <package.json key> | <x verb> | none
 groomed: <yyyy-mm-dd> (dima)    # only on dima's word
@@ -93,6 +93,6 @@ research, the outside world:
 - **cost** — price, free tier and quota changes for anything we pay or might pay for
 
 analysis, our own evidence:
-- **what broke for us** — the flawlog (`#dima-caught` first), coder and verifier retros, test-drive logs since the last run
+- **what broke for us** — the flawlog (`#dima-caught` first), codie and sixth sense retros, test-drive logs since the last run
 - **the artifact against reality** — every claim the artifacts hold re-checked on the current build, or marked stale
 - **drift** — vendored or copied files against their recorded upstream commit

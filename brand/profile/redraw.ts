@@ -15,9 +15,9 @@ const gv = {
 
 const crew = [
     { name: 'clio', role: 'coordinates', word: 'idle', tone: 'green' },
-    { name: 'coder', role: 'crafts', word: 'working', tone: 'yellow' },
+    { name: 'codie', role: 'crafts', word: 'working', tone: 'yellow' },
     { name: 'reviewer', role: 'reviews', word: 'reviewing', tone: 'pink' },
-    { name: 'verifier', role: 'verifies', word: 'idle', tone: 'green' },
+    { name: 'sixth sense', role: 'verifies', word: 'idle', tone: 'green' },
 ] as const satisfies readonly CrewRow[];
 
 const glyphs: Glyphs = JSON.parse(readFileSync(join(here, 'glyphs.json'), 'utf8'));
@@ -78,9 +78,9 @@ function board(f: Fleet) {
     const t = lettering('b');
     const facts: Record<CrewName, string> = {
         clio: `${f.ticketsClosed} tickets closed · ${f.ticketsPlanned} planned`,
-        coder: `${f.agentCommits} commits · last ${f.lastTicket}`,
+        codie: `${f.agentCommits} commits · last ${f.lastTicket}`,
         reviewer: f.reviewer,
-        verifier: f.verifier,
+        'sixth sense': f.sixthSense,
     };
     const rows = crew.map((r, n) => `<g transform="translate(28 ${46 + n * 58})"><clipPath id="av${n}"><rect width="44" height="44" rx="8"/></clipPath><image href="${avatars[r.name]}" width="44" height="44" clip-path="url(#av${n})"/>
 ${t.text(r.name, 60, 19, 15, 'Medium', gv.ink)}${t.text(r.role, 60, 37, 13, 'Book', gv.dim)}
@@ -196,7 +196,7 @@ async function tickets(since: Date): Promise<Partial<Fleet>> {
 /* Types */
 
 type Face = 'Book' | 'Medium';
-type CrewName = 'clio' | 'coder' | 'reviewer' | 'verifier';
+type CrewName = 'clio' | 'codie' | 'reviewer' | 'sixth sense';
 
 interface CrewRow {
     name: CrewName;
@@ -216,9 +216,9 @@ interface Fleet {
     lastTicket: string;
     ticketsClosed: number;
     ticketsPlanned: number;
-    // reviewer and verifier have no data source yet: their lines stay as typed in fleet.json
+    // reviewer and sixth sense have no data source yet: their lines stay as typed in fleet.json
     reviewer: string;
-    verifier: string;
+    sixthSense: string;
     skills: number;
     langs: Array<[string, number]>;
     lazy: Array<[string, number]>;

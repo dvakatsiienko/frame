@@ -43,7 +43,7 @@ dima's, 2026-09-29:
 3. if a new voice is a contender: render a blind booth round, dima rates. a quality change is proven by a blind listening booth (the 2026-09-29 booth artifact is the
    template: same text into every engine, loudness-matched, letters shuffled, rated 1–5, decoded after). done: his ratings, or «no contender». (template)
 4. eval + findings print. done: the proposal is printed. (template)
-5. resolve with dima; a coder applies the picks. done: his word on each pick. (open)
+5. resolve with dima; codie applies the picks. done: his word on each pick. (open)
 6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
