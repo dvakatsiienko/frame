@@ -1435,3 +1435,13 @@ test('a card with no linked file stays hand-stepped', async ($, on) => {
         await denied($, { act: 'step', current: 1, id: 'l1' }),
     ).toBeUndefined();
 });
+
+test("a plan tick that moves the pointer drops dima's steer on the old step", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    w.store.set('lane-steer:l1', { steer: 'hold on step 1' });
+    w.files[PLAN] = planText('x  ');
+    await poll(w);
+    expect(steerOf(w)).toBeUndefined();
+});

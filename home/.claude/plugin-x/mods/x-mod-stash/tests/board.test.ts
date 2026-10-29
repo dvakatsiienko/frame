@@ -1162,10 +1162,10 @@ const gapRow = async (
 ) => {
     const ui = await board($);
     await clock.advance(9000);
-    return (await ui.find({ text: /^🚨/, type: 'Text' }))?.text;
+    return (await ui.find({ key: 'quiet:card', type: 'Box' }))?.text;
 };
 
-test('a member that sent cclio more pings than her log holds draws a 🚨 row on her board', async ($, on) => {
+test('a member that sent cclio more pings than her log holds draws a calm card, never a 🚨 row', async ($, on) => {
     const { clock } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
@@ -1174,9 +1174,12 @@ test('a member that sent cclio more pings than her log holds draws a 🚨 row on
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toBe(
-        `🚨 quiet ledger: ${PEER_NAME} sent cclio 2, her quiet log holds 1`,
+    const ui = await board($);
+    await clock.advance(9000);
+    expect((await ui.find({ key: 'quiet:card', type: 'Box' }))?.text).toContain(
+        `${PEER_NAME} · a progress ping skipped the quiet hold (sent 2, logged 1)`,
     );
+    expect(await ui.find({ text: /^🚨/, type: 'Text' })).toBeUndefined();
 });
 
 test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
@@ -1217,9 +1220,7 @@ test('a flushed line does not count as a logged delivery', async ($, on) => {
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
-    expect(await gapRow($, clock)).toContain(
-        'sent cclio 2, her quiet log holds 1',
-    );
+    expect(await gapRow($, clock)).toContain('(sent 2, logged 1)');
 });
 
 test("the ledger's gap stays off any board but cclio's", async ($, on) => {
@@ -1553,4 +1554,50 @@ test("the cold composer sidecar shows ❄️, not ⚠ (dima's 10-15 screenshot)"
     fleet(on, COLD, { bg: [2], patch: { 2: { name: '🎼 composer' } } });
     const text = await row($, PEER);
     expect([text.includes('❄️'), text.includes('⚠')]).toEqual([true, false]);
+});
+
+// FRM-429 exit 2 (FRM-412): held pings read as one calm card with each member's count
+test('held pings show as one calm card listing each member with its held count', async ($, on) => {
+    fleet(on, {
+        [`quiet-held:${HERE}`]: [
+            { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
+            { at: NOW - MIN, from: PEER_NAME, text: 'step 3' },
+        ],
+    });
+    const ui = await board($);
+    const card = (await ui.find({ key: 'quiet:card', type: 'Box' }))?.text;
+    expect(card).toContain('🤫 quiet comms');
+    expect(card).toContain('held');
+    expect(await ui.find({ text: /^🚨/, type: 'Text' })).toBeUndefined();
+});
+
+test('no held ping and no gap draws no quiet card', async ($, on) => {
+    fleet(on);
+    expect(
+        await (await board($)).find({ key: 'quiet:card', type: 'Box' }),
+    ).toBeUndefined();
+});
+
+// FRM-412 exit 3: the cause of «holds 0» — a member renamed from ☕️ to 🌗 logged under both names, and the ledger
+// matched the log's name to the registry's exactly (10-22: 4 lines as ☕️, 9 as 🌗 for one coder)
+test('a member whose mode emoji changed keeps its logged pings counted: no gap', async ($, on) => {
+    const { clock } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                logged('🌗 🔧 FRM-1 code: x', NOW - 30 * MIN),
+                logged('🌗 🔧 FRM-1 code: x', NOW - 25 * MIN),
+            ],
+        },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 25 * MIN)] },
+        },
+    );
+    const ui = await board($);
+    await clock.advance(9000);
+    expect([
+        await ui.find({ key: 'quiet:card', type: 'Box' }),
+        await ui.find({ text: /^🚨/, type: 'Text' }),
+    ]).toEqual([undefined, undefined]);
 });

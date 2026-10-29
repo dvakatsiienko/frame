@@ -1998,6 +1998,7 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'op',
             'ops',
             'pick',
+            'plan',
             'role',
             'session',
             'text',

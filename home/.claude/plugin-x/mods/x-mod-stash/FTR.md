@@ -666,7 +666,9 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - makes: `quiet-gap` in the store, `{ at, gaps: [{ from, sent, logged }] }`, rewritten once a minute; the boot digest reads it
   - given a live member's own transcript holds more SendMessage calls to cclio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
   - when the minute's ledger runs in cclio's thread
-  - then her board draws a red `🚨 quiet ledger: <member> sent cclio <n>, her quiet log holds <m>` row at its top; any other board draws none
+  - then her board draws a calm `🤫 quiet comms` card at its top naming the member, «a progress ping skipped the quiet hold» and sent vs logged — never a red row (FRM-412, FRM-429); any other board draws none
+  - and the card also lists each member holding `[progress]` pings with its held count; it never raises an orbit ask
+  - and a member's log lines match its registry name without its leading mode emoji, so a rename from ☕️ to 🌗 no longer reads as «sent 3, holds 0» (the cause of FRM-412's shot: one coder logged 4 lines as ☕️ and 9 as 🌗 on 10-22)
   - decision: a `flushed` line is not a delivery, so a held ping counts once
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
   - decision: a send whose result said `success:false` (no such session, a plugin refused it, a dead socket) never reached her, so it is not counted (brief 9 item 2)

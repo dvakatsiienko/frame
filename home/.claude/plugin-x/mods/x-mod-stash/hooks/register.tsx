@@ -439,6 +439,7 @@ const ORBIT_PROPS = {
         type: 'string',
     },
     pick: { type: 'string' },
+    plan: { type: 'string' },
     role: { enum: [...LANE_ROLES], type: 'string' },
     session: { type: 'string' },
     slug: { type: 'string' },
@@ -785,8 +786,10 @@ async function quietLedger($: EngineInterface, now: number) {
             .map((t) => Date.parse(t))
             .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
         // the envelope names ccrow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
+        // a member keeps its identity when its mode emoji changes (☕️ → 🌗 on a rename), so the lines match without it
         const logged = judged.filter(
-            (l) => bare(l.from) === bare(r.base.name) && l.at >= since,
+            (l) =>
+                memberKey(l.from) === memberKey(r.base.name) && l.at >= since,
         ).length;
         if (sent > logged) gaps.push({ from: r.base.name, logged, sent });
     }
@@ -1661,6 +1664,13 @@ async function followPlans($: EngineInterface) {
             continue;
         }
         isChanged = true;
+        // a steer was about the step it sat on: it leaves when the plan moves the pointer, as a hand step does
+        if (at !== lane.current) {
+            await $.store.delete(LANE_STEER + lane.id).catch(() => undefined);
+            await $.store
+                .delete(LANE_STEER_OLD + lane.id)
+                .catch(() => undefined);
+        }
         const { isPlanGone: _, ...rest } = lane;
         next.push({
             ...rest,
@@ -1934,6 +1944,9 @@ async function isBootOpen($: EngineInterface) {
     return typeof at === 'number' && (await $.clock.now()) - at < BOOT_MS;
 }
 
+// a member's name without its leading mode emoji: «☕️ 🔧 FRM-1 code: x» and «🌗 🔧 FRM-1 code: x» are one member
+const memberKey = (name: string) =>
+    bare(name).replace(/^(?:☕️?|🌗|⚡|🌘|🎯)/u, '');
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
 
 // a thread's asks show while it has any and they are under a day old
@@ -5593,16 +5606,37 @@ export const register: Register = (on) => {
                             {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
                         </Text>
                     ) : null;
-                    const gapsJSX = (board?.quietGaps ?? []).map((g) => {
-                        return (
-                            <Text
-                                color={PALETTE.hot}
-                                key={`gap:${g.from}`}
-                                wrap='truncate-end'>
-                                {`🚨 quiet ledger: ${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`}
-                            </Text>
-                        );
-                    });
+                    // the quiet comms card: who holds how many [progress] pings, calm, never an alarm row or an orbit ask; a real
+                    // gap — a ping that skipped the hold — names its member and the count (FRM-429, FRM-412)
+                    const heldBy = (board?.members ?? []).filter(
+                        (m) => m.held?.length,
+                    );
+                    const gaps = board?.quietGaps ?? [];
+                    const gapsJSX =
+                        heldBy.length || gaps.length ? (
+                            <Box
+                                key='quiet:card'
+                                {...cardProps}
+                                marginBottom={1}>
+                                <Text bold>🤫 quiet comms</Text>
+                                {heldBy.map((m) => (
+                                    <Text
+                                        dimColor
+                                        key={`quiet:held:${m.sid}`}
+                                        wrap='truncate-end'>
+                                        {`${m.name} · ${m.held?.length} held`}
+                                    </Text>
+                                ))}
+                                {gaps.map((g) => (
+                                    <Text
+                                        dimColor
+                                        key={`quiet:gap:${g.from}`}
+                                        wrap='truncate-end'>
+                                        {`${g.from} · a progress ping skipped the quiet hold (sent ${g.sent}, logged ${g.logged})`}
+                                    </Text>
+                                ))}
+                            </Box>
+                        ) : null;
                     const arranged = (top: RenderElement) => (
                         <Box flexDirection='column' minHeight={fill}>
                             {stripJSX}
