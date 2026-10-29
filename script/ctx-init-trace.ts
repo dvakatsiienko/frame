@@ -22,18 +22,21 @@ const PROJECTS_DIR = path.join(homedir(), '.claude/projects');
 const DAY = 24 * 60 * 60 * 1000;
 const FIRST_RUN_DAYS = 14;
 
-export async function scanTranscripts({
+// each project folder's rows reach `onRows` as soon as it is read, so a scan cut short by the boot's timeout keeps what it found
+async function scanTranscripts({
     projects = PROJECTS_DIR,
     since,
     known = new Set<string>(),
+    onRows,
 }: {
     projects?: string;
     since: number;
     known?: Set<string>;
+    onRows: (rows: TraceRow[]) => void;
 }) {
-    const rows: TraceRow[] = [];
-    if (!existsSync(projects)) return rows;
+    if (!existsSync(projects)) return;
     for (const dir of readdirSync(projects)) {
+        const rows: TraceRow[] = [];
         const folder = path.join(projects, dir);
         if (!statSync(folder).isDirectory()) continue;
         for (const file of readdirSync(folder)) {
@@ -44,14 +47,15 @@ export async function scanTranscripts({
             const row = await initRowOf(full, sid, dir);
             if (row) rows.push(row);
         }
+        onRows(rows);
     }
-    return rows;
 }
 
 async function initRowOf(file: string, sid: string, dir: string) {
     let firstChars: number | undefined;
     let firstText = '';
-    const lines = createInterface({ input: createReadStream(file) });
+    const input = createReadStream(file);
+    const lines = createInterface({ input });
     try {
         for await (const line of lines) {
             const entry = parse(line);
@@ -83,6 +87,7 @@ async function initRowOf(file: string, sid: string, dir: string) {
         }
     } finally {
         lines.close();
+        input.destroy();
     }
     return undefined;
 }
@@ -106,28 +111,29 @@ export function readTrace(file = TRACE_FILE) {
         .map((l) => JSON.parse(l) as TraceRow);
 }
 
-export function appendRows(rows: TraceRow[], file = TRACE_FILE) {
+function appendRows(rows: TraceRow[], file = TRACE_FILE) {
     if (!rows.length) return;
     mkdirSync(path.dirname(file), { recursive: true });
     appendFileSync(file, rows.map((r) => `${JSON.stringify(r)}\n`).join(''));
 }
 
 export async function scan(file = TRACE_FILE, projects = PROJECTS_DIR) {
-    const trace = readTrace(file);
-    const newest = Math.max(0, ...trace.map((r) => Date.parse(r.at) || 0));
-    const since = newest ? newest - DAY : Date.now() - FIRST_RUN_DAYS * DAY;
-    const rows = await scanTranscripts({
-        known: new Set(trace.map((r) => r.sid)),
+    let added = 0;
+    await scanTranscripts({
+        known: new Set(readTrace(file).map((r) => r.sid)),
+        onRows: (rows) => {
+            appendRows(rows, file);
+            added += rows.length;
+        },
         projects,
-        since,
+        since: Date.now() - FIRST_RUN_DAYS * DAY,
     });
-    appendRows(rows, file);
-    return rows.length;
+    return added;
 }
 
-export const net = (r: TraceRow) => r.init - Math.round(r.chars / 4);
+const net = (r: TraceRow) => r.init - Math.round(r.chars / 4);
 
-export function median(values: number[]) {
+function median(values: number[]) {
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2
@@ -209,7 +215,7 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
 }
 
 // the memory a seat loads at boot: the files whose growth explains a rising starting context
-export const MEMORY_PATHS = [
+const MEMORY_PATHS = [
     'home/.claude/rules',
     'home/.claude/CLAUDE.md',
     'cclio/memory',
@@ -338,6 +344,13 @@ export function digestOf(
                   .map(
                       (m) =>
                           `${m.seat} ${kilo(m.value)} ${m.model.replace('claude-', '')}`,
+                  )
+                  .concat(
+                      SEAT_ORDER.filter(
+                          (seat) => !medians.some((m) => m.seat === seat),
+                      ).map(
+                          (seat) => `${seat} no session in ${DIGEST_DAYS} days`,
+                      ),
                   )
                   .join(' · ')}`
             : 'starting ctx: no sessions traced in the last 14 days',

@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    utimesSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -63,7 +69,7 @@ function fixture() {
 }
 
 describe('the init-context scan', () => {
-    it('writes one row per session with its seat, model and init number', async () => {
+    it('writes a row with the session seat, model, init number', async () => {
         const f = fixture();
         f.put('-Users-dima-frame-cclio', 's1', [user('hi'), assistant('s1')]);
         await scan(f.file, f.projects);
@@ -81,6 +87,19 @@ describe('the init-context scan', () => {
         ]);
     });
 
+    it('leaves a transcript older than the first-run window unread', async () => {
+        const f = fixture();
+        f.put('-Users-dima-frame', 's1', [user('hi'), assistant('s1')]);
+        const old = new Date(Date.now() - 30 * DAY);
+        utimesSync(
+            path.join(f.projects, '-Users-dima-frame', 's1.jsonl'),
+            old,
+            old,
+        );
+        await scan(f.file, f.projects);
+        expect(readTrace(f.file)).toEqual([]);
+    });
+
     it('adds nothing on a second run', async () => {
         const f = fixture();
         f.put('-Users-dima-frame', 's1', [user('hi'), assistant('s1')]);
@@ -96,7 +115,7 @@ describe('the init-context scan', () => {
         expect(readTrace(f.file)).toEqual([]);
     });
 
-    it('skips a sidechain entry and a synthetic model, and takes the next main entry', async () => {
+    it('skips a sidechain entry and a synthetic model for the next main entry', async () => {
         const f = fixture();
         f.put('-Users-dima-frame', 's1', [
             user('hi'),
@@ -202,7 +221,7 @@ describe('the growth alarm', () => {
         expect(kinds(weeks(118_000, 118_000), baseline)).toEqual(['ceiling']);
     });
 
-    it('stays quiet when only the first message doubled and memory stayed flat', () => {
+    it('stays quiet when only the first message doubled', () => {
         const rows = weeks(100_000, 112_000, 56_000, 8_000);
         expect(kinds(rows, baselineOf(rows))).toEqual([]);
     });
@@ -317,32 +336,35 @@ describe('the boot digest', () => {
             ...[1, 2, 3].map((d) => row(d, 129_000)),
         ];
         expect(digestOf(rows, {}, NOW, none)).toEqual([
-            'starting ctx (net, newest 5 sessions): cclio 129k opus-5-5 · coder 100k opus-5-5',
+            'starting ctx (net, newest 5 sessions): cclio 129k opus-5-5 · coder 100k opus-5-5 · ccrow no session in 14 days · composer no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
         ]);
     });
 
     it('adds the alarm line under it when a seat grew', () => {
         const rows = weeks(100_000, 112_000);
         expect(digestOf(rows, {}, NOW, none)).toEqual([
-            'starting ctx (net, newest 5 sessions): cclio 112k opus-5-5',
+            'starting ctx (net, newest 5 sessions): cclio 112k opus-5-5 · ccrow no session in 14 days · composer no session in 14 days · coder no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
             expect.stringMatching(
                 /^⚠ cclio \(claude-opus-5-5\): starting ctx 112k, 12 % over 100k/,
             ),
         ]);
     });
 
-    it('names the grown memory file in the alarm line, and reads git only when an alarm fires', () => {
-        const grown = vi.fn(() => [
-            { bytes: 900, file: 'cclio/memory/craft-pm.md', lines: 30 },
-        ]);
+    const grownFiles = () => [
+        { bytes: 900, file: 'cclio/memory/craft-pm.md', lines: 30 },
+    ];
+
+    it('names the grown memory file in the alarm line', () => {
+        const lines = digestOf(weeks(100_000, 112_000), {}, NOW, grownFiles);
+        expect(lines[1]).toContain(
+            'cclio/memory/craft-pm.md (+30 lines) → trim it',
+        );
+    });
+
+    it('reads git only when an alarm fires', () => {
+        const grown = vi.fn(grownFiles);
         digestOf(weeks(100_000, 108_000), {}, NOW, grown);
-        const lines = digestOf(weeks(100_000, 112_000), {}, NOW, grown);
-        expect([grown.mock.calls.length, lines[1]]).toEqual([
-            1,
-            expect.stringContaining(
-                'cclio/memory/craft-pm.md (+30 lines) → trim it',
-            ),
-        ]);
+        expect(grown).not.toHaveBeenCalled();
     });
 
     it('says so when no session was traced lately', () => {
@@ -392,9 +414,16 @@ describe('the cclio boot digest line', () => {
         );
     });
 
-    it('keeps the call before the green line and outside compact mode', () => {
-        expect(hook.indexOf('\ninit_ctx_digest\n')).toBeGreaterThan(
-            hook.indexOf('fi\n\necho "-- flawlog'),
-        );
+    it('calls the digest outside every day-opener block, so compact mode prints it', () => {
+        const lines = hook.split('\n');
+        const call = lines.indexOf('init_ctx_digest');
+        const opener = 'if [ -z "$' + '{COMPACT:-}" ]; then';
+        const blocks = lines
+            .map((l, i) => (l === opener ? i : -1))
+            .filter((i) => i >= 0)
+            .map((from) => [from, lines.indexOf('fi', from)]);
+        expect(
+            blocks.filter(([from = 0, to = 0]) => call > from && call < to),
+        ).toEqual([]);
     });
 });
