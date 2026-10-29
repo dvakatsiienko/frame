@@ -17,7 +17,7 @@ siesta after each (`habit-dima-comms`); heavy queries fire at the step that need
 
 📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
-🚦 **a spawn in the boot never ends its turn**: the board is the one stop (dima, 2026-10-29; guard: FRM-426).
+🚦 **a spawn in the boot never ends its turn**: the board is the one stop (dima, 2026-10-29; guard: FRM-426). a side channel asked at the boot (a fresh thread usually, a fork when the job needs this thread) starts at the first possible point, a fork before the boot reads anything so it inherits the least, and the boot runs on.
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context (its sections are the script's). **one shell round at most:**

@@ -21,4 +21,4 @@ a side channel takes dima's side questions, research and fixes, so the main thre
 3. done: the result names a started session; the reply links it, `[🦉 cclio (side)](#local_<id>)`, in one line
 4. while [FRM-464](https://linear.app/x-com/issue/FRM-464) is open: check the door against its `live checks` and tick its ⬜ in the body the same turn (until: FRM-464 closes, then this step goes)
 
-its pocket items carry `side` and come back at the next boot (`cclio:boot` § 3); its closing report reaches the main by SendMessage.
+its pocket items carry `side` and come back at the next boot (`cclio:boot` § 3); its closing report reaches the main by SendMessage. a fork's `worktree-fork-*` branch is merged by cclio the turn its report lands, never dropped (dima, 2026-10-29).

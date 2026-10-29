@@ -184,7 +184,7 @@ file he names.
   so dima can tell «correctly idle» from «stalled».
 - **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out.
   - a thing with a page is a link labelled with an emoji and a short word
-  - several holders share one line and one «waiting on», split by commas — `🔭 waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**` · until: PK-160, the band merges them itself
+  - several holders share one line and one «waiting on», split by commas — `🔭 waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**`
   - a member or a subagent prints as § emoji says, no link
 
 ### 🪐 open asks — orbit

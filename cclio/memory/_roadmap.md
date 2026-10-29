@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → pm revamp → monorepo → speak → chords → trophy-sys → portfolio → monorepo
 - now: the pm revamp tails, then monorepo; the cli lanes beside
 - next: speak v2 or oxc/vp + bun
-- started mils: fleet · 🐉 fleet tools sharpened 2/13, fleet · 🐋 the board reads true 1/6, cli · 🐉 review loop gets verbs 3/20, fleet · 🐋 safer, quieter mods 10/13, fleet · 🐋 pm revamp tails landed 3/10
+- started mils: fleet · 🐉 fleet tools sharpened 2/13, fleet · 🐋 the board reads true 3/6, cli · 🐉 review loop gets verbs 3/20, fleet · 🐋 safer, quieter mods 10/13, fleet · 🐋 pm revamp tails landed 4/10
