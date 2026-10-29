@@ -32,7 +32,7 @@ export type Context = {
     // the clis whose bare `--help` already ran this session
     helped?: Set<string>;
 };
-// a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
+// a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCoder: boolean; isStamped: boolean };
 export type Verdict =
     | { kind: 'run' }

@@ -65,7 +65,7 @@ A delete on a service past any trash: `gh repo|release delete`, `vercel rm`, `op
 _Avoid_: cloud delete
 
 **Brief stamp**:
-The file `x brief check` writes on a clean pass, keyed by the sha256 of the brief's bytes; a coder spawn runs only when its brief file has one.
+The file `x brief check` writes on a clean pass, keyed by the sha256 of the brief's bytes; a codie summon runs only when its brief file has one.
 _Avoid_: brief approval, check mark
 
 **Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; guard refuses a Bash write to a held file.

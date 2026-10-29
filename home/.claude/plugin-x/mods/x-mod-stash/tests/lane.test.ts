@@ -239,17 +239,20 @@ test('a second link of a role replaces the first', async ($, on) => {
     await lane($, {
         act: 'link',
         id: 'l1',
-        role: 'coder',
-        session: 'old-coder',
+        role: 'codie',
+        session: 'old-codie',
     });
     await lane($, {
         act: 'link',
         id: 'l1',
-        role: 'coder',
-        session: 'new-coder',
+        role: 'codie',
+        session: 'new-codie',
     });
-    await lane($, { act: 'link', id: 'l1', role: 'verifier', session: 'v' });
-    expect(kept(w)[0]?.members).toEqual({ coder: 'new-coder', verifier: 'v' });
+    await lane($, { act: 'link', id: 'l1', role: 'sixth-sense', session: 'v' });
+    expect(kept(w)[0]?.members).toEqual({
+        codie: 'new-codie',
+        'sixth-sense': 'v',
+    });
 });
 
 test('a second open lane of one topic is refused, naming the open one and its fix', async ($, on) => {
@@ -593,10 +596,10 @@ test('the 🛼 glide switch hides every glide card', async ($, on) => {
 
 /* exit 3 — the members' asks on the card */
 
-const CODER = 'c0c0c0c0-coder';
-const VERIFIER = 'v0v0v0v0-verifier';
+const CODER = 'c0c0c0c0-codie';
+const VERIFIER = 'v0v0v0v0-sixth';
 const linked = () =>
-    shelf(keptLane({ members: { coder: CODER, verifier: VERIFIER } }));
+    shelf(keptLane({ members: { codie: CODER, 'sixth-sense': VERIFIER } }));
 const published = (
     w: ReturnType<typeof world>,
     sid: string,
@@ -612,19 +615,19 @@ const ASK = { id: 'o3', pick: 'cut it', text: 'cut the second probe?' };
 const subText = async (ui: Board, role: string) =>
     (await ui.find({ key: `lane:l1:${role}`, type: 'Box' }))?.text;
 
-test('a coder subcard sits above a verifier subcard, each folded to its count', async ($, on) => {
+test('a codie subcard sits above a sixth sense subcard, each folded to its count', async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
     published(w, VERIFIER, [ASK]);
     await start($);
     const text = await laneText(await board($));
     expect([
-        text?.indexOf('🙋 🔧 coder · 2 asks'),
+        text?.indexOf('🙋 🔧 codie · 2 asks'),
         text?.includes('cut the second probe'),
     ]).toEqual([expect.any(Number), false]);
     expect(
-        (text?.indexOf('🙋 🔧 coder · 2 asks') ?? -1) <
-            (text?.indexOf('🙋 🔎 verifier · 1 ask') ?? -1),
+        (text?.indexOf('🙋 🔧 codie · 2 asks') ?? -1) <
+            (text?.indexOf('🙋 🔎 sixth sense · 1 ask') ?? -1),
     ).toBe(true);
 });
 
@@ -639,8 +642,8 @@ test('a member with asks heads its subcard in bold amber with a 🙋; at 0 it re
         return [t?.props.bold, t?.props.color];
     };
     expect([
-        await head('🙋 🔧 coder · 1 ask'),
-        await head('🔎 verifier · 0 asks'),
+        await head('🙋 🔧 codie · 1 ask'),
+        await head('🔎 sixth sense · 0 asks'),
     ]).toEqual([
         [true, '#d9661a'],
         [true, undefined],
@@ -666,7 +669,7 @@ test("the board's top strip counts the asks waiting on dima, per member, a marke
     expect([
         (await ui.find({ key: 'asks-strip', type: 'Box' }))?.text,
         keys.indexOf('asks-strip') < keys.indexOf('lane:l1'),
-    ]).toEqual(['🙋 3 asks wait for you· 🔧 coder 3', true]);
+    ]).toEqual(['🙋 3 asks wait for you· 🔧 codie 3', true]);
 });
 
 test('a tick on the card reads 📨 tick while it is sending', async ($, on) => {
@@ -674,9 +677,9 @@ test('a tick on the card reads 📨 tick while it is sending', async ($, on) => 
     published(w, CODER, [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
-    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
-    expect(await subText(ui, 'coder')).toContain('📨 tick');
+    await ui.press({ key: 'fold:lane:l1:codie' });
+    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
+    expect(await subText(ui, 'codie')).toContain('📨 tick');
 });
 
 test('🛼 glide switched off draws no strip', async ($, on) => {
@@ -699,7 +702,7 @@ test('a member linked by an id it cleared away from keeps its asks on the card',
     w.store.set(`succ:${OLD}`, { at: 1, sid: CODER });
     published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
     await start($);
-    expect(await laneText(await board($))).toContain('🙋 🔧 coder · 2 asks');
+    expect(await laneText(await board($))).toContain('🙋 🔧 codie · 2 asks');
 });
 
 test('a /clear records the id the session goes on under', async ($, on) => {
@@ -718,8 +721,8 @@ test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
     published(w, CODER, [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
-    expect(await subText(ui, 'coder')).toMatch(
+    await ui.press({ key: 'fold:lane:l1:codie' });
+    expect(await subText(ui, 'codie')).toMatch(
         /o3: cut the second probe\?.*➡️ cut it.*tick.*replay/su,
     );
 });
@@ -729,12 +732,12 @@ test("a tick on the card waits in the store for the member's own stash", async (
     published(w, CODER, [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
-    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    await ui.press({ key: 'fold:lane:l1:codie' });
+    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
     await w.clock.advance(5_000);
     expect([
         (w.store.get(`marks:${CODER}:o3`) as { mark?: string })?.mark,
-        await subText(ui, 'coder'),
+        await subText(ui, 'codie'),
     ]).toEqual(['accepted', expect.stringContaining('✅ tick')]);
 });
 
@@ -947,7 +950,7 @@ test('every board card folds by one rule: open until folded, a member subcard fo
     const label = async (card: string) =>
         (await ui.find({ key: `fold:${card}`, type: 'Button' }))?.text;
     // the subcard first: a folded glide card hides it
-    const cards = ['lane:l1:coder', 'orbit', 'phases'];
+    const cards = ['lane:l1:codie', 'orbit', 'phases'];
     const before = await Promise.all(cards.map(label));
     const after: (string | undefined)[] = [];
     for (const card of cards) {
@@ -1028,8 +1031,8 @@ test('a glide mark saved before the steer rename clears for good when dima empti
     w.store.set(`marks:${CODER}:o3`, { at: 1, mark: 'accepted', note: 'old' });
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
-    await ui.input({ key: 'lane:l1:coder:steer:o3', kind: 'submit', text: '' });
+    await ui.press({ key: 'fold:lane:l1:codie' });
+    await ui.input({ key: 'lane:l1:codie:steer:o3', kind: 'submit', text: '' });
     const m = w.store.get(`marks:${CODER}:o3`) as Record<string, unknown>;
     expect([m.mark, m.steer, 'note' in m]).toEqual([
         'accepted',
@@ -1056,10 +1059,10 @@ test("a link by the member's desktop id keeps its registry name", async ($, on) 
     await lane($, {
         act: 'link',
         id: 'l1',
-        role: 'coder',
+        role: 'codie',
         session: 'local_94d65a2a',
     });
-    expect(kept(w)[0]?.members.coder).toBe(CODER_NAME);
+    expect(kept(w)[0]?.members.codie).toBe(CODER_NAME);
 });
 
 test("a link by an 8-char session prefix keeps the member's registry name", async ($, on) => {
@@ -1069,10 +1072,10 @@ test("a link by an 8-char session prefix keeps the member's registry name", asyn
     await lane($, {
         act: 'link',
         id: 'l1',
-        role: 'coder',
+        role: 'codie',
         session: 'c0c0c0c0',
     });
-    expect(kept(w)[0]?.members.coder).toBe(CODER_NAME);
+    expect(kept(w)[0]?.members.codie).toBe(CODER_NAME);
 });
 
 test("after a /clear mints a new session id, the card still shows the member's asks", async ($, on) => {
@@ -1083,7 +1086,7 @@ test("after a /clear mints a new session id, the card still shows the member's a
     published(w, 'n3n3n3n3-after-clear', [ASK]);
     await start($);
     const ui = await board($);
-    expect(await subText(ui, 'coder')).toContain('1 ask');
+    expect(await subText(ui, 'codie')).toContain('1 ask');
 });
 
 test("a tick on the card reaches the member's session id of now", async ($, on) => {
@@ -1094,8 +1097,8 @@ test("a tick on the card reaches the member's session id of now", async ($, on) 
     published(w, 'n3n3n3n3-after-clear', [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
-    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    await ui.press({ key: 'fold:lane:l1:codie' });
+    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
     expect(
         (w.store.get('marks:n3n3n3n3-after-clear:o3') as { mark?: string })
             ?.mark,
@@ -1114,7 +1117,7 @@ test('two live sessions under one name: the card follows the newer', async ($, o
     published(w, 'n2n2n2n2-newer', [ASK, { ...ASK, id: 'o4' }]);
     await start($);
     const ui = await board($);
-    expect(await subText(ui, 'coder')).toContain('2 asks');
+    expect(await subText(ui, 'codie')).toContain('2 asks');
 });
 
 /* rider (clio's ask, 18:01): a card edits in place, up to 7 steps */
@@ -1128,12 +1131,12 @@ test('seven steps make a card', async ($, on) => {
     expect(kept(w)[0]?.items.length).toBe(7);
 });
 
-test('an edit keeps the lane id, its members and its history, adding one edit entry', async ($, on) => {
+test('an edit keeps the lane id, its members (old role keys read as the new ones) and its history, adding one edit entry', async ($, on) => {
     const w = world(on, {
         files: shelf(
             keptLane({
                 history: [{ act: 'create', at: 1, current: 0, done: 0 }],
-                members: { coder: 'c0c0c0c0-coder' },
+                members: { coder: 'c0c0c0c0-codie' },
             }),
         ),
     });
@@ -1144,7 +1147,7 @@ test('an edit keeps the lane id, its members and its history, adding one edit en
         [
             'l1',
             'kept, renamed',
-            { coder: 'c0c0c0c0-coder' },
+            { codie: 'c0c0c0c0-codie' },
             ['create', 'edit'],
         ],
     );
@@ -1255,7 +1258,7 @@ test("a lane-order key a board left before o138 is dropped by clio's stash, neve
 
 /* todo 6 — glide steps itself from the linked coder's plan step (spec exits 3–4) */
 
-const STEP_VERIFIER = '☕️ 🔎 verify: mods';
+const STEP_VERIFIER = '⚡ 🔎 sixth sense: mods';
 const NOW = new Date(2026, 9, 11, 18, 30).getTime();
 const stepKey = (name: string) =>
     `lane-step:${name.replaceAll(/[\s\u200d]/g, '')}`;
@@ -1507,13 +1510,13 @@ test('a tick on the card after typing keeps the typed steer, not the published o
     published(w, CODER, [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.press({ key: 'fold:lane:l1:codie' });
     await ui.input({
-        key: 'lane:l1:coder:steer:o3',
+        key: 'lane:l1:codie:steer:o3',
         kind: 'change',
         text: 'new words',
     });
-    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
     expect(
         (w.store.get(`marks:${CODER}:o3`) as { steer?: string })?.steer,
     ).toBe('new words');

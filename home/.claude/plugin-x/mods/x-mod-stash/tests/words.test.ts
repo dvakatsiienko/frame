@@ -29,9 +29,9 @@ test('a wish is bolded as a noun, never as a verb', () => {
 
 test('a fleet member prints bold with its badge', () => {
     expect(
-        boldFleetWords('clio asks crow; the coder and two verifiers').text,
+        boldFleetWords('clio asks crow; codie and two sixth senses').text,
     ).toBe(
-        '**🦉 clio** asks **🐦‍⬛ crow**; the **🔧 coder** and two **🔎 verifiers**',
+        '**🦉 clio** asks **🐦‍⬛ crow**; **🔧 codie** and two **🔦 sixth senses**',
     );
 });
 
@@ -45,8 +45,8 @@ test("a skill name, a quote, a session name and another member's badge keep thei
     const text = [
         'run clio:halt',
         '«dima, 2026-10-08»',
-        'ask ☕️ 🔧 mods coder',
-        'a 🔎 coder',
+        'ask ☕️ 🔧 mods codie',
+        'a 🔦 codie',
     ].join('\n');
     expect(boldFleetWords(text).text).toBe(text);
 });

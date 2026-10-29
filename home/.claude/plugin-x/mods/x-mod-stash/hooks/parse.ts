@@ -119,14 +119,15 @@ export function dropWaitAside(text: string) {
 // explore, cc) — those would badge a helper function or the retro file
 const MEMBERS = {
     clio: '🦉',
+    'cloud chat': '☁️',
     'cloud-chat': '☁️',
-    coder: '🔧',
+    codie: '🔧',
     crow: '🐦‍⬛',
     designer: '🎨',
     dima: '🙋‍♂️',
     'helper-lite': '🪶',
     researcher: '🐝',
-    verifier: '🔎',
+    'sixth sense': '🔦',
 } as const;
 const BADGES = {
     ...MEMBERS,
@@ -150,7 +151,7 @@ export function boldFleetWords(text: string) {
         if (/^\s*```/.test(line)) isFence = !isFence;
         if (isFence || /^\s*>/.test(line)) return line;
         // masked at the same length, so match offsets land on the real line; a «quote» stays as typed, and a session
-        // name (`☕️ 🔧 mods coder`) keeps its own role emoji
+        // name (`☕️ 🔧 mods codie`) keeps its own role emoji
         const masked = line.replace(
             /`[^`\n]*`|\*\*[^*\n]+\*\*|\]\([^)\n]*\)|https?:\/\/\S+|«[^»\n]*»|(?:☕️?|🎯) \S+ [^\n,;)»]*/gu,
             (m) => '\0'.repeat(m.length),
@@ -319,14 +320,17 @@ export function planSteps(text: string) {
 
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 
-// `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»; a standing member keeps
+// `<mode> <role emoji> <scope> <member name>: <ticket or what>` (dima, 2026-10-29) — «⚡ 🔧 mods lane 3 codie: FRM-431»;
+// the older ☕️ 🎯 shape («☕️ 🔧 FRM-303 code: stash keep-hot») still reads true; a standing member keeps
 // its own name, badge or not — «🐦‍⬛ crow», which the registry writes with a space for the joiner
 const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
+const THREAD_NAME = /^(⚡️?|🌗|🌘)\s+\S+\s+(?:[^:\s]+\s+)*[\w-]+:\s+\S/u;
 // standing sidecars named by a bare word, not by the lane pattern: helga is clio's copyist (rules/fleet-identity.md)
 const SIDECARS = new Set(['helga']);
 export function isFleetName(name: string) {
     return (
         FLEET_NAME.test(name) ||
+        THREAD_NAME.test(name) ||
         Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim()) ||
         SIDECARS.has(name.replace(/[^\w\s-]/gu, '').trim())
     );

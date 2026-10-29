@@ -68,7 +68,7 @@ the facts a mod round needs only when a probe or a test bites; the doors and rul
 - a throwing op mock is skipped by the harness, never thrown — test a failure by forcing the real failing path (FRM-307)
 - a declaration a mod needs (a vault, a store shape) sits in a `types` contract the manifest names, never inline — `claude plugin validate` goes red otherwise; stop on that red before committing (FRM-307). a contract file keeps its comments to plain text: an emoji's variation selector (U+FE0F), even in a comment, fails it (pk-93)
 
-- the harness clones an event before any hook runs, so no test row can make a hook throw — test a `.catch` by calling the handler directly; a row's `children` carry only `type`, no text or key (mods coder, lane l12)
+- the harness clones an event before any hook runs, so no test row can make a hook throw — test a `.catch` by calling the handler directly; a row's `children` carry only `type`, no text or key (mods codie, lane l12)
 
 ## secrets and chain order
 

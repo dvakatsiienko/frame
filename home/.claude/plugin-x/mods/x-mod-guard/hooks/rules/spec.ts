@@ -1,5 +1,5 @@
 // a list or a ticket in a «>» quote or a code fence is someone's words, never the job
-export const TO_MEMBER = /🔧|🔎|\bcoder\b|\bverifier\b/i;
+export const TO_MEMBER = /🔧|🔎|\b(?:codie|coder|sixth sense|verifier)\b/i; // read-both: names before the 10-29 rename
 const SPEC_PATH = /\.scratch\/[^\s/]+\/spec\.md\b/;
 const TICKET = /\b(FRM|BYT)-\d+\b/;
 const ITEM = /^\s*\d{1,2}[.)]\s+\S/;

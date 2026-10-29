@@ -202,7 +202,7 @@ test('the coordinator is pinned to the top of the board', async ($, on) => {
     expect(order).toEqual([`m:${HERE}`, `m:${PEER}`]);
 });
 
-test("the coordinator's adviser is pinned second, above a coder whose name only mentions it", async ($, on) => {
+test("the coordinator's adviser is pinned second, above a codie whose name only mentions it", async ($, on) => {
     fleet(
         on,
         {},
@@ -634,7 +634,7 @@ async function nineCellColumns($: Engine) {
 }
 
 test('with no ticket on any row, no row draws the ticket column', async ($, on) => {
-    fleet(on, {}, { patch: { 2: { name: '☕️ 🔧 code: x' } } });
+    fleet(on, {}, { patch: { 2: { name: '⚡ 🔧 codie: x' } } });
     expect(await nineCellColumns($)).toBe(0);
 });
 
@@ -1017,7 +1017,7 @@ test('two members whose names hash alike still get two hues', () => {
 test("with colour on, an idle member's dot is dimmed and a busy one's is not", async ($, on) => {
     fleet(on, { 'board-colour': true });
     const dots = (await colourTexts($)).filter((t) => t.text === '●');
-    // clio is pinned first and busy, the coder second and idle
+    // clio is pinned first and busy, codie second and idle
     expect(dots.map((d) => d.dim)).toEqual([false, true]);
 });
 
@@ -1536,7 +1536,7 @@ test("the state column is as wide as the board's longest time, never a fixed 9",
     const widths = (await view.findAll({ type: 'Box' }))
         .filter((n) => n.key?.startsWith('state:'))
         .map((n) => n.props.width);
-    // 🦉 busy 3m, the coder idle 12m: «12m», its emoji, its gap and a cell of air
+    // 🦉 busy 3m, codie idle 12m: «12m», its emoji, its gap and a cell of air
     expect(widths).toEqual([7, 7]);
 });
 

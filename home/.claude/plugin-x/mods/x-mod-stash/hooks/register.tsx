@@ -109,7 +109,7 @@ const SUCC = 'succ:';
 const MARKS = 'marks:';
 // 🛼 a member's lane step from its plan op, one key per registry name, written only by that session (todo 6)
 const LANE_STEP = 'lane-step:';
-// the moves clio's stash made from a coder's step, held for her next tool call or prompt
+// the moves clio's stash made from codie's step, held for her next tool call or prompt
 const LANE_MOVES = 'lane-moves';
 const DIMA_AT = 'dima-at';
 const AFK_KEY = 'afk';
@@ -337,7 +337,12 @@ const LANE_ORDER = 'lane-order:';
 // a lane steer typed before the rename sits under the old prefix: read as a steer, retired at its next write
 const LANE_STEER_OLD = 'lane-note:';
 const LANE_OWNER = '🦉 clio';
-const LANE_ROLES = ['coder', 'verifier'] as const;
+const LANE_ROLES = ['codie', 'sixth-sense'] as const;
+// read-both: lanes linked before the 10-29 rename keep the old role keys; both words resolve
+const LANE_ROLE_OLD: Record<string, (typeof LANE_ROLES)[number]> = {
+    coder: 'codie',
+    verifier: 'sixth-sense',
+};
 const LANE_MAX = 7;
 const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
@@ -388,7 +393,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · text» lines are the steps, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · text» lines are the steps, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
@@ -660,10 +665,10 @@ const WIND_SAY = {
     refused: 'refused, work started after pending: none',
     writing: 'finishing its step, then its handoff',
 } as const;
-const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (a coder: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods coder; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 export const WIND_WORDS =
     'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
-const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (a verifier's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
+const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (sixth sense's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
 // clio's good stop is todo 16's nine steps (dima, 10-13)
 const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const windRefused = (what: string) =>
@@ -1529,11 +1534,11 @@ export function glideOp(
     }
     if (act === 'link') {
         const session = oneLine(input.session);
-        const role = input.role;
+        const role = LANE_ROLE_OLD[input.role as string] ?? input.role;
         if (!session)
             return { deny: 'orbit glide: link names the member session id' };
-        if (role !== 'coder' && role !== 'verifier')
-            return { deny: 'orbit glide: role is coder or verifier' };
+        if (role !== 'codie' && role !== 'sixth-sense')
+            return { deny: 'orbit glide: role is codie or sixth-sense' };
         return put(
             {
                 ...lane,
@@ -1649,8 +1654,8 @@ const laneTopic = (title: string) =>
 
 type LaneStep = { at: number; step: number };
 
-// a linked coder's plan step moves its lane forward: a step ahead of the pointer and newer than the lane's last move,
-// never the finish, which stays clio's act; her own step back holds until the coder names a step again (todo 6)
+// a linked codie's plan step moves its lane forward: a step ahead of the pointer and newer than the lane's last move,
+// never the finish, which stays clio's act; her own step back holds until codie names a step again (todo 6)
 async function followCoders($: EngineInterface) {
     if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
         return;
@@ -1660,12 +1665,12 @@ async function followCoders($: EngineInterface) {
     const moves: string[] = [];
     const next: StashLane[] = [];
     for (const lane of lanes) {
-        const coder = lane.members.coder;
+        const codie = lane.members.codie;
         const m =
-            lane.endedAt || lane.plan || !coder
+            lane.endedAt || lane.plan || !codie
                 ? undefined
                 : ((await $.store
-                      .get(LANE_STEP + bare(coder))
+                      .get(LANE_STEP + bare(codie))
                       .catch(() => undefined)) as LaneStep | undefined);
         if (
             !m ||
@@ -1685,7 +1690,7 @@ async function followCoders($: EngineInterface) {
                 {
                     act: 'step',
                     at: now,
-                    by: coder,
+                    by: codie,
                     current: stepped.current,
                     done: stepped.done,
                 },
@@ -1695,7 +1700,7 @@ async function followCoders($: EngineInterface) {
         });
         await $.store.delete(LANE_STEER + lane.id).catch(() => undefined);
         moves.push(
-            `lane ${lane.id} «${lane.title}» moved to step ${stepped.current} by ${coder}`,
+            `lane ${lane.id} «${lane.title}» moved to step ${stepped.current} by ${codie}`,
         );
     }
     if (!moves.length) return;
@@ -1869,13 +1874,29 @@ function laneSummary(
 const lanesFile = (home: string | undefined) =>
     `${home}/.claude/shelf/lanes.json`;
 
+// read-both: a lane stored before the 10-29 rename names its members coder and verifier
+function laneRolesNow(lane: StashLane): StashLane {
+    const now = (r?: Partial<Record<string, string>>) =>
+        r &&
+        Object.fromEntries(
+            Object.entries(r).map(([k, v]) => [LANE_ROLE_OLD[k] ?? k, v]),
+        );
+    return {
+        ...lane,
+        members: now(lane.members) ?? {},
+        ...(lane.memberSids ? { memberSids: now(lane.memberSids) } : {}),
+    };
+}
+
 // the shelf file as it stands: every lane, ended ones kept as the record
 async function readLanes($: EngineInterface): Promise<StashLane[]> {
     const home = await $.env.get('HOME').catch(() => undefined);
     const text = await $.fs.read(lanesFile(home)).catch(() => undefined);
     try {
         const body = text ? JSON.parse(text) : undefined;
-        return Array.isArray(body?.lanes) ? (body.lanes as StashLane[]) : [];
+        return Array.isArray(body?.lanes)
+            ? (body.lanes as StashLane[]).map(laneRolesNow)
+            : [];
     } catch {
         return [];
     }
@@ -2048,9 +2069,9 @@ async function isBootOpen($: EngineInterface) {
     return typeof at === 'number' && (await $.clock.now()) - at < BOOT_MS;
 }
 
-// a member's name without its leading mode emoji: «☕️ 🔧 FRM-1 code: x» and «🌗 🔧 FRM-1 code: x» are one member
+// a member's name without its leading mode emoji: «⚡ 🔧 codie: FRM-1» and «🌗 🔧 codie: FRM-1» are one member
 const memberKey = (name: string) =>
-    bare(name).replace(/^(?:☕️?|🌗|⚡|🌘|🎯)/u, '');
+    bare(name).replace(/^(?:☕️?|🌗|⚡️?|🌘|🎯)/u, '');
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
 // a member keeps its role through a rename (a new ticket, a new topic): its role emoji and the word before the colon
 const roleKey = (name: string) => {
@@ -4874,7 +4895,9 @@ export const register: Register = (on) => {
                         card: string,
                     ) =>
                         kept[card] ??
-                        /^(lane:[^:]+:(coder|verifier)|quiet:.+)$/.test(card);
+                        /^(lane:[^:]+:(codie|sixth-sense|coder|verifier)|quiet:.+)$/.test(
+                            card,
+                        );
                     const flipFold = async (card: string) => {
                         const was = (await $.state.get(FOLDS)).value ?? {};
                         await $.state.set(FOLDS, {
@@ -5301,7 +5324,7 @@ export const register: Register = (on) => {
                         const markSid = lane.memberSids?.[role] ?? sid;
                         const card = `lane:${lane.id}:${role}`;
                         const isOpen = !isFolded(card);
-                        const badge = role === 'coder' ? '🔧' : '🔎';
+                        const badge = role === 'codie' ? '🔧' : '🔎';
                         return (
                             <Box
                                 flexDirection='column'
@@ -5319,7 +5342,7 @@ export const register: Register = (on) => {
                                                 ? PALETTE.warn
                                                 : undefined
                                         }>
-                                        {`${asks.length ? '🙋 ' : ''}${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}
+                                        {`${asks.length ? '🙋 ' : ''}${badge} ${role.replace('-', ' ')} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}
                                     </Text>
                                     {foldJSX(card)}
                                 </Box>
@@ -5399,7 +5422,7 @@ export const register: Register = (on) => {
                                                 .catch(() => undefined)
                                         }
                                         plain>
-                                        {`· ${w.role === 'coder' ? '🔧' : '🔎'} ${w.role} ${w.n}`}
+                                        {`· ${w.role === 'codie' ? '🔧' : '🔎'} ${w.role.replace('-', ' ')} ${w.n}`}
                                     </Button>
                                 ))}
                             </Box>

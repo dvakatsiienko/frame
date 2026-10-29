@@ -1,7 +1,7 @@
 # x-mod-stash — features
 
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
-- given/when/then lines are the verifier's exit lines
+- given/when/then lines are sixth sense's exit lines
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
@@ -30,7 +30,7 @@
   - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
   - 📌 the harness proves the one row; its look on the desktop is dima's eye
 - ✅ 🔭 what this session waits on, in the band
-  - given the session's last reply ends with a `🔭` line (a coder, ci, a review, a merge)
+  - given the session's last reply ends with a `🔭` line (codie, ci, a review, a merge)
   - when the band draws
   - then the row's 🔭 mark, after the compaction point and in the theme grey, names the wait and how the answer arrives; with no wait it reads «🔭 not waiting»
   - decision: in the row, always drawn, darker than dim, so dima sees every session's state at a glance (dima's o7, 22:03)
@@ -81,10 +81,10 @@
 - ✅ a bare fleet word or member in a reply prints bold with its badge before dima sees it
   - given a reply in prose names a fleet word plain: `wisp`, `siesta`, `wish` after a determiner (`a`, `the`, `his` …), `freebie`, or their plurals
   - then the drawing and the stored row both read **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**; a word already badged only gains the bold
-  - given a reply names a fleet member from `rules/fleet-identity.md` plain: `clio`, `crow`, `coder`, `verifier`, `designer`, `researcher`, `helper-lite`, `cloud-chat`, `dima`, or their plurals
-  - then it reads **🦉 clio**, **🐦‍⬛ crow**, **🔧 coder**, **🔎 verifier**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **🤝 cloud chat**, **🙋‍♂️ dima** (FRM-357)
+  - given a reply names a fleet member from `rules/fleet-identity.md` plain: `clio`, `crow`, `codie`, `sixth sense`, `designer`, `researcher`, `helper-lite`, `cloud chat`, `cloud-chat`, `dima`, or their plurals
+  - then it reads **🦉 clio**, **🐦‍⬛ crow**, **🔧 codie**, **🔦 sixth sense**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **☁️ cloud chat**, **🙋‍♂️ dima** (FRM-357)
   - decision: members that are plain english too stay out — `helper`, `retro`, `classifier`, `scout`, `cc` would badge a helper function, the retro file or the verb
-  - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods coder`), a word behind another word's badge (`🔎 coder`), and a name like `x-mod-wisp`, `wisp.md` or `clio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
+  - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods codie`), a word behind another word's badge (`🔦 codie`), and a name like `x-mod-wisp`, `wisp.md` or `clio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
   - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped
   - decision: fixed in the output, never policed — clio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)
   - proven live 2026-10-08: a headless reply told to print «that becomes a wisp, then a siesta; i wish the wish were a freebie» was stored with all four bolded, the verb left, and the day's key written; freebie took its 🍀 the same day (dima, 18:25)
@@ -247,10 +247,10 @@
 
 - 🔎 `/board` opens a pane listing every live session
   - the harness proves the rows; the spacing is dima's look
-  - given clio, two coders and a verifier are live
+  - given clio, two codies and a sixth sense are live
   - when dima types `/board`
   - then a pane lists each by its session name, its state on the right, a full empty row between members in the terminal, 0.6 of a row on the desktop (the cards mock's spacing, dima 17:27)
-  - decision: clio is pinned to the top, its name always bold; crow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming crow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
+  - decision: clio is pinned to the top, its name always bold; crow, her adviser, is pinned second and bold too, a member matched by the name's last word so codie naming crow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
 - ✅ the board's sections sit in cards (FRM-391 aside, dima 16:54)
   - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card no colour: on the desktop a 30 % grey (`#8080804d`), the same on light and dark and a touch softer than `subtle`, in the terminal `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); each ask is a smaller dim-bordered card inside orbit
@@ -269,7 +269,7 @@
   - when dima presses `🚦`, at the row's right end
   - then the board opens; pressed again, it closes; the `secondary` chip says it is open, and `b` does the same while the row holds focus
 - ✅ each row's state is cc's own
-  - given a coder runs a long shell command inside a turn
+  - given codie runs a long shell command inside a turn
   - when the board draws
   - then its row's state column reads `🐚` and for how long, not `💤`
   - and the state is an emoji set right against its time, both packed left in the state column so every row's emoji lines up (dima, 10-13 16:59: right-aligned they read as a ladder), no word (dima, 22:11: the emoji belongs to the time, not the ctx pill): 🐆 busy, 💤 idle, 🐚 shell, ⏳ waiting, 🚧 blocked, 🙋 needs_input, ❔ a status cc adds later (dima's o106, 2026-10-12 21:17)
@@ -417,7 +417,7 @@
   - when the call carries no `pending`, or a `pending` naming work, then it is refused in one line saying what is required or pending, and nothing compacts
   - when it carries `pending: none`, then the mod compacts at the turn's end and ingests the handoff
   - when an agent, a background command or a background session starts after `pending: none` and before the compact, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it
-  - then the note the session reads carries dima's words whole (W4, FRM-431), for a coder and for clio alike
+  - then the note the session reads carries dima's words whole (W4, FRM-431), for codie and for clio alike
   - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a background command started after pending: none makes the wind refuse / both notes carry dima's words
 - ✅ every compact is followed by one `/reload-skills`
   - given a compact ran in the main session (a second wind's, the threshold's or a typed one), not a precompute and not a subagent's
@@ -740,14 +740,14 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given a live member's own transcript holds more SendMessage calls to clio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
   - when the minute's ledger runs in clio's thread
   - then the gap is written to `quiet-gap` and rides clio's next prompt once as a model-only note («🤫 quiet-comms ledger: <member> sent you n pings and your quiet log holds m: n−m skipped the hold»), told again only when the gap is bigger than the one told, or opens again after closing; no card draws on any board and no red row (dima's o56, 2026-10-29: «a UI card is useless … keep the comms fully functional with all the under-the-hood stuff»; was a calm `🤫 quiet comms` card, FRM-412)
-  - and a member's log lines match its registry name without its leading mode emoji, so a rename from ☕️ to 🌗 no longer reads as «sent 3, holds 0» (the cause of FRM-412's shot: one coder logged 4 lines as ☕️ and 9 as 🌗 on 10-22)
+  - and a member's log lines match its registry name without its leading mode emoji, so a rename from ☕️ to 🌗 no longer reads as «sent 3, holds 0» (the cause of FRM-412's shot: one codie logged 4 lines as ☕️ and 9 as 🌗 on 10-22)
   - decision: a `flushed` line is not a delivery, so a held ping counts once
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
   - decision: a send whose result said `success:false` (no such session, a plugin refused it, a dead socket) never reached her, so it is not counted (brief 9 item 2)
   - proof: tests/quiet.test.ts::a ledger gap rides the lane owner’s next prompt once / a standing gap of the same size is not told again / a gap that grows is told again / a gap that closes and opens again is told again; tests/board.test.ts::a member that sent clio more pings than her log holds is a gap in the ledger, never a 🚨 row; ::no quiet-comms card draws on clio's board; ::a send inside the 2 min grace is not a gap yet; ::a flushed line does not count as a logged delivery; ::the ledger'… — not asserted: success:false decision unasserted
   - given a member renamed after clio logged some of its pings (a new ticket, a new topic in its name)
   - when the ledger counts that member's sends against the log
-  - then the lines logged under its old name still count for it, through its session id once logged with one, and through its role (emoji and word before the colon) when no other member shares it: a rename never draws a false gap (the verifier's 16:17 shot, FRM-412)
+  - then the lines logged under its old name still count for it, through its session id once logged with one, and through its role (emoji and word before the colon) when no other member shares it: a rename never draws a false gap (sixth sense's 16:17 shot, FRM-412)
   - proof: tests/board.test.ts::a member renamed mid-day keeps its logged pings / a renamed member that sent more than its old-name lines hold still shows its gap / a log line carrying the sender's session id counts for it
 - ✅ a stuck held ping turns clio's 🤫 n red
   - given a held ping older than the idle wait + 2 min (12 min by default)
@@ -815,7 +815,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - when clio's poll next ticks, then x-mod-stash sends its line to crow's session id (`$.session.send`, no model, clio sees nothing) and marks it `isSent`, so clio's prompt hook only starts the harvester
   - given the send does not go out, then the wake stays parked and the next poll sends it; her prompt hook never asks her to forward it
   - decision: the old «forward this line» ask in clio's context is retired — the mod-sent wake arrived from `x-mod-stash` and started crow's turn in her desktop tab (crow, 2026-10-12 19:21; brief 10 item 2)
-  - 📌 unprobed live: that a desktop-tab crow acts on the socket line — crow's 10-09 probe said a tab let one sit; clio's tab took this coder's socket lines today
+  - 📌 unprobed live: that a desktop-tab crow acts on the socket line — crow's 10-09 probe said a tab let one sit; clio's tab took this codie's socket lines today
   - proof: tests/quiet.test.ts::a parked crow wake goes to her session from clio's poll, and is marked sent; ::a wake that does not go out stays parked for the next poll; ::a wake already sent goes out once
 
 ## /board — 🛼 glide (FRM-385)
@@ -833,11 +833,11 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given `🛼 glide` switched off, then no stale lane and no taken steer reach clio's prompt or tool result, and `op glide` is refused in one line naming the switch
   - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
   - proof: tests/lane.test.ts::a card lists every step in order, done ones kept, the current marked; ::any session's board draws the lane clio wrote; ::a ticket step links to linear; ::the current step's ticket leads its text, the tick a… — not asserted: head naming mod unasserted
-- ✅ only clio writes the lanes — one exception: the pointer's forward move from a linked coder's plan step, still written by clio's stash
+- ✅ only clio writes the lanes — one exception: the pointer's forward move from a linked codie's plan step, still written by clio's stash
   - given any session calls op `glide`, when the registry does not name it 🦉 clio, then it is refused with one line; a new clio after a handoff steps and ends a lane it did not create
   - and act `create` refuses while a lane of the same topic is open — the topic is the title before « — » or «:», case-blind — naming the open lane and its fix: «lane l13 «mods — …» is still open: end it first (glide end l13)»; a lane whose last step is done counts as open until ended; a different topic always passes (todo 11, dima's 18:55 go)
   - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (clio's ask, 18:01)
-  - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
+  - and act `link` with a session id and a role (codie, sixth-sense) links a member; a second link of a role replaces the first
   - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (clio's wisp, 18:01)
   - and a member linked by a session id it left through a `/clear` follows the id it goes on under: each `/clear` records old → new in the store, the card follows that chain, so its asks stay on the card with no relink (todo 21, dima's shot 10-13 17:55)
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
@@ -846,7 +846,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - proof: tests/lane.test.ts::a session the registry does not name 🦉 clio is refused; ::a new clio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
 - ✅ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
   - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
-  - when the coder ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
+  - when codie ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
   - proof: tests/lane.test.ts::a create naming a lane plan takes its steps from the file; ::a tick in the plan file moves the card to the first unticked line on the next poll; ::an all-ticked plan file shows the lane done; ::a nested or u… — not asserted: 60-char cut not checked
@@ -861,19 +861,19 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: 8, not phases' 3 — a lane step spans many turns
   - proof: tests/lane.test.ts::a lane that moved nothing for 8 of clio's turns reads stale; a step that moves nothing keeps the count; ::with no lane the reminder carries no lane text; ::with 🛼 glide switched off, a stale lane reaches no…
 - decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in clio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by clio's stash, never applied
-- ✅ a lane follows its coder's plan step (todo 6, dima's 18:55 shot: «I want to see the coder's future progress»)
+- ✅ a lane follows codie's plan step (todo 6, dima's 18:55 shot: «I want to see the coder's future progress»)
   - makes: a `lane-step:<registry name>` key in the store, `{ at, step }`, written only by that session's plan op
-  - given a lane with a coder linked, when that coder's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and clio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` the coder, and clio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <coder>» once
-  - given the pointer at 3, when the coder names 2, or the step count, or the verifier, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays clio's act
-  - and clio's step back holds until the coder names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
-  - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters the coder's context — its brief numbers the steps
+  - given a lane with codie linked, when codie's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and clio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` codie, and clio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <coder>» once
+  - given the pointer at 3, when codie names 2, or the step count, or sixth sense, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays clio's act
+  - and clio's step back holds until codie names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
+  - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters codie's context — its brief numbers the steps
   - proof: tests/lane.test.ts::a session's plan step lands in the store under its registry name; ::the linked coder's step 3 moves the lane while clio idles, and her next prompt hears it once; ::a move reaches clio's running turn at her…
 - ✅ a glide card holds its members' asks (exit 3)
-  - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
-  - and a subcard holding asks heads bold amber with a 🙋 — `🙋 🔧 coder · 1 ask` — the palette's `warn`, the one colour dima reads as «waits on you»; at 0 it reads plain (todo 28; dima, 19:45: «revert to previous layout and keep color update plus emoji»)
+  - given a lane with linked codie and sixth sense, then a `🔧 codie · n asks` subcard sits above a `🔎 sixth sense · n asks` one, each folded by default with its own `📁`
+  - and a subcard holding asks heads bold amber with a 🙋 — `🙋 🔧 codie · 1 ask` — the palette's `warn`, the one colour dima reads as «waits on you»; at 0 it reads plain (todo 28; dima, 19:45: «revert to previous layout and keep color update plus emoji»)
   - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control
   - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46); a compact line per ask under the current step was tried and dropped as cramped (dima, 19:45)
-  - and the board's top draws a strip while any lane member's asks wait on dima, an ask he marked not counted: `🙋 3 asks wait for you · 🔧 coder 3`, an amber border, a row of air before the sessions card; a press on a member scrolls the board to its asks; at 0 asks or with 🛼 glide off it is gone
+  - and the board's top draws a strip while any lane member's asks wait on dima, an ask he marked not counted: `🙋 3 asks wait for you · 🔧 codie 3`, an amber border, a row of air before the sessions card; a press on a member scrolls the board to its asks; at 0 asks or with 🛼 glide off it is gone
   - when dima marks or steers a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
   - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
@@ -887,12 +887,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 
 - decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)
 - ✅ the board marks a background session named off the fleet pattern
-  - given a background session's name is not `<mode> <role emoji> <ticket> <role word>: <what>` («☕️ 🔧 FRM-303 code: stash keep-hot»)
+  - given a background session's name is not `<mode> <role emoji> <scope> <member name>: <ticket or what>` («⚡ 🔧 mods lane 3 codie: FRM-431»), nor the older `<mode> <role emoji> <ticket> <role word>: <what>`
   - when the board lists it
   - then its row carries ⚠ beside the name; the pattern lives here, since the pane draws no hover card
   - given a background session named as a standing member alone, badge or not («🐦‍⬛ crow»)
   - then no ⚠ — its fixed name is the pattern (dima, 2026-10-09, FRM-357)
-  - decision: on the board, not at spawn — a `--bg` coder starts through Bash, and `agent.spawn` sees only Agent-tool subagents
+  - decision: on the board, not at summon — a `--bg` codie starts through Bash, and `agent.spawn` sees only Agent-tool subagents
   - proof: tests/board.test.ts::the board marks a background session named off the fleet pattern; ::a cold row off the fleet pattern keeps ⚠, never ❄️ — not asserted: standing-member no-⚠ only via helga-sidecar test
 
 ## scripts

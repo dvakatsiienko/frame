@@ -264,7 +264,7 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         return rewrite(
             or(subOps, 'push'),
             'a force-push',
-            'x lane rebase-main — it rebases a coder/* branch and pushes it with a lease; any other force-push, ask clio',
+            'x lane rebase-main — it rebases a codie/* (or older coder/*) branch and pushes it with a lease; any other force-push, ask clio',
         );
     // a mirror push makes every remote ref match the local ones: it rewrites and deletes like a force push
     if (sub === 'push' && hasFlag(subArgs, ['--mirror']))

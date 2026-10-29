@@ -1,7 +1,7 @@
 # x-mod-holds — features
 
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
-- given/when/then lines are the verifier's exit lines
+- given/when/then lines are sixth sense's exit lines
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
@@ -44,7 +44,7 @@ two sessions, A and B, in one checkout.
 - ✅ a commit through Bash releases at once
   - given A holds `x.ts` and commits it through Bash (`x lane commit …`, `git commit …`) mid-turn
   - then A's clean holds drop from the store right after the command, so B's edit goes through; a command that commits nothing keeps them to the turn's end (FRM-337)
-  - decision: before, a hold dropped only at A's turn end or on B's next try — a coordinator in one long turn kept its holds ~30 min past the commit and blocked the FRM-336 coder
+  - decision: before, a hold dropped only at A's turn end or on B's next try — a coordinator in one long turn kept its holds ~30 min past the commit and blocked FRM-336's codie
 - ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted
   - when B edits it
@@ -62,7 +62,7 @@ two sessions, A and B, in one checkout.
 - ✅ one winner in a race
   - given A and B edit the same new file in the same second
   - then never both of them hold it
-  - decision: no compare-and-set, so after its write a claim that sees any rival yields; a true tie refuses both and the next try settles it — earliest `at` let both win when one session's write landed late (verifier round 1)
+  - decision: no compare-and-set, so after its write a claim that sees any rival yields; a true tie refuses both and the next try settles it — earliest `at` let both win when one session's write landed late (sixth sense round 1)
 - ✅ a broken store never blocks work
   - given the store file is unreadable
   - when B edits

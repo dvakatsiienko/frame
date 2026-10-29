@@ -58,7 +58,7 @@ const QUIET = [
     ['/home/frame', "echo 'git add a.ts and gh pr view 1'"],
     ['/home/frame', "cat <<'EOF'\ngit add a.ts\ngh pr view 1\nEOF"],
     ['/repo', 'x gh pr 12'],
-    ['/repo', 'x as coder -- gh pr view 12'],
+    ['/repo', 'x as codie -- gh pr view 12'],
     ['/repo', 'gh pr create --fill'],
     ['/repo', 'gh api repos/o/r/issues/12'],
     ['/repo', 'gh api -X POST repos/o/r/pulls/12/comments'],

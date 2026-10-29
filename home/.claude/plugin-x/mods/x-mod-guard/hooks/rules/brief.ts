@@ -8,7 +8,7 @@ import {
     resolve,
 } from './command.ts';
 
-const CODER = '/x:crew-codie';
+const CODIE = '/x:crew-codie';
 const INLINE = 'inline-brief';
 // a `claude --bg` call's brief file: the one `$(cat <path>)`, `cat <path> |` or `< <path>` reads
 function spawnBrief(c: Command, ctx: Context) {
@@ -24,26 +24,26 @@ function spawnBrief(c: Command, ctx: Context) {
         file: text ? { path: resolve(text, dir, ctx), text } : undefined,
     };
 }
-// the brief files every coder spawn in the command reads, for the caller to hash and look up
+// the brief files every codie summon in the command reads, for the caller to hash and look up
 export function briefPaths(command: string, cwd: string, ctx: Context = {}) {
     return commands(parse(command), cwd).flatMap((c) => {
         const path = spawnBrief(c, ctx)?.file?.path;
         return path ? [path] : [];
     });
 }
-// a coder spawn runs only on a brief whose bytes passed x brief check
+// a codie summon runs only on a brief whose bytes passed x brief check
 export function brief(c: Command, ctx: Context): Refusal | undefined {
     const spawn = spawnBrief(c, ctx);
     if (!spawn) return undefined;
     const { dir, file } = spawn;
-    const isNamed = c.args.some((w) => w.text.includes(CODER));
+    const isNamed = c.args.some((w) => w.text.includes(CODIE));
     if (!file)
         return isNamed
             ? {
                   door: `write the brief to a file, run x brief check <path> --repo ${dir}, then spawn with "$(cat <path>)"`,
                   rule: 'brief',
                   targets: [INLINE],
-                  why: 'x-mod-guard can check a brief only in a file, and a coder brief must pass x brief check',
+                  why: 'x-mod-guard can check a brief only in a file, and a brief for codie must pass x brief check',
               }
             : undefined;
     const found = ctx.briefs?.get(file.path);

@@ -250,7 +250,7 @@ async function isWarnOnly($: EngineInterface, rule: string) {
     );
 }
 const wouldRefuse = (rule: string, text: string) =>
-    `x-mod-guard would refuse this (rule ${rule}, warn-only until its verifier says clean): ${text}`;
+    `x-mod-guard would refuse this (rule ${rule}, warn-only until its sixth sense says clean): ${text}`;
 
 // the local day, `yyyy-mm-dd`
 function day(at: number) {
@@ -904,7 +904,7 @@ export const register: Register = (on) => {
                 );
             }
         }
-        // a raw plugin update names x plugin bump, every session's door (FRM-389 exit 7); warn-only until its verifier
+        // a raw plugin update names x plugin bump, every session's door (FRM-389 exit 7); warn-only until its sixth sense
         const bump = rawPluginUpdate(typed, cwd);
         if (bump) {
             const said = `x-mod-guard stopped this one command. instead: ${bump.door}. why: ${bump.why}.`;
@@ -1074,7 +1074,7 @@ export const register: Register = (on) => {
                 return result;
             try {
                 const home = await $.env.get('HOME');
-                // the session's root, never its cwd: a clio cd'd into ~/frame is still clio, a coder cd'd into clio is not
+                // the session's root, never its cwd: a clio cd'd into ~/frame is still clio, codie cd'd into clio is not
                 const root = await $.session
                     .root()
                     .catch(() => $.session.cwd());
@@ -1194,7 +1194,7 @@ export const register: Register = (on) => {
             !isSpecMissing(to, message)
         )
             return next(e);
-        // a member's own traffic (a verifier's findings, a coder's «final») is a report, never a lane job
+        // a member's own traffic (sixth sense's findings, codie's «final») is a report, never a lane job
         const sid = await $.session.id().catch(() => undefined);
         const from = sid
             ? await sessionName($, sid).catch(() => undefined)

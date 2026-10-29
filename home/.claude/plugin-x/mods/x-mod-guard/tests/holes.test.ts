@@ -217,18 +217,18 @@ for (const command of [
 // E4 — a ticket that lands in a project with milestones names one
 const MILESTONE = 'pick a milestone, or propose one';
 for (const command of [
-    'x as coder -- linear issue create --project cli -t x',
-    'x as coder -- linear issue create --project=cli -t x',
-    'x as coder -- linear issue create --project cli --milestone "" -t x',
-    'x as coder -- linear issue create --project cli --milestone= -t x',
+    'x as codie -- linear issue create --project cli -t x',
+    'x as codie -- linear issue create --project=cli -t x',
+    'x as codie -- linear issue create --project cli --milestone "" -t x',
+    'x as codie -- linear issue create --project cli --milestone= -t x',
     'x linear set FRM-1 --project cli',
     'x linear --json set FRM-1 --project cli',
-    'x linear --as=coder set FRM-1 --project cli',
-    'x linear --as coder set FRM-1 --project cli',
+    'x linear --as=codie set FRM-1 --project cli',
+    'x linear --as codie set FRM-1 --project cli',
     'x linear --board set FRM-1 --project cli',
     'x --json linear set FRM-1 --project cli',
-    'x --as coder linear set FRM-1 --project cli',
-    'x --as=coder --json linear set FRM-1 --project cli',
+    'x --as codie linear set FRM-1 --project cli',
+    'x --as=codie --json linear set FRM-1 --project cli',
     `x linear api 'mutation { issueCreate(input: { teamId: "t", title: "x", projectId: "${CLI_ID}" }) { success } }'`,
     `x linear api 'mutation { issueUpdate(id: "FRM-1", input: { projectId: "${CLI_ID}" }) { success } }'`,
     `x linear api --vars '{"p":"${CLI_ID}"}' 'mutation($p: String!) { issueCreate(input: { teamId: "t", title: "x", projectId: $p }) { success } }'`,
@@ -245,10 +245,10 @@ for (const command of [
     });
 
 for (const command of [
-    'x as coder -- linear issue create --project cli --milestone "🐉 review loop gets verbs" -t x',
+    'x as codie -- linear issue create --project cli --milestone "🐉 review loop gets verbs" -t x',
     `x linear api 'mutation { issueCreate(input: { teamId: "t", title: "x", projectId: "${CLI_ID}", projectMilestoneId: "m1" }) { success } }'`,
-    'x as coder -- linear issue create -t x',
-    'x as coder -- linear issue create --project lab -t x',
+    'x as codie -- linear issue create -t x',
+    'x as codie -- linear issue create --project lab -t x',
     "rg -- '--project' .",
     'x linear list --search set --project cli',
     'x lane commit msg.txt -- linear set --project cli',
@@ -272,14 +272,14 @@ test('«git commit -m "guard --project"» is not read as a linear call', async (
 });
 
 // x takes a root flag anywhere before its family: each one × each family form, in either order of two
-const ROOT_FLAGS = ['--json', '--board', '--apply', '--as coder', '--as=coder'];
+const ROOT_FLAGS = ['--json', '--board', '--apply', '--as codie', '--as=codie'];
 const FAMILY_FORMS = [
     'linear set FRM-1 --project cli',
-    'as coder -- linear issue create --project cli -t x',
-    'as coder -- linear issue update FRM-1 --project cli',
-    'as coder linear issue create --project cli -t x',
-    'as --json coder -- linear issue create --project cli -t x',
-    'as coder --board linear issue update FRM-1 --project cli',
+    'as codie -- linear issue create --project cli -t x',
+    'as codie -- linear issue update FRM-1 --project cli',
+    'as codie linear issue create --project cli -t x',
+    'as --json codie -- linear issue create --project cli -t x',
+    'as codie --board linear issue update FRM-1 --project cli',
 ];
 for (const flag of ROOT_FLAGS)
     for (const form of FAMILY_FORMS)
@@ -297,7 +297,7 @@ test('with linear unreachable the create runs, warned that the milestone check w
     const w = world(on, { cwd: '/repo', isLinearUp: false });
     const r = await bash(
         $,
-        'x as coder -- linear issue create --project cli -t x',
+        'x as codie -- linear issue create --project cli -t x',
     );
     expect([
         w.ran.length,
@@ -313,7 +313,7 @@ test('the projects read is cached for a day', async ($, on) => {
     expect(w.reads).toHaveLength(1);
 });
 
-// E5 — a lane send to a coder or verifier that names a ticket goes through a spec, whatever its item count
+// E5 — a lane send to a codie or sixth sense that names a ticket goes through a spec, whatever its item count
 const SPEC = 'shape-lane-dispatch § 2';
 for (const [shape, message] of [
     ['1 item', 'FRM-425 round 1:\n1. close the railway hole'],
@@ -333,14 +333,14 @@ for (const [shape, message] of [
             ]);
         });
 
-test("a verifier's findings to its coder are sent", async ($, on) => {
+test("sixth sense's findings to its codie are sent", async ($, on) => {
     const w = world(on, {
         cwd: '/repo',
         isLinearUp: true,
         name: '⚡ 🔎 FRM-425 verify: main',
     });
     const message = 'FRM-425 round 1:\n1. E3 fails from ~/frame';
-    expect([w.ran, (await send($, message, '🔧 coder')).deny]).toEqual([
+    expect([w.ran, (await send($, message, '🔧 codie')).deny]).toEqual([
         [message],
         undefined,
     ]);
@@ -349,7 +349,7 @@ test("a verifier's findings to its coder are sent", async ($, on) => {
 test('a ticket named only inside a quote leaves the 3+ rule', async ($, on) => {
     const w = world(on);
     const message = 'dima wrote:\n> FRM-1 looks done\n1. the meter';
-    expect([w.ran, (await send($, message, '🔧 coder')).deny]).toEqual([
+    expect([w.ran, (await send($, message, '🔧 codie')).deny]).toEqual([
         [message],
         undefined,
     ]);
@@ -366,7 +366,7 @@ test('a ticket send naming its spec path is sent', async ($, on) => {
 test('a 2-item send naming no ticket is sent, the 3+ rule unchanged', async ($, on) => {
     const w = world(on);
     const message = 'round 2:\n1. a\n2. b';
-    expect([w.ran, (await send($, message, '🔧 coder')).deny]).toEqual([
+    expect([w.ran, (await send($, message, '🔧 codie')).deny]).toEqual([
         [message],
         undefined,
     ]);
@@ -374,7 +374,7 @@ test('a 2-item send naming no ticket is sent, the 3+ rule unchanged', async ($, 
 
 test('a 3-item send naming no ticket is refused', async ($, on) => {
     world(on);
-    const r = await send($, 'round 2:\n1. a\n2. b\n3. c', '🔧 coder');
+    const r = await send($, 'round 2:\n1. a\n2. b\n3. c', '🔧 codie');
     expect(r.deny).toContain(SPEC);
 });
 
@@ -391,7 +391,7 @@ for (const [hole, cwd, call, door] of [
     [
         'milestone',
         '/repo',
-        "x as coder -- linear issue create --team FRM -t 'x linear set: several --add-label flags keep only the last one' --description-file b245.md --project cli -l agent -l bug -p medium --estimate 1 --no-input -y",
+        "x as codie -- linear issue create --team FRM -t 'x linear set: several --add-label flags keep only the last one' --description-file b245.md --project cli -l agent -l bug -p medium --estimate 1 --no-input -y",
         MILESTONE,
     ],
 ] as const)

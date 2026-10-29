@@ -21,7 +21,7 @@ the x marketplace lists x-mod-stash, the one worth sharing; x-mod-guard, x-mod-r
 
 ## the rules
 
-- a new refusing or injecting hook ships warn-only until its verifier says clean: mods load from main, so a commit reaches every session at its next turn end (FRM-392). in x-mod-guard a new rule joins `WARN_ONLY` in `hooks/register.ts` (the call runs, the model gets «would refuse», the event is kept as `warned`) and leaves it on the clean; `rule-mode:<rule>` = «enforce» in its store turns a listed rule on early, and nothing in the store can make a rule warn, since every session writes that store (dima's o70). the warn path is proven by red-proof listing a rule
+- a new refusing or injecting hook ships warn-only until sixth sense says clean: mods load from main, so a commit reaches every session at its next turn end (FRM-392). in x-mod-guard a new rule joins `WARN_ONLY` in `hooks/register.ts` (the call runs, the model gets «would refuse», the event is kept as `warned`) and leaves it on the clean; `rule-mode:<rule>` = «enforce» in its store turns a listed rule on early, and nothing in the store can make a rule warn, since every session writes that store (dima's o70). the warn path is proven by red-proof listing a rule
 - a probe's consuming hook (one that holds, swallows or rewrites a delivery) unloads the turn its proof lands: its folder leaves `--plugin-dir` and `~/.claude/dev-mods/` (pk-93's `qc-view` swallowed clio's 16:03 brief after its proof passed)
 - a mod initialises on `session.start`, never `classic.SessionStart`: a hot reload fires only the first
 - a mod hooks only events every live engine knows: an engine refuses the whole module over one event it lacks, so `pnpm mods:skew` (in the commit gate) checks each mod against every version a live session runs and against the cc the desktop app bundles (read from `Claude.app`'s `app.asar`, `X_CLAUDE_APP` names another path), and exits non-zero when a mod needs a newer engine than the desktop's; a new event waits until no session runs an engine without it
@@ -36,13 +36,13 @@ the x marketplace lists x-mod-stash, the one worth sharing; x-mod-guard, x-mod-r
 - a mod's `Link` takes only `https:` (or `http://localhost`): a `linear://` href is drawn as plain text; opening an app needs a `Button` running `open <url>` through `$.process.run` (FRM-382)
 
 <!--
-warn-only: the verifier switched the `rm` floor off through the store at 15:08 (o70), so the store can only turn a rule on.
-mods:probe: an unchecked «loaded from <dev>» once stood beside a run the verifier traced to main (FRM-392).
+warn-only: sixth sense switched the `rm` floor off through the store at 15:08 (o70), so the store can only turn a rule on.
+mods:probe: an unchecked «loaded from <dev>» once stood beside a run sixth sense traced to main (FRM-392).
 -->
 
 ## where the rest lives
 
 - `engine.md` — what the engine does, probed: lifetimes, budgets, rewrite semantics, cross-session marks, drawing and hover, the test-harness traps; read its section when a probe or a test bites
-- `workarounds.md` — every mods want the engine can't do yet: the want, the upstream issue, the workaround, the undo; a coder who hits a new engine gap adds its entry in the same commit as the workaround (dima, 2026-10-10); `refresh-cc-mods` re-checks it each run
+- `workarounds.md` — every mods want the engine can't do yet: the want, the upstream issue, the workaround, the undo; codie, on a new engine gap, adds its entry in the same commit as the workaround (dima, 2026-10-10); `refresh-cc-mods` re-checks it each run
 - `api-map.md` — every hook event by name, and the fleet ideas; at a cc bump diff its list against `EngineEventOf`
 - `<mod>/FTR.md` + `<mod>/GLOSSARY.md` — read your section before changing what x-mod-stash, x-mod-redact, x-mod-guard or x-mod-holds does

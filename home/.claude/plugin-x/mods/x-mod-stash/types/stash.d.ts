@@ -213,7 +213,7 @@ export type StashPlan = {
 // 🛼 glide (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only clio writes;
 // ≤5 plain steps, the pointer and what moved it; done steps stay listed
 export type LaneItem = { text: string; ticket?: string; isDone: boolean };
-export type LaneRole = 'coder' | 'verifier';
+export type LaneRole = 'codie' | 'sixth-sense';
 export type StashLane = {
     id: string;
     title: string;
@@ -234,7 +234,7 @@ export type StashLane = {
     // dima's steer on the current step: a draft until his take, then it joins clio's next prompt or running turn once
     steer?: string;
     isSteerTaken?: boolean;
-    // `by`: the linked coder whose plan step moved the pointer forward, written by clio's stash
+    // `by`: the linked codie whose plan step moved the pointer forward, written by clio's stash
     history: {
         at: number;
         act: string;

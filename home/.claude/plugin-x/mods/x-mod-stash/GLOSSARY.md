@@ -33,7 +33,7 @@ The session's next moves, at most 7 (🎛️ shows 5 to 7), kept live in the boa
 _Avoid_: planned actions, next block, todo
 
 **Lane**:
-One piece of fleet work clio runs, its whole scope as 1–7 plain steps (any count from a linked lane plan), with its linked members (a coder, a verifier).
+One piece of fleet work clio runs, its whole scope as 1–7 plain steps (any count from a linked lane plan), with its linked members (codie, sixth sense).
 _Avoid_: project, run
 
 **Glide** 🛼:
@@ -41,7 +41,7 @@ A lane's progress card on every board: its steps in order, done ones kept, the c
 _Avoid_: lane tracker, lane card
 
 **Plan step**:
-The lane step a linked coder names with its plan (orbit `plan`, `step`), as its brief numbers them; clio's stash moves the lane's pointer forward to it.
+The lane step linked codie names with its plan (orbit `plan`, `step`), as its brief numbers them; clio's stash moves the lane's pointer forward to it.
 _Avoid_: progress, mirror step
 
 **Lane plan**:
@@ -122,7 +122,7 @@ What a session is blocked on, from the `🔭` line that ends its last reply; on 
 _Avoid_: blocker, status, watch
 
 **Fleet word**:
-A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, and the members' names (**🦉 clio**, **🔧 coder** …); the words and badges are `rules/fleet-vibe.md`'s, the members `rules/fleet-identity.md`'s.
+A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, and the members' names (**🦉 clio**, **🔧 codie** …); the words and badges are `rules/fleet-vibe.md`'s, the members `rules/fleet-identity.md`'s.
 _Avoid_: keyword, vibe word
 
 **Second wind**:

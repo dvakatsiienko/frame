@@ -52,7 +52,7 @@ function linearWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'linear') return { isX: false, words };
     if (c.name !== 'x') return undefined;
-    // x takes any flag before its family (`x --json linear …`, `x --board as coder …`): the family is the first
+    // x takes any flag before its family (`x --json linear …`, `x --board as codie …`): the family is the first
     // `linear` or `as` with only flags or flag values ahead of it
     const family = words.findIndex(
         (w, i) =>
@@ -89,7 +89,7 @@ function projectMove(c: Command): ProjectMove | undefined {
     const linear = linearWords(c);
     if (!linear) return undefined;
     const { isX, words } = linear;
-    // the verb may follow root flags (`--json`, `--as coder`, `--team FRM`); a later word that names a verb is a value
+    // the verb may follow root flags (`--json`, `--as codie`, `--team FRM`); a later word that names a verb is a value
     const head = isX
         ? words.findIndex((w, i) => X_VERBS.has(w) && words[i - 1] !== '--as')
         : words.findIndex((w) => w === 'api' || w === 'issue');
