@@ -129,7 +129,7 @@ def door_claims(prose: str) -> list[str]:
 # the claim forms: «copied whole», a first-person «I checked / verified / proved», a label line «proven: …», and «verified by …».
 # the bare word was tried first: a week of 3,276 Stop turns flagged 22 replies, most relaying a member's verdict or a promise
 CHECKED_CLAIM = re.compile(
-    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|verified|proven|proved)\b|^\W*(?:checked|verified|proven)\s*[:—-]|\b(?:checked|verified|proven)\s+(?:by|with|against)\b",
+    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|verified|proven|proved)\b(?!\s+(?:nothing|none|little)\b)|^\W*proven\s*[:—-]|\bverified\s+by\b",
     re.I | re.M,
 )
 # «not checked», «never verified», «isn't proven»: the word negated is a disclosure, not a claim
@@ -164,7 +164,7 @@ def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]
     named = [t for t in texts if GRILL_ASK_TEXT.search(t)]
     printed = {int(n) for n in GRILL_PRINTED_NUMBER.findall(FENCE.sub("", reply))}
     # an ask naming Q3 needs its own «❓ **Q3**» line; a grill-round ask with no number needs any one
-    lost = [t for t in named if (({int(n) for n in re.findall(r"\bQ(\d+)\b", t)} - printed) if re.search(r"\bQ\d+\b", t) else not printed)]
+    lost = [t for t in named if (({int(n) for n in re.findall(r"\bQ(\d+)\b", t, re.I)} - printed) if re.search(r"\bQ\d+\b", t, re.I) else not printed)]
     return [lost[0][:40]] if lost else []
 
 

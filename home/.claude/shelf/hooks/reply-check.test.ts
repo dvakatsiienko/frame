@@ -341,6 +341,17 @@ describe('a checked claim with no evidence call (FRM-429)', () => {
         }
     });
 
+    it.each([
+        'the rule was briefed and proven by me.',
+        'it went out as checked with no command.',
+        'Checked: the desktop look.',
+        'Verified — the parse.',
+        'I proved nothing yet.',
+        'the build was checked against the spec.',
+    ])('passes «%s», a form the re-signed line does not name', (reply) => {
+        expect(loggedAfter(reply, noCalls)).toBe('');
+    });
+
     it('passes the word inside a fence or inline code', () => {
         expect(loggedAfter('run `x verified`.\n```\nchecked\n```', noCalls)).toBe('');
     });
@@ -362,6 +373,10 @@ describe('a grill ask with no printed question (dima o18)', () => {
 
     it('logs an ask naming Q3 when the reply prints only ❓ **Q4**', () => {
         expect(loggedAfter('🔥 grill:\n❓ **Q4** which lane first?', grillAdd('Q3 which lane first?'))).toContain('grill-unprinted\t');
+    });
+
+    it('logs a lowercase «q3» ask when the reply prints only ❓ **Q4**', () => {
+        expect(loggedAfter('🔥 grill:\n❓ **Q4** which lane first?', grillAdd('q3 which lane first?'))).toContain('grill-unprinted\t');
     });
 
     it('passes an orbit ask that names no grill round or Q number, a verifier round included', () => {
