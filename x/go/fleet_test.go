@@ -63,7 +63,7 @@ func TestFlawlogCountsTaggedLinesInTheWindow(t *testing.T) {
 	write(t, filepath.Join(dir, "2026-10-05-day.md"), strings.Join([]string{
 		"# flawlog — 2026-10-05",
 		"- the brief named a banned path #brief",
-		"  - the exit lines lived in the coder brief only (`#brief`) #dima-caught",
+		"  - the exit lines lived in codie's brief only (`#brief`) #dima-caught",
 		"- a #briefing word is not the tag",
 		"- nor is a tag glued to a word#brief",
 		"- an untagged line",
@@ -323,10 +323,10 @@ func TestSizeMissesFlagAClosedTicketPastItsLine(t *testing.T) {
 
 func TestCoderTurnsSumEverySessionOfATicketAndSkipTheVerifier(t *testing.T) {
 	t.Parallel()
-	turns := coderTurns([]opsSession{
-		{Role: "coder", Ticket: "FRM-9", Steps: 300},
-		{Role: "coder", Ticket: "FRM-9", Steps: 200},
-		{Role: "verifier", Ticket: "FRM-9", Steps: 900},
+	turns := codieTurns([]opsSession{
+		{Role: "codie", Ticket: "FRM-9", Steps: 300},
+		{Role: "codie", Ticket: "FRM-9", Steps: 200},
+		{Role: "sixth-sense", Ticket: "FRM-9", Steps: 900},
 	})
 	if marshal(turns) != `{"FRM-9":500}` {
 		t.Errorf("turns %s, want FRM-9 at 500", marshal(turns))
@@ -452,8 +452,8 @@ func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
 func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
 	t.Parallel()
 	path := filepath.Join(t.TempDir(), "session.jsonl")
-	write(t, path, jsonLines(t, said("spawn a coder with /x:crew-codie")))
+	write(t, path, jsonLines(t, said("spawn codie with /x:crew-codie")))
 	if _, ok := auditSession(path); ok {
-		t.Error("a session that names the coder in prose counted as a coder")
+		t.Error("a session that names codie in prose counted as codie")
 	}
 }

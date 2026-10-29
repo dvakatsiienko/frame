@@ -145,7 +145,7 @@ func TestGhPrReadsAsTheCoderApp(t *testing.T) {
 	}
 	for _, a := range auth {
 		if a != "Bearer ghs_coder" {
-			t.Fatalf("a request went out as %q, want the coder app", a)
+			t.Fatalf("a request went out as %q, want the codie app", a)
 		}
 	}
 }

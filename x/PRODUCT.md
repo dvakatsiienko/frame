@@ -86,7 +86,7 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 
 - **the families (draft, each re-thought when built):** `linear` (read, token, as, push) · `handoff` (store, ingest, peek) · `lane` (commit, push, pr, merge-main, unlock, worktree seed) · `mods` (test, live) · `design` (contrast, palette, cvd, scale, tokens, diff) · `jev` (vet, report, route, flawlog) · `research` (lanes) · `flow` (report, crew audit, memory-load, reply-check) · `app` (essentials, badges) · `frame` (link, toolchain sync, macos setup) · `tool` (dima's hotkeys, speak, schedule, monitor) · `x` (schema, stats, completion)
 - **the order:** telemetry first (it decides the rest) → `linear` + `handoff` (the hottest) → `flow` (feeds the memory sweep) → the rest in the order telemetry ranks them
-- **who builds:** one go `--bg` coder per family, reused while under the spawn grid's ~220k; mechanical ports go to `implement-spec` subagents on sonnet
+- **who builds:** one go `--bg` codie per family, reused while under the spawn grid's ~220k; mechanical ports go to `implement-spec` subagents on sonnet
 - **the old scripts:** a ported script dies in its verb's commit; a thin `pnpm` shim stays only for a name dima types himself, and goes after 14 days of zero calls in telemetry
 - **the memory sweep pairs with it:** each memory line the sweep touches gets a fourth verdict, «→ x verb» or «→ guard rule», collected into this family map
 
@@ -96,13 +96,13 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 - **depth:** the next 1–2 families are grilled in full ahead of the build, so a lane never stops for a grill; the rest stay one line here until their turn — the memory sweep may move them
 - **telemetry is the foundation:** every verb built after it is traced from its first call
   - `caller` on every trace line: `dima` (a tty, no agent env) · `cc` (`CLAUDECODE=1`) · `cloud-chat` (Cowork's Desktop Commander: a `CLAUDE_PLUGIN_ROOT` under `local-agent-mode-sessions/`, probed 2026-10-07) · `ssh` (`SSH_CONNECTION`, no agent env) · `hook` (lefthook or a cc hook) · `other`. a cloud session never reaches the mac's x, so it has no value; a new member is one line
-  - the agent's member name (clio, a coder) is resolved from the session registry at `x stats` time; the write stays one append
+  - the agent's member name (clio, codie) is resolved from the session registry at `x stats` time; the write stays one append
   - error kinds: `usage` · `refused` · `external` · `bug`
   - raw daily files live 90 days — the cli changes fast while it is built
   - dima's terminal: a zsh hook (`home/.config/zsh-custom/x-trace.zsh`) writes a trace line for every `pnpm <script>` he types, same format, same dir; an `x` he types is traced by the dispatcher, once
 - **the pnpm scripts:** each family's port deletes its scripts in its own commit; the ~45 dead for 30 days go in one prune pass, 14 days after the `preexec` hook starts, item by item with dima (granular)
 - **`x stats`:** easy to extract for agents (the envelope), pretty for dima — a bubbletea board: calls per family as bars, a 30-day sparkline per verb, failure kinds, dima vs agents; `tab` switches family / verb view
-- **the charm stack, in full:** bubbletea · bubbles · lipgloss · glamour · huh · log · fang (in use) · **harmonica** — upfront: a coder animates with it wherever a view can move; a continuous repaint is fine when it makes the ui prettier (dima) · **teatest** — golden frames for every redraw · **ntcharts** (third party) — the charts, tried first on `x stats` · **sequin** — the redraw debugger (`brew`) · **vhs** + **freeze** — the shots
+- **the charm stack, in full:** bubbletea · bubbles · lipgloss · glamour · huh · log · fang (in use) · **harmonica** — upfront: codie animates with it wherever a view can move; a continuous repaint is fine when it makes the ui prettier (dima) · **teatest** — golden frames for every redraw · **ntcharts** (third party) — the charts, tried first on `x stats` · **sequin** — the redraw debugger (`brew`) · **vhs** + **freeze** — the shots
 - **later, when needed:** **wish** — serve x's views over ssh
 
 ## the next lane — grill round 4 (2026-10-07)
@@ -110,7 +110,7 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 - **the charm reference is the stack page:** `docs/knowledge/go-charm.md` — every lib with its gh link and job, which widget for which view (pointers into bubbletea's examples), our gotchas; a pointer line in `x:guide-go`; a contract test fails when `go.mod` gains a charm module the file does not list
 - **`fleet`** is the family of the fleet measuring itself: `x fleet flow`, `x fleet audit` and `x fleet ops` landed as straight ports, their scripts gone (FRM-347); memory-load and reply-check join once their test drives adopt them
 - **skill → x ← mcp:** a skill keeps the judgment and points at `x <family> --help`; the `x-cloud-chat` tools are one-line shells to x; a mechanic lives in one place
-- **identity:** `x as <member> -- <command>` puts the right app token (linear: clio / coder, github: x-codie-cc) into that child's env only; one internal `keys` package — 1password read in-process, minted tokens cached in the macOS keychain to expiry, every `as` traced. ❓ does the `linear` cli take an oauth bearer from env — probe at spec time
+- **identity:** `x as <member> -- <command>` puts the right app token (linear: clio / codie, github: x-codie-cc) into that child's env only; one internal `keys` package — 1password read in-process, minted tokens cached in the macOS keychain to expiry, every `as` traced. ❓ does the `linear` cli take an oauth bearer from env — probe at spec time
 - **`linear`, the fast train:** native go, batched, presets, and measured both ways in `x stats` — under-delivers (a `read` followed within a minute by a raw call on the same id) and over-delivers (bytes per call nobody used)
 - **traces keep entity ids** (ticket ids, slugs, family names); free text, bodies and paths outside the repos stay out
 - **the `linear` verbs**, from 981 raw `linear api` calls + 93 curl calls in 30 days: `read <ids…>` (batched; default fields = what the 583 single reads asked for) · `list` + `list --search` · `body <id>` pull / `--set <file>` write back, refused when the ticket changed since the pull · `set <id>` (state, delegate, parent, project, milestone, additive labels) · `link <id> blocks|related <ids…>` · `comment <id> --body-file` · `update <project|initiative> --body-file --health`; ids and state names resolve inside x, the token hop and the `viewer` checks go into `x as`

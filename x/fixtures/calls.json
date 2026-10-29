@@ -95,7 +95,7 @@
             "argv": ["lane", "commit", "{world}/msg.txt", "--", "notes.txt"],
             "cwd": "{world}/repo",
             "data": {
-                "branch": "coder/demo"
+                "branch": "codie/demo"
             },
             "exit": 0,
             "id": "commit-run-json",
@@ -459,7 +459,7 @@
             ],
             "cwd": "{world}/repo",
             "data": {
-                "branch": "coder/demo"
+                "branch": "codie/demo"
             },
             "exit": 0,
             "id": "commit-hold-json",

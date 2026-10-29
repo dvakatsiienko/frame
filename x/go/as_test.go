@@ -70,10 +70,10 @@ func TestAsHandsTheMemberTokenToTheChildOnly(t *testing.T) {
 	cases := []struct {
 		name, member, tool, envName, key, token string
 	}{
-		{"coder on linear", "coder", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-coder:x", "tok-linear-coder"},
+		{"codie on linear", "codie", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-codie:x", "tok-linear-coder"},
 		{"clio on linear", "clio", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-clio:x", "tok-linear-clio"},
 		{"dima on linear", "dima", "linear", "LINEAR_API_KEY", "op://dev/linear-golden/credential", "lin_api_dima"},
-		{"coder on gh", "coder", "gh", "GH_TOKEN", "keychain:x-token-gh-x-codie-cc:x", "ghs_coder"},
+		{"codie on gh", "codie", "gh", "GH_TOKEN", "keychain:x-token-gh-x-codie-cc:x", "ghs_coder"},
 		{"clio on gh", "clio", "gh", "GH_TOKEN", "keychain:x-token-gh-x-clio-cc:x", "ghs_clio"},
 	}
 	for _, c := range cases {
@@ -106,6 +106,17 @@ func TestAsHandsTheMemberTokenToTheChildOnly(t *testing.T) {
 	}
 }
 
+func TestAsResolvesTheRoleWordToItsMember(t *testing.T) {
+	t.Parallel()
+	bin := t.TempDir()
+	seen := fakeTool(t, bin, "gh", "GH_TOKEN")
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_codie"})
+	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keys}, "as", "coder", "--", "gh", "pr", "view")
+	if got.code != 0 || read(t, seen) != "ghs_codie" || !strings.Contains(got.trace, `"x.actor":"codie"`) {
+		t.Fatalf("exit %d, want codie's token and actor codie\n%s%s%s", got.code, got.stdout, got.stderr, got.trace)
+	}
+}
+
 func TestAsMintsALinearTokenWhenTheCacheRunsOut(t *testing.T) {
 	t.Parallel()
 	var form url.Values
@@ -117,10 +128,10 @@ func TestAsMintsALinearTokenWhenTheCacheRunsOut(t *testing.T) {
 	defer server.Close()
 	bin := t.TempDir()
 	seen := fakeTool(t, bin, "linear", "LINEAR_API_KEY")
-	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-coder:x": "1:tok-stale",
-		"keychain:linear-coder-id:coder": "client-id", "keychain:linear-coder-secret:coder": "client-secret"})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-codie:x": "1:tok-stale",
+		"keychain:linear-codie-id:codie": "client-id", "keychain:linear-codie-secret:codie": "client-secret"})
 	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keys, "X_LINEAR_URL=" + server.URL},
-		"as", "coder", "--", "linear", "api", "query")
+		"as", "codie", "--", "linear", "api", "query")
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
 	}
@@ -143,13 +154,13 @@ func TestAsNeverCachesATokenTheKeychainWouldSplit(t *testing.T) {
 	defer server.Close()
 	bin := t.TempDir()
 	seen := fakeTool(t, bin, "linear", "LINEAR_API_KEY")
-	keys := keysFixture(t, map[string]string{"keychain:linear-coder-id:coder": "id", "keychain:linear-coder-secret:coder": "secret"})
+	keys := keysFixture(t, map[string]string{"keychain:linear-codie-id:codie": "id", "keychain:linear-codie-secret:codie": "secret"})
 	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keys, "X_LINEAR_URL=" + server.URL},
-		"as", "coder", "--", "linear", "api", "query")
+		"as", "codie", "--", "linear", "api", "query")
 	if got.code != 0 || read(t, seen) != "tok with space" {
 		t.Fatalf("exit %d, child saw %q", got.code, read(t, seen))
 	}
-	if cache := read(t, keys); strings.Contains(cache, "x-token-linear-coder") {
+	if cache := read(t, keys); strings.Contains(cache, "x-token-linear-codie") {
 		t.Errorf("a token with a space was cached: %s", cache)
 	}
 }
@@ -184,7 +195,7 @@ func TestAsMintsAGithubTokenWithASignedAppJWT(t *testing.T) {
 	seen := fakeTool(t, bin, "gh", "GH_TOKEN")
 	keys := keysFixture(t, map[string]string{"keychain:github-x-codie-cc-id:x-codie-cc": "4873606", "keychain:github-x-codie-cc-key:x-codie-cc": encoded})
 	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL},
-		"as", "coder", "--", "gh", "pr", "view")
+		"as", "codie", "--", "gh", "pr", "view")
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
 	}
@@ -238,9 +249,9 @@ func TestAsEndsOnTheChildExitCode(t *testing.T) {
 	t.Parallel()
 	bin := t.TempDir()
 	fakeTool(t, bin, "linear", "LINEAR_API_KEY")
-	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-coder:x": farFuture + ":tok"})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-codie:x": farFuture + ":tok"})
 	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keys, "FAKE_EXIT=3"},
-		"as", "coder", "--", "linear", "api", "query")
+		"as", "codie", "--", "linear", "api", "query")
 	if got.code != 3 || got.stdout != "" {
 		t.Errorf("exit %d stdout %q, want the child's 3 and no envelope", got.code, got.stdout)
 	}
@@ -253,9 +264,9 @@ func TestAsRefusesWhatItCannotRunWithUsage(t *testing.T) {
 	keys := keysFixture(t, map[string]string{})
 	for name, argv := range map[string][]string{
 		"an unknown member":      {"as", "ghost", "--", "linear", "api"},
-		"a tool with no token":   {"as", "coder", "--", "curl", "https://example.com"},
-		"no command":             {"as", "coder"},
-		"a tool missing on PATH": {"as", "coder", "--", "/nowhere/linear"},
+		"a tool with no token":   {"as", "codie", "--", "curl", "https://example.com"},
+		"no command":             {"as", "codie"},
+		"a tool missing on PATH": {"as", "codie", "--", "/nowhere/linear"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			got := runAs(t, []string{"PATH=" + bin + ":/usr/bin:/bin", "X_KEYS=" + keys}, argv...)

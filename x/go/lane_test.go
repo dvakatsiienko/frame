@@ -774,6 +774,6 @@ func TestPrOpenOpensOntoMain(t *testing.T) {
 
 	calls := strings.TrimSpace(read(t, log))
 	if got.code != 0 || !strings.HasPrefix(calls, "ghs_coder pr create --base main --head coder/FRM-1-a ") || strings.Contains(calls, "\n") {
-		t.Fatalf("exit %d, gh calls %q, want one pr create onto main as the coder app\n%s", got.code, calls, got.stdout)
+		t.Fatalf("exit %d, gh calls %q, want one pr create onto main as the codie app\n%s", got.code, calls, got.stdout)
 	}
 }

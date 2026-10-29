@@ -277,7 +277,7 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 		name, reason string
 		fail         func(w *mergeWorld)
 	}{
-		{"no clean record", "verifier", func(w *mergeWorld) { write(t, w.store, `{"o/r#8":"`+w.head+`"}`) }},
+		{"no clean record", "sixth-sense", func(w *mergeWorld) { write(t, w.store, `{"o/r#8":"`+w.head+`"}`) }},
 		{"a self-edit waiting for dima", "self-edit", func(w *mergeWorld) {
 			w.hub.mu.Lock()
 			defer w.hub.mu.Unlock()
@@ -623,7 +623,7 @@ func TestMergeAutoLeavesABaseWithNoOpenPrToTheChecks(t *testing.T) {
 
 	got := w.run(t, "8", "--apply")
 
-	if !strings.Contains(got.stdout, `"name":"verifier"`) {
+	if !strings.Contains(got.stdout, `"name":"sixth-sense"`) {
 		t.Fatalf("merge-auto stopped before its checks on a base no pr owns:\n%s", got.stdout)
 	}
 }
@@ -786,7 +786,7 @@ func TestRestackRefusesALayerAnotherWorktreeHolds(t *testing.T) {
 	}
 }
 
-// a verifier checks a stack in one call: the top layer's tree, and every layer's pr, head and base
+// sixth sense checks a stack in one call: the top layer's tree, and every layer's pr, head and base
 func TestVerifyTreeWithStackSeedsTheTopAndListsEveryLayer(t *testing.T) {
 	t.Parallel()
 	main, prHead := verifyWorld(t)

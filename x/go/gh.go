@@ -116,7 +116,7 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 			} `json:"head"`
 		}
 		var header http.Header
-		if header, err = ghFetch(asCoder, base+"/pulls/"+n, &pr); err != nil {
+		if header, err = ghFetch(asCodie, base+"/pulls/"+n, &pr); err != nil {
 			return
 		}
 		// github's clock, read before the feeds: the next --since misses nothing posted while they ran
@@ -129,12 +129,12 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 		if pr.Merged {
 			read.state = "merged"
 		}
-		if read.checks, err = checksOf(asCoder, base, pr.Head.Sha); err != nil {
+		if read.checks, err = checksOf(asCodie, base, pr.Head.Sha); err != nil {
 			return
 		}
 		for i, feed := range prFeeds {
 			var comments []ghComment
-			if comments, err = ghPages[ghComment](asCoder, base+fmt.Sprintf(feed.path, n), ""); err != nil {
+			if comments, err = ghPages[ghComment](asCodie, base+fmt.Sprintf(feed.path, n), ""); err != nil {
 				return
 			}
 			read.feeds[i] = commentsOf(comments, since)
@@ -235,9 +235,9 @@ func repoOf(flags Flags) (string, error) {
 
 /* Github */
 
-// dima's own login does what the coder app may not: branch protection (admin), an approve, a merge
+// dima's own login does what the codie app may not: branch protection (admin), an approve, a merge
 const (
-	asCoder = "coder"
+	asCodie = "codie"
 	asDima  = "dima"
 )
 
@@ -301,8 +301,8 @@ func ghSend(as, method, target string, body, into any) (int, http.Header, error)
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
 	switch {
-	case resp.StatusCode == http.StatusNotFound && as == asCoder:
-		return resp.StatusCode, nil, &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the coder app is not installed on the repo",
+	case resp.StatusCode == http.StatusNotFound && as == asCodie:
+		return resp.StatusCode, nil, &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the codie app is not installed on the repo",
 			Next: ghAPINext(as, path)}
 	case resp.StatusCode >= 300:
 		var said struct {
@@ -340,8 +340,8 @@ func githubToken(as string) (string, error) {
 }
 
 func ghAPINext(as, path string) string {
-	if as == asCoder {
-		return "x as coder -- gh api " + path
+	if as == asCodie {
+		return "x as codie -- gh api " + path
 	}
 	return "gh api " + path
 }

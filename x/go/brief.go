@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// brief check reads a spawn brief the way a coder will: every backticked thing it names must exist in
+// brief check reads a spawn brief the way codie will: every backticked thing it names must exist in
 // the repo, and its exit lines must be checkable. prose is never checked. a pass writes a stamp keyed
 // by the brief's hash, which a spawn guard can ask for (FRM-311)
 
@@ -366,7 +366,7 @@ func missingTickets(ids map[string]int) ([]string, error) {
 	return absent, nil
 }
 
-// each rule came from a brief that misled a coder (FRM-311); a new miss adds a rule here. skill reads a
+// each rule came from a brief that misled codie (FRM-311); a new miss adds a rule here. skill reads a
 // named skill's SKILL.md, "" when there is none
 func lint(lines []briefLine, skill func(name string) string) []finding {
 	var found []finding
@@ -398,7 +398,7 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 			found = append(found, finding{line.n, "lint", "exit line", "names no surface: a file, a port or a command in backticks"})
 		}
 		if line.exit && strings.Contains(line.group, "_clio/") {
-			found = append(found, finding{line.n, "lint", "_clio/", "a coder's exit line never points into _clio/"})
+			found = append(found, finding{line.n, "lint", "_clio/", "codie's exit line never points into _clio/"})
 		}
 		if relayed.MatchString(text) && !stampTime.MatchString(text) {
 			found = append(found, finding{line.n, "lint", "dima's approval", "a relayed approval is quoted with its time"})

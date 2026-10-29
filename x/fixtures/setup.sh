@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # builds the fixture world every arm runs calls.json against, in a fresh dir:
 #   <world>/origin.git  bare remote, main one commit ahead of the branch
-#   <world>/repo        on coder/demo: notes.txt changed, draft.txt untracked
+#   <world>/repo        on codie/demo: notes.txt changed, draft.txt untracked
 #   <world>/store       three handoffs, mtimes pinned to their filename stamps
 #   <world>/msg.txt     a commit message; <world>/pr-body.md a pr body
 set -euo pipefail
@@ -27,15 +27,15 @@ printf 'first line\n' >notes.txt
 g add . && g commit -q -m seed
 g remote add origin "${world}/origin.git"
 g push -q origin main
-g switch -q -c coder/demo
-g push -q origin coder/demo
+g switch -q -c codie/demo
+g push -q origin codie/demo
 
 # main moves on without the branch, so merge-main has something to bring
 g switch -q main
 printf 'from main\n' >main.txt
 g add main.txt && g commit -q -m 'main moves'
 g push -q origin main
-g switch -q coder/demo
+g switch -q codie/demo
 g branch -q -D main
 
 printf 'second line\n' >>notes.txt

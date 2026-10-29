@@ -22,11 +22,12 @@ import (
 
 var ticketShape = regexp.MustCompile(`^[A-Z]+-\d+$`)
 
-// an agent acts as the clio app, a member's session (its registry name is not 🦉 clio) as the coder app, dima on his
+// an agent acts as the clio app, a member's session (its registry name is not 🦉 clio) as the codie app, dima on his
 // own terminal as himself; --as names anyone else (FRM-399)
 func actorOf(flags Flags) (string, error) {
-	if named, _ := flags["as"].(string); named != "" {
-		if !slices.Contains(members, named) {
+	if given, _ := flags["as"].(string); given != "" {
+		named, known := memberNamed(given)
+		if !known {
 			return "", usageFail("no member "+named+" — --as takes "+strings.Join(members, ", "), "x linear --help")
 		}
 		return named, nil
@@ -36,7 +37,7 @@ func actorOf(flags Flags) (string, error) {
 		return "dima", nil
 	}
 	if name, ok := sessionName(); ok && strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "") != "🦉clio" {
-		return "coder", nil
+		return "codie", nil
 	}
 	return "clio", nil
 }

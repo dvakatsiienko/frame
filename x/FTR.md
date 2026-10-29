@@ -1,7 +1,7 @@
 # x — features
 
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
-- given/when/then lines are the verifier's exit lines
+- given/when/then lines are sixth sense's exit lines
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
@@ -126,16 +126,16 @@
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
   - given a remote that answers a 5xx, then the push tries again, up to 3 tries 2 s and 4 s apart, and lands once the remote recovers
   - given a 4xx or a hook refusal, then it fails on the first try
-- ⬜ `x lane pr-open` opens a pr as the coder app
+- ⬜ `x lane pr-open` opens a pr as the codie app
 - ✅ `x lane review <pr>` keeps the ci review on the pr head
   - given a pr with no review round yet, under the 1-round cap (dima, 2026-10-22)
   - when `x lane review <pr>` runs
-  - then it adds `🤖 review:requested` as the coder app
+  - then it adds `🤖 review:requested` as the codie app
   - given the last round judged the head, a round still running on the branch, or a repo with no `review.yml`, then it prints ok and touches no label
   - given the head is approved on dima's account, or `review:clean` is green on it, then it prints ok («cleared») and touches no label, past the cap too
-  - given the round already ran and neither holds, then it requests nothing, exits 1 and names clio's approval on the verifier's clean as the way past
+  - given the round already ran and neither holds, then it requests nothing, exits 1 and names clio's approval on sixth sense's clean as the way past
   - given the label came off and the add failed, then the failure says the pr now holds no review label
-  - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and the coder's «final» ping runs it as one call (FRM-355)
+  - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and codie's «final» ping runs it as one call (FRM-355)
 - ✅ `x lane gate <msg-file>` holds a commit at commit-msg, in frame and bytes
   - given a commit that changes a file a context lists as its `contract:` in `GLOSSARY-MAP.md`, without that context's `GLOSSARY.md` or a file in its adr dir, then it exits 1 naming the context and the missing glossary; a message line «glossary: unchanged — <why>» passes it
   - given a commit touching a context whose `contract:` reads «none yet», then it exits 0 with one line naming that context; a context with no `contract:` line stays quiet
@@ -150,9 +150,9 @@
   - given no pr number, or a file where the number goes
   - when `x lane pr-body` runs
   - then it refuses with exit 2 and calls nothing
-  - given a number and a file, when it runs with `--apply`, then the body is written as the coder app and the read-back matches the file, or it fails naming the difference
+  - given a number and a file, when it runs with `--apply`, then the body is written as the codie app and the read-back matches the file, or it fails naming the difference
 - ✅ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
-  - given the verifier clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
+  - given sixth sense clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
   - when `x lane merge-auto <pr> --apply` runs
   - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
   - given no run, a skipped or red required check, 0 required checks, an open thread, no verifier clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
@@ -160,40 +160,40 @@
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
-  - given a pr whose ticket (its `coder/<ID>-…` branch, else its body's `- ticket: <ID>` line) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
+  - given a pr whose ticket (its `codie/<ID>-…` branch, else its body's `- ticket: <ID>` line) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
   - when `x lane merge-auto <pr> --apply` runs from the main checkout on the verifier-clean pr that touches a self-edit path
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
   - given the body edited after the last signed line, a last sign with no `merge: pre-approved`, no `## signed` block, or a build whose `x/go` differs from origin/main, then it waits and names which, the re-sign included; the brake waits whatever the sign says
-  - decision: the sign is read from the linear ticket, never the pr, whose body the coder writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as clio signs (FRM-423 grill, o141)
+  - decision: the sign is read from the linear ticket, never the pr, whose body codie writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as clio signs (FRM-423 grill, o141)
   - decision: clio's merge-auto runs from `~/frame`, main's build — a pr head's own binary could drop any check inside it, so the main checkout is the guard, the dev-build wait its backstop (clio, FRM-423 pr 0)
-  - known gap: which ticket is read comes from the pr's branch name or body, both the coder's to write, so nothing binds a pr to the chunk it names; the verifier checks the pr against its chunk (accepted for the mvp, clio, FRM-423 pr 0)
+  - known gap: which ticket is read comes from the pr's branch name or body, both codie's to write, so nothing binds a pr to the chunk it names; sixth sense checks the pr against its chunk (accepted for the mvp, clio, FRM-423 pr 0)
 - ⬜ a self-edit with no pre-approved sign merges on dima's typed word
   - given a verifier-clean self-edit pr whose chunk holds no pre-approved sign
   - when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, which it does only when dima's own last typed prompt names that pr (`x-mod-guard/FTR.md`, the dima-ok-flag line)
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
-- ✅ `x lane rebase-main --apply` puts a coder branch on origin/main with no merge commit
-  - given a `coder/*` branch behind origin/main with no conflict
+- ✅ `x lane rebase-main --apply` puts a codie branch on origin/main with no merge commit
+  - given a `codie/*` branch behind origin/main with no conflict
   - when `x lane rebase-main --apply` runs
   - then the branch sits on origin/main's head with 0 merge commits, and the remote holds the rebased sha, pushed with a lease on the sha read before the rebase
-  - given a branch outside `coder/*`, then it exits 2 before any rebase
+  - given a branch outside `codie/*`, then it exits 2 before any rebase
   - given origin's branch holds a commit HEAD lacks, then it refuses before any rebase, naming that sha
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
   - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
-  - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in the verifier's round 2
-  - decision: the one force-push door, `coder/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
-- ✅ `x lane verify-tree <pr url | main:<sha>>` gives the verifier a seeded worktree of a head
+  - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in sixth sense's round 2
+  - decision: the one force-push door, `codie/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
+- ✅ `x lane verify-tree <pr url | main:<sha>>` gives sixth sense a seeded worktree of a head
   - given a pr url of this repo, or `main:<sha>` of a commit on origin/main
   - when `x lane verify-tree` runs in frame
   - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
   - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
-  - given branch `coder/FRM-1-a-2` on top of `coder/FRM-1-a`, when `x lane pr-open --apply --base coder/FRM-1-a <title> <body-file>` runs, then one pr opens with base `coder/FRM-1-a`; a base origin lacks refuses before gh runs
-  - given layers `coder/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names their 3 open prs by number, bottom-up (gh-stack pushes a named branch, and a frame worktree's push dies at the mirror gate), and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`
-  - decision: view reads github, never `gh stack view`, which reads a local stack file its own link never writes (verifier round 1)
+  - given branch `codie/FRM-1-a-2` on top of `codie/FRM-1-a`, when `x lane pr-open --apply --base codie/FRM-1-a <title> <body-file>` runs, then one pr opens with base `codie/FRM-1-a`; a base origin lacks refuses before gh runs
+  - given layers `codie/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names their 3 open prs by number, bottom-up (gh-stack pushes a named branch, and a frame worktree's push dies at the mirror gate), and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`
+  - decision: view reads github, never `gh stack view`, which reads a local stack file its own link never writes (sixth sense round 1)
   - given gh-stack's lock held (its exit 8), then the call is tried again with backoff for up to 2 minutes, then fails naming the lock; a paused stack rebase (exit 7) refuses after 1 call naming its worktree, `gh stack rebase --continue` and `--abort`; stacks off for the repo (exit 9) refuses at once naming it
   - given no gh-stack extension, then `x lane stack link` exits 1 naming `gh extension install github/gh-stack`
   - given a pr in a linked github stack whose every open layer up to it is verifier-clean on its head, green and threadless, when `x lane merge-auto --apply <pr>` runs, then that part of the stack merges in one call through github's async merge (the plain endpoint answers 403 for any stacked pr, the bottom one included), and the required checks and the brake read the stack's trunk
@@ -339,7 +339,7 @@
 ## as — identity
 
 - ✅ `x as <member> -- <command>` runs one command as a fleet member
-  - given a member (`clio`, `coder`, `dima`) and a `linear` or `gh` command after `--`
+  - given a member (`clio`, `codie`, `dima`) and a `linear` or `gh` command after `--`
   - when it runs
   - then the command runs with that member's token in its own env only (`LINEAR_API_KEY`, `GH_TOKEN`); its output and exit code are the call's, with no envelope
   - then the trace line names the actor; no token reaches x's stdout, stderr or the trace
@@ -362,7 +362,7 @@
   - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
   - given an agent env, then json; `--board` draws the human view
   - given a pr number that is not digits, a `--since` that is not RFC 3339 or a repo that is not owner/name, then exit 2 before any request
-  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as coder -- gh` (FRM-364)
+  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as codie -- gh` (FRM-364)
 
 ## linear — tickets
 
@@ -397,7 +397,7 @@
   - given no pull of that ticket, then nothing is written and `next` is the pull
 - ✅ `x linear set` updates a ticket by names, in one write
   - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)
-  - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|clio`, `--add-label`, `--remove-label` — names, never ids
+  - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate codie|clio`, `--add-label`, `--remove-label` — names, never ids
   - when it runs
   - then one lookup resolves every name and one `issueUpdate` lands them all; the envelope prints the actor and each change as `field: old → new`
   - given `--add-label` or `--remove-label` repeated, comma lists or both, then every named label moves (FRM-415)
@@ -431,7 +431,7 @@
   - when it runs, then it prints the plan and exits 4; with `--apply`, one request archives them all and a capped page says «run again»
 - ⬜ a ticket's size prints as its word: `x linear read` carries `size` (XS · S · M) beside the estimate (FRM-399)
 - ✅ every `x linear` call acts as someone, and says who
-  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cloud chat — anything without a terminal — then it acts as the clio app — but a session whose registry name is not 🦉 clio (by `CLAUDE_CODE_SESSION_ID`) acts as the coder app (FRM-399); given dima's own terminal, as dima; `--as coder|clio|dima` overrides
+  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cloud chat — anything without a terminal — then it acts as the clio app — but a session whose registry name is not 🦉 clio (by `CLAUDE_CODE_SESSION_ID`) acts as the codie app (FRM-399); given dima's own terminal, as dima; `--as codie|clio|dima` overrides
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
@@ -469,20 +469,20 @@
   - when `x fleet flow --days 14` runs
   - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
   - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
-- ✅ `x fleet audit` checks each coder read its lessons first
+- ✅ `x fleet audit` checks each codie read its lessons first
   - given the session transcripts of the last `--days` (default 1)
   - when `x fleet audit` runs
   - then each session opened with `/x:crew-codie` gets a line: whether it read `crew-codie/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
   - when `x fleet ops` runs
-  - then it prints tokens and wall time per ticket (coder + verifier, each step once), clio's code edits per session, and the cost of a clio boot (full and mini), each with its median
+  - then it prints tokens and wall time per ticket (codie + sixth sense, each step once), clio's code edits per session, and the cost of a clio boot (full and mini), each with its median
 - ✅ `x fleet ops` names each size miss
   - given a ticket linear closed inside the `--days` window, sized XS or S, whose coder turns in that window reached its line (XS 80, S 400)
   - when `x fleet ops` runs
   - then it prints one line per size miss — ticket, size, turns, the line — most turns first; no size miss, no section; linear unreachable, one line saying the check did not run
-  - decision: the check lives in `x fleet ops`, which already reads the coder transcripts, not in a duckdb query beside it (FRM-379)
-  - decision: closed inside the window, so a halt never reports the last halt's miss again; the cost is an undercount for a ticket whose coder sessions started before the window, and sessions under `--min-kb` are not read
+  - decision: the check lives in `x fleet ops`, which already reads codie transcripts, not in a duckdb query beside it (FRM-379)
+  - decision: closed inside the window, so a halt never reports the last halt's miss again; the cost is an undercount for a ticket whose codie sessions started before the window, and sessions under `--min-kb` are not read
 - ✅ a bad `--days` or `--min-kb` exits 2 with the command that works
 
 ## stats — telemetry
@@ -512,7 +512,7 @@
   - given trace lines written by a dev build — an x the shim built from `x/go` code that differs from its merge base with `origin/main` (an edit, an untracked file, an unpushed commit), stamped `x.dev`
   - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
   - when `x stats --dev` runs, then they are counted too
-  - decision: dev means x/go differs from its merge base with origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide a coder's real `x lane` calls; never origin/main itself, which would mark a checkout merely behind main; lines from before the stamp count as real (dima, 2026-10-08)
+  - decision: dev means x/go differs from its merge base with origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide codie's real `x lane` calls; never origin/main itself, which would mark a checkout merely behind main; lines from before the stamp count as real (dima, 2026-10-08)
 - ✅ `x stats --outside` ranks what cc runs by hand
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs

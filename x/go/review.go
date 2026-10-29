@@ -13,7 +13,7 @@ import (
 )
 
 // the bytes review lane: the label starts a round, a successful review.yml run on the branch is one round,
-// one round per pr at «final», and past it an approval on dima's account (dima, or clio on the verifier's clean)
+// one round per pr at «final», and past it an approval on dima's account (dima, or clio on sixth sense's clean)
 // publishes review:clean (bytes .github/workflows; dima, 2026-10-22, PK-103 W100, W101)
 const (
 	reviewLabel = "🤖 review:requested"
@@ -117,20 +117,20 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 	}
 	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
-			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap clio approves #%s on dima's account once the verifier is clean on the head, and review-approved.yml publishes review:clean on it",
+			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap clio approves #%s on dima's account once sixth sense is clean on the head, and review-approved.yml publishes review:clean on it",
 				len(rounds), pr.HeadRefName, short(judged), short(head), n),
-			Next: "ask clio to approve #" + n + " on the verifier's clean"}
+			Next: "ask clio to approve #" + n + " on sixth sense's clean"}
 	}
 
 	if err := r.Step("request", "re-labelling "+reviewLabel, func() (string, error) {
 		// a label already on the pr fires no event: only a fresh add starts a round
 		removed := slices.Contains(pr.Labels, label{reviewLabel})
 		if removed {
-			if err := ghCoderOK("pr", "edit", n, "--remove-label", reviewLabel); err != nil {
+			if err := ghCodieOK("pr", "edit", n, "--remove-label", reviewLabel); err != nil {
 				return "", err
 			}
 		}
-		if err := ghCoderOK("pr", "edit", n, "--add-label", reviewLabel); err != nil {
+		if err := ghCodieOK("pr", "edit", n, "--add-label", reviewLabel); err != nil {
 			if failed, ok := errors.AsType[*Fail](err); ok && removed {
 				failed.Msg = "the label came off #" + n + " and did not go back on, so the pr holds no review label: " + failed.Msg
 				failed.Next = "gh pr edit " + n + " --add-label '" + reviewLabel + "'"
@@ -180,7 +180,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	n, file := fields[0].value.(string), fields[3].value.(string)
 	if err := r.Step("write", "gh pr edit as x-codie-cc", func() (string, error) {
-		return "#" + n, ghCoderOK("pr", "edit", n, "--body-file", file)
+		return "#" + n, ghCodieOK("pr", "edit", n, "--body-file", file)
 	}); err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		if err != nil {
 			return "", err
 		}
-		got, err := ghCoder("pr", "view", n, "--json", "body", "--jq", ".body")
+		got, err := ghCodie("pr", "view", n, "--json", "body", "--jq", ".body")
 		if err != nil {
 			return "", err
 		}
@@ -206,7 +206,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 
 /* Github */
 func readPR(n string) (prHead, error) {
-	got, err := ghCoder("pr", "view", n, "--json", "title,headRefName,headRefOid,reviewDecision,labels")
+	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,reviewDecision,labels")
 	if err != nil {
 		return prHead{}, err
 	}
@@ -249,8 +249,8 @@ func cleanOnHead(head string) bool {
 	return err == nil && got.ok && got.out == "success"
 }
 
-// ghCoder runs gh as the x-codie-cc app, the identity every lane write on github wears
-func ghCoder(args ...string) (result, error) {
+// ghCodie runs gh as the x-codie-cc app, the identity every lane write on github wears
+func ghCodie(args ...string) (result, error) {
 	got, err := ghRaw(args...)
 	if err == nil && !got.ok {
 		return got, &Fail{Msg: "gh " + strings.Join(args[:min(2, len(args))], " ") + " failed — its output is above", Next: "gh auth status", Log: nonBlank(got.log)}
@@ -258,13 +258,13 @@ func ghCoder(args ...string) (result, error) {
 	return got, err
 }
 
-func ghCoderOK(args ...string) error { _, err := ghCoder(args...); return err }
+func ghCodieOK(args ...string) error { _, err := ghCodie(args...); return err }
 
 // ghRaw leaves a failed gh in the result, for a caller that reads its words
 func ghRaw(args ...string) (result, error) {
-	token, err := tokenFor("coder", "gh")
+	token, err := tokenFor("codie", "gh")
 	if err != nil {
-		return result{}, &Fail{Msg: "no gh token for the coder app: " + err.Error(), Next: "x schema as"}
+		return result{}, &Fail{Msg: "no gh token for the codie app: " + err.Error(), Next: "x schema as"}
 	}
 	got, _ := run("", []string{"GH_TOKEN=" + token}, "", "gh", args...)
 	return got, nil

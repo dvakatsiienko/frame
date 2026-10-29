@@ -144,10 +144,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	var verifier, ci, threads mergeCheck
-	if err := r.Step("verifier", "reading the verifier's clean", func() (string, error) {
-		verifier = verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
-		return verifier.shown()
+	var sixthSense, ci, threads mergeCheck
+	if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
+		sixthSense = sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+		return sixthSense.shown()
 	}); err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	d.Checks = []mergeCheck{verifier, ci, threads}
+	d.Checks = []mergeCheck{sixthSense, ci, threads}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
 		own, ownSelf, err := riskyPaths(api, n)
@@ -210,7 +210,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	d.Decision, d.Wait = decide(brake, selfWait, needsApprove, verifier, ci, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, needsApprove, sixthSense, ci, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -219,16 +219,16 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the brake and a self-edit outrank every check; a bytes head missing only review:clean gets the approve
-func decide(brake, selfWait string, needsApprove bool, verifier, ci, threads mergeCheck) (decision, wait string) {
+func decide(brake, selfWait string, needsApprove bool, sixthSense, ci, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
 	case selfWait != "":
 		return "wait", selfWait
-	case verifier.OK && threads.OK && needsApprove:
+	case sixthSense.OK && threads.OK && needsApprove:
 		return "approve", ""
 	}
-	for _, c := range []mergeCheck{verifier, ci, threads} {
+	for _, c := range []mergeCheck{sixthSense, ci, threads} {
 		if !c.OK {
 			return "wait", c.Detail
 		}
@@ -243,7 +243,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	d.heads[n] = pr.Head.Sha
-	verifier := verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+	sixthSense := sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
 	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
 	if err != nil {
 		return "", err
@@ -264,14 +264,14 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
-	decision, wait := decide("", selfWait, needsApprove, verifier, ci, threads)
+	decision, wait := decide("", selfWait, needsApprove, sixthSense, ci, threads)
 	switch decision {
 	case "merge":
 		return "", nil
 	case "approve":
 		return layer + " needs its review:clean first: x lane merge-auto --apply " + n, nil
 	}
-	for _, c := range []mergeCheck{verifier, ci, threads} {
+	for _, c := range []mergeCheck{sixthSense, ci, threads} {
 		if !c.OK && c.Detail == wait {
 			wait = c.Name + ": " + wait
 		}
@@ -288,7 +288,7 @@ func headsHeld(api string, heads map[string]string) error {
 		}
 		if pr.Head.Sha != gated {
 			return &Fail{Refused: true, Msg: fmt.Sprintf("#%s moved from %s to %s after the gate read it; nothing merged", n, short(gated), short(pr.Head.Sha)),
-				Next: "x lane merge-auto <pr>, once the verifier cleared #" + n + "'s new head"}
+				Next: "x lane merge-auto <pr>, once sixth sense cleared #" + n + "'s new head"}
 		}
 	}
 	return nil
@@ -640,21 +640,21 @@ func clock() time.Time {
 
 /* Checks */
 
-// a «clean» in a pr comment or body is never read: only the verifier writes this store
-func verifierCheck(repo, n, head, base, ref string) mergeCheck {
-	c := mergeCheck{Name: "verifier"}
+// a «clean» in a pr comment or body is never read: only sixth sense writes this store
+func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
+	c := mergeCheck{Name: "sixth-sense"}
 	home, _ := os.UserHomeDir()
 	path := cmp.Or(os.Getenv("X_VERIFIED"), filepath.Join(home, ".claude/shelf/pr-verified.json"))
 	raw, err := os.ReadFile(path)
 	var store map[string]string
 	if err != nil || json.Unmarshal(raw, &store) != nil {
-		c.Detail = "no verifier store at " + path
+		c.Detail = "no sixth sense store at " + path
 		return c
 	}
 	verified := store[repo+"#"+n]
 	switch {
 	case verified == "":
-		c.Detail = "no verifier clean recorded for " + repo + "#" + n
+		c.Detail = "no sixth sense clean recorded for " + repo + "#" + n
 	case verified == head:
 		c.OK, c.Detail = true, "clean on "+short(head)
 	default:
@@ -664,9 +664,9 @@ func verifierCheck(repo, n, head, base, ref string) mergeCheck {
 }
 
 // the whole branch change is compared, merges included: per-commit patch-ids let an edit inside a merge slip
-// (verifier round 1); they only name the commit to blame
+// (sixth sense round 1); they only name the commit to blame
 func carried(verified, head, base, ref string) (bool, string) {
-	moved := "the verifier's clean is on " + short(verified) + ", the head is " + short(head)
+	moved := "sixth sense's clean is on " + short(verified) + ", the head is " + short(head)
 	if got, _ := gitIn("", "fetch", "-q", "origin", base, ref); !got.ok {
 		return false, moved + "; git could not fetch them to compare: " + logLine(got.log)
 	}
@@ -691,7 +691,7 @@ func carried(verified, head, base, ref string) (bool, string) {
 	if errWas == nil && errNow == nil {
 		for _, c := range now {
 			if !slices.ContainsFunc(was, func(v patchCommit) bool { return v.id == c.id }) {
-				return false, short(c.sha) + " " + c.subject + " is past the verifier's clean on " + short(verified)
+				return false, short(c.sha) + " " + c.subject + " is past sixth sense's clean on " + short(verified)
 			}
 		}
 	}
@@ -755,7 +755,7 @@ const reviewClean = "review:clean"
 
 func approveAndAwait(api string, d *mergeDecision) (string, error) {
 	if _, _, err := ghSend(asDima, http.MethodPost, api+"/pulls/"+d.PR+"/reviews", map[string]string{
-		"commit_id": d.Head, "event": "APPROVE", "body": "verifier clean on " + short(d.Head) + " — x lane merge-auto",
+		"commit_id": d.Head, "event": "APPROVE", "body": "sixth sense clean on " + short(d.Head) + " — x lane merge-auto",
 	}, nil); err != nil {
 		return "", err
 	}

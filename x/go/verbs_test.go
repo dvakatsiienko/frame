@@ -251,7 +251,7 @@ func TestBriefLintRules(t *testing.T) {
 		{"jev with no budget", "route it through jev\n", true},
 		{"jev with a budget", "route it through jev, budget 200 calls\n", false},
 		{"another member pushes past the skill's door", "/x:crew-codie FRM-1\nclio pushes when you are done\n", true},
-		{"the coder pushes through the skill's door", "/x:crew-codie FRM-1\npush with `x lane push`\n", false},
+		{"codie pushes through the skill's door", "/x:crew-codie FRM-1\npush with `x lane push`\n", false},
 		{"another member pushes under a skill with no push door", "/x:crew-designer\nclio pushes the canvas\n", false},
 		{"a reuse with nothing to keep", "reuse the FRM-1 coder\n", true},
 		{"a reuse that names what to keep", "reuse the FRM-1 coder, keep its worktree and context\n", false},

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// side is a second clone that moves main and pushes to the branch behind the coder's back
+// side is a second clone that moves main and pushes to the branch behind codie's back
 type rebaseWorld struct {
 	origin, clone, side string
 }
@@ -20,9 +20,9 @@ func newRebaseWorld(t *testing.T, branch string) *rebaseWorld {
 	gitT(t, side, "remote", "add", "origin", origin)
 	gitT(t, side, "push", "-q", "origin", "main")
 	gitT(t, side, "switch", "-q", "-c", branch)
-	write(t, filepath.Join(side, "mine.txt"), "the coder's change\n")
+	write(t, filepath.Join(side, "mine.txt"), "codie's change\n")
 	gitT(t, side, "add", "mine.txt")
-	gitT(t, side, "commit", "-q", "-m", "the coder's change")
+	gitT(t, side, "commit", "-q", "-m", "codie's change")
 	gitT(t, side, "push", "-q", "origin", branch)
 	gitT(t, side, "switch", "-q", "main")
 
@@ -133,7 +133,7 @@ func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
 	}
 }
 
-// the verifier's round 2 repro: a hand resolution and an unstaged edit sit in a paused rebase
+// sixth sense's round 2 repro: a hand resolution and an unstaged edit sit in a paused rebase
 func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
 	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
@@ -188,7 +188,7 @@ func TestRebaseMainNamesARemoteThatDiffersAfterThePush(t *testing.T) {
 	}
 }
 
-// the want line: main moves twice under a coder lane, and the branch never holds a merge commit
+// the want line: main moves twice under codie lane, and the branch never holds a merge commit
 func TestRebaseMainLeavesNoMergeCommitAcrossTwoMainMoves(t *testing.T) {
 	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")
@@ -207,19 +207,24 @@ func TestRebaseMainLeavesNoMergeCommitAcrossTwoMainMoves(t *testing.T) {
 
 func TestRebaseMainPutsTheBranchOnMainWithoutAMergeCommit(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
-	w.mainMoves(t, "one.txt", "one\n")
-	w.mainMoves(t, "two.txt", "two\n")
+	for _, branch := range []string{"codie/x", "coder/x"} {
+		t.Run(branch, func(t *testing.T) {
+			t.Parallel()
+			w := newRebaseWorld(t, branch)
+			w.mainMoves(t, "one.txt", "one\n")
+			w.mainMoves(t, "two.txt", "two\n")
 
-	got := w.run(t, "--apply")
+			got := w.run(t, "--apply")
 
-	gitT(t, w.clone, "fetch", "-q", "origin")
-	head := gitT(t, w.clone, "rev-parse", "HEAD")
-	mainHead := remoteHead(t, w, "main")
-	merges := gitT(t, w.clone, "log", "--merges", "--oneline", "origin/main..HEAD")
-	base := gitT(t, w.clone, "merge-base", "HEAD", mainHead)
-	if got.code != 0 || merges != "" || base != mainHead || remoteHead(t, w, "coder/x") != head {
-		t.Fatalf("exit %d, merges %q, base %s (main %s), remote %s (head %s):\n%s",
-			got.code, merges, short(base), short(mainHead), short(remoteHead(t, w, "coder/x")), short(head), got.stdout)
+			gitT(t, w.clone, "fetch", "-q", "origin")
+			head := gitT(t, w.clone, "rev-parse", "HEAD")
+			mainHead := remoteHead(t, w, "main")
+			merges := gitT(t, w.clone, "log", "--merges", "--oneline", "origin/main..HEAD")
+			base := gitT(t, w.clone, "merge-base", "HEAD", mainHead)
+			if got.code != 0 || merges != "" || base != mainHead || remoteHead(t, w, branch) != head {
+				t.Fatalf("exit %d, merges %q, base %s (main %s), remote %s (head %s):\n%s",
+					got.code, merges, short(base), short(mainHead), short(remoteHead(t, w, branch)), short(head), got.stdout)
+			}
+		})
 	}
 }

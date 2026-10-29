@@ -58,7 +58,7 @@ func linearKeys(t *testing.T) string {
 	return keysFixture(t, map[string]string{
 		"op://dev/linear-golden/credential": "lin_api_dima",
 		"keychain:x-token-linear-clio:x":    farFuture + ":tok-clio",
-		"keychain:x-token-linear-coder:x":   farFuture + ":tok-coder",
+		"keychain:x-token-linear-codie:x":   farFuture + ":tok-codie",
 	})
 }
 
@@ -258,7 +258,7 @@ func TestLinearActsAsClioForAnAgentAndDimaOnHisOwn(t *testing.T) {
 		auth string
 	}{
 		{"an agent", []string{"CLAUDECODE=1"}, []string{"linear", "read", "FRM-1"}, "Bearer tok-clio"},
-		{"an agent as coder", []string{"CLAUDECODE=1"}, []string{"linear", "read", "--as", "coder", "FRM-1"}, "Bearer tok-coder"},
+		{"an agent as codie", []string{"CLAUDECODE=1"}, []string{"linear", "read", "--as", "codie", "FRM-1"}, "Bearer tok-codie"},
 		{"a pipe with no agent env", nil, []string{"linear", "read", "FRM-1"}, "Bearer tok-clio"},
 		{"as dima", nil, []string{"linear", "read", "--as", "dima", "FRM-1"}, "lin_api_dima"},
 	}
@@ -305,9 +305,9 @@ func TestARevokedAppTokenIsMintedAgainOnce(t *testing.T) {
 			graphql.ServeHTTP(w, r)
 		}
 	})
-	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-coder:x": farFuture + ":tok-revoked",
-		"keychain:linear-coder-id:coder": "id", "keychain:linear-coder-secret:coder": "secret"})
-	got := runAs(t, []string{"X_KEYS=" + keys, "X_LINEAR_URL=" + server.URL}, "linear", "read", "--as", "coder", "FRM-1")
+	keys := keysFixture(t, map[string]string{"keychain:x-token-linear-codie:x": farFuture + ":tok-revoked",
+		"keychain:linear-codie-id:codie": "id", "keychain:linear-codie-secret:codie": "secret"})
+	got := runAs(t, []string{"X_KEYS=" + keys, "X_LINEAR_URL=" + server.URL}, "linear", "read", "--as", "codie", "FRM-1")
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
 	}

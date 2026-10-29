@@ -58,7 +58,7 @@ func TestReviewRequestsTheFirstRoundUnderTheCap(t *testing.T) {
 	removed := strings.Index(log, "ghs_coder pr edit 7 --remove-label 🤖 review:requested")
 	added := strings.Index(log, "ghs_coder pr edit 7 --add-label 🤖 review:requested")
 	if got.code != 0 || removed < 0 || added < removed {
-		t.Fatalf("exit %d, want the label removed then added as the coder app:\n%s%s", got.code, log, got.stdout)
+		t.Fatalf("exit %d, want the label removed then added as the codie app:\n%s%s", got.code, log, got.stdout)
 	}
 	if got.data["judged"] != "" || got.data["review"] != "requested" {
 		t.Errorf("the envelope does not show a first request: %s", got.stdout)
@@ -165,7 +165,7 @@ func TestPrBodyWritesTheFileAndReadsItBack(t *testing.T) {
 				t.Fatalf("exit %d, want %d:\n%s%s", got.code, c.code, calls(t, dir), got.stdout)
 			}
 			if !strings.Contains(calls(t, dir), "ghs_coder pr edit 7 --body-file "+body) {
-				t.Errorf("the body was not written to #7 as the coder app:\n%s", calls(t, dir))
+				t.Errorf("the body was not written to #7 as the codie app:\n%s", calls(t, dir))
 			}
 		})
 	}
@@ -211,8 +211,8 @@ func TestTwoOwnersNeedsAClioHalfAndAnother(t *testing.T) {
 		name, group string
 		two         bool
 	}{
-		{"clio's step beside a coder's skill", "6. `x:crew-codie`'s final step and clio's pre-merge step name `x lane review`", true},
-		{"a clio path beside a coder's path", "1. `_clio/docs/a.md` and `x/go/a.go` agree", true},
+		{"clio's step beside codie's skill", "6. `x:crew-codie`'s final step and clio's pre-merge step name `x lane review`", true},
+		{"a clio path beside codie's path", "1. `_clio/docs/a.md` and `x/go/a.go` agree", true},
 		{"a quoted clio word", "2. `x lane commit` refuses «clio pushes»", false},
 		{"clio's half alone", "3. `_clio/docs/a.md` holds the recipe", false},
 		{"no clio at all", "4. `x lane commit` prints the sha", false},

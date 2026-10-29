@@ -14,7 +14,7 @@ type rebaseTarget struct {
 	From   string `json:"from"`
 }
 
-// the branch a stopped rebase rewrites; any stopped rebase or am is the coder's to finish, never the verb's
+// the branch a stopped rebase rewrites; any stopped rebase or am is codie's to finish, never the verb's
 func pausedRebase() (name string, paused bool) {
 	for _, state := range []string{"rebase-merge", "rebase-apply"} {
 		dir, _ := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-path", state)
@@ -26,7 +26,7 @@ func pausedRebase() (name string, paused bool) {
 	return "", false
 }
 
-// the fleet's one force-push door: coder/* only, leased on the sha read before the rebase (dima, o87)
+// the fleet's one force-push door: codie/* (and the older coder/*) only, leased on the sha read before the rebase (dima, o87)
 func rebasePlan(r *Run, _ []string, _ Flags) (any, error) {
 	if name, paused := pausedRebase(); paused {
 		return nil, &Fail{Refused: true, Msg: "a rebase of " + name + " is stopped here; nothing was touched — resolve, git add, then git rebase --continue, or git rebase --abort",
@@ -36,8 +36,8 @@ func rebasePlan(r *Run, _ []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(name, "coder/") {
-		return nil, usageFail(name+" is not a coder/* branch: rebase-main force-pushes only those", "git switch -c coder/<ticket>-<slug>")
+	if !strings.HasPrefix(name, "codie/") && !strings.HasPrefix(name, "coder/") { // read-both: branches cut before the 10-29 rename keep coder/
+		return nil, usageFail(name+" is not a codie/* branch: rebase-main force-pushes only those", "git switch -c codie/<ticket>-<slug>")
 	}
 	r.Open(name)
 	t := &rebaseTarget{Branch: name}
@@ -126,7 +126,7 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	return ordered{{"branch", t.Branch}, {"main", t.Main}, {"sha", sha}}, nil
 }
 
-// a conflict leaves the tree mid-rebase for the coder; a stop with no conflict is undone only when this
+// a conflict leaves the tree mid-rebase for codie; a stop with no conflict is undone only when this
 // run's rebase is the one paused, and the message says what really happened
 func rebaseFail(rebased result) error {
 	conflicts, _ := git("diff", "--name-only", "--diff-filter=U")

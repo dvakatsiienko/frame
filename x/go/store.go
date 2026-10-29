@@ -16,11 +16,11 @@ import (
 // the handoff store: a flat dir of CSTs, named by one grammar (script/lib/handoff-names.json holds its
 // cases). nothing here deletes by age — a stale CST is dima's to see and decide about
 
-var audiences = []string{"any", "cc", "clio", "crow", "coder", "cloud-chat", "designer", "verifier"}
+var audiences = []string{"any", "cc", "clio", "crow", "codie", "cloud-chat", "designer", "sixth-sense"}
 
 // read-both: CST names written before the 10-29 rename keep their old audience, so a stored one still
 // parses as addressed (never as «any») and is pulled by no new reader; pending ones were renamed then
-var pastAudiences = []string{"ccli", "cclio", "ccrow", "cw"} // read-both
+var pastAudiences = []string{"ccli", "cclio", "ccrow", "coder", "cw", "verifier"} // read-both
 
 func knownAudience(token string) bool {
 	return slices.Contains(audiences, token) || slices.Contains(pastAudiences, token)

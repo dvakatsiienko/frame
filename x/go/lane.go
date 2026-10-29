@@ -812,7 +812,7 @@ func packageScripts(tree string) map[string]string {
 }
 
 /* Git */
-// a worktree coder's other-repo half lands on that repo's main and nowhere else
+// a worktree codie's other-repo half lands on that repo's main and nowhere else
 func enterMain(repo string) error {
 	root, _ := gitIn(repo, "rev-parse", "--show-toplevel")
 	if !root.ok {

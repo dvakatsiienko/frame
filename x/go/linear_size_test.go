@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// FRM-399: a member's session acts as coder without --as; a ticket's size is a word, XS · S · M
+// FRM-399: a member's session acts as codie without --as; a ticket's size is a word, XS · S · M
 
 func sessionsFixture(t *testing.T, name string) []string {
 	t.Helper()
@@ -18,8 +18,8 @@ func sessionsFixture(t *testing.T, name string) []string {
 func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, session, want string }{
-		{"a member session acts as coder", "☕️ 🔧 FRM-399 code", "coder"},
-		{"a verifier is a member too", "☕️ 🔎 FRM-399 verify", "coder"},
+		{"a member session acts as codie", "⚡ 🔧 codie: FRM-399", "codie"},
+		{"sixth sense is a member too", "⚡ 🔎 sixth sense: FRM-399", "codie"},
 		{"clio stays clio", "🦉 clio", "clio"},
 		{"clio as the registry stores her keeps clio", "🦉  clio", "clio"},
 	}
@@ -80,7 +80,7 @@ func TestReadPrintsTheSizeWord(t *testing.T) {
 func TestUnderXTestWithoutXSessionsTheLiveRegistryIsNeverRead(t *testing.T) {
 	t.Parallel()
 	home := t.TempDir()
-	write(t, filepath.Join(home, ".claude/sessions/1.json"), `{"sessionId":"s-1","name":"☕️ 🔧 coder","pid":1}`)
+	write(t, filepath.Join(home, ".claude/sessions/1.json"), `{"sessionId":"s-1","name":"⚡ 🔧 codie: FRM-399","pid":1}`)
 	server := newFakeLinear(t, func(gqlCall) string {
 		return `{"data":{"commentCreate":{"success":true,"comment":{"url":"https://linear.app/x-com/issue/FRM-1#comment-1"}}}}`
 	})

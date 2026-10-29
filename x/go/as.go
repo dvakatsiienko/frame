@@ -10,10 +10,11 @@ import (
 )
 
 // as runs one command with a member's token in that child's env only; the child's output and exit
-// code are the call's, so an agent reads `x as coder -- linear api …` exactly as it read `linear api …`
+// code are the call's, so an agent reads `x as codie -- linear api …` exactly as it read `linear api …`
 func as(r *Run, args []string, _ Flags) (any, error) {
-	member, command := args[0], args[1:]
-	if !slices.Contains(members, member) {
+	member, known := memberNamed(args[0])
+	command := args[1:]
+	if !known {
 		return nil, usageFail("no member "+member+" — x as takes "+strings.Join(members, ", "), "x as --help")
 	}
 	if len(command) == 0 {

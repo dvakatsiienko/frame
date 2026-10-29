@@ -13,13 +13,13 @@
         {
             "example": "x linear read FRM-1 FRM-2 --comments",
             "gist": "tickets in native graphql: ids, states and labels resolve inside x",
-            "identity": "every verb acts as one member: clio's session or a terminal-less caller as the clio app, any other agent session as the coder app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
+            "identity": "every verb acts as one member: clio's session or a terminal-less caller as the clio app, any other agent session as the codie app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
             "name": "linear",
             "rawDoor": "x linear api"
         },
         {
             "example": "x fleet flow --days 14",
-            "gist": "the fleet measuring itself: flow, coder audits, agent ops",
+            "gist": "the fleet measuring itself: flow, codie audits, agent ops",
             "name": "fleet"
         },
         {
@@ -38,14 +38,14 @@
             "name": "knowledge"
         },
         {
-            "example": "x as coder -- gh pr comment 12 --body-file f.md",
+            "example": "x as codie -- gh pr comment 12 --body-file f.md",
             "gist": "one command under a fleet member's identity",
             "name": "as"
         },
         {
             "example": "x gh pr 12 --since 2026-10-09T15:00:00Z",
             "gist": "github reads in one call: a pr's checks and its comment feeds",
-            "identity": "every read acts as the x-codie-cc app, its token from the keychain (keys.go); writes stay with x as coder -- gh",
+            "identity": "every read acts as the x-codie-cc app, its token from the keychain (keys.go); writes stay with x as codie -- gh",
             "name": "gh"
         },
         {
@@ -148,7 +148,7 @@
         {
             "name": "lane rebase-main",
             "needsApply": true,
-            "purpose": "rebase a coder/* branch onto origin/main and push it with a lease on the sha read back; no merge commit",
+            "purpose": "rebase a codie/* branch onto origin/main and push it with a lease on the sha read back; no merge commit",
             "steps": ["plan", "rebase", "push", "verify"]
         },
         {
@@ -160,7 +160,7 @@
             ],
             "name": "lane verify-tree",
             "needsApply": false,
-            "purpose": "add a seeded worktree of a pr's head or a main sha for the verifier, git-crypt unlocked; prints its path",
+            "purpose": "add a seeded worktree of a pr's head or a main sha for sixth sense, git-crypt unlocked; prints its path",
             "steps": ["fetch", "worktree", "seed", "verify", "hooks"]
         },
         {
@@ -268,11 +268,11 @@
             },
             "name": "lane merge-auto",
             "needsApply": true,
-            "purpose": "merge a pr once its head is verifier-clean, required checks green and threads closed; else wait and name why",
+            "purpose": "merge a pr once its head is sixth-sense-clean, required checks green and threads closed; else wait and name why",
             "steps": [
                 "pr",
                 "layers",
-                "verifier",
+                "sixth-sense",
                 "ci",
                 "threads",
                 "risky",
@@ -282,7 +282,7 @@
             ],
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
-                "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read",
+                "~/.claude/shelf/pr-verified.json — sixth sense's clean per pr, read",
                 "linear — a self-edit's chunk ticket, its ## signed block read",
                 "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
@@ -290,7 +290,7 @@
         {
             "flags": {
                 "for": {
-                    "description": "the reading agent, one of any, cc, clio, crow, coder, cloud-chat, designer, verifier; files addressed to another agent are left alone",
+                    "description": "the reading agent, one of any, cc, clio, crow, codie, cloud-chat, designer, sixth-sense; files addressed to another agent are left alone",
                     "type": "string",
                     "value": "audience"
                 }
@@ -337,7 +337,7 @@
             ],
             "flags": {
                 "for": {
-                    "description": "the reading agent, one of any, cc, clio, crow, coder, cloud-chat, designer, verifier; files addressed to another agent are left alone",
+                    "description": "the reading agent, one of any, cc, clio, crow, codie, cloud-chat, designer, sixth-sense; files addressed to another agent are left alone",
                     "type": "string",
                     "value": "audience"
                 }
@@ -358,7 +358,7 @@
         {
             "flags": {
                 "audience": {
-                    "description": "the agent the CST is for, one of any, cc, clio, crow, coder, cloud-chat, designer, verifier; any (the default) is whoever pulls next",
+                    "description": "the agent the CST is for, one of any, cc, clio, crow, codie, cloud-chat, designer, sixth-sense; any (the default) is whoever pulls next",
                     "type": "string",
                     "value": "audience"
                 },
@@ -480,7 +480,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -514,7 +514,7 @@
         {
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -565,7 +565,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -603,12 +603,12 @@
                     "value": "names"
                 },
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
                 "delegate": {
-                    "description": "the member working it, by name: coder or clio; the assignee stays dima's",
+                    "description": "the member working it, by name: codie or clio; the assignee stays dima's",
                     "type": "string",
                     "value": "name"
                 },
@@ -674,7 +674,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 }
@@ -695,7 +695,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -721,7 +721,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -752,7 +752,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -772,7 +772,7 @@
         {
             "flags": {
                 "as": {
-                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -820,7 +820,7 @@
             },
             "name": "fleet audit",
             "needsApply": false,
-            "purpose": "per coder session: lessons read before the first edit and after each compaction, and its library-docs lookups",
+            "purpose": "per codie session: lessons read before the first edit and after each compaction, and its library-docs lookups",
             "replaces": ["script/crew-audit.ts"],
             "touches": [
                 "~/.claude/projects/ — the session transcripts, one level deep"
@@ -845,13 +845,13 @@
             "replaces": ["script/agent-ops.ts"],
             "touches": [
                 "~/.claude/projects/ — the session transcripts, one level deep",
-                "linear's graphql api — the estimate and state of each ticket a coder worked in the window"
+                "linear's graphql api — the estimate and state of each ticket codie worked in the window"
             ]
         },
         {
             "args": [
                 {
-                    "description": "who acts: clio, coder or dima",
+                    "description": "who acts: clio, codie or dima",
                     "name": "member"
                 },
                 {

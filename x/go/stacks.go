@@ -52,7 +52,7 @@ func init() {
 func stackShown(repo, n string) ([]string, error) {
 	api := githubBase() + "/repos/" + repo
 	var stacks []remoteStack
-	status, _, err := ghSend(asCoder, http.MethodGet, api+"/stacks?pull_request="+n, nil, &stacks)
+	status, _, err := ghSend(asCodie, http.MethodGet, api+"/stacks?pull_request="+n, nil, &stacks)
 	switch {
 	case status == http.StatusNotFound:
 		return nil, &Fail{Refused: true, Msg: "the stacks api answered 404 for " + repo + ": no stacks there to read", Next: "x lane verify-tree <pr url>, one layer"}
@@ -70,7 +70,7 @@ func stackShown(repo, n string) ([]string, error) {
 			pullHead
 			Commits int `json:"commits"`
 		}
-		if _, err := ghFetch(asCoder, fmt.Sprintf("%s/pulls/%d", api, layer.Number), &pr); err != nil {
+		if _, err := ghFetch(asCodie, fmt.Sprintf("%s/pulls/%d", api, layer.Number), &pr); err != nil {
 			return nil, err
 		}
 		lines = append(lines, fmt.Sprintf("#%d %s onto %s at %s, adds %s", layer.Number, pr.Head.Ref, pr.Base.Ref, short(pr.Head.Sha), plural(pr.Commits, "commit")))
@@ -291,7 +291,7 @@ func openPR(repo, branch string) (int, error) {
 		} `json:"head"`
 	}
 	owner, _, _ := strings.Cut(repo, "/")
-	if _, err := ghFetch(asCoder, githubBase()+"/repos/"+repo+"/pulls?state=open&head="+url.QueryEscape(owner+":"+branch), &open); err != nil {
+	if _, err := ghFetch(asCodie, githubBase()+"/repos/"+repo+"/pulls?state=open&head="+url.QueryEscape(owner+":"+branch), &open); err != nil {
 		return 0, err
 	}
 	for _, pr := range open {
@@ -339,10 +339,10 @@ func stackView(r *Run, _ []string, flags Flags) (any, error) {
 	}
 	var stacks []remoteStack
 	if err := r.Step("view", "reading github's stack for the pr", func() (string, error) {
-		status, _, err := ghSend(asCoder, http.MethodGet, fmt.Sprintf("%s/stacks?pull_request=%d", api, n), nil, &stacks)
+		status, _, err := ghSend(asCodie, http.MethodGet, fmt.Sprintf("%s/stacks?pull_request=%d", api, n), nil, &stacks)
 		switch {
 		case status == http.StatusNotFound:
-			return "", &Fail{Refused: true, Msg: "the stacks api answered 404 for " + repo + ": stacked prs are off there, or the coder app cannot read stacks", Next: "x lane pr-open --apply <title> <body-file>, a plain pr"}
+			return "", &Fail{Refused: true, Msg: "the stacks api answered 404 for " + repo + ": stacked prs are off there, or the codie app cannot read stacks", Next: "x lane pr-open --apply <title> <body-file>, a plain pr"}
 		case err != nil:
 			return "", err
 		case len(stacks) == 0:
@@ -570,16 +570,16 @@ var (
 )
 
 func stackCall(args ...string) (result, error) {
-	listed, err := ghCoder("extension", "list")
+	listed, err := ghCodie("extension", "list")
 	if err != nil {
 		return listed, err
 	}
 	if !strings.Contains(listed.out, "github/gh-stack") {
 		return listed, &Fail{Refused: true, Msg: "the gh-stack extension is not installed", Next: "gh extension install github/gh-stack"}
 	}
-	token, err := tokenFor("coder", "gh")
+	token, err := tokenFor("codie", "gh")
 	if err != nil {
-		return result{}, &Fail{Msg: "no gh token for the coder app: " + err.Error(), Next: "x schema as"}
+		return result{}, &Fail{Msg: "no gh token for the codie app: " + err.Error(), Next: "x schema as"}
 	}
 	clock := newStackClock()
 	pause := 2 * time.Second

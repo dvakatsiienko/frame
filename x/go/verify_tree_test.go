@@ -79,7 +79,7 @@ func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {
 	}
 }
 
-// the next round on the same pr moves the verifier's own tree to the new head
+// the next round on the same pr moves sixth sense's own tree to the new head
 func TestVerifyTreeMovesItsTreeToANewHead(t *testing.T) {
 	t.Parallel()
 	main, _ := verifyWorld(t)

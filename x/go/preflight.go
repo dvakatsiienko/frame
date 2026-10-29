@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// preflight reads a ticket the way a lane plan should before it spawns anyone: exit lines a verifier can
+// preflight reads a ticket the way a lane plan should before it spawns anyone: exit lines sixth sense can
 // grade, nothing the plan would build twice, and no redesign slipping into an unattended lane (FRM-355)
 
 var (
@@ -89,13 +89,13 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 			}
 			exits++
 			if !numbered.MatchString(line.text) {
-				found = append(found, finding{line.n, "lint", "exit line", "has no number for a verifier to grade it by"})
+				found = append(found, finding{line.n, "lint", "exit line", "has no number for sixth sense to grade it by"})
 			}
 			if !surface.MatchString(line.group) && !postMerge.MatchString(line.group) {
 				found = append(found, finding{line.n, "lint", "exit line", "names no surface (a path, a port or a command in backticks) and no «post-merge»"})
 			}
 			if twoOwners(line.group) {
-				found = append(found, finding{line.n, "lint", "exit line", "has two owners, clio and a coder: the verifier cannot read clio's half, so split it"})
+				found = append(found, finding{line.n, "lint", "exit line", "has two owners, clio and codie: sixth sense cannot read clio's half, so split it"})
 			}
 		}
 		if exits == 0 {

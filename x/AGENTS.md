@@ -35,12 +35,12 @@ source file is newer.
 
 ## keys
 
-- `go/keys.go` is the one place a token comes from; each secret is read where it lives: dima's linear key in 1password (`op read`, the `x-fleet` service account — never `op run`, it masks stdout), the _clio/coder oauth pairs and the github app keys in the macos keychain. minted app tokens cache in the keychain, written through `security -i` on stdin so no value reaches argv; dima's key is never cached.
+- `go/keys.go` is the one place a token comes from; each secret is read where it lives: dima's linear key in 1password (`op read`, the `x-fleet` service account — never `op run`, it masks stdout), the clio/codie oauth pairs and the github app keys in the macos keychain. minted app tokens cache in the keychain, written through `security -i` on stdin so no value reaches argv; dima's key is never cached.
 - tests: `X_KEYS` names a json fixture standing in for both stores (`keychain:<service>:<account>` or `op://…` → value); `X_LINEAR_URL` / `X_GITHUB_URL` point the mints, and the `linear` and `gh` reads, at a fake server. under `X_TEST` a missing `X_KEYS` is an error, so no test reads the real keychain.
 
 ## verify
 
-the checks a verifier or coder on `x` starts from.
+the checks sixth sense or codie on `x` starts from.
 - a fake of an external cli traces one assertion to its upstream source; a staged-path gate is probed with a `git mv` and a staged delete; an exit-line count is re-counted from `go test -json` passes (FRM-422)
 - **a red test whose cause is not in the diff** is stepped through with delve before a print goes in: the headless recipe is `x:guide-go` § delve (no x verb: a one-line recipe fails the admission rule).
 - **a «no free text» exit line** is proven against hostile argv, never one example: an unknown `-word`, a bare `-`, words after `--`, free text in an id-named arg, a quoted multi-word arg as zsh `${(z)}` splits it, a flag value equal to a verb name.
@@ -76,7 +76,7 @@ the checks a verifier or coder on `x` starts from.
 - `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
 - `lane commit` waits out a peer's `index.lock` before its `add` and its `commit`, up to `lockWait` (30 s), and once more on a lock race right after; a lock past the wait fails and stays — the verb never deletes one (`FTR.md`). `X_LOCK_WAIT` shortens the wait under `X_TEST` only
 - `lane commit` on main runs the ci jobs for the touched paths after the hold, before the hooks: `go test ./...` per go module a path sits in, the repo's `pnpm typecheck` + `pnpm test` for a `.ts`/`.tsx` unless the installed lefthook pre-commit already runs it (`preCommitRuns`). a pr branch skips them — ci sees it before main does
-- `lane merge-auto` calls github as dima's `gh` login (`asDima` in `gh.go`), since the coder app has no `contents: write` and branch protection needs admin; it reads the brake and the patch-ids from the clone it runs in, after a fetch. a stacked pr merges through `PUT /pulls/<n>/merge-async` (the add-on's `stackMerge`), every layer under it gated first
+- `lane merge-auto` calls github as dima's `gh` login (`asDima` in `gh.go`), since the codie app has no `contents: write` and branch protection needs admin; it reads the brake and the patch-ids from the clone it runs in, after a fetch. a stacked pr merges through `PUT /pulls/<n>/merge-async` (the add-on's `stackMerge`), every layer under it gated first
 - `lane rebase-main` pushes from the push home `lane push` uses, with `--force-with-lease=refs/heads/<branch>:<read sha>`; its tests land a rival push through a real `post-rewrite` hook, the gap between the rebase and the push
 - a test fixture that pushes to a fake `github.com` origin sets `pushInsteadOf` beside `insteadOf`: dima's global gitconfig rewrites https pushes to ssh, and that outranks `insteadOf`
 - **two pr modes**: plain prs in core; stacked prs in the add-on (`go/stacks*`, on trial, easy to delete) behind `//go:build !nostacks`, reaching core only via `laneAddOn` (`lane.go`); `go/nostacks-pass.sh` reruns lane tests built out; deleting it is those files and that pass

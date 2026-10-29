@@ -29,7 +29,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 ## who acts
 
 - **caller** — who ran a verb, one value per trace: `dima`, `cc`, `cloud-chat`, `hook`, `ssh` or `other`
-- **actor** — the fleet member a call acts as on an outside service (`clio`, `coder`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
+- **actor** — the fleet member a call acts as on an outside service (`clio`, `codie`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
 
 ## the trace and what it counts
 
@@ -40,7 +40,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **raw head** — a head no x door covers and no shell basic, run 5 times or more: a verb candidate
 - **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch
 - **false fire** — a crew skill (`x:crew-codie`, `x:crew-sixth-sense`) loaded with no earlier message naming it; its opposite is **brief-led**
-- **coder turn** — one assistant message in a coder transcript, summed over every coder session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because clio's pm skill writes the size lines in it
+- **coder turn** — one assistant message in codie's transcript, summed over every codie session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because clio's pm skill writes the size lines in it
 - **size** — a ticket's estimate as the fleet says it: XS, S or M, for linear's 1, 2, 3. XS and S each have a **size line** in coder turns (XS under 80, S under 400); M has none
 - **size miss** — a closed ticket whose coder turns reached its size line
 
@@ -52,24 +52,24 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it
 - **held files** — the unstaged and untracked work outside a commit's paths, set aside while the hooks run and put back byte for byte. avoid: stash
 - **review round** — one successful ci review run on a pr in bytes, started by the review label; two per pr, a third only past dima's approval
-- **verifier clean** — the pr head the verifier said clean on, one per pr in `~/.claude/shelf/pr-verified.json`; it carries to a new head whose whole branch change keeps its patch-id (a rebase, a plain merge of main). a «clean» in a comment is never one
+- **verifier clean** — the pr head sixth sense said clean on, one per pr in `~/.claude/shelf/pr-verified.json`; it carries to a new head whose whole branch change keeps its patch-id (a rebase, a plain merge of main). a «clean» in a comment is never one
 - **risky path** — a changed path that can turn the checks themselves green (workflows, settings, memory files, secrets, deploy), listed in `x/go/risky.json`; `lane merge-auto` merges it and names it on its `risky:` line
 - **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word, unless its chunk's sign pre-approved it; his word reaches merge-auto as `--dima-ok <pr>`, which x-mod-guard lets through only when his last typed prompt names the pr
 - **pre-approved sign** — a chunk ticket's `## signed` block holding `merge: pre-approved` while the body above it still hashes to its last `· body <hash>` line; it lets a self-edit of that chunk merge without dima's word, never past the brake
 - **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
-- **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; the verifier's bench, made by `lane verify-tree`
+- **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; sixth sense's bench, made by `lane verify-tree`
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
 - **stack** — prs that each open onto the branch of the one below, merged together in one async call up to the pr named; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)
-- **layer** — one pr's branch in a stack: the root `coder/<ticket>-<slug>`, then `-2`, `-3` on top
+- **layer** — one pr's branch in a stack: the root `codie/<ticket>-<slug>`, then `-2`, `-3` on top
 - **brake** — every pr waiting for dima's word for 7 days after a merge-auto merge is reverted, read from git and github each run; a stack's squash, which carries no trailer, is known by its pr's `merged-by-x` label on github; a stack merge that landed another head than the gated one, or named no head at all, sets it too, through its pr's `merge-brake` label, until dima's typed word releases it; the one stored state is the mac's own record of a brake github refused to label
 - **judged commit** — the pr head the last review round read; a verdict is **stale** when the pr head moved past it
 - **comment feed** — one of the three places a pr's comments land: the conversation, reviews, and lines in the diff; the ci reviewer posts to a different one per round
 
 ## briefs
 
-- **brief** — the markdown a coder is spawned with
+- **brief** — the markdown codie is summoned with
 - **stamp** — the file a passing `x brief check` leaves, keyed by the brief's content, so a spawn guard can ask «was this brief checked». only a brief has a stamp
-- **preflight** — the read of a ticket before a lane spawns anyone: exit lines a verifier can grade, every x verb and flag they name real, nothing main already holds, no redesign in an unattended lane
+- **preflight** — the read of a ticket before a lane summons anyone: exit lines sixth sense can grade, every x verb and flag they name real, nothing main already holds, no redesign in an unattended lane
 
 ## handoffs
 

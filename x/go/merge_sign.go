@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ticketOfBranch = regexp.MustCompile(`^coder/([A-Z]+-\d+)(?:-|$)`)
+	ticketOfBranch = regexp.MustCompile(`^(?:codie|coder)/([A-Z]+-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
 	ticketOfBody   = regexp.MustCompile(`(?m)^- ticket: ([A-Z]+-\d+)\s*$`)
 	signedHeading  = regexp.MustCompile(`(?m)^## signed\s*$`)
 	nextHeading    = regexp.MustCompile(`(?m)^## `)
@@ -26,7 +26,7 @@ type chunkSign struct {
 	detail string
 }
 
-// the sign lives in linear, never the pr: a pr body is the coder's to write
+// the sign lives in linear, never the pr: a pr body is codie's to write
 func signOf(pr pullHead, signs map[string]chunkSign) (chunkSign, error) {
 	ticket := ""
 	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {

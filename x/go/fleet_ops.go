@@ -99,7 +99,7 @@ type opsData struct {
 	SessionsRead int          `json:"sessions_read"`
 }
 
-// a ticket closed in the window whose coder turns reached its estimate's size line
+// a ticket closed in the window whose codie turns reached its estimate's size line
 type sizeMiss struct {
 	Ticket string `json:"ticket"`
 	Size   string `json:"size"`
@@ -119,7 +119,7 @@ var sizeLines = map[int]struct {
 }{1: {"XS", 80}, 2: {"S", 400}}
 
 // fleetOps reads agent ops off the transcripts, no model tokens: tokens and wall time per ticket (coder
-// + verifier), clio's own code edits per session, the cost of a clio boot
+// + sixth sense), clio's own code edits per session, the cost of a clio boot
 func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 	days, err := daysFlag(flags, "fleet ops", 7)
 	if err != nil {
@@ -136,7 +136,7 @@ func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 		sessions = append(sessions, parseOpsSession(transcriptLines(path), path))
 	}
 	data := opsData{Days: days, MinKB: minKB, Tickets: costPerTicket(sessions), ClioEdits: []clioEdits{}, Boots: []opsBoot{}, SizeMisses: []sizeMiss{}, SessionsRead: len(sessions)}
-	if turns := coderTurns(sessions); len(turns) > 0 {
+	if turns := codieTurns(sessions); len(turns) > 0 {
 		actor, err := actorOf(flags)
 		if err != nil {
 			return nil, err
@@ -299,10 +299,10 @@ func opsRole(cwd, firstCmd, path, title string) string {
 	switch {
 	case strings.Contains(title, "🔧") || firstCmd == "x:crew-codie" ||
 		firstCmd == "x:crew-coder": // read-both: the skill id before the 10-29 rename
-		return "coder"
+		return "codie"
 	case strings.Contains(title, "🔎") || firstCmd == "x:crew-sixth-sense" ||
 		firstCmd == "x:crew-verifier": // read-both: the skill id before the 10-29 rename
-		return "verifier"
+		return "sixth-sense"
 	case crowTitle.MatchString(title):
 		return "crow"
 	case clioTitle.MatchString(title) || clioCwd.MatchString(cwd):
@@ -315,12 +315,12 @@ func opsRole(cwd, firstCmd, path, title string) string {
 	return "other"
 }
 
-// coder + verifier sessions summed per ticket, the costliest first
+// codie + sixth sense sessions summed per ticket, the costliest first
 func costPerTicket(sessions []opsSession) []ticketCost {
 	costs := []ticketCost{}
 	index := map[string]int{}
 	for _, s := range sessions {
-		if s.Ticket == "" || s.Role != "coder" && s.Role != "verifier" {
+		if s.Ticket == "" || s.Role != "codie" && s.Role != "sixth-sense" {
 			continue
 		}
 		i, seen := index[s.Ticket]
@@ -336,11 +336,11 @@ func costPerTicket(sessions []opsSession) []ticketCost {
 	return costs
 }
 
-// coder turns (distinct assistant message ids) summed per ticket over every session that worked it
-func coderTurns(sessions []opsSession) map[string]int {
+// codie turns (distinct assistant message ids) summed per ticket over every session that worked it
+func codieTurns(sessions []opsSession) map[string]int {
 	turns := map[string]int{}
 	for _, s := range sessions {
-		if s.Role == "coder" && s.Ticket != "" {
+		if s.Role == "codie" && s.Ticket != "" {
 			turns[s.Ticket] += s.Steps
 		}
 	}
@@ -397,7 +397,7 @@ func ticketSizes(actor string, tickets []string, since time.Time) (map[string]ti
 func opsLines(d opsData) []string {
 	millions := func(n float64) string { return fixed1(n/1e6) + "M" }
 	minutes := func(ms float64) string { return fixed1(ms/60000) + "min" }
-	lines := []string{"", "== cost per ticket: coder + verifier sessions, tokens = input + cache_creation + cache_read + output per step (deduped by message.id), wall = first to last timestamp =="}
+	lines := []string{"", "== cost per ticket: codie + sixth sense sessions, tokens = input + cache_creation + cache_read + output per step (deduped by message.id), wall = first to last timestamp =="}
 	var tokens, walls []float64
 	for _, c := range d.Tickets {
 		lines = append(lines, fmt.Sprintf("%s\t%s tokens\t%s", c.Ticket, millions(float64(c.Tokens)), minutes(float64(c.WallMs))))
@@ -431,7 +431,7 @@ func opsLines(d opsData) []string {
 		for _, estimate := range slices.Sorted(maps.Keys(sizeLines)) {
 			bounds = append(bounds, fmt.Sprintf("%s %d", sizeLines[estimate].name, sizeLines[estimate].line))
 		}
-		lines = append(lines, "", "== size misses: tickets closed in the window whose coder turns reached their size line ("+strings.Join(bounds, ", ")+") ==")
+		lines = append(lines, "", "== size misses: tickets closed in the window whose codie turns reached their size line ("+strings.Join(bounds, ", ")+") ==")
 		for _, m := range d.SizeMisses {
 			lines = append(lines, fmt.Sprintf("%s\t%s\t%d turns (line %d)", m.Ticket, m.Size, m.Turns, m.Line))
 		}

@@ -124,7 +124,7 @@ func (h *hub) sent(prefix string) []string {
 const mergedSha = "cccccccccccccccccccccccccccccccccccccccc"
 
 // a pr world: a bare origin standing in for github.com/o/r, a clone clio runs merge-auto in, the pr
-// branch coder/x touching the given paths, a verifier store, and the hub answering for #7 as all green
+// branch coder/x touching the given paths, a sixth sense store, and the hub answering for #7 as all green
 type mergeWorld struct {
 	clone, origin, seed, head, store, state string
 	hub                                     *hub
@@ -239,8 +239,8 @@ func TestMergeAutoMergesACleanGreenPrNamingTheThreeChecks(t *testing.T) {
 		}
 		names = append(names, c.Name)
 	}
-	if !slices.Equal(names, []string{"verifier", "ci", "threads"}) {
-		t.Errorf("checks %v, want verifier, ci, threads:\n%s", names, got.stdout)
+	if !slices.Equal(names, []string{"sixth-sense", "ci", "threads"}) {
+		t.Errorf("checks %v, want sixth-sense, ci, threads:\n%s", names, got.stdout)
 	}
 }
 
@@ -257,7 +257,7 @@ func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) 
 		t.Fatalf("exit %d, %d merge calls, want the carried clean to merge:\n%s", got.code, len(merges), got.stdout)
 	}
 	if rows := envelopeOf(got).Data.Checks; len(rows) == 0 || !strings.Contains(rows[0].Detail, "patch-id") {
-		t.Errorf("the verifier row %+v does not say the clean carried by patch-id", rows)
+		t.Errorf("sixth sense row %+v does not say the clean carried by patch-id", rows)
 	}
 }
 
@@ -328,7 +328,7 @@ func TestMergeAutoWaitsWhenAPushChangedThePatchAfterTheClean(t *testing.T) {
 
 	got := w.run(t, "7", "--apply")
 
-	want := "wait: " + short(w.head) + " unreviewed fix is past the verifier's clean"
+	want := "wait: " + short(w.head) + " unreviewed fix is past sixth sense's clean"
 	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
 		t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 	}
@@ -407,8 +407,8 @@ func TestMergeAutoMarksACheckThatDoesNotHoldOnTheBoard(t *testing.T) {
 
 	got := xIn(t, w.clone, append(w.env, "CLAUDECODE="), "lane", "merge-auto", "7", "--board")
 
-	if plain := sgr.ReplaceAllString(got.stdout, ""); got.code != 1 || !strings.Contains(plain, "✗ verifier") || !strings.Contains(plain, "✓ ci") {
-		t.Fatalf("exit %d, want ✗ on the verifier and ✓ on ci:\n%s", got.code, plain)
+	if plain := sgr.ReplaceAllString(got.stdout, ""); got.code != 1 || !strings.Contains(plain, "✗ sixth-sense") || !strings.Contains(plain, "✓ ci") {
+		t.Fatalf("exit %d, want ✗ on sixth sense and ✓ on ci:\n%s", got.code, plain)
 	}
 }
 
@@ -629,7 +629,7 @@ func TestMergeAutoApprovesNothingUnlessTheRestHolds(t *testing.T) {
 		name   string
 		change func(t *testing.T, w *mergeWorld)
 	}{
-		{"the verifier is not clean", func(t *testing.T, w *mergeWorld) { write(t, w.store, `{}`) }},
+		{"sixth sense is not clean", func(t *testing.T, w *mergeWorld) { write(t, w.store, `{}`) }},
 		{"a thread is open", func(_ *testing.T, w *mergeWorld) {
 			w.hub.mu.Lock()
 			defer w.hub.mu.Unlock()
@@ -760,13 +760,13 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 				{"isResolved":true,"path":"a.go","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}},
 				{"isResolved":false,"path":"script/foo.ts","line":3,"comments":{"nodes":[{"url":"https://t/2"}]}}]}}}}}`
 		}, "1 open review thread: script/foo.ts:3 https://t/2"},
-		{"no verifier clean recorded", func(w *mergeWorld) {
+		{"no sixth sense clean recorded", func(w *mergeWorld) {
 			write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
-		}, "no verifier clean recorded for o/r#7"},
+		}, "no sixth sense clean recorded for o/r#7"},
 		{"a clean only as a plain pr comment", func(w *mergeWorld) {
 			write(t, w.store, `{}`)
 			w.hub.pages[repoPath+"/issues/7/comments"] = `[{"user":{"login":"dvakatsiienko"},"body":"verdict: clean\nverified: ` + w.head + `"}]`
-		}, "no verifier clean recorded for o/r#7"},
+		}, "no sixth sense clean recorded for o/r#7"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
