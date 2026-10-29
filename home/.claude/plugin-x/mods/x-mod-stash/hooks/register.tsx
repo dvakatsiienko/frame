@@ -887,6 +887,8 @@ async function quietAlarm($: EngineInterface, key: string, text: string) {
 // a ledger gap rides cclio's next prompt once, model-only: the board draws no card for it, so this note is how
 // a skipped hold reaches her turn; a gap that changes (more sends, more lines) is told again
 const QUIET_GAP_TOLD = 'quiet-gap-told';
+// told per member by the size of its gap (sent - logged): a standing gap that only moves with new sends is not told
+// again, a bigger one is, and a gap that closes is forgotten so its next opening is told
 async function takeGapNotes($: EngineInterface) {
     const gaps =
         (
@@ -896,18 +898,18 @@ async function takeGapNotes($: EngineInterface) {
         )?.gaps ?? [];
     const told =
         ((await $.store.get(QUIET_GAP_TOLD).catch(() => undefined)) as
-            | string[]
-            | undefined) ?? [];
-    const keyOf = (g: QuietGap) => `${g.from}|${g.sent}|${g.logged}`;
-    const fresh = gaps.filter((g) => !told.includes(keyOf(g)));
-    if (!fresh.length) return [];
-    await $.store.set(
-        QUIET_GAP_TOLD,
-        [...told, ...fresh.map(keyOf)].slice(-50),
+            | Record<string, number>
+            | undefined) ?? {};
+    const size = (g: QuietGap) => g.sent - g.logged;
+    const fresh = gaps.filter((g) => size(g) > (told[g.from] ?? 0));
+    const next = Object.fromEntries(
+        gaps.map((g) => [g.from, Math.max(size(g), told[g.from] ?? 0)]),
     );
+    if (JSON.stringify(next) !== JSON.stringify(told))
+        await $.store.set(QUIET_GAP_TOLD, next);
     return fresh.map(
         (g) =>
-            `🤫 quiet-comms ledger: ${g.from} sent you ${g.sent} pings and your quiet log holds ${g.logged}: one skipped the hold, check its log line.`,
+            `🤫 quiet-comms ledger: ${g.from} sent you ${g.sent} pings and your quiet log holds ${g.logged}: ${size(g)} skipped the hold, check its log line.`,
     );
 }
 

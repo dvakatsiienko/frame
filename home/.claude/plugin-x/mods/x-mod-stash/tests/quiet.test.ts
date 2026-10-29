@@ -326,10 +326,39 @@ test('a ledger gap rides the lane owner’s next prompt once, naming the member'
     await say($, 'and now?');
     expect([first, gapNote(w)]).toEqual([
         [
-            '🤫 quiet-comms ledger: ☕️ 🔧 coder: mods sent you 2 pings and your quiet log holds 1: one skipped the hold, check its log line.',
+            '🤫 quiet-comms ledger: ☕️ 🔧 coder: mods sent you 2 pings and your quiet log holds 1: 1 skipped the hold, check its log line.',
         ],
         [],
     ]);
+});
+
+test('a standing gap of the same size after one more send and one more line is not told again', async ($, on) => {
+    const w = world(on);
+    w.store.set('quiet-gap', {
+        at: 1,
+        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 23, sent: 24 }],
+    });
+    await start($);
+    await say($, 'status?');
+    w.store.set('quiet-gap', {
+        at: 2,
+        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 24, sent: 25 }],
+    });
+    await say($, 'and now?');
+    expect(gapNote(w)).toEqual([]);
+});
+
+test('a gap that closes and opens again is told again', async ($, on) => {
+    const w = world(on);
+    const gap = { from: '☕️ 🔧 coder: mods', logged: 1, sent: 2 };
+    w.store.set('quiet-gap', { at: 1, gaps: [gap] });
+    await start($);
+    await say($, 'status?');
+    w.store.set('quiet-gap', { at: 2, gaps: [] });
+    await say($, 'closed?');
+    w.store.set('quiet-gap', { at: 3, gaps: [gap] });
+    await say($, 'again?');
+    expect(gapNote(w)).toHaveLength(1);
 });
 
 test('a gap that grows is told again', async ($, on) => {
