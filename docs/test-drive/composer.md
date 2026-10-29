@@ -124,6 +124,21 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-27 · inbox-prep · 0 · 0 · consult 1: charter inbox-prep.md outside cclio/ not found, no grooming done
 - 2026-10-27 · inbox-prep · 1 · 0 · inbox-composer.md written, check 4/4, 4 items 3 asks
 - 2026-10-27 · prompt-groom · 1 · 0 · 16:09 prompt groomed W265-W271, 11/11 sentences mapped
+- 2026-10-27 · prompt-groom · 1 · 0 · 17:16 prompt groomed W275-W278, 4/4 sentences mapped
+- 2026-10-27 · prompt-groom · 1 · 0 · 18:50 prompt groomed W281-W282, 2/2 sentences mapped
+- 2026-10-28 · inbox-prep · 0 · 0 · consult: inbox.md has 0 content lines, nothing written
+- 2026-10-28 · prompt-groom · 1 · 0 · 1427 W283
+- 2026-10-28 · prompt-groom · 1 · 0 · 1437 W284-W292
+- 2026-10-28 · prompt-groom · 1 · 0 · 1445 W293-W302
+- 2026-10-28 · prompt-groom · 1 · 0 · 1451 W303-W305, sideband block not groomed
+- 2026-10-28 · prompt-groom · 1 · 0 · 1428 W306-W310
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-463 groomed to 2026-10-27-1843.groomed.md
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-462 groomed to 2026-10-27-1914.groomed.md
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-464 groomed to 2026-10-27-1916.groomed.md
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-464 groomed to 2026-10-27-1925.groomed.md
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-465 W311 groomed to 2026-10-28-1520.groomed.md
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-465 W312-W315 groomed to 2026-10-28-1523.groomed.md
+- 2026-10-28 · prompt-groom · 1 · 0 · FRM-465 W316-W319 groomed to 2026-10-28-1549.groomed.md
 
 ## rounds
 
