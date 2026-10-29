@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-10-29T11:47:00Z'
+updated_date: '2026-10-29T11:48:00Z'
 due_date: '2026-10-29'
 labels:
   - m
@@ -629,4 +629,6 @@ W379 (2026-10-29 13:44, dima): decide on new names, then flush all updates at on
 W380 (2026-10-29 13:44, dima): before starting, when we get to this part, print me all spawnable names that we have.
 W381 (2026-10-29 13:44, dima): everyone, including Clio, Cristicro, Composer, your fork, coder, verifier, crew lead, and all subagents.
 W382 (2026-10-29 13:44, dima): let's see a full picture of all crew members in Fleet and see how we can rename them.
+
+re-fold 2026-10-29 13:51 (wispr, ccrow catch): W345 «a secror (?)» → «a ccrow»; W347 «`-dbg` flag» → «`--bg` flag»; W368 «a Clio SA Clio facility» → «a cclio facility»; W381 «Cristicro» → «ccrow»
 <!-- SECTION:NOTES:END -->
