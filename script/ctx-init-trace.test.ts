@@ -1,7 +1,8 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
     type Alarm,
@@ -10,6 +11,7 @@ import {
     alarmsOf,
     baselineOf,
     causeOf,
+    digestOf,
     growthOf,
     lineOf,
     readTrace,
@@ -300,5 +302,99 @@ describe('the alarm line names its cause and one proposal per file', () => {
         ['cclio/memory/x.md', 100, undefined, 'trim it'],
     ])('%s at %i of %s: %s', (file, bytes, budget, verb) => {
         expect(verbFor(file, bytes, budget)).toBe(verb);
+    });
+});
+
+describe('the boot digest', () => {
+    const none = () => [];
+
+    it('prints each seat and model with its starting number, in seat order', () => {
+        const rows = [
+            ...[1, 2, 3].map((d) => ({
+                ...row(d, 100_000),
+                seat: 'coder' as const,
+            })),
+            ...[1, 2, 3].map((d) => row(d, 129_000)),
+        ];
+        expect(digestOf(rows, {}, NOW, none)).toEqual([
+            'starting ctx (net, newest 5 sessions): cclio 129k opus-5-5 · coder 100k opus-5-5',
+        ]);
+    });
+
+    it('adds the alarm line under it when a seat grew', () => {
+        const rows = weeks(100_000, 112_000);
+        expect(digestOf(rows, {}, NOW, none)).toEqual([
+            'starting ctx (net, newest 5 sessions): cclio 112k opus-5-5',
+            expect.stringMatching(
+                /^⚠ cclio \(claude-opus-5-5\): starting ctx 112k, 12 % over 100k/,
+            ),
+        ]);
+    });
+
+    it('names the grown memory file in the alarm line, and reads git only when an alarm fires', () => {
+        const grown = vi.fn(() => [
+            { bytes: 900, file: 'cclio/memory/craft-pm.md', lines: 30 },
+        ]);
+        digestOf(weeks(100_000, 108_000), {}, NOW, grown);
+        const lines = digestOf(weeks(100_000, 112_000), {}, NOW, grown);
+        expect([grown.mock.calls.length, lines[1]]).toEqual([
+            1,
+            expect.stringContaining(
+                'cclio/memory/craft-pm.md (+30 lines) → trim it',
+            ),
+        ]);
+    });
+
+    it('says so when no session was traced lately', () => {
+        expect(digestOf([], {}, NOW, none)).toEqual([
+            'starting ctx: no sessions traced in the last 14 days',
+        ]);
+    });
+});
+
+describe('the cclio boot digest line', () => {
+    const hook = readFileSync(
+        path.join(
+            import.meta.dirname,
+            '../cclio/.claude/hooks/boot-prefetch.sh',
+        ),
+        'utf8',
+    );
+    const fn = hook.slice(
+        hook.indexOf('init_ctx_digest() {'),
+        hook.indexOf('echo "-- init ctx'),
+    );
+
+    // the function alone, with `fail` recording a red, run against a stub of the trace script
+    const run = (stub: string) => {
+        const dir = mkdtempSync(path.join(tmpdir(), 'ctx-boot-'));
+        const script = path.join(dir, 'stub.ts');
+        writeFileSync(script, stub);
+        return execFileSync(
+            'bash',
+            [
+                '-c',
+                `fail() { echo "RED $1"; }\n${fn}\nINIT_CTX_SCRIPT=${script} init_ctx_digest`,
+            ],
+            { encoding: 'utf8' },
+        ).trim();
+    };
+
+    it('prints the digest the script prints', () => {
+        expect(run("console.log('starting ctx: cclio 129k');")).toBe(
+            'starting ctx: cclio 129k',
+        );
+    });
+
+    it('turns a script that dies into a note, never a red', () => {
+        expect(run("throw new Error('no trace');")).toMatch(
+            /^🟡 init-ctx trace could not run \(or took over 3 s\): .*no trace/,
+        );
+    });
+
+    it('keeps the call before the green line and outside compact mode', () => {
+        expect(hook.indexOf('\ninit_ctx_digest\n')).toBeGreaterThan(
+            hook.indexOf('fi\n\necho "-- flawlog'),
+        );
     });
 });

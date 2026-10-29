@@ -1,5 +1,6 @@
 // every seat's starting context, traced over time (FRM-408): a session's init number is its first main-thread
 // assistant entry's input + cache read + cache creation tokens; the history is already on disk, so the trace starts with its back data
+import { execFileSync } from 'node:child_process';
 import {
     appendFileSync,
     createReadStream,
@@ -8,6 +9,7 @@ import {
     readFileSync,
     readdirSync,
     statSync,
+    writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -15,6 +17,7 @@ import { createInterface } from 'node:readline';
 
 const STATE_DIR = path.join(homedir(), '.local/state/x/ctx-init');
 const TRACE_FILE = path.join(STATE_DIR, 'trace.jsonl');
+const BASELINE_FILE = path.join(STATE_DIR, 'baseline.json');
 const PROJECTS_DIR = path.join(homedir(), '.claude/projects');
 const DAY = 24 * 60 * 60 * 1000;
 const FIRST_RUN_DAYS = 14;
@@ -29,6 +32,7 @@ export async function scanTranscripts({
     known?: Set<string>;
 }) {
     const rows: TraceRow[] = [];
+    if (!existsSync(projects)) return rows;
     for (const dir of readdirSync(projects)) {
         const folder = path.join(projects, dir);
         if (!statSync(folder).isDirectory()) continue;
@@ -291,6 +295,108 @@ export function lineOf(alarm: Alarm, cause: Cause) {
     return `⚠ ${head}, ${against} — ${why}`;
 }
 
+const SEAT_ORDER: Seat[] = [
+    'cclio',
+    'ccrow',
+    'composer',
+    'coder',
+    'verifier',
+    'cc',
+];
+const DIGEST_DAYS = 14;
+const DIGEST_SESSIONS = 5;
+
+// each seat+model's starting number (the median of its newest sessions) on one line, then an alarm line apiece
+export function digestOf(
+    rows: TraceRow[],
+    baseline: Baseline,
+    now: number,
+    grown: () => GrownFile[],
+) {
+    const recent = rows.filter(
+        (r) =>
+            SEAT_ORDER.includes(r.seat) &&
+            now - Date.parse(r.at) < DIGEST_DAYS * DAY,
+    );
+    const groups = Map.groupBy(recent, keyOf);
+    const medians = [...groups.entries()]
+        .map(([key, group]) => {
+            const [seat, model = ''] = key.split('|') as [Seat, string];
+            const newest = [...group]
+                .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
+                .slice(0, DIGEST_SESSIONS);
+            return { model, seat, value: median(newest.map(net)) };
+        })
+        .sort(
+            (a, b) => SEAT_ORDER.indexOf(a.seat) - SEAT_ORDER.indexOf(b.seat),
+        );
+    const alarms = alarmsOf(rows, baseline, now);
+    const files = alarms.length ? grown() : [];
+    return [
+        medians.length
+            ? `starting ctx (net, newest ${DIGEST_SESSIONS} sessions): ${medians
+                  .map(
+                      (m) =>
+                          `${m.seat} ${kilo(m.value)} ${m.model.replace('claude-', '')}`,
+                  )
+                  .join(' · ')}`
+            : 'starting ctx: no sessions traced in the last 14 days',
+        ...alarms.map((a) => lineOf(a, causeOf(a, rows, now, files))),
+    ];
+}
+
+function readBaseline() {
+    if (!existsSync(BASELINE_FILE)) return {};
+    return JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) as Baseline;
+}
+
+function writeBaseline(baseline: Baseline) {
+    if (JSON.stringify(baseline) === JSON.stringify(readBaseline())) return;
+    mkdirSync(STATE_DIR, { recursive: true });
+    writeFileSync(BASELINE_FILE, `${JSON.stringify(baseline, null, 2)}\n`);
+}
+
+// the memory files that grew in the last two weeks, with their size and their budget line
+function growthFiles() {
+    const root = path.resolve(import.meta.dirname, '..');
+    const log = execFileSync(
+        'git',
+        [
+            '-C',
+            root,
+            'log',
+            '--numstat',
+            '--format=',
+            `--since=${DIGEST_DAYS} days ago`,
+            '--',
+            ...MEMORY_PATHS,
+        ],
+        { encoding: 'utf8' },
+    );
+    const budgets = new Map(
+        readFileSync(
+            path.join(
+                root,
+                'recipes/nurture-memory/scripts/memory-budgets.tsv',
+            ),
+            'utf8',
+        )
+            .split('\n')
+            .filter((l) => l && !l.startsWith('#'))
+            .map((l) => l.split('\t') as [string, string]),
+    );
+    return growthOf(log).map(({ file, lines }) => {
+        const full = path.join(root, file);
+        const budget = Number(budgets.get(file)) || undefined;
+        return {
+            budget,
+            bytes: existsSync(full) ? statSync(full).size : 0,
+            file,
+            lines,
+        };
+    });
+}
+
 function parse(line: string) {
     try {
         return JSON.parse(line) as Entry;
@@ -309,7 +415,15 @@ function textOf(content: unknown): string {
 
 if (import.meta.main) {
     const added = await scan();
-    console.log(`ctx-init:trace: ${added} new sessions in ${TRACE_FILE}`);
+    if (process.argv[2] === 'digest') {
+        const rows = readTrace();
+        const baseline = baselineOf(rows, readBaseline());
+        writeBaseline(baseline);
+        for (const line of digestOf(rows, baseline, Date.now(), growthFiles))
+            console.log(line);
+    } else {
+        console.log(`ctx-init:trace: ${added} new sessions in ${TRACE_FILE}`);
+    }
 }
 
 /* Types */

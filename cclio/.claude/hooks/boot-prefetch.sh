@@ -400,6 +400,18 @@ echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"
 today="$HOME/.claude/shelf/flawlog/$(date +%Y-%m-%d)"
 ls "$today"-*.md >/dev/null 2>&1 && echo "today's file exists" || echo "no file for today yet — open one at step 8"
 
+# the starting-context digest (FRM-408): a trace that cannot be read is a note beside it, never a red of its own
+init_ctx_digest() {
+  local out
+  if out=$(timeout 3 node "${INIT_CTX_SCRIPT:-$HOME/frame/script/ctx-init-trace.ts}" digest 2>&1); then
+    printf '%s\n' "$out"
+  else
+    echo "🟡 init-ctx trace could not run (or took over 3 s): $(printf '%s\n' "$out" | grep -m1 -i error | cut -c1-120)"
+  fi
+}
+echo "-- init ctx (each seat's starting context, net of its first message; pnpm ctx-init:trace) --"
+init_ctx_digest
+
 date +%s > "$STAMP"
 if [ "$fails" -gt 0 ]; then
   echo "=== $fails check(s) FAILED — report them first, before any work ==="
