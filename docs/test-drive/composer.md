@@ -139,6 +139,11 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-28 · prompt-groom · 1 · 0 · FRM-465 W311 groomed to 2026-10-28-1520.groomed.md
 - 2026-10-28 · prompt-groom · 1 · 0 · FRM-465 W312-W315 groomed to 2026-10-28-1523.groomed.md
 - 2026-10-28 · prompt-groom · 1 · 0 · FRM-465 W316-W319 groomed to 2026-10-28-1549.groomed.md
+- 2026-10-29 · prompt-groom · 1 · 0 · W320-W382, 63 lines; asks W340 W355 W356 W359 W361 W368 W370 W373; flag W379; (?) on secror W345
+- 2026-10-29 · prompt-groom · 1 · 0 · W383-W483, 101 lines; asks: W383 W389 W391 W407 W416 W420 W427 W436-W438 W440-W445 W449 W457 W463-W466 W482 W483; (?) on helpe-T1 W441 and cc loud W435
+- 2026-10-29 · prompt-groom · 1 · 0 · W484-W507, 24 lines; asks: W484 W503 W507; cclio board line (1. mcp-x-cloud-chat, o65) kept as context, not groomed as his words; wispr sixten's→sixth sense W500
+- 2026-10-29 · prompt-groom · 1 · 0 · W510-W515, 6 lines; asks: W514 W515; skipped cclio's quoted code:/verify: paragraph at head per brief; ← no line kept as dima's reply (W510)
+- 2026-10-29 · prompt-groom · 1 · 0 · W3-W23, 21 lines; asks: W6 W10; FRM-455 W1-W2 held by cclio, not touched; pasted_content wrapper dropped, body kept
 
 ## rounds
 
