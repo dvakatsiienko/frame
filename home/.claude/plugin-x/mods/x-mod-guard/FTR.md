@@ -58,6 +58,7 @@
   - given `railway logs --help` and no bare `railway --help` this session, then it runs as typed and the model reads: `railway --help`, bare, lists its verbs — some clis run the verb under `<verb> --help`
   - given the cli's bare `--help` already ran, or its verb hint already fired this session, then no hint
   - given `x`, `gh`, `git` or `claude` (every verb parses `--help`), `obsidian` (refused instead), a script runner, or a shell word, then no hint
+  - given `pnpm dlx biome check --help`, `npx biome check --help` or `pnpx biome check --help` (also `bunx`, `pnpm exec`), then the hint names the package's own cli — `biome --help`, bare — never the runner (FRM-426)
 - ⬜ a worktree command cc core refuses carries the scratch-script door (FRM-428 exit 4)
   - given a worktree session's Bash names git or `github` where cc core's isolation check refuses it (a heredoc body, a `gh api repos/...` path), then the refusal the model reads is core's, followed by: write the command into a scratch script and run that script by path; git itself goes through `x lane <verb>`
   - given a command core lets run, then no door

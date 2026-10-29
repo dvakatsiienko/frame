@@ -105,8 +105,6 @@ const HELP_SAFE = [
     'claude plugin --help',
     'for f in a b; do x $f --help; done',
     '$R sync --help',
-    'npx biome check --help',
-    'bunx tsc --help',
 ] as const;
 for (const typed of HELP_SAFE)
     test(`no verb hint: ${typed}`, async ($, on) => {
@@ -115,3 +113,25 @@ for (const typed of HELP_SAFE)
             lines((await bash($, typed)).context, 'lists its verbs'),
         ).toEqual([]);
     });
+
+// FRM-426: a package runner hands --help to the package's own cli, so the hint names that cli, never the runner
+for (const typed of [
+    'pnpm dlx biome check --help',
+    'npx biome check --help',
+    'pnpx biome check --help',
+])
+    test(`the verb hint names biome, never the runner: ${typed}`, async ($, on) => {
+        world(on);
+        const r = await bash($, typed);
+        expect(lines(r.context, '`biome --help`')).toHaveLength(1);
+        expect(lines(r.context, '`pnpm --help`')).toEqual([]);
+        expect(lines(r.context, '`npx --help`')).toEqual([]);
+        expect(lines(r.context, '`pnpx --help`')).toEqual([]);
+    });
+
+test('a package runner with no verb after the package draws no hint', async ($, on) => {
+    world(on);
+    expect(
+        lines((await bash($, 'npx biome --help')).context, 'lists its verbs'),
+    ).toEqual([]);
+});

@@ -77,21 +77,36 @@ export function helpScripts(command: string, cwd: string, ctx: Context) {
 // cobra, commander or our own: every verb parses --help and only prints
 const HELP_SAFE = new Set(['x', 'gh', 'git', 'claude', 'obsidian']);
 const SHELL_WORDS = new Set(['for', 'case', 'select', 'function', 'in']);
+// a package runner hands the words after the package to the package's own cli, so that cli is the one a hint names
+// (FRM-426: `pnpm dlx biome check --help` hinted `pnpm --help`)
+const PKG_RUNNERS = new Set(['npx', 'bunx', 'pnpx']);
+function ranCli(c: Command) {
+    const ops = operands(c.args);
+    if (PKG_RUNNERS.has(c.name)) return { cli: ops[0], verbs: ops.slice(1) };
+    if (c.name === 'pnpm' && (ops[0] === 'dlx' || ops[0] === 'exec'))
+        return { cli: ops[1], verbs: ops.slice(2) };
+    return undefined;
+}
 // the clis a command runs as `<cli> <verb> --help` that this session has not met yet: their hint fires once
 export function verbHelps(command: string, cwd: string, ctx: Context) {
     const clis = new Set<string>();
-    for (const c of commands(parse(command), cwd))
+    for (const c of commands(parse(command), cwd)) {
+        const ran = ranCli(c);
+        const cli = ran ? ran.cli : c.name;
+        const verbs = ran ? ran.verbs : operands(c.args);
         if (
-            /^[A-Za-z][\w.-]*$/.test(c.name) &&
-            !SHELL_WORDS.has(c.name) &&
-            !HELP_SAFE.has(c.name) &&
-            !RUNNERS.has(c.name) &&
-            !SCRIPT.test(c.name) &&
-            !ctx.helped?.has(c.name) &&
+            cli &&
+            /^[A-Za-z][\w.-]*$/.test(cli) &&
+            !SHELL_WORDS.has(cli) &&
+            !HELP_SAFE.has(cli) &&
+            (ran || !RUNNERS.has(cli)) &&
+            !SCRIPT.test(cli) &&
+            !ctx.helped?.has(cli) &&
             c.args.some((w) => w.text === '--help') &&
-            operands(c.args).length
+            verbs.length
         )
-            clis.add(c.name);
+            clis.add(cli);
+    }
     return [...clis];
 }
 // the clis a command runs with a bare `--help`, nothing else
