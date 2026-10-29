@@ -7,7 +7,7 @@ Ticket: none · built c9533240 (mods lane l12)
 
 # orbit ask expiry — does an ask that leaves on its own ever help dima?
 
-dima, 2026-10-12 (o92): «I generally don't like for items in orbit to be expirable at all, because I can miss it for a few turns and it will vanish. I'd rather keep it sticky if I peek into a window later. let's have it for some time, and I'll test drive.»
+dima, 2026-10-12 (o92): «I generally don't like orbit items to expire at all, because I can miss it for a few turns and it will vanish. I'd rather keep it sticky if I peek into a window later. let's have it for some time, and I'll test drive.»
 
 ## the use, during the drive
 

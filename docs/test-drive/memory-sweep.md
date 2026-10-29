@@ -5,7 +5,7 @@ until: 2026-10-19
 
 # memory sweep — the log
 
-the trace of every ask, steer and decision across the sweep ([FRM-267](https://linear.app/x-com/issue/FRM-267), pocket 10), memory and skills and recipes; the input of the sweep retro. dima, 2026-10-07: «important, it will help us to do the sweep retro, once actual sweep is done». closes with the verdict: keep the nurture flow as a recipe, or refold it as a skill.
+the trace of every ask, steer and decision across the sweep ([FRM-267](https://linear.app/x-com/issue/FRM-267), pocket 10), memory and skills and recipes; the input of the sweep retro. dima, 2026-10-07: «important, it will help us to do the sweep retro, once the actual sweep is done». closes with the verdict: keep the nurture flow as a recipe, or refold it as a skill.
 
 his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 
@@ -19,7 +19,7 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - a closed ticket in open-state words: FRM-244, FRM-335, FRM-397 (r26, r28)
 - a dead entry: the kick-5h commands, gone since `59be8a3e` but still listed (r28)
 - a missing entry is drift too: the chords route list lacked `/api/stats` (r28)
-- step 10's strays (10-16): a retired tool still named (`x:queue` on the boot board), a raw door after its verb landed (`linear api` in boot + halt), stories regrown into skills after their groom, one block pasted into four app files (+679 B each), a partial pass recorded as a groom → each class becomes a step-10 check or a halt-time lens, so upkeep runs between sweeps, never only inside one (dima: «hopefully we sharpen the recipe and habits so the memory maintenance will be smoother in future»)
+- step 10's strays (10-16): a retired tool still named (`x:queue` on the boot board), a raw door after its verb landed (`linear api` in boot + halt), stories regrown into skills after their groom, one block pasted into four app files (+679 B each), a partial pass recorded as a groom → each class becomes a step-10 check or a halt-time lens, so upkeep runs between sweeps, never only inside one (dima: «hopefully we sharpen the recipe and habits so memory maintenance runs smoother in the future»)
 
 ### mistakes
 - the fold pass covered memory, rules, recipes and the pocket, and «the sweep is done» let dima read linear as covered too; name which surfaces a pass did NOT touch (00:35)
@@ -44,19 +44,19 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - **the order:**
   - baseline
   - research
-  - **recipes first** — dima: «process recipes first, before actual nurture-* recipe set is used for actual sweep, so the sweep runs on new settled recipes shape»
-  - **the prompt-audit early** — dima: «where is the step from claude-api prompt-audit? it should be one of the firsts steps»
+  - **recipes first** — dima: «process recipes first, before the nurture-* recipe set is used for the actual sweep, so the sweep runs on the newly settled recipe shape»
+  - **the prompt-audit early** — dima: «where is the step from claude-api prompt-audit? it should be one of the first steps»
   - dupes
   - buckets
   - the leaf pass
   - skills
   - the global review
-- **delete-first:** dima: «the delete-leaned is a deliberate choice, and is justified. memory became bloated … previous memory sweep was incredibly chaotic … so this sweep have to be much better. let's aim for lightweightness» · «the fact that memory became bloated is probably caused by «do not delete» invariant. it is designed to protect, but acts as double edged sword against memory. it encourages cluttering by protecting from deletions». memory, skills and recipes are in git, so a delete is reversible; deletes go out in one batch per phase with a reason each, one approve, the text quoted here
-- **the coordinator split:** dima: «one of the biggest wins. for example, so far you did not even spawned even one --bg session today (except ccrow). so ~1m tokens today was using your whole spawning memory module with no use. how to modularize your memory, so you won't use whole monolith but lazyload rarely used memory parts, while keeping essentials always resident?» — (a) spawning leaves the resident set inside the sweep; (b) the squad leader is shaped after it
+- **delete-first:** dima: «the delete-leaned is a deliberate choice, and is justified. memory became bloated … the previous memory sweep was incredibly chaotic … so this sweep has to be much better. let's aim for lightweightness» · «the fact that memory became bloated is probably caused by «do not delete» invariant. it is designed to protect, but acts as double edged sword against memory. it encourages cluttering by protecting from deletions». memory, skills and recipes are in git, so a delete is reversible; deletes go out in one batch per phase with a reason each, one approve, the text quoted here
+- **the coordinator split:** dima: «one of the biggest wins. for example, so far you haven't spawned even one --bg session today (except ccrow), so ~1m tokens today went to your whole spawning memory module for nothing. how do we modularize your memory, so you don't carry the whole monolith but lazyload rarely used memory parts, while keeping essentials always resident?» — (a) spawning leaves the resident set inside the sweep; (b) the squad leader is shaped after it
 - **the adviser:** ccrow with a sweep brief — checks every delete batch and rewrite against this log, and «think on its behalf on how to improve and streamline our memory system»
-- **the target:** dima: «make everything as efficient as possible. half the cut is good. i'd be glad if your total start would be at ~50k. and less than 100k after full boot»
+- **the target:** dima: «make everything as efficient as possible. half the cut is good. i'd be glad if your total start were ~50k. and less than 100k after full boot»
 - **the children:** in — the plugin + mcp prune, FRM-220, FRM-184, FRM-238 per skill; out — FRM-243 (jev frozen), FRM-239 (→ x verb verdicts), FRM-270 (after)
-- **pacing:** dima: «observe, suggest, don't stress to much i keep an eye»
+- **pacing:** dima: «observe, suggest, don't stress too much, i keep an eye on it»
 
 ## baseline (dima's measure, 2026-10-07)
 
@@ -66,8 +66,8 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 
 ### round 2 · 2026-10-07
 
-- **four tiers:** resident · hook-lazy (deterministic trigger, the `memory-load-rule-lazy` mechanism widened) · skill-lazy (rituals) · on demand by pointer. dima's catch: «to spawn a ccrow (on boot) you probably will want to load whole craft-spawning? which is too large … which lazyloaded modules could be split even more? and it should work! you should not forget to actually load relevant memory modules, once you need them» — ccrow starts through `pnpm ccrow:keep-cache-hot`, a script, so the boot needs no spawn memory; `craft-spawning` splits by trigger (round 3)
-- **the floor depends on the born place:** dima: «when born in terminal, you weight less. c desktop app code tab born weights … +~10k roughly, desktop app capabilities like additional mcps, builtin browser support etc. these are not removable, only changeable via born place» — every measure names its born place
+- **four tiers:** resident · hook-lazy (deterministic trigger, the `memory-load-rule-lazy` mechanism widened) · skill-lazy (rituals) · on demand by pointer. dima's catch: «to spawn a ccrow (on boot) you'd probably want to load the whole craft-spawning? which is too large … which lazyloaded modules could be split even more? and it should work! you should not forget to actually load relevant memory modules, once you need them» — ccrow starts through `pnpm ccrow:keep-cache-hot`, a script, so the boot needs no spawn memory; `craft-spawning` splits by trigger (round 3)
+- **the floor depends on the born place:** dima: «born in the terminal, you weigh less; born in the desktop app's code tab, you weigh … ~10k more, roughly: desktop app capabilities like additional mcps, built-in browser support etc. these are not removable, only changeable by the born place» — every measure names its born place
 - **targets:** memory files 71k → ≤ 25k · MCP tools 17k → ≤ 8k · skills 14.6k → ≤ 9k · ≈ 80k at boot, ≤ 100k after init
 - **`dima-stories`:** off the resident set, kept — dima: «i am OK if my stories are useful»; the halt appends, the retro and the sweep read it
 - **point of view:** b, «we use…» for shared rules; a only in a passport; c only in dima's quoted words
@@ -81,7 +81,7 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - **`x:guide-tests`** beside `x:guide-code`; root keeps two lines and the pointer
 - **a `shape-*` family:** `x:shape-test-drive` replaces the resident `habit-test-drive`, `x:shape-recipe` replaces `_spec.md` + `habit-recipe-first`
 - **the order, amended twice by dima in round 1** (ccrow caught that it was never shown back whole): 0 baseline + prompt-audit scan · 1 research · 2 recipes, the full reshape · 3 dupes · 4 buckets · 5 leaf pass (audit findings applied) · 6 skills · 7 recipe runs · 8 global review
-- **recipe candidates join phase 2:** dima: «scan a system for more recipe candidates. what activities do we do what would like to want a recipe? (frequently do activity recipe missing). for example: guide-tests does not have a recipe. what are test writing best practices for agents? how to prevent agents from writing useless tests, and only have useful tests? and it should complement matt's tdd» — [FRM-270](https://linear.app/x-com/issue/FRM-270) moves in
+- **recipe candidates join phase 2:** dima: «scan the system for more recipe candidates: which frequent activities of ours lack a recipe? for example: guide-tests does not have a recipe. what are test writing best practices for agents? how to prevent agents from writing useless tests, and only have useful tests? and it should complement matt's tdd» — [FRM-270](https://linear.app/x-com/issue/FRM-270) moves in
 - **measures fold into `refresh-fleet-ops`** (guard refusals per rule, skill loads, dima's wait, cost per member), duckdb as the engine; the baseline runs two of them
 
 ## phase 01 · baseline · 2026-10-07 18:07
@@ -222,7 +222,7 @@ born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monit
 - sweep run #2, cclio leaves · 17:40 · o136 ctx7 + explore off habit-test-drive's live list (3,643 B); dima: one home for the test-drive list → o139 (frontmatter + script vs one of the two lists); o137 → PK-58 (ordinal 99000 in the next band, due 10-13, pocket-check green); o138 wishkeeper keeps boot + siesta
 - sweep run #2, cclio leaves · 17:52 · o139 the test-drive list has one home: 40 docs/test-drive files carry status + until (23 live, 2 frozen, 7 unsorted → PK-58, 1 parked, 7 adopted), 22 🔬 lines moved verbatim from _reminders into their files (26,724 → 16,005 B, 7 non-drive 🔬 lines stay), pnpm test-drive:list (script/test-drive-list.ts, typecheck 0), habit-test-drive 3,643 → 2,697 B, halt 3b + _MEMORY point at the list
 - sweep run #2, cclio leaves · 17:56 · cclio/AGENTS.md proposal .scratch/memory-sweep/cclio-agents-proposal.md: the outside-cclio rule twice, the import-path rule restated (barrel header + method-silent-failures hold it), ⚠️ on a caveat + a history clause (o140–o142) · _MEMORY.md: 24 of 24 imports resolve, unchanged beyond o139
-- sweep run #2, cclio leaves · 17:45 · cclio/AGENTS.md 3,424 → 3,110 B (o140 the outside rule once, o141 the import-path rule cut, o142 ⚠️ → 📌 + history comment), gate 0, the barrel import intact · o143 cclio:checkpoint § 3.5: wishkeeper checks the CST draft vs orbit, pocket, groom list, member queues · PK-58 rewritten readable (dima: «i cant read pk-58»)
+- sweep run #2, cclio leaves · 17:45 · cclio/AGENTS.md 3,424 → 3,110 B (o140 the outside rule once, o141 the import-path rule cut, o142 ⚠️ → 📌 + history comment), gate 0, the barrel import intact · o143 cclio:checkpoint § 3.5: wishkeeper checks the CST draft vs orbit, pocket, groom list, member queues · PK-58 rewritten readable (dima: «i can't read pk-58»)
 - 17:54 · PK-58: dima's verdicts on 3 (backlog-md, sonnet-coder adopted, review-stack live on his graphite → gh stacks plan), my picks on 4 written as his — caught by wishkeeper 18:09, now marked cclio's pick (o151); a closed status joins the list for one-shot measurements; left: the design drift policy trial without a file
 - sweep run #2, cclio leaves · 17:58 · dima-leaves proposal: the quote fold (dima-wishes' 10-10 sweep) read both files, quotes clean · dima-strategy: old role names + italics (o144, o145) · dima-wishes unchanged ✅
 - sweep run #2, cclio leaves · 18:01 · habits proposal .scratch/memory-sweep/habits-proposal.md (o146–o148: the 90-char number the tool enforces, research-lanes' grading after adoption, DOT-252 → FRM-252); 6 habit leaves read whole, unchanged; habit-shared-files + craft-fleet-flow → pm review

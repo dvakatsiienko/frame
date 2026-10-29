@@ -5,7 +5,7 @@ until: 2026-11-01
 
 # want line — dima reads one exit line per feature ticket
 
-started 2026-10-10. dima's terms, 12:44 and 12:50: «let's try minimal + blind critic, if it still be too much for me or redundant i fully delegate to you» · «ask me after 5 times you print me exit lines. and ask me if useful / i want it each time».
+started 2026-10-10. dima's terms, 12:44 and 12:50: «let's try minimal + blind critic, if it is still too much for me or redundant, i fully delegate it to you» · «ask me after 5 times you print me exit lines. and ask me if useful / i want it each time».
 
 the rule: every reply that shows dima a want line prints it as `want line n/5, useful?` (2026-10-10: a `·` got split into two bullets by the stash's list rewrite); his answer is logged below; at 5/5 the reply asks the verdict — keep reading it, or delegate it fully. verdict: open.
 

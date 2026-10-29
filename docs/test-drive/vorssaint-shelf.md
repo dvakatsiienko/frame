@@ -8,7 +8,7 @@ dies-when: the verdict line below is written (2026-10-17) — adopted as a door 
 
 Ticket: none
 
-dima, 2026-10-01: «your input prompt only allows five screenshots at once, and sometimes I say more screenshots, so they don't fit into one turn. I will drop those screenshots on the shelf and tell you to check that out. Possibly, I can drop more things there, so let's use this approach. test drive.»
+dima, 2026-10-01: «your input prompt only allows five screenshots at once, and sometimes I send more screenshots, so they don't fit into one turn. I will drop those screenshots on the shelf and tell you to check that out. Possibly, I can drop more things there, so let's use this approach. test drive.»
 
 - the read: `pnpm vorssaint:shelf` (`--json` for a machine read) — the app keeps the list as json in its preferences (`com.vorssaint.utils` → `shelfItems`); items are paths, the files stay where he saved them
 - the trigger words: «check my shelf», «on the shelf», «dropped it on the shelf»

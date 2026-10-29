@@ -4,7 +4,7 @@
 
 > resident memory carries only what every turn needs. a rule that matters for one kind of work (linear, git, the vault) arrives the moment that work starts, by mechanism, never by my recall. pilot: linear-flow.
 
-dima, 2026-10-04: «if we keep it, it must work very well and always load correct memories when needed (because we already had some experiment with the jev skill router, and it failed). i don't want another failed thing. let's see if it works, make it work, or discard it.»
+dima, 2026-10-04: «if we keep it, it must work very well and always load correct memories when needed (because we already had an experiment with the jev skill router, and it failed). i don't want another failed thing. let's see if it works, make it work, or discard it.»
 
 ## decided (grill, 2026-10-04)
 

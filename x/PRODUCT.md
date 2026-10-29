@@ -44,7 +44,7 @@ a verb lives in x only when all three hold:
 - **a fleet procedure, not a package's lifecycle** — build, dev, test, typecheck, lint, codegen, render stay turbo / pnpm scripts, cached and ordered by the task graph; x may call a turbo task, never re-implements one
 - **more than one surface calls it** — agents and dima, or cc and cloud threads; a one-off script stays a script
 - **it hides a hazard, a sequence or a location** — where a thing lives, its format, its filter; a thin alias over one command is noise
-- **a thin verb lives while telemetry shows it used** — dima, 2026-10-07: «even if cli cmd is very basic and just a listing like x handoffs list — it is still good to have because it allows to see doors … not always for perf gains - for colocation purposes». colocation is the reason, `x stats` is the proof
+- **a thin verb lives while telemetry shows it used** — dima, 2026-10-07: «even if cli cmd is very basic and just a listing like x handoffs list — it is still good to have, because it lets us see the doors … not always for perf gains: for colocation». colocation is the reason, `x stats` is the proof
 - **hiding is for the caller, never for the fixer** — `x schema <verb>` prints the verb's source dir, the stores and files it touches, and the script it replaced; `--help` stays the pretty day-to-day view
 
 ## two pr modes — plain and stacked (FRM-423, 2026-10-23)

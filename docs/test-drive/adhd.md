@@ -10,7 +10,7 @@ Ticket: none
 
 **what:** [UditAkhourii/adhd](https://github.com/UditAkhourii/adhd) 0.1.4 — 5 isolated frame branches, then a critic that scores, flags traps and deepens the top 3. same author as `neuroarxiv`.
 **installed:** plugin `adhd@adhd`, cclio project scope (`cclio/.claude/settings.json`). the user-only lock is open: `skillOverrides` never reaches a plugin skill.
-**window:** 2026-09-28 → 2026-10-14 (extended a week on 10-06, dima: «outputs was meh»). verdict on 10-14: adopt (keep, user-only) or drop (uninstall + marketplace remove).
+**window:** 2026-09-28 → 2026-10-14 (extended a week on 10-06, dima: «the outputs were meh»). verdict on 10-14: adopt (keep, user-only) or drop (uninstall + marketplace remove).
 
 ## the protocol, every round
 
