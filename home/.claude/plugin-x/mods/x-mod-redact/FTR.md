@@ -40,13 +40,14 @@
   - given the vault cannot be written (three version checks lost to parallel rows, or `$.state` failing)
   - when a row or a tool result carries a secret
   - then it is masked one way — its first six characters and `…‹redacted›` — and the error is logged; the row is never blocked
-- ⬜ a failing hook never lets a secret through
+- ✅ a failing hook never lets a secret through
   - given the row hook or the tool hook throws, overruns its 10 s or answers a wrong shape
   - then its `.catch` runs in its place: the row goes on masked one way, the tool's result (replayed, or run with its placeholders as written) is masked one way, and a log line names the failure
   - given a row too big to scan inside what is left of the hook's budget (under 300 ms plus a millisecond per 4,000 chars), then it skips the vault and is masked one way at once
   - decision: fail closed, the opposite of quiet comms: a secret that leaks is never taken back, a row masked one way costs only a lost restore (brief 9 item 5, borrowed from ray-amjad/claude-code-mods `transcript-redactor`)
   - 📌 the harness clones an event before any hook, so no test row can make a hook throw: the two handlers are tested directly, their `.catch` wiring by reading
   - decision: fail to the mask, not to the raw row — the old one-way mask could not fail, so the placeholder must not open a hole it closed
+  - proof: tests/vault.test.ts::a tool hook that failed before the tool ran runs it with its placeholders as written, plus the catch handlers and the vault error — not asserted: the tight-budget mask path (the harness cannot set `next.budget`)
 
 ## scripts
 

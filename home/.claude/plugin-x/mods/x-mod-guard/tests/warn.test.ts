@@ -48,6 +48,21 @@ test('a floor rule stays refused when the store says warn', async ($, on) => {
     expect([ran, r.deny !== undefined]).toEqual([[], true]);
 });
 
+test('a warn-only rule that fires keeps a warned event and counts it in the day tally', async ($, on) => {
+    const { ran, store } = world(on);
+    await $.tool.call({ command: 'claude plugin update x@x', tool: 'Bash' });
+    const dayKey = [...store.keys()].find((k) => k.startsWith('day:'));
+    expect([ran, kinds(store), dayKey && store.get(dayKey)]).toMatchObject([
+        ['claude plugin update x@x'],
+        ['warned'],
+        {
+            refused: 0,
+            rules: { 'raw-plugin-update': { warned: 1 } },
+            warned: 1,
+        },
+    ]);
+});
+
 test('a rule with no mode set still refuses', async ($, on) => {
     const { ran } = world(on);
     const r = await $.tool.call({ command: 'rm -rf build', tool: 'Bash' });

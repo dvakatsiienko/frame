@@ -37,7 +37,7 @@ function checkAnswer(text: string) {
 
 function world(on: On, check: 'answers' | 'breaks' = 'answers') {
     mock.clock(on, { now: 1_000_000 });
-    liveStore(on);
+    const store = liveStore(on);
     const checked: string[] = [];
     const logs: string[] = [];
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
@@ -65,7 +65,7 @@ function world(on: On, check: 'answers' | 'breaks' = 'answers') {
     });
     on('agent.spawn', () => ({ agentId: 'sub-1', model: 'claude-opus-5-5' }));
     on('session.send', () => ({ isDelivered: true }));
-    return { checked, logs };
+    return { checked, logs, store };
 }
 
 const spawn = ($: Engine, prompt: string) =>
@@ -91,6 +91,15 @@ test('an agent brief naming a missing path is refused with the path', async ($, 
     world(on);
     const r = await spawn($, `FRM-1: read ${MISSING} first`);
     expect(r.deny).toContain('home/.claude/nope.md — no such path');
+});
+
+test('a refused agent brief leaves a refused event under the brief rule', async ($, on) => {
+    const { store } = world(on);
+    await spawn($, `FRM-1: read ${MISSING} first`);
+    const events = [...store.entries()]
+        .filter(([k]) => k.startsWith('event:'))
+        .map(([, v]) => v);
+    expect(events).toMatchObject([{ kind: 'refused', rule: 'brief' }]);
 });
 
 test('an agent brief guessing a bare file name is checked and refused', async ($, on) => {

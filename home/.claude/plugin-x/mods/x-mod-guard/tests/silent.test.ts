@@ -58,6 +58,15 @@ test('with guard notes silent, the rewrite still runs and no note reaches the mo
     ]);
 });
 
+test('with guard notes silent, a warn-only rule still says it would refuse', async ($, on) => {
+    const w = world(on, true);
+    const r = await bash($, 'claude plugin update x@x');
+    expect([
+        w.ran,
+        (r.context ?? []).filter((l) => l.includes('would refuse')),
+    ]).toMatchObject([['claude plugin update x@x'], [expect.any(String)]]);
+});
+
 test('with guard notes silent, a floor refusal still refuses', async ($, on) => {
     const w = world(on, true);
     const r = await bash($, 'git reset --hard');

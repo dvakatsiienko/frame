@@ -1,13 +1,15 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { liveStore } from './store.ts';
+
 const MOD = '/home/frame/mods/x-mod-demo';
 const LINK = '/home/.claude/mods/x-mod-demo';
 
 // one live mod in CLAUDE_CODE_PLUGIN_DIRS, reached through `~`; its plugin test exits `testExit`; LINK resolves into it
 function world(on: On, testExit: number) {
     mock.clock(on, { now: 1_000_000 });
-    mock.store(on);
+    const store = liveStore(on);
     const ran: string[] = [];
     const tested: string[][] = [];
     on('session.id', () => ({ value: 'u1u1u1u1-0000' }));
@@ -46,7 +48,7 @@ function world(on: On, testExit: number) {
         ran.push(e.tool);
         return { result: {}, text: 'ran' };
     });
-    return { ran, tested };
+    return { ran, store, tested };
 }
 
 const edit = ($: Engine, file: string) =>
@@ -61,6 +63,25 @@ test("an Edit under a live mod's hooks/ is refused while its plugin test is red"
     const { ran } = world(on, 1);
     const r = await edit($, `${MOD}/hooks/register.ts`);
     expect([r.deny?.includes('x mods edit pull'), ran]).toEqual([true, []]);
+});
+
+test('a red refusal keeps a refused event under the live-hook-red rule', async ($, on) => {
+    const { store } = world(on, 1);
+    await edit($, `${MOD}/hooks/register.ts`);
+    const events = [...store.entries()]
+        .filter(([k]) => k.startsWith('event:'))
+        .map(([, v]) => v);
+    expect(events).toMatchObject([{ kind: 'refused', rule: 'live-hook-red' }]);
+});
+
+test('a Write under a red live mod is refused like an Edit', async ($, on) => {
+    const { ran } = world(on, 1);
+    const r = await $.tool.call({
+        content: 'x',
+        file_path: `${MOD}/hooks/register.ts`,
+        tool: 'Write',
+    });
+    expect([r.deny?.includes('stopped this Write'), ran]).toEqual([true, []]);
 });
 
 test("an Edit under a live mod's hooks/ goes through while its plugin test is green", async ($, on) => {

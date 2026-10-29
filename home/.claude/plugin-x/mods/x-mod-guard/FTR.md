@@ -38,34 +38,41 @@
   - given a `git add` or `git commit` whose repo is frame or bytes (the cwd, a `cd`, or `-C`), then it runs with one line naming `x lane commit`; in any other repo no line is added
   - then `x gh pr`, `x lane commit`, `x as <member> -- gh …`, a `gh api` with a body or a non-GET method, quoted text and a heredoc body get no line
   - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
-- ⬜ a `gh --jq` call gets a gojq hint (FRM-394)
+- ✅ a `gh --jq` call gets a gojq hint (FRM-394)
   - given a Bash call runs `gh … --jq <program>` (also `--jq=…` or `-q`), then it runs as typed and the model reads: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`
   - given `gh … --json f | jq …`, then no hint
   - decision: a hint, never a refusal — the program may well be right; the `fleet-hazards.md` line goes to its holder's commit
+  - proof: tests/hint.test.ts::a gh --jq call runs with a gojq hint (x3 forms); gh --json piped into jq gets no gojq hint
 - ✅ an `rg` that skips dot dirs gets a `--hidden` hint (PK-139)
   - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
   - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
-- ⬜ a pipe into `jq` before `&&` gets a pipestatus hint (FRM-428, PK-188)
+- ✅ a pipe into `jq` before `&&` gets a pipestatus hint (FRM-428, PK-188)
   - given `gh api repos/x/y | jq .name && echo ok`, then it runs as typed and the model reads: the `&&` after `| jq` reads jq's exit, not the producer's — check `$pipestatus[1]` (zsh) or start with `set -o pipefail`
   - given a pipe ending in `jq` with nothing after it, `;` after it, or a command naming `pipefail`, then no hint
-- ⬜ a silent curl into a pipe gets a `curl -f` hint (FRM-428, PK-188)
+  - proof: tests/pipes.test.ts::a pipe into jq before && runs with a pipestatus hint; no pipestatus hint
+- ✅ a silent curl into a pipe gets a `curl -f` hint (FRM-428, PK-188)
   - given `curl -s https://example.com | jq .`, then it runs as typed and the model reads: `curl -s` exits 0 on an http error and pipes the error page on — add `curl -f` (or `--fail-with-body`)
   - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
-- ⬜ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
+  - proof: tests/pipes.test.ts::a silent curl into a pipe runs with a curl -f hint; no curl -f hint
+- ✅ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
   - given `node ~/frame/cclio/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
   - given a script whose source names a help flag, a run without `--help`, or a script outside `~/frame`, then no hint
-- ⬜ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
+  - proof: tests/help.test.ts::a frame script with no help flag, run with --help, gets a hint first; no script help hint
+- ✅ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
   - given `railway logs --help` and no bare `railway --help` this session, then it runs as typed and the model reads: `railway --help`, bare, lists its verbs — some clis run the verb under `<verb> --help`
   - given the cli's bare `--help` already ran, or its verb hint already fired this session, then no hint
   - given `x`, `gh`, `git` or `claude` (every verb parses `--help`), `obsidian` (refused instead), a script runner, or a shell word, then no hint
   - given `pnpm dlx biome check --help`, `npx biome check --help` or `pnpx biome check --help` (also `bunx`, `pnpm exec`), then the hint names the package's own cli — `biome --help`, bare — never the runner (FRM-426)
-- ⬜ a worktree command cc core refuses carries the scratch-script door (FRM-428 exit 4)
+  - proof: tests/help.test.ts (every other clause, and `obsidian --help` / `obsidian x --help` in the no-hint list)
+- ✅ a worktree command cc core refuses carries the scratch-script door (FRM-428 exit 4)
   - given a worktree session's Bash names git or `github` where cc core's isolation check refuses it (a heredoc body, a `gh api repos/...` path), then the refusal the model reads is core's, followed by: write the command into a scratch script and run that script by path; git itself goes through `x lane <verb>`
   - given a command core lets run, then no door
   - decision: no hook overrides core's isolation verdict (dima's o26, 2026-10-28); the door rides core's own refusal, so it never fires where core would not refuse
-- ⬜ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
+  - proof: tests/isolation.test.ts::a worktree command cc core refuses carries the scratch-script door; a worktree command core lets run gets no door
+- ✅ a slow foreground Bash leaves no hint behind (FRM-428, PK-226)
   - given a foreground Bash took over 60 s, when the same shape runs again, then no hint names «held the foreground» and the store keeps no `slow:` key
   - decision: the hint is deleted, not re-measured — 197 of 643 calls got it, 82 % under 30 s, none moved (dima's o82)
+  - proof: tests/slow.test.ts::a foreground call that held over a minute leaves no hint and no memory — not asserted: asserts no «held the foreground» and no `slow:` key
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»
@@ -183,25 +190,28 @@
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
 
-- ⬜ a new rule warns before it refuses (dima's o70)
+- ✅ a new rule warns before it refuses (dima's o70)
   - given a rule listed in `WARN_ONLY`
   - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its verifier says clean): <the refusal>»
   - when it fires on an Agent spawn, then the agent runs — a spawn takes no note
   - then the event is kept as `warned`, and the day's tally counts it apart
   - given «enforce» in the store's `rule-mode:<rule>`, then a listed rule refuses; «warn» there does nothing — every session writes that store, so it can never switch a rule off (the verifier's 15:08 probe turned the `rm` floor off)
   - decision: a refusing hook reaches every session at its next turn end; FRM-392's guard refused three verifier verdicts before anyone saw it
+  - proof: tests/warn.test.ts::a warn-only rule that fires keeps a warned event and counts it in the day tally, plus the Bash warn, enforce and store-warn cases
 
-- ⬜ stash's 🎛️ «🛡️ guard notes to the model» switch silences guard's notes (FRM-391 slice 06, dima's o11)
+- ✅ stash's 🎛️ «🛡️ guard notes to the model» switch silences guard's notes (FRM-391 slice 06, dima's o11)
   - given the switch off — `guard-silent: true` in x-mod-stash's store file, read with `$.fs`, read-only
   - when a call is rewritten, hinted or reaches the 8th cclio edit
   - then the rewrite still runs and no note joins the model's context; a refusal and a warn-only «would refuse» still speak, the floor untouched
   - decision: guard reads stash's file rather than keeping its own knob — one 🎛️ view, the store is one file per plugin (`mods/engine.md`)
+  - proof: tests/silent.test.ts::with guard notes silent, a warn-only rule still says it would refuse, plus the rewrite, hint and floor-refusal cases
 
-- ⬜ `CI=1 pnpm` with a frozen lockfile is flagged, warn-only (FRM-393)
+- ✅ `CI=1 pnpm` with a frozen lockfile is flagged, warn-only (FRM-393)
   - given `CI=1 pnpm add|remove …`, or `CI=1 pnpm install` while `git diff --name-only HEAD` in its dir names a `package.json` or `pnpm-workspace.yaml`, with no `--no-frozen-lockfile`
   - then the guard names the flag: `CI=1` freezes the lockfile, the dep change never reaches it and the commit ships half
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
+  - proof: tests/lockfile.test.ts::a frozen dep change is flagged with the flag named; CI=1 pnpm install over a changed package.json is flagged; runs unflagged
 
 - ✅ a `#` comment before `;`, `&&` or `||` is refused (FRM-463)
   - given `echo a # deadline: 5 s; trash x`, `echo a # x && y` or `echo a # x || y`
@@ -209,18 +219,20 @@
   - given `echo a; trash x # deadline: 5 s`, `echo 'a # b; c'`, or a comment ending its line before the next one, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until the verifier's clean, refusing since (FRM-427 round 2, 2026-10-28); a comment of prose holding a `;` fires too (1 of 5 shapes in a 3-day replay, 16 fires in 16,275 calls)
 
-- ⬜ three slips get a hint line, the command runs as typed (PK-67, the 10-11 halt flush)
+- ✅ three slips get a hint line, the command runs as typed (PK-67, the 10-11 halt flush)
   - given an `sd`, `sed -i` or `python` write into a file under `~/frame` or `~/projects/bytes`, then the hint names `Edit`, which fires the format and hold hooks a scripted replace skips; an append, a redirect or a path outside the repos gets none
   - given `echo` of a json-ish argument (`{…"…`), then the hint names `printf '%s\n'` or `jq -n`: zsh's `echo` reads the escapes inside it
   - given `claude -p` inside a `while read` loop with no `</dev/null`, then the hint names `</dev/null`: the call eats the loop's stdin
   - decision: hints, never refusals — a bulk change across many files may stay one script (`fleet-hazards.md`), and the held-file veto already covers heredoc and python writes
+  - proof: tests/hint.test.ts::a scripted replace into a repo file names Edit; echo of json names zsh's escapes and printf; claude -p inside while read names </dev/null
 
-- ⬜ a raw plugin update names `x plugin bump`, warn-only (FRM-389 exit 7)
+- ✅ a raw plugin update names `x plugin bump`, warn-only (FRM-389 exit 7)
   - given any session runs `claude plugin update …` or `claude plugin marketplace update …`
   - then it runs, and the model reads «would refuse» with `x plugin bump --apply <plugin>` named; with `rule-mode:raw-plugin-update` = «enforce» nothing runs
   - given `claude plugin list`, `validate`, `test`, a quoted mention or another `claude … update`, then it runs unwarned
   - decision: every session, cclio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70)
+  - proof: tests/plugin-update.test.ts::a raw plugin update runs, warned with x plugin bump named; with the rule enforced, a raw plugin update is refused; runs unwarned
 
 - ✅ a backlog notes edit that would wipe notes is refused naming `--append-notes` (PK-150, FRM-425)
   - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (cclio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
@@ -233,7 +245,7 @@
   - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`
-- ⬜ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt names that pr (FRM-423)
+- ✅ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt names that pr (FRM-423)
   - given a Bash call running `x lane merge-auto … --dima-ok <pr>` (or `--dima-ok=<pr>`)
   - when dima's last prompt typed at the composer or sent over the bridge names the pr as a whole word, `104` or `#104`, by the same match as a dima-ok marker
   - then it runs; when no such prompt exists, it names another number (`1041`, `#10`), or only a peer or a notification said it, then nothing runs and the refusal (rule `dima-ok-flag`) names the numbers his prompt lacks
@@ -242,6 +254,7 @@
   - decision: a refusal from day one, never warn-only — a warning would run the merge it means to stop (dima's o102, the `foreground-claude` precedent)
   - given x's root flags before the family or between it and the verb (`x --json lane merge-auto …`, `x lane --board merge-auto …`), a full path to x, `bash -c` or `eval`, then the rule judges it the same
   - known gap: a deliberate evasion every guard rule shares slips it — a command piped into `sh`, the flag held in a variable, a script run by path (FRM-423 verifier, round 1)
+  - proof: tests/merge-word.test.ts::merge-auto's --dima-ok runs when dima's last prompt says; stays refused when; a peer naming the pr never proves --dima-ok; an unproven --dima-ok is refused however x is reached
 - ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
@@ -251,7 +264,7 @@
 
 ## every Agent spawn
 
-- ⬜ an agent brief passes `x brief check` before the agent runs (FRM-392)
+- ✅ an agent brief passes `x brief check` before the agent runs (FRM-392)
   - given an `Agent` prompt that names a ticket id, a backticked path or file name, or one of matt's skills
   - when x-mod-guard runs `x brief check` on it, over stdin, against the session's repo root
   - then a missing path or a skill whose step waits on the user's approval refuses it, and the reason carries the check's own line, so the next try fixes the brief; the refusal is kept as a guard event
@@ -263,6 +276,7 @@
   - decision: fail open — a check that breaks, times out or answers oddly lets the brief go, unlike the floor: this runs on every Agent of every session, cclio's included
   - given a relative path the session's repo lacks, then the refusal adds «a path from another repo: write it absolute or ~/»; an absolute or `~/` path is checked where it lives (dima's o66)
   - decision: off for a while after it refused plain reports live (dima's o65, 13:47); back on after the verifier's clean on the dev copy (round 3)
+  - proof: tests/spawn-briefs.test.ts::a refused agent brief leaves a refused event under the brief rule, plus every refusal and allow
 - ✅ a fork must say why it needs the parent context
   - given an `Agent` spawn of type `fork` whose prompt has no `why-fork: <what parent context it needs>` line
   - when x-mod-guard reads the spawn
@@ -300,11 +314,12 @@
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
-- ⬜ a cclio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
+- ✅ a cclio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
   - given a session whose root is under `~/frame/cclio` reads its 3rd `.png` `.jpg` `.jpeg` `.gif` `.webp` `.heic` `.bmp` or `.tiff` in one turn (the main loop, never a subagent's)
   - then the Read runs and the model gets one note naming `helper-lite` and `rules/fleet-tooling.md`; the 1st, 2nd and 4th get none
   - given a new prompt, then the count starts over; given a text file or a session outside `~/frame/cclio`, then nothing is counted
   - makes: a per-turn count in x-mod-guard's `$.state`
+  - proof: tests/images.test.ts::cclio's 3rd image Read in a turn gets the helper-lite nudge, once; a new turn starts the image count over; a text Read never counts; a session booted anywhere else gets no nudge
 - ✅ a Write over a tracked file this session never read is refused
   - given a session that has not Read, Edited or Written a file git tracks
   - when it Writes over that file
@@ -313,13 +328,14 @@
   - decision: cc's own Write lets an unread existing file be replaced (measured 2026-10-09); a tracked test file was lost that way and restored from git (FRM-350)
   - makes: the session's seen paths in x-mod-guard's `$.state`, real paths, gone with the session
   - 📌 a file read by `cat` in Bash does not count as read; the Read tool is the door
-- ⬜ no live hook edit while the mod's own tests are red (FRM-361)
+- ✅ no live hook edit while the mod's own tests are red (FRM-361)
   - given a mod named in `CLAUDE_CODE_PLUGIN_DIRS` whose `claude plugin test` exits red
   - when an `Edit`, `Write` or `MultiEdit` targets a file under that mod's `hooks/`, by any path that resolves there
   - then it is refused: «instead: edit a scratch copy: `x mods edit pull <file>`, then `x mods edit push`, which lands it only when the mod validates and tests green», and a guard event is kept (rule `live-hook-red`)
   - given the mod's tests green, or a file outside its `hooks/` (its tests, its FTR), then the call runs, and outside `hooks/` no test runs at all
   - decision: the test runs on each such call, 1–5 s, never a cached verdict — a stale green is the exact hole (FRM-350: a half-done refactor of a hot-reloaded mod took Bash down fleet-wide for ~5 min)
   - 📌 harness-proven only; a live red mod was not planted
+  - proof: tests/livered.test.ts::a red refusal keeps a refused event under the live-hook-red rule / a Write under a red live mod is refused like an Edit, plus refuse, green, symlink and outside-hooks
 
 ## held files — x-mod-holds' holds, refused for Bash
 

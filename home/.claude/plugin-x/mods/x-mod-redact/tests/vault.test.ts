@@ -194,6 +194,16 @@ test('a tool hook that failed masks the replayed result one way', async () => {
     expect(JSON.stringify(r)).not.toContain(FAKE);
 });
 
+test('a tool hook that failed before the tool ran runs it with its placeholders as written', async () => {
+    const command = `echo ${placeholderOf(FAKE)}`;
+    const { next, seen } = caught(
+        async () => ({ result: {}, text: 'ok' }),
+        false,
+    );
+    await toolCaught(quiet$, { command }, next);
+    expect(seen).toEqual([{ command }]);
+});
+
 test('a tool hook that failed keeps a refusal as it was', async () => {
     const { next } = caught(async () => ({ deny: 'no' }), false);
     expect(await toolCaught(quiet$, { command: 'x' }, next)).toEqual({
