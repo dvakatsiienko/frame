@@ -26,7 +26,9 @@ const avatars: Record<CrewName, string> = JSON.parse(readFileSync(join(here, 'av
 const { values: args } = parseArgs({ options: { data: { type: 'string' }, out: { type: 'string' }, fetch: { type: 'boolean', default: false } } });
 if (!args.data || !args.out) throw new Error('usage: node redraw.ts --data <fleet.json> --out <dir> [--fetch]');
 
-let fleet: Fleet = JSON.parse(readFileSync(args.data, 'utf8'));
+// read-both: data written before 10-29 keys sixth sense as verifier; the next write moves it
+const { verifier, ...stored } = JSON.parse(readFileSync(args.data, 'utf8')) as Fleet & { verifier?: string };
+let fleet: Fleet = { ...stored, sixthSense: stored.sixthSense ?? verifier ?? '' };
 fleet.skills = readdirSync(join(here, '../../home/.claude/plugin-x/skills'), { withFileTypes: true }).filter(e => e.isDirectory()).length;
 if (args.fetch) {
     fleet = { ...fleet, ...(await fetchFleet()) };
