@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-10-29T15:00:00Z'
-due_date: '2026-10-29'
+updated_date: '2026-10-29T15:13:00Z'
+due_date: '2026-10-30'
 labels:
   - m
 dependencies: []
@@ -758,4 +758,6 @@ W509 (2026-10-29 16:52, dima): no, i'd like thread names to have vibe words too:
 note: W485–W488 and W508 are cclio's own 16:40/16:48 reply quoted back in the paste, not dima's words; W487 was reversed by dima at W489–W493
 
 correction: W509's stamp is 16:52, not 14:52 (a typo of cclio's); its groomed form lands from grooms/2026-10-29-1652.groomed.md
+
+held: 2026-10-29 — FRM-419 rename sweep; the pm module is parked until the rename time is decided (dima 17:08)
 <!-- SECTION:NOTES:END -->
