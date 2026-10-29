@@ -16,6 +16,7 @@ import {
     foregroundClaude,
     installDirs,
     isSignAsk,
+    isStashKill,
     mergeAutoCall,
     mergeAutoPr,
     mergeAutoRepo,
@@ -29,6 +30,8 @@ import {
     remoteSlug,
     removedTrees,
     signWord,
+    stashAsked,
+    stashKills,
     withDimaOk,
 } from './rules.ts';
 
@@ -424,6 +427,30 @@ async function stashOver(
         if (found) return stashSweep(dir, found.hold.file);
     }
     return undefined;
+}
+
+// dima's own prompt naming the stash, a kill verb and the repo lets a stash drop through in that repo (FRM-426); the
+// repo is the toplevel of the dir the command runs in, never the session's cwd
+async function stashAllowed(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+    found: Refusal[],
+) {
+    if (!found.length || !found.every(isStashKill)) return undefined;
+    const kills = stashKills(command, cwd, ctx);
+    if (!kills.length) return undefined;
+    const { value: said = '' } = await $.state.get(PROMPT);
+    for (const k of kills) {
+        const top = await $.process
+            .run(['git', '-C', k.dir, 'rev-parse', '--show-toplevel'])
+            .catch(() => undefined);
+        const repo =
+            top?.exitCode === 0 ? top.stdout.trim().split('/').pop() : '';
+        if (!repo || !stashAsked(said, k.verb, repo)) return undefined;
+    }
+    return { dirs: kills.map((k) => k.dir), said };
 }
 
 async function isReleased(
@@ -962,6 +989,21 @@ export const register: Register = (on) => {
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
             const targets = [...new Set(found.flatMap((r) => r.targets))];
+            const asked = await stashAllowed($, command, cwd, ctx, found);
+            if (asked) {
+                await record($, {
+                    command,
+                    door: "dima's word on the stash",
+                    kind: 'escaped',
+                    rule: 'git-discard',
+                    target: asked.dirs.join(', '),
+                    why: asked.said,
+                });
+                $.ui.log(
+                    `x-mod-guard: ran on dima's word on the stash: ${asked.dirs.join(', ')}`,
+                );
+                return go();
+            }
             const tick = await tickFor(
                 $,
                 guardedOf(command),

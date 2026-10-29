@@ -180,6 +180,42 @@ export function namesWhole(said: string, target: string) {
     }
     return false;
 }
+// dima's word on a stash drop: one sentence of his prompt that names «stash» (never inside x-mod-stash), a kill verb and
+// the repo, with no negation, lets `git stash drop` through in that repo; `clear` needs «all» or «clear» too (FRM-426)
+const word = (re: string) => new RegExp(`(?<![\\w-])(?:${re})(?![\\w-])`, 'i');
+const STASH_WORD = word('stash(?:es)?');
+const KILL_WORD = word('(?:drop|kill|delet|clear)\\w*');
+const ALL_WORD = word('all|clear');
+const NEGATED =
+    /(?<![\w-])(?:do not|never|not|no|without|avoid|stop|leave)(?![\w-])|n['’]t(?![\w-])/i;
+export const isStashKill = (r: Refusal) =>
+    r.rule === 'git-discard' && /^git stash (drop|clear) /.test(r.why);
+// every stash drop or clear of the command with the git dir it runs in; a command with a nested shell or eval names
+// none, since a script's stash drop could ride beside a plain one
+export function stashKills(command: string, cwd: string, ctx: Context = {}) {
+    const list = commands(parse(command), cwd);
+    if (list.some((c) => SHELLS.has(c.name) || c.name === 'eval')) return [];
+    return list.flatMap((c) => {
+        if (c.name !== 'git') return [];
+        const { sub, subArgs } = gitParts(c.args);
+        const verb = operands(subArgs)[0];
+        return sub === 'stash' && (verb === 'drop' || verb === 'clear')
+            ? [{ dir: gitDir(c, ctx), verb }]
+            : [];
+    });
+}
+export function stashAsked(said: string, verb: string, repo: string) {
+    return said
+        .split(/(?<=[.!?])\s+|\n+/)
+        .some(
+            (s) =>
+                STASH_WORD.test(s) &&
+                KILL_WORD.test(s) &&
+                !NEGATED.test(s) &&
+                namesWhole(s.toLowerCase(), repo.toLowerCase()) &&
+                (verb === 'drop' || ALL_WORD.test(s)),
+        );
+}
 export function markers(command: string) {
     return parse(command)
         .comments.map((c) => c.match(/^\s*dima-ok:\s*(.+?)\s*$/)?.[1])

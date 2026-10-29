@@ -16,6 +16,10 @@
   - decision: a refusal stops one command, never the session — no dialog, so a missed click can never stall a coder; the coder finds its own way around (dima, FRM-321)
   - decision: quoted text, heredoc bodies and comments are never read as commands — a commit message may name `rm -rf`
   - 📌 not read: a script piped into a shell (`curl … | sh`, `cat x | bash`); `rmdir`, `truncate`, `git worktree` moves
+- ✅ a stash drop runs on dima's own word naming the stash and the repo
+  - given dima's last typed prompt holds, in one sentence with no negation, the word «stash» (never inside `x-mod-stash`), a kill verb (drop, kill, delete, clear) and the repo's name
+  - when the session runs `git stash drop` in that repo (its toplevel, never the cwd)
+  - then it runs; `git stash clear` needs «all» or «clear» in the sentence too; the same drop in another repo, a negated ask («don't touch the stash in bytes»), and any command with a nested shell stay refused (FRM-426)
 - ✅ a hazard shape is refused with its fix, and its near miss runs
   - given a Bash call holds: an `sd` replacement holding `$`, in double quotes (the shell eats it) or single (sd reads `$NAME` as a capture ref and writes it empty — `under $CLAUDE_JOB_DIR/tmp` wrote `/tmp`, 2026-10-08), door python or the Edit tool; an `sd` find led by `-` with no `--`; an unbraced `$var` before `:<letter>` (a zsh modifier) or a non-ascii character; `sd`, or `sed -i`, on `.github/workflows/*`; a trailing `&` with no `wait` or `sleep` after it; a gate (`typecheck`, `test`, `check`, `tsc`, `vitest`, a `family:test` or `family:gate` script such as `pnpm x-go:gate`) piped into `head`, `tail` or `grep`; a `git push` piped into `grep`; a `git commit` with no `--` paths, `git add -A` / `--all` / `.`
   - given an `x knowledge read <name>` whose stdout goes to `/dev/null` or a file (`>`, `1>`, `&>`, `>>`), then it is refused: «read it plainly», since the read is logged as read while nothing reaches the session (FRM-371, helper-lite 10-09); a plain read, `| head` and `2>/dev/null` run
