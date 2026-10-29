@@ -135,7 +135,7 @@ CHECKED_CLAIM = re.compile(
 # «not checked», «never verified», «isn't proven»: the word negated is a disclosure, not a claim
 NEGATED_CLAIM = re.compile(r"\b(?:not|never|no|isn't|wasn't|aren't|weren't|n't|nothing|un)\s+(?:\w+\s+)?(?:copied whole|checked|verified|proven)\b", re.I)
 EVIDENCE = ("Bash", "Read", "Grep", "Glob", "Monitor")
-EVIDENCE_MCP = re.compile(r"^mcp__.*(?:read|get|list|search|query|fetch|find|status)", re.I)
+EVIDENCE_MCP = re.compile(r"^mcp__.+?__[^_]*(?:read|get|list|search|query|fetch|find|status)", re.I)
 
 
 def claims_without_evidence(reply: str, calls: list[tuple[str, dict]]) -> list[str]:
@@ -155,16 +155,17 @@ def unevidenced(path: str, reply: str) -> list[str]:
 # «round» alone is a verifier's or a review's too (the week replay: 31 of ~40 distinct hits), so a round counts beside «grill»
 GRILL_ASK_TEXT = re.compile(r"\bQ\d+\b|\bgrill\b[^\n]{0,40}\bround\b|\bround\b[^\n]{0,40}\bgrill\b", re.I)
 # the label may carry its title in the bold («❓ **Q5, build or reuse**», «❓ **Q1 - the birth test**»)
-GRILL_PRINTED = re.compile(r"^\W*❓\s*\*\*Q\d+\b", re.M)
+GRILL_PRINTED_NUMBER = re.compile(r"^\W*❓\s*\*\*Q(\d+)\b", re.M)
 
 
 def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]:
     ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
     texts = [str(a.get("text", "")) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
     named = [t for t in texts if GRILL_ASK_TEXT.search(t)]
-    if not named or GRILL_PRINTED.search(FENCE.sub("", reply)):
-        return []
-    return [named[0][:40]]
+    printed = {int(n) for n in GRILL_PRINTED_NUMBER.findall(FENCE.sub("", reply))}
+    # an ask naming Q3 needs its own «❓ **Q3**» line; a grill-round ask with no number needs any one
+    lost = [t for t in named if (({int(n) for n in re.findall(r"\bQ(\d+)\b", t)} - printed) if re.search(r"\bQ\d+\b", t) else not printed)]
+    return [lost[0][:40]] if lost else []
 
 
 def grill_drift(prose: str, session: str) -> str:

@@ -468,10 +468,6 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: buttons, because a mod's text can't be selected for F4 on the desktop ([claude-code#101090](https://github.com/anthropics/claude-code/issues/101090)) — a workaround, `mods/workarounds.md`
   - 📌 harness-proven that the press sends `read` with the text; the voice itself is dima's ear
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
-- 🐞 a press in the desktop board lands on the first click
-  - given the board is open in the desktop Code tab
-  - when dima clicks an ask's 🛎️ once
-  - then it lights; today it takes a second click (dima, 19:45) — upstream: [claude-code#99395](https://github.com/anthropics/claude-code/issues/99395), the desktop's first click on a pane button only moves focus
 - ✅ marked asks join the next prompt
   - given one or more asks are accepted or rejected
   - when dima sends a prompt from the prompt box
@@ -668,7 +664,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given a live member's own transcript holds more SendMessage calls to cclio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
   - when the minute's ledger runs in cclio's thread
   - then her board draws a calm `🤫 quiet comms` card at its top naming the member, «a progress ping skipped the quiet hold» and sent vs logged — never a red row (FRM-412, FRM-429); any other board draws none
-  - and the card also lists each member holding `[progress]` pings with its held count; it never raises an orbit ask
+  - and the card also lists each sender whose `[progress]` pings cclio holds, with its held count, on cclio's board only; it never raises an orbit ask
   - and a member's log lines match its registry name without its leading mode emoji, so a rename from ☕️ to 🌗 no longer reads as «sent 3, holds 0» (the cause of FRM-412's shot: one coder logged 4 lines as ☕️ and 9 as 🌗 on 10-22)
   - decision: a `flushed` line is not a delivery, so a held ping counts once
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`

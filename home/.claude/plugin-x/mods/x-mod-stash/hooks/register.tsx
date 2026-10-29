@@ -659,8 +659,7 @@ const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
 const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
-// a [progress] ping that asks dima something is pushed, never held: two coder questions sat unseen in held pings on
-// 2026-10-23. the list is dima's pick (o26, 2026-10-29) after a replay of 14 days of pings: a bare «?» was 4 false of 4
+// a [progress] ping that asks dima something is pushed, never held; dima's list (o26), a bare «?» was 4 false of 4
 const QUIET_PUSH = /(?<![\w-])(?:for dima|decisions|pick:|your call)(?![\w-])/i;
 // the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
 const QUIET_GAP = 'quiet-gap';
@@ -1623,8 +1622,7 @@ async function followCoders($: EngineInterface) {
     await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
 }
 
-// a linked card is its lane plan file: each poll its numbered lines become the steps, the first unticked one the step we
-// are on, and a file that cannot be read leaves the last state marked until the lane ends (FRM-429 exit 1)
+// a linked card is its lane plan file: each poll its numbered lines are the steps; an unreadable file keeps the last state
 async function followPlans($: EngineInterface) {
     if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
         return;
@@ -1651,24 +1649,25 @@ async function followPlans($: EngineInterface) {
         const steps = planSteps(text).map((s) => ({
             isDone: s.isDone,
             text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
-            ...(s.text.match(/\b[A-Z]{2,5}-\d+\b/)
-                ? { ticket: s.text.match(/\b[A-Z]{2,5}-\d+\b/)?.[0] }
-                : {}),
+            ...(ticketOf(s.text) ? { ticket: ticketOf(s.text) } : {}),
         }));
         const items: LaneItem[] = steps.length ? steps : lane.items;
         const current = items.findIndex((x) => !x.isDone);
         const at = current < 0 ? items.length : current;
-        const same =
+        const isSame =
             !lane.isPlanGone &&
             at === lane.current &&
             JSON.stringify(items) === JSON.stringify(lane.items);
-        if (same) {
+        if (isSame) {
             next.push(lane);
             continue;
         }
         isChanged = true;
         // a steer was about the step it sat on: it leaves when the plan moves the pointer, as a hand step does
-        if (at !== lane.current) {
+        if (
+            at !== lane.current ||
+            lane.items[lane.current]?.text !== items[at]?.text
+        ) {
             await $.store.delete(LANE_STEER + lane.id).catch(() => undefined);
             await $.store
                 .delete(LANE_STEER_OLD + lane.id)
@@ -2561,6 +2560,7 @@ async function publish($: EngineInterface) {
             members: await members($).catch(() => undefined),
             ...((await isLaneOwner($))
                 ? {
+                      isOwner: true,
                       quietGaps: (
                           (await $.store
                               .get(QUIET_GAP)
@@ -3547,6 +3547,10 @@ async function orbitCall(
         // a create that names its lane plan takes its first steps from that file, so the card is never drawn from a guess
         let given = linkTo ? { ...input, session: linkTo } : input;
         if (input.act === 'create' && typeof input.plan === 'string') {
+            if (!/^(?:\/|~\/)/.test(input.plan))
+                return {
+                    deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
+                };
             const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
             const text = await $.fs
                 .read(input.plan.replace(/^~(?=\/)/, home))
@@ -5614,25 +5618,31 @@ export const register: Register = (on) => {
                             {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
                         </Text>
                     ) : null;
-                    // the quiet comms card: who holds how many [progress] pings, calm, never an alarm row or an orbit ask; a real
-                    // gap — a ping that skipped the hold — names its member and the count (FRM-429, FRM-412)
-                    const heldBy = (board?.members ?? []).filter(
-                        (m) => m.held?.length,
-                    );
+                    // the quiet comms card: held counts and real gaps, calm, never an alarm row or an orbit ask
+                    // cclio's held list holds every sender's pings: counted by sender, on her board only
+                    const heldBy = new Map<string, number>();
+                    const isOwnerBoard = board?.isOwner === true;
+                    if (isOwnerBoard)
+                        for (const m of board?.members ?? [])
+                            for (const p of m.held ?? [])
+                                heldBy.set(
+                                    p.from,
+                                    (heldBy.get(p.from) ?? 0) + 1,
+                                );
                     const gaps = board?.quietGaps ?? [];
                     const gapsJSX =
-                        heldBy.length || gaps.length ? (
+                        isOwnerBoard && (heldBy.size || gaps.length) ? (
                             <Box
                                 key='quiet:card'
                                 {...cardProps}
                                 marginBottom={1}>
                                 <Text bold>🤫 quiet comms</Text>
-                                {heldBy.map((m) => (
+                                {[...heldBy].map(([from, count]) => (
                                     <Text
                                         dimColor
-                                        key={`quiet:held:${m.sid}`}
+                                        key={`quiet:held:${from}`}
                                         wrap='truncate-end'>
-                                        {`${m.name} · ${m.held?.length} held`}
+                                        {`${from} · ${count} held`}
                                     </Text>
                                 ))}
                                 {gaps.map((g) => (

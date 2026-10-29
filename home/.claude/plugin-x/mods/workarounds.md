@@ -23,16 +23,6 @@ the workaround in place, the undo. checked against the changelog through 2.1.306
 - undo when fixed: drop the three buttons and the `speak` call; keep the socket's `read` op only if another reader
   uses it
 
-## the board's first click
-
-- issue: [claude-code#99395](https://github.com/anthropics/claude-code/issues/99395) — on the desktop, the first
-  click on a pane button only moves focus; `$.ui.open({ focus: true })` helps until the next turn; still open
-  2026-10-11
-- does not bite an orbit ask's 🔗 file link: one click opened the file (in the mac's default app for it, MacVim for
-  `.md`) — dima's click, 2026-10-12 21:44 (PK-66)
-- workaround: none in the code; the FTR's 🐞 line tracks it
-- undo when fixed: flip that line
-
 ## hover cards in the board
 
 - want: a board row's count names itself on hover, «1 open ask for you», as the band's chips do (dima, 2026-10-10)

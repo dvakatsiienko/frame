@@ -187,7 +187,6 @@ for (const marker of [
             $,
             `[progress] step 2 landed. ${marker} on the cut`,
         );
-        expect([r.consumed, w.queued]).toHaveLength(2);
         expect(r.consumed).toBeUndefined();
         expect(w.queued).toHaveLength(1);
     });

@@ -309,8 +309,7 @@ export function noticeOf(
     return id && state ? { id, state } : undefined;
 }
 
-// a lane plan's steps: the numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text`; a nested, unnumbered or
-// any other checklist line moves nothing (FRM-429 exit 1)
+// a lane plan's steps: numbered column-0 lines only; a nested, unnumbered or other checklist line moves nothing
 export function planSteps(text: string) {
     return text.split('\n').flatMap((line) => {
         const m = line.match(/^- \[( |x)\] \d+ · (.+?)\s*$/);

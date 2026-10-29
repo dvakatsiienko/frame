@@ -1445,3 +1445,12 @@ test("a plan tick that moves the pointer drops dima's steer on the old step", as
     await poll(w);
     expect(steerOf(w)).toBeUndefined();
 });
+
+test('a create naming a relative plan path is refused for its shape, not read', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files['plan.md'] = planText('   ');
+    expect(
+        await denied($, { act: 'create', plan: 'plan.md', title: 'x' }),
+    ).toContain('absolute or ~/');
+});

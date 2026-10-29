@@ -108,6 +108,8 @@ export type StashBoardView = {
     staleProbes?: string[];
     // cclio's board only: the ledger's gaps, from the store's `quiet-gap`
     quietGaps?: QuietGap[];
+    // set only on cclio's board: the quiet card draws there alone
+    isOwner?: boolean;
 };
 
 // the running turn, kept so a mid-turn reload still knows it: busy, dima's own, a keep-hot ping, afk as it began

@@ -1558,16 +1558,20 @@ test("the cold composer sidecar shows ❄️, not ⚠ (dima's 10-15 screenshot)"
 
 // FRM-429 exit 2 (FRM-412): held pings read as one calm card with each member's count
 test('held pings show as one calm card listing each member with its held count', async ($, on) => {
-    fleet(on, {
-        [`quiet-held:${HERE}`]: [
-            { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
-            { at: NOW - MIN, from: PEER_NAME, text: 'step 3' },
-        ],
-    });
+    fleet(
+        on,
+        {
+            [`quiet-held:${HERE}`]: [
+                { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
+                { at: NOW - MIN, from: PEER_NAME, text: 'step 3' },
+            ],
+        },
+        { isOwner: true },
+    );
     const ui = await board($);
     const card = (await ui.find({ key: 'quiet:card', type: 'Box' }))?.text;
     expect(card).toContain('🤫 quiet comms');
-    expect(card).toContain('held');
+    expect(card).toContain(`${PEER_NAME} · 2 held`);
     expect(await ui.find({ text: /^🚨/, type: 'Text' })).toBeUndefined();
 });
 
@@ -1600,4 +1604,15 @@ test('a member whose mode emoji changed keeps its logged pings counted: no gap',
         await ui.find({ key: 'quiet:card', type: 'Box' }),
         await ui.find({ text: /^🚨/, type: 'Text' }),
     ]).toEqual([undefined, undefined]);
+});
+
+test("a held ping shows no quiet card on a board that is not cclio's", async ($, on) => {
+    fleet(on, {
+        [`quiet-held:${HERE}`]: [
+            { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
+        ],
+    });
+    expect(
+        await (await board($)).find({ key: 'quiet:card', type: 'Box' }),
+    ).toBeUndefined();
 });

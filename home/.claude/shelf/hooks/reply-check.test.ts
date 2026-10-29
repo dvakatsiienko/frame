@@ -331,6 +331,10 @@ describe('a checked claim with no evidence call (FRM-429)', () => {
         expect(loggedAfter('I verified the files.', turnWith({ calls: [{ name }], id: 'm1' }))).toBe('');
     });
 
+    it('does not count an MCP write named with «get» in its server as evidence', () => {
+        expect(loggedAfter('I verified the files.', turnWith({ calls: [{ name: 'mcp__getting_started__post_thread' }], id: 'm1' }))).toContain('unevidenced\t');
+    });
+
     it('passes «unverified», «verifier» and a disclosure like «not checked»', () => {
         for (const reply of ['the claim is unverified.', 'the verifier ran.', 'not checked: the desktop look.', 'never verified live.', 'the verifier passed it, so it is verified clean.', 'a parse proven on one build fails on the other.']) {
             expect(loggedAfter(reply, noCalls)).toBe('');
@@ -355,6 +359,10 @@ describe('a grill ask with no printed question (dima o18)', () => {
             expect(loggedAfter(`🔥 grill:\n${line}`, grillAdd('Q3 which lane first?'))).toBe('');
         },
     );
+
+    it('logs an ask naming Q3 when the reply prints only ❓ **Q4**', () => {
+        expect(loggedAfter('🔥 grill:\n❓ **Q4** which lane first?', grillAdd('Q3 which lane first?'))).toContain('grill-unprinted\t');
+    });
 
     it('passes an orbit ask that names no grill round or Q number, a verifier round included', () => {
         expect(loggedAfter('asked.', grillAdd('push FRM-1?'))).toBe('');
