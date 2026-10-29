@@ -31,16 +31,17 @@ test('control characters still leave every string', () => {
     expect(cleanTree(box(text('a\u0007b\tc')))).toEqual(box(text('ab c')));
 });
 
-test('a section that throws draws its marker box, a sound one is returned as built', () => {
+test('a section that throws draws its marker box', () => {
     const bad = drawn('lane l1', () => {
         throw new Error('bad data');
     });
-    expect([drawn('orbit', () => text('fine')), bad]).toEqual([
-        text('fine'),
-        {
-            children: [marker('⚠ lane l1 could not draw')],
-            props: { key: 'broken:lane l1' },
-            type: 'Box',
-        },
-    ]);
+    expect(bad).toEqual({
+        children: [marker('⚠ lane l1 could not draw')],
+        props: { key: 'broken:lane l1' },
+        type: 'Box',
+    });
+});
+
+test('a section that builds is returned as built', () => {
+    expect(drawn('orbit', () => text('fine'))).toEqual(text('fine'));
 });

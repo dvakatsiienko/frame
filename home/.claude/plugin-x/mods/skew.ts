@@ -48,7 +48,7 @@ export const byVersion = (a: string, b: string) => {
 };
 
 // the desktop app ships one cc, written into its app.asar as `JSON.parse('{"version":"2.1.309","manifest"…`: a session
-// born in the desktop app runs that engine, so a mod must fit it whether or not one is open now (dima, 2026-10-18)
+// born in the desktop app runs that engine, so a mod must fit it whether or not one is open now
 export const APP_ARCHIVE =
     '/Applications/Claude.app/Contents/Resources/app.asar';
 export const bundledVersion = (archive: string) =>
@@ -56,9 +56,9 @@ export const bundledVersion = (archive: string) =>
         /JSON\.parse\('\{"version":"(\d+\.\d+\.\d+)","manifest"/,
     )?.[1];
 
-export function bundleOf(
-    path: string,
-): { version: string } | { error: string } {
+type Bundle = { version: string } | { error: string };
+
+export function bundleOf(path: string): Bundle {
     if (!existsSync(path)) return { error: `no Claude.app archive at ${path}` };
     const version = bundledVersion(readFileSync(path, 'latin1'));
     return version
@@ -78,7 +78,7 @@ export const floorOf = (
 export function verdict(
     hooked: Record<string, Set<string>>,
     engines: Record<string, Set<string> | undefined>,
-    bundle?: { version: string } | { error: string },
+    bundle?: Bundle,
 ) {
     const lines: string[] = [];
     let isRed = false;
@@ -90,6 +90,12 @@ export function verdict(
     } else if (bundle) {
         lines.push(`mods:skew: the desktop app bundles cc ${bundle.version}`);
         if (engines[bundle.version]) {
+            const floors = Object.values(hooked)
+                .map((events) => floorOf(events, engines))
+                .filter((f): f is string => !!f)
+                .sort(byVersion);
+            const top = floors.at(-1);
+            if (top) lines.push(`mods:skew: the mods need cc ${top} or newer`);
             for (const [mod, events] of Object.entries(hooked)) {
                 const floor = floorOf(events, engines);
                 if (floor && byVersion(floor, bundle.version) > 0) {

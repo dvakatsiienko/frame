@@ -104,17 +104,17 @@ describe('the desktop app side', () => {
         expect(bundledVersion(asar)).toBe('2.1.309');
     });
 
-    it('names a bundle path that is not there, and an archive that names no version', () => {
+    it('names a bundle path that is not there', () => {
+        expect(bundleOf(join(dir, 'missing.asar'))).toEqual({
+            error: `no Claude.app archive at ${join(dir, 'missing.asar')}`,
+        });
+    });
+
+    it('names an archive that holds no version', () => {
         writeFileSync(join(dir, 'empty.asar'), 'nothing here');
-        expect([
-            bundleOf(join(dir, 'missing.asar')),
-            bundleOf(join(dir, 'empty.asar')),
-        ]).toEqual([
-            { error: `no Claude.app archive at ${join(dir, 'missing.asar')}` },
-            {
-                error: `${join(dir, 'empty.asar')} names no bundled cc version`,
-            },
-        ]);
+        expect(bundleOf(join(dir, 'empty.asar'))).toEqual({
+            error: `${join(dir, 'empty.asar')} names no bundled cc version`,
+        });
     });
 
     it('reads a real archive file', () => {
@@ -139,10 +139,13 @@ describe('the desktop app side', () => {
             { '2.1.299': new Set(['a']), '2.1.300': new Set(['a', 'b']) },
             { version: '2.1.299' },
         );
-        expect([r.isRed, r.lines[0], r.lines[1]]).toEqual([
+        expect([r.isRed, r.lines.slice(0, 3)]).toEqual([
             true,
-            'mods:skew: the desktop app bundles cc 2.1.299',
-            'mods:skew: x-mod-a needs cc 2.1.300 or newer, the desktop app bundles 2.1.299',
+            [
+                'mods:skew: the desktop app bundles cc 2.1.299',
+                'mods:skew: the mods need cc 2.1.300 or newer',
+                'mods:skew: x-mod-a needs cc 2.1.300 or newer, the desktop app bundles 2.1.299',
+            ],
         ]);
     });
 
@@ -152,9 +155,10 @@ describe('the desktop app side', () => {
             { '2.1.299': new Set(['a']) },
             { version: '2.1.299' },
         );
-        expect([r.isRed, r.lines[0]]).toEqual([
+        expect([r.isRed, r.lines[0], r.lines[1]]).toEqual([
             false,
             'mods:skew: the desktop app bundles cc 2.1.299',
+            'mods:skew: the mods need cc 2.1.299 or newer',
         ]);
     });
 

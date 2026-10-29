@@ -178,6 +178,8 @@ export type QuietLogLine = {
     startedTurn: boolean;
     arm: 'on' | 'off';
     canary?: string;
+    // the sender's session id when the registry names it, so a rename mid-day never loses its lines
+    sid?: string;
 };
 // the ledger: a member whose transcript sent cclio more pings than her quiet log holds since the window opened
 export type QuietGap = { from: string; sent: number; logged: number };

@@ -791,8 +791,18 @@ async function quietLedger($: EngineInterface, now: number) {
         ),
     });
     const gaps: QuietGap[] = [];
-    for (const r of await registry($)) {
-        if (!r.isAlive || r.base.sid === me) continue;
+    const members = (await registry($)).filter(
+        (r) => r.isAlive && r.base.sid !== me,
+    );
+    // a log line is the member's by its session id, or by its name; a line from an older name (the member was renamed
+    // mid-day) is its own when no live member answers to that name and the role is the member's alone
+    const liveKeys = new Set(members.map((r) => memberKey(r.base.name)));
+    const roles = new Map<string, number>();
+    for (const r of members) {
+        const role = roleKey(r.base.name);
+        if (role) roles.set(role, (roles.get(role) ?? 0) + 1);
+    }
+    for (const r of members) {
         const since = Math.max(opened, r.startedAt ?? 0);
         // the transcript by its session id, never the cwd: the registry's cwd follows a Bash `cd`
         const out = await $.process
@@ -805,10 +815,16 @@ async function quietLedger($: EngineInterface, now: number) {
             .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
         // the envelope names ccrow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
         // a member keeps its identity when its mode emoji changes (☕️ → 🌗 on a rename), so the lines match without it
-        const logged = judged.filter(
-            (l) =>
-                memberKey(l.from) === memberKey(r.base.name) && l.at >= since,
-        ).length;
+        const role = roleKey(r.base.name);
+        const isOurs = (l: QuietLogLine) =>
+            l.sid
+                ? l.sid === r.base.sid
+                : memberKey(l.from) === memberKey(r.base.name) ||
+                  (role !== undefined &&
+                      roles.get(role) === 1 &&
+                      roleKey(l.from) === role &&
+                      !liveKeys.has(memberKey(l.from)));
+        const logged = judged.filter((l) => isOurs(l) && l.at >= since).length;
         if (sent > logged) gaps.push({ from: r.base.name, logged, sent });
     }
     return gaps;
@@ -2007,6 +2023,13 @@ async function isBootOpen($: EngineInterface) {
 const memberKey = (name: string) =>
     bare(name).replace(/^(?:☕️?|🌗|⚡|🌘|🎯)/u, '');
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
+// a member keeps its role through a rename (a new ticket, a new topic): its role emoji and the word before the colon
+const roleKey = (name: string) => {
+    const key = memberKey(name);
+    const emoji = key.match(/^\p{Extended_Pictographic}\uFE0F?/u)?.[0];
+    const word = key.split(':')[0]?.match(/[A-Za-z]+$/)?.[0];
+    return emoji && word ? `${emoji}${word}` : undefined;
+};
 
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
@@ -2390,7 +2413,7 @@ async function windOnCompact($: EngineInterface) {
 }
 
 // work a session starts after it said pending: none and before the compact fires: an agent, a background command or session
-const BG_SESSION = /\bclaude\s+(?:-n\s+\S+.*\s)?--bg\b/;
+const BG_SESSION = /\bclaude\b[^\n|;&]*\s--bg\b/;
 function windBlocker(tool: string, input: Record<string, unknown>) {
     if (tool === 'Agent') return 'an agent';
     if (tool !== 'Bash') return undefined;
@@ -4217,7 +4240,15 @@ export const register: Register = (on) => {
             const isBusyNow =
                 (await $.state.get(TURN).catch(() => undefined))?.value
                     ?.isBusy ?? isBusy;
-            const line = { arm, at: now, from, tag, ...marks } as const;
+            const sid = memberOf(await registry($), from)?.base.sid;
+            const line = {
+                arm,
+                at: now,
+                from,
+                tag,
+                ...(sid ? { sid } : {}),
+                ...marks,
+            } as const;
             if (
                 isOn &&
                 !isMobile &&
@@ -6345,9 +6376,13 @@ export const register: Register = (on) => {
             const text = lines.join('\n');
             return (landed ? { result: text } : { deny: text }) as never;
         }
+        // a wind blocks on work that STARTS after «pending: none», so the check runs before the call does
+        if (!e.agentId)
+            await windBlock($, e as Record<string, unknown>).catch(
+                () => undefined,
+            );
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
-        await windBlock($, e as Record<string, unknown>).catch(() => undefined);
         if (
             (e.tool as string) === WRAP_UP_TOOL &&
             oneLine((e as Record<string, unknown>).ask)

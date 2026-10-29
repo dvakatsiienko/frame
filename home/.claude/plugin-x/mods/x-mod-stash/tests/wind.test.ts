@@ -102,7 +102,7 @@ const ready = ($: Engine, slug?: string, pending: string | null = 'none') =>
         ...(pending === null ? {} : { pending }),
     } as never) as Promise<{ deny?: string; result?: unknown }>;
 
-const W4 =
+const DIMAS_WORDS =
     'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
 
 const notes = (lines: string[]) => lines.filter((l) => l.includes('🐦‍🔥'));
@@ -375,7 +375,7 @@ for (const [who, isOwner] of [
         w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
         await start($);
         await say($);
-        expect(notes(w.lines).join('\n')).toContain(W4);
+        expect(notes(w.lines).join('\n')).toContain(DIMAS_WORDS);
     });
 
 test("a compact that ran, the wind's or a threshold one, is followed by one /reload-skills", async ($, on) => {
@@ -409,6 +409,10 @@ for (const [what, call] of [
         'a background command',
         { command: 'sleep 90', run_in_background: true, tool: 'Bash' },
     ],
+    [
+        'a background session with its flag last',
+        { command: "claude -p 'work' --bg", tool: 'Bash' },
+    ],
 ] as const)
     test(`${what} started after pending: none makes the wind refuse, and the next prompt says why`, async ($, on) => {
         const w = world(on);
@@ -424,6 +428,16 @@ for (const [what, call] of [
             w.store.has(`wind:${SID}`),
         ]).toEqual([[], true, false]);
     });
+
+test('an agent started before pending: none does not block the wind', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await $.tool.call({ tool: 'Agent' } as never);
+    await ready($, SLUG);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect(w.commands.filter((c) => c.startsWith('/compact'))).toHaveLength(1);
+});
 
 test('a foreground command started after pending: none does not block the wind', async ($, on) => {
     const w = world(on);

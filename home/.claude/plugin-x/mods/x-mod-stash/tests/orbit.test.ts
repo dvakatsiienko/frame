@@ -617,7 +617,7 @@ test('a remote mark landing while dima types a steer leaves his typed steer in i
     expect(savedSteer(w.store)).toBe('a heron');
 });
 
-test('every board card is bordered a soft grey on the desktop', async ($, on) => {
+test('the orbit card is bordered a soft grey on the desktop', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -651,7 +651,7 @@ test('the Stop passes with 🪐 orbit switched off, an ask open and a wrap_up as
     expect((await stop($)).block).toBeUndefined();
 });
 
-test('⏸️ on an assumption pauses speak, ⏹️ stops it', async ($, on) => {
+test('⏸️ on an assumption pauses speak', async ($, on) => {
     const w = world(on);
     const sent = speakStub(on, { paused: false, speaking: true });
     await start($);
@@ -659,11 +659,18 @@ test('⏸️ on an assumption pauses speak, ⏹️ stops it', async ($, on) => {
     await assume($, 'kept the old port');
     await w.clock.advance(5_000);
     await ui.press({ key: 'orbit:pause:a1' });
+    expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'pause' }]);
+});
+
+test('⏹️ on an assumption stops speak', async ($, on) => {
+    const w = world(on);
+    const sent = speakStub(on, { paused: false, speaking: true });
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port');
+    await w.clock.advance(5_000);
     await ui.press({ key: 'orbit:stop:a1' });
-    expect(sent.filter((r) => r.op !== 'status')).toEqual([
-        { op: 'pause' },
-        { op: 'stop' },
-    ]);
+    expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'stop' }]);
 });
 
 test("an assumption's steer box is empty once ↩️ sent it back", async ($, on) => {

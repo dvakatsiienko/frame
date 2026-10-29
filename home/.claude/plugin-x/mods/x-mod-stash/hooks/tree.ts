@@ -6,7 +6,6 @@ import type { RenderElement } from 'claude-code';
 const CONTROL = /[\u0000-\u0008\u000B-\u001F\u007F]/g;
 const clean = (s: string) => s.replace(/\t/g, ' ').replace(CONTROL, '');
 
-type Element = { children?: unknown; props?: unknown; type: string };
 const isElement = (node: unknown): node is Element =>
     typeof node === 'object' &&
     node !== null &&
@@ -65,3 +64,7 @@ export function drawn<T>(name: string, build: () => T): T | RenderElement {
         };
     }
 }
+
+/* Types */
+
+type Element = { children?: unknown; props?: unknown; type: string };

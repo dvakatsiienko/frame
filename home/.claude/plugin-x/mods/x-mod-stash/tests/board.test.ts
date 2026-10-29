@@ -1197,6 +1197,53 @@ test('a member that sent cclio more pings than her log holds draws a calm card, 
     expect(await ui.find({ text: /^🚨/, type: 'Text' })).toBeUndefined();
 });
 
+const RENAMED = 'FRM-426 code: band and board read true';
+
+test('a member renamed mid-day keeps its logged pings, so the old name leaves no gap', async ($, on) => {
+    const { clock } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN),
+                logged(`☕️ 🔧 ${RENAMED}`, NOW - 20 * MIN),
+            ],
+        },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toBeUndefined();
+});
+
+test('a renamed member that sent more than its old-name lines hold still shows its gap', async ($, on) => {
+    const { clock } = fleet(
+        on,
+        { [`quiet-log:${DAY}`]: [logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN)] },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toContain('(sent 2, logged 1)');
+});
+
+test("a log line carrying the sender's session id counts for it whatever name it was logged under", async ($, on) => {
+    const { clock } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                {
+                    ...logged('☕️ 🧪 an unrelated name', NOW - 30 * MIN),
+                    sid: PEER,
+                },
+            ],
+        },
+        { isOwner: true, sends: { [PEER]: [at(NOW - 30 * MIN)] } },
+    );
+    expect(await gapRow($, clock)).toBeUndefined();
+});
+
 test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
     const { clock } = fleet(
         on,
@@ -1516,11 +1563,10 @@ const undoInputs = async (settings: Awaited<ReturnType<typeof settingsPane>>) =>
         .filter((n) => n.key?.includes('undo'))
         .map((n) => n.props.value);
 
-test('the undo delay field holds 5 by default, and is hidden with the switch off', async ($, on) => {
+test('the undo delay field holds 5 by default', async ($, on) => {
     fleet(on);
     await board($);
-    const on_ = await undoInputs(await settingsPane($));
-    expect(on_).toEqual(['5']);
+    expect(await undoInputs(await settingsPane($))).toEqual(['5']);
 });
 
 test('with the undo switch off the delay field is not drawn', async ($, on) => {

@@ -30,7 +30,8 @@
   - given a Bash call holds `pnpm -s` (before any `--`), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
-  - ⬜ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
+  - ✅ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
+  - proof: tests/rewrite.test.ts::a raw linear api / a raw linear api after a cd / a linear api rewrite is named in one line; tests/linear.test.ts::cclio's raw linear api still takes the x linear rewrite
   - decision: x-mod-guard alone covers `=word`: its `tool.call` rewrite runs before any classic PreToolUse hook, so the classic `zsh-equals-guard.py` backstop was dropped (dima's o286, 2026-10-11); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
 - ✅ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
   - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
@@ -130,7 +131,8 @@
   - decision: the record is x-mod-stash's `$.state` `ticks`, written only by his 🛎️ press; any plugin reads another's value while only its owner writes it, so no Bash, Edit, Write or orbit op forges one, a tick planted in the shared store is ignored, and a tick authorizes only its own session (cclio's greenlight, 2026-10-28)
   - makes: the last 20 prompts across sessions, each with its origin and every field (text cut to 80 code points), under `origins` in x-mod-guard's `$.store` — what the origin rules are measured against (FRM-358)
   - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session cclio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
-  - ⬜ in a session the registry marks `kind: bg`, only a `bridge` prompt counts as dima's; a `composer` one, the spawn prompt's kind there, never does (dima's pick, 2026-10-09, FRM-358)
+  - ✅ in a session the registry marks `kind: bg`, only a `bridge` prompt counts as dima's; a `composer` one, the spawn prompt's kind there, never does (dima's pick, 2026-10-09, FRM-358)
+  - proof: tests/bg.test.ts::in a bg session a composer prompt never proves a dima-ok marker / in a bg session dima's bridge prompt proves a dima-ok marker
 - ✅ a guard that fails refuses the command
   - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; an overrun runs the same `.catch` — types: `CatchHandler`, «run afresh when it throws, misreturns or overruns»)
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»

@@ -335,43 +335,46 @@ test('a measure writes the 5h window to the usage file in seconds', async ($, on
     });
 });
 
-test('a seven-day window and the write time ride the usage file, and an unmoved limit rewrites nothing', async ($, on) => {
-    const { clock, files } = meters(on);
-    const limits = [
+const bothLimits = (
+    changed: 'rateLimits' | 'context',
+): Parameters<Engine['session']['measure']>[0] => ({
+    changed: [changed],
+    context: { percent: 35, tokens: 350_000, window: 1_000_000 },
+    rateLimits: [
         {
-            kind: 'five_hour' as const,
+            kind: 'five_hour',
             percentUsed: 39,
             resetsAt: new Date(NOW + 3 * HOUR).toISOString(),
         },
         {
-            kind: 'seven_day' as const,
+            kind: 'seven_day',
             percentUsed: 12,
             resetsAt: new Date(NOW + 48 * HOUR).toISOString(),
         },
-    ];
-    const measureBoth = (changed: 'rateLimits' | 'context') =>
-        $.session.measure({
-            changed: [changed],
-            context: { percent: 35, tokens: 350_000, window: 1_000_000 },
-            rateLimits: limits,
-        });
-    await measureBoth('rateLimits');
-    const first = JSON.parse(files[USAGE] ?? '{}');
-    await clock.advance(10_000);
-    await measureBoth('context');
-    const second = JSON.parse(files[USAGE] ?? '{}');
-    expect([
-        first.rate_limits.seven_day,
-        first.written_at,
-        second.written_at,
-    ]).toEqual([
+    ],
+});
+
+test('a seven-day window and the write time ride the usage file', async ($, on) => {
+    const { files } = meters(on);
+    await $.session.measure(bothLimits('rateLimits'));
+    const written = JSON.parse(files[USAGE] ?? '{}');
+    expect([written.rate_limits.seven_day, written.written_at]).toEqual([
         {
             resets_at: Math.round((NOW + 48 * HOUR) / 1000),
             used_percentage: 12,
         },
         Math.round(NOW / 1000),
-        Math.round(NOW / 1000),
     ]);
+});
+
+test('a measure whose rate limits did not move rewrites nothing', async ($, on) => {
+    const { clock, files } = meters(on);
+    await $.session.measure(bothLimits('rateLimits'));
+    await clock.advance(10_000);
+    await $.session.measure(bothLimits('context'));
+    expect(JSON.parse(files[USAGE] ?? '{}').written_at).toBe(
+        Math.round(NOW / 1000),
+    );
 });
 
 test('a settings file that is not a json object is refused and left untouched', async ($, on) => {

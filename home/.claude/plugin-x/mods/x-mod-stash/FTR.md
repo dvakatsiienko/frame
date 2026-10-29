@@ -239,7 +239,7 @@
   - proof: tests/meters.test.ts::typing a compaction point saves it with no Enter / a compaction point outside 10–99 is refused / a settings file that is not a json object is refused and left untouched, plus the repo-top and subdir cases
 - ✅ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json` on every measure whose rate limits moved, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it
   - 📌 unprobed: that a desktop tab's measure carries `five_hour` — the file held `five_hour: null` from sline at 18:43
-  - proof: tests/meters.test.ts::a measure writes the 5h window to the usage file in seconds / a seven-day window and the write time ride the usage file, and an unmoved limit rewrites nothing — the desktop-tab half stays the 📌 unprobed one
+  - proof: tests/meters.test.ts::a measure writes the 5h window to the usage file in seconds / a seven-day window and the write time ride the usage file / a measure whose rate limits did not move rewrites nothing — the desktop-tab half stays the 📌 unprobed one
 - decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i dont need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file
 
 ## /board — the fleet board
@@ -262,7 +262,7 @@
   - decision: a session that never ran a turn gets no row and no count — its project folder under `~/.claude/projects/` holds no `<session id>.jsonl` yet; the desktop's warm spares sit in the registry like this (cclio-9a, 2026-10-09; that they are spares is an inference). a missing project folder keeps the row, since cc hashes a long path's folder name
   - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
-  - proof: tests/orbit.test.ts::orbit is a card headed «🪐 orbit» / every board card is bordered a soft grey on the desktop; tests/board.test.ts rows — not asserted: the terminal's `subtle` border value
+  - proof: tests/orbit.test.ts::orbit is a card headed «🪐 orbit» / the orbit card is bordered a soft grey on the desktop; tests/board.test.ts rows — not asserted: the terminal's `subtle` border value
 - ✅ `🚦` in the row shows and hides the board
   - given the row draws
   - when dima presses `🚦`, at the row's right end
@@ -685,7 +685,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given an assumption shows under «assumed»
   - when dima presses its 🔊, ▶️ or ⏹️
   - then speak reads, pauses or stops its text, as on an ask row (dima, 2026-10-11 11:27)
-  - proof: tests/orbit.test.ts::🔊 on an assumption reads its text aloud / ⏸️ on an assumption pauses speak, ⏹️ stops it
+  - proof: tests/orbit.test.ts::🔊 on an assumption reads its text aloud / ⏸️ on an assumption pauses speak / ⏹️ on an assumption stops speak
 - ✅ 🛎️ clears, ↩️ sends back
   - given an assumption shows
   - when dima presses its 🛎️, or its ↩️ with a steer
@@ -745,6 +745,10 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
   - decision: a send whose result said `success:false` (no such session, a plugin refused it, a dead socket) never reached her, so it is not counted (brief 9 item 2)
   - proof: tests/board.test.ts::a member that sent cclio more pings than her log holds draws a calm card, never a 🚨 row; ::a send inside the 2 min grace is not a gap yet; ::a flushed line does not count as a logged delivery; ::the ledger'… — not asserted: success:false decision unasserted
+  - given a member renamed after cclio logged some of its pings (a new ticket, a new topic in its name)
+  - when the ledger counts that member's sends against the log
+  - then the lines logged under its old name still count for it, through its session id once logged with one, and through its role (emoji and word before the colon) when no other member shares it: a rename never draws a false gap (the verifier's 16:17 shot, FRM-412)
+  - proof: tests/board.test.ts::a member renamed mid-day keeps its logged pings / a renamed member that sent more than its old-name lines hold still shows its gap / a log line carrying the sender's session id counts for it
 - ✅ a stuck held ping turns cclio's 🤫 n red
   - given a held ping older than the idle wait + 2 min (12 min by default)
   - then her row's `🤫 n` reads red; younger, it reads plain
