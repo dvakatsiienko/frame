@@ -18,8 +18,13 @@ const typeAll = (drawn: string, ...texts: string[]) =>
     );
 
 // what the field draws for the stored value at a time: the held value, the stored one, or a remount
-function drawn(draft: FieldDraft | undefined, saved: string, at: number) {
-    const view = fieldView(draft, saved, at);
+function drawn(
+    draft: FieldDraft | undefined,
+    saved: string,
+    at: number,
+    isNumber = false,
+) {
+    const view = fieldView(draft, saved, at, isNumber);
     if (view.kind === 'held') return view.draft.drawn;
     if (view.kind === 'outside' && view.isRemount) return `remount:${saved}`;
     return saved;
@@ -32,8 +37,12 @@ test('while typing, every redraw draws the value the field showed', () => {
     ).toEqual(['', '', '', '']);
 });
 
-test('after 3 s of quiet the stored text is drawn', () => {
-    expect(drawn(typeAll('', 'a', 'ab'), 'ab', T + 3200)).toBe('ab');
+test('a text field keeps drawing what it showed once typing goes quiet, so its view never jumps to the start', () => {
+    expect(drawn(typeAll('', 'a', 'ab'), 'ab', T + 60_000)).toBe('');
+});
+
+test('after 3 s of quiet a number field draws the stored value', () => {
+    expect(drawn(typeAll('0.5', '0', '0.'), '0.5', T + 3200, true)).toBe('0.5');
 });
 
 test('a value set from outside, never typed here, is drawn at once', () => {

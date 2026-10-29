@@ -312,8 +312,8 @@ export function noticeOf(
 // a lane plan's steps: numbered column-0 lines only; a nested, unnumbered or other checklist line moves nothing
 export function planSteps(text: string) {
     return text.split('\n').flatMap((line) => {
-        const m = line.match(/^- \[( |x)\] \d+ · (.+?)\s*$/);
-        return m ? [{ isDone: m[1] === 'x', text: m[2] ?? '' }] : [];
+        const m = line.match(/^- \[( |x|X)\] \d+ · (.+?)\s*$/);
+        return m ? [{ isDone: m[1] !== ' ', text: m[2] ?? '' }] : [];
     });
 }
 

@@ -447,6 +447,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given dima types a steer into a member's ask on another board's glide card
   - when the member takes the card's mark into its orbit, or he types on while it does
   - then the field keeps what he typed: the mark leaves only after the orbit holds it and only if it is still the one read, and a steer typed on the card replaces the member's own (dima, 2026-10-29: «text … gets occasionally deleted when I print too fast»)
+- ⬜ a steer box keeps its view where he left it, and fills its row
+  - given dima typed a long steer into a box on an ask or an assumption
+  - when the board redraws and typing has gone quiet
+  - then the box still shows the end he typed, never jumping to the start; a board closed and opened again draws the stored text; the box takes the row's width left after its buttons (dima, 2026-10-29: «the focus jumps … text boxes are too short»)
 - ✅ accept, reject, steer, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its steer, or presses check all

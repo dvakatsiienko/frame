@@ -474,6 +474,18 @@ test('a steer on a step leaves when cclio moves the lane past it', async ($, on)
 
 test('a taken steer clears from the box once cclio took it', async ($, on) => {
     world(on);
+    on('ui.panes', () => ({
+        value: [
+            {
+                id: 'fleet-board',
+                isFocused: false,
+                isPlaced: true,
+                isShown: true,
+                plugin: 'x-mod-stash',
+                title: 'fleet board',
+            },
+        ],
+    }));
     await start($);
     const ui = await board($);
     await create($);
@@ -1403,9 +1415,30 @@ test('a nested or unnumbered checklist line moves nothing', async ($, on) => {
     await start($);
     await linkedPlan($, w);
     w.files[PLAN] =
-        `${planText('x  ')}\n  - [x] 02 · nested\n- [x] no number\n- [x] 7 - dash`;
+        `  - [ ] 00 · nested\n- [ ] no number\n- [ ] 7 - dash\n${planText('x  ')}`;
     await poll(w);
-    expect(kept(w)[0]?.current).toBe(1);
+    expect([kept(w)[0]?.current, kept(w)[0]?.items.length]).toEqual([1, 3]);
+});
+
+test('a capital X ticks a step like x', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    w.files[PLAN] = planText('x  ').replace('[x]', '[X]');
+    await poll(w);
+    expect([kept(w)[0]?.items[0]?.isDone, kept(w)[0]?.items.length]).toEqual([
+        true,
+        3,
+    ]);
+});
+
+test('a plan file grown past seven steps draws the first seven', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    w.files[PLAN] = planText('x        ');
+    await poll(w);
+    expect(kept(w)[0]?.items.length).toBe(7);
 });
 
 test('a missing plan file keeps the last state marked «plan file gone»', async ($, on) => {
@@ -1416,6 +1449,7 @@ test('a missing plan file keeps the last state marked «plan file gone»', async
     await poll(w);
     const l = kept(w)[0];
     expect([l?.current, l?.isPlanGone]).toEqual([1, true]);
+    expect(await laneText(await board($))).toContain('· plan file gone');
 });
 
 test('a hand step on a linked card is refused, naming the file', async ($, on) => {

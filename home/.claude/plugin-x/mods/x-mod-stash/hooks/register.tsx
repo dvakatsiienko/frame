@@ -508,13 +508,16 @@ export function fieldView(
     draft: FieldDraft | undefined,
     saved: string,
     now: number,
+    isNumber = false,
 ): FieldView {
     if (!draft) return { kind: 'saved' };
     const isOwn = draft.sent.includes(saved);
     const isLag = saved === draft.drawn && !draft.isLanded;
     if (!isOwn && !isLag)
         return { isRemount: saved === draft.drawn, kind: 'outside' };
-    if (now - draft.at >= FIELD_QUIET_MS) return { kind: 'saved' };
+    // a text field never swaps its value for the stored one: the surface scrolls a field back to its start on any value
+    // change, equal text or not (dima, 10-29: «the focus jumps to the start» once the board redrew); a number is short
+    if (isNumber && now - draft.at >= FIELD_QUIET_MS) return { kind: 'saved' };
     return {
         draft: isOwn && !draft.isLanded ? { ...draft, isLanded: true } : draft,
         kind: 'held',
@@ -538,8 +541,13 @@ const isNumberField = (key: string) =>
 // what the trim cut (dima's wisp, 10-13 15:42); only spaces is no steer, and the model reads it trimmed
 const steerOf = (value: string) => (value.trim() ? value : undefined);
 function field($: EngineInterface, key: string, saved: string) {
-    // clock-ok: a field draws in a sync render, where $.clock.now() cannot be awaited
-    const view = fieldView(drafts.get(key), saved, Date.now());
+    const view = fieldView(
+        drafts.get(key),
+        saved,
+        // clock-ok: a field draws in a sync render, where $.clock.now() cannot be awaited
+        Date.now(),
+        isNumberField(key),
+    );
     if (view.kind === 'held') drafts.set(key, view.draft);
     else drafts.delete(key);
     if (view.kind === 'outside' && view.isRemount && !isNumberField(key))
@@ -1653,11 +1661,13 @@ async function followPlans($: EngineInterface) {
             next.push(lane.isPlanGone ? lane : { ...lane, isPlanGone: true });
             continue;
         }
-        const steps = planSteps(text).map((s) => ({
-            isDone: s.isDone,
-            text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
-            ...(ticketOf(s.text) ? { ticket: ticketOf(s.text) } : {}),
-        }));
+        const steps = planSteps(text)
+            .slice(0, LANE_MAX)
+            .map((s) => ({
+                isDone: s.isDone,
+                text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
+                ...(ticketOf(s.text) ? { ticket: ticketOf(s.text) } : {}),
+            }));
         const items: LaneItem[] = steps.length ? steps : lane.items;
         const current = items.findIndex((x) => !x.isDone);
         const at = current < 0 ? items.length : current;
@@ -2553,6 +2563,8 @@ let compactTrail: number[] = [];
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
+    // a closed board unmounts its fields: the next open draws the stored text, not a held one
+    if (!isBoardOpen) drafts.clear();
     // a lane cclio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
     if (isBoardOpen) {
@@ -4907,7 +4919,10 @@ export const register: Register = (on) => {
                                             </Box>
                                         ) : null
                                     ) : Input ? (
-                                        <Box flexShrink={1} minWidth={0}>
+                                        <Box
+                                            flexGrow={1}
+                                            flexShrink={1}
+                                            minWidth={0}>
                                             <Input
                                                 key={
                                                     field(
@@ -5062,6 +5077,7 @@ export const register: Register = (on) => {
                                                         : null}
                                                     {Input ? (
                                                         <Box
+                                                            flexGrow={1}
                                                             flexShrink={1}
                                                             minWidth={0}>
                                                             <Input
@@ -5639,7 +5655,7 @@ export const register: Register = (on) => {
                                 );
                     const gaps = board?.quietGaps ?? [];
                     const gapsJSX =
-                        isOwnerBoard && (heldBy.size || gaps.length) ? (
+                        heldBy.size || gaps.length ? (
                             <Box
                                 key='quiet:card'
                                 {...cardProps}
