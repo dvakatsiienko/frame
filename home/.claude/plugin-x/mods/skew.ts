@@ -56,14 +56,16 @@ export const bundledVersion = (archive: string) =>
         /JSON\.parse\('\{"version":"(\d+\.\d+\.\d+)","manifest"/,
     )?.[1];
 
-type Bundle = { version: string } | { error: string };
-
 export function bundleOf(path: string): Bundle {
     if (!existsSync(path)) return { error: `no Claude.app archive at ${path}` };
-    const version = bundledVersion(readFileSync(path, 'latin1'));
-    return version
-        ? { version }
-        : { error: `${path} names no bundled cc version` };
+    try {
+        const version = bundledVersion(readFileSync(path, 'latin1'));
+        return version
+            ? { version }
+            : { error: `${path} names no bundled cc version` };
+    } catch (err) {
+        return { error: `${path} could not be read: ${String(err)}` };
+    }
 }
 
 // the oldest checked engine that knows every event a mod hooks
@@ -220,3 +222,7 @@ if (import.meta.main) {
     console.log(lines.join('\n'));
     process.exit(isRed ? 1 : 0);
 }
+
+/* Types */
+
+type Bundle = { version: string } | { error: string };

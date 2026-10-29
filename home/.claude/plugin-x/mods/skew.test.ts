@@ -117,6 +117,12 @@ describe('the desktop app side', () => {
         });
     });
 
+    it('names a bundle path that is a folder, not an archive', () => {
+        expect(bundleOf(dir)).toEqual({
+            error: expect.stringContaining(`${dir} could not be read`),
+        });
+    });
+
     it('reads a real archive file', () => {
         writeFileSync(join(dir, 'app.asar'), asar);
         expect(bundleOf(join(dir, 'app.asar'))).toEqual({ version: '2.1.309' });
