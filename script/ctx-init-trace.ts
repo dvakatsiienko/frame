@@ -111,9 +111,9 @@ export function seatOf(dir: string, firstMessage: string): Seat {
 const PAST_SEATS: Record<string, Seat> = {
     cclio: 'clio', // read-both
     ccrow: 'crow', // read-both
-    coder: 'codie',
-    composer: 'helga',
-    verifier: 'sixth-sense',
+    coder: 'codie', // read-both
+    composer: 'helga', // read-both
+    verifier: 'sixth-sense', // read-both
 }; // read-both
 const seatNow = (seat: string) => PAST_SEATS[seat] ?? (seat as Seat);
 

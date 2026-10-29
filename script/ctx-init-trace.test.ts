@@ -168,7 +168,7 @@ describe('a session names its seat', () => {
     it.each([
         ['-Users-dima-frame-cclio', 'hi', 'clio'],
         ['-Users-dima--local-state-ccrow-plans-2026', 'hi', 'crow'],
-        ['-Users-dima--local-state-composer', 'hi', 'helga'],
+        ['-Users-dima--local-state-composer', 'hi', 'helga'], // read-both
         ['-Users-dima-frame--clio', 'hi', 'clio'],
         ['-Users-dima--local-state-crow-plans-2026', 'hi', 'crow'],
         ['-Users-dima--local-state-helga', 'hi', 'helga'],

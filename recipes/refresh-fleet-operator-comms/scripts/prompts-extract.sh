@@ -1,7 +1,7 @@
 #!/bin/sh
 # dima's typed prompts since a date → <out>/prompts.jsonl, deduped by text and minute, plus <out>/chunk-NN.jsonl for the labelling lanes.
 # usage: prompts-extract.sh <since yyyy-mm-dd> <out-dir> [chunks=4]
-# a prompt counts in the clio, frame, bytes or home project dirs, through the cli or the desktop app; coder briefs, hook echoes and peer lines are dropped.
+# a prompt counts in the clio, frame, bytes or home project dirs, through the cli or the desktop app; codie briefs, hook echoes and peer lines are dropped.
 set -eu
 since=$1 out=$2 chunks=${3:-4}
 mkdir -p "$out"

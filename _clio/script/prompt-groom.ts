@@ -150,7 +150,7 @@ function steerText(id: string, transcript?: string) {
         .findLast((steer) => steer.id === id)?.text;
 }
 
-function composerUp() {
+function helgaUp() {
     const agents = JSON.parse(
         execFileSync('claude', ['agents', '--json'], { encoding: 'utf8' }),
     ) as {
@@ -162,7 +162,7 @@ function composerUp() {
     );
 }
 
-function startComposer() {
+function startHelga() {
     const skill = readFileSync(
         path.join(
             home,
@@ -277,7 +277,7 @@ if (import.meta.main) {
         mkdirSync(groomDir, { recursive: true });
         const rawFile = groomFile(day, hhmm, 'raw');
         writeFileSync(rawFile, `${raw}\n`);
-        if (!composerUp()) startComposer();
+        if (!helgaUp()) startHelga();
         console.log(
             isSteer
                 ? `prompt-groom: dima's ${day} ${hhmm} steer, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} <HH:MM>, dima, ${hhmm} steer)», first number <N>, written to ${groomFile(day, hhmm, 'groomed')}`
