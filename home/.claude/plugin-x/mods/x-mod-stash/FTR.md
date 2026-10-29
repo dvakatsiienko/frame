@@ -735,15 +735,15 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - when held pings ride her next prompt, or land as the idle row, then each gets a `flushed` line beside its `held` one
   - proof: tests/quiet.test.ts::a held ping that rides the next prompt logs flushed; ::a held ping that lands as the idle row logs flushed — not asserted: both paths asserted
 - ✅ the ledger counts what members sent against what the log holds
-  - makes: `quiet-gap` in the store, `{ at, gaps: [{ from, sent, logged }] }`, rewritten once a minute; the boot digest reads it
+  - makes: `quiet-gap` in the store, `{ at, gaps: [{ from, sent, logged }] }`, rewritten once a minute; cclio's next prompt reads each new gap once (the `quiet-gap-told` key)
   - given a live member's own transcript holds more SendMessage calls to cclio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
   - when the minute's ledger runs in cclio's thread
-  - then the gap is written to `quiet-gap` and reaches cclio through the boot digest and her prompt hook; no card draws on any board and no red row (dima's o56, 2026-10-29: «a UI card is useless … keep the comms fully functional with all the under-the-hood stuff»; was a calm `🤫 quiet comms` card, FRM-412)
+  - then the gap is written to `quiet-gap` and rides cclio's next prompt once as a model-only note («🤫 quiet-comms ledger: <member> sent you n pings and your quiet log holds m»), told again when it grows; no card draws on any board and no red row (dima's o56, 2026-10-29: «a UI card is useless … keep the comms fully functional with all the under-the-hood stuff»; was a calm `🤫 quiet comms` card, FRM-412)
   - and a member's log lines match its registry name without its leading mode emoji, so a rename from ☕️ to 🌗 no longer reads as «sent 3, holds 0» (the cause of FRM-412's shot: one coder logged 4 lines as ☕️ and 9 as 🌗 on 10-22)
   - decision: a `flushed` line is not a delivery, so a held ping counts once
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
   - decision: a send whose result said `success:false` (no such session, a plugin refused it, a dead socket) never reached her, so it is not counted (brief 9 item 2)
-  - proof: tests/board.test.ts::a member that sent cclio more pings than her log holds is a gap in the ledger, never a 🚨 row; ::no quiet-comms card draws on cclio's board; ::a send inside the 2 min grace is not a gap yet; ::a flushed line does not count as a logged delivery; ::the ledger'… — not asserted: success:false decision unasserted
+  - proof: tests/quiet.test.ts::a ledger gap rides the lane owner’s next prompt once / a gap that grows is told again; tests/board.test.ts::a member that sent cclio more pings than her log holds is a gap in the ledger, never a 🚨 row; ::no quiet-comms card draws on cclio's board; ::a send inside the 2 min grace is not a gap yet; ::a flushed line does not count as a logged delivery; ::the ledger'… — not asserted: success:false decision unasserted
   - given a member renamed after cclio logged some of its pings (a new ticket, a new topic in its name)
   - when the ledger counts that member's sends against the log
   - then the lines logged under its old name still count for it, through its session id once logged with one, and through its role (emoji and word before the colon) when no other member shares it: a rename never draws a false gap (the verifier's 16:17 shot, FRM-412)

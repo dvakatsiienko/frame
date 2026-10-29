@@ -884,8 +884,35 @@ async function quietAlarm($: EngineInterface, key: string, text: string) {
     );
 }
 
-// the ledger runs once a minute in cclio's thread; its gaps sit in the store for her board and the boot digest, and each
-// new gap or a held ping stuck past the idle wait + 2 min raises one native alarm beside the board's red row
+// a ledger gap rides cclio's next prompt once, model-only: the board draws no card for it, so this note is how
+// a skipped hold reaches her turn; a gap that changes (more sends, more lines) is told again
+const QUIET_GAP_TOLD = 'quiet-gap-told';
+async function takeGapNotes($: EngineInterface) {
+    const gaps =
+        (
+            (await $.store.get(QUIET_GAP).catch(() => undefined)) as
+                | { gaps?: QuietGap[] }
+                | undefined
+        )?.gaps ?? [];
+    const told =
+        ((await $.store.get(QUIET_GAP_TOLD).catch(() => undefined)) as
+            | string[]
+            | undefined) ?? [];
+    const keyOf = (g: QuietGap) => `${g.from}|${g.sent}|${g.logged}`;
+    const fresh = gaps.filter((g) => !told.includes(keyOf(g)));
+    if (!fresh.length) return [];
+    await $.store.set(
+        QUIET_GAP_TOLD,
+        [...told, ...fresh.map(keyOf)].slice(-50),
+    );
+    return fresh.map(
+        (g) =>
+            `🤫 quiet-comms ledger: ${g.from} sent you ${g.sent} pings and your quiet log holds ${g.logged}: one skipped the hold, check its log line.`,
+    );
+}
+
+// the ledger runs once a minute in cclio's thread; its gaps sit in the store for her next prompt, and each
+// new gap or a held ping stuck past the idle wait + 2 min raises one native alarm
 let ledgerAt = 0;
 async function quietBooks($: EngineInterface) {
     if (!(await isQuietHome($))) return;
@@ -3976,6 +4003,7 @@ export const register: Register = (on) => {
             await saveQuiet($, { ...quiet, held: [] });
             await quietFlushed($, quiet.held).catch(() => undefined);
         }
+        const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
         // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
         const costHint =
             isUser && isOwner && isOn('stash.cost') && COST_WORDS.test(e.text)
@@ -3999,6 +4027,7 @@ export const register: Register = (on) => {
                 ...laneSteers,
                 ...(planMark ? [planText(planMark)] : []),
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
+                ...gapNotes,
                 ...(tickets ? [tickets] : []),
                 ...(wind ? [wind] : []),
                 ...(costHint ? [costHint] : []),

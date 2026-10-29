@@ -309,6 +309,45 @@ test('the 🎛️ quiet switch turns quiet off, and a [progress] ping passes', a
 
 /* the flush */
 
+const gapNote = (w: ReturnType<typeof world>) =>
+    (w.contexts.at(-1) ?? []).filter((c) =>
+        c.startsWith('🤫 quiet-comms ledger'),
+    );
+
+test('a ledger gap rides the lane owner’s next prompt once, naming the member', async ($, on) => {
+    const w = world(on);
+    w.store.set('quiet-gap', {
+        at: 1,
+        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 1, sent: 2 }],
+    });
+    await start($);
+    await say($, 'status?');
+    const first = gapNote(w);
+    await say($, 'and now?');
+    expect([first, gapNote(w)]).toEqual([
+        [
+            '🤫 quiet-comms ledger: ☕️ 🔧 coder: mods sent you 2 pings and your quiet log holds 1: one skipped the hold, check its log line.',
+        ],
+        [],
+    ]);
+});
+
+test('a gap that grows is told again', async ($, on) => {
+    const w = world(on);
+    w.store.set('quiet-gap', {
+        at: 1,
+        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 1, sent: 2 }],
+    });
+    await start($);
+    await say($, 'status?');
+    w.store.set('quiet-gap', {
+        at: 2,
+        gaps: [{ from: '☕️ 🔧 coder: mods', logged: 1, sent: 3 }],
+    });
+    await say($, 'and now?');
+    expect(gapNote(w)).toHaveLength(1);
+});
+
 test('held pings ride the next prompt as one hidden block, once', async ($, on) => {
     const w = world(on);
     await start($);
