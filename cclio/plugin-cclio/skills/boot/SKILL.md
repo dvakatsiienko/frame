@@ -17,6 +17,8 @@ siesta after each (`habit-dima-comms`); heavy queries fire at the step that need
 
 📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
+🚦 **a spawn in the boot never ends its turn**: the board is the one stop (dima, 2026-10-29; guard: FRM-426).
+
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context (its sections are the script's). **one shell round at most:**
 - no `cclio boot digest` and no cclio memory in context → the tab's cwd is not `~/frame/cclio`: stop and tell dima to reopen it there, before any write (a boot from ccrow's dir fed her harvester)
@@ -129,7 +131,7 @@ message, **no cst ingest, no pocket parse** — the inbox stays his file.
 4. open renovate count (step 4's last line; the digest waits for his word)
 5. stuck reminders (step 5)
 6. self-grill (step 6)
-7. flawlog file for the day (step 7; `/cclio:flawlog` loads alongside, as in a full boot)
+7. flawlog file for the day (step 7)
 
 skipped on purpose: the roadmap block, handoff ingest, the run-id continuity (a pending cst stays
 pending and is named in the board, never pulled). the board ends with his asks in his order and
