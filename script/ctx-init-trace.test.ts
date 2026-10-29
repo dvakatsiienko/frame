@@ -3,7 +3,15 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { readTrace, scan, seatOf } from './ctx-init-trace.ts';
+import {
+    type Baseline,
+    type TraceRow,
+    alarmsOf,
+    baselineOf,
+    readTrace,
+    scan,
+    seatOf,
+} from './ctx-init-trace.ts';
 
 const AT = '2026-10-20T10:00:00.000Z';
 
@@ -123,5 +131,104 @@ describe('a session names its seat', () => {
         ['-Users-dima-bytes', 'hi', 'other'],
     ])('%s with «%s» is %s', (dir, first, seat) => {
         expect(seatOf(dir, first)).toBe(seat);
+    });
+});
+
+const NOW = Date.parse('2026-10-29T12:00:00.000Z');
+const DAY = 24 * 60 * 60 * 1000;
+
+const row = (
+    daysAgo: number,
+    init: number,
+    chars = 0,
+    now = NOW,
+): TraceRow => ({
+    at: new Date(now - daysAgo * DAY).toISOString(),
+    chars,
+    date: new Date(now - daysAgo * DAY).toISOString().slice(0, 10),
+    init,
+    model: 'claude-opus-5-5',
+    seat: 'cclio',
+    sid: `s${Math.random()}`,
+    version: '2.1.309',
+});
+
+// three sessions at `init` in each of the last week (days 1-3) and the week before (days 8-10)
+const weeks = (before: number, last: number, chars = 0, charsBefore = 0) => [
+    ...[8, 9, 10].map((d) => row(d, before, charsBefore)),
+    ...[1, 2, 3].map((d) => row(d, last, chars)),
+];
+
+const kinds = (rows: TraceRow[], baseline: Baseline = {}, now = NOW) =>
+    alarmsOf(rows, baseline, now).map((a) => a.kind);
+
+describe('the growth alarm', () => {
+    it('fires on 12 % over the week before, with both medians', () => {
+        expect(alarmsOf(weeks(100_000, 112_000), {}, NOW)).toEqual([
+            {
+                kind: 'week',
+                model: 'claude-opus-5-5',
+                now: 112_000,
+                ref: 100_000,
+                seat: 'cclio',
+            },
+        ]);
+    });
+
+    it('stays quiet at 8 %', () => {
+        expect(kinds(weeks(100_000, 108_000))).toEqual([]);
+    });
+
+    it('stays quiet when the week before holds under three sessions', () => {
+        const rows = [
+            row(8, 100_000),
+            row(9, 100_000),
+            ...[1, 2, 3].map((d) => row(d, 130_000)),
+        ];
+        expect(kinds(rows)).toEqual([]);
+    });
+
+    it('fires over the ceiling with no growth', () => {
+        const baseline = {
+            'cclio|claude-opus-5-5': { ceiling: 115_000, median: 100_000 },
+        };
+        expect(kinds(weeks(118_000, 118_000), baseline)).toEqual(['ceiling']);
+    });
+
+    it('stays quiet when only the first message doubled and memory stayed flat', () => {
+        const rows = weeks(100_000, 112_000, 56_000, 8_000);
+        expect(kinds(rows, baselineOf(rows))).toEqual([]);
+    });
+
+    it('never alarms a session no seat claimed', () => {
+        const rows = weeks(100_000, 150_000).map((r) => ({
+            ...r,
+            seat: 'other' as const,
+        }));
+        expect(kinds(rows, baselineOf(rows))).toEqual([]);
+    });
+});
+
+describe('the slow creep check', () => {
+    // a seat growing 4 % a week: the week-to-week check never fires, the baseline from the first run does by week 5
+    const level = (w: number) => Math.round(100_000 * 1.04 ** w);
+    const T0 = NOW;
+    const rowsUpTo = (w: number) =>
+        Array.from({ length: w + 2 }, (_, i) => i - 1).flatMap((k) =>
+            [1, 2, 3].map((d) => row(d, level(k), 0, T0 + k * 7 * DAY)),
+        );
+    const baseline = baselineOf(rowsUpTo(0));
+    const at = (w: number) => T0 + w * 7 * DAY;
+
+    it('stays quiet in week 3', () => {
+        expect(kinds(rowsUpTo(3), baseline, at(3))).not.toContain('creep');
+    });
+
+    it('fires by week 5', () => {
+        expect(kinds(rowsUpTo(5), baseline, at(5))).toContain('creep');
+    });
+
+    it('never fires the week-to-week check on it', () => {
+        expect(kinds(rowsUpTo(5), baseline, at(5))).not.toContain('week');
     });
 });

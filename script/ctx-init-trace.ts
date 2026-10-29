@@ -121,6 +121,89 @@ export async function scan(file = TRACE_FILE, projects = PROJECTS_DIR) {
     return rows.length;
 }
 
+export const net = (r: TraceRow) => r.init - Math.round(r.chars / 4);
+
+export function median(values: number[]) {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2
+        ? (sorted[mid] ?? 0)
+        : ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2;
+}
+
+const keyOf = (r: TraceRow) => `${r.seat}|${r.model}`;
+const GROWTH_WEEK = 0.1;
+const GROWTH_CREEP = 0.2;
+const CEILING_MARGIN = 0.15;
+const MIN_SESSIONS = 3;
+
+// the baseline and the ceilings are written once per seat+model, from the back data the first run finds
+export function baselineOf(rows: TraceRow[], kept: Baseline = {}) {
+    const next: Baseline = { ...kept };
+    const groups = Map.groupBy(
+        rows.filter((r) => r.seat !== 'other'),
+        keyOf,
+    );
+    for (const [key, group] of groups) {
+        if (next[key]) continue;
+        const m = median(group.map(net));
+        next[key] = {
+            ceiling: Math.round(m * (1 + CEILING_MARGIN)),
+            median: m,
+        };
+    }
+    return next;
+}
+
+export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
+    const week = 7 * DAY;
+    const alarms: Alarm[] = [];
+    const groups = Map.groupBy(
+        rows.filter((r) => r.seat !== 'other'),
+        keyOf,
+    );
+    for (const [key, group] of groups) {
+        const [seat, model] = key.split('|') as [Seat, string];
+        const at = (r: TraceRow) => Date.parse(r.at);
+        const last = group.filter((r) => now - at(r) < week).map(net);
+        const before = group
+            .filter((r) => now - at(r) >= week && now - at(r) < 2 * week)
+            .map(net);
+        if (last.length < MIN_SESSIONS) continue;
+        const nowMedian = median(last);
+        if (
+            before.length >= MIN_SESSIONS &&
+            nowMedian >= median(before) * (1 + GROWTH_WEEK)
+        )
+            alarms.push({
+                kind: 'week',
+                model,
+                now: nowMedian,
+                ref: median(before),
+                seat,
+            });
+        const kept = baseline[key];
+        if (!kept) continue;
+        if (nowMedian >= kept.median * (1 + GROWTH_CREEP))
+            alarms.push({
+                kind: 'creep',
+                model,
+                now: nowMedian,
+                ref: kept.median,
+                seat,
+            });
+        if (nowMedian > kept.ceiling)
+            alarms.push({
+                kind: 'ceiling',
+                model,
+                now: nowMedian,
+                ref: kept.ceiling,
+                seat,
+            });
+    }
+    return alarms;
+}
+
 function parse(line: string) {
     try {
         return JSON.parse(line) as Entry;
@@ -152,6 +235,16 @@ export type Seat =
     | 'composer'
     | 'other'
     | 'verifier';
+
+export type Baseline = Record<string, { ceiling: number; median: number }>;
+
+export type Alarm = {
+    kind: 'ceiling' | 'creep' | 'week';
+    model: string;
+    now: number;
+    ref: number;
+    seat: Seat;
+};
 
 export type TraceRow = {
     at: string;
