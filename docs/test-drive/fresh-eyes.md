@@ -13,6 +13,7 @@ Ticket: FRM-407
 
 **test card:** we believe fresh-eyes finds where a first-time user gets lost that the verifier and dima's own look miss · we test it by on-demand runs on apps without a login (chords, speak, atelier) whenever a screen changes · we measure per goal: stuck spots, true or false by dima's call, the 2-of-3 agreement rate, the control run's false spots, tokens and dollars for the 3 parallel runs, wall time · we're right if at least 1 true stumble the verifier missed turns up per 3 goals, at most 1 in 3 reported spots is false, and one goal costs under 10 minutes of wall time
 **kill rule:** 3 goals in a row with no true spot, or the control run flags a false spot twice
+**at the verdict:** adopted → rethink the code-review card's name, wisphunter vs sharp-eyes as fresh-eyes' pair (dima, 2026-10-29, FRM-455)
 
 ## stress list
 - the blind door (a PreToolUse hook on `agent_type`) — its first run — `cat`, the Read tool off its shots dir, `view-source:`, `/src/…`, a source map, `file://`: each refused, yes or no

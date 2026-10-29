@@ -36,4 +36,5 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - 🦡 **`retro`** — opus 5.5, read-only: matt's retro over finished transcripts, fixes to the agents' environment ranked by severity.
 - 🐠 **`fresh-eyes`** — sonnet 5.5, blind by design: runs an app in a headless browser, never reads its code, and returns where a first-time user gets lost; the verifier spawns it on screen-changing PRs. shaping (2026-10-21), not built yet.
 - 🦅 **`scout`** — sonnet 5.5 low, read-only: finds where code lives; the built-in Explore, Plan, claude and statusline-setup are off (dima, 2026-10-18).
+- 🐆 **`wisphunter`** — opus 5.5 medium, read-only, `x:guide-code` preloaded: every code review of a diff (the built-in `/code-review`, matt's two axes, a coder's local review, the verifier's second read); findings as `path:line` with evidence. on a test drive (`docs/test-drive/wisphunter.md`).
 - 🐬 **`wishkeeper`** (auditor) — opus 5.5 medium (high per call at a siesta), read-only: cclio's own reviewer, the way a coder has a verifier, at every siesta and the boot's inbox parse; cclio-only.
