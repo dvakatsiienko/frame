@@ -12,6 +12,7 @@
         "frame:seed": "sh ./script/seed.sh",
         "toolchain:sync": "node script/toolchain-sync.ts",
         "evergreen:gate": "node ./script/evergreen-gate.ts",
+        "ctx-init:trace": "node ./script/ctx-init-trace.ts",
         "vorssaint:export": "defaults export com.vorssaint.utils - | plutil -convert xml1 -o import/vorssaint/com.vorssaint.utils.plist -",
         "vorssaint:import": "osascript -e 'quit app \"Vorssaint\"' && defaults import com.vorssaint.utils import/vorssaint/com.vorssaint.utils.plist && open -a Vorssaint",
         "vorssaint:shelf": "node ./script/vorssaint-shelf.ts",
