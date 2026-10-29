@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -60,11 +61,19 @@ type flowData struct {
 	KnowledgeReads []fileCount `json:"knowledge_reads"`
 }
 
+// a crew skill id, old or new, to the id it is now
+var skillNow = map[string]string{
+	"x:crew-codie":       "x:crew-codie",
+	"x:crew-sixth-sense": "x:crew-sixth-sense",
+	"x:crew-coder":       "x:crew-codie",       // read-both: the id before 10-29
+	"x:crew-verifier":    "x:crew-sixth-sense", // read-both: the id before 10-29
+}
+
 // the counts before tagging began (FRM-316), and each repo's pr median in minutes before the flow work
 var (
 	flowTags     = []tagCount{{Tag: "#dima-caught", Baseline: 60}, {Tag: "#brief", Baseline: 47}}
 	flowRepos    = []prMedian{{Repo: "frame", Baseline: 36}, {Repo: "bytes", Baseline: 25}}
-	crewSkills   = []string{"x:crew-codie", "x:crew-sixth-sense", "x:crew-coder", "x:crew-verifier"} // read-both: the ids before 10-29
+	crewSkills   = slices.Sorted(maps.Keys(skillNow))
 	bareRun      = regexp.MustCompile(`\bclaude\b[^|;&\n]*--safe-mode`)
 	knowledgeAt  = regexp.MustCompile(`/docs/knowledge/(.+)$`)
 	guardStoreRe = regexp.MustCompile(`^(x-mod-)?guard_.*\.json$`)

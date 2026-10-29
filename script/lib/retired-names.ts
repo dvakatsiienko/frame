@@ -18,9 +18,7 @@ const formPattern = new RegExp(
     'gi',
 );
 
-// history and caches keep their words: the gazette, flawlog, the pocket (his words, append-only), shifts, logs,
-// research, adrs, test-drive rounds, CST and handoff-name fixtures, dima's prompts, crow's steers, the spawn
-// probe records (each tied to a cc build), app source (EffectComposer), and this guard itself
+// history, caches, dima's words, build-tied probe records, app source and this guard keep the old words
 const excludedPaths = [
     /^_clio\/gazette\//,
     /^home\/\.claude\/shelf\/(flawlog|jev|handoffs|transcripts)\//,

@@ -16,7 +16,7 @@ spec = importlib.util.spec_from_file_location("hook", os.path.join(HOOK, "memory
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
-CODER = ("<command-name>/x:crew-codie</command-name>", "<command-name>/x:crew-coder</command-name>")  # read-both: the id before 10-29
+CODIE_BOOT = ("<command-name>/x:crew-codie</command-name>", "<command-name>/x:crew-coder</command-name>")  # read-both: the id before 10-29
 
 
 def prompt_text(entry):
@@ -55,7 +55,7 @@ def replay(path, rule, subagent=False):
             continue
         prompt = prompt_text(entry)
         if prompt is not None:
-            role = role or ("codie" if any(c in prompt for c in CODER) else "other")
+            role = role or ("codie" if any(c in prompt for c in CODIE_BOOT) else "other")
             loaded = loaded or (not subagent and bool(hook.prompt_trigger(rule, prompt)))
             continue
         if entry.get("type") != "assistant":

@@ -18,8 +18,7 @@ import (
 
 var audiences = []string{"any", "cc", "clio", "crow", "codie", "cloud-chat", "designer", "sixth-sense"}
 
-// read-both: CST names written before the 10-29 rename keep their old audience, so a stored one still
-// parses as addressed (never as «any») and is pulled by no new reader; pending ones were renamed then
+// read-both: an old CST stays addressed to its old audience (never «any»), so no new reader pulls it
 var pastAudiences = []string{"ccli", "cclio", "ccrow", "coder", "cw", "verifier"} // read-both
 
 func knownAudience(token string) bool {

@@ -93,8 +93,11 @@ func auditSession(path string) (codieSession, bool) {
 			break
 		}
 	}
-	if !bytes.Contains(opening, []byte("<command-name>/x:crew-codie</command-name>")) &&
-		!bytes.Contains(opening, []byte("<command-name>/x:crew-coder</command-name>")) { // read-both: the skill id before 10-29
+	isCodie := false
+	for id, now := range skillNow {
+		isCodie = isCodie || now == "x:crew-codie" && bytes.Contains(opening, []byte("<command-name>/"+id+"</command-name>"))
+	}
+	if !isCodie {
 		return codieSession{}, false
 	}
 	s := codieSession{ID: filepath.Base(path)[:min(8, len(filepath.Base(path)))], Compacts: []compactRead{}}

@@ -297,11 +297,9 @@ var (
 
 func opsRole(cwd, firstCmd, path, title string) string {
 	switch {
-	case strings.Contains(title, "🔧") || firstCmd == "x:crew-codie" ||
-		firstCmd == "x:crew-coder": // read-both: the skill id before the 10-29 rename
+	case strings.Contains(title, "🔧") || skillNow[firstCmd] == "x:crew-codie":
 		return "codie"
-	case strings.Contains(title, "🔎") || firstCmd == "x:crew-sixth-sense" ||
-		firstCmd == "x:crew-verifier": // read-both: the skill id before the 10-29 rename
+	case strings.Contains(title, "🔎") || skillNow[firstCmd] == "x:crew-sixth-sense":
 		return "sixth-sense"
 	case crowTitle.MatchString(title):
 		return "crow"

@@ -93,10 +93,8 @@ async function initRowOf(file: string, sid: string, dir: string) {
 }
 
 export function seatOf(dir: string, firstMessage: string): Seat {
-    // read-both below: transcripts before the 10-29 rename carry the old skill ids and dirs
     if (/\/x:crew-(verifier|sixth-sense)\b/.test(firstMessage))
-        // read-both
-        return 'sixth-sense';
+        return 'sixth-sense'; // read-both
     if (/crew-(coder|codie)\b/.test(firstMessage)) return 'codie'; // read-both
     const clioDir =
         /^-Users-dima(-projects-dotfiles-cclio|-frame-cclio|-frame--clio)$/; // read-both
@@ -114,7 +112,7 @@ const PAST_SEATS: Record<string, Seat> = {
     coder: 'codie', // read-both
     composer: 'helga', // read-both
     verifier: 'sixth-sense', // read-both
-}; // read-both
+};
 const seatNow = (seat: string) => PAST_SEATS[seat] ?? (seat as Seat);
 
 export function readTrace(file = TRACE_FILE) {

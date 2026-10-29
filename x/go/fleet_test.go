@@ -457,3 +457,17 @@ func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
 		t.Error("a session that names codie in prose counted as codie")
 	}
 }
+
+func TestOpsRoleReadsOldSkillIDs(t *testing.T) {
+	t.Parallel()
+	for id, want := range map[string]string{
+		"x:crew-codie":       "codie",
+		"x:crew-coder":       "codie", // read-both
+		"x:crew-sixth-sense": "sixth-sense",
+		"x:crew-verifier":    "sixth-sense", // read-both
+	} {
+		if got := opsRole("/tmp", id, "a.jsonl", "untitled"); got != want {
+			t.Errorf("opsRole(%s) = %s, want %s", id, got, want)
+		}
+	}
+}

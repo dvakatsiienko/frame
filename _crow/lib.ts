@@ -170,11 +170,11 @@ export function isCoordinatorTranscript(
                 readFileSync(join(sessionsDir, file), 'utf8'),
             );
             if (entry.sessionId !== sessionId) continue;
-            return (
-                bareName(entry.name ?? '')
-                    .replace(/^\p{Extended_Pictographic}+/u, '')
-                    .match(/^c?clio/) !== null
-            ); // read-both: a clio tab resumed under its old title
+            const bare = bareName(entry.name ?? '').replace(
+                /^\p{Extended_Pictographic}+/u,
+                '',
+            );
+            return /^c?clio/.test(bare); // read-both: a clio tab resumed under its old title
         } catch {}
     }
     return false;

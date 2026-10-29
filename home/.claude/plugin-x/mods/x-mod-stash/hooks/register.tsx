@@ -343,6 +343,10 @@ const LANE_ROLE_OLD: Record<string, (typeof LANE_ROLES)[number]> = {
     coder: 'codie', // read-both
     verifier: 'sixth-sense', // read-both
 };
+// a glide card's member subcard or a quiet card, folded by default
+const FOLDED_CARD = new RegExp(
+    `^(lane:[^:]+:(${LANE_ROLES.join('|')})|quiet:.+)$`,
+);
 const LANE_MAX = 7;
 const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
@@ -1656,7 +1660,7 @@ type LaneStep = { at: number; step: number };
 
 // a linked codie's plan step moves its lane forward: a step ahead of the pointer and newer than the lane's last move,
 // never the finish, which stays clio's act; her own step back holds until codie names a step again (todo 6)
-async function followCoders($: EngineInterface) {
+async function followCodies($: EngineInterface) {
     if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
         return;
     const lanes = await readLanes($);
@@ -1789,7 +1793,7 @@ async function heldLaneMoves($: EngineInterface) {
 
 // the held moves, once: they leave the store as they join clio's turn
 async function takeLaneMoves($: EngineInterface) {
-    await followCoders($);
+    await followCodies($);
     const held = await heldLaneMoves($);
     if (held.length) await $.store.delete(LANE_MOVES);
     return held;
@@ -3914,7 +3918,7 @@ export const register: Register = (on) => {
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
-                    await followCoders($).catch(() => undefined);
+                    await followCodies($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);
@@ -4893,12 +4897,7 @@ export const register: Register = (on) => {
                     const foldedOf = (
                         kept: Record<string, boolean>,
                         card: string,
-                    ) =>
-                        kept[card] ??
-                        /^(lane:[^:]+:(codie|sixth-sense|coder|verifier)|quiet:.+)$/.test(
-                            // read-both
-                            card,
-                        );
+                    ) => kept[card] ?? FOLDED_CARD.test(card);
                     const flipFold = async (card: string) => {
                         const was = (await $.state.get(FOLDS)).value ?? {};
                         await $.state.set(FOLDS, {
