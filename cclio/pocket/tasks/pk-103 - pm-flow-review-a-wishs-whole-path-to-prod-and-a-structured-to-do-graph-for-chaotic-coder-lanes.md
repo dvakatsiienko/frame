@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-10-29T11:48:00Z'
+updated_date: '2026-10-29T12:33:00Z'
 due_date: '2026-10-29'
 labels:
   - m
@@ -631,4 +631,106 @@ W381 (2026-10-29 13:44, dima): everyone, including Clio, Cristicro, Composer, yo
 W382 (2026-10-29 13:44, dima): let's see a full picture of all crew members in Fleet and see how we can rename them.
 
 re-fold 2026-10-29 13:51 (wispr, ccrow catch): W345 «a secror (?)» → «a ccrow»; W347 «`-dbg` flag» → «`--bg` flag»; W368 «a Clio SA Clio facility» → «a cclio facility»; W381 «Cristicro» → «ccrow»
+
+W383 (2026-10-29 14:28, dima): print all fleet member names, short and compact, in a bullet list with fleet names in bold, for me to use as a reference. ❓
+W384 (2026-10-29 14:28, dima): and here is my proposal and ideas for names.
+W385 (2026-10-29 14:28, dima): cclio → clio ← i am sure.
+W386 (2026-10-29 14:28, dima): ccrow → crow ← i am sure.
+W387 (2026-10-29 14:28, dima): coder → codie ← like 85%, not sure.
+W388 (2026-10-29 14:28, dima): verifier → helga (or other cool name) ← like 60%, not sure.
+W389 (2026-10-29 14:28, dima): composer → ? ❓
+W390 (2026-10-29 14:28, dima): designer → picasso ← like 65%.
+W391 (2026-10-29 14:28, dima): coordinator (lead) → ? ❓
+W392 (2026-10-29 14:28, dima): why? the naming part is tricky, because i started to name fleet members a long time ago, when i wasn't too proficient in Claude Code overall, and now i have a much better picture of how everything works.
+W393 (2026-10-29 14:28, dima): this naming pattern `cclio`: initially, i was born with the idea that you are a CC (e.g., Claude), and this CC prefix was present for everyone previously.
+W394 (2026-10-29 14:28, dima): for example, `ccli` would mean a plain `cc`. why `cli`? because it was born in `cli`. so `ccli` = `cc` + `cli`. a naming trick.
+W395 (2026-10-29 14:28, dima): you, cclio, are the same: a combo of `cc` + `clio` (name) = `cclio`. same for `ccrow`.
+W396 (2026-10-29 14:28, dima): so why do i propose to change it? because it's no longer necessary.
+W397 (2026-10-29 14:28, dima): previously i was mixing these naming patterns to make it clear that these entities are CC, because in Fleet there are more entities, for example cowork threads.
+W398 (2026-10-29 14:28, dima): but it becomes intertwined, and i want it simpler.
+W399 (2026-10-29 14:28, dima): that's why i propose to rename you like this: `cclio` → `clio`, `ccrow` → `crow`. simpler, straightforward.
+W400 (2026-10-29 14:28, dima): i am sure about: clio and crow.
+W401 (2026-10-29 14:28, dima): not sure about the rest, just ideas:
+W402 (2026-10-29 14:28, dima): codie, because it codes.
+W403 (2026-10-29 14:28, dima): helga, because Helga Pataki was a character in the Hey Arnold cartoon, and Helga is kind of that annoying girl who secretly watches Arnold and worships him in her shed.
+W404 (2026-10-29 14:28, dima): she is similar to what a verifier does: a verifier verifies the coder's scope of applied changes to a codebase.
+W405 (2026-10-29 14:28, dima): i was thinking that Helga would be a cool name for a verifier.
+W406 (2026-10-29 14:28, dima): verifier, although it could have another alias other than Helga Pataki. i've come up only with this and have no other ideas.
+W407 (2026-10-29 14:28, dima): if you have some proposal via top 7, i'd like another cool name for verifier. ❓
+W408 (2026-10-29 14:28, dima): why rename coder and verifier? it's tricky.
+W409 (2026-10-29 14:28, dima): the initial idea is that i want everyone to have a clear but also cool name, because coder/verifier is nice but somewhat boring.
+W410 (2026-10-29 14:28, dima): it's straightforward and reliable, and that is a good part: coder and verifier is maximally clear naming, and no one will be confused by it.
+W411 (2026-10-29 14:28, dima): on the other hand, creating aliases like Codie and Helga would possibly create some confusion, which is not a good part.
+W412 (2026-10-29 14:28, dima): it also blurs understanding a bit, which is also not a good part, and we are also drifting out of the convention.
+W413 (2026-10-29 14:28, dima): this is a choice between being boring and being cool, by taking a slightly risky move with this rename.
+W414 (2026-10-29 14:28, dima): although it could be solved much more simply: we could just keep an alias in fleet identity, describing Codie and Helga, to tell that Codie is a coder and Helga is a verifier, right in the main passport of everyone.
+W415 (2026-10-29 14:28, dima): just use the alias from there, so everyone would be aware from the start what Codie or Helga means.
+W416 (2026-10-29 14:28, dima): propose. ❓
+W417 (2026-10-29 14:28, dima): designer → picasso ← like 65%. as for a designer, it is similar to the coder and verifier.
+W418 (2026-10-29 14:28, dima): plain designer is very clear and non-confusing, but a little bit boring. that's why i was thinking of naming the designer somewhat as well.
+W419 (2026-10-29 14:28, dima): actually, for a designer, i think we could even keep the plain designer, because we don't use it too often.
+W420 (2026-10-29 14:28, dima): other names would possibly be similarly flavored, like Salvador for example, or other artists. propose. ❓
+W421 (2026-10-29 14:28, dima): coordinator (lead) → ? ← so when we get there, we will resume my idea about having a full-fledged coordinator crew member as a part of the crew.
+W422 (2026-10-29 14:28, dima): when you start a new lane, you will spawn or summon a coordinator, a coder, and optionally a verifier.
+W423 (2026-10-29 14:28, dima): the coder lane will report to that separate coordinator, which loads a crew lead skill, and this way you delegate coordination to those threads.
+W424 (2026-10-29 14:28, dima): why? because side lanes keep spamming your thread, and it is not good. it clutters the main lane.
+W425 (2026-10-29 14:28, dima): i still keep this idea in mind, and eventually we will create it at some point, maybe even soon, or i will create it with a fork while we do the main lane. this is my plan.
+W426 (2026-10-29 14:28, dima): for that kind of thread, we should also have a cool name, for the same reason.
+W427 (2026-10-29 14:28, dima): coordinator/lead is boring, so let's find a cool name for coordinator too, if it is possible. propose top 7. ❓
+W428 (2026-10-29 14:28, dima): cw threads: cowork is no longer a cowork in the broad sense, because previously the desktop app had two types of chats: simple chats and cowork chats.
+W429 (2026-10-29 14:28, dima): a few weeks ago, a change was made to the desktop app, and now the split is gone.
+W430 (2026-10-29 14:28, dima): all threads in the desktop app that are not CC are plain, fully operational threads.
+W431 (2026-10-29 14:28, dima): i was talking to a thread, and it was saying that it is no longer treating itself as a CW thread.
+W432 (2026-10-29 14:28, dima): it now treats itself as Claude in the cloud. it doesn't have the CC memory system that we have currently, because it runs in the cloud.
+W433 (2026-10-29 14:28, dima): but the idea is that it treats itself as CC, because it is actually a plain CC in a virtual box somewhere.
+W434 (2026-10-29 14:28, dima): so i propose to rename cw thread → cc cloud. boring, but fine, because cloud threads are also rare, and i don't have an idea for a cool naming.
+W435 (2026-10-29 14:28, dima): there is a catch: you can also summon cc cloud threads (for code), so we need a split and a suffix for each. (cc loud (?) kept as written in the raw; read as cc cloud.)
+W436 (2026-10-29 14:28, dima): cc cloud code? ❓
+W437 (2026-10-29 14:28, dima): cc cloud chat? cc cloud thread? cc cloud cw (don't like)? cc cloud chat. ❓
+W438 (2026-10-29 14:28, dima): propose how to distinguish cc clouds that you summon for code from cc clouds in desktop app thread chats. ❓
+W439 (2026-10-29 14:28, dima): subagents:
+W440 (2026-10-29 14:28, dima): helper → helper-T1 (or helper-T2?) ❓
+W441 (2026-10-29 14:28, dima): helper-lite → helper-T2 (or helpe-T1? (?)) ❓
+W442 (2026-10-29 14:28, dima): wishkeeper → sixth-sense? leave like this? ❓
+W443 (2026-10-29 14:28, dima): retro → ? ❓
+W444 (2026-10-29 14:28, dima): researcher → ? ❓
+W445 (2026-10-29 14:28, dima): explore → probably leave like this (have to override builtin)? ❓
+W446 (2026-10-29 14:28, dima): helper + helper-lite: for helpers, i think a helper route is fine, but i don't really like having a helper and a helper-lite.
+W447 (2026-10-29 14:28, dima): i was thinking of a differentiator for them (e.g. T1 and T2, like tier one and tier two), but i'm not fully sure.
+W448 (2026-10-29 14:28, dima): it may be unnecessary, and i would also consider options for a better description or root name for a helper.
+W449 (2026-10-29 14:28, dima): propose what the options are here. ❓
+W450 (2026-10-29 14:28, dima): wishkeeper → sixth-sense: this is also an idea.
+W451 (2026-10-29 14:28, dima): i actually like Wishkeeper, but i also invented it as a sixth sense at some point.
+W452 (2026-10-29 14:28, dima): why? because i spotted that Wishkeeper is actually extremely useful.
+W453 (2026-10-29 14:28, dima): it is a very good idea that we created Wishkeeper as a safety-net subagent checker for yourself.
+W454 (2026-10-29 14:28, dima): it finds an incredibly large amount of issues and your slips, and allows avoiding a very large amount of produced issues up front.
+W455 (2026-10-29 14:28, dima): it actually serves as a kind of sixth sense that prevents you from creating issues with your moves.
+W456 (2026-10-29 14:28, dima): it is a tough choice: Wishkeeper is not a subagent that really wants a rename, because Wishkeeper is already a very good name, but Sixth Sense is also a good name.
+W457 (2026-10-29 14:28, dima): propose how to solve it. ❓
+W458 (2026-10-29 14:28, dima): i like Sixth Sense and don't want to throw it away.
+W459 (2026-10-29 14:28, dima): optionally, my second proposal, which i just invented: keep a wishkeeper as your subagent safety net, and apply sixth sense to a verifier instead of Helga Pataki.
+W460 (2026-10-29 14:28, dima): why? because Helga Pataki sounds cool for a verifier, but it is a little bit far from what a verifier does.
+W461 (2026-10-29 14:28, dima): Sixth Sense would actually be very compatible with a verifier, because both are about checking something unobvious or finding unobvious ways things are not working.
+W462 (2026-10-29 14:28, dima): that's why i think Sixth Sense would be a nice name for a verifier thread instead of Helga Pataki, optionally.
+W463 (2026-10-29 14:28, dima): these are all ideas. i still expect you to propose cool names for everyone. ❓
+W464 (2026-10-29 14:28, dima): retro → ? i have no ideas. ❓
+W465 (2026-10-29 14:28, dima): researcher → ? i have no ideas. ❓
+W466 (2026-10-29 14:28, dima): explore → probably leave like this? we disabled the explore builtin, so we can name it any way we want. i have no ideas. ❓
+W467 (2026-10-29 14:28, dima): finally, a folder rename: frame/cclio → frame/_clio.
+W468 (2026-10-29 14:28, dima): why? because frame grew a lot and now has a lot of files and folders; it's sometimes hard for me to find your folder in a vertical list in Cursor Explorer.
+W469 (2026-10-29 14:28, dima): an underscore at the start of the folder name would hoist it to the top, and let me easily find the folders i need most.
+W470 (2026-10-29 14:28, dima): this change will affect a lot of diffs, so i'm not sure i really want it.
+W471 (2026-10-29 14:28, dima): since the renaming sweep will affect a very large area, we could do this move as well, if needed. not critical.
+W472 (2026-10-29 14:28, dima): these are all my ideas and renames.
+W473 (2026-10-29 14:28, dima): as you spotted, i initially proposed some real names and some non-real-name renames.
+W474 (2026-10-29 14:28, dima): since we already have quite a lot of members in Fleet, it would be a good idea to create some convention.
+W475 (2026-10-29 14:28, dima): for example, name everyone by a real name, like Clio, because it's a real thread, and your smart advisor is like a real ccrow.
+W476 (2026-10-29 14:28, dima): Codie is because it's similar to code, etc., etc.
+W477 (2026-10-29 14:28, dima): this convention is actually tricky and really hard to do in a well-thought-out way.
+W478 (2026-10-29 14:28, dima): i don't really have too much time to figure out all the cool names for everyone, so i think a mix is allowed here.
+W479 (2026-10-29 14:28, dima): we can have a mix of real names that are close to what things do, and non-real-name entities like Wishkeeper or Sixth Sense.
+W480 (2026-10-29 14:28, dima): we also have empty cells with no ideas: retro, researcher, explorer, coordinator/lead, composer, and everyone else.
+W481 (2026-10-29 14:28, dima): let's just think and grill about good names and images for everyone, to refresh the fleet, remove these legacy cc prefixes, and think about the overall good shape of names: clear and fun as well, again, not boring.
+W482 (2026-10-29 14:28, dima): print other fleet members, or stuff worth renaming, that i've missed. ❓
+W483 (2026-10-29 14:28, dima): mods lane: sup there? mods coder finished a chunk? what next for him? can he start chunk 2? he is 41% ctx. compact him before chunk 2, or proceed like this? ❓
 <!-- SECTION:NOTES:END -->
