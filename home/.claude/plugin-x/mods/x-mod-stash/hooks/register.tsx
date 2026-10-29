@@ -6393,7 +6393,7 @@ export const register: Register = (on) => {
                         <Box
                             flexDirection='row'
                             flexShrink={0}
-                            gap={1}
+                            gap={e.surface === 'desktop' ? 0.6 : 1}
                             key='switches'>
                             {!isShown('stash.second-wind') || !view.selfId
                                 ? null
