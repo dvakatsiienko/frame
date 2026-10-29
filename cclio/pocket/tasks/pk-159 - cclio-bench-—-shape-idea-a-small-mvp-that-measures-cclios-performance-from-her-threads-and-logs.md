@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-10-28T12:51:00Z'
-due_date: '2026-10-28'
+updated_date: '2026-10-29T11:28:00Z'
+due_date: '2026-10-30'
 labels:
   - m
 dependencies: []
@@ -32,4 +32,6 @@ re-dated 2026-10-25 from 2026-10-24: no activity on 10-24; the pocket/linear gri
 kept: 2026-10-25 — cclio's own shapeless idea (Q5); no wait, worked when a window opens
 
 kept: 2026-10-28 — a later shape-idea wish that belongs in linear; it carries dima's words, so the move is asked at today's halt
+
+kept: 2026-10-29 — dima o2: «keep it parked, i'll take care of it with fork (try)»
 <!-- SECTION:NOTES:END -->
