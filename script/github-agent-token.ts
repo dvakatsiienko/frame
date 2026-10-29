@@ -1,8 +1,8 @@
-// prints a fresh github installation token for our github app `x-coder` (app id 4873606).
-//   pnpm github:agent-token [app]                      → token for the one installation (dvakatsiienko); app = x-coder (default) | x-cclio-cc
-//   GH_TOKEN=$(pnpm --silent github:agent-token) gh api …    → every write renders as x-coder[bot]
-// the app's private key (base64 of the pem) + id live in the macos keychain as github-x-coder-key / github-x-coder-id
-// (account x-coder); the token caches in ~/.cache/github/x-coder-token.json, re-minted when <10 min remain.
+// prints a fresh github installation token for our github app `x-codie-cc` (app id 4873606).
+//   pnpm github:agent-token [app]                      → token for the one installation (dvakatsiienko); app = x-codie-cc (default) | x-clio-cc
+//   GH_TOKEN=$(pnpm --silent github:agent-token) gh api …    → every write renders as x-codie-cc[bot]
+// the app's private key (base64 of the pem) + id live in the macos keychain as github-x-codie-cc-key / github-x-codie-cc-id
+// (account x-codie-cc); the token caches in ~/.cache/github/x-codie-cc-token.json, re-minted when <10 min remain.
 // flow: RS256 jwt signed with the app key (10 min) → POST /app/installations/<id>/access_tokens (1 h).
 import { execFileSync } from 'node:child_process';
 import { createSign } from 'node:crypto';
@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const app = process.argv[2] ?? 'x-coder';
+const app = process.argv[2] ?? 'x-codie-cc';
 const cacheDir = join(homedir(), '.cache', 'github');
 const cacheFile = join(cacheDir, `${app}-token.json`);
 

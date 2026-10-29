@@ -455,14 +455,14 @@ func prPlan(r *Run, args []string, flags Flags) (any, error) {
 
 func askPR(plan any) string {
 	fields := plan.(ordered)
-	return fmt.Sprintf("open a pr from %s onto %s as x-coder-cc?", fields[1].value, fields[2].value)
+	return fmt.Sprintf("open a pr from %s onto %s as x-codie-cc?", fields[1].value, fields[2].value)
 }
 
 func prOpen(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	name, argv := fields[1].value.(string), fields[0].value.([]string)
 	var url string
-	if err := r.Step("open", "gh pr create as x-coder-cc", func() (string, error) {
+	if err := r.Step("open", "gh pr create as x-codie-cc", func() (string, error) {
 		opened, err := ghRaw(argv...)
 		if err != nil {
 			return "", err

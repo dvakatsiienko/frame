@@ -73,8 +73,8 @@ func TestAsHandsTheMemberTokenToTheChildOnly(t *testing.T) {
 		{"coder on linear", "coder", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-coder:x", "tok-linear-coder"},
 		{"clio on linear", "clio", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-clio:x", "tok-linear-clio"},
 		{"dima on linear", "dima", "linear", "LINEAR_API_KEY", "op://dev/linear-golden/credential", "lin_api_dima"},
-		{"coder on gh", "coder", "gh", "GH_TOKEN", "keychain:x-token-gh-x-coder:x", "ghs_coder"},
-		{"clio on gh", "clio", "gh", "GH_TOKEN", "keychain:x-token-gh-x-cclio-cc:x", "ghs_clio"},
+		{"coder on gh", "coder", "gh", "GH_TOKEN", "keychain:x-token-gh-x-codie-cc:x", "ghs_coder"},
+		{"clio on gh", "clio", "gh", "GH_TOKEN", "keychain:x-token-gh-x-clio-cc:x", "ghs_clio"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -182,7 +182,7 @@ func TestAsMintsAGithubTokenWithASignedAppJWT(t *testing.T) {
 	defer server.Close()
 	bin := t.TempDir()
 	seen := fakeTool(t, bin, "gh", "GH_TOKEN")
-	keys := keysFixture(t, map[string]string{"keychain:github-x-coder-id:x-coder": "4873606", "keychain:github-x-coder-key:x-coder": encoded})
+	keys := keysFixture(t, map[string]string{"keychain:github-x-codie-cc-id:x-codie-cc": "4873606", "keychain:github-x-codie-cc-key:x-codie-cc": encoded})
 	got := runAs(t, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL},
 		"as", "coder", "--", "gh", "pr", "view")
 	if got.code != 0 {

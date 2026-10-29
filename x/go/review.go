@@ -179,7 +179,7 @@ func askPRBody(plan any) string {
 func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	n, file := fields[0].value.(string), fields[3].value.(string)
-	if err := r.Step("write", "gh pr edit as x-coder-cc", func() (string, error) {
+	if err := r.Step("write", "gh pr edit as x-codie-cc", func() (string, error) {
 		return "#" + n, ghCoderOK("pr", "edit", n, "--body-file", file)
 	}); err != nil {
 		return nil, err
@@ -249,7 +249,7 @@ func cleanOnHead(head string) bool {
 	return err == nil && got.ok && got.out == "success"
 }
 
-// ghCoder runs gh as the x-coder-cc app, the identity every lane write on github wears
+// ghCoder runs gh as the x-codie-cc app, the identity every lane write on github wears
 func ghCoder(args ...string) (result, error) {
 	got, err := ghRaw(args...)
 	if err == nil && !got.ok {

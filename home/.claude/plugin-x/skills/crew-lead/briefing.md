@@ -45,7 +45,7 @@
 
 ## the pr
 
-- **a pr clio opens for a coder is opened as the coder app** — a coder opens its own with `x lane pr-open`; when clio opens one: `GH_TOKEN=$(node ~/frame/script/github-agent-token.ts) gh pr create …` renders as `x-coder[bot]`, a plain `gh` makes it dima's.
+- **a pr clio opens for a coder is opened as the coder app** — a coder opens its own with `x lane pr-open`; when clio opens one: `GH_TOKEN=$(node ~/frame/script/github-agent-token.ts) gh pr create …` renders as `x-codie-cc[bot]`, a plain `gh` makes it dima's.
 - **a watch lives until its pr merges or closes, never until its coder stops** — `📡 pr-watch` (`~/frame/_clio/.claude/hooks/pr-watch.sh`, armed by `clio:boot`) wakes clio when a pr first appears («opened — spawn its verifier»), on a new commit, and once per head when green, so the verifier spawns off it within a minute and a spawn arms no watch of its own. a cloud report lands on a `cloud/<slug>` branch the same hook sees.
 - **one coder with two prs in sequence gets one verifier that takes them in turn**.
 - **before a merge, `review:clean` is green on the head**: the one ci round at «final», or past it clio's `gh pr review --approve` on the verifier's clean; never a hand relabel.

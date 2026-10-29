@@ -35,7 +35,7 @@ var members = []string{"clio", "coder", "dima"}
 // the env var each proxied tool reads its token from
 var tokenEnv = map[string]string{"linear": "LINEAR_API_KEY", "gh": "GH_TOKEN"}
 
-var githubApp = map[string]string{"coder": "x-coder", "clio": "x-cclio-cc"}
+var githubApp = map[string]string{"coder": "x-codie-cc", "clio": "x-clio-cc"}
 
 // a token with less life left than this is minted again
 var freshFor = map[string]time.Duration{"linear": 24 * time.Hour, "gh": 10 * time.Minute}

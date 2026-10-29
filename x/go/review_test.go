@@ -35,7 +35,7 @@ pr) case "$2 $*" in
 	esac ;;
 esac
 `)
-	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"})
 	return []string{"PATH=" + filepath.Join(dir, "bin") + ":" + os.Getenv("PATH"), "X_KEYS=" + keys}, dir
 }
 

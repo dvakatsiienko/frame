@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# github-token-wrap — run one `gh` call as the coder app (x-coder-cc).
+# github-token-wrap — run one `gh` call as the coder app (x-codie-cc).
 # every gh call that WRITES to a pr or issue in our repos goes through this,
 # so the post wears the app and never dima. usage: github-token-wrap pr comment 76 --body …
 set -euo pipefail

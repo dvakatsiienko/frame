@@ -136,7 +136,7 @@ on diff lines.
   plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).
 - **github is a ledger**: every line written there is read back into your context on every later turn.
-  API writes wear `github-token-wrap` as `x-coder-cc`; pushes, force-pushes and ref deletes stay on dima's
+  API writes wear `github-token-wrap` as `x-codie-cc`; pushes, force-pushes and ref deletes stay on dima's
   git auth, since the app has no `contents: write`. a reviewer thread gets ≤3 lines: fixed in `<sha>`,
   declined: why, or answered: fact.
 

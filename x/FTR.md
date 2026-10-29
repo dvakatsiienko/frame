@@ -362,7 +362,7 @@
   - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
   - given an agent env, then json; `--board` draws the human view
   - given a pr number that is not digits, a `--since` that is not RFC 3339 or a repo that is not owner/name, then exit 2 before any request
-  - decision: reads go over the rest api as the x-coder-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as coder -- gh` (FRM-364)
+  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as coder -- gh` (FRM-364)
 
 ## linear — tickets
 

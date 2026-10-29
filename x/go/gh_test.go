@@ -91,7 +91,7 @@ type prRun struct {
 func runGhPr(t *testing.T, pages map[string]string, env []string, argv ...string) (prRun, []string) {
 	t.Helper()
 	server, auth := fakeGithub(t, pages)
-	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"})
 	got := runAs(t, append([]string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL}, env...), append([]string{"gh", "pr"}, argv...)...)
 	out := prRun{code: got.code, output: got.stdout + got.stderr}
 	var envelope struct {
@@ -281,7 +281,7 @@ func TestGhPrReadsTheRepoFromTheOriginRemote(t *testing.T) {
 				gitT(t, dir, "config", "url."+c.insteadOf+".insteadOf", c.remote)
 			}
 			server, _ := fakeGithub(t, prPages())
-			keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+			keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"})
 
 			got := xIn(t, dir, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL}, "gh", "pr", "7")
 

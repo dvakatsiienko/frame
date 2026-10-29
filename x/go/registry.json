@@ -45,7 +45,7 @@
         {
             "example": "x gh pr 12 --since 2026-10-09T15:00:00Z",
             "gist": "github reads in one call: a pr's checks and its comment feeds",
-            "identity": "every read acts as the x-coder-cc app, its token from the keychain (keys.go); writes stay with x as coder -- gh",
+            "identity": "every read acts as the x-codie-cc app, its token from the keychain (keys.go); writes stay with x as coder -- gh",
             "name": "gh"
         },
         {
@@ -141,7 +141,7 @@
             ],
             "name": "lane pr-open",
             "needsApply": true,
-            "purpose": "open a pr from the pushed branch onto main as the x-coder-cc app",
+            "purpose": "open a pr from the pushed branch onto main as the x-codie-cc app",
             "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": ["plan", "open"]
         },
@@ -212,7 +212,7 @@
             "needsApply": false,
             "purpose": "re-request a ci review that judged an older commit than the pr head; at the 2-round cap, name dima's approval instead",
             "steps": ["pr", "rounds", "request"],
-            "touches": ["github — the pr's labels, as the x-coder-cc app"]
+            "touches": ["github — the pr's labels, as the x-codie-cc app"]
         },
         {
             "args": [
@@ -244,9 +244,9 @@
             ],
             "name": "lane pr-body",
             "needsApply": true,
-            "purpose": "write a file as the body of the numbered pr as the x-coder-cc app, then read it back",
+            "purpose": "write a file as the body of the numbered pr as the x-codie-cc app, then read it back",
             "steps": ["plan", "write", "verify"],
-            "touches": ["github — the pr's body, as the x-coder-cc app"]
+            "touches": ["github — the pr's body, as the x-codie-cc app"]
         },
         {
             "args": [
@@ -892,7 +892,7 @@
             "needsApply": false,
             "purpose": "read a pr's checks and its three comment feeds in one call, newest first; deploy-bot comments never print",
             "touches": [
-                "github's rest api ($X_GITHUB_URL in tests), as the x-coder-cc app"
+                "github's rest api ($X_GITHUB_URL in tests), as the x-codie-cc app"
             ]
         },
         {

@@ -752,7 +752,7 @@ func ghRecorder(t *testing.T, cases string) (env []string, log string) {
 	dir := t.TempDir()
 	log = filepath.Join(dir, "calls.log")
 	write(t, filepath.Join(dir, "bin/gh"), "#!/bin/sh\nprintf '%s %s\\n' \"$GH_TOKEN\" \"$*\" >> '"+log+"'\ncase \"$*\" in\n"+cases+"\nesac\n")
-	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"})
 	return []string{"PATH=" + filepath.Join(dir, "bin") + ":" + os.Getenv("PATH"), "X_KEYS=" + keys}, log
 }
 

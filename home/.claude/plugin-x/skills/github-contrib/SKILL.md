@@ -106,5 +106,5 @@ ends with one footer line so the maintainer knows who typed it and that dima sta
 
 his account carries the accountability, the footer carries the honesty. the text itself is
 written through `x:writing-for-humans` — load it before the first draft. never a `[bot]`
-impersonation, never silent. inside our own repos the app identities (`x-coder-cc`,
+impersonation, never silent. inside our own repos the app identities (`x-codie-cc`,
 `x-reviewer-cc`) do this job instead.

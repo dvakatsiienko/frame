@@ -32,7 +32,7 @@
             "purpose": "link this branch's layers (<branch>, -2, -3 on origin) into a github stack, bottom-up; hidden while stacks are on trial",
             "steps": ["layers", "link"],
             "touches": [
-                "github — a stack of the layers' prs, as the x-coder-cc app"
+                "github — a stack of the layers' prs, as the x-codie-cc app"
             ]
         },
         {
@@ -42,7 +42,7 @@
             "purpose": "print the github stack this branch's pr sits in, bottom-up, with each pr and state; hidden while stacks are on trial",
             "steps": ["pr", "view"],
             "touches": [
-                "github — the stacks api and the open prs, read as the x-coder-cc app"
+                "github — the stacks api and the open prs, read as the x-codie-cc app"
             ]
         }
     ]

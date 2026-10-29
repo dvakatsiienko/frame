@@ -50,7 +50,7 @@ func stackGithub(t *testing.T, clone string, stacks string) []string {
 		pages[repoPath+"/stacks"] = stacks
 	}
 	server, _ := fakeGithub(t, pages)
-	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
+	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"})
 	return []string{"X_GITHUB_URL=" + server.URL, "X_KEYS=" + keys}
 }
 
@@ -799,7 +799,7 @@ func TestVerifyTreeWithStackSeedsTheTopAndListsEveryLayer(t *testing.T) {
 	}}
 	server := h.serve(t)
 	env := append(tracing(t.TempDir()), "X_GITHUB_URL="+server.URL,
-		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"}))
+		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"}))
 
 	got := xIn(t, main, env, "lane", "verify-tree", "--stack", "https://github.com/o/r/pull/7")
 
@@ -821,7 +821,7 @@ func TestVerifyTreeWithStackRefusesAPrInNoStackBeforeSeeding(t *testing.T) {
 	h := &hub{pages: map[string]string{repoPath + "/stacks": `[]`}}
 	server := h.serve(t)
 	env := append(tracing(t.TempDir()), "X_GITHUB_URL="+server.URL,
-		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"}))
+		"X_KEYS="+keysFixture(t, map[string]string{"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder"}))
 
 	got := xIn(t, main, env, "lane", "verify-tree", "--stack", "https://github.com/o/r/pull/7")
 
