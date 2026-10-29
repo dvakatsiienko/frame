@@ -12,7 +12,7 @@ he answers with a number. the kind follows his words: «emoji» → emojis; «na
 
 - **first call the thing's kind** (dima, 2026-10-16: «I accept the drawback that a name will then be a little bit more verbose, but clarity wins here»); the test: will the name alone have to tell it apart from look-alike siblings?
   - **a worker** — a script, a verb, a hook, a job, a file family, read in a list of siblings: `<area>-<object>-<action>`, verbose is fine — `memory-trace-append`, never `trace-append`
-  - **a character** — a member, a mod, an app, a skill called by name: short and evocative, no area prefix — `composer`, never `cclio-composer`
+  - **a character** — a member, a mod, an app, a skill called by name: short and evocative, no area prefix — `helga`, never `clio-helga`
 - seven distinct names; `rg --hidden -n '<name>'` over `~/frame` and `~/projects/bytes` before printing, so none clashes with a live name
 - naming rules: root `CLAUDE.md` § global naming conventions (entity-first, one name on every layer)
 - his own words lead: a verb or noun he used for the thing is candidate 1

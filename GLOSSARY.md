@@ -2,7 +2,7 @@
 
 The inventory of one mac, in three tiers: the mirror (`home/` symlinked into `~`), the machine
 (Brewfile, macOS defaults, launchd jobs as data), and the fleet (the Claude Code layer in
-`home/.claude/`, cclio, sline, plugin-x, hotkeys).
+`home/.claude/`, clio, sline, plugin-x, hotkeys).
 
 ## Maturity — read before proposing changes
 
@@ -100,11 +100,11 @@ A session's inbound message endpoint at `/tmp/cc-socks/<pid>.sock`.
 The machine-optimized context package one thread produces so another thread — in any handoff frontend — can continue it. Defined once in `CST-SPEC.md`.
 
 **Handoff frontend**:
-A surface that can produce or ingest CSTs — the `cc` `handoff*` skills, or `cw` via the `x-cw` MCP server.
+A surface that can produce or ingest CSTs — the `cc` `handoff*` skills, or `cloud-chat` via the `x-cloud-chat` MCP server.
 _Avoid_: naming one frontend when the statement holds for all
 
 **Handoff store**:
 `~/.claude/shelf/handoffs/` — the directory all handoff frontends share. Files are transient: deleted on ingest (`-shared` kept), swept after 24h.
 
 **Pending handoff**:
-A CST file in the handoff store awaiting ingest. The handoff skill family and the `cw` MCP server own its lifecycle; sline's 📬 only observes.
+A CST file in the handoff store awaiting ingest. The handoff skill family and the `cloud-chat` MCP server own its lifecycle; sline's 📬 only observes.

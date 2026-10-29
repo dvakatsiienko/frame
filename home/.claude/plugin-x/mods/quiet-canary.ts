@@ -1,4 +1,4 @@
-// pnpm mods:quiet-canary [--deadline <min>] — sends cclio a test [progress] ping through x-mod-stash's /quiet-canary in
+// pnpm mods:quiet-canary [--deadline <min>] — sends clio a test [progress] ping through x-mod-stash's /quiet-canary in
 // a headless session (no model call), then reads her quiet log by the ping's nonce: held → delivered, or FAIL. exit 0
 // delivered, 1 FAIL, 2 bad input
 import { spawnSync } from 'node:child_process';
@@ -92,7 +92,7 @@ async function main(argv: string[]) {
     const first = await waitFor(nonce, (s) => s !== 'none', 30_000);
     if (first === 'none') {
         console.log(
-            `FAIL: sent ${nonce}, cclio's log holds no line for it in 30 s — her x-mod-stash is not loaded, not named 🦉 cclio, or the ping was lost`,
+            `FAIL: sent ${nonce}, clio's log holds no line for it in 30 s — her x-mod-stash is not loaded, not named 🦉 clio, or the ping was lost`,
         );
         return 1;
     }
@@ -109,7 +109,7 @@ async function main(argv: string[]) {
         return 0;
     }
     console.log(
-        `held: ${nonce}, waiting up to ${deadline} min for cclio's next prompt or the idle row`,
+        `held: ${nonce}, waiting up to ${deadline} min for clio's next prompt or the idle row`,
     );
     const last = await waitFor(
         nonce,
@@ -121,7 +121,7 @@ async function main(argv: string[]) {
         return 0;
     }
     console.log(
-        `FAIL: ${nonce} held, not delivered in ${deadline} min — the 🤫 n on cclio's row should read red`,
+        `FAIL: ${nonce} held, not delivered in ${deadline} min — the 🤫 n on clio's row should read red`,
     );
     return 1;
 }

@@ -33,15 +33,15 @@ The session's next moves, at most 7 (🎛️ shows 5 to 7), kept live in the boa
 _Avoid_: planned actions, next block, todo
 
 **Lane**:
-One piece of fleet work cclio runs, its whole scope as 1–7 plain steps (any count from a linked lane plan), with its linked members (a coder, a verifier).
+One piece of fleet work clio runs, its whole scope as 1–7 plain steps (any count from a linked lane plan), with its linked members (a coder, a verifier).
 _Avoid_: project, run
 
 **Glide** 🛼:
-A lane's progress card on every board: its steps in order, done ones kept, the current marked, its members' asks beneath; kept in one shelf file, written only by 🦉 cclio through orbit op `glide`, drawn until her siesta ends it; a card past seven steps draws the current one with its neighbours and says «4–8 of 11».
+A lane's progress card on every board: its steps in order, done ones kept, the current marked, its members' asks beneath; kept in one shelf file, written only by 🦉 clio through orbit op `glide`, drawn until her siesta ends it; a card past seven steps draws the current one with its neighbours and says «4–8 of 11».
 _Avoid_: lane tracker, lane card
 
 **Plan step**:
-The lane step a linked coder names with its plan (orbit `plan`, `step`), as its brief numbers them; cclio's stash moves the lane's pointer forward to it.
+The lane step a linked coder names with its plan (orbit `plan`, `step`), as its brief numbers them; clio's stash moves the lane's pointer forward to it.
 _Avoid_: progress, mirror step
 
 **Lane plan**:
@@ -102,7 +102,7 @@ A choice the session made without asking that would cost a redo if wrong, shown 
 _Avoid_: guess, assumed ask
 
 **Quiet comms**:
-cclio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; on by default, `/quiet off` (or 🎛️) its revert.
+clio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; on by default, `/quiet off` (or 🎛️) its revert.
 _Avoid_: mute, silent mode, filter
 
 **Enhancer**:
@@ -122,7 +122,7 @@ What a session is blocked on, from the `🔭` line that ends its last reply; on 
 _Avoid_: blocker, status, watch
 
 **Fleet word**:
-A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, and the members' names (**🦉 cclio**, **🔧 coder** …); the words and badges are `rules/fleet-vibe.md`'s, the members `rules/fleet-identity.md`'s.
+A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, and the members' names (**🦉 clio**, **🔧 coder** …); the words and badges are `rules/fleet-vibe.md`'s, the members `rules/fleet-identity.md`'s.
 _Avoid_: keyword, vibe word
 
 **Second wind**:

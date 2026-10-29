@@ -167,13 +167,13 @@ context-selection mechanism.**
   `CLAUDE.md` is read through its `AGENTS.md`.
 
 **a subagent INHERITS the parent's context stack, whatever its own cwd** [volatile — verified
-2.1.258, 2.1.283] — two cclio subagents (opus at `~/frame/docs`, haiku at `~/frame`) both held
+2.1.258, 2.1.283] — two clio subagents (opus at `~/frame/docs`, haiku at `~/frame`) both held
 `cclio/CLAUDE.md` and every `cclio/memory/*` leaf and quoted its first sentence on request; a
-`--bg` from the same shell and cwd held neither. 2.1.283: this run's own agent, a cclio subagent
+`--bg` from the same shell and cwd held neither. 2.1.283: this run's own agent, a clio subagent
 at `~/frame`, carried `cclio/AGENTS.md` and every memory leaf — two builds in a row now.
 🚨 **reversed 2.1.251** (re-derive from own cwd), which had reversed 2.1.239 (inherit). three
 builds, three answers — never write a brief that depends on either.
-🎯 **consequence:** a subagent or workflow agent spawned by cclio wears the coordinator's brain
+🎯 **consequence:** a subagent or workflow agent spawned by clio wears the coordinator's brain
 on this build, and no `cd` sheds it. a coder that must think as a plain session goes through
 `claude --bg` from the target repo — the only door that derives from cwd.
 - **`omitClaudeMd`** in agent frontmatter runs a card without user, project and local CLAUDE.md
@@ -245,7 +245,7 @@ directory in the brief, every path absolute.**
 
   a frame without `from_mode` reads as «no mode asserted», and a bypass session **holds** it
   («Held peer message … not delivered») unless its settings say `crossSessionInbound: "accept"`.
-  ccrow's `--settings` sets that.
+  crow's `--settings` sets that.
 - a message held by the receiver's permission-mode policy now leaves a trace: a
   `[Cross-session delivery notice]` for a local target, and a `SendMessage` result no longer
   implies it was read [docs, changelog 2.1.271; tool description 2.1.283]. an offline Remote
@@ -269,7 +269,7 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
 - ⭐ **background sessions are ADOPTABLE** — anything reading `~/.claude/sessions/` can brief a
   coder it never spawned. Never respawn to escape a lost parent; delivery is proven, correctness is
   a separate check.
-- ✅ **cclio spawns `--bg` coders from either birth, terminal or Code tab** — measured 2026-09-07: a Code-tab-born session's child booted on `Claude Max`, wrote a file, bridged rc. the desktop env markers (`CLAUDE_CODE_ENTRYPOINT=claude-desktop`, `ANTHROPIC_BASE_URL`) are harmless. an auth error on spawn means cc is signed out, not a broken door — probe: `claude -p --model haiku 'reply: alive'`.
+- ✅ **clio spawns `--bg` coders from either birth, terminal or Code tab** — measured 2026-09-07: a Code-tab-born session's child booted on `Claude Max`, wrote a file, bridged rc. the desktop env markers (`CLAUDE_CODE_ENTRYPOINT=claude-desktop`, `ANTHROPIC_BASE_URL`) are harmless. an auth error on spawn means cc is signed out, not a broken door — probe: `claude -p --model haiku 'reply: alive'`.
 - **cloud is receive-only** and cli → cloud delivery is unverified — a one-way pipe plus a shared
   store, never a handshake.
 - **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299 from flag, project and user settings; 2.1.304 from user settings]:
@@ -277,7 +277,7 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   flagSettings»; the control without it called fine; the user `settings.json` holds it fleet-wide since 2026-10-15.
 - **who costs what on the first request** [verified 2026-10-07 → 10-15, 256 subagent first requests, duckdb]:
   `omitClaudeMd` cards 8–10k cold · Explore 35–57k and helper 118k before both got `omitClaudeMd` on 2026-10-15 ·
-  general-purpose 82k, 117k from cclio · fork 270k warm. parallel spawns of one card shared no prefix
+  general-purpose 82k, 117k from clio · fork 270k warm. parallel spawns of one card shared no prefix
   cache (warm 0 in 111); a workflow fan-out holds siblings up to 5 s so they do [docs].
 - **a workflow `agent()` without `agentType` loads the whole fleet memory** [verified 2.1.299]: the default workflow agent (haiku) wrote 115k on its first request, one on `agentType: 'helper-lite'` 7.5k; the `general-purpose` deny does not touch the default. both answered a question from the parent's latest user turn, so a workflow agent sees part of the parent's last turn [verified, mechanism unknown]
 - **a x10 fan-out of one card** [verified 2.1.299, helper-lite on haiku 5.5, a real job]: 10 agents 139k
@@ -294,9 +294,9 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
 - **row 10 in full** — cloud is forbidden by every brief so far.
 - **what `disableAgentView` costs today** — it gated `claude agents` and `claude agents --json`
   and not `ListAgents` [verified 2.1.239]; whether it also hides the in-tui agent view [unknown].
-- ⚠️ **the cclio-stack bleed — explained for subagents, unreproduced for `--bg`.** subagent
+- ⚠️ **the clio-stack bleed — explained for subagents, unreproduced for `--bg`.** subagent
   inheritance (§7) is what the 2026-08-30 run saw from the inside. its one `--bg` observation
-  (registry cwd `~/frame`, cclio leaves loaded) did not reproduce: two `--bg` probes on 2.1.258
+  (registry cwd `~/frame`, clio leaves loaded) did not reproduce: two `--bg` probes on 2.1.258
   from `~/frame` and `~/frame/docs` loaded nothing under `cclio/`. 1 bleed in 3 bg launches
   across two builds; the daemon recording the first `--bg` call's cwd (§5) is the remaining
   suspect. **a bg coder's brief asks it to name its loaded CLAUDE.md paths in its first reply** —

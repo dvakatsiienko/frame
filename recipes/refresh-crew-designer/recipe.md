@@ -55,7 +55,7 @@ dima, 2026-10-02, on the design comms loop:
 
 - suggest a run when: a big design job is about to start, Claude Design or Cowork ships a major update
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. spawn the lanes on one brief (per habit-test-drive: reach for the live test drives first): exa agent (effort set explicitly) · parallel core · an opus lane that reads sources (skills,
    prompts, npm) · neuroarxiv for the papers · `advise-project-approach` when the flow itself is in
    question. one shared brief file; the reply waits for all lanes (habit-dima-comms: a fan-out answers once). done: every lane returned or marked failed. (template)

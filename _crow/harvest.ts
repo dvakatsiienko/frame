@@ -78,7 +78,7 @@ async function waitTurn(marker: string) {
 }
 
 async function harvestSession(wake: Wake, arm: Arm) {
-    const turn = await waitTurn(`ccrow wake ${wake.id}`);
+    const turn = await waitTurn(`crow wake ${wake.id}`);
     if (!turn)
         return appendNoteOnce(
             NOTES_PATH,

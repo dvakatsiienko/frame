@@ -23,7 +23,7 @@ import {
     isMode,
     liveArm,
     modeList,
-    oneCcrow,
+    oneCrow,
     packWake,
     readLines,
     readState,
@@ -35,11 +35,11 @@ import {
     writeState,
 } from './lib.ts';
 
-const usage = `ccrow:wake --transcript <jsonl> [--mode ${modeList.join('|')}] [--precompact]
+const usage = `crow:wake --transcript <jsonl> [--mode ${modeList.join('|')}] [--precompact]
 
-  builds a packet from cclio's transcript delta and the leaves in ${join(STATE_DIR, 'leaves.txt')},
-  copies it into ccrow's home and sends ccrow one wake line. skips (exit 0, one line) when
-  ${join(STATE_DIR, 'paused')} exists, ccrow is not running, the last wake is under 30 min old, or fewer than 10 cclio steps
+  builds a packet from clio's transcript delta and the leaves in ${join(STATE_DIR, 'leaves.txt')},
+  copies it into crow's home and sends crow one wake line. skips (exit 0, one line) when
+  ${join(STATE_DIR, 'paused')} exists, crow is not running, the last wake is under 30 min old, or fewer than 10 clio steps
   passed (--precompact waives the step count). mode defaults to day.`;
 
 const { values } = parseArgs({
@@ -89,11 +89,11 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         skip(`paused (${join(STATE_DIR, 'paused')} exists)`);
     }
     if (!isCoordinatorTranscript(transcriptPath)) {
-        skip(`not cclio's thread: ${transcriptPath}`);
+        skip(`not clio's thread: ${transcriptPath}`);
     }
     const state = readState();
-    // a --bg ccrow takes socket lines; a desktop tab takes only the desktop's own door, so cclio relays
-    const session = oneCcrow();
+    // a --bg crow takes socket lines; a desktop tab takes only the desktop's own door, so clio relays
+    const session = oneCrow();
     const viaSocket = Boolean(session?.jobId);
     if (state.lastWakeAt && now.getTime() - state.lastWakeAt < WAKE_GAP_MS) {
         skip(
@@ -111,7 +111,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     const delta = transcriptDelta(lines, fromLine);
     if (!values.precompact && delta.steps < MIN_STEPS) {
         skip(
-            `${delta.steps} cclio steps since the last wake (min ${MIN_STEPS})`,
+            `${delta.steps} clio steps since the last wake (min ${MIN_STEPS})`,
         );
     }
 
@@ -135,7 +135,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         await sendLine(session.messagingSocketPath, wakeLine(wakeInfo)).catch(
             (error: unknown) =>
                 fail(
-                    `cannot reach ccrow's socket: ${error instanceof Error ? error.message : String(error)}`,
+                    `cannot reach crow's socket: ${error instanceof Error ? error.message : String(error)}`,
                 ),
         );
     } else {
@@ -161,11 +161,11 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         ? `, ${packed.missing.length} leaves unmatched`
         : '';
     console.log(
-        `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: cclio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${packed.files.length} files${unmatched}`,
+        `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: clio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${packed.files.length} files${unmatched}`,
     );
     if (wakeInfo.phase === 'live' && state.arm && state.arm !== liveArm) {
         console.log(
-            `ccrow runs ${state.arm}, the arm is ${liveArm}: pnpm ccrow:stop, then pnpm ccrow:start ${liveArm}`,
+            `crow runs ${state.arm}, the arm is ${liveArm}: pnpm crow:stop, then pnpm crow:start ${liveArm}`,
         );
     }
 }

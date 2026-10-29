@@ -4,7 +4,7 @@ node_modules
 todo.md
 
 # Build artifacts
-home/.claude/mcp-x-cw/dist
+home/.claude/mcp-x-cloud-chat/dist
 home/.claude/sline/bin
 x/go/bin
 home/.claude/sline/sline
@@ -44,11 +44,11 @@ home/.claude/shelf/yt-transcripts/
 home/.claude/shelf/sounds/*
 !home/.claude/shelf/sounds/audition.sh
 
-# The cclio-mode snapshot is a build (script/skill-cclio-mode-snapshot.ts), recompiled at every halt.
-home/.claude/shelf/cclio-mode-snapshot.md
+# The clio-mode snapshot is a build (script/skill-clio-mode-snapshot.ts), recompiled at every halt.
+home/.claude/shelf/clio-mode-snapshot.md
 
 # The memory-sync mirror is a build too (script/skill-memory-sync-mirror.ts): the cc masters rendered
-# into cw memory entries plus a manifest, re-rendered by pnpm memory-sync:copy / skill:memory-sync-mirror.
+# into cloud-chat memory entries plus a manifest, re-rendered by pnpm memory-sync:copy / skill:memory-sync-mirror.
 home/.claude/shelf/memory-sync-mirror/
 __pycache__/
 home/.claude/shelf/ci-seen.json

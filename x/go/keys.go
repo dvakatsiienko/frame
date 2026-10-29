@@ -25,17 +25,17 @@ import (
 
 // keys is the one place a token comes from. each secret is read where it lives (checked 2026-10-07):
 // dima's linear key in 1password (dev/linear-golden, through the x-fleet service account, `op read`
-// in-process — `op run` masks a child's stdout), the cclio/coder linear oauth pairs and the github app
+// in-process — `op run` masks a child's stdout), the clio/coder linear oauth pairs and the github app
 // keys in the macos keychain. a minted token is cached in the keychain until it nears expiry, written
 // through `security -i` on stdin. no secret reaches argv, stdout, a trace or a file in a repo.
 // X_KEYS names a json fixture that stands in for both stores; under X_TEST nothing else is read.
 
-var members = []string{"cclio", "coder", "dima"}
+var members = []string{"clio", "coder", "dima"}
 
 // the env var each proxied tool reads its token from
 var tokenEnv = map[string]string{"linear": "LINEAR_API_KEY", "gh": "GH_TOKEN"}
 
-var githubApp = map[string]string{"coder": "x-coder", "cclio": "x-cclio-cc"}
+var githubApp = map[string]string{"coder": "x-coder", "clio": "x-cclio-cc"}
 
 // a token with less life left than this is minted again
 var freshFor = map[string]time.Duration{"linear": 24 * time.Hour, "gh": 10 * time.Minute}

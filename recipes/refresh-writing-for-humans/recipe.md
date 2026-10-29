@@ -23,7 +23,7 @@ dima's, confirmed 2026-08-27:
 
 - suggest a run when: a run of the skill produces «machinic» output dima flags
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. lanes from two briefs (skills + techniques · detectors): the `researcher` agent + `pnpm research:lanes`; add your own read on how the skill should work (dima's standing note). done: every lane landed or failed out loud. (template)
 3. distill: clever-merge findings into `home/.claude/plugin-x/skills/writing-for-humans/references/sources.md` (useful old stays,
    useful new enters, no bloat, completeness first); raw researcher output stays in `last/` until the next run's distill. done: the doc carries the merge, or is named «unchanged». (open)

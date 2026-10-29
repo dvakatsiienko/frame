@@ -7,7 +7,7 @@ this file holds the code-level examples and where the rule stops.
 
 - ✅ `FormSubmit`, `FormLogin`, `FormField` · 🚫 `SubmitForm`, `LoginForm`
 - ✅ `usageSave`, `usageRead`, `usagePath` · 🚫 `saveUsage`, `readUsage`
-- ✅ `crew-coder`, `crew-verifier`, `crew-designer` · 🚫 `coder-brief`, `verifier-brief`
+- ✅ `crew-codie`, `crew-sixth-sense`, `crew-designer` · 🚫 `coder-brief`, `verifier-brief`
 - ✅ `guide-code`, `guide-react` · 🚫 `code-guide`, `react-guide`
 - ✅ `handoff-create`, `handoff-delete` · 🚫 `create-handoff`, `delete-handoff`
 - ✅ a package script family: `sline:build`, `sline:test` · 🚫 `build-sline`, `test-sline`

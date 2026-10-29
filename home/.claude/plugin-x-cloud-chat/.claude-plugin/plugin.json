@@ -1,0 +1,12 @@
+{
+  "name": "x-cloud-chat",
+  "version": "0.2.44",
+  "description": "the x skill set curated for cloud-chat (claude desktop) — symlinks into plugin-x, plus cloud-chat-only skills as real dirs",
+  "author": {
+    "name": "Dima Vakatsiienko",
+    "email": "imagnum.satellite@gmail.com"
+  },
+  "homepage": "https://github.com/dvakatsiienko/frame",
+  "repository": "https://github.com/dvakatsiienko/frame",
+  "license": "MIT"
+}

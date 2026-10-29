@@ -79,7 +79,7 @@ func (d *mergeDecision) selfWait(pr pullHead, self []string) (string, error) {
 		"; once his own prompt names #" + d.PR + ": x lane merge-auto " + d.PR + " --apply --dima-ok " + d.PR, nil
 }
 
-// the hash covers the body through the newline before ## signed, first 8 hex of its sha256, as cclio signs it;
+// the hash covers the body through the newline before ## signed, first 8 hex of its sha256, as clio signs it;
 // the last «· body <hash>» line in the block is the one that holds
 func readSign(ticket, body string) chunkSign {
 	// the block closes the body, so the last heading is it: an earlier «## signed» sits in a quote or a fence

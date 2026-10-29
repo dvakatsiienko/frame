@@ -1,11 +1,11 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { cclioAddress, peerPing } from '../hooks/register.tsx';
+import { clioAddress, peerPing } from '../hooks/register.tsx';
 
-// quiet comms (PK-93): a member's [progress] ping is held in cclio's thread, everything else passes
+// quiet comms (PK-93): a member's [progress] ping is held in clio's thread, everything else passes
 
-const SID = 'q1q1q1q1-cclio';
+const SID = 'q1q1q1q1-clio';
 // 2026-10-12 is an even day: the a/b arm is on unless switched
 const EVEN = new Date(2026, 9, 12, 15, 0).getTime();
 const ODD = new Date(2026, 9, 13, 15, 0).getTime();
@@ -13,14 +13,14 @@ const MIN = 60_000;
 
 const PID = 4242;
 
-// cclio by default, as the registry names her; `cwd` is where a Bash `cd` left her
+// clio by default, as the registry names her; `cwd` is where a Bash `cd` left her
 function world(
     on: On,
     {
         cwd = '/home/frame/_clio',
-        name = '🦉 cclio',
+        name = '🦉 clio',
         now = EVEN,
-        // files beside the registry (ccrow's relay), and other live sessions as cc writes their registry files
+        // files beside the registry (crow's relay), and other live sessions as cc writes their registry files
         files = {} as Record<string, string>,
         peers = [] as Record<string, unknown>[],
         // a test's own answer to a process run, before the default one
@@ -152,7 +152,7 @@ const held = (w: ReturnType<typeof world>) =>
 
 /* the hold */
 
-test("a [progress] ping in cclio's thread is taken: not queued, no turn", async ($, on) => {
+test("a [progress] ping in clio's thread is taken: not queued, no turn", async ($, on) => {
     const w = world(on);
     await start($);
     const r = await ping($, '[progress] step 2 of 5 landed');
@@ -210,14 +210,14 @@ test('an untagged ping passes, never held blind', async ($, on) => {
     expect(w.queued).toHaveLength(1);
 });
 
-test("cclio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, on) => {
+test("clio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, on) => {
     const w = world(on, { cwd: '/home/frame/home/.claude/plugin-x/mods' });
     await start($);
     await ping($, '[progress] step 2 landed');
     expect(w.queued).toEqual([]);
 });
 
-test('a session the registry names other than cclio passes a [progress] ping, even in her dir', async ($, on) => {
+test('a session the registry names other than clio passes a [progress] ping, even in her dir', async ($, on) => {
     const w = world(on, { name: '☕️ 🔧 coder: mods' });
     await start($);
     await ping($, '[progress] step 2 landed');
@@ -437,7 +437,7 @@ test('each delivery logs its sender, tag, verdict and whether it started a turn'
     ]);
 });
 
-test("the held pings reach the store for cclio's sessions row", async ($, on) => {
+test("the held pings reach the store for clio's sessions row", async ($, on) => {
     const w = world(on);
     await start($);
     await ping($, '[progress] a');
@@ -457,9 +457,9 @@ test("the held pings reach the store for cclio's sessions row", async ($, on) =>
 test('a desktop envelope names its sender with name=', () => {
     expect(
         peerPing(
-            '<cross-session-message from="local_a1" name="🦉 cclio">\n[ask] a or b?\n</cross-session-message>',
+            '<cross-session-message from="local_a1" name="🦉 clio">\n[ask] a or b?\n</cross-session-message>',
         ),
-    ).toEqual({ body: '[ask] a or b?', from: '🦉 cclio', tag: 'ask' });
+    ).toEqual({ body: '[ask] a or b?', from: '🦉 clio', tag: 'ask' });
 });
 
 /* the safety net (brief 6) */
@@ -539,7 +539,7 @@ test("a canary ping's held and flushed lines carry its nonce", async ($, on) => 
     ]);
 });
 
-test('/quiet-canary sends cclio a [progress] ping with its nonce', async ($, on) => {
+test('/quiet-canary sends clio a [progress] ping with its nonce', async ($, on) => {
     world(on, { name: '☕️ 🔧 coder: mods' });
     const sent: { to: string; text: string }[] = [];
     on('session.send', (_$, e) => {
@@ -556,7 +556,7 @@ test('/quiet-canary sends cclio a [progress] ping with its nonce', async ($, on)
         [
             {
                 text: '[progress] quiet canary c7: a test ping from /quiet-canary, nothing to do',
-                to: '🦉 cclio',
+                to: '🦉 clio',
             },
         ],
     ]);
@@ -573,27 +573,27 @@ test('/quiet-canary says FAIL with the reason when the send bounces', async ($, 
     expect(r.text).toBe('quiet canary c7: FAIL, not reachable');
 });
 
-test('the ledger counts a send to cclio by her name, her socket or her session id, wherever `to` sits', () => {
+test('the ledger counts a send to clio by her name, her socket or her session id, wherever `to` sits', () => {
     const to = new RegExp(
-        cclioAddress({ pid: 35832, sids: ['local_a955'] }),
+        clioAddress({ pid: 35832, sids: ['local_a955'] }),
         'u',
     );
     const sent = (input: string) =>
         `{"type":"assistant","message":{"content":[{"type":"tool_use","name":"SendMessage","input":${input}}]}}`;
     expect(
         [
-            sent('{"to":"🦉 cclio [271ab4]","message":"x"}'),
+            sent('{"to":"🦉 clio [271ab4]","message":"x"}'),
             sent(
                 '{"summary":"s","to":"uds:/tmp/cc-socks/35832.sock","message":"x"}',
             ),
             sent('{"message":"x","to":"local_a955"}'),
-            sent('{"to":"🔎 verifier","message":"cclio said so"}'),
+            sent('{"to":"🔎 verifier","message":"clio said so"}'),
             sent('{"to":"uds:/tmp/cc-socks/999.sock","message":"x"}'),
         ].map((l) => to.test(l)),
     ).toEqual([true, true, true, false, false]);
 });
 
-/* brief 8 item 2: cclio's thread sends ccrow's wake itself */
+/* brief 8 item 2: clio's thread sends crow's wake itself */
 
 const RELAY = '/home/.local/state/crow/relay.json';
 const CROW_SID = 'f9f9f9f9-crow';
@@ -601,7 +601,7 @@ const WAKE = JSON.stringify({
     id: 'w1',
     line: 'wake w1 · day · read the last 30 steps',
 });
-const crowPeer = { name: '🐦 ⬛ ccrow', pid: 777, sessionId: CROW_SID };
+const crowPeer = { name: '🐦 ⬛ crow', pid: 777, sessionId: CROW_SID };
 
 function relayWorld(on: On, delivered = true) {
     const files: Record<string, string> = { [RELAY]: WAKE };
@@ -616,7 +616,7 @@ function relayWorld(on: On, delivered = true) {
     return { ...w, files, sent };
 }
 
-test("a parked ccrow wake goes to her session from cclio's poll, and is marked sent", async ($, on) => {
+test("a parked crow wake goes to her session from clio's poll, and is marked sent", async ($, on) => {
     const w = relayWorld(on);
     await start($);
     await w.clock.advance(5000);
@@ -688,8 +688,8 @@ test('a ledger gap raises one native alarm, through osascript when notify finds 
     await start($);
     await w.clock.advance(10 * MIN);
     expect([w.notified, w.scripted]).toEqual([
-        ['☕️ 🔧 coder: mods sent cclio 1, her quiet log holds 0'],
-        ['☕️ 🔧 coder: mods sent cclio 1, her quiet log holds 0'],
+        ['☕️ 🔧 coder: mods sent clio 1, her quiet log holds 0'],
+        ['☕️ 🔧 coder: mods sent clio 1, her quiet log holds 0'],
     ]);
 });
 
@@ -749,7 +749,7 @@ test('an alarm neither notify nor osascript can raise is logged, never thrown', 
     expect(
         w.logged.filter((l) => l.includes('quiet alarm not raised')),
     ).toEqual([
-        'x-mod-stash: quiet alarm not raised (notify: no-surface; osascript: exit 1): ☕️ 🔧 coder: mods sent cclio 1, her quiet log holds 0',
+        'x-mod-stash: quiet alarm not raised (notify: no-surface; osascript: exit 1): ☕️ 🔧 coder: mods sent clio 1, her quiet log holds 0',
     ]);
 });
 

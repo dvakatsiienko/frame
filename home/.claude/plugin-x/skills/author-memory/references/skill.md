@@ -19,7 +19,7 @@ refresh-when: the skill listing budget mechanics change, or `writing-for-agents`
 - argument placeholders
 - evals
 
-conventions for the skills in `home/.claude/plugin-x/skills/`. `cw` reads the same files: `home/.claude/plugin-x-cw/` symlinks into them and ships as the `x-cw` plugin, so a skill is written once. **a new `x:*` skill asks the cw question at create time**: `plugin-x-cw` is a curated symlink set, so a skill reaches cw only by `ln -s ../../plugin-x/skills/<name>` in `plugin-x-cw/skills/` plus a bump of both plugins.
+conventions for the skills in `home/.claude/plugin-x/skills/`. `cloud-chat` reads the same files: `home/.claude/plugin-x-cloud-chat/` symlinks into them and ships as the `x-cloud-chat` plugin, so a skill is written once. **a new `x:*` skill asks the cloud chat question at create time**: `plugin-x-cloud-chat` is a curated symlink set, so a skill reaches cloud chat only by `ln -s ../../plugin-x/skills/<name>` in `plugin-x-cloud-chat/skills/` plus a bump of both plugins.
 
 📌 **a plugin runs from its cache copy, so everything its `bin/` and skills import lives inside the plugin dir** — outside it the import dies with `ERR_MODULE_NOT_FOUND` (`script/lib/plugin-bin-imports.test.ts` checks the bins).
 
@@ -43,7 +43,7 @@ the single most expensive line, and the only one that decides whether the skill 
 - **a «Not for …» clause** is added only when a misfire is on record, naming the lookalike in the words that misfired («Not for a 1password vault or item.»)
 - **seed it with the literal words dima types** («commit this», a pasted url, «walk me through»): a description can only match words that appear in a prompt
 
-🚨 **the name is read before the description, sometimes instead of it. [measured]** four mcp tools shipped as `transcript_*`; a `cw` thread listed them and refused them as «your session/handoff transcript store … not YouTube captions». renamed `yt_transcript_*`, they worked first try. a wrong entity name is not recoverable by a good description, and the entity is as specific as the namespace it claims (dima: *«we may have more things for transcripting»*). the entity-first rule lives in root `CLAUDE.md`.
+🚨 **the name is read before the description, sometimes instead of it. [measured]** four mcp tools shipped as `transcript_*`; a `cloud-chat` thread listed them and refused them as «your session/handoff transcript store … not YouTube captions». renamed `yt_transcript_*`, they worked first try. a wrong entity name is not recoverable by a good description, and the entity is as specific as the namespace it claims (dima: *«we may have more things for transcripting»*). the entity-first rule lives in root `CLAUDE.md`.
 
 ## the skill listing budget
 
@@ -60,7 +60,7 @@ skills are **half-lazy**: `name` + `description` are resident from boot (~80–1
 
 ## invocation control
 
-📌 **commands and skills are the same thing** — the docs: *"Custom commands have been merged into skills."* a command is billed exactly like a skill (**[measured]** the `cclio:*` commands sit in the listing at ~30–40 tokens each).
+📌 **commands and skills are the same thing** — the docs: *"Custom commands have been merged into skills."* a command is billed exactly like a skill (**[measured]** the `clio:*` commands sit in the listing at ~30–40 tokens each).
 
 - **only dima invokes it** → `disable-model-invocation: true`: the description leaves the listing — the saving. it also stops preloading into subagents, stops the run when a scheduled task fires with the skill as its prompt, and drops a project `verify` or `simplify` skill's before-each-commit run (2.1.286; plugin skills never get it)
 - **only claude invokes it** → `user-invocable: false`: hidden from the `/` menu, description still resident. ⚠️ the trap — it reads like the one you want
@@ -68,7 +68,7 @@ skills are **half-lazy**: `name` + `description` are resident from boot (~80–1
 - **a rule that must hold** → the skill's own `hooks:` frontmatter, registered from invoke to session end (`once: true` drops it after its first success), never a firmer line in prose **[read, docs 2026-10-13]**
 - **cross-skill calls** are written «call the Skill tool with "x:foo"», one skill per call, never routed to a `disable-model-invocation` skill **[read, matt `invocation.md`]**
 
-🚫 **the habit: read the body for self-triggering before flagging** — a skill meant to fire on its own dies silently when flagged: `cclio:halt` (dima may just say «we are done»), `cclio:flawlog` (a mistake just happened), `x:cmt` (any commit). the saving is ~30–40 tokens, never worth a habit.
+🚫 **the habit: read the body for self-triggering before flagging** — a skill meant to fire on its own dies silently when flagged: `clio:halt` (dima may just say «we are done»), `clio:flawlog` (a mistake just happened), `x:cmt` (any commit). the saving is ~30–40 tokens, never worth a habit.
 
 ## splitting: by trigger, not by topic
 

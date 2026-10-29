@@ -42,7 +42,7 @@
   - then the row reads «🔭 waiting on <who>», the first task in three words at most, «+n» for the rest; a reply's own 🔭 line wins
   - and a fleet subagent (`wishkeeper`, `helper`, `researcher`, `retro`, `helper-lite`, `scout`) is <who> as its badge and type, `🐬 wishkeeper`, never its description; only <who> prints bold (dima, 2026-10-11 15:34: «why no emoji? bold only <who>»)
   - decision: short, «waiting on <who>», nothing more (dima's o88, 23:15)
-  - given the only tasks running are cclio's standing watches — a task whose command runs `watch-once.sh`, else one described «Arm the one-shot pr watch» or «… ci watch» — then the 🔭 reads «not waiting»; beside a real wait they are not counted in the +n
+  - given the only tasks running are clio's standing watches — a task whose command runs `watch-once.sh`, else one described «Arm the one-shot pr watch» or «… ci watch» — then the 🔭 reads «not waiting»; beside a real wait they are not counted in the +n
   - decision: the standing watches run all day and are no wait (dima's o52, 2026-10-11)
   - given several background tasks, then the band keeps «waiting on <first> +n» and the fleet board's row names every one by its own description, `; `-joined (dima's o75)
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
@@ -72,7 +72,7 @@
   - given dima's prompt, or a peer's
   - when it reaches the model
   - then its context holds `now HH:MM`, so a reply's 📄 stamp copies the clock
-  - decision: three 📄 stamps were guessed ahead of the clock on 10-07 and `reply-check` refused each one, a correction turn every time; ccrow named the fix, dima said yes
+  - decision: three 📄 stamps were guessed ahead of the clock on 10-07 and `reply-check` refused each one, a correction turn every time; crow named the fix, dima said yes
 - ✅ a ·-joined list in a reply becomes bullets before dima sees it
   - given a reply line in prose like `the crew: a · b · c` (outside a fence, inline code and the 📄 line)
   - then the drawing (`ui.render` on `AssistantMessage`, every surface) and the stored row (`session.append`, the response door) both read `the crew:` and one `- ` line per item; a `·` list inside a bullet nests under it
@@ -81,19 +81,19 @@
 - ✅ a bare fleet word or member in a reply prints bold with its badge before dima sees it
   - given a reply in prose names a fleet word plain: `wisp`, `siesta`, `wish` after a determiner (`a`, `the`, `his` …), `freebie`, or their plurals
   - then the drawing and the stored row both read **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**; a word already badged only gains the bold
-  - given a reply names a fleet member from `rules/fleet-identity.md` plain: `cclio`, `ccrow`, `coder`, `verifier`, `designer`, `researcher`, `helper-lite`, `cw`, `dima`, or their plurals
-  - then it reads **🦉 cclio**, **🐦‍⬛ ccrow**, **🔧 coder**, **🔎 verifier**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **🤝 cw**, **🙋‍♂️ dima** (FRM-357)
+  - given a reply names a fleet member from `rules/fleet-identity.md` plain: `clio`, `crow`, `coder`, `verifier`, `designer`, `researcher`, `helper-lite`, `cloud-chat`, `dima`, or their plurals
+  - then it reads **🦉 clio**, **🐦‍⬛ crow**, **🔧 coder**, **🔎 verifier**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **🤝 cloud chat**, **🙋‍♂️ dima** (FRM-357)
   - decision: members that are plain english too stay out — `helper`, `retro`, `classifier`, `scout`, `cc` would badge a helper function, the retro file or the verb
-  - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods coder`), a word behind another word's badge (`🔎 coder`), and a name like `x-mod-wisp`, `wisp.md` or `cclio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
+  - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods coder`), a word behind another word's badge (`🔎 coder`), and a name like `x-mod-wisp`, `wisp.md` or `clio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
   - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped
-  - decision: fixed in the output, never policed — cclio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)
+  - decision: fixed in the output, never policed — clio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)
   - proven live 2026-10-08: a headless reply told to print «that becomes a wisp, then a siesta; i wish the wish were a freebie» was stored with all four bolded, the verb left, and the day's key written; freebie took its 🍀 the same day (dima, 18:25)
 - ✅ three more reply-style misses are redrawn on screen, never blocked (todo 29, dima's o171)
   - given a reply line runs ①②③, then it draws as one `n.` line each, a label before the first kept as its own line; a lone circled digit stays
   - given a bare `FRM-n` or `BYT-n` in prose, then it draws as its link into linear; one in a link, a url, a path, inline code or a fence stays
   - given a 🔭 line carries an (aside), then it draws without it; a link's url keeps its parens
   - and each has its own 🎛️ switch under `stash · replies` (`①②③ drawn as numbered lines`, `bare ticket ids drawn as links`, `a 🔭 line's (aside) dropped`); fences and the 📄 line are never touched
-  - decision: what a render fixes, `reply-check.py` stops checking (circled-digits, bare-ticket, wait-paren); the rest stays its log and reminder (cclio, 19:40)
+  - decision: what a render fixes, `reply-check.py` stops checking (circled-digits, bare-ticket, wait-paren); the rest stays its log and reminder (clio, 19:40)
   - proof: tests/replyfix.test.ts (numberCircled, linkTickets, dropWaitAside); tests/switches.test.ts (each switch's reason row) — not asserted: the AssistantMessage render wiring through a mounted message
 - ✅ a reply's 📄 stamp is stored with the real clock
   - given a reply row whose 📄 line carries an `HH:MM` that is not now (a long turn outran its prompt's clock, or the model guessed)
@@ -146,7 +146,7 @@
   - when dima switches 🔥 on
   - then the ping comes 33 minutes later, inside the cache's hour; switched on 50 or more minutes after the turn, it pings at once
 - ✅ 🔥 follows its store key at every turn end
-  - given another process writes or deletes `hot:<session id>` after `session.start` (ccrow's start script learns its id from the registry, FRM-335)
+  - given another process writes or deletes `hot:<session id>` after `session.start` (crow's start script learns its id from the registry, FRM-335)
   - when the session's turn ends
   - then 🔥 ticks and the 50-minute ping is armed, or unticks and no ping is armed
   - given dima switched 🔥 off on the band
@@ -175,7 +175,7 @@
   - when dima clicks 🔥
   - then it unticks and its `hot:<session id>` key leaves the store
   - proven live 2026-10-09 in `pnpm mods:live`: a planted `hot:<id>` whose 5h reset had passed a minute before loaded on a reload, 🔥's card read «stop keeping …» after the polls, and the key stayed; the click is harness-proven, `mods:live` cannot press
-  - decision: the 5h auto-off is gone — it cooled ccrow overnight; hot moves only by dima's click, ccrow's start script the one exception (dima, 2026-10-08, FRM-357)
+  - decision: the 5h auto-off is gone — it cooled crow overnight; hot moves only by dima's click, crow's start script the one exception (dima, 2026-10-08, FRM-357)
   - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
 - ✅ a hot session is pinged while idle
   - given 🔥 is on and the session's last turn ended 50 minutes ago
@@ -196,7 +196,7 @@
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
-  - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
+  - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; clio's «build the rest of slice 05 meanwhile»)
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given any part switched off, then the whole feature is off, for every model too: nothing drawn, no line of it in a prompt or a tool result, no turn it would start, and its orbit op refused in one line naming the switch; switched back on, all of it returns
     - the `assumed` section, `🌔 phases`, `🛼 glide`: their lines leave, ops `assume` `plan` `glide` refused
@@ -232,11 +232,11 @@
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it
   - makes: at a repo top, a change in the tracked `.claude/settings.json` that waits in git to be committed; anywhere else an untracked local file
-  - decision: a repo top's own local file outranks every subdir's, its shared file does not (probed 2026-10-10) — so frame's 92 sits in the shared file and cclio's 70 in `~/frame/_clio` wins for her (dima, 11:25: «for cclio, it should be tied to that 70 value, her local override»)
+  - decision: a repo top's own local file outranks every subdir's, its shared file does not (probed 2026-10-10) — so frame's 92 sits in the shared file and clio's 70 in `~/frame/_clio` wins for her (dima, 11:25: «for clio, it should be tied to that 70 value, her local override»)
   - when he types anything else, or the file is not a json object
   - then one red line under the meters says why, and the file stays untouched
-  - decision: the project is the dir the session launched in, as its registry entry's `cwd` names it (cclio's is `~/frame/_clio`), never the repo root and never user settings — every session in that dir shares the point
-  - decision: the registry's `cwd`, not `session.start`'s — cclio's session.start read `~/frame`, and dima's 90 landed in the repo root's file, lowering every `~/frame` session's point too (19:19)
+  - decision: the project is the dir the session launched in, as its registry entry's `cwd` names it (clio's is `~/frame/_clio`), never the repo root and never user settings — every session in that dir shares the point
+  - decision: the registry's `cwd`, not `session.start`'s — clio's session.start read `~/frame`, and dima's 90 landed in the repo root's file, lowering every `~/frame` session's point too (19:19)
   - proof: tests/meters.test.ts::typing a compaction point saves it with no Enter / a compaction point outside 10–99 is refused / a settings file that is not a json object is refused and left untouched, plus the repo-top and subdir cases
 - ✅ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json` on every measure whose rate limits moved, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it
   - 📌 unprobed: that a desktop tab's measure carries `five_hour` — the file held `five_hour: null` from sline at 18:43
@@ -247,20 +247,20 @@
 
 - 🔎 `/board` opens a pane listing every live session
   - the harness proves the rows; the spacing is dima's look
-  - given cclio, two coders and a verifier are live
+  - given clio, two coders and a verifier are live
   - when dima types `/board`
   - then a pane lists each by its session name, its state on the right, a full empty row between members in the terminal, 0.6 of a row on the desktop (the cards mock's spacing, dima 17:27)
-  - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming ccrow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
+  - decision: clio is pinned to the top, its name always bold; crow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming crow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
 - ✅ the board's sections sit in cards (FRM-391 aside, dima 16:54)
   - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card no colour: on the desktop a 30 % grey (`#8080804d`), the same on light and dark and a touch softer than `subtle`, in the terminal `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); each ask is a smaller dim-bordered card inside orbit
   - and orbit's head reads `🪐 orbit` with no count, its check-all a bare `✅`; phases carry no count either (seven at most)
   - and each card's head line ends in a plain `📂` at its far right (orbit's `✅` just left of it); a press folds the card to that line and it reads `📁`, a second opens it (17:21); the folds are kept in the session's state, so a hot reload keeps them (dima's o5, 17:16)
   - decision: cards over strips and the dashboard, tried side by side in a throwaway `board-lab` mod (dima, 16:48 «strips — no, windows 92 look», «colors are ugly»; 16:54 «apply the cards layout»)
-  - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
+  - decision: cc's registry stores «🐦‍⬛ crow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
-  - and a session resumed under a minute ago keeps its row from the first poll: its transcript is older than its process, as every session's is after a mac reboot (dima's ✨ wisp, 10-13 16:26: the card showed cclio alone)
-  - decision: a session that never ran a turn gets no row and no count — its project folder under `~/.claude/projects/` holds no `<session id>.jsonl` yet; the desktop's warm spares sit in the registry like this (cclio-9a, 2026-10-09; that they are spares is an inference). a missing project folder keeps the row, since cc hashes a long path's folder name
+  - and a session resumed under a minute ago keeps its row from the first poll: its transcript is older than its process, as every session's is after a mac reboot (dima's ✨ wisp, 10-13 16:26: the card showed clio alone)
+  - decision: a session that never ran a turn gets no row and no count — its project folder under `~/.claude/projects/` holds no `<session id>.jsonl` yet; the desktop's warm spares sit in the registry like this (clio-9a, 2026-10-09; that they are spares is an inference). a missing project folder keeps the row, since cc hashes a long path's folder name
   - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
   - proof: tests/orbit.test.ts::orbit is a card headed «🪐 orbit» / the orbit card is bordered a soft grey on the desktop; tests/board.test.ts rows — not asserted: the terminal's `subtle` border value
@@ -284,7 +284,7 @@
   - decision: red, not a cooling blue — red is what dima sees, and it says something is wrong (dima, 2026-10-09)
   - decision: 💤 holds the column and red says it all (o106 replaced the 15/22/30/60 ramp); ❄️ returns only as a mark beside the name, once the cache is gone (below)
   - given an idle row whose last reply is an hour old or more (the prompt cache's life), then ❄️ stands beside its name; a busy row, or an idle one inside the hour, shows none
-  - and a row off the fleet pattern keeps ⚠, which beats ❄️ when both hold; `composer` counts as a fleet name, so a cold composer reads ❄️ (dima's screenshot 2026-10-15; FRM-426)
+  - and a row off the fleet pattern keeps ⚠, which beats ❄️ when both hold; `helga` counts as a fleet name, so a cold helga reads ❄️ (dima's screenshot 2026-10-15; FRM-426)
   - decision: one hour, not the 45-minute red tint — the red warns, the ❄️ says it is gone
   - and an idle row counts from the session's last reply, or a later 🔥 keep-hot ping, never cc's registry stamp: cc restamps a thread whenever it is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77, dima's boot shot 2026-10-12); a busy row and a session with no reply yet keep the registry stamp
   - source: the `reply:<session>` store key each session's x-mod-stash writes at every reply end, `pingedAt` at a ping's
@@ -296,14 +296,14 @@
   - given the last reply has no `🔭` line
   - then the row has no second line
   - decision: only a `🔭` line, never a fallback — the reply's first line read as noise beside the waits (dima, 2026-10-05)
-- ✅ ccrow's row carries her newest 👀 tip for dima
-  - given ccrow's newest note written today holds a `👀 **for you:** …` line, with or without a leading `- `
+- ✅ crow's row carries her newest 👀 tip for dima
+  - given crow's newest note written today holds a `👀 **for you:** …` line, with or without a leading `- `
   - when the board draws
   - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, 🔊 ▶️ ⏹️ all before it, reading it through speak (dima's shots, 10-13 18:29, 19:40: «you forgot to move stop btn to the left too»); no other row ever carries it, and a tip from a past day never draws, even under 24 h old (dima, 10-13: yesterday's tip showed today)
   - source: `~/.local/state/crow/notes.jsonl`, read by the poll for her row only
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
-  - proof: tests/board.test.ts::ccrow's row shows her newest 👀 for-you tip in the wait slot (+ tip over a day old leaves, from yesterday never draws, no bullet, no other row, ccrow's line leads with read and pause)
+  - proof: tests/board.test.ts::crow's row shows her newest 👀 for-you tip in the wait slot (+ tip over a day old leaves, from yesterday never draws, no bullet, no other row, crow's line leads with read and pause)
 - ✅ a session's name is bold text, never a control (dima, 17:42: «i don't need a session as a clickable link in sessions»)
   - given the board draws, then every name reads bold and its `●` dot keeps its colour; a row holds no button
   - decision: the desktop deep links (FRM-306) left with the press; `mods/api-map.md` keeps the `claude://` door as knowledge
@@ -376,12 +376,12 @@
   - when a span turns its minute (`idle 12m` → `idle 13m`)
   - then the board redraws with it
   - decision: a pane redraw also rebuilds x-mod-breather's svg in the band on the desktop (dima, 2026-10-09: «breather only resets while the board is open»; a video measured a blank frame every 4.04 s, the poll's beat); the svg rebuild is the desktop's, [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)
-- ✅ a stale probe mod warns on cclio's board (brief 6, mods lane l9)
+- ✅ a stale probe mod warns on clio's board (brief 6, mods lane l9)
   - given a folder under `~/.claude/dev-mods/<session id>/` holds a mod, and its session is gone or the mod is over a day old
-  - when cclio's board draws
+  - when clio's board draws
   - then one amber row at its top reads `🧪 stale probe mods in ~/.claude/dev-mods, unload them: <mod> (<session short id>)`, every stale mod in that row; any other board draws none
-  - decision: the registry name says whose board it is, never the cwd; a probe left loaded swallowed cclio's 16:03 brief after its proof (pk-93 retro)
-  - proof: tests/board.test.ts::a probe whose session is gone warns on cclio's board (+ older than a day, live session's fresh probe none, only a file none, stale probe stays off any board but cclio's)
+  - decision: the registry name says whose board it is, never the cwd; a probe left loaded swallowed clio's 16:03 brief after its proof (pk-93 retro)
+  - proof: tests/board.test.ts::a probe whose session is gone warns on clio's board (+ older than a day, live session's fresh probe none, only a file none, stale probe stays off any board but clio's)
 
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 
@@ -390,18 +390,18 @@
   - proof: tests/board.test.ts::the state column is as wide as the board's longest time, never a fixed 9 / the state column keeps a cell of air after the ctx meter on the desktop
 - ✅ a 🐦‍🔥 button beside every row's ctx meter asks that session for a second wind
   - makes: a `wind:<session id>` key in the store, read by every board and by that session's own stash
-  - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
+  - given the board is open, then every row, clio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
   - when dima presses a row's 🐦‍🔥, then it reads 🥚 and a dim line under the row reads `🐦‍🔥 second wind: asked, waits for its next turn (<age>)`; no turn starts
   - given the ask, when that session's next turn starts — dima's prompt, a member's ping, a wake — then its context carries the second wind note once and the button reads ✍️ (`finishing its step, then its handoff`)
   - and a press while that session works joins its next tool step instead, once, the way a tick slipstreams; an idle session is never woken (dima, 19:14, todo 27)
-  - given cclio's row is asked, then her note names her good stop: no new todos, the tails solved, `cclio:checkpoint`, the fleet told, her after-pickup ask into orbit
-  - and every note, cclio's included, has the handoff open with the role's init list as its first first-act — the skills the role loads at its start, the files it reads whole — since a compact re-attaches only some skills (todo 26, cclio's audit of the first live press, 18:57)
+  - given clio's row is asked, then her note names her good stop: no new todos, the tails solved, `clio:checkpoint`, the fleet told, her after-pickup ask into orbit
+  - and every note, clio's included, has the handoff open with the role's init list as its first first-act — the skills the role loads at its start, the files it reads whole — since a compact re-attaches only some skills (todo 26, clio's audit of the first live press, 18:57)
   - given the note, when the session calls orbit's `op second-wind` with the slug of the handoff it wrote, then the button reads 🌀 (`compacting onto its handoff`); at that turn's end the mod runs `/compact` with a keep line naming the slug, then `/x:handoff-ingest <slug>`, once, and the button goes back to 🐦‍🔥
-  - and the ingest is queued with the compact, while it still runs, so a prompt dima types meanwhile never lands between them (cclio's 19:17 press: her ingest ran after his 19:19 prompt); the op's answer tells the session to end its turn with no «waiting on» line, the refresh runs on its own
+  - and the ingest is queued with the compact, while it still runs, so a prompt dima types meanwhile never lands between them (clio's 19:17 press: her ingest ran after his 19:19 prompt); the op's answer tells the session to end its turn with no «waiting on» line, the refresh runs on its own
   - given no slug, or a slug `x handoff peek` cannot find, then the op is refused in one line and nothing compacts
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
   - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)
-  - proof: tests/wind.test.ts (asked session reads the note once, press on a busy session joins its next tool step once, idle wakes nothing, cclio's note, init list, op refusals, compact then ingest queued) + tests/board.test.ts::every ro…
+  - proof: tests/wind.test.ts (asked session reads the note once, press on a busy session joins its next tool step once, idle wakes nothing, clio's note, init list, op refusals, compact then ingest queued) + tests/board.test.ts::every ro…
 - ✅ the band's 🐦‍🔥 asks this session for a second wind
   - given the band, then a plain 🐦‍🔥 leads the band's buttons, left of 🔥 keep-hot (dima's o8 and o11, 18:29–18:35); it presses as a row's button does, for this session only, and reads its state (🥚, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
   - proof: tests/band.test.ts::the band's 🐦‍🔥 asks this session, and reads its state
@@ -409,7 +409,7 @@
   - given the button reads 🥚, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
   - given it reads ✍️, when dima presses it, then it reads ↩️ (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
   - given it reads 🌀, then a press changes nothing
-  - decision: no timer ever cancels or compacts: an idle session waits on 🥚 until its next turn (dima, o2; cclio 17:32)
+  - decision: no timer ever cancels or compacts: an idle session waits on 🥚 until its next turn (dima, o2; clio 17:32)
   - decision: asked reads 🥚, the phoenix before it hatches: 📨 is the undo tick's (dima's emoji battle, o13, 19:14); the cancel reads ↩️ for the same reason (o13's follow, 19:26)
   - proof: tests/board.test.ts::a second press before the note went out takes the ask back, unseen / a press after the note went out cancels, and a third asks again / a press while the session compacts changes nothing
 - ✅ a second wind compacts only when the session says nothing is pending
@@ -417,7 +417,7 @@
   - when the call carries no `pending`, or a `pending` naming work, then it is refused in one line saying what is required or pending, and nothing compacts
   - when it carries `pending: none`, then the mod compacts at the turn's end and ingests the handoff
   - when an agent, a background command or a background session starts after `pending: none` and before the compact, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it
-  - then the note the session reads carries dima's words whole (W4, FRM-431), for a coder and for cclio alike
+  - then the note the session reads carries dima's words whole (W4, FRM-431), for a coder and for clio alike
   - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a background command started after pending: none makes the wind refuse / both notes carry dima's words
 - ✅ every compact is followed by one `/reload-skills`
   - given a compact ran in the main session (a second wind's, the threshold's or a typed one), not a precompute and not a subagent's
@@ -436,18 +436,18 @@
   - proof: tests/orbit.test.ts::open asks come back when the session is resumed in a new process (+ phases, folded card, mobile mode, held member pings, week-old drop, ids keep counting, /clear empty)
 
 - ✅ an ask carries one link dima opens in a click (brief 8)
-  - given cclio adds an ask with `link` — an https url, an `obsidian://` url, or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
+  - given clio adds an ask with `link` — an https url, an `obsidian://` url, or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
   - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>` (an obsidian url: its note), a press opening it through `open`; any other link (`http://`, `file://`, a bare word) is refused and no ask lands
   - proof: tests/orbit.test.ts::an ask's https link draws as a link to that url / an ask's file link opens through open / file link may hold spaces / obsidian:// link / an http url, a file:// url and a bare word are still refused
-- ✅ a cclio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
-  - given cclio's session loaded `cclio:boot` and has printed no reply as long as the board (300 characters or more) since
+- ✅ a clio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
+  - given clio's session loaded `clio:boot` and has printed no reply as long as the board (300 characters or more) since
   - when `start_session` returns, whose own hint says «then end your turn»
   - then its result carries one model-only line: «the boot continues; the board ends the turn»
   - and after the board printed, after three hours, in any other session, or with the 🥾 switch off, nothing lands; a short nudge answer («booting, board next») does not close the boot
   - decision: the boot is open from the skill's load, not from a flag the model sets — a guard the session must remember is the promise it already broke
   - and the link sits at the row's end, after the steer field, on every ask card: orbit's own and a glide card's (dima's shot, 2026-10-12 20:57: «first steer then file»)
   - and a glide card draws the same link on a member's ask
-  - proof: tests/boot.test.ts::start_session inside an open cclio boot carries the boot-continues line (+ after the board printed, short nudge, never loaded, other member, older than three hours); tests/switches.test.ts:179 stash.boot off… — not asserted: link sub-lines 407-408 sit under this item, covered
+  - proof: tests/boot.test.ts::start_session inside an open clio boot carries the boot-continues line (+ after the board printed, short nudge, never loaded, other member, older than three hours); tests/switches.test.ts:179 stash.boot off… — not asserted: link sub-lines 407-408 sit under this item, covered
 - ✅ the model reads orbit's whole tool description (dima's o50)
   - given cc shows a model only the first 2048 chars of a tool's description (the reload notice read 2371)
   - when a session loads orbit
@@ -461,7 +461,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
 
 - ✅ orbit lists this session's open asks, oldest first
-  - given cclio ends a turn with something for dima to decide
+  - given clio ends a turn with something for dima to decide
   - when the turn ends
   - then each ask is one line in orbit, its bold id leading it, and the reply holds no ⏳ block
   - decision: one orbit per session; other sessions' asks never show in it (dima, 2026-10-10)
@@ -469,7 +469,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ an ask reads alone
   - given 20 asks have piled up
   - when dima reads orbit
-  - then every line says what is asked and cclio's pick in one line, with no «above» or «this» pointing at a reply
+  - then every line says what is asked and clio's pick in one line, with no «above» or «this» pointing at a reply
 - ✅ a long ask is refused at the door
   - given a session sends an ask, a follow-up or a phase line over 90 characters
   - when the orbit tool takes it
@@ -482,11 +482,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: https links only, no ↗ app buttons beside them — a mod Link refuses `linear://`, and a button can't sit inside a line of text (dima, 22:34); app links are not wanted: his Hyper+G opens a selected id in the app (dima, 2026-10-12 21:32)
 - ✅ every steer field clears once its text has gone out (dima's o57, 17:39)
   - given dima typed a steer on an ask, an assumption or a glide step
-  - when it goes out — the turn its tick joined ends, or ↩️ sent the assumption back, or the lane step's tick joined cclio's prompt
+  - when it goes out — the turn its tick joined ends, or ↩️ sent the assumption back, or the lane step's tick joined clio's prompt
   - then its field is empty for the next steer, and a second tick never sends the old text again
   - decision: one name, «steer», for every text field dima types into on the board; an ask's hidden note stays a «note», it is the session's (dima's o57)
   - decision: a text kept under the old name, «note», reads as its steer after the reload: orbit's state, a glide mark, a lane's draft
-  - proof: tests/orbit-steps.test.ts::a steer the turn carried clears at the turn's end; tests/lane.test.ts::a taken steer clears from the box once cclio took it; tests/orbit.test.ts::an assumption's steer box is empty once ↩️ sent it back
+  - proof: tests/orbit-steps.test.ts::a steer the turn carried clears at the turn's end; tests/lane.test.ts::a taken steer clears from the box once clio took it; tests/orbit.test.ts::an assumption's steer box is empty once ↩️ sent it back
 - ✅ a steer typed on a glide card never loses text while the member takes it in
   - given dima types a steer into a member's ask on another board's glide card
   - when the member takes the card's mark into its orbit, or he types on while it does
@@ -501,7 +501,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - proof: tests/fields.test.ts::a text field keeps drawing what it showed once typing goes quiet; tests/orbit.test.ts::a card folded and opened again draws the saved steer — not asserted: the box's width, dima's eye
 - ✅ a glide card follows a lane plan file of any length
   - given a lane plan file of 11 numbered lines, ticked up to the fifth
-  - when cclio creates a card naming it
+  - when clio creates a card naming it
   - then the card is taken, never refused, and draws the current step with its neighbours, its head saying «4–8 of 11»
   - and a «[X]» ticks a step like «[x]»; a card of up to 7 steps draws all of them with no label
   - proof: tests/lane.test.ts::a create naming a plan of eleven steps is taken, never refused; ::a card of eleven steps draws the current one with its neighbours and says where it is; ::a capital X ticks a step like x; ::a card of seven s…
@@ -526,35 +526,35 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given orbit shows an ask and x-speak runs
   - when dima presses its 🔊
   - then speak reads the ask and its pick as the card shows them, no «pick» word (dima, 17:14), through the chain F4 uses, cutting off whatever plays; ⏯ and ⏹ act on any read
-  - and the play button follows speak's own `status`: ⏸️ while it reads, ▶️ while it is paused or quiet; a press pauses, resumes, or — speak quiet — reads that row; every play button on the board, ccrow's tip included, reads the same, refreshed at each press and on the board's 4 s poll while it is open (dima, 15:51: «▶️ if paused or not speaking, ⏸️ if speaking»)
+  - and the play button follows speak's own `status`: ⏸️ while it reads, ▶️ while it is paused or quiet; a press pauses, resumes, or — speak quiet — reads that row; every play button on the board, crow's tip included, reads the same, refreshed at each press and on the board's 4 s poll while it is open (dima, 15:51: «▶️ if paused or not speaking, ⏸️ if speaking»)
   - decision: buttons, because a mod's text can't be selected for F4 on the desktop ([claude-code#101090](https://github.com/anthropics/claude-code/issues/101090)) — a workaround, `mods/workarounds.md`
   - 📌 harness-proven that the press sends `read` with the text; the voice itself is dima's ear
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
 - ✅ marked asks join the next prompt
   - given one or more asks are accepted or rejected
   - when dima sends a prompt from the prompt box
-  - then cclio receives his text plus each marked ask with its id and steer, model-only: his prompt shows only what he typed; unmarked asks stay
+  - then clio receives his text plus each marked ask with its id and steer, model-only: his prompt shows only what he typed; unmarked asks stay
   - decision: model-only context, never a rewrite of his text — a rewrite once destroyed his typed prompt (the copy-all decision above)
   - decision: only the prompt box starts a turn; orbit never does (dima, 2026-10-10)
-- ✅ a tick while cclio works joins the running turn
-  - given cclio is mid-turn, whoever started the turn — dima, a peer's message or a background task
+- ✅ a tick while clio works joins the running turn
+  - given clio is mid-turn, whoever started the turn — dima, a peer's message or a background task
   - when dima ticks an ask
-  - then cclio's reply in that turn covers it; only a keep-hot ping turn never takes a tick; a tick that lands too late for the turn stays ticked and joins the next prompt
-  - proven live on the desktop 2026-10-10 20:40: dima ticked o21 while cclio ran a tool, and that same turn's reply answered it
+  - then clio's reply in that turn covers it; only a keep-hot ping turn never takes a tick; a tick that lands too late for the turn stays ticked and joins the next prompt
+  - proven live on the desktop 2026-10-10 20:40: dima ticked o21 while clio ran a tool, and that same turn's reply answered it
   - decision: the tick rides the turn's next tool result as model-only context; one that no tool result reaches waits for dima's next prompt — a hidden appended message started a turn of its own when it landed after the turn's last read (dima, 20:31)
   - given dima ticks an ask once and the turn that took it never resolves it, then the next three turns do not carry the tick again; a re-tick of the still-open ask arrives as a fresh tick (FRM-426, PK-262: a tick was delivered five times)
   - given a remote mark from another board lands on an ask whose steer dima is typing, then his typed steer stays; the remote steer fills only an empty one (PK-149)
   - decision: any running turn takes a tick, not only one dima's prompt started — his o32 waited through 5+ tool calls of a task-notification turn (dima's o10, 2026-10-11 12:20)
   - decision: every orbit write reads the orbit back from `$.state` first — a reload landing at a turn's end ran `turn.complete` before `session.start` and saved an empty orbit (dima, 20:20: «coder wiped the orbit»)
-- ✅ marked asks lock while cclio works on them
+- ✅ marked asks lock while clio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
   - then those rows keep both buttons, the held one reading `🔓 tick` or `🔓 replay` and a press on either changing nothing, and the steer shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his steer: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the steer field comes back empty, its text sent (dima's o57) (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ▶️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
-  - given cclio answered a marked ask
+  - given clio answered a marked ask
   - when the turn ends
-  - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text, its line led by 🆕 (`🆕 o3: …`)
+  - then the ask leaves orbit; one clio has a follow-up on keeps its place and id, with new text, its line led by 🆕 (`🆕 o3: …`)
   - and its steer box comes back empty — dima's steer answered the old question (dima, 13:57 shot)
   - and the running turn lets go of it: a tick dima gives the new question lands at once, never waits for the turn to end (o88 wisp, dima 20:39)
   - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
@@ -568,7 +568,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time its sending window ends; x-mod-guard reads it
   - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press inside the window takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
-  - decision: a tick on a glide card, made in cclio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write
+  - decision: a tick on a glide card, made in clio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write
   - and a second press inside the 5 s unsends it: no turn ever takes it
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)
@@ -581,12 +581,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
   - then the ask collapses to two dim lines, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else) with its id and text, cut short, then `➡️ <word>` in bold under it, never cut — `✅ o1: <ask>` / `➡️ **landed**` (dima's shots, 20:37, 10-13 18:20)
   - when the turn ends, then it stays, dim, through the next turn; at that turn's end it leaves
-  - decision: an ask resolved with no word leaves at its turn end as before (cclio's brief 8, 2026-10-12)
+  - decision: an ask resolved with no word leaves at its turn end as before (clio's brief 8, 2026-10-12)
   - proof: tests/orbit.test.ts::a resolved ask reads its closing word on a line of its own under it; ::an ask resolved with a closing word shows dim with it for one more turn, then leaves; ::a closed ask leads with its word's emoji: dropp…
 - ✅ the 🐠 catch shelf is gone (dima, 2026-10-28: «full delete but surgical»)
   - given any session, then orbit has no `catch` op (a call is refused as an unknown op), the board draws no 🐠 card, ⚙️ settings has no `🐠 catch` row, and no prompt carries catch.md
   - given an orbit kept with caught pieces, then it loads without them
-  - decision: cclio's keep-in-mind shelf (FRM-386, PK-96) left at dima's word; its store keys `catch-shelf:cclio` and `catch-count:<day>` are no longer read
+  - decision: clio's keep-in-mind shelf (FRM-386, PK-96) left at dima's word; its store keys `catch-shelf:clio` and `catch-count:<day>` are no longer read
   - proof: tests/orbit.test.ts::orbit has no catch op: the schema names none, a call is refused as unknown; ::an orbit kept with caught pieces loads without them, and the board draws no 🐠; grep -n '🐠\
 - ✅ a resolve on a ticked ask says what shipped (FRM-427, PK-204)
   - given dima ticked an ask, when a session resolves it with a closing word holding neither «as ticked» nor «changed: <what>», or with none, then the tool refuses the resolve naming both words
@@ -598,7 +598,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given a turn whose `wrap_up` call sets its `ask` while this session's orbit holds an open ask, when the turn stops, then the Stop goes red once, naming the open ask
   - given a turn that added an orbit ask opening «Q<n>» and a reply lacking «❓ **Q<n>**», then the Stop goes red naming the round; the add itself passes
   - then it passes with no open ask, a wrap_up with no ask, a reply printing the round, in a `--bg` session, with `🪐 orbit` switched off, and on the turn the red woke (`stop_hook_active`), even when it repeats the wrap_up ask
-  - decision: both enforce from their commit, the signed decision (cclio's greenlight, option a, 2026-10-28)
+  - decision: both enforce from their commit, the signed decision (clio's greenlight, option a, 2026-10-28)
   - proof: tests/orbit.test.ts::a wrap_up carrying an ask while an orbit ask is open reds the Stop / the Stop passes with no open orbit ask, a wrap_up with no ask, 🪐 orbit switched off, a --bg session, the turn after its own red / the grill-round cases
 - ✅ one orbit call carries many ops (FRM-427, o83)
   - given one call with `ops: [{ op: 'add', … }, { op: 'resolve', … }, { op: 'plan', … }]`, then all three land in order and the result reads one line per op
@@ -646,14 +646,14 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 ## cost questions — the price facts, never recall (todo 17)
 
-- ✅ a cost question sends cclio to the price file
-  - given dima's own prompt to cclio names tokens, a cache, a ctx or context cost, pricing or MTok
+- ✅ a cost question sends clio to the price file
+  - given dima's own prompt to clio names tokens, a cache, a ctx or context cost, pricing or MTok
   - then that prompt carries one model-only line: read `~/frame/home/.claude/plugin-x/skills/crew-lead/references/model-cards.md` before answering — each model's price line and the «cache reads are where agents spend» bullet — never from recall
-  - and a member's ping, a wake, or any session not named 🦉 cclio carries none; «the ctx meter», «a tokenizer», «the context menu» are no cost question
+  - and a member's ping, a wake, or any session not named 🦉 clio carries none; «the ctx meter», «a tokenizer», «the context menu» are no cost question
   - given `💵 cost questions read model-cards.md` switched off in 🎛️ settings, then no prompt carries it
-  - decision: a word list, once per prompt; a false hit costs one small read (o171: 10-13 cclio quoted a cache read at 1/10 of input, the file says 1/20)
+  - decision: a word list, once per prompt; a false hit costs one small read (o171: 10-13 clio quoted a cache read at 1/10 of input, the file says 1/20)
   - decision: the brief named a «§ cost» section; the file has none, so the line names the price lines and the cache bullet instead
-  - proof: tests/cost.test.ts hit and miss word tests; tests/switches.test.ts::stash.cost on/off (loop); tests/orbit.test.ts::a cost question in a session that is not cclio carries no cost hint — not asserted: member ping or wake carries none is untested
+  - proof: tests/cost.test.ts hit and miss word tests; tests/switches.test.ts::stash.cost on/off (loop); tests/orbit.test.ts::a cost question in a session that is not clio carries no cost hint — not asserted: member ping or wake carries none is untested
 
 ## mobile mode — the asks fence
 
@@ -700,20 +700,20 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given it off, then a sent-back assumption joins no prompt and `op assume` is refused in one line naming the switch
   - proof: tests/orbit.test.ts::with assumed switched off, a sent-back assumption joins no prompt; ::with assumed switched off, op assume is refused in one line naming the switch
 
-## quiet comms — member pings off cclio's thread
+## quiet comms — member pings off clio's thread
 
-an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, dima's o17): a member's `[progress]` ping waits for cclio's next turn instead of starting one; one switch reverts it.
+an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, dima's o17): a member's `[progress]` ping waits for clio's next turn instead of starting one; one switch reverts it.
 - makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm); `quiet-held:<session>` the held count
 
-- 🧭 a [progress] ping is held in cclio's thread, every other passes
-  - given cclio's session — the registry names it `🦉 cclio`, wherever a Bash `cd` left it — and the switch on
-  - decision: the registry name, never the cwd: a `cd` into `~/frame` let every ping through for an hour (cclio's wisp, 17:06)
+- 🧭 a [progress] ping is held in clio's thread, every other passes
+  - given clio's session — the registry names it `🦉 clio`, wherever a Bash `cd` left it — and the switch on
+  - decision: the registry name, never the cwd: a `cd` into `~/frame` let every ping through for an hour (clio's wisp, 17:06)
   - when a member's message opens with `[progress]`
   - then it is not queued and starts no turn; `[done]`, `[blocked]`, `[ask]` and an untagged ping pass as before; any other session holds nothing
   - decision: the tag decides, never a guess at the text — an untagged ping always passes (dima, 2026-10-12, the probe's «never hold blind»)
   - and a `[progress]` ping holding «for dima», «decisions», «pick:» or «your call» (whole words, any case) is pushed, not held, so a question to dima wakes the coordinator's turn; a bare «?» never pushes (dima o26, 2026-10-29: of 81 pings in 14 days, a «?» pushed 4 and all 4 were false; FRM-429)
   - proven on the desktop 15:48: a held `[progress]` ping started no turn (the probe's open line)
-- 🧭 held pings reach cclio without a turn of their own
+- 🧭 held pings reach clio without a turn of their own
   - given pings are held
   - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and first line, once
   - when none comes for the wait while she is idle — 10 min by default, set in the 🎛️ `🤫 quiet comms` card, 1–60 — then one hidden row is appended, no turn
@@ -721,50 +721,50 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given no switch set, then quiet holds every day; `/quiet off` passes every ping, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' [progress] pings`, is the same store key, `quiet-comms` (dima's o33)
   - given mobile mode is on, then nothing is held
   - decision: always on, no day arm — the a/b compares days by the log's `arm`, read from the switch (dima, 16:53, brief 5)
-- 🧭 cclio's row counts what waits, and opens it
+- 🧭 clio's row counts what waits, and opens it
   - given her stash holds n pings, then her row in the sessions card reads `🤫 n` beside the name; at 0 nothing
   - when dima presses `🤫 n`, then one dim line per held ping opens under her row — `🤫 <sender> · <age> ago: <first line>` — and a second press folds it; folded by default (dima's o34)
   - source: `quiet-held:<session>` in the store, the held pings themselves
 - ✅ a broken hold never loses a ping (brief 6, dima's o49)
-  - given anything inside cclio's quiet hold throws
+  - given anything inside clio's quiet hold throws
   - when a member's ping arrives
   - then it passes as if quiet were off, and the log keeps a `failed-open` line for it
   - given the held list does not save, or its `held` log line does not land, then the ping passes the same way, and a held list that saved is taken back, so it is never delivered twice
   - decision: the hold answers «consumed» only once both writes landed; a write that fails silently was a ping nobody holds (brief 9 item 2, 2026-10-12)
   - proof: tests/quiet.test.ts::a throw inside the hold passes the ping and logs failed-open; ::a held list that does not save passes the ping, failed-open, nothing held; ::a held line that does not log passes the ping and takes it back o…
-- ✅ every held ping that reaches cclio logs `flushed`
+- ✅ every held ping that reaches clio logs `flushed`
   - when held pings ride her next prompt, or land as the idle row, then each gets a `flushed` line beside its `held` one
   - proof: tests/quiet.test.ts::a held ping that rides the next prompt logs flushed; ::a held ping that lands as the idle row logs flushed — not asserted: both paths asserted
 - ✅ the ledger counts what members sent against what the log holds
-  - makes: `quiet-gap` in the store, `{ at, gaps: [{ from, sent, logged }] }`, rewritten once a minute; cclio's next prompt reads each new gap once (the `quiet-gap-told` key, the size told per member)
-  - given a live member's own transcript holds more SendMessage calls to cclio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
-  - when the minute's ledger runs in cclio's thread
-  - then the gap is written to `quiet-gap` and rides cclio's next prompt once as a model-only note («🤫 quiet-comms ledger: <member> sent you n pings and your quiet log holds m: n−m skipped the hold»), told again only when the gap is bigger than the one told, or opens again after closing; no card draws on any board and no red row (dima's o56, 2026-10-29: «a UI card is useless … keep the comms fully functional with all the under-the-hood stuff»; was a calm `🤫 quiet comms` card, FRM-412)
+  - makes: `quiet-gap` in the store, `{ at, gaps: [{ from, sent, logged }] }`, rewritten once a minute; clio's next prompt reads each new gap once (the `quiet-gap-told` key, the size told per member)
+  - given a live member's own transcript holds more SendMessage calls to clio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
+  - when the minute's ledger runs in clio's thread
+  - then the gap is written to `quiet-gap` and rides clio's next prompt once as a model-only note («🤫 quiet-comms ledger: <member> sent you n pings and your quiet log holds m: n−m skipped the hold»), told again only when the gap is bigger than the one told, or opens again after closing; no card draws on any board and no red row (dima's o56, 2026-10-29: «a UI card is useless … keep the comms fully functional with all the under-the-hood stuff»; was a calm `🤫 quiet comms` card, FRM-412)
   - and a member's log lines match its registry name without its leading mode emoji, so a rename from ☕️ to 🌗 no longer reads as «sent 3, holds 0» (the cause of FRM-412's shot: one coder logged 4 lines as ☕️ and 9 as 🌗 on 10-22)
   - decision: a `flushed` line is not a delivery, so a held ping counts once
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
   - decision: a send whose result said `success:false` (no such session, a plugin refused it, a dead socket) never reached her, so it is not counted (brief 9 item 2)
-  - proof: tests/quiet.test.ts::a ledger gap rides the lane owner’s next prompt once / a standing gap of the same size is not told again / a gap that grows is told again / a gap that closes and opens again is told again; tests/board.test.ts::a member that sent cclio more pings than her log holds is a gap in the ledger, never a 🚨 row; ::no quiet-comms card draws on cclio's board; ::a send inside the 2 min grace is not a gap yet; ::a flushed line does not count as a logged delivery; ::the ledger'… — not asserted: success:false decision unasserted
-  - given a member renamed after cclio logged some of its pings (a new ticket, a new topic in its name)
+  - proof: tests/quiet.test.ts::a ledger gap rides the lane owner’s next prompt once / a standing gap of the same size is not told again / a gap that grows is told again / a gap that closes and opens again is told again; tests/board.test.ts::a member that sent clio more pings than her log holds is a gap in the ledger, never a 🚨 row; ::no quiet-comms card draws on clio's board; ::a send inside the 2 min grace is not a gap yet; ::a flushed line does not count as a logged delivery; ::the ledger'… — not asserted: success:false decision unasserted
+  - given a member renamed after clio logged some of its pings (a new ticket, a new topic in its name)
   - when the ledger counts that member's sends against the log
   - then the lines logged under its old name still count for it, through its session id once logged with one, and through its role (emoji and word before the colon) when no other member shares it: a rename never draws a false gap (the verifier's 16:17 shot, FRM-412)
   - proof: tests/board.test.ts::a member renamed mid-day keeps its logged pings / a renamed member that sent more than its old-name lines hold still shows its gap / a log line carrying the sender's session id counts for it
-- ✅ a stuck held ping turns cclio's 🤫 n red
+- ✅ a stuck held ping turns clio's 🤫 n red
   - given a held ping older than the idle wait + 2 min (12 min by default)
   - then her row's `🤫 n` reads red; younger, it reads plain
   - proof: tests/board.test.ts::a held ping past the wait + 2 min turns the 🤫 n red; ::a held ping inside the wait + 2 min keeps the 🤫 n plain
 - ✅ a ledger gap or a stuck hold raises a native alarm
   - makes: one macOS notification headed `🚨 quiet comms`; `quiet-alarmed` in the store names the alarms raised
-  - given the minute's ledger in cclio's thread finds a member's gap, or her oldest held ping past the idle wait + 2 min
-  - then one notification names it (`<member> sent cclio <n>, her quiet log holds <m>`, or `<n> held pings stuck <m> min, oldest from <member>`), beside the red row
+  - given the minute's ledger in clio's thread finds a member's gap, or her oldest held ping past the idle wait + 2 min
+  - then one notification names it (`<member> sent clio <n>, her quiet log holds <m>`, or `<n> held pings stuck <m> min, oldest from <member>`), beside the red row
   - and a member's gap alarms once while it stays open, again only after it closed; a stuck hold alarms once per oldest ping
   - and when neither `$.ui.notify` nor osascript raises it, a `ui.log` line says so; nothing throws
-  - decision: `$.ui.notify` first, osascript when it answers not sent — the desktop, where cclio runs, answers `no-surface` (dima's o75, 2026-10-12)
+  - decision: `$.ui.notify` first, osascript when it answers not sent — the desktop, where clio runs, answers `no-surface` (dima's o75, 2026-10-12)
   - proof: tests/quiet.test.ts::a ledger gap raises one native alarm, through osascript when notify finds no surface; ::a gap that closes and opens again alarms again; ::a gap notify sends itself goes no further; ::a held ping stuck past … — not asserted: once-per-oldest-ping not separately asserted
-- ✅ `/quiet-canary` sends cclio a test ping with no model
-  - given any session but cclio's, when it runs `/quiet-canary <nonce>`, then the mod sends `[progress] quiet canary <nonce>: …` to `🦉 cclio` through `$.session.send` and answers `sent` or `FAIL, <reason>`
-  - then cclio's log lines for it carry `canary: <nonce>`, so `pnpm mods:quiet-canary` reads held → delivered
-  - proof: tests/quiet.test.ts::/quiet-canary sends cclio a [progress] ping with its nonce; ::/quiet-canary says FAIL with the reason when the send bounces; ::a canary ping's held and flushed lines carry its nonce
+- ✅ `/quiet-canary` sends clio a test ping with no model
+  - given any session but clio's, when it runs `/quiet-canary <nonce>`, then the mod sends `[progress] quiet canary <nonce>: …` to `🦉 clio` through `$.session.send` and answers `sent` or `FAIL, <reason>`
+  - then clio's log lines for it carry `canary: <nonce>`, so `pnpm mods:quiet-canary` reads held → delivered
+  - proof: tests/quiet.test.ts::/quiet-canary sends clio a [progress] ping with its nonce; ::/quiet-canary says FAIL with the reason when the send bounces; ::a canary ping's held and flushed lines carry its nonce
 
 - ✅ phases: the session's next 7 moves, live
   - given the session has set its phases
@@ -794,7 +794,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given a working turn — an edit, an Agent spawn, a glide move, or a Bash that runs `claude --bg`, `claude stop`, a commit or an `x lane` publish — has run 3 tool calls, with no phases set in this turn or the 2 before it
   - when the third result comes back
   - then it carries «no phases yet — set them with orbit plan» (or «phases not set for 3 turns» when older ones exist), once a turn
-  - decision: phases set in the last 2 turns still hold, so a working turn that did not move them stays quiet (cclio's brief 8, 2026-10-12)
+  - decision: phases set in the last 2 turns still hold, so a working turn that did not move them stays quiet (clio's brief 8, 2026-10-12)
   - decision: never a Stop block, never an extra turn (dima's o14, 2026-10-11 11:27)
   - decision: a q&a turn of reads gets no nudge — the 3-turn stale mark covers it; the nudge on every turn drove 235 plan calls in one session (PK-70, dima 00:28: «fewer redundant tool calls, phases still real-time»)
   - proof: tests/orbit.test.ts::a session's first prompt says phases are its live plan; ::after a /clear the first prompt says phases are its live plan again; ::the third tool call of a working turn with no phases set carries the nudge, o… — not asserted: each tool kind that counts as working not separately asserted
@@ -810,64 +810,64 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - when the next prompt goes
   - then the board marks them stale and the session's reminder says so in one line
 
-- ✅ cclio's thread sends ccrow's wake itself (brief 8)
-  - given ccrow's wake script parked a wake for her desktop tab in `~/.local/state/crow/relay.json`
-  - when cclio's poll next ticks, then x-mod-stash sends its line to ccrow's session id (`$.session.send`, no model, cclio sees nothing) and marks it `isSent`, so cclio's prompt hook only starts the harvester
+- ✅ clio's thread sends crow's wake itself (brief 8)
+  - given crow's wake script parked a wake for her desktop tab in `~/.local/state/crow/relay.json`
+  - when clio's poll next ticks, then x-mod-stash sends its line to crow's session id (`$.session.send`, no model, clio sees nothing) and marks it `isSent`, so clio's prompt hook only starts the harvester
   - given the send does not go out, then the wake stays parked and the next poll sends it; her prompt hook never asks her to forward it
-  - decision: the old «forward this line» ask in cclio's context is retired — the mod-sent wake arrived from `x-mod-stash` and started ccrow's turn in her desktop tab (ccrow, 2026-10-12 19:21; brief 10 item 2)
-  - 📌 unprobed live: that a desktop-tab ccrow acts on the socket line — ccrow's 10-09 probe said a tab let one sit; cclio's tab took this coder's socket lines today
-  - proof: tests/quiet.test.ts::a parked ccrow wake goes to her session from cclio's poll, and is marked sent; ::a wake that does not go out stays parked for the next poll; ::a wake already sent goes out once
+  - decision: the old «forward this line» ask in clio's context is retired — the mod-sent wake arrived from `x-mod-stash` and started crow's turn in her desktop tab (crow, 2026-10-12 19:21; brief 10 item 2)
+  - 📌 unprobed live: that a desktop-tab crow acts on the socket line — crow's 10-09 probe said a tab let one sit; clio's tab took this coder's socket lines today
+  - proof: tests/quiet.test.ts::a parked crow wake goes to her session from clio's poll, and is marked sent; ::a wake that does not go out stays parked for the next poll; ::a wake already sent goes out once
 
 ## /board — 🛼 glide (FRM-385)
 
 - ✅ every board draws the fleet's live lanes
-  - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–7 steps (5 until 2026-10-12) (plain text, an optional ticket id, a done flag)
+  - given 🦉 clio calls orbit op `glide` act `create` with a title and 1–7 steps (5 until 2026-10-12) (plain text, an optional ticket id, a done flag)
   - then every session's board draws a `🛼 glide: <title>` card right above 🌔 phases, its head naming its mod as sessions, orbit and phases do (dima's board shot, 23:41): every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
-  - and one 🛎️ tick and a steer box sit on the current step's line after its ticket link, tick first; the step's text cuts short before the link, tick or steer give way (dima's shots, 17:41, 17:46) — on any board; the text stays a draft until tick, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the tick clear once it did (the button read «take» until dima's o28)
-  - and a tick with an empty steer box sends too: cclio's next prompt reads «lane tick from dima on <step>: 🛎️ good to go», once (dima's shot, 10-13 18:01: «tick does not work here»)
-  - decision: the steer and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the steer (FRM-400)
+  - and one 🛎️ tick and a steer box sit on the current step's line after its ticket link, tick first; the step's text cuts short before the link, tick or steer give way (dima's shots, 17:41, 17:46) — on any board; the text stays a draft until tick, then joins clio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the tick clear once it did (the button read «take» until dima's o28)
+  - and a tick with an empty steer box sends too: clio's next prompt reads «lane tick from dima on <step>: 🛎️ good to go», once (dima's shot, 10-13 18:01: «tick does not work here»)
+  - decision: the steer and its take live in the stash store, one key per lane, so the shelf file keeps one writer, clio's lane op; a step that moves the pointer drops the steer (FRM-400)
   - decision: take only, no replay — a steer has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
   - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
-  - given `🛼 glide` switched off, then no stale lane and no taken steer reach cclio's prompt or tool result, and `op glide` is refused in one line naming the switch
+  - given `🛼 glide` switched off, then no stale lane and no taken steer reach clio's prompt or tool result, and `op glide` is refused in one line naming the switch
   - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
-  - proof: tests/lane.test.ts::a card lists every step in order, done ones kept, the current marked; ::any session's board draws the lane cclio wrote; ::a ticket step links to linear; ::the current step's ticket leads its text, the tick a… — not asserted: head naming mod unasserted
-- ✅ only cclio writes the lanes — one exception: the pointer's forward move from a linked coder's plan step, still written by cclio's stash
-  - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
+  - proof: tests/lane.test.ts::a card lists every step in order, done ones kept, the current marked; ::any session's board draws the lane clio wrote; ::a ticket step links to linear; ::the current step's ticket leads its text, the tick a… — not asserted: head naming mod unasserted
+- ✅ only clio writes the lanes — one exception: the pointer's forward move from a linked coder's plan step, still written by clio's stash
+  - given any session calls op `glide`, when the registry does not name it 🦉 clio, then it is refused with one line; a new clio after a handoff steps and ends a lane it did not create
   - and act `create` refuses while a lane of the same topic is open — the topic is the title before « — » or «:», case-blind — naming the open lane and its fix: «lane l13 «mods — …» is still open: end it first (glide end l13)»; a lane whose last step is done counts as open until ended; a different topic always passes (todo 11, dima's 18:55 go)
-  - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (cclio's ask, 18:01)
+  - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (clio's ask, 18:01)
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
-  - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (cclio's wisp, 18:01)
+  - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (clio's wisp, 18:01)
   - and a member linked by a session id it left through a `/clear` follows the id it goes on under: each `/clear` records old → new in the store, the card follows that chain, so its asks stay on the card with no relink (todo 21, dima's shot 10-13 17:55)
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
-  - and a step back moves the pointer back and reopens every step from it on (`current: 1` after `current: 2` once left «2 of 5 done», cclio 15:18)
+  - and a step back moves the pointer back and reopens every step from it on (`current: 1` after `current: 2` once left «2 of 5 done», clio 15:18)
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
-  - proof: tests/lane.test.ts::a session the registry does not name 🦉 cclio is refused; ::a new cclio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
+  - proof: tests/lane.test.ts::a session the registry does not name 🦉 clio is refused; ::a new clio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
 - ✅ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
-  - given 🦉 cclio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
+  - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
   - when the coder ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
   - proof: tests/lane.test.ts::a create naming a lane plan takes its steps from the file; ::a tick in the plan file moves the card to the first unticked line on the next poll; ::an all-ticked plan file shows the lane done; ::a nested or u… — not asserted: 60-char cut not checked
-- ✅ a lane survives a reload, a compaction and a restart, and ends at cclio's siesta
+- ✅ a lane survives a reload, a compaction and a restart, and ends at clio's siesta
   - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back
-  - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — cclio's next siesta — takes it off and the file records `endedAt`
+  - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — clio's next siesta — takes it off and the file records `endedAt`
   - decision: no auto-end — dima's o57 over the critic's «gone one turn later» (dima, 18:18)
-  - decision: global, one file, cclio its only writer — dima keeps only her thread open and wants every lane there (grill 2, 2026-10-11)
+  - decision: global, one file, clio its only writer — dima keeps only her thread open and wants every lane there (grill 2, 2026-10-11)
   - proof: tests/lane.test.ts::a lane reads back whole from the shelf file at a fresh start; ::a finished lane stays, all done, across turn ends until the end call; ::an ended lane never comes back at a fresh start
-- ✅ a lane that moved nothing for 8 of cclio's turns reads stale
-  - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
+- ✅ a lane that moved nothing for 8 of clio's turns reads stale
+  - given the pointer and the done flags unmoved for 8 of clio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane step spans many turns
-  - proof: tests/lane.test.ts::a lane that moved nothing for 8 of cclio's turns reads stale; a step that moves nothing keeps the count; ::with no lane the reminder carries no lane text; ::with 🛼 glide switched off, a stale lane reaches no…
-- decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in cclio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by cclio's stash, never applied
+  - proof: tests/lane.test.ts::a lane that moved nothing for 8 of clio's turns reads stale; a step that moves nothing keeps the count; ::with no lane the reminder carries no lane text; ::with 🛼 glide switched off, a stale lane reaches no…
+- decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in clio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by clio's stash, never applied
 - ✅ a lane follows its coder's plan step (todo 6, dima's 18:55 shot: «I want to see the coder's future progress»)
   - makes: a `lane-step:<registry name>` key in the store, `{ at, step }`, written only by that session's plan op
-  - given a lane with a coder linked, when that coder's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and cclio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` the coder, and cclio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <coder>» once
-  - given the pointer at 3, when the coder names 2, or the step count, or the verifier, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays cclio's act
-  - and cclio's step back holds until the coder names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
+  - given a lane with a coder linked, when that coder's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and clio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` the coder, and clio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <coder>» once
+  - given the pointer at 3, when the coder names 2, or the step count, or the verifier, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays clio's act
+  - and clio's step back holds until the coder names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
   - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters the coder's context — its brief numbers the steps
-  - proof: tests/lane.test.ts::a session's plan step lands in the store under its registry name; ::the linked coder's step 3 moves the lane while cclio idles, and her next prompt hears it once; ::a move reaches cclio's running turn at her…
+  - proof: tests/lane.test.ts::a session's plan step lands in the store under its registry name; ::the linked coder's step 3 moves the lane while clio idles, and her next prompt hears it once; ::a move reaches clio's running turn at her…
 - ✅ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
   - and a subcard holding asks heads bold amber with a 🙋 — `🙋 🔧 coder · 1 ask` — the palette's `warn`, the one colour dima reads as «waits on you»; at 0 it reads plain (todo 28; dima, 19:45: «revert to previous layout and keep color update plus emoji»)
@@ -890,10 +890,10 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given a background session's name is not `<mode> <role emoji> <ticket> <role word>: <what>` («☕️ 🔧 FRM-303 code: stash keep-hot»)
   - when the board lists it
   - then its row carries ⚠ beside the name; the pattern lives here, since the pane draws no hover card
-  - given a background session named as a standing member alone, badge or not («🐦‍⬛ ccrow»)
+  - given a background session named as a standing member alone, badge or not («🐦‍⬛ crow»)
   - then no ⚠ — its fixed name is the pattern (dima, 2026-10-09, FRM-357)
   - decision: on the board, not at spawn — a `--bg` coder starts through Bash, and `agent.spawn` sees only Agent-tool subagents
-  - proof: tests/board.test.ts::the board marks a background session named off the fleet pattern; ::a cold row off the fleet pattern keeps ⚠, never ❄️ — not asserted: standing-member no-⚠ only via composer-sidecar test
+  - proof: tests/board.test.ts::the board marks a background session named off the fleet pattern; ::a cold row off the fleet pattern keeps ⚠, never ❄️ — not asserted: standing-member no-⚠ only via helga-sidecar test
 
 ## scripts
 

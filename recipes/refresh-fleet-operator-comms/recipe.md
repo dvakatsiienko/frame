@@ -35,13 +35,13 @@ dima, 2026-10-10: «after we run this recipe first time, i get the most meaningf
   - the model labels only pushback and the gap (4–7 values, where agreement holds); the 9 kinds come from patterns where mechanical (approve, command, status); the cheapest model that agrees 85 % with the gold set does it (run 1: sonnet, 91 % and 89 %; haiku failed), jev when its credit is back
   - the reply read samples 100 pairs, opus only there
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
 2. research fan-out: one brief quoting the want and the research vectors, through `pnpm research:lanes <brief>` (exa + parallel) and one `researcher` lane on sources + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane landed or failed out loud. (script)
 3. sharpen the hunts: each research finding that names something measurable becomes a scrape hunt for this run, or is named «not measurable here». done: the hunt list for this run is written in `last/`. (open)
 4. scrape: `scripts/prompts-extract.sh` and `scripts/replies-extract.sh` over the transcripts since the last run, then labelling lanes (sonnet over his prompts, opus over reply → reaction pairs). done: the numbers and the labels sit in `last/`. (script)
    - the judge sees the 3 turns before each prompt, never the prompt alone: a correction or a re-ask reads as a steer without its context
    - labels use the SWE-chat pushback kinds (correction, rejection, failure report) beside ours, so rates compare with published ones, and tag the communication challenge a prompt shows (what can the agent do, what is it doing, did it land, which past decision applies)
-   - the gold set in the label store (`gold-<date>.csv`, the disputed prompts labelled by cclio from context) grows by each run's new disputes: a labelling lane counts only at 85 % agreement or more
+   - the gold set in the label store (`gold-<date>.csv`, the disputed prompts labelled by clio from context) grows by each run's new disputes: a labelling lane counts only at 85 % agreement or more
    - the relational numbers come from `duckdb`, no model: ask → answer latency, unanswered asks, the repair span after a correction, turns per decision, a new agent message before his reply
 5. distill into `docs/knowledge/fleet-operator-comms.md` (the ledger, its trend against the last run) and propose the rule, style and habit lines the run showed wrong; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
 6. findings print, the shared parts plus this recipe's checklist. done: printed. (template)
@@ -82,7 +82,7 @@ dima, 2026-10-10: «after we run this recipe first time, i get the most meaningf
 - `docs/knowledge/fleet-operator-comms.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
 - `home/.claude/rules/fleet-output-format.md` — the reply shape; the run proposes line changes, dima approves
 - `home/.claude/output-styles/output-fun.md` — the voice; same, his word only
-- `_clio/memory/habit-dima-comms.md` — cclio's pacing habits; proposals announced, edited on his word
+- `_clio/memory/habit-dima-comms.md` — clio's pacing habits; proposals announced, edited on his word
 
 ## findings
 

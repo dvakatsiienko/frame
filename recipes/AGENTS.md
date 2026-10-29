@@ -2,7 +2,7 @@
 
 a **recipe** is a repeatable learning run: it researches one area wide and deep, then sharpens the
 matching part of the fleet (a skill, a memory file, an app's knowledge) with what it found. every
-recipe shares one shape, and this file is it; running, grooming and creating one is `cclio:shape-recipe`.
+recipe shares one shape, and this file is it; running, grooming and creating one is `clio:shape-recipe`.
 
 ## the want
 
@@ -52,7 +52,7 @@ body, in this order. each section holds only its own kind of line:
 1. `# <folder name>`, one purpose line (what it keeps true), at most one 📌 status line. no history past «born <date> from <ticket>», no run results
 2. `## contents` — only when the file passes 100 lines; the h2 list and nothing else
 3. `## the want` — dima's words in «» or `>`, each dated, plus his standing calls. never research results, steps, or a paraphrase posing as a quote
-4. `## the run` — binding run rules as a short list, then numbered steps; each step ends on a `done:` line and names its freedom (`script`, `template`, `open`). the shared steps of `cclio:shape-recipe` are named, never restated. the last step logs the run. the last run is the newest line of `log.md`, never a field; a recipe may carry one `- suggest a run when: …` line in `## the run`, after the run rules and before step 1 — cclio suggests, dima runs
+4. `## the run` — binding run rules as a short list, then numbered steps; each step ends on a `done:` line and names its freedom (`script`, `template`, `open`). the shared steps of `clio:shape-recipe` are named, never restated. the last step logs the run. the last run is the newest line of `log.md`, never a field; a recipe may carry one `- suggest a run when: …` line in `## the run`, after the run rules and before step 1 — clio suggests, dima runs
 5. `## vectors` — `### research` (the outside world, in dima's or the owner's words), `### analysis` (our own evidence), optional `### cut` (vectors he settled). never last run's answers: those live in the artifact
 6. `## artifacts` — one bullet per `artifacts:` entry: what it holds, how the distill treats it. never the artifact's content
 7. `## findings` — what this recipe's print adds to the shared parts, and its checklist, re-checked every run. never past verdicts
@@ -74,10 +74,10 @@ body, in this order. each section holds only its own kind of line:
 
 ## the check
 
-`script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a line restating the shared vectors below or `cclio:shape-recipe`'s run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.
+`script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a line restating the shared vectors below or `clio:shape-recipe`'s run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.
 
 ## the shared vectors — every refresh run asks these on top of its own
-<!-- moved from cclio:shape-recipe (dima o73, 2026-10-12): a list in a skill was read and still missed -->
+<!-- moved from clio:shape-recipe (dima o73, 2026-10-12): a list in a skill was read and still missed -->
 skip one only by naming why it does not fit (a job-market run has no «agent use» of a tool).
 
 every vector's finding, shared or the recipe's own, is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing» — the want's «use what comes back to find mistakes in our own and the fleet's flows» above.

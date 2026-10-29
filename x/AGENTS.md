@@ -72,7 +72,7 @@ the checks a verifier or coder on `x` starts from.
   frame tree `git-crypt unlock` decrypts by itself; in a fresh fixture it leaves the ciphertext (git
   sees the files as unchanged). so the locked set is read again after it, and each file still locked
   is removed and checked out, only while its raw bytes equal its index blob.
-- `lane commit` runs `_clio/script/quote-diff.py HEAD` over staged memory, skill and rules markdown; a gone «» quote refuses unless the message holds `quotes: shown`. the script is cclio's, x only calls it
+- `lane commit` runs `_clio/script/quote-diff.py HEAD` over staged memory, skill and rules markdown; a gone «» quote refuses unless the message holds `quotes: shown`. the script is clio's, x only calls it
 - `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
 - `lane commit` waits out a peer's `index.lock` before its `add` and its `commit`, up to `lockWait` (30 s), and once more on a lock race right after; a lock past the wait fails and stays — the verb never deletes one (`FTR.md`). `X_LOCK_WAIT` shortens the wait under `X_TEST` only
 - `lane commit` on main runs the ci jobs for the touched paths after the hold, before the hooks: `go test ./...` per go module a path sits in, the repo's `pnpm typecheck` + `pnpm test` for a `.ts`/`.tsx` unless the installed lefthook pre-commit already runs it (`preCommitRuns`). a pr branch skips them — ci sees it before main does

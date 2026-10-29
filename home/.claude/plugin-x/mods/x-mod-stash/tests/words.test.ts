@@ -29,9 +29,9 @@ test('a wish is bolded as a noun, never as a verb', () => {
 
 test('a fleet member prints bold with its badge', () => {
     expect(
-        boldFleetWords('cclio asks ccrow; the coder and two verifiers').text,
+        boldFleetWords('clio asks crow; the coder and two verifiers').text,
     ).toBe(
-        '**🦉 cclio** asks **🐦‍⬛ ccrow**; the **🔧 coder** and two **🔎 verifiers**',
+        '**🦉 clio** asks **🐦‍⬛ crow**; the **🔧 coder** and two **🔎 verifiers**',
     );
 });
 
@@ -43,7 +43,7 @@ test("dima's name takes his badge, a path through a member's dir keeps its own",
 
 test("a skill name, a quote, a session name and another member's badge keep their words", () => {
     const text = [
-        'run cclio:halt',
+        'run clio:halt',
         '«dima, 2026-10-08»',
         'ask ☕️ 🔧 mods coder',
         'a 🔎 coder',

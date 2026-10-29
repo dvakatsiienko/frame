@@ -74,7 +74,7 @@ const leavesDir = join(fixtures, 'leaves');
 
 test('the boot prompt is the x:crew-adviser skill body, frontmatter cut', () => {
     const charter = readCharter();
-    expect(charter.startsWith('you are ccrow')).toBe(true);
+    expect(charter.startsWith('you are crow')).toBe(true);
     expect(charter).toContain('the silence bar');
 });
 
@@ -91,13 +91,13 @@ test('_crow/AGENTS.md holds the mechanics, never the hunts', () => {
 const lines = readLines(join(fixtures, 'transcript.jsonl'));
 
 describe('transcriptDelta', () => {
-    test('keeps dima, peer and cclio text from the offset on', () => {
+    test('keeps dima, peer and clio text from the offset on', () => {
         expect(transcriptDelta(lines, 2).text).toBe(
             [
-                '## dima\nship the ccrow build',
-                '## cclio\non it',
+                '## dima\nship the crow build',
+                '## clio\non it',
                 '## peer\ncoder: done, pr #9',
-                '## cclio\ndone, all green',
+                '## clio\ndone, all green',
             ].join('\n\n'),
         );
     });
@@ -244,7 +244,7 @@ describe('transcriptDelta', () => {
 
 describe('appendNoteOnce', () => {
     test('a second note with the same id is not appended', () => {
-        const path = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 'notes.jsonl');
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-')), 'notes.jsonl');
         const note = {
             at: '2026-10-21T10:53:45Z',
             channel: 'session',
@@ -259,7 +259,7 @@ describe('appendNoteOnce', () => {
 
 describe('readLines', () => {
     test('leaves out a last line that has no newline yet', () => {
-        const path = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 't.jsonl');
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-')), 't.jsonl');
         writeFileSync(path, '{"a":1}\n{"b":');
         expect(readLines(path)).toEqual(['{"a":1}']);
     });
@@ -278,7 +278,7 @@ describe('resolveLeaves', () => {
     });
 
     test('takes only the newest match for a latest line', () => {
-        const dir = mkdtempSync(join(tmpdir(), 'ccrow-'));
+        const dir = mkdtempSync(join(tmpdir(), 'crow-'));
         for (const [name, time] of [
             ['old.md', 1000],
             ['new.md', 2000],
@@ -301,7 +301,7 @@ describe('resolveLeaves', () => {
 
 describe('buildPacket', () => {
     test('writes one packet.md: the delta, then each leaf under its header', () => {
-        const dir = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 'packet');
+        const dir = join(mkdtempSync(join(tmpdir(), 'crow-')), 'packet');
         const leaf = join(leavesDir, 'strategy.md');
         buildPacket({
             deltaText: '## dima\nhi',
@@ -311,15 +311,15 @@ describe('buildPacket', () => {
         });
         expect(readdirSync(dir)).toEqual(['packet.md']);
         expect(readFileSync(join(dir, 'packet.md'), 'utf8')).toBe(
-            `# cclio since the last wake\n\n## dima\nhi\n\n## leaf · ${leaf}\n\nvector: ship the fleet\n`,
+            `# clio since the last wake\n\n## dima\nhi\n\n## leaf · ${leaf}\n\nvector: ship the fleet\n`,
         );
     });
 
     const packetOf = (deltaLines: string[]) => {
-        const dir = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 'packet');
+        const dir = join(mkdtempSync(join(tmpdir(), 'crow-')), 'packet');
         const delta = transcriptDelta(deltaLines, 0);
         buildPacket({
-            cut: cutLine(delta.cut, '/t/cclio.jsonl'),
+            cut: cutLine(delta.cut, '/t/clio.jsonl'),
             deltaText: delta.text,
             dir,
             leaves: [],
@@ -339,7 +339,7 @@ describe('buildPacket', () => {
             }),
         ]);
         expect(packet.match(/^cut: .*$/gm)).toEqual([
-            'cut: 0 older blocks dropped, 1 tool outputs capped · transcript /t/cclio.jsonl',
+            'cut: 0 older blocks dropped, 1 tool outputs capped · transcript /t/clio.jsonl',
         ]);
     });
 
@@ -350,7 +350,7 @@ describe('buildPacket', () => {
 
 describe('stashModOf', () => {
     test('picks the plugin dir named stash, whatever the dir is called', () => {
-        const home = mkdtempSync(join(tmpdir(), 'ccrow-mods-'));
+        const home = mkdtempSync(join(tmpdir(), 'crow-mods-'));
         for (const [dir, name] of [
             ['breather', 'breather'],
             ['renamed', 'x-mod-stash'],
@@ -371,7 +371,7 @@ describe('stashModOf', () => {
 describe('setHot', () => {
     test('adds the session hot key beside the keys already stored', () => {
         const store = join(
-            mkdtempSync(join(tmpdir(), 'ccrow-store-')),
+            mkdtempSync(join(tmpdir(), 'crow-store-')),
             's.json',
         );
         writeFileSync(store, JSON.stringify({ afk: false }));
@@ -386,7 +386,7 @@ describe('setHot', () => {
 const plan = readFileSync(join(fixtures, 'plan.md'), 'utf8');
 
 describe('plan prompts', () => {
-    test('carry no line of cclio’s transcript and no earlier verdict', () => {
+    test('carry no line of clio’s transcript and no earlier verdict', () => {
         const earlier = [
             'the rename finding was right, dima took it',
             'store writes race under two shells',
@@ -519,31 +519,31 @@ describe('planNotes', () => {
 });
 
 describe('isCoordinatorTranscript', () => {
-    const sessions = mkdtempSync(join(tmpdir(), 'ccrow-sessions-'));
+    const sessions = mkdtempSync(join(tmpdir(), 'crow-sessions-'));
     writeFileSync(
         join(sessions, '6020.json'),
-        JSON.stringify({ name: '🦉 cclio', sessionId: 'aaa' }),
+        JSON.stringify({ name: '🦉 clio', sessionId: 'aaa' }),
     );
     writeFileSync(
         join(sessions, '3356.json'),
         JSON.stringify({ name: '☕️ 🔧 coder: mods', sessionId: 'bbb' }),
     );
 
-    test('a transcript of the session named cclio wakes ccrow', () => {
+    test('a transcript of the session named clio wakes crow', () => {
         expect(isCoordinatorTranscript('/p/aaa.jsonl', sessions)).toBe(true);
     });
 
-    test('a coder transcript under the cclio dir does not', () => {
+    test('a coder transcript under the clio dir does not', () => {
         expect(isCoordinatorTranscript('/p/bbb.jsonl', sessions)).toBe(false);
     });
 });
 
 test('a desktop turn ends on stop_hook_summary, timed from its timestamps', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'ccrow-turn-'));
+    const dir = mkdtempSync(join(tmpdir(), 'crow-turn-'));
     const path = join(dir, 't.jsonl');
     const lines = [
         {
-            message: { content: 'ccrow wake 1 · mode day' },
+            message: { content: 'crow wake 1 · mode day' },
             timestamp: '2026-10-09T14:45:00Z',
             type: 'user',
         },
@@ -563,7 +563,7 @@ test('a desktop turn ends on stop_hook_summary, timed from its timestamps', () =
         },
     ];
     writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
-    expect(readTurn(path, 'ccrow wake 1')).toMatchObject({
+    expect(readTurn(path, 'crow wake 1')).toMatchObject({
         model: 'claude-fable-5-1',
         note: 'none',
         seconds: 120,
@@ -584,7 +584,7 @@ test('a delta block carries its local time when the entry has one', () => {
     expect(transcriptDelta(lines, 0).text).toBe(`## dima · ${hhmm}\nhi`);
 });
 
-test('a leaf goes again only when it changed, or when ccrow started a new transcript', () => {
+test('a leaf goes again only when it changed, or when crow started a new transcript', () => {
     const leaf = join(leavesDir, 'strategy.md');
     const first = leavesToSend([leaf], { offsets: {} }, 't1');
     expect(first.changed).toEqual([leaf]);
@@ -603,7 +603,7 @@ describe('decisionOf', () => {
         ['GH_TOKEN=x gh pr merge 5', 'merge'],
         ['gh pr merge --subject "a; claude --bg" 82', 'merge'],
         [
-            'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-coder FRM-1"',
+            'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-codie FRM-1"',
             'spawn',
         ],
         ['A=1 claude --bg hi', 'spawn'],
@@ -644,10 +644,7 @@ describe('meterLine', () => {
     const NOW = new Date(Date.UTC(2026, 9, 12, 11, 0));
     const sec = (ms: number) => Math.floor(ms / 1000);
     test('prints both windows, their resets and the reading age', () => {
-        const path = join(
-            mkdtempSync(join(tmpdir(), 'ccrow-meter-')),
-            'u.json',
-        );
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-meter-')), 'u.json');
         writeFileSync(
             path,
             JSON.stringify({
@@ -678,7 +675,7 @@ describe('ledgerLine', () => {
     const at = (h: number, m: number, day = 11) =>
         new Date(2026, 9, day, h, m).toISOString();
     function files(notes: object[], verdicts: object[] = []) {
-        const dir = mkdtempSync(join(tmpdir(), 'ccrow-ledger-'));
+        const dir = mkdtempSync(join(tmpdir(), 'crow-ledger-'));
         const jsonl = (rows: object[]) =>
             rows.map((r) => JSON.stringify(r)).join('\n');
         writeFileSync(join(dir, 'notes.jsonl'), jsonl(notes));
@@ -721,9 +718,9 @@ describe('ledgerLine', () => {
     });
 });
 
-// relay.ts: a wake x-mod-stash has not sent yet stays parked for its next poll; cclio's prompt hook prints nothing
-test('an unsent parked wake stays parked and puts nothing in cclio’s context', () => {
-    const state = mkdtempSync(join(tmpdir(), 'ccrow-state-'));
+// relay.ts: a wake x-mod-stash has not sent yet stays parked for its next poll; clio's prompt hook prints nothing
+test('an unsent parked wake stays parked and puts nothing in clio’s context', () => {
+    const state = mkdtempSync(join(tmpdir(), 'crow-state-'));
     const relay = join(state, 'relay.json');
     writeFileSync(
         relay,
@@ -736,7 +733,7 @@ test('an unsent parked wake stays parked and puts nothing in cclio’s context',
     );
     const run = spawnSync('node', [join(import.meta.dirname, 'relay.ts')], {
         encoding: 'utf8',
-        env: { ...process.env, CCROW_STATE_DIR: state },
+        env: { ...process.env, CROW_STATE_DIR: state },
     });
     expect([run.status, run.stdout, existsSync(relay)]).toEqual([0, '', true]);
 });

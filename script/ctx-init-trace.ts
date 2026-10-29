@@ -104,20 +104,28 @@ export function seatOf(dir: string, firstMessage: string): Seat {
         )
     )
         // read-both
-        return 'cclio';
-    if (/^-Users-dima--local-state-(ccrow|crow)/.test(dir)) return 'ccrow'; // read-both
-    if (/^-Users-dima--local-state-(composer|helga)/.test(dir))
-        return 'composer'; // read-both
+        return 'clio';
+    if (/^-Users-dima--local-state-(ccrow|crow)/.test(dir)) return 'crow'; // read-both
+    if (/^-Users-dima--local-state-(composer|helga)/.test(dir)) return 'helga'; // read-both
     if (dir === '-Users-dima-frame') return 'cc';
     return 'other';
 }
+
+// read-both: rows and baseline keys stored before the 10-29 rename carry the old seat names
+const PAST_SEATS: Record<string, Seat> = {
+    cclio: 'clio',
+    ccrow: 'crow',
+    composer: 'helga',
+}; // read-both
+const seatNow = (seat: string) => PAST_SEATS[seat] ?? (seat as Seat);
 
 export function readTrace(file = TRACE_FILE) {
     if (!existsSync(file)) return [];
     return readFileSync(file, 'utf8')
         .split('\n')
         .filter(Boolean)
-        .map((l) => JSON.parse(l) as TraceRow);
+        .map((l) => JSON.parse(l) as TraceRow)
+        .map((r) => ({ ...r, seat: seatNow(r.seat) }));
 }
 
 function appendRows(rows: TraceRow[], file = TRACE_FILE) {
@@ -310,14 +318,7 @@ export function lineOf(alarm: Alarm, cause: Cause) {
     return `⚠ ${head}, ${against} — ${why}`;
 }
 
-const SEAT_ORDER: Seat[] = [
-    'cclio',
-    'ccrow',
-    'composer',
-    'coder',
-    'verifier',
-    'cc',
-];
+const SEAT_ORDER: Seat[] = ['clio', 'crow', 'helga', 'coder', 'verifier', 'cc'];
 const DIGEST_DAYS = 14;
 const DIGEST_SESSIONS = 5;
 
@@ -369,7 +370,13 @@ export function digestOf(
 
 function readBaseline() {
     if (!existsSync(BASELINE_FILE)) return {};
-    return JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) as Baseline;
+    const stored = JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) as Baseline;
+    return Object.fromEntries(
+        Object.entries(stored).map(([key, value]) => {
+            const [seat, model] = key.split('|');
+            return [`${seatNow(seat ?? '')}|${model}`, value];
+        }),
+    ) as Baseline;
 }
 
 function writeBaseline(baseline: Baseline) {
@@ -462,11 +469,11 @@ export type Cause =
     | { from: string; kind: 'version'; to: string };
 
 export type Seat =
-    | 'cclio'
-    | 'ccrow'
+    | 'clio'
+    | 'crow'
     | 'cc'
     | 'coder'
-    | 'composer'
+    | 'helga'
     | 'other'
     | 'verifier';
 

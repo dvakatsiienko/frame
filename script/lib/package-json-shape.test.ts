@@ -92,7 +92,7 @@ describe('finding the manifests', () => {
             'pnpm-workspace.yaml': [
                 'packages:',
                 '  - apps/*',
-                "  - 'home/.claude/mcp-x-cw'",
+                "  - 'home/.claude/mcp-x-cloud-chat'",
                 '  - "!apps/ignored"',
                 '',
                 'minimumReleaseAgeExclude:',
@@ -105,7 +105,7 @@ describe('finding the manifests', () => {
         // line would swallow it and look for a package.json that never existed.
         expect(readWorkspaceGlobs(root)).toEqual([
             'apps/*',
-            'home/.claude/mcp-x-cw',
+            'home/.claude/mcp-x-cloud-chat',
         ]);
     });
 

@@ -1,14 +1,14 @@
 ---
 name: pm
 description: >-
-  cclio's linear handbook. load before any ticket write — create, body edit, state or label set,
+  clio's linear handbook. load before any ticket write — create, body edit, state or label set,
   link, close, triage, a milestone, a sort, a project update — before a close proposal, and before
   a read that decides what to do next. a plain «what does FRM-N say» needs only `x linear read`.
 ---
 
-# cclio:pm — the tracker, run by cclio alone
+# clio:pm — the tracker, run by clio alone
 
-cclio does every linear write; members read, and post a done report or a clean verdict (`rules-lazy/linear-flow.md`
+clio does every linear write; members read, and post a done report or a clean verdict (`rules-lazy/linear-flow.md`
 is their whole floor, and binds here too). the words — team, project, story, label group, role,
 size, run marker — are defined in `docs/tracker/GLOSSARY.md` and the TRK adrs, never restated here.
 every-turn judgment (fold or drop, wishes, the pace contract, the freebie rule) is `craft-pm`;
@@ -24,9 +24,9 @@ recipes are [references/workspace.md](references/workspace.md).
 - `link FRM-N blocks FRM-M` · `comment FRM-N --body-file f` · `update <project> --body-file f --health onTrack`
 - `archive --days 14`, then `--apply`
 - `api '<graphql>'` for the rest; `x schema linear` holds every flag
-- create has no verb: `x as cclio -- linear issue create … --project <name> --milestone <name> --description-file f`, never `--state` —
+- create has no verb: `x as clio -- linear issue create … --project <name> --milestone <name> --description-file f`, never `--state` —
   a new ticket is born in Triage, and promotion out of it is dima's (2026-08-31)
-- every call acts as the cclio app (`viewer` answers `cclio, app: true`); `--as coder` writes as the coder app
+- every call acts as the clio app (`viewer` answers `clio, app: true`); `--as coder` writes as the coder app
 
 traps:
 - the raw cli's `issue update --label` replaces every label
@@ -49,7 +49,7 @@ traps:
   die with?», none → flat; **milestone** inherited from the parent
 - **an assignee carries no meaning**: Linear may assign dima through a linked commit, and that is fine
   (dima, 2026-10-15); his own tickets carry the `human` label. the delegate says who works it:
-  cclio starts it → `delegateId` cclio (`0e9bab8b-1e99-4d9c-90f8-57ce3166ca7a`); handed to a
+  clio starts it → `delegateId` clio (`0e9bab8b-1e99-4d9c-90f8-57ce3166ca7a`); handed to a
   coder → the coder app (`195a6ec0-ed0c-4519-9750-948eac4e5e00`)
 - **work starts** → In Progress the same turn, and the sline pin:
   `printf '{"session_id":"%s","prompt":"claim FRM-N"}' "$CLAUDE_CODE_SESSION_ID" | ~/.claude/shelf/hooks/sline-focus.sh`
@@ -70,7 +70,7 @@ traps:
 
 - 📖 **a create, a body rewrite or a comment → read [references/body.md](references/body.md) first**: the body order (lane, wish, dima notes … closing word), writing, run markers. no body is written from memory of this section
 - 📖 **a close, cancel, merge or reshape → read [references/closing.md](references/closing.md) first**: the three auto-close cases, the close test, the ask-guard
-- what holds even without the read: a rewrite starts with a full-body fetch (`x linear body`); dima's words survive every edit and never go into a comment; every id is a link; a body cclio creates and every comment cclio writes end with the run marker `⸻ 🪪 <run> · <model> · agent run stamp — please keep 🙏`
+- what holds even without the read: a rewrite starts with a full-body fetch (`x linear body`); dima's words survive every edit and never go into a comment; every id is a link; a body clio creates and every comment clio writes end with the run marker `⸻ 🪪 <run> · <model> · agent run stamp — please keep 🙏`
 
 ## reading — how deep
 
@@ -86,7 +86,7 @@ traps:
 
 dima, 2026-09-03: *«we plan a lot, and then when we get to a bunch, we have a pile of unsorted
 tickets.»* every new branch and milestone opens sorted: after its tickets exist and before any
-work, cclio proposes the order, dima corrects it, it lands in `sortOrder` (recipe in
+work, clio proposes the order, dima corrects it, it lands in `sortOrder` (recipe in
 `references/workspace.md`). a milestone's `blocks` chain is the order, and its `sortOrder` is
 written from it at every sort and sign, so the boot's «next» and dispatch agree. priority stays
 importance, never sequence; re-sort when the milestone changes shape, never mid-ticket.
@@ -100,8 +100,8 @@ same brief, first. `standing` is for the fleet's records (pm, memory, nvim, skil
 
 ## the app identity — notifications
 
-every app write notifies dima: linear treats cclio and coder as other people (2026-09-28: 68 unread
-in two days, all ours). cclio comments when something waits on dima, or to stash what the fleet
+every app write notifies dima: linear treats clio and coder as other people (2026-09-28: 68 unread
+in two days, all ours). clio comments when something waits on dima, or to stash what the fleet
 will need later; trail that the gazette or a pr already carries stays out. dima wants the
 notifications, just not the spam — marking them read for him is parked, his call.
 

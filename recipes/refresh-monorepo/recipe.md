@@ -35,7 +35,7 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 - each bytes coder lane proposes this recipe's vector changes at its end (the coder seat)
 - suggest a run when: a turbo minor ships
 
-1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
+1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)
 2. **research** — the brief from `pnpm recipe:brief refresh-monorepo`; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + bytes, measured). done: every lane returned or marked failed. (script)
 3. **distill** — the baseline into bytes' `AGENTS.md` (short, every coder reads it), the rest into `docs/knowledge/monorepo.md`; raw lane output stays in `last/` until the next run's distill. done: both read and touched, or named «unchanged». (open)
 4. **land** — every small win done in the run; the rest dated pocket items. done: each win landed or dated. (open)

@@ -12,7 +12,7 @@ groomed: 2026-10-10 (dima)
 
 # refresh-crew-coordinator-pocket
 
-keeps cclio's pocket true to its purpose: no drift, no clutter, easy items never parked, the pocket pulled often.
+keeps clio's pocket true to its purpose: no drift, no clutter, easy items never parked, the pocket pulled often.
 
 born 2026-10-10 from PK-34.
 
@@ -28,7 +28,7 @@ born 2026-10-10 from PK-34.
 
 - suggest a run when: a Backlog.md minor release, `pocket-check` goes red twice in a week, or the pocket trial verdict (2026-10-21)
 
-1. **groom** (step 0 of `cclio:shape-recipe`): the vectors below against the last run's line and the birth gate in `_clio/memory/habit-shared-files.md`. done: dima's word, the stamp in frontmatter. (open)
+1. **groom** (step 0 of `clio:shape-recipe`): the vectors below against the last run's line and the birth gate in `_clio/memory/habit-shared-files.md`. done: dima's word, the stamp in frontmatter. (open)
 2. **own data first**: the analysis vectors, measured from `_clio/pocket/` (tasks, completed, archive) and its git history. done: the numbers in the findings print. (script)
 3. **lanes, from one brief**: `researcher` + `pnpm research:lanes`, pointed at what step 2 showed broken. done: every lane landed or failed out loud. (template)
 4. **distill** into the artifacts: a gap closed by a Backlog.md feature replaces our own check, never sits beside it. done: each artifact touched or named «unchanged». (open)
@@ -64,6 +64,6 @@ born 2026-10-10 from PK-34.
 
 ## findings
 
-the print follows `cclio:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors).
+the print follows `clio:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors).
 
 the checklist, every run: the birth gate rule by rule (xs solved, bigger in order, linear on his word, waiting with its line, parked with its reason, done completed) — held or broken, with the count.

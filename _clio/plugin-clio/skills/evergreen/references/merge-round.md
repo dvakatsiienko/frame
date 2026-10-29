@@ -1,9 +1,9 @@
 # evergreen — the merge round
 
-read by `cclio:evergreen` § act on his word when dima says «approve evergreen» (or ticks its orbit ask).
+read by `clio:evergreen` § act on his word when dima says «approve evergreen» (or ticks its orbit ask).
 
 a plain «approve evergreen» (or a 🛎️ on its orbit ask) means: **every ➡️ merge in the report runs
-now, by cclio, no second ask.** steers inside the
+now, by clio, no second ask.** steers inside the
 same message («hold #61») subtract from the round.
 
 - **the round ends with a loot in every repo it merged into** (`git pull --ff-only`, or a
@@ -20,7 +20,7 @@ same message («hold #61») subtract from the round.
   `<!-- rebase-check -->` box in the PR body via `gh pr edit --body-file`; renovate rebases
   within its next scan (~hourly); report it as pending, never rebase by hand.
 - **coder** → a red or held-for-migration PR gets a coder on its branch through
-  `x:crew-coder` («make this bump green; migrate what the release notes say changed»).
+  `x:crew-codie` («make this bump green; migrate what the release notes say changed»).
   renovate stops rebasing once a human commit lands, which is right.
 - **hold** → a peer-range hold gets `gh pr close --comment` with the range named; renovate
   reopens it on the next release of the package. any other hold: nothing, the age prefix

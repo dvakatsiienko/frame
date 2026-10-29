@@ -30,11 +30,11 @@ export function trailerAdd(message: string, role: string, model: string) {
 
 /* Helpers */
 const ROLES = [
-    ['🦉', 'cclio'],
+    ['🦉', 'clio'],
     ['🔧', 'coder'],
     ['🔎', 'verifier'],
-    ['🎼', 'composer'],
+    ['🎀', 'helga'],
     ['🎨', 'designer'],
-    ['🐦', 'ccrow'],
+    ['🐦', 'crow'],
     ['☁️', 'cloud'],
 ] as const;

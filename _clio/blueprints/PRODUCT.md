@@ -18,9 +18,9 @@
 - **where**: local, on the mac; a local web app is the start, a pretty desktop app is a nice-to-have; performance and accessibility first
 - **the truth**: a text file in git, local only, no deploy, no remote; the most efficient channel; complexity only when needed or when dima wants it
 - **round-trip**: his drag edits save back into the same file, in v1 — «by editing, I want to show you my ideas and propositions. this is the whole idea»
-- **layout**: under the hood, cclio's call; editing a flow costs cclio the least effort, the mechanism reliable, robust and bulletproof; start simple, add only as needed
-- **the tests**: draw the pm map from the real files; cclio edits 3 nodes (tokens, seconds, renders right); dima drags one part and cclio reads it back
-- **the flows** he wants to see, one file each, in cclio's folder, self-descriptive names he reads: the pm module flow · cclio's memory structure · optionally the whole fleet memory, globals included
+- **layout**: under the hood, clio's call; editing a flow costs clio the least effort, the mechanism reliable, robust and bulletproof; start simple, add only as needed
+- **the tests**: draw the pm map from the real files; clio edits 3 nodes (tokens, seconds, renders right); dima drags one part and clio reads it back
+- **the flows** he wants to see, one file each, in clio's folder, self-descriptive names he reads: the pm module flow · clio's memory structure · optionally the whole fleet memory, globals included
 - **polish**: performant as a priority; pretty is a strong nice-to-have — «i don't like clunky and ugly tools»
 
 ## the cut

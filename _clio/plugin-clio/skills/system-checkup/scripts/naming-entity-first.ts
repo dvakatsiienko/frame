@@ -90,13 +90,13 @@ function main() {
             skill('skill x'),
         ),
         ...dirs(join(frame, '_clio/plugin-clio/skills')).map(
-            skill('skill cclio'),
+            skill('skill clio'),
         ),
         ...dirs(join(frame, 'recipes')).map(skill('recipe')),
         ...entries(join(frame, 'script')).map(file('script')),
-        ...entries(join(frame, '_clio/script')).map(file('cclio script')),
+        ...entries(join(frame, '_clio/script')).map(file('clio script')),
         ...entries(join(frame, 'home/.claude/shelf/hooks')).map(file('hook')),
-        ...entries(join(frame, '_clio/.claude/hooks')).map(file('cclio hook')),
+        ...entries(join(frame, '_clio/.claude/hooks')).map(file('clio hook')),
         ...scriptKeys(join(frame, 'package.json'), 'frame script'),
         ...scriptKeys(
             join(home, 'projects/bytes/package.json'),

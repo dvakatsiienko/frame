@@ -71,10 +71,10 @@ func TestAsHandsTheMemberTokenToTheChildOnly(t *testing.T) {
 		name, member, tool, envName, key, token string
 	}{
 		{"coder on linear", "coder", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-coder:x", "tok-linear-coder"},
-		{"cclio on linear", "cclio", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-cclio:x", "tok-linear-cclio"},
+		{"clio on linear", "clio", "linear", "LINEAR_API_KEY", "keychain:x-token-linear-clio:x", "tok-linear-clio"},
 		{"dima on linear", "dima", "linear", "LINEAR_API_KEY", "op://dev/linear-golden/credential", "lin_api_dima"},
 		{"coder on gh", "coder", "gh", "GH_TOKEN", "keychain:x-token-gh-x-coder:x", "ghs_coder"},
-		{"cclio on gh", "cclio", "gh", "GH_TOKEN", "keychain:x-token-gh-x-cclio-cc:x", "ghs_cclio"},
+		{"clio on gh", "clio", "gh", "GH_TOKEN", "keychain:x-token-gh-x-cclio-cc:x", "ghs_clio"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

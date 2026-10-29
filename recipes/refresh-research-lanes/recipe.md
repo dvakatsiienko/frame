@@ -41,7 +41,7 @@ his standing calls:
 - the trials of research tools (firecrawl and any new one) log their rounds in their own test-drive file; this recipe reads those rounds in its analysis and writes their verdict lines, so no research tool gets a recipe of its own
 - suggest a run when: a lane's free tier or price changes, a new research tool is tried, or 30 days since the last run
 
-1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
+1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)
 2. **research** — the brief from `pnpm recipe:brief refresh-research-lanes`; `pnpm research:lanes <brief> <out>` + the `researcher` agent on the same brief + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane returned or marked failed. (script)
 3. **score** — per lane, from this run and the `last/` outputs of the recipe runs since the last one: what each lane found that no other did, its seconds and cost. done: one score line per lane in the print. (open)
 4. **distill** — into the artifacts below. done: each read and touched, or named «unchanged». (open)

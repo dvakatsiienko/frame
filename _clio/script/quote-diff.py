@@ -19,6 +19,9 @@ gone = failed = 0
 for f in args:
     real = os.path.realpath(os.path.expanduser(f))
     d = os.path.dirname(real)
+    # a file deleted with its folder (a moved dir) is asked from the nearest folder still on disk
+    while not os.path.isdir(d) and d != os.path.dirname(d):
+        d = os.path.dirname(d)
     top = git("rev-parse", "--show-toplevel", cwd=d).stdout.strip()
     if not top:
         print(f"✗ {f}: not inside a git repo — not checked"); failed += 1; continue

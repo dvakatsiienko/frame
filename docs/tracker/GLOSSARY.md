@@ -1,6 +1,6 @@
 # tracker context — glossary
 
-the linear workspace (`x-com`) domain. one term per concept, per TRK adrs. operational recipes live in `cclio:pm` (`_clio/plugin-clio/skills/pm/`); this file is vocabulary only.
+the linear workspace (`x-com`) domain. one term per concept, per TRK adrs. operational recipes live in `clio:pm` (`_clio/plugin-clio/skills/pm/`); this file is vocabulary only.
 
 - **team** — top split by nature of work, never by repo: `FRM` = tooling/approaches/how-we-work (key `DOT` until 2026-09-23; old `DOT-N` ids resolve), `BYT` = building apps. two teams, free-plan max.
 - **project** — long-lived area inside a team. never closes. DOT: pm, mind, fleet, cli, shelf, revamp, sline, numi. BYT: rl, design-system, cv, x-com-chat, tooling, lab, trophy-sys, monorepo (bytes-the-repo: shape, deps, turbo, lint, scripts — sweeps over the whole repo).
@@ -12,10 +12,10 @@ the linear workspace (`x-com`) domain. one term per concept, per TRK adrs. opera
 - **assignee** — assigned-to-dima = strictly his, agents never resolve it (≠ `human` label, which only says a human does the work). unassigned = open to anyone.
 - **priority** — how much a ticket matters, p1 rare. sequencing = `blocks` relation, never inflated priority. **estimate** — T-Shirt XS · S · M in agent sessions (minutes · one session · split); the order, not the priority, decides what runs next.
 - **sweep** — a read-only analysis pass over the tracker producing proposals, flushed only after approval.
-- **run marker** — per-run identifier stamped as the last line of agent-created ticket bodies and agent comments: `⸻ 🪪 cc·20260819·batch1 · agent run stamp — please keep 🙏`. minted once per session, `<surface>·<date>·<slug>`. buys one-pass revert of a bad batch and cross-session idempotency. never on a dima-authored ticket. contract in `cclio:pm` (DOT-107).
+- **run marker** — per-run identifier stamped as the last line of agent-created ticket bodies and agent comments: `⸻ 🪪 cc·20260819·batch1 · agent run stamp — please keep 🙏`. minted once per session, `<surface>·<date>·<slug>`. buys one-pass revert of a bad batch and cross-session idempotency. never on a dima-authored ticket. contract in `clio:pm` (DOT-107).
 - **doc** — research/deliverable attached to a ticket or project the moment it is born (task outputs are ephemeral). title is the interface: topic — kind — date.
 - **project overview** — a project's content field, the standing description of what it is and where it stands. a tracked surface: the coordinator maintains it for dima, it is never left to rot.
-- **coordinator** — the session that owns tracker work: creates, updates, closes, triages, and never writes product code. **`cclio`** holds it (a ccli session in `~/frame/_clio`) — the DOT-188 trial resolved in its favor 2026-08-31.
+- **coordinator** — the session that owns tracker work: creates, updates, closes, triages, and never writes product code. **`clio`** holds it (a cc session in `~/frame/_clio`) — the DOT-188 trial resolved in its favor 2026-08-31.
 - **pocket** — the coordinator's local pool of by-hand work for its next sessions, read before linear; an item gets a linear ticket only when a coder takes it. _avoid_: queue, flowlog, and «inbox», which is dima's drop point that feeds the pocket.
 - **spec ticket** — one build step of a spec, the unit a coder claims and closes during a spec run; local and short-lived, while the linear ticket keeps the record. _avoid_: issue, and a bare «ticket», which means the linear one.
 - **health update** — a linear project update. cadence is weekly per active project plus event-driven on real state changes (TRK-0003). ticket ids do not auto-link there, so every id is a markdown link — mandatory, not style.
@@ -28,7 +28,7 @@ successor. never create or reopen a gh issue.
 
 all operations go through the `linear` cli (schpet/linear-cli, on PATH, keyring-authed);
 `linear api '<graphql>'` covers anything without a dedicated command. **the linear mcp is not
-used.** the door is `x linear` (`x schema linear`); the field contract lives in `cclio:pm`.
+used.** the door is `x linear` (`x schema linear`); the field contract lives in `clio:pm`.
 
 📌 **ticket→gh-issue mirroring was tried and scrapped** (2026-08-21, dima). do not re-litigate.
 what IS live: the linear push webhook on `dvakatsiienko/frame` and `dvakatsiienko/bytes`

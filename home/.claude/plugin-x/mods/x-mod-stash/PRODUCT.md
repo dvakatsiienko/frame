@@ -18,8 +18,8 @@ the words: `GLOSSARY.md`.
 
 > the main thread is chaotic and multi-lane, so i often miss data in your messages that i don't want to miss. … each of your asks is a checkbox line; checked means i agree and accept your proposal … this way i do not need to copy-paste.
 
-- why: 71 % of cclio's replies ended with an ask block, he pasted 58 of 136 back unchanged, and the block broke whenever a second lane changed it mid-read (the comms ledger, `docs/knowledge/fleet-operator-comms.md`)
-- the full want, the grill and the chunks: cclio's pocket PK-20
+- why: 71 % of clio's replies ended with an ask block, he pasted 58 of 136 back unchanged, and the block broke whenever a second lane changed it mid-read (the comms ledger, `docs/knowledge/fleet-operator-comms.md`)
+- the full want, the grill and the chunks: clio's pocket PK-20
 - out: other sessions' asks in one list, a turn started by the mod, a new skill for the contract
 
 

@@ -1,6 +1,6 @@
 /**
  * jev:vet — the trial period of every jev flow. `pnpm jev:vet` prints each flow's streak;
- * `pnpm jev:vet ok|miss <flow> <note>` records cclio's verdict on one jev answer (the halt loop
+ * `pnpm jev:vet ok|miss <flow> <note>` records clio's verdict on one jev answer (the halt loop
  * calls it per disagreement, and once per clean day). `--prompt "<text>"` — or `--last`, which
  * takes the prompt off the newest route.log line — files the prompt beside the verdict, so
  * `pnpm jev:route --misses` can replay a real miss. logic and the registry shape live in

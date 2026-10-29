@@ -7,9 +7,9 @@
   "description": "dima's frame marketplace — the x plugin, synced from the repo",
   "plugins": [
     {
-      "name": "x-cw",
-      "source": "./home/.claude/plugin-x-cw",
-      "description": "Dima's skills curated for cw / claude desktop — handoff, pm, cmt, walkthroughs (conventions excluded)"
+      "name": "x-cloud-chat",
+      "source": "./home/.claude/plugin-x-cloud-chat",
+      "description": "Dima's skills curated for cloud-chat / claude desktop — handoff, pm, cmt, walkthroughs (conventions excluded)"
     }
   ]
 }

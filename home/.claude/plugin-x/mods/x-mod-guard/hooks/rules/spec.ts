@@ -9,7 +9,7 @@ const ITEMS_MIN = 3;
 const TICKET_ITEMS_MIN = 1;
 
 export const SPEC_WHY =
-    "a lane job goes through a spec (cclio:shape-lane-dispatch § 2): a ticket's job from 1 item, any other from 3";
+    "a lane job goes through a spec (clio:shape-lane-dispatch § 2): a ticket's job from 1 item, any other from 3";
 export const SPEC_DOOR =
     'write the job to .scratch/<feature>/spec.md and send its path';
 

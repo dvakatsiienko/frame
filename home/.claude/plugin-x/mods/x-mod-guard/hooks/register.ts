@@ -75,14 +75,14 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
-// a cclio session's own code edits: the 8th gets one note that a bigger job belongs to a helper
+// a clio session's own code edits: the 8th gets one note that a bigger job belongs to a helper
 const CODE_FILE = /\.(ts|tsx|go|sh|py|swift)$/;
 const EDITS = { key: 'edits', plugin: 'x-mod-guard' } as const;
 const EDIT_LIMIT = 8;
 const DELEGATE_NOTE =
-    "x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context";
+    "x-mod-guard: 8 code edits in this clio session — a bigger job goes to a helper (~137k base) instead of this thread's context";
 const FAILED =
-    'x-mod-guard: the check failed or ran out of time, so this call is refused (fail closed). retry it once; if it repeats, tell cclio';
+    'x-mod-guard: the check failed or ran out of time, so this call is refused (fail closed). retry it once; if it repeats, tell clio';
 // a fork carries the whole parent context; the line says what of it the fork needs
 const WHY_FORK = /^\s*why-fork:\s*\S/m;
 const FORK_DOOR =
@@ -100,7 +100,7 @@ const BRIEF_REFUSES = /^line \d+: (?:path|quiz) .+$/gm;
 const RELATIVE_MISS = /^line \d+: path (?![/~])/;
 
 // the findings that stop a brief, or none; it throws when x breaks, and the spawn goes then (fail open, unlike the
-// floor): this runs on every Agent of every session, cclio's included
+// floor): this runs on every Agent of every session, clio's included
 async function briefFindings($: EngineInterface, text: string) {
     if (!BRIEF_SIGN.test(text)) return [];
     const repo = await $.session.root().catch(() => $.session.cwd());
@@ -129,12 +129,12 @@ async function readBrief(
         .join('');
     const state = (await $.env.get('X_STATE')) || `${home}/.local/state/x`;
     return {
-        isCoder: new TextDecoder().decode(bytes).includes('/x:crew-coder'),
+        isCoder: new TextDecoder().decode(bytes).includes('/x:crew-codie'),
         isStamped: await $.fs.exists(`${state}/briefs/${sum}.json`),
     };
 }
 
-// the dir a repo's `backlog.config.yml` names as `backlog_directory` (cclio's pocket: `pocket`), else none
+// the dir a repo's `backlog.config.yml` names as `backlog_directory` (clio's pocket: `pocket`), else none
 async function backlogDir($: EngineInterface, dir: string) {
     const config = await $.fs.read(`${dir}/backlog.config.yml`).catch(() => '');
     return config
@@ -486,7 +486,7 @@ const ISOLATED_DOOR =
     'x-mod-guard: write the command into a scratch script ($CLAUDE_JOB_DIR/tmp or the session scratchpad) and run that script by path; git itself goes through `x lane <verb>`';
 const IMAGE_FILE = /\.(png|jpe?g|gif|webp|heic|bmp|tiff?)$/i;
 const IMAGE_LIMIT = 3;
-// screenshots read for their data go to helper-lite (PK-148); cclio reads them herself and pays for each
+// screenshots read for their data go to helper-lite (PK-148); clio reads them herself and pays for each
 const IMAGE_NOTE = `x-mod-guard: ${IMAGE_LIMIT} image Reads this turn — screenshots read for their data go to \`helper-lite\` cards, ≤20 a batch, transcribed to text (\`rules/fleet-tooling.md\`)`;
 // dima's ticks: x-mod-stash writes them into its own $.state from his 🛎️ press alone, and any plugin reads another's
 // value while only its owner writes it — so no Bash, Edit, Write or orbit op can forge one, and it is this session's
@@ -543,7 +543,7 @@ const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 // so in a bg session only the bridge is his
 const TYPED_BY_DIMA_IN_BG = new Set(['bridge']);
 const UNPROVEN_DOOR =
-    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session counts only what dima types into it himself; ask cclio to get him there';
+    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session counts only what dima types into it himself; ask clio to get him there';
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
 // a live mod's hooks reload into every session on save, so while its own tests are red a half-done edit there breaks the fleet
@@ -623,7 +623,7 @@ async function isTracked($: EngineInterface, path: string) {
     return ls?.exitCode === 0;
 }
 
-// a tree cclio may drop unasked: no `.scratch/` plan inside, and every commit its HEAD reaches is on a branch;
+// a tree clio may drop unasked: no `.scratch/` plan inside, and every commit its HEAD reaches is on a branch;
 // a lookup that fails counts as unclean, so the remove asks
 async function isCleanTree($: EngineInterface, tree: string) {
     if (await $.fs.exists(`${tree}/.scratch`)) return false;
@@ -784,7 +784,7 @@ export const register: Register = (on) => {
         const root = await $.session.root().catch(() => cwd);
         const ctx: Context = {
             home,
-            isCclio: isUnder(root, `${home}/frame/_clio`),
+            isClio: isUnder(root, `${home}/frame/_clio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
         };
         const facts = await lookUp($, command, cwd, ctx);
@@ -887,14 +887,14 @@ export const register: Register = (on) => {
                 fg,
                 `nothing in this command ran — x-mod-guard stopped this one command. instead: ${fg.door}. why: ${fg.why}.`,
             );
-        // a member's raw linear read or comment, as typed (before the api rewrite), names its x linear door; cclio's runs (FRM-398)
+        // a member's raw linear read or comment, as typed (before the api rewrite), names its x linear door; clio's runs (FRM-398)
         const raw = rawLinear(typed, cwd);
         if (raw) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
             if (
                 name !== undefined &&
-                name.replaceAll(/[\s\u200d]/g, '') !== '🦉cclio'
+                name.replaceAll(/[\s\u200d]/g, '') !== '🦉clio'
             ) {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
                 return enforce(
@@ -1074,7 +1074,7 @@ export const register: Register = (on) => {
                 return result;
             try {
                 const home = await $.env.get('HOME');
-                // the session's root, never its cwd: a cclio cd'd into ~/frame is still cclio, a coder cd'd into cclio is not
+                // the session's root, never its cwd: a clio cd'd into ~/frame is still clio, a coder cd'd into clio is not
                 const root = await $.session
                     .root()
                     .catch(() => $.session.cwd());

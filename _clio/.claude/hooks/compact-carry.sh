@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SessionStart:compact — re-prints cclio's last reply that carried a ⏳ block, verbatim from the
+# SessionStart:compact — re-prints clio's last reply that carried a ⏳ block, verbatim from the
 # transcript: an auto-compact cannot be steered, and its summary dropped open asks twice (2026-10-08).
 set -u
 t=$(jq -r '.transcript_path // empty' 2>/dev/null)

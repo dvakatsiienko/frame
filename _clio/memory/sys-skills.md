@@ -2,8 +2,8 @@
 
 Dima routes by prefix at a glance; the test is **where a skill can run**, never who wrote it.
 
-- **`x:*`** — useful in ANY ccli session.
-- **`cclio:*`** — coordinator-only, via the `cclio` plugin at project scope.
+- **`x:*`** — useful in ANY cc session.
+- **`clio:*`** — coordinator-only, via the `clio` plugin at project scope.
 - **mirrored external frameworks** (matt's) keep their original names for cross-surface muscle
   memory.
 
@@ -13,7 +13,7 @@ cache, no mirror. 🎯 **Be proactive with them**: `grilling` when a plan has un
 `to-tickets` when a thread ripens into buildable work. Opus filled ADRs through those flows —
 respect them, do not re-litigate decided things.
 
-🔓 **a user-only skill is still plain text** (dima, 2026-10-07: «you could work around any `disable-model-invocation` via a direct read»): cclio and every coder run matt's `to-spec`, `to-tickets`, `implement`, `implement-spec`, `grill-with-docs` by reading the `SKILL.md` and following it, no typed command needed. a read skill is ordinary context, so after a compaction it may be gone (inference) — re-read it at the next step.
+🔓 **a user-only skill is still plain text** (dima, 2026-10-07: «you could work around any `disable-model-invocation` via a direct read»): clio and every coder run matt's `to-spec`, `to-tickets`, `implement`, `implement-spec`, `grill-with-docs` by reading the `SKILL.md` and following it, no typed command needed. a read skill is ordinary context, so after a compaction it may be gone (inference) — re-read it at the next step.
 
 🪜 **a loaded skill's numbered steps print in the reply before the work** — one line per step, ✅ or ⏭️ with the reason, so a skip shows before dima catches it.
 

@@ -15,7 +15,7 @@ import (
 
 // x-mod-holds (the cc mod) holds a file from a session's first edit until it is committed; lane commit
 // reads its store and refuses a named path another live session holds, so a coordinator's commit never
-// sweeps a coder's hunk (cclio took a live coder's package.json, 2026-10-06). the release checks are the
+// sweeps a coder's hunk (clio took a live coder's package.json, 2026-10-06). the release checks are the
 // mod's own: an idle holder, a dead pid, a landed hold that is clean in git. a broken store never blocks
 
 var holdsFile = regexp.MustCompile(`^x-mod-holds_.*\.json$`)

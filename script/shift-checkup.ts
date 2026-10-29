@@ -1,5 +1,5 @@
 // Every guard a shift leans on, checked red and green where a fixture can prove it, each with the
-// reason it exists. Any red → no shift. Run by cclio:shift's preflight.
+// reason it exists. Any red → no shift. Run by clio:shift's preflight.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -53,10 +53,10 @@ const checks: Check[] = [
                 return JSON.stringify({ transcript_path: p });
             };
             if (
-                !hookOut(crewHook, transcript('/x:crew-coder')).includes('STOP')
+                !hookOut(crewHook, transcript('/x:crew-codie')).includes('STOP')
             )
                 return 'silent for a coder (green case)';
-            if (hookOut(crewHook, transcript('/cclio:boot')).trim())
+            if (hookOut(crewHook, transcript('/clio:boot')).trim())
                 return 'fires for a non-crew session (red case)';
             return true;
         },
@@ -71,7 +71,7 @@ const checks: Check[] = [
                 const dir = mkdtempSync(join(scratch, 'plan-'));
                 writeFileSync(
                     join(dir, 'p.md'),
-                    `# probe\n\nstatus: ${status}\n\n## log\n\n- 10:00 · cclio · step 1\n`,
+                    `# probe\n\nstatus: ${status}\n\n## log\n\n- 10:00 · clio · step 1\n`,
                 );
                 return dir;
             };
@@ -85,7 +85,7 @@ const checks: Check[] = [
                 return 'fires on a finished plan (red case)';
             return true;
         },
-        why: 'nobody types /compact during a shift — autocompact fires instead, and without this cclio forgets the plan, the step and the decisions',
+        why: 'nobody types /compact during a shift — autocompact fires instead, and without this clio forgets the plan, the step and the decisions',
     },
     {
         name: 'one running plan at most',
@@ -101,7 +101,7 @@ const checks: Check[] = [
                 `${running.length} plans say running: ${running.join(', ')}`
             );
         },
-        why: 'a plan left at status: running sends a compacted cclio back into a dead shift',
+        why: 'a plan left at status: running sends a compacted clio back into a dead shift',
     },
     {
         name: 'bg-spare age',
@@ -131,10 +131,10 @@ const checks: Check[] = [
             });
             return (
                 ps.split('\n').some((l) => l.includes('pr-watch.sh --watch')) ||
-                'no pr-watch.sh --watch process — start it from the cclio plugin monitor'
+                'no pr-watch.sh --watch process — start it from the clio plugin monitor'
             );
         },
-        why: 'a member pings only when done or blocked — the watch is what wakes cclio on a new commit or a green pr',
+        why: 'a member pings only when done or blocked — the watch is what wakes clio on a new commit or a green pr',
     },
     {
         name: 'fast-jev-compaction',
@@ -159,8 +159,8 @@ const checks: Check[] = [
                 !/402|billing|credit/i.test(health.stdout + health.stderr);
             if (on === jevUp) return true;
             return on
-                ? 'on at cclio scope while jev refuses — a compaction would call a dead api; set it false in _clio/.claude/settings.json'
-                : 'jev answers again — turn the plugin back on at cclio scope, its test drive prefers it';
+                ? 'on at clio scope while jev refuses — a compaction would call a dead api; set it false in _clio/.claude/settings.json'
+                : 'jev answers again — turn the plugin back on at clio scope, its test drive prefers it';
         },
         why: 'jev compacts at 95 % keeping the last 10 messages when its credit is live; frozen, cc native autocompact + the shift recompact hook carry the shift',
     },

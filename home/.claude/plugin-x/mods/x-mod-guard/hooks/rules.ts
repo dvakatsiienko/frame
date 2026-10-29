@@ -71,12 +71,12 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
             isJobTmp(p, ctx) || TEMP_ROOTS.some((root) => p.startsWith(root)),
     );
 }
-// cclio removes a scratch tree (a clean one: --force still asks) and deletes a scratch/* branch without dima's word;
+// clio removes a scratch tree (a clean one: --force still asks) and deletes a scratch/* branch without dima's word;
 // a merged branch's `git branch -d` already runs for everyone, since git itself refuses an unmerged one
 const SCRATCH_TREE = /\/\.claude\/(worktrees\/[^/]+|jobs\/[^/]+\/tmp\/.+)$/;
-// the scratch trees a cclio `git worktree remove` names, for the caller to look up; a tree elsewhere asks anyway
+// the scratch trees a clio `git worktree remove` names, for the caller to look up; a tree elsewhere asks anyway
 export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
-    if (!ctx.isCclio) return [];
+    if (!ctx.isClio) return [];
     return commands(parse(command), cwd).flatMap((c) => {
         if (c.name !== 'git') return [];
         const { sub, subArgs } = gitParts(c.args);
@@ -90,7 +90,7 @@ export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
     });
 }
 function isCleanup(c: Command, r: Refusal, ctx: Context) {
-    if (!ctx.isCclio || c.name !== 'git' || r.rule !== 'git-rewrite')
+    if (!ctx.isClio || c.name !== 'git' || r.rule !== 'git-rewrite')
         return false;
     const { sub, subArgs } = gitParts(c.args);
     const ops = operands(subArgs);
@@ -253,7 +253,7 @@ export function installDirs(command: string, cwd: string, ctx: Context = {}) {
     return frozenInstallDirs(commands(parse(command), cwd), ctx);
 }
 
-// a foreground `claude -p` holds the session's thread until it ends: a probe of eight runs blocked cclio for 3 minutes
+// a foreground `claude -p` holds the session's thread until it ends: a probe of eight runs blocked clio for 3 minutes
 // (dima's o102, FRM-395); `# fg-ok: <why>` lets a real need through, and a background run is never judged
 export function foregroundClaude(
     command: string,
@@ -277,7 +277,7 @@ export function foregroundClaude(
 }
 
 // a plugin's cache moves through x plugin bump, never a raw update: 36 raw update calls in 14 days, while the bump also
-// reads the cache back (FRM-389 exit 7, dima's o33); every session, cclio's included
+// reads the cache back (FRM-389 exit 7, dima's o33); every session, clio's included
 export function rawPluginUpdate(
     command: string,
     cwd: string,
@@ -438,7 +438,7 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
 }
 
 // a member reads and comments on tickets through x linear, never the raw cli (FRM-398, rules-lazy/linear-flow.md);
-// cclio's own session is never asked, the caller checks the registry name
+// clio's own session is never asked, the caller checks the registry name
 export function rawLinear(command: string, cwd: string): Refusal | undefined {
     for (const c of commands(parse(command), cwd)) {
         if (c.name !== 'linear') continue;

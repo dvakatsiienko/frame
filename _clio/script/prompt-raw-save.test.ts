@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { dimasText } from './prompt-raw-save.ts';
 
 const notice =
-    '<system-reminder>\nThe user\'s fork "🦉 cclio (fork)" finished a turn.\n</system-reminder>\n';
+    '<system-reminder>\nThe user\'s fork "🦉 clio (fork)" finished a turn.\n</system-reminder>\n';
 
 describe('dimasText', () => {
     test('a prompt behind an app notice keeps his words, without the notice', () => {

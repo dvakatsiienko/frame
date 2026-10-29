@@ -52,7 +52,7 @@ describe('ungroomedStamps', () => {
         expect(newUnstamped(`${inbox}\n`, '')).toEqual([]);
     });
 
-    test('composer’s W<n> · text (stamp) shape reads like the stamp-first one', () => {
+    test('helga’s W<n> · text (stamp) shape reads like the stamp-first one', () => {
         const drift = 'W7 · fold this one (2026-10-26 09:12, dima)';
         expect(ungroomedStamps(drift, day, () => false)).toEqual(['09:12']);
         expect(newUnstamped(`${drift}\n`, '')).toEqual([]);
@@ -200,7 +200,7 @@ describe('--check on an inbox stamp', () => {
     test('with no prep copy the red names the copy step, not a command that cannot work', () => {
         const out = check(undefined);
         expect(out.status).toBe(1);
-        expect(out.stdout).toContain('inbox-composer.md');
+        expect(out.stdout).toContain('inbox-helga.md');
         expect(out.stdout).not.toContain('node script/prompt-groom.ts inbox');
     });
 
@@ -223,7 +223,7 @@ describe('prompt-groom inbox', () => {
             { encoding: 'utf8' },
         );
         expect(out.status).toBe(1);
-        expect(out.stderr).toContain('inbox-composer.md');
+        expect(out.stderr).toContain('inbox-helga.md');
     });
 });
 
@@ -240,10 +240,10 @@ describe('prompt-groom oN (FRM-451)', () => {
         try {
             const grooms = join(root, 'grooms');
             mkdirSync(join(root, 'bin'));
-            // composer is stubbed up, so nothing is spawned
+            // helga is stubbed up, so nothing is spawned
             writeFileSync(
                 join(root, 'bin', 'claude'),
-                `#!/bin/sh\necho '[{"name":"composer","status":"idle"}]'\n`,
+                `#!/bin/sh\necho '[{"name":"helga","status":"idle"}]'\n`,
                 { mode: 0o755 },
             );
             const transcript = join(root, 't.jsonl');

@@ -338,7 +338,7 @@
             "id": "6:297",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 work to hand off</b><br><span style=\"font-size:20px\">cclio has a job for someone</span>",
+            "value": "<b style=\"font-size:26px\">🦉 work to hand off</b><br><span style=\"font-size:20px\">clio has a job for someone</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -402,7 +402,7 @@
             "id": "6:313",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ the desktop thread</b><br><span style=\"font-size:20px\">cclio starts it with start_session, archives it at the lane's end</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ the desktop thread</b><br><span style=\"font-size:20px\">clio starts it with start_session, archives it at the lane's end</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -418,7 +418,7 @@
             "id": "6:317",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">always a quick lane on main, one coder for the area's chunks<br>a desktop thread cclio opens with start_session and closes with archive_session, in a shift too</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a mods coder</b><br><span style=\"font-size:20px\">always a quick lane on main, one coder for the area's chunks<br>a desktop thread clio opens with start_session and closes with archive_session, in a shift too</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -450,7 +450,7 @@
             "id": "6:325",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🍴 a side channel</b><br><span style=\"font-size:20px\">cclio:side-channel opens one, fresh or forked; banner, edits only in its own worktree, side-labelled pocket items, the boot takes them over</span>",
+            "value": "<b style=\"font-size:26px\">🍴 a side channel</b><br><span style=\"font-size:20px\">clio:side-channel opens one, fresh or forked; banner, edits only in its own worktree, side-labelled pocket items, the boot takes them over</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -466,7 +466,7 @@
             "id": "6:329",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎼 the sidecars</b><br><span style=\"font-size:20px\">ccrow + composer start in cclio:boot; composer takes chores only from «🦉 cclio» exactly</span>",
+            "value": "<b style=\"font-size:26px\">🎀 the sidecars</b><br><span style=\"font-size:20px\">crow + helga start in clio:boot; helga takes chores only from «🦉 clio» exactly</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -546,7 +546,7 @@
             "id": "6:352",
             "parent": "6:349",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📋 role contract first</b><br><span style=\"font-size:20px\">/x:crew-coder … — only the first slash expands</span>",
+            "value": "<b style=\"font-size:26px\">📋 role contract first</b><br><span style=\"font-size:20px\">/x:crew-codie … — only the first slash expands</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -706,7 +706,7 @@
             "id": "6:407",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔧 the coder works</b><br><span style=\"font-size:20px\">a side lane in its worktree (pr); a quick lane on main, committing as it goes, cclio pushes</span>",
+            "value": "<b style=\"font-size:26px\">🔧 the coder works</b><br><span style=\"font-size:20px\">a side lane in its worktree (pr); a quick lane on main, committing as it goes, clio pushes</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -738,7 +738,7 @@
             "id": "6:415",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📡 «opened» or «final»</b><br><span style=\"font-size:20px\">pr-watch on a side lane, the coder's «final» on a quick lane → cclio spawns the verifier (main:&lt;sha&gt;)</span>",
+            "value": "<b style=\"font-size:26px\">📡 «opened» or «final»</b><br><span style=\"font-size:20px\">pr-watch on a side lane, the coder's «final» on a quick lane → clio spawns the verifier (main:&lt;sha&gt;)</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -754,7 +754,7 @@
             "id": "6:419",
             "parent": "6:404",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔁 coder ↔ verifier</b><br><span style=\"font-size:20px\">rounds, cap 3; cclio hears none; a round-3 stop is cclio's call, told to dima as info</span>",
+            "value": "<b style=\"font-size:26px\">🔁 coder ↔ verifier</b><br><span style=\"font-size:20px\">rounds, cap 3; clio hears none; a round-3 stop is clio's call, told to dima as info</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -962,7 +962,7 @@
             "id": "fx:quick-lane",
             "parent": "6:463",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⚡ a quick lane, no pr</b><br><span style=\"font-size:20px\">«final» → cclio pushes main → ⚡ 🔎 verify: main:&lt;base&gt; final:&lt;sha&gt;; each round's head pushed first, clean a Linear comment</span>",
+            "value": "<b style=\"font-size:26px\">⚡ a quick lane, no pr</b><br><span style=\"font-size:20px\">«final» → clio pushes main → ⚡ 🔎 verify: main:&lt;base&gt; final:&lt;sha&gt;; each round's head pushed first, clean a Linear comment</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1184,7 +1184,7 @@
             "id": "6:555",
             "parent": "6:549",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 cclio</b><br><span style=\"font-size:20px\">does it</span>",
+            "value": "<b style=\"font-size:26px\">🦉 clio</b><br><span style=\"font-size:20px\">does it</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1311,7 +1311,7 @@
             "id": "23:233",
             "parent": "7:236",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
-            "value": "craft-fleet-flow stage 1 · craft-pm § wishes · habit-shared-files § the pocket · cclio:boot step 3",
+            "value": "craft-fleet-flow stage 1 · craft-pm § wishes · habit-shared-files § the pocket · clio:boot step 3",
             "vertex": "1"
         },
         "geometry": {
@@ -1343,7 +1343,7 @@
             "id": "23:238",
             "parent": "7:236",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎼 composer grooms it</b><br><span style=\"font-size:20px\">every wish-bearing prompt; his raw words land in the notes at once</span>",
+            "value": "<b style=\"font-size:26px\">🎀 helga grooms it</b><br><span style=\"font-size:20px\">every wish-bearing prompt; his raw words land in the notes at once</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1487,7 +1487,7 @@
             "id": "23:300",
             "parent": "23:298",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
-            "value": "craft-fleet-flow stages 2–3 · root invariant 3 · cclio:shape-idea · grilling · craft-pm § wishes",
+            "value": "craft-fleet-flow stages 2–3 · root invariant 3 · clio:shape-idea · grilling · craft-pm § wishes",
             "vertex": "1"
         },
         "geometry": {
@@ -1519,7 +1519,7 @@
             "id": "23:305",
             "parent": "23:298",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 cclio:shape-idea</b><br><span style=\"font-size:20px\">the want, a grill, prior art, the cut, the done test</span>",
+            "value": "<b style=\"font-size:26px\">🦉 clio:shape-idea</b><br><span style=\"font-size:20px\">the want, a grill, prior art, the cut, the done test</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1535,7 +1535,7 @@
             "id": "23:309",
             "parent": "23:298",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔁 grill rounds</b><br><span style=\"font-size:20px\">matt&#x27;s grilling: a proposal file, ccrow reviews it, the refined round prints once</span>",
+            "value": "<b style=\"font-size:26px\">🔁 grill rounds</b><br><span style=\"font-size:20px\">matt&#x27;s grilling: a proposal file, crow reviews it, the refined round prints once</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1663,7 +1663,7 @@
             "id": "23:363",
             "parent": "23:361",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
-            "value": "craft-fleet-flow stage 4 · cclio:pm § the fields · pm/references/body.md · the sorting phase",
+            "value": "craft-fleet-flow stage 4 · clio:pm § the fields · pm/references/body.md · the sorting phase",
             "vertex": "1"
         },
         "geometry": {
@@ -1695,7 +1695,7 @@
             "id": "23:368",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎫 born in Triage</b><br><span style=\"font-size:20px\">x as cclio, never --state; promotion is dima&#x27;s</span>",
+            "value": "<b style=\"font-size:26px\">🎫 born in Triage</b><br><span style=\"font-size:20px\">x as clio, never --state; promotion is dima&#x27;s</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1743,7 +1743,7 @@
             "id": "23:380",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 cclio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks)</span>",
+            "value": "<b style=\"font-size:26px\">🦉 clio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks)</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1775,7 +1775,7 @@
             "id": "23:388",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ the sorting phase</b><br><span style=\"font-size:20px\">cclio proposes the order, dima corrects it</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ the sorting phase</b><br><span style=\"font-size:20px\">clio proposes the order, dima corrects it</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1935,7 +1935,7 @@
             "id": "23:447",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ cclio 🟢 greenlights the order</b><br><span style=\"font-size:20px\">the coder drafts lane-plan.md, cclio reorders against what comes next</span>",
+            "value": "<b style=\"font-size:26px\">✅ clio 🟢 greenlights the order</b><br><span style=\"font-size:20px\">the coder drafts lane-plan.md, clio reorders against what comes next</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1951,7 +1951,7 @@
             "id": "23:451",
             "parent": "23:424",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CCF2D1;strokeColor=#33A854;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">✅ steers land in the file</b><br><span style=\"font-size:20px\">dima's, cclio's and proxied steers, asks, wisps → ## not greenlit the same turn; cclio greenlights again</span>",
+            "value": "<b style=\"font-size:26px\">✅ steers land in the file</b><br><span style=\"font-size:20px\">dima's, clio's and proxied steers, asks, wisps → ## not greenlit the same turn; clio greenlights again</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2015,7 +2015,7 @@
             "id": "23:489",
             "parent": "23:487",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
-            "value": "craft-fleet-flow stages 8–10 · pm/references/closing.md · habit-shared-files · cclio:halt",
+            "value": "craft-fleet-flow stages 8–10 · pm/references/closing.md · habit-shared-files · clio:halt",
             "vertex": "1"
         },
         "geometry": {
@@ -2031,7 +2031,7 @@
             "id": "23:490",
             "parent": "23:487",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔀 land — cclio approves + merges</b><br><span style=\"font-size:20px\">verifier clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima</span>",
+            "value": "<b style=\"font-size:26px\">🔀 land — clio approves + merges</b><br><span style=\"font-size:20px\">verifier clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2222,7 +2222,7 @@
             "id": "30:436",
             "parent": "30:434",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=22;fontStyle=0;fontColor=#1E1E1E;",
-            "value": "dima-strategy § the roadmap · craft-pm § milestones first · cclio:pm (milestone fields) · boot's milestone-health block",
+            "value": "dima-strategy § the roadmap · craft-pm § milestones first · clio:pm (milestone fields) · boot's milestone-health block",
             "vertex": "1"
         },
         "geometry": {
@@ -2366,7 +2366,7 @@
             "id": "7:232",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=72;fontStyle=1;fontColor=#1E1E1E;",
-            "value": "🛼 the coordinator — how cclio spawns and runs the crew",
+            "value": "🛼 the coordinator — how clio spawns and runs the crew",
             "vertex": "1"
         },
         "geometry": {
@@ -2414,7 +2414,7 @@
             "id": "7:235",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
-            "value": "craft-pm · cclio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-27 · ⚠️ = my reading, not in the files",
+            "value": "craft-pm · clio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-27 · ⚠️ = my reading, not in the files",
             "vertex": "1"
         },
         "geometry": {

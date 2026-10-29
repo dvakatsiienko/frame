@@ -10,5 +10,5 @@ out="$dir/_trail.md"
     awk '/^## trail/{f=1;next} f&&/^## /{f=0} f' "$g" | sed '/^$/d'
   done
 } > "$out"
-# the cw snapshot rides the same moment: every gazette post is a halt, and the compile is ~1 s.
-node "$HOME/frame/script/skill-cclio-mode-snapshot.ts" >/dev/null || echo "🚨 FAIL · cw cclio-mode snapshot did not build (script/skill-cclio-mode-snapshot.ts)" >&2
+# the cloud-chat snapshot rides the same moment: every gazette post is a halt, and the compile is ~1 s.
+node "$HOME/frame/script/skill-clio-mode-snapshot.ts" >/dev/null || echo "🚨 FAIL · cloud-chat clio-mode snapshot did not build (script/skill-clio-mode-snapshot.ts)" >&2

@@ -29,4 +29,4 @@ what the 2026-10-19 scout shaping learned, kept for every card and every `refres
 - the ceiling first: what share of the callers' context the card could replace at most (scout: reads of never-edited files, 8 % of coder tool output, p90 22 %; the earlier 76 % counted base64 screenshots)
 - a nudge (a hook, a guard hint) is replayed over past transcripts before it is built: fires per session and the share of wrong fires (a pre-read hint: 9 fires in 87 sessions — not built)
 - the pass line is written before the trial: net tokens of card plus caller, quality (verifier rounds), never «the card got called»
-- a shaping plan goes through `pnpm -C ~/frame ccrow:plan-critique <file>` before the build
+- a shaping plan goes through `pnpm -C ~/frame crow:plan-critique <file>` before the build

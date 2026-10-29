@@ -13,7 +13,7 @@ import (
 )
 
 // the bytes review lane: the label starts a round, a successful review.yml run on the branch is one round,
-// one round per pr at «final», and past it an approval on dima's account (dima, or cclio on the verifier's clean)
+// one round per pr at «final», and past it an approval on dima's account (dima, or clio on the verifier's clean)
 // publishes review:clean (bytes .github/workflows; dima, 2026-10-22, PK-103 W100, W101)
 const (
 	reviewLabel = "🤖 review:requested"
@@ -117,9 +117,9 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 	}
 	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
-			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap cclio approves #%s on dima's account once the verifier is clean on the head, and review-approved.yml publishes review:clean on it",
+			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap clio approves #%s on dima's account once the verifier is clean on the head, and review-approved.yml publishes review:clean on it",
 				len(rounds), pr.HeadRefName, short(judged), short(head), n),
-			Next: "ask cclio to approve #" + n + " on the verifier's clean"}
+			Next: "ask clio to approve #" + n + " on the verifier's clean"}
 	}
 
 	if err := r.Step("request", "re-labelling "+reviewLabel, func() (string, error) {

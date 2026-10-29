@@ -1,6 +1,6 @@
 #!/bin/bash
-# cclio boot digest — every check the boot ritual needs, one run, one status line per check.
-# fires as the SessionStart hook AND by hand from /cclio:boot when the last digest is stale.
+# clio boot digest — every check the boot ritual needs, one run, one status line per check.
+# fires as the SessionStart hook AND by hand from /clio:boot when the last digest is stale.
 # list-only, with one write: a clean main that is only behind origin gets an ff-only pull + install.
 # never ingests, never deletes. a check that cannot run prints FAIL, never silence —
 # an agent reading a digest cannot tell a skipped check from a passed one.
@@ -13,7 +13,7 @@ fail() { echo "🚨 FAIL · $1"; fails=$((fails + 1)); }
 STAMP="$HOME/.claude/shelf/boot-digest.stamp"
 VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq"
 
-echo "=== cclio boot digest · $(date '+%Y-%m-%d %H:%M') ==="
+echo "=== clio boot digest · $(date '+%Y-%m-%d %H:%M') ==="
 # after a compaction (stdin source=compact) or `--compact` by hand: the day-opener checks stay out
 in=$([ -t 0 ] || timeout 1 cat)
 { [ "$(printf %s "$in" | jq -r '.source // empty' 2>/dev/null)" = compact ] || [ "${1:-}" = --compact ]; } && COMPACT=1 && echo "(compact mode — the full digest: boot-prefetch.sh)"
@@ -44,7 +44,7 @@ for f in "$HOME"/.claude/shelf/handoffs/*.md; do
   # A whitelist, so an unparsed field can never wrongly claim a file is someone
   # else's and get it left behind forever.
   case "$audience" in
-    cw|ccli) tag=" [for $audience — leave it]" ;;
+    cloud-chat|cc) tag=" [for $audience — leave it]" ;;
     *) tag="" ;;
   esac
   age_min=$(( ( $(date +%s) - $(stat -f %m "$f") ) / 60 ))
@@ -104,9 +104,9 @@ done < <(grep '^⏰' "$reminders" 2>/dev/null | grep -v '^⏰📌')
 
 echo "-- fleet: live sessions · worktrees · coder prs --"
 # the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)
-# a lane coder's desktop thread (a mods coder) is cclio's, archived at its lane's end; any other interactive non-cclio session is dima's: 👤, never on a stop list.
-# the rest of the fleet (coders, verifiers, probes) is spawned with --bg; ccrow is a desktop tab the halt stops, matched by name
-live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("ccrow") then " · the fleet'"'"'s — the halt stops her" elif (.name // "") | test("^(⚡|🌗|🌘) .* code:") and (.entrypoint // "") == "claude-desktop" then " · a lane coder cclio started — archived at its lane'"'"'s end" elif .kind == "interactive" and ((.name // "") | test("cclio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
+# a lane coder's desktop thread (a mods coder) is clio's, archived at its lane's end; any other interactive non-clio session is dima's: 👤, never on a stop list.
+# the rest of the fleet (coders, verifiers, probes) is spawned with --bg; crow is a desktop tab the halt stops, matched by name
+live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("crow") then " · the fleet'"'"'s — the halt stops her" elif (.name // "") | test("^(⚡|🌗|🌘) .* code:") and (.entrypoint // "") == "claude-desktop" then " · a lane coder clio started — archived at its lane'"'"'s end" elif .kind == "interactive" and ((.name // "") | test("clio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"
@@ -116,7 +116,7 @@ for repo in bytes frame; do
 done
 
 if [ -z "${COMPACT:-}" ]; then
-echo "-- renovate + the apps lane (cclio:evergreen) --"
+echo "-- renovate + the apps lane (clio:evergreen) --"
 for repo in bytes frame; do
   gh pr list -R "dvakatsiienko/$repo" --search 'author:app/x-renovate' --json number,createdAt 2>/dev/null \
     | jq -r --arg r "$repo" 'if length == 0 then "\($r): 0" else "\($r): \(length) open · oldest \(min_by(.createdAt).createdAt[:10])" end' \
@@ -142,11 +142,11 @@ security=$((security + $(gh pr list -R dvakatsiienko/bytes --search 'author:app/
 if [[ "$apps_line" == *"DUE today"* || "$security" -gt 0 ]]; then
   seeded() { BACKLOG_CWD="$HOME/frame/_clio" backlog task list --plain -s open 2>/dev/null | grep -q '🧬 evergreen turn'; }
   if seeded; then
-    echo "🧬 evergreen turn: on top of the pocket — turn 2 is evergreen (cclio:evergreen)"
+    echo "🧬 evergreen turn: on top of the pocket — turn 2 is evergreen (clio:evergreen)"
   else
     # pocket-add exits 1 when its trailing pocket-check is red for any item, so the seed is judged by the pocket
-    node "$HOME/frame/_clio/script/pocket-add.ts" "🧬 evergreen turn — $(date +%Y-%m-%d)" --priority now --top --size xs --due "$(date +%Y-%m-%d)" -d "seeded by the boot digest: apps lane due or $security security PR(s). run cclio:evergreen; done when its § the day completes." >/dev/null 2>&1
-    seeded && echo "🧬 evergreen turn: seeded on top of the pocket — turn 2 is evergreen (cclio:evergreen)" || fail "evergreen turn: pocket-add wrote nothing"
+    node "$HOME/frame/_clio/script/pocket-add.ts" "🧬 evergreen turn — $(date +%Y-%m-%d)" --priority now --top --size xs --due "$(date +%Y-%m-%d)" -d "seeded by the boot digest: apps lane due or $security security PR(s). run clio:evergreen; done when its § the day completes." >/dev/null 2>&1
+    seeded && echo "🧬 evergreen turn: seeded on top of the pocket — turn 2 is evergreen (clio:evergreen)" || fail "evergreen turn: pocket-add wrote nothing"
   fi
 fi
 last_checkup=$(grep -v ' · postponed · ' "$HOME/frame/_clio/checkup/log.md" 2>/dev/null | grep -oE '^- [0-9]{4}-[0-9]{2}-[0-9]{2}' | cut -c3- | sort | tail -1)
@@ -154,9 +154,9 @@ postponed_to=$(grep ' · postponed · ' "$HOME/frame/_clio/checkup/log.md" 2>/de
 if [ -n "$postponed_to" ] && [[ "$postponed_to" > "$(date +%F)" ]]; then
   echo "checkup: last run ${last_checkup:-never} · postponed until $postponed_to"
 elif [ -z "$last_checkup" ]; then
-  echo "checkup: never run · DUE — offer cclio:system-checkup on the board"
+  echo "checkup: never run · DUE — offer clio:system-checkup on the board"
 elif [ $(( ( $(date +%s) - $(date -j -f %Y-%m-%d "$last_checkup" +%s) ) / 86400 )) -ge 7 ]; then
-  echo "checkup: last run $last_checkup · DUE — offer cclio:system-checkup on the board"
+  echo "checkup: last run $last_checkup · DUE — offer clio:system-checkup on the board"
 else
   echo "checkup: last run $last_checkup"
 fi
@@ -217,7 +217,7 @@ cw_err=$(mktemp)
 "$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
 rm -f "$cw_err"
 
-echo "-- n8n tables (blueprints trial: 🔴 ci watch rows unseen, 🎼📬 composer receipts of the last day) --"
+echo "-- n8n tables (blueprints trial: 🔴 ci watch rows unseen, 🎀📬 helga receipts of the last day) --"
 # the ci watch polls frame + bytes main every 5 min under pm2 (x-n8n); its rows replace a watch the boot has to re-arm
 if n8n_out=$(timeout 30 ~/frame/script/op-run.sh bash -c '
   set -eo pipefail
@@ -324,7 +324,7 @@ while read -r spid slstart; do
   echo "${flag}warm spare $spid · born $slstart · age ${hours}h"
 done < <(ps -o pid=,lstart=,command= -ax | awk '/claude bg-spare/ && !/awk/ {print $1, $2, $3, $4, $5, $6}')
 [ "$spares" = 0 ] && echo "no warm spare"
-# measured 2026-09-21: the loaded chain spawns at ~75.6k prompt tokens, the same spawn with no cclio
+# measured 2026-09-21: the loaded chain spawns at ~75.6k prompt tokens, the same spawn with no clio
 # barrel at ~46.5k (base prompt + global ~/.claude + plugins). 60k sits between them, so the logged
 # ctx is what separates «the model whiffed» from «the import chain broke» on the next red.
 probe_run() {
@@ -347,7 +347,7 @@ echo "📌 this hook proves the FILE chain in a fresh process; the running sessi
 
 fi
 
-echo "-- test drives (pnpm test-drive:check; a red runs cclio:shape-test-drive § 4) --"
+echo "-- test drives (pnpm test-drive:check; a red runs clio:shape-test-drive § 4) --"
 if out=$(node "$HOME/frame/script/test-drive-list.ts" --check 2>&1); then
   echo "$out"
 elif printf '%s\n' "$out" | head -1 | grep -q '^test-drive:check:'; then

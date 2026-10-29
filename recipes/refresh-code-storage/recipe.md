@@ -26,7 +26,7 @@ his standing calls: gitlab is out (archaic); the backup is codeberg-first until 
 
 - suggest a run when: github has a big outage or policy change, a host on the shortlist ships a free tier, or two months passed
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
 2. **research**: `pnpm recipe:brief refresh-code-storage` → `pnpm research:lanes` + the `researcher` agent on primary pages (pricing, llms.txt, status feeds). done: every lane landed or failed out loud. (script)
 3. **distill** into the knowledge file: rewrite the ranked list and the facts, one `## runs` line. done: the file carries the delta, or «unchanged». (open)
 4. **findings print**, then **log** today's line in `log.md`. done: the line is there. (template)

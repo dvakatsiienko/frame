@@ -29,8 +29,8 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 - a line that holds only after **another pr** merges names that pr; one that can close only after its own merge or a dispatch says so in the spec, so the verifier grades the rest (FRM-465 line 2)
 - a **cross-repo** line names where each half lands and which merges first: a hook calling the other repo's verb cannot push before the verb is on main
 - a **rename of stored data** says «migrate» or «read both», or two lines pull against each other
-- a line that writes under `_clio/` is cclio's own, never the coder's: frame `AGENTS.md` bars a coder from that dir
-- **one owner and one gradeable surface per line**: a hand-off to cclio or dima goes to `out` or a pocket item, never an exit line — the verifier cannot read the other half (FRM-355, 359, 372). a half only dima can grade (his eye, his evening) is split off at seal as its own line marked `pending: dima`, so the verifier can still reach «clean» on the rest (FRM-382 exit 5)
+- a line that writes under `_clio/` is clio's own, never the coder's: frame `AGENTS.md` bars a coder from that dir
+- **one owner and one gradeable surface per line**: a hand-off to clio or dima goes to `out` or a pocket item, never an exit line — the verifier cannot read the other half (FRM-355, 359, 372). a half only dima can grade (his eye, his evening) is split off at seal as its own line marked `pending: dima`, so the verifier can still reach «clean» on the rest (FRM-382 exit 5)
 
 ## once sealed, it changes in the open
 

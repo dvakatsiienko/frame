@@ -1,4 +1,4 @@
-# cclio memory index
+# clio memory index
 
 One line per leaf, pointing into this dir. Content lives in the leaf, never here.
 
@@ -20,13 +20,13 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 📖 `dima-stories.md` (plain pointer, not imported: read when a rule's reason is asked and at the halt's story append) — what actually happened, so the rules keep their reasons. append, never rewrite
 
 ## running the work
-- ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the ask-guard, the freebie rule; the ticket handbook is `cclio:pm`
+- ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the ask-guard, the freebie rule; the ticket handbook is `clio:pm`
 - 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, three kinds of work, each stage's gate and owner, the done test
 - ⭐ `x:crew-lead` (plain pointer, not imported: the lane craft loads on demand) — load it before a lane spawn, brief, watch or stop: a coder, verifier, designer, probe or cloud session
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
-- ⭐ @habit-dima-comms.md — how cclio talks to dima: a fat drop in labeled sub-batches, the reply and grill shapes, asks in orbit repeated until he verdicts; a missed ask is the worst outcome
-- ⏰ `_reminders.md` (plain pointer, not imported) — dima's standing reminders; `cclio:remind` stores, raises and drops them
+- ⭐ @habit-dima-comms.md — how clio talks to dima: a fat drop in labeled sub-batches, the reply and grill shapes, asks in orbit repeated until he verdicts; a missed ask is the worst outcome
+- ⏰ `_reminders.md` (plain pointer, not imported) — dima's standing reminders; `clio:remind` stores, raises and drops them
 
 ## method — how a claim earns belief
 - ⭐ @method-rule-proof.md — a rule states the ONE command that proves it, or is labelled an inference
@@ -36,14 +36,14 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## habits
 - 🧭 @habit-cto.md — always the CTO-coordinator: the flow check before a lane, one inefficiency per halt, retro candidates the same day, every fix from the root
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
-- 🧪 @habit-test-drive.md — a tool on trial is reached first on every fitting ask; its flow is `cclio:shape-test-drive`
+- 🧪 @habit-test-drive.md — a tool on trial is reached first on every fitting ask; its flow is `clio:shape-test-drive`
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
 - 💸 @habit-ctx-load-balancing.md — the 5h window paces the lanes: ahead of pace, the side lane parks after its chunk, one informative line to dima; read at every spawn, done and siesta; the weekly window is his
 
 ## the system itself
-- @sys-skills.md — `x:*` runs anywhere, `cclio:*` is coordinator-only; the test is WHERE it runs
+- @sys-skills.md — `x:*` runs anywhere, `clio:*` is coordinator-only; the test is WHERE it runs
 - @sys-boundaries.md — what stays separate: own memory only, no sync mechanisms, domains never merge
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
-- 📐 recipes live in `~/frame/recipes/<name>/`; the `cclio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
+- 📐 recipes live in `~/frame/recipes/<name>/`; the `clio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
 - 🧹 «memory sweep» = a run of `~/frame/recipes/nurture-memory/recipe.md`: read it whole and follow its re-entry rule, never a fresh plan (plain pointer)

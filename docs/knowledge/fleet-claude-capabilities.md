@@ -11,8 +11,8 @@ when:
 
 ## core
 
-- the surfaces: `cc` (the mac cli, loads everything), cclio (cc in ~/frame/_clio + her barrel), Code-tab sessions (cc from the desktop + desktop-only MCP servers injected once at creation, never for `--bg` or a resume; the desktop's bundled cc can lag the terminal's, 2.1.295 vs 2.1.296 on 2026-10-12), `cc cloud` (no ~/.claude, no plugin-x, the repo's AGENTS.md only), `cw` (the Claude app: the x-cw plugin, no rules/, hooks or root CLAUDE.md)
-- memory per surface: cc files; cw `memory_*` entries through `x-cw:memory-update`; cloud none; a Projects mount is read by cloud threads only
+- the surfaces: `cc` (the mac cli, loads everything), clio (cc in ~/frame/_clio + her barrel), Code-tab sessions (cc from the desktop + desktop-only MCP servers injected once at creation, never for `--bg` or a resume; the desktop's bundled cc can lag the terminal's, 2.1.295 vs 2.1.296 on 2026-10-12), `cloud code` (no ~/.claude, no plugin-x, the repo's AGENTS.md only), `cloud-chat` (the Claude app: the x-cloud-chat plugin, no rules/, hooks or root CLAUDE.md)
+- memory per surface: cc files; cloud chat `memory_*` entries through `x-cloud-chat:memory-update`; cloud none; a Projects mount is read by cloud threads only
 - who reaches whom: SendMessage reaches local, `--bg` and Code-tab sessions both ways; a cloud session takes a steer only as `claude -p "<msg>" --cloud <id>` and never messages back; a Projects coordinator cannot reach the mac
 - «harness» is reserved for the FRM-43 thread; `CLAUDE_CONFIG_DIR` is rejected for isolation (it leaks four ways)
 
@@ -32,47 +32,47 @@ Claim tags: **[verified]** executed, not read · **[docs]** Anthropic docs only 
 by Dima in the UI · **[?]** unknown. A dated tag is a probe on that day; anything older than the
 surface's last big change says so.
 
-Rewritten 2026-10-05: the cw-era (2026-08) probe sections were cut to what still holds; Cowork and
-chat merged into one Claude app on 2026-09-16, so every cw-sandbox fact below is dated and unchecked
+Rewritten 2026-10-05: the cloud-chat-era (2026-08) probe sections were cut to what still holds; Cowork and
+chat merged into one Claude app on 2026-09-16, so every cloud-chat-sandbox fact below is dated and unchecked
 since.
 
 ## The surfaces
 
 - **`cc`** — the cli on the mac. Loads everything: root `CLAUDE.md`, `rules/` (lazy ones via
   `memory-load-rule-lazy`), `plugin-x` skills, the project `AGENTS.md`, hooks, output style.
-- **`cclio`** — a `cc` session booted in `~/frame/_clio`: the same, plus its `AGENTS.md`, the memory
-  barrel and the boot ritual (`/cclio:boot <slug>`).
+- **`clio`** — a `cc` session booted in `~/frame/_clio`: the same, plus its `AGENTS.md`, the memory
+  barrel and the boot ritual (`/clio:boot <slug>`).
 - **Code-tab sessions** — `cc` born in the desktop Code tab. Same stack, plus the desktop-only MCP
   servers (Browser pane, Chrome bridge, scheduled-tasks, mcp-registry), injected **once at creation**,
   never for terminal-born, `--bg` or `--remote-control` sessions, not on resume **[verified
   2026-09-03]** ([docs](https://code.claude.com/docs/en/desktop.md),
   [claude-code#37284](https://github.com/anthropics/claude-code/issues/37284)). A local thread follows
   the desktop's bundled cc, which can lag the terminal's (2.1.286 vs 2.1.289 on 2026-10-05).
-- **`cc cloud`** — `claude --cloud` on an Anthropic VM: no `~/.claude`, no `plugin-x`, the repo's
+- **`cloud code`** — `claude --cloud` on an Anthropic VM: no `~/.claude`, no `plugin-x`, the repo's
   `AGENTS.md` only. Procedure: `x:crew-cloud`.
 - **Claude Code Projects** — a coordinator plus threads; see [Projects](#projects).
-- **`cw`** — the Claude app's cowork side (merged with chat 2026-09-16). Gets the `x-cw` plugin, whose
+- **`cloud-chat`** — the Claude app's cowork side (merged with chat 2026-09-16). Gets the `x-cloud-chat` plugin, whose
   skills are symlinks into `plugin-x`; no `rules/`, no hooks, no output styles, no root `CLAUDE.md`
   **[verified 2026-08-15]**. What `plugin-x` defers to a rules file reaches it another way:
-  `linear-flow.md` is symlinked into the plugin root and `x-cw__pm_guide` inlines it.
+  `linear-flow.md` is symlinked into the plugin root and `x-cloud-chat__pm_guide` inlines it.
   - from iOS/iPadOS, every thread type reaches the `x` skills even with the desktop app closed;
     `--remote-control` sessions are usable from the phone **[verified by Dima, 2026-08-26]**
 
 ## Memory, per surface
 
-- `cc` — file-based: `~/.claude/projects/<slug>/memory/` + `MEMORY.md`; cclio's barrel lives in
+- `cc` — file-based: `~/.claude/projects/<slug>/memory/` + `MEMORY.md`; clio's barrel lives in
   `~/frame/_clio/memory/`. Agent + Dima edit.
-- `cw` — global memory entries the agent writes through `memory_write` / `memory_str_replace` /
-  `memory_append` / `memory_delete`; every write goes through `x-cw:memory-update` **[docs: the
+- `cloud-chat` — global memory entries the agent writes through `memory_write` / `memory_str_replace` /
+  `memory_append` / `memory_delete`; every write goes through `x-cloud-chat:memory-update` **[docs: the
   skill]**. Larger context still arrives through handoff CSTs.
-- `cc cloud` — none of its own.
+- `cloud code` — none of its own.
 - Projects — a file mount (`/tmp/claude/memory/team/silo`, `MEMORY.md` index) read by cloud threads
   only; a local thread never sees it **[verified 2026-10-05]**.
 
 ## Who can spawn or operate whom
 
 - **Dima** — anything.
-- **`cc` / cclio** — local sessions and worktrees; `claude --bg` coders (take model and effort, survive
+- **`cc` / clio** — local sessions and worktrees; `claude --bg` coders (take model and effort, survive
   a coordinator reset); `/fork`; **cloud sessions** via `claude --cloud` wrapped in `script` (it refuses
   a non-tty) **[verified, `x:crew-cloud`]**; subagents through `Agent` (no effort flag — an agent file's
   `effort:` pins it, e.g. `home/.claude/agents/helper.md`).
@@ -80,7 +80,7 @@ since.
     takes a steer only as `claude -p "<msg>" --cloud <id>` and cannot message back.
 - **a Projects coordinator** — threads only (cloud, or «Work locally» on the mac); it cannot reach the
   mac itself.
-- **`cw`** — some sessions expose `start_code_task` (a local `cc` with worktree isolation), others do
+- **`cloud-chat`** — some sessions expose `start_code_task` (a local `cc` with worktree isolation), others do
   not **[verified 2026-08-15]**; never assume a capability from another session's report.
 
 ## Projects
@@ -109,7 +109,7 @@ since.
   restricts file tools only — `start_process` still runs anything not in `blockedCommands`.
 - a session you start yourself (terminal, `--bg`, desktop local) cannot be added to a project; a cloud
   session can be moved in. Remote Control sessions do not show in the Code-tab sidebar.
-- **shared memory across projects = the claude.ai profile instructions** (the `<!-- sync: cw -->` sections, `pnpm memory-sync:copy`): a coordinator and its threads read them, as a snapshot at session start — a new thread sees a paste at once, a running coordinator only after it is replaced **[observed by a coordinator, 2026-10-05]**
+- **shared memory across projects = the claude.ai profile instructions** (the `<!-- sync: cloud-chat -->` sections, `pnpm memory-sync:copy`): a coordinator and its threads read them, as a snapshot at session start — a new thread sees a paste at once, a running coordinator only after it is replaced **[observed by a coordinator, 2026-10-05]**
 - **the fleet cli in a project:** no MCP mirror (decided 2026-10-05) — a cloud thread runs `x` through
   the `remote-devices` DC shell, a local thread runs it natively, the coordinator routes to a thread.
 
@@ -130,7 +130,7 @@ since.
 ## Desktop Commander
 
 - installed as the synced plugin `desktop-commander@synced` (not a desktop extension); the app's
-  `localMcpBridge` advertises its 26 tools and `x-cw`'s 13 to the device bridge **[verified
+  `localMcpBridge` advertises its 26 tools and `x-cloud-chat`'s 13 to the device bridge **[verified
   2026-10-05]**
 - config: `~/.claude-server-commander/config.json`, read and written by DC's own `get_config` /
   `set_config_value`; the README says to change it from a separate chat, because an agent blocked by
@@ -141,7 +141,7 @@ since.
 
 [verified 2026-08-15 unless dated]
 
-- **the cw sandbox** — Ubuntu 22.04 aarch64, 4 vCPU, 3.8 GiB; node 22, npm, python 3.10, git, jq, rg;
+- **the cloud chat sandbox** — Ubuntu 22.04 aarch64, 4 vCPU, 3.8 GiB; node 22, npm, python 3.10, git, jq, rg;
   no pnpm, gh, docker. `/sessions` persists across bash calls. folders are bind-mounted from the mac
   (a write is instantly visible on the mac) and are create/write but **not unlink** — delete through
   Desktop Commander. network: a fixed proxy allowlist (npm, github.com, pypi; api.github.com blocked);
@@ -155,7 +155,7 @@ since.
     does not help **[docs]**
   - from inside: `curl -sS "$HTTPS_PROXY/__agentproxy/status"` prints the proxy config and recent
     denials; the allowlist reloads live
-- route clone-build-commit-push to a cc cloud session or a Projects thread, never to the cw sandbox
+- route clone-build-commit-push to a cloud code session or a Projects thread, never to the cloud chat sandbox
 
 ## Claude on disk
 
@@ -229,5 +229,5 @@ the profile; credential paths are inconsistent. Isolation comes from the cli wal
 - whether the cloud-thread device bridge survives the desktop's device toggle being off
 - the cloud tool-count cap (`{toolLimit}`) against Desktop Commander's 26 tools
 - whether a Projects coordinator can ever be tied to a device
-- why `start_code_task` is present in some cw sessions and absent in others
+- why `start_code_task` is present in some cloud chat sessions and absent in others
 - the skill count is per surface: about 60 in the cli, 106–113 in the desktop (2026-10-05, FRM-305); a transcript's `skill_listing` attachment is the exact roster, built-ins included

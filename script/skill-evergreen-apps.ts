@@ -146,7 +146,7 @@ const readers: Record<Shape, (s: Source) => Promise<Delta>> = {
 
 // a reader run with no skill loaded once became the whole digest (2026-10-14): the output says what it is
 console.log(
-    '🧬 raw input for cclio:evergreen (references/read.md §§ 2–4), never the digest itself: load the skill, read each entry over its whole range, judge, then report',
+    '🧬 raw input for clio:evergreen (references/read.md §§ 2–4), never the digest itself: load the skill, read each entry over its whole range, judge, then report',
 );
 let newest: Record<string, string> = {};
 for (const s of picked) {

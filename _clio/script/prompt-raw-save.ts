@@ -1,4 +1,4 @@
-// cclio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
+// clio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
 // so a wish folded from it is groomed from his exact words (pm revamp grill 8, dima's W59, o88, o93)
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';

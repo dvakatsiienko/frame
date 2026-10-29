@@ -1,7 +1,7 @@
 // the skill router: the skills a prompt should load, from the skill-suggestion shape (v2, FRM-305)
 // usage: script/op-run.sh node script/skill-route.ts '<prompt>'        → live: prints the load, logs the pick + ms
 //        script/op-run.sh node script/skill-route.ts --from-log [n]  → replay the last n near-misses from route.log
-//        script/op-run.sh node script/skill-route.ts --misses [n]     → replay the last n prompts cclio verdicted a miss
+//        script/op-run.sh node script/skill-route.ts --misses [n]     → replay the last n prompts clio verdicted a miss
 // live mode reads `JEV_TRANSCRIPT` (the hook's transcript_path) for the last reply
 // the labelled fixtures, every arm: script/op-run.sh node script/jev-test.ts skill-router
 import { appendFileSync, mkdirSync } from 'node:fs';
@@ -49,7 +49,7 @@ if (mode !== '--from-log' && mode !== '--misses') {
     process.exit(0);
 }
 
-// --from-log: real near-misses; --misses: the prompts cclio already called wrong
+// --from-log: real near-misses; --misses: the prompts clio already called wrong
 // (`jev:vet miss skill-router …`) — a confident wrong pick never enters the band.
 // no transcript here: the prompt replays with no reply before it
 const count = Number(countArg ?? 10);

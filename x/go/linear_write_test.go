@@ -36,7 +36,7 @@ func TestLinkSendsOneRelationPerTargetInOneRequest(t *testing.T) {
 	if got2 != "FRM-1 blocks FRM-2,FRM-1 blocks FRM-3" {
 		t.Errorf("relations sent: %s", got2)
 	}
-	if data, _ := envelope["data"].(map[string]any); data["actor"] != "cclio" {
+	if data, _ := envelope["data"].(map[string]any); data["actor"] != "clio" {
 		t.Errorf("the write does not print its actor: %s", got.stdout)
 	}
 }
@@ -69,7 +69,7 @@ func TestCommentSendsTheFileByteForByte(t *testing.T) {
 	if call.Variables["body"] != body || call.Variables["issue"] != "FRM-1" {
 		t.Errorf("sent %q to %v", call.Variables["body"], call.Variables["issue"])
 	}
-	if data, _ := envelope["data"].(map[string]any); data["actor"] != "cclio" || data["url"] == nil {
+	if data, _ := envelope["data"].(map[string]any); data["actor"] != "clio" || data["url"] == nil {
 		t.Errorf("the envelope misses the actor or the url: %s", got.stdout)
 	}
 }

@@ -21,11 +21,10 @@ three rules keep it honest:
 ## research/ — investigations, subject-first, one topic per file
 
 - [agent harness building](research/harness-building.md) — building a custom orchestration harness on claude code / agent sdk
-- [cc extension surfaces](research/harness-cc-surfaces.md) — every extension point of ccli, mechanics + gotchas per surface
+- [cc extension surfaces](research/harness-cc-surfaces.md) — every extension point of cc, mechanics + gotchas per surface
 - [headless browser tool](research/headless-browser-tool.md) — agent-browser vs playwright for llm coders, measured
 - [matt's framework walkthrough](research/matt-framework-walkthrough.md) — the digest of the walkthrough over his skills
 - [notion channel](research/notion-channel.md) — notion, octoport, zapier: three verdicts
-- [cw memory regeneration](research/cw-memory-regen.md) — does anything rewrite our lines in cw memory?
 
 ## adr/ — repo decisions (`ADR-nnnn`)
 

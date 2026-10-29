@@ -14,10 +14,10 @@ import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
-export const SESSION_NAME = '🐦‍⬛ ccrow';
-// CCROW_STATE_DIR moves every note, verdict and run off the real home, so a fixture never writes the live notes (FRM-339)
+export const SESSION_NAME = '🐦‍⬛ crow';
+// CROW_STATE_DIR moves every note, verdict and run off the real home, so a fixture never writes the live notes (FRM-339)
 export const STATE_DIR =
-    process.env.CCROW_STATE_DIR || join(homedir(), '.local/state/crow');
+    process.env.CROW_STATE_DIR || join(homedir(), '.local/state/crow');
 const STORE_DIR = join(homedir(), '.claude/plugins/store');
 const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
@@ -104,7 +104,7 @@ export function clearHot(storePath: string, sessionId: string) {
     writeFileSync(storePath, JSON.stringify(store));
 }
 
-// ccrow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
+// crow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
 // a /clear drops the boot prompt, so every wake line names the charter a fresh session reads first
 const CHARTER_PATH = join(
     import.meta.dirname,
@@ -154,10 +154,10 @@ export function writeState(state: State) {
     );
 }
 
-// the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ ccrow»
+// the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ crow»
 const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 
-// a coder whose cwd is ~/frame/_clio fires cclio's Stop hook too; only the coordinator's own thread wakes ccrow
+// a coder whose cwd is ~/frame/_clio fires clio's Stop hook too; only the coordinator's own thread wakes crow
 export function isCoordinatorTranscript(
     transcriptPath: string,
     sessionsDir = SESSIONS_DIR,
@@ -172,7 +172,7 @@ export function isCoordinatorTranscript(
             if (entry.sessionId !== sessionId) continue;
             return bareName(entry.name ?? '')
                 .replace(/^\p{Extended_Pictographic}+/u, '')
-                .startsWith('cclio');
+                .startsWith('clio');
         } catch {}
     }
     return false;
@@ -191,12 +191,12 @@ export function findSession(): LiveSession | undefined {
     return findSessions()[0];
 }
 
-// a tab and a --bg ccrow alive together make every name match a coin flip
-export function oneCcrow(): LiveSession | undefined {
+// a tab and a --bg crow alive together make every name match a coin flip
+export function oneCrow(): LiveSession | undefined {
     const live = findSessions();
     if (live.length > 1)
         fail(
-            `two ccrows are live (pids ${live.map((s) => s.pid).join(', ')}): stop the --bg one (pnpm ccrow:stop) or /clear the tab`,
+            `two crows are live (pids ${live.map((s) => s.pid).join(', ')}): stop the --bg one (pnpm crow:stop) or /clear the tab`,
         );
     return live[0];
 }
@@ -245,7 +245,7 @@ function copyRules() {
     }
 }
 
-export async function startCcrow(arm: Arm) {
+export async function startCrow(arm: Arm) {
     mkdirSync(STATE_DIR, { recursive: true });
     copyRules();
     const stash = stashModOf(userPluginDirs());
@@ -271,17 +271,17 @@ export async function startCcrow(arm: Arm) {
     }
     writeState({ ...readState(), arm, jobId, startedAt: Date.now() });
     console.log(
-        `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
+        `crow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
     );
 
-    // --bg ignores --session-id, so the id is known only once the registry lists ccrow
+    // --bg ignores --session-id, so the id is known only once the registry lists crow
     let live = findSession();
     for (let i = 0; i < 30 && !live; i++) {
         await sleep(1000);
         live = findSession();
     }
     if (!live) {
-        console.log('🔥 off: ccrow not in the registry after 30 s');
+        console.log('🔥 off: crow not in the registry after 30 s');
         return;
     }
     armHot(live.sessionId);
@@ -296,16 +296,16 @@ export function armHot(sessionId: string) {
     }
     setHot(store, sessionId, Date.now());
     console.log(
-        `🔥 key hot:${sessionId} written; stash re-reads it at ccrow's next turn end and pings 50 min after`,
+        `🔥 key hot:${sessionId} written; stash re-reads it at crow's next turn end and pings 50 min after`,
     );
 }
 
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
-// a /clear or a reopened desktop tab starts a new transcript in ccrow's project dir; the newest is the live one
+// a /clear or a reopened desktop tab starts a new transcript in crow's project dir; the newest is the live one
 export const RELAY_PATH = join(STATE_DIR, 'relay.json');
 
-// a wake parked past the gap advises on a dead state: a 10-13 20:28 wake reached the next day's ccrow (PK-129)
+// a wake parked past the gap advises on a dead state: a 10-13 20:28 wake reached the next day's crow (PK-129)
 export function dropStaleRelay(path = RELAY_PATH, now = Date.now()) {
     const parkedAt = statSync(path, { throwIfNoEntry: false })?.mtimeMs;
     if (parkedAt === undefined || now - parkedAt < WAKE_GAP_MS) return false;
@@ -326,7 +326,7 @@ export function spawnHarvester(args: string[]) {
     ).unref();
 }
 
-// the harvester finds ccrow's answer by this prefix; the evidence after it is free text
+// the harvester finds crow's answer by this prefix; the evidence after it is free text
 export function reconcileMarker(noteId: string) {
     return `reconcile ${noteId}:`;
 }
@@ -435,7 +435,7 @@ function queuedText(prompt: TranscriptContent | undefined) {
 
 const NOTIFICATION_MAX_CHARS = 2_000;
 
-// a task-notification carries a subagent's whole report; ccrow needs its gist and where the rest lives
+// a task-notification carries a subagent's whole report; crow needs its gist and where the rest lives
 function capNotifications(text: string) {
     let capped = 0;
     const kept = text.replace(
@@ -465,7 +465,7 @@ function lastBlocks(parts: string[]) {
     return { dropped, text: text.slice(-DELTA_MAX_CHARS) };
 }
 
-// ccrow times its sends off each block; a block whose entry has no timestamp prints none
+// crow times its sends off each block; a block whose entry has no timestamp prints none
 function headOf(who: string, timestamp?: string) {
     const at = timestamp ? new Date(timestamp) : undefined;
     return at && !Number.isNaN(at.getTime())
@@ -489,10 +489,9 @@ export function transcriptDelta(lines: string[], fromLine: number) {
         if (entry?.type === 'assistant') {
             if (entry.message?.id) stepIds.add(entry.message.id);
             const text = textOf(entry.message?.content).trim();
-            if (text)
-                parts.push(`${headOf('cclio', entry.timestamp)}\n${text}`);
+            if (text) parts.push(`${headOf('clio', entry.timestamp)}\n${text}`);
         }
-        // a message dima types while cclio is mid-turn lands as a queued_command attachment, never a user entry
+        // a message dima types while clio is mid-turn lands as a queued_command attachment, never a user entry
         if (
             entry?.type === 'attachment' &&
             entry.attachment?.type === 'queued_command'
@@ -501,7 +500,7 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             if (text && !text.includes('<cross-session-message'))
                 parts.push(`${headOf('dima', entry.timestamp)}\n${text}`);
         }
-        // dima's orbit ticks and notes reach cclio only as hook context, never as a user entry
+        // dima's orbit ticks and notes reach clio only as hook context, never as a user entry
         if (
             entry?.type === 'attachment' &&
             entry.attachment?.type === 'hook_additional_context'
@@ -531,7 +530,7 @@ export function transcriptDelta(lines: string[], fromLine: number) {
     return { cut: { blocks: dropped, outputs }, steps: stepIds.size, text };
 }
 
-// a packet that lost blocks or tool output names the transcript, so ccrow reads its tail only then
+// a packet that lost blocks or tool output names the transcript, so crow reads its tail only then
 export function cutLine(cut: Cut, transcriptPath: string) {
     if (cut.blocks === 0 && cut.outputs === 0) return '';
     return `cut: ${cut.blocks} older blocks dropped, ${cut.outputs} tool outputs capped · transcript ${transcriptPath}`;
@@ -566,14 +565,14 @@ export function resolveLeaves(patterns: string[], today: string) {
     return { found, missing };
 }
 
-// ccrow holds a leaf it read earlier in the same transcript; a /clear starts a new one and gets every leaf again
+// crow holds a leaf it read earlier in the same transcript; a /clear starts a new one and gets every leaf again
 export function leavesToSend(
     paths: string[],
     state: State,
-    ccrowTranscript: string | undefined,
+    crowTranscript: string | undefined,
 ) {
     const known =
-        state.leavesFor === ccrowTranscript ? (state.leafHashes ?? {}) : {};
+        state.leavesFor === crowTranscript ? (state.leafHashes ?? {}) : {};
     const hashes: Record<string, string> = {};
     const changed: string[] = [];
     const unchanged: string[] = [];
@@ -613,7 +612,7 @@ export function buildPacket({
     const body = [
         ...(ledger ? [ledger] : []),
         ...(meter ? [meter] : []),
-        `# cclio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
+        `# clio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
         proposalBlock,
         ...leafBlocks,
         unchangedNote,
@@ -665,7 +664,7 @@ function shellCommands(line: string) {
     return commands;
 }
 
-// a merge waits for ccrow's note; a member spawn wakes it and runs on; anything else is no decision
+// a merge waits for crow's note; a member spawn wakes it and runs on; anything else is no decision
 export function decisionOf(line: string): Decision | undefined {
     for (const command of shellCommands(line)) {
         const words = command.slice(command.findIndex((w) => !/^\w+=/.test(w)));
@@ -676,7 +675,7 @@ export function decisionOf(line: string): Decision | undefined {
     }
 }
 
-// a proposal cclio writes for dima wakes ccrow before he ticks it; any other write is no decision
+// a proposal clio writes for dima wakes crow before he ticks it; any other write is no decision
 export function proposalOf(
     tool: string | undefined,
     path: string | undefined,
@@ -761,7 +760,7 @@ export function verifiedHead(key: string) {
     } catch {}
 }
 
-// one packet for any wake: the delta since the last one, plus the leaves changed since ccrow last read them
+// one packet for any wake: the delta since the last one, plus the leaves changed since crow last read them
 export function packWake({
     delta,
     lines,
@@ -779,8 +778,8 @@ export function packWake({
         ).split('\n');
     } catch {}
     const leaves = resolveLeaves(leafPatterns, localDay(now));
-    const ccrowTranscript = newestTranscript();
-    const toSend = leavesToSend(leaves.found, state, ccrowTranscript);
+    const crowTranscript = newestTranscript();
+    const toSend = leavesToSend(leaves.found, state, crowTranscript);
     const files = buildPacket({
         cut: cutLine(delta.cut, transcriptPath),
         deltaText: delta.text,
@@ -798,7 +797,7 @@ export function packWake({
         state: {
             ...state,
             leafHashes: toSend.hashes,
-            leavesFor: ccrowTranscript,
+            leavesFor: crowTranscript,
             offsets: { ...state.offsets, [transcriptPath]: lines.length },
         } satisfies State,
     };
@@ -815,7 +814,7 @@ export function wakeIdOf(date: Date) {
 }
 
 export function wakeLine(wake: Wake) {
-    return `ccrow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${CHARTER_PATH}`;
+    return `crow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${CHARTER_PATH}`;
 }
 
 export function dayOf(firstWakeAt: number, now: number) {
@@ -827,7 +826,7 @@ export const liveArm: Arm = 'opus';
 
 export function sendLine(socketPath: string, text: string) {
     const frame = JSON.stringify({
-        from_name: 'ccrow:wake',
+        from_name: 'crow:wake',
         message: { content: text },
         priority: 'next',
         type: 'user',
@@ -855,7 +854,7 @@ export function appendNoteOnce(path: string, value: Note | ReconcileNote) {
     appendJsonl(path, value);
 }
 
-// ccrow's day in one line: notes sent today, the last send's time, today's ok verdicts
+// crow's day in one line: notes sent today, the last send's time, today's ok verdicts
 // the budget hunt quotes this line; x-mod-stash writes the file on every session.measure
 export function meterLine(now: Date, usagePath = USAGE_PATH) {
     try {
@@ -1310,7 +1309,7 @@ export interface PlanRun {
     at: string;
 }
 
-// one line per finding; accepted is a `ccrow:note-vet` verdict on its id, never a field here
+// one line per finding; accepted is a `crow:note-vet` verdict on its id, never a field here
 export interface PlanNote extends Omit<PlanRun, 'planText'> {
     id: string;
     channel: 'plan';

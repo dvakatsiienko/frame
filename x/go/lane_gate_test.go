@@ -27,7 +27,7 @@ func gateRepo(t *testing.T, files map[string]string) string {
 		"app/adr/0001.md":                           "# one\n",
 		"side/GLOSSARY.md":                          "- **side** — a word\n",
 		"side/tool.sh":                              "echo side\n",
-		"skills/crew-coder/SKILL.md":                "# coder\none\ntwo\nthree\n",
+		"skills/crew-codie/SKILL.md":                "# coder\none\ntwo\nthree\n",
 		"skills/notes/SKILL.md":                     "# notes\n",
 		"web/FTR.md":                                "- ✅ a page\n",
 		"web/page.tsx":                              "export const Page = 1;\n",
@@ -148,11 +148,11 @@ func TestGateRefusesASkillThatOnlyGrows(t *testing.T) {
 		files map[string]string
 		code  int
 	}{
-		"three lines added":           {map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"}, 1},
-		"two lines added":             {map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\ntwo\nthree\na\nb\n"}, 0},
-		"blank lines never count":     {map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\n\ntwo\n\nthree\n\na\nb\n"}, 0},
-		"three added, one cut":        {map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\ntwo\na\nb\nc\n"}, 0},
-		"a new file in a skill dir":   {map[string]string{"skills/crew-coder/extra.md": "one\n"}, 1},
+		"three lines added":           {map[string]string{"skills/crew-codie/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"}, 1},
+		"two lines added":             {map[string]string{"skills/crew-codie/SKILL.md": "# coder\none\ntwo\nthree\na\nb\n"}, 0},
+		"blank lines never count":     {map[string]string{"skills/crew-codie/SKILL.md": "# coder\none\n\ntwo\n\nthree\n\na\nb\n"}, 0},
+		"three added, one cut":        {map[string]string{"skills/crew-codie/SKILL.md": "# coder\none\ntwo\na\nb\nc\n"}, 0},
+		"a new file in a skill dir":   {map[string]string{"skills/crew-codie/extra.md": "one\n"}, 1},
 		"a new crew skill":            {map[string]string{"skills/crew-new/SKILL.md": "one\n"}, 1},
 		"a skill outside crew, guide": {map[string]string{"skills/notes/SKILL.md": "# notes\na\nb\nc\nd\n"}, 0},
 	}
@@ -173,10 +173,10 @@ func TestGateReadsARenamedSkillFileByItsChange(t *testing.T) {
 		from, to, body string
 		code           int
 	}{
-		"moved as is":                 {"skills/crew-coder/SKILL.md", "skills/crew-coder/CODER.md", "# coder\none\ntwo\nthree\n", 0},
-		"moved and grown by 3":        {"skills/crew-coder/SKILL.md", "skills/crew-coder/CODER.md", "# coder\none\ntwo\nthree\na\nb\nc\n", 1},
-		"moved into another skill":    {"skills/crew-coder/SKILL.md", "skills/guide-go/stolen.md", "# coder\none\ntwo\nthree\n", 1},
-		"moved in from outside crews": {"skills/notes/SKILL.md", "skills/crew-coder/notes.md", "# notes\n", 1},
+		"moved as is":                 {"skills/crew-codie/SKILL.md", "skills/crew-codie/CODER.md", "# coder\none\ntwo\nthree\n", 0},
+		"moved and grown by 3":        {"skills/crew-codie/SKILL.md", "skills/crew-codie/CODER.md", "# coder\none\ntwo\nthree\na\nb\nc\n", 1},
+		"moved into another skill":    {"skills/crew-codie/SKILL.md", "skills/guide-go/stolen.md", "# coder\none\ntwo\nthree\n", 1},
+		"moved in from outside crews": {"skills/notes/SKILL.md", "skills/crew-codie/notes.md", "# notes\n", 1},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -239,7 +239,7 @@ func TestGateTracesARefusalAsRefused(t *testing.T) {
 
 func TestGatePassesAGrownSkillTheMessageGroomed(t *testing.T) {
 	t.Parallel()
-	dir := gateRepo(t, map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"})
+	dir := gateRepo(t, map[string]string{"skills/crew-codie/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"})
 
 	got := gate(t, dir, "change\n\ngroom: read whole — cut the old recipe\n")
 

@@ -7,13 +7,13 @@
         },
         {
             "example": "x handoff peek cli-arms",
-            "gist": "the shared CST store, one door for cc and cw",
+            "gist": "the shared CST store, one door for cc and cloud-chat",
             "name": "handoff"
         },
         {
             "example": "x linear read FRM-1 FRM-2 --comments",
             "gist": "tickets in native graphql: ids, states and labels resolve inside x",
-            "identity": "every verb acts as one member: cclio's session or a terminal-less caller as the cclio app, any other agent session as the coder app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
+            "identity": "every verb acts as one member: clio's session or a terminal-less caller as the clio app, any other agent session as the coder app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
             "name": "linear",
             "rawDoor": "x linear api"
         },
@@ -290,7 +290,7 @@
         {
             "flags": {
                 "for": {
-                    "description": "the reading agent, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; files addressed to another agent are left alone",
+                    "description": "the reading agent, one of any, cc, clio, crow, coder, cloud-chat, designer, verifier; files addressed to another agent are left alone",
                     "type": "string",
                     "value": "audience"
                 }
@@ -337,7 +337,7 @@
             ],
             "flags": {
                 "for": {
-                    "description": "the reading agent, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; files addressed to another agent are left alone",
+                    "description": "the reading agent, one of any, cc, clio, crow, coder, cloud-chat, designer, verifier; files addressed to another agent are left alone",
                     "type": "string",
                     "value": "audience"
                 }
@@ -358,7 +358,7 @@
         {
             "flags": {
                 "audience": {
-                    "description": "the agent the CST is for, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; any (the default) is whoever pulls next",
+                    "description": "the agent the CST is for, one of any, cc, clio, crow, coder, cloud-chat, designer, verifier; any (the default) is whoever pulls next",
                     "type": "string",
                     "value": "audience"
                 },
@@ -480,7 +480,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -514,7 +514,7 @@
         {
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -565,7 +565,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -603,12 +603,12 @@
                     "value": "names"
                 },
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
                 "delegate": {
-                    "description": "the member working it, by name: coder or cclio; the assignee stays dima's",
+                    "description": "the member working it, by name: coder or clio; the assignee stays dima's",
                     "type": "string",
                     "value": "name"
                 },
@@ -674,7 +674,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 }
@@ -695,7 +695,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -721,7 +721,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -752,7 +752,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -772,7 +772,7 @@
         {
             "flags": {
                 "as": {
-                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -841,7 +841,7 @@
             },
             "name": "fleet ops",
             "needsApply": false,
-            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, cclio's code edits, boot cost, size misses",
+            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, clio's code edits, boot cost, size misses",
             "replaces": ["script/agent-ops.ts"],
             "touches": [
                 "~/.claude/projects/ — the session transcripts, one level deep",
@@ -851,7 +851,7 @@
         {
             "args": [
                 {
-                    "description": "who acts: cclio, coder or dima",
+                    "description": "who acts: clio, coder or dima",
                     "name": "member"
                 },
                 {

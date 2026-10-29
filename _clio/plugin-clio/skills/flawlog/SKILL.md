@@ -2,11 +2,11 @@
 description: load on «flawlog», «flush the flawlog», «flaw», the moment a mistake just happened — dima says «you goofed», «that was wrong» — or you caught your own flaw. fix in place first, log only what survives the attempt.
 ---
 
-# /cclio:flawlog
+# /clio:flawlog
 
 **a flaw just happened → try to fix it NOW. log only what survives the attempt.**
 
-loads at boot alongside `/cclio:boot`, whenever a mistake/friction/retry just happened, or when
+loads at boot alongside `/clio:boot`, whenever a mistake/friction/retry just happened, or when
 dima asks «do you keep an eye on flawlog». coordinator-only, on purpose.
 
 ## 1. flag on the spot, same turn
@@ -42,7 +42,7 @@ only what could NOT be closed on the spot:
 file: `~/.claude/shelf/flawlog/<YYYY-MM-DD>-<topic-slug>.md`, created on first entry.
 
 📌 **the slug is the session's main topic, in 2-4 plain words** — `spawn-measurements-and-plugin-cache`,
-`invented-ids-and-tool-limits`, `cclio-first-boot`. a human scanning the dir should be able to
+`invented-ids-and-tool-limits`, `clio-first-boot`. a human scanning the dir should be able to
 guess which log holds the thing they half-remember, which a run id can never do. the run id is
 not lost: it stays in the file's H1, where provenance belongs and legibility does not.
 

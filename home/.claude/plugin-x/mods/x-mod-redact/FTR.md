@@ -15,7 +15,7 @@
   - decision: the placeholder carries no glob characters — the model writes it into shell commands, and `[redacted]` broke a zsh `echo` in the live probe
   - proven live 2026-10-05 for the one-way mask: a headless `claude --plugin-dir` run echoed a planted `sk-ant-…` fake; 8 rows came out masked, the reply too
   - and a prompt is masked as it is submitted: a `prompt.submit` hook rewrites its text before the engine queues it, so a prompt typed mid-turn reads the placeholder in its `queue-operation` and `queued_command` records too, which `session.append` never sees (todo 24)
-  - proven live 2026-10-13 18:40 on cc 2.1.296: a stream-json `claude -p` got a fake `sk-ant-…` key 5 s into a sleeping turn; the jsonl held it 0 times raw, 3 times as the placeholder, the queue's `remove` row and the `queued_command` attachment included (cclio's 18:35 probe, before the hook: raw in 3 records)
+  - proven live 2026-10-13 18:40 on cc 2.1.296: a stream-json `claude -p` got a fake `sk-ant-…` key 5 s into a sleeping turn; the jsonl held it 0 times raw, 3 times as the placeholder, the queue's `remove` row and the `queued_command` attachment included (clio's 18:35 probe, before the hook: raw in 3 records)
   - 📌 one raw copy stays: the `enqueue` row of a prompt given on `claude -p`'s command line, written before any hook runs (probed 18:44, `pnpm mods:probe-x-mod-redact`); the gap is in `mods/workarounds.md`
 - ✅ one value reads as one placeholder
   - given the same key appears in two rows

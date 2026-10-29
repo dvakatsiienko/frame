@@ -58,7 +58,7 @@ const verbHint = (cli: string) =>
     `x-mod-guard hint: \`${cli} --help\`, bare, lists its verbs — some clis run the verb under \`<verb> --help\``;
 const isHelp = (args: Command['args']) =>
     args.some((w) => w.text === '--help' || w.text === '-h');
-// the frame or cclio scripts a command runs with `--help` or `-h`, by real path
+// the frame or clio scripts a command runs with `--help` or `-h`, by real path
 export function helpScripts(command: string, cwd: string, ctx: Context) {
     const out: string[] = [];
     for (const c of commands(parse(command), cwd)) {

@@ -14,7 +14,7 @@ const NOW = new Date(2026, 9, 12, 15, 0).getTime();
 const MIN = 60_000;
 const CAPPED = "You've hit your session limit · resets 11:40pm (Europe/Kiev)";
 
-// cclio's session with the band and the board drawn: `lines` holds every model-only line a prompt or a tool result
+// clio's session with the band and the board drawn: `lines` holds every model-only line a prompt or a tool result
 // carried, and every turn the mod started itself
 function world(on: On) {
     const lines: string[] = [];
@@ -22,7 +22,7 @@ function world(on: On) {
     const store = new Map<string, unknown>();
     const files: Record<string, string> = {
         [`/home/.claude/sessions/${PID}.json`]: JSON.stringify({
-            name: '🦉 cclio',
+            name: '🦉 clio',
             pid: PID,
         }),
     };
@@ -177,7 +177,7 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /wrong assumption/,
     },
     'stash.boot': {
-        arm: ($) => $.skill.prompt({ skill: 'cclio:boot', text: '# boot' }),
+        arm: ($) => $.skill.prompt({ skill: 'clio:boot', text: '# boot' }),
         // start_session returns inside the open boot: its result carries the line
         fire: async ($, w) => {
             const r = await $.tool.call({
@@ -188,7 +188,7 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /the boot continues/,
     },
     'stash.cost': {
-        // the world is cclio's session, and dima asks her about cost
+        // the world is clio's session, and dima asks her about cost
         arm: async () => undefined,
         fire: ($) => say($, 'what does a cache read cost on opus?'),
         trace: /a cost question/,

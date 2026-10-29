@@ -11,7 +11,7 @@ Your arguments, verbatim: `$ARGUMENTS` — the app, then `quick` for a quick job
 are `~/projects/studio/AGENTS.md`; this file is the procedure.
 
 **Solid designs come first.** Every rule below exists to make the spread truly different and
-the pick truly good. Report to whoever started you: dima in this chat, and cclio by one
+the pick truly good. Report to whoever started you: dima in this chat, and clio by one
 `SendMessage` per spread (the canvas link + one line per take).
 
 **read `../crew-dna/SKILL.md` first** — the rules every member shares; your first reply quotes its version line.
@@ -109,14 +109,14 @@ Print the canvas link, then one line per take: its axis position and thesis. Say
 middle take tends to win because it is in the middle, so dima picks the corner he wants.
 
 - **dima picks by commenting on the canvas, never by describing boards in text**:
-  a «best …» comment on the part he likes, a steer comment on what to change. cclio collects the
+  a «best …» comment on the part he likes, a steer comment on what to change. clio collects the
   comments and writes the merge brief (her side lives in `x:crew-lead`); you draw ONE merged take from it.
 - **the designer asks dima only through design-loupe** (`~/projects/bytes/apps/design-loupe`, read its
   `GLOSSARY.md`): a round of asks in `jobs/<app>/asks.json`, each pinned with `id="ask-N"` on the element
   it is about, a recommendation and why on every ask, ~7 asks a round at most. he opens each by a link,
   answers in place, and hands the round over; act once per handover, never per answer — mark each
   seen, then applied, and take the id off when applied. his own canvas comments still reach you
-  natively (Send to Claude). one channel per question — cclio never relays a pick for a question an
+  natively (Send to Claude). one channel per question — clio never relays a pick for a question an
   ask already carries.
 - **comment rounds on a long session are the cost**: a fresh session per batch of rounds, reading the
   brief and the canvas files, beats a session carrying 700k (the speak merge: $17 spread, $54 total)

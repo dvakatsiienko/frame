@@ -1,5 +1,5 @@
 /**
- * ? jev vet — a flow earns trust by running clean for a window. every verdict cclio gives on a
+ * ? jev vet — a flow earns trust by running clean for a window. every verdict clio gives on a
  * ? jev answer lands in `shelf/jev/<flow>.log`; the registry keeps each flow's window start. a miss
  * ? restarts the window from that day; `windowDays` clean days promote the flow to green, and a
  * ? green flow that misses drops back to vetting. dima's model (2026-09-20), two-week window.

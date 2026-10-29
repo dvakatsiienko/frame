@@ -110,7 +110,7 @@
   - when `x lane commit` runs
   - then it refuses before the hooks, naming each gone quote, and HEAD does not move
   - given the message carries a line `quotes: shown`, then it commits
-  - decision: x only calls the script and never edits it — the script is cclio's
+  - decision: x only calls the script and never edits it — the script is clio's
 - ✅ `x lane commit` adds `ftr: none` when an app's code moves without its ftr
   - given a commit whose named paths change an app's code (the paths `x lane gate`'s ftr half counts) and not that app's `FTR.md`
   - when `x lane commit` runs
@@ -133,7 +133,7 @@
   - then it adds `🤖 review:requested` as the coder app
   - given the last round judged the head, a round still running on the branch, or a repo with no `review.yml`, then it prints ok and touches no label
   - given the head is approved on dima's account, or `review:clean` is green on it, then it prints ok («cleared») and touches no label, past the cap too
-  - given the round already ran and neither holds, then it requests nothing, exits 1 and names cclio's approval on the verifier's clean as the way past
+  - given the round already ran and neither holds, then it requests nothing, exits 1 and names clio's approval on the verifier's clean as the way past
   - given the label came off and the add failed, then the failure says the pr now holds no review label
   - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and the coder's «final» ping runs it as one call (FRM-355)
 - ✅ `x lane gate <msg-file>` holds a commit at commit-msg, in frame and bytes
@@ -164,9 +164,9 @@
   - when `x lane merge-auto <pr> --apply` runs from the main checkout on the verifier-clean pr that touches a self-edit path
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
   - given the body edited after the last signed line, a last sign with no `merge: pre-approved`, no `## signed` block, or a build whose `x/go` differs from origin/main, then it waits and names which, the re-sign included; the brake waits whatever the sign says
-  - decision: the sign is read from the linear ticket, never the pr, whose body the coder writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as cclio signs (FRM-423 grill, o141)
-  - decision: cclio's merge-auto runs from `~/frame`, main's build — a pr head's own binary could drop any check inside it, so the main checkout is the guard, the dev-build wait its backstop (cclio, FRM-423 pr 0)
-  - known gap: which ticket is read comes from the pr's branch name or body, both the coder's to write, so nothing binds a pr to the chunk it names; the verifier checks the pr against its chunk (accepted for the mvp, cclio, FRM-423 pr 0)
+  - decision: the sign is read from the linear ticket, never the pr, whose body the coder writes; the hash is sha256 of the body through the newline before `## signed`, its first 8 hex, as clio signs (FRM-423 grill, o141)
+  - decision: clio's merge-auto runs from `~/frame`, main's build — a pr head's own binary could drop any check inside it, so the main checkout is the guard, the dev-build wait its backstop (clio, FRM-423 pr 0)
+  - known gap: which ticket is read comes from the pr's branch name or body, both the coder's to write, so nothing binds a pr to the chunk it names; the verifier checks the pr against its chunk (accepted for the mvp, clio, FRM-423 pr 0)
 - ⬜ a self-edit with no pre-approved sign merges on dima's typed word
   - given a verifier-clean self-edit pr whose chunk holds no pre-approved sign
   - when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, which it does only when dima's own last typed prompt names that pr (`x-mod-guard/FTR.md`, the dima-ok-flag line)
@@ -203,7 +203,7 @@
   - given a pr onto another open pr's branch with no github stack, then it waits naming the lower pr; once the lower pr merged, the upper refuses until it is retargeted onto main; a base no pr owns is left to the checks
   - decision: one atomic call per stack, never a layer per call — github merges a stack all-or-nothing (dima o83, 2026-10-23: «I vote for efficiency»)
   - given a stack merged by merge-auto and one of its squashes reverted on the trunk within 7 days (git revert or github's revert button), when merge-auto runs on any pr, then the brake is on and names the revert: every layer wears the `merged-by-x` label before the merge call, and the brake asks github whether a reverted commit's pr wears it
-  - decision: a label on the pr over a local sha record — the async merge takes no message for the trailer, and a label lives on github, read the same from any machine, with nothing to drift (dima o-brake «b, record the shas», cclio's lean, 2026-10-23); the one local record left is the fallback for a label github refused (o194)
+  - decision: a label on the pr over a local sha record — the async merge takes no message for the trailer, and a label lives on github, read the same from any machine, with nothing to drift (dima o-brake «b, record the shas», clio's lean, 2026-10-23); the one local record left is the fallback for a label github refused (o194)
   - given a stack merge whose async result's `details.expected_head_sha` is not the head the gate read, when merge-auto reads it back, then it prints the mismatch on stderr, exits 1 and marks the pr `merge-brake`; while any pr wears that label, merge-auto on any pr waits with the brake on, naming the release
   - given a stack merge whose result names no head it took — merged, enqueued, still pending at the 10-minute budget, a poll that failed, or a status x does not know; only github's «failed» says nothing merged — when merge-auto reads it back, then it calls the gated head unverified on stderr, exits 1 and turns the brake on the same way
   - given a stack merge submit github answers with no 2xx, or never answers, when merge-auto sends it, then it calls the gated head unverified on stderr, exits 1 naming the release and turns the brake on the same way; only a 404 (no async merge in the repo) refuses with no brake (dima, o195)
@@ -236,14 +236,14 @@
   - given the shared lefthook shims point at a linked worktree
   - when `x lane decamp <path> --apply` runs
   - then the tree is gone and the shims point at the main checkout
-  - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (cclio, 2026-10-08)
+  - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (clio, 2026-10-08)
 
 ## handoff — the CST store
 
 - ✅ `x handoff` lists, peeks and ingests CSTs from the shared store
   - given a pending handoff in the store
   - when `x handoff list` runs
-  - then it lists the same handoffs `x-cw`'s tools see — they shell out to it, one store, one door
+  - then it lists the same handoffs `x-cloud-chat`'s tools see — they shell out to it, one store, one door
 - ✅ an ingest names its reader
   - given a pending CST
   - when `x handoff ingest` runs without `--for`, a slug or not
@@ -263,10 +263,10 @@
   - then that one file, or every file, goes to the macos trash; a bare `delete` is exit 2 and touches nothing
   - decision: no `--apply` — the store is disposable by contract (ADR-0002), and the envelope names what went
 - ✅ every handoff caller goes through `x handoff`
-  - given the two plugin-x handoff skills, `CST-SPEC.md`, the `x-cw` handoff tools and the x-ray raycast command
+  - given the two plugin-x handoff skills, `CST-SPEC.md`, the `x-cloud-chat` handoff tools and the x-ray raycast command
   - when they list, peek, ingest, write or delete
   - then each one calls `x handoff … --json`; the node store script is gone
-  - decision: the raycast command is renamed `handoff` with the rest — it carries no hotkey, so nothing was orphaned (dima's screenshot, via cclio, 2026-10-07)
+  - decision: the raycast command is renamed `handoff` with the rest — it carries no hotkey, so nothing was orphaned (dima's screenshot, via clio, 2026-10-07)
 - ✅ `x handoff list` paints in under 20 ms
   - given the live store
   - when dima runs `x handoff list` in a terminal
@@ -289,7 +289,7 @@
   - when `x brief check <brief> --repo <path>` runs
   - then it fails and names each one with its line; a thing the brief asks to build passes when `(new)` follows it
 - ✅ `x brief check` lints the exit lines
-  - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «cclio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
+  - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
 - ✅ `x brief check` refuses a skill that waits on the user's approval
@@ -298,11 +298,11 @@
   - then a `quiz` finding names the skill on its line; with a skip line the brief passes
   - decision: a coder parked on four asks under `to-tickets`' quiz while dima was away (FRM-392, 2026-10-11 12:03)
 - ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
-  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `_clio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
+  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (clio's half beside a backticked surface outside `_clio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
   - when `x brief preflight <ticket>` runs
   - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
   - given a clean ticket, then it prints ok
-  - decision: a path counts as shipped only through a commit for this ticket, never by existing — most exit lines edit files main has (cclio, 2026-10-09)
+  - decision: a path counts as shipped only through a commit for this ticket, never by existing — most exit lines edit files main has (clio, 2026-10-09)
 - ⬜ `x brief preflight <ticket>` reads the exit lines from the lane spec when one holds the ticket
   - given a `.scratch/<feature>/spec.md` in the repo with a `## <ticket> —` section, when `x brief preflight <ticket>` runs, then it lints that section's exit lines instead of the ticket's, and its ok names the spec it read; with no such section, the ticket's own exit lines as before
   - decision: the spec binds, so a seal no longer copies its exit lines into the ticket (FRM-423 grill)
@@ -339,7 +339,7 @@
 ## as — identity
 
 - ✅ `x as <member> -- <command>` runs one command as a fleet member
-  - given a member (`cclio`, `coder`, `dima`) and a `linear` or `gh` command after `--`
+  - given a member (`clio`, `coder`, `dima`) and a `linear` or `gh` command after `--`
   - when it runs
   - then the command runs with that member's token in its own env only (`LINEAR_API_KEY`, `GH_TOKEN`); its output and exit code are the call's, with no envelope
   - then the trace line names the actor; no token reaches x's stdout, stderr or the trace
@@ -397,7 +397,7 @@
   - given no pull of that ticket, then nothing is written and `next` is the pull
 - ✅ `x linear set` updates a ticket by names, in one write
   - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)
-  - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|cclio`, `--add-label`, `--remove-label` — names, never ids
+  - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|clio`, `--add-label`, `--remove-label` — names, never ids
   - when it runs
   - then one lookup resolves every name and one `issueUpdate` lands them all; the envelope prints the actor and each change as `field: old → new`
   - given `--add-label` or `--remove-label` repeated, comma lists or both, then every named label moves (FRM-415)
@@ -414,7 +414,7 @@
 - ✅ `x linear update <project|initiative> --body-file <f> --health <h>` posts a status update
   - given a name that finds exactly one project or initiative, and `--health onTrack|atRisk|offTrack`
   - when it runs, then the update lands on that one with its health; a name that finds none or several writes nothing
-  - given a name that finds a project, then initiatives are never read, so an actor without `initiative:read` (cclio) posts it; a project wins over an initiative of the same name
+  - given a name that finds a project, then initiatives are never read, so an actor without `initiative:read` (clio) posts it; a project wins over an initiative of the same name
 - ✅ `x linear api '<graphql>'` is the raw door when no verb fits
   - given any graphql, and `--vars '<json object>'`
   - when it runs, then it goes out as the acting member, and linear's reply prints as it came — exit 1 when it holds errors
@@ -431,7 +431,7 @@
   - when it runs, then it prints the plan and exits 4; with `--apply`, one request archives them all and a capped page says «run again»
 - ⬜ a ticket's size prints as its word: `x linear read` carries `size` (XS · S · M) beside the estimate (FRM-399)
 - ✅ every `x linear` call acts as someone, and says who
-  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cw — anything without a terminal — then it acts as the cclio app — but a session whose registry name is not 🦉 cclio (by `CLAUDE_CODE_SESSION_ID`) acts as the coder app (FRM-399); given dima's own terminal, as dima; `--as coder|cclio|dima` overrides
+  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cloud chat — anything without a terminal — then it acts as the clio app — but a session whose registry name is not 🦉 clio (by `CLAUDE_CODE_SESSION_ID`) acts as the coder app (FRM-399); given dima's own terminal, as dima; `--as coder|clio|dima` overrides
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
@@ -443,9 +443,9 @@
   - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, `claude plugin list` reports the install at the new version with its cache dir on disk, and the board ends on `next /reload-plugins`
   - given a linked worktree, then the plan refuses before anything is written, whatever its marketplace reads, and names the main checkout
   - given a tree its marketplace does not read, then the plan refuses: nothing is written and nothing refreshed
-  - decision: `pnpm plugin:release` retired into this verb (FRM-359); its moved-since status and the cw symlink audit did not move
+  - decision: `pnpm plugin:release` retired into this verb (FRM-359); its moved-since status and the cloud chat symlink audit did not move
   - given an install that stays at the old version, then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
-  - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cw`'s marketplace is never added), then it bumps only and runs nothing
+  - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cloud-chat`'s marketplace is never added), then it bumps only and runs nothing
   - given a name no plugin carries, then exit 2 lists the names that exist
 - ✅ `x schema plugin` lists the verb
 
@@ -472,11 +472,11 @@
 - ✅ `x fleet audit` checks each coder read its lessons first
   - given the session transcripts of the last `--days` (default 1)
   - when `x fleet audit` runs
-  - then each session opened with `/x:crew-coder` gets a line: whether it read `crew-coder/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
+  - then each session opened with `/x:crew-codie` gets a line: whether it read `crew-codie/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
   - when `x fleet ops` runs
-  - then it prints tokens and wall time per ticket (coder + verifier, each step once), cclio's code edits per session, and the cost of a cclio boot (full and mini), each with its median
+  - then it prints tokens and wall time per ticket (coder + verifier, each step once), clio's code edits per session, and the cost of a clio boot (full and mini), each with its median
 - ✅ `x fleet ops` names each size miss
   - given a ticket linear closed inside the `--days` window, sized XS or S, whose coder turns in that window reached its line (XS 80, S 400)
   - when `x fleet ops` runs
@@ -497,7 +497,7 @@
 - ✅ the trace names its caller
   - given `CLAUDECODE=1`, `SSH_CONNECTION`, a git or cc hook env, a Cowork Desktop Commander, or a plain tty
   - when x runs
-  - then the caller reads `cc`, `ssh`, `hook`, `cw` or `dima`; anything else reads `other`
+  - then the caller reads `cc`, `ssh`, `hook`, `cloud-chat` or `dima`; anything else reads `other`
 - ✅ `x stats` reads the traces
   - given a trace dir
   - when `x stats --json --days 30` runs
@@ -529,5 +529,5 @@
   - then `x trace record` writes the same line shape in the background, with the script's exit and time; an `x` call is not recorded twice
   - then the name is `pnpm <script>` only for a script the nearest `package.json` defines, else plain `pnpm` — a flag's value or free text never becomes a name
   - not traced: a line that does not start with `pnpm` — an env prefix (`FOO=1 pnpm dev`) or a compound (`cd app; pnpm dev`)
-  - decision: the hook skips `x` — the dispatcher already traces it as `dima` (cclio, 2026-10-07)
-  - decision: only lines that start with `pnpm`; the gap above is known and kept narrow (cclio, 2026-10-07)
+  - decision: the hook skips `x` — the dispatcher already traces it as `dima` (clio, 2026-10-07)
+  - decision: only lines that start with `pnpm`; the gap above is known and kept narrow (clio, 2026-10-07)

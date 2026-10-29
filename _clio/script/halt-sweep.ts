@@ -26,7 +26,7 @@ function gh(args: string[]): unknown {
 
 // a content line is anything that is not blank, not the template's own text, and not under a ✅ line;
 // a ✅ line covers itself and the indented lines right under it, never an unindented one (a drop typed after the parse);
-// a line that sits verbatim in composer's prepped inbox is handled too, a line typed after the prep never is
+// a line that sits verbatim in helga's prepped inbox is handled too, a line typed after the prep never is
 export function unhandledLines(
     inbox: string,
     template: string,
@@ -57,21 +57,21 @@ export function unhandledLines(
     return open;
 }
 
-// a line without its list marker and its «✅ PK-N» stamp: the shape composer's prep holds
+// a line without its list marker and its «✅ PK-N» stamp: the shape helga's prep holds
 const bareLine = (text: string) =>
     text.replace(/^(?:\d+\.|[-*])\s+/, '').replace(/^✅\s+PK-\d+\s+/, '');
 
 function inboxParts(apply: boolean) {
-    const composer = join(HQ, 'inbox-composer.md');
+    const helga = join(HQ, 'inbox-helga.md');
     const inbox = join(HQ, 'inbox.md');
     const template = join(HQ, 'inbox-template.md');
     console.log(
-        `inbox: reset inbox.md from inbox-template.md · trash inbox-composer.md (${existsSync(composer) ? 'exists' : 'absent'})`,
+        `inbox: reset inbox.md from inbox-template.md · trash inbox-helga.md (${existsSync(helga) ? 'exists' : 'absent'})`,
     );
     const open = unhandledLines(
         readFileSync(inbox, 'utf8'),
         readFileSync(template, 'utf8'),
-        existsSync(composer) ? readFileSync(composer, 'utf8') : '',
+        existsSync(helga) ? readFileSync(helga, 'utf8') : '',
     );
     if (open.length > 0) {
         console.log(
@@ -82,7 +82,7 @@ function inboxParts(apply: boolean) {
     }
     if (!apply || open.length > 0) return;
     copyFileSync(template, inbox);
-    if (existsSync(composer)) run('trash', [composer]);
+    if (existsSync(helga)) run('trash', [helga]);
 }
 
 function hasOpenPr(repo: string, branch: string, call: Gh): boolean {

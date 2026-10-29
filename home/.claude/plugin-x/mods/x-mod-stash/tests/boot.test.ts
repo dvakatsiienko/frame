@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-// FRM-426 exit 9: while a cclio boot is open, start_session's result carries «the boot continues; the board ends the
+// FRM-426 exit 9: while a clio boot is open, start_session's result carries «the boot continues; the board ends the
 // turn»; after the board printed, or in any other session, nothing lands
 const SID = 'b0b0b0b0-boot';
 const PID = 3131;
@@ -9,7 +9,7 @@ const NOW = new Date(2026, 9, 29, 13, 0).getTime();
 const LINE = 'the boot continues; the board ends the turn';
 const START = 'mcp__ccd_session__start_session';
 
-function world(on: On, name = '🦉 cclio') {
+function world(on: On, name = '🦉 clio') {
     mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -54,7 +54,7 @@ function world(on: On, name = '🦉 cclio') {
 }
 
 const boot = ($: Engine) =>
-    $.skill.prompt({ skill: 'cclio:boot', text: '# boot' });
+    $.skill.prompt({ skill: 'clio:boot', text: '# boot' });
 const spawn = async ($: Engine) =>
     ((await $.tool.call({ tool: START } as never)).context ?? []).join('\n');
 const reply = ($: Engine, text: string) =>
@@ -66,7 +66,7 @@ const reply = ($: Engine, text: string) =>
 const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
 
-test('start_session inside an open cclio boot carries the boot-continues line', async ($, on) => {
+test('start_session inside an open clio boot carries the boot-continues line', async ($, on) => {
     world(on);
     await start($);
     await boot($);
@@ -95,7 +95,7 @@ test('a session that never loaded the boot gets nothing', async ($, on) => {
     expect(await spawn($)).not.toContain(LINE);
 });
 
-test('a member that loads a skill named boot gets nothing: only cclio boots', async ($, on) => {
+test('a member that loads a skill named boot gets nothing: only clio boots', async ($, on) => {
     world(on, '☕️ 🔧 FRM-1 code: x');
     await start($);
     await boot($);

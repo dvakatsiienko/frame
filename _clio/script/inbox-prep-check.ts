@@ -1,4 +1,4 @@
-// composer's inbox prep, checked for data loss: every content line of dima's inbox.md sits verbatim in inbox-composer.md
+// helga's inbox prep, checked for data loss: every content line of dima's inbox.md sits verbatim in inbox-helga.md
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -27,7 +27,7 @@ function squash(text: string) {
 
 if (import.meta.main) {
     const inbox = readFileSync(path.join(HQ, 'inbox.md'), 'utf8');
-    const prep = readFileSync(path.join(HQ, 'inbox-composer.md'), 'utf8');
+    const prep = readFileSync(path.join(HQ, 'inbox-helga.md'), 'utf8');
     const misses = findMisses(inbox, prep);
     const total = contentLines(inbox).length;
     console.log(`coverage ${total - misses.length}/${total}`);

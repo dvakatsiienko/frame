@@ -1,11 +1,11 @@
 ---
 name: handoff-ingest
-description: Load on /handoff-ingest or "grab/pull/ingest handoff" — session id/name to request from a live CC peer; bare, topic keyword, or "cw" for the shared store.
+description: Load on /handoff-ingest or "grab/pull/ingest handoff" — session id/name to request from a live CC peer; bare, topic keyword, or "cloud-chat" for the shared store.
 ---
 
 # Handoff-ingest (requester)
 
-**lane** — `cw`: `x-cw__handoff_ingest` (+ `_list`, `_peek` to look first) · `cc`:
+**lane** — `cloud-chat`: `x-cloud-chat__handoff_ingest` (+ `_list`, `_peek` to look first) · `cc`:
 `x handoff`, below.
 
 Ingest a CST per [CST-SPEC.md](../../CST-SPEC.md) — read it first; its Ingest section is the
@@ -16,8 +16,8 @@ Claude Code acquisition mechanics. Counterpart: `handoff`.
 Mode by argument:
 
 - looks like a session id (8-char/UUID/pid) or session name → **PEER MODE**
-- empty, `cw`, `file`, or a topic keyword ("bg2ee", "the sline one") → **FILE MODE** — the
-  default posture, and the pickup path for `cw`-produced handoffs
+- empty, `cloud-chat`, `file`, or a topic keyword ("bg2ee", "the sline one") → **FILE MODE** — the
+  default posture, and the pickup path for `cloud-chat`-produced handoffs
 
 If the user stated what THIS thread is for, that is a TARGET — peer mode passes it as a
 `TARGET:` line; file mode uses it only to pick the file (a written CST can't be re-weighted).
@@ -30,7 +30,7 @@ x handoff ingest [<topic>] --for <this session's audience> --json
 
 🚫 **never silence an ingest.** it prints the CST once — the envelope's `data.body` — and deletes the file; piping it to `/dev/null` destroys the handoff. read the print in full; a peek is not an ingest.
 
-`<audience>` is this session's own token — `cclio` for a coordinator session, `ccli` for a plain
+`<audience>` is this session's own token — `clio` for a coordinator session, `cc` for a plain
 one; an ingest without `--for` is refused. x does the mechanics and refuses rather than guessing:
 
 - it keeps only handoffs for `any` or this token, and names the others without touching them —

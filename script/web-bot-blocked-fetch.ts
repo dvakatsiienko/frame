@@ -1,4 +1,4 @@
-// reads a web page as text for agents whose own fetch is blocked (cw through Desktop Commander):
+// reads a web page as text for agents whose own fetch is blocked (cloud-chat through Desktop Commander):
 // a MediaWiki page through its free api (infobox values first), a .md/.txt url as is, anything else through firecrawl (1 credit).
 // usage: pnpm web-bot-blocked:fetch <url> [--out <file>] · pnpm web-bot-blocked:fetch --index <wiki host> [--out <file>]
 import { writeFileSync } from 'node:fs';

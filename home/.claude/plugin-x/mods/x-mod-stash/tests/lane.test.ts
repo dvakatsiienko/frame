@@ -1,18 +1,18 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-// 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by 🦉 cclio, drawn on every board
+// 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by 🦉 clio, drawn on every board
 const SID = 'l1l1l1l1-lane';
 const TOOL = 'mcp__x-mod-stash__orbit';
 const FILE = '/home/.claude/shelf/lanes.json';
 const PID = 4242;
-const CCLIO = '🦉 cclio';
+const CLIO = '🦉 clio';
 
 function world(
     on: On,
     {
         files = {},
-        name = CCLIO,
+        name = CLIO,
         peers = [],
     }: {
         files?: Record<string, string>;
@@ -200,22 +200,22 @@ for (const [why, input] of [
         expect(await denied($, input)).toMatch(/^orbit glide: [^\n]+$/);
     });
 
-test('a session the registry does not name 🦉 cclio is refused', async ($, on) => {
+test('a session the registry does not name 🦉 clio is refused', async ($, on) => {
     const w = world(on, { name: '☕️ 🔧 coder' });
     await start($);
     expect([(await create($)).deny, w.files[FILE]]).toEqual([
-        'orbit glide: only 🦉 cclio writes the lanes; every board shows them',
+        'orbit glide: only 🦉 clio writes the lanes; every board shows them',
         undefined,
     ]);
 });
 
-test('cclio writes the lanes from a hook that runs before session.start', async ($, on) => {
+test('clio writes the lanes from a hook that runs before session.start', async ($, on) => {
     const w = world(on, { files: shelf(keptLane()) });
     const r = await lane($, { act: 'step', current: 1, id: 'l1' });
     expect([r.deny, kept(w)[0]?.current]).toEqual([undefined, 1]);
 });
 
-test('cclio still writes the lanes after a plugin reload', async ($, on) => {
+test('clio still writes the lanes after a plugin reload', async ($, on) => {
     const w = world(on, { files: shelf(keptLane()) });
     await start($);
     await start($);
@@ -223,7 +223,7 @@ test('cclio still writes the lanes after a plugin reload', async ($, on) => {
     expect([r.deny, kept(w)[0]?.current]).toEqual([undefined, 1]);
 });
 
-test('a new cclio after a handoff steps and ends a lane it did not create', async ($, on) => {
+test('a new clio after a handoff steps and ends a lane it did not create', async ($, on) => {
     const w = world(on, { files: shelf(keptLane()) });
     await start($);
     await lane($, { act: 'step', current: 1, id: 'l1' });
@@ -336,7 +336,7 @@ test('a card lists every step in order, done ones kept, the current marked', asy
     );
 });
 
-test("any session's board draws the lane cclio wrote", async ($, on) => {
+test("any session's board draws the lane clio wrote", async ($, on) => {
     world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
     await start($);
     expect(await laneText(await board($))).toMatch(/🛼 glide: kept.*➡️ a/su);
@@ -366,7 +366,7 @@ const steer = async (ui: Board, text: string) =>
     ui.input({ key: 'lane:l1:steer', kind: 'change', text });
 const take = (ui: Board) => ui.press({ key: 'lane:l1:take' });
 
-test("a bare tick on the current step reaches cclio's next prompt once as «good to go»", async ($, on) => {
+test("a bare tick on the current step reaches clio's next prompt once as «good to go»", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -430,7 +430,7 @@ test("a peer's prompt never carries a taken steer (dima, 20:51: only via send pr
     );
 });
 
-test("a steer taken while cclio's turn runs joins it at her next tool call", async ($, on) => {
+test("a steer taken while clio's turn runs joins it at her next tool call", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -446,7 +446,7 @@ test("a steer taken while cclio's turn runs joins it at her next tool call", asy
     ]).toEqual([true, false]);
 });
 
-test("a member's board takes a steer that reaches cclio, never the member's own prompt", async ($, on) => {
+test("a member's board takes a steer that reaches clio, never the member's own prompt", async ($, on) => {
     const w = world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
     await start($);
     const ui = await board($);
@@ -457,12 +457,12 @@ test("a member's board takes a steer that reaches cclio, never the member's own 
         steerOf(w)?.steer,
         steerOf(w)?.isTaken,
         w.contexts.at(-1)?.some((c) => c.includes('slow down')),
-        // only cclio's lane op writes the shelf file
+        // only clio's lane op writes the shelf file
         kept(w)[0]?.steer,
     ]).toEqual(['slow down', true, false, undefined]);
 });
 
-test('a steer on a step leaves when cclio moves the lane past it', async ($, on) => {
+test('a steer on a step leaves when clio moves the lane past it', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -472,7 +472,7 @@ test('a steer on a step leaves when cclio moves the lane past it', async ($, on)
     expect(steerOf(w)).toBe(undefined);
 });
 
-test('a taken steer clears from the box once cclio took it', async ($, on) => {
+test('a taken steer clears from the box once clio took it', async ($, on) => {
     world(on);
     on('ui.panes', () => ({
         value: [
@@ -832,9 +832,9 @@ test("an ask's buttons sit on the line under its pick, never beside it", async (
     ]);
 });
 
-/* exit 5 — the stale nag, cclio's turns only */
+/* exit 5 — the stale nag, clio's turns only */
 
-test("a lane that moved nothing for 8 of cclio's turns reads stale; a step that moves nothing keeps the count", async ($, on) => {
+test("a lane that moved nothing for 8 of clio's turns reads stale; a step that moves nothing keeps the count", async ($, on) => {
     const w = world(on);
     await start($);
     await create($, { title: 't' });
@@ -861,7 +861,7 @@ test('with no lane the reminder carries no lane text', async ($, on) => {
 const glideOff = (w: { store: Map<string, unknown> }) =>
     w.store.set('shown', { 'stash.glide': false });
 
-test("with 🛼 glide switched off, a stale lane reaches no prompt of cclio's", async ($, on) => {
+test("with 🛼 glide switched off, a stale lane reaches no prompt of clio's", async ($, on) => {
     const w = world(on);
     await start($);
     await create($, { title: 't' });
@@ -871,7 +871,7 @@ test("with 🛼 glide switched off, a stale lane reaches no prompt of cclio's", 
     expect(w.contexts.at(-1)?.some((c) => c.includes('stale'))).toBe(false);
 });
 
-test("with 🛼 glide switched off, a taken steer joins no prompt of cclio's", async ($, on) => {
+test("with 🛼 glide switched off, a taken steer joins no prompt of clio's", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -885,7 +885,7 @@ test("with 🛼 glide switched off, a taken steer joins no prompt of cclio's", a
     );
 });
 
-test("with 🛼 glide switched off, a taken steer joins no tool call of cclio's", async ($, on) => {
+test("with 🛼 glide switched off, a taken steer joins no tool call of clio's", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -1038,7 +1038,7 @@ test('a glide mark saved before the steer rename clears for good when dima empti
     ]);
 });
 
-/* rider (cclio's wisp, 18:01): a member is linked by its registry name, so its asks survive a /clear */
+/* rider (clio's wisp, 18:01): a member is linked by its registry name, so its asks survive a /clear */
 
 const CODER_NAME = '☕️ 🔧 coder: mods';
 const coderAt = (sessionId: string, more: Record<string, unknown> = {}) => ({
@@ -1117,7 +1117,7 @@ test('two live sessions under one name: the card follows the newer', async ($, o
     expect(await subText(ui, 'coder')).toContain('2 asks');
 });
 
-/* rider (cclio's ask, 18:01): a card edits in place, up to 7 steps */
+/* rider (clio's ask, 18:01): a card edits in place, up to 7 steps */
 
 const step = (text: string, isDone = false) => ({ isDone, text });
 
@@ -1242,7 +1242,7 @@ test('no glide row carries ↑ or ↓, queued steps included', async ($, on) => 
     expect(arrows.some(Boolean)).toBe(false);
 });
 
-test("a lane-order key a board left before o138 is dropped by cclio's stash, never applied", async ($, on) => {
+test("a lane-order key a board left before o138 is dropped by clio's stash, never applied", async ($, on) => {
     const w = world(on, { files: shelf(threeQueued()) });
     w.store.set('lane-order:l1', { at: 0, order: ['d', 'c', 'b'] });
     await start($);
@@ -1293,7 +1293,7 @@ for (const step of [1.5, -1, '2'])
         ]);
     });
 
-test("the linked coder's step 3 moves the lane while cclio idles, and her next prompt hears it once", async ($, on) => {
+test("the linked coder's step 3 moves the lane while clio idles, and her next prompt hears it once", async ($, on) => {
     const w = world(on, { files: shelf(coderLane()) });
     w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 3 });
     await start($);
@@ -1311,7 +1311,7 @@ test("the linked coder's step 3 moves the lane while cclio idles, and her next p
     ]);
 });
 
-test("a move reaches cclio's running turn at her next tool call", async ($, on) => {
+test("a move reaches clio's running turn at her next tool call", async ($, on) => {
     const w = world(on, { files: shelf(coderLane()) });
     w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 2 });
     await start($);
@@ -1356,7 +1356,7 @@ for (const [why, lanes, key, step, shown] of [
         ]).toEqual([true, false]);
     });
 
-test("cclio's step back holds until the coder names a step again", async ($, on) => {
+test("clio's step back holds until the coder names a step again", async ($, on) => {
     const w = world(on, { files: shelf(coderLane()) });
     w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 3 });
     await start($);

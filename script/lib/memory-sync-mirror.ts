@@ -2,12 +2,12 @@
  * ? memory-sync mirror — renders the cc masters into dima's `account / profile / instructions`
  * ? (claude.ai settings → account → «instructions for claude»).
  * ?
- * ? `account / profile / instructions` is the one cw destination the masters feed: it loads
+ * ? `account / profile / instructions` is the one cloud-chat destination the masters feed: it loads
  * ? on every surface, holds 32 768 chars (dima's paste test, 2026-09-23), and only dima can write
- * ? it — so the render is a paste block, and cw's own memory entries (`/preferences.md`,
- * ? `/profile.md`, the leaves) stay fully cw-native, never spliced.
+ * ? it — so the render is a paste block, and cloud-chat's own memory entries (`/preferences.md`,
+ * ? `/profile.md`, the leaves) stay fully cloud-chat-native, never spliced.
  * ?
- * ? ROUTING IS A TAG IN THE MASTER, never a list here. a line `<!-- sync: cw -->` directly under a
+ * ? ROUTING IS A TAG IN THE MASTER, never a list here. a line `<!-- sync: cloud-chat -->` directly under a
  * ? heading sends that section — and every subsection under it — to `account / profile / instructions`; a subsection may opt
  * ? back out with `<!-- sync: none -->`, and one line inside it with a trailing `<!-- cc -->` (its deeper-indented
  * ? lines go with it). a tag on its own line before the first heading routes the
@@ -24,8 +24,8 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-type Tag = 'cw' | 'none';
-const TAGS: readonly Tag[] = ['cw', 'none'];
+type Tag = 'cloud-chat' | 'none';
+const TAGS: readonly Tag[] = ['cloud-chat', 'none'];
 
 export type Target = {
     /** where the fragment lands — `account/profile/instructions` is dima's settings field */
@@ -65,7 +65,7 @@ export type Manifest = Record<
  * edits it here, never in the field, because the next paste renders over the field.
  */
 export const HEAD =
-    'home/.claude/plugin-x-cw/skills/memory-update/instructions-head.md';
+    'home/.claude/plugin-x-cloud-chat/skills/memory-update/instructions-head.md';
 
 /** the line between his section and the synced part — plain text, it reads in the settings field. */
 export const SEPARATOR = [
@@ -112,7 +112,7 @@ export function listMasters(root: string): string[] {
 
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
 
-const TAG_LINE = /^<!-- sync: ([a-z]+) -->$/;
+const TAG_LINE = /^<!-- sync: ([a-z-]+) -->$/;
 
 /**
  * the compact shape. blocks are separated by blank lines; a block survives when its first line is
@@ -133,7 +133,7 @@ export const compact = (body: string) =>
 
 const CC_ONLY = '<!-- cc -->';
 
-/** drops a line tagged `<!-- cc -->` and the deeper-indented lines under it: cc-only detail inside a cw section. */
+/** drops a line tagged `<!-- cc -->` and the deeper-indented lines under it: cc-only detail inside a cloud-chat section. */
 export const dropCcOnly = (body: string) => {
     const out: string[] = [];
     let cut: number | undefined;
@@ -210,7 +210,7 @@ export function parseMaster(body: string, file = 'master'): Part[] {
 }
 
 /**
- * the parts routed to cw, compacted. a routed part pulls its ancestors' heading lines along so the
+ * the parts routed to cloud-chat, compacted. a routed part pulls its ancestors' heading lines along so the
  * hierarchy reads; a routed leaf left with only its heading keeps its prose. each tagged section
  * reports the chars it and its subsections render to.
  */
@@ -226,8 +226,8 @@ export function selectFor(
     parts.forEach((part, i) => {
         while (stack.length && (stack.at(-1)?.level ?? 0) >= part.level)
             stack.pop();
-        if (part.eff === 'cw') {
-            if (part.own === 'cw')
+        if (part.eff === 'cloud-chat') {
+            if (part.own === 'cloud-chat')
                 sections.push({
                     chars: 0,
                     file,
@@ -241,7 +241,7 @@ export function selectFor(
                 }
             const next = parts[i + 1];
             const hasRoutedChild =
-                !!next && next.level > part.level && next.eff === 'cw';
+                !!next && next.level > part.level && next.eff === 'cloud-chat';
             const own = dropCcOnly(part.text.trim());
             let text = compact(own);
             if (!hasRoutedChild && !text.includes('\n')) text = clean(own);
@@ -275,7 +275,7 @@ export function render(root: string): Rendered {
      */
     const head = readFileSync(join(root, HEAD), 'utf8').trim();
     const sourceSha = sha(`${head}\n\n${bodies.join('\n\n')}`);
-    const body = `${head}\n\n${SEPARATOR}\n\n${MARK_START}\n<!-- rendered by script/skill-memory-sync-mirror.ts from the \`sync: cw\` sections of ${used.join(' + ') || 'nothing'} · source-sha256: ${sourceSha} · never edit by hand -->\n\n${bodies.join('\n\n')}\n\n${MARK_END}\n`;
+    const body = `${head}\n\n${SEPARATOR}\n\n${MARK_START}\n<!-- rendered by script/skill-memory-sync-mirror.ts from the synced sections of ${used.map((m) => m.replace('home/.claude/', '')).join(' + ') || 'nothing'} · source-sha256: ${sourceSha} · never edit by hand -->\n\n${bodies.join('\n\n')}\n\n${MARK_END}\n`;
     return {
         body,
         chars: body.length,

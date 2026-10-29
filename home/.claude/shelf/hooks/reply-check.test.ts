@@ -53,13 +53,13 @@ describe('the · rule', () => {
         expect(stop(reply)).toBe('');
     });
 
-    it('never blocks a 🔭 line on a ccrow wake, and reminds at the next prompt', () => {
-        expect(stop('done.\n\n🔭 waiting on 🐦‍⬛ ccrow’s 22:16 wake')).toBe('');
+    it('never blocks a 🔭 line on a crow wake, and reminds at the next prompt', () => {
+        expect(stop('done.\n\n🔭 waiting on 🐦‍⬛ crow’s 22:16 wake')).toBe('');
         expect(nextPrompt()).toContain('a wake never holds the session');
     });
 
-    it('passes prose that mentions the 🔭 rule and ccrow', () => {
-        expect(stop('🔔 ccrow: my 🔭 line named its wake, and a wake holds nothing.')).toBe('');
+    it('passes prose that mentions the 🔭 rule and crow', () => {
+        expect(stop('🔔 crow: my 🔭 line named its wake, and a wake holds nothing.')).toBe('');
     });
 
     it('passes a 🔭 line that waits on a real block', () => {

@@ -42,14 +42,14 @@ func TestWriteLandsOnePrivateFileUnderTheGrammarsName(t *testing.T) {
 	t.Parallel()
 	root := filepath.Join(t.TempDir(), "store")
 
-	got := xStore(t, root, "# META\n\nbody\n", "handoff", "write", "--audience", "cclio", "--slug", "Pm Overhaul!", "--lane", "pm", "--author", "ccli")
+	got := xStore(t, root, "# META\n\nbody\n", "handoff", "write", "--audience", "clio", "--slug", "Pm Overhaul!", "--lane", "pm", "--author", "cc")
 
 	files := storeFiles(root)
 	if got.code != 0 || len(files) != 1 {
 		t.Fatalf("exit %d, files %v: %s", got.code, files, got.stdout)
 	}
 	parsed, _ := parseName(files[0])
-	if parsed.Audience != "cclio" || parsed.Lane != "pm" || parsed.Slug != "pm-overhaul" || parsed.Author != "ccli" || parsed.Shared {
+	if parsed.Audience != "clio" || parsed.Lane != "pm" || parsed.Slug != "pm-overhaul" || parsed.Author != "cc" || parsed.Shared {
 		t.Errorf("name %s parsed as %+v", files[0], parsed)
 	}
 	path := filepath.Join(root, files[0])
@@ -90,7 +90,7 @@ func TestParseNameReadsTheSharedGrammar(t *testing.T) {
 func TestIngestWithNoReaderRefuses(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	write(t, filepath.Join(root, "cw--pm--a--by-ccli--20261007T100000Z.md"), "# META\n")
+	write(t, filepath.Join(root, "cloud-chat--pm--a--by-cc--20261007T100000Z.md"), "# META\n")
 
 	for _, argv := range [][]string{{"handoff", "ingest"}, {"handoff", "ingest", "a"}} {
 		got := xStore(t, root, "", argv...)
@@ -104,13 +104,13 @@ func TestIngestWithNoReaderRefuses(t *testing.T) {
 func TestWriteReplacesLeavesExactlyOneFile(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	write(t, filepath.Join(root, "any--code--old-thread--by-cw--20261001T120000Z-shared.md"), "# META\nold\n")
-	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\nother\n")
+	write(t, filepath.Join(root, "any--code--old-thread--by-cloud-chat--20261001T120000Z-shared.md"), "# META\nold\n")
+	write(t, filepath.Join(root, "any--code--other--by-cloud-chat--20261001T120000Z.md"), "# META\nother\n")
 
 	got := xStore(t, root, "# META\nnew\n", "handoff", "write", "--slug", "new-thread", "--replaces", "old-thread")
 
 	files := storeFiles(root)
-	if got.code != 0 || len(files) != 2 || got.data["replaced"] != "any--code--old-thread--by-cw--20261001T120000Z-shared.md" {
+	if got.code != 0 || len(files) != 2 || got.data["replaced"] != "any--code--old-thread--by-cloud-chat--20261001T120000Z-shared.md" {
 		t.Fatalf("exit %d, files %v: %s", got.code, files, got.stdout)
 	}
 	if !slices.ContainsFunc(files, func(f string) bool {
@@ -144,7 +144,7 @@ func TestWriteNeverOverwritesACSTOfTheSameName(t *testing.T) {
 func TestWriteReplacingNothingWritesNothing(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\n")
+	write(t, filepath.Join(root, "any--code--other--by-cloud-chat--20261001T120000Z.md"), "# META\n")
 
 	got := xStore(t, root, "# META\nnew\n", "handoff", "write", "--slug", "new", "--replaces", "missing")
 
@@ -155,8 +155,8 @@ func TestWriteReplacingNothingWritesNothing(t *testing.T) {
 
 func threeStored(t *testing.T) string {
 	root := t.TempDir()
-	for _, file := range []string{"any--code--one--by-cw--20261001T120000Z.md", "cclio--pm--two--by-cw--20261001T120000Z.md",
-		"any--code--three--by-cw--20261001T120000Z-shared.md"} {
+	for _, file := range []string{"any--code--one--by-cloud-chat--20261001T120000Z.md", "clio--pm--two--by-cloud-chat--20261001T120000Z.md",
+		"any--code--three--by-cloud-chat--20261001T120000Z-shared.md"} {
 		write(t, filepath.Join(root, file), "# META\n")
 	}
 	return root
@@ -187,7 +187,7 @@ func TestDeleteOneSlugLeavesTheRestAlone(t *testing.T) {
 func TestDeleteWithNoTargetRefuses(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	write(t, filepath.Join(root, "any--code--only--by-cw--20261001T120000Z.md"), "# META\n")
+	write(t, filepath.Join(root, "any--code--only--by-cloud-chat--20261001T120000Z.md"), "# META\n")
 
 	if got := xStore(t, root, "", "handoff", "delete"); got.code != 2 || len(storeFiles(root)) != 1 {
 		t.Fatalf("a bare delete must name a slug or --all: exit %d", got.code)
@@ -251,7 +251,7 @@ func TestListingKeepsHandoffsOnlyNewestFirst(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
 	now := time.Now()
-	for file, ago := range map[string]time.Duration{"cclio-first-20260831T120000Z.md": 30 * time.Minute, "any-second-20260831T120000Z.md": 5 * time.Minute} {
+	for file, ago := range map[string]time.Duration{"clio-first-20260831T120000Z.md": 30 * time.Minute, "any-second-20260831T120000Z.md": 5 * time.Minute} {
 		path := filepath.Join(root, file)
 		write(t, path, "# META\n")
 		_ = os.Chtimes(path, now.Add(-ago), now.Add(-ago))
@@ -274,14 +274,14 @@ func TestListingKeepsHandoffsOnlyNewestFirst(t *testing.T) {
 func TestIngestNeverTakesAnotherAgentsHandoffUnnamed(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	write(t, filepath.Join(root, "cclio-theirs-20260831T120000Z.md"), "# META\n")
+	write(t, filepath.Join(root, "clio-theirs-20260831T120000Z.md"), "# META\n")
 	env := []string{"HANDOFF_STORE_ROOT=" + root}
 
-	refused := xIn(t, root, env, "handoff", "ingest", "--for", "cw")
+	refused := xIn(t, root, env, "handoff", "ingest", "--for", "cloud-chat")
 	if refused.code != 2 || len(listStore(root)) != 1 {
 		t.Fatalf("a bare pull took a foreign file: exit %d", refused.code)
 	}
-	forced := xIn(t, root, env, "handoff", "ingest", "--for", "cw", "theirs")
+	forced := xIn(t, root, env, "handoff", "ingest", "--for", "cloud-chat", "theirs")
 	if forced.code != 0 || len(listStore(root)) != 0 {
 		t.Fatalf("naming the slug must force it: exit %d", forced.code)
 	}

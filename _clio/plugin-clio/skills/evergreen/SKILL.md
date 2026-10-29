@@ -1,9 +1,9 @@
 ---
 name: evergreen
-description: load when dima types /cclio:evergreen, asks «updates?», «what's new in deps», «anything to merge?», says «approve evergreen», or when the boot digest prints a «🧬 evergreen turn» line.
+description: load when dima types /clio:evergreen, asks «updates?», «what's new in deps», «anything to merge?», says «approve evergreen», or when the boot digest prints a «🧬 evergreen turn» line.
 ---
 
-# /cclio:evergreen 🧬 — the news layer over renovate and brew
+# /clio:evergreen 🧬 — the news layer over renovate and brew
 
 renovate opens the PRs (`renovate.json` in `bytes` and `frame` holds the schedule and the automerge tiers). this skill is the half a bot cannot do: **read, judge,
 tell dima only what he would want to know, keep brew fresh, act on his word.** 🌲 is her commit
@@ -19,9 +19,9 @@ the boot digest seeds «🧬 evergreen turn» on top of the pocket (`boot-prefet
 3. **his feedback** — he steers line by line
 4. **resolve** — each borrow done in place, or a ticket, or a lane rider; the page republished with each chip at its landing (ticket, rider, skipped and why); `pnpm skill:evergreen-apps --mark` (the helper card never marks); the 🧬 pocket item set done
 
-## the report — what cclio does with the card's reply
+## the report — what clio does with the card's reply
 
-- 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; cclio reads it before printing or reworking a report, never prints from memory
+- 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; clio reads it before printing or reworking a report, never prints from memory
 - **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —
   one standing page, [Evergreen](https://claude.ai/artifact/Vgx13BgNQyieSfcTNvsi4p), republished
   by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
@@ -33,7 +33,7 @@ the boot digest seeds «🧬 evergreen turn» on top of the pocket (`boot-prefet
 
 ## act on his word
 
-«approve evergreen» (or a 🛎️ on its orbit ask) runs every ➡️ merge in the report now, by cclio, no second ask: read [references/merge-round.md](references/merge-round.md) first — the merge, the rebase, the hold and the after-round steps.
+«approve evergreen» (or a 🛎️ on its orbit ask) runs every ➡️ merge in the report now, by clio, no second ask: read [references/merge-round.md](references/merge-round.md) first — the merge, the rebase, the hold and the after-round steps.
 
 weekly with brew, the skills lane and the plugins lane join the digest: read [references/weekly-lanes.md](references/weekly-lanes.md).
 

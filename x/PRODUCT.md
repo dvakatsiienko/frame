@@ -62,12 +62,12 @@ after a frame → bytes merge, x is one workspace package beside turbo: turbo ow
 
 ## the cut — v1 (2026-10-05)
 
-- `lane` (shipped in v0) · `handoff` (list, peek, ingest, write, delete — the store `x-cw` and raycast call) · `x schema` at two detail levels
+- `lane` (shipped in v0) · `handoff` (list, peek, ingest, write, delete — the store `x-cloud-chat` and raycast call) · `x schema` at two detail levels
 - one resident line, never a per-verb index: «`x` is the fleet cli; `x` lists families, `x schema <family>` the verbs» (~30 tokens, against ~1.5k for 60 verbs, dima 2026-10-07); an `x-mod-guard` hint answers a call to a replaced script with its verb
 - the look: the FRM-284 a/b/c winner, built to the T2 design
 - every new verb passes the admission rule first
 
-**out of v1:** pm / notes / scheduling / evergreen verbs (each through the admission rule later) · interactive driving · an MCP mirror (decided: none; `x-cw` stays until the cw-door probe) · package lifecycle (turbo / pnpm)
+**out of v1:** pm / notes / scheduling / evergreen verbs (each through the admission rule later) · interactive driving · an MCP mirror (decided: none; `x-cloud-chat` stays until the cloud-chat-door probe) · package lifecycle (turbo / pnpm)
 
 the done test is `FTR.md`; the words are `GLOSSARY.md`. prior art: `docs/research/cli-agent-facing.md`.
 
@@ -79,7 +79,7 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 - **the shape:** entity-first families (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 families, each verb declared once in the registry. not a port: each script is re-thought into its family or dropped.
 - **go native or adapter:** the hot paths go native first (linear, the handoff store, lanes); a cold verb may call its TS script through an adapter until telemetry says it lives.
 - **telemetry from day one:** one json line per call in `~/.local/state/x/trace/<date>.jsonl`, written at exit, no network — when, verb, flag names (never values), caller (a terminal, or an agent session + member), repo, duration, exit and error kind, each step's time, x version. OpenTelemetry-shaped names. `X_TRACE=0` turns it off. `x stats` reads it (most used, dead for 30 days, slowest p95, failure rate, agents vs dima); `x fleet flow`, the halt board and the hq app read the same files. each `pnpm` shim left during the move writes a trace line too.
-- **where x runs:** the mac (cc, cw through Desktop Commander). a cloud session gets the repo, not x.
+- **where x runs:** the mac (cc, cloud chat through Desktop Commander). a cloud session gets the repo, not x.
 - **the move is done when:** the root `package.json` holds only app dev scripts, every fleet op is a verb with a contract-test line, and `x stats` shows no verb dead for 30 days.
 
 ## the rebuild — grill round 2 (2026-10-06)
@@ -95,8 +95,8 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 - **the order:** `x` (telemetry + `x stats`) → `handoff` → `linear` → `fleet` (flow report, crew audit, memory-load, reply-check, agent-ops) → `mods` → `research` → `design` → `jev` (after the credit refill) → `app` / `frame` / `tool`, ranked by telemetry when their turn comes. `lane` is done. agent calls per family over 30 days (transcripts, dima's terminal not counted): `linear` 300 + 632 raw `linear api`, `handoff` ~145, `jev` 84, `mods` 62, `design` 52, `research` 50
 - **depth:** the next 1–2 families are grilled in full ahead of the build, so a lane never stops for a grill; the rest stay one line here until their turn — the memory sweep may move them
 - **telemetry is the foundation:** every verb built after it is traced from its first call
-  - `caller` on every trace line: `dima` (a tty, no agent env) · `cc` (`CLAUDECODE=1`) · `cw` (Cowork's Desktop Commander: a `CLAUDE_PLUGIN_ROOT` under `local-agent-mode-sessions/`, probed 2026-10-07) · `ssh` (`SSH_CONNECTION`, no agent env) · `hook` (lefthook or a cc hook) · `other`. a cloud session never reaches the mac's x, so it has no value; a new member is one line
-  - the agent's member name (cclio, a coder) is resolved from the session registry at `x stats` time; the write stays one append
+  - `caller` on every trace line: `dima` (a tty, no agent env) · `cc` (`CLAUDECODE=1`) · `cloud-chat` (Cowork's Desktop Commander: a `CLAUDE_PLUGIN_ROOT` under `local-agent-mode-sessions/`, probed 2026-10-07) · `ssh` (`SSH_CONNECTION`, no agent env) · `hook` (lefthook or a cc hook) · `other`. a cloud session never reaches the mac's x, so it has no value; a new member is one line
+  - the agent's member name (clio, a coder) is resolved from the session registry at `x stats` time; the write stays one append
   - error kinds: `usage` · `refused` · `external` · `bug`
   - raw daily files live 90 days — the cli changes fast while it is built
   - dima's terminal: a zsh hook (`home/.config/zsh-custom/x-trace.zsh`) writes a trace line for every `pnpm <script>` he types, same format, same dir; an `x` he types is traced by the dispatcher, once
@@ -109,10 +109,10 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 
 - **the charm reference is the stack page:** `docs/knowledge/go-charm.md` — every lib with its gh link and job, which widget for which view (pointers into bubbletea's examples), our gotchas; a pointer line in `x:guide-go`; a contract test fails when `go.mod` gains a charm module the file does not list
 - **`fleet`** is the family of the fleet measuring itself: `x fleet flow`, `x fleet audit` and `x fleet ops` landed as straight ports, their scripts gone (FRM-347); memory-load and reply-check join once their test drives adopt them
-- **skill → x ← mcp:** a skill keeps the judgment and points at `x <family> --help`; the `x-cw` tools are one-line shells to x; a mechanic lives in one place
-- **identity:** `x as <member> -- <command>` puts the right app token (linear: cclio / coder, github: x-coder) into that child's env only; one internal `keys` package — 1password read in-process, minted tokens cached in the macOS keychain to expiry, every `as` traced. ❓ does the `linear` cli take an oauth bearer from env — probe at spec time
+- **skill → x ← mcp:** a skill keeps the judgment and points at `x <family> --help`; the `x-cloud-chat` tools are one-line shells to x; a mechanic lives in one place
+- **identity:** `x as <member> -- <command>` puts the right app token (linear: clio / coder, github: x-coder) into that child's env only; one internal `keys` package — 1password read in-process, minted tokens cached in the macOS keychain to expiry, every `as` traced. ❓ does the `linear` cli take an oauth bearer from env — probe at spec time
 - **`linear`, the fast train:** native go, batched, presets, and measured both ways in `x stats` — under-delivers (a `read` followed within a minute by a raw call on the same id) and over-delivers (bytes per call nobody used)
 - **traces keep entity ids** (ticket ids, slugs, family names); free text, bodies and paths outside the repos stay out
 - **the `linear` verbs**, from 981 raw `linear api` calls + 93 curl calls in 30 days: `read <ids…>` (batched; default fields = what the 583 single reads asked for) · `list` + `list --search` · `body <id>` pull / `--set <file>` write back, refused when the ticket changed since the pull · `set <id>` (state, delegate, parent, project, milestone, additive labels) · `link <id> blocks|related <ids…>` · `comment <id> --body-file` · `update <project|initiative> --body-file --health`; ids and state names resolve inside x, the token hop and the `viewer` checks go into `x as`
 - **the raw door:** a missing verb never blocks an agent. each proxying family keeps one traced passthrough, `x linear api '<graphql>'` — the tool underneath, under `x as` identity, with id resolution and a trace line; `x schema <family>` names it. `x stats` ranks what the raw door carries, and a query seen three times becomes a verb. a raw call outside x still works: the doors report (`refresh-fleet-ops`) counts it, and an `x-mod-guard` hint answers it with the matching verb once one exists
-- **later, a verb candidate:** `x scout <url> "<lens>"` — reads `docs/knowledge/scouts.md` first, a miss runs the `researcher` agent with dima's lens (for him, the fleet, cclio), prints the verdict and appends one line; a «try» hands into `x:shape-test-drive` (dima, 2026-10-07)
+- **later, a verb candidate:** `x scout <url> "<lens>"` — reads `docs/knowledge/scouts.md` first, a miss runs the `researcher` agent with dima's lens (for him, the fleet, clio), prints the verdict and appends one line; a «try» hands into `x:shape-test-drive` (dima, 2026-10-07)

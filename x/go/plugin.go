@@ -48,7 +48,7 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 		if market, root, err = marketOf(tree, dir); err != nil || market == "" {
 			return fmt.Sprintf("%s → %s, no marketplace lists it: a bump only", from, to), err
 		}
-		// a listing is not an install: the mods load @inline and x-cw's marketplace is never added
+		// a listing is not an install: the mods load @inline and x-cloud-chat's marketplace is never added
 		installed, err := installedPlugins()
 		if err != nil {
 			return "", err

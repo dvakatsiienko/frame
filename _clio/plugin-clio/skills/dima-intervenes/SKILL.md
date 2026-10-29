@@ -1,9 +1,9 @@
 ---
 name: dima-intervenes
-description: load when dima asks how a part of our system or the fleet works or what is happening in it — «remind me how our … works», «what's happening in our …», «i forgot how …», «show me our …» — when he senses a part is off — «feels off», «drifted», «something's wrong with our …», «let's shake your …» — and on your own when his words show an outdated picture of a part. not for setting a reminder (that is cclio:remind).
+description: load when dima asks how a part of our system or the fleet works or what is happening in it — «remind me how our … works», «what's happening in our …», «i forgot how …», «show me our …» — when he senses a part is off — «feels off», «drifted», «something's wrong with our …», «let's shake your …» — and on your own when his words show an outdated picture of a part. not for setting a reminder (that is clio:remind).
 ---
 
-# cclio:dima-intervenes — dima regains a part of our system, and fixes it with me
+# clio:dima-intervenes — dima regains a part of our system, and fixes it with me
 
 the system grows faster than he can follow, and his grasp of it shapes every prompt. three modes, one
 voice: **recall** (how a part works now), **tour** (a part he never saw, light, an mvp), **fix** (a part

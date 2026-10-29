@@ -224,13 +224,13 @@
             "note": "three entries, newest first; charm-gum is over 7 days old and is flagged, never deleted"
         },
         {
-            "argv": ["handoff", "list", "--for", "cw"],
+            "argv": ["handoff", "list", "--for", "cloud-chat"],
             "cwd": "{world}/repo",
             "exit": 0,
             "id": "handoff-list-for",
             "matrix": "json mode",
             "mode": "pipe",
-            "note": "entries: cli-arms, charm-gum; others: board-sort (for cclio)",
+            "note": "entries: cli-arms, charm-gum; others: board-sort (for clio)",
             "status": "ok"
         },
         {
@@ -275,7 +275,7 @@
             "status": "usage"
         },
         {
-            "argv": ["handoff", "ingest", "--for", "cclio"],
+            "argv": ["handoff", "ingest", "--for", "clio"],
             "cols": 120,
             "cwd": "{world}/repo",
             "exit": 0,
@@ -286,7 +286,7 @@
             "note": "several pending, no slug, a terminal: a picker over the slugs, newest first; Down + Enter takes board-sort and prints its CST"
         },
         {
-            "argv": ["handoff", "ingest", "board-sort", "--for", "cclio"],
+            "argv": ["handoff", "ingest", "board-sort", "--for", "clio"],
             "cwd": "{world}/repo",
             "data": {
                 "kept": false,
@@ -299,7 +299,7 @@
             "status": "ok"
         },
         {
-            "argv": ["handoff", "ingest", "charm-gum", "--for", "cclio"],
+            "argv": ["handoff", "ingest", "charm-gum", "--for", "clio"],
             "cwd": "{world}/repo",
             "data": {
                 "kept": true,

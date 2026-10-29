@@ -62,14 +62,14 @@ for (const [typed, door] of [
     });
 }
 
-test("cclio's session runs the raw linear cli", async ($, on) => {
-    const w = world(on, '🦉 cclio');
+test("clio's session runs the raw linear cli", async ($, on) => {
+    const w = world(on, '🦉 clio');
     await bash($, 'linear issue view FRM-1');
     expect(w.ran).toEqual(['linear issue view FRM-1']);
 });
 
-test("cclio's raw linear api still takes the x linear rewrite", async ($, on) => {
-    const w = world(on, '🦉 cclio');
+test("clio's raw linear api still takes the x linear rewrite", async ($, on) => {
+    const w = world(on, '🦉 clio');
     await bash($, "linear api '{ viewer { id } }'");
     expect(w.ran).toEqual(["x linear api '{ viewer { id } }'"]);
 });

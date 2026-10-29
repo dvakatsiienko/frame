@@ -6,7 +6,7 @@ description: >-
   run whole or one check at a time.
 ---
 
-# /cclio:system-checkup — the unification plate
+# /clio:system-checkup — the unification plate
 
 dima, 2026-10-19: «whenever we want to know if our system is in good health, we go to the system
 checkup flow, and it should have everything. it's a unification plate.» a granular set of checks, never
@@ -64,7 +64,7 @@ colocated — checks that live elsewhere, run or read from here:
 - **boot-digest** — settings symlink, repos vs origin, ci reds, sessions and worktrees, usage ·
   `BOOT_STRICT=1 ~/frame/_clio/.claude/hooks/boot-prefetch.sh`, its `🚨 FAIL` lines only
 - **go-vulns** — `pnpm x-go:vuln`
-- **evergreen** — renovate prs, brew and the apps lane · `cclio:evergreen`, its newest report read; a whole
+- **evergreen** — renovate prs, brew and the apps lane · `clio:evergreen`, its newest report read; a whole
   checkup runs its gather (`references/read.md` § 1) without the full read
 
 not here, on purpose: the memory content groom, `doctor prompt-audit` and `/skill-doctor` stay in
@@ -74,7 +74,7 @@ not here, on purpose: the memory content groom, `doctor prompt-audit` and `/skil
 
 dima, 2026-10-19: «let's try a cadence and see if scheduled runs work with it. if it works, let's keep a
 cadence; if not, I'll just switch it to a manual system checkup invocation».
-every halt runs one check, the one longest since its last log line (`cclio:halt` phase 3.3), so the
+every halt runs one check, the one longest since its last log line (`clio:halt` phase 3.3), so the
 whole plate turns in ~2 weeks (dima's o59 tick). the fallback: the boot digest prints `DUE` once 7 days
 pass with no log line at all, and a whole run is offered on the board, never run unasked. the trial:
 `docs/test-drive/system-checkup-cadence.md`.

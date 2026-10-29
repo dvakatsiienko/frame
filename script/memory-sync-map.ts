@@ -1,5 +1,5 @@
 /**
- * memory-sync:map — prints what reaches cw from the cc masters: every `<!-- sync: cw -->` section,
+ * memory-sync:map — prints what reaches cloud-chat from the cc masters: every `<!-- sync: cloud-chat -->` section,
  * grouped by master, with the chars it costs in dima's `account / profile / instructions` field and the room
  * left. read-only: renders in memory, writes nothing. `pnpm memory-sync:map`.
  */
@@ -21,7 +21,10 @@ const BAR = 30;
 const filled = Math.min(BAR, Math.round(share * BAR));
 const bar = `${(share > 1 ? yb : gb)('█'.repeat(filled))}${dim('░'.repeat(BAR - filled))}`;
 
-title('memory-sync:map', 'cc masters → cw · account / profile / instructions');
+title(
+    'memory-sync:map',
+    'cc masters → cloud-chat · account / profile / instructions',
+);
 
 step('account / profile / instructions');
 console.log(
@@ -38,6 +41,6 @@ for (const file of [...new Set(r.sections.map((s) => s.file))]) {
 }
 
 done(
-    `${r.sections.length} sections from ${new Set(r.sections.map((s) => s.file)).size} masters · route one with <!-- sync: cw --> under its heading`,
+    `${r.sections.length} sections from ${new Set(r.sections.map((s) => s.file)).size} masters · route one with <!-- sync: cloud-chat --> under its heading`,
     { clean: r.chars <= target.cap },
 );

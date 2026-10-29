@@ -108,7 +108,7 @@ func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
 	}
 }
 
-func TestReviewAtTheCapNamesCcliosApprovalAndRequestsNothing(t *testing.T) {
+func TestReviewAtTheCapNamesCliosApprovalAndRequestsNothing(t *testing.T) {
 	t.Parallel()
 	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "failure")})
 
@@ -117,8 +117,8 @@ func TestReviewAtTheCapNamesCcliosApprovalAndRequestsNothing(t *testing.T) {
 	if got.code != 1 || strings.Contains(calls(t, dir), "pr edit") {
 		t.Fatalf("exit %d, calls:\n%s", got.code, calls(t, dir))
 	}
-	if !strings.Contains(got.stdout, "cclio approves #7") {
-		t.Errorf("the refusal does not name cclio's approval: %s", got.stdout)
+	if !strings.Contains(got.stdout, "clio approves #7") {
+		t.Errorf("the refusal does not name clio's approval: %s", got.stdout)
 	}
 }
 
@@ -205,17 +205,17 @@ func TestPreflightPassesACleanTicket(t *testing.T) {
 	}
 }
 
-func TestTwoOwnersNeedsACclioHalfAndAnother(t *testing.T) {
+func TestTwoOwnersNeedsAClioHalfAndAnother(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		name, group string
 		two         bool
 	}{
-		{"cclio's step beside a coder's skill", "6. `x:crew-coder`'s final step and cclio's pre-merge step name `x lane review`", true},
-		{"a cclio path beside a coder's path", "1. `_clio/docs/a.md` and `x/go/a.go` agree", true},
-		{"a quoted cclio word", "2. `x lane commit` refuses «cclio pushes»", false},
-		{"cclio's half alone", "3. `_clio/docs/a.md` holds the recipe", false},
-		{"no cclio at all", "4. `x lane commit` prints the sha", false},
+		{"clio's step beside a coder's skill", "6. `x:crew-codie`'s final step and clio's pre-merge step name `x lane review`", true},
+		{"a clio path beside a coder's path", "1. `_clio/docs/a.md` and `x/go/a.go` agree", true},
+		{"a quoted clio word", "2. `x lane commit` refuses «clio pushes»", false},
+		{"clio's half alone", "3. `_clio/docs/a.md` holds the recipe", false},
+		{"no clio at all", "4. `x lane commit` prints the sha", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -230,11 +230,11 @@ func TestTwoOwnersNeedsACclioHalfAndAnother(t *testing.T) {
 func TestBriefCheckReadsTheCoderSkillsPushDoor(t *testing.T) {
 	t.Parallel()
 	brief := filepath.Join(t.TempDir(), "brief.md")
-	write(t, brief, "/x:crew-coder\ncclio pushes when you are done\n")
+	write(t, brief, "/x:crew-codie\nclio pushes when you are done\n")
 
 	got := xIn(t, repo(t), []string{"X_STATE=" + t.TempDir()}, "brief", "check", brief)
 
-	if got.code != 1 || !strings.Contains(got.stdout, "x:crew-coder names `x lane push`") {
+	if got.code != 1 || !strings.Contains(got.stdout, "x:crew-codie names `x lane push`") {
 		t.Fatalf("exit %d: %s", got.code, got.stdout)
 	}
 }
@@ -250,7 +250,7 @@ func TestPreflightRefusesATicketWithNoExitSection(t *testing.T) {
 
 func TestPreflightNamesEveryProblem(t *testing.T) {
 	t.Parallel()
-	body := "## the board redesign\n\nwe rework the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. adds `x lane unlock` for a locked tree\n4. `docs/shipped.md` says done\n5. `x:crew-coder`'s final step and cclio's pre-merge step name it\n"
+	body := "## the board redesign\n\nwe rework the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. adds `x lane unlock` for a locked tree\n4. `docs/shipped.md` says done\n5. `x:crew-codie`'s final step and clio's pre-merge step name it\n"
 	want := []string{
 		"line 11: lint exit line — has two owners",
 		"line 1: grill redesign",

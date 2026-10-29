@@ -34,13 +34,13 @@ describe('sessionRead', () => {
 describe('listingParse', () => {
     test('a description holding its own bullets stays one skill', () => {
         const content =
-            '- x:walkthrough: teach by showing\n- Explicit learning requests\n- Confusion signals\n- cclio:pm: tickets';
-        expect(listingParse(content, ['x:walkthrough', 'cclio:pm'])).toEqual([
+            '- x:walkthrough: teach by showing\n- Explicit learning requests\n- Confusion signals\n- clio:pm: tickets';
+        expect(listingParse(content, ['x:walkthrough', 'clio:pm'])).toEqual([
             [
                 'x:walkthrough',
                 'teach by showing - Explicit learning requests - Confusion signals',
             ],
-            ['cclio:pm', 'tickets'],
+            ['clio:pm', 'tickets'],
         ]);
     });
 });

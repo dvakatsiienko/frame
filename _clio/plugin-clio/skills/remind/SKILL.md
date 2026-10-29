@@ -10,13 +10,13 @@ a reminder lives in `_clio/memory/_reminders.md` (git-backed), one line each, ne
 
 ## the line
 
-`⏰ <the thing, his words folded (craft-pm § wishes)> — set <YYYY-MM-DD>`, plus ` · due: <YYYY-MM-DD>` when it has a date. the legend at the file's head: `⏰📌` stuck, `🦉` set by cclio for herself (then 👁️ a watch, 📜 a doc kept alive, 🔬 a probe). a trial's date lives in its test-drive file, never here.
+`⏰ <the thing, his words folded (craft-pm § wishes)> — set <YYYY-MM-DD>`, plus ` · due: <YYYY-MM-DD>` when it has a date. the legend at the file's head: `⏰📌` stuck, `🦉` set by clio for herself (then 👁️ a watch, 📜 a doc kept alive, 🔬 a probe). a trial's date lives in its test-drive file, never here.
 
 ## verbs — confirm each in one line
 
 - **no argument** — one new line; `⏰ reminded: <thing>`. never two lines for one reminder
 - **`stick`** — the stuck tier, `⏰📌`; an existing `⏰` is promoted in place. `⏰📌 stuck: <thing>`
-- **`yourself stick`** — cclio's own watch or behaviour: `⏰📌 🦉<flavour> …`
+- **`yourself stick`** — clio's own watch or behaviour: `⏰📌 🦉<flavour> …`
 - **`unstick`** — back to `⏰`, matched from his plain words; unstick is not forget. `⏰ unstuck: <thing>`
 - **`forget`** — match his words, delete the line, `⏰ dropped: <thing>`; two matches → name both and ask; none → say so
 - **`list`** — one line each, stuck first, oldest first within a tier

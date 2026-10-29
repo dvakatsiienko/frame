@@ -51,13 +51,13 @@
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
             "if": "Bash(gh pr merge*)",
             "timeout": 120
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
             "if": "Bash(claude *)",
             "timeout": 30
           },
@@ -116,7 +116,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:decision'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
             "timeout": 30
           }
         ]
@@ -127,7 +127,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:relay'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:relay'",
             "timeout": 10
           },
           {
@@ -153,12 +153,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {}'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {}'",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent ccrow:unvetted'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:unvetted'",
             "timeout": 10
           },
           {
@@ -174,7 +174,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {} --precompact'",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {} --precompact'",
             "timeout": 30
           }
         ]
@@ -184,14 +184,14 @@
   "bashOutputMaxChars": 8000,
   "outputStyle": "output-glados",
   "enabledPlugins": {
-    "cclio@cclio": true,
+    "clio@clio": true,
     "neuroarxiv@neuroarxiv": true,
     "fast-jev-compaction@fast-jev-compaction": false,
     "cc-plugin-you-should-know@builtin": false,
-    "x-cw@x-com": false
+    "x-cloud-chat@x-com": false
   },
   "extraKnownMarketplaces": {
-    "cclio": {
+    "clio": {
       "source": {
         "source": "directory",
         "path": "/Users/dima/frame/_clio/plugin-clio"

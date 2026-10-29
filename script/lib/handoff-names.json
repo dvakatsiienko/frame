@@ -2,10 +2,10 @@
     "about": "the handoff filename grammar, as cases: x/go/store_test.go reads every one, so a grammar change starts here. `parsed: null` = not a handoff.",
     "cases": [
         {
-            "file": "cclio--pm--pm-overhaul--by-ccli--20260831T120000Z.md",
+            "file": "clio--pm--pm-overhaul--by-cc--20260831T120000Z.md",
             "parsed": {
-                "audience": "cclio",
-                "author": "ccli",
+                "audience": "clio",
+                "author": "cc",
                 "lane": "pm",
                 "shared": false,
                 "slug": "pm-overhaul",
@@ -13,10 +13,10 @@
             }
         },
         {
-            "file": "any--probe--sline-probe--by-cw--20260831T120000Z-shared.md",
+            "file": "any--probe--sline-probe--by-cloud-chat--20260831T120000Z-shared.md",
             "parsed": {
                 "audience": "any",
-                "author": "cw",
+                "author": "cloud-chat",
                 "lane": "probe",
                 "shared": true,
                 "slug": "sline-probe",

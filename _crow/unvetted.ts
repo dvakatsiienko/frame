@@ -3,8 +3,8 @@ import { join } from 'node:path';
 
 import { NOTES_PATH, STATE_DIR, VERDICTS_PATH } from './lib.ts';
 
-// cclio's Stop hook: a note ccrow sent with no verdict blocks the turn end once, naming the vet command;
-// green and held notes reach cclio as nothing to answer, so only a 🔴 sent one needs a verdict
+// clio's Stop hook: a note crow sent with no verdict blocks the turn end once, naming the vet command;
+// green and held notes reach clio as nothing to answer, so only a 🔴 sent one needs a verdict
 const FLAGGED_PATH = join(STATE_DIR, 'unvetted-flagged.txt');
 
 function jsonl(path: string): Array<Record<string, unknown>> {
@@ -40,7 +40,7 @@ if (open.length > 0) {
     console.log(
         JSON.stringify({
             decision: 'block',
-            reason: `ccrow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame ccrow:note-vet ok|miss <id> <why>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
+            reason: `crow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame crow:note-vet ok|miss <id> <why>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
         }),
     );
 }

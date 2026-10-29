@@ -28,7 +28,7 @@ const gate = (command: string) =>
         input: JSON.stringify({ tool_input: { command } }),
     });
 
-const brief = '"/x:crew-coder FRM-1 do the job"';
+const brief = '"/x:crew-codie FRM-1 do the job"';
 
 describe('--spawn-hook', () => {
     it('denies the canonical shape', () => {
@@ -36,7 +36,7 @@ describe('--spawn-hook', () => {
     });
 
     it('allows a brief that names the trial', () => {
-        expect(gate(`claude --bg "/x:crew-coder fixture-trial"`)).toBe('');
+        expect(gate(`claude --bg "/x:crew-codie fixture-trial"`)).toBe('');
     });
 
     it('denies a changed flag order', () => {
@@ -59,16 +59,16 @@ describe('--spawn-hook', () => {
     });
 
     it('ignores the argv quoted in a heredoc body', () => {
-        const command = `cat > note.md <<'EOF'\nclaude --bg "/x:crew-coder FRM-1"\nEOF`;
+        const command = `cat > note.md <<'EOF'\nclaude --bg "/x:crew-codie FRM-1"\nEOF`;
         expect(gate(command)).toBe('');
     });
 
     it('ignores the argv as an argument to another program', () => {
-        expect(gate(`echo 'claude --bg /x:crew-coder FRM-1'`)).toBe('');
-        expect(gate(`printf "claude --cloud /x:crew-coder" | tee f`)).toBe('');
+        expect(gate(`echo 'claude --bg /x:crew-codie FRM-1'`)).toBe('');
+        expect(gate(`printf "claude --cloud /x:crew-codie" | tee f`)).toBe('');
     });
 
     it('ignores a claude run with neither flag', () => {
-        expect(gate(`claude -p "/x:crew-coder FRM-1"`)).toBe('');
+        expect(gate(`claude -p "/x:crew-codie FRM-1"`)).toBe('');
     });
 });

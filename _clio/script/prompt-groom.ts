@@ -1,5 +1,5 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
-// usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start composer if down, print the chore brief
+// usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
 import { execFileSync } from 'node:child_process';
 import {
@@ -22,7 +22,7 @@ const groomDir =
 // the check binds every fold from the day the rules landed (dima's o61–o63) through today
 // FRM-418's rule landed 2026-10-25 14:50; an earlier prompt was never groomed by design
 const RULES_FROM = '2026-10-25 14:50';
-// both shapes: composer's stamp-first `W<n> (<date> <HH:MM>, dima): text` and its drift `W<n> · text (<date> <HH:MM>, dima)`
+// both shapes: helga's stamp-first `W<n> (<date> <HH:MM>, dima): text` and its drift `W<n> · text (<date> <HH:MM>, dima)`
 const STAMP =
     /^\s*(?:[*-]\s+)?W\d+(?: \(| · [^\n]*\()(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima(?:, (o\d+) steer)?/gm;
 
@@ -37,7 +37,7 @@ export function dayBefore(day: string) {
 export const groomFile = (day: string, hhmm: string, kind: 'raw' | 'groomed') =>
     path.join(groomDir, `${day}-${hhmm.replace(':', '')}.${kind}.md`);
 
-// a line without its quote marker and its list marker: the shape of composer's prep, which quotes the original drop
+// a line without its quote marker and its list marker: the shape of helga's prep, which quotes the original drop
 const bare = (line: string) =>
     line
         .trim()
@@ -45,7 +45,7 @@ const bare = (line: string) =>
         .replace(/^(?:\d+\.|[-*])\s+/, '');
 
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
-// an inbox day's groomed file is composer's checked prep, copied in at boot: it must exist and carry every
+// an inbox day's groomed file is helga's checked prep, copied in at boot: it must exist and carry every
 // `raw drop (<day> inbox, dima): …` note of the item, or an inbox stamp would pass a raw fold
 export const groomedOnDisk: Groomed = (day, hhmm, item) => {
     const file = groomFile(day, hhmm, 'groomed');
@@ -65,10 +65,10 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
         .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
 };
 
-// the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of composer's prep
+// the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of helga's prep
 export const groomStep = (hhmm: string) =>
     hhmm.startsWith('inbox')
-        ? "copy that day's checked inbox-composer.md to grooms/<day>-inbox.groomed.md (boot step 3) with each item's `raw drop (<day> inbox, dima): …` note in it, or re-prep with composer"
+        ? "copy that day's checked inbox-helga.md to grooms/<day>-inbox.groomed.md (boot step 3) with each item's `raw drop (<day> inbox, dima): …` note in it, or re-prep with helga"
         : `run \`node script/prompt-groom.ts ${hhmm}\``;
 
 export function ungroomedStamps(
@@ -128,7 +128,7 @@ export function newUnstamped(text: string, head: string) {
     );
 }
 
-// the newest steer of that id in cclio's transcript (the given one, else the newest under her project dir)
+// the newest steer of that id in clio's transcript (the given one, else the newest under her project dir)
 function steerText(id: string, transcript?: string) {
     // read-both: the live dir since the 10-29 move, and the old one for history
     const file =
@@ -158,7 +158,7 @@ function composerUp() {
         status?: string;
     }[];
     return agents.some(
-        (a) => a.name?.includes('composer') && a.status !== 'exited',
+        (a) => a.name?.includes('helga') && a.status !== 'exited',
     );
 }
 
@@ -166,7 +166,7 @@ function startComposer() {
     const skill = readFileSync(
         path.join(
             home,
-            'frame/home/.claude/plugin-x/skills/crew-composer/SKILL.md',
+            'frame/home/.claude/plugin-x/skills/crew-helga/SKILL.md',
         ),
         'utf8',
     ).replace(/^---\n[\s\S]*?\n---\n/, '');
@@ -182,7 +182,7 @@ function startComposer() {
         [
             '--bg',
             '-n',
-            '🎼 composer',
+            '🎀 helga',
             '--model',
             'haiku',
             '--effort',
@@ -249,7 +249,7 @@ if (import.meta.main) {
                 ? (args[dateAt + 1] ?? '')
                 : new Date().toLocaleDateString('sv');
         const dayFile = path.join(promptDir, `${day}.md`);
-        // an orbit steer (o69) is cut from cclio's transcript, not the prompts file
+        // an orbit steer (o69) is cut from clio's transcript, not the prompts file
         const isSteer = /^o\d+$/.test(hhmm);
         const transcriptAt = args.indexOf('--transcript');
         const raw = isSteer

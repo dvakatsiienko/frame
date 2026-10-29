@@ -14,7 +14,7 @@ const gv = {
 } as const;
 
 const crew = [
-    { name: 'cclio', role: 'coordinates', word: 'idle', tone: 'green' },
+    { name: 'clio', role: 'coordinates', word: 'idle', tone: 'green' },
     { name: 'coder', role: 'crafts', word: 'working', tone: 'yellow' },
     { name: 'reviewer', role: 'reviews', word: 'reviewing', tone: 'pink' },
     { name: 'verifier', role: 'verifies', word: 'idle', tone: 'green' },
@@ -77,7 +77,7 @@ function titleBar(w: number, h: number) {
 function board(f: Fleet) {
     const t = lettering('b');
     const facts: Record<CrewName, string> = {
-        cclio: `${f.ticketsClosed} tickets closed · ${f.ticketsPlanned} planned`,
+        clio: `${f.ticketsClosed} tickets closed · ${f.ticketsPlanned} planned`,
         coder: `${f.agentCommits} commits · last ${f.lastTicket}`,
         reviewer: f.reviewer,
         verifier: f.verifier,
@@ -196,7 +196,7 @@ async function tickets(since: Date): Promise<Partial<Fleet>> {
 /* Types */
 
 type Face = 'Book' | 'Medium';
-type CrewName = 'cclio' | 'coder' | 'reviewer' | 'verifier';
+type CrewName = 'clio' | 'coder' | 'reviewer' | 'verifier';
 
 interface CrewRow {
     name: CrewName;

@@ -24,7 +24,7 @@ a story is a parent with sub-tickets, the parent doubling as the batch id; order
 `blocks` relations, never title prefixes. an old «epic» met in a title or body becomes «story» in passing.
 
 ```bash
-x as cclio -- linear issue update FRM-N --parent FRM-M
+x as clio -- linear issue update FRM-N --parent FRM-M
 ```
 
 ## model labels

@@ -1,7 +1,7 @@
 ---
 fed-by: incidents
 when:
-  - { kind: skill, value: cclio:shape-test-drive }
+  - { kind: skill, value: clio:shape-test-drive }
   - { kind: command, value: brew install }
   - { kind: command, value: pnpm add -g }
 ---
@@ -10,7 +10,7 @@ when:
 
 ## core
 
-read before any new scout: a tool already here is answered from its line. a **scout** is the one-shot look at a tool dima drops (a link plus his lens: for him, for the fleet, for cclio), before any test drive. the flow: this file → a miss goes to the `researcher` agent with the lens → a verdict → one line here. a «try» hands into `x:shape-test-drive`; a «skip» keeps its reason, so a research brief can carry «decided against: …» instead of proposing it again. later: `x scout <url> "<lens>"` (`x/PRODUCT.md`).
+read before any new scout: a tool already here is answered from its line. a **scout** is the one-shot look at a tool dima drops (a link plus his lens: for him, for the fleet, for clio), before any test drive. the flow: this file → a miss goes to the `researcher` agent with the lens → a verdict → one line here. a «try» hands into `x:shape-test-drive`; a «skip» keeps its reason, so a research brief can carry «decided against: …» instead of proposing it again. later: `x scout <url> "<lens>"` (`x/PRODUCT.md`).
 
 one line per tool: date · tool [link] · what it is · stars / last push · verdict · why · home
 

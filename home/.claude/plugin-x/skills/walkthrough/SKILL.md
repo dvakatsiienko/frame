@@ -56,5 +56,5 @@ the anchor comes BEFORE the explanation. explain-then-run turns the command into
 
 ## surface notes
 
-- ccli: run anchors via Bash yourself only to verify; the point is HE runs them.
-- `cw` / desktop: relay steps via messages, or offer switching to the executing session.
+- cc: run anchors via Bash yourself only to verify; the point is HE runs them.
+- `cloud-chat` / desktop: relay steps via messages, or offer switching to the executing session.

@@ -10,7 +10,7 @@ const run = promisify(execFile);
 // and its age labels live in one place. Dima reads as the coordinator: what x files under
 // `others` is addressed to another agent, and the row says so.
 export const readHandoffList = async (): Promise<Handoff[]> => {
-    const listing = await x<Listing>(['list', '--for', 'cclio']);
+    const listing = await x<Listing>(['list', '--for', 'clio']);
 
     return [
         ...listing.entries.map((row) => toHandoff(listing.root, row, false)),
@@ -27,16 +27,16 @@ export const readHandoffBody = (path: string) => readFile(path, 'utf8');
 export const deleteHandoff = (handoff: Handoff) =>
     x<Deleted>(['delete', handoff.fileName]);
 
-// `/x:handoff-ingest <topic>` picks this file out of the shelf; `/cclio:boot <topic>` boots
+// `/x:handoff-ingest <topic>` picks this file out of the shelf; `/clio:boot <topic>` boots
 // the reading session as the coordinator and ingests the same file. Which one is wanted depends
 // on the session being pasted into, not on the file, so both lines are offered and the choice is
 // the keypress. The boot line carries the topic as plain text, never a second slash command: the
-// desktop composer refuses a message holding two skill chips (Claude 2.19675).
+// desktop helga refuses a message holding two skill chips (Claude 2.19675).
 export const toIngestLine = (handoff: Handoff) =>
     `/x:handoff-ingest ${handoff.topic}`;
 
-export const toCclioBootLine = (handoff: Handoff) =>
-    `/cclio:boot ${handoff.topic}`;
+export const toClioBootLine = (handoff: Handoff) =>
+    `/clio:boot ${handoff.topic}`;
 
 /* Helpers */
 

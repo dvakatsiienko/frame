@@ -54,17 +54,17 @@ cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<🌗|🌘> ☁�
 ## step 3 — the brief
 
 **In an environment that boots plugin `x` (see the setup script below), the prompt starts with
-the coder contract** — probe 4 (2026-09-28): a cloud prompt opening with `/x:crew-coder` arrives
+the coder contract** — probe 4 (2026-09-28): a cloud prompt opening with `/x:crew-codie` arrives
 expanded, zero tool calls, the same door as a `--bg` spawn. Then only the cloud deltas follow:
 
 ```
-/x:crew-coder <BYT-N> <one-line job>
+/x:crew-codie <BYT-N> <one-line job>
 cloud mode — you run on an anthropic vm, not the mac:
 - you cannot message anyone: skip every ping and SendMessage step; the pr body is your report, the exit lines graded ✅/❌ in it.
 - nobody answers questions: an open decision goes in the pr body as `? <question>`, and you take the safer option.
 - no worktree: you are already on a fresh clone; branch `coder/<BYT-N>-<slug>`, `CI=1 pnpm install`, push, open ONE pr with gh.
 - run everything in the foreground; the vm is reclaimed when idle.
-- your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — cclio's pr-watch sees that branch; nothing else tells it you finished.
+- your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — clio's pr-watch sees that branch; nothing else tells it you finished.
 ```
 
 **Without plugin `x` in the environment** (no setup script), the self-contained brief is
@@ -96,11 +96,11 @@ coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
   session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
   closed → the session is archived by the coordinator, never left for dima (his call, 2026-09-28:
   «if another army appears — you clean»), one line per archived name in the reply. probed 2026-10-28 (FRM-442): a
-  cli-made cloud session opens on claude.ai/code in cclio's browser pane, but its row menu holds no
-  Archive, only Delete, which stays dima's word; until a door exists, cclio names each finished
+  cli-made cloud session opens on claude.ai/code in clio's browser pane, but its row menu holds no
+  Archive, only Delete, which stays dima's word; until a door exists, clio names each finished
   session in the reply and dima archives it in the desktop sidebar, hover → archive.
 - the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
-  are the local flow's, unchanged: cclio reads the pr and writes the comment.
+  are the local flow's, unchanged: clio reads the pr and writes the comment.
 
 ## the environment's setup script — plugin `x` in every cloud session
 
@@ -123,8 +123,8 @@ claude plugin install x@x
 - ✅ proven by probe 3b (2026-09-28, environment «cloud base», network Custom: default list +
   `*.browserbase.com`): a fresh session listed 19 `x:*` skills, `gh` 2.45 came from ubuntu's
   archive (`apt-get install -y gh`), node 24 + pnpm 12.3.4 from dima's fnm block
-- `crew-coder` and `crew-verifier` are model-loadable but fire only on a brief that names them; a prompt
-  that starts with `/x:crew-coder` expands (probe 4) — step 3's short form
+- `crew-codie` and `crew-sixth-sense` are model-loadable but fire only on a brief that names them; a prompt
+  that starts with `/x:crew-codie` expands (probe 4) — step 3's short form
 
 ## keys and browsers
 
@@ -142,5 +142,5 @@ Before and after a cloud job the coordinator reads claude.ai → Settings → Us
 `claude-in-chrome`, one page-text call each (dima's yes, 2026-09-28); the job's line in the test-drive
 log carries both numbers.
 
-**Done** = the pr exists with its exit lines graded, cclio has read it, and the session is archived
+**Done** = the pr exists with its exit lines graded, clio has read it, and the session is archived
 or told to stop.

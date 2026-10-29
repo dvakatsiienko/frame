@@ -6,7 +6,7 @@ _clio/blueprints/AGENTS.md	3700	2026-10-27: the board version line (dima, W282);
 _clio/memory/_MEMORY.md	6400	seed 2026-10-16, today's size + 15 %
 _clio/memory/_reminders.md	17500	seed 2026-10-16, today's size + 15 %
 _clio/memory/_roadmap.md	550	2026-10-23 raised: generated; milestone names now say their outcome in words (dima's o23)
-_clio/memory/craft-fleet-flow.md	7450	2026-10-27: cclio drives the side lane, a round-3 stop is info (dima o60); 2026-10-23: lane init's one contract home (PK-263, dima o75), the rules moved here from the skills; +150 2026-10-27: one lane over one area may take several milestones (dima o67)
+_clio/memory/craft-fleet-flow.md	7450	2026-10-27: clio drives the side lane, a round-3 stop is info (dima o60); 2026-10-23: lane init's one contract home (PK-263, dima o75), the rules moved here from the skills; +150 2026-10-27: one lane over one area may take several milestones (dima o67)
 _clio/memory/craft-pm.md	10100	2026-10-27: the milestone guard went live, dima's informative fallback kept (FRM-417); 2026-10-25: ☘️ almost-freebie in the freebie rule (dima o77); 2026-10-23: «shape-idea or not» per wish (o91) + milestone = lane (o97); +150 2026-10-27: a fork's asks fold (FRM-462)
 _clio/memory/dima-stories.md	11200	seed 2026-10-16, today's size + 15 %
 _clio/memory/dima-strategy-branches.md	3800	seed 2026-10-16, today's size + 15 %
@@ -75,13 +75,13 @@ home/.claude/plugin-x/skills/author-memory/references/memory.md	16500	seed 2026-
 home/.claude/plugin-x/skills/author-memory/references/skill.md	14800	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/author-memory/SKILL.md	5400	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/browser-headless/SKILL.md	7400	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/cclio-mode/SKILL.md	1400	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/clio-mode/SKILL.md	1400	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/cmt/SKILL.md	10300	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-adviser/SKILL.md	11200	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-cloud/references/brief-no-plugin.md	2700	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-cloud/SKILL.md	10700	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/crew-coder/SKILL.md	11500	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/crew-composer/SKILL.md	6300	seed 2026-10-16, today's size + 15 %; +200 2026-10-27: the fork refusal (FRM-430)
+home/.claude/plugin-x/skills/crew-codie/SKILL.md	11500	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/crew-helga/SKILL.md	6300	seed 2026-10-16, today's size + 15 %; +200 2026-10-27: the fork refusal (FRM-430)
 home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md	7000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-designer/SKILL.md	11700	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-dna/SKILL.md	6300	seed 2026-10-16, today's size + 15 %
@@ -90,7 +90,7 @@ home/.claude/plugin-x/skills/crew-lead/references/model-cards.md	8200	seed 2026-
 home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md	37100	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/SKILL.md	11400	seed 2026-10-16 at size + 15 %; +300 on 2026-10-27 for the desktop-tab limit line (dima)
 home/.claude/plugin-x/skills/crew-subagent/SKILL.md	4900	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/crew-verifier/SKILL.md	11900	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/crew-sixth-sense/SKILL.md	11900	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/github-contrib/SKILL.md	9000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-code/SKILL.md	4300	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-conventions/SKILL.md	1700	seed 2026-10-16, today's size + 15 %
@@ -102,7 +102,7 @@ home/.claude/plugin-x/skills/handoff-ingest/SKILL.md	8000	seed 2026-10-16, today
 home/.claude/plugin-x/skills/handoff/SKILL.md	9800	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/mobile-mode/SKILL.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/notes/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/research/SKILL.md	5200	2026-10-21: the wish-cover line (PK-240, a pocket-born brief cites its W-lines); before: 5000, dima's cw-test adds
+home/.claude/plugin-x/skills/research/SKILL.md	5200	2026-10-21: the wish-cover line (PK-240, a pocket-born brief cites its W-lines); before: 5000, dima's cloud-chat-test adds
 home/.claude/plugin-x/skills/step-by-step/SKILL.md	2400	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/top-seven/SKILL.md	2900	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/walkthrough/SKILL.md	3500	seed 2026-10-16, today's size + 15 %

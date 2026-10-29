@@ -8,7 +8,7 @@ import {
     resolve,
 } from './command.ts';
 
-const CODER = '/x:crew-coder';
+const CODER = '/x:crew-codie';
 const INLINE = 'inline-brief';
 // a `claude --bg` call's brief file: the one `$(cat <path>)`, `cat <path> |` or `< <path>` reads
 function spawnBrief(c: Command, ctx: Context) {

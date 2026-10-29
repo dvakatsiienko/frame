@@ -18,7 +18,7 @@ import {
     deleteHandoff,
     readHandoffBody,
     readHandoffList,
-    toCclioBootLine,
+    toClioBootLine,
     toIngestLine,
 } from './lib/handoff';
 
@@ -116,7 +116,7 @@ const HandoffDetail = (props: HandoffDetailProps) => {
 };
 
 // Four sections, because the verbs are four: paste into the session in front of you, copy
-// for somewhere else, open the file, throw it away. Within the first two the cclio line
+// for somewhere else, open the file, throw it away. Within the first two the clio line
 // leads — it is the one that boots a coordinator, and the plain ingest line is the fallback
 // for a session already booted. Delete sits alone at the bottom under macos's own ⌘⌫.
 const HandoffShelfActions = (props: HandoffShelfActionsProps) => {
@@ -124,10 +124,10 @@ const HandoffShelfActions = (props: HandoffShelfActionsProps) => {
         <>
             <ActionPanel.Section>
                 <Action.Paste
-                    content={toCclioBootLine(props.handoff)}
+                    content={toClioBootLine(props.handoff)}
                     icon={Icon.Terminal}
                     shortcut={{ key: 'return', modifiers: ['cmd'] }}
-                    title='paste cclio boot line'
+                    title='paste clio boot line'
                 />
                 <Action.Paste
                     content={toIngestLine(props.handoff)}
@@ -138,10 +138,10 @@ const HandoffShelfActions = (props: HandoffShelfActionsProps) => {
             </ActionPanel.Section>
             <ActionPanel.Section>
                 <Action.CopyToClipboard
-                    content={toCclioBootLine(props.handoff)}
+                    content={toClioBootLine(props.handoff)}
                     icon={Icon.Clipboard}
                     shortcut={{ key: 'c', modifiers: ['cmd'] }}
-                    title='copy cclio boot line'
+                    title='copy clio boot line'
                 />
                 <Action.CopyToClipboard
                     content={toIngestLine(props.handoff)}
@@ -227,7 +227,7 @@ export default HandoffShelf;
 // both surfaces. A foreign handoff is already called out by its Lock accessory.
 const scrollEmoji = '📜';
 
-// The row's orange "for cw" accessory is the standing warning, and the alert covers it —
+// The row's orange "for cloud-chat" accessory is the standing warning, and the alert covers it —
 // so an audience that is not ours is restated here, where the keypress actually happens.
 const toDeleteWarning = (handoff: Handoff) => {
     const owner = handoff.isForeign

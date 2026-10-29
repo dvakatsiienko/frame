@@ -30,7 +30,7 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 
 - suggest a run when: a jev model bump ships, a flow's vet streak breaks twice in a week
 
-1. **research**: after the groom (`cclio:shape-recipe` step 0), one brief from the vectors below; `pnpm research:lanes <brief> <out>` (exa + parallel) + an opus source lane (vectors 2–4 need source reading) + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper — `x:research`. done: every lane returned or marked failed. (script)
+1. **research**: after the groom (`clio:shape-recipe` step 0), one brief from the vectors below; `pnpm research:lanes <brief> <out>` (exa + parallel) + an opus source lane (vectors 2–4 need source reading) + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper — `x:research`. done: every lane returned or marked failed. (script)
 2. **distill** — clever-merge into the guide and the rubrics' comments; raw lane output stays in `last/` until the next run's distill. done: the artifacts carry the merge, or are named «unchanged». (open)
 3. **eval + findings** — grade every lane in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)
 4. **resolve** — with dima: a rubric change ships as a commit with `RUNS=3` numbers in its body; noop is fine. done: his word on each change. (open)

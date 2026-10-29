@@ -55,7 +55,7 @@ describe('fork-guard', () => {
             state,
             '{"session_id":"s-fork","source":"resume"}',
         );
-        expect(out.stdout).toContain("you are cclio's side channel");
+        expect(out.stdout).toContain("you are clio's side channel");
         expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
             'session=s-main',
         );

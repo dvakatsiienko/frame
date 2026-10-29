@@ -1,6 +1,6 @@
 # evergreen — gather, read, judge, report
 
-the `helper` card's whole brief (`cclio:evergreen` day flow, step 1): run §§ 1–3, reply with the § 4 report.
+the `helper` card's whole brief (`clio:evergreen` day flow, step 1): run §§ 1–3, reply with the § 4 report.
 
 ## 1. gather
 
@@ -24,11 +24,11 @@ the lanes, one line each; a quiet lane prints nothing:
 - **go** — direct modules behind, notes read
 - **uv** — each tool's notes read
 - **toolchain** (dima, 2026-10-28) — node's notes read every run, upgraded only on his word when they bring something; pnpm always upgraded (brew owns it); after either, `pnpm -C ~/frame toolchain:sync` repins both repos
-- after the digest, cclio runs `pnpm update -g --latest` and `uv tool upgrade --all`
+- after the digest, clio runs `pnpm update -g --latest` and `uv tool upgrade --all`
 
 **the apps lane** — the self-updating apps neither renovate nor brew reads. `_clio/evergreen/sources.json` is the index and the app list
 (one entry per app: changelog url, read shape, the `marker` = newest entry the last run saw); the
-reader prints every entry newer than its marker, the skill judges, then cclio's `pnpm skill:evergreen-apps
+reader prints every entry newer than its marker, the skill judges, then clio's `pnpm skill:evergreen-apps
 --mark` advances the markers (the helper card never runs it) — **after the digest went out, never before.** the markers make the lane
 skip-proof: a run on any day prints everything since the last mark, and the boot digest's `apps
 lane` line says when it is due — **a wednesday has passed since the last mark** — the run fires by itself on a wednesday boot only; any other day it waits for the next wednesday, no ask. a dead url or a
@@ -43,7 +43,7 @@ shows in the last 14 days of our Bash calls or dima's zsh history (one `duckdb` 
 transcripts plus `~/.zsh_history`) gets the full read, and so does a cask whose app is in `sources.json` or running (`pgrep -x`) — a gui app never shows in a shell history; every other updated one still gets a skim of its newest release headline,
 promoted to a full read when the headline names a new capability, a rewrite or a perf number — the
 cut saves tokens, never the news (dima, 2026-10-14: «don't cut everything, or evergreens get too bare»;
-ccrow: the 96-entry brew read was most of the 350k). the apps lane and renovate keep the full read; a line that
+crow: the 96-entry brew read was most of the 350k). the apps lane and renovate keep the full read; a line that
 says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
 knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
 ~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in the `helper` card (Sonnet 5.5), never a fork or a generic agent,
@@ -72,7 +72,7 @@ between. a release post on the project's blog beats the github release body when
   we run — a deprecated or advised one is a card line, «a yank is not a cve, and a cve needs no yank»
   (borrowed from dependency-doctor, 2026-10-20)
 - **since last major** — on every major card, one clause: `<prev major> shipped <yyyy-mm-dd>, <n> months ago` (dima 2026-09-09, «for curiosity»). npm: `npm view <pkg> time --json`; others: the project's release page
-- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential`. then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
+- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude _clio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential`. then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
   repo can be green and his shell still broken
 - **🌟 or 🟠** — his taste: a **rewrite** (zig → rust, a new bundler
   core), a **perf claim with numbers**, a **new capability** he could use → 🌟 with a `🔬 deep`

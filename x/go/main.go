@@ -170,7 +170,7 @@ func dispatchArgv(argv []string) int {
 	if err != nil {
 		var fail *Fail
 		if !errors.As(err, &fail) {
-			fail = &Fail{Msg: err.Error(), Next: "report it to cclio with the command you ran"}
+			fail = &Fail{Msg: err.Error(), Next: "report it to clio with the command you ran"}
 		}
 		return finishFail(m, nameOf(wordsOf(argv)), nil, fail)
 	}
@@ -363,7 +363,7 @@ func finishConfirm(m mode, verb Verb, r *Run, impl Impl, plan any, args []string
 func finishFail(m mode, name string, r *Run, err error) int {
 	var fail *Fail
 	if !errors.As(err, &fail) {
-		fail = &Fail{Msg: err.Error(), Next: "report it to cclio with the command you ran"}
+		fail = &Fail{Msg: err.Error(), Next: "report it to clio with the command you ran"}
 		logger.Error("unexpected", "err", err)
 		traced.Kind = "bug"
 	} else {

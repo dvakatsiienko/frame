@@ -1,5 +1,5 @@
 #!/bin/bash
-# UserPromptSubmit: jev ranks the x + cclio skills for this prompt and the last reply; a load prints into context with its score.
+# UserPromptSubmit: jev ranks the x + clio skills for this prompt and the last reply; a load prints into context with its score.
 # fail-soft: no key, no network, no node → silent, the built-in router still runs.
 [ -f "$HOME/.claude/shelf/jev/router.off" ] && exit 0   # pnpm jev:router off — the kill switch, nothing runs
 input=$(cat)

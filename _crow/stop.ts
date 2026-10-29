@@ -14,13 +14,13 @@ import {
 
 if (process.argv.length > 2) {
     fail(
-        'ccrow:stop — stop the live ccrow and switch its 🔥 off; takes no arguments',
+        'crow:stop — stop the live crow and switch its 🔥 off; takes no arguments',
     );
 }
 
 const running = findSession();
 if (!running) {
-    console.log('no ccrow live');
+    console.log('no crow live');
     process.exit(0);
 }
 const stash = stashModOf(userPluginDirs());
@@ -29,7 +29,7 @@ const store = stash && storeOf(stash.name);
 if (!running.jobId) {
     if (store) clearHot(store, running.sessionId);
     console.log(
-        `ccrow is a desktop tab (pid ${running.pid}): 🔥 off, the tab stays for dima`,
+        `crow is a desktop tab (pid ${running.pid}): 🔥 off, the tab stays for dima`,
     );
     process.exit(0);
 }
@@ -51,7 +51,7 @@ for (let i = 0; i < 20 && isAlive(running.pid); i++) {
 }
 if (isAlive(running.pid)) {
     fail(
-        `ccrow pid ${running.pid} still alive 10 s after claude stop ${handle}`,
+        `crow pid ${running.pid} still alive 10 s after claude stop ${handle}`,
     );
 }
-console.log(`ccrow stopped (job ${handle})`);
+console.log(`crow stopped (job ${handle})`);

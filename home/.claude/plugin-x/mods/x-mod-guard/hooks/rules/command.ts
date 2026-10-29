@@ -15,8 +15,8 @@ export type Context = {
     missing?: Set<string>;
     kinds?: Map<string, 'file' | 'dir' | 'other'>;
     briefs?: Map<string, Brief>;
-    // the session is cclio's: it cleans its fleet's scratch trees and branches on its own
-    isCclio?: boolean;
+    // the session is clio's: it cleans its fleet's scratch trees and branches on its own
+    isClio?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches
     cleanTrees?: Set<string>;
     // the dirs whose working tree changed a package.json or pnpm-workspace.yaml since HEAD (FRM-393)
@@ -27,7 +27,7 @@ export type Context = {
     milestoneProjects?: Set<string>;
     // the projects a linear call moves tickets into while linear could not be read: the milestone check skipped them
     milestoneUnread?: string[];
-    // the frame and cclio scripts a `--help` run names whose source parses no help flag, so `--help` runs them
+    // the frame and clio scripts a `--help` run names whose source parses no help flag, so `--help` runs them
     helpless?: Set<string>;
     // the clis whose bare `--help` already ran this session
     helped?: Set<string>;
@@ -219,7 +219,7 @@ export const TRASH = 'trash <path> — recoverable from the macos trash';
 export const STASH =
     'git stash push -u -- <your paths> — it sets only your work aside, untracked files included, recoverable';
 // the one door that is a person: nothing safe does the job
-export const ASK = 'no safe door here — ask cclio, naming the target';
+export const ASK = 'no safe door here — ask clio, naming the target';
 export const NEVER =
     'fix what the hook or the signer refused, then run it without the flag';
 export const LANE = 'x lane commit — it commits named paths only';

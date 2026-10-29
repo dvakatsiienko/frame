@@ -4,13 +4,13 @@ import { modelFor, roleFor, trailerAdd } from './agent-trailer.ts';
 
 describe('roleFor', () => {
     test.each([
-        ['🦉 cclio', 'cclio'],
-        ['🦉 cclio (fork)', 'cclio-side'],
-        ['🦉 cclio (fork 2)', 'cclio-side'],
-        ['🦉 cclio (side)', 'cclio-side'],
+        ['🦉 clio', 'clio'],
+        ['🦉 clio (fork)', 'clio-side'],
+        ['🦉 clio (fork 2)', 'clio-side'],
+        ['🦉 clio (side)', 'clio-side'],
         ['☕️ 🔧 BYT-100 code: review gate', 'coder'],
         ['☕️ 🔎 BYT-100 verify: #125', 'verifier'],
-        ['🎼 composer', 'composer'],
+        ['🎀 helga', 'helga'],
         ['frame-df', 'frame-df'],
     ])('reads the role of %s', (name, role) => {
         expect(roleFor(name)).toBe(role);
@@ -30,16 +30,12 @@ describe('modelFor', () => {
 describe('trailerAdd', () => {
     test('appends the trailer after a blank line', () => {
         expect(
-            trailerAdd(
-                '🔧 x: a change\n\n- a: b\n',
-                'cclio',
-                'Claude Opus 5.5',
-            ),
-        ).toBe('🔧 x: a change\n\n- a: b\n\nAgent: cclio · Claude Opus 5.5\n');
+            trailerAdd('🔧 x: a change\n\n- a: b\n', 'clio', 'Claude Opus 5.5'),
+        ).toBe('🔧 x: a change\n\n- a: b\n\nAgent: clio · Claude Opus 5.5\n');
     });
 
     test('leaves a message that already carries one', () => {
         const message = '🔧 x: a change\n\nAgent: coder · Claude Sonnet 5.5\n';
-        expect(trailerAdd(message, 'cclio', 'Claude Opus 5.5')).toBe(message);
+        expect(trailerAdd(message, 'clio', 'Claude Opus 5.5')).toBe(message);
     });
 });

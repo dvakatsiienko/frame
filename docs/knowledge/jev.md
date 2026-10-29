@@ -12,11 +12,11 @@ when:
 ## core
 
 `jev` (typesafe.ai) answers typed questions about a `state`: no tools, no memory, no generation.
-we pull, it judges, we write back. one flow left: the inbox and flawlog lanes retired 2026-10-19 (dima: inbox prep needs intelligence, composer does it; the flawlog lanes missed 23 of 32).
+we pull, it judges, we write back. one flow left: the inbox and flawlog lanes retired 2026-10-19 (dima: inbox prep needs intelligence, helga does it; the flawlog lanes missed 23 of 32).
 
 - **skill router** — a `UserPromptSubmit` hook at user scope (`home/.claude/settings.json`), so it runs in every fleet session, coders included; it prints `skills (jev router):
-  cclio:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router runs alone; jev's catch of
-  its misses is off since v2 merged (FRM-305): 75 % precision on real prompts against a 90 % bar, re-measured 10-19 (`_reminders.md`). 📌 the hook is synchronous — every prompt in cclio waits for it (~0.8–1.8 s measured
+  clio:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router runs alone; jev's catch of
+  its misses is off since v2 merged (FRM-305): 75 % precision on real prompts against a 90 % bar, re-measured 10-19 (`_reminders.md`). 📌 the hook is synchronous — every prompt in clio waits for it (~0.8–1.8 s measured
   2026-09-22). log: `~/.claude/shelf/jev/route.log` (time · top pick · loads · prompt · ms). kill
   switch: `pnpm jev:router off|on|status` (a flag file, `router.off`); the digest and `jev:report`
   print `router: OFF` or `router: on · avg · p95`.
@@ -58,9 +58,9 @@ keys and the call path: `x-fleet` service account → vault `dev` → `script/op
   fixture suite (`pnpm jev:test`) and a weekly spot-check are what keep it honest.** a miss is
   never just recorded — the criterion is reworded in the same halt. 🚨 **a miss is sharpened in the halt that finds it, never deferred** (dima, 2026-09-24): a halt report that says «reword tomorrow» is the miss repeated.
 
-🔒 **a green skill-router never auto-trusts a side-effect skill** (dima, 2026-09-25) — `cclio:halt`,
-`x:cmt`, `x:handoff`, `cclio:evergreen`'s merge hand: a load of one always waits for my read of dima's
-actual words. the case: «that's it for now from my side» scored `cclio:halt` 0.60 while it closed a
+🔒 **a green skill-router never auto-trusts a side-effect skill** (dima, 2026-09-25) — `clio:halt`,
+`x:cmt`, `x:handoff`, `clio:evergreen`'s merge hand: a load of one always waits for my read of dima's
+actual words. the case: «that's it for now from my side» scored `clio:halt` 0.60 while it closed a
 tweak batch mid-session — trusted, it would have opened the halt early. **at the router's green lift,
 re-check this list first**; the hook already tags these picks «⚠ read first».
 
@@ -82,4 +82,4 @@ re-check this list first**; the hook already tags these picks «⚠ read first»
 
 ## parked from root `CLAUDE.md` (2026-10-11 sweep) — restore there when the router is back on
 
-a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: cclio:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.
+a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: clio:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.

@@ -123,7 +123,7 @@ func (h *hub) sent(prefix string) []string {
 
 const mergedSha = "cccccccccccccccccccccccccccccccccccccccc"
 
-// a pr world: a bare origin standing in for github.com/o/r, a clone cclio runs merge-auto in, the pr
+// a pr world: a bare origin standing in for github.com/o/r, a clone clio runs merge-auto in, the pr
 // branch coder/x touching the given paths, a verifier store, and the hub answering for #7 as all green
 type mergeWorld struct {
 	clone, origin, seed, head, store, state string
@@ -785,7 +785,7 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 	}
 }
 
-// a chunk body with its sign block; the hash covers the body through the newline before ## signed, as cclio signs it
+// a chunk body with its sign block; the hash covers the body through the newline before ## signed, as clio signs it
 func signedBody(above, block, hashed string) string {
 	return above + "## signed\n\n✍️ signed 2026-10-23 · body " + bodyHash(hashed) + "\n" + block
 }

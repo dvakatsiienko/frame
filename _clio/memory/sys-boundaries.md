@@ -1,6 +1,6 @@
 # surface boundaries — what stays separate
 
-**An agent mutates only its own memory** — `cw` and cloud `cc` keep their own stores.
+**An agent mutates only its own memory** — `cloud-chat` and cloud `cc` keep their own stores.
 
 **Domains never merge either**: repo context, tracker context (`docs/tracker/`, TRK-nnnn) and the
 fleet vocabulary are separate by design — cross-reference by pointer, never fold one into another
@@ -12,6 +12,6 @@ conflicting terms on sight; ADR only for hard-to-reverse, surprising decisions.
 - 🎯 a «surfaces are out of sync» symptom → ask whether the two sides need to be two sides;
   never propose another sync mechanism. The old sync program died by deletion, and that was the
   fix.
-- **mcp vs cli — which machine does the shell reach?** cclio's shell is the mac → cli. `cw`'s
+- **mcp vs cli — which machine does the shell reach?** clio's shell is the mac → cli. `cloud-chat`'s
   shell is a throwaway container → a local mcp server is its only door to the real filesystem.
   Say that inside the tool's description. Decided in [FRM-185](https://linear.app/x-com/issue/FRM-185).

@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-const CCLIO = '/home/frame/_clio';
+const CLIO = '/home/frame/_clio';
 
 // every tree is clean unless it holds `.scratch/` or its HEAD reaches a commit no branch does
 function world(
@@ -49,8 +49,8 @@ for (const command of [
     'git branch -D scratch/probe scratch/night',
     'git branch -d coder/FRM-1-x',
 ])
-    test(`cclio cleans up without dima's word: ${command}`, async ($, on) => {
-        const { ran } = world(on, CCLIO);
+    test(`clio cleans up without dima's word: ${command}`, async ($, on) => {
+        const { ran } = world(on, CLIO);
         expect((await bash($, command)).deny).toBeUndefined();
         expect(ran).toEqual([command]);
     });
@@ -62,9 +62,9 @@ for (const command of [
     'git branch -D coder/FRM-1-x',
     'git branch -D scratch/probe main',
 ])
-    test(`cclio still asks: ${command}`, async ($, on) => {
-        const { ran } = world(on, CCLIO);
-        expect((await bash($, command)).deny).toContain('ask cclio');
+    test(`clio still asks: ${command}`, async ($, on) => {
+        const { ran } = world(on, CLIO);
+        expect((await bash($, command)).deny).toContain('ask clio');
         expect(ran).toEqual([]);
     });
 
@@ -72,34 +72,34 @@ for (const tree of [
     '/home/frame/.claude/worktrees/FRM-1-x',
     '/home/.claude/jobs/ab12/tmp/clone',
 ]) {
-    test(`cclio asks to remove a tree holding a .scratch plan: ${tree}`, async ($, on) => {
-        const { ran } = world(on, CCLIO, { scratch: true });
+    test(`clio asks to remove a tree holding a .scratch plan: ${tree}`, async ($, on) => {
+        const { ran } = world(on, CLIO, { scratch: true });
         const r = await bash($, `git worktree remove ${tree}`);
-        expect(r.deny).toContain('ask cclio');
+        expect(r.deny).toContain('ask clio');
         expect(ran).toEqual([]);
     });
 
-    test(`cclio asks to remove a tree whose HEAD has commits no branch reaches: ${tree}`, async ($, on) => {
-        const { ran } = world(on, CCLIO, { orphan: true });
+    test(`clio asks to remove a tree whose HEAD has commits no branch reaches: ${tree}`, async ($, on) => {
+        const { ran } = world(on, CLIO, { orphan: true });
         const r = await bash($, `git worktree remove ${tree}`);
-        expect(r.deny).toContain('ask cclio');
+        expect(r.deny).toContain('ask clio');
         expect(ran).toEqual([]);
     });
 }
 
-test('cclio asks to remove a scratch tree whose lookup fails', async ($, on) => {
-    const { ran } = world(on, CCLIO, { broken: true });
+test('clio asks to remove a scratch tree whose lookup fails', async ($, on) => {
+    const { ran } = world(on, CLIO, { broken: true });
     const r = await bash(
         $,
         'git -C /home/frame worktree remove .claude/worktrees/FRM-1-x',
     );
-    expect(r.deny).toContain('ask cclio');
+    expect(r.deny).toContain('ask clio');
     expect(ran).toEqual([]);
 });
 
-test('a session outside cclio still asks to remove a scratch tree', async ($, on) => {
+test('a session outside clio still asks to remove a scratch tree', async ($, on) => {
     const { ran } = world(on, '/home/frame');
     const r = await bash($, 'git worktree remove .claude/worktrees/FRM-1-x');
-    expect(r.deny).toContain('ask cclio');
+    expect(r.deny).toContain('ask clio');
     expect(ran).toEqual([]);
 });

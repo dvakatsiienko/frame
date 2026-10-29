@@ -21,7 +21,7 @@ const edit = ($: Engine, file: string) =>
         tool: 'Edit',
     });
 
-test('the 8th code edit in a cclio session carries the delegate note, once', async ($, on) => {
+test('the 8th code edit in a clio session carries the delegate note, once', async ($, on) => {
     world(on, '/home/frame/_clio');
     const notes: number[] = [];
     for (let i = 1; i <= 10; i++) {
@@ -36,7 +36,7 @@ test('the 8th edit still runs, never blocked', async ($, on) => {
     let r = await edit($, '/home/frame/x/a.ts');
     for (let i = 2; i <= 8; i++) r = await edit($, '/home/frame/x/a.ts');
     expect(r.deny).toBeUndefined();
-    expect(r.context?.[0]).toContain('8 code edits in this cclio session');
+    expect(r.context?.[0]).toContain('8 code edits in this clio session');
 });
 
 test('edits to non-code files do not count', async ($, on) => {
@@ -47,7 +47,7 @@ test('edits to non-code files do not count', async ($, on) => {
     }
 });
 
-test("cclio cd'd into ~/frame still gets the note at the 8th edit", async ($, on) => {
+test("clio cd'd into ~/frame still gets the note at the 8th edit", async ($, on) => {
     world(on, '/home/frame', '/home/frame/_clio');
     const notes: number[] = [];
     for (let i = 1; i <= 10; i++) {
@@ -57,7 +57,7 @@ test("cclio cd'd into ~/frame still gets the note at the 8th edit", async ($, on
     expect(notes).toEqual([8]);
 });
 
-test("a coder cd'd into cclio's dir gets no note", async ($, on) => {
+test("a coder cd'd into clio's dir gets no note", async ($, on) => {
     world(on, '/home/frame/_clio', '/home/frame');
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/x/a.ts');
@@ -65,7 +65,7 @@ test("a coder cd'd into cclio's dir gets no note", async ($, on) => {
     }
 });
 
-test('a session outside cclio gets no note', async ($, on) => {
+test('a session outside clio gets no note', async ($, on) => {
     world(on, '/home/projects/bytes');
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/projects/bytes/a.ts');

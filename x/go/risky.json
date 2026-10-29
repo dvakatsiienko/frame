@@ -5,7 +5,7 @@
         "**/CLAUDE.md",
         "**/AGENTS.md",
         "home/.claude/rules/**",
-        "home/.claude/plugin-x/skills/crew-verifier/**",
+        "home/.claude/plugin-x/skills/crew-sixth-sense/**",
         ".gitattributes",
         "**/.env",
         "**/.env.*",

@@ -14,7 +14,7 @@ Adopted from Dima's inbox ask, option b of two he approved: **announce-always, g
 
 «crew-* skills are crew members' DNA, the contract they function by».
 
-<!-- failure: the audit (`_clio/.scratch/retro-audit.md`) measured crew-coder 8.5k → 30.8k and craft-spawning 14.9k → 46.9k in 30 days with zero grooming commits -->
+<!-- failure: the audit (`_clio/.scratch/retro-audit.md`) measured crew-codie 8.5k → 30.8k and craft-spawning 14.9k → 46.9k in 30 days with zero grooming commits -->
 
 - **add → read the whole file → groom** (`x:author-memory` § how it is written); the report names what got cut, or why nothing could be
 - **a line enters a skill only** when it holds for every lane, no guard or test can enforce it, and it has no home yet; a one-lane stumble stays in its retro, an enforceable one becomes a guard or a test

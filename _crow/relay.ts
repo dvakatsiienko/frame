@@ -2,7 +2,7 @@ import { readFileSync, rmSync } from 'node:fs';
 
 import { RELAY_PATH, type Wake, dropStaleRelay, spawnHarvest } from './lib.ts';
 
-// a cclio UserPromptSubmit hook: once x-mod-stash in her thread sent a parked wake to a desktop-tab ccrow (`isSent`), it
+// a clio UserPromptSubmit hook: once x-mod-stash in her thread sent a parked wake to a desktop-tab crow (`isSent`), it
 // starts the harvester; an unsent wake stays parked for the mod's next poll, never an ask in her context
 if (dropStaleRelay()) process.exit(0);
 let parked:

@@ -72,7 +72,7 @@ test('a bare deadline follows the idle wait dima set, falling back to 10 outside
     ]);
 });
 
-// the ledger counts a member's sends to cclio from its own transcript; a send whose result said success:false never
+// the ledger counts a member's sends to clio from its own transcript; a send whose result said success:false never
 // reached her, so it is no loss
 function sends(rows: unknown[]) {
     const home = mkdtempSync(join(tmpdir(), 'ledger-'));
@@ -81,7 +81,7 @@ function sends(rows: unknown[]) {
         join(home, '.claude/projects/-p/sid-1.jsonl'),
         rows.map((r) => JSON.stringify(r)).join('\n'),
     );
-    return spawnSync('sh', ['-c', LEDGER_SENDS, 'sh', home, 'sid-1', 'cclio'], {
+    return spawnSync('sh', ['-c', LEDGER_SENDS, 'sh', home, 'sid-1', 'clio'], {
         encoding: 'utf8',
     })
         .stdout.split('\n')
@@ -92,7 +92,7 @@ const call = (id: string, at: string) => ({
         content: [
             {
                 id,
-                input: { message: '[progress] x', to: '🦉 cclio' },
+                input: { message: '[progress] x', to: '🦉 clio' },
                 name: 'SendMessage',
                 type: 'tool_use',
             },
@@ -119,7 +119,7 @@ const answer = (id: string, isSent: boolean) => ({
     type: 'user',
 });
 
-test('the ledger counts every send to cclio that went out', () => {
+test('the ledger counts every send to clio that went out', () => {
     expect(
         sends([
             call('t1', '2026-10-12T15:01:00Z'),

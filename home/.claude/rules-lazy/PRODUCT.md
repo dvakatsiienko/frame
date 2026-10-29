@@ -23,7 +23,7 @@ dima, 2026-10-04: «if we keep it, it must work very well and always load correc
 - the miss detector: a Stop hook, signals = a ticket id, a `linear.app` link, a `- ticket:` line, a `linear` call
 - compaction: `SessionStart:compact` clears the loaded marks for both `memory-load-*` hooks — the path loader never reloaded an `AGENTS.md` after a compaction
 - `pnpm memory-load:replay --days 14` — the detector over real transcripts, the hit rate printed
-- cw: the path constant in `mcp-x-cw/src/pm.ts`, rebuilt — undone 2026-10-11: cw's `pm_guide` tool and `pm.ts` are gone (`FTR.md` § the move)
+- cloud chat: the path constant in `mcp-x-cloud-chat/src/pm.ts`, rebuilt — undone 2026-10-11: cloud chat's `pm_guide` tool and `pm.ts` are gone (`FTR.md` § the move)
 - the path loader's rename to `memory-load-agents-md` on every layer: file, `settings.json`, log strings, docs
 
 **out:** `fleet-hazards` and every rule besides linear-flow until the verdict · jev · any ui · a separate load for subagents (they carry the parent's context)

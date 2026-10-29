@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { afterEach, describe, expect, test } from 'vitest';
 
-// a fixture home with a ccrow socket this test owns, so the live ccrow is never touched
+// a fixture home with a crow socket this test owns, so the live crow is never touched
 const HOOK = join(import.meta.dirname, 'decision.ts');
 const servers: Server[] = [];
 afterEach(() => {
@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 function home({ tab = false } = {}) {
-    const dir = mkdtempSync(join(tmpdir(), 'ccrow-dec-'));
+    const dir = mkdtempSync(join(tmpdir(), 'crow-dec-'));
     const sessions = join(dir, '.claude/sessions');
     mkdirSync(sessions, { recursive: true });
     mkdirSync(join(dir, '.claude/shelf'), { recursive: true });
@@ -30,7 +30,7 @@ function home({ tab = false } = {}) {
     const socket = join(dir, 's.sock');
     writeFileSync(
         join(sessions, '1.json'),
-        JSON.stringify({ name: '🦉 cclio', sessionId: 'cclio-1' }),
+        JSON.stringify({ name: '🦉 clio', sessionId: 'clio-1' }),
     );
     writeFileSync(
         join(sessions, `${process.pid}.json`),
@@ -38,12 +38,12 @@ function home({ tab = false } = {}) {
             cwd: dir,
             ...(tab ? {} : { jobId: 'job-1' }),
             messagingSocketPath: socket,
-            name: '🐦 ⬛ ccrow',
+            name: '🐦 ⬛ crow',
             pid: process.pid,
-            sessionId: 'ccrow-1',
+            sessionId: 'crow-1',
         }),
     );
-    const transcript = join(dir, 'cclio-1.jsonl');
+    const transcript = join(dir, 'clio-1.jsonl');
     writeFileSync(
         transcript,
         `${JSON.stringify({ message: { content: 'merge it' }, type: 'user' })}\n`,
@@ -60,8 +60,8 @@ function home({ tab = false } = {}) {
     return { dir, socket, transcript };
 }
 
-// a fake ccrow: records every wake line, and answers a merge wake by writing its note file
-function ccrow(socket: string, note?: string) {
+// a fake crow: records every wake line, and answers a merge wake by writing its note file
+function crow(socket: string, note?: string) {
     const lines: string[] = [];
     let heard: (line: string) => void = () => {};
     const first = new Promise<string>((done) => {
@@ -97,7 +97,7 @@ function hook(
     const child = spawn(process.execPath, [HOOK], {
         env: {
             ...process.env,
-            CCROW_DECISION_WAIT_MS: String(waitMs),
+            CROW_DECISION_WAIT_MS: String(waitMs),
             HOME: fixture.dir,
             PATH: `${join(fixture.dir, 'bin')}:${process.env.PATH}`,
         },
@@ -140,9 +140,9 @@ function hook(
 }
 
 describe('a merge in the coordinator session', () => {
-    test('wakes ccrow once with the pr, the verified head and the current head', async () => {
+    test('wakes crow once with the pr, the verified head and the current head', async () => {
         const fixture = home();
-        const { lines } = ccrow(
+        const { lines } = crow(
             fixture.socket,
             'hold: two commits past the clean',
         );
@@ -156,37 +156,37 @@ describe('a merge in the coordinator session', () => {
         ).toEqual([true]);
     });
 
-    test('carries ccrow’s note into the merge as one context line', async () => {
+    test('carries crow’s note into the merge as one context line', async () => {
         const fixture = home();
-        ccrow(fixture.socket, 'hold: two commits past the clean');
+        crow(fixture.socket, 'hold: two commits past the clean');
         const { code, out } = await hook(fixture, 'gh pr merge 82 --squash');
         expect([code, out?.hookSpecificOutput.additionalContext]).toEqual([
             0,
-            "🐦‍⬛ dvakatsiienko/frame#82 (verified a2cfe573, head b0b0b0b0: unverified delta): ccrow's note: hold: two commits past the clean",
+            "🐦‍⬛ dvakatsiienko/frame#82 (verified a2cfe573, head b0b0b0b0: unverified delta): crow's note: hold: two commits past the clean",
         ]);
     });
 
-    test('says ccrow is silent when no note lands in time', async () => {
+    test('says crow is silent when no note lands in time', async () => {
         const fixture = home();
-        ccrow(fixture.socket);
+        crow(fixture.socket);
         const { out } = await hook(fixture, 'gh pr merge 82', 1_000);
         expect(out?.hookSpecificOutput.additionalContext).toMatch(
-            /: ccrow silent after 1 s$/,
+            /: crow silent after 1 s$/,
         );
     });
 
-    test('denies a tab ccrow’s first merge with the wake line to relay', async () => {
+    test('denies a tab crow’s first merge with the wake line to relay', async () => {
         const fixture = home({ tab: true });
         const { out } = await hook(fixture, 'gh pr merge 82');
         expect([
             out?.hookSpecificOutput.permissionDecision,
-            /\nccrow wake \S+ · mode decision .* · merge dvakatsiienko\/frame#82 · /.test(
+            /\ncrow wake \S+ · mode decision .* · merge dvakatsiienko\/frame#82 · /.test(
                 out?.hookSpecificOutput.permissionDecisionReason ?? '',
             ),
         ]).toEqual(['deny', true]);
     });
 
-    test('lets a tab ccrow’s rerun pass with the note ccrow wrote', async () => {
+    test('lets a tab crow’s rerun pass with the note crow wrote', async () => {
         const fixture = home({ tab: true });
         const first = await hook(fixture, 'gh pr merge 82');
         const notePath = / · note (\S+)$/.exec(
@@ -199,39 +199,39 @@ describe('a merge in the coordinator session', () => {
             out?.hookSpecificOutput.additionalContext,
         ]).toEqual([
             undefined,
-            "🐦‍⬛ dvakatsiienko/frame#82 (verified a2cfe573, head b0b0b0b0: unverified delta): ccrow's note: none",
+            "🐦‍⬛ dvakatsiienko/frame#82 (verified a2cfe573, head b0b0b0b0: unverified delta): crow's note: none",
         ]);
     });
 });
 
 describe('a spawn in the coordinator session', () => {
     const spawnLine =
-        'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-coder FRM-1"';
+        'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-codie FRM-1"';
 
-    test('wakes ccrow with a spawn line', async () => {
+    test('wakes crow with a spawn line', async () => {
         const fixture = home();
-        const { first } = ccrow(fixture.socket);
+        const { first } = crow(fixture.socket);
         await hook(fixture, spawnLine);
         expect(await first).toMatch(/ · mode decision · .* · spawn$/);
     });
 
-    test('hands cclio the spawn line to relay to a tab ccrow', async () => {
+    test('hands clio the spawn line to relay to a tab crow', async () => {
         const fixture = home({ tab: true });
         const { out } = await hook(fixture, spawnLine);
         expect(out?.hookSpecificOutput.additionalContext).toMatch(
-            /\nccrow wake \S+ · mode decision · .* · spawn$/,
+            /\ncrow wake \S+ · mode decision · .* · spawn$/,
         );
     });
 
     test('runs on without waiting for a note', async () => {
         const fixture = home();
-        ccrow(fixture.socket);
+        crow(fixture.socket);
         const { ms, out } = await hook(fixture, spawnLine, 60_000);
         expect([out, ms < 10_000]).toEqual([undefined, true]);
     });
 });
 
-describe('a proposal cclio writes', () => {
+describe('a proposal clio writes', () => {
     function proposal(fixture: ReturnType<typeof home>) {
         const path = join(fixture.dir, '.scratch/sweep/step-4-proposal.md');
         mkdirSync(join(fixture.dir, '.scratch/sweep'), { recursive: true });
@@ -239,10 +239,10 @@ describe('a proposal cclio writes', () => {
         return path;
     }
 
-    test('wakes ccrow with a proposal line', async () => {
+    test('wakes crow with a proposal line', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        const { first } = ccrow(fixture.socket);
+        const { first } = crow(fixture.socket);
         await hook(fixture, { path, tool: 'Write' });
         expect(await first).toMatch(
             new RegExp(` · mode decision · .* · proposal ${path}$`),
@@ -252,7 +252,7 @@ describe('a proposal cclio writes', () => {
     test('puts the proposal file whole into the packet', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        const { first } = ccrow(fixture.socket);
+        const { first } = crow(fixture.socket);
         await hook(fixture, { path, tool: 'Edit' });
         const packet = / · packet (\S+) /.exec(await first)?.[1] ?? '';
         expect(readFileSync(packet, 'utf8')).toContain(
@@ -260,10 +260,10 @@ describe('a proposal cclio writes', () => {
         );
     });
 
-    test('opens the packet with ccrow’s ledger line', async () => {
+    test('opens the packet with crow’s ledger line', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        const { first } = ccrow(fixture.socket);
+        const { first } = crow(fixture.socket);
         await hook(fixture, { path, tool: 'Write' });
         const packet = / · packet (\S+) /.exec(await first)?.[1] ?? '';
         expect(readFileSync(packet, 'utf8').split('\n')[0]).toMatch(
@@ -274,7 +274,7 @@ describe('a proposal cclio writes', () => {
     test('runs on without waiting for a note', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        ccrow(fixture.socket);
+        crow(fixture.socket);
         const { ms, out } = await hook(
             fixture,
             { path, tool: 'Write' },
@@ -283,21 +283,21 @@ describe('a proposal cclio writes', () => {
         expect([out, ms < 10_000]).toEqual([undefined, true]);
     });
 
-    test('hands cclio the proposal line to relay to a tab ccrow', async () => {
+    test('hands clio the proposal line to relay to a tab crow', async () => {
         const fixture = home({ tab: true });
         const path = proposal(fixture);
         const { out } = await hook(fixture, { path, tool: 'Write' });
         expect(out?.hookSpecificOutput).toEqual({
             additionalContext: expect.stringMatching(
                 new RegExp(
-                    `\\nccrow wake \\S+ · mode decision · .* · proposal ${path}$`,
+                    `\\ncrow wake \\S+ · mode decision · .* · proposal ${path}$`,
                 ),
             ),
             hookEventName: 'PostToolUse',
         });
     });
 
-    test('tells cclio to hold a boot board for the note, any other proposal not', async () => {
+    test('tells clio to hold a boot board for the note, any other proposal not', async () => {
         const fixture = home({ tab: true });
         mkdirSync(join(fixture.dir, '.scratch/boot-2026-10-12'), {
             recursive: true,
@@ -348,10 +348,10 @@ describe('a proposal cclio writes', () => {
         ]);
     });
 
-    test('wakes ccrow once for several edits in one turn', async () => {
+    test('wakes crow once for several edits in one turn', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        const { lines } = ccrow(fixture.socket);
+        const { lines } = crow(fixture.socket);
         await hook(fixture, { path, tool: 'Write' });
         await hook(fixture, { path, tool: 'Edit' });
         await hook(fixture, { path, tool: 'Edit' });
@@ -359,10 +359,10 @@ describe('a proposal cclio writes', () => {
         expect(lines.length).toBe(1);
     });
 
-    test('wakes ccrow again when the next turn edits the proposal', async () => {
+    test('wakes crow again when the next turn edits the proposal', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        const { lines } = ccrow(fixture.socket);
+        const { lines } = crow(fixture.socket);
         await hook(fixture, { path, tool: 'Write' });
         writeFileSync(
             fixture.transcript,
@@ -382,7 +382,7 @@ describe('a proposal cclio writes', () => {
 
     test('wakes nothing on a write to any other file', async () => {
         const fixture = home();
-        ccrow(fixture.socket, 'x');
+        crow(fixture.socket, 'x');
         const path = join(fixture.dir, '.scratch/sweep/spec.md');
         mkdirSync(join(fixture.dir, '.scratch/sweep'), { recursive: true });
         writeFileSync(path, 'a spec');
@@ -393,7 +393,7 @@ describe('a proposal cclio writes', () => {
     test('wakes nothing on a read of a proposal', async () => {
         const fixture = home();
         const path = proposal(fixture);
-        ccrow(fixture.socket, 'x');
+        crow(fixture.socket, 'x');
         await hook(fixture, { path, tool: 'Read' });
         expect(existsSync(stateOf(fixture))).toBe(false);
     });
@@ -402,18 +402,18 @@ describe('a proposal cclio writes', () => {
 describe('a push to main', () => {
     test('wakes nothing', async () => {
         const fixture = home();
-        ccrow(fixture.socket, 'x');
+        crow(fixture.socket, 'x');
         const { out } = await hook(fixture, 'x lane push --apply');
         expect([existsSync(stateOf(fixture)), out]).toEqual([false, undefined]);
     });
 });
 
-test('a session other than cclio wakes nothing', async () => {
+test('a session other than clio wakes nothing', async () => {
     const fixture = home();
-    ccrow(fixture.socket, 'x');
+    crow(fixture.socket, 'x');
     writeFileSync(
         join(fixture.dir, '.claude/sessions/1.json'),
-        JSON.stringify({ name: '☕️ 🔧 coder', sessionId: 'cclio-1' }),
+        JSON.stringify({ name: '☕️ 🔧 coder', sessionId: 'clio-1' }),
     );
     await hook(fixture, 'gh pr merge 82');
     expect(existsSync(stateOf(fixture))).toBe(false);
@@ -421,7 +421,7 @@ test('a session other than cclio wakes nothing', async () => {
 
 test('a decision wake leaves the Stop wake’s 30-min clock alone', async () => {
     const fixture = home();
-    ccrow(fixture.socket, 'none');
+    crow(fixture.socket, 'none');
     const state = stateOf(fixture);
     writeFileSync(state, JSON.stringify({ lastWakeAt: 5, offsets: {} }));
     await hook(fixture, 'gh pr merge 82');

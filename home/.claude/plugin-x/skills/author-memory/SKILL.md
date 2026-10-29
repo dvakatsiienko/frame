@@ -1,6 +1,6 @@
 ---
 name: author-memory
-description: Load BEFORE writing or grooming any file an agent reads as instructions — a SKILL.md, an AGENTS.md or CLAUDE.md, a `rules/` file, a cclio memory leaf, a recipe, a command; and once up front before a halt flush, a flawlog parse or a memory sweep. «author memory», «where does this line go», «groom this skill».
+description: Load BEFORE writing or grooming any file an agent reads as instructions — a SKILL.md, an AGENTS.md or CLAUDE.md, a `rules/` file, a clio memory leaf, a recipe, a command; and once up front before a halt flush, a flawlog parse or a memory sweep. «author memory», «where does this line go», «groom this skill».
 ---
 
 # author-memory — where a line goes, and how it is written
@@ -14,7 +14,7 @@ craft (wording, triggers, pruning, leading words) is `mattpocock-skills:writing-
 
 ## where a line goes — audience decides, never topic
 
-the failure this prevents: a line landing where it was convenient instead of where it belongs (cclio's phrase, dima's pick, 2026-10-16) — the widest bucket whose whole audience benefits:
+the failure this prevents: a line landing where it was convenient instead of where it belongs (clio's phrase, dima's pick, 2026-10-16) — the widest bucket whose whole audience benefits:
 - root `CLAUDE.md` / `rules/` without `paths:` → every session pays for it, forever
 - `rules/` with `paths:` → a convention tied to a glob; an intention has no glob
 - a project `AGENTS.md` → wrong or meaningless in another repo

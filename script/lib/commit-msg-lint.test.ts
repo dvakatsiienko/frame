@@ -7,7 +7,7 @@ describe('commitMsgLint', () => {
         '🔧 sline: fix reset glyph rendering',
         '🗑️ deps: drop the old pin',
         '🗑 deps: drop the old pin',
-        '📜 cclio:halt: the last act resets phases',
+        '📜 clio:halt: the last act resets phases',
         '🔧 x lane commit: the message on stdin',
         '📜 rules + memory: the screenshot rule',
         '🔧 pocket: Backlog.md 1.54 — done items archive',
@@ -15,7 +15,7 @@ describe('commitMsgLint', () => {
         '📜 docs: the skill split scan',
         '🐞 ci: the backup never mirrors destruction',
         "Merge remote-tracking branch 'origin/main'",
-        '🐞 x: a fix\n\n- ticket: FRM-12\n\nAgent: cclio · Claude Opus 5.5\n',
+        '🐞 x: a fix\n\n- ticket: FRM-12\n\nAgent: clio · Claude Opus 5.5\n',
         '🔧 x: a change\n# Please enter the commit message\n# fixes FRM-1 in a comment\n',
     ])('passes %j', (message) => {
         expect(commitMsgLint(message).errors).toEqual([]);

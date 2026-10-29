@@ -71,7 +71,7 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
       | [$d.projectMilestones.nodes[] | select(.project.name == $p)] as $ms
       | (if .issues.pageInfo.hasNextPage then "🟡 \($p): unassigned issues capped at 50, health incomplete" else empty end),
         ($ms[] | select(.issues.nodes | length == 0) | "🟡 \($p) · \(.name): empty — fill it, or ask dima to delete it"),
-        ($ms[] | select(.status != "done") | select(.name | test("lane [0-9]|(^|\\s)m[0-9]+( |$)|step [0-9]")) | "🟡 \($p) · \(.name): a number for a name — rename it to the outcome (cclio:pm)"),
+        ($ms[] | select(.status != "done") | select(.name | test("lane [0-9]|(^|\\s)m[0-9]+( |$)|step [0-9]")) | "🟡 \($p) · \(.name): a number for a name — rename it to the outcome (clio:pm)"),
         (if ($ms | length) > 0 and (.issues.nodes | length) > 0 then "🟡 \($p): \(.issues.nodes | length) open ticket(s) with no milestone — \([.issues.nodes[].identifier] | join(", "))" else empty end),
         ([$ms[] | select(.status != "done")] | length | select(. > 5) | "🟡 \($p): \(.) open milestones (aim for 4, 5 is fine)"))
   ] | if length == 0 then "🟢 milestones healthy" else .[] end)

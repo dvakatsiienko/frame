@@ -6,8 +6,8 @@ description: Load on /handoff with any argument shape — focus, spawn, «sessio
 
 # Handoff (sender)
 
-**lane** — `cw`: `x-cw__handoff_save` (+ `_supersede`, `_list`, `_peek`, `_delete`) · `cc`:
-`x handoff`, below. Both doors run the same rules — the `x-cw` tools shell out to `x handoff`.
+**lane** — `cloud-chat`: `x-cloud-chat__handoff_save` (+ `_supersede`, `_list`, `_peek`, `_delete`) · `cc`:
+`x handoff`, below. Both doors run the same rules — the `x-cloud-chat` tools shell out to `x handoff`.
 
 Produce a CST per [CST-SPEC.md](../../CST-SPEC.md) — read it first; it defines sections,
 calibration, and the store's semantics. This skill adds the Claude Code sender mechanics.
@@ -21,7 +21,7 @@ timestamp; never build a path by hand. Each verb answers in one json envelope: t
 is `data.path`, a refusal is `error` plus the `next` command.
 
 `<audience>` = who the CST is FOR: nobody in particular → `any`; a specific agent → its seat's token:
-`cclio`, `coder`, `verifier`, `designer`, `ccrow`, `cw`, and `ccli` only for a plain session with no seat.
+`clio`, `coder`, `verifier`, `designer`, `crow`, `cloud-chat`, and `cc` only for a plain session with no seat.
 a member handing off to its own successor names its own seat (a coder's CST is `coder`). `--shared` when
 several threads will pull it.
 
@@ -55,14 +55,14 @@ asking for *only* a part = a SCOPED handoff — restrict content, set META's `sc
 - suggest a handoff at **any size before going idle over an hour** — cache TTL expires and the
   next turn pays full price
 
-## The peer moves — `cc` and `cw` are peers, either side may open
+## The peer moves — `cc` and `cloud-chat` are peers, either side may open
 
 Offer with a 💡 tip, specific and occasional, never a running commentary.
 
-- **ROUTE** — the task fits `cw` better (long-form web research, doc/PDF/image analysis,
-  repo-free ideation): «💡 handoff this to `cw`, <one reason>».
-- **PUSH** — something made here would help `cw`: offer to send it.
-- **REQUEST** — `cw` holds something useful (its memory of Dima, a spec drafted there):
+- **ROUTE** — the task fits `cloud-chat` better (long-form web research, doc/PDF/image analysis,
+  repo-free ideation): «💡 handoff this to `cloud-chat`, <one reason>».
+- **PUSH** — something made here would help `cloud-chat`: offer to send it.
+- **REQUEST** — `cloud-chat` holds something useful (its memory of Dima, a spec drafted there):
   suggest pulling it.
 - **Cross-thread awareness** — one topic worked in both frontends → offer a sync handoff
   rather than letting both sides work blind.
@@ -92,7 +92,7 @@ CST
 
 Add `--replaces <slug>` when the sibling check found this thread's own pending file. Tell the
 user in one line: file written; any frontend ingests it (`handoff-ingest` skill on cc, the
-`/handoff-ingest` prompt on cw) and deletes on ingest (`-shared`: kept).
+`/handoff-ingest` prompt on cloud chat) and deletes on ingest (`-shared`: kept).
 
 **No pickup block, no accompanying prompt.** Dima picks CSTs up from the raycast handoffs
 command, which pastes the ingest line itself (2026-09-25: «handoff must now be fully

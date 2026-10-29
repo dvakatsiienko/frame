@@ -57,7 +57,7 @@ func (f *fakeLinear) requests() []gqlCall {
 func linearKeys(t *testing.T) string {
 	return keysFixture(t, map[string]string{
 		"op://dev/linear-golden/credential": "lin_api_dima",
-		"keychain:x-token-linear-cclio:x":   farFuture + ":tok-cclio",
+		"keychain:x-token-linear-clio:x":    farFuture + ":tok-clio",
 		"keychain:x-token-linear-coder:x":   farFuture + ":tok-coder",
 	})
 }
@@ -193,7 +193,7 @@ func TestReadMarksACappedConnection(t *testing.T) {
 func TestReadAddsCommentsAndBothRelationSidesOnlyWhenAsked(t *testing.T) {
 	t.Parallel()
 	answer := readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t",
-		comments:  pageOf(`{"body":"later","createdAt":"2026-10-01T17:23:00Z","user":{"name":"Dima"},"botActor":null}`, `{"body":"first","createdAt":"2026-10-01T11:15:00Z","user":null,"botActor":{"name":"cclio"}}`),
+		comments:  pageOf(`{"body":"later","createdAt":"2026-10-01T17:23:00Z","user":{"name":"Dima"},"botActor":null}`, `{"body":"first","createdAt":"2026-10-01T11:15:00Z","user":null,"botActor":{"name":"clio"}}`),
 		relations: pageOf(`{"type":"blocks","relatedIssue":{"identifier":"FRM-5","title":"five","state":{"name":"Todo"}}}`),
 		inverse:   pageOf(`{"type":"blocks","issue":{"identifier":"FRM-4","title":"four","state":{"name":"Todo"}}}`)}})
 	server := newFakeLinear(t, answer)
@@ -215,7 +215,7 @@ func TestReadAddsCommentsAndBothRelationSidesOnlyWhenAsked(t *testing.T) {
 		} `json:"data"`
 	}
 	_ = json.Unmarshal([]byte(got.stdout), &read)
-	want := ticket{Comments: []note{{"cclio", "2026-10-01", "first"}, {"Dima", "2026-10-01", "later"}},
+	want := ticket{Comments: []note{{"clio", "2026-10-01", "first"}, {"Dima", "2026-10-01", "later"}},
 		Relations: []link{{"blocks", "FRM-5", "five", "Todo"}, {"blocked by", "FRM-4", "four", "Todo"}}}
 	if len(read.Data.Tickets) != 1 {
 		t.Fatalf("want one ticket: %s", got.stdout)
@@ -248,7 +248,7 @@ func TestReadRefusesAMalformedIdBeforeAnyRequest(t *testing.T) {
 	}
 }
 
-func TestLinearActsAsCclioForAnAgentAndDimaOnHisOwn(t *testing.T) {
+func TestLinearActsAsClioForAnAgentAndDimaOnHisOwn(t *testing.T) {
 	t.Parallel()
 	server := newFakeLinear(t, readAnswer(map[string]issue{"FRM-1": {id: "FRM-1", title: "t"}}))
 	cases := []struct {
@@ -257,9 +257,9 @@ func TestLinearActsAsCclioForAnAgentAndDimaOnHisOwn(t *testing.T) {
 		argv []string
 		auth string
 	}{
-		{"an agent", []string{"CLAUDECODE=1"}, []string{"linear", "read", "FRM-1"}, "Bearer tok-cclio"},
+		{"an agent", []string{"CLAUDECODE=1"}, []string{"linear", "read", "FRM-1"}, "Bearer tok-clio"},
 		{"an agent as coder", []string{"CLAUDECODE=1"}, []string{"linear", "read", "--as", "coder", "FRM-1"}, "Bearer tok-coder"},
-		{"a pipe with no agent env", nil, []string{"linear", "read", "FRM-1"}, "Bearer tok-cclio"},
+		{"a pipe with no agent env", nil, []string{"linear", "read", "FRM-1"}, "Bearer tok-clio"},
 		{"as dima", nil, []string{"linear", "read", "--as", "dima", "FRM-1"}, "lin_api_dima"},
 	}
 	for _, c := range cases {
@@ -384,7 +384,7 @@ func TestReadSavesALinearUploadWithTheAuthItHolds(t *testing.T) {
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
 	}
-	if uploadAuth != "Bearer tok-cclio" {
+	if uploadAuth != "Bearer tok-clio" {
 		t.Errorf("the download carried %q, want the actor's key", uploadAuth)
 	}
 	var names []string
@@ -400,7 +400,7 @@ func TestReadSavesALinearUploadWithTheAuthItHolds(t *testing.T) {
 	if !strings.Contains(string(saved), `"bytes":14`) {
 		t.Errorf("the envelope does not list the saved file with its size: %s", saved)
 	}
-	if strings.Contains(got.stdout+got.stderr, "tok-cclio") {
+	if strings.Contains(got.stdout+got.stderr, "tok-clio") {
 		t.Error("the key leaked onto x's output")
 	}
 }

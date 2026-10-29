@@ -46,7 +46,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 
 - suggest a run when: a cc minor touches mods, the test-drive verdict (2026-10-19)
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus lane when source must be read (vector 2). done: every lane returned or marked failed. (script)
 3. **distill** — a probed engine fact merges into `mods/engine.md`, a door or a rule into `mods/AGENTS.md` (claims marked unprobed until probed; the core stays near 8 KB) and the FRM-304 open list; raw lane output stays in `last/` until the next run's distill. done: the artifacts carry the merge, or are named «unchanged». (open)
 4. **eval + findings** — grade the lanes in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)
@@ -75,13 +75,13 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 3. the coder retros on mods work — each harness or api trap becomes an `AGENTS.md` line
 4. built-in collisions — does cc now ship natively what a mod of ours does (the prompt suggestion did); then the mod yields or goes
 5. the api-map — re-read the types at every cc bump; grep the whole file for a capability before choosing one
-6. **a session-kind probe** — any filter on origin or session kind is probed once per kind: interactive, bg `sdk`, peer (the composer-only allow-list broke every bg session, FRM-303)
+6. **a session-kind probe** — any filter on origin or session kind is probed once per kind: interactive, bg `sdk`, peer (the helga-only allow-list broke every bg session, FRM-303)
 7. **a state-lifetime audit** — every module variable that must survive a reload lives in `$.state` or `$.store` (the 10-04 keep-hot untick looked like a reload resetting one)
 8. **open leads**: every «unprobed» line in `mods/AGENTS.md` and `mods/engine.md` and every open child of FRM-304, re-checked on the current build; the test drive verdict in `docs/test-drive/mods.md`
 9. **the comms targets** — the ledger in `docs/knowledge/fleet-operator-comms.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
 10. **session identity** — every key a mod uses for «who is this session» (cwd, registry name, cc sessionId, desktop `local_` id) checked against a `cd`, a `/clear`, a rename and a reinit
 11. **leftovers** — dev-mods dirs past their probe, a mod still loaded after its source moved
-12. **cclio's wants list** — each open want of the coordinator's (brief 8 on 10-12) read against the api: buildable, workaround, or engine gap
+12. **clio's wants list** — each open want of the coordinator's (brief 8 on 10-12) read against the api: buildable, workaround, or engine gap
 13. **our bottlenecks → mods** — the flawlog, the comms ledger and the retros read for the troubles a mod could remove; a ranked list of mods we do not have yet
 
 ## artifacts

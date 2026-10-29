@@ -28,12 +28,12 @@ import {
 } from './lib.ts';
 
 // a PreToolUse exit 2 or timeout blocks the merge, so every failure prints context and exits 0
-// cclio's settings give the merge hook 120 s, so this wait stays under it
-const WAIT_MS = Number(process.env.CCROW_DECISION_WAIT_MS ?? 90_000);
+// clio's settings give the merge hook 120 s, so this wait stays under it
+const WAIT_MS = Number(process.env.CROW_DECISION_WAIT_MS ?? 90_000);
 const MARKER_TTL_MS = 10 * 60_000;
-// the boot's draft board (cclio:boot step 8): dima wants ccrow's note on it before it prints
+// the boot's draft board (clio:boot step 8): dima wants crow's note on it before it prints
 const BOOT_BOARD = /(^|\/)\.scratch\/boot-[^/]+\/[^/]+-proposal\.md$/;
-// a ccrow without a job id is a desktop tab or a terminal resume; SendMessage by her registry name reaches both
+// a crow without a job id is a desktop tab or a terminal resume; SendMessage by her registry name reaches both
 const sendVia = (name = SESSION_NAME) =>
     `with SendMessage to «${name}», her registry name`;
 
@@ -63,7 +63,7 @@ if (
             );
     } catch (error) {
         context(
-            `🐦‍⬛ ccrow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
+            `🐦‍⬛ crow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
         );
     }
 }
@@ -84,7 +84,7 @@ async function merge(
     const about = `${repo}#${pr.number} (${heads})`;
     const fields = `merge ${repo}#${pr.number} · verified ${verified ?? 'none'} · head ${pr.headRefOid}`;
 
-    const live = liveCcrow();
+    const live = liveCrow();
     if ('skip' in live) return context(`🐦‍⬛ ${about}: ${live.skip}`);
 
     const marker = join(
@@ -92,10 +92,10 @@ async function merge(
         'decisions',
         `${repo.replace('/', '-')}-${pr.number}-${head}.json`,
     );
-    if (!live.ccrow.jobId) {
+    if (!live.crow.jobId) {
         const asked = readMarker(marker);
         if (!asked) {
-            const wake = await wakeCcrow({
+            const wake = await wakeCrow({
                 fields,
                 transcriptPath,
                 withNote: true,
@@ -106,42 +106,42 @@ async function merge(
                 JSON.stringify({ at: Date.now(), wakeId: wake.id }),
             );
             return deny(
-                `🐦‍⬛ ccrow decides on this merge first (${heads}): send the line below, alone, ${sendVia(live.ccrow.name)}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for ccrow's note. no need to report it to dima unless he asks.\n${wake.line}`,
+                `🐦‍⬛ crow decides on this merge first (${heads}): send the line below, alone, ${sendVia(live.crow.name)}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for crow's note. no need to report it to dima unless he asks.\n${wake.line}`,
             );
         }
         return context(`🐦‍⬛ ${about}: ${await noteOf(asked.wakeId)}`);
     }
-    const wake = await wakeCcrow({
+    const wake = await wakeCrow({
         fields,
-        socket: live.ccrow,
+        socket: live.crow,
         transcriptPath,
         withNote: true,
     });
     context(`🐦‍⬛ ${about}: ${await noteOf(wake.id)}`);
 }
 
-// a spawn has already run and a proposal is already written: ccrow is woken, nothing waits on its note
+// a spawn has already run and a proposal is already written: crow is woken, nothing waits on its note
 async function noWaitWake(
     fields: string,
     transcriptPath: string,
     proposal?: string,
 ) {
-    const live = liveCcrow();
+    const live = liveCrow();
     if ('skip' in live) return;
-    const wake = await wakeCcrow({
+    const wake = await wakeCrow({
         fields,
         proposal,
-        socket: live.ccrow,
+        socket: live.crow,
         transcriptPath,
         withNote: false,
     });
-    if (!live.ccrow.jobId)
+    if (!live.crow.jobId)
         context(
-            `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${sendVia(live.ccrow.name)}; ${proposal && BOOT_BOARD.test(proposal) ? 'the board waits on her note: end the turn on the 🔭 line, print the board once her note and wishkeeper are folded.' : 'do not wait for it, no need to report it to dima unless he asks.'}\n${wake.line}`,
+            `🐦‍⬛ crow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${sendVia(live.crow.name)}; ${proposal && BOOT_BOARD.test(proposal) ? 'the board waits on her note: end the turn on the 🔭 line, print the board once her note and wishkeeper are folded.' : 'do not wait for it, no need to report it to dima unless he asks.'}\n${wake.line}`,
         );
 }
 
-// one wake per proposal file per turn: a draft takes several Edits, and ccrow should read it once
+// one wake per proposal file per turn: a draft takes several Edits, and crow should read it once
 function isFirstInTurn(path: string, transcriptPath: string) {
     const turn = `${transcriptPath}:${turnStartOf(readLines(transcriptPath))}`;
     const marker = join(
@@ -162,19 +162,19 @@ function shortSha(sha: string) {
     return sha.slice(0, 8);
 }
 
-// oneCcrow exits 2 on two live ccrows, which here would block the merge
-function liveCcrow(): { ccrow: LiveSession } | { skip: string } {
+// oneCrow exits 2 on two live crows, which here would block the merge
+function liveCrow(): { crow: LiveSession } | { skip: string } {
     if (existsSync(join(STATE_DIR, 'paused')))
-        return { skip: 'ccrow is paused' };
-    const [ccrow, ...more] = findSessions();
-    if (!ccrow) return { skip: 'ccrow is not running' };
-    if (more.length) return { skip: 'two ccrows are live, none was woken' };
-    return { ccrow };
+        return { skip: 'crow is paused' };
+    const [crow, ...more] = findSessions();
+    if (!crow) return { skip: 'crow is not running' };
+    if (more.length) return { skip: 'two crows are live, none was woken' };
+    return { crow };
 }
 
 // a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's.
 // the boot board is the one exception: the boot's turn ends on purpose while it waits, and a Stop wake then would read the same half boot twice
-async function wakeCcrow({
+async function wakeCrow({
     fields,
     proposal,
     socket,
@@ -223,11 +223,11 @@ async function noteOf(wakeId: string) {
     while (Date.now() - started < WAIT_MS) {
         try {
             const note = readFileSync(notePath(wakeId), 'utf8').trim();
-            if (note) return `ccrow's note: ${note}`;
+            if (note) return `crow's note: ${note}`;
         } catch {}
         await sleep(1000);
     }
-    return `ccrow silent after ${Math.round(WAIT_MS / 1000)} s`;
+    return `crow silent after ${Math.round(WAIT_MS / 1000)} s`;
 }
 
 function readMarker(path: string): Marker | undefined {

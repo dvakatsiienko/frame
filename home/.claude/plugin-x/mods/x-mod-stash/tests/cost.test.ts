@@ -2,7 +2,7 @@ import { expect, test } from 'claude-code/testing';
 
 import { COST_WORDS } from '../hooks/register.tsx';
 
-// todo 17 (o171): the words that send cclio to model-cards.md, and the near misses that must not
+// todo 17 (o171): the words that send clio to model-cards.md, and the near misses that must not
 const HITS = [
     'how many tokens does a lane burn?',
     'is the cache still warm',

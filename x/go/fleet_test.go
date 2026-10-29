@@ -50,7 +50,7 @@ func bashCalled(command string) map[string]any {
 	return called("Bash", map[string]any{"command": command}, flowAt)
 }
 
-var crewLoad = called("Skill", map[string]any{"skill": "x:crew-coder"}, flowAt)
+var crewLoad = called("Skill", map[string]any{"skill": "x:crew-codie"}, flowAt)
 
 func flowCounts(t *testing.T, lines ...any) flowTranscripts {
 	session(t, lines...)
@@ -154,7 +154,7 @@ func TestFlowMarksACrewLoadByWhetherAMessageNamedIt(t *testing.T) {
 		name, said           string
 		briefLed, falseFires int
 	}{
-		{"brief-led when an earlier message names the skill", "load `x:crew-coder` first", 1, 0},
+		{"brief-led when an earlier message names the skill", "load `x:crew-codie` first", 1, 0},
 		{"a false fire when none does", "fix the typo", 0, 1},
 	}
 	for _, c := range cases {
@@ -238,16 +238,16 @@ func TestOpsSumsInputCacheAndOutputTokens(t *testing.T) {
 	}
 }
 
-func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
+func TestOpsCostsAClioBootUpToItsFirstEndTurn(t *testing.T) {
 	t.Parallel()
 	boot := map[string]any{"type": "user", "timestamp": "2026-10-07T10:00:00Z", "cwd": "/Users/dima/frame/_clio",
-		"message": map[string]any{"content": "<command-name>/cclio:boot</command-name><command-args>mini</command-args>"}}
+		"message": map[string]any{"content": "<command-name>/clio:boot</command-name><command-args>mini</command-args>"}}
 	usage := map[string]int{"output_tokens": 10}
 	s := opsSessionOf(t, boot,
 		assistantStep("m1", "2026-10-07T10:00:05Z", usage, "tool_use"), assistantStep("m1", "2026-10-07T10:00:06Z", usage, "tool_use"),
 		assistantStep("m2", "2026-10-07T10:00:30Z", map[string]int{"output_tokens": 5}, "end_turn"),
 		assistantStep("m3", "2026-10-07T10:01:00Z", usage, "end_turn"))
-	if want := `{"kind":"mini","id":"a.jsonl","tokens":15,"seconds":30}`; s.Role != "cclio" || marshal(s.Boot) != want {
+	if want := `{"kind":"mini","id":"a.jsonl","tokens":15,"seconds":30}`; s.Role != "clio" || marshal(s.Boot) != want {
 		t.Errorf("role %s, boot %s, want %s", s.Role, marshal(s.Boot), want)
 	}
 }
@@ -255,7 +255,7 @@ func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
 func TestOpsReadsBothCoordinatorCwds(t *testing.T) {
 	t.Parallel()
 	for _, cwd := range []string{"/Users/dima/frame/_clio", "/Users/dima/frame/cclio/script"} { // read-both
-		if got := opsRole(cwd, "", "a.jsonl", "untitled"); got != "cclio" {
+		if got := opsRole(cwd, "", "a.jsonl", "untitled"); got != "clio" {
 			t.Errorf("cwd %s: role %q, want the coordinator", cwd, got)
 		}
 	}
@@ -401,8 +401,8 @@ func TestFleetOpsPrintsNoSizeSectionWithoutAClosedTicket(t *testing.T) {
 
 func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
 	t.Parallel()
-	opening := said("<command-name>/x:crew-coder</command-name> FRM-1")
-	read := called("Read", map[string]any{"file_path": "/x/crew-coder/how-you-work.md"}, "2026-10-05T10:01:00.000Z")
+	opening := said("<command-name>/x:crew-codie</command-name> FRM-1")
+	read := called("Read", map[string]any{"file_path": "/x/crew-codie/how-you-work.md"}, "2026-10-05T10:01:00.000Z")
 	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-05T10:02:00.000Z")
 	compact := map[string]any{"type": "system", "subtype": "compact_boundary", "timestamp": "2026-10-05T10:03:00.000Z"}
 	cases := []struct {
@@ -414,7 +414,7 @@ func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
 		{"read, then edit", []any{opening, read, edit}, true, ""},
 		{"edit before any read", []any{opening,
 			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-05T10:01:00.000Z"),
-			called("Read", map[string]any{"file_path": "/x/crew-coder/how-you-work.md"}, "2026-10-05T10:02:00.000Z")}, false, ""},
+			called("Read", map[string]any{"file_path": "/x/crew-codie/how-you-work.md"}, "2026-10-05T10:02:00.000Z")}, false, ""},
 		{"a compaction with no re-read", []any{opening, read, edit, compact}, true, "🚫 compact 10:03:00"},
 		{"a compaction re-read", []any{opening, read, compact, read}, true, "✅ compact 10:03:00"},
 	}
@@ -433,7 +433,7 @@ func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
 
 func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
 	t.Parallel()
-	opening := said("<command-name>/x:crew-coder</command-name> FRM-1")
+	opening := said("<command-name>/x:crew-codie</command-name> FRM-1")
 	at := "2026-10-05T10:02:00.000Z"
 	path := filepath.Join(t.TempDir(), "session.jsonl")
 	write(t, path, jsonLines(t, opening,
@@ -452,7 +452,7 @@ func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
 func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
 	t.Parallel()
 	path := filepath.Join(t.TempDir(), "session.jsonl")
-	write(t, path, jsonLines(t, said("spawn a coder with /x:crew-coder")))
+	write(t, path, jsonLines(t, said("spawn a coder with /x:crew-codie")))
 	if _, ok := auditSession(path); ok {
 		t.Error("a session that names the coder in prose counted as a coder")
 	}

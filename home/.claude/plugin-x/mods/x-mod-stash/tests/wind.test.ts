@@ -126,26 +126,26 @@ test("a peer's ping carries the note too: any turn takes it", async ($, on) => {
     const w = world(on);
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
     await start($);
-    await say($, 'a ping from cclio', 'peer');
+    await say($, 'a ping from clio', 'peer');
     expect(notes(w.lines)).toHaveLength(1);
 });
 
-test("cclio's note names her good stop", async ($, on) => {
-    const w = world(on, '🦉 cclio');
+test("clio's note names her good stop", async ($, on) => {
+    const w = world(on, '🦉 clio');
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
     await start($);
     await say($);
     expect(notes(w.lines)[0]).toMatch(
-        /finish that topic whole first.*never split.*cclio:checkpoint/,
+        /finish that topic whole first.*never split.*clio:checkpoint/,
     );
 });
 
 const INIT_LIST =
-    /first first-act is your role's init list.*x:crew-coder, x:crew-dna read whole.*plugin-authoring.*cclio: her boot/;
+    /first first-act is your role's init list.*x:crew-codie, x:crew-dna read whole.*plugin-authoring.*clio: her boot/;
 
 for (const [who, name] of [
     ['a coder', undefined],
-    ['cclio', '🦉 cclio'],
+    ['clio', '🦉 clio'],
 ] as const)
     test(`${who}'s note makes the handoff open with the role's init list`, async ($, on) => {
         const w = world(on, name);
@@ -368,10 +368,10 @@ test('the op refuses a pending that names work, saying what is pending, and noth
 
 for (const [who, isOwner] of [
     ['a coder', false],
-    ['cclio', true],
+    ['clio', true],
 ] as const)
     test(`${who}'s second wind note carries dima's words whole`, async ($, on) => {
-        const w = world(on, isOwner ? '🦉 cclio' : '☕️ 🔧 coder: mods');
+        const w = world(on, isOwner ? '🦉 clio' : '☕️ 🔧 coder: mods');
         w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
         await start($);
         await say($);

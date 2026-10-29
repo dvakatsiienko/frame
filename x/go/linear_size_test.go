@@ -20,8 +20,8 @@ func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
 	cases := []struct{ name, session, want string }{
 		{"a member session acts as coder", "☕️ 🔧 FRM-399 code", "coder"},
 		{"a verifier is a member too", "☕️ 🔎 FRM-399 verify", "coder"},
-		{"cclio stays cclio", "🦉 cclio", "cclio"},
-		{"cclio as the registry stores her keeps cclio", "🦉  cclio", "cclio"},
+		{"clio stays clio", "🦉 clio", "clio"},
+		{"clio as the registry stores her keeps clio", "🦉  clio", "clio"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestUnderXTestWithoutXSessionsTheLiveRegistryIsNeverRead(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "c.md")
 	write(t, file, "done\n")
 	envelope, got := runLinear(t, server, []string{"HOME=" + home, "CLAUDE_CODE_SESSION_ID=s-1"}, "linear", "comment", "FRM-1", "--body-file", file)
-	if data, _ := envelope["data"].(map[string]any); got.code != 0 || data["actor"] != "cclio" {
+	if data, _ := envelope["data"].(map[string]any); got.code != 0 || data["actor"] != "clio" {
 		t.Errorf("exit %d, actor %v\n%s", got.code, data["actor"], got.stdout)
 	}
 }

@@ -180,7 +180,7 @@ describe('memory-load-rule-lazy', () => {
         expect(readFileSync(join(marks, s.id), 'utf8')).toBe('');
     });
 
-    it('loads linear-flow at the start of a cclio session', () => {
+    it('loads linear-flow at the start of a clio session', () => {
         const out = session().run({
             cwd: '/Users/dima/frame/_clio',
             hook_event_name: 'SessionStart',

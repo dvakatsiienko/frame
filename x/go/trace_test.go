@@ -97,7 +97,7 @@ func TestTheTraceNamesItsCaller(t *testing.T) {
 		{"ssh", []string{"SSH_CONNECTION=10.0.0.2 52000 10.0.0.1 22"}},
 		{"hook", []string{"GIT_EXEC_PATH=/opt/homebrew/opt/git/libexec/git-core"}},
 		{"hook", []string{"CLAUDECODE=1", "CLAUDE_PROJECT_DIR=/Users/dima/frame"}},
-		{"cw", []string{cowork}},
+		{"cloud-chat", []string{cowork}},
 		{"other", nil},
 	}
 	for _, c := range cases {

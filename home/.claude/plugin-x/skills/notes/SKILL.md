@@ -10,10 +10,10 @@ pick per op is the cheapest lane that does not break the vault; nothing here is 
 
 ## obsidian
 
-the vault's hazards first (the cw leaf `/topics/obsidian.md` keeps a hand copy — an edit here is
+the vault's hazards first (the cloud chat leaf `/topics/obsidian.md` keeps a hand copy — an edit here is
 copied there by hand):
 - the vault is **not under git** — no undo, no history; a bad overwrite is gone
-- **writes only when dima asks**, except cclio's inbox reset and pocket mirror (`habit-shared-files`); reads anytime
+- **writes only when dima asks**, except clio's inbox reset and pocket mirror (`habit-shared-files`); reads anytime
 - 🚫 **icloud sync is whole-file, last-writer-wins, no conflict copy**: never edit before the synced
   version has arrived (sync lags minutes after obsidian opens; a relaunch often forces the pull), keep
   obsidian closed on the ipad during a session, and re-read right before every write

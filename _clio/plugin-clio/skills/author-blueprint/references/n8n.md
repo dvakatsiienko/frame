@@ -1,4 +1,4 @@
-# n8n 2.43.7 — what cclio uses, verified 2026-10-18
+# n8n 2.43.7 — what clio uses, verified 2026-10-18
 
 sources: three research lanes (exa, parallel, an opus source lane reading the installed package), raw in `_clio/.scratch/viz-tool/n8n-*` until the halt; the recipe `refresh-blueprint-comms` refreshes this file.
 

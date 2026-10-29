@@ -229,7 +229,7 @@ test('a tick pressed right after typing carries the steer still waiting to save'
     );
 });
 
-test("an ask's row reads its text and cclio's pick", async ($, on) => {
+test("an ask's row reads its text and clio's pick", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -261,7 +261,7 @@ test('an unmarked ask joins no prompt', async ($, on) => {
     expect(joined(w.contexts).join('\n')).not.toContain('o1');
 });
 
-test("a rejected ask joins with dima's steer and cclio's hidden steer", async ($, on) => {
+test("a rejected ask joins with dima's steer and clio's hidden steer", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -2152,7 +2152,7 @@ test('a phases steer alone never joins a turn', async ($, on) => {
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toMatch(/🌔 phases: dima/);
 });
 
-// the engine drops an argument its schema does not name: an arg missing here reaches no op (cclio, 21:08)
+// the engine drops an argument its schema does not name: an arg missing here reaches no op (clio, 21:08)
 test("orbit's schema names every argument its ops read", async ($, on) => {
     world(on);
     await start($);
@@ -2593,7 +2593,7 @@ test('open asks come back when the session is resumed in a new process', async (
 });
 
 // an app restart mid-turn: the new process's first hook is that turn's end, before its session.start (10-13 17:22,
-// cclio's o158 gone)
+// clio's o158 gone)
 test('open asks come back when the new process ends a turn before its start', async ($, on) => {
     const w = world(on);
     stateOf(on);
@@ -2724,7 +2724,7 @@ test('📱 mobile mode comes back on when the session is resumed in a new proces
     expect(lines(w)).toMatch(/no board reaches dima/);
 });
 
-test("held member pings come back when cclio's session is resumed in a new process", async ($, on) => {
+test("held member pings come back when clio's session is resumed in a new process", async ($, on) => {
     world(on);
     const state = stateOf(on);
     await start($);
@@ -2774,8 +2774,8 @@ test('a poll that finds nothing changed leaves the kept copy as it was', async (
     ).toBe(before);
 });
 
-// todo 17: the cost hint is cclio's alone; this world's session is no cclio
-test('a cost question in a session that is not cclio carries no cost hint', async ($, on) => {
+// todo 17: the cost hint is clio's alone; this world's session is no clio
+test('a cost question in a session that is not clio carries no cost hint', async ($, on) => {
     const w = world(on);
     await start($);
     await say($, 'what does a cache read cost?');

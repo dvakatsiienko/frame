@@ -40,7 +40,7 @@
         },
         {
             "dependencyDashboardApproval": true,
-            "description": "majors open no pr: they wait on the dependency dashboard for the major round, which cclio runs on dima's word",
+            "description": "majors open no pr: they wait on the dependency dashboard for the major round, which clio runs on dima's word",
             "matchUpdateTypes": ["major"]
         },
         {

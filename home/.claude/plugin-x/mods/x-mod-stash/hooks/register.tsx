@@ -109,7 +109,7 @@ const SUCC = 'succ:';
 const MARKS = 'marks:';
 // 🛼 a member's lane step from its plan op, one key per registry name, written only by that session (todo 6)
 const LANE_STEP = 'lane-step:';
-// the moves cclio's stash made from a coder's step, held for her next tool call or prompt
+// the moves clio's stash made from a coder's step, held for her next tool call or prompt
 const LANE_MOVES = 'lane-moves';
 const DIMA_AT = 'dima-at';
 const AFK_KEY = 'afk';
@@ -319,35 +319,35 @@ const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 // the phases guard, no extra turn and no Stop block: one line at the first prompt, one nudge in a turn's tool results (dima's o14)
 const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s plan op and keep them current as the work moves.`;
 const NUDGE_AT = 3;
-// a plan set in either of the last 2 turns still holds: a turn that did not move it gets no nudge (cclio's brief 8)
+// a plan set in either of the last 2 turns still holds: a turn that did not move it gets no nudge (clio's brief 8)
 const PLAN_QUIET_TURNS = 2;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 // a board card folded to its head row, per session (dima's o5, 17:16)
 const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
-// 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by the session the registry names 🦉 cclio, read by
-// every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
+// 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by the session the registry names 🦉 clio, read by
+// every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of clio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
 // dima's steer on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
-// keeps its one writer, cclio's lane op
+// keeps its one writer, clio's lane op
 const LANE_STEER = 'lane-steer:';
-// the retired glide reorder's store key (o84, dropped by o138): cclio's stash deletes any left behind
+// the retired glide reorder's store key (o84, dropped by o138): clio's stash deletes any left behind
 const LANE_ORDER = 'lane-order:';
 // a lane steer typed before the rename sits under the old prefix: read as a steer, retired at its next write
 const LANE_STEER_OLD = 'lane-note:';
-const LANE_OWNER = '🦉 cclio';
+const LANE_OWNER = '🦉 clio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 7;
 const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
 const LANE_TICKET = /^[A-Z]{2,5}-\d+$/;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
-// cclio's boot is open from the cclio:boot skill's load until a reply as long as the board prints; start_session's own
+// clio's boot is open from the clio:boot skill's load until a reply as long as the board prints; start_session's own
 // «then end your turn» hint ended the 10-29 boot early (FRM-426, exit 9). the keep is the store, so a reload still knows;
 // a harness nudge answered «booting, board next» is short and never closes it, a silent turn has no reply at all
 const BOOT = 'boot:';
-const BOOT_SKILL = /^(?:cclio:)?boot$/;
+const BOOT_SKILL = /^(?:clio:)?boot$/;
 const BOARD_MIN = 300;
 const BOOT_MS = 3 * 60 * 60 * 1000;
 const START_SESSION_TOOL = 'mcp__ccd_session__start_session';
@@ -630,7 +630,7 @@ let orbit: StashOrbit = EMPTY_ORBIT;
 let isOrbitLoaded = false;
 
 // one json line to x-speak's control socket; the text rides argv, never the shell's words
-// quiet comms (PK-93, dima's o17: an a/b mvp, one switch to revert): in cclio's thread a member's [progress] ping is
+// quiet comms (PK-93, dima's o17: an a/b mvp, one switch to revert): in clio's thread a member's [progress] ping is
 // held, no turn; every other tag, and no tag, passes; held pings ride her next prompt as one hidden block, or an
 // idle append after 10 min. the a/b reads one log line per delivery from the store (docs/test-drive/quiet-comms.md)
 const QUIET = { key: 'quiet', plugin: 'x-mod-stash' } as const;
@@ -638,7 +638,7 @@ const QUIET_HELD = 'quiet-held:';
 // 🐦‍🔥 second wind (todo 16): `wind:<sid>`, written by any board's press and read by that session's own stash at its next
 // turn, so the ask rides the turn and never starts one (dima's slipstream)
 const WIND = 'wind:';
-// dima asking cclio about cost: her context points at the price facts once, so she never answers from recall (o171; 10-13
+// dima asking clio about cost: her context points at the price facts once, so she never answers from recall (o171; 10-13
 // she quoted a cache read at 1/10 of input, the file says 1/20)
 export const COST_WORDS =
     /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
@@ -660,12 +660,12 @@ const WIND_SAY = {
     refused: 'refused, work started after pending: none',
     writing: 'finishing its step, then its handoff',
 } as const;
-const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (a coder: x:crew-coder, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods coder; cclio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (a coder: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods coder; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 export const WIND_WORDS =
     'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
 const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (a verifier's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
-// cclio's good stop is todo 16's nine steps (dima, 10-13)
-const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run cclio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+// clio's good stop is todo 16's nine steps (dima, 10-13)
+const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const windRefused = (what: string) =>
     `🐦‍🔥 second wind refused: ${what} started after you said pending: none, so nothing compacted. resolve it, then call ${ORBIT_TOOL} op second-wind again.`;
 const WIND_CANCELLED =
@@ -692,20 +692,20 @@ const QUIET_ALARM_TITLE = '🚨 quiet comms';
 const NOTIFY_SCRIPT =
     'on run argv\ndisplay notification (item 1 of argv) with title (item 2 of argv)\nend run';
 
-// every way a member addresses cclio in a SendMessage `to`: her name (any ref after it), the socket a reply copies from
+// every way a member addresses clio in a SendMessage `to`: her name (any ref after it), the socket a reply copies from
 // her envelope's `from`, her session ids — as one grep -E alternation, read wherever `to` sits in the input
-export function cclioAddress(ids: { pid?: number; sids: string[] }) {
+export function clioAddress(ids: { pid?: number; sids: string[] }) {
     const literal = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const alts = [
-        'cclio',
+        'clio',
         ...(ids.pid ? [`cc-socks/${ids.pid}\\.sock`] : []),
         ...ids.sids.filter(Boolean).map(literal),
     ];
     return `"to":"[^"]*(${alts.join('|')})`;
 }
 
-// only cclio's thread holds anything, known by her registry name — never the cwd, which a Bash `cd` moves: her pings
-// passed unheld from 16:43, the hour she worked cd'd into ~/frame (cclio's wisp, 17:06)
+// only clio's thread holds anything, known by her registry name — never the cwd, which a Bash `cd` moves: her pings
+// passed unheld from 16:43, the hour she worked cd'd into ~/frame (clio's wisp, 17:06)
 const isQuietHome = ($: EngineInterface) => isLaneOwner($);
 
 // a peer delivery's body and sender: a cli peer's envelope names it `from-name`, a desktop one `name` (probe, 14:49)
@@ -750,7 +750,7 @@ async function quietLog($: EngineInterface, line: QuietLogLine) {
         .catch(() => false);
 }
 
-// each held ping that reached cclio's thread gets a `flushed` line, so a canary sees held → delivered
+// each held ping that reached clio's thread gets a `flushed` line, so a canary sees held → delivered
 async function quietFlushed($: EngineInterface, held: QuietPing[]) {
     const at = await $.clock.now();
     for (const p of held)
@@ -765,7 +765,7 @@ async function quietFlushed($: EngineInterface, held: QuietPing[]) {
         });
 }
 
-// the ledger: each live member's sends to cclio, counted from its own transcript, against her quiet log's lines from
+// the ledger: each live member's sends to clio, counted from its own transcript, against her quiet log's lines from
 // it; a member that sent more than the log holds lost a ping between the two. the window opens at the day's first log
 // line (before it quiet comms logged nothing) and at the member's start
 async function quietLedger($: EngineInterface, now: number) {
@@ -784,7 +784,7 @@ async function quietLedger($: EngineInterface, now: number) {
         .read(`${home}/.claude/sessions/${pid}.json`)
         .then((raw) => JSON.parse(raw) as Record<string, unknown>)
         .catch(() => ({}))) as Record<string, unknown>;
-    const to = cclioAddress({
+    const to = clioAddress({
         pid,
         sids: [me, text(mine.hostSessionId)].filter(
             (x): x is string => typeof x === 'string',
@@ -813,7 +813,7 @@ async function quietLedger($: EngineInterface, now: number) {
             .split('\n')
             .map((t) => Date.parse(t))
             .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
-        // the envelope names ccrow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
+        // the envelope names crow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
         // a member keeps its identity when its mode emoji changes (☕️ → 🌗 on a rename), so the lines match without it
         const role = roleKey(r.base.name);
         const isOurs = (l: QuietLogLine) =>
@@ -830,10 +830,10 @@ async function quietLedger($: EngineInterface, now: number) {
     return gaps;
 }
 
-// ccrow's wake, parked by her wake script for a desktop tab: cclio's thread sends the line itself, no tool call of
+// crow's wake, parked by her wake script for a desktop tab: clio's thread sends the line itself, no tool call of
 // hers (brief 8 item 2), then marks it sent so her prompt hook starts the harvester; a failed send stays parked for the
 // next poll
-async function relayCcrowWake($: EngineInterface) {
+async function relayCrowWake($: EngineInterface) {
     if (!(await isLaneOwner($))) return;
     const path = `${await $.env.get('HOME')}/.local/state/crow/relay.json`;
     const raw = await $.fs.read(path).catch(() => undefined);
@@ -845,7 +845,7 @@ async function relayCcrowWake($: EngineInterface) {
         return;
     }
     if (!parked || parked.isSent || typeof parked.line !== 'string') return;
-    const crow = memberOf(await registry($), `${CROW} ccrow`);
+    const crow = memberOf(await registry($), `${CROW} crow`);
     if (!crow) return;
     const r = await $.session
         .send({ text: parked.line, to: { sessionId: crow.base.sid } })
@@ -884,7 +884,7 @@ async function quietAlarm($: EngineInterface, key: string, text: string) {
     );
 }
 
-// a ledger gap rides cclio's next prompt once, model-only: the board draws no card for it, so this note is how
+// a ledger gap rides clio's next prompt once, model-only: the board draws no card for it, so this note is how
 // a skipped hold reaches her turn; a gap that changes (more sends, more lines) is told again
 const QUIET_GAP_TOLD = 'quiet-gap-told';
 // told per member by the size of its gap (sent - logged): a standing gap that only moves with new sends is not told
@@ -913,7 +913,7 @@ async function takeGapNotes($: EngineInterface) {
     );
 }
 
-// the ledger runs once a minute in cclio's thread; its gaps sit in the store for her next prompt, and each
+// the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
 // new gap or a held ping stuck past the idle wait + 2 min raises one native alarm
 let ledgerAt = 0;
 async function quietBooks($: EngineInterface) {
@@ -933,7 +933,7 @@ async function quietBooks($: EngineInterface) {
         await quietAlarm(
             $,
             `gap:${g.from}`,
-            `${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`,
+            `${g.from} sent clio ${g.sent}, her quiet log holds ${g.logged}`,
         );
     const held = heldOf(await $.store.get(QUIET_HELD + (await currentId($))));
     if (!held) return;
@@ -968,7 +968,7 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
           )
         : undefined;
 
-// held pings past 10 min while cclio is idle: one hidden row, no turn (probe Q2, 11:46:50)
+// held pings past 10 min while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
     const q = await quietOf($);
     if (!q.held.length) return;
@@ -1487,7 +1487,7 @@ export function glideOp(
             `lane ${lane.id} «${lane.title}» ended`,
         );
     // a card refreshed in place: the id, members and history stay; a step whose text survives keeps its done flag, and
-    // the pointer lands on the first step not done (cclio's ask, 18:01: ending and re-creating lost all three)
+    // the pointer lands on the first step not done (clio's ask, 18:01: ending and re-creating lost all three)
     if (act === 'edit') {
         if (lane.plan && input.items !== undefined)
             return {
@@ -1650,7 +1650,7 @@ const laneTopic = (title: string) =>
 type LaneStep = { at: number; step: number };
 
 // a linked coder's plan step moves its lane forward: a step ahead of the pointer and newer than the lane's last move,
-// never the finish, which stays cclio's act; her own step back holds until the coder names a step again (todo 6)
+// never the finish, which stays clio's act; her own step back holds until the coder names a step again (todo 6)
 async function followCoders($: EngineInterface) {
     if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
         return;
@@ -1782,7 +1782,7 @@ async function heldLaneMoves($: EngineInterface) {
     return Array.isArray(held) ? (held as string[]) : [];
 }
 
-// the held moves, once: they leave the store as they join cclio's turn
+// the held moves, once: they leave the store as they join clio's turn
 async function takeLaneMoves($: EngineInterface) {
     await followCoders($);
     const held = await heldLaneMoves($);
@@ -1808,7 +1808,7 @@ const laneSpan = (lane: StashLane) => {
         : '';
 };
 
-// a lane's steps as cclio sends them: 1 to `max`, each plain text ≤LANE_TEXT_MAX, an optional ticket id
+// a lane's steps as clio sends them: 1 to `max`, each plain text ≤LANE_TEXT_MAX, an optional ticket id
 function laneItems(
     input: unknown,
     max = LANE_MAX,
@@ -1926,7 +1926,7 @@ async function changeLaneSteer(
     await showLanes($, await readLanes($));
 }
 
-// the glide reorder left (dima's o138): a `lane-order:` key a board wrote before that is dropped by cclio's stash, never applied
+// the glide reorder left (dima's o138): a `lane-order:` key a board wrote before that is dropped by clio's stash, never applied
 async function dropLaneOrders($: EngineInterface) {
     for (const key of await $.store.keys().catch(() => [] as string[]))
         if (key.startsWith(LANE_ORDER))
@@ -2016,7 +2016,7 @@ async function markRemote(
         $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
 }
 
-// the lane steers dima took with 🛎️, as cclio reads them; each leaves the lane once read
+// the lane steers dima took with 🛎️, as clio reads them; each leaves the lane once read
 async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
     const taken = lanes.filter((l) => !l.endedAt && steers[l.id]?.isTaken);
@@ -2035,13 +2035,13 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     });
 }
 
-// the registry names the coordinator, so a handoff's new 🦉 cclio keeps the lanes
+// the registry names the coordinator, so a handoff's new 🦉 clio keeps the lanes
 async function isLaneOwner($: EngineInterface) {
     const name = await sessionName($);
     return name !== undefined && bare(name) === bare(LANE_OWNER);
 }
 
-// a cclio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
+// a clio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
 async function isBootOpen($: EngineInterface) {
     if (!(await isLaneOwner($))) return false;
     const at = await $.store.get(BOOT + (await $.session.id()));
@@ -2084,7 +2084,7 @@ const short = (sid: string) => sid.slice(0, 8);
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
 // this session's process, resolved at its first read: a hook can run before a reloaded module's session.start, where
-// a module variable is still unset (cclio's glide was refused after a /reload-plugins, 2026-10-12 20:05)
+// a module variable is still unset (clio's glide was refused after a /reload-plugins, 2026-10-12 20:05)
 async function procNow($: EngineInterface) {
     proc ??= await procOf($).catch(() => undefined);
     return proc;
@@ -2433,7 +2433,7 @@ async function windReady(
 }
 
 // a compact the wind did not run (the threshold, a typed /compact) already refreshed the session: an ask or a handoff
-// still being written dies with it, or the board keeps «finishing its step» forever (cclio's 10-14 auto-compact, o96)
+// still being written dies with it, or the board keeps «finishing its step» forever (clio's 10-14 auto-compact, o96)
 async function windOnCompact($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
@@ -2488,7 +2488,7 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
             at: await $.clock.now(),
             state: 'refreshing',
         } satisfies StashWind);
-        // both queue at once: an awaited compact let a prompt dima typed during it queue ahead of the ingest (cclio's
+        // both queue at once: an awaited compact let a prompt dima typed during it queue ahead of the ingest (clio's
         // 19:17 press: compact 19:17, his prompt 19:19, the ingest 19:20)
         await Promise.all([
             $.command.run({
@@ -2527,7 +2527,7 @@ async function armWake($: EngineInterface) {
     });
 }
 
-// the rate-limit mirror every fleet reader takes (cclio's boot, the designer), in sline's old shape: seconds, and
+// the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds, and
 // `null` for a window the response did not report; this mod is its one writer
 async function saveUsage(
     $: EngineInterface,
@@ -2596,7 +2596,7 @@ async function freshMeter($: EngineInterface) {
 
 // the engine's own compaction point as a % of the window, whatever set it: the project's override, or cc's default
 async function compactAtOf($: EngineInterface, window: number) {
-    // the override as cc resolves it for this session: the settings merged for its project (cclio's 70 sits in
+    // the override as cc resolves it for this session: the settings merged for its project (clio's 70 sits in
     // ~/frame/_clio/.claude/settings.json), then the process env; the engine's breakdown reports its default either way
     const merged = await $.settings.read().catch(() => undefined);
     const set =
@@ -2649,7 +2649,7 @@ async function setCompactAt(
         compactTrail.push(was.compactAt);
     compactTrail = isTyping ? [...compactTrail, typed.value] : [];
     // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
-    // later one (cclio's read ~/frame while it launched in ~/frame/_clio, 2026-10-09)
+    // later one (clio's read ~/frame while it launched in ~/frame/_clio, 2026-10-09)
     const launchPid = (await procNow($))?.pid;
     const launched = launchPid
         ? await $.fs
@@ -2665,7 +2665,7 @@ async function setCompactAt(
     const dir = launched ?? projectDir;
     if (!dir) return keep('no project dir for this session');
     // a repo top's own settings.local.json outranks every subdir's, its shared settings.json does not (probed
-    // 2026-10-10): the top writes the shared file, so a subdir session (cclio in ~/frame/_clio) keeps its own value
+    // 2026-10-10): the top writes the shared file, so a subdir session (clio in ~/frame/_clio) keeps its own value
     const root = (await $.session.repo().catch(() => undefined))?.root;
     const path = `${dir}/.claude/${dir === root ? 'settings.json' : 'settings.local.json'}`;
     let settings: Record<string, unknown> = {};
@@ -2704,7 +2704,7 @@ async function publish($: EngineInterface) {
         await flushFields();
         drafts.clear();
     }
-    // a lane cclio moved shows on this board at its next poll
+    // a lane clio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
     if (isBoardOpen) {
         // each board write redraws the pane, and the desktop then rebuilds the bars' svg in the band (a blink and a
@@ -3240,7 +3240,7 @@ type Registered = {
 
 // a lane's member as the registry knows it now: by its name first — a /clear mints a new session id under the same
 // name — the newest live one when two share it; else by its session id, an 8-char prefix of it, or its desktop id
-// (cclio's wisp, 18:01: a linked `local_` id and a /clear both left the subcard at «0 asks»)
+// (clio's wisp, 18:01: a linked `local_` id and a /clear both left the subcard at «0 asks»)
 export function memberOf(
     rows: Pick<Registered, 'base' | 'hostId' | 'isAlive' | 'startedAt'>[],
     member: string,
@@ -3260,7 +3260,7 @@ export function memberOf(
     );
 }
 
-// cc's registry stores the black bird's zero-width joiner as a space: «🐦 ⬛ ccrow» for «🐦‍⬛ ccrow»
+// cc's registry stores the black bird's zero-width joiner as a space: «🐦 ⬛ crow» for «🐦‍⬛ crow»
 const SPLIT_CROW = '\u{1F426} \u{2B1B}';
 const CROW = '\u{1F426}\u{200D}\u{2B1B}';
 
@@ -3319,7 +3319,7 @@ async function registry($: EngineInterface): Promise<Registered[]> {
 }
 
 // a session that never ran a turn has no transcript yet: the desktop's warm spares sit in the registry like this
-// (cclio-9a, 2026-10-09); a missing project folder keeps the row, since cc hashes the folder name of a long path
+// (clio-9a, 2026-10-09); a missing project folder keeps the row, since cc hashes the folder name of a long path
 async function isUnstarted(
     $: EngineInterface,
     home: string | undefined,
@@ -3335,7 +3335,7 @@ async function isUnstarted(
 }
 
 // a session under a minute old is a probe, unless its transcript is older than its process: a resume, as every session
-// is after a mac reboot (dima's ✨ wisp, 10-13 16:26: the card showed cclio alone); FsStat has no birth time, so one
+// is after a mac reboot (dima's ✨ wisp, 10-13 16:26: the card showed clio alone); FsStat has no birth time, so one
 // `stat` asks, and only for a young row
 async function isResumed(
     $: EngineInterface,
@@ -3351,7 +3351,7 @@ async function isResumed(
     return born > 0 && born < r.startedAt - SHORT_MS;
 }
 
-// ccrow's newest 👀 «for you» line from her notes file, written today, its bold stripped (PK-73, dima 14:16: «i'd like to
+// crow's newest 👀 «for you» line from her notes file, written today, its bold stripped (PK-73, dima 14:16: «i'd like to
 // see this note somewhere in a mod», the 👀 line only, no numbers); a past day's tip is stale even under 24 h (dima, 10-13),
 // and her notes print the line with or without a leading bullet
 const CROW_TIP = /^(?:- )?👀 \*\*for you:\*\*\s*(.+)$/mu;
@@ -3429,7 +3429,7 @@ async function members($: EngineInterface): Promise<Member[]> {
 }
 
 // a probe mod left in `~/.claude/dev-mods/<session id>/` past its probe: a day old, or its session gone — a loaded
-// probe keeps acting on live traffic (pk-93's qc-view swallowed cclio's brief after its proof)
+// probe keeps acting on live traffic (pk-93's qc-view swallowed clio's brief after its proof)
 async function staleProbes($: EngineInterface, now: number) {
     const dir = `${await $.env.get('HOME')}/.claude/dev-mods`;
     const held: { sid: string; mods: string[]; at: number }[] = [];
@@ -3469,11 +3469,11 @@ const COLUMNS = {
 } as const;
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
-// a member is the name's last word: a coder named «… + ccrow at decisions» is not ccrow (2026-10-10)
-const isCoordinator = (name: string) => /(^|\s)cclio$/.test(name);
-// cclio, then ccrow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
+// a member is the name's last word: a coder named «… + crow at decisions» is not crow (2026-10-10)
+const isCoordinator = (name: string) => /(^|\s)clio$/.test(name);
+// clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 const pinOf = (name: string) =>
-    isCoordinator(name) ? 0 : /(^|\s)ccrow$/.test(name) ? 1 : 2;
+    isCoordinator(name) ? 0 : /(^|\s)crow$/.test(name) ? 1 : 2;
 
 async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);
@@ -3875,7 +3875,7 @@ export const register: Register = (on) => {
             await $.command
                 .register({
                     description:
-                        'quiet comms canary: send cclio a test [progress] ping, no model; `pnpm mods:quiet-canary` reads held → delivered',
+                        'quiet comms canary: send clio a test [progress] ping, no model; `pnpm mods:quiet-canary` reads held → delivered',
                     name: 'quiet-canary',
                 })
                 .catch(() =>
@@ -3892,7 +3892,7 @@ export const register: Register = (on) => {
                     await wakeForMarks($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
-                    await relayCcrowWake($).catch(() => undefined);
+                    await relayCrowWake($).catch(() => undefined);
                     await followCoders($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
                     // a fold or mobile mode is kept within one poll of its change
@@ -3977,7 +3977,7 @@ export const register: Register = (on) => {
                 : orbitReminder(orbit, isOn);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
-        // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
+        // the lanes speak only in clio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
         // riding her next prompt once, from any board
         const isOwner = await isLaneOwner($);
         const laneMoves =
@@ -4158,7 +4158,7 @@ export const register: Register = (on) => {
                 : undefined;
         await $.state.set(CAP, cap ?? null).catch(() => undefined);
         await armWake($);
-        // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
+        // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
         if (sid)
             hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
@@ -4240,7 +4240,7 @@ export const register: Register = (on) => {
     });
 
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
-    // quiet comms: a member's [progress] ping is held in cclio's thread, every other delivery passes and is logged
+    // quiet comms: a member's [progress] ping is held in clio's thread, every other delivery passes and is logged
     on('session.receive', async ($, e, next) => {
         const kind = e.origin.kind;
         if (kind === 'task-notification' && !e.agentId) {
@@ -4324,7 +4324,7 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    // the canary: a model-free test [progress] ping to cclio through the real peer path; its run reads the log by nonce
+    // the canary: a model-free test [progress] ping to clio through the real peer path; its run reads the log by nonce
     on('command.run', { command: 'quiet-canary' }, async ($, e) => {
         const nonce = e.args.trim() || `c${(await $.clock.now()).toString(36)}`;
         const r = await $.session
@@ -5286,7 +5286,7 @@ export const register: Register = (on) => {
                         </Box>
                     ));
                     // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
-                    // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
+                    // current one «← we are here»; a steer on it reaches clio's next prompt, whichever board took it
                     const lanes = (await $.state.get(LANES)).value ?? [];
                     const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
                     // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
@@ -5961,7 +5961,7 @@ export const register: Register = (on) => {
                                         ) : mark ? (
                                             <Text>{mark}</Text>
                                         ) : null}
-                                        {/* quiet comms: the member pings held for cclio's next turn, nothing at 0 */}
+                                        {/* quiet comms: the member pings held for clio's next turn, nothing at 0 */}
                                         {m.held ? (
                                             <Box flexShrink={0}>
                                                 <Button
@@ -6124,7 +6124,7 @@ export const register: Register = (on) => {
                                         </Box>
                                     </Box>
                                 </Box>
-                                {/* the second line, under the name: ccrow's 👀 tip with speak's buttons, or the 🔭 wait — one clipped row,
+                                {/* the second line, under the name: crow's 👀 tip with speak's buttons, or the 🔭 wait — one clipped row,
                             so a session waiting on many things never pushes the name's line (dima's o6, 15:49) */}
                                 {(m.tip || line) &&
                                 isPartOn('stash.rowmeta') ? (
@@ -6415,7 +6415,7 @@ export const register: Register = (on) => {
             await saveOrbit($, lockJoined(o, fresh));
             notes.push(joinText(fresh));
         }
-        // a lane steer dima took while cclio's turn runs joins it here too, as an orbit mark does
+        // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
         if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
             notes.push(...(await takeLaneMoves($)));
             notes.push(...(await takeLaneSteers($, await readLanes($))));

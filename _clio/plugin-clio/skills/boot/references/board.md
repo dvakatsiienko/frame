@@ -1,6 +1,6 @@
 # boot board mode — the tracker orientation
 
-read by `cclio:boot` when the argument means the full picture («board», «full»). state is queried, never remembered: a stored board goes stale silently and gets read with confidence.
+read by `clio:boot` when the argument means the full picture («board», «full»). state is queried, never remembered: a stored board goes stale silently and gets read with confidence.
 
 **one query serves the skeleton** (per-project counts blow linear's complexity cap — derive counts client-side):
 

@@ -1,4 +1,4 @@
-# cclio:dima-intervenes (was cclio:catch-up) — PRODUCT
+# clio:dima-intervenes (was cclio:catch-up) — PRODUCT
 
 ## the want
 
@@ -18,7 +18,7 @@ dima, 2026-10-15 (the want, sharpened):
 >
 > the triggers, roughly: «…btw remind me how our this and that works?…», «…what's happening in our x and y parts of the fleet…», «…remind me how your pm module works…», «…remind me how our recipes system is set up now…».
 
-- naming (dima, 2026-10-15): «remind» stays for setting reminders (`x:remind`); this skill was `cclio:catch-up`, renamed `cclio:dima-intervenes` 2026-10-21 on dima's pick; cclio's own: coordinator-only, never an `x:*` skill (dima, 2026-10-15).
+- naming (dima, 2026-10-15): «remind» stays for setting reminders (`x:remind`); this skill was `cclio:catch-up`, renamed `clio:dima-intervenes` 2026-10-21 on dima's pick; clio's own: coordinator-only, never an `x:*` skill (dima, 2026-10-15).
 
 ## decided (the grill, 2026-10-15, all six picks ticked)
 
@@ -35,7 +35,7 @@ dima, 2026-10-15 (the want, sharpened):
 - `anthropic-skills:learn` (installed; matt's `teach` sits in the marketplace cache, mattpocock-skills 1.3.1, not in this session's listing) — socratic, it holds back the answer so the learner finds it. the opposite of the want: catch-up answers first. borrowed: name the one misconception when his picture is off. its triggers («explain», «how does … work») overlap, so catch-up's description says «our system» and «the fleet» to win for our own parts
 - no outside tool or lib: this is one skill file and a small stamps file — build
 
-## the plan critic (ccrow, opus, 5 findings — folded)
+## the plan critic (crow, opus, 5 findings — folded)
 
 - 🆕 reads `git log --since=<the area's stamp>`, no stamp → 14 days; never a fixed 7 days beside a stamp (finding 1)
 - no hand-kept area → path table: the area resolves live through the homes the fleet already keeps (`AGENTS.md` maps, skill names, `rg`), and every path is `test -e`'d before the log reads it — a dead path prints nothing and exits 0 (finding 2)
@@ -62,12 +62,12 @@ out:
 
 ## the done test
 
-- given dima asks «remind me how our recipes system works now», when cclio answers, then the reply answers it in plain words first, names `recipes/AGENTS.md` as its source, carries one 🆕 line from that area's commits since its stamp (or 14 days), stays under ~1,500 chars, and orbit holds 2–3 route asks
-- given the area is a flow (the fleet flow, the handoff), when cclio answers, then the reply carries an ascii map of ≤8 lines
-- given an area whose code is newer than its home doc, when cclio answers, then the reply says «docs lag the code by N days»
-- given an area path that no longer exists, when cclio gathers, then the answer names the dead path, never a quiet «nothing new»
-- given dima steers with a stale picture of an area (his words contradict its file), when cclio replies, then one line offers a catch-up on that area, and never twice per area per session
-- given «remind me to …» (a reminder), when cclio reads it, then `x:remind` loads, never catch-up
+- given dima asks «remind me how our recipes system works now», when clio answers, then the reply answers it in plain words first, names `recipes/AGENTS.md` as its source, carries one 🆕 line from that area's commits since its stamp (or 14 days), stays under ~1,500 chars, and orbit holds 2–3 route asks
+- given the area is a flow (the fleet flow, the handoff), when clio answers, then the reply carries an ascii map of ≤8 lines
+- given an area whose code is newer than its home doc, when clio answers, then the reply says «docs lag the code by N days»
+- given an area path that no longer exists, when clio gathers, then the answer names the dead path, never a quiet «nothing new»
+- given dima steers with a stale picture of an area (his words contradict its file), when clio replies, then one line offers a catch-up on that area, and never twice per area per session
+- given «remind me to …» (a reminder), when clio reads it, then `x:remind` loads, never catch-up
 - given a catch-up ran, then the area's stamp in `~/.local/state/clio/catch-up.json` is today
 
 - **teach** (dima, 2026-10-15: «optionally pipe through matt's teach skill») — offered as a route only when an area deserves real study; teach is a multi-session course of html lessons, too heavy as a default
@@ -97,11 +97,11 @@ out:
 
 ### decided (grill rounds 1–2, 2026-10-21)
 
-- one skill: the recall, a light tour and a fix mode (W6, W7); name `cclio:dima-intervenes`, dima's pick
+- one skill: the recall, a light tour and a fix mode (W6, W7); name `clio:dima-intervenes`, dima's pick
 - fix mode starts on his concern words — «feels off», «drifted», «something's wrong with»; a plain «how does … work» stays a recall (W1, W16)
 - tours of unexplored areas are light, an MVP to try (W4)
 - pace: one layer per turn, at most 4 highlights a layer, the issue list by turn 4 (W8–W10)
-- roles: he drives the what and picks the fixes, and may steer tech choices; cclio does the essential tech herself, never overloads him, leaves him the option (W11, W13, W17)
+- roles: he drives the what and picks the fixes, and may steer tech choices; clio does the essential tech herself, never overloads him, leaves him the option (W11, W13, W17)
 - plain words; tech in a linked file, shown on «show me the tech» (W18)
 - after the issue list: one grill round on the fixes, then fix in place first; a ticket only when too big for now's time or capacity (W9, W16)
 - first run: the pm module, PK-103 (W8, W14)
@@ -110,7 +110,7 @@ out:
 ### prior art borrowed (`prior-art.md`)
 
 - fix mode opens with «what were you seeing?» and plays his account back before digging (Allspaw)
-- he names his own guess in one line before the issue list, or skips; the list puts his guess beside cclio's findings (Buçinca: cognitive forcing cuts over-reliance)
+- he names his own guess in one line before the issue list, or skips; the list puts his guess beside clio's findings (Buçinca: cognitive forcing cuts over-reliance)
 - the issue list in postmortem form: the fact · a one-click file:line link · the effect in plain words · one proposed fix
 - at most 4 highlights a layer; the current layer plus one named next step, never the whole tree (Cowan, NN/g)
 - avoid: over-explaining an expert; fixing anything outside the decision round; «approve all?» rounds that invite a rubber stamp
@@ -122,17 +122,17 @@ out: a second skill; a ticket by default; a design critique; tours as a course (
 
 ### the done test
 
-- given «something feels off with the pm module», when cclio replies, then turn 1 asks what he was seeing and shows at most 4 top-level highlights in plain words, no code
+- given «something feels off with the pm module», when clio replies, then turn 1 asks what he was seeing and shows at most 4 top-level highlights in plain words, no code
 - given a zoom turn, then it shows at most 4 highlights and names one next step, and the issue list lands by turn 4 at the latest
 - given the issue list, then his guess was asked first, and each issue carries a file:line link, the effect in plain words and one fix
 - given the decision round, then only the fixes he picked are applied, in place; one too big becomes a ticket on his word
 - given «how does … work» with no concern word, then it stays a recall
 - given «show me the tech», then the linked file's detail comes into the chat
 
-### the plan critic (ccrow, opus, revise, 5 findings — folded 2026-10-21)
+### the plan critic (crow, opus, revise, 5 findings — folded 2026-10-21)
 
 - the rename reaches every live layer; v1 above is marked as history (finding 1)
-- fix ownership: cclio's own files and our tooling land in place; an app, a flow contract or anything bigger than a tweak goes its lane, shaped first (finding 2)
+- fix ownership: clio's own files and our tooling land in place; an app, a flow contract or anything bigger than a tweak goes its lane, shaped first (finding 2)
 - the stamps key is the area's home file path, never his wording (finding 3)
 - a concern word anywhere wins over a recall ask; an unreadable case gets one «recall, or fix?» line (finding 4)
 - the run state lives in `runs/<area>.md`, written every turn; turn 4 is a target, not a forced list (finding 5)

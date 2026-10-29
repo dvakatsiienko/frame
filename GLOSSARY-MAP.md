@@ -24,4 +24,4 @@ a context's `contract:` line names the files its glossary defines: `x lane gate`
 without the context's glossary or adr, unless the message says «glossary: unchanged — <why>». «none yet» nudges on a
 touch; no line keeps the context quiet (the repo context: every commit touches it).
 
-adr ids are context-prefixed; never bare numbers across contexts. normative split: tracker glossary + decisions live here, operational recipes stay in `cclio:pm` (`references/workspace.md` points at this context, never restates it).
+adr ids are context-prefixed; never bare numbers across contexts. normative split: tracker glossary + decisions live here, operational recipes stay in `clio:pm` (`references/workspace.md` points at this context, never restates it).

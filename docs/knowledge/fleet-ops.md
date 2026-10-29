@@ -3,7 +3,7 @@ fed-by: recipe refresh-fleet-ops
 when:
   - { kind: command, value: x fleet }
   - { kind: command, value: claude plugin eval }
-  - { kind: skill, value: cclio:halt }
+  - { kind: skill, value: clio:halt }
 ---
 
 # fleet-ops — what is worth measuring and maintaining in the fleet

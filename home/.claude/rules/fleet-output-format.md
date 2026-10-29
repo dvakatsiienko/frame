@@ -1,5 +1,5 @@
 # output formatting — the mechanical shape of every reply
-<!-- sync: cw -->
+<!-- sync: cloud-chat -->
 
 **scope:** everything checkable without hearing a tone — links, typography, emoji, casing, copy
 fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every fleet member.
@@ -87,7 +87,7 @@ a page you named, never navigates from a site root to the page you meant.
   before asking at all, look for the door that does it for him (a `defaults write`, a script).
 - **ticket ids are always an https link plus a short tldr**, never bare — including inside
   lists: `[FRM-N](https://linear.app/x-com/issue/FRM-N): <tldr> — in progress`. https is the
-  one form every surface renders (the desktop Code tab and cw strip custom schemes); dima opens a
+  one form every surface renders (the desktop Code tab and cloud chat strip custom schemes); dima opens a
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
   a bare `#787` autolinks to the repo in view.
@@ -104,7 +104,7 @@ boot block, a command. a prompt printed as prose reads fine and gives no way to 
 the ribbons sit **outside** the fence so they never get copied, with **one blank line between
 ribbon and fence — to breathe**. **plain text only — no box-drawing glyphs, no dashes**; an emoji-bold-emoji line renders the same
 in every pane:
-<!-- failure: 2026-09-08, the long ╭───╮ ribbons wrapped in the code tab and were trimmed in cw -->
+<!-- failure: 2026-09-08, the long ╭───╮ ribbons wrapped in the code tab and were trimmed in cloud chat -->
 
     📋 **copy → terminal** 📋
 
@@ -170,9 +170,9 @@ file he names.
 - nothing to ask → one ➡️ line; a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
-- **no board in reach (cw always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on
+- **no board in reach (cloud chat always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on
   your word:», then a fence holding one ask per line, numbered `1.` `2.`: the item, the ➡️ recommendation, and the line's end
-  free for his `←` (dima, 2026-10-20: cw has no orbit).
+  free for his `←` (dima, 2026-10-20: cloud chat has no orbit).
 - give the context needed to choose fast, and no more.
 - **a choice prints as `a) … b) …`**, each option with its consequence in his words, ≤15 words; never
   an abstract axis («keep the linear scale or change the truth of the scale» cost an «eli5» turn).

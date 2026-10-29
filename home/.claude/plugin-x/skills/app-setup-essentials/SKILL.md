@@ -11,7 +11,7 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 - bytes: `pnpm apps:essentials` (every app) · `--app <name|path>` (one) · `--staged` (the commit hook)
 - chords, the one app outside bytes: `node ~/projects/bytes/script/apps-essentials.ts --app hotkeys/chords`,
   which frame's `chords-essentials` hook runs on a chords commit
-- it is a required check on bytes main, runs in the commit hook, and prints in cclio's boot digest
+- it is a required check on bytes main, runs in the commit hook, and prints in clio's boot digest
 - a gap prints `🔴 <app> <row> — <detail>` and names the tool that fills it; a 🟡 is a doc gone stale
   and never fails
 - a waiver is a postponement with a reason and a ticket, kept in the script's data. it is lifted the
@@ -22,7 +22,7 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 1. `AGENTS.md`: what the app is, how it runs, its hazards. The repo's root `AGENTS.md` gets its registry row.
 2. `x:app-author-ftr` drafts `FTR.md` from the running app. Every line starts ⬜ until its check runs.
 3. matt's `domain-modeling` writes `GLOSSARY.md` and `docs/adr/0001-*.md`, with the stack pick as ADR-0001.
-4. `/run-skill-generator <app>` makes `<app>-run`. It is user-invoked, so dima types it, or cclio
+4. `/run-skill-generator <app>` makes `<app>-run`. It is user-invoked, so dima types it, or clio
    spawns a one-shot session whose prompt is that command. Then write `<app>-verify` from it.
    A tooling area that is not an app keeps an `<area>-verify` skill too, so a verifier's recipe lines have a home: `x-verify` (`x/`), `mods-verify` (`home/.claude/plugin-x/mods/`), `ci-verify` (bytes `.github`); the checker does not walk areas yet.
 5. A ui app: impeccable `init` for `PRODUCT.md`, and `document` for `DESIGN.md` after the first build.

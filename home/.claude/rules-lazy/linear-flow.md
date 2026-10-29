@@ -1,8 +1,8 @@
 # linear flow — the floor every session stands on
 
-**cclio owns the tracker**: every create, body edit, state and label move, close and sort is hers,
-through her `cclio:pm` skill. a member reads tickets and posts its done comment; anything past
-that, it hands to cclio in its ping.
+**clio owns the tracker**: every create, body edit, state and label move, close and sort is hers,
+through her `clio:pm` skill. a member reads tickets and posts its done comment; anything past
+that, it hands to clio in its ping.
 
 📌 **this binds only workspace `x-com`** (teams `FRM`, how we work, and `BYT`, building apps). a
 repo with another tracker, or none, follows its own conventions.
@@ -13,12 +13,12 @@ repo with another tracker, or none, follows its own conventions.
   labels, state, both relation sides, comments; several ids batched. old `DOT-N` ids resolve to `FRM-N`
 - **comment**: `x linear comment <id> --body-file <file>` — a coder's done report or a verifier's `clean` verdict,
   nothing else; a body goes through a file, never inline. dima's words or verdicts heard in your
-  thread go to cclio in your ping, never into a linear comment
+  thread go to clio in your ping, never into a linear comment
 - `x schema linear` lists every verb; the raw `linear` cli and the Linear MCP are never a member's door
 
 ## what a member never does
 
-- create a ticket, edit a body, move a state or a label: cclio does it the turn your ping lands.
+- create a ticket, edit a body, move a state or a label: clio does it the turn your ping lands.
   the slices `to-tickets` cuts live in `.scratch/<feature>/issues/`, never in linear
 - start a ticket labelled `human` (dima, 2026-09-30, after BYT-86 was proposed as a shift
   candidate); labels are read from the ticket the same turn, never recalled

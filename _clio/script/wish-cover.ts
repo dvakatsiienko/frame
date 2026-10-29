@@ -11,7 +11,7 @@ export function wishLines(item: string) {
     const lines = new Map<string, string>();
     for (const match of item.matchAll(/^\s*[-*]?\s*(W\d+)\b[ \t]*(.*)$/gm)) {
         const [, id, text] = match;
-        // a leading «(Q1)» or «(band 4)» is cclio's source tag, never his words
+        // a leading «(Q1)» or «(band 4)» is clio's source tag, never his words
         if (id && !lines.has(id))
             lines.set(id, (text ?? '').replace(/^\(.*?\)\s*:?\s*/, '').trim());
     }

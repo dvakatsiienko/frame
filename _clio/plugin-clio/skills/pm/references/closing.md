@@ -1,6 +1,6 @@
 # pm — closing
 
-read before any close, cancel, merge or reshape proposal (`cclio:pm` § write and close).
+read before any close, cancel, merge or reshape proposal (`clio:pm` § write and close).
 
 ## closing — proposed, never performed
 

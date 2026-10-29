@@ -64,7 +64,7 @@ type flowData struct {
 var (
 	flowTags     = []tagCount{{Tag: "#dima-caught", Baseline: 60}, {Tag: "#brief", Baseline: 47}}
 	flowRepos    = []prMedian{{Repo: "frame", Baseline: 36}, {Repo: "bytes", Baseline: 25}}
-	crewSkills   = []string{"x:crew-coder", "x:crew-verifier"}
+	crewSkills   = []string{"x:crew-codie", "x:crew-sixth-sense", "x:crew-coder", "x:crew-verifier"} // read-both: the ids before 10-29
 	bareRun      = regexp.MustCompile(`\bclaude\b[^|;&\n]*--safe-mode`)
 	knowledgeAt  = regexp.MustCompile(`/docs/knowledge/(.+)$`)
 	guardStoreRe = regexp.MustCompile(`^(x-mod-)?guard_.*\.json$`)

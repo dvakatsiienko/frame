@@ -11,12 +11,12 @@
   - subagent (5m): opus 2.6M ÷ steps · sonnet 2.6M ÷ steps · fable 5.1M ÷ steps · haiku 1.3M ÷ steps
   - on an opus `--bg`: ≤10 steps → reuse up to ~410k · ~50 steps (a ticket) → under ~80k · 100+ (a feature) → spawn fresh. effort changes the steps, never the prices.
 - idle past the cache life → cold, a reuse rewrites the whole context at the write price → spawn fresh, unless its knowledge is the job. **a `--bg` session goes cold after 1h idle, a subagent after 5 min** — a finished subagent revived by `SendMessage` minutes later is almost always a cold reuse.
-- the taxonomy, by cost: cclio (one long session, its context is the job) · `--bg` coder (watchable) · implement-spec subagents (bulk) · fork (pays the parent's whole context) · `helper` (sonnet, mechanical) · bare probe (`claude -p --safe-mode`, almost no base) · ccrow (resident, 🔥 keeps it warm).
+- the taxonomy, by cost: clio (one long session, its context is the job) · `--bg` coder (watchable) · implement-spec subagents (bulk) · fork (pays the parent's whole context) · `helper` (sonnet, mechanical) · bare probe (`claude -p --safe-mode`, almost no base) · crow (resident, 🔥 keeps it warm).
 
 **the spec-run balance** (dima, 2026-10-06: «plain --bg coder is better for granular work, where i'd like to see the results in place. and implement-spec looks very good of under the hood work»):
 - a `--bg` coder for granular work dima watches: UI, side lanes, anything he steers in place
-- `implement-spec` subagents for bulk work under the hood; each ticket picks its model — sonnet 5.5 for a mechanical ticket, opus for judgment; cclio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
-- a `--bg` coder hands its big reads and mechanical edits to subagents, so its own context stays lean (`x:crew-coder`)
+- `implement-spec` subagents for bulk work under the hood; each ticket picks its model — sonnet 5.5 for a mechanical ticket, opus for judgment; clio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
+- a `--bg` coder hands its big reads and mechanical edits to subagents, so its own context stays lean (`x:crew-codie`)
 
 ## picking the model — Dima's contract, never re-derived
 

@@ -129,7 +129,7 @@ func linearUpdate(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	// projects are read alone first: an app actor without `initiative:read` (cclio) fails the whole
+	// projects are read alone first: an app actor without `initiative:read` (clio) fails the whole
 	// query the moment it names initiatives, so a project update never asks for them
 	kind, mutation, idKey := "project", "projectUpdateCreate", "projectId"
 	target, err := findNamed(r, actor, "projects", name)

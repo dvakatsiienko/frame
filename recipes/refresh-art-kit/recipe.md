@@ -41,7 +41,7 @@ dima's, 2026-09-30:
 
 - suggest a run when: a rebrand is spotted, a new art job type appears
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. one brief file from the kept vectors → `pnpm research:lanes <brief>` (exa + parallel) plus a
    fresh opus source lane that PROBES: the svgl api, the npm versions, which logo each set serves,
    the tool versions on this mac (`ffmpeg -version`, `gifski --version`, `vhs --version`,

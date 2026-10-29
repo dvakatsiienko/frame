@@ -2,7 +2,7 @@
 description: load on «test drive», «try X», «trial», «let's try», a new tool dima drops for a look; when a tool, a member, a skill or a habit goes on trial, a round is logged, `pnpm test-drive:check` reds or names a trial due, and at the halt's trial board.
 ---
 
-# /cclio:shape-test-drive — a trial, born to verdict
+# /clio:shape-test-drive — a trial, born to verdict
 
 dima, 2026-10-14: «a shape-test-drive skill that sets the test drive flow properly with the correct sequence, so you never forget anything related to test drives». a trial is a running measurement: it is used as often as it fits, measured every time, and closed by a verdict, never by silence.
 
@@ -28,7 +28,7 @@ two passes, both wide (dima, 2026-09-28: «encourage yourself to proactively use
 - each use is one round line: date · the ask · the numbers · a grade against the usual door. a round without numbers is an anecdote
 - **widest, not deepest**: one real try per stress-list feature beats ten of the one that works; an untried feature at the verdict is named untried, never folded into «fine»
 - **alone in its lane** (dima, 2026-10-02: «don't have any parallel activities … we can only parallelize tools that we have proven by usage»): no parallel spawn or side ask folded in mid-round; proven tools run beside it, and talk or planning in the thread is not a parallel activity
-- a member appends its own round to the file; a member that cannot reach the file puts the numbers in its report and cclio appends them
+- a member appends its own round to the file; a member that cannot reach the file puts the numbers in its report and clio appends them
 
 ## 4. due — done when each due trial has its verdict ask in orbit
 

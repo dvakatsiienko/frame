@@ -50,7 +50,7 @@ const FAMILIES = [
         'src/a.ts',
     ],
     ['git clean -f', 'git clean -fd', 'git stash push -u -- <your paths>', '.'],
-    ['git stash drop', 'git stash drop', 'ask cclio', 'stash@{0}'],
+    ['git stash drop', 'git stash drop', 'ask clio', 'stash@{0}'],
     [
         'force-push',
         'git push --force origin main',
@@ -63,11 +63,11 @@ const FAMILIES = [
         'x lane rebase-main',
         'origin coder/x',
     ],
-    ['git branch -D', 'git branch -D old', 'ask cclio', 'old'],
+    ['git branch -D', 'git branch -D old', 'ask clio', 'old'],
     [
         'git worktree remove',
         'git worktree remove .claude/worktrees/w1',
-        'ask cclio',
+        'ask clio',
         '.claude/worktrees/w1',
     ],
     [
@@ -160,7 +160,7 @@ const SLIPS = [
     ['a :refspec push', 'git push origin :main', 'no safe door'],
     ['a push --delete', 'git push --delete origin old', 'no safe door'],
     ['a push -d', 'git push -d origin old', 'no safe door'],
-    ['git branch -d -f', 'git branch -d -f old', 'ask cclio'],
+    ['git branch -d -f', 'git branch -d -f old', 'ask clio'],
     ['bash -lc', "bash -lc 'rm x'", 'trash'],
     [
         'a kill fed by ps',
@@ -174,7 +174,7 @@ const SLIPS = [
         'git checkout -f main',
         'git stash push -u -- <your paths>',
     ],
-    ['git worktree prune', 'git worktree prune', 'ask cclio'],
+    ['git worktree prune', 'git worktree prune', 'ask clio'],
     ['npm --location=global', 'npm install --location=global x', 'pnpm add -g'],
     ['git config user.name', 'git config user.name bot', 'without the flag'],
     ['a command after arithmetic', 'echo $((1<<2))\nrm x', 'trash'],

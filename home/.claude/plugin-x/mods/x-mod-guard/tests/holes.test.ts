@@ -13,7 +13,7 @@ const EMPTY =
     '## Implementation Notes\n\n<!-- SECTION:NOTES:BEGIN -->\n<!-- SECTION:NOTES:END -->\n';
 const FILES: Record<string, string> = {
     [`${POCKET}/backlog.config.yml`]:
-        'project_name: "cclio pocket"\nbacklog_directory: "pocket"\n',
+        'project_name: "clio pocket"\nbacklog_directory: "pocket"\n',
     [`${POCKET}/pocket/tasks/pk-103 - pm flow review.md`]: NOTED,
     [`${POCKET}/pocket/tasks/pk-104 - a fresh task.md`]: EMPTY,
 };
@@ -137,7 +137,7 @@ for (const command of [
         const r = await bash($, command);
         expect([w.ran, r.deny]).toEqual([
             [],
-            expect.stringMatching(/ask cclio.*deletes on the remote/),
+            expect.stringMatching(/ask clio.*deletes on the remote/),
         ]);
     });
 
@@ -380,7 +380,7 @@ test('a 3-item send naming no ticket is refused', async ($, on) => {
 
 // E6 — the five holes as their literal commands, replayed at the hook entry
 for (const [hole, cwd, call, door] of [
-    ['railway', '/repo', 'railway variable delete API_KEY', 'ask cclio'],
+    ['railway', '/repo', 'railway variable delete API_KEY', 'ask clio'],
     ['mirror', '/repo', 'git push --mirror origin', '# dima-ok: origin'],
     [
         'pocket notes',

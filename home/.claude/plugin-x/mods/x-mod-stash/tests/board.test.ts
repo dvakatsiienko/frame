@@ -13,7 +13,7 @@ const PING =
 const REGISTRY: Record<string, Record<string, unknown>> = {
     '/home/.claude/sessions/1.json': {
         hostSessionId: 'local_abc-1',
-        name: '🦉 cclio',
+        name: '🦉 clio',
         pid: 1,
         sessionId: HERE,
         status: 'busy',
@@ -108,7 +108,7 @@ function fleet(
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
-                // `sh` is the board's own pid lookup: pid 1, the registry's cclio, when the board is hers
+                // `sh` is the board's own pid lookup: pid 1, the registry's clio, when the board is hers
                 stdout:
                     e.argv[0] === 'stat'
                         ? `${born[e.argv.at(-1) ?? ''] ?? ''}\n`
@@ -173,7 +173,7 @@ test('every name is bold text, and a row holds no control', async ($, on) => {
     fleet(on);
     const ui = await board($);
     const [name, doors] = await Promise.all([
-        ui.find({ text: '🦉 cclio (here)', type: 'Text' }),
+        ui.find({ text: '🦉 clio (here)', type: 'Text' }),
         ui.findAll({ type: 'Button' }),
     ]);
     expect([
@@ -209,8 +209,8 @@ test("the coordinator's adviser is pinned second, above a coder whose name only 
         {
             alive: [1, 2, 3],
             patch: {
-                2: { name: '☕️ 🔧 FRM-1 code: head + ccrow at decisions' },
-                3: { name: '🐦 ⬛ ccrow' },
+                2: { name: '☕️ 🔧 FRM-1 code: head + crow at decisions' },
+                3: { name: '🐦 ⬛ crow' },
             },
         },
     );
@@ -218,10 +218,10 @@ test("the coordinator's adviser is pinned second, above a coder whose name only 
 });
 
 test("the coordinator's adviser's name is bold, like the coordinator's", async ($, on) => {
-    fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: '🐦 ⬛ ccrow' } } });
+    fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: '🐦 ⬛ crow' } } });
     const ui = await board($);
     const name = (await ui.findAll({ type: 'Text' })).find((t) =>
-        (t.text ?? '').endsWith(' ccrow'),
+        (t.text ?? '').endsWith(' crow'),
     );
     expect(name?.props.bold).toBe(true);
 });
@@ -237,7 +237,7 @@ test('a session started under a minute ago gets no row', async ($, on) => {
 });
 
 // a reboot relaunches every session under a new pid: one resumed has a transcript older than its process, a new one
-// does not (dima's ✨ wisp, 10-13 16:26: the card showed cclio alone)
+// does not (dima's ✨ wisp, 10-13 16:26: the card showed clio alone)
 test('a session resumed under a minute ago keeps its row', async ($, on) => {
     fleet(
         on,
@@ -480,8 +480,7 @@ test("the wait sits on a second line under the name, never on the name's line", 
     const ui = await board($);
     const nameSide = (await ui.findAll({ type: 'Box' })).find(
         (b) =>
-            b.props.overflow === 'hidden' &&
-            b.text?.includes('🦉 cclio (here)'),
+            b.props.overflow === 'hidden' && b.text?.includes('🦉 clio (here)'),
     );
     const second = (await ui.findAll({ type: 'Box' })).find(
         (b) => b.props.paddingLeft === 2 && b.text?.startsWith('🔭'),
@@ -492,13 +491,13 @@ test("the wait sits on a second line under the name, never on the name's line", 
     ]);
 });
 
-test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) => {
+test("crow's tip line carries speak's buttons, reading the tip", async ($, on) => {
     fleet(
         on,
         {},
         {
             alive: [1, 2, 3],
-            patch: { 3: { name: '🐦 ⬛ ccrow', sessionId: 'c3c3c3c3-crow' } },
+            patch: { 3: { name: '🐦 ⬛ crow', sessionId: 'c3c3c3c3-crow' } },
             reads: {
                 '/home/.local/state/crow/notes.jsonl': JSON.stringify({
                     at: new Date(NOW - MIN).toISOString(),
@@ -516,13 +515,13 @@ test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) 
     ).toBe(true);
 });
 
-test("ccrow's line leads with read and pause, and stop closes it (dima, 18:29)", async ($, on) => {
+test("crow's line leads with read and pause, and stop closes it (dima, 18:29)", async ($, on) => {
     fleet(
         on,
         {},
         {
             alive: [1, 2, 3],
-            patch: { 3: { name: '🐦 ⬛ ccrow', sessionId: 'c3c3c3c3-crow' } },
+            patch: { 3: { name: '🐦 ⬛ crow', sessionId: 'c3c3c3c3-crow' } },
             reads: {
                 '/home/.local/state/crow/notes.jsonl': JSON.stringify({
                     at: new Date(NOW - MIN).toISOString(),
@@ -664,7 +663,7 @@ test("a row links the ticket in its session's name", async ($, on) => {
     expect(link?.props.href).toBe('https://linear.app/x-com/issue/FRM-1');
 });
 
-// ccrow's notes file as her wakes write it: one json line per note, the 👀 «for you» line inside the note's text
+// crow's notes file as her wakes write it: one json line per note, the 👀 «for you» line inside the note's text
 const crowNotes = (notes: { at: number; note: string }[]) => ({
     '/home/.local/state/crow/notes.jsonl': notes
         .map((n) =>
@@ -674,9 +673,9 @@ const crowNotes = (notes: { at: number; note: string }[]) => ({
 });
 
 const CROW_SID = 'c3c3c3c3-crow';
-const asCrow = { 3: { name: '🐦 ⬛ ccrow', sessionId: CROW_SID } };
+const asCrow = { 3: { name: '🐦 ⬛ crow', sessionId: CROW_SID } };
 
-test("ccrow's row shows her newest 👀 for-you tip in the wait slot", async ($, on) => {
+test("crow's row shows her newest 👀 for-you tip in the wait slot", async ($, on) => {
     fleet(
         on,
         {},
@@ -776,10 +775,10 @@ test("no other session's row carries her tip", async ($, on) => {
     expect([rows[PEER], rows[HERE]].join('\n')).not.toContain('👀');
 });
 
-// cc's registry keeps «🐦‍⬛ ccrow» with its zero-width joiner turned into a space
-test("ccrow's black bird keeps its joiner on the board", async ($, on) => {
-    fleet(on, {}, { patch: { 2: { name: '\u{1F426} \u{2B1B} ccrow' } } });
-    expect(await row($, PEER)).toContain('\u{1F426}\u{200D}\u{2B1B} ccrow');
+// cc's registry keeps «🐦‍⬛ crow» with its zero-width joiner turned into a space
+test("crow's black bird keeps its joiner on the board", async ($, on) => {
+    fleet(on, {}, { patch: { 2: { name: '\u{1F426} \u{2B1B} crow' } } });
+    expect(await row($, PEER)).toContain('\u{1F426}\u{200D}\u{2B1B} crow');
 });
 
 test('the board marks a background session named off the fleet pattern', async ($, on) => {
@@ -885,8 +884,7 @@ test("a row shows its session's model on the name's line, its effort as lit cell
     const ui = await board($);
     const nameSide = (await ui.findAll({ type: 'Box' })).find(
         (b) =>
-            b.props.overflow === 'hidden' &&
-            b.text?.includes('🦉 cclio (here)'),
+            b.props.overflow === 'hidden' && b.text?.includes('🦉 clio (here)'),
     );
     const cells = (await ui.findAll({ type: 'Svg' })).find((n) =>
         String(n.props.alt).startsWith('effort'),
@@ -1019,7 +1017,7 @@ test('two members whose names hash alike still get two hues', () => {
 test("with colour on, an idle member's dot is dimmed and a busy one's is not", async ($, on) => {
     fleet(on, { 'board-colour': true });
     const dots = (await colourTexts($)).filter((t) => t.text === '●');
-    // cclio is pinned first and busy, the coder second and idle
+    // clio is pinned first and busy, the coder second and idle
     expect(dots.map((d) => d.dim)).toEqual([false, true]);
 });
 
@@ -1119,7 +1117,7 @@ const probes = (sid: string, mods: FsEntry[]) => ({
 const probeRow = async ($: Engine) =>
     (await (await board($)).find({ text: /^🧪/, type: 'Text' }))?.text;
 
-test("a probe whose session is gone warns on cclio's board", async ($, on) => {
+test("a probe whose session is gone warns on clio's board", async ($, on) => {
     fleet(
         on,
         {},
@@ -1165,12 +1163,12 @@ test('a dev-mods folder holding only a file draws no warning', async ($, on) => 
     expect(await probeRow($)).toBeUndefined();
 });
 
-test("a stale probe stays off any board but cclio's", async ($, on) => {
+test("a stale probe stays off any board but clio's", async ($, on) => {
     fleet(on, {}, { dirs: probes(GONE, [dir('qc-view', NOW - MIN)]) });
     expect(await probeRow($)).toBeUndefined();
 });
 
-// the quiet ledger (brief 6): a member's transcript sends to cclio against her quiet log, on her board only
+// the quiet ledger (brief 6): a member's transcript sends to clio against her quiet log, on her board only
 const DAY = new Date(NOW).toISOString().slice(0, 10);
 const at = (ms: number) => new Date(ms).toISOString();
 const logged = (from: string, ms: number, verdict = 'held') => ({
@@ -1203,7 +1201,7 @@ const gapRow = async (
 };
 type QuietGapLine = { from: string; logged: number; sent: number };
 
-test('a member that sent cclio more pings than her log holds is a gap in the ledger, never a 🚨 row', async ($, on) => {
+test('a member that sent clio more pings than her log holds is a gap in the ledger, never a 🚨 row', async ($, on) => {
     const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
@@ -1308,7 +1306,7 @@ test('a flushed line does not count as a logged delivery', async ($, on) => {
     expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
 });
 
-test("the ledger's gap stays off any board but cclio's", async ($, on) => {
+test("the ledger's gap stays off any board but clio's", async ($, on) => {
     const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
@@ -1317,7 +1315,7 @@ test("the ledger's gap stays off any board but cclio's", async ($, on) => {
     expect(await gapRow($, clock, store)).toBeUndefined();
 });
 
-// the stuck alarm: a held ping past the idle wait (10 min) + 2 min turns cclio's 🤫 n red
+// the stuck alarm: a held ping past the idle wait (10 min) + 2 min turns clio's 🤫 n red
 const heldFor = (ms: number) => ({
     [`quiet-held:${HERE}`]: [{ at: NOW - ms, from: PEER_NAME, text: 'step 2' }],
 });
@@ -1334,18 +1332,18 @@ test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on)
     expect(badge?.props.color).toBeUndefined();
 });
 
-test("ccrow's lines count for her though the log keeps the registry's split «🐦 ⬛» and the board the joined «🐦‍⬛»", async ($, on) => {
+test("crow's lines count for her though the log keeps the registry's split «🐦 ⬛» and the board the joined «🐦‍⬛»", async ($, on) => {
     const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
-                logged('🐦 ⬛ ccrow', NOW - 30 * MIN),
-                logged('🐦 ⬛ ccrow', NOW - 20 * MIN),
+                logged('🐦 ⬛ crow', NOW - 30 * MIN),
+                logged('🐦 ⬛ crow', NOW - 20 * MIN),
             ],
         },
         {
             isOwner: true,
-            patch: { 2: { name: '🐦 ⬛ ccrow' } },
+            patch: { 2: { name: '🐦 ⬛ crow' } },
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
@@ -1372,7 +1370,7 @@ test('no member dot equals a state tint: ok, warn, hot, calm or accent', () => {
 });
 
 test('every dot comes from the palette, the same name keeping the same hue', () => {
-    const names = ['🦉 cclio', '☕️ 🔧 coder', '🐦 ⬛ ccrow'];
+    const names = ['🦉 clio', '☕️ 🔧 coder', '🐦 ⬛ crow'];
     const hues = huesOf(names);
     expect([
         hues.every(
@@ -1652,14 +1650,14 @@ test('a cold row off the fleet pattern keeps ⚠, never ❄️', async ($, on) =
     expect([text.includes('⚠'), text.includes('❄️')]).toEqual([true, false]);
 });
 
-test("the cold composer sidecar shows ❄️, not ⚠ (dima's 10-15 screenshot)", async ($, on) => {
-    fleet(on, COLD, { bg: [2], patch: { 2: { name: '🎼 composer' } } });
+test("the cold helga sidecar shows ❄️, not ⚠ (dima's 10-15 screenshot)", async ($, on) => {
+    fleet(on, COLD, { bg: [2], patch: { 2: { name: '🎀 helga' } } });
     const text = await row($, PEER);
     expect([text.includes('❄️'), text.includes('⚠')]).toEqual([true, false]);
 });
 
 // FRM-429 exit 2 (dima's o56): no quiet-comms card draws on any board; held pings and ledger gaps stay in the store
-test('no quiet-comms card draws on cclio’s board, with pings held and a gap open', async ($, on) => {
+test('no quiet-comms card draws on clio’s board, with pings held and a gap open', async ($, on) => {
     const { clock, store } = fleet(
         on,
         {

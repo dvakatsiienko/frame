@@ -15,7 +15,7 @@ verb's mechanics — this file says which verbs, in which order, with which gate
    hard to follow; the coordinator's window is quiet and its answers land on his lane), never the
    repo root of a multi-tool repo (one product record over unrelated tools steers nothing). the six categories the README names are
    all in the template under other headings; **voice is the one init tends to skip** — ask it.
-   `buildPath: code` when no image generation exists. `PRODUCT.md`'s want block is ours (`cclio:shape-idea`), the rest is init's: hand edits there are
+   `buildPath: code` when no image generation exists. `PRODUCT.md`'s want block is ours (`clio:shape-idea`), the rest is init's: hand edits there are
    banned, a stale line waits for the next `init`.
 3. **`document` on the incumbent, the coordinator's window again, dima confirming** — records the
    look as it is: tokens off `:root`,
@@ -54,7 +54,7 @@ per pass:
 - harness affordances on day one: a port override and a `--data-dir` so a round never writes to
   dima's real data; a write-path probe uses a key nothing is filed under
 - the adversarial review lane (coderabbit) runs before the verifier's first
-  round, not when someone remembers (`x:crew-coder` § 3); a long-lived PR is a reason for MORE
+  round, not when someone remembers (`x:crew-codie` § 3); a long-lived PR is a reason for MORE
   review, never less
 
 ## what the tool fights, and who wins

@@ -57,13 +57,13 @@ see `writing-for-agents` for the craft (pointers, the ladder, pruning, no-ops, l
 
 ## the mechanics, and their probes
 
-- **block html comments** — `<!-- … -->` at column 0 is stripped before injection: free storage for the why. ❗ an indented one, inside a list item, is NOT stripped and loads whole **[measured 2026-10-11, cclio's own root attachment + a sonnet probe]**: put the comment at column 0, after the list. **[measured]** in a `CLAUDE.md`, an imported leaf and a `rules/` file (cc 2.1.292; re-run on 2.1.296, haiku + sonnet, 2026-10-11); an `AGENTS.md` loaded as project instructions too (cclio's own: its line-51 comment is on disk and absent from the loaded copy, 2026-10-11)
+- **block html comments** — `<!-- … -->` at column 0 is stripped before injection: free storage for the why. ❗ an indented one, inside a list item, is NOT stripped and loads whole **[measured 2026-10-11, clio's own root attachment + a sonnet probe]**: put the comment at column 0, after the list. **[measured]** in a `CLAUDE.md`, an imported leaf and a `rules/` file (cc 2.1.292; re-run on 2.1.296, haiku + sonnet, 2026-10-11); an `AGENTS.md` loaded as project instructions too (clio's own: its line-51 comment is on disk and absent from the loaded copy, 2026-10-11)
 - **`paths:` frontmatter** — a `.claude/rules/*.md` with `paths:` is absent at boot and fires on touching a matching file, never on an intention. **[measured, cc 2.1.296, 2026-10-11]** opus and sonnet 5.5, 24/24: Bash `cat`, `Edit`, and a `Write` followed by a read load it; haiku: `Read` too, a bare `Write` of a new file not; touching nothing matching loads nothing (`recipes/nurture-memory/scripts/paths-probe.sh`). 📌 the rule arrives inside the tool result, so write it as a plain project convention: a secret-token probe read as injected text to haiku
 - **`@imports`** — expand at launch: they buy organisation, not context **[read]**
 - **size** — a `CLAUDE.md` over 4 MiB is skipped (the 200-line and `MEMORY.md` cuts are in `SKILL.md`) **[read]**
 - **delivery** — `CLAUDE.md` arrives as a user message after the system prompt: context, never enforcement **[read]**
 - **compaction** — the project-root `CLAUDE.md` is re-read from disk after `/compact`; nested files and `paths:` rules reload only when re-matched; conversation-only instructions are gone **[read]**
-- **did it load?** — `/context` (and `/memory`) list every loaded memory file, AGENTS.md included: the probe of record. the `InstructionsLoaded` hook never reports an AGENTS.md loaded as project instructions, how frame and cclio load **[read, 2026-10-11]**; a one-line `CLAUDE.md` holding `@AGENTS.md` makes it fire
+- **did it load?** — `/context` (and `/memory`) list every loaded memory file, AGENTS.md included: the probe of record. the `InstructionsLoaded` hook never reports an AGENTS.md loaded as project instructions, how frame and clio load **[read, 2026-10-11]**; a one-line `CLAUDE.md` holding `@AGENTS.md` makes it fire
 - **`/doctor prompt-audit`** (2.1.283) audits instructions; plain `/doctor` proposes trims of derivable content and offers moves into skills **[read]**
 
 the probes — rerun them, never trust the list above:
@@ -151,7 +151,7 @@ more specific wins, narrowest last: root `CLAUDE.md` → `rules/*.md` → `~/pro
 the mechanics above hold the wrong key, the import cost and the `MEMORY.md` cut; these bite on top:
 
 - ❗ **an `@import` path** resolves from the importing file: from `memory/_MEMORY.md` a sibling is `@leaf.md`, and `@memory/leaf.md` fails silently
-- ❗ **a hand-written barrel can lie** — `_clio/memory/` is index-authoritative, so a missing line disables a memory; cclio's barrel makes every leaf resident from turn one
+- ❗ **a hand-written barrel can lie** — `_clio/memory/` is index-authoritative, so a missing line disables a memory; clio's barrel makes every leaf resident from turn one
 - ❗ **a subagent does not inherit the parent's cwd** — every path in a brief or a memfile is absolute
 
 ## how the files are organised

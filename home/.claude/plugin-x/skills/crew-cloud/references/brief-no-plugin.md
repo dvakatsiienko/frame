@@ -17,7 +17,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 ## how we code (our fleet rules; the VM does not have them)
 - less is more: delete, derive or inline before you add. no speculative abstraction, no unasked docs.
 - typescript: no `any`; inferred types over annotations; zod at boundaries only.
-- names are entity-first: `usageSave`, not `saveUsage`; `crew-coder`, not `coder-crew`.
+- names are entity-first: `usageSave`, not `saveUsage`; `crew-codie`, not `coder-crew`.
 - comments only for a non-obvious why, one line.
 - tests prove a contract, one behaviour each, runner vitest; a test is proven by making it fail once.
 - setup: `CI=1 pnpm install` (keeps git-hook shims out). typecheck + the touched tests must pass.

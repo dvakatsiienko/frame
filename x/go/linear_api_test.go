@@ -24,7 +24,7 @@ func apiServer(t *testing.T, reply string) *fakeLinear {
 
 func TestAPIPrintsLinearsReplyAsItCame(t *testing.T) {
 	t.Parallel()
-	reply := `{"data":{"viewer":{"name":"cclio"}}}`
+	reply := `{"data":{"viewer":{"name":"clio"}}}`
 	server := apiServer(t, reply)
 	_, got := runLinear(t, server, nil, "linear", "api", "query { viewer { name } }")
 	if got.code != 0 || strings.TrimSpace(got.stdout) != reply {

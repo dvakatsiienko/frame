@@ -82,7 +82,7 @@ type ticketCost struct {
 	WallMs int64  `json:"wall_ms"`
 }
 
-type cclioEdits struct {
+type clioEdits struct {
 	ID    string `json:"id"`
 	Edits int    `json:"edits"`
 	Title string `json:"title"`
@@ -92,7 +92,7 @@ type opsData struct {
 	Days         int          `json:"days"`
 	MinKB        int          `json:"min_kb"`
 	Tickets      []ticketCost `json:"tickets"`
-	CclioEdits   []cclioEdits `json:"cclio_edits"`
+	ClioEdits    []clioEdits  `json:"clio_edits"`
 	Boots        []opsBoot    `json:"boots"`
 	SizeMisses   []sizeMiss   `json:"size_misses"`
 	SizeError    string       `json:"size_error,omitempty"`
@@ -112,14 +112,14 @@ type ticketSize struct {
 	Closed   bool
 }
 
-// the size lines in agent turns (cclio:pm, _clio/plugin-clio/skills/pm/SKILL.md § the fields); M has none, it is split before a spawn
+// the size lines in agent turns (clio:pm, _clio/plugin-clio/skills/pm/SKILL.md § the fields); M has none, it is split before a spawn
 var sizeLines = map[int]struct {
 	name string
 	line int
 }{1: {"XS", 80}, 2: {"S", 400}}
 
 // fleetOps reads agent ops off the transcripts, no model tokens: tokens and wall time per ticket (coder
-// + verifier), cclio's own code edits per session, the cost of a cclio boot
+// + verifier), clio's own code edits per session, the cost of a clio boot
 func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 	days, err := daysFlag(flags, "fleet ops", 7)
 	if err != nil {
@@ -135,7 +135,7 @@ func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 	for _, path := range sessionFiles(time.Now().Add(-time.Duration(days)*24*time.Hour), int64(minKB)*1024) {
 		sessions = append(sessions, parseOpsSession(transcriptLines(path), path))
 	}
-	data := opsData{Days: days, MinKB: minKB, Tickets: costPerTicket(sessions), CclioEdits: []cclioEdits{}, Boots: []opsBoot{}, SizeMisses: []sizeMiss{}, SessionsRead: len(sessions)}
+	data := opsData{Days: days, MinKB: minKB, Tickets: costPerTicket(sessions), ClioEdits: []clioEdits{}, Boots: []opsBoot{}, SizeMisses: []sizeMiss{}, SessionsRead: len(sessions)}
 	if turns := coderTurns(sessions); len(turns) > 0 {
 		actor, err := actorOf(flags)
 		if err != nil {
@@ -149,18 +149,18 @@ func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 			data.SizeMisses = sizeMisses(turns, sizes)
 		}
 	}
-	var cclio []opsSession
+	var clio []opsSession
 	for _, s := range sessions {
-		if s.Role == "cclio" {
-			cclio = append(cclio, s)
+		if s.Role == "clio" {
+			clio = append(clio, s)
 		}
 	}
-	slices.SortStableFunc(cclio, func(a, b opsSession) int { return b.CodeEdits - a.CodeEdits })
-	for _, s := range cclio {
-		data.CclioEdits = append(data.CclioEdits, cclioEdits{ID: s.ID, Edits: s.CodeEdits, Title: s.Title})
+	slices.SortStableFunc(clio, func(a, b opsSession) int { return b.CodeEdits - a.CodeEdits })
+	for _, s := range clio {
+		data.ClioEdits = append(data.ClioEdits, clioEdits{ID: s.ID, Edits: s.CodeEdits, Title: s.Title})
 	}
 	for _, kind := range []string{"full", "mini"} {
-		for _, s := range cclio {
+		for _, s := range clio {
 			if s.Boot != nil && s.Boot.Kind == kind {
 				data.Boots = append(data.Boots, *s.Boot)
 			}
@@ -263,8 +263,8 @@ func parseOpsSession(lines [][]byte, path string) opsSession {
 	for _, step := range steps {
 		s.Tokens += step.tokens
 	}
-	// a cclio boot costs the tokens and seconds from the first prompt to the first end_turn
-	if s.Role == "cclio" && firstCmd == "cclio:boot" {
+	// a clio boot costs the tokens and seconds from the first prompt to the first end_turn
+	if s.Role == "clio" && (firstCmd == "clio:boot" || firstCmd == "cclio:boot") { // read-both: the boot skill before 10-29
 		tokens := 0
 		for _, t := range order {
 			step := steps[t.id]
@@ -286,9 +286,9 @@ func parseOpsSession(lines [][]byte, path string) opsSession {
 }
 
 var (
-	ccrowTitle = regexp.MustCompile(`(?i)ccrow`)
-	cclioTitle = regexp.MustCompile(`(?i)cclio`)
-	cclioCwd   = regexp.MustCompile(
+	crowTitle = regexp.MustCompile(`(?i)crow`)
+	clioTitle = regexp.MustCompile(`(?i)clio`)
+	clioCwd   = regexp.MustCompile(
 		`/frame/(cclio|_clio)(/|$)`, // read-both: transcripts before the 10-29 rename ran in frame/cclio
 	)
 	probeTitle    = regexp.MustCompile(`(?i)🧪|probe`)
@@ -303,10 +303,10 @@ func opsRole(cwd, firstCmd, path, title string) string {
 	case strings.Contains(title, "🔎") || firstCmd == "x:crew-sixth-sense" ||
 		firstCmd == "x:crew-verifier": // read-both: the skill id before the 10-29 rename
 		return "verifier"
-	case ccrowTitle.MatchString(title):
-		return "ccrow"
-	case cclioTitle.MatchString(title) || cclioCwd.MatchString(cwd):
-		return "cclio"
+	case crowTitle.MatchString(title):
+		return "crow"
+	case clioTitle.MatchString(title) || clioCwd.MatchString(cwd):
+		return "clio"
 	case probeTitle.MatchString(title) || strings.Contains(path, "probe"):
 		return "probe"
 	case researchTitle.MatchString(title):
@@ -404,14 +404,14 @@ func opsLines(d opsData) []string {
 		tokens, walls = append(tokens, float64(c.Tokens)), append(walls, float64(c.WallMs))
 	}
 	lines = append(lines, fmt.Sprintf("median over %d tickets: %s tokens, %s", len(d.Tickets), millions(median(tokens)), minutes(median(walls))),
-		"", "== cclio code edits: Edit/Write/MultiEdit on "+strings.Join(opsCodeExtensions, " ")+", per cclio session ==")
+		"", "== clio code edits: Edit/Write/MultiEdit on "+strings.Join(opsCodeExtensions, " ")+", per clio session ==")
 	var edits []float64
-	for _, c := range d.CclioEdits {
+	for _, c := range d.ClioEdits {
 		lines = append(lines, fmt.Sprintf("%s\t%d\t%s", c.ID, c.Edits, cmp.Or(c.Title, "-")))
 		edits = append(edits, float64(c.Edits))
 	}
-	lines = append(lines, fmt.Sprintf("median over %d sessions: %s", len(d.CclioEdits), strconv.FormatFloat(median(edits), 'f', -1, 64)),
-		"", "== boot cost: cclio sessions opening with /cclio:boot, first prompt to first end_turn ==")
+	lines = append(lines, fmt.Sprintf("median over %d sessions: %s", len(d.ClioEdits), strconv.FormatFloat(median(edits), 'f', -1, 64)),
+		"", "== boot cost: clio sessions opening with /clio:boot, first prompt to first end_turn ==")
 	for _, kind := range []string{"full", "mini"} {
 		var bootTokens, seconds []float64
 		for _, b := range d.Boots {

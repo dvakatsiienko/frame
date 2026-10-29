@@ -38,7 +38,7 @@ dima's, 2026-09-29:
 
 - suggest a run when: a free tier ends (fish: 2026-11-30), the elevenlabs quota runs out two months in a row
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. spawn the lanes: exa agent · parallel core · an opus lane that probes (real API calls for first-byte and quality); probe any new engine for real (a key, one call, first-byte ms). done: every lane returned or marked failed. (script)
 3. if a new voice is a contender: render a blind booth round, dima rates. a quality change is proven by a blind listening booth (the 2026-09-29 booth artifact is the
    template: same text into every engine, loudness-matched, letters shuffled, rated 1–5, decoded after). done: his ratings, or «no contender». (template)

@@ -87,4 +87,4 @@ alias cc-lean='(cd "$(mktemp -d)" && claude --safe-mode --strict-mcp-config)'
 alias clio='cd ~/frame/_clio && claude --remote-control "🦉 clio"'
 alias clio-list='~/frame/_clio/.claude/hooks/boot-prefetch.sh'
 alias hk='pnpm --dir ~/frame --silent hotkeys:top'   # which chords + apps i actually use
-alias pk='BACKLOG_CWD=~/frame/_clio backlog'   # cclio's pocket (Backlog.md): pk board, pk search <word>
+alias pk='BACKLOG_CWD=~/frame/_clio backlog'   # clio's pocket (Backlog.md): pk board, pk search <word>

@@ -3,7 +3,7 @@ kind: refresh
 owner: [coder, coordinator]
 artifacts:
   - docs/knowledge/pr-flow.md
-  - x:crew-coder
+  - x:crew-codie
 script: none
 groomed: 2026-10-20 (dima)
 ---
@@ -41,9 +41,9 @@ his standing calls:
 - each coder lane that opened a pr proposes this recipe's vector changes in its retro (the coder seat)
 - suggest a run when: `gh stack` ships a release, or a coder lane's pr took more than 3 review rounds
 
-1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
+1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)
 2. **research** — the brief from `pnpm recipe:brief refresh-pr-flow`; `pnpm research:lanes <brief> <out>` + an opus source lane (gh and linear docs, our ci workflows). done: every lane returned or marked failed. (script)
-3. **distill** — into `docs/knowledge/pr-flow.md` (the flow's core and its traps) and the pr part of `x:crew-coder`. done: both read and touched, or named «unchanged». (open)
+3. **distill** — into `docs/knowledge/pr-flow.md` (the flow's core and its traps) and the pr part of `x:crew-codie`. done: both read and touched, or named «unchanged». (open)
 4. **log** — the line in `log.md`. done: the line is there. (template)
 
 ## vectors
@@ -64,7 +64,7 @@ his standing calls:
 ## artifacts
 
 - `docs/knowledge/pr-flow.md` — the core every pr-opening session reads: the gate, the review loop, stacks if adopted; the distill rewrites it, keeping what still holds
-- `x:crew-coder` — its pr part; the distill edits only the lines a finding proves wrong
+- `x:crew-codie` — its pr part; the distill edits only the lines a finding proves wrong
 
 ## findings
 

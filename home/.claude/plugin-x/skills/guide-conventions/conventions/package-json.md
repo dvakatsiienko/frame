@@ -53,13 +53,13 @@ incomplete, not minimal.
   no bare root: `github:agent-token` · `frame:link` · `sline:build` ·
   `mcp:build`.
 - **`skill:`** is the family for a script whose only caller is a skill, tail = the skill plus the
-  artifact it produces: `skill:cclio-mode-snapshot`, `skill:memory-sync-mirror`.
+  artifact it produces: `skill:clio-mode-snapshot`, `skill:memory-sync-mirror`.
 
 The file is the key with `:` → `-`, no table to maintain: `github:agent-token` ⇔ `script/github-agent-token.ts`,
 `skill:evergreen-apps` ⇔ `script/skill-evergreen-apps.ts`. Library modules under `script/lib/` are
 named for what they are, not for a key.
 
-🚫 `cw-memory-render`, `cclio-mode-cw-snapshot` — the surface or the action in the name instead
+🚫 `cloud-chat-memory-render`, `clio-mode-cloud-chat-snapshot` — the surface or the action in the name instead
 of the entity; the family already says where it runs, and the tail names the artifact, never the
 verb (`mirror`, `snapshot`, `store` — not `render`, `compile`, `sync`).
 

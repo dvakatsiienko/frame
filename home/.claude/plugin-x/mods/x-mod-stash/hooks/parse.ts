@@ -118,10 +118,10 @@ export function dropWaitAside(text: string) {
 // members are rules/fleet-identity.md's, minus the names that are plain english too (helper, retro, classifier,
 // explore, cc) — those would badge a helper function or the retro file
 const MEMBERS = {
-    cclio: '🦉',
-    ccrow: '🐦‍⬛',
+    clio: '🦉',
+    'cloud-chat': '☁️',
     coder: '🔧',
-    cw: '🤝',
+    crow: '🐦‍⬛',
     designer: '🎨',
     dima: '🙋‍♂️',
     'helper-lite': '🪶',
@@ -229,7 +229,7 @@ export function waitSpans(part: string): { text: string; isBold: boolean }[] {
 export const unbold = (wait: string) => wait.replaceAll('**', '');
 
 // with no 🔭 line, the session's own background work is what it waits on: the first task in three words at most,
-// «waiting on <who>», and +n for the rest (dima's o88: short, nothing more); cclio's standing pr/ci watches
+// «waiting on <who>», and +n for the rest (dima's o88: short, nothing more); clio's standing pr/ci watches
 // (`watch-once.sh`) run all day and are no wait (dima's o52)
 const STANDING_WATCH = /^Arm the one-shot (?:pr|ci) watch/i;
 const isStandingWatch = (t: { description: string; command?: string }) =>
@@ -320,10 +320,10 @@ export function planSteps(text: string) {
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 
 // `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»; a standing member keeps
-// its own name, badge or not — «🐦‍⬛ ccrow», which the registry writes with a space for the joiner
+// its own name, badge or not — «🐦‍⬛ crow», which the registry writes with a space for the joiner
 const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
-// standing sidecars named by a bare word, not by the lane pattern: composer is cclio's copyist (rules/fleet-identity.md)
-const SIDECARS = new Set(['composer']);
+// standing sidecars named by a bare word, not by the lane pattern: helga is clio's copyist (rules/fleet-identity.md)
+const SIDECARS = new Set(['helga']);
 export function isFleetName(name: string) {
     return (
         FLEET_NAME.test(name) ||
@@ -332,7 +332,7 @@ export function isFleetName(name: string) {
     );
 }
 
-// the quiet ledger's count of one member's sends to cclio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
+// the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
 // prints the timestamp of each SendMessage call whose `to` names her; a call its result answered `success:false`
 // (unreachable, refused by a plugin, a dead socket) never reached her, so it is left out
 export const LEDGER_SENDS = [

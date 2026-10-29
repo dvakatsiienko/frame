@@ -1,6 +1,6 @@
 # CST-SPEC — Continuation State Transfer
 
-Single definition of a CST, consumed by every handoff frontend (`cc` `handoff*` skills, the `mcp-x-cw` server for `cw`). Edit here, never fork the text.
+Single definition of a CST, consumed by every handoff frontend (`cc` `handoff*` skills, the `mcp-x-cloud-chat` server for `cloud-chat`). Edit here, never fork the text.
 
 A CST is a machine-optimized context package one thread produces so another thread — in any frontend — behaves indistinguishably like a continuation of it at a fraction of the tokens. It is NOT a summary: it is an *upgraded compaction*, expanded with specific attention to the data that naive summaries lose.
 
@@ -8,7 +8,7 @@ A CST is a machine-optimized context package one thread produces so another thre
 
 ## Calibration (read first, calibrate everything to this)
 
-The user deliberately keeps very long threads because they hold key details, but resuming one after cache expiry re-reads the whole history uncached (≈20% of a 5h usage window in `cc`; `cw` threads are often far longer). The CST replaces that resume. So do NOT summarize — preserve. When unsure whether something matters, INCLUDE it; under-preservation is the failure mode. Size is handled by transport, never by trimming substance.
+The user deliberately keeps very long threads because they hold key details, but resuming one after cache expiry re-reads the whole history uncached (≈20% of a 5h usage window in `cc`; `cloud-chat` threads are often far longer). The CST replaces that resume. So do NOT summarize — preserve. When unsure whether something matters, INCLUDE it; under-preservation is the failure mode. Size is handled by transport, never by trimming substance.
 
 If a TARGET/focus was stated (what the continuation is for), weight R/D/S toward it; compress the rest harder but never to zero. No target = full continuation.
 
@@ -24,7 +24,7 @@ If a TARGET/focus was stated (what the continuation is for), weight R/D/S toward
   - **fleet roster** — living sessions worth reattaching to, one line each: session title, role, what it holds (e.g. `🔬 research: proto lab — proto owner — the running prototype + its findings`). Titles follow the spawn naming convention, so the title IS the address. Purpose: a coordinator that lost its conversation reconnects to the persistent `cc`s listed here instead of spawning new ones. Only sessions actually worth resuming — a roster of everything is a roster of nothing.
   - **run marker** — the active tracker run id (`cc·20260819·batch1`), if one was minted. The
     ingesting session continues that run instead of minting a new one, so a batch spanning two
-    sessions still reverts as one. Format and stamping rules: `cclio:pm`.
+    sessions still reverts as one. Format and stamping rules: `clio:pm`.
 - **G**: goal + current mental model of the problem.
 - **R**: user-stated requirements/preferences/corrections, verbatim or near-verbatim (highest-loss items in naive summaries — be generous here).
 - **D**: decisions made + one-line rationale each (so the continuation doesn't re-litigate).
@@ -79,13 +79,13 @@ Compress the **language**, never the substance. Telegraphic fragments are fine. 
 📌 **The mechanics live in one door: `x handoff`** (`list`, `peek`, `ingest`, `write`, `delete`).
 Filename grammar, permissions, the audience gate, age flagging, the replace — it owns all of it,
 and every frontend calls it rather than re-deriving it: the `cc` `handoff` and `handoff-ingest`
-skills directly, `cw` through the `x-cw` mcp server's adapters, dima through the raycast `handoff`
+skills directly, `cloud-chat` through the `x-cloud-chat` mcp server's adapters, dima through the raycast `handoff`
 command. sline keeps its own read-only glob for the pending count. `x handoff <verb> --help`
 prints the flags. This section says what the rules MEAN; x is what they ARE, and on a
 disagreement about mechanics x wins.
 
-📌 **Where an `x-cw` tool exists for an act, it wins over a shell performing the same act.**
-📌 Skill prefixes follow the plugin name per surface — `x:` on `cc`, `x-cw:` on `cw`. Cross-refs
+📌 **Where an `x-cloud-chat` tool exists for an act, it wins over a shell performing the same act.**
+📌 Skill prefixes follow the plugin name per surface — `x:` on `cc`, `x-cloud-chat:` on `cloud-chat`. Cross-refs
 in skill bodies use bare skill names; translate with your own prefix.
 
 - **Filename** — `<for>--<lane>--<topic>--by-<author>--<utc-ts>[-shared].md`. Fields are cut on
@@ -95,7 +95,7 @@ in skill bodies use bare skill names; translate with your own prefix.
   when the writer did not say. A listing reads it back as `<lane> lane · by <author> · <topic>`.
   - Two legacy shapes still parse: `<audience>-<topic>-<ts>` and a timestamp-first name. Neither
     carries a lane or an author, so both report `any` for those. Nothing writes them any more.
-- **Audience** — one lowercase token naming the agent a CST is written FOR: `cclio`, `cw`, `ccli`, `coder`, `verifier`, `designer`, `ccrow`, or **`any`** when it is for whoever picks it up next. A session knows its own
+- **Audience** — one lowercase token naming the agent a CST is written FOR: `clio`, `cloud-chat`, `cc`, `coder`, `verifier`, `designer`, `crow`, or **`any`** when it is for whoever picks it up next. A session knows its own
   token; `any` matches every reader.
   - 🚨 **A pull NEVER ingests a file addressed to another agent.** It reports what it found and
     whose it is, and stops. Forcing one is possible by naming its slug explicitly — that is the

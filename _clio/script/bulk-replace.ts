@@ -1,4 +1,4 @@
-// composer's bulk-replace, all or none (PK-133): every pair's anchor must match its file exactly once, or
+// helga's bulk-replace, all or none (PK-133): every pair's anchor must match its file exactly once, or
 // nothing is written; the receipt is one line per pair
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

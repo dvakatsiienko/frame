@@ -46,16 +46,13 @@ describe('deadPointers', () => {
 
     it('resolves a references path against the skill the line names', () => {
         expect(
-            deadPointers(
-                root,
-                at("`cclio:pm`'s `references/body.md` holds it"),
-            ),
+            deadPointers(root, at("`clio:pm`'s `references/body.md` holds it")),
         ).toEqual([]);
     });
 
     it('reds a references path no named skill holds', () => {
         expect(
-            deadPointers(root, at('`cclio:pm` keeps `references/no-such.md`')),
+            deadPointers(root, at('`clio:pm` keeps `references/no-such.md`')),
         ).toMatchObject([{ why: 'no such path' }]);
     });
 });

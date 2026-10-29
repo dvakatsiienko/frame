@@ -1,6 +1,6 @@
 # system checkup — run log
 
-one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: … | asked: … | —` (`cclio:system-checkup` § the run).
+one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: … | asked: … | —` (`clio:system-checkup` § the run).
 
 - 2026-10-19 · skill-shape · 🔴 3 strong splits, 6 strong scripts, 8 duplicated pairs · fixed: pm + evergreen split, 3 cclio scripts | asked: 4 x verbs (PK-199–202)
 - 2026-10-19 · hook-health · 🔴 SessionStart p95 48–58 s (startup, resume), compact 12 s · asked: what makes session start slow

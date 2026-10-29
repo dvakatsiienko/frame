@@ -1,9 +1,9 @@
 # tooling — the tool picks, split by surface
 
 **scope:** which cli does which job. the `shared` section is copied by hand into
-the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
+the cloud chat leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 
-## shared — cc and cw
+## shared — cc and cloud chat
 
 - **cli over mcp, whenever possible** — an mcp only earns its place in a complex multi-surface,
   multi-person collab case, which is currently nowhere in this setup; everywhere else it only
@@ -12,14 +12,14 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **1password holds every api key** — vault `dev`, item `<service>-golden` (the shared key) or `<service>-<purpose>` (a scoped one)
   - configs carry `op://dev/<item>/credential`, never a value; reads run through `script/op-run.sh` (service account `x-fleet`, read-only, no touch id)
   - `op item create|edit` works from an agent shell through his desktop session; dima pastes the key value in the app
-  - an item an agent creates carries: `--url` where a new key is minted, a one-line note (what it unlocks, which config reads it), tags `fleet` + the surface (`cc`, `cw`, `raycast`), the account, and the expiry when the service sets one
+  - an item an agent creates carries: `--url` where a new key is minted, a one-line note (what it unlocks, which config reads it), tags `fleet` + the surface (`cc`, `cloud-chat`, `raycast`), the account, and the expiry when the service sets one
 - **pnpm** — preferred package manager for node/typescript/javascript projects
 - **obsidian = raw files, the `obsidian` cli only for rename/move and the link graph; notion = `ntn`; never an mcp for either** — the recipe and the hazards: `x:notes`
 - **himalaya** — the mail cli (`himalaya envelope list`, `message read <id>`, `message delete`, `message reply`; `compose|reply|forward --json` with no send prints a decoded template, the hand-off for an email draft); one gmail account, app password from 1password `gmail-himalaya-golden`, config in `home/.config/himalaya/`. filters are not its job — those are `gmailctl` over `gmail/blocklist.json`
 - **fj** — the codeberg cli (`brew "forgejo-cli"`), always `fj -H codeberg.org …`: without `-H` it takes the host from the cwd's git remote and answers 410 Gone; signed in with 1Password `codeberg-golden` (`CODEBERG_TOKEN` in `op.env`). codeberg holds read-only mirrors of frame and bytes, pushed by `.github/workflows/codeberg-mirror.yml`
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
-- **a page your fetch can't read → `pnpm -C ~/frame --silent web-bot-blocked:fetch <url>`** (cw: through Desktop Commander on the mac, wrapped as `zsh -lc '…'` so homebrew's `pnpm` is on PATH) — a MediaWiki page goes through the wiki's free api, `--index <wiki host>` lists every article; anything else through firecrawl, the escape hatch for bot-blocked sites (1 credit a page, 1,000 free a month, key `op://dev/firecrawl-golden/credential`); a docs site that serves `llms.txt` is read directly, never crawled
+- **a page your fetch can't read → `pnpm -C ~/frame --silent web-bot-blocked:fetch <url>`** (cloud chat: through Desktop Commander on the mac, wrapped as `zsh -lc '…'` so homebrew's `pnpm` is on PATH) — a MediaWiki page goes through the wiki's free api, `--index <wiki host>` lists every article; anything else through firecrawl, the escape hatch for bot-blocked sites (1 credit a page, 1,000 free a month, key `op://dev/firecrawl-golden/credential`); a docs site that serves `llms.txt` is read directly, never crawled
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
 - **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too
 - **yq** — yaml/toml read-write (`settings.toml`, lefthook)

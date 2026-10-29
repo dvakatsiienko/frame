@@ -133,7 +133,7 @@ the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)
 
 ## fleet ideas — candidates, none built (2026-10-05)
 
-cclio folds dima's picks into a ticket; a built idea leaves this list.
+clio folds dima's picks into a ticket; a built idea leaves this list.
 
 - context toast — `session.measure` crosses 85 % context → `$.ui.toast` «offer a handoff»; the same hook already feeds keep-hot's 5h window
 - a coder ping you can hear — `session.receive` sees a peer message from a coder → `$.audio.speak` reads its first line while dima is away from the screen
@@ -150,7 +150,7 @@ cclio folds dima's picks into a ticket; a built idea leaves this list.
 - **joining the prompt**: `prompt.submit` rewrites `e.text` (visible, either end) or appends `e.context` (model-only, after the prompt only)
 - **turn state**: a pane is not told whether a turn runs; a lock while mid-turn needs a flag the mod keeps from `turn.start` / `turn.complete`
 - **mid-turn join**: `$.session.append` adds a hidden user message without starting a turn (grill, human-in-the-loop use it); a message that lands during the final reply is never read, and human-in-the-loop then starts a turn — our rule forbids that, so a 🤔 piece rides the next prompt «?»
-- **peer envelope**: `session.receive` gets a peer message as `<cross-session-message from="…" …>`, and the sender's registry name sits in `from-name="…"` or `name="…"` depending on the surfaces — parse both, `from-name` first (x-mod-stash's peer parse in `hooks/register.tsx`; probe 14:49 read cli → `from-name`, desktop → `name`, yet a desktop cclio's message to a desktop coder rendered with `from-name`, 17:18 — unprobed at the hook); the name is whatever the sender wrote, so it never decides a guard (api page)
+- **peer envelope**: `session.receive` gets a peer message as `<cross-session-message from="…" …>`, and the sender's registry name sits in `from-name="…"` or `name="…"` depending on the surfaces — parse both, `from-name` first (x-mod-stash's peer parse in `hooks/register.tsx`; probe 14:49 read cli → `from-name`, desktop → `name`, yet a desktop clio's message to a desktop coder rendered with `from-name`, 17:18 — unprobed at the hook); the name is whatever the sender wrote, so it never decides a guard (api page)
 - **contract**: a `prompt.submit` reminder in `e.context` is the one layer that holds every turn and through compaction; a third-party comment claims the desktop app skips the system-prompt event mods use «?»
 - **borrow**: `next-steps` (planned actions), `todo-bar` (lane progress), `where-am-i` (goal · now · waiting on you · next), `pinboard` (a durable list), `blast-radius` (accept / reject buttons), `prompt-drafts` (the user owns the send), `review-inbox` (age and severity)
 

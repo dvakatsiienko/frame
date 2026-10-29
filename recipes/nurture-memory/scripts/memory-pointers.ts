@@ -9,12 +9,12 @@ const PATH = /`((?:~\/|[\w.-]+\/)[\w./-]+\.(?:md|ts|sh|json|tsv|yml|yaml))`/g;
 const SECTION = /`([\w:./-]+)`(?: skill)?(?:'s)? § ([^,;)(—`]+)/g;
 const NAMED = /`([\w:.-]+)`/g;
 
-// `cclio:pm` → its SKILL.md; `fleet-vibe` → rules/fleet-vibe.md; `habit-shared-files` → the cclio leaf; `crew-dna` → x's skill
+// `clio:pm` → its SKILL.md; `fleet-vibe` → rules/fleet-vibe.md; `habit-shared-files` → the clio leaf; `crew-dna` → x's skill
 function nameCandidates(root: string, name: string) {
-    const ns = name.match(/^(cclio|x):([\w-]+)$/);
+    const ns = name.match(/^(clio|x):([\w-]+)$/);
     if (ns)
         return [
-            ns[1] === 'cclio'
+            ns[1] === 'clio'
                 ? path.join(
                       root,
                       '_clio/plugin-clio/skills',

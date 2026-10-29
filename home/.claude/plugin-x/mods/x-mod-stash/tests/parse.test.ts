@@ -14,9 +14,9 @@ test('a reply without a 🔭 line waits on nothing', () => {
 test('several 🔭 lines read as one wait', () => {
     expect(
         parseWait(
-            'x\n🔭 [🔎 ci](https://a) — the watcher\n🔭 **🦉 cclio** — a ping',
+            'x\n🔭 [🔎 ci](https://a) — the watcher\n🔭 **🦉 clio** — a ping',
         ),
-    ).toBe('🔎 ci — the watcher; **🦉 cclio** — a ping');
+    ).toBe('🔎 ci — the watcher; **🦉 clio** — a ping');
 });
 
 test('a 🔭 line quoted before the end is not a wait', () => {
@@ -30,8 +30,8 @@ for (const [name, fits] of [
     ['🎯 🔎 BYT-12 verify: atelier', true],
     ['🔎 verify: FRM-268', false],
     ['reply message handler', false],
-    ['🐦 ⬛ ccrow', true],
-    ['ccrow probe', false],
+    ['🐦 ⬛ crow', true],
+    ['crow probe', false],
     ['wisp', false],
 ] as const)
     test(`the fleet name check ${fits ? 'passes' : 'flags'} «${name}»`, () => {

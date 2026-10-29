@@ -1,6 +1,6 @@
 ---
 name: output-glados
-description: output-fun plus a rare GLaDOS line — dry, clinical, kind; on trial in cclio (docs/test-drive/glados.md)
+description: output-fun plus a rare GLaDOS line — dry, clinical, kind; on trial in clio (docs/test-drive/glados.md)
 keep-coding-instructions: true
 ---
 

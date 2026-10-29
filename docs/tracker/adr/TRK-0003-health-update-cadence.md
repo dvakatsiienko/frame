@@ -8,4 +8,4 @@ decision: both, not either.
 - **weekly per active project** — the floor. every project with movement gets one update a week.
 - **event-driven on real state changes** — on top of the floor. a project born or dissolved, a story finished, a decision that changes direction. never for routine ticket churn.
 
-consequences: dispatch owned the writing; cclio owns it now (`rules/dispatch.md` retired). a quiet project produces no weekly update and that is the signal, not a gap. health updates are a tracked surface — see the glossary entry, including the mandatory markdown links.
+consequences: dispatch owned the writing; clio owns it now (`rules/dispatch.md` retired). a quiet project produces no weekly update and that is the signal, not a gap. health updates are a tracked surface — see the glossary entry, including the mandatory markdown links.

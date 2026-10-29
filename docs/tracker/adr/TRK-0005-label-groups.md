@@ -20,5 +20,5 @@ loose labels stay loose because they combine: `freebie` `granular` `walkthrough`
 `standing`.
 
 consequences: the role slot in `docs/tracker/GLOSSARY.md` becomes the group list; the triage bridge
-maps mattpocock `needs-info` onto the two blockers by direction; `cclio:pm` sends exactly one label per
+maps mattpocock `needs-info` onto the two blockers by direction; `clio:pm` sends exactly one label per
 group and never a second from the same one.

@@ -25,7 +25,7 @@ his standing calls:
 
 - suggest a run when: `agent-browser` ships a minor release, a browser check fails for a reason outside the app, or 30 days since the last run
 
-1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
+1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)
 2. **research** — the brief from `pnpm recipe:brief refresh-browser-headless`; `pnpm research:lanes <brief> <out>` + the `researcher` agent on the same brief, the local-file vectors to the researcher alone. done: every lane returned or marked failed. (script)
 3. **distill** — into the artifacts below. done: each read and touched, or named «unchanged». (open)
 4. **log** — the line in `log.md`. done: the line is there. (template)

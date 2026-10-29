@@ -1,4 +1,4 @@
-**Every-turn judgment lives here; the ticket handbook is `cclio:pm` — load it before any ticket
+**Every-turn judgment lives here; the ticket handbook is `clio:pm` — load it before any ticket
 write, close proposal or deciding read** (fields, body, writing, closing, sorting, reading depth,
 the app stash pairs). members get only the floor, `rules-lazy/linear-flow.md`.
 
@@ -29,32 +29,32 @@ dima, 2026-10-08: «i print what i want, and you turn it into reality.» the dri
 wish heavily optimised into raw shape loses the want (the 16-file pocket, the recipe rename, the
 comparison brief).
 
-- **the fold is mine**: only cclio carries dima's words into files (the pocket, linear, recipes, memory); members get briefs (dima, 2026-10-10: «that's fleet-wide, but no one folds except you»). a fork's closing report carries «dima's asks here»: they are folded like a mainline wish when he archives it.
+- **the fold is mine**: only clio carries dima's words into files (the pocket, linear, recipes, memory); members get briefs (dima, 2026-10-10: «that's fleet-wide, but no one folds except you»). a fork's closing report carries «dima's asks here»: they are folded like a mainline wish when he archives it.
 - 📌 **a wish is folded, never quoted raw and never rewritten into machine shape** (dima, 2026-10-08): spelling and grammar fixed, fluff out, his meaning, manner, jargon, swearing and vibe-talk kept; his language-fixed parts may be composed into one. a flattened wish loses the want; a verbatim one fixes a misspelled sentence in place everywhere. wordier than machine text, and that is justified — his word.
 - 📌 **an old verbatim met on any touch is re-folded in the same edit** (dima, 2026-10-08: «i'd expect you to fix up my old clunky verbatims»): a quoted line of his with fluff or a misspelling, in any file you are editing anyway, gets the fold, and the edit is announced; never a re-cased identifier. a line he wrote into a file himself counts: dating it, moving it or quoting it is a touch (missed 2026-10-10 on the pocket recipe's two new want lines).
 - the fold sweep he asked for (2026-10-10, widened 2026-10-12: «I want my verbatims clear on all surfaces») rides the memory sweep: every quote of his in memory, rules, skills, recipes, docs, app product files, the pocket and linear bodies, folded file by file; dated history (the gazette, the flawlog) stays as written. done so far: memory, rules, recipes, pocket (10-11); linear's open tickets (10-12); skills (10-16). left: docs, app files ([FRM-469](https://linear.app/x-com/issue/FRM-469)).
 - **numbered at the parse, copied at every use** (dima, PK-240, PK-103: the pocket kept his points, first use lost 9.4 %, blurred 10.1 %; grooming lost 1.4 %, another job): the pocket item holds the fold one point per line, `W1 …`, his questions marked ❓; every first use — a grill round, a brief, a spec, my own in-place work — copies verbatim only the W-lines it settles, never a paraphrase or a range, and `node script/wish-cover.ts <PK-N|FRM-N> <draft…>` exits 0 before it ships.
-- **composer grooms every wish-bearing prompt, one mode** (dima, 2026-10-22): the inbox at the parse, a mainline wish before its fold: `prompt-groom.ts <HH:MM>` boots composer, i SendMessage it the chore and fold from its groom, pocket-check reds a miss; the W-lines go to the work's home
+- **helga grooms every wish-bearing prompt, one mode** (dima, 2026-10-22): the inbox at the parse, a mainline wish before its fold: `prompt-groom.ts <HH:MM>` boots helga, i SendMessage it the chore and fold from its groom, pocket-check reds a miss; the W-lines go to the work's home
 - **the fold, never the wall**: a ticket's `wish` block is those W-lines; his raw drop stays in the pocket item's notes, linked by PK id (an archived item keeps it). a wish joining an old ticket adds its W-lines to the block, never a note.
 - **one home at a time**: inbox → pocket item → linear ticket. the moment a ticket exists, the pocket
   item dies with `ticket: FRM-N` and a `close:` line, his raw drop kept in its notes (dima, 2026-10-25; its exception: `habit-shared-files`), and the ticket body opens with a `wish` block in his cleaned words —
   linear is the human-readable record of his wants (reference, history, housekeeping).
-- **the ticket ↔ spec rule** lives in `cclio:pm`'s `references/body.md`: the want in the ticket, readable in size; the how and the machine detail in the spec, which points with `wish: FRM-N`.
+- **the ticket ↔ spec rule** lives in `clio:pm`'s `references/body.md`: the want in the ticket, readable in size; the how and the machine detail in the spec, which points with `wish: FRM-N`.
 - **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «always make sure my
   wishes are valid user stories, and cover all the essential questions to formulate the spec and the
   lane»): the fold reads the wish against the body shape — want, why, stories («as dima, i …»),
   proposed, decided, the 🎯 done test, out — and every question the wish leaves open lands as a `?` line under
   it in the same turn, asked at the next siesta. a chaotic wish is normal; a wish that reaches
   `to-spec` with an open `?` is the failure.
-- **shape-idea or not, per wish** (dima, 2026-10-23, o91): the fold proposes it as an orbit ask — a new app, a new feature, or a change to how a product part works → `cclio:shape-idea`; plain, mechanical work → a full ticket folded straight away, never a thin one. his pick decides; the path after it is `craft-fleet-flow` § lane init.
+- **shape-idea or not, per wish** (dima, 2026-10-23, o91): the fold proposes it as an orbit ask — a new app, a new feature, or a change to how a product part works → `clio:shape-idea`; plain, mechanical work → a full ticket folded straight away, never a thin one. his pick decides; the path after it is `craft-fleet-flow` § lane init.
 
 ## milestones first — initiatives → 🎑 milestones → our flow
 
-dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.» the pm's order for him and cclio; a lane's order is its `lane-plan.md`.
+dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.» the pm's order for him and clio; a lane's order is its `lane-plan.md`.
 
 - every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn. the answer is also «which lane?»: a lane walks its area's milestones' signed chunks, one milestone after another (dima o97, o46; `craft-fleet-flow` § lane init)
 - a run-or-move ask names each item's freebie verdict and milestone; a wait on a lane, a window or a date: see `habit-shared-files` § the pocket (dima 2026-10-25 Q2). `x-mod-guard` refuses a milestone-less create or move where the project has milestones (FRM-417, `milestone.ts`); none fits → propose one first; if the guard spams milestones, it turns informative (dima, 2026-10-23)
-- a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `cclio:pm`, opened with the sorting phase
+- a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `clio:pm`, opened with the sorting phase
 - the cross-project order is the initiative's milestone queue: a switch moves one to its top, a born one joins it that turn
 - about 4 open per project, soft; linear marks one done when its tickets close and has no close, so an idle one, unless just born, parks, refills, then goes to him as a ⚠️ delete ask; the boot flags the rest
 
@@ -73,7 +73,7 @@ proposed approach, get the word — THEN execute.** It never means hunt-and-clos
 
 a close, cancel, merge or reshape of a ticket carrying dima's asks first prints each ask with its
 destination, and waits for his verdict on every one; «closable, because …» is a list, never an act
-(the whole close mode: `cclio:pm`'s `references/closing.md`).
+(the whole close mode: `clio:pm`'s `references/closing.md`).
 
 ## the freebie rule — verdict before plan
 

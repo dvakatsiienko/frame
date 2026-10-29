@@ -5,15 +5,15 @@ artifacts:
   - home/.claude/plugin-x/skills/crew-adviser/SKILL.md
   - _crow/AGENTS.md
   - ~/.local/state/crow/leaves.txt
-  - docs/test-drive/ccrow.md
+  - docs/test-drive/crow.md
 script: none
 groomed: 2026-10-08 (dima)
-was: [refresh-ccrow, refresh-adviser, refresh-coordinator-adviser]
+was: [refresh-crow, refresh-adviser, refresh-coordinator-adviser]
 ---
 
 # refresh-crew-coordinator-adviser
 
-keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, which arm runs it, and whether the whole adviser idea still earns its place.
+keeps clio's adviser (today: crow) true: what it hunts, how it talks to her, which arm runs it, and whether the whole adviser idea still earns its place.
 
 📌 co-owned with the adviser: it consults at step 1 and self-reports at step 5.
 
@@ -28,10 +28,10 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 
 - suggest a run when: the trial verdict (2026-10-20), a new anthropic model ships, a cc change to mods, advisor or cross-session messaging
 
-1. **groom** (step 0 of `cclio:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `_crow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
+1. **groom** (step 0 of `clio:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `_crow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.
 3. **lanes, from one brief**: `researcher` (sources, papers, code) + `pnpm research:lanes` (exa + parallel) + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane landed or failed out loud. (template)
-4. **the built-in head-to-head**, only while `docs/test-drive/ccrow.md` has no `/advisor` verdict: a day of `/advisor fable` beside ccrow, both logging notes, acted-on and tokens. done: the verdict, or «settled <date>». (template)
+4. **the built-in head-to-head**, only while `docs/test-drive/crow.md` has no `/advisor` verdict: a day of `/advisor fable` beside crow, both logging notes, acted-on and tokens. done: the verdict, or «settled <date>». (template)
 5. **the self-report**: after the lanes land, ping the adviser for what it lacked, would drop or would hunt, as evidence for the analysis (step 6). done: its answer in `last/consult-report.md`. (script)
 6. **analysis**: `notes.jsonl` + `verdicts.jsonl` per arm (notes vs `none`, ok vs miss, latency to the catch, tokens per wake), the flawlog since the last run (what it caught first, what it never caught), `steers.md` obeyed or not. done: the numbers in the findings print. (script)
 7. **the critical review of the whole setup**: keep, revamp, or retire the adviser — written as a verdict with its evidence, every run. done: one line, never skipped. (open)
@@ -49,33 +49,33 @@ the owner's vectors, in the outside world:
 - packet → accuracy: what context a critic needs to be right and what it fails on without it — images, the session id and cwd, a timestamp per message, the diff since the last wake (park: a packet checklist in `_crow/AGENTS.md`)
 - interruption timing: when a critic holds a note and when it pushes it — natural breaks: a siesta, a commit, before a launch (park: a timing line in the charter)
 - evaluation without self-grading: counterfactual scoring of advice, and the bias when the advised grades the adviser (park: the vet protocol)
-- the built-in alternative: cc's `/advisor` and the api advisor tool — what they do that ccrow does not (timing, the reconcile line, the length cap, the pairing rule), what ccrow does that they cannot; feeds the head-to-head (step 4)
+- the built-in alternative: cc's `/advisor` and the api advisor tool — what they do that crow does not (timing, the reconcile line, the length cap, the pairing rule), what crow does that they cannot; feeds the head-to-head (step 4)
 
 ### analysis
 
 our own evidence:
-- cclio's wants from her adviser, seat by seat — as coordinator (dropped asks, stalls, briefs), as pm (tickets, the pocket, the order), as cto (flow numbers, root fixes) — written by cclio from her own misses, then checked against what ccrow hunts today
-- everyone's misses — cclio's, dima's, any member's — the adviser's primary goal (dima, 2026-10-08): for dima, one detector per kind (a dropped ask, a call that contradicts his own earlier verdict, overload building), each tested on a real thread
+- clio's wants from her adviser, seat by seat — as coordinator (dropped asks, stalls, briefs), as pm (tickets, the pocket, the order), as cto (flow numbers, root fixes) — written by clio from her own misses, then checked against what crow hunts today
+- everyone's misses — clio's, dima's, any member's — the adviser's primary goal (dima, 2026-10-08): for dima, one detector per kind (a dropped ask, a call that contradicts his own earlier verdict, overload building), each tested on a real thread
 - operator overload: the signals (reply gaps, message length, rounds on one item) are only the trigger — the note's value is the remedy it proposes (split the batch, hold member traffic, collapse the asks), judged by whether the next replies shrink (dima: «what would be truly useful is proposing how to resolve it, not only spotting it») (park: the signal list + the remedy list)
 - day mode against systematic mode: which hunts fire in which, from `notes.jsonl`; a hunt that never fires in a mode leaves that mode's charter
-- the cost of a wrong note: notes cclio acted on whose action was later undone (disruption), beside ok and miss — the number that says whether the adviser pays
-- the signal it should hunt: the class of cclio's errors it has never caught (the flawlog since the last run against its notes); the baseline is the last run's catch count in `docs/test-drive/ccrow.md`
+- the cost of a wrong note: notes clio acted on whose action was later undone (disruption), beside ok and miss — the number that says whether the adviser pays
+- the signal it should hunt: the class of clio's errors it has never caught (the flawlog since the last run against its notes); the baseline is the last run's catch count in `docs/test-drive/crow.md`
 - the arm verdict from `verdicts.jsonl`: ok vs miss per arm, latency to the catch, packet tokens per wake, hits per $
-- the consult (step 5): ccrow's own answer, weighed against the research
+- the consult (step 5): crow's own answer, weighed against the research
 
 ### cut
 
-settled: «the comms model: pings or reads» — it reads her transcript on a wake, the open question is the shape above. «its taxonomy» — `steers.md` settles it, no lane. «one adviser over many threads» — too early: sharpen ccrow bound to cclio first; an adviser per crew member is parked in linear (dima, 2026-10-08).
+settled: «the comms model: pings or reads» — it reads her transcript on a wake, the open question is the shape above. «its taxonomy» — `steers.md` settles it, no lane. «one adviser over many threads» — too early: sharpen crow bound to clio first; an adviser per crew member is parked in linear (dima, 2026-10-08).
 
 ## artifacts
 
-- `x:crew-adviser` (`home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) — the seat's contract: hunts, bar, note shape, timing, modes; ccrow's boot prompt
+- `x:crew-adviser` (`home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) — the seat's contract: hunts, bar, note shape, timing, modes; crow's boot prompt
 - `_crow/AGENTS.md` — the mechanics and the facts that bite
 - `~/.local/state/crow/leaves.txt` — the memory slice it gets per wake
-- `docs/test-drive/ccrow.md` — the trial and its log
+- `docs/test-drive/crow.md` — the trial and its log
 
 ## findings
 
-done = the run happened (the `cclio:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
+done = the run happened (the `clio:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
 
-the print follows `cclio:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors); its checklist is `x:crew-adviser` hunt by hunt: fired, caught, never fired.
+the print follows `clio:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors); its checklist is `x:crew-adviser` hunt by hunt: fired, caught, never fired.

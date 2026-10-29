@@ -126,10 +126,10 @@ describe('router latency', () => {
     it('avg and p95 come from the ms column, rows without one are skipped', () => {
         const rows = routeParse(
             [
-                '2026-09-22T10:00:00.000Z\tcclio:pm 0.81\tcclio:pm\tread BYT-41',
+                '2026-09-22T10:00:00.000Z\tclio:pm 0.81\tclio:pm\tread BYT-41',
                 '2026-09-22T10:01:00.000Z\tx:cmt 0.90\tx:cmt\tcommit this\t1200',
-                '2026-09-22T10:02:00.000Z\tcclio:pm 0.45\t-\twhat about\t800',
-                '2026-09-21T10:02:00.000Z\tcclio:pm 0.45\t-\tyesterday\t9000',
+                '2026-09-22T10:02:00.000Z\tclio:pm 0.45\t-\twhat about\t800',
+                '2026-09-21T10:02:00.000Z\tclio:pm 0.45\t-\tyesterday\t9000',
             ].join('\n'),
             '2026-09-22',
         );
@@ -152,10 +152,10 @@ describe('router latency', () => {
     it('the near-miss band picks the prompts a probe should replay', () => {
         const rows = routeParse(
             [
-                '2026-09-22T10:00:00.000Z\tcclio:pm 0.81\tcclio:pm\tsure\t1',
+                '2026-09-22T10:00:00.000Z\tclio:pm 0.81\tclio:pm\tsure\t1',
                 '2026-09-22T10:01:00.000Z\tx:cmt 0.50\t-\tmaybe\t1',
-                '2026-09-22T10:02:00.000Z\tcclio:pm 0.30\t-\tedge\t1',
-                '2026-09-22T10:03:00.000Z\tcclio:pm 0.10\t-\tno\t1',
+                '2026-09-22T10:02:00.000Z\tclio:pm 0.30\t-\tedge\t1',
+                '2026-09-22T10:03:00.000Z\tclio:pm 0.10\t-\tno\t1',
             ].join('\n'),
         );
         expect(nearMisses(rows, 5).map((r) => r.prompt)).toEqual([
@@ -170,7 +170,7 @@ describe('recorded misses', () => {
     const log = [
         '2026-09-20T13:14:38.187Z\tmiss\tlaned ticket, was answer',
         '2026-09-21T16:20:01.441Z\tok\tmatched\tsup, where are we',
-        '2026-09-21T16:21:01.441Z\tmiss\tloaded cclio:pm, wanted x:notes\tappend to inbox: windscribe',
+        '2026-09-21T16:21:01.441Z\tmiss\tloaded clio:pm, wanted x:notes\tappend to inbox: windscribe',
         '2026-09-22T10:00:00.000Z\tmiss\tno load at all\tdoes the chart render at mobile width?',
     ].join('\n');
 

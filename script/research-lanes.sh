@@ -41,7 +41,7 @@ fi
 
 brief=${1:?usage: research-lanes <brief.md> [out-dir]}
 [ -s "$brief" ] || { echo "research-lanes: no brief at $brief" >&2; exit 1; }
-# a recipe's lanes launch only after dima's word on today's groom (cclio:shape-recipe step 0)
+# a recipe's lanes launch only after dima's word on today's groom (clio:shape-recipe step 0)
 brief_abs=$(cd "$(dirname "$brief")" && pwd)/$(basename "$brief")
 case $brief_abs in
   */recipes/*/last/*)
@@ -49,7 +49,7 @@ case $brief_abs in
     recipe=${brief_abs%/recipes/*}/recipes/${name%%/*}
     groomed=$(awk 'NR > 1 && /^---$/ { exit } /^groomed:/ { sub(/^groomed:[ \t]*/, ""); sub(/\r$/, ""); sub(/[ \t]+#.*$/, ""); sub(/[ \t]+$/, ""); gsub(/["'\''`]/, ""); print; exit }' "$recipe/recipe.md" 2>/dev/null)
     [ "$groomed" = "$(date +%F) (dima)" ] || {
-      echo "research-lanes: recipe $(basename "$recipe") is groomed ${groomed:-never}, not today — groom it with dima first (cclio:shape-recipe step 0)" >&2
+      echo "research-lanes: recipe $(basename "$recipe") is groomed ${groomed:-never}, not today — groom it with dima first (clio:shape-recipe step 0)" >&2
       exit 2
     }
     # the shared vectors ride every recipe brief, built by recipe:brief and marked with their hash (dima o73)

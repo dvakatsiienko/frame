@@ -4,10 +4,10 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
-// a coder's job of 3+ numbered items goes through a spec (cclio:shape-lane-dispatch § 2), refused unsent since FRM-425's verifier clean
+// a coder's job of 3+ numbered items goes through a spec (clio:shape-lane-dispatch § 2), refused unsent since FRM-425's verifier clean
 
 const CODER = '☕️ 🔧 coder: mods';
-const NOTE = 'a lane job goes through a spec (cclio:shape-lane-dispatch § 2)';
+const NOTE = 'a lane job goes through a spec (clio:shape-lane-dispatch § 2)';
 const JOB = 'round 5:\n1. the meter\n2. the card\n3. the glide step';
 
 function world(on: On) {
@@ -71,7 +71,7 @@ test('a 3-item job naming its spec path is sent unwarned', async ($, on) => {
 
 test('a 3-item message to a session that is not a coder is sent unwarned', async ($, on) => {
     world(on);
-    expect(warned(await send($, JOB, '🦉 cclio'))).toBe(false);
+    expect(warned(await send($, JOB, '🦉 clio'))).toBe(false);
 });
 
 test('the refusal is kept as a guard event', async ($, on) => {

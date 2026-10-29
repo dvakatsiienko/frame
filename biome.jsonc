@@ -92,7 +92,7 @@
     {
       // vitest is the one runner, a workspace-root devDependency for the same reason as vite
       // above; a workspace package's test imports it without declaring it.
-      "includes": ["home/.claude/mcp-x-cw/src/**/*.test.ts"],
+      "includes": ["home/.claude/mcp-x-cloud-chat/src/**/*.test.ts"],
       "linter": {
         "rules": { "correctness": { "noUndeclaredDependencies": "off" } }
       }

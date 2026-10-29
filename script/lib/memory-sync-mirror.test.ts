@@ -70,12 +70,12 @@ describe('compact', () => {
 describe('tags', () => {
     test('a tag routes its section and every subsection; `none` opts a child out', () => {
         const parts = parseMaster(
-            '# t\n\n## a\n<!-- sync: cw -->\n\n- a\n\n### a1\n\n- a1\n\n### a2\n<!-- sync: none -->\n\n- a2\n\n## b\n\n- b\n',
+            '# t\n\n## a\n<!-- sync: cloud-chat -->\n\n- a\n\n### a1\n\n- a1\n\n### a2\n<!-- sync: none -->\n\n- a2\n\n## b\n\n- b\n',
         );
         expect(parts.map((p) => [p.title, p.eff])).toEqual([
             ['t', undefined],
-            ['a', 'cw'],
-            ['a1', 'cw'],
+            ['a', 'cloud-chat'],
+            ['a1', 'cloud-chat'],
             ['a2', 'none'],
             ['b', undefined],
         ]);
@@ -83,9 +83,9 @@ describe('tags', () => {
 
     test('a tag before the first heading routes the whole file', () => {
         const parts = parseMaster(
-            '<!-- sync: cw -->\n\n**bold lead**\n\n## x\n\n- x\n',
+            '<!-- sync: cloud-chat -->\n\n**bold lead**\n\n## x\n\n- x\n',
         );
-        expect(parts.every((p) => p.eff === 'cw')).toBe(true);
+        expect(parts.every((p) => p.eff === 'cloud-chat')).toBe(true);
     });
 
     test('an unknown tag fails loud', () => {
@@ -94,16 +94,16 @@ describe('tags', () => {
         ).toThrow('rules/x.md: unknown sync tag «cww»');
     });
 
-    test('a line tagged `<!-- cc -->` stays out of cw, its nested lines with it, its siblings kept', () => {
+    test('a line tagged `<!-- cc -->` stays out of cloud-chat, its nested lines with it, its siblings kept', () => {
         const { text } = selectFor(
-            '## a\n<!-- sync: cw -->\n\n- kept\n- orbit asks <!-- cc -->\n  - nested orbit detail\n- also kept\n',
+            '## a\n<!-- sync: cloud-chat -->\n\n- kept\n- orbit asks <!-- cc -->\n  - nested orbit detail\n- also kept\n',
         );
         expect(text).toBe('## a\n\n- kept\n- also kept');
     });
 
     test('selection drops the tag line, pulls ancestor headings, keeps a prose-only leaf, sizes the section', () => {
         const { text, sections } = selectFor(
-            '# t\n\n## parent\n\nparent prose\n\n### kept\n<!-- sync: cw -->\n\nleaf prose only\n\n### other\n\n- no\n',
+            '# t\n\n## parent\n\nparent prose\n\n### kept\n<!-- sync: cloud-chat -->\n\nleaf prose only\n\n### other\n\n- no\n',
             'x.md',
         );
         expect(text).toBe('# t\n\n## parent\n\n### kept\n\nleaf prose only');
@@ -130,7 +130,7 @@ describe('render', () => {
     test('the paste block is fenced, names its masters, carries no memory tags', async () => {
         await write(
             'home/.claude/rules/alpha.md',
-            '# a\n\n## box\n<!-- sync: cw -->\n\n- b\n\n## cc only\n\n- c\n',
+            '# a\n\n## box\n<!-- sync: cloud-chat -->\n\n- b\n\n## cc only\n\n- c\n',
         );
         const r = render(root);
         expect(
@@ -155,7 +155,7 @@ describe('render', () => {
         const before = render(root).sha256;
         await write(
             'home/.claude/rules/alpha.md',
-            '# a\n\n## x\n<!-- sync: cw -->\n\n- x\n',
+            '# a\n\n## x\n<!-- sync: cloud-chat -->\n\n- x\n',
         );
         expect(render(root).sha256).not.toBe(before);
     });
@@ -163,7 +163,7 @@ describe('render', () => {
     test('the manifest keys the field and lists the masters it drew from', async () => {
         await write(
             'home/.claude/rules/alpha.md',
-            '# a\n\n## one\n<!-- sync: cw -->\n\n- x\n',
+            '# a\n\n## one\n<!-- sync: cloud-chat -->\n\n- x\n',
         );
         const m = toManifest(render(root));
         expect(Object.keys(m)).toEqual(['account/profile/instructions#core']);

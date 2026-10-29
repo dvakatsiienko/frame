@@ -1,6 +1,6 @@
 ---
 name: shape-recipe
-description: Load BEFORE creating, reshaping or running a recipe — «recipe», «refresh <x>», «nurture <x>», «run the <x> recipe», a research about to be repeated, a branch (design, voice, tooling) that will need refreshing again. typed as `/cclio:shape-recipe <name or idea>`.
+description: Load BEFORE creating, reshaping or running a recipe — «recipe», «refresh <x>», «nurture <x>», «run the <x> recipe», a research about to be repeated, a branch (design, voice, tooling) that will need refreshing again. typed as `/clio:shape-recipe <name or idea>`.
 argument-hint: "<recipe name to run, or the thing a new recipe would keep fresh>"
 ---
 
@@ -40,7 +40,7 @@ coordinator, should act in a special way here.» so:
 - **a brief is built by `pnpm recipe:brief <name>`**, never by hand: a hand brief re-describes the want and the lanes answer the reframing
 - **outside research is pointed at where the owner failed** (the flawlog, the retros, the test-drive logs since the last run), never at the whole subject
 - **the owner is a seat, never a spawn**: whoever holds that seat next proposes its vector cuts and adds
-  as a last act of its session, in its retro (the next design lane for `refresh-art-kit`); cclio runs the
+  as a last act of its session, in its retro (the next design lane for `refresh-art-kit`); clio runs the
   groom and the grill from them, with the seat's skill loaded, and says so. nobody is spawned for a groom
 
 ## creating one

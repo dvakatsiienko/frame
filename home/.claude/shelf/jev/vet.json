@@ -24,7 +24,7 @@
           "hit": 0,
           "total": 5
         },
-        "cclio:halt": {
+        "clio:halt": {
           "hit": 0,
           "total": 2
         },
@@ -36,7 +36,7 @@
           "hit": 0,
           "total": 2
         },
-        "cclio:init": {
+        "clio:init": {
           "hit": 0,
           "total": 1
         },

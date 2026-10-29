@@ -22,7 +22,7 @@ import {
     wakeIdOf,
 } from './lib.ts';
 
-const usage = `ccrow:plan-critique <plan file>
+const usage = `crow:plan-critique <plan file>
 
   a fresh claude -p review of one plan, on opus at effort high: pass 1 sees only the
   want / constraints / done test sections, pass 2 the whole plan on the fixed template. each
@@ -50,7 +50,7 @@ const effort = 'high';
 const id = `${wakeIdOf(now)}${String(now.getSeconds()).padStart(2, '0')}`;
 const runDir = `${STATE_DIR}/plans/${id}`;
 mkdirSync(runDir, { recursive: true });
-// no tools: a one-shot that can read would reach cclio's transcripts and the earlier verdicts
+// no tools: a one-shot that can read would reach clio's transcripts and the earlier verdicts
 const args = [
     ...claudeArgs(arm, '', effort),
     '--tools',
@@ -137,5 +137,5 @@ for (const note of notes) {
     );
 }
 console.log(
-    `review: ${runDir}/review.json · vet: pnpm ccrow:note-vet ok|miss <id> <why>`,
+    `review: ${runDir}/review.json · vet: pnpm crow:note-vet ok|miss <id> <why>`,
 );

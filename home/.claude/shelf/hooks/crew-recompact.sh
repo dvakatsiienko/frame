@@ -5,13 +5,15 @@
 set -u
 transcript=$(jq -r '.transcript_path // empty')
 [ -f "$transcript" ] || exit 0
-# a crew member's opening prompt is the command; a later mention (cclio talking about it) is not one
+# a crew member's opening prompt is the command; a later mention (clio talking about it) is not one
 opening=$(head -40 "$transcript" | grep -m1 '"type":"user"')
 skills=~/frame/home/.claude/plugin-x/skills
-for role in coder verifier designer cloud; do
+# read-both: coder and verifier are the skill ids before the 10-29 rename
+for role in codie sixth-sense coder verifier designer cloud; do
   printf '%s' "$opening" | grep -q "<command-name>/x:crew-${role}</command-name>" || continue
+  case $role in coder) role=codie ;; verifier) role=sixth-sense ;; esac
   files="${skills}/crew-${role}/SKILL.md"
-  [ "$role" = coder ] && files="$files and ${skills}/crew-coder/how-you-work.md"
-  echo "🛑 STOP — you are a ${role} and this session was just compacted; your crew-${role} contract did not survive it whole. your NEXT tool call is Read ${files}, in full — no other tool, message, comment or reviewer request before it, even when the summary says what to do next. they bind as they did at spawn; then resume from the summary."
+  [ "$role" = codie ] && files="$files and ${skills}/crew-codie/how-you-work.md"
+  echo "🛑 STOP — you are ${role} and this session was just compacted; your crew-${role} contract did not survive it whole. your NEXT tool call is Read ${files}, in full — no other tool, message, comment or reviewer request before it, even when the summary says what to do next. they bind as they did at spawn; then resume from the summary."
   exit 0
 done

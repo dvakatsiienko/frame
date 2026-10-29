@@ -2,7 +2,7 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - cclio:system-checkup
+  - clio:system-checkup
   - docs/research/system-checkup-prior-art.md
 script: research:lanes
 draft: true
@@ -10,7 +10,7 @@ draft: true
 
 # refresh-system-checkup
 
-keeps `cclio:system-checkup` the one plate of every health check our fleet needs, sharpened by what others check and by what broke for us.
+keeps `clio:system-checkup` the one plate of every health check our fleet needs, sharpened by what others check and by what broke for us.
 
 ## the want
 
@@ -30,7 +30,7 @@ dima's, 2026-10-19 (folded):
 - a check that already lives elsewhere joins by pointer, never by copy; the memory groom, `doctor prompt-audit` and `/skill-doctor` stay in `recipes/nurture-memory`
 - suggest a run when: a check has gone 90 days green, a checkup run misses something dima then catches, or a cc release adds a doctor-style built-in
 
-1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. one research round per `x:research` (exa + parallel + an opus source lane), built by `pnpm recipe:brief refresh-system-checkup`. done: every lane returned or marked failed. (script)
 3. distill into the plate: each check kept, added (with its home and its run line) or proposed for removal; the prior-art doc rewritten to today's picture. done: both artifacts touched or named «unchanged». (open)
 4. findings print per `x:research` § the print. done: printed. (template)
@@ -51,7 +51,7 @@ dima's, 2026-10-19 (folded):
 
 ## artifacts
 
-- `cclio:system-checkup` — the plate: its check list and run rules; the distill edits only the lines a finding moves, then `x plugin bump --apply cclio`
+- `clio:system-checkup` — the plate: its check list and run rules; the distill edits only the lines a finding moves, then `x plugin bump --apply clio`
 - `docs/research/system-checkup-prior-art.md` — the outside picture and its sources; the distill rewrites it whole
 
 ## findings

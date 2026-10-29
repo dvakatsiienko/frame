@@ -6,18 +6,18 @@ import { parseArgs } from 'node:util';
 
 import { liveSessions, transcriptOf } from './session-registry.ts';
 
-const CCLIO_NAME = '🦉 cclio';
+const CLIO_NAME = '🦉 clio';
 const MAX_CHARS = 300;
 const STAMP = '📄 last report:';
 const STEER = /^- (o\d+) .*his steer: «(.*?)»(?: ·|$)/;
 
-// «Side chat» sessions write to the same project dir, so the live «🦉 cclio» session is asked first
+// «Side chat» sessions write to the same project dir, so the live «🦉 clio» session is asked first
 function defaultTranscript(): string {
-    const live = liveSessions().find((session) => session.name === CCLIO_NAME);
+    const live = liveSessions().find((session) => session.name === CLIO_NAME);
     const own = live && transcriptOf(live.sessionId);
     if (own) return own;
     console.error(
-        `no live «${CCLIO_NAME}» session: using the newest transcript`,
+        `no live «${CLIO_NAME}» session: using the newest transcript`,
     );
     // read-both: the live dir since the 10-29 move, and the old one for history
     const files = ['-Users-dima-frame--clio', '-Users-dima-frame-cclio']

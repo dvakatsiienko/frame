@@ -28,8 +28,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 
 ## who acts
 
-- **caller** — who ran a verb, one value per trace: `dima`, `cc`, `cw`, `hook`, `ssh` or `other`
-- **actor** — the fleet member a call acts as on an outside service (`cclio`, `coder`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
+- **caller** — who ran a verb, one value per trace: `dima`, `cc`, `cloud-chat`, `hook`, `ssh` or `other`
+- **actor** — the fleet member a call acts as on an outside service (`clio`, `coder`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
 
 ## the trace and what it counts
 
@@ -39,8 +39,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **head** — what a Bash command runs, past a leading `cd`, variable setup and wrappers: the tool's name, plus its verb for the tools that have one (`git commit`, `pnpm test`), or an interpreter with its script. not git's HEAD: a pr's newest commit is its **pr head**. avoid: command name
 - **raw head** — a head no x door covers and no shell basic, run 5 times or more: a verb candidate
 - **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch
-- **false fire** — a crew skill (`x:crew-coder`, `x:crew-verifier`) loaded with no earlier message naming it; its opposite is **brief-led**
-- **coder turn** — one assistant message in a coder transcript, summed over every coder session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because cclio's pm skill writes the size lines in it
+- **false fire** — a crew skill (`x:crew-codie`, `x:crew-sixth-sense`) loaded with no earlier message naming it; its opposite is **brief-led**
+- **coder turn** — one assistant message in a coder transcript, summed over every coder session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because clio's pm skill writes the size lines in it
 - **size** — a ticket's estimate as the fleet says it: XS, S or M, for linear's 1, 2, 3. XS and S each have a **size line** in coder turns (XS under 80, S under 400); M has none
 - **size miss** — a closed ticket whose coder turns reached its size line
 

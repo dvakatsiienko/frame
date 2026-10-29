@@ -109,7 +109,7 @@ A commit carries **no ticket line**: a PR is what links to Linear — its branch
 conversation, the branch name or Dima, never a guess.
 
 - **no closing keyword next to an id** — `close(s|d)` `fix(es|ed)` `resolve(s|d)` `complete(s|d)`:
-  Linear's GitHub integration reads every push and would close the ticket; the close is cclio's
+  Linear's GitHub integration reads every push and would close the ticket; the close is clio's
   (or Dima's), made in Linear with a closing word
 - **never the literal skip-ci markers** (`[skip ci]`, `[ci skip]`, `[skip actions]`,
   `[actions skip]`), quoting included: github reads them anywhere in the message and silently
@@ -120,7 +120,7 @@ conversation, the branch name or Dima, never a guess.
 ### The lanes
 
 - **default: `main`** — no branch, no PR, the commit body carries everything
-- **a coder lane: a PR** in its own worktree — the flow is `x:crew-coder`; the branch name `coder/<ticket>-<slug>` links it in Linear by itself, and its
+- **a coder lane: a PR** in its own worktree — the flow is `x:crew-codie`; the branch name `coder/<ticket>-<slug>` links it in Linear by itself, and its
   url reaches Dima as a one-click link the moment it prints
 - **any other PR** (`claude/…` cloud branches, one Dima opens) — the same `- ticket:` line in its
   body, never a closing keyword; a branch never checked out here is worded with `gh pr edit`, never by rewriting

@@ -189,7 +189,7 @@ func TestBriefCheckReadsAFileNamedWithALineOrAnAnchor(t *testing.T) {
 func TestBriefCheckReadsASlashCommandAsNoPath(t *testing.T) {
 	t.Parallel()
 	dir := repo(t)
-	for _, token := range []string{"/clear", "/mcp", "/cclio:boot", "/x:handoff-ingest"} {
+	for _, token := range []string{"/clear", "/mcp", "/clio:boot", "/x:handoff-ingest"} {
 		if kind, why := missing(token, dir, nil); kind != "" {
 			t.Errorf("%q: %s %s", token, kind, why)
 		}
@@ -243,16 +243,16 @@ func TestBriefLintRules(t *testing.T) {
 		{"an exit line with no surface", "## exit\n\n- the board looks right\n", true},
 		{"an exit line naming a file", "## exit\n\n- the board in `x/go/boards.go` looks right\n", false},
 		{"an exit line naming a port", "## exit lines\n\n- localhost:7373 serves the map\n", false},
-		{"an exit line into cclio", "## exit\n\n- `_clio/docs/recipes/x.md` holds it\n", true},
+		{"an exit line into clio", "## exit\n\n- `_clio/docs/recipes/x.md` holds it\n", true},
 		{"an ftr exit line whose surface sits in a child", "## exit\n\n- the hold keeps work out\n  - given wip\n  - then `x lane commit` passes\n", false},
-		{"a prose line into cclio", "the recipe sits in `_clio/docs`\n", false},
+		{"a prose line into clio", "the recipe sits in `_clio/docs`\n", false},
 		{"a relayed approval with no time", "dima approved the cut\n", true},
 		{"a relayed approval with its time", "dima approved the cut at 14:59\n", false},
 		{"jev with no budget", "route it through jev\n", true},
 		{"jev with a budget", "route it through jev, budget 200 calls\n", false},
-		{"another member pushes past the skill's door", "/x:crew-coder FRM-1\ncclio pushes when you are done\n", true},
-		{"the coder pushes through the skill's door", "/x:crew-coder FRM-1\npush with `x lane push`\n", false},
-		{"another member pushes under a skill with no push door", "/x:crew-designer\ncclio pushes the canvas\n", false},
+		{"another member pushes past the skill's door", "/x:crew-codie FRM-1\nclio pushes when you are done\n", true},
+		{"the coder pushes through the skill's door", "/x:crew-codie FRM-1\npush with `x lane push`\n", false},
+		{"another member pushes under a skill with no push door", "/x:crew-designer\nclio pushes the canvas\n", false},
 		{"a reuse with nothing to keep", "reuse the FRM-1 coder\n", true},
 		{"a reuse that names what to keep", "reuse the FRM-1 coder, keep its worktree and context\n", false},
 		{"a quoted reuse", "the rule on «reuse» lands here\n", false},
@@ -267,7 +267,7 @@ func TestBriefLintRules(t *testing.T) {
 	}
 	skill := func(name string) string {
 		return map[string]string{
-			"crew-coder":    "the push door: `x lane push --apply`",
+			"crew-codie":    "the push door: `x lane push --apply`",
 			"crew-designer": "draw on the canvas",
 			"tdd":           "red, green, refactor",
 			"to-tickets":    "### 4. Quiz the user\n\nIterate until the user approves the breakdown.",
@@ -336,7 +336,7 @@ func TestIngestThatCannotTrashKeepsTheFile(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(root, 0o700) })
 
-	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoff", "ingest", "--for", "cclio", "probe")
+	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoff", "ingest", "--for", "clio", "probe")
 
 	if got.code != 0 || got.data["kept"] != true || len(listStore(root)) != 1 {
 		t.Fatalf("exit %d, kept %v, files %d", got.code, got.data["kept"], len(listStore(root)))

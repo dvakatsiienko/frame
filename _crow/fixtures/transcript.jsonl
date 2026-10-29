@@ -1,6 +1,6 @@
 {"type":"user","origin":{"kind":"human"},"message":{"content":"old ask before the last wake"}}
 {"type":"assistant","message":{"id":"m0","content":[{"type":"text","text":"old reply"}]}}
-{"type":"user","origin":{"kind":"human"},"message":{"content":"ship the ccrow build"}}
+{"type":"user","origin":{"kind":"human"},"message":{"content":"ship the crow build"}}
 {"type":"assistant","message":{"id":"m1","content":[{"type":"text","text":"on it"}]}}
 {"type":"assistant","message":{"id":"m1","content":[{"type":"tool_use","name":"Bash","input":{"command":"ls"}}]}}
 {"type":"user","message":{"content":[{"type":"tool_result","content":"a.ts b.ts"}]}}

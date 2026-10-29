@@ -30,7 +30,7 @@ export function commitMsgLint(message: string): Verdict {
             );
         if (conventionalTypes.test(scope))
             verdict.errors.push(
-                `«${scope}» is a conventional-commit type; the scope names a domain (sline, deps, cclio)`,
+                `«${scope}» is a conventional-commit type; the scope names a domain (sline, deps, clio)`,
             );
         if (description.endsWith('.'))
             verdict.errors.push('the description ends without a period');

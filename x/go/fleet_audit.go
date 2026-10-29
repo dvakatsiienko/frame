@@ -48,7 +48,7 @@ type auditLine struct {
 	} `json:"message"`
 }
 
-const lessonsFile = "crew-coder/how-you-work.md"
+const lessonsFile = "crew-codie/how-you-work.md"
 
 var (
 	auditEditTools = map[string]bool{"Edit": true, "Write": true, "NotebookEdit": true, "MultiEdit": true}
@@ -56,7 +56,7 @@ var (
 	ctx7Word       = regexp.MustCompile(`\bctx7\b`)
 )
 
-// fleetAudit asks of every coder session (opened with /x:crew-coder) whether it read its lessons file
+// fleetAudit asks of every coder session (opened with /x:crew-codie) whether it read its lessons file
 // before its first edit and again after each compaction, and counts its library-docs lookups; the
 // transcript is the proof, a coder's own «i read it» is not
 func fleetAudit(r *Run, _ []string, flags Flags) (any, error) {
@@ -85,7 +85,7 @@ func fleetAudit(r *Run, _ []string, flags Flags) (any, error) {
 // one coder session's reads, edits and lookups; a session that does not open with the command is no coder
 func auditSession(path string) (coderSession, bool) {
 	lines := transcriptLines(path)
-	// a coder's opening prompt is the command; a later mention (cclio talking about it) is not a coder
+	// a coder's opening prompt is the command; a later mention (clio talking about it) is not a coder
 	opening := []byte{}
 	for _, raw := range lines[:min(40, len(lines))] {
 		if bytes.Contains(raw, []byte(`"type":"user"`)) {
@@ -93,7 +93,8 @@ func auditSession(path string) (coderSession, bool) {
 			break
 		}
 	}
-	if !bytes.Contains(opening, []byte("<command-name>/x:crew-coder</command-name>")) {
+	if !bytes.Contains(opening, []byte("<command-name>/x:crew-codie</command-name>")) &&
+		!bytes.Contains(opening, []byte("<command-name>/x:crew-coder</command-name>")) { // read-both: the skill id before 10-29
 		return coderSession{}, false
 	}
 	s := coderSession{ID: filepath.Base(path)[:min(8, len(filepath.Base(path)))], Compacts: []compactRead{}}

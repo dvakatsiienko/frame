@@ -1,6 +1,6 @@
 # evergreen — the weekly lanes
 
-read by `cclio:evergreen` on the weekly brew day: the skills and the plugins renovate cannot see.
+read by `clio:evergreen` on the weekly brew day: the skills and the plugins renovate cannot see.
 
 - **skills lane, weekly with brew** — the agent skills renovate cannot see. the `skills` cli has no
   machine-wide list and no check command: `list`/`update` see the cwd's project OR global (`-g`),
@@ -16,5 +16,5 @@ read by `cclio:evergreen` on the weekly brew day: the skills and the plugins ren
   plugin, sit still (measured 2026-09-16: impeccable cached 4.2.1, upstream 4.3.1, disabled).
   `claude plugin marketplace update` then `claude plugin update <name>` for those; a bump is one
   digest line and binds next session.
-  - cw updates nothing by itself: when the `humanize` marketplace moved since the last run, the
-    digest carries «cw humanize: update it in cw» for dima.
+  - cloud chat updates nothing by itself: when the `humanize` marketplace moved since the last run, the
+    digest carries «cloud chat humanize: update it in cloud chat» for dima.

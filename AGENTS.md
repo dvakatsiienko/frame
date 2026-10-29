@@ -10,7 +10,7 @@ This is where the agent system itself (currently Claude Code CLI) is developed (
 
 🚫 **`_clio/` is the coordinator's home.** A session not booted as the coordinator never cds into
 or reads under `_clio/` — its memory autoloads and quietly rebrands whoever enters. Asked to boot as
-cclio from here: load `x:cclio-mode`.
+clio from here: load `x:clio-mode`.
 
 ## the dotfiles
 
@@ -58,7 +58,7 @@ it in that home; `script/`, `docs/` and `lib/` are not homes, they are where sca
 
 - **`plugin-x/`** — the personal plugin, registered as marketplace "x". `CST-SPEC.md` there is the
   single definition of the handoff format.
-- **`mcp-x-cw/`** — local stdio MCP server giving `cw` handoff and transcript tools against the
+- **`mcp-x-cloud-chat/`** — local stdio MCP server giving `cloud-chat` handoff and transcript tools against the
   shared shelf. Build: `pnpm mcp:build`.
 - **`shelf/`** — everything we bake, symlinked wholesale into `~/.claude/`: handoffs,
   transcripts, flawlog, plus the `hooks/` settings.json points at and the `sounds/` they
@@ -89,7 +89,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   `ctx-burn`, `notes-stack/` with its bench scripts). A test drive is a running measurement any session
   may append a round to, so it lives here and never under `_clio/`; it closes with a verdict line
   (adopted / dropped) and stays as the record. A research doc answers once; a test drive accumulates.
-  Its flow is cclio's `cclio:shape-test-drive`; `pnpm test-drive:check` reds an overdue, undated or copied date.
+  Its flow is clio's `clio:shape-test-drive`; `pnpm test-drive:check` reds an overdue, undated or copied date.
 
 ## Agent skills
 

@@ -22,7 +22,7 @@ test("a prompt's origin is logged with its head cut on whole code points", async
     const store = world(on);
     await $.prompt.submit({
         origin: { kind: 'peer' },
-        text: `${'a'.repeat(79)}🦉 cclio`,
+        text: `${'a'.repeat(79)}🦉 clio`,
         wait: false,
     });
     const [row] = store.origins as Row[];

@@ -60,8 +60,8 @@ for (const [why, from, to] of [
     ['an aside', '🔭 waiting on ci (a ping when it lands)', '🔭 waiting on ci'],
     [
         'an aside in a bullet',
-        '- 🔭 waiting on **cclio** (her halt)',
-        '- 🔭 waiting on **cclio**',
+        '- 🔭 waiting on **clio** (her halt)',
+        '- 🔭 waiting on **clio**',
     ],
     [
         'an aside beside a link',

@@ -78,7 +78,7 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 
 dima, 2026-10-18 (inbox W4): to fix, sharpen and smoothen your pm, i should first review all your pm flows from a to b, including the lane-closing parts; then evaluate how good the current flow is, find weak parts and gaps, find and apply shortcuts, cut redundancies. tl;dr: your pm and coord/lead flows need sharpening and smoothing (🎙️ «colors/lead» → coord/lead). the intervention skill PK-173 is tried on this first.
 
-inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and spawning — crew members are «summons», subagents are «spawns», for a clearer boundary: a summon is a longer-lasting thread entity, a spawn is smaller, it does something and dies. summons: cclio, coder, verifier, designer, ccrow, composer. spawns: researcher, wishkeeper and the rest of the subagents. a naming change → x:top-seven candidates when the revamp reaches it.
+inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and spawning — crew members are «summons», subagents are «spawns», for a clearer boundary: a summon is a longer-lasting thread entity, a spawn is smaller, it does something and dies. summons: clio, coder, verifier, designer, crow, helga. spawns: researcher, wishkeeper and the rest of the subagents. a naming change → x:top-seven candidates when the revamp reaches it.
 
 2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a grill: the pm flow review
 
@@ -197,11 +197,11 @@ W85 (Q3) the milestone emoji: 🎑 (moon viewing)
 W86 after the pm revamp is fully resolved: prep the few nearest milestones, the cli lane's first; spawn the cli lane today on the refreshed pm module to test it all; find the issues and weak spots and fix them in place, while the trace is hot
 
 2026-10-22 18:02 state after the build (commits c473cbc2..971e1fde + the 18:0x fix batch):
-shipped: wish-cover reads words (bullets + source tags fixed 18:00 after wishkeeper's siesta), the wish-cover hook on .scratch spec/proposal writes, pocket-check M1 + M2, the boot's milestone-health block (>5 soft), memory + skills for rounds 1–4, lane-plan.md in shape-lane + crew-coder, prompt-groom in crew-composer, 🎑 mil.
+shipped: wish-cover reads words (bullets + source tags fixed 18:00 after wishkeeper's siesta), the wish-cover hook on .scratch spec/proposal writes, pocket-check M1 + M2, the boot's milestone-health block (>5 soft), memory + skills for rounds 1–4, lane-plan.md in shape-lane + crew-codie, prompt-groom in crew-helga, 🎑 mil.
 left, in order (wishkeeper siesta 1, 27 findings, 18:53):
 1. fold FRM-72's own dima notes into W87+ (PK-85 review policy, PK-86 init-ctx alarm, the sidecrow/clio rename weigh, the 10-13 todo.md trial) and ask which still stand — the audit's «old ticket absorbs a wish» hop
 2. paste his raw prompts + steers 16:15→ into these notes under their W ranges (helper-lite extract: ~/frame/.scratch/dima-intervenes/runs/raw-prompts-2026-10-22.md)
-3. the waiting-items cap (~10, o24) — rides the 52-item sweep; M3 the weekly wish-loss audit as a cclio skill, from the 10-28 Wednesday pass (o17)
+3. the waiting-items cap (~10, o24) — rides the 52-item sweep; M3 the weekly wish-loss audit as a clio skill, from the 10-28 Wednesday pass (o17)
 4. the hook reads only «wish: PK-N»; a spec carries «wish: FRM-N» — resolve FRM → PK or put both on the spec line
 5. the halt step that counts low-tide solves born parked (craft-pm says it, halt/SKILL.md lacks it); the initiative health line in roadmap-prefetch (o26)
 6. FRM-72's wish block gets the W-lines or a pointer to PK-103 (next linear batch)
@@ -209,7 +209,7 @@ left, in order (wishkeeper siesta 1, 27 findings, 18:53):
 8. PK-250 + PK-251 waiting on a lane → linear riders under PK-120 (the new contract), with W41, W53, W73 copied into PK-251
 9. a UserPromptSubmit hook that saves a long wish-bearing prompt raw and queues prompt-groom (W59: a mechanism, not a memory line)
 10. answer W16 and W40 here; a linear → pocket pull rule in habit-shared-files (W19)
-11. small: the 10-07 «solve now?» cut shown to dima; a kind → emoji list in pm/SKILL.md (W83); W74 «milestones are inside initiatives» + W75 «not fully automated» back into craft-pm; wish-cover reds an unknown id; _reminders.md:53 «no cli capacity» reworded at the spawn; lane-plan contract in one home (shape-lane), crew-coder points
+11. small: the 10-07 «solve now?» cut shown to dima; a kind → emoji list in pm/SKILL.md (W83); W74 «milestones are inside initiatives» + W75 «not fully automated» back into craft-pm; wish-cover reds an unknown id; _reminders.md:53 «no cli capacity» reworded at the spawn; lane-plan contract in one home (shape-lane), crew-codie points
 then: the rename part (W6–W10, W24), the milestone review + milestone-first test drive (W72, W76), W86 the cli lane.
 
 2026-10-22 his raw words, 16:15 → 17:52, verbatim (helper-lite extract from the session transcript; the W-lines W22–W86 above are their folds):
@@ -325,9 +325,9 @@ W96 the hook is a good idea; we have 2 settled official blueprints: 🛼 crew an
 
 2026-10-22 18:2x progress on the state list: item 4 done (ac20f2f5: wish-cover resolves «wish: FRM-N»); the blueprint habit fix done (f4d0873f, W94–W96: the nudge hook, siesta step 2.6); item 5a done (593998c8: the halt's 🌊 born-parked count). item 5b open → the fixes round: the roadmap body marks steps 1–2 done while pm and fleet still read Planned in linear, and «now: fleet tails» names no step — what a closed step means for its project is dima's call (W81 cut time-based checks).
 
-18:18 ccrow's catch on item 5b (vet 202610221816-opus): dima-strategy's step-close rule exists. checked: applying it as Completed would bury live work: pm holds FRM-72 (this revamp), fleet holds 11 open + the «fleet package» milestone (next). so the fixes round asks: does a closed step complete its project (moving its open tickets), or do pm and fleet stay standing homes with the step marked done in the body only; and which step is «now». ccrow also: W87's re-look tests one job on both runners (Haiku 5.5 vs Opus 5.5) before craft-pm's «composer 1.4 %» line stays.
+18:18 crow's catch on item 5b (vet 202610221816-opus): dima-strategy's step-close rule exists. checked: applying it as Completed would bury live work: pm holds FRM-72 (this revamp), fleet holds 11 open + the «fleet package» milestone (next). so the fixes round asks: does a closed step complete its project (moving its open tickets), or do pm and fleet stay standing homes with the step marked done in the body only; and which step is «now». crow also: W87's re-look tests one job on both runners (Haiku 5.5 vs Opus 5.5) before craft-pm's «helga 1.4 %» line stays.
 
-18:3x items 7 + 11 (commit 7b9e5a74): verifier ask → crew-lead one home; ticket close closes its pocket item (closing.md); lane-plan: shape-lane keeps cclio's half, crew-coder keeps the coder's (a coder can't load cclio:shape-lane — the state note's «crew-coder points» was backwards); wish-cover reds an unknown W id. W74/W75 verified already in craft-pm § milestones first. the 10-07 «solve now?» line shown to dima in the 18:3x reply. left to their homes: board band 0 + lane-plan tile → the redraw; the band 5 walk → the weak-spot round; the kind → emoji list → the fixes-round grill (an emoji pick is his); _reminders.md:53 → at the cli spawn.
+18:3x items 7 + 11 (commit 7b9e5a74): verifier ask → crew-lead one home; ticket close closes its pocket item (closing.md); lane-plan: shape-lane keeps clio's half, crew-codie keeps the coder's (a coder can't load clio:shape-lane — the state note's «crew-codie points» was backwards); wish-cover reds an unknown W id. W74/W75 verified already in craft-pm § milestones first. the 10-07 «solve now?» line shown to dima in the 18:3x reply. left to their homes: board band 0 + lane-plan tile → the redraw; the band 5 walk → the weak-spot round; the kind → emoji list → the fixes-round grill (an emoji pick is his); _reminders.md:53 → at the cli spawn.
 
 correction: items 7 + 11 landed in 55c50577, not 7b9e5a74 (the first try failed on closing.md's budget)
 
@@ -373,7 +373,7 @@ note: W103 is the o49 b pick text he ticked, not his own words
 
 2026-10-22 19:4x what's left in pm scope (dima asked the full list, tomorrow's included):
 before the spawn: the board redraw (fork running), the second wind.
-main lane beside cli lane 1: (a) milestones: FRM-408/409/410/411 into one, then the review across projects nearest first + the milestone-first test drive (W72, W76); (b) item 9: a UserPromptSubmit hook saving a long wish-bearing prompt raw + queuing prompt-groom (W59); (c) FRM-408 the init-context trace; (d) item 3: the waiting cap (~10) rides the 52-item sweep; (e) item 5b: the initiative health line in roadmap-prefetch (o26) — what it checks now that projects are standing; (f) wishkeeper leftovers: fleet-output-format + halt groomed to the emoji-led-no-bullet rule (M10), FRM-72 note «settled in place» → name crew-coder § 3, bytes cap 1, review-rounds.md (L15), FRM-411 «active lane» (L18), 🪸 also in sline/model.go:18, PK-251's copied correction, PK-252 W3 line, the risky-list attribution on FRM-401, review.yml + review-approved.yml on the self-edit list (ask), FRM-72 + FRM-411 «lane: feature» → side lane, review-rounds.md section for graded lines + who commits from bytes, github-contrib:40 «re-requests», spec:86 done; (g) the remote-delete guard gap (railway variable delete unguarded) → a ticket under FRM-304; (h) the M3 weekly wish-loss audit ⏰ due 10-28 at the halt.
+main lane beside cli lane 1: (a) milestones: FRM-408/409/410/411 into one, then the review across projects nearest first + the milestone-first test drive (W72, W76); (b) item 9: a UserPromptSubmit hook saving a long wish-bearing prompt raw + queuing prompt-groom (W59); (c) FRM-408 the init-context trace; (d) item 3: the waiting cap (~10) rides the 52-item sweep; (e) item 5b: the initiative health line in roadmap-prefetch (o26) — what it checks now that projects are standing; (f) wishkeeper leftovers: fleet-output-format + halt groomed to the emoji-led-no-bullet rule (M10), FRM-72 note «settled in place» → name crew-codie § 3, bytes cap 1, review-rounds.md (L15), FRM-411 «active lane» (L18), 🪸 also in sline/model.go:18, PK-251's copied correction, PK-252 W3 line, the risky-list attribution on FRM-401, review.yml + review-approved.yml on the self-edit list (ask), FRM-72 + FRM-411 «lane: feature» → side lane, review-rounds.md section for graded lines + who commits from bytes, github-contrib:40 «re-requests», spec:86 done; (g) the remote-delete guard gap (railway variable delete unguarded) → a ticket under FRM-304; (h) the M3 weekly wish-loss audit ⏰ due 10-28 at the halt.
 tomorrow: the member names + summon vs spawn (W9, W10); W6, a name for chaotic lanes, if he still wants one; the 52 waiting pocket items' sweep.
 
 19:42 dima, raw: «I see a large amount of tickets in your pocket waiting state 48. That's quite a lot. It is not critical and not urgent priority, but we have to solve them somehow by either resolving out of pocket or starting to rebalance them with Linear, as agreed, and alternatively, formulating milestones. I'm not sure what is better to start right now. It's quite a lot of stuff everywhere. After the second lane is started, let's continue on resolving the PM module.» o61 ✓ spawn right after the pickup, with a verifier.
@@ -519,7 +519,7 @@ W215 (14:12) only non-standing story tickets can have some info describing the s
 W216 (14:12) standing tickets are almost always stories.
 W217 (14:12) okay, let's resolve these findings fully and print what is left in scope of pk103.
 W218 (14:12) print a slim, easy-to-read list.
-routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W181 (boot board, trophy-sys, FRM-417 shape, the budget hook), W206–W208 (PK-198). dropped as cclio's own lines he quoted with ←, never his wish: W163, W165, W166, W183–W189, W213. ❓1–❓22 answered in the thread the turn each came in.
+routed elsewhere, already acted on before the checkpoint: W148–W162, W176–W181 (boot board, trophy-sys, FRM-417 shape, the budget hook), W206–W208 (PK-198). dropped as clio's own lines he quoted with ←, never his wish: W163, W165, W166, W183–W189, W213. ❓1–❓22 answered in the thread the turn each came in.
 
 2026-10-23 14:27 dima on W6 (a name for chaotic lanes): «I thought we discarded chaotic lanes» — W6 settled as dropped; no lane kind is named chaotic.
 
@@ -630,7 +630,7 @@ W380 (2026-10-29 13:44, dima): before starting, when we get to this part, print 
 W381 (2026-10-29 13:44, dima): everyone, including Clio, Cristicro, Composer, your fork, coder, verifier, crew lead, and all subagents.
 W382 (2026-10-29 13:44, dima): let's see a full picture of all crew members in Fleet and see how we can rename them.
 
-re-fold 2026-10-29 13:51 (wispr, ccrow catch): W345 «a secror (?)» → «a ccrow»; W347 «`-dbg` flag» → «`--bg` flag»; W368 «a Clio SA Clio facility» → «a cclio facility»; W381 «Cristicro» → «ccrow»
+re-fold 2026-10-29 13:51 (wispr, crow catch): W345 «a secror (?)» → «a ccrow»; W347 «`-dbg` flag» → «`--bg` flag»; W368 «a Clio SA Clio facility» → «a cclio facility»; W381 «Cristicro» → «ccrow»
 
 W383 (2026-10-29 14:28, dima): print all fleet member names, short and compact, in a bullet list with fleet names in bold, for me to use as a reference. ❓
 W384 (2026-10-29 14:28, dima): and here is my proposal and ideas for names.
@@ -755,9 +755,9 @@ W505 (2026-10-29 16:49, dima): for the desktop app, we have two things: a plugin
 W506 (2026-10-29 16:49, dima): if so, then yes, x-cloud-chat/mcp-x-cloud-chat is fine.
 W507 (2026-10-29 16:49, dima): what do you mean by `code:` and `verify:` staying where they stay? ❓
 W509 (2026-10-29 16:52, dima): no, i'd like thread names to have vibe words too: ⚡ 🔧 mods lane 3 codie: FRM-431 · ⚡ 🔎 mods lane 3 sixth sense: main — that's the whole idea why i want it. will it work? will it confuse you? ❓
-note: W485–W488 and W508 are cclio's own 16:40/16:48 reply quoted back in the paste, not dima's words; W487 was reversed by dima at W489–W493
+note: W485–W488 and W508 are clio's own 16:40/16:48 reply quoted back in the paste, not dima's words; W487 was reversed by dima at W489–W493
 
-correction: W509's stamp is 16:52, not 14:52 (a typo of cclio's); its groomed form lands from grooms/2026-10-29-1652.groomed.md
+correction: W509's stamp is 16:52, not 14:52 (a typo of clio's); its groomed form lands from grooms/2026-10-29-1652.groomed.md
 
 held: 2026-10-29 — FRM-419 rename sweep; the pm module is parked until the rename time is decided (dima 17:08)
 <!-- SECTION:NOTES:END -->

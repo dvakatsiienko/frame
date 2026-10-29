@@ -47,9 +47,9 @@ export type StashMember = {
     status?: string;
     statusSince?: number;
     wait?: string;
-    // ccrow's row only: her newest 👀 «for you» tip, which takes the wait's place (PK-73)
+    // crow's row only: her newest 👀 «for you» tip, which takes the wait's place (PK-73)
     tip?: string;
-    // cclio's row only: the member pings quiet comms holds for her next turn, opened from her row's 🤫 n
+    // clio's row only: the member pings quiet comms holds for her next turn, opened from her row's 🤫 n
     held?: QuietPing[];
     // a held ping older than the idle wait + 2 min: the 🤫 n reads red
     isHeldStuck?: boolean;
@@ -108,7 +108,7 @@ export type StashBoardView = {
     isRing: boolean;
     // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
-    // cclio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»
+    // clio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»
     staleProbes?: string[];
 };
 
@@ -120,7 +120,7 @@ export type StashTurn = {
     afk?: boolean;
 };
 
-// one ask to dima in orbit: what is asked and cclio's pick, the steer cclio keeps for herself, dima's mark and steer;
+// one ask to dima in orbit: what is asked and clio's pick, the steer clio keeps for herself, dima's mark and steer;
 // locked while the turn it joined runs, changed after a follow-up, resolved until that turn ends
 export type OrbitAsk = {
     id: string;
@@ -154,7 +154,7 @@ export type OrbitAssumption = {
     steer?: string;
 };
 
-// quiet comms (PK-93): a [progress] ping from a member, held off cclio's thread until her next turn
+// quiet comms (PK-93): a [progress] ping from a member, held off clio's thread until her next turn
 // `canary`: the nonce of a `/quiet-canary` test ping, so its run finds its own log lines
 export type QuietPing = {
     at: number;
@@ -162,7 +162,7 @@ export type QuietPing = {
     text: string;
     canary?: string;
 };
-// the pings held for cclio's next turn; the on/off switch is a settings knob in the store
+// the pings held for clio's next turn; the on/off switch is a settings knob in the store
 export type StashQuiet = { held: QuietPing[] };
 // one delivery as the a/b reads it
 export type QuietLogLine = {
@@ -177,7 +177,7 @@ export type QuietLogLine = {
     // the sender's session id when the registry names it, so a rename mid-day never loses its lines
     sid?: string;
 };
-// the ledger: a member whose transcript sent cclio more pings than her quiet log holds since the window opened
+// the ledger: a member whose transcript sent clio more pings than her quiet log holds since the window opened
 export type QuietGap = { from: string; sent: number; logged: number };
 
 // dima's tick on an ask, written only by his press: the ask's text, its backtick-quoted targets, and when it counts (once
@@ -210,7 +210,7 @@ export type StashPlan = {
     sendAt?: number;
 };
 
-// 🛼 glide (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only cclio writes;
+// 🛼 glide (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only clio writes;
 // ≤5 plain steps, the pointer and what moved it; done steps stay listed
 export type LaneItem = { text: string; ticket?: string; isDone: boolean };
 export type LaneRole = 'coder' | 'verifier';
@@ -224,17 +224,17 @@ export type StashLane = {
     isPlanGone?: boolean;
     // the step we are on; items.length once every step is done
     current: number;
-    // cclio's orbit turn count when the pointer or a done flag last moved
+    // clio's orbit turn count when the pointer or a done flag last moved
     movedAt: number;
     // the linked members as the registry names them (an id the registry did not know stays as given); a re-link of a
     // role replaces the old one
     members: Partial<Record<LaneRole, string>>;
     // the board's view only: each member's session id now, resolved from its name at every draw
     memberSids?: Partial<Record<LaneRole, string>>;
-    // dima's steer on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
+    // dima's steer on the current step: a draft until his take, then it joins clio's next prompt or running turn once
     steer?: string;
     isSteerTaken?: boolean;
-    // `by`: the linked coder whose plan step moved the pointer forward, written by cclio's stash
+    // `by`: the linked coder whose plan step moved the pointer forward, written by clio's stash
     history: {
         at: number;
         act: string;

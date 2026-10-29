@@ -10,7 +10,7 @@ export const inboxQuestions = {
             answer: 'Dima wants a reply: a question, or an idea filed under the `💡` ideas section, where he expects a reaction and a suggestion, not a build.',
             drop: 'Nothing to do and nothing to record: an observation or a thought with no action wanted.',
             fold: 'Attaches to an existing ticket or a thread already tracked: the text names a ticket id (FRM-N, BYT-N, or an old DOT-N) or links the ticket, or says «+1», «add this», «fold», «resolve <id>». No new ticket, even when the ask is large.',
-            pocket: 'A concrete todo an agent can finish this session or the next, alongside other work, with no plan and no decision from dima: a freebie, a check, a leftovers sweep, a deletion or cleanup job dima describes step by step and wants done now, or an fyi whose only action is updating a file, a map, or a list the fleet keeps. Lands in the pocket, the local work pool of cclio.',
+            pocket: 'A concrete todo an agent can finish this session or the next, alongside other work, with no plan and no decision from dima: a freebie, a check, a leftovers sweep, a deletion or cleanup job dima describes step by step and wants done now, or an fyi whose only action is updating a file, a map, or a list the fleet keeps. Lands in the pocket, the local work pool of clio.',
             ticket: 'New work that needs its own session: a plan, a design, a decision from dima, or a coder spawned for it. Becomes a new linear ticket.',
         },
         instructions:

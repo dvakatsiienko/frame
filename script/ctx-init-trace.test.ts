@@ -80,7 +80,7 @@ describe('the init-context scan', () => {
                 date: '2026-10-20',
                 init: 100,
                 model: 'claude-opus-5-5',
-                seat: 'cclio',
+                seat: 'clio',
                 sid: 's1',
                 version: '2.1.309',
             },
@@ -144,21 +144,39 @@ describe('the init-context scan', () => {
         await scan(f.file, f.projects);
         expect(readTrace(f.file)[0]?.chars).toBe(800);
     });
+
+    it('reads a row stored under a seat name from before the 10-29 rename as its new seat', () => {
+        const file = path.join(
+            mkdtempSync(path.join(tmpdir(), 'ctx-seat-')),
+            'trace.jsonl',
+        );
+        writeFileSync(
+            file,
+            ['cclio', 'ccrow', 'composer'] // read-both
+                .map((seat) => `${JSON.stringify({ seat, sid: seat })}\n`)
+                .join(''),
+        );
+        expect(readTrace(file).map((r) => r.seat)).toEqual([
+            'clio',
+            'crow',
+            'helga',
+        ]);
+    });
 });
 
 describe('a session names its seat', () => {
     it.each([
-        ['-Users-dima-frame-cclio', 'hi', 'cclio'],
-        ['-Users-dima--local-state-ccrow-plans-2026', 'hi', 'ccrow'],
-        ['-Users-dima--local-state-composer', 'hi', 'composer'],
-        ['-Users-dima-frame--clio', 'hi', 'cclio'],
-        ['-Users-dima--local-state-crow-plans-2026', 'hi', 'ccrow'],
-        ['-Users-dima--local-state-helga', 'hi', 'composer'],
+        ['-Users-dima-frame-cclio', 'hi', 'clio'],
+        ['-Users-dima--local-state-ccrow-plans-2026', 'hi', 'crow'],
+        ['-Users-dima--local-state-composer', 'hi', 'helga'],
+        ['-Users-dima-frame--clio', 'hi', 'clio'],
+        ['-Users-dima--local-state-crow-plans-2026', 'hi', 'crow'],
+        ['-Users-dima--local-state-helga', 'hi', 'helga'],
         ['-Users-dima-frame', 'use the crew-codie skill', 'coder'],
         ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'verifier'],
         ['-Users-dima-frame', 'hi', 'cc'],
-        ['-Users-dima-frame', 'use the crew-coder skill', 'coder'],
-        ['-Users-dima-bytes', '/x:crew-verifier FRM-1', 'verifier'],
+        ['-Users-dima-frame', 'use the crew-codie skill', 'coder'],
+        ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'verifier'],
         ['-Users-dima-bytes', 'hi', 'other'],
     ])('%s with «%s» is %s', (dir, first, seat) => {
         expect(seatOf(dir, first)).toBe(seat);
@@ -179,7 +197,7 @@ const row = (
     date: new Date(now - daysAgo * DAY).toISOString().slice(0, 10),
     init,
     model: 'claude-opus-5-5',
-    seat: 'cclio',
+    seat: 'clio',
     sid: `s${Math.random()}`,
     version: '2.1.309',
 });
@@ -201,7 +219,7 @@ describe('the growth alarm', () => {
                 model: 'claude-opus-5-5',
                 now: 112_000,
                 ref: 100_000,
-                seat: 'cclio',
+                seat: 'clio',
             },
         ]);
     });
@@ -221,7 +239,7 @@ describe('the growth alarm', () => {
 
     it('fires over the ceiling with no growth', () => {
         const baseline = {
-            'cclio|claude-opus-5-5': { ceiling: 115_000, median: 100_000 },
+            'clio|claude-opus-5-5': { ceiling: 115_000, median: 100_000 },
         };
         expect(kinds(weeks(118_000, 118_000), baseline)).toEqual(['ceiling']);
     });
@@ -243,12 +261,12 @@ describe('the growth alarm', () => {
 describe('the first-run baseline', () => {
     it('sets each ceiling at the back data median plus 15 %', () => {
         expect(baselineOf(weeks(100_000, 100_000))).toEqual({
-            'cclio|claude-opus-5-5': { ceiling: 115_000, median: 100_000 },
+            'clio|claude-opus-5-5': { ceiling: 115_000, median: 100_000 },
         });
     });
 
     it('keeps a baseline already written, whatever the new data says', () => {
-        const kept = { 'cclio|claude-opus-5-5': { ceiling: 1, median: 1 } };
+        const kept = { 'clio|claude-opus-5-5': { ceiling: 1, median: 1 } };
         expect(baselineOf(weeks(100_000, 100_000), kept)).toEqual(kept);
     });
 });
@@ -295,7 +313,7 @@ describe('the alarm line names its cause and one proposal per file', () => {
         expect(
             lineOf(alarm, causeOf(alarm, weeks(100_000, 112_000), NOW, files)),
         ).toBe(
-            '⚠ cclio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — grew most: home/.claude/rules/fleet-flow.md (+40 lines) → trim it; _clio/memory/craft-pm.md (+22 lines) → trim it; _clio/AGENTS.md (+9 lines) → raise its budget',
+            '⚠ clio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — grew most: home/.claude/rules/fleet-flow.md (+40 lines) → trim it; _clio/memory/craft-pm.md (+22 lines) → trim it; _clio/AGENTS.md (+9 lines) → raise its budget',
         );
     });
 
@@ -304,7 +322,7 @@ describe('the alarm line names its cause and one proposal per file', () => {
             NOW - Date.parse(r.at) < 7 * DAY ? { ...r, version: '2.1.312' } : r,
         );
         expect(lineOf(alarm, causeOf(alarm, rows, NOW, files))).toBe(
-            '⚠ cclio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — cc 2.1.309 → 2.1.312 landed in that window: nothing to trim, re-baseline?',
+            '⚠ clio (claude-opus-5-5): starting ctx 112k, 12 % over 100k the week before — cc 2.1.309 → 2.1.312 landed in that window: nothing to trim, re-baseline?',
         );
     });
 
@@ -354,16 +372,16 @@ describe('the boot digest', () => {
             ...[1, 2, 3].map((d) => row(d, 129_000)),
         ];
         expect(digestOf(rows, {}, NOW, none)).toEqual([
-            'starting ctx (net, newest 5 sessions): cclio 129k opus-5-5 · coder 100k opus-5-5 · ccrow no session in 14 days · composer no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
+            'starting ctx (net, newest 5 sessions): clio 129k opus-5-5 · coder 100k opus-5-5 · crow no session in 14 days · helga no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
         ]);
     });
 
     it('adds the alarm line under it when a seat grew', () => {
         const rows = weeks(100_000, 112_000);
         expect(digestOf(rows, {}, NOW, none)).toEqual([
-            'starting ctx (net, newest 5 sessions): cclio 112k opus-5-5 · ccrow no session in 14 days · composer no session in 14 days · coder no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
+            'starting ctx (net, newest 5 sessions): clio 112k opus-5-5 · crow no session in 14 days · helga no session in 14 days · coder no session in 14 days · verifier no session in 14 days · cc no session in 14 days',
             expect.stringMatching(
-                /^⚠ cclio \(claude-opus-5-5\): starting ctx 112k, 12 % over 100k/,
+                /^⚠ clio \(claude-opus-5-5\): starting ctx 112k, 12 % over 100k/,
             ),
         ]);
     });
@@ -392,7 +410,7 @@ describe('the boot digest', () => {
     });
 });
 
-describe('the cclio boot digest line', () => {
+describe('the clio boot digest line', () => {
     const hook = readFileSync(
         path.join(
             import.meta.dirname,
@@ -421,8 +439,8 @@ describe('the cclio boot digest line', () => {
     };
 
     it('prints the digest the script prints', () => {
-        expect(run("console.log('starting ctx: cclio 129k');")).toBe(
-            'starting ctx: cclio 129k',
+        expect(run("console.log('starting ctx: clio 129k');")).toBe(
+            'starting ctx: clio 129k',
         );
     });
 

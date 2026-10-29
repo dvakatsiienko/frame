@@ -109,9 +109,9 @@ function fleet(name: string, marks: (string | undefined)[]) {
     return home;
 }
 
-describe('reply-check: cclio names dima in her 🔭 while his ask is open', () => {
+describe('reply-check: clio names dima in her 🔭 while his ask is open', () => {
     it('reminds, never blocks, her reply whose 🔭 omits dima while an ask waits on him', () => {
-        const home = fleet('🦉 cclio', [undefined]);
+        const home = fleet('🦉 clio', [undefined]);
         const out = stop(
             'done.\n\n🔭 waiting on **🔧 coder**',
             '12:00',
@@ -126,7 +126,7 @@ describe('reply-check: cclio names dima in her 🔭 while his ask is open', () =
     });
 
     it('passes her reply whose 🔭 names dima', () => {
-        const home = fleet('🦉 cclio', [undefined]);
+        const home = fleet('🦉 clio', [undefined]);
         const out = stop(
             'done.\n\n🔭 waiting on **🙋‍♂️ dima**',
             '12:00',
@@ -138,7 +138,7 @@ describe('reply-check: cclio names dima in her 🔭 while his ask is open', () =
     });
 
     it('passes her reply when every ask is already marked', () => {
-        const home = fleet('🦉 cclio', ['accepted']);
+        const home = fleet('🦉 clio', ['accepted']);
         expect(stop('done.', '12:00', false, home, 'sid-1')).toBeUndefined();
     });
 

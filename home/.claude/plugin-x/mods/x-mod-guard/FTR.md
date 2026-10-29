@@ -11,7 +11,7 @@
   - given a Bash call runs one of: `rm` or `unlink` (also `xargs rm`, `find -delete`, `find -exec rm`); a kill by pattern (`pkill`, `killall`, a `kill` fed by `pgrep`, `ps`, `grep` or `awk`); `git reset --hard`, `git checkout --`, `.` or `-f`, `git restore` of the worktree, `git clean -f`, `git stash drop|clear`; `git push --force|-f|--force-with-lease|--delete|--mirror` or a `+ref` / `:ref` refspec, `git branch -D` or `-d -f`, `git worktree remove|prune`; `--no-verify` or `--no-gpg-sign` on `git` or `x`, `git commit -n`, `-c commit.gpgsign=false`, `-c user.name|user.email`, `git config user.name|user.email <value>`; a `mv` in the obsidian vault; a `HOME=` override; `npm -g` or `--location=global`; `pip install`
   - and wherever it sits: behind `sudo -u <user>`, `env`, `timeout`, `nice`, `xargs`; inside `if`, `for`, `while`, `{ … }`; inside a `$( … )` or backticks, quoted or not; in a `bash -c` / `-lc` script or an `eval`
   - when x-mod-guard reads it
-  - then that one command is refused, and the reason opens with the door: `trash`, `claude stop <id>`, `git stash push -u -- <your paths>`, the `obsidian` cli, `uv pip install`, `brew` / `pnpm add -g`, a run without the flag, `x lane rebase-main` for a force-push (a coder/* branch; any other, «ask cclio») — and «ask cclio» only for a mirror push (its escape names the remote, `# dima-ok: origin`), a remote branch delete, a local branch delete, `git worktree remove|prune` and a x-mod-stash drop, where no safe door exists
+  - then that one command is refused, and the reason opens with the door: `trash`, `claude stop <id>`, `git stash push -u -- <your paths>`, the `obsidian` cli, `uv pip install`, `brew` / `pnpm add -g`, a run without the flag, `x lane rebase-main` for a force-push (a coder/* branch; any other, «ask clio») — and «ask clio» only for a mirror push (its escape names the remote, `# dima-ok: origin`), a remote branch delete, a local branch delete, `git worktree remove|prune` and a x-mod-stash drop, where no safe door exists
   - proven live 2026-10-05: a headless `claude -p --plugin-dir x-mod-guard` was told to `rm` a scratch file; the call was refused with the trash door, the file stayed, the event landed in x-mod-guard's store
   - decision: a refusal stops one command, never the session — no dialog, so a missed click can never stall a coder; the coder finds its own way around (dima, FRM-321)
   - decision: quoted text, heredoc bodies and comments are never read as commands — a commit message may name `rm -rf`
@@ -31,7 +31,7 @@
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
   - ✅ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
-  - proof: tests/rewrite.test.ts::a raw linear api / a raw linear api after a cd / a linear api rewrite is named in one line; tests/linear.test.ts::cclio's raw linear api still takes the x linear rewrite
+  - proof: tests/rewrite.test.ts::a raw linear api / a raw linear api after a cd / a linear api rewrite is named in one line; tests/linear.test.ts::clio's raw linear api still takes the x linear rewrite
   - decision: x-mod-guard alone covers `=word`: its `tool.call` rewrite runs before any classic PreToolUse hook, so the classic `zsh-equals-guard.py` backstop was dropped (dima's o286, 2026-10-11); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
 - ✅ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
   - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
@@ -56,7 +56,7 @@
   - given `-f`, `--fail`, `--fail-with-body`, `-w`, no `-s`, or no pipe, then no hint
   - proof: tests/pipes.test.ts::a silent curl into a pipe runs with a curl -f hint; no curl -f hint
 - ✅ a frame script run with `--help` whose source parses no help flag gets a hint first (FRM-428, PK-208)
-  - given `node ~/frame/_clio/script/pocket-add.ts --help` (or `-h`, or `tsx` a cclio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
+  - given `node ~/frame/_clio/script/pocket-add.ts --help` (or `-h`, or `tsx` a clio script), and its source names neither `--help` nor `'-h'`, then it runs as typed and the model reads: `<script>`'s source names no help flag — `--help` runs it; read its header instead
   - given a script whose source names a help flag, a run without `--help`, or a script outside `~/frame`, then no hint
   - proof: tests/help.test.ts::a frame script with no help flag, run with --help, gets a hint first; no script help hint
 - ✅ a cli's `<verb> --help` gets a bare-help hint, once per cli per session (FRM-428; fleet-hazards § the bash tool)
@@ -86,10 +86,10 @@
   - decision: the temp roots joined after a verifier lost ~8 calls to fixture repos under `mktemp -d` (FRM-346's retro, dima, 2026-10-08)
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
-- ✅ cclio cleans up its fleet's scratch without dima's word
+- ✅ clio cleans up its fleet's scratch without dima's word
   - given a session rooted under `~/frame/_clio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
   - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one
-  - then a tree elsewhere, a `--force` remove, a `-D` naming any non-`scratch/` branch, and the same commands from any other session are still refused with «ask cclio»
+  - then a tree elsewhere, a `--force` remove, a `-D` naming any non-`scratch/` branch, and the same commands from any other session are still refused with «ask clio»
   - decision: dima wants everything clear when he returns, parking only things like backup restores; a dirty tree keeps git's own refusal, so `--force` still asks (FRM-356, 2026-10-09)
   - then a tree holding a `.scratch/` dir, or whose HEAD reaches a commit no branch or remote branch does, still asks; so does a tree the lookup could not read
   - decision: git's dirty check misses both — a gitignored `.scratch/` plan goes with the tree, and a detached HEAD's commits are orphaned (the verifier's find; dima, 2026-10-09)
@@ -125,12 +125,12 @@
   - then the tick is spent by its first use for what it authorized (a target set, a pr, a sign): a second run is refused, while one ask quoting a guarded target and a pr carries each once (the 10-22 o4/o9 replay); a tick quoting only part of the command (`git push --mirror`) proves nothing
   - given a tick quoting the pr's url in this repo (`github.com/<owner>/<name>/pull/<n>`, the repo the call's `--repo` names or the cwd's origin, as merge-auto reads it), then `x lane merge-auto <pr> --apply --dima-ok <pr>` runs, and a bare `x lane merge-auto <pr> --apply` runs with `--dima-ok <pr>` added right after the call's own words, so a following `&& echo merged` or `# ship it` keeps it (a call in a nested shell gets none); another repo's pr of the same number, or a bare `#<n>`, proves nothing; `--release-brake` still needs his typed word
   - given a tick more than 2 h past its sending window, then it proves nothing: a yes for this afternoon's push never unlocks tonight's (dima's o2, 2026-10-28)
-  - decision: a tick pressed on a glide card in cclio's tab never counts as dima's word in the member's guard: its mark reaches the member through the shared store, which any session writes (dima's o1, 2026-10-28)
+  - decision: a tick pressed on a glide card in clio's tab never counts as dima's word in the member's guard: its mark reaches the member through the shared store, which any session writes (dima's o1, 2026-10-28)
   - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>:<what it authorized>`
   - given `x linear set <id> --add-label signed` (or `agent,signed`, `--add-label=signed`), or `x linear body <id> --set <file>` whose file holds a `✍️ signed` or `✍️ re-signed` line dated today, with no tick on a sign ask `✍️ sign <id>: <title>` — its id whole, so «FRM-14 …» or a rename ask naming the id proves nothing — then it is refused (rule `sign-untick`, o197; warn-only until the verifier's clean, 2026-10-28); with that tick, it runs, the label and the body's sign line each taking it once
-  - decision: the record is x-mod-stash's `$.state` `ticks`, written only by his 🛎️ press; any plugin reads another's value while only its owner writes it, so no Bash, Edit, Write or orbit op forges one, a tick planted in the shared store is ignored, and a tick authorizes only its own session (cclio's greenlight, 2026-10-28)
+  - decision: the record is x-mod-stash's `$.state` `ticks`, written only by his 🛎️ press; any plugin reads another's value while only its owner writes it, so no Bash, Edit, Write or orbit op forges one, a tick planted in the shared store is ignored, and a tick authorizes only its own session (clio's greenlight, 2026-10-28)
   - makes: the last 20 prompts across sessions, each with its origin and every field (text cut to 80 code points), under `origins` in x-mod-guard's `$.store` — what the origin rules are measured against (FRM-358)
-  - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session cclio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
+  - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session clio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
   - ✅ in a session the registry marks `kind: bg`, only a `bridge` prompt counts as dima's; a `composer` one, the spawn prompt's kind there, never does (dima's pick, 2026-10-09, FRM-358)
   - proof: tests/bg.test.ts::in a bg session a composer prompt never proves a dima-ok marker / in a bg session dima's bridge prompt proves a dima-ok marker
 - ✅ a guard that fails refuses the command
@@ -156,7 +156,7 @@
     - prune: `brew cleanup`, `pnpm store prune`, `docker system prune`, `crontab -r`
     - remote delete: `gh repo|release delete*`, `vercel rm|remove` and `vercel env rm`, `op <item|…> delete|rm|remove`, `security delete-*`, `linear issue delete`, an `issueDelete` mutation sent by `curl` or `linear`, `railway delete|rm`, `railway down` and `railway <environment|variable|service|volume|ca|flag|tcp-proxy|…> delete|rm|remove` or `railway sandbox destroy|rm|delete` (FRM-413)
     - top dir: `trash` of `/`, `~`, a dir above it, a dir right under it (`~/Documents`, `~/.config`) or the obsidian vault root; `defaults delete <domain>` with no key, or `-g` with none
-  - then it is refused, and the reason opens with the door: «ask cclio» for a disk, a device, history or a remote delete; «hand dima the step» for `csrutil`, `spctl` and `tccutil`; «hand dima the command» for `sudo`; «leave the prune to dima — name it in your report»; `>>`, a new path or the Write tool for a redirect; `mv -n` / `cp -n` or trash the old file first; «cancel it» for a linear issue; trash the files inside, by name; one `defaults` key
+  - then it is refused, and the reason opens with the door: «ask clio» for a disk, a device, history or a remote delete; «hand dima the step» for `csrutil`, `spctl` and `tccutil`; «hand dima the command» for `sudo`; «leave the prune to dima — name it in your report»; `>>`, a new path or the Write tool for a redirect; `mv -n` / `cp -n` or trash the old file first; «cancel it» for a linear issue; trash the files inside, by name; one `defaults` key
   - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `railway variables --kv`, `railway status`, `railway run rm …` (a local command), `trash` of a file in `~/Documents`, of one regular file right under `~` (a dotfile like `~/.zcompdump`; a symlink stays refused) or a note in the vault, `defaults delete <domain> <key>` (PK-167)
   - then `sudo` ahead of a floor command keeps the floor's door (`sudo rm` → trash)
   - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
@@ -170,11 +170,11 @@
   - decision: `obsidian delete --help` moved dima's `_hq/memory-sweep.md` into the trash on 2026-10-07, restored the same minute (pocket 27)
 
 - ✅ a coder spawn runs only on a brief that passed `x brief check`
-  - given a `claude --bg` call whose prompt carries `/x:crew-coder` — in the command, or in the brief file it reads through `"$(cat <path>)"`, `cat <path> |` or `< <path>`, resolved from the dir its `cd` left
+  - given a `claude --bg` call whose prompt carries `/x:crew-codie` — in the command, or in the brief file it reads through `"$(cat <path>)"`, `cat <path> |` or `< <path>`, resolved from the dir its `cd` left
   - when the brief file's sha256 (its raw bytes) has a stamp at `$X_STATE/briefs/<sha256>.json`, else `~/.local/state/x/briefs/<sha256>.json` — what a clean `x brief check` writes (x/go/brief.go)
   - then it runs; one byte changed after the check, or no file on disk, and it is refused with the door `x brief check <path> --repo <dir>`
   - given the brief inline in the command, then it is refused with «write the brief to a file, run x brief check …», target `inline-brief`
-  - given a `claude --bg` without `/x:crew-coder` (a probe, ccrow), then it runs; `# dima-ok: <target>` lets a refused one run, as in every rule
+  - given a `claude --bg` without `/x:crew-codie` (a probe, crow), then it runs; `# dima-ok: <target>` lets a refused one run, as in every rule
   - decision: x-mod-guard sees the command before the shell runs it, so it cannot hash an expanded `$(cat …)` — it reads the named file itself (FRM-311)
   - 📌 harness-proven only; a live spawn through the gate is unprobed until x v1.1 lands on main
 
@@ -203,7 +203,7 @@
 
 - ✅ stash's 🎛️ «🛡️ guard notes to the model» switch silences guard's notes (FRM-391 slice 06, dima's o11)
   - given the switch off — `guard-silent: true` in x-mod-stash's store file, read with `$.fs`, read-only
-  - when a call is rewritten, hinted or reaches the 8th cclio edit
+  - when a call is rewritten, hinted or reaches the 8th clio edit
   - then the rewrite still runs and no note joins the model's context; a refusal and a warn-only «would refuse» still speak, the floor untouched
   - decision: guard reads stash's file rather than keeping its own knob — one 🎛️ view, the store is one file per plugin (`mods/engine.md`)
   - proof: tests/silent.test.ts::with guard notes silent, a warn-only rule still says it would refuse, plus the rewrite, hint and floor-refusal cases
@@ -232,21 +232,21 @@
   - given any session runs `claude plugin update …` or `claude plugin marketplace update …`
   - then it runs, and the model reads «would refuse» with `x plugin bump --apply <plugin>` named; with `rule-mode:raw-plugin-update` = «enforce» nothing runs
   - given `claude plugin list`, `validate`, `test`, a quoted mention or another `claude … update`, then it runs unwarned
-  - decision: every session, cclio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
+  - decision: every session, clio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70)
   - proof: tests/plugin-update.test.ts::a raw plugin update runs, warned with x plugin bump named; with the rule enforced, a raw plugin update is refused; runs unwarned
 
 - ✅ a backlog notes edit that would wipe notes is refused naming `--append-notes` (PK-150, FRM-425)
-  - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (cclio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
+  - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (clio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
   - then nothing runs, and the refusal names `backlog task edit <id> --append-notes <text>`
   - given an empty notes block, no notes section, `--append-notes`, or an id no task file matches, then it runs unwarned
   - decision: refuse: the warn stage ran until FRM-425's verifier clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
 
 - ✅ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
   - decision: warned for a week, refused from 2026-10-18 (dima's o234): 0 raw-linear warnings in the week's otel tap
-  - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
-  - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
-  - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`
+  - given a session the registry names anything but 🦉 clio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
+  - and clio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
+  - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
 - ✅ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt names that pr (FRM-423)
   - given a Bash call running `x lane merge-auto … --dima-ok <pr>` (or `--dima-ok=<pr>`)
   - when dima's last prompt typed at the composer or sent over the bridge names the pr as a whole word, `104` or `#104`, by the same match as a dima-ok marker
@@ -260,8 +260,8 @@
 - ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
-  - proven live 2026-10-13 19:50: cclio's foreground `claude -p` was refused, its `foreground-claude` event in x-mod-guard's store names the `run_in_background` door
-  - decision: a refusal, never warn-only — a warning fires after the block it means to prevent (dima's o102; cclio, 18:16)
+  - proven live 2026-10-13 19:50: clio's foreground `claude -p` was refused, its `foreground-claude` event in x-mod-guard's store names the `run_in_background` door
+  - decision: a refusal, never warn-only — a warning fires after the block it means to prevent (dima's o102; clio, 18:16)
   - decision: its own escape, `# fg-ok:`, never `# dima-ok:` — a real need is the session's call, as with a wait
 
 ## every Agent spawn
@@ -275,7 +275,7 @@
   - given a `SendMessage`, then it is never checked
   - decision: messages left the check after it refused the verifier's verdict three times live — a report names a skill or an example path on purpose (FRM-392 round 1, 13:40); which messages count as briefs is dima's call
   - decision: the check's other findings (an unknown backticked term, a relayed approval with no time, the exit-line lints) never refuse — a message quotes code on purpose (a verifier's mutation); only a path and the quiz stopped work (dima's o40, 2026-10-11)
-  - decision: fail open — a check that breaks, times out or answers oddly lets the brief go, unlike the floor: this runs on every Agent of every session, cclio's included
+  - decision: fail open — a check that breaks, times out or answers oddly lets the brief go, unlike the floor: this runs on every Agent of every session, clio's included
   - given a relative path the session's repo lacks, then the refusal adds «a path from another repo: write it absolute or ~/»; an absolute or `~/` path is checked where it lives (dima's o66)
   - decision: off for a while after it refused plain reports live (dima's o65, 13:47); back on after the verifier's clean on the dev copy (round 3)
   - proof: tests/spawn-briefs.test.ts::a refused agent brief leaves a refused event under the brief rule, plus every refusal and allow
@@ -303,25 +303,25 @@
 - ✅ a lane job to a coder or verifier goes through a spec (dima's o143, FRM-425)
   - given a `SendMessage` to a session whose name carries `🔧`, `🔎`, `coder` or `verifier`, with no `.scratch/<feature>/spec.md` path, holding lines that open with an item number (`1.` or `1)`) outside a code fence: 1 or more when it names a ticket (`FRM-N`, `BYT-N`), 3 or more when it names none
   - when x-mod-guard reads it
-  - then it is refused unsent: «a lane job goes through a spec (cclio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
+  - then it is refused unsent: «a lane job goes through a spec (clio:shape-lane-dispatch § 2) …; write the job to .scratch/<feature>/spec.md and send its path», and a `refused` guard event is kept
   - given no item, 1 or 2 items with no ticket, a list or a ticket in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), a session not named a coder or verifier, or a sender that is itself a coder or verifier (its findings, its «final»), then it is sent
   - decision: refuse: the warn stage ran until FRM-425's verifier clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open — a message is never stopped by a broken check
 
 ## every Edit and Write
 
-- ✅ a cclio session gets one delegate hint at its 8th code edit
+- ✅ a clio session gets one delegate hint at its 8th code edit
   - given a session whose root is under `~/frame/_clio` (its start dir, which a shell `cd` never moves) makes its 8th `Edit`, `Write` or `MultiEdit` on a `.ts` `.tsx` `.go` `.sh` `.py` or `.swift` file
-  - then the call runs and the model gets one note: «x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context»; later edits get none
+  - then the call runs and the model gets one note: «x-mod-guard: 8 code edits in this clio session — a bigger job goes to a helper (~137k base) instead of this thread's context»; later edits get none
   - given other file types, or a session outside `~/frame/_clio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
-- ✅ a cclio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
+- ✅ a clio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
   - given a session whose root is under `~/frame/_clio` reads its 3rd `.png` `.jpg` `.jpeg` `.gif` `.webp` `.heic` `.bmp` or `.tiff` in one turn (the main loop, never a subagent's)
   - then the Read runs and the model gets one note naming `helper-lite` and `rules/fleet-tooling.md`; the 1st, 2nd and 4th get none
   - given a new prompt, then the count starts over; given a text file or a session outside `~/frame/_clio`, then nothing is counted
   - makes: a per-turn count in x-mod-guard's `$.state`
-  - proof: tests/images.test.ts::cclio's 3rd image Read in a turn gets the helper-lite nudge, once; a new turn starts the image count over; a text Read never counts; a session booted anywhere else gets no nudge
+  - proof: tests/images.test.ts::clio's 3rd image Read in a turn gets the helper-lite nudge, once; a new turn starts the image count over; a text Read never counts; a session booted anywhere else gets no nudge
 - ✅ a Write over a tracked file this session never read is refused
   - given a session that has not Read, Edited or Written a file git tracks
   - when it Writes over that file

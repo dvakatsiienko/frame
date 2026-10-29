@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { afterEach, expect, test } from 'vitest';
 
-// a fixture home holding one past note and a ccrow transcript that already answered the reconcile
+// a fixture home holding one past note and a crow transcript that already answered the reconcile
 const SCRIPT = join(import.meta.dirname, 'reconcile.ts');
 const NOTE_ID = '202610111830-opus';
 const servers: Server[] = [];
@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 function home({ tab = true } = {}) {
-    const dir = mkdtempSync(join(tmpdir(), 'ccrow-rec-'));
+    const dir = mkdtempSync(join(tmpdir(), 'crow-rec-'));
     const state = join(dir, '.local/state/crow');
     const sessions = join(dir, '.claude/sessions');
     const projects = join(
@@ -38,9 +38,9 @@ function home({ tab = true } = {}) {
             cwd: state,
             ...(tab ? {} : { jobId: 'job-1' }),
             messagingSocketPath: socket,
-            name: '🐦 ⬛ ccrow',
+            name: '🐦 ⬛ crow',
             pid: process.pid,
-            sessionId: 'ccrow-1',
+            sessionId: 'crow-1',
         }),
     );
     writeFileSync(
@@ -77,7 +77,7 @@ function home({ tab = true } = {}) {
         },
     ];
     writeFileSync(
-        join(projects, 'ccrow-1.jsonl'),
+        join(projects, 'crow-1.jsonl'),
         `${turn.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
     );
     return { dir, notes: join(state, 'notes.jsonl'), socket };
@@ -117,7 +117,7 @@ async function loggedAnswer(notes: string) {
     }
 }
 
-test('hands cclio the reconcile line to relay to a tab ccrow', async () => {
+test('hands clio the reconcile line to relay to a tab crow', async () => {
     const fixture = home();
     const { stdout } = await reconcile(
         fixture,
@@ -129,7 +129,7 @@ test('hands cclio the reconcile line to relay to a tab ccrow', async () => {
     );
 });
 
-test('sends the reconcile line to a --bg ccrow’s socket', async () => {
+test('sends the reconcile line to a --bg crow’s socket', async () => {
     const fixture = home({ tab: false });
     const heard = new Promise<string>((done) => {
         const server = createServer((conn) => {
@@ -152,7 +152,7 @@ test('sends the reconcile line to a --bg ccrow’s socket', async () => {
     ]);
 });
 
-test('logs ccrow’s one answer under the note’s id', async () => {
+test('logs crow’s one answer under the note’s id', async () => {
     const fixture = home();
     await reconcile(fixture, NOTE_ID, 'the verifier re-ran on b0b0');
     const answer = await loggedAnswer(fixture.notes);
@@ -189,7 +189,7 @@ test('refuses a second reconcile on the same note', async () => {
     ]);
 });
 
-test('refuses a second reconcile while the first waits for ccrow', async () => {
+test('refuses a second reconcile while the first waits for crow', async () => {
     const fixture = home();
     const pending = join(fixture.dir, '.local/state/crow/reconciles');
     mkdirSync(pending);
@@ -200,11 +200,11 @@ test('refuses a second reconcile while the first waits for ccrow', async () => {
     const { status, stderr } = await reconcile(fixture, NOTE_ID, 'again');
     expect([status, stderr.trim()]).toEqual([
         2,
-        `${NOTE_ID} has a reconcile waiting for ccrow's answer`,
+        `${NOTE_ID} has a reconcile waiting for crow's answer`,
     ]);
 });
 
-test('marks a sent reconcile as waiting for ccrow', async () => {
+test('marks a sent reconcile as waiting for crow', async () => {
     const fixture = home();
     await reconcile(fixture, NOTE_ID, 'the verifier re-ran on b0b0');
     expect(
@@ -214,7 +214,7 @@ test('marks a sent reconcile as waiting for ccrow', async () => {
     ).toBe(true);
 });
 
-test('refuses a reconcile before ccrow ever started', async () => {
+test('refuses a reconcile before crow ever started', async () => {
     const fixture = home();
     writeFileSync(
         join(fixture.dir, '.local/state/crow/state.json'),
@@ -223,7 +223,7 @@ test('refuses a reconcile before ccrow ever started', async () => {
     const { status, stderr } = await reconcile(fixture, NOTE_ID, 'x');
     expect([status, stderr.trim()]).toEqual([
         2,
-        'no arm in state.json: start ccrow first',
+        'no arm in state.json: start crow first',
     ]);
 });
 

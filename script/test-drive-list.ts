@@ -1,5 +1,5 @@
 // the one list of trials (o139): each docs/test-drive file's own status and until, grouped, live ones by date.
-// --check (cclio:shape-test-drive): reds what a trial forgets — past due, undated, a date copied outside its file
+// --check (clio:shape-test-drive): reds what a trial forgets — past due, undated, a date copied outside its file
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
@@ -52,8 +52,8 @@ const markdownUnder = (p: string): string[] => {
         .filter((f) => !/\/last\/|\/log[^/]*\.md$/.test(f));
 };
 
-// --spawn-hook (cclio PreToolUse on Bash): a `claude --bg` member spawn is refused until its brief names every live trial
-// whose `fits:` matches the member, so applying a trial never rests on cclio's memory (dima, 2026-10-22, o89)
+// --spawn-hook (clio PreToolUse on Bash): a `claude --bg` member spawn is refused until its brief names every live trial
+// whose `fits:` matches the member, so applying a trial never rests on clio's memory (dima, 2026-10-22, o89)
 if (process.argv.includes('--spawn-hook')) {
     const command: string =
         JSON.parse(readFileSync(0, 'utf8') || '{}').tool_input?.command ?? '';
@@ -66,9 +66,9 @@ if (process.argv.includes('--spawn-hook')) {
             `the gate cannot read the brief file this spawn names (${file ?? 'unparsed'}) — pass it as "$(cat <path>)"`,
         );
     const text = spawn ? briefText(command, file) : '';
-    const role = /\/x:crew-verifier\b/.test(text)
+    const role = /\/x:crew-(sixth-sense|verifier)\b/.test(text) // read-both
         ? 'verifier'
-        : /\/x:crew-coder\b/.test(text)
+        : /\/x:crew-(codie|coder)\b/.test(text) // read-both
           ? 'coder'
           : '';
     const kinds = [

@@ -71,7 +71,7 @@ func TestBodySetWritesTheFileBackWhenTheTicketIsUnchanged(t *testing.T) {
 	if input, _ := json.Marshal(sent[0].Variables); !strings.Contains(string(input), `"description":"edited body"`) {
 		t.Errorf("the mutation sent %s", input)
 	}
-	if data, _ := envelope["data"].(map[string]any); data["actor"] != "cclio" {
+	if data, _ := envelope["data"].(map[string]any); data["actor"] != "clio" {
 		t.Errorf("the write does not print its actor: %s", got.stdout)
 	}
 }

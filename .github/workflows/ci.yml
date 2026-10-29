@@ -67,7 +67,7 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # x is go, on a newer go than sline's. its toolchain comes before the vitest run: the x-cw
+      # x is go, on a newer go than sline's. its toolchain comes before the vitest run: the x-cloud-chat
       # handoff tools are tested against a built x, which the x shim compiles on first call
       - uses: actions/setup-go@v7
         with:

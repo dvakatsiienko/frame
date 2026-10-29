@@ -47,12 +47,12 @@ var (
 	fileLike   = regexp.MustCompile(`^[\w.@~-]+\.(?:md|mdx|ts|tsx|js|mjs|go|json|jsonc|sh|zsh|yml|yaml|toml|swift|css|html|txt|plist|py|svg|png)$`)
 	lineRef    = regexp.MustCompile(`(:\d+(?:-\d+)?|#[\w-]+)$`)
 	npmScoped  = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
-	// a cc slash command (`/clear`, `/cclio:boot`) is one segment from the root: never a path to check
+	// a cc slash command (`/clear`, `/clio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
 	jevWord           = regexp.MustCompile(`(?i)\bjev\b`)
 	reuseWord         = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
 	keepWord          = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
-	otherPush         = regexp.MustCompile(`(?i)\b(?:cclio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
+	otherPush         = regexp.MustCompile(`(?i)\b(?:clio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
 	// a skill however it is named: prefixed, a slash command, «the <name> skill», or any hyphenated word (`to-tickets`);
 	// a word naming no skill reads no file
 	skillName  = regexp.MustCompile("(?:\\b(?:x:|mattpocock-skills:|matt's `?)|(?:^|\\s)/(?:x:)?)([a-z][\\w-]*)|\\b([a-z][\\w-]*)`? skill\\b|\\b([a-z]+(?:-[a-z]+)+)\\b")

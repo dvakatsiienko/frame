@@ -16,7 +16,15 @@ import (
 // the handoff store: a flat dir of CSTs, named by one grammar (script/lib/handoff-names.json holds its
 // cases). nothing here deletes by age — a stale CST is dima's to see and decide about
 
-var audiences = []string{"any", "ccli", "cclio", "ccrow", "coder", "cw", "designer", "verifier"}
+var audiences = []string{"any", "cc", "clio", "crow", "coder", "cloud-chat", "designer", "verifier"}
+
+// read-both: CST names written before the 10-29 rename keep their old audience, so a stored one still
+// parses as addressed (never as «any») and is pulled by no new reader; pending ones were renamed then
+var pastAudiences = []string{"ccli", "cclio", "ccrow", "cw"} // read-both
+
+func knownAudience(token string) bool {
+	return slices.Contains(audiences, token) || slices.Contains(pastAudiences, token)
+}
 
 const staleAfter = 7 * 24 * time.Hour
 
@@ -90,7 +98,7 @@ func parseLegacy(stem string, shared bool) (name, bool) {
 	legacy := name{Audience: "any", Author: "any", Lane: "any", Shared: shared}
 	if timestamp.MatchString(parts[0]) {
 		rest := parts[1:]
-		if len(rest) > 0 && slices.Contains(audiences, rest[0]) {
+		if len(rest) > 0 && knownAudience(rest[0]) {
 			legacy.Audience, rest = rest[0], rest[1:]
 		}
 		legacy.Slug, legacy.TS = strings.Join(rest, "-"), parts[0]
@@ -101,7 +109,7 @@ func parseLegacy(stem string, shared bool) (name, bool) {
 		body, legacy.TS = parts[:len(parts)-1], last
 	}
 	// the audience is positional: a two-segment name has none, its first token is the slug
-	if len(body) > 1 && slices.Contains(audiences, body[0]) {
+	if len(body) > 1 && knownAudience(body[0]) {
 		legacy.Audience, body = body[0], body[1:]
 	}
 	legacy.Slug = strings.Join(body, "-")
@@ -109,7 +117,7 @@ func parseLegacy(stem string, shared bool) (name, bool) {
 }
 
 func audienceOr(token string) string {
-	if slices.Contains(audiences, token) {
+	if knownAudience(token) {
 		return token
 	}
 	return "any"

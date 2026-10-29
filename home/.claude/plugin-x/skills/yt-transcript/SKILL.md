@@ -6,7 +6,7 @@ argument-hint: "<youtube url> [transit] | <title fragment or video id> | list"
 
 # yt-transcript
 
-**lane** — `cw`: `x-cw__yt_transcript_fetch`, `x-cw__yt_transcript_transit`, `x-cw__yt_transcript_recall`, `x-cw__yt_transcript_list` · `cc`: Bash.
+**lane** — `cloud-chat`: `x-cloud-chat__yt_transcript_fetch`, `x-cloud-chat__yt_transcript_transit`, `x-cloud-chat__yt_transcript_recall`, `x-cloud-chat__yt_transcript_list` · `cc`: Bash.
 
 Downloads YouTube captions, cleans them into readable text, shelves them so a video is never
 fetched twice. **Captions only** — Whisper is deliberately not here

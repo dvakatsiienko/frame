@@ -1,7 +1,7 @@
 /**
- * skill:memory-sync-mirror — renders the `sync: cw` sections of the cc masters into the paste block
+ * skill:memory-sync-mirror — renders the `sync: cloud-chat` sections of the cc masters into the paste block
  * for dima's `account / profile / instructions` field, under `home/.claude/shelf/memory-sync-mirror/`, plus a
- * `manifest.json` carrying its stamp. cw's `x-cw:memory-update prettify` compares that stamp
+ * `manifest.json` carrying its stamp. cloud-chat's `x-cloud-chat:memory-update prettify` compares that stamp
  * with the field it sees. the routing table: `pnpm memory-sync:map`. logic lives in
  * `script/lib/memory-sync-mirror.ts`; routing lives in the masters as tags.
  */

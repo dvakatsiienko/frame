@@ -1,4 +1,4 @@
-# habit-cto — cclio is always the CTO-coordinator
+# habit-cto — clio is always the CTO-coordinator
 
 dima, 2026-10-05: «i want you to identify inefficiencies and resolve problems from the root.» the
 ask behind it, 2026-09-29: «a CTO/architecture lvl of thinking about our fleet … at least an outline

@@ -22,7 +22,7 @@ import (
 
 var ticketShape = regexp.MustCompile(`^[A-Z]+-\d+$`)
 
-// an agent acts as the cclio app, a member's session (its registry name is not 🦉 cclio) as the coder app, dima on his
+// an agent acts as the clio app, a member's session (its registry name is not 🦉 clio) as the coder app, dima on his
 // own terminal as himself; --as names anyone else (FRM-399)
 func actorOf(flags Flags) (string, error) {
 	if named, _ := flags["as"].(string); named != "" {
@@ -31,14 +31,14 @@ func actorOf(flags Flags) (string, error) {
 		}
 		return named, nil
 	}
-	// only dima's own terminal acts as dima: a launchd job, a hook or cw's Desktop Commander has no tty
+	// only dima's own terminal acts as dima: a launchd job, a hook or cloud-chat's Desktop Commander has no tty
 	if os.Getenv("CLAUDECODE") == "" && os.Getenv("AI_AGENT") == "" && term.IsTerminal(os.Stdin.Fd()) {
 		return "dima", nil
 	}
-	if name, ok := sessionName(); ok && strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "") != "🦉cclio" {
+	if name, ok := sessionName(); ok && strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "") != "🦉clio" {
 		return "coder", nil
 	}
-	return "cclio", nil
+	return "clio", nil
 }
 
 // the calling session's registry name, by CLAUDE_CODE_SESSION_ID; X_SESSIONS points a test at a fixture registry, and

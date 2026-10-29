@@ -12,10 +12,10 @@
   - when dima's prompt names `FRM-12`
   - then linear-flow is in context before the reply, and the log shows `load linear-flow by prompt`
   - decision: a task notification counts as a prompt — `UserPromptSubmit` fires on it (probed live, 2026-10-04)
-- ✅ a cclio session loads linear-flow at its start
+- ✅ a clio session loads linear-flow at its start
   - given a session starts, clears or compacts in `_clio/`
   - then linear-flow is in context before the first prompt, and the log shows `load linear-flow by project`
-  - decision: cclio owns pm and boots with ticket ids already in context (its start hook, its gazette trail) — the replay found 17 replies naming a ticket before any other trigger, all in cclio
+  - decision: clio owns pm and boots with ticket ids already in context (its start hook, its gazette trail) — the replay found 17 replies naming a ticket before any other trigger, all in clio
 - ✅ the first linear command waits for the rule
   - given linear-flow is not loaded
   - when the session runs `linear issue view`
@@ -46,10 +46,10 @@
   - when a reply names a ticket id, a `linear.app` link or a `- ticket:` line
   - then the Stop hook logs a miss
 - ✅ the replay gate
-  - given the last 14 days of cclio and coder transcripts
+  - given the last 14 days of clio and coder transcripts
   - when `pnpm memory-load:replay --days 14` runs
   - then 100 % of linear signals come after a load; below that, fix a trigger or discard
-  - measured 2026-10-04, 314 sessions: cclio 1648/1648 (1023 in replies), coder 284/284 (73 in replies); other sessions 345/346 — the one miss names a worktree path (`BYT-105-gremlins`) from `ps` output, not linear work
+  - measured 2026-10-04, 314 sessions: clio 1648/1648 (1023 in replies), coder 284/284 (73 in replies); other sessions 345/346 — the one miss names a worktree path (`BYT-105-gremlins`) from `ps` output, not linear work
   - a signal in a tool call is also a tool trigger, so it hits by construction; the replies are the real measure. subagent transcripts are not replayed
 
 ## the move
@@ -57,7 +57,7 @@
 - ✅ linear-flow leaves the resident set
   - given the build landed
   - then `rules/` holds no `linear-flow.md`, and the resident rules shrink by about 3.7 KB
-- decision: cw's `pm_guide` tool is removed (dima, 2026-10-11: cw never does linear work)
+- decision: cloud chat's `pm_guide` tool is removed (dima, 2026-10-11: cloud chat never does linear work)
 - ✅ one name for the path loader
   - given the rename landed
   - then a grep for the path loader's old name prints nothing outside history

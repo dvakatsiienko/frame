@@ -6,7 +6,7 @@ description: Load BEFORE any `gh pr` / `gh issue` command, before writing a PR t
 # github contributions
 
 conventions for pull requests and issues — the `gh` mechanics under the lanes in `x:cmt` and
-`x:crew-coder` (a coder's assignment lands as a PR by default; dima's own lane is `main`).
+`x:crew-codie` (a coder's assignment lands as a PR by default; dima's own lane is `main`).
 
 ## pull requests
 
@@ -38,7 +38,7 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 - **the bytes review lane**: `gh pr edit <n> --add-label '🤖 review:requested'` starts the ci
   reviewer on this head; the guard publishes `review:clean`, the required check on main —
   never created = blocked. a later push leaves it stale — `x lane review <pr>` names the judged commit and
-  counts the rounds (one per pr, at «final»); past that round it names cclio's approval on dima's
+  counts the rounds (one per pr, at «final»); past that round it names clio's approval on dima's
   account after the verifier's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed (#79, two rounds

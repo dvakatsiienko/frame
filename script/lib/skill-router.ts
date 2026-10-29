@@ -24,8 +24,8 @@ export const defaultThresholds: Thresholds = {
 
 // a pick of these never auto-trusts, green router or not (docs/knowledge/jev.md)
 export const sideEffectSkills: ReadonlySet<string> = new Set([
-    'cclio:evergreen',
-    'cclio:halt',
+    'clio:evergreen',
+    'clio:halt',
     'x:cmt',
     'x:handoff',
 ]);
@@ -38,17 +38,17 @@ export const mustNotMiss: readonly string[] = [
     'x:github-contrib',
     'x:guide-ui-ux',
     'x:handoff-ingest',
-    'cclio:pm',
-    'cclio:shape-idea',
+    'clio:pm',
+    'clio:shape-idea',
     'x:writing-for-humans',
 ];
 
 const skillDirs = {
-    cclio: new URL('../../_clio/plugin-clio/skills/', import.meta.url),
+    clio: new URL('../../_clio/plugin-clio/skills/', import.meta.url),
     x: new URL('../../home/.claude/plugin-x/skills/', import.meta.url),
 };
 
-/** x + cclio from this tree, so a worktree measures its own descriptions — FRM-268's whole roster */
+/** x + clio from this tree, so a worktree measures its own descriptions — FRM-268's whole roster */
 export const treeRoster: readonly RouterSkill[] = Object.entries(
     skillDirs,
 ).flatMap(([prefix, dir]) =>
@@ -71,15 +71,15 @@ export const treeRoster: readonly RouterSkill[] = Object.entries(
 );
 
 /**
- * every skill the session was shown (its transcript's skill listing), x + cclio swapped for this
+ * every skill the session was shown (its transcript's skill listing), x + clio swapped for this
  * tree's copies; a listed skill with a SKILL.md on disk gets its excerpt, a built-in only its line
  */
 export function rosterFrom(listing: ReadonlyMap<string, string>) {
     const own = new Set(treeRoster.map((s) => s.name));
-    // `x-cw:<s>` is cowork's copy of `x:<s>`: two names for one procedure split the Choice
-    const asTree = (name: string) => name.replace(/^x-cw:/, 'x:');
+    // `x-cloud-chat:<s>` is cowork's copy of `x:<s>`: two names for one procedure split the Choice
+    const asTree = (name: string) => name.replace(/^x-cloud-chat:/, 'x:');
     const isTwin = (name: string) =>
-        own.has(asTree(name)) || /^(x|cclio):/.test(name);
+        own.has(asTree(name)) || /^(x|clio):/.test(name);
     const listed = new Set([...listing.keys()].map(asTree));
     const others = [...listing]
         .filter(([name]) => !isTwin(name))
@@ -88,7 +88,7 @@ export function rosterFrom(listing: ReadonlyMap<string, string>) {
             excerpt: excerptOf(name),
             name,
         }));
-    // a tree skill the session was not shown (cclio's in a coder session) cannot be loaded there
+    // a tree skill the session was not shown (clio's in a coder session) cannot be loaded there
     return [...treeRoster.filter((s) => listed.has(s.name)), ...others];
 }
 
@@ -242,7 +242,7 @@ export function decide(
     };
 }
 
-// the hook runs `+context` (dima's pick, FRM-305): x + cclio plus the last reply, at the
+// the hook runs `+context` (dima's pick, FRM-305): x + clio plus the last reply, at the
 // thresholds r4 swept for it — the best arm on the 32 real held-out prompts (75 % precision,
 // 15 % wrong, 71 % critical recall). no arm meets the bar to turn on (≥ 90 % / ≤ 5 %) there,
 // so the router stays off until it is re-measured on real labels

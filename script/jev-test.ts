@@ -1,6 +1,6 @@
 /**
  * jev:test — the fixture suite of every jev flow. one jsonl per flow in `shelf/jev/fixtures/`,
- * a line = the state jev sees + the lane cclio gave. run before a criterion changes and at the
+ * a line = the state jev sees + the lane clio gave. run before a criterion changes and at the
  * halt; a criterion edit that lowers a flow's precision is refused. `skill-router` runs only when
  * named: four jev arms (FRM-268's router, then v2's parts added one at a time) and a haiku
  * baseline, `RUNS` times (default 3), jev thresholds swept on the tune split, every rate printed

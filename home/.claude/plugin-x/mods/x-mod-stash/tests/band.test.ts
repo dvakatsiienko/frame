@@ -212,7 +212,7 @@ test('a reply with no 🔭 line names its background work in the row', async ($,
     );
 });
 
-// the two watches as cclio arms them: the pr one names its script, the ci one only its description
+// the two watches as clio arms them: the pr one names its script, the ci one only its description
 const standingWatch = (id: string) =>
     id === 'w1'
         ? {
@@ -229,7 +229,7 @@ const standingWatch = (id: string) =>
               type: 'shell',
           };
 
-test("cclio's standing pr/ci watches are not counted as waits", async ($, on) => {
+test("clio's standing pr/ci watches are not counted as waits", async ($, on) => {
     world(on);
     const ui = await band($);
     await $.classic.Stop({

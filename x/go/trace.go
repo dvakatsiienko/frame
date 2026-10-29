@@ -57,7 +57,7 @@ func traceName(words []string) string {
 }
 
 // who ran x, from the env each door leaves. a hook first: git exports GIT_EXEC_PATH to every hook, cc
-// exports CLAUDE_PROJECT_DIR to its hooks and never to its Bash tool. cw is Cowork's Desktop Commander,
+// exports CLAUDE_PROJECT_DIR to its hooks and never to its Bash tool. cloud-chat is Cowork's Desktop Commander,
 // which passes its own env on, a plugin root under local-agent-mode-sessions (probed 2026-10-07)
 func callerOf(tty bool) string {
 	switch {
@@ -66,7 +66,7 @@ func callerOf(tty bool) string {
 	case os.Getenv("CLAUDECODE") != "":
 		return "cc"
 	case strings.Contains(os.Getenv("CLAUDE_PLUGIN_ROOT"), "/local-agent-mode-sessions/"):
-		return "cw"
+		return "cloud-chat"
 	case os.Getenv("SSH_CONNECTION") != "":
 		return "ssh"
 	case tty:

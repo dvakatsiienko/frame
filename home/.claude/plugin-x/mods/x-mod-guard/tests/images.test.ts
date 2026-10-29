@@ -31,7 +31,7 @@ const nudges = (context: readonly string[] | undefined) =>
 const newTurn = ($: Engine) =>
     $.prompt.submit({ origin: { kind: 'composer' }, text: 'go', wait: false });
 
-test("cclio's 3rd image Read in a turn gets the helper-lite nudge, once", async ($, on) => {
+test("clio's 3rd image Read in a turn gets the helper-lite nudge, once", async ($, on) => {
     world(on, '/home/frame/_clio');
     const counts: number[] = [];
     for (const f of ['a.png', 'b.jpg', 'c.jpeg', 'd.webp'])

@@ -1,11 +1,11 @@
 ---
 name: gazette
-description: load when /cclio:halt reaches phase 4.5, when /cclio:checkpoint writes its update block, or when dima says «gazette» — the day's post and the gated wire.
+description: load when /clio:halt reaches phase 4.5, when /clio:checkpoint writes its update block, or when dima says «gazette» — the day's post and the gated wire.
 ---
 
-# /cclio:gazette — cclio's gazette 🗞️ the tweet and the wire
+# /clio:gazette — clio's gazette 🗞️ the tweet and the wire
 
-**cclio's gazette** — the durable event history plus its outward release. the halt calls this BEFORE the CST, so the
+**clio's gazette** — the durable event history plus its outward release. the halt calls this BEFORE the CST, so the
 handoff carries only what the gazette did not already say.
 
 **what it is (dima, 2026-09-03): the memory of what meaningful stuff we did, not a mirror of
@@ -21,10 +21,10 @@ write the day's post: `_clio/gazette/YYYY-MM-DD-<short-slug>.md`.
 - **one file per day.** a second halt the same day APPENDS under a `⸻ upd hh:mm` rule — never a
   second file. slug is minted at first write and stays.
 - **source from evidence, not memory of your own turns**: `git log --since=<today>` across
-  touched repos, the day's linear activity, the session context last — coders and cw leave
-  traces cclio's thread never saw.
+  touched repos, the day's linear activity, the session context last — coders and cloud chat leave
+  traces clio's thread never saw.
 - frontmatter: `date` · `slug` · `tickets: [FRM-N, BYT-N, …]` · `posted: {health: no}`
-- header line: `# 🗞️ cclio's gazette · <slug title>` — the masthead leads every post
+- header line: `# 🗞️ clio's gazette · <slug title>` — the masthead leads every post
 - skeleton, soft cap ~25 lines:
   - **shipped** — what landed, every fact linear-linked
   - **tricks gained** — fleet-useful finds, gotchas, new capabilities
@@ -32,7 +32,7 @@ write the day's post: `_clio/gazette/YYYY-MM-DD-<short-slug>.md`.
 - fleet voice. only facts that changed something; a fact links its ticket, never restates the
   body; dates absolute, never «today».
 - dedup: read the previous post before writing.
-- every post ends with a `## trail` section: three bullets, `shipped:` / `open:` / `state:`, one line each — the only part that stays resident. after writing, run `_clio/.claude/hooks/gazette-trail.sh` (from the frame root): it regenerates `gazette/_trail.md`, which the memory barrel imports into every cclio boot
+- every post ends with a `## trail` section: three bullets, `shipped:` / `open:` / `state:`, one line each — the only part that stays resident. after writing, run `_clio/.claude/hooks/gazette-trail.sh` (from the frame root): it regenerates `gazette/_trail.md`, which the memory barrel imports into every clio boot
 
 ## phase 2 — the wire (gated)
 

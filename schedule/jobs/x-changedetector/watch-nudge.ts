@@ -1,4 +1,4 @@
-// cclio's UserPromptSubmit hook: an upstream page in the prompt with no watch → one nudge line
+// clio's UserPromptSubmit hook: an upstream page in the prompt with no watch → one nudge line
 import { readFileSync } from 'node:fs';
 
 import { apiKey, watchApi, watchFor } from './watch-add.ts';

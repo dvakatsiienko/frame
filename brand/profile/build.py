@@ -11,7 +11,7 @@ GH = 'https://github.com/dvakatsiienko'
 
 # ---------- inputs for redraw.ts: it draws the board and the cards, here and in the weekly action ----------
 MONO_FACE = str(pathlib.Path.home() / 'Library/Fonts/Operator Mono %s Regular.otf')
-AVATARS = dict(cclio='owl.png', coder='bulldog.png', reviewer='basset.png', verifier='../avatars/fleet/verifier/verifier-dalmatian-space.png')
+AVATARS = dict(clio='owl.png', coder='bulldog.png', reviewer='basset.png', verifier='../avatars/fleet/sixth-sense/verifier-dalmatian-space.png')
 
 def export_glyphs():
     faces, upm = {}, 0

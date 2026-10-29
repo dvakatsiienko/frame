@@ -3,9 +3,9 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts, dimaSays } from './said.ts';
 
-const BRIEF = '/x:crew-coder FRM-1 build the thing\n';
+const BRIEF = '/x:crew-codie FRM-1 build the thing\n';
 // `shasum -a 256` of BRIEF, and of BRIEF with its last letter capitalised
-const SUM = '52729345631895ec297d387a57506ea5344a3a1c4fdc94da3ed3636b53f144d1';
+const SUM = 'e24d76845f47f3137d2be715a9459fa98e2be9bd7dfb0f00aa230fb7a037f110';
 const STAMP = `/home/.local/state/x/briefs/${SUM}.json`;
 
 // files: absolute path → text, the stamps among them; env: what env.get answers past HOME
@@ -63,13 +63,13 @@ test('a coder spawn with the brief inline is refused, asking for a brief file', 
     const w = world(on, {});
     const r = await bash(
         $,
-        "claude --bg -n coder '/x:crew-coder FRM-1 build the thing' --remote-control",
+        "claude --bg -n coder '/x:crew-codie FRM-1 build the thing' --remote-control",
     );
     expect(r.deny).toContain('write the brief to a file');
     expect(w.ran).toEqual([]);
 });
 
-test('a claude --bg without /x:crew-coder runs', async ($, on) => {
+test('a claude --bg without /x:crew-codie runs', async ($, on) => {
     const w = world(on, {});
     const command = "claude --bg -n probe 'say ok'";
     expect((await bash($, command)).deny).toBeUndefined();
@@ -79,13 +79,13 @@ test('a claude --bg without /x:crew-coder runs', async ($, on) => {
 test('a coder spawn ending in a dima-ok marker runs', async ($, on) => {
     const w = world(on, {});
     const command =
-        "claude --bg '/x:crew-coder FRM-1 fix' # dima-ok: inline-brief one-line hotfix";
+        "claude --bg '/x:crew-codie FRM-1 fix' # dima-ok: inline-brief one-line hotfix";
     await dimaSays($, 'spawn it, inline-brief is fine for a one-line hotfix');
     expect((await bash($, command)).deny).toBeUndefined();
     expect(w.ran).toEqual([command]);
 });
 
-test('a brief read through < whose file names /x:crew-coder is checked', async ($, on) => {
+test('a brief read through < whose file names /x:crew-codie is checked', async ($, on) => {
     const w = world(on, { '/repo/b.md': BRIEF });
     const r = await bash($, 'cd /repo && claude --bg -n coder < b.md');
     expect(r.deny).toContain('x brief check /repo/b.md --repo /repo');

@@ -1,12 +1,12 @@
 # pm — the body, writing, run markers
 
-read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:pm` § write and close).
+read before a ticket create, a body rewrite, or a comment clio writes (`clio:pm` § write and close).
 
 ## the body — a spec seed
 
 `to-spec` runs on the body alone (dima, 2026-10-07). in order, a small ticket filling only the lines it has:
 
-- `lane: <kind>` (the four kinds: `fleet-vibe` § entities, lane) — the first line, the kind word only; `repo: <name>` under it once signed (`cclio:shape-lane` § 3)
+- `lane: <kind>` (the four kinds: `fleet-vibe` § entities, lane) — the first line, the kind word only; `repo: <name>` under it once signed (`clio:shape-lane` § 3)
 - **wish** — dima's words, folded (`_clio/memory/craft-pm.md` § wishes), one point per numbered W-line; his raw drop stays in the pocket notes, linked (`craft-pm` § wishes)
 - **dima notes** — his later notes and verdicts, folded and dated, read by the ask-guard; a later ask joins the wish block as W-lines
 - **why** — what hurts today
@@ -18,10 +18,10 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 - **out** — out of scope and «decided against», so nobody re-proposes it
 - **refs** — research, designs, prior art
 - **closing word** — at close
-- **`## signed`** — the last section, appended to, never edited: `✍️ signed <YYYY-MM-DD> · body <hash>` at his sign (`cclio:shape-lane` § 4 owns the hash), `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`, `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`, `merge: pre-approved` when his sign covers the merge, `🚀 dispatched <YYYY-MM-DD>` or `🚫 cancelled <YYYY-MM-DD> — <why>` (`cclio:shape-lane-dispatch`), `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <asks>` (`cclio:halt`), `✍️ re-sign pending <YYYY-MM-DD> — <what changed>` when a scope moved after his sign: the chunk is blocked until his re-sign, asked in orbit the same turn (dima o66)
+- **`## signed`** — the last section, appended to, never edited: `✍️ signed <YYYY-MM-DD> · body <hash>` at his sign (`clio:shape-lane` § 4 owns the hash), `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`, `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`, `merge: pre-approved` when his sign covers the merge, `🚀 dispatched <YYYY-MM-DD>` or `🚫 cancelled <YYYY-MM-DD> — <why>` (`clio:shape-lane-dispatch`), `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <asks>` (`clio:halt`), `✍️ re-sign pending <YYYY-MM-DD> — <what changed>` when a scope moved after his sign: the chunk is blocked until his re-sign, asked in orbit the same turn (dima o66)
 
 **the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»):
-- want in the ticket: the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch — on a signed ticket with its `## signed` line in the same write (`cclio:shape-lane` § 4)
+- want in the ticket: the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch — on a signed ticket with its `## signed` line in the same write (`clio:shape-lane` § 4)
 - how to spec: the how is the body's `proposed` / `decided` until dispatch; `to-spec` then moves it into `.scratch/<feature>/spec.md`, beside the exit lines
   - each chunk section opens with its own `wish: FRM-N` in place of a problem statement, never restates the want, and cites the W-lines each part serves (`script/wish-cover.ts` exits 0 on it)
   - steers on the how land in the spec, and its outcome folds into the closing word when the run lands
@@ -59,7 +59,7 @@ read before a ticket create, a body rewrite, or a comment cclio writes (`cclio:p
 
 mint one per session at the first write, reuse it all session: `<surface>·<YYYYMMDD>·<slug>`
 (`cc·20260819·batch1`); a pulled session continues the run from the CST META. it is the last line
-of a body cclio creates and of every comment cclio writes:
+of a body clio creates and of every comment clio writes:
 
 ```
 ⸻ 🪪 cc·20260819·batch1 · <model name> · agent run stamp — please keep 🙏

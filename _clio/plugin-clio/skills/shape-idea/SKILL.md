@@ -1,6 +1,6 @@
 ---
 name: shape-idea
-description: Load BEFORE a new app, a new feature or a change to how a product part works gets built — «i want to build», «new app», «new feature», «an idea», «should we build», «shape it», «shape-idea», «redesign», «re-shape» — when dima picks shape-idea for a wish, and before a designer brief is written. typed as `/cclio:shape-idea <idea or app>`.
+description: Load BEFORE a new app, a new feature or a change to how a product part works gets built — «i want to build», «new app», «new feature», «an idea», «should we build», «shape it», «shape-idea», «redesign», «re-shape» — when dima picks shape-idea for a wish, and before a designer brief is written. typed as `/clio:shape-idea <idea or app>`.
 argument-hint: "<the idea, or an existing app to re-shape>"
 ---
 
@@ -33,15 +33,15 @@ word. skipping a step happens only on his word, named out loud.
 4. **sharpen** — `neuroarxiv` when the question is an architecture or a method; `adhd` for a name
    or a fork with no clear answer. only where one applies; say which ran and what it changed.
    neuroarxiv's per-paper reads go to a `helper-lite` or `researcher` agent (no fleet memory, ~10k a read).
-   then, on every shape, a plan critic: write the plan to a file and run `pnpm -C ~/frame ccrow:plan-critique
-   <file>` — a fresh one-shot on ccrow's day arm, blind to the thread; its verdict and ≤5 located
+   then, on every shape, a plan critic: write the plan to a file and run `pnpm -C ~/frame crow:plan-critique
+   <file>` — a fresh one-shot on crow's day arm, blind to the thread; its verdict and ≤5 located
    findings go to dima beside the grill (FRM-336).
 5. **the cut** — the smallest version worth using, and a written «out» list of what it is not.
    it names the **polish tier**: an internal tool stops at «works and clear»; a showcase app
    (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the
    look comes from, and a reviewer who sees a generic look clicks away.
 6. **the done test** — how dima will know it works, as given/when/then lines: his 🎯, never the verifier's exit lines, which dispatch writes into the spec from it.
-7. **the ticket** — one shaped ticket, written through `cclio:pm` (its `references/body.md` owns the sections): the wish, why, stories, decided, the cut as `out` and the polish tier, the 🎯 done test, prior art and libs under `refs`; a pocket item behind it dies that turn, `ticket: FRM-N` and a `close:` line. no files: `PRODUCT.md` is born at dispatch, the FTR lines and glossary words in the build (`craft-fleet-flow` § lane init). an app wish then goes to the designer before its sign (`x:crew-designer-interview` reads the ticket; a trial, tested on speak v2).
+7. **the ticket** — one shaped ticket, written through `clio:pm` (its `references/body.md` owns the sections): the wish, why, stories, decided, the cut as `out` and the polish tier, the 🎯 done test, prior art and libs under `refs`; a pocket item behind it dies that turn, `ticket: FRM-N` and a `close:` line. no files: `PRODUCT.md` is born at dispatch, the FTR lines and glossary words in the build (`craft-fleet-flow` § lane init). an app wish then goes to the designer before its sign (`x:crew-designer-interview` reads the ticket; a trial, tested on speak v2).
 
 **completion criterion:** the ticket exists with every section step 7 names, and dima said «shaped»; it
-goes to `cclio:shape-lane` for his sign, and nothing is designed or built from the original ask.
+goes to `clio:shape-lane` for his sign, and nothing is designed or built from the original ask.

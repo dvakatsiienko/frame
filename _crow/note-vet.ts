@@ -3,9 +3,9 @@ import { setTimeout as sleep } from 'node:timers/promises';
 
 import { NOTES_PATH, VERDICTS_PATH, appendJsonl, fail } from './lib.ts';
 
-const usage = `ccrow:note-vet <ok|miss> <note-id> <why…> — log a verdict on one note to ${VERDICTS_PATH}`;
+const usage = `crow:note-vet <ok|miss> <note-id> <why…> — log a verdict on one note to ${VERDICTS_PATH}`;
 // a vet can land before harvest.ts logs the note it answers, so the line gets this long to appear
-const WAIT_MS = Number(process.env.CCROW_VET_WAIT_MS ?? 60_000);
+const WAIT_MS = Number(process.env.CROW_VET_WAIT_MS ?? 60_000);
 
 const [value, id, ...why] = process.argv.slice(2);
 if ((value !== 'ok' && value !== 'miss') || !id || why.length === 0)

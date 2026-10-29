@@ -44,7 +44,7 @@ brew "git-delta"                 # core.pager in .gitconfig — syntax-highlight
 brew "agent-browser"            # headless browser cli for coders: rust daemon, attach in 30 ms, --json verbs.
                                  # the x:browser-headless skill says when; `agent-browser skills get core` says how
 brew "schpet/tap/linear"         # Linear CLI — the pm skill runs on this
-brew "backlog-md"                # `backlog`, markdown task tracker — cclio's pocket a/b vs pocket.md (2026-10-09)
+brew "backlog-md"                # `backlog`, markdown task tracker — clio's pocket a/b vs pocket.md (2026-10-09)
 
 # ── Languages and package managers ──────────────────────────────────────────
 brew "fnm"                       # Node version manager
@@ -82,7 +82,7 @@ brew "freeze"                    # charm code/terminal shots → png; FRM-284 sh
 brew "sequin"                    # charm's ansi decoder — `… | sequin` shows what a tui redraw really printed
 brew "gifski"                    # high-quality gif encoder for browser recordings
 brew "yt-dlp"
-brew "whisper-cpp"               # local speech-to-text — mcp-x-cw transcripts pipeline calls it
+brew "whisper-cpp"               # local speech-to-text — mcp-x-cloud-chat transcripts pipeline calls it
 brew "poppler"                   # PDF tooling
 
 # ── Test drives (DOT-250, 2026-09-16) ──────────────────────────────────────

@@ -13,14 +13,14 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 
 ## the names
 - every tile title opens with an emoji from the set below that names what it is about; the same thing gets the same emoji on every board
-- the board's name leads with its emoji: `🛼 crew-lead — how cclio spawns everyone`
+- the board's name leads with its emoji: `🛼 crew-lead — how clio spawns everyone`
 - a meaning missing from the set joins it here first, then is drawn
 
 ## the set: who acts
 - 🙋‍♂️ dima decides or acts
-- 🦉 cclio does it
+- 🦉 clio does it
 - ⚙️ a script, a hook or a check runs it
-- 🔧 coder · 🔎 verifier · 🎨 designer · 🐝 researcher · 🐜 helper · 🪶 helper-lite · 🦅 scout · 🐬 wishkeeper · 🐦‍⬛ ccrow · 🎼 composer · 🐠 fresh-eyes
+- 🔧 coder · 🔎 verifier · 🎨 designer · 🐝 researcher · 🐜 helper · 🪶 helper-lite · 🦅 scout · 🐬 wishkeeper · 🐦‍⬛ crow · 🎀 helga · 🐠 fresh-eyes
 
 ## the set: what a tile is
 - ❓ a decision (a diamond)

@@ -19,8 +19,8 @@ INLINE_CODE = re.compile(r"`[^`\n]*`")
 MIDDOT = re.compile(r"\w[^\n·]*\s·\s[^\n·]*\w")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
 REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
-# a ccrow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
-WAIT_ON_CCROW = re.compile(r"^\s*🔭.*ccrow.*$", re.M)
+# a crow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
+WAIT_ON_CROW = re.compile(r"^\s*🔭.*crow.*$", re.M)
 GRILL_ANSWER = re.compile(r"^\s*Q\d+\s*[:\-–]?\s*[a-e]\b", re.M)
 GRILL_HEAD = re.compile(r"^🔥 grill:.*$", re.M)
 GRILL_QUESTION = re.compile(r"^(\d+)\. \*\*", re.M)
@@ -29,7 +29,7 @@ ASK_NUMBER = re.compile(r"\bQ(\d+)\b")
 LOCAL_LINK = re.compile(r"\]\((?![a-z][a-z0-9+.-]*:|#)([^)\s]+)\)")
 LINE_SUFFIX = re.compile(r":\d+(?::\d+)?$")
 HOME = os.environ.get("REPLY_CHECK_HOME", os.path.expanduser("~"))
-# while dima owes cclio an answer, her 🔭 names him (o45; missed twice on 10-12 after it was set)
+# while dima owes clio an answer, her 🔭 names him (o45; missed twice on 10-12 after it was set)
 WAIT_LINE = re.compile(r"^\s*🔭.*$", re.M)
 # an internal id dima cannot read cold: an orbit ask, a pocket item, a letter-digit label (o54: o56, PK-50, I7); a grill's
 # `Q1` is its own label, printed with its question in the same reply
@@ -186,7 +186,7 @@ def grill_drift(prose: str, session: str) -> str:
 
 
 def waits_without_dima(prose: str, session: str) -> bool:
-    if not re.search(r"(^|\s)cclio$", session_name(session)) or not open_asks(session):
+    if not re.search(r"(^|\s)clio$", session_name(session)) or not open_asks(session):
         return False
     return not any("dima" in line for line in WAIT_LINE.findall(prose))
 
@@ -410,14 +410,14 @@ def findings(reply: str) -> list[tuple[str, str]]:
             found += [("middot", m.group(0)[:40]) for m in MIDDOT.finditer(line)]
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
     found += [("future-stamp", stamp) for stamp in future_stamps(prose)]
-    found += [("wait-on-ccrow", m.group(0)[:40]) for m in WAIT_ON_CCROW.finditer(prose)]
+    found += [("wait-on-crow", m.group(0)[:40]) for m in WAIT_ON_CROW.finditer(prose)]
     # each fence is judged alone: a Q line in prose between two command fences once matched across them
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     found += [("unglossed-id", token) for token in unglossed(prose)]
     found += [("unproven-cant", word) for word in unproven_cants(prose)]
     found += [("wide-claim", claim) for claim in wide_claims(prose)]
     found += [("door-claim", claim) for claim in door_claims(prose)]
-    # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
+    # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (crow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
         found.append(("empty-reply", body[0][:40]))
@@ -467,15 +467,15 @@ def main() -> None:
     by_rule = lambda name: [snippet for rule, snippet in hits if rule == name]
     reminds: list[str] = []
     if by_rule("lone-wishkeeper"):
-        reminds.append("wishkeeper ran alone — start the siesta freebie now (cclio:siesta step 2.2)")
+        reminds.append("wishkeeper ran alone — start the siesta freebie now (clio:siesta step 2.2)")
     if by_rule("unreached"):
         reminds.append(f"text printed before a tool call never reached dima («{by_rule('unreached')[0]}…») — what he must read goes in the last message")
     for said in by_rule("empty-promise"):
         reminds.append(f"the reply says «{said}» with no {'orbit add' if said == 'proposed in orbit' else 'command'} that turn — a promise lands with its call")
     if by_rule("empty-reply"):
         reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
-    if by_rule("wait-on-ccrow"):
-        reminds.append("a 🔭 line named ccrow — a wake never holds the session")
+    if by_rule("wait-on-crow"):
+        reminds.append("a 🔭 line named crow — a wake never holds the session")
     if by_rule("wait-without-dima"):
         reminds.append("an open orbit ask and no 🔭 line naming **🙋‍♂️ dima** — end on `🔭 waiting on **🙋‍♂️ dima**`")
     if by_rule("table"):

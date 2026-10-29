@@ -54,7 +54,7 @@ export const noLinkReasons = {
 
 export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.claude/plugin-x', 'absolutePath'],
-    ['.claude/mcp-x-cw', 'absolutePath'],
+    ['.claude/mcp-x-cloud-chat', 'absolutePath'],
     ['.zshrc', 'sourcedByStub'],
     ['.zshenv', 'sourcedByStub'],
     ['.zprofile', 'sourcedByStub'],

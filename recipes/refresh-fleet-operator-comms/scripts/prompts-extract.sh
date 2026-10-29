@@ -1,7 +1,7 @@
 #!/bin/sh
 # dima's typed prompts since a date → <out>/prompts.jsonl, deduped by text and minute, plus <out>/chunk-NN.jsonl for the labelling lanes.
 # usage: prompts-extract.sh <since yyyy-mm-dd> <out-dir> [chunks=4]
-# a prompt counts in the cclio, frame, bytes or home project dirs, through the cli or the desktop app; coder briefs, hook echoes and peer lines are dropped.
+# a prompt counts in the clio, frame, bytes or home project dirs, through the cli or the desktop app; coder briefs, hook echoes and peer lines are dropped.
 set -eu
 since=$1 out=$2 chunks=${3:-4}
 mkdir -p "$out"
@@ -22,9 +22,9 @@ duckdb -c "
 create table d as select * replace (t::timestamptz::timestamp as t), regexp_replace(txt,'\s+',' ','g') flat from read_json_auto('$raw')
   where t::timestamptz >= '$since'::timestamptz;
 create table u as select min(t) t, any_value(p) p, any_value(s) s, flat, max(img) img, length(flat) len from d
-  where flat not like '<%' and flat not like 'reply with only%' and flat not like 'PROBLEM:%' and flat not like 'you are ccrow%'
+  where flat not like '<%' and flat not like 'reply with only%' and flat not like 'PROBLEM:%' and flat not like 'you are crow%' and flat not like 'you are ccrow%'
     and flat not like 'This session is being continued%' and flat not like '[Request interrupted%' and flat not like 'The x-mod-stash%'
-    and flat <> 'ping' and flat not like 'HANDOFF%' and flat not like 'Caveat:%' and flat not like 'ccrow wake%'
+    and flat <> 'ping' and flat not like 'HANDOFF%' and flat not like 'Caveat:%' and flat not like 'crow wake%' and flat not like 'ccrow wake%'
   group by flat, date_trunc('minute', t);
 copy (select row_number() over (order by t) id, strftime(t,'%Y-%m-%d %H:%M') t, p, img, len, left(flat,600) txt from u order by t) to '$out/prompts.jsonl';"
 n=$(wc -l < "$out/prompts.jsonl" | tr -d ' ')

@@ -742,7 +742,7 @@ describe('auditAgainstHead', () => {
     test('the real git path: a committed task deleted afterwards goes red', () => {
         const repo = mkdtempSync(join(tmpdir(), 'pocket-git-'));
         try {
-            const root = join(repo, 'cclio');
+            const root = join(repo, 'clio');
             const tasks = join(root, 'pocket', 'tasks');
             const archive = join(root, 'pocket', 'archive', 'tasks');
             mkdirSync(tasks, { recursive: true });
