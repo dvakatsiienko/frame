@@ -754,7 +754,7 @@ W504 (2026-10-29 16:49, dima): let's plan to have this hook for some time to avo
 W505 (2026-10-29 16:49, dima): for the desktop app, we have two things: a plugin and an MCP, and we should have a bot rename it.
 W506 (2026-10-29 16:49, dima): if so, then yes, x-cloud-chat/mcp-x-cloud-chat is fine.
 W507 (2026-10-29 16:49, dima): what do you mean by `code:` and `verify:` staying where they stay? ❓
-W509 (2026-10-29 14:52, dima): no, i'd like thread names to have vibe words too: ⚡ 🔧 mods lane 3 codie: FRM-431 · ⚡ 🔎 mods lane 3 sixth sense: main — that's the whole idea why i want it. will it work? will it confuse you? ❓
+W509 (2026-10-29 16:52, dima): no, i'd like thread names to have vibe words too: ⚡ 🔧 mods lane 3 codie: FRM-431 · ⚡ 🔎 mods lane 3 sixth sense: main — that's the whole idea why i want it. will it work? will it confuse you? ❓
 note: W485–W488 and W508 are cclio's own 16:40/16:48 reply quoted back in the paste, not dima's words; W487 was reversed by dima at W489–W493
 
 correction: W509's stamp is 16:52, not 14:52 (a typo of cclio's); its groomed form lands from grooms/2026-10-29-1652.groomed.md
