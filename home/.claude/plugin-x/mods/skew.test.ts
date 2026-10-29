@@ -119,7 +119,9 @@ describe('the desktop app side', () => {
 
     it('names a bundle path that is a folder, not an archive', () => {
         expect(bundleOf(dir)).toEqual({
-            error: expect.stringContaining(`${dir} could not be read`),
+            error: expect.stringMatching(
+                new RegExp(`^${dir} could not be read: EISDIR`),
+            ),
         });
     });
 

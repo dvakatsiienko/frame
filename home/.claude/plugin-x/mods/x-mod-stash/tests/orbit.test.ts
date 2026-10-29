@@ -2960,3 +2960,28 @@ test('an orbit kept with caught pieces loads without them, and the board draws n
         await asksShown(ui),
     ]).toEqual([false, false, ['o1']]);
 });
+
+test('an ask that breaks the orbit card blanks the card alone, the board still draws', async ($, on) => {
+    world(on);
+    const state: Record<string, unknown> = {
+        orbit: { asks: [], next: 2, turns: 1 },
+    };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    state.orbit = {
+        asks: [{ id: 'o1', link: 5, pick: 'y', text: 'x' }],
+        next: 2,
+        turns: 1,
+    };
+    const ui = await board($);
+    expect([
+        (await ui.find({ key: 'broken:orbit', type: 'Box' }))?.text,
+        (await ui.find({ text: /failed to draw/, type: 'Text' }))?.text,
+    ]).toEqual(['⚠ orbit could not draw', undefined]);
+});

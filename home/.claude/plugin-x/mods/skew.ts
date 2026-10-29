@@ -64,7 +64,9 @@ export function bundleOf(path: string): Bundle {
             ? { version }
             : { error: `${path} names no bundled cc version` };
     } catch (err) {
-        return { error: `${path} could not be read: ${String(err)}` };
+        return {
+            error: `${path} could not be read: ${err instanceof Error ? err.message : String(err)}`,
+        };
     }
 }
 

@@ -5112,7 +5112,7 @@ export const register: Register = (on) => {
                                 </Box>
                             </Box>
                         );
-                    const orbitJSX = (
+                    const orbitJSX = drawn('orbit', () => (
                         <Box
                             key='orbit'
                             {...cardProps}
@@ -5284,7 +5284,7 @@ export const register: Register = (on) => {
                                 </Box>
                             ) : null}
                         </Box>
-                    );
+                    ));
                     // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
                     // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
                     const lanes = (await $.state.get(LANES)).value ?? [];
@@ -5371,38 +5371,40 @@ export const register: Register = (on) => {
                         (sum, w) => sum + w.n,
                         0,
                     );
-                    const stripJSX = waitingCount ? (
-                        <Box
-                            key='asks-strip'
-                            {...cardProps}
-                            alignItems='center'
-                            borderColor={PALETTE.warn}
-                            columnGap={1}
-                            flexDirection='row'
-                            flexWrap='wrap'
-                            marginBottom={1}>
-                            <Text bold color={PALETTE.warn}>
-                                {`🙋 ${waitingCount} ask${waitingCount === 1 ? ' waits' : 's wait'} for you`}
-                            </Text>
-                            {waitingOn.map((w) => (
-                                <Button
-                                    key={`asks-strip:${w.lane.id}:${w.role}`}
-                                    onPress={() =>
-                                        void $.ui
-                                            .scroll({
-                                                block: 'start',
-                                                to: {
-                                                    key: `lane:${w.lane.id}:${w.role}`,
-                                                },
-                                            })
-                                            .catch(() => undefined)
-                                    }
-                                    plain>
-                                    {`· ${w.role === 'coder' ? '🔧' : '🔎'} ${w.role} ${w.n}`}
-                                </Button>
-                            ))}
-                        </Box>
-                    ) : null;
+                    const stripJSX = drawn('asks', () =>
+                        waitingCount ? (
+                            <Box
+                                key='asks-strip'
+                                {...cardProps}
+                                alignItems='center'
+                                borderColor={PALETTE.warn}
+                                columnGap={1}
+                                flexDirection='row'
+                                flexWrap='wrap'
+                                marginBottom={1}>
+                                <Text bold color={PALETTE.warn}>
+                                    {`🙋 ${waitingCount} ask${waitingCount === 1 ? ' waits' : 's wait'} for you`}
+                                </Text>
+                                {waitingOn.map((w) => (
+                                    <Button
+                                        key={`asks-strip:${w.lane.id}:${w.role}`}
+                                        onPress={() =>
+                                            void $.ui
+                                                .scroll({
+                                                    block: 'start',
+                                                    to: {
+                                                        key: `lane:${w.lane.id}:${w.role}`,
+                                                    },
+                                                })
+                                                .catch(() => undefined)
+                                        }
+                                        plain>
+                                        {`· ${w.role === 'coder' ? '🔧' : '🔎'} ${w.role} ${w.n}`}
+                                    </Button>
+                                ))}
+                            </Box>
+                        ) : null,
+                    );
                     // o84: dima's hand on this session's phases — a move, a tick, a steer — waits SEND_MS like an orbit tick
                     const changePlan = async (
                         change: (p: StashPlan) => StashPlan,
@@ -5639,7 +5641,7 @@ export const register: Register = (on) => {
                         : null;
                     // the lanes and the phases stick to the board's bottom, the lanes on top of the phases: a docked board fills its rows
                     // and a gap grows above them (dima, 11:07; the lanes, 20:12)
-                    const phasesJSX =
+                    const phasesJSX = drawn('phases', () =>
                         o.plan && isPartOn('stash.phases')
                             ? [
                                   <Box
@@ -5790,7 +5792,8 @@ export const register: Register = (on) => {
                                       })}
                                   </Box>,
                               ]
-                            : null;
+                            : null,
+                    );
                     const fill =
                         e.props.placement === 'dock'
                             ? e.props.scroll.bodyRows
@@ -6271,7 +6274,13 @@ export const register: Register = (on) => {
                                     {foldJSX('sessions')}
                                 </Box>
                             </Box>
-                            {isFolded('sessions') ? null : list.map(row)}
+                            {isFolded('sessions')
+                                ? null
+                                : list.map((m, i) =>
+                                      drawn(`session ${m.sid}`, () =>
+                                          row(m, i),
+                                      ),
+                                  )}
                         </Box>,
                     );
                 })(),
