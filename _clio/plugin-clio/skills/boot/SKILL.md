@@ -54,8 +54,8 @@ and the next ticket from it; never re-query what it already printed.
   skill's): never ingest a CST addressed to another agent — report whose it is and leave it.
 - active run id from the last CST META → continue it, never mint one mid-story. a CST marked
   FROZEN is not the active one.
-- the digest lists live sessions and open `codie/*` (or older `coder/*`) prs; codie alive with one → arm the merge monitor: a
-  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice) polling `gh pr list --state merged --search 'head:codie/'` and `'head:coder/'` every 60 s and running
+- the digest lists live sessions and open `codie/*` or `coder/*` prs; codie alive with one → arm the merge monitor: a
+  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice) polling `gh pr list --state merged --limit 200 --json headRefName --jq '.[] | select(.headRefName | test("^(codie|coder)/"))'` every 60 s and running
   `gprune -d` on each new merge — **only while the owning codie is idle** (`claude agents --json`
   status; busy → wait a tick, retry): a merge that races codie's tail push removes its worktree under a live push. clio merges and cleans; the monitor dies
   with the session.
@@ -127,7 +127,7 @@ message, **no cst ingest, no pocket parse** — the inbox stays his file.
 1. healthcheck (step 1, unchanged)
 2. inbox: read only, propose the order of what he names; an item done in this session gets a ✅
    in place. nothing copied into the pocket, nothing folded
-3. merge monitor — only when codie with an open `codie/*` pr is alive (step 4's monitor line)
+3. merge monitor — only when codie with an open `codie/*` or `coder/*` pr is alive (step 4's monitor line)
 4. open renovate count (step 4's last line; the digest waits for his word)
 5. stuck reminders (step 5)
 6. self-grill (step 6)

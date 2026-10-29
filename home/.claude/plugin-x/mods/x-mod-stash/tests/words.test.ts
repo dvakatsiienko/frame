@@ -46,6 +46,8 @@ test("a skill name, a quote, a session name and another member's badge keep thei
         'run clio:halt',
         '«dima, 2026-10-08»',
         'ask ☕️ 🔧 mods codie',
+        'ping ⚡ 🔧 mods lane 3 codie: FRM-431',
+        'ping 🌗 🔦 cli lane sixth sense: #12',
         'a 🔦 codie',
     ].join('\n');
     expect(boldFleetWords(text).text).toBe(text);

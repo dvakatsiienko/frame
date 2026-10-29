@@ -16,7 +16,7 @@ const setLookupReply = `{"data":{
 	"labels":{"nodes":[{"id":"l-feature-byt","name":"feature","team":{"id":"t-byt"}},{"id":"l-feature","name":"feature","team":null}]},
 	"parent":{"id":"uuid-9","identifier":"FRM-9"},
 	"projects":{"nodes":[{"id":"p-cli","name":"cli","projectMilestones":{"nodes":[{"id":"m-v1","name":"v1"}]}}]},
-	"users":{"nodes":[{"id":"u-coder","name":"coder"}]}}}`
+	"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 
 func setServer(t *testing.T) *fakeLinear {
 	return newFakeLinear(t, func(call gqlCall) string {
@@ -49,7 +49,7 @@ func TestSetSendsEveryFieldResolvedInOneUpdate(t *testing.T) {
 		t.Errorf("%d requests, want one lookup and one update", n)
 	}
 	want := map[string]any{"stateId": "s-ip", "priority": float64(2), "estimate": float64(3), "parentId": "uuid-9",
-		"projectId": "p-cli", "projectMilestoneId": "m-v1", "delegateId": "u-coder"}
+		"projectId": "p-cli", "projectMilestoneId": "m-v1", "delegateId": "u-codie"}
 	input := updateInput(t, server)
 	for key, value := range want {
 		if input[key] != value {

@@ -148,7 +148,7 @@
         {
             "name": "lane rebase-main",
             "needsApply": true,
-            "purpose": "rebase a codie/* branch onto origin/main and push it with a lease on the sha read back; no merge commit",
+            "purpose": "rebase a codie/* or coder/* branch onto origin/main, push it with a lease on the sha read back; no merge commit",
             "steps": ["plan", "rebase", "push", "verify"]
         },
         {

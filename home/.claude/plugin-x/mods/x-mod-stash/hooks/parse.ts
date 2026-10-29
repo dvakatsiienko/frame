@@ -153,7 +153,7 @@ export function boldFleetWords(text: string) {
         // masked at the same length, so match offsets land on the real line; a «quote» stays as typed, and a session
         // name (`☕️ 🔧 mods codie`) keeps its own role emoji
         const masked = line.replace(
-            /`[^`\n]*`|\*\*[^*\n]+\*\*|\]\([^)\n]*\)|https?:\/\/\S+|«[^»\n]*»|(?:☕️?|🎯) \S+ [^\n,;)»]*/gu,
+            /`[^`\n]*`|\*\*[^*\n]+\*\*|\]\([^)\n]*\)|https?:\/\/\S+|«[^»\n]*»|(?:☕️?|🎯|⚡️?|🌗|🌘) \S+ [^\n,;)»]*/gu,
             (m) => '\0'.repeat(m.length),
         );
         let out = '';

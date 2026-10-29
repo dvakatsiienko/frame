@@ -90,6 +90,9 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 	if len(given) == 0 {
 		return nil, usageFail("nothing to set — name a field: --"+strings.Join(setFields, ", --"), "x linear set --help")
 	}
+	if alias, ok := memberAliases[given["delegate"]]; ok {
+		given["delegate"] = alias
+	}
 	if parent := given["parent"]; parent != "" {
 		if err := checkIDs([]string{parent}, "linear set"); err != nil {
 			return nil, err
