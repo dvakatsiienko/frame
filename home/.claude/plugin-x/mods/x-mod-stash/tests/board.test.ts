@@ -1515,3 +1515,42 @@ test('the state column keeps a cell of air after the ctx meter on the desktop', 
         .map((n) => n.props.marginLeft);
     expect(margins).toEqual([1, 1]);
 });
+
+// FRM-426 (W5): an idle row past the prompt cache's hour reads ❄️; a fault keeps ⚠
+const COLD = { [`reply:${PEER}`]: { at: NOW - 61 * MIN } };
+
+test('an idle row past the cache hour shows ❄️', async ($, on) => {
+    fleet(on, COLD);
+    expect(await row($, PEER)).toContain('❄️');
+});
+
+test('an idle row inside the cache hour shows no mark', async ($, on) => {
+    fleet(on, { [`reply:${PEER}`]: { at: NOW - 59 * MIN } });
+    const text = await row($, PEER);
+    expect([text.includes('❄️'), text.includes('⚠')]).toEqual([false, false]);
+});
+
+test('a busy row never shows ❄️ however old its last reply', async ($, on) => {
+    fleet(on, { [`reply:${HERE}`]: { at: NOW - 5 * 60 * MIN } });
+    expect(await row($, HERE)).not.toContain('❄️');
+});
+
+test('a cold row off the fleet pattern keeps ⚠, never ❄️', async ($, on) => {
+    fleet(
+        on,
+        { [`reply:${GONE}`]: { at: NOW - 90 * MIN } },
+        {
+            alive: [1, 2, 3],
+            bg: [3],
+            patch: { 3: { status: 'idle' } },
+        },
+    );
+    const text = await row($, GONE);
+    expect([text.includes('⚠'), text.includes('❄️')]).toEqual([true, false]);
+});
+
+test("the cold composer sidecar shows ❄️, not ⚠ (dima's 10-15 screenshot)", async ($, on) => {
+    fleet(on, COLD, { bg: [2], patch: { 2: { name: '🎼 composer' } } });
+    const text = await row($, PEER);
+    expect([text.includes('❄️'), text.includes('⚠')]).toEqual([true, false]);
+});

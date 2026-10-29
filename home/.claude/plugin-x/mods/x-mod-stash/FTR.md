@@ -266,7 +266,10 @@
   - and the thresholds are idle's alone: a waiting, blocked or needs_input row keeps its own tint however long (dima's o106)
   - decision: always on, never behind `/board colour` — it is a cache signal, not decoration (dima's ask, 2026-10-09)
   - decision: red, not a cooling blue — red is what dima sees, and it says something is wrong (dima, 2026-10-09)
-  - decision: no ❄️ any more — 💤 holds the column and red says it all (o106 replaced the 15/22/30/60 ramp)
+  - decision: 💤 holds the column and red says it all (o106 replaced the 15/22/30/60 ramp); ❄️ returns only as a mark beside the name, once the cache is gone (below)
+  - given an idle row whose last reply is an hour old or more (the prompt cache's life), then ❄️ stands beside its name; a busy row, or an idle one inside the hour, shows none
+  - and a row off the fleet pattern keeps ⚠, which beats ❄️ when both hold; `composer` counts as a fleet name, so a cold composer reads ❄️ (dima's screenshot 2026-10-15; FRM-426)
+  - decision: one hour, not the 45-minute red tint — the red warns, the ❄️ says it is gone
   - and an idle row counts from the session's last reply, or a later 🔥 keep-hot ping, never cc's registry stamp: cc restamps a thread whenever it is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77, dima's boot shot 2026-10-12); a busy row and a session with no reply yet keep the registry stamp
   - source: the `reply:<session>` store key each session's x-mod-stash writes at every reply end, `pingedAt` at a ping's
 - 🔎 each row says what its session waits on

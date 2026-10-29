@@ -307,10 +307,13 @@ export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 // `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»; a standing member keeps
 // its own name, badge or not — «🐦‍⬛ ccrow», which the registry writes with a space for the joiner
 const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
+// standing sidecars named by a bare word, not by the lane pattern: composer is cclio's copyist (rules/fleet-identity.md)
+const SIDECARS = new Set(['composer']);
 export function isFleetName(name: string) {
     return (
         FLEET_NAME.test(name) ||
-        Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim())
+        Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim()) ||
+        SIDECARS.has(name.replace(/[^\w\s-]/gu, '').trim())
     );
 }
 

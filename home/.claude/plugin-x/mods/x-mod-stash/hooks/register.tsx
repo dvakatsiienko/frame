@@ -2609,6 +2609,8 @@ const RAMP = ['#b98500', '#d9661a', '#e5484d'] as const;
 // idle only: gray, amber from 30 min, red from 45 (dima's o106)
 const IDLE_WARN_MS = 30 * 60_000;
 const IDLE_HOT_MS = 45 * 60_000;
+// the prompt cache lives an hour: an idle row past it is cold, marked ❄️ (FRM-426, W5)
+const CACHE_TTL_MS = 60 * 60_000;
 
 // the meters: a bar of whole cells, the reading filled and one cell marked — the pace on the 5h bar, the compaction
 // point on the context one; runs of one kind come out joined, so each draws as one Text
@@ -2905,6 +2907,13 @@ export const idleTint = (ms: number) =>
         : ms >= IDLE_WARN_MS
           ? PALETTE.warn
           : undefined;
+
+// the mark beside a row's name: ⚠ for a fault (a background name off the fleet pattern) beats ❄️ for an idle row past the cache
+export const markOf = (m: {
+    isIdle: boolean;
+    ms: number;
+    offPattern: boolean;
+}) => (m.offPattern ? '⚠' : m.isIdle && m.ms >= CACHE_TTL_MS ? '❄️' : undefined);
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -5509,6 +5518,11 @@ export const register: Register = (on) => {
                               ? status.tint
                               : undefined;
                         const ticket = ticketOf(m.name);
+                        const mark = markOf({
+                            isIdle: status.isIdle,
+                            ms: sinceMs ?? 0,
+                            offPattern: !!m.offPattern,
+                        });
                         const name = m.sid === me ? `${m.name} (here)` : m.name;
                         const line = m.tip
                             ? `👀 ${m.tip}`
@@ -5586,8 +5600,10 @@ export const register: Register = (on) => {
                                         <Text bold wrap='truncate-end'>
                                             {name}
                                         </Text>
-                                        {m.offPattern ? (
+                                        {mark === '⚠' ? (
                                             <Text color={ACCENT}>⚠</Text>
+                                        ) : mark ? (
+                                            <Text>{mark}</Text>
                                         ) : null}
                                         {/* quiet comms: the member pings held for cclio's next turn, nothing at 0 */}
                                         {m.held ? (
