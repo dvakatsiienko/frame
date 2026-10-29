@@ -47,14 +47,65 @@ export const byVersion = (a: string, b: string) => {
     return 0;
 };
 
+// the desktop app ships one cc, written into its app.asar as `JSON.parse('{"version":"2.1.309","manifest"…`: a session
+// born in the desktop app runs that engine, so a mod must fit it whether or not one is open now (dima, 2026-10-18)
+export const APP_ARCHIVE =
+    '/Applications/Claude.app/Contents/Resources/app.asar';
+export const bundledVersion = (archive: string) =>
+    archive.match(
+        /JSON\.parse\('\{"version":"(\d+\.\d+\.\d+)","manifest"/,
+    )?.[1];
+
+export function bundleOf(
+    path: string,
+): { version: string } | { error: string } {
+    if (!existsSync(path)) return { error: `no Claude.app archive at ${path}` };
+    const version = bundledVersion(readFileSync(path, 'latin1'));
+    return version
+        ? { version }
+        : { error: `${path} names no bundled cc version` };
+}
+
+// the oldest checked engine that knows every event a mod hooks
+export const floorOf = (
+    events: Set<string>,
+    engines: Record<string, Set<string> | undefined>,
+) =>
+    Object.keys(engines)
+        .filter((v) => [...events].every((e) => engines[v]?.has(e)))
+        .sort(byVersion)[0];
+
 export function verdict(
     hooked: Record<string, Set<string>>,
     engines: Record<string, Set<string> | undefined>,
+    bundle?: { version: string } | { error: string },
 ) {
     const lines: string[] = [];
     let isRed = false;
     const versions = Object.keys(engines).sort(byVersion);
     const checked = versions.filter((v) => engines[v]);
+    if (bundle && 'error' in bundle) {
+        isRed = true;
+        lines.push(`mods:skew: ${bundle.error}, the desktop cc is unnamed`);
+    } else if (bundle) {
+        lines.push(`mods:skew: the desktop app bundles cc ${bundle.version}`);
+        if (engines[bundle.version]) {
+            for (const [mod, events] of Object.entries(hooked)) {
+                const floor = floorOf(events, engines);
+                if (floor && byVersion(floor, bundle.version) > 0) {
+                    isRed = true;
+                    lines.push(
+                        `mods:skew: ${mod} needs cc ${floor} or newer, the desktop app bundles ${bundle.version}`,
+                    );
+                }
+            }
+        } else {
+            isRed = true;
+            lines.push(
+                `mods:skew: the desktop cc ${bundle.version} has no types on disk, unchecked: open a session on it once`,
+            );
+        }
+    }
     for (const v of checked)
         for (const [mod, events] of Object.entries(hooked)) {
             const unknown = [...events].filter((e) => !engines[v]?.has(e));
@@ -142,6 +193,8 @@ if (import.meta.main) {
             .filter((v): v is string => !!v),
     );
     const engines: Record<string, Set<string> | undefined> = {};
+    const bundle = bundleOf(process.env.X_CLAUDE_APP || APP_ARCHIVE);
+    if ('version' in bundle) live.add(bundle.version);
     for (const v of live) {
         const f = join(cache, `${v}.json`);
         engines[v] = existsSync(f)
@@ -157,7 +210,7 @@ if (import.meta.main) {
         });
         hooked[mod] = hookedEvents(`${r.stdout}${r.stderr}`);
     }
-    const { isRed, lines } = verdict(hooked, engines);
+    const { isRed, lines } = verdict(hooked, engines, bundle);
     console.log(lines.join('\n'));
     process.exit(isRed ? 1 : 0);
 }
