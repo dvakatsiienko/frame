@@ -124,7 +124,7 @@ def readme():
 
 <p align="center">{tour}</p>
 
-### [this week, by the fleet]({GAZETTE})
+### [📰 read the official gazette of dima's fleet]({GAZETTE})
 
 <img src="assets/board.svg" width="100%" alt="fleet board: this week's agent commits, tickets and skills">
 <p align="center"><img src="assets/langs.svg" width="49%" alt="top languages"> <img src="assets/lazy.svg" width="49%" alt="commits by time of day"></p>
