@@ -129,6 +129,7 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+  - decision: the 50 min ping stays — measured 2026-10-29, one long-lived headless process per arm, each with its own system-prompt prefix: idle 65 min with no ping, the arm's own cache was gone (read 31,942 = the shared floor, 6,685 rewritten); idle 50 min, one ping, then 15 min more, the cache held (read 38,598, 59 written). idle 10 and 55 min held too. a ping inside the hour is what carries the cache past it
 - ✅ 💨 afk keeps every remote-controlled session warm (o161)
   - given 💨 afk on and a session the registry names a remote-control bridge for, with its 🔥 off
   - when 50 minutes pass after its last turn ended, then it gets the keep-hot ping; afk switched on from any board arms it at that session's next poll
@@ -240,7 +241,7 @@
 - ✅ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json` on every measure whose rate limits moved, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it
   - 📌 unprobed: that a desktop tab's measure carries `five_hour` — the file held `five_hour: null` from sline at 18:43
   - proof: tests/meters.test.ts::a measure writes the 5h window to the usage file in seconds / a seven-day window and the write time ride the usage file / a measure whose rate limits did not move rewrites nothing — the desktop-tab half stays the 📌 unprobed one
-- decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i dont need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file
+- decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i don't need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file
 
 ## /board — the fleet board
 
@@ -303,7 +304,7 @@
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
   - proof: tests/board.test.ts::ccrow's row shows her newest 👀 for-you tip in the wait slot (+ tip over a day old leaves, from yesterday never draws, no bullet, no other row, ccrow's line leads with read and pause)
-- ✅ a session's name is bold text, never a control (dima, 17:42: «i don't need a session as clickable link in sessions»)
+- ✅ a session's name is bold text, never a control (dima, 17:42: «i don't need a session as a clickable link in sessions»)
   - given the board draws, then every name reads bold and its `●` dot keeps its colour; a row holds no button
   - decision: the desktop deep links (FRM-306) left with the press; `mods/api-map.md` keeps the `claude://` door as knowledge
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
@@ -340,7 +341,7 @@
   - and a head reads `🌌 sessions` (the pane's tab holds 🚦, dima's o3, 17:14) with `n on this mac · m busy` on its right, the busy bold (dima, 17:00), each row leads with a `●` state dot, the second line sits under the name and is dim
   - decision: no footer hint — «a name opens its session · /board colour flips colour» is gone (dima, 21:12)
   - decision: a quarter row of air between the lines of one block — a member's two lines, an ask and its buttons, the phases — on the desktop; the terminal rounds it to none (dima, 21:22: 0 too dense, 0.5 too big)
-  - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
+  - decision: no new controls — the reference's run buttons stay out (dima: «no need for functionality buttons»)
   - decision: the full row between members stays, dima's call of 2026-10-05, though the reference packs its rows
   - proof: tests/board.test.ts::the sessions head reads its count and a bold busy on the right / the sessions head leads with 🌌 / an idle state's time reads bold / a row's 🔭 line prints only the who bold — not asserted: dark-screenshot look is eye
 - ✅ `/board colour` tries colour as an MVP
@@ -348,7 +349,7 @@
   - when dima types `/board colour`
   - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), 🚧 blocked's time red, ⏳ waiting's and 🙋 needs_input's amber, every colour read from one palette table (ok, warn, hot, dim, accent, the ctx meter's calm blue, and the six member dot hues, none equal to a state tint — the 1st and 4th nudged off calm and ok, each 3.6:1 on white and 4.2:1 on the dark pane; dima's o107, l13), each row's context its % merged into the meter, one fixed width at any fill — a ring and the % (50 px, 7 cells) by default, the % with a 3-px bar under it (34 px, 5 cells) with `▬ bar` picked in the 🎛️ `🧠 sessions: ctx meter type` row, two buttons, the one in use lit (dima, 10-13 17:45) — the meter and the % in one step of green, lime, amber, orange, red, red at the compaction point (80 when the point is unknown), the % 4.5:1 or more on both panes, the terminal a fixed 10-wide `▮▮▯▯▯  43%` bar, every row the same width (dima's o105); the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
-  - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
+  - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «don't like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick a prettier color for the ctx filling»)
   - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
   - decision: one fleet-wide switch in the store, so dima compares on his own board; the verdict is his eye (FRM-329)
   - and the 🎛️ `🎨 board colour` switch is the same door: either flip reaches the open board at once, never at the next poll (FRM-400)
@@ -374,7 +375,7 @@
   - then the board's value is not rewritten, so the pane does not redraw
   - when a span turns its minute (`idle 12m` → `idle 13m`)
   - then the board redraws with it
-  - decision: a pane redraw also rebuilds x-mod-breather's svg in the band on the desktop (dima, 2026-10-09: «breather only resets while board is open»; a video measured a blank frame every 4.04 s, the poll's beat); the svg rebuild is the desktop's, [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)
+  - decision: a pane redraw also rebuilds x-mod-breather's svg in the band on the desktop (dima, 2026-10-09: «breather only resets while the board is open»; a video measured a blank frame every 4.04 s, the poll's beat); the svg rebuild is the desktop's, [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)
 - ✅ a stale probe mod warns on cclio's board (brief 6, mods lane l9)
   - given a folder under `~/.claude/dev-mods/<session id>/` holds a mod, and its session is gone or the mod is over a day old
   - when cclio's board draws
@@ -454,7 +455,7 @@
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
   - decision: 2048 holds while any 2.1.295 session runs; 2.1.296 raised cc's cap to 4096 (brief 9 item 6, refresh-cc-mods run #4)
   - proof: tests/orbit.test.ts::orbit's description fits the 2048 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
-the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «current stash asks implementation doesn't work for me»).
+the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` and the away digest count them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
 - 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
