@@ -223,6 +223,11 @@ export const PARTS = [
     },
     {
         group: 'stash · board',
+        key: 'stash.boot',
+        label: '🥾 boot keeps going after a spawn',
+    },
+    {
+        group: 'stash · board',
         key: 'stash.second-wind',
         label: '🐦‍🔥 second wind',
     },
@@ -337,6 +342,15 @@ const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
 const LANE_TICKET = /^[A-Z]{2,5}-\d+$/;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
+// cclio's boot is open from the cclio:boot skill's load until a reply as long as the board prints; start_session's own
+// «then end your turn» hint ended the 10-29 boot early (FRM-426, exit 9). the keep is the store, so a reload still knows;
+// a harness nudge answered «booting, board next» is short and never closes it, a silent turn has no reply at all
+const BOOT = 'boot:';
+const BOOT_SKILL = /^(?:cclio:)?boot$/;
+const BOARD_MIN = 300;
+const BOOT_MS = 3 * 60 * 60 * 1000;
+const START_SESSION_TOOL = 'mcp__ccd_session__start_session';
+const BOOT_NOTE = 'the boot continues; the board ends the turn';
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b|\bmobile mode off\b/i;
 // the prompt enhancer: Haiku rewrites the box on a press; prev and new swap the two texts back with no call
@@ -1829,6 +1843,13 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
 async function isLaneOwner($: EngineInterface) {
     const name = await sessionName($);
     return name !== undefined && bare(name) === bare(LANE_OWNER);
+}
+
+// a cclio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
+async function isBootOpen($: EngineInterface) {
+    if (!(await isLaneOwner($))) return false;
+    const at = await $.store.get(BOOT + (await $.session.id()));
+    return typeof at === 'number' && (await $.clock.now()) - at < BOOT_MS;
 }
 
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
@@ -3598,6 +3619,10 @@ export const register: Register = (on) => {
 
     // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off
     on('skill.prompt', async ($, e, next) => {
+        if (BOOT_SKILL.test(e.skill) && (await isLaneOwner($)))
+            await $.store
+                .set(BOOT + (await $.session.id()), await $.clock.now())
+                .catch(() => undefined);
         if (MOBILE_SKILL.test(e.skill))
             await $.state
                 .set(MOBILE, !MOBILE_OFF.test(e.text))
@@ -3789,6 +3814,8 @@ export const register: Register = (on) => {
 
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
+        if ((e.last_assistant_message ?? '').length >= BOARD_MIN)
+            await $.store.delete(BOOT + e.session_id).catch(() => undefined);
         const red = e.stop_hook_active
             ? undefined
             : await stopRed($, e.last_assistant_message ?? '');
@@ -6030,6 +6057,12 @@ export const register: Register = (on) => {
             turnAfk = afk;
             if (isOn('stash.afk')) notes.push(afk ? AWAY_NOTE : BACK_NOTE);
         }
+        if (
+            (e.tool as string) === START_SESSION_TOOL &&
+            isOn('stash.boot') &&
+            (await isBootOpen($))
+        )
+            notes.push(BOOT_NOTE);
         // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
         // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
         // mid-turn reload keeps

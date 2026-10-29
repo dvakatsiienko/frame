@@ -398,6 +398,12 @@
 - ⬜ an ask carries one link dima opens in a click (brief 8)
   - given cclio adds an ask with `link` — an https url, an `obsidian://` url, or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
   - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>` (an obsidian url: its note), a press opening it through `open`; any other link (`http://`, `file://`, a bare word) is refused and no ask lands
+- ⬜ a cclio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
+  - given cclio's session loaded `cclio:boot` and has printed no reply as long as the board (300 characters or more) since
+  - when `start_session` returns, whose own hint says «then end your turn»
+  - then its result carries one model-only line: «the boot continues; the board ends the turn»
+  - and after the board printed, after three hours, in any other session, or with the 🥾 switch off, nothing lands; a short nudge answer («booting, board next») does not close the boot
+  - decision: the boot is open from the skill's load, not from a flag the model sets — a guard the session must remember is the promise it already broke
   - and the link sits at the row's end, after the steer field, on every ask card: orbit's own and a glide card's (dima's shot, 2026-10-12 20:57: «first steer then file»)
   - and a glide card draws the same link on a member's ask
 - ⬜ the model reads orbit's whole tool description (dima's o50)

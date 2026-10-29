@@ -176,6 +176,17 @@ const SCENARIOS: Record<string, Scenario> = {
         op: { op: 'assume', texts: ['one more'] },
         trace: /wrong assumption/,
     },
+    'stash.boot': {
+        arm: ($) => $.skill.prompt({ skill: 'cclio:boot', text: '# boot' }),
+        // start_session returns inside the open boot: its result carries the line
+        fire: async ($, w) => {
+            const r = await $.tool.call({
+                tool: 'mcp__ccd_session__start_session',
+            } as never);
+            w.lines.push(...(r.context ?? []));
+        },
+        trace: /the boot continues/,
+    },
     'stash.cost': {
         // the world is cclio's session, and dima asks her about cost
         arm: async () => undefined,
