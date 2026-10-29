@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-10-29T12:33:00Z'
+updated_date: '2026-10-29T15:00:00Z'
 due_date: '2026-10-29'
 labels:
   - m
@@ -733,4 +733,27 @@ W480 (2026-10-29 14:28, dima): we also have empty cells with no ideas: retro, re
 W481 (2026-10-29 14:28, dima): let's just think and grill about good names and images for everyone, to refresh the fleet, remove these legacy cc prefixes, and think about the overall good shape of names: clear and fun as well, again, not boring.
 W482 (2026-10-29 14:28, dima): print other fleet members, or stuff worth renaming, that i've missed. ❓
 W483 (2026-10-29 14:28, dima): mods lane: sup there? mods coder finished a chunk? what next for him? can he start chunk 2? he is 41% ctx. compact him before chunk 2, or proceed like this? ❓
+
+W484 (2026-10-29 16:49, dima): i lean towards renaming skills too: crew-codie, crew-sixth-sense. it will then be the least drift possible, but it will require more changes. tell how to do this better. ❓
+W489 (2026-10-29 16:49, dima): wait, i was wrong. i forgot that we have a reviewer as well.
+W490 (2026-10-29 16:49, dima): in that case, reviewer shouldn't be used by verifier, because the reviewer GitHub app is used by the CC Cloud reviewer (EG (?) Cloud app that is installed on bytes).
+W491 (2026-10-29 16:49, dima): it's a CI code reviewer, but the fact that we don't have a verifier GitHub app is a novelty for me.
+W492 (2026-10-29 16:49, dima): i thought we had that, but it's a drift out of scope. let's not create it for now.
+W493 (2026-10-29 16:49, dima): let verifier use the coder GitHub app for now, as he currently does, and let's plan to create a GitHub app for verifier later as well.
+W494 (2026-10-29 16:49, dima): it is actually not good that the verifier currently uses the coder identity to post on GitHub, so let's create a pocket item to create a GitHub app for verifier 2 at some point.
+W495 (2026-10-29 16:49, dima): q1. yes, let's have everyone named according to our lib naming first-hand.
+W496 (2026-10-29 16:49, dima): anytime we want to refer to a coder, we use `codie`, and anytime we want to refer to a verifier, it is a sixth sense.
+W497 (2026-10-29 16:49, dima): it is important to keep clear alias clarification about what the entity is, to avoid confusion, and it has to be clearly stated in the root identities file for everyone who has a blurry identity, for example, a sixth sense.
+W498 (2026-10-29 16:49, dima): it must be done in a way where a coder can be referred to both as `codie` or `coder`, so it's clear.
+W499 (2026-10-29 16:49, dima): for example, if i asked you to spawn a coder, you would spawn a `coder/codie`, and if i asked you to spawn or summon a `codie`, you would be aware that i mean a coder.
+W500 (2026-10-29 16:49, dima): `codie/coder` or `verifier/sixth sense` are both the same thing, and it's a clear alias.
+W501 (2026-10-29 16:49, dima): the only key bit: our lib alias is more important, and we always refer to everyone with an alias name (e.g., a nickname), but everyone knows who is who under the hood.
+W502 (2026-10-29 16:49, dima): the most important thing here is to avoid confusion and drifts.
+W503 (2026-10-29 16:49, dima): q2. but after some time, this hook will not be needed anymore, when we ensure that all surfaces are renamed? ❓
+W504 (2026-10-29 16:49, dima): let's plan to have this hook for some time to avoid drifts, and then delete it when it is not needed anymore.
+W505 (2026-10-29 16:49, dima): for the desktop app, we have two things: a plugin and an MCP, and we should have a bot rename it.
+W506 (2026-10-29 16:49, dima): if so, then yes, x-cloud-chat/mcp-x-cloud-chat is fine.
+W507 (2026-10-29 16:49, dima): what do you mean by `code:` and `verify:` staying where they stay? ❓
+W509 (2026-10-29 14:52, dima): no, i'd like thread names to have vibe words too: ⚡ 🔧 mods lane 3 codie: FRM-431 · ⚡ 🔎 mods lane 3 sixth sense: main — that's the whole idea why i want it. will it work? will it confuse you? ❓
+note: W485–W488 and W508 are cclio's own 16:40/16:48 reply quoted back in the paste, not dima's words; W487 was reversed by dima at W489–W493
 <!-- SECTION:NOTES:END -->

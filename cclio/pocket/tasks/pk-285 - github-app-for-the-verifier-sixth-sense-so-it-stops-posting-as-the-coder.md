@@ -4,7 +4,7 @@ title: github app for the verifier (sixth sense), so it stops posting as the cod
 status: open
 assignee: []
 created_date: '2026-10-29T14:50:00Z'
-updated_date: '2026-10-29T14:52:00Z'
+updated_date: '2026-10-29T15:00:00Z'
 due_date: '2026-10-30'
 labels:
   - s
@@ -34,4 +34,6 @@ W492 (2026-10-29 16:49, dima): i thought we had that, but it's a drift out of sc
 W493 (2026-10-29 16:49, dima): let verifier use the coder GitHub app for now, as he currently does, and let's plan to create a GitHub app for verifier later as well.
 W494 (2026-10-29 16:49, dima): it is actually not good that the verifier currently uses the coder identity to post on GitHub, so let's create a pocket item to create a GitHub app for verifier 2 at some point.
 W495 (2026-10-29 16:49, dima): q1. yes, let's have everyone named according to our lib naming first-hand.
+
+correction 2026-10-29 17:00 (wishkeeper): W485–W488 above are cclio's 16:40 reply quoted back in dima's paste, not his words; W487 (x-reviewer-cc → x-sixth-sense-cc) was reversed by dima at W489–W493. the want here is W489–W494.
 <!-- SECTION:NOTES:END -->
