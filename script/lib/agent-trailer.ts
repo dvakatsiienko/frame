@@ -35,6 +35,6 @@ const ROLES = [
     ['🔎', 'sixth-sense'],
     ['🎀', 'helga'],
     ['🎨', 'designer'],
-    ['🐦', 'crow'],
+    ['🐦‍⬛', 'crow'],
     ['☁️', 'cloud'],
 ] as const;
