@@ -185,6 +185,21 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-10-30 · prompt-groom · 1 · 0 · W723-W724 (2); ask Q1
 - 2026-10-30 · prompt-groom · 1 · 0 · W725 (1); no asks
 - 2026-10-30 · prompt-groom · 1 · 0 · W726 (1); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W727-W728 (2); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W729-W731 (3); ask Q1
+- 2026-10-30 · prompt-groom · 1 · 0 · W732 (1); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W733-W734 (2); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W735-W736 (2); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W737-W741 (5); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W742-W743 (2); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · no W-lines; no wish
+- 2026-10-30 · prompt-groom · 1 · 0 · 1842 W747-W754 0 asks
+- 2026-10-30 · prompt-groom · 1 · 0 · 1856 W755-W756 3 asks
+- 2026-10-30 · prompt-groom · 1 · 0 · 1906 W757-W762 1 ask
+- 2026-10-30 · prompt-groom · 1 · 0 · o52 W763 1 ask
+- 2026-10-30 · prompt-groom · 1 · 0 · o56 W764-W765 0 asks
+- 2026-10-30 · prompt-groom · 0 · 1 · 1856 rework: W766-W776 added, dictation not context
+- 2026-10-30 · prompt-groom · 0 · 1 · 1906 rework: W777-W794 added, Q1 what is planned
 
 ## rounds
 
