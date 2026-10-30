@@ -31,6 +31,22 @@ var pathTable = []struct {
 	{"scratch/foo.md", true},
 }
 
+// a url beside a command never hides the command: only a span that is a link or a url skips the checks
+func TestBriefCheckStillChecksACommandNextToAURL(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "package.json"), `{"scripts":{}}`)
+	write(t, filepath.Join(dir, "brief.md"), "wish: none\n\n- `x lane opn --url https://a.b`\n- `pnpm no-such --base-url http://localhost:3000`\n")
+
+	got := xIn(t, dir, nil, "brief", "check", "brief.md")
+
+	for _, want := range []string{"verb x lane opn", "script pnpm no-such"} {
+		if got.code == 0 || !strings.Contains(got.stdout, want) {
+			t.Errorf("exit %d, want %q:\n%s", got.code, want, got.stdout)
+		}
+	}
+}
+
 func TestBriefCheckReportsOnlyARealMissingPath(t *testing.T) {
 	t.Parallel()
 	dir := repo(t)

@@ -244,7 +244,20 @@ var (
 	commandHeads = []string{"node", "go", "git", "gh", "rg", "jq"}
 	// a lone `docs/nope.md` or `/clear` names a thing; only a script runs
 	scriptPath = regexp.MustCompile(`^[\w.~$/{}-]*/[\w.-]+\.(?:sh|zsh|ts|mjs|js|py)$`)
+	// the flags whose next word is a value, never a file: a go subtest name, a node -e body, a pnpm dir
+	resolveValueFlags = []string{"-run", "-bench", "-C", "-e", "--eval", "-p", "--print", "--filter", "--dir"}
 )
+
+// a word preflight checks on disk: a path with a slash, never a placeholder, a glob, a go package pattern,
+// a git ref (`HEAD:x/go/main.go`), a range (`origin/main..HEAD`) or a variable left after ~ and $HOME expand
+func fileArgument(word string) bool {
+	switch {
+	case strings.Contains(word, argMark), strings.ContainsAny(word, "*"), strings.Contains(word, ".."),
+		strings.Contains(expandHome(word), "$"), strings.Contains(word, ":") && !lineRef.MatchString(word):
+		return false
+	}
+	return strings.Contains(word, "/") && isPathLike(word)
+}
 
 // resolveFindings reds an exit-line command that cannot run here: a pnpm script its package lacks, a head off
 // the PATH, a file argument or script that does not exist. it resolves and never executes: an unattended
@@ -284,9 +297,8 @@ func resolveFindings(body, repo string) []finding {
 			default:
 				continue
 			}
-			for _, word := range words[1:] {
-				if strings.HasPrefix(word, "-") || strings.Contains(word, argMark) || strings.ContainsAny(word, "*") || strings.Contains(word, "...") ||
-					!strings.Contains(word, "/") || !isPathLike(word) {
+			for i, word := range words {
+				if i == 0 || strings.HasPrefix(word, "-") || slices.Contains(resolveValueFlags, words[i-1]) || !fileArgument(word) {
 					continue
 				}
 				if kind, why := pathMissing(word, repo, files); kind != "" {

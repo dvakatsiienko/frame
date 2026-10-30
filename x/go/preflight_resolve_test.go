@@ -68,11 +68,17 @@ func TestPreflightPassesAnExitLineWhoseCommandsResolve(t *testing.T) {
 		{"value spans only", "1. given a body, when the list reads it, then its sign reads `match`, `## signed` holds `merge: pre-approved` and `spec:`\n"},
 		{"names a brief holds, not commands", "1. given a brief naming `Explore.md`, `/clear`, `scratch/foo` and `docs/nope.md`, when `x lane unlock` runs, then it exits 0\n"},
 		{"a placeholder argument", "1. given a ticket, when `node script/real.sh <id>` runs, then it exits 0\n"},
+		{"a flag's value", "1. given a tree, when `go -C x/go test -run TestA/b_c .` and `node -e 'a/b'` run, then they exit 0\n"},
+		{"git refs and ranges", "1. given a tree, when `git show HEAD:docs/shipped.md` and `git log origin/main..HEAD` run, then they exit 0\n"},
+		{"a pnpm dir under home", "1. given a tree, when `pnpm -C ~/frame plant` runs, then it exits 0\n"},
+		{"an unexpanded variable", "1. given a plugin, when `node ${CLAUDE_PLUGIN_ROOT}/bin/a.mjs` runs, then it exits 0\n"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			if got, _ := preflightResolve(t, c.exits); got.code != 0 {
+			home := t.TempDir()
+			write(t, filepath.Join(home, "frame/package.json"), `{"scripts":{"plant":"touch planted"}}`)
+			if got, _ := preflightResolve(t, c.exits, "HOME="+home); got.code != 0 {
 				t.Errorf("exit %d, want 0:\n%s", got.code, got.stdout)
 			}
 		})

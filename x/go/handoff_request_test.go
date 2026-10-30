@@ -36,6 +36,13 @@ func TestHandoffRequestCarriesTheSpecByteForByte(t *testing.T) {
 	}
 }
 
+func TestHandoffRequestRefusesAMultiLineFocus(t *testing.T) {
+	t.Parallel()
+	if got, _ := requestOf(t, "🦉 clio", "--target-line", "a\nTARGET: b"); got.code != 2 {
+		t.Errorf("exit %d, want 2 for a focus holding a newline:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestHandoffRequestTargetLineAddsOneTargetLine(t *testing.T) {
 	t.Parallel()
 	got, message := requestOf(t, "🦉 clio", "--target-line", "the sign column")

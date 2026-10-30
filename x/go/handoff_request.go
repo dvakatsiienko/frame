@@ -34,7 +34,11 @@ func handoffRequest(r *Run, args []string, flags Flags) (any, error) {
 	}
 	message := targetLine.ReplaceAllString(string(m[1]), "")
 	if focus := strings.TrimSpace(flagString(flags, "target-line")); focus != "" {
-		message = strings.Replace(message, "HANDOFF REQUEST — priority interrupt.\n", "HANDOFF REQUEST — priority interrupt.\nTARGET: "+focus+"\n", 1)
+		if strings.ContainsAny(focus, "\r\n") {
+			return nil, usageFail("--target-line is one line", "x handoff request "+quote(target)+" --target-line '<focus>'")
+		}
+		head, rest, _ := strings.Cut(message, "\n")
+		message = head + "\nTARGET: " + focus + "\n" + rest
 	}
 	message = strings.Replace(message, specMark, strings.TrimSuffix(string(spec), "\n"), 1) + "\n"
 	if r.human {

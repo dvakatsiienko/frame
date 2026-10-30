@@ -249,7 +249,7 @@ func cmdIn(dir, name string, args ...string) *exec.Cmd {
 // missing names the kind of thing a token is and why it was not found; "" when it exists
 func missing(token, repo string, files []string) (kind, why string) {
 	switch {
-	case strings.Contains(token, "<") || strings.Contains(token, "://"):
+	case strings.Contains(token, "<") || strings.Contains(strings.Fields(token)[0], "://"):
 		return "", ""
 	case slashCommandToken.MatchString(token):
 		return "", ""
@@ -315,11 +315,15 @@ func pnpmMissing(token, repo string) (string, string) {
 	if match == nil || slices.Contains(pnpmBuiltins, match[2]) {
 		return "", ""
 	}
+	dir := expandHome(match[1])
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(repo, dir)
+	}
 	// pnpm runs a package's bin by name as well as a script
-	if exists(filepath.Join(repo, match[1], "node_modules/.bin", match[2])) {
+	if exists(filepath.Join(dir, "node_modules/.bin", match[2])) {
 		return "", ""
 	}
-	manifest := filepath.Join(repo, match[1], "package.json")
+	manifest := filepath.Join(dir, "package.json")
 	raw, err := os.ReadFile(manifest)
 	if err != nil {
 		return "script", "no package.json at " + home(filepath.Dir(manifest))
