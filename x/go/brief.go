@@ -249,7 +249,7 @@ func cmdIn(dir, name string, args ...string) *exec.Cmd {
 // missing names the kind of thing a token is and why it was not found; "" when it exists
 func missing(token, repo string, files []string) (kind, why string) {
 	switch {
-	case strings.Contains(token, "<") || strings.HasPrefix(token, "http://") || strings.HasPrefix(token, "https://"):
+	case strings.Contains(token, "<") || strings.Contains(token, "://"):
 		return "", ""
 	case slashCommandToken.MatchString(token):
 		return "", ""

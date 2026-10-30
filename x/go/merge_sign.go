@@ -90,8 +90,8 @@ var (
 	// a markdown link linear writes over a bare id or url after the write
 	linkRewrite = regexp.MustCompile(`\[([^\[\]\n]+)\]\(([^)\s]+)\)`)
 	bareID      = regexp.MustCompile(`^(?:FRM|BYT|PK)-\d+$`)
-	// linear links an id only to that id's own issue page; any other target is an edit
-	issueURL = regexp.MustCompile(`^https://linear\.app/[\w-]+/issue/((?:FRM|BYT|PK)-\d+)(?:/[^\s)]*)?$`)
+	// linear links an id only to that id's own issue page in our workspace; any other target is an edit
+	issueURL = regexp.MustCompile(`^https://linear\.app/x-com/issue/((?:FRM|BYT|PK)-\d+)(?:/[^\s)]*)?$`)
 	angleURL = regexp.MustCompile(`<(https?://[^>\s]+)>`)
 )
 

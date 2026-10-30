@@ -21,6 +21,7 @@ var pathTable = []struct {
 	{"main", false},
 	{"https://example.com/a/b.md", false},
 	{"<path>", false},
+	{"[FRM-12](https://linear.app/x-com/issue/FRM-12/s)", false},
 	{"~/frame/x", false},
 	{"$HOME/frame", false},
 	{"${HOME}/frame/x", false},

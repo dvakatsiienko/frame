@@ -49,10 +49,11 @@ func TestPreflightRedsAnExitLineWhoseCommandCannotRun(t *testing.T) {
 		"2. given a tree, when `node script/gone.ts` runs, then it exits 0\n"+
 		"3. given a tree, when `x lane unlock --nope` runs, then it exits 0\n"+
 		"4. given a tree, when `script/missing.sh` runs, then it exits 0\n"+
-		"5. given a tree, when `x lane unlock` runs, then it exits 0\n")
+		"5. given a tree, when `x lane unlock` runs, then it exits 0\n"+
+		"6. given a tree, when `node script/gone_file.ts` and `go test x/go/nope_test.go` run, then they exit 0\n")
 
 	for _, want := range []string{"line 7: script pnpm no-such-script", "line 8: path script/gone.ts", "line 9: flag --nope",
-		"line 10: path script/missing.sh", "4 problems"} {
+		"line 10: path script/missing.sh", "line 12: path script/gone_file.ts", "line 12: path x/go/nope_test.go", "6 problems"} {
 		if got.code == 0 || !strings.Contains(got.stdout, want) {
 			t.Errorf("exit %d, want %q in\n%s", got.code, want, got.stdout)
 		}

@@ -129,6 +129,7 @@ func TestTheSignedListReadsEachSignAgainstItsBody(t *testing.T) {
 		{"FRM-6", signedAs, signNoHash},
 		{"FRM-7", signedBody("lane: side\n\nsee [FRM-12](https://evil.example/x), PK-3 and https://e.com/a\n\n", "", signedAs), signDrifted},
 		{"FRM-8", signedBody("lane: side\n\nsee [[FRM-12](https://linear.app/x-com/issue/FRM-12)] here\n\n", "", "lane: side\n\nsee [FRM-12] here\n\n"), signMatch},
+		{"FRM-10", signedBody("lane: side\n\nsee [FRM-12](https://linear.app/evil/issue/FRM-12), PK-3 and https://e.com/a\n\n", "", signedAs), signDrifted},
 		{"FRM-9", signedBody("lane: side\n\nsee [FRM-12](https://linear.app/x-com/issue/FRM-13/s), PK-3 and https://e.com/a\n\n", "", signedAs), signDrifted},
 	}
 	var nodes []string

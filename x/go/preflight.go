@@ -238,6 +238,8 @@ func declaredNew(span string, newSpans map[string]bool) bool {
 }
 
 // the first words that make a span a command; any other span (`match`, `## signed`, `spec:`) is a value
+const argMark = "\x00arg\x00"
+
 var (
 	commandHeads = []string{"node", "go", "git", "gh", "rg", "jq"}
 	// a lone `docs/nope.md` or `/clear` names a thing; only a script runs
@@ -255,7 +257,8 @@ func resolveFindings(body, repo string) []finding {
 		if declaredNew(ref.text, newSpans) {
 			continue
 		}
-		for _, segment := range shellSep.Split(argument.ReplaceAllString(ref.text, "_"), -1) {
+		// a placeholder or a quoted argument becomes one marked word no file check reads; «_» stays a name's own
+		for _, segment := range shellSep.Split(argument.ReplaceAllString(ref.text, argMark), -1) {
 			words := strings.Fields(segment)
 			if len(words) == 0 {
 				continue
@@ -282,7 +285,7 @@ func resolveFindings(body, repo string) []finding {
 				continue
 			}
 			for _, word := range words[1:] {
-				if strings.HasPrefix(word, "-") || strings.ContainsAny(word, "*_") || strings.Contains(word, "...") ||
+				if strings.HasPrefix(word, "-") || strings.Contains(word, argMark) || strings.ContainsAny(word, "*") || strings.Contains(word, "...") ||
 					!strings.Contains(word, "/") || !isPathLike(word) {
 					continue
 				}
