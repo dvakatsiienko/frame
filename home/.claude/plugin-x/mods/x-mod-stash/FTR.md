@@ -835,7 +835,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - proof: tests/lane.test.ts::a card lists every step in order, done ones kept, the current marked; ::any session's board draws the lane clio wrote; ::a ticket step links to linear; ::the current step's ticket leads its text, the tick a… — not asserted: head naming mod unasserted
 - ✅ only clio writes the lanes — one exception: the pointer's forward move from a linked codie's plan step, still written by clio's stash
   - given any session calls op `glide`, when the registry does not name it 🦉 clio, then it is refused with one line; a new clio after a handoff steps and ends a lane it did not create
-  - and act `create` refuses while a lane of the same topic is open — the topic is the title before « — » or «:», case-blind — naming the open lane and its fix: «lane l13 «mods — …» is still open: end it first (glide end l13)»; a lane whose last step is done counts as open until ended; a different topic always passes (todo 11, dima's 18:55 go)
+  - and act `create` refuses while a lane of the same topic is open — the topic is the title before « — », « | » or «:», case-blind — naming the live lane and its fix: «lane l13 «mods — …» is live: step it (glide step l13) or edit it (glide edit l13); end it (glide end l13) only when the lane is over»; a create naming a lane plan file another open lane already holds is refused the same way, whatever its title; the topic also ends at « | »; a lane whose last step is done counts as open until ended; a different topic always passes (todo 11, dima's 18:55 go)
   - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (clio's ask, 18:01)
   - and act `link` with a session id and a role (codie, sixth-sense) links a member; a second link of a role replaces the first
   - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (clio's wisp, 18:01)
@@ -887,7 +887,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 
 - decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)
 - ✅ the board marks a background session named off the fleet pattern
-  - given a background session's name is not `<mode> <role emoji> <scope> <member name>: <ticket or what>` («⚡ 🔧 mods lane 3 codie: FRM-431»), nor the older `<mode> <role emoji> <ticket> <role word>: <what>`
+  - given a background session's name is not `<mode> <role emoji> <member name>: <scope> | <ticket>` («⚡ 🔧 codie: mods lane 3 | FRM-467»), nor the 10-29 `<mode> <role emoji> <scope> <member name>: <ticket or what>`, nor the older `<mode> <role emoji> <ticket> <role word>: <what>`
   - when the board lists it
   - then its row carries ⚠ beside the name; the pattern lives here, since the pane draws no hover card
   - given a background session named as a standing member alone, badge or not («🐦‍⬛ crow»)

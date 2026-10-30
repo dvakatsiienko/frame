@@ -1616,14 +1616,18 @@ function laneCreate(
 ): { lanes: StashLane[]; result: string } | { deny: string } {
     const title = oneLine(input.title);
     if (!title) return { deny: 'orbit glide: a title names the lane' };
+    const plan = oneLine(input.plan);
+    // the same lane is the same topic or the same lane plan file, whatever the title says
     const open = lanes.find(
-        (l) => !l.endedAt && laneTopic(l.title) === laneTopic(title),
+        (l) =>
+            !l.endedAt &&
+            (laneTopic(l.title) === laneTopic(title) ||
+                (!!plan && l.plan === plan)),
     );
     if (open)
         return {
-            deny: `orbit glide: lane ${open.id} «${open.title}» is still open: end it first (glide end ${open.id})`,
+            deny: `orbit glide: lane ${open.id} «${open.title}» is live: step it (glide step ${open.id}) or edit it (glide edit ${open.id}); end it (glide end ${open.id}) only when the lane is over`,
         };
-    const plan = oneLine(input.plan);
     if (plan && !/^(?:\/|~\/)/.test(plan))
         return {
             deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
@@ -1656,9 +1660,9 @@ function laneCreate(
     };
 }
 
-// one topic, one open lane: the topic is the title before « — » or «:», case-blind; a finished lane counts until ended
+// one topic, one open lane: the topic is the title before « — », « | » or «:», case-blind; a finished lane counts until ended
 const laneTopic = (title: string) =>
-    (title.split(/ — |:/)[0] ?? '').trim().toLowerCase();
+    (title.split(/ — | \| |:/)[0] ?? '').trim().toLowerCase();
 
 type LaneStep = { at: number; step: number };
 
@@ -2067,8 +2071,7 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
 // the registry names the coordinator, so a handoff's new 🦉 clio keeps the lanes
 async function isLaneOwner($: EngineInterface) {
     const name = await sessionName($);
-    const owners = [LANE_OWNER, '🦉 cclio']; // read-both: a clio tab resumed under its old title keeps the lanes
-    return name !== undefined && owners.some((o) => bare(name) === bare(o));
+    return name !== undefined && isCoordinator(name);
 }
 
 // a clio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
@@ -3501,10 +3504,12 @@ const COLUMNS = {
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
 // a member is the name's last word: a codie named «… + crow at decisions» is not crow (2026-10-10)
 // read-both: a clio tab resumed under its old title (cclio) is still the coordinator
-const isCoordinator = (name: string) => /(^|\s)c?clio$/.test(name);
+const isCoordinator = (name: string) =>
+    /(^|\s|\p{Extended_Pictographic}️?)c?clio$/u.test(name);
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
+// read-both: a crow tab resumed under its old title (c?crow)
 const pinOf = (name: string) =>
-    isCoordinator(name) ? 0 : /(^|\s)crow$/.test(name) ? 1 : 2;
+    isCoordinator(name) ? 0 : /(^|\s)c?crow$/.test(name) ? 1 : 2;
 
 async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);

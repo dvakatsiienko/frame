@@ -264,10 +264,51 @@ test('a second open lane of one topic is refused, naming the open one and its fi
         await denied($, { act: 'create', items: ITEMS, title: 'mods: z' }),
         kept(w).map((l) => l.id),
     ]).toEqual([
-        'orbit glide: lane l1 «mods — x» is still open: end it first (glide end l1)',
-        'orbit glide: lane l1 «mods — x» is still open: end it first (glide end l1)',
+        'orbit glide: lane l1 «mods — x» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
+        'orbit glide: lane l1 «mods — x» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
         ['l1'],
     ]);
+});
+
+test('a second card for the same lane is refused whatever its title, naming the live card', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    const again = await denied($, {
+        act: 'create',
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        title: 'another name for the same lane',
+    });
+    const piped = await denied($, {
+        act: 'create',
+        items: ITEMS,
+        title: 'mods settings | FRM-9',
+    });
+    expect([again, piped, kept(w).map((l) => l.id)]).toEqual([
+        'orbit glide: lane l1 «mods settings» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
+        'orbit glide: lane l1 «mods settings» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
+        ['l1'],
+    ]);
+});
+
+const CLIO_TITLES = ['🦉 cclio', '🦉clio', '🦉 clio']; // read-both: a tab resumed under the old title
+for (const title of CLIO_TITLES)
+    test(`a session named ${title} writes the lanes`, async ($, on) => {
+        const w = world(on, { name: title });
+        await start($);
+        expect(
+            await denied($, { act: 'create', items: ITEMS, title: 'mods x' }),
+        ).toBeUndefined();
+        expect(kept(w).map((l) => l.id)).toEqual(['l1']);
+    });
+
+test('a session that only ends in clio is not the lane owner', async ($, on) => {
+    world(on, { name: '☕️ 🔧 mods lane codie' });
+    await start($);
+    expect(
+        await denied($, { act: 'create', items: ITEMS, title: 'mods x' }),
+    ).toContain('only 🦉 clio writes the lanes');
 });
 
 test('a finished lane holds its topic until it is ended', async ($, on) => {
@@ -291,7 +332,7 @@ test('a finished lane holds its topic until it is ended', async ($, on) => {
         afterEnd,
         kept(w).map((l) => [l.id, l.endedAt === undefined]),
     ]).toEqual([
-        'orbit glide: lane l1 «mods — x» is still open: end it first (glide end l1)',
+        'orbit glide: lane l1 «mods — x» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
         undefined,
         [
             ['l1', false],

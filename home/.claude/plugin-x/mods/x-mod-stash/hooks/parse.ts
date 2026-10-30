@@ -323,8 +323,8 @@ export function planSteps(text: string) {
 
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 
-// `<mode> <role emoji> <scope> <member name>: <ticket or what>` (dima, 2026-10-29) — «⚡ 🔧 mods lane 3 codie: FRM-431»;
-// the older ☕️ 🎯 shape («☕️ 🔧 FRM-303 code: stash keep-hot») still reads true; a standing member keeps
+// `<mode> <role emoji> <member name>: <scope> | <ticket>` (dima, 2026-10-30) — «⚡ 🔧 codie: mods lane 3 | FRM-467»;
+// the 10-29 shape «⚡ 🔧 mods lane 3 codie: FRM-431» and the older ☕️ 🎯 shape («☕️ 🔧 FRM-303 code: stash keep-hot») still reads true; a standing member keeps
 // its own name, badge or not — «🐦‍⬛ crow», which the registry writes with a space for the joiner
 const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
 const THREAD_NAME = /^(⚡️?|🌗|🌘)\s+\S+\s+(?:[^:\s]+\s+)*[\w-]+:\s+\S/u;

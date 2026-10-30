@@ -28,6 +28,9 @@ test('a 🔭 line quoted before the end is not a wait', () => {
 for (const [name, fits] of [
     ['☕️ 🔧 FRM-303 code: stash keep-hot', true],
     ['🎯 🔎 BYT-12 verify: atelier', true],
+    ['⚡ 🔧 codie: mods lane 3 | FRM-467', true],
+    ['⚡ 🔎 sixth sense: mods lane 3 | main', true],
+    ['🌗 🔧 codie: cli lane | FRM-383', true],
     ['⚡ 🔧 mods lane 3 codie: FRM-431', true],
     ['⚡️ 🔎 mods lane 3 sixth sense: main', true],
     ['🌗 🔧 cli lane codie: FRM-383', true],
