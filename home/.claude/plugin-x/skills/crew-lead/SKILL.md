@@ -52,7 +52,7 @@ the split is **disposable vs watchable**, never research vs code.
 
 the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped one, names its fix.
 
-- **reuse or summon** — an idle member revives by message with its context intact; the grid in [models.md](models.md) § summon or reuse decides.
+- **reuse or summon** — an idle member revives by message, context intact; [models.md](models.md) § summon or reuse decides. one sixth sense a lane, reused by message
 - **trust key** — a `--bg` summon reads its exact folder in `~/.claude.json` (`projects[<path>].hasTrustDialogAccepted`), never a trusted parent; a new summon home gets the key in one command, `jq … ~/.claude.json > tmp && mv tmp ~/.claude.json`, since every live session writes that file; never a `cp` from an older copy.
 - **spare age** — every `--bg` summon claims a pre-warmed `claude bg-spare`, and a day-old spare once booted codie without the repo's root `AGENTS.md`; a day old → `claude daemon stop --keep-workers`. the brief's «name your loaded AGENTS.md paths» line is the belt.
 - **app essentials** — the target app passes `node ~/projects/bytes/script/apps-essentials.ts --app <app>` (`x:app-setup-essentials`); a red row is filled before the summon, or the brief says which row codie fills first. a 🟡 row rides the brief too, after the app's wisps.
@@ -62,7 +62,7 @@ the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped 
 - **the pr mode** — a side-lane or shift brief says `pr mode: plain` or `pr mode: stacked`; stacked only while the stacked-prs trial runs, for 2+ dependent parts, its brief naming `docs/test-drive/stacked-prs.md`
 - **the argv** — literal, `-n` before the prompt, the prompt before `--remote-control` (the flag once ate a 1.5 kB brief as its rc label):
   - side lane: `cd <repo> && claude --bg -n '🌗 🔧 codie: <scope> | BYT-N' --model opus --effort medium "$(cat <brief file>)" --remote-control`
-  - quick lane on main: `cd <repo> && claude --bg -n '⚡ 🔧 codie: <scope> | BYT-N' --model sonnet --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "$(cat <brief file>)" --remote-control`
+  - quick lane on main: `cd <repo> && claude --bg -n '⚡ 🔧 codie: <scope> | BYT-N' --model opus --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "$(cat <brief file>)" --remote-control`
   - side-lane sixth sense, once the pr exists: `cd <repo> && claude --bg -n '🌗 🔎 sixth sense: <scope> | #<pr>' --model opus --effort medium '/x:crew-sixth-sense BYT-N <pr url> <codie registry name> <clio registry name> spec: <spec path> trials: <names>' --remote-control`
   - quick-lane sixth sense, on codie's «final»: the same line with `-n '⚡ 🔎 sixth sense: <scope> | main'` and `main:<base sha>` in place of the pr url, plus `final: <head sha>` before `spec:`, pushed by clio first (a later round's head too)
   - `spec:` is the lane's spec path, so sixth sense grades the spec's exit lines; it comes after the four arguments, before `trials:`

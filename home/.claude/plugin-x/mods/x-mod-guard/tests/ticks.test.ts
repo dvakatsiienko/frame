@@ -166,6 +166,45 @@ for (const typed of [
         expect([signFlagged(r), ran]).toEqual([false, [typed]]);
     });
 
+// FRM-459 (o49): one sign ask may name several tickets, and its one tick signs each of them
+for (const text of [
+    '✍️ sign FRM-1, FRM-2: two small tickets',
+    '✍️ sign FRM-1 and FRM-2: two small tickets',
+    '✍️ sign FRM-1 FRM-2: two small tickets',
+])
+    test(`one tick on «${text.slice(0, 26)}» signs both ids it names`, async ($, on) => {
+        const { ran } = world(on, [tick(text)]);
+        const one = await bash($, 'x linear set FRM-1 --add-label signed');
+        const two = await bash($, 'x linear set FRM-2 --add-label signed');
+        expect([signFlagged(one), signFlagged(two), ran.length]).toEqual([
+            false,
+            false,
+            2,
+        ]);
+    });
+
+for (const [why, id, text] of [
+    ['an id the ask does not name', 'FRM-3', '✍️ sign FRM-1, FRM-2: two'],
+    [
+        'a longer id that starts with a named one',
+        'FRM-14',
+        '✍️ sign FRM-1, FRM-2: two',
+    ],
+    ['an id past the colon', 'FRM-3', '✍️ sign FRM-1: also FRM-3'],
+] as const)
+    test(`a batch tick does not sign ${why}`, async ($, on) => {
+        world(on, [tick(text)]);
+        const r = await bash($, `x linear set ${id} --add-label signed`);
+        expect(signFlagged(r)).toBe(true);
+    });
+
+test('a batch tick is spent per id: a second sign of the same id is refused', async ($, on) => {
+    world(on, [tick('✍️ sign FRM-1, FRM-2: two small tickets')]);
+    await bash($, 'x linear set FRM-1 --add-label signed');
+    const again = await bash($, 'x linear set FRM-1 --add-label signed');
+    expect(signFlagged(again)).toBe(true);
+});
+
 test('another label runs with no tick', async ($, on) => {
     world(on);
     const r = await bash($, 'x linear set FRM-1 --add-label agent');

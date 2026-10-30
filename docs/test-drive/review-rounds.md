@@ -44,5 +44,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-10-29 · the rename sweep · 13 intermediate wisphunter runs per slice, 1–3 min each · caught what the final rounds would have, earlier · useful
 - 2026-10-30 · the rename sweep post-run, wave 1 (clio) · matt's code-review, standards card (wisphunter) · 8 + 1 question: drifted read-both lists missing `cclio` in 3 readers, a narrowed dir match, a half-renamed comment, 2 smells, 2 nits · useful
 - 2026-10-30 · the rename sweep post-run, wave 1 (clio) · matt's code-review, spec card (wisphunter) · 8: the guard's exceptions wider than the spec, an open pocket item missed, live state outside git (desktop presets, a state-file key, token caches), 2 spec lines half-done, `pnpm check` missing from exit 3's evidence · useful
+- 2026-10-30 · FRM-467 mods quick lane 3 (codie + sixth sense) · 2 rounds: round 1 refuted on c1174fe5 (27 escapes from the job-tmp lift, one proven on disk), round 2 clean on bd686083 · codie's local review: 3 wisphunter cards, 28 items, the bug card's 5 holes the best · useful
 
 ## verdict

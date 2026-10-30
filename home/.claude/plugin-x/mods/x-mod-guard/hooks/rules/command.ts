@@ -54,13 +54,7 @@ type Peeled = {
     stdouts: string[];
 };
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
-// fresh: the variables holding a bare `$(mktemp -d)` made earlier in the command
-export type Command = Peeled & {
-    sep: Sep;
-    dir: string;
-    feeders: Peeled[];
-    fresh: string[];
-};
+export type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
 export const VAULT = 'iCloud~md~obsidian';
 // the linear teams whose ticket ids the rules read: `x schema linear` lists the workspace's, and a new team joins here
 export const TICKET_KEY = ['FRM', 'BYT'].join('|');
@@ -199,18 +193,6 @@ function pathAssigned(value: string, subst: Parsed['segments'][number][]) {
         ? ops[0]
         : undefined;
 }
-// a value that is exactly one `$(mktemp -d)` with no template: the os makes an empty dir and prints it
-function isBareMktemp(value: string, subst: Parsed['segments'][number][]) {
-    const [only] = subst;
-    if (value !== '$(…)' || subst.length !== 1 || !only) return false;
-    const m = peel(only.words);
-    return (
-        m.name === 'mktemp' &&
-        m.wrappers.length === 0 &&
-        m.args.length === 1 &&
-        ['-d', '--directory'].includes(m.args[0]?.text ?? '')
-    );
-}
 const REBINDERS = new Set([
     'declare',
     'export',
@@ -230,8 +212,6 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
     const out: Command[] = [];
     let dir = cwd;
     const vars = new Map<string, string>();
-    // the variables an earlier segment set to a bare `$(mktemp -d)`: an empty dir made in this very command
-    const fresh = new Set<string>();
     // GIT_DIR or GIT_WORK_TREE set by an earlier segment points every later git elsewhere
     const sticky: string[] = [];
     const expand = (t: string) =>
@@ -241,8 +221,6 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
         );
     const peeled = parsed.segments.map((s) => ({ ...peel(s.words), s }));
     peeled.forEach(({ s, ...c }, k) => {
-        // `H=$(mktemp -d) HOME=$H cmd` expands $H before it is set, so a variable counts only from the next segment on
-        const freshBefore = [...fresh];
         for (const a of c.assigns) {
             const at = a.indexOf('=');
             const name = a.slice(0, at);
@@ -250,22 +228,12 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             if (name.endsWith('+')) vars.delete(name.slice(0, -1));
             else if (path) vars.set(name, path);
             else vars.delete(name);
-            if (name.endsWith('+')) fresh.delete(name.slice(0, -1));
-            else if (isBareMktemp(a.slice(at + 1), s.subst)) fresh.add(name);
-            else fresh.delete(name);
         }
         const appended = s.words[0]?.text.match(/^([A-Za-z_][A-Za-z0-9_]*)\+=/);
-        if (appended?.[1]) {
-            vars.delete(appended[1]);
-            fresh.delete(appended[1]);
-        }
+        if (appended?.[1]) vars.delete(appended[1]);
         // a command that rebinds a variable other than by `NAME=` (read, for, unset, declare, export R=…) forgets it
         if (REBINDERS.has(c.name))
-            for (const w of c.args) {
-                const name = w.text.replace(/\+?=.*$/, '');
-                vars.delete(name);
-                fresh.delete(name);
-            }
+            for (const w of c.args) vars.delete(w.text.replace(/\+?=.*$/, ''));
         sticky.push(
             ...[
                 ...c.assigns,
@@ -297,7 +265,6 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             assigns: [...c.assigns, ...sticky],
             dir,
             feeders,
-            fresh: freshBefore,
             sep: s.sep,
         });
     });

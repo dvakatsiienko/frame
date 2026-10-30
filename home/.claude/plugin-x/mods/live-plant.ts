@@ -3,17 +3,24 @@
 import {
     cpSync,
     existsSync,
+    lstatSync,
     mkdtempSync,
     readFileSync,
+    unlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 
 const MANIFEST = '.claude-plugin/plugin.json';
 
+// the walk ends at the `mods` dir: a file beside the mods belongs to plugin x, whose manifest sits above
 function modOf(file: string) {
-    for (let d = dirname(file); d !== dirname(d); d = dirname(d))
+    for (
+        let d = dirname(file);
+        d !== dirname(d) && basename(d) !== 'mods';
+        d = dirname(d)
+    )
         if (existsSync(join(d, MANIFEST))) return d;
     return undefined;
 }
@@ -33,9 +40,11 @@ export function plantedCopy(file: string, anchor: string, replacement: string) {
     const copy = join(mkdtempSync(join(tmpdir(), 'mods-live-plant-')), 'mod');
     cpSync(mod, copy, { recursive: true });
     const inCopy = join(copy, relative(mod, path));
+    // cpSync keeps a symlink a symlink; the planted file becomes a plain one, so the write never reaches the tree through it
+    if (lstatSync(inCopy).isSymbolicLink()) unlinkSync(inCopy);
     writeFileSync(
         inCopy,
         text.replace(anchor, () => replacement),
     );
-    return { file: inCopy, mod: copy };
+    return { file: inCopy, mod: copy, root: dirname(copy) };
 }

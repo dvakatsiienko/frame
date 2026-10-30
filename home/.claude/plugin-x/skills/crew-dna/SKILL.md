@@ -19,6 +19,7 @@ this file says how every member does it. A section headed with roles binds only 
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
 - a ping to clio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping waits for her next turn (quiet comms), so a question or a decision for dima never rides one: it goes as its own `[ask]` message; codie in a lane sends one `[progress]` line per finished step, and «final» or «round N» goes to clio as a push message, never `[progress]`
+- a send that errors or bounces is retried once, then named in your next ping with its error text
 - every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant

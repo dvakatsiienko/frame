@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-10-30
 ---
 
@@ -13,3 +13,7 @@ until: 2026-10-30
 
 ## misses
 - 2026-10-27 · composer's inbox-prep at boot searched for its own charter `inbox-prep.md` outside `_clio/` · `home/.claude/plugin-x/skills/crew-composer/inbox-prep.md` existed beside its `SKILL.md`, and its charter names no path to it · found by cclio's `find` after composer's consult
+
+## verdict
+
+- 2026-10-30 · **scattered: 1 miss in 18 days** (10-27, a charter with no path to it, fixed by naming the path); `rg`, the barrel and the knowledge shelf found every other doc · FRM-177 stays open: dima looks at it first, then decides (his 17:12 steer: «it may still be useful at some point»)

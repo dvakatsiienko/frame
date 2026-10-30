@@ -219,19 +219,19 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
         )
     );
 }
-// a test door (FRM-470): `H=$(mktemp -d) && HOME=$H node <hook>`. the HOME is an empty dir this command made, so the hook never
-// sees the real config; git stays out, since a HOME with no gitconfig drops the signing and identity the commit rules rest on
-function isFreshHome(c: Command) {
-    const homes = c.assigns.filter((a) => a.startsWith('HOME='));
-    return (
-        c.name !== 'git' &&
-        homes.length > 0 &&
-        homes.every((a) => {
-            const name = a.slice(5).match(/^"?\$\{?([A-Za-z_]\w*)\}?"?$/)?.[1];
-            return name !== undefined && c.fresh.includes(name);
-        })
+// a test door (FRM-470), an allowlist of the whole line: `NAME=$(mktemp -d) && HOME=$NAME <runner> <plain words>`, two commands and
+// nothing between or after them. the HOME is an empty dir this line made, so the hook never sees the real config. the runner is
+// one a mods test uses (node, claude, a `pnpm mods:` verb): git through a shell, `env`, `eval` or `pnpm exec` with no gitconfig
+// drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
+const FRESH_HOME =
+    /^([A-Za-z]\w*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
+// pnpm reads -C, --dir, --filter and the like anywhere among its words, so a `pnpm mods:` line carries none of them
+const isFreshHomeLine = (command: string) =>
+    FRESH_HOME.test(command) &&
+    !(
+        command.includes(' pnpm mods:') &&
+        command.split(/\s+/).some((w) => PNPM_REDIRECTS.test(w))
     );
-}
 function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
     if (r.rule === 'home') {
         // a git command must also act inside the tmp
@@ -370,9 +370,7 @@ export function refusals(
         while (
             found &&
             ((isPlain && isThrowawayLift(rest.c, found, ctx)) ||
-                (found.rule === 'home' &&
-                    !HIDDEN.test(command) &&
-                    isFreshHome(rest.c)))
+                (found.rule === 'home' && isFreshHomeLine(command)))
         ) {
             const stripped = without(rest.c, found, rest.next);
             const isSame =
@@ -644,9 +642,16 @@ export function signWord(
     return undefined;
 }
 const TICKET = new RegExp(`^(${TICKET_KEY})-\\d+$`);
-// a sign ask, `✍️ sign <id>: <title>`, its id matched whole
+// a sign ask, `✍️ sign <id>: <title>` or `✍️ sign <id>, <id>: <title>` for a batch (FRM-459 o49): each id named is matched whole,
+// and an id the ask does not list is not signed by it
+const SIGN_ASK = new RegExp(
+    `(?:^|\\s)✍️ sign ((?:${TICKET_KEY})-\\d+(?:(?:,\\s*|\\s+and\\s+|\\s+)(?:${TICKET_KEY})-\\d+)*):`,
+    'u',
+);
 export const isSignAsk = (text: string, id: string) =>
-    new RegExp(`(^|\\s)✍️ sign ${id}:`, 'u').test(text);
+    SIGN_ASK.exec(text)?.[1]
+        ?.split(/[,\s]+(?:and\s+)?/)
+        .includes(id) ?? false;
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`; a bare `#<n>`
 // or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1)
 export const quotesPr = (text: string, repo: string, pr: string) =>

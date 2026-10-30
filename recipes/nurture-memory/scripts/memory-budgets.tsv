@@ -84,7 +84,7 @@ home/.claude/plugin-x/skills/crew-codie/SKILL.md	11800	seed 2026-10-16, today's 
 home/.claude/plugin-x/skills/crew-helga/SKILL.md	6400	seed 2026-10-16, today's size + 15 %; +200 2026-10-27: the fork refusal (FRM-430); +100 on 2026-10-30 for the receipt's SendMessage line (a silent receipt, wave 0)
 home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md	7000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-designer/SKILL.md	11700	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/crew-dna/SKILL.md	6300	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/crew-dna/SKILL.md	6450	seed 2026-10-16, today's size + 15 %; 2026-10-30 +150 B: a bounced send is retried once, then named (crow's catch, mods lane 3)
 home/.claude/plugin-x/skills/crew-lead/references/card-craft.md	3200	seed 2026-10-19, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/references/model-cards.md	8200	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md	37100	seed 2026-10-16, its size + 15 %

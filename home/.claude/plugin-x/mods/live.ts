@@ -40,6 +40,8 @@ if (args.kind === 'usage') {
     );
     process.exit(2);
 }
+// the scratch dir a --plant made; the serve removes it when the session ends
+let plantRoot: string | undefined;
 const modArg = args.kind === 'plant' ? planted(args) : args.mod;
 const mod = resolve(modArg);
 const manifest = join(mod, '.claude-plugin/plugin.json');
@@ -77,6 +79,7 @@ function planted(a: { file: string; anchor: string; replacement: string }) {
         console.log(
             `mods:live: planted a change in ${p.file}; the tree is untouched`,
         );
+        plantRoot = p.root;
         return p.mod;
     } catch (e) {
         console.error(`mods:live: ${(e as Error).message}`);
@@ -136,6 +139,7 @@ async function serve() {
         console.error(
             `mods:live: ${name} is served already (pid ${readFileSync(pidFile, 'utf8')})`,
         );
+        if (plantRoot) rmSync(plantRoot, { force: true, recursive: true });
         process.exit(2);
     }
     mkdirSync(dir, { recursive: true });
@@ -165,11 +169,28 @@ async function serve() {
     // named, so the fleet board reads what it is
     const session = pty.spawn(
         'claude',
-        ['-n', `mods-live: ${name}`, '--debug-file', debugLog],
+        [
+            '-n',
+            `mods-live: ${name}`,
+            '--debug-file',
+            debugLog,
+            // a cli-entrypoint cc (a --bg session's) lets settings.json's env beat the swapped plugin dirs, so the child loads the
+            // live mod; without the user settings the swap alone names the dirs
+            '--setting-sources',
+            'project,local',
+            // the user's default mode came with the user settings: a frame session must not stop at a permission dialog
+            '--permission-mode',
+            'bypassPermissions',
+        ],
         {
             cols: COLS,
             cwd: process.cwd(),
-            env: { ...process.env, CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':') },
+            // the watch var also came from the user settings' env
+            env: {
+                ...process.env,
+                CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':'),
+                CLAUDE_CODE_PLUGIN_DIR_WATCH: '1',
+            },
             name: 'xterm-256color',
             rows: ROWS,
         },
@@ -192,12 +213,14 @@ async function serve() {
         session.kill();
         rmSync(pidFile, { force: true });
         rmSync(slotFile, { force: true });
+        if (plantRoot) rmSync(plantRoot, { force: true, recursive: true });
         process.exit(code);
     };
     session.onExit(() => {
         console.error('mods:live: the session ended');
         rmSync(pidFile, { force: true });
         rmSync(slotFile, { force: true });
+        if (plantRoot) rmSync(plantRoot, { force: true, recursive: true });
         process.exit(1);
     });
     process.on('SIGINT', () => stop(0));
