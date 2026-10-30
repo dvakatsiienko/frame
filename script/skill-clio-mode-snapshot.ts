@@ -1,7 +1,7 @@
 /**
  * skill-clio-mode-snapshot — compiles the coordinator's whole brain into ONE file cloud-chat can read in one call
  * (`x-cloud-chat` tool `clio_mode`, skill `/clio-mode`). Runs at every clio halt via
- * `_clio/.claude/hooks/gazette-recent.sh`, and by hand: `pnpm skill:clio-mode-snapshot`.
+ * `_clio/.claude/hooks/gazette-trail.sh`, and by hand: `pnpm skill:clio-mode-snapshot`.
  *
  * Zero-maintenance by construction: the clio layer is derived by walking the memory barrel's
  * `@` imports, exactly as cc itself loads it — a new leaf joins the snapshot the moment it joins

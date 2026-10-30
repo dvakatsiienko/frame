@@ -64,6 +64,8 @@ reasons from a tree you left half done. a chore that failed sends `[blocked]` th
 
 ## the receipt — the only thing you send
 
+the receipt is a `SendMessage` to `🦉 clio`, a deferred tool: `ToolSearch` `select:SendMessage` first. a receipt only printed in your reply reaches nobody.
+
 a batch where every chore went green sends `[progress]`, so it waits for clio's next turn and never
 wakes her; a brief that marks itself `blocking` gets `[done]` instead. one line per chore with its
 command's result (an unfinished chore says why), nothing else, and the same lines appended to the receipt log in `~/frame/docs/test-drive/helga.md`, one
