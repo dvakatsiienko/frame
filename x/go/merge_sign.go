@@ -79,18 +79,81 @@ func (d *mergeDecision) selfWait(pr pullHead, self []string) (string, error) {
 		"; once his own prompt names #" + d.PR + ": x lane merge-auto " + d.PR + " --apply --dima-ok " + d.PR, nil
 }
 
+// what a ticket's last body hash says about the body above its sign block
+const (
+	signMatch   = "match"
+	signDrifted = "drifted"
+	signNoHash  = "no hash"
+)
+
+var (
+	// a markdown link linear writes over a bare id or url after the write
+	linkRewrite = regexp.MustCompile(`\[([^\]\n]+)\]\(([^)\s]+)\)`)
+	bareID      = regexp.MustCompile(`^(?:FRM|BYT|PK)-\d+$`)
+	angleURL    = regexp.MustCompile(`<(https?://[^>\s]+)>`)
+)
+
+// signedBlock splits a body at the ## signed block that closes it: an earlier heading sits in a quote or a fence
+func signedBlock(body string) (above, block string, ok bool) {
+	all := signedHeading.FindAllStringIndex(body, -1)
+	if all == nil {
+		return "", "", false
+	}
+	at := all[len(all)-1]
+	block = body[at[1]:]
+	if next := nextHeading.FindStringIndex(block); next != nil {
+		block = block[:next[0]]
+	}
+	return body[:at[0]], block, true
+}
+
+// asSigned folds linear's link rewrite back to the bare text and trims trailing blank lines to the one blank
+// line every live sign hashed over (measured 2026-10-30: 12 of 12 stored hashes end in "\n\n")
+func asSigned(above string) string {
+	folded := linkRewrite.ReplaceAllStringFunc(above, func(link string) string {
+		m := linkRewrite.FindStringSubmatch(link)
+		if bareID.MatchString(m[1]) || m[1] == m[2] {
+			return m[1]
+		}
+		return link
+	})
+	folded = angleURL.ReplaceAllString(folded, "$1")
+	if trimmed := strings.TrimRight(folded, "\n"); trimmed != "" {
+		return trimmed + "\n\n"
+	}
+	return folded
+}
+
+func shortHash(text string) string { return fmt.Sprintf("%x", sha256.Sum256([]byte(text)))[:8] }
+
+// bodySign reads the last «· body <hash>» line of the closing sign block against the body above it. the sign holds
+// on the raw body's hash (how every stored hash was written) or the normalized one; now is the raw body's
+func bodySign(body string) (state, stored, now string) {
+	above, block, ok := signedBlock(body)
+	if !ok {
+		return signNoHash, "", ""
+	}
+	for line := range strings.Lines(block) {
+		if m := signedBodyHash.FindStringSubmatch(line); m != nil {
+			stored = m[1]
+		}
+	}
+	now = shortHash(above)
+	switch {
+	case stored == "":
+		return signNoHash, "", now
+	case stored == now || stored == shortHash(asSigned(above)):
+		return signMatch, stored, now
+	}
+	return signDrifted, stored, now
+}
+
 // the hash covers the body through the newline before ## signed, first 8 hex of its sha256, as clio signs it;
 // the last «· body <hash>» line in the block is the one that holds
 func readSign(ticket, body string) chunkSign {
-	// the block closes the body, so the last heading is it: an earlier «## signed» sits in a quote or a fence
-	all := signedHeading.FindAllStringIndex(body, -1)
-	if all == nil {
+	_, block, ok := signedBlock(body)
+	if !ok {
 		return chunkSign{detail: ticket + " carries no ## signed block"}
-	}
-	at := all[len(all)-1]
-	block := body[at[1]:]
-	if next := nextHeading.FindStringIndex(block); next != nil {
-		block = block[:next[0]]
 	}
 	// a pre-approval belongs to the sign above it: a re-sign without one voids an older one
 	since := block
@@ -108,17 +171,11 @@ func readSign(ticket, body string) chunkSign {
 	if !preApproved.MatchString(since) {
 		return chunkSign{detail: ticket + "'s last sign holds no merge: pre-approved"}
 	}
-	last := ""
-	for line := range strings.Lines(block) {
-		if m := signedBodyHash.FindStringSubmatch(line); m != nil {
-			last = m[1]
-		}
-	}
-	now := fmt.Sprintf("%x", sha256.Sum256([]byte(body[:at[0]])))[:8]
+	state, last, now := bodySign(body)
 	switch {
-	case last == "":
+	case state == signNoHash:
 		return chunkSign{detail: ticket + "'s sign names no body hash"}
-	case last != now:
+	case state == signDrifted:
 		return chunkSign{detail: fmt.Sprintf("%s's body changed after its last signed line (body %s, now %s): re-sign it", ticket, last, now)}
 	case isDevBuild():
 		return chunkSign{detail: ticket + " pre-approved, but this merge-auto is a dev build: a self-edit merges only through main's build, run from the main checkout"}
