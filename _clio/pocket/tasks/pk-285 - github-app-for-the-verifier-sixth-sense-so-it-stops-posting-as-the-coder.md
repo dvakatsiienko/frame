@@ -4,7 +4,7 @@ title: github app for the verifier (sixth sense), so it stops posting as the cod
 status: open
 assignee: []
 created_date: '2026-10-29T14:50:00Z'
-updated_date: '2026-10-29T15:00:00Z'
+updated_date: '2026-10-30T14:48:00Z'
 due_date: '2026-10-30'
 labels:
   - s
@@ -36,4 +36,6 @@ W494 (2026-10-29 16:49, dima): it is actually not good that the verifier current
 W495 (2026-10-29 16:49, dima): q1. yes, let's have everyone named according to our lib naming first-hand.
 
 correction 2026-10-29 17:00 (wishkeeper): W485–W488 above are clio's 16:40 reply quoted back in dima's paste, not his words; W487 (x-reviewer-cc → x-sixth-sense-cc) was reversed by dima at W489–W493. the want here is W489–W494.
+
+2026-10-30 16:50: the same outcome on linear — FRM-467's sixth sense posted its clean verdict through x linear comment and it landed under actor «codie»; sixth sense needs its own linear identity beside the github app (its retro, ~/.local/state/x/lanes/mods-lane-3/2026-10-30-FRM-467-sixth-sense-retro.md line 5)
 <!-- SECTION:NOTES:END -->

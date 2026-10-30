@@ -35,7 +35,7 @@ load `mattpocock-skills:grilling` and run its ❓ round as written — the front
 
 ## 3 · what the sign carries
 
-dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane takes one milestone's chunks); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess.
+dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane walks its area's milestones one after another, `craft-fleet-flow` § lane init); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess.
 
 ## 4 · the sign
 
@@ -49,7 +49,7 @@ the grill and the groom come first: the chunk is healthy — good content, a goo
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
 
-- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit; the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`; a tiny change may skip the grill, never the line; after 🚀 the `signed` label stays off and dispatch § 6 re-seals, unless a ↩️ follows the 🚀 (dispatch § 6)
+- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit; the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`; a tiny change may skip the grill, never the line; a re-sign of a chunk that carried `merge: pre-approved` repeats that line, since merge-auto reads only the newest sign's; after 🚀 his word in the thread on the change is the re-sign, quoted in its line, the `signed` label stays off and dispatch § 6 re-seals with the change's tests as exit lines, unless a ↩️ follows the 🚀 (dispatch § 6)
 - **one birth door, the fold**: shape-lane runs over a ticket. a wish he wants signed on the spot folds into its ticket, and the grill and sign follow in the same turn, a few calls in a row, never a second turn
 
 **done** = every chunk of the session carries the `signed` label and a dated `## signed` line, with every § 3 field present. «grilled» without the sign is reported as not signed. what follows is dima's «what can we dispatch?» — `clio:shape-lane-dispatch`.

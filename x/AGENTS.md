@@ -54,6 +54,7 @@ the checks sixth sense or codie on `x` starts from.
 - **a secret-shape check** plants every key form it claims: base64 pem, `OPENSSH`, `ghp_`.
 - **an actor rule** (tty vs agent) runs in a python pty with and without `CLAUDECODE`.
 - **a never-fail path** (a verb a hook runs) runs against a dead-port `X_LINEAR_URL`.
+- **a test's adequacy** (base's source, head's tests) restores the old source in a verify tree with `git archive <base> <paths> | tar -x`, since the guard refuses `git checkout <sha> -- <path>` over a tree.
 
 ## output
 

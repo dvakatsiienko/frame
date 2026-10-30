@@ -8,7 +8,7 @@ the machine part of lane init, clio's alone: dima signed the chunks in `clio:sha
 
 ## 1 · the offer
 
-«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker, no `lane: main` (ours, never codie's) and no `human` or `needs human` label, grouped by milestone, each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane is one milestone's chunks, ordered by their `blocks` chain (codie's ticket order inside a chunk is its lane plan). his pick is the summon word: no second ask. a sixth sense comes by default; a quick lane's pick also says sixth sense yes or no. a quick lane needs no sign: he names the ticket, which promotes a Triage one (Todo).
+«what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker, no `lane: main` (ours, never codie's) and no `human` or `needs human` label, grouped by milestone in the initiative's milestone-queue order, each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane walks its area's milestones one after another, each one's chunks in their `blocks` chain (codie's ticket order inside a chunk is its lane plan). his pick is the summon word: no second ask. a sixth sense comes by default; a quick lane's pick also says sixth sense yes or no. a quick lane needs no sign: he names the ticket, which promotes a Triage one (Todo); a quick chunk that edits the guards, the review workflows or merge-auto asks his merge pre-approval in the pick, the line a sign would carry.
 
 ## 2 · the spec
 
@@ -26,7 +26,7 @@ then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.m
 
 ## 4 · the seal
 
-`x brief preflight` passes; it reads the exit lines from the spec (FRM-423). a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the lines: a line its rules forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 **sealed**, N exit lines`.
+`x brief preflight` passes; it reads the exit lines from the spec (FRM-423). a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules and its `FTR.md` decisions are read against the lines: a line they forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 **sealed**, N exit lines`.
 
 ## 5 · the summon and the greenlight
 

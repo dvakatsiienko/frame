@@ -23,6 +23,8 @@ const CAP_FREE_TITLE = /^🧬 evergreen turn/;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
+// a dropped clause's proof: an orbit ask id, or «dima» with a date or a time
+const DIMA_VERDICT = /\bo\d+\b|\bdima\s+(?:\d{4}-\d{2}-\d{2}|\d{1,2}:\d{2})\b/i;
 // the one ticket-line shape, shared with wish-cover
 export const TICKET_LINE =
     /^[ \t]*(?:- )?(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gim;
@@ -106,13 +108,18 @@ export function checkPocket(
             (born >= WISH_RULES_FROM || touched >= WISH_RULES_FROM)
         ) {
             // only the clause that says «dropped» drops its ids: «raw drop kept in the notes» drops nothing
-            const dropped = citedIds(
-                noteLines(text)
-                    .filter((line) => CLOSE_LINE.test(line))
-                    .flatMap((line) => line.split(/[,;]/))
-                    .filter((clause) => /\bdropped\b/i.test(clause))
-                    .join('\n'),
-            );
+            const droppedClauses = noteLines(text)
+                .filter((line) => CLOSE_LINE.test(line))
+                .flatMap((line) => line.split(/[,;]/))
+                .filter((clause) => /\bdropped\b/i.test(clause));
+            const dropped = citedIds(droppedClauses.join('\n'));
+            // a line dima wrote or asked for dies only on his word: the clause cites it
+            for (const clause of droppedClauses)
+                if (!DIMA_VERDICT.test(clause))
+                    for (const wishId of citedIds(clause))
+                        report(
+                            `dropped ${wishId} with no verdict of dima's: cite the orbit id (oN) or «dima <date|HH:MM>» in the same clause`,
+                        );
             for (const ticket of ticketsOf(text)) {
                 const block = wishBlocks.get(ticket);
                 if (block === undefined) continue;

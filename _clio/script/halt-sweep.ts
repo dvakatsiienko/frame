@@ -1,6 +1,6 @@
 // the halt's fixed sweeps (inbox reset, github notifications, shelf retention, until-notes list): node halt-sweep.ts [--apply] [--only inbox,notifications,retention,until-notes]; dry run without --apply
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -12,6 +12,7 @@ const HQ = join(
 const BRANCH_RUN = /for (.+) branch$/;
 const PARTS = ['inbox', 'notifications', 'retention', 'until-notes'] as const;
 export const UNTIL_NOTE = /until: (FRM|BYT|PK)-[0-9]+/;
+const RAW_DROP = /raw drop \([^)]*\): (.+)/g;
 
 function run(command: string, args: string[]): string {
     return execFileSync(command, args, {
@@ -26,17 +27,16 @@ function gh(args: string[]): unknown {
 
 // a content line is anything that is not blank, not the template's own text, and not under a ✅ line;
 // a ✅ line covers itself and the indented lines right under it, never an unindented one (a drop typed after the parse);
-// a line that sits verbatim in helga's prepped inbox is handled too, a line typed after the prep never is
+// a line whose text sits in a pocket item's «raw drop (<day> inbox, dima): <text>» note is handled too;
+// being in helga's prepped copy is not enough, prepped is not landed
 export function unhandledLines(
     inbox: string,
     template: string,
-    prepped = '',
+    pocket = '',
 ): string[] {
     const own = new Set(template.split('\n').map((line) => line.trim()));
-    const preppedLines = new Set(
-        prepped
-            .split('\n')
-            .map((line) => bareLine(line.trim().replace(/^> ?/, ''))),
+    const rawDrops = [...pocket.matchAll(RAW_DROP)].map(
+        (match) => match[1] ?? '',
     );
     let isHandled = false;
     const open: string[] = [];
@@ -47,8 +47,9 @@ export function unhandledLines(
             continue;
         }
         if (own.has(text)) isHandled = false;
-        else if (preppedLines.has(bareLine(text))) continue;
         else if (/^\s*(?:\d+\.|[-*])?\s*✅/.test(text)) isHandled = true;
+        else if (rawDrops.some((drop) => drop.includes(bareLine(text))))
+            continue;
         else if (!isHandled || !/^\s/.test(line)) {
             isHandled = false;
             open.push(line);
@@ -57,9 +58,17 @@ export function unhandledLines(
     return open;
 }
 
-// a line without its list marker and its «✅ PK-N» stamp: the shape helga's prep holds
-const bareLine = (text: string) =>
-    text.replace(/^(?:\d+\.|[-*])\s+/, '').replace(/^✅\s+PK-\d+\s+/, '');
+// a line without its list marker: the shape a raw-drop note holds
+const bareLine = (text: string) => text.replace(/^(?:\d+\.|[-*])\s+/, '');
+
+// every pocket item, archived and completed ones included
+function readPocket(): string {
+    const dir = join(homedir(), 'frame/_clio/pocket');
+    return readdirSync(dir, { encoding: 'utf8', recursive: true })
+        .filter((file) => file.endsWith('.md'))
+        .map((file) => readFileSync(join(dir, file), 'utf8'))
+        .join('\n');
+}
 
 function inboxParts(apply: boolean) {
     const helga = join(HQ, 'inbox-helga.md');
@@ -71,7 +80,7 @@ function inboxParts(apply: boolean) {
     const open = unhandledLines(
         readFileSync(inbox, 'utf8'),
         readFileSync(template, 'utf8'),
-        existsSync(helga) ? readFileSync(helga, 'utf8') : '',
+        readPocket(),
     );
     if (open.length > 0) {
         console.log(

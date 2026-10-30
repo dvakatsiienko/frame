@@ -7,6 +7,7 @@ import {
     type Verdict,
     actsIn,
     adds,
+    basename,
     commands,
     commandsDeep,
     gitDir,
@@ -69,17 +70,7 @@ const LOCAL_GIT = new Set(['git-discard', 'git-rewrite']);
 // what a throwaway repo under the job's own tmp lifts (FRM-467): a sweep (`git add -A`, a pathless commit), the identity
 // a `-c user.*` or `git config user.*` sets, a gate piped to tail, and a HOME that itself points into the job tmp
 const IDENTITY = /^user\.(?:name|email)$/i;
-// `git config --global|--system|--file|--blob` writes a config that is not the throwaway repo's
-function writesOutsideRepo(c: Command) {
-    return gitParts(c.args).subArgs.some((w) =>
-        /^(?:--global|--system|--file|-f|--blob|--worktree)(?:=|$)/.test(
-            w.text,
-        ),
-    );
-}
-// the lift rests on the whole command being plain (FRM-467, sixth sense round 1): a parse of where git acts leaks every
-// form it cannot follow, so a chain lifts only when each command is on these lists and every dir it enters is the job
-// tmp; anything else keeps the refusal
+// a chain lifts only when every command of it is on the plain lists below and every dir it enters is the job tmp
 const PLAIN_NAMES = new Set([
     'cat',
     'cd',
@@ -130,9 +121,12 @@ const PNPM_REDIRECTS =
     /^(?:-[CFrw]|--(?:dir|filter|recursive|workspace-root|prefix))/;
 // an env name that moves git or a shell (GIT_*, XDG_*, BASH_ENV, LD_*) has an underscore; these five do without
 const ENV_MOVERS = new Set(['CDPATH', 'ENV', 'IFS', 'PATH', 'SHELL']);
+// what runs or writes where the parse does not look: a backtick, a process substitution, `$((`, a heredoc, `>|`, and `>&` into a file
+const HIDDEN = /`|[<>]\(|\$\(\(|(?<!<)<<(?!<)|>\||>&(?!\d|-)/;
 const isTmpPath = (path: string, dir: string, ctx: Context) => {
     const p = resolve(path, dir, ctx);
-    return !/[`$*?[{\\]/.test(p) && isJobTmp(p, ctx);
+    // a `~` left after the home is filled in is `~user` or `~-`, which the shell expands
+    return !/[`$*?[{\\~]/.test(p) && isJobTmp(p, ctx);
 };
 type Plain = ReturnType<typeof peel>;
 // dir: where the command runs; undefined for one inside a `$( … )`, which then takes no git
@@ -148,7 +142,8 @@ function isPlainCommand(c: Plain, dir: string | undefined, ctx: Context) {
             (isTmpPath(to, where, ctx) &&
                 !resolve(to, where, ctx)
                     .split('/')
-                    .some((s) => /^\.git(?!ignore$)/.test(s))),
+                    .some((s) => /^\.git(?!ignore$)/.test(s)) &&
+                !/^\.(?!gitignore$)/.test(basename(to))),
     );
     if (c.wrappers.length > 0 || !isEnvOk || !isRedirectOk) return false;
     if (SHELLS.has(c.name))
@@ -206,8 +201,7 @@ function isPlainGit(c: Plain, where: string, ctx: Context) {
     return true;
 }
 function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
-    // a backtick or a process substitution runs a command the parse does not list
-    if (/`|[<>]\(/.test(script)) return false;
+    if (HIDDEN.test(script)) return false;
     const parsed = parse(script);
     const isSubstPlain = (s: Parsed['segments'][number]): boolean =>
         s.subst.every(
@@ -225,17 +219,23 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
         )
     );
 }
-function isThrowawayLift(
-    c: Command,
-    r: Refusal,
-    ctx: Context,
-    isPlain: boolean,
-) {
-    if (!isPlain) return false;
+// a test door (FRM-470): `H=$(mktemp -d) && HOME=$H node <hook>`. the HOME is an empty dir this command made, so the hook never
+// sees the real config; git stays out, since a HOME with no gitconfig drops the signing and identity the commit rules rest on
+function isFreshHome(c: Command) {
+    const homes = c.assigns.filter((a) => a.startsWith('HOME='));
+    return (
+        c.name !== 'git' &&
+        homes.length > 0 &&
+        homes.every((a) => {
+            const name = a.slice(5).match(/^"?\$\{?([A-Za-z_]\w*)\}?"?$/)?.[1];
+            return name !== undefined && c.fresh.includes(name);
+        })
+    );
+}
+function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
     if (r.rule === 'home') {
-        // an export covers the commands after it, and a git command must also act inside the tmp
-        if (c.name === 'export' || (c.name === 'git' && !isThrowaway(c, ctx)))
-            return false;
+        // a git command must also act inside the tmp
+        if (c.name === 'git' && !isThrowaway(c, ctx)) return false;
         return c.assigns
             .filter((a) => a.startsWith('HOME='))
             .every((a) => isJobTmp(resolve(a.slice(5), '/', ctx), ctx));
@@ -246,7 +246,6 @@ function isThrowawayLift(
         return (
             c.name === 'git' &&
             r.targets.every((t) => IDENTITY.test(t)) &&
-            !writesOutsideRepo(c) &&
             isThrowaway(c, ctx)
         );
     return false;
@@ -368,7 +367,13 @@ export function refusals(
             c,
             next: list[i + 1],
         };
-        while (found && isThrowawayLift(rest.c, found, ctx, isPlain)) {
+        while (
+            found &&
+            ((isPlain && isThrowawayLift(rest.c, found, ctx)) ||
+                (found.rule === 'home' &&
+                    !HIDDEN.test(command) &&
+                    isFreshHome(rest.c)))
+        ) {
             const stripped = without(rest.c, found, rest.next);
             const isSame =
                 stripped.c.args.length === rest.c.args.length &&

@@ -22,6 +22,7 @@ import xterm from '@xterm/headless';
 import pty from 'node-pty';
 
 import { type LiveVerb, parseLive } from './live-args.ts';
+import { plantedCopy } from './live-plant.ts';
 import { reloadVerdict, sourceHash } from './live-verdict.ts';
 import { liveDirs, manifestName, swapDir } from './probe.ts';
 
@@ -35,11 +36,11 @@ const ACT_MS = 60_000;
 const args = parseLive(process.argv.slice(2));
 if (args.kind === 'usage') {
     console.error(
-        'usage: pnpm mods:live <mod dir>, or … hover|click <label>, … type|fill <text>, … status',
+        'usage: pnpm mods:live <mod dir>, or … hover|click <label>, … type|fill <text>, … status, or --plant <file> <anchor> <replacement>',
     );
     process.exit(2);
 }
-const modArg = args.mod;
+const modArg = args.kind === 'plant' ? planted(args) : args.mod;
 const mod = resolve(modArg);
 const manifest = join(mod, '.claude-plugin/plugin.json');
 if (!existsSync(manifest)) {
@@ -68,6 +69,20 @@ const isServing = () => {
 if (args.kind === 'act') await act(args.verb, args.text);
 else if (args.kind === 'status') status();
 else await serve();
+
+// the scratch copy a --plant serves; a refused anchor ends the run before any session starts
+function planted(a: { file: string; anchor: string; replacement: string }) {
+    try {
+        const p = plantedCopy(a.file, a.anchor, a.replacement);
+        console.log(
+            `mods:live: planted a change in ${p.file}; the tree is untouched`,
+        );
+        return p.mod;
+    } catch (e) {
+        console.error(`mods:live: ${(e as Error).message}`);
+        process.exit(2);
+    }
+}
 
 function status() {
     if (!isServing()) {
