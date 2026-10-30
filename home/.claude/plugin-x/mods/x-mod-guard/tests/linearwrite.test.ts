@@ -71,6 +71,14 @@ for (const [shape, typed] of [
         'the raw cli creating with a description',
         'linear issue create --title t --description x',
     ],
+    [
+        'the raw cli behind x as',
+        'x as codie -- linear issue update FRM-1 --description x',
+    ],
+    ['an issueBatchUpdate', UPDATE.replace('issueUpdate', 'issueBatchUpdate')],
+    ['an issueCreate', UPDATE.replace('issueUpdate', 'issueCreate')],
+    ['a query held in a variable', 'Q=$(cat q.graphql); x linear api "$Q"'],
+    ['a query from a substitution', 'x linear api "$(cat q.graphql)"'],
 ] as const)
     test(`a member's body write past the door is refused naming it: ${shape}`, async ($, on) => {
         const w = world(on);
@@ -82,7 +90,8 @@ for (const [shape, typed] of [
 for (const [shape, typed] of [
     ['--as dima', 'x linear read FRM-1 --as dima'],
     ['--as=dima', 'x linear comment FRM-1 --as=dima --body-file f.md'],
-    ['a capital', 'x linear set FRM-1 --state Done --as Dima'],
+    ['an actor held in a variable', 'A=dima; x linear read FRM-1 --as $A'],
+    ['x as a variable', 'A=dima; x as "$A" -- linear issue list'],
     ['x as dima', 'x as dima -- linear issue view FRM-1'],
     ['in a nested shell', `bash -c 'x linear read FRM-1 --as dima'`],
 ] as const)
@@ -99,6 +108,7 @@ for (const typed of [
     'x linear body FRM-1 --to /tmp/b.md',
     'x linear body FRM-1 --set /repo/b.md',
     "x linear api '{ viewer { id } }'",
+    'x linear api \'query($id: String!) { issue(id: $id) { id } }\' --vars \'{"id":"FRM-1"}\'',
     'x linear comment FRM-1 --as codie --body-file f.md',
     'x linear read FRM-1 --comments',
     'x as codie -- linear issue list',
@@ -151,3 +161,12 @@ for (const [rule, typed] of [
             ['warned'],
         ]);
     });
+
+test('a warning keeps the other checks in play: a force-push after it is still refused', async ($, on) => {
+    const w = world(on);
+    const r = await bash(
+        $,
+        'x linear read FRM-1 --as dima; git push --force origin main',
+    );
+    expect([w.ran, r.deny === undefined]).toEqual([[], false]);
+});

@@ -97,7 +97,7 @@
   - decision: the lift is a loosening, so it ships live; the sweep no longer lifts under `/tmp` or `/var/folders` (the 10-08 temp roots keep discard and rewrite only), since the done test names frame, `/tmp` and the job tmp apart
   - proof: tests/throwaway.test.ts
 - ✅ a hook runs under a HOME the same line made (FRM-470)
-  - given exactly `NAME=$(mktemp -d) && HOME=$NAME <runner> <words>` (or `;`; `$NAME`, `"$NAME"` or `${NAME}`), the runner `node`, `claude` or `pnpm mods:<verb>` (not `pnpm exec`, which runs git), the words free of `; & | < > ( ) { } $` backtick, backslash and newline
+  - given exactly `NAME=$(mktemp -d) && HOME=$NAME <runner> <words>` (or `;`; `$NAME`, `"$NAME"` or `${NAME}`), the runner `node`, `claude` or `pnpm mods:<verb>` (not `pnpm exec`, which runs git; no `-C`, `--dir` or `--filter` among a pnpm line's words), the words free of `; & | < > ( ) { } $` backtick, backslash and newline
   - when the guard reads it, then it runs, and the rest of the line is judged without the `HOME=` (a foreground `claude -p` is still refused)
   - given any other HOME override — a literal dir, `~/other`, `export HOME=…`, a variable never set, set again or rebound between (`read`, `printf -v`, `eval`, `let`, `PWD`), set in a subshell, a skipped branch or a pipe, a mktemp with a template or `-p`, `'$H'` single-quoted, git (also through `bash -c`, `env`, `xcrun`), a command chained or piped after, a heredoc or process substitution — then it is refused naming the `HOME` override
   - decision: the door is an allowlist of the whole line, since the local bug review found a deny-list of rebinders leaking (printf -v, eval, a subshell); git stays out, since a HOME with no gitconfig drops the signing and identity the commit rules rest on
@@ -265,8 +265,9 @@
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
 - 🧭 a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
   - given a session the registry names anything but 🦉 clio (a nested shell and an eval count)
-  - when it runs `x linear api` with an `issueUpdate`, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file`, then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
-  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima` or `x as dima`, then the call is flagged `as-dima`
+  - when it runs `x linear api` with an `issueUpdate`, `issueBatchUpdate` or `issueCreate`, or a query the shell expands from a variable or a substitution, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file` (also behind `x as <member> --`), then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
+  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, or an actor held in a variable, then the call is flagged `as-dima`
+  - and a warning keeps every check below it in play: a force-push or an untick'd sign after it is still refused
   - and clio's session, `x linear set <id> --state …`, `x linear body --set`, `x linear api` queries and a quoted mention run; a session the registry does not list runs them, fail open; a thread whose title only mentions clio is still a member
   - decision: warn-only (`WARN_ONLY`) until sixth sense says clean, then refused in its own commit (clio, 2026-10-30, mods/AGENTS.md § the rules)
   - proof: tests/linearwrite.test.ts

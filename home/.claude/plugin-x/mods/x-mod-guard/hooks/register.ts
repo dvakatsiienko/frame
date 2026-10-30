@@ -898,6 +898,8 @@ export const register: Register = (on) => {
         if (typeof typed !== 'string') return next(e);
         // a shape with one right spelling is fixed, then the fixed command is what every rule reads
         const { command, notes } = rewrite(typed);
+        // what a warn-only rule would have refused: the call goes on through the checks below and runs with these read
+        const warns: string[] = [];
         const cwd = await $.session.cwd();
         const home = await $.env.get('HOME');
         const root = await $.session.root().catch(() => cwd);
@@ -943,6 +945,7 @@ export const register: Register = (on) => {
                           `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${run}`,
                       ]
                     : []),
+                ...warns,
                 ...(drift && result.isError ? [drift] : []),
                 ...(facts.milestoneUnread?.length
                     ? [milestoneSkipped(facts.milestoneUnread)]
@@ -1036,11 +1039,22 @@ export const register: Register = (on) => {
                 !coordinators.includes(name.replaceAll(/[\s‍]/g, ''))
             ) {
                 const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
-                return enforce(
-                    write,
-                    `nothing in this command ran — ${said}`,
-                    said,
-                );
+                if (!(await isWarnOnly($, write.rule)))
+                    return enforce(
+                        write,
+                        `nothing in this command ran — ${said}`,
+                        said,
+                    );
+                // a warning keeps the checks below in play: `enforce` would run the whole line here and skip them
+                await record($, {
+                    command,
+                    door: write.door,
+                    kind: 'warned',
+                    rule: write.rule,
+                    target: write.targets[0] ?? '',
+                    why: write.why,
+                });
+                warns.push(wouldRefuse(write.rule, said));
             }
         }
         // a raw plugin update names x plugin bump, every session's door (FRM-389 exit 7); warn-only until its sixth sense
