@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-30T13:46:00Z'
+updated_date: '2026-10-30T13:47:00Z'
 labels:
   - m
 dependencies: []
@@ -46,3 +47,14 @@ W580 (2026-10-30 14:36, dima): but first, hunt rename issues; i think it could b
 W581 (2026-10-30 14:36, dima): so first, hunt rename wisps; then let's see where we are time-wise and whether the mods lane is still ok today.
 W582 (2026-10-30 14:36, dima): go see issues yourself too.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+❓ Q1. how would you suggest verifying the renaming sweep?
+❓ Q2. my idea: spawn a few renaming wisphunter subagents?
+❓ Q3. 4 in parallel in different areas so they won't overlap, or one by one sequentially over the full scope, finding fewer wisps each wave?
+❓ Q4. so matt's code reviews run against exit criteria?
+❓ Q5. if so, maybe this one is more appropriate and could even be used to hunt rename sweep wisps?
+answered on the 14:41 boot board: sequential waves over the full scope, each split in disjoint slices (W560); matt's grades against the house rules and the spec's exit lines, the built-in hunts bugs — matt's fit the sweep better; 3 waves ran, 16 → 3 → 2
+<!-- SECTION:NOTES:END -->
