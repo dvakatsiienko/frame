@@ -36,12 +36,12 @@ type dispatchPlan struct {
 
 type dispatchLookup struct {
 	Issue struct {
-		ID          string             `json:"id"`
-		Identifier  string             `json:"identifier"`
-		Description *string            `json:"description"`
-		State       named              `json:"state"`
-		Delegate    *named             `json:"delegate"`
-		Labels      connection[idName] `json:"labels"`
+		ID          string                      `json:"id"`
+		Identifier  string                      `json:"identifier"`
+		Description *string                     `json:"description"`
+		State       struct{ Name, Type string } `json:"state"`
+		Delegate    *named                      `json:"delegate"`
+		Labels      connection[idName]          `json:"labels"`
 		Team        struct {
 			States connection[idName] `json:"states"`
 		} `json:"team"`
@@ -65,7 +65,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	for _, id := range args {
 		var found dispatchLookup
 		if err := r.Step("read "+id, "its labels, state, delegate and sign", func() (string, error) {
-			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name } delegate { name }
+			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name type } delegate { name }
 				labels(first: 100) { nodes { id name } } team { states { nodes { id name } } } }
 				users(filter: { name: { eqIgnoreCase: "codie" } }) { nodes { id name } } }`, map[string]any{"id": id})
 			if err != nil {
@@ -84,8 +84,13 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		plan.Tickets = append(plan.Tickets, ticket)
 	}
 	// outside every checkout: a .scratch/ in the worktree would keep the tree from its decamp at land
-	if lane != "" {
-		plan.Slices = home(filepath.Join(stateDir(), "lanes", lane, "issues")) + "/ — codie's to-tickets slices"
+	// one dir name with codie's lane plan and x lane landed's retros: the spec's feature, else the lane
+	feature := lane
+	if paths, _ := laneSpecSection(mainCheckout(frameRoot()), args[0]); len(paths) > 0 {
+		feature = filepath.Base(filepath.Dir(paths[0]))
+	}
+	if feature != "" {
+		plan.Slices = home(filepath.Join(stateDir(), "lanes", feature, "issues")) + "/ — codie's to-tickets slices"
 	}
 	plan.Glide = "orbit glide, act link, role codie, session " + cmp.Or(session, "<sid>") + " — clio's call, x never calls orbit"
 	plan.Window = fiveHourWindow()
@@ -109,7 +114,8 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 	switch {
 	case !signed:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries no ## signed block: a chunk is signed before its dispatch", Next: "x linear read " + id}
-	case sign != signMatch:
+	// a 🚀 already written stands: the drift came after the dispatch, and a re-run writes no new mark on it
+	case sign != signMatch && !dispatched:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + "'s sign reads " + sign + ": the body moved since dima signed it, so it is signed again before its dispatch", Next: "x linear list --team " + strings.SplitN(id, "-", 2)[0] + " --label signed"}
 	case labelAt < 0 && !dispatched:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries neither the signed label nor a 🚀 dispatched line: its sign is missing", Next: "x linear read " + id}
@@ -127,9 +133,10 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 	if labelAt >= 0 {
 		ticket.input["removedLabelIds"] = []string{issue.Labels.Nodes[labelAt].ID}
 	}
-	inProgress := issue.State.Name == "In Progress"
-	mark("state", !inProgress, issue.State.Name+" → In Progress")
-	if !inProgress {
+	// only a ticket not yet started moves; In Review or Done is past the dispatch, never moved back
+	unstarted := slices.Contains([]string{"triage", "backlog", "unstarted"}, issue.State.Type)
+	mark("state", unstarted, issue.State.Name+" → In Progress")
+	if unstarted {
 		at := slices.IndexFunc(issue.Team.States.Nodes, func(s idName) bool { return s.Name == "In Progress" })
 		if at < 0 {
 			return dispatchTicket{}, &Fail{Msg: id + "'s team has no In Progress state", Next: "x linear read " + id}

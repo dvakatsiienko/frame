@@ -499,12 +499,24 @@ func lineOrLast(f finding) int {
 
 func ticketLine(id string) string { return `ticket: ` + id + `([^0-9]|$)` }
 
+// ticketCommits lists origin/main's commits for id: a squashed pr's body carries «ticket: <id>», a quick
+// lane's commit names it in its subject's parenthetical, «(FRM-459 step 20)» or «(FRM-459 and FRM-470 review)»
 func ticketCommits(repo, id string) []string {
-	got, _ := gitIn(repo, "log", "origin/main", "-E", "--grep="+ticketLine(id), "--format=%h %s")
-	if !got.ok || got.out == "" {
-		return nil
+	var commits []string
+	if got, _ := gitIn(repo, "log", "origin/main", "-E", "--grep="+ticketLine(id), "--format=%h %s"); got.ok && got.out != "" {
+		commits = strings.Split(got.out, "\n")
 	}
-	return strings.Split(got.out, "\n")
+	inSubject := regexp.MustCompile(`\([^)]*\b` + regexp.QuoteMeta(id) + `([^0-9]|$)`)
+	got, _ := gitIn(repo, "log", "origin/main", "-F", "--grep="+id, "--format=%h %s")
+	if !got.ok || got.out == "" {
+		return commits
+	}
+	for line := range strings.SplitSeq(got.out, "\n") {
+		if _, subject, _ := strings.Cut(line, " "); inSubject.MatchString(subject) && !slices.Contains(commits, line) {
+			commits = append(commits, line)
+		}
+	}
+	return commits
 }
 
 func touchedBy(repo, id, path string) string {

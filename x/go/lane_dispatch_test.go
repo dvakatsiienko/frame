@@ -12,6 +12,9 @@ const dispatchAbove = "lane: side\n\n## 🎯 done test\n\ngiven a ticket, when i
 // a signed ticket as clio leaves it before a dispatch: the sign block, then the run stamp
 var signedTicket = signedBody(dispatchAbove, "", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
 
+// linear's state types, which the dispatch reads instead of a state's name
+var stateTypes = map[string]string{"Todo": "unstarted", "In Progress": "started", "In Review": "started", "Done": "completed"}
+
 type dispatchState struct {
 	body, state, delegate string
 	labels                []string
@@ -33,17 +36,36 @@ func dispatchServer(t *testing.T, s dispatchState) *fakeLinear {
 			delegate = `{"name":"` + s.delegate + `"}`
 		}
 		description, _ := json.Marshal(s.body)
-		return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":` + string(description) + `,"state":{"name":"` + s.state + `"},"delegate":` + delegate +
+		return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":` + string(description) + `,"state":{"name":"` + s.state + `","type":"` + stateTypes[s.state] + `"},"delegate":` + delegate +
 			`,"labels":{"nodes":[` + strings.Join(labels, ",") + `]},"team":{"states":{"nodes":[{"id":"s-todo","name":"Todo"},{"id":"s-ip","name":"In Progress"}]}}},` +
 			`"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 	})
 }
 
+// runDispatch runs against an empty frame root: the slices dir falls back to the lane, never a real ~/frame spec
 func runDispatch(t *testing.T, server *fakeLinear, args ...string) (map[string]any, asRun) {
+	t.Helper()
+	return runDispatchIn(t, server, t.TempDir(), args...)
+}
+
+func runDispatchIn(t *testing.T, server *fakeLinear, frame string, args ...string) (map[string]any, asRun) {
 	t.Helper()
 	home := t.TempDir()
 	write(t, filepath.Join(home, ".claude/shelf/cc-usage-window.json"), `{"rate_limits":{"five_hour":{"resets_at":1793389800,"used_percentage":20}}}`)
-	return runLinear(t, server, []string{"HOME=" + home}, append([]string{"lane", "dispatch"}, args...)...)
+	return runLinear(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, append([]string{"lane", "dispatch"}, args...)...)
+}
+
+func TestDispatchNamesTheSlicesDirAfterTheSpecsFeature(t *testing.T) {
+	t.Parallel()
+	frame := repo(t)
+	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — the chunk\n")
+	server := dispatchServer(t, dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}})
+
+	envelope, _ := runDispatchIn(t, server, frame, "FRM-1", "--session", "s1", "--lane", "cli-9")
+
+	if out := jsonOf(envelope["plan"]); !strings.Contains(out, "lanes/feat-a/issues/") {
+		t.Errorf("the slices dir must follow the spec's feature, as the lane plan and the retros do:\n%s", out)
+	}
 }
 
 var undispatched = dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}}
@@ -104,6 +126,27 @@ func TestDispatchAgainReportsEveryMarkSetAndSendsNothing(t *testing.T) {
 	}
 	if n := len(mutations(server)); n != 0 {
 		t.Errorf("%d mutations on a dispatched ticket", n)
+	}
+}
+
+func TestDispatchReRunLeavesATicketPastInProgress(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, body, state string }{
+		{"a dispatched ticket now In Review", signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — cli-3, codie s1\n", dispatchAbove), "In Review"},
+		// the body moved after the dispatch: the 🚀 stands, the re-run writes nothing
+		{"a dispatched ticket whose body drifted since", signedBody(dispatchAbove+"an edit after the dispatch\n", "🚀 dispatched 2026-10-30 — cli-3, codie s1\n", dispatchAbove), "In Progress"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := dispatchServer(t, dispatchState{body: c.body, state: c.state, delegate: "codie", labels: []string{"agent"}})
+
+			_, got := runDispatch(t, server, "FRM-1", "--apply")
+
+			if n := len(mutations(server)); got.code != 0 || n != 0 {
+				t.Errorf("exit %d with %d mutations, want 0 and nothing moved:\n%s", got.code, n, got.stdout)
+			}
+		})
 	}
 }
 

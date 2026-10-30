@@ -106,6 +106,12 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 			fail("role", "the first line opens with the role skill, /x:crew-codie <id> …", restamp(brief))
 		}
 	})
+	// sixth sense's argv is inline by design; any other role's brief is a file x brief check stamped
+	if brief == "" && role != "" && role != "sixth-sense" {
+		step("stamp", "x brief check passed the brief", func() {
+			fail("stamp", "an inline "+role+" prompt skips x brief check: write the brief to a file, check it, pass it as \"$(cat <file>)\"", "x brief check <brief file>")
+		})
+	}
 	if brief != "" {
 		step("wish", "a wish: line in the first 10 lines", func() {
 			lines := strings.SplitN(text, "\n", 11)

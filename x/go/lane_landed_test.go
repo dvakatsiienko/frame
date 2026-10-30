@@ -13,11 +13,16 @@ import (
 type landedWorld struct {
 	repo, state string
 	server      *fakeLinear
+	comments    *string // the ticket's comments as linear's json nodes
 }
+
+// the head of a done report, as crew-codie's how-you-work.md shapes it
+const lookCardComment = `[{"body":"- **what**: the verb\n- **proven**: go test ok\n- **not checked**: dima's eyes"}]`
 
 func newLandedWorld(t *testing.T) landedWorld {
 	t.Helper()
-	w := landedWorld{repo: repo(t), state: t.TempDir()}
+	w := landedWorld{repo: repo(t), state: t.TempDir(), comments: new(string)}
+	*w.comments = "[]"
 	write(t, filepath.Join(w.repo, "x.txt"), "the change\n")
 	gitT(t, w.repo, "add", "x.txt")
 	gitT(t, w.repo, "commit", "-q", "-m", "the change", "-m", "- ticket: FRM-1")
@@ -25,7 +30,7 @@ func newLandedWorld(t *testing.T) landedWorld {
 	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — the chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
 	body, _ := json.Marshal("## wish\n\n* W1 (2026-10-30, dima): a thing\n* W2 (2026-10-30, dima): another\n\n## signed\n")
 	w.server = newFakeLinear(t, func(gqlCall) string {
-		return `{"data":{"issue":{"id":"uuid-1","description":` + string(body) + `,"updatedAt":"2026-10-30T00:00:00.000Z"}}}`
+		return `{"data":{"issue":{"id":"uuid-1","description":` + string(body) + `,"updatedAt":"2026-10-30T00:00:00.000Z","comments":{"nodes":` + *w.comments + `}}}}`
 	})
 	return w
 }
@@ -35,7 +40,9 @@ func (w landedWorld) done(t *testing.T) {
 	t.Helper()
 	write(t, filepath.Join(w.repo, "docs/test-drive/review-rounds.md"), "- FRM-1 · codie · 2 rounds\n")
 	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-codie-retro.md"), "retro\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-sixth-sense-retro.md"), "retro\n")
+	// a two-ticket retro, as a sixth sense on a joined lane names it
+	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-FRM-2-sixth-sense-retro.md"), "retro\n")
+	*w.comments = lookCardComment
 }
 
 func (w landedWorld) landed(t *testing.T, args ...string) (map[string]any, asRun) {
@@ -57,7 +64,7 @@ func TestLandedRedsEveryGapAndWritesNothing(t *testing.T) {
 	envelope, got := w.landed(t)
 
 	out := linesOf(envelope)
-	for _, want := range []string{"🔴 spec", "🔴 review-rounds", "🔴 retros", "✅ merged", "✅ wish"} {
+	for _, want := range []string{"🔴 spec", "🔴 review-rounds", "🔴 retros", "🔴 look", "✅ merged", "✅ wish"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("want %q in:\n%s", want, out)
 		}
@@ -252,6 +259,83 @@ func TestLandedDecampsAVerifyTreeNamedForTheTicket(t *testing.T) {
 
 	if exists(verify) {
 		t.Errorf("the verify-FRM-1 tree was not decamped:\n%s", got.stdout)
+	}
+}
+
+func TestLandedReadsAQuickLaneMergedAndDecampsItsVerifyTree(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	// a quick lane's commit, the shape on main: the id in the subject's parenthetical, no ticket line
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	gitT(t, w.repo, "reset", "-q", "--hard", "HEAD~1")
+	write(t, filepath.Join(w.repo, "q.txt"), "the quick change\n")
+	gitT(t, w.repo, "add", "q.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 x-mod-guard: a rule refuses (FRM-2 and FRM-1 review)", "-m", "- both rules leave WARN_ONLY\n\nAgent: codie · Claude Sonnet 5.5")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	sha := gitT(t, w.repo, "rev-parse", "HEAD")
+	verify := filepath.Join(w.repo, ".claude/worktrees/verify-"+sha[:7])
+	gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, sha)
+
+	envelope, _ := w.landed(t, "--apply")
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
+		t.Errorf("a quick lane's subject-named commit must read merged:\n%s", out)
+	}
+	if exists(verify) {
+		t.Errorf("the quick lane's verify-<sha> tree was not decamped:\n%s", linesOf(envelope))
+	}
+}
+
+func TestLandedRefusesAPrThatIsNotTheTickets(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "remote", "add", "origin", "https://github.com/o/r.git")
+	other := filepath.Join(w.repo, ".claude/worktrees/other")
+	gitT(t, w.repo, "worktree", "add", "-q", other, "-b", "codie/FRM-2-other")
+	server, _ := fakeGithub(t, map[string]string{repoPath + "/pulls/8": `{"merged":true,"body":"- ticket: FRM-2","head":{"ref":"codie/FRM-2-other","sha":"abc"}}`})
+	keys := keysFixture(t, map[string]string{
+		"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder",
+		"keychain:x-token-linear-codie:x":  farFuture + ":tok-codie",
+		"keychain:x-token-linear-clio:x":   farFuture + ":tok-clio",
+	})
+
+	got := runAs(t, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL, "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
+		"lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "8", "--apply")
+
+	if !exists(other) || got.code == 0 || !strings.Contains(got.stdout, "is not FRM-1's pr") {
+		t.Errorf("exit %d, want FRM-2's pr refused and its tree kept:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestLandedKeepsATreeHoldingAnIgnoredFileOnlyAPersonMakes(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".env.local\nnode_modules/\n")
+	env := w.laneTree(t, "env")
+	write(t, filepath.Join(env, ".env.local"), "KEY=a value only dima typed\n")
+	built := w.laneTree(t, "built")
+	write(t, filepath.Join(built, "node_modules/pkg/index.js"), "module.exports = 1\n")
+
+	_, got := w.landed(t, "--apply")
+
+	if !exists(filepath.Join(env, ".env.local")) || !strings.Contains(got.stdout, "ignored files only a person makes: .env.local") {
+		t.Errorf("the tree holding .env.local must stay and say why:\n%s", got.stdout)
+	}
+	if exists(built) {
+		t.Errorf("a tree whose only ignored files are node_modules must decamp:\n%s", got.stdout)
+	}
+}
+
+func TestLandedKeepsATreeALiveSessionLocked(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	tree := w.laneTree(t, "held")
+	gitT(t, w.repo, "worktree", "lock", "--reason", "claude session 5a21e87f", tree)
+
+	_, got := w.landed(t, "--apply")
+
+	if !exists(tree) || !strings.Contains(got.stdout, "a live session holds it") {
+		t.Errorf("a locked tree must stay, named as held:\n%s", got.stdout)
 	}
 }
 

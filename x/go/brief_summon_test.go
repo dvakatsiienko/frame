@@ -135,6 +135,9 @@ func TestBriefSummonRefusesABriefThatSkipsAStep(t *testing.T) {
 		{"a sixth sense argv missing spec:", "sixth sense", func(_ *testing.T, w summonWorld) string {
 			return sixthArgv(w, "")
 		}, nil},
+		{"an inline codie prompt no brief check saw", "stamp", func(_ *testing.T, w summonWorld) string {
+			return "cd " + w.repo + " && claude --bg -n c '/x:crew-codie FRM-1 build it' --remote-control"
+		}, nil},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

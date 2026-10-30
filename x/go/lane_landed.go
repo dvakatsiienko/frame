@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -71,6 +72,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 
 	merged := landedLine{name: "merged"}
 	var headRef, headSha, mergedHead string
+	var commits []string
 	if pr != "" {
 		// --repo here is the checkout's path, so the github slug comes from its origin
 		ghRepo := originSlugIn(repo)
@@ -78,7 +80,8 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 			return nil, usageFail(home(repo)+" has no github origin to read #"+pr+" from", "git -C "+home(repo)+" remote -v")
 		}
 		var read struct {
-			Merged bool `json:"merged"`
+			Merged bool   `json:"merged"`
+			Body   string `json:"body"`
 			Head   struct {
 				Ref string `json:"ref"`
 				Sha string `json:"sha"`
@@ -86,6 +89,10 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		}
 		if _, ferr := ghFetch(asCodie, githubBase()+"/repos/"+ghRepo+"/pulls/"+pr, &read); ferr != nil {
 			return nil, ferr
+		}
+		// another lane's pr would green «merged» and hand its trees to this ticket
+		if !strings.HasPrefix(read.Head.Ref, "codie/"+id+"-") && !regexp.MustCompile(ticketLine(id)).MatchString(read.Body) {
+			return nil, &Fail{Refused: true, Msg: "#" + pr + " is not " + id + "'s pr: its head is " + read.Head.Ref + " and its body holds no «- ticket: " + id + "» line", Next: "x lane landed " + id + " --pr <" + id + "'s pr>"}
 		}
 		headRef, headSha = read.Head.Ref, read.Head.Sha
 		if read.Merged {
@@ -96,7 +103,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 			merged.detail = "#" + pr + " is not merged"
 		}
 	} else {
-		commits := ticketCommits(repo, id)
+		commits = ticketCommits(repo, id)
 		merged.ok, merged.detail, merged.fix = len(commits) > 0, plural(len(commits), "commit")+" for "+id+" on origin/main", "land "+id+"'s commits on main, or pass --pr <n>"
 	}
 	lines = append(lines, merged)
@@ -136,7 +143,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		dir := filepath.Join(stateDir(), "lanes", feature)
 		var missing []string
 		for _, role := range []string{"codie", "sixth-sense"} {
-			if found, _ := filepath.Glob(filepath.Join(dir, "*-"+id+"-"+role+"-retro.md")); len(found) == 0 {
+			if found, _ := filepath.Glob(filepath.Join(dir, "*-"+id+"-*"+role+"-retro.md")); len(found) == 0 {
 				missing = append(missing, role)
 			}
 		}
@@ -150,7 +157,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean = nil
 	var notes []string
-	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead})
+	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits})
 	for _, tree := range found {
 		if tree.reason == "" {
 			plan.clean = append(plan.clean, tree.path)
@@ -172,28 +179,57 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	}
 	lines = append(lines, trees)
 
+	look := landedLine{name: "look", detail: "no comment on " + id + " carries a look card", fix: "post the done report, its look card first: x linear comment " + id + " --body-file <file>"}
 	wish := landedLine{name: "wish", ok: true, detail: "no W-lines in the body"}
-	actor, berr := actorOf(flags)
-	var issue bodyIssue
-	if berr == nil {
-		issue, berr = fetchBody(actor, id)
-	}
+	issue, berr := landedIssue(flags, id)
 	switch {
 	case berr != nil:
-		wish.ok, wish.detail, wish.fix = false, "linear did not read: "+berr.Error(), "x linear read "+id
-	case issue.Description != nil:
-		if n := len(wishItem.FindAllString(*issue.Description, -1)); n > 0 {
+		look.detail, look.fix = "linear did not read: "+berr.Error(), "x linear read "+id
+		wish.ok, wish.detail, wish.fix = false, look.detail, look.fix
+	default:
+		look.ok = slices.ContainsFunc(issue.Comments.Nodes, func(c struct{ Body string }) bool { return lookCard.MatchString(c.Body) })
+		if look.ok {
+			look.detail = "a comment on " + id + " carries the look card"
+		}
+		if n := len(wishItem.FindAllString(issue.Description, -1)); n > 0 {
 			wish.detail = fmt.Sprintf("%s for the close proposal: x linear read %s", plural(n, "W-line"), id)
 		}
 	}
-	lines = append(lines, wish)
+	lines = append(lines, look, wish)
 	return lines, nil
+}
+
+// the look card's two fields every done report carries (crew-codie how-you-work.md § the look card)
+var lookCard = regexp.MustCompile(`(?is)\bproven\b.*\bnot checked\b`)
+
+type landedRead struct {
+	Description string
+	Comments    connection[struct{ Body string }]
+}
+
+func landedIssue(flags Flags, id string) (landedRead, error) {
+	actor, err := actorOf(flags)
+	if err != nil {
+		return landedRead{}, err
+	}
+	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { description comments(first: 100) { nodes { body } } } }`, map[string]any{"id": id})
+	if err != nil {
+		return landedRead{}, err
+	}
+	var read landedRead
+	if raw, found := data["issue"]; !found || json.Unmarshal(raw, &read) != nil {
+		return landedRead{}, &Fail{Msg: "linear sent no issue " + id, Next: "x linear read " + id}
+	}
+	return read, nil
 }
 
 type laneTree struct{ path, reason string }
 
 // what names a lane's trees beyond its codie/<ticket>-* branches: the pr, its head, its head once merged
-type laneRefs struct{ pr, headRef, headSha, mergedHead string }
+type laneRefs struct {
+	pr, headRef, headSha, mergedHead string
+	commits                          []string // a quick lane's commits on origin/main, «<short sha> <subject>»
+}
 
 func mainCheckout(dir string) string {
 	if common, linked, err := worktreeOf(dir); err == nil && linked {
@@ -236,8 +272,9 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 	var trees []laneTree
 	for block := range strings.SplitSeq(listed, "\n\n") {
 		var path, branch, sha string
-		detached := false
+		detached, locked := false, false
 		for line := range strings.SplitSeq(block, "\n") {
+			locked = locked || line == "locked" || strings.HasPrefix(line, "locked ")
 			if v, ok := strings.CutPrefix(line, "worktree "); ok {
 				path = v
 			}
@@ -251,14 +288,27 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		}
 		ours := branch != "" && (strings.HasPrefix(branch, "codie/"+id+"-") || branch == refs.headRef)
 		name := filepath.Base(path)
-		verify := detached && (name == "verify-"+id || (refs.pr != "" && name == "verify-pr-"+refs.pr) || (refs.headSha != "" && sha == refs.headSha))
+		// a quick lane's verify tree is verify-<short sha> at one of the ticket's commits on main
+		atCommit := strings.HasPrefix(name, "verify-") && slices.ContainsFunc(refs.commits, func(c string) bool {
+			short, _, _ := strings.Cut(c, " ")
+			return short != "" && strings.HasPrefix(sha, short)
+		})
+		verify := detached && (name == "verify-"+id || (refs.pr != "" && name == "verify-pr-"+refs.pr) || (refs.headSha != "" && sha == refs.headSha) || atCommit)
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
-		trees = append(trees, laneTree{path, treeDirt(path, selves, mergedHead)})
+		reason := treeDirt(path, selves, mergedHead)
+		if locked {
+			// git worktree lock: a session working in it, decamp refuses it anyway
+			reason = strings.TrimPrefix(reason+", a live session holds it", ", ")
+		}
+		trees = append(trees, laneTree{path, reason})
 	}
 	return trees, nil
 }
+
+// the ignored files a tree's seed, install and build make again: a frame tree holds 30 of them
+var regenerable = regexp.MustCompile(`(^|/)(node_modules|\.next|\.turbo)/$|^x/go/bin/$|/\.claude-plugin/types/|^home/\.claude/plugin-x/mods/[^/]+/tsconfig\.json$`)
 
 func resolved(path string) string {
 	if real, err := filepath.EvalSymlinks(path); err == nil {
@@ -272,19 +322,30 @@ func treeDirt(tree string, selves []string, mergedHead string) string {
 	if slices.Contains(selves, resolved(tree)) {
 		reasons = append(reasons, "x runs from it")
 	}
-	status, _ := gitIn(tree, "status", "--porcelain")
+	// worktree remove deletes ignored files too, so an ignored file only a person made (a .env.local) keeps the tree
+	status, _ := gitIn(tree, "status", "--porcelain", "--ignored=matching")
+	var changed, ignored []string
+	for line := range strings.SplitSeq(status.out, "\n") {
+		// run trims stdout, so the first line may have lost its leading status blank
+		if len(line) <= 2 {
+			continue
+		}
+		file := strings.TrimSpace(line[2:])
+		switch {
+		case !strings.HasPrefix(line, "!!"):
+			changed = append(changed, file)
+		case file != ".scratch/" && !regenerable.MatchString(file):
+			ignored = append(ignored, file)
+		}
+	}
 	switch {
 	case !status.ok:
 		reasons = append(reasons, "git status failed")
-	case status.out != "":
-		var files []string
-		for line := range strings.SplitSeq(status.out, "\n") {
-			// run trims stdout, so the first line may have lost its leading status blank
-			if len(line) > 2 {
-				files = append(files, strings.TrimSpace(line[2:]))
-			}
-		}
-		reasons = append(reasons, "changes in "+strings.Join(files, ", "))
+	case len(changed) > 0:
+		reasons = append(reasons, "changes in "+strings.Join(changed, ", "))
+	}
+	if len(ignored) > 0 {
+		reasons = append(reasons, "ignored files only a person makes: "+strings.Join(ignored, ", "))
 	}
 	if exists(filepath.Join(tree, ".scratch")) {
 		reasons = append(reasons, "holds a .scratch/ dir")

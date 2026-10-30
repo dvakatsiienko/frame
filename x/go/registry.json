@@ -254,8 +254,8 @@
             "purpose": "print a merged lane's after-merge chores, met or red with a fix; --apply archives the spec, decamps clean trees",
             "steps": ["read", "archive", "decamp"],
             "touches": [
-                "github — the pr's merged state and head branch, read",
-                "linear — the ticket's W-lines, read",
+                "github — the pr's merged state, head and body, read",
+                "linear — the ticket's W-lines and comments (the look card), read",
                 "<frame main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/ once every chunk merged",
                 "<frame main checkout>/docs/test-drive/review-rounds.md — read",
                 "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped",
