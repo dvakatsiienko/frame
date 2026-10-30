@@ -62,7 +62,7 @@ func TestPreflightRedsAnExitLineWhoseCommandCannotRun(t *testing.T) {
 func TestPreflightPassesAnExitLineWhoseCommandsResolve(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, exits string }{
-		{"every command resolves", "1. given a tree, when `pnpm retired-names:check` and `rg -n 'a|b' docs/` and `go test ./...` and `script/real.sh` run, then they exit 0\n"},
+		{"every command resolves", "1. given a tree, when `pnpm retired-names:check` and `git grep -n 'a|b' docs/` and `go test ./...` and `script/real.sh` run, then they exit 0\n"},
 		{"a (new) verb", "1. given `x brief summon` (new), when `x brief summon brief.md` runs, then it exits 0\n"},
 		{"value spans only", "1. given a body, when the list reads it, then its sign reads `match`, `## signed` holds `merge: pre-approved` and `spec:`\n"},
 		{"names a brief holds, not commands", "1. given a brief naming `Explore.md`, `/clear`, `scratch/foo` and `docs/nope.md`, when `x lane unlock` runs, then it exits 0\n"},
