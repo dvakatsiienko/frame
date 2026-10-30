@@ -495,6 +495,32 @@
         {
             "args": [
                 {
+                    "description": "the summon command as it would run: cd <home> && claude --bg -n '<name>' … \"$(cat <brief>)\" --remote-control",
+                    "name": "command"
+                }
+            ],
+            "name": "brief summon",
+            "purpose": "check a summon command against the mechanical preflight steps and print its argv; never launches a session",
+            "steps": [
+                "argv",
+                "role",
+                "wish",
+                "stamp",
+                "trials",
+                "trust",
+                "spare",
+                "essentials",
+                "sixth sense"
+            ],
+            "touches": [
+                "~/.local/state/x/briefs — the x brief check stamp, read",
+                "~/.claude.json — the summon home's trust key, read",
+                "script/test-drive-list.ts --spawn-hook — the live trials that fit, run"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "a ticket id, FRM-N or BYT-N; several batch into one request",
                     "isVariadic": true,
                     "name": "id"

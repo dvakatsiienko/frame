@@ -71,6 +71,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **brief** — the markdown codie is summoned with
 - **stamp** — the file a passing `x brief check` leaves, keyed by the brief's content, so a spawn guard can ask «was this brief checked». only a brief has a stamp
 - **preflight** — the read of a ticket before a lane summons anyone: exit lines sixth sense can grade, every x verb and flag they name real, every command they name resolvable here (never run), nothing main already holds, no redesign in an unattended lane
+- **summon check** — `brief summon`'s read of the exact summon command before it runs: the argv order, the role skill line, the `wish:` line, the stamp, the fitting trials, the trust key, the spare age, a bytes app's essentials, sixth sense's arguments; it prints the argv and never launches. the judgment steps (reuse or summon, the model) stay the coordinator's
 - **command span** — a backticked span whose first word is a command head (`x`, `pnpm`, `node`, `go`, `git`, `gh`, `rg`, `jq`) or a script path; preflight resolves it. every other span is a **value** (`match`, `## signed`, `spec:`) and is never resolved
 
 ## handoffs
