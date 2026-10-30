@@ -139,6 +139,7 @@ async function serve() {
         console.error(
             `mods:live: ${name} is served already (pid ${readFileSync(pidFile, 'utf8')})`,
         );
+        if (plantRoot) rmSync(plantRoot, { force: true, recursive: true });
         process.exit(2);
     }
     mkdirSync(dir, { recursive: true });

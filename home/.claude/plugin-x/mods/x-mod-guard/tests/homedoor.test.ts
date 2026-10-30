@@ -80,6 +80,14 @@ const REFUSED = [
         'H=$(mktemp -d) && HOME=$H pnpm --dir ~/frame exec git status',
     ],
     ['pnpm past the mods verbs', 'H=$(mktemp -d) && HOME=$H pnpm test'],
+    [
+        'a pnpm dir flag after the verb',
+        'H=$(mktemp -d) && HOME=$H pnpm mods:x -C /tmp/x',
+    ],
+    [
+        'a pnpm filter after the verb',
+        'H=$(mktemp -d) && HOME=$H pnpm mods:test --filter y',
+    ],
     ['a subpath of the fresh dir', 'H=$(mktemp -d) && HOME=$H/sub node x'],
     ['a second HOME', 'H=$(mktemp -d) && HOME=$H HOME=/etc node x'],
     ['a process substitution', 'H=$(mktemp -d) && HOME=$H node <(echo x)'],

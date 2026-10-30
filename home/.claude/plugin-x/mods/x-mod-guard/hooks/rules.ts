@@ -225,6 +225,13 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
 // drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
 const FRESH_HOME =
     /^([A-Za-z]\w*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
+// pnpm reads -C, --dir, --filter and the like anywhere among its words, so a `pnpm mods:` line carries none of them
+const isFreshHomeLine = (command: string) =>
+    FRESH_HOME.test(command) &&
+    !(
+        command.includes(' pnpm mods:') &&
+        command.split(/\s+/).some((w) => PNPM_REDIRECTS.test(w))
+    );
 function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
     if (r.rule === 'home') {
         // a git command must also act inside the tmp
@@ -363,7 +370,7 @@ export function refusals(
         while (
             found &&
             ((isPlain && isThrowawayLift(rest.c, found, ctx)) ||
-                (found.rule === 'home' && FRESH_HOME.test(command)))
+                (found.rule === 'home' && isFreshHomeLine(command)))
         ) {
             const stripped = without(rest.c, found, rest.next);
             const isSame =
