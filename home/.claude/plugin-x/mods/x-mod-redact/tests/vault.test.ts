@@ -166,11 +166,13 @@ const caught = <E, R>(answer: (e: E) => R, called: boolean) => {
             seen.push(e);
             return answer(e);
         },
-        { called, error: { kind: 'throw' } },
+        { called, error: { budget: 1_000, kind: 'throw' as const } },
     );
     return { next, seen };
 };
 const quiet$ = { ui: { log: () => undefined } } as never;
+const logging$ = (lines: string[]) =>
+    ({ ui: { log: (t: string) => void lines.push(t) } }) as never;
 
 test('a row hook that failed before passing the row on sends it masked one way', () => {
     const { next, seen } = caught((e: unknown) => e, false);
@@ -182,6 +184,15 @@ test('a row hook that failed before passing the row on sends it masked one way',
     expect([seen.length, JSON.stringify(seen).includes(FAKE)]).toEqual([
         1,
         false,
+    ]);
+});
+
+test('a failed row hook logs its failure kind', () => {
+    const lines: string[] = [];
+    const { next } = caught((e: unknown) => e, false);
+    appendCaught(logging$(lines), { message: { content: 'x' } }, next);
+    expect(lines).toEqual([
+        'x-mod-redact: the row hook failed (throw); masked one way',
     ]);
 });
 

@@ -1,8 +1,7 @@
 # workarounds — what dima wanted, what the api gave, what to undo
 
 read on demand when cc's mods api moves; nothing points here from a resident file. each entry: the want, the issue,
-the workaround in place, the undo. checked against the changelog through 2.1.306 (the evergreen read,
-2026-10-21): no entry is fixed yet; 2.1.301's `Input rows` may undo the multi-line half of «orbit's note».
+the workaround in place, the undo. checked against the changelog through 2.1.314 (refresh-cc-mods run #5, 2026-10-30): «orbit's description» is undone; 2.1.301's `Input rows` is terminal-only, so «orbit's note» stands on the desktop until probed; «an argv prompt's enqueue row» is undone (2.1.312 writes it with no text).
 
 ## orbit's note: a wide, roomy text field
 
@@ -47,29 +46,12 @@ the workaround in place, the undo. checked against the changelog through 2.1.306
 - workaround: none; the board redraws only on its poll and on a press
 - undo when fixed: nothing to undo; drop the decision line in `x-mod-stash/FTR.md` that names the blink
 
-## orbit's description under 2,048 chars
-
-- want: the model reads orbit's whole tool description, every op's rule (dima's o50, 2026-10-12)
-- issue: no upstream issue — a 2.1.295 session showed a 2,371-char description cut at 2,048; 2.1.296 raised cc's
-  up-front cap to 4,096, and the fleet still runs both builds
-- workaround: the description is held under 2,048 (x-mod-stash's `ORBIT_ABOUT`, a test pins it)
-- undo when no 2.1.295 session runs: let the ops' rules breathe again, up to 4,096
-
 ## the board in the desktop's empty space
 
 - want: the board uses the free bottom half of the left sidebar and the chat column's side margins (dima, 2026-10-13, three shots)
 - issue: [claude-code#101759](https://github.com/anthropics/claude-code/issues/101759) — a mod draws only in `AbovePrompt`, a `Pane` and the engine's rows (2.1.296); related [#101525](https://github.com/anthropics/claude-code/issues/101525), several panes at once
 - workaround: none drawn; the board stays one `Pane` with folds, and dima refines its layout himself (o155: no split for now)
 - undo when a sidebar or margin site ships: move the asks list there first
-
-## x-mod-redact: an argv prompt's enqueue row
-
-- want: no secret lands raw in any transcript record (x-mod-redact, todo 24)
-- issue: none filed yet — a prompt given on `claude -p`'s command line gets its `queue-operation` `enqueue` row
-  written before any hook runs, so `prompt.submit` and `session.append` both come too late (probed 2026-10-13 18:44,
-  cc 2.1.296, `pnpm mods:probe-x-mod-redact`); a prompt queued mid-turn is masked through `prompt.submit` since todo 24
-- workaround: none possible from a mod; the probe exempts that one row and checks every other record
-- undo when fixed: drop the `enqueue` exemption in `probe-x-mod-redact.ts` and the 📌 line in `x-mod-redact/FTR.md`
 
 ## a sync clock read
 

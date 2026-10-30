@@ -1,6 +1,6 @@
 // pnpm mods:probe-x-mod-redact — proves x-mod-redact live: a headless session gets a planted fake key in its prompt, pipes it
-// through Bash into a file, and no record of its transcript may hold the key raw but the argv prompt's own enqueue row,
-// which the engine writes before any hook (workarounds.md); a prompt queued mid-turn is masked there too (todo 24)
+// through Bash into a file, and no record of its transcript may hold the key raw (cc 2.1.312 writes the argv prompt's
+// enqueue row with no text, so it needs no exemption; a prompt queued mid-turn is masked through prompt.submit, todo 24)
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
@@ -47,19 +47,14 @@ if (!transcript) {
 }
 
 const rows = readFileSync(transcript, 'utf8').split('\n').filter(Boolean);
-const raw = rows.filter(
-    (row) => row.includes(fake) && !row.includes('"operation":"enqueue"'),
-).length;
+const raw = rows.filter((row) => row.includes(fake)).length;
 const masked = rows.filter((row) => placeholder.test(row)).length;
 const checks: [string, boolean][] = [
     [
         'the command got the real value',
         existsSync(out) && readFileSync(out, 'utf8') === fake,
     ],
-    [
-        `no raw value outside the argv prompt's enqueue row (${raw} found)`,
-        raw === 0,
-    ],
+    [`no raw value in any record (${raw} found)`, raw === 0],
     [`rows read the placeholder (${masked} found)`, masked > 0],
 ];
 for (const [check, isOk] of checks) console.log(`${isOk ? '✓' : '✘'} ${check}`);

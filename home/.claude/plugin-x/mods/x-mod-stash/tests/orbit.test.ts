@@ -1830,11 +1830,11 @@ test('on mobile a stale plan is still named', async ($, on) => {
     expect(lastContext(w.contexts)).toMatch(/plan is stale/);
 });
 
-test("orbit's description fits the 2048 chars cc shows the model, every op named", async ($, on) => {
+test("orbit's description fits the 4096 chars cc shows the model, every op named", async ($, on) => {
     world(on);
     await start($);
     const ops = [...described.matchAll(/^op (\w+)/gmu)].map((m) => m[1]);
-    expect([described.length <= 2048, ops]).toEqual([
+    expect([described.length <= 4096, ops]).toEqual([
         true,
         ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);

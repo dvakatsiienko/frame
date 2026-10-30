@@ -197,6 +197,26 @@ test("a Monitor's command is read like a Bash one", async ($, on) => {
     expect(r.deny).toContain('${=PIDS}');
 });
 
+test('a Monitor watch pipe with grep --line-buffered runs, a piped gate in one is refused', async ($, on) => {
+    world(on);
+    const watch = await $.tool.call({
+        command: 'tail -f /repo/app.log | grep --line-buffered ERROR',
+        description: 'watch',
+        timeout_ms: 60_000,
+        tool: 'Monitor',
+    });
+    const gate = await $.tool.call({
+        command: 'pnpm test | grep --line-buffered FAIL',
+        description: 'watch',
+        timeout_ms: 60_000,
+        tool: 'Monitor',
+    });
+    expect([watch.deny, gate.deny?.includes('red gate quiet')]).toEqual([
+        undefined,
+        true,
+    ]);
+});
+
 test('a refusal says nothing in the command ran', async ($, on) => {
     world(on);
     expect(

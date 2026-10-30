@@ -4206,15 +4206,11 @@ export const register: Register = (on) => {
 
     on('session.compact', async ($, e, next) => {
         const r = await next(e);
-        if (!e.agentId && e.trigger !== 'precompute') {
+        // cc sends the whole skill list again after a compact (2.1.304), so none is reloaded here; a compact another hook
+        // skipped changed nothing
+        if (!e.agentId && e.trigger !== 'precompute' && !('skip' in r)) {
             await windOnCompact($).catch(() => undefined);
             await load($);
-            // a compact keeps only some skills: the full list is sent again once it ends
-            $.clock.after(WIND_DELAY_MS, () =>
-                $.command
-                    .run({ args: '', command: 'reload-skills' })
-                    .catch(() => undefined),
-            );
         }
         return r;
     });

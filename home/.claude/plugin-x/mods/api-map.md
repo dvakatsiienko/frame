@@ -1,6 +1,6 @@
 # mods api map — every hook event, one line each
 
-read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.295 / 2.1.296 (refresh-cc-mods run #4, 2026-10-12);
+read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.312 (refresh-cc-mods run #5, 2026-10-30);
 the types file wins on any conflict. 📌 the fleet runs both builds and each rewrites a mod's types on load (stash's
 copy flipped twice in a minute), so the file's first line names the build you are reading. find an event by
 grepping its quoted name (`'tool.call'`) — names survive a bump, line numbers never did. at a bump, diff three
@@ -33,6 +33,7 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 - `prompt.fill` — a text is about to go into the prompt box as the person's draft
 - `prompt.suggest` — a dim Tab-to-take suggestion is about to show: the engine's guess or a plugin's `$.prompt.suggest`
 - `prompt.edit` — the person edits the prompt box: a key or a paste
+- `prompt.change` — the box's text changed without a typed edit: a recalled history entry, a clear, an undo, a plugin's fill (2.1.300)
 - `prompt.autocomplete` — the person types in the prompt box; answer `{ suggestions }`, rows joining the typeahead beneath the engine's own
 - `prompt.mention` — a prompt names a path after `@`, before the engine reads it; answer `{ deny }` or add `context`. no `tool.call` is raised for this read, so a Bash or Read guard never sees it
 - `prompt.section` — once per named system-prompt section; rewrite its text
@@ -55,7 +56,7 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 - `session.receive` — a delivery reaches the session, before it is queued; `e.origin.kind` is `peer`, `peer-send-message`, `coordinator`, `bridge`, `task-notification`, `scheduled-trigger`, `projects-relay`, `slack-ping` or `unclassified`, a teammate's carrying `isVerified`. a session set to refuse inbound messages refuses before this hook fires, so a sent message may never reach it
 - `session.append` — every row the conversation keeps (prompt, response block, tool result, notice), before it is stored
 - `session.send` — a plain-text message is about to leave for another agent or session (SendMessage, `$.session.send`)
-- `session.compact` — the conversation is about to be compacted; resolves `{ messages }`
+- `session.compact` — the conversation is about to be compacted; resolves `{ messages }`, or `{ skip: reason }` to leave it as it is; `e.trigger` is `manual` `auto` `plugin` or `precompute` (a `precompute` installs nothing, its result kept for the next compaction)
 - `session.attach` — a remote client joins the roster of surfaces
 - `session.detach` — a client leaves the roster
 - `session.measure` — after each main-thread turn and on a whole-point rate-limit move: context fill, `rateLimits` (`five_hour`, `seven_day`), cost
@@ -63,7 +64,7 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 
 ## turns
 
-- `turn.start` — a model turn begins, before its first model call
+- `turn.start` — a model turn begins, main's, a subagent's or a teammate's (`e.agentId`, absent on main; 2.1.299), before its first model call
 - `turn.step` — a model request of a turn is about to go out, main's or a subagent's
 - `turn.complete` — a model turn ended; `e.agentId` set for a subagent's; answer `{ text }` to show a line under the answer
 
@@ -104,10 +105,10 @@ every `$` method is also an interceptable event; these are the ones the op list 
 - hooks: 10 s each (`HookBudget.ms`), a `.catch` 1 s (`catchMs`), 5 s linger after an abort (`lingerMs`); every `$` call is free of the budget but `$.clock.sleep`, which spends it
 - `prompt.edit` ~50 ms — the reference's number, measured live at 2.1.296 (45 ms lands, 60 ms is dropped silently); `HookBudget` names no such budget and the harness does not enforce it
 - all `session.end` hooks together 1.5 s; a `drop` or `deny` reason 4,096 chars
-- `Link.href` 2,048 chars; `Svg` 131,072 chars; `Raster` 512×256; `Image` 2 MiB; a UI tree 100,000 chars, 2,000 nested scopes
+- `Link.href` 2,048 chars; `Svg` 131,072 chars (unverified); one tree: the first 100,000 chars drawn, 32 nesting levels, 20,000 elements, 262,144 `Raster` cells, 2 MiB of `Image` bytes; one hooks-module file: 2,000 nested scopes
 - toast, status and log lines 2,000 chars in the terminal, 10,000 on a remote surface
 - `$.fs.read` / `write` 4 MiB, `write` not atomic; `$.store` 4 MiB in all, read-modify-write not atomic
-- `$.http.fetch` 4 MiB, 30 s, 5 redirects; `$.model.complete` 1,024 output tokens by default
+- `$.http.fetch` 4 MiB, 30 s, 5 redirects; `$.model.complete` 1,024 output tokens by default, up to 64,000; `$.process.run` stdout and stderr 4 MiB each (`isStdoutTruncated`); `$.session.messages()` the newest 4,096; `$.ui.toast` 4 s unless `timeoutMs`; a pane opened unasked placed from 144 columns (110 once opened); command, tool, agent-type and pane names 64 chars of letters, digits, `_` and `-`
 - a `context` note (`tool.call`, `prompt.submit`, `prompt.mention`): any length, past 100,000 chars (200,000 together) cut to its head and a path
 - a tool description: no cap in `ToolSpec`; cc's MCP caps by build — 2,048 up front until 2.1.296, 4,096 from it, 16,384 through ToolSearch — and that they bind a mod's tool is likely «?» (a 2,371-char notice at 2,048, x-mod-stash FTR)
 - cross-session messages ~1 M serialized chars; an inbound queue of 50 accepted, 100 held
@@ -120,16 +121,16 @@ the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)
 - agent: `agent.list` `agent.register`
 - audio: `audio.play` `audio.speak`
 - clock: `clock.now` `clock.after` `clock.every` `clock.sleep`
-- command and config: `command.list` `command.register` `config.list` `settings.read`
-- env: `env.get` `env.set`
+- command and config: `command.list` `command.register` `config.list` `settings.read` (each read raises it once with `e.layers`; a hook may rewrite the merged answer, 2.1.304)
+- env: `env.get` `env.set` (resolves `{}`, or `{ deny }` when the write is not made, 2.1.301; `DISABLE_COMPACT` through it only turns compaction off, 2.1.311)
 - fs: `fs.read` `fs.write` `fs.stat` `fs.exists` `fs.list` `fs.ancestors`
 - net and processes: `http.fetch` `mcp.call` `mcp.connect` `process.run` `process.spawn`
 - model: `model.complete` `model.classify` (weigh it beside jev) `model.fork`
-- prompt and turn: `prompt.read` `turn.abort`
-- session: `session.id` `session.cwd` `session.root` `session.repo` `session.model` `session.messages` (this session's own, or one of its agents') `session.turns` `session.usage` `session.surface` `session.surfaces` `session.version` `session.authorize`
+- prompt and turn: `prompt.read` `prompt.paint` (from 2.1.311) `turn.abort`
+- session: `session.id` `session.cwd` `session.root` `session.repo` `session.model` `session.messages` (this session's own, or one of its agents') `session.turns` `session.usage` `session.surface` `session.surfaces` `session.version` `session.authorize` `session.identity` (managed mods only, 2.1.299)
 - state and store: `state.get` `state.set` `store.get` `store.set` `store.delete` `store.keys`
 - tools: `tool.list` `tool.register`
-- ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.blit` `ui.selection` (`undefined` with fullscreen off, in `-p`, and on a surface that reports none)
+- ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.notify` `ui.view` (`$.ui.view({ agentId })` shows an agent's transcript in the main view, `{}` goes back) `ui.blit` `ui.selection` (`undefined` with fullscreen off, in `-p`, and on a surface that reports none)
 
 ## fleet ideas — candidates, none built (2026-10-05)
 

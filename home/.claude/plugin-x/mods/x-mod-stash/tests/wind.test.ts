@@ -378,25 +378,10 @@ for (const [who, isOwner] of [
         expect(notes(w.lines).join('\n')).toContain(DIMAS_WORDS);
     });
 
-test("a compact that ran, the wind's or a threshold one, is followed by one /reload-skills", async ($, on) => {
+test("a compact that ran, the wind's or a threshold one, submits no /reload-skills: cc sends the skill list again itself", async ($, on) => {
     const w = world(on);
     await start($);
     await compact($, 'auto');
-    await w.clock.advance(2_000);
-    expect(
-        w.commands.filter((c) => c.startsWith('/reload-skills')),
-    ).toHaveLength(1);
-});
-
-test('a precompute or a subagent compact reloads no skills', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await compact($, 'precompute');
-    await $.session.compact({
-        agentId: 'sub-1',
-        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
-        trigger: 'auto',
-    } as never);
     await w.clock.advance(2_000);
     expect(w.commands.filter((c) => c.startsWith('/reload-skills'))).toEqual(
         [],

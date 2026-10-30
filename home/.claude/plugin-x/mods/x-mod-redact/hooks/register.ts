@@ -1,4 +1,4 @@
-import type { EngineInterface, Register } from 'claude-code';
+import type { Caught, EngineInterface, Register } from 'claude-code';
 
 import {
     type Vault,
@@ -54,22 +54,18 @@ async function redactOrMask<T>(
     }
 }
 
-// fail closed: a hook that throws, overruns or misanswers is run again as its `.catch`, which never passes a row raw
-type Caught<E, R> = ((e: E) => R) & {
-    readonly called: boolean;
-    readonly error: { readonly kind: string };
-};
+// fail closed: a hook that throws or overruns is run again as its `.catch`, which never passes a row raw
+type Handler<E, R> = ((e: E) => R) & Caught;
 
 // the row hook failed: the row goes on masked one way (a row it already passed on replays, the engine ignoring the argument)
 export function appendCaught<E extends { message: { content: unknown } }, R>(
     $: EngineInterface,
     e: E,
-    next: Caught<E, R>,
+    next: Handler<E, R>,
 ) {
-    if (next.error.kind !== 're-entry')
-        $.ui.log(
-            `x-mod-redact: the row hook failed (${next.error.kind}); masked one way`,
-        );
+    $.ui.log(
+        `x-mod-redact: the row hook failed (${next.error.kind}); masked one way`,
+    );
     return next({
         ...e,
         message: {
@@ -84,11 +80,10 @@ export function appendCaught<E extends { message: { content: unknown } }, R>(
 export async function toolCaught<
     E,
     R extends { deny?: unknown; result?: unknown; text?: unknown },
->($: EngineInterface, e: E, next: Caught<E, Promise<R>>) {
-    if (next.error.kind !== 're-entry')
-        $.ui.log(
-            `x-mod-redact: the tool hook failed (${next.error.kind}); its result masked one way`,
-        );
+>($: EngineInterface, e: E, next: Handler<E, Promise<R>>) {
+    $.ui.log(
+        `x-mod-redact: the tool hook failed (${next.error.kind}); its result masked one way`,
+    );
     const r = await next(e);
     if (r.deny !== undefined) return r;
     return {
