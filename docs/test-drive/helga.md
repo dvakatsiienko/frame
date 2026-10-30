@@ -150,6 +150,11 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-10-30 · prompt-groom · 1 · 0 · 1458 groomed: W518-W543, Q1-Q3
 - 2026-10-30 · prompt-groom · 1 · 0 · 1512 groomed: W544-W554
 - 2026-10-30 · prompt-groom · 1 · 0 · 1436 groomed: W555-W582, Q1-Q5
+- 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1534 W583 asks=0
+- 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1549 W584-W593 asks=2
+- 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1608 W594-W612 asks=7
+- 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1614 W613 asks=0
+- 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1632 W614 asks=1
 
 ## rounds
 
