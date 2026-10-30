@@ -301,7 +301,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
-		reason := treeDirt(path, selves, mergedHead)
+		reason := treeDirt(path, main, selves, mergedHead)
 		if locked {
 			// git worktree lock: a session working in it, decamp refuses it anyway
 			reason = strings.TrimPrefix(reason+", a live session holds it", ", ")
@@ -311,9 +311,25 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 	return trees, nil
 }
 
-// the ignored files a person makes and no seed or build makes again: env and local files, keys. every other
-// ignored file (node_modules, dist, a seed's offset, .DS_Store; a frame tree holds 30) goes with the tree
-var personMade = regexp.MustCompile(`(^|/)(\.env[^/]*|[^/]*\.local(\.[^/]+)?|[^/]*\.(pem|key|p12))/?$`)
+// the ignored paths an install, a build or a seed makes again, from frame's and bytes' .gitignore build lines;
+// any other ignored path keeps the tree, since worktree remove deletes it (nothing of dima's is destroyed)
+var disposable = regexp.MustCompile(`(^|/)(node_modules|\.next|\.vite|\.turbo|\.vercel|\.generated|dist|build|out|coverage|\.vitest|\.stryker|__pycache__|\.pnpm-store)/` +
+	`|(^|/)\.claude-plugin/types/` +
+	`|(^|/)(\.DS_Store|\.worktree-offset|[^/]*\.tsbuildinfo|(npm|yarn|\.pnpm)-[^/]*\.log[^/]*)$` +
+	`|^(x/go/bin/|x/go/x$|home/\.claude/sline/(bin/|sline$)|schedule/jobs/[^/]+/bin/|home/\.claude/plugin-x/mods/[^/]+/tsconfig\.json$)`)
+
+// a seed's copy (bytes copies its .env files in) is the main checkout's file byte for byte, so the main keeps it
+func seedCopy(tree, main, file string) bool {
+	if strings.HasSuffix(file, "/") {
+		return false
+	}
+	ours, err := os.ReadFile(filepath.Join(tree, file))
+	if err != nil {
+		return false
+	}
+	theirs, err := os.ReadFile(filepath.Join(main, file))
+	return err == nil && string(ours) == string(theirs)
+}
 
 func resolved(path string) string {
 	if real, err := filepath.EvalSymlinks(path); err == nil {
@@ -322,12 +338,12 @@ func resolved(path string) string {
 	return path
 }
 
-func treeDirt(tree string, selves []string, mergedHead string) string {
+func treeDirt(tree, main string, selves []string, mergedHead string) string {
 	var reasons []string
 	if slices.Contains(selves, resolved(tree)) {
 		reasons = append(reasons, "x runs from it")
 	}
-	// worktree remove deletes ignored files too, so an ignored file only a person made (a .env.local) keeps the tree
+	// worktree remove deletes ignored files too: only build, install and seed output goes with the tree
 	status, _ := gitIn(tree, "status", "--porcelain", "--ignored=matching")
 	var changed, ignored []string
 	for line := range strings.SplitSeq(status.out, "\n") {
@@ -339,7 +355,7 @@ func treeDirt(tree string, selves []string, mergedHead string) string {
 		switch {
 		case !strings.HasPrefix(line, "!!"):
 			changed = append(changed, file)
-		case personMade.MatchString(file):
+		case file != ".scratch/" && !disposable.MatchString(file) && !seedCopy(tree, main, file):
 			ignored = append(ignored, file)
 		}
 	}
@@ -350,7 +366,7 @@ func treeDirt(tree string, selves []string, mergedHead string) string {
 		reasons = append(reasons, "changes in "+strings.Join(changed, ", "))
 	}
 	if len(ignored) > 0 {
-		reasons = append(reasons, "ignored files only a person makes: "+strings.Join(ignored, ", "))
+		reasons = append(reasons, "ignored files no build or seed makes: "+strings.Join(ignored, ", "))
 	}
 	if exists(filepath.Join(tree, ".scratch")) {
 		reasons = append(reasons, "holds a .scratch/ dir")

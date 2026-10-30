@@ -309,14 +309,20 @@ func TestLandedRefusesAPrThatIsNotTheTickets(t *testing.T) {
 	}
 }
 
-func TestLandedKeepsATreeHoldingAnIgnoredFileOnlyAPersonMakes(t *testing.T) {
+func TestLandedDecampsOnlyBuildAndSeedOutputAmongIgnoredFiles(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
-	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".env.local\nnode_modules/\ndist/\n.DS_Store\n.worktree-offset\n")
+	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".env.local\nnode_modules/\ndist/\n.DS_Store\n.worktree-offset\nnotes/\n")
+	write(t, filepath.Join(w.repo, ".env.local"), "KEY=the main checkout's\n")
+	// an ignored dir no build makes: its notes are dima's
+	notes := w.laneTree(t, "notes")
+	write(t, filepath.Join(notes, "notes/notes.md"), "a thought\n")
+	// an env file edited in the tree, no longer the seed's copy
 	env := w.laneTree(t, "env")
 	write(t, filepath.Join(env, ".env.local"), "KEY=a value only dima typed\n")
 	// what a seed, an install, a build and finder leave in a bytes tree
 	built := w.laneTree(t, "built")
+	write(t, filepath.Join(built, ".env.local"), "KEY=the main checkout's\n")
 	write(t, filepath.Join(built, "node_modules/pkg/index.js"), "module.exports = 1\n")
 	write(t, filepath.Join(built, "dist/app.js"), "built\n")
 	write(t, filepath.Join(built, ".DS_Store"), "finder\n")
@@ -324,11 +330,13 @@ func TestLandedKeepsATreeHoldingAnIgnoredFileOnlyAPersonMakes(t *testing.T) {
 
 	_, got := w.landed(t, "--apply")
 
-	if !exists(filepath.Join(env, ".env.local")) || !strings.Contains(got.stdout, "ignored files only a person makes: .env.local") {
-		t.Errorf("the tree holding .env.local must stay and say why:\n%s", got.stdout)
+	for tree, file := range map[string]string{notes: "notes/", env: ".env.local"} {
+		if !exists(tree) || !strings.Contains(got.stdout, "ignored files no build or seed makes: "+file) {
+			t.Errorf("the tree holding %s must stay and name it:\n%s", file, got.stdout)
+		}
 	}
 	if exists(built) {
-		t.Errorf("a tree whose only ignored files are node_modules must decamp:\n%s", got.stdout)
+		t.Errorf("a tree holding only build output and a seed's copy must decamp:\n%s", got.stdout)
 	}
 }
 
