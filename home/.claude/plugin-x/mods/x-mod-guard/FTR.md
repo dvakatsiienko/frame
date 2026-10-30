@@ -82,10 +82,18 @@
   - decision: git aborts the whole add on one unmatched pathspec, and a commit after it lands partial — the old path after a `git mv` was the case (fleet-hazards, the bash tool)
   - 📌 a tracked file already deleted is refused too; `git rm <path>` stages it. a `git add` inside `bash -c` or `eval` is not looked up
 - ✅ a scratch clone runs its local git
-  - given a git discard, a local rewrite (`branch -D`, `worktree remove|prune`) or a sweep (`add -A`, `add .`, a bare `commit`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp` (spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`) or an os temp root (`/tmp`, `/private/tmp`, `/var/folders`, where `mktemp -d` lands), through `cd` or `-C`
+  - given a git discard or a local rewrite (`branch -D`, `worktree remove|prune`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp` (spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`) or an os temp root (`/tmp`, `/private/tmp`, `/var/folders`, where `mktemp -d` lands), through `cd` or `-C`
   - decision: the temp roots joined after sixth sense lost ~8 calls to fixture repos under `mktemp -d` (FRM-346's retro, dima, 2026-10-08)
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
+- ✅ a throwaway repo under the job tmp runs its git hygiene (FRM-467)
+  - given a git command whose own dir resolves under `$CLAUDE_JOB_DIR/tmp` — through `cd`, `git -C`, or a variable set earlier in the command to a path or to `$(mktemp -d <template under the job tmp>)`
+  - when it is a sweep (`add -A`, `add .`, a bare `commit`), a `-c user.name|email` or `git config user.*`, a gate piped to `tail`, or a command carrying a `HOME=` that itself points under the job tmp
+  - then it runs, and the rest of the command is judged without the lifted part, so a force-push or `--no-verify` beside a `-c user.name` stays refused
+  - given the same command in frame's checkout, in a repo under `/tmp` outside the job dir, after a `cd` out of the tmp, with `git -C` or `--git-dir` or `GIT_DIR` or `GIT_WORK_TREE` pointing elsewhere, in a tmp worktree of frame or through a symlink in the tmp, or with `CLAUDE_JOB_DIR` unset or empty, then it is refused as before
+  - given a `HOME` under the job tmp beside `git -C <frame> add -A`, then the sweep stays refused: HOME adds to the git-dir check and never stands in for it
+  - decision: the lift is a loosening, so it ships live; the sweep no longer lifts under `/tmp` or `/var/folders` (the 10-08 temp roots keep discard and rewrite only), since the done test names frame, `/tmp` and the job tmp apart
+  - proof: tests/throwaway.test.ts
 - ✅ clio cleans up its fleet's scratch without dima's word
   - given a session rooted under `~/frame/_clio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
   - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one
@@ -297,6 +305,14 @@
   - given linear cannot be read, then it runs, and the model reads «the milestone check was skipped» naming the project
   - decision: refuse: the warn stage ran until FRM-425's sixth sense clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open on an unread linear, like pocket-check's closed-ticket net; tickets already outside a milestone are never read (dima's FRM-417 call)
+
+- ✅ a start_session spawn is read by the live-trial gate (FRM-467)
+  - given a `start_session` call whose prompt leaves a live trial unnamed, as a `claude --bg` spawn would (frame's `script/test-drive-list.ts --spawn-hook`)
+  - then it runs with a would-refuse note and a `warned` event under `spawn-trial`, until its sixth sense says clean; with `rule-mode:spawn-trial` = enforce it is refused with the gate's own reason
+  - given a prompt naming every live trial, or a gate that breaks, then it runs
+  - proof: tests/spawn-trial.test.ts
+- ✅ a brief file naming the pre-rename skill id is checked like a codie brief
+  - given `claude --bg "$(cat <file>)"` where the file names `/x:crew-coder` and holds no `x brief check` stamp, then it is refused with the check door (read-both)
 
 ## every SendMessage
 

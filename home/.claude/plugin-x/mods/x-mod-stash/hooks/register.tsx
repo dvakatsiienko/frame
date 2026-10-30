@@ -1153,9 +1153,6 @@ async function absorbMarks($: EngineInterface) {
             };
         }),
     });
-    // dima's press on a glide card is his tick as much as a press here: x-mod-guard reads the record only tickAsk writes
-    for (const a of o.asks)
-        if (marks[a.id] && !a.isLocked && !a.isResolved) await tickAsk($, a.id);
     // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
     // stays for the next take, and its card never sees the steer missing in between
     for (const [id, m] of Object.entries(marks)) {

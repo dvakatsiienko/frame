@@ -162,3 +162,19 @@ for (const [shape, command, opts] of OUTSIDE)
         expect((await bash($, command)).deny).toBeDefined();
         expect(w.ran).toEqual([]);
     });
+
+// the done test as one fixture: codie works a throwaway repo, and nothing needs a retry
+const WORK = (dir: string) =>
+    `cd ${dir} && git init -q && git add -A && git -c user.name=t -c user.email=t@t commit -m x && git log | tail -3 && pnpm test | tail -3`;
+
+test('a throwaway repo takes init, stage-all, a commit with an identity and a tailed log in one command', async ($, on) => {
+    const w = world(on);
+    expect((await bash($, WORK(TMP))).deny).toBeUndefined();
+    expect(w.ran).toEqual([WORK(TMP)]);
+});
+
+test("the same command in frame's checkout is refused", async ($, on) => {
+    const w = world(on);
+    expect((await bash($, WORK('/repo'))).deny).toBeDefined();
+    expect(w.ran).toEqual([]);
+});

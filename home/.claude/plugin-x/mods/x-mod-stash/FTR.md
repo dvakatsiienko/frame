@@ -568,7 +568,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time its sending window ends; x-mod-guard reads it
   - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press inside the window takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
-  - decision: a tick on a glide card, made in clio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write
+  - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it, then the record holds the new text and its quoted command, and x-mod-guard lets that command through (FRM-467 exit 3)
+  - decision: a tick on a glide card, made in clio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write; pinned by tests/orbit.test.ts::a mark from another board's glide card writes no tick record (FRM-467, kept after a try that wrote one)
   - and a second press inside the 5 s unsends it: no turn ever takes it
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)

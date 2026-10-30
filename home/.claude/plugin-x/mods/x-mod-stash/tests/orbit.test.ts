@@ -1378,11 +1378,14 @@ test("an agent's own orbit ops never write a tick", async ($, on) => {
     expect(writes).toEqual([]);
 });
 
-test("a tick on a followed-up ask from another board's glide card writes the tick record", async ($, on) => {
+test('a 🛎️ press on a followed-up ask writes the tick record with the new text', async ($, on) => {
     const w = world(on);
     const writes = tickLog(on);
     await start($);
+    const ui = await board($);
     await add($, ['push `git push origin --delete old`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await orbit($, { ids: ['o1'], op: 'resolve' });
     await orbit($, {
         id: 'o1',
         op: 'follow',
@@ -1390,8 +1393,7 @@ test("a tick on a followed-up ask from another board's glide card writes the tic
         text: '⚠️ delete `git push origin --delete cloud/x-help-drift`',
     });
     const at = await w.clock.now();
-    w.store.set(`marks:${SID}:o1`, { at, mark: 'accepted' });
-    await w.clock.advance(5_000);
+    await ui.press({ key: 'orbit:accepted:o1' });
     expect(writes.at(-1)).toEqual([
         {
             at: at + 5_000,
@@ -1400,6 +1402,19 @@ test("a tick on a followed-up ask from another board's glide card writes the tic
             text: '⚠️ delete `git push origin --delete cloud/x-help-drift`',
         },
     ]);
+});
+
+test("a mark from another board's glide card writes no tick record: the shared store it travels through is anything's to write", async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    await add($, ['push `git push origin --delete old`', 'yes']);
+    w.store.set(`marks:${SID}:o1`, {
+        at: await w.clock.now(),
+        mark: 'accepted',
+    });
+    await w.clock.advance(5_000);
+    expect(writes.flat()).toEqual([]);
 });
 
 test('a 🛎️ press in orbit ends mobile mode', async ($, on) => {
