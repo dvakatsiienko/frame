@@ -215,6 +215,137 @@ describe('--check on an inbox stamp', () => {
     });
 });
 
+describe('--day', () => {
+    const dayFile = '## 10:00\n\nship the thing\n\n';
+
+    function run(opts: {
+        grooms?: Record<string, string>;
+        linear?: string;
+        now?: string;
+        pocket?: Record<string, string>;
+        prompts?: string;
+    }) {
+        const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
+        try {
+            // linear is stubbed: x prints one ticket body
+            mkdirSync(join(root, 'bin'));
+            writeFileSync(
+                join(root, 'bin', 'x'),
+                `#!/bin/sh\necho '${JSON.stringify({ data: { issues: { nodes: [{ description: opts.linear ?? '', identifier: 'FRM-1' }] } } })}'\n`,
+                { mode: 0o755 },
+            );
+            for (const [dir, files] of [
+                ['grooms', opts.grooms],
+                ['pocket', opts.pocket],
+            ] as const) {
+                mkdirSync(join(root, dir));
+                for (const [name, text] of Object.entries(files ?? {}))
+                    writeFileSync(join(root, dir, name), text);
+            }
+            mkdirSync(join(root, 'prompts'));
+            writeFileSync(
+                join(root, 'prompts', `${day}.md`),
+                opts.prompts ?? dayFile,
+            );
+            return spawnSync(
+                process.execPath,
+                [
+                    join(import.meta.dirname, 'prompt-groom.ts'),
+                    '--day',
+                    day,
+                    '--now',
+                    opts.now ?? '10:30',
+                ],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        HOME: root,
+                        PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                        POCKET_DIR: join(root, 'pocket'),
+                        PROMPT_GROOM_DIR: join(root, 'grooms'),
+                        PROMPT_RAW_DIR: join(root, 'prompts'),
+                    },
+                },
+            );
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    }
+
+    const groomed = (id = 'W1') => ({
+        [`${day}-1000.groomed.md`]: `${id} (${day} 10:00, dima): ship it\n`,
+    });
+
+    test('an old ungroomed prompt reds with the fix', () => {
+        const out = run({});
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('10:00 — no groom: ship the thing');
+        expect(out.stdout).toContain('prompt-groom.ts 10:00');
+    });
+
+    test('a groomed prompt passes', () => {
+        expect(
+            run({ grooms: groomed(), pocket: { 'a.md': 'W1 home' } }).status,
+        ).toBe(0);
+    });
+
+    test('a no-wish line passes the prompt', () => {
+        expect(
+            run({
+                grooms: { [`${day}.no-wish.md`]: '10:00 — just a thanks\n' },
+            }).status,
+        ).toBe(0);
+    });
+
+    test('a prompt under 10 minutes old passes', () => {
+        expect(run({ now: '10:10' }).status).toBe(0);
+    });
+
+    test('a prompt of a slash command alone passes', () => {
+        expect(
+            run({ prompts: '## 10:00\n\n/x:mobile-mode 10min\n\n' }).status,
+        ).toBe(0);
+    });
+
+    test('a groomed W-id with no home reds', () => {
+        const out = run({ grooms: groomed('W7'), pocket: { 'a.md': 'W8' } });
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain(`W7 (${day}-1000.groomed.md) — no home`);
+    });
+
+    test('a groomed W-id in a recent linear body passes', () => {
+        expect(
+            run({ grooms: groomed('W7'), linear: 'folded W7 here' }).status,
+        ).toBe(0);
+    });
+
+    test('a prompt of a harness event alone passes', () => {
+        expect(
+            run({
+                prompts:
+                    '## 10:00\n\n<side-sessions-event>no session works\nnow</side-sessions-event>\n\n',
+            }).status,
+        ).toBe(0);
+    });
+
+    test('a harness event beside dima’s own text still reds', () => {
+        expect(
+            run({
+                prompts:
+                    '## 10:00\n\n<task-notification>done</task-notification>\nship the thing\n\n',
+            }).status,
+        ).toBe(1);
+    });
+
+    test('a groomed W-id in a pocket file passes', () => {
+        expect(
+            run({ grooms: groomed('W7'), pocket: { 'a.md': 'see W7 here' } })
+                .status,
+        ).toBe(0);
+    });
+});
+
 describe('prompt-groom inbox', () => {
     test('the verb refuses an inbox with the copy step', () => {
         const out = spawnSync(

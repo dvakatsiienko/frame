@@ -1,9 +1,11 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
+//        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM]   red each prompt of that day (default today) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), and each W-id of that day's groomed files found in no pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today
 import { execFileSync } from 'node:child_process';
 import {
     existsSync,
+    globSync,
     mkdirSync,
     readFileSync,
     readdirSync,
@@ -19,6 +21,8 @@ const promptDir =
     process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts');
 const groomDir =
     process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms');
+const pocketDir =
+    process.env.POCKET_DIR ?? path.join(import.meta.dirname, '../pocket');
 // the check binds every fold from the day the rules landed (dima's o61–o63) through today
 // FRM-418's rule landed 2026-10-25 14:50; an earlier prompt was never groomed by design
 const RULES_FROM = '2026-10-25 14:50';
@@ -117,6 +121,100 @@ export function rawPromptAt(dayFile: string, hhmm: string) {
     return prompts.length > 0 ? prompts.join('\n\n---\n\n') : undefined;
 }
 
+// a prompt of the day file older than 10 minutes at `now` with no groom and no no-wish line; a prompt of slash commands or local-command echoes alone carries no wish
+export function ungroomedPrompts(
+    dayText: string,
+    day: string,
+    now: string,
+    noWishText = '',
+    isGroomed: Groomed = groomedOnDisk,
+) {
+    const minutes = (hhmm: string) =>
+        Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3));
+    const noWish = new Set(
+        [...noWishText.matchAll(/^(\d{2}:\d{2}) — /gm)].map(([, hhmm]) => hhmm),
+    );
+    const times = new Set(
+        dayText.match(/^## \d{2}:\d{2}$/gm)?.map((head) => head.slice(3)),
+    );
+    return [...times].flatMap((hhmm) => {
+        const text = rawPromptAt(dayText, hhmm);
+        if (
+            !text ||
+            minutes(now) - minutes(hhmm) <= 10 ||
+            noWish.has(hhmm) ||
+            isGroomed(day, hhmm, text) ||
+            text
+                .replace(
+                    /<(side-sessions-event|task-notification|system-reminder)>[\s\S]*?<\/\1>/g,
+                    '',
+                )
+                .split('\n')
+                .filter((line) => line.trim() && line.trim() !== '---')
+                .every((line) => /^\s*(?:\/|<local-command)/.test(line))
+        )
+            return [];
+        return [{ hhmm, text }];
+    });
+}
+
+// every ticket updated yesterday or today, a newly born one included (the halt's door; a halt after midnight still sees the day before)
+function linearBodies(): [string, string][] {
+    const day = new Date().toLocaleDateString('sv');
+    return (
+        JSON.parse(
+            execFileSync(
+                'x',
+                [
+                    'linear',
+                    'api',
+                    `{ issues(first: 250, filter: { updatedAt: { gte: "${dayBefore(day)}" } }) { nodes { identifier description } } }`,
+                ],
+                { encoding: 'utf8' },
+            ),
+        ).data.issues.nodes as {
+            identifier: string;
+            description: string | null;
+        }[]
+    ).map((n) => [n.identifier, n.description ?? '']);
+}
+
+// W-ids of the day's groomed files that no pocket task file, no scratch spec and no recent linear body carries: [id, groom file]
+export function homelessWishes(
+    day: string,
+    scratchDir: string,
+    linear: [string, string][],
+) {
+    const homes = [
+        ...readdirSync(pocketDir, { recursive: true })
+            .filter((name) => String(name).endsWith('.md'))
+            .map((name) => path.join(pocketDir, String(name))),
+        ...globSync('**/spec.md', { cwd: scratchDir }).map((name) =>
+            path.join(scratchDir, name),
+        ),
+    ]
+        .map((file) => readFileSync(file, 'utf8'))
+        .concat(linear.map(([, body]) => body))
+        .join('\n');
+    const homed = new Set(homes.match(/\bW\d+\b/g));
+    return readdirSync(groomDir)
+        .filter(
+            (name) =>
+                name.startsWith(`${day}-`) && name.endsWith('.groomed.md'),
+        )
+        .flatMap((name) =>
+            [
+                ...new Set(
+                    readFileSync(path.join(groomDir, name), 'utf8').match(
+                        /\bW\d+\b/g,
+                    ),
+                ),
+            ]
+                .filter((id) => !homed.has(id))
+                .map((id) => [id, name] as const),
+        );
+}
+
 const W_LINE = /^\s*(?:[*-]\s+)?W\d+\b.*$/gm;
 
 // a W-line added since HEAD must carry its prompt's stamp, or it slips past the groom check
@@ -198,27 +296,50 @@ function startHelga() {
 
 if (import.meta.main) {
     const args = process.argv.slice(2);
-    if (args[0] === '--check' || args[0] === '--linear') {
+    if (args[0] === '--day') {
+        const today = new Date();
+        const day = /^\d{4}-\d{2}-\d{2}$/.test(args[1] ?? '')
+            ? (args[1] ?? '')
+            : today.toLocaleDateString('sv');
+        const nowAt = args.indexOf('--now');
+        const now =
+            nowAt >= 0
+                ? (args[nowAt + 1] ?? '')
+                : today.toLocaleTimeString('sv').slice(0, 5);
+        const read = (file: string) =>
+            existsSync(file) ? readFileSync(file, 'utf8') : '';
+        const prompts = ungroomedPrompts(
+            read(path.join(promptDir, `${day}.md`)),
+            day,
+            now,
+            read(path.join(groomDir, `${day}.no-wish.md`)),
+        );
+        const homeless = existsSync(groomDir)
+            ? homelessWishes(
+                  day,
+                  path.join(home, 'frame/.scratch'),
+                  linearBodies(),
+              )
+            : [];
+        for (const { hhmm, text } of prompts)
+            console.log(
+                `🔴 ${hhmm} — no groom: ${text.replace(/\s+/g, ' ').slice(0, 60)} — ${groomStep(`${hhmm} --date ${day}`)}, or add «${hhmm} — <why>» to ${path.join(groomDir, `${day}.no-wish.md`)}`,
+            );
+        for (const [id, file] of homeless)
+            console.log(
+                `🔴 ${id} (${file}) — no home: a groomed W-line in no pocket task file, no spec.md and no recent linear body`,
+            );
+        if (prompts.length + homeless.length === 0)
+            console.log(
+                `🟢 ${day} at ${now}: every prompt older than 10 minutes has a groom or a no-wish line, and every groomed W-id has a home (scanned: ${promptDir}/${day}.md, ${groomDir}, ${pocketDir}, ${home}/frame/.scratch/**/spec.md, linear tickets updated yesterday or today)`,
+            );
+        process.exitCode = prompts.length + homeless.length ? 1 : 0;
+    } else if (args[0] === '--check' || args[0] === '--linear') {
         const day = new Date().toLocaleDateString('sv');
         // --linear: every ticket updated yesterday or today, a newly born one included (the halt's door; a halt after midnight still sees the day before)
         const sources: [string, string][] =
             args[0] === '--linear'
-                ? (
-                      JSON.parse(
-                          execFileSync(
-                              'x',
-                              [
-                                  'linear',
-                                  'api',
-                                  `{ issues(first: 250, filter: { updatedAt: { gte: "${dayBefore(day)}" } }) { nodes { identifier description } } }`,
-                              ],
-                              { encoding: 'utf8' },
-                          ),
-                      ).data.issues.nodes as {
-                          identifier: string;
-                          description: string | null;
-                      }[]
-                  ).map((n) => [n.identifier, n.description ?? ''])
+                ? linearBodies()
                 : args.slice(1).map((f) => [f, readFileSync(f, 'utf8')]);
         let red = 0;
         for (const [name, text] of sources) {
