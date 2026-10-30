@@ -12,9 +12,11 @@ import {
     gitDir,
     gitParts,
     hasFlag,
+    isFlag,
     isJobTmp,
     isThrowaway,
     operands,
+    peel,
     resolve,
 } from './rules/command.ts';
 import { floor } from './rules/floor.ts';
@@ -24,7 +26,7 @@ import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
 import { landings, overwrite } from './rules/overwrite.ts';
-import { parse } from './shell.ts';
+import { type Parsed, parse } from './shell.ts';
 
 const SHELLS = new Set(['sh', 'bash', 'zsh']);
 // the paths every git add in the command names, for the caller to look up on disk; a path an earlier part of the
@@ -75,7 +77,161 @@ function writesOutsideRepo(c: Command) {
         ),
     );
 }
-function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
+// the lift rests on the whole command being plain (FRM-467, sixth sense round 1): a parse of where git acts leaks every
+// form it cannot follow, so a chain lifts only when each command is on these lists and every dir it enters is the job
+// tmp; anything else keeps the refusal
+const PLAIN_NAMES = new Set([
+    'cat',
+    'cd',
+    'echo',
+    'git',
+    'grep',
+    'head',
+    'ls',
+    'mkdir',
+    'mktemp',
+    'pnpm',
+    'tail',
+    'wc',
+]);
+const PLAIN_GIT = new Set([
+    'add',
+    'branch',
+    'checkout',
+    'commit',
+    'config',
+    'diff',
+    'init',
+    'log',
+    'ls-files',
+    'merge',
+    'reset',
+    'restore',
+    'rev-parse',
+    'rm',
+    'show',
+    'stash',
+    'status',
+    'switch',
+    'tag',
+]);
+const PLAIN_PNPM = new Set([
+    'build',
+    'check',
+    'install',
+    'lint',
+    'run',
+    'test',
+    'typecheck',
+]);
+const GIT_REDIRECTS =
+    /^--(?:git-dir|work-tree|separate-git-dir|exec-path|namespace|super-prefix)(?:=|$)/;
+const PNPM_REDIRECTS =
+    /^(?:-[CFrw]|--(?:dir|filter|recursive|workspace-root|prefix))/;
+// an env name that moves git or a shell (GIT_*, XDG_*, BASH_ENV, LD_*) has an underscore; these five do without
+const ENV_MOVERS = new Set(['CDPATH', 'ENV', 'IFS', 'PATH', 'SHELL']);
+const isTmpPath = (path: string, dir: string, ctx: Context) => {
+    const p = resolve(path, dir, ctx);
+    return !/[`$*?[{\\]/.test(p) && isJobTmp(p, ctx);
+};
+type Plain = ReturnType<typeof peel>;
+// dir: where the command runs; undefined for one inside a `$( … )`, which then takes no git
+function isPlainCommand(c: Plain, dir: string | undefined, ctx: Context) {
+    const where = dir === undefined ? '/' : resolve(dir, '/', ctx);
+    const isEnvOk = c.assigns.every((a) => {
+        const name = a.slice(0, a.indexOf('='));
+        return /^[A-Za-z][A-Za-z0-9]*$/.test(name) && !ENV_MOVERS.has(name);
+    });
+    const isRedirectOk = [...c.writes, ...c.appends, ...c.stdouts].every(
+        (to) =>
+            to === '/dev/null' ||
+            (isTmpPath(to, where, ctx) &&
+                !resolve(to, where, ctx)
+                    .split('/')
+                    .some((s) => /^\.git(?!ignore$)/.test(s))),
+    );
+    if (c.wrappers.length > 0 || !isEnvOk || !isRedirectOk) return false;
+    if (SHELLS.has(c.name))
+        return c.args.length === 2 && c.args[0]?.text === '-c';
+    if (!PLAIN_NAMES.has(c.name)) return false;
+    if (c.name === 'cd')
+        return (
+            dir !== undefined &&
+            c.args.length === 1 &&
+            !isFlag(c.args[0]?.text ?? '') &&
+            isTmpPath(dir, '/', ctx)
+        );
+    if (c.name === 'mktemp')
+        return (
+            c.args.length === 2 &&
+            ['-d', '--directory'].includes(c.args[0]?.text ?? '') &&
+            isTmpPath(c.args[1]?.text ?? '', where, ctx)
+        );
+    if (c.name === 'mkdir')
+        return c.args.every(
+            (w) => w.text === '-p' || isTmpPath(w.text, where, ctx),
+        );
+    if (c.name === 'pnpm')
+        return (
+            PLAIN_PNPM.has(c.args[0]?.text ?? '') &&
+            !c.args.some((w) => PNPM_REDIRECTS.test(w.text))
+        );
+    if (c.name === 'git') return dir !== undefined && isPlainGit(c, where, ctx);
+    return true;
+}
+function isPlainGit(c: Plain, where: string, ctx: Context) {
+    const { at, configs, sub, subArgs } = gitParts(c.args);
+    const ops = operands(subArgs);
+    // before the subcommand only `-c <key=value>`, `-C <dir>` and `--no-pager`: `-ckey=value` hides a config from the parse
+    const prefix = c.args.slice(0, c.args.length - subArgs.length - 1);
+    const isPrefixOk = prefix.every(
+        (w, i) =>
+            ['-c', '-C'].includes(prefix[i - 1]?.text ?? '') ||
+            ['-c', '-C', '--no-pager'].includes(w.text),
+    );
+    if (
+        !isPrefixOk ||
+        c.args.some((w) => GIT_REDIRECTS.test(w.text)) ||
+        c.args.filter((w) => w.text === '-C').length > 1 ||
+        (at !== undefined && !isTmpPath(at, where, ctx)) ||
+        !configs.every((k) => IDENTITY.test(k.split('=')[0] ?? '')) ||
+        !PLAIN_GIT.has(sub)
+    )
+        return false;
+    if (sub === 'config')
+        return (
+            !subArgs.some((w) => isFlag(w.text)) && IDENTITY.test(ops[0] ?? '')
+        );
+    if (sub === 'init') return ops.every((o) => isTmpPath(o, where, ctx));
+    return true;
+}
+function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
+    // a backtick or a process substitution runs a command the parse does not list
+    if (/`|[<>]\(/.test(script)) return false;
+    const parsed = parse(script);
+    const isSubstPlain = (s: Parsed['segments'][number]): boolean =>
+        s.subst.every(
+            (x) =>
+                isPlainCommand(peel(x.words), undefined, ctx) &&
+                isSubstPlain(x),
+        );
+    return (
+        parsed.segments.every(isSubstPlain) &&
+        commands(parsed, cwd).every(
+            (c) =>
+                isPlainCommand(c, c.dir, ctx) &&
+                (!SHELLS.has(c.name) ||
+                    isPlainScript(c.args[1]?.text ?? '', c.dir, ctx)),
+        )
+    );
+}
+function isThrowawayLift(
+    c: Command,
+    r: Refusal,
+    ctx: Context,
+    isPlain: boolean,
+) {
+    if (!isPlain) return false;
     if (r.rule === 'home') {
         // an export covers the commands after it, and a git command must also act inside the tmp
         if (c.name === 'export' || (c.name === 'git' && !isThrowaway(c, ctx)))
@@ -173,8 +329,8 @@ function isCleanup(c: Command, r: Refusal, ctx: Context) {
         trees.every((t) => SCRATCH_TREE.test(t) && ctx.cleanTrees?.has(t))
     );
 }
-// the job-tmp dirs a throwaway lift would rest on, for the caller to look up on disk: a symlink or a worktree there
-// reaches out of the tmp; a nested shell's script and an eval count too
+// the job-tmp dirs a throwaway lift would rest on, for the caller to look up on disk: a symlink or a worktree already
+// there reaches out of the tmp; a nested shell's script and an eval count too
 export function tmpDirs(
     command: string,
     cwd: string,
@@ -185,19 +341,12 @@ export function tmpDirs(
         return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
 }
-// a link or a worktree the command makes puts a path of the job tmp somewhere else before its git runs, which the
-// caller's look at the disk cannot see
-export function makesLinks(command: string, cwd: string) {
-    return commandsDeep(command, cwd).some(
-        (c) =>
-            c.name === 'ln' ||
-            (c.name === 'git' && gitParts(c.args).sub === 'worktree'),
-    );
-}
+// isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
 export function refusals(
     command: string,
     cwd: string,
     ctx: Context = {},
+    isPlain = isPlainScript(command, cwd, ctx),
 ): Refusal[] {
     const parsed = parse(command);
     const list = commands(parsed, cwd);
@@ -219,7 +368,7 @@ export function refusals(
             c,
             next: list[i + 1],
         };
-        while (found && isThrowawayLift(rest.c, found, ctx)) {
+        while (found && isThrowawayLift(rest.c, found, ctx, isPlain)) {
             const stripped = without(rest.c, found, rest.next);
             const isSame =
                 stripped.c.args.length === rest.c.args.length &&
@@ -236,10 +385,15 @@ export function refusals(
             ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
             : -1;
         const script = dashC >= 0 ? c.args[dashC + 1] : undefined;
-        if (script) out.push(...refusals(script.text, c.dir, ctx));
+        if (script) out.push(...refusals(script.text, c.dir, ctx, isPlain));
         if (c.name === 'eval')
             out.push(
-                ...refusals(c.args.map((w) => w.text).join(' '), c.dir, ctx),
+                ...refusals(
+                    c.args.map((w) => w.text).join(' '),
+                    c.dir,
+                    ctx,
+                    isPlain,
+                ),
             );
     });
     for (const r of [

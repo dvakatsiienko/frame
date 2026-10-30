@@ -18,7 +18,6 @@ import {
     installDirs,
     isSignAsk,
     isStashKill,
-    makesLinks,
     mergeAutoCall,
     mergeAutoPr,
     mergeAutoRepo,
@@ -782,11 +781,7 @@ async function lookUp(
     const unsafeTmp = new Set<string>();
     if (ctx.jobDir)
         for (const dir of new Set(tmpDirs(command, cwd, ctx)))
-            if (
-                makesLinks(command, cwd) ||
-                (await isTmpEscape($, dir, ctx.jobDir))
-            )
-                unsafeTmp.add(dir);
+            if (await isTmpEscape($, dir, ctx.jobDir)) unsafeTmp.add(dir);
     const { value: helped = [] } = await $.state
         .get(HELPED)
         .catch(() => ({ value: [] }));

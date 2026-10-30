@@ -225,6 +225,113 @@ const OUTSIDE = [
         `git worktree add ${JOB}/tmp/w && cd ${JOB}/tmp/w && git -c user.name=x commit -am y`,
         {},
     ],
+    // FRM-467 round 1: the lift rests on the whole command being plain, so each class of escape stays refused
+    [
+        'a gitdir pointer written in the chain',
+        `cd ${TMP} && printf 'gitdir: /repo/.git' > .git && git add -A`,
+        {},
+    ],
+    [
+        'a gitdir pointer written by echo',
+        `cd ${TMP} && echo 'gitdir: /repo/.git' > ./x/../.git && git add -A`,
+        {},
+    ],
+    [
+        'a separate git dir on init',
+        `cd ${TMP} && git init -q --separate-git-dir /repo/.git && git add -A`,
+        {},
+    ],
+    [
+        'a separate git dir on clone',
+        `cd ${JOB}/tmp && git clone --separate-git-dir=/repo/.git x y && cd y && git add -A`,
+        {},
+    ],
+    [
+        'a symlink copied in',
+        `cp -a /home/.claude/link ${JOB}/tmp/p && cd ${JOB}/tmp/p && git add -A`,
+        {},
+    ],
+    ['a repo moved in', `cd ${TMP} && mv /repo x && cd x && git add -A`, {}],
+    [
+        'a git config that moves the worktree',
+        `cd ${TMP} && git config core.worktree /repo && git add -A`,
+        {},
+    ],
+    [
+        'a config glued to -c',
+        `cd ${TMP} && git -ccore.worktree=/repo add -A`,
+        {},
+    ],
+    [
+        'GIT_INDEX_FILE',
+        `cd ${TMP} && GIT_INDEX_FILE=/repo/.git/index git add -A`,
+        {},
+    ],
+    ['GIT_COMMON_DIR', `cd ${TMP} && GIT_COMMON_DIR=/repo/.git git add -A`, {}],
+    [
+        'typeset -x GIT_DIR',
+        `cd ${TMP} && typeset -x GIT_DIR=/repo/.git; git add -A`,
+        {},
+    ],
+    [
+        'declare -x GIT_DIR',
+        `cd ${TMP} && declare -x GIT_DIR=/repo/.git; git add -A`,
+        {},
+    ],
+    [
+        'an outer export before bash -c',
+        `export GIT_DIR=/repo/.git; bash -c 'cd ${TMP} && git add -A'`,
+        {},
+    ],
+    [
+        'a GIT_DIR prefix on bash -c',
+        `GIT_DIR=/repo/.git bash -c 'cd ${TMP} && git add -A'`,
+        {},
+    ],
+    [
+        'an export before eval',
+        `cd ${TMP} && export GIT_DIR=/repo/.git; eval git add -A`,
+        {},
+    ],
+    ['env -C', `cd ${TMP} && env -C /repo git add -A`, {}],
+    ['sudo -D', `cd ${TMP} && sudo -D /repo git add -A`, {}],
+    ['eval cd', `cd ${TMP} && eval cd /repo && git add -A`, {}],
+    ['zsh chdir', `cd ${TMP} && chdir /repo && git add -A`, {}],
+    ['zsh two-arg cd', `cd ${TMP} && cd ${TMP} /repo && git add -A`, {}],
+    [
+        'a function that cds',
+        `cd ${TMP} && f() { cd /repo; }; f; git add -A`,
+        {},
+    ],
+    ['a subshell that cds', `cd ${TMP} && (cd /repo && git add -A)`, {}],
+    ['a brace group that cds', `cd ${TMP} && { cd /repo; git add -A; }`, {}],
+    ['two -C', `cd ${TMP} && git -C /repo -C . add -A`, {}],
+    [
+        'a variable rebound by eval',
+        `R=${TMP}; eval R=/repo; cd "$R" && git add -A`,
+        {},
+    ],
+    [
+        'a variable rebound by zsh ::=',
+        `R=${TMP}; : \${R::=/repo}; cd "$R" && git add -A`,
+        {},
+    ],
+    ['a source that rebinds', `cd ${TMP} && source /x.sh && git add -A`, {}],
+    [
+        'pnpm -C frame piped to tail',
+        `cd ${TMP} && pnpm -C /repo test | tail -3`,
+        {},
+    ],
+    [
+        'a backtick substitution',
+        `cd ${TMP} && git -C \`echo /repo\` add -A`,
+        {},
+    ],
+    [
+        'a CDPATH that lands the cd in frame',
+        `cd ${TMP} && CDPATH=/ cd repo && git add -A`,
+        {},
+    ],
 ] as const;
 
 for (const [shape, command, opts] of OUTSIDE)
