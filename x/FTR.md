@@ -155,7 +155,7 @@
   - given sixth sense clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
   - when `x lane merge-auto <pr> --apply` runs
   - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
-  - given no run, a skipped or red required check, 0 required checks, an open thread, no verifier clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
+  - given no run, a skipped or red required check, 0 required checks, an open thread, no sixth sense clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
   - given bytes' `review:clean` is the one required check missing and the ci review round ran on the branch, then it approves the head on dima's account, waits for `review:clean` to go green on it, then merges; before that round it waits and names `x lane review`
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
@@ -478,7 +478,7 @@
   - when `x fleet ops` runs
   - then it prints tokens and wall time per ticket (codie + sixth sense, each step once), clio's code edits per session, and the cost of a clio boot (full and mini), each with its median
 - ✅ `x fleet ops` names each size miss
-  - given a ticket linear closed inside the `--days` window, sized XS or S, whose coder turns in that window reached its line (XS 80, S 400)
+  - given a ticket linear closed inside the `--days` window, sized XS or S, whose codie turns in that window reached its line (XS 80, S 400)
   - when `x fleet ops` runs
   - then it prints one line per size miss — ticket, size, turns, the line — most turns first; no size miss, no section; linear unreachable, one line saying the check did not run
   - decision: the check lives in `x fleet ops`, which already reads codie transcripts, not in a duckdb query beside it (FRM-379)
