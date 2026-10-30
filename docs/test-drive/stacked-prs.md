@@ -44,4 +44,8 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 - FRM-423 (pr 0 + 2 layers, #105 → #106 → #107): 28, 68 and 43 min, one merge-auto call; the coder: worth it for dependent parts, ~28 min of stack-only hand steps, late scope adds misfit
 - reading after 2 stacks (cclio, 2026-10-25, inference): no speed gain at our medians; the gain is one concern per layer for the verifier, so a stack fits only one chunk with dependent parts big enough to split (a guess: over ~400 lines); shape-lane would mark it «stack: N layers» at the sign
 
+### round 2 — planned at the sign (2026-10-30)
+
+- dima, 10-30 (o39): left to codie, every lane chose plain — zero stacks in 5 days. so the stack is planned at the sign: FRM-383 → FRM-384 in cli lane 3, `pr mode: stacked`; the verdict, useful or dead weight, lands by 11-05
+
 ## verdict
