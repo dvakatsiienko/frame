@@ -22,6 +22,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 2.6 **the boards**: `node ~/frame/_clio/script/blueprint-drift.ts --since <last siesta, HH:MM local>`; each board it names gets a phases line «redraw <board>», drawn once this batch's steers and tweaks land, never skipped (dima, 2026-10-22: the board is our main reference for our flows); the card names it
 3. **the 5h window**: read it (`habit-ctx-load-balancing`)
 3.2 **ci reds**: the unseen rows of n8n's 🔴 ci watch, the same read as the boot digest's n8n section; a red gets one card line and a fix or an ask
+3.3 **the groom check**: `node ~/frame/_clio/script/prompt-groom.ts --day`; each red prompt is groomed with helga or gets a `HH:MM — <why>` no-wish line, each homeless W-line gets its home
 3.5 **the helper count**: `node ~/frame/_clio/script/helper-count.ts --since <last siesta, HH:MM local>` prints `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
 4. **check before acting**: every high finding from wishkeeper or crow, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
 5. **the card**, one reply when wishkeeper is back:
