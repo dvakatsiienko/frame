@@ -223,14 +223,21 @@ func repoOf(flags Flags) (string, error) {
 		}
 		return repo, nil
 	}
-	// an insteadOf rewrite can carry the github slug either way: the configured url or the rewritten one
-	for _, read := range [][]string{{"config", "--get", "remote.origin.url"}, {"remote", "get-url", "origin"}} {
-		got, _ := gitIn("", read...)
-		if match := remoteSlug.FindStringSubmatch(strings.TrimSpace(got.out)); got.ok && match != nil {
-			return match[1], nil
-		}
+	if slug := originSlugIn(""); slug != "" {
+		return slug, nil
 	}
 	return "", usageFail("no github origin here to read the repo from", "x gh pr <pr number> --repo <owner/name>")
+}
+
+// originSlugIn reads owner/name off dir's origin; an insteadOf rewrite can carry it in the configured url or the rewritten one
+func originSlugIn(dir string) string {
+	for _, read := range [][]string{{"config", "--get", "remote.origin.url"}, {"remote", "get-url", "origin"}} {
+		got, _ := gitIn(dir, read...)
+		if match := remoteSlug.FindStringSubmatch(strings.TrimSpace(got.out)); got.ok && match != nil {
+			return match[1]
+		}
+	}
+	return ""
 }
 
 /* Github */

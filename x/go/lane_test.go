@@ -630,6 +630,24 @@ func TestShimRebuildsABinaryOlderThanItsSource(t *testing.T) {
 	}
 }
 
+// a fresh worktree has no x/go/bin yet: the first build still stamps it, or a dev binary is never rebuilt clean
+func TestShimStampsTheFirstBuildOfAFreshTree(t *testing.T) {
+	t.Parallel()
+	tree := fakeTree(t, "stale")
+	if err := os.RemoveAll(filepath.Join(tree, "x/go/bin")); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(tree, "x/go/main.go"), "package main\n\nfunc main() {}\n")
+
+	c := exec.Command(filepath.Join(tree, "x/bin/x"))
+	c.Dir = tree
+	out, _ := c.CombinedOutput()
+
+	if !exists(filepath.Join(tree, "x/go/bin/.dev")) || strings.Contains(string(out), "No such file") {
+		t.Fatalf("no bin/.dev after the first build:\n%s", out)
+	}
+}
+
 // a peer's git holds the index lock for 2 s, then lets go: the commit waits it out and lands
 func TestCommitWaitsOutABriefIndexLock(t *testing.T) {
 	t.Parallel()

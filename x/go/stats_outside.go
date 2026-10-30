@@ -56,10 +56,12 @@ var twoWord = map[string]bool{"git": true, "claude": true, "gh": true, "pnpm": t
 // an interpreter's head names the script it runs, so two scripts count apart
 var interpreters = map[string]bool{"bash": true, "node": true, "python": true, "python3": true, "sh": true, "zsh": true}
 
-var scriptFile = regexp.MustCompile(`^[\w./~-]+\.(js|mjs|py|sh|ts)$`)
+var scriptFile = regexp.MustCompile(`^[\w./~-]+\.(js|mjs|py|sh|zsh|ts)$`)
 
-// flags that take the next word as their value, so the verb sits after it
-var valueFlags = map[string]bool{"-C": true, "-c": true, "--dir": true, "--filter": true, "-F": true, "-R": true, "--repo": true}
+// flags that take the next word as their value: the verb sits after it, and preflight never reads it as a file
+// (a go subtest name, a node -e body, a pnpm dir)
+var valueFlags = map[string]bool{"-C": true, "-c": true, "--dir": true, "--filter": true, "-F": true, "-R": true, "--repo": true,
+	"-run": true, "-bench": true, "-e": true, "--eval": true, "-p": true, "--print": true}
 
 var assignment = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*=`)
 

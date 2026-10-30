@@ -47,6 +47,8 @@ var impls = map[string]Impl{
 	"lane verify-tree": {Run: verifyTree, Undone: "no worktree was added"},
 	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
 	"lane decamp":      {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp},
+	"lane dispatch":    {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "a ticket before the failed one keeps its marks", Ask: askDispatch},
+	"lane landed":      {Plan: landedPlanOf, Apply: laneLanded, Undone: "a step that ran stands; the list above is read after it", Ask: askLanded},
 	"lane seed":        {Run: seed, Undone: "the tree is as the hook left it"},
 	"lane review":      {Run: laneReview, Undone: "no review was requested"},
 	"lane pr-body":     {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
@@ -62,6 +64,8 @@ var impls = map[string]Impl{
 	"handoff ingest":   {Run: handoffIngest},
 	"handoff write":    {Run: handoffWrite, Undone: "nothing was written"},
 	"handoff delete":   {Run: handoffDelete, Undone: "nothing was deleted"},
+	"handoff request":  {Run: handoffRequest},
+	"brief summon":     {Run: briefSummon},
 	"brief check":      {Run: briefCheck, Undone: "nothing was stamped"},
 	"brief preflight":  {Run: briefPreflight},
 	"as":               {Run: as, Undone: "the command did not run"},
@@ -451,6 +455,14 @@ func (o ordered) MarshalJSON() ([]byte, error) {
 		parts[i] = marshal(field.key) + ":" + marshal(field.value)
 	}
 	return []byte("{" + strings.Join(parts, ",") + "}"), nil
+}
+
+// the frame tree x runs from; a test points it at a fixture tree
+func frameRoot() string {
+	if root := os.Getenv("X_FRAME_ROOT"); root != "" && os.Getenv("X_TEST") != "" {
+		return root
+	}
+	return filepath.Dir(filepath.Dir(sourceDir()))
 }
 
 func sourceDir() string {

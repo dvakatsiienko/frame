@@ -863,6 +863,35 @@ func TestMergeAutoReadsTheSignBlockThatClosesTheBody(t *testing.T) {
 	}
 }
 
+// linear rewrites a bare id into a markdown link and wraps a url after the write: the sign still holds
+func TestMergeAutoHoldsASignWhoseOnlyDriftIsLinearsLinkRewrite(t *testing.T) {
+	t.Parallel()
+	signedAs := signAbove + "see FRM-12 and https://example.com/a\n\n"
+	rewritten := signAbove + "see [FRM-12](https://linear.app/x-com/issue/FRM-12/slug) and <https://example.com/a>\n\n\n"
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signedBody(rewritten, "merge: pre-approved\n", signedAs))
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, %d merges, want a link-rewrite-only body to hold its sign:\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
+// an id relinked anywhere but its own linear issue is an edit, never linear's rewrite
+func TestMergeAutoWaitsWhenAnIDLinkPointsElsewhere(t *testing.T) {
+	t.Parallel()
+	signedAs := signAbove + "see FRM-12\n\n"
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signedBody(signAbove+"see [FRM-12](https://evil.example/x)\n\n", "merge: pre-approved\n", signedAs))
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); len(merges) != 0 || !strings.Contains(got.stdout, "body changed") {
+		t.Fatalf("exit %d, %d merges, want a wait on a relinked id:\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
 func TestMergeAutoTakesTheTicketFromTheBranchName(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "x/go/merge_auto.go")

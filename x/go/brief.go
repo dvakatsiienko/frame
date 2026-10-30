@@ -49,6 +49,7 @@ var (
 	npmScoped  = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
 	// a cc slash command (`/clear`, `/clio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
+	branchShape       = regexp.MustCompile(`^(?:scratch|codie|coder|worktree|claude)/[\w.+-]+$`)
 	jevWord           = regexp.MustCompile(`(?i)\bjev\b`)
 	reuseWord         = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
 	keepWord          = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
@@ -221,9 +222,11 @@ func briefLines(text string) []briefLine {
 }
 
 func expandHome(path string) string {
-	if rest, ok := strings.CutPrefix(path, "~/"); ok {
-		userHome, _ := os.UserHomeDir()
-		return filepath.Join(userHome, rest)
+	for _, prefix := range []string{"~/", "$HOME/", "${HOME}/"} {
+		if rest, ok := strings.CutPrefix(path, prefix); ok {
+			userHome, _ := os.UserHomeDir()
+			return filepath.Join(userHome, rest)
+		}
 	}
 	return path
 }
@@ -246,7 +249,7 @@ func cmdIn(dir, name string, args ...string) *exec.Cmd {
 // missing names the kind of thing a token is and why it was not found; "" when it exists
 func missing(token, repo string, files []string) (kind, why string) {
 	switch {
-	case strings.Contains(token, "<") || strings.HasPrefix(token, "http://") || strings.HasPrefix(token, "https://"):
+	case strings.Contains(token, "<") || strings.Contains(strings.Fields(token)[0], "://"):
 		return "", ""
 	case slashCommandToken.MatchString(token):
 		return "", ""
@@ -259,7 +262,11 @@ func missing(token, repo string, files []string) (kind, why string) {
 	case strings.HasPrefix(token, "pnpm "):
 		return pnpmMissing(token, repo)
 	case isPathLike(token):
-		return pathMissing(token, repo, files)
+		kind, why := pathMissing(token, repo, files)
+		// a bare file name is a path only when some file carries it: `Explore.md` names a card, never a repo file
+		if kind == "" || strings.Contains(token, "/") {
+			return kind, why
+		}
 	}
 	first := strings.Fields(token)[0]
 	if strings.Contains(token, " ") && !strings.HasPrefix(first, "-") {
@@ -276,7 +283,7 @@ func missing(token, repo string, files []string) (kind, why string) {
 // `brief.go:37` and `FTR.md#brief` name a file, so the line or the anchor comes off first
 func isPathLike(token string) bool {
 	bare := lineRef.ReplaceAllString(token, "")
-	if npmScoped.MatchString(bare) {
+	if npmScoped.MatchString(bare) || (branchShape.MatchString(bare) && !fileLike.MatchString(filepath.Base(bare))) {
 		return false
 	}
 	return !strings.Contains(bare, " ") && (strings.Contains(bare, "/") || fileLike.MatchString(bare))
@@ -308,11 +315,15 @@ func pnpmMissing(token, repo string) (string, string) {
 	if match == nil || slices.Contains(pnpmBuiltins, match[2]) {
 		return "", ""
 	}
+	dir := expandHome(match[1])
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(repo, dir)
+	}
 	// pnpm runs a package's bin by name as well as a script
-	if exists(filepath.Join(repo, match[1], "node_modules/.bin", match[2])) {
+	if exists(filepath.Join(dir, "node_modules/.bin", match[2])) {
 		return "", ""
 	}
-	manifest := filepath.Join(repo, match[1], "package.json")
+	manifest := filepath.Join(dir, "package.json")
 	raw, err := os.ReadFile(manifest)
 	if err != nil {
 		return "script", "no package.json at " + home(filepath.Dir(manifest))
@@ -429,7 +440,7 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 
 // a skill's SKILL.md: plugin-x's own, else matt's newest cached version; "" when there is none
 func pluginSkill(name string) string {
-	if raw, err := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(sourceDir())), "home/.claude/plugin-x/skills", name, "SKILL.md")); err == nil {
+	if raw, err := os.ReadFile(filepath.Join(frameRoot(), "home/.claude/plugin-x/skills", name, "SKILL.md")); err == nil {
 		return string(raw)
 	}
 	home, _ := os.UserHomeDir()

@@ -12,7 +12,7 @@
         },
         {
             "example": "x linear read FRM-1 FRM-2 --comments",
-            "gist": "tickets in native graphql: ids, states and labels resolve inside x",
+            "gist": "tickets in native graphql, every name resolved inside x",
             "identity": "every verb acts as one member: clio's session or a terminal-less caller as the clio app, any other agent session as the codie app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
             "name": "linear",
             "rawDoor": "x linear api"
@@ -200,6 +200,67 @@
             "needsApply": true,
             "purpose": "remove a linked worktree, then point the shared lefthook shims back at the main checkout",
             "steps": ["tree", "remove", "hooks"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the signed chunk tickets the summon took, FRM-N or BYT-N",
+                    "isVariadic": true,
+                    "name": "ticket"
+                }
+            ],
+            "flags": {
+                "lane": {
+                    "description": "the lane name the 🚀 line records, e.g. cli-3",
+                    "type": "string",
+                    "value": "name"
+                },
+                "session": {
+                    "description": "the summoned codie's session id the 🚀 line records",
+                    "type": "string",
+                    "value": "sid"
+                }
+            },
+            "name": "lane dispatch",
+            "needsApply": true,
+            "purpose": "write a summoned lane's dispatch marks on its signed tickets in one update each; a re-run reports them set",
+            "steps": ["read", "write"],
+            "touches": [
+                "linear — each ticket's signed label, state, delegate and sign block, written",
+                "~/.claude/shelf/cc-usage-window.json — the 5h window, read"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the lane's ticket, FRM-N or BYT-N",
+                    "name": "ticket"
+                }
+            ],
+            "flags": {
+                "pr": {
+                    "description": "the lane's pr number; without it the merge reads as the ticket's commits on origin/main",
+                    "type": "string",
+                    "value": "n"
+                },
+                "repo": {
+                    "description": "the repo the lane worked in; defaults to the repo of the cwd",
+                    "type": "string",
+                    "value": "path"
+                }
+            },
+            "name": "lane landed",
+            "needsApply": true,
+            "purpose": "print a merged lane's after-merge chores, met or red with a fix; --apply archives the spec, decamps clean trees",
+            "steps": ["read", "archive", "decamp"],
+            "touches": [
+                "github — the pr's merged state, head and body, read",
+                "linear — the ticket's W-lines and comments (the look card), read",
+                "<frame main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/ once every chunk merged",
+                "<frame main checkout>/docs/test-drive/review-rounds.md — read",
+                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped",
+                "~/.local/state/x/lanes/<feature>/ — the retros, read"
+            ]
         },
         {
             "args": [
@@ -432,6 +493,28 @@
         {
             "args": [
                 {
+                    "description": "the peer session the request goes to, its ListAgents name",
+                    "name": "target"
+                }
+            ],
+            "flags": {
+                "target-line": {
+                    "description": "the focus this thread takes over, printed as one TARGET: line",
+                    "type": "string",
+                    "value": "focus"
+                }
+            },
+            "name": "handoff request",
+            "needsApply": false,
+            "purpose": "print the handoff request a peer session gets, CST-SPEC.md inlined whole; sends nothing, the caller sends it",
+            "touches": [
+                "home/.claude/plugin-x/skills/handoff-ingest/SKILL.md — the request template, read",
+                "home/.claude/plugin-x/CST-SPEC.md — inlined byte for byte, read"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "the brief file, markdown",
                     "name": "brief"
                 }
@@ -467,8 +550,36 @@
                 }
             },
             "name": "brief preflight",
-            "purpose": "read a ticket before a lane: numbered exit lines, real x verbs and flags, nothing already on main, no redesign wording",
-            "steps": ["read", "lint", "verbs", "main"]
+            "purpose": "read a ticket before a lane: numbered exit lines whose commands resolve, nothing already on main, no redesign wording",
+            "steps": ["read", "lint", "verbs", "resolve", "main"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the summon command as it would run: cd <home> && claude --bg -n '<name>' … \"$(cat <brief>)\" --remote-control",
+                    "name": "command"
+                }
+            ],
+            "name": "brief summon",
+            "purpose": "check a summon command against the mechanical preflight steps and print its argv; never launches a session",
+            "steps": [
+                "argv",
+                "role",
+                "wish",
+                "stamp",
+                "trials",
+                "trust",
+                "spare",
+                "essentials",
+                "sixth sense"
+            ],
+            "touches": [
+                "~/.local/state/x/briefs — the x brief check stamp, read",
+                "~/.claude.json — the summon home's trust key, read",
+                "script/test-drive-list.ts --spawn-hook — the live trials that fit, run",
+                "ps — the age of each claude bg-spare, read",
+                "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run"
+            ]
         },
         {
             "args": [

@@ -10,7 +10,8 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
   free after, every process). no run skill yet → say so: `/run-skill-generator` is dima's to type. a shift
   plan's `server: skip` drops only the server dima watches.
 - **a brief that hands you a spec** (`.scratch/<feature>/`) → cut it with matt's `to-tickets` first, even
-  when it fits one pr; each spec exit line lands verbatim in exactly one ticket's checklist (FRM-344).
+  when it fits one pr, into `~/.local/state/x/lanes/<feature>/issues/`, never the worktree (a `.scratch/` there keeps
+  it from `x lane landed`'s decamp); each spec exit line lands verbatim in exactly one ticket's checklist (FRM-344).
 - **the lane plan**, for 2+ tickets: write `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside your worktree, the one path the isolation allows both of you), one line per ticket in your proposed
   order (`- [ ] 03 · <ticket title>`; its steps stay in its slice file), ping clio `[ask] lane-plan ready to greenlight`, and start on her 🟢 greenlit order. tick `[x]` at
   each ticket's commit. when dima steers you in this thread and the steer adds or moves work, append it under

@@ -1,6 +1,77 @@
 package main
 
-import "testing"
+import (
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+// each token and whether brief check may call it a missing path; the guard's brief rule is meant to read it next
+var pathTable = []struct {
+	token       string
+	missingPath bool
+}{
+	{"Explore.md", false},
+	{"/clear", false},
+	{"/x:crew-codie", false},
+	{"scratch/foo", false},
+	{"codie/FRM-458-cli-lane-3", false},
+	{"claude/fix-the-thing", false},
+	{"main", false},
+	{"https://example.com/a/b.md", false},
+	{"<path>", false},
+	{"[FRM-12](https://linear.app/x-com/issue/FRM-12/s)", false},
+	{"~/frame/x", false},
+	{"$HOME/frame", false},
+	{"${HOME}/frame/x", false},
+	{"docs/here.md", false},
+	{"docs/nope.md", true},
+	{"~/frame/nope", true},
+	{"scratch/foo.md", true},
+}
+
+// a url beside a command never hides the command: only a span that is a link or a url skips the checks
+func TestBriefCheckStillChecksACommandNextToAURL(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "package.json"), `{"scripts":{}}`)
+	write(t, filepath.Join(dir, "brief.md"), "wish: none\n\n- `x lane opn --url https://a.b`\n- `pnpm no-such --base-url http://localhost:3000`\n")
+
+	got := xIn(t, dir, nil, "brief", "check", "brief.md")
+
+	for _, want := range []string{"verb x lane opn", "script pnpm no-such"} {
+		if got.code == 0 || !strings.Contains(got.stdout, want) {
+			t.Errorf("exit %d, want %q:\n%s", got.code, want, got.stdout)
+		}
+	}
+}
+
+func TestBriefCheckReportsOnlyARealMissingPath(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	home := t.TempDir()
+	write(t, filepath.Join(home, "frame/x/AGENTS.md"), "x\n")
+	write(t, filepath.Join(dir, "docs/here.md"), "here\n")
+	var brief strings.Builder
+	brief.WriteString("wish: none\n\n")
+	for _, c := range pathTable {
+		brief.WriteString("- names `" + c.token + "`\n")
+	}
+	write(t, filepath.Join(dir, "brief.md"), brief.String())
+
+	got := xIn(t, dir, []string{"HOME=" + home}, "brief", "check", "brief.md")
+
+	for _, c := range pathTable {
+		t.Run(c.token, func(t *testing.T) {
+			if reported := strings.Contains(got.stdout, "path "+c.token+" "); reported != c.missingPath {
+				t.Errorf("reported as a missing path %v, want %v", reported, c.missingPath)
+			}
+		})
+	}
+	if got.code == 0 {
+		t.Errorf("exit 0, want the real missing paths to red:\n%s", got.stdout)
+	}
+}
 
 func TestIsPathLike(t *testing.T) {
 	t.Parallel()

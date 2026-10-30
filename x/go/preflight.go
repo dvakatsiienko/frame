@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -114,6 +115,14 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
+	if err := r.Step("resolve", "each exit-line command resolves here, none is run", func() (string, error) {
+		before := len(found)
+		found = append(found, resolveFindings(exitText, repo)...)
+		return plural(len(found)-before, "finding"), nil
+	}); err != nil {
+		return nil, err
+	}
+
 	var shipped []string
 	if err := r.Step("main", "what origin/main already holds", func() (string, error) {
 		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
@@ -205,13 +214,105 @@ func xCommandFindings(body string, registry []Verb) []finding {
 	seen := map[string]bool{}
 	refs, newSpans, newFlags := exitCommands(body)
 	for _, ref := range refs {
-		if newSpans[ref.text] {
+		if declaredNew(ref.text, newSpans) {
 			continue
 		}
 		for _, f := range xSegmentFindings(ref, registry, newFlags) {
 			if key := fmt.Sprint(f.Line, f.Kind, f.What); !seen[key] {
 				seen[key] = true
 				found = append(found, f)
+			}
+		}
+	}
+	return found
+}
+
+// `x lane dispatch FRM-1 --session s1` is the lane's own once `x lane dispatch <ticket> --session <sid>` (new)
+// sits anywhere in the spec: the declared verb path is its words before the first placeholder, option or flag
+func declaredNew(span string, newSpans map[string]bool) bool {
+	words := strings.Fields(span)
+	for declared := range newSpans {
+		path := strings.Fields(declared)
+		if cut := slices.IndexFunc(path, func(w string) bool { return strings.ContainsAny(w[:1], "<[-") }); cut >= 0 {
+			path = path[:cut]
+		}
+		if len(path) >= 2 && len(words) >= len(path) && slices.Equal(words[:len(path)], path) {
+			return true
+		}
+	}
+	return false
+}
+
+// a placeholder or a quoted argument, as one word no file check reads
+const argMark = "\x00arg\x00"
+
+var (
+	// the first words that make a span a command; any other span (`match`, `## signed`, `spec:`) is a value
+	commandHeads = []string{"node", "go", "git", "gh", "rg", "jq"}
+	// a remote-tracking ref (`origin/main`) is a git revision, never a file
+	remoteRef = regexp.MustCompile(`^(?:origin|upstream)/`)
+)
+
+// a word preflight checks on disk: a path with a slash, never a placeholder, a glob, a go package pattern,
+// a git ref (`HEAD:x/go/main.go`), a range (`origin/main..HEAD`) or a variable left after ~ and $HOME expand
+func fileArgument(word string) bool {
+	switch {
+	case strings.Contains(word, argMark), strings.ContainsAny(word, "*"), strings.Contains(word, ".."),
+		strings.Contains(expandHome(word), "$"), strings.Contains(word, ":") && !lineRef.MatchString(word):
+		return false
+	}
+	return strings.Contains(word, "/") && isPathLike(word)
+}
+
+// resolveFindings reds an exit-line command that cannot run here: a pnpm script its package lacks, a head off
+// the PATH, a file argument or script that does not exist. it resolves and never executes: an unattended
+// preflight must not write. `x` spans are the verbs step's
+func resolveFindings(body, repo string) []finding {
+	var found []finding
+	files := repoFiles(repo)
+	refs, newSpans, _ := exitCommands(body)
+	for _, ref := range refs {
+		if declaredNew(ref.text, newSpans) {
+			continue
+		}
+		// a placeholder or a quoted argument becomes one marked word no file check reads; «_» stays a name's own
+		for _, segment := range shellSep.Split(argument.ReplaceAllString(ref.text, argMark), -1) {
+			words := strings.Fields(segment)
+			if len(words) == 0 {
+				continue
+			}
+			head := words[0]
+			switch {
+			case head == "x":
+				continue
+			case head == "pnpm":
+				if _, err := exec.LookPath(head); err != nil {
+					found = append(found, finding{ref.line, "command", head, "not on the PATH"})
+				} else if kind, why := pnpmMissing(strings.Join(words, " "), repo); kind != "" {
+					found = append(found, finding{ref.line, kind, strings.Join(words[:min(2, len(words))], " "), why})
+				}
+				continue
+			case slices.Contains(commandHeads, head):
+				if _, err := exec.LookPath(head); err != nil {
+					found = append(found, finding{ref.line, "command", head, "not on the PATH"})
+					continue
+				}
+			// a lone `docs/nope.md` or `/clear` names a thing; only a script runs
+			case strings.Contains(head, "/") && scriptFile.MatchString(head):
+				if kind, why := pathMissing(head, repo, files); kind != "" {
+					found = append(found, finding{ref.line, kind, head, why})
+				}
+			default:
+				continue
+			}
+			for i, word := range words {
+				if i == 0 || strings.HasPrefix(word, "-") || valueFlags[words[i-1]] || !fileArgument(word) ||
+					(head == "git" && remoteRef.MatchString(word)) {
+					continue
+				}
+				if kind, why := pathMissing(word, repo, files); kind != "" {
+					found = append(found, finding{ref.line, kind, word, why})
+				}
 			}
 		}
 	}
@@ -334,7 +435,7 @@ func xWalk(line int, words []string, registry []Verb, newFlags map[string]bool) 
 func mainVerbs(repo string) []string {
 	got, _ := gitIn(repo, "show", "origin/main:x/go/registry.json")
 	if !got.ok {
-		got, _ = gitIn(filepath.Dir(filepath.Dir(sourceDir())), "show", "origin/main:x/go/registry.json")
+		got, _ = gitIn(frameRoot(), "show", "origin/main:x/go/registry.json")
 	}
 	var registry struct {
 		Verbs []struct {
@@ -398,12 +499,24 @@ func lineOrLast(f finding) int {
 
 func ticketLine(id string) string { return `ticket: ` + id + `([^0-9]|$)` }
 
+// ticketCommits lists origin/main's commits for id: a squashed pr's body carries «ticket: <id>», a quick
+// lane's commit names it in its subject's parenthetical, «(FRM-459 step 20)» or «(FRM-459 and FRM-470 review)»
 func ticketCommits(repo, id string) []string {
-	got, _ := gitIn(repo, "log", "origin/main", "-E", "--grep="+ticketLine(id), "--format=%h %s")
-	if !got.ok || got.out == "" {
-		return nil
+	var commits []string
+	if got, _ := gitIn(repo, "log", "origin/main", "-E", "--grep="+ticketLine(id), "--format=%h %s"); got.ok && got.out != "" {
+		commits = strings.Split(got.out, "\n")
 	}
-	return strings.Split(got.out, "\n")
+	inSubject := regexp.MustCompile(`\([^)]*\b` + regexp.QuoteMeta(id) + `([^0-9]|$)`)
+	got, _ := gitIn(repo, "log", "origin/main", "-F", "--grep="+id, "--format=%h %s")
+	if !got.ok || got.out == "" {
+		return commits
+	}
+	for line := range strings.SplitSeq(got.out, "\n") {
+		if _, subject, _ := strings.Cut(line, " "); inSubject.MatchString(subject) && !slices.Contains(commits, line) {
+			commits = append(commits, line)
+		}
+	}
+	return commits
 }
 
 func touchedBy(repo, id, path string) string {

@@ -57,6 +57,15 @@ func hooksHome(main, tree string) (string, error) {
 	return "the shims point at " + home(main), nil
 }
 
+func removeTree(main, tree string) error {
+	// no --force: git refuses a tree with changes, and that refusal is the answer
+	removed, _ := gitIn(main, "worktree", "remove", tree)
+	if !removed.ok {
+		return &Fail{Msg: "git kept the worktree — its output is above", Next: "commit or stash in " + home(tree) + ", then x lane decamp " + home(tree) + " --apply", Log: nonBlank(removed.log)}
+	}
+	return nil
+}
+
 func decampPlan(r *Run, args []string, _ Flags) (any, error) {
 	r.Open(args[0])
 	var tree, main string
@@ -77,14 +86,7 @@ func askDecamp(plan any) string {
 func decamp(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	tree, main := fields[0].value.(string), fields[1].value.(string)
-	if err := r.Step("remove", "git worktree remove", func() (string, error) {
-		// no --force: git refuses a tree with changes, and that refusal is the answer
-		removed, _ := gitIn(main, "worktree", "remove", tree)
-		if !removed.ok {
-			return "", &Fail{Msg: "git kept the worktree — its output is above", Next: "commit or stash in " + home(tree) + ", then x lane decamp " + home(tree) + " --apply", Log: nonBlank(removed.log)}
-		}
-		return "removed", nil
-	}); err != nil {
+	if err := r.Step("remove", "git worktree remove", func() (string, error) { return "removed", removeTree(main, tree) }); err != nil {
 		return nil, err
 	}
 	if err := r.Step("hooks", "pnpm exec lefthook install in the main checkout", func() (string, error) { return hooksHome(main, tree) }); err != nil {

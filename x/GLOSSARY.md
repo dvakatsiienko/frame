@@ -55,7 +55,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **sixth sense clean** — the pr head sixth sense said clean on, one per pr in `~/.claude/shelf/pr-verified.json`; it carries to a new head whose whole branch change keeps its patch-id (a rebase, a plain merge of main). a «clean» in a comment is never one
 - **risky path** — a changed path that can turn the checks themselves green (workflows, settings, memory files, secrets, deploy), listed in `x/go/risky.json`; `lane merge-auto` merges it and names it on its `risky:` line
 - **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word, unless its chunk's sign pre-approved it; his word reaches merge-auto as `--dima-ok <pr>`, which x-mod-guard lets through only when his last typed prompt names the pr
-- **pre-approved sign** — a chunk ticket's `## signed` block holding `merge: pre-approved` while the body above it still hashes to its last `· body <hash>` line; it lets a self-edit of that chunk merge without dima's word, never past the brake
+- **pre-approved sign** — a chunk ticket's `## signed` block holding `merge: pre-approved` while its **sign state** reads match; it lets a self-edit of that chunk merge without dima's word, never past the brake
+- **sign state** — a signed ticket's body read against the last `· body <hash>` of the `## signed` block that closes it: **match** when the hash fits the raw body or the body as signed (linear's link rewrite of an id to its own issue url folded back, trailing blanks trimmed to one blank line), **drifted** when neither fits, **no hash** with no block or no `· body` line; `linear list --label signed` and merge-auto read the same one
 - **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
 - **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; sixth sense's bench, made by `lane verify-tree`
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
@@ -69,7 +70,11 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 
 - **brief** — the markdown codie is summoned with
 - **stamp** — the file a passing `x brief check` leaves, keyed by the brief's content, so a spawn guard can ask «was this brief checked». only a brief has a stamp
-- **preflight** — the read of a ticket before a lane summons anyone: exit lines sixth sense can grade, every x verb and flag they name real, nothing main already holds, no redesign in an unattended lane
+- **preflight** — the read of a ticket before a lane summons anyone: exit lines sixth sense can grade, every x verb and flag they name real, every command they name resolvable here (never run), nothing main already holds, no redesign in an unattended lane
+- **dispatch marks** — the four writes a summoned lane leaves on each signed chunk, through `lane dispatch`: the `signed` label off, In Progress, the codie delegate, a `🚀 dispatched <date> — <lane>, codie <session>` line closing its sign block; the 🚀 line is what a re-run reads, since the label is gone after the first
+- **after-merge list** — `lane landed`'s chores for a merged lane, each ✅ or 🔴 with its fix: the merge, the spec archived under `.scratch/_archive/<feature>/`, the review-rounds line, both retros, the lane's trees, the W-lines for the close; behind x's apply gate, `--apply` archives the spec
+- **summon check** — `brief summon`'s read of the exact summon command before it runs: the argv order, the role skill line, the `wish:` line, the stamp, the fitting trials, the trust key, the spare age, a bytes app's essentials, sixth sense's arguments; it prints the argv and never launches. the judgment steps (reuse or summon, the model) stay the coordinator's
+- **command span** — a backticked span whose first word is a command head (`x`, `pnpm`, `node`, `go`, `git`, `gh`, `rg`, `jq`) or a script path; preflight resolves it. every other span is a **value** (`match`, `## signed`, `spec:`) and is never resolved
 
 ## handoffs
 
