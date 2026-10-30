@@ -43,37 +43,48 @@ describe('unhandledLines', () => {
         expect(unhandledLines(dropped, template)).toEqual(['a new drop']);
     });
 
-    test('lines in the prepped inbox pass, a line typed after the prep is refused', () => {
-        const prepped = inbox(
-            '> [!quote]- original\n> **add this**\n> topic to review: x',
-        );
-        const drop = inbox('**add this**\ntopic to review: x\ntyped later');
-        expect(unhandledLines(drop, template, prepped)).toEqual([
-            'typed later',
+    test('a line only in the prepped copy is unhandled', () => {
+        expect(unhandledLines(inbox('**add this**'), template)).toEqual([
+            '**add this**',
         ]);
-        expect(unhandledLines(drop, template)).toHaveLength(3);
     });
 
     test('a numbered ✅ PK line is handled', () => {
-        const prepped = inbox('> [!quote]- original\n> 1. finish pm module');
-        const drop = inbox('1. ✅ PK-277 finish pm module');
-        expect(unhandledLines(drop, template, prepped)).toEqual([]);
+        expect(
+            unhandledLines(inbox('1. ✅ PK-277 finish pm module'), template),
+        ).toEqual([]);
     });
 
-    test('an unmarked bold line and a plain line in the prep are handled', () => {
-        const prepped = inbox(
-            '> [!quote]- original\n> **dark board**\n> make it dark please',
-        );
-        const drop = inbox('**dark board**\nmake it dark please');
-        expect(unhandledLines(drop, template, prepped)).toEqual([]);
+    test('a line whose text is in a pocket raw-drop note is handled', () => {
+        const pocket =
+            'notes\nraw drop (2026-10-30 inbox, dima): **dark board**\n';
+        expect(
+            unhandledLines(inbox('**dark board**'), template, pocket),
+        ).toEqual([]);
     });
 
-    test('a listed line in neither the prep nor a ✅ is refused', () => {
-        const prepped = inbox('> [!quote]- original\n> **dark board**');
-        const drop = inbox('- something new');
-        expect(unhandledLines(drop, template, prepped)).toEqual([
-            '- something new',
-        ]);
+    test('a listed line is matched by its text, not its list marker', () => {
+        const pocket = 'raw drop (2026-10-30 inbox, dima): something new';
+        expect(
+            unhandledLines(inbox('- something new'), template, pocket),
+        ).toEqual([]);
+    });
+
+    test('a line absent from every raw-drop note stays unhandled', () => {
+        const pocket = 'raw drop (2026-10-30 inbox, dima): **dark board**';
+        expect(
+            unhandledLines(inbox('- something new'), template, pocket),
+        ).toEqual(['- something new']);
+    });
+
+    test('text outside a raw-drop note does not count', () => {
+        expect(
+            unhandledLines(
+                inbox('something new'),
+                template,
+                'ticket body: something new',
+            ),
+        ).toEqual(['something new']);
     });
 
     test('a pristine template passes', () => {
