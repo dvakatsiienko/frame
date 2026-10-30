@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-30T13:46:00Z'
-updated_date: '2026-10-30T14:44:00Z'
+updated_date: '2026-10-30T14:47:00Z'
 labels:
   - m
 dependencies: []
@@ -61,4 +61,6 @@ answered on the 14:41 boot board: sequential waves over the full scope, each spl
 2026-10-30 16:45 homed (prompt-groom --day found them unhomed): W518–W519 done (3 sweep waves of matt's code-review, 16 → 3 → 2); W533 done (mods lane 3 rider); W534–W536 done (the review boundary line in crew-codie step 2 and crew-lead briefing); W537 done (wave 0); W538 done (bytes node pins); W539 done (bytes #55 closed, the hosted renovate app uninstalled); W540–W541, W550, W553 done (vorssaint 3.4.3 confirmed on #2164); W542 done (the side fork archived); W543 done (bytes renovate chores); W544 done (thread names format); W545–W546 done (renovate app checked uninstalled); W551 done (the review line, y); W554 done (mobile mode off)
 
 2026-10-30 16:46: W535 done (the review boundary line, with W534 and W536)
+
+2026-10-30 16:48 homed: W583 standing (a findings report at each noticeable finish, kept for the day); W609 done (round-2 fixes under way: prose, _clio checks, cli lane 3); W610 done (mods lane 3 continues: FRM-470, FRM-459); W611 done (codie's second wind, 16:32); W612 done (clio's second wind, 16:14); W613 done (cli lane 3 dispatched with the rename probe)
 <!-- SECTION:NOTES:END -->
