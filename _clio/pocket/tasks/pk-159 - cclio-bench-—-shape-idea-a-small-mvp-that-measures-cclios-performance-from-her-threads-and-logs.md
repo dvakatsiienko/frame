@@ -34,4 +34,6 @@ kept: 2026-10-25 — cclio's own shapeless idea (Q5); no wait, worked when a win
 kept: 2026-10-28 — a later shape-idea wish that belongs in linear; it carries dima's words, so the move is asked at today's halt
 
 kept: 2026-10-29 — dima o2: «keep it parked, i'll take care of it with fork (try)»
+
+10-30: the otel proposal moved with the coordinator home: _clio/.scratch/otel/proposal.md (the 10-16 note above names the old path)
 <!-- SECTION:NOTES:END -->
