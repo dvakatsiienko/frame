@@ -9,11 +9,11 @@ blind: true
 
 Ticket: none
 
-on trial since 2026-10-06 (`brew "delve"`); `x:guide-go` and `x/AGENTS.md` teach it to every Go coder.
+on trial since 2026-10-06 (`brew "delve"`); `x:guide-go` and `x/AGENTS.md` teach it to every Go codie.
 
 ## what counts
 
-dima, 2026-10-13: a tool used is not a tool proven useful. the next cli coder's brief says nothing about delve; he codes as usual. at his retro (at done, or before a 🐦‍🔥 second wind) cclio asks whether he reached for delve and whether it helped, and a helper-lite counts his `dlv` calls in the transcript.
+dima, 2026-10-13: a tool used is not a tool proven useful. the next cli codie's brief says nothing about delve; he codes as usual. at his retro (at done, or before a 🐦‍🔥 second wind) clio asks whether he reached for delve and whether it helped, and a helper-lite counts his `dlv` calls in the transcript.
 
 ## rounds
 

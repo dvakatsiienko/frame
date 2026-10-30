@@ -21,7 +21,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - 🐦‍⬛ **`crow`** (adviser) — clio's parked adviser: a pinned `--bg` session that reads her thread on a wake <!-- cc -->
   (her Stop and PreCompact hooks) and sends one note or `none`. `_crow/AGENTS.md` owns it.
 - 🧢 **`cap`** (lane coordinator) — coming: runs one lane for clio. <!-- cc -->
-- 🎀 **`helga`** (composer) — clio's editing sidecar: a parked `--bg` Haiku 5.5 session for her mechanical chores. `x:crew-helga` owns its contract; adopted 2026-10-22 (`docs/test-drive/helga.md`). <!-- cc -->
+- 🎀 **`helga`** (copyist) — clio's editing sidecar: a parked `--bg` Haiku 5.5 session for her mechanical chores. `x:crew-helga` owns its contract; adopted 2026-10-22 (`docs/test-drive/helga.md`). <!-- cc -->
 - 🦈 **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory. <!-- cc -->
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
   flow, docs first.
