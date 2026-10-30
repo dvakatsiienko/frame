@@ -97,7 +97,7 @@
   - decision: the lift is a loosening, so it ships live; the sweep no longer lifts under `/tmp` or `/var/folders` (the 10-08 temp roots keep discard and rewrite only), since the done test names frame, `/tmp` and the job tmp apart
   - proof: tests/throwaway.test.ts
 - ✅ a hook runs under a HOME the same line made (FRM-470)
-  - given exactly `NAME=$(mktemp -d) && HOME=$NAME <runner> <words>` (or `;`; `$NAME`, `"$NAME"` or `${NAME}`), the runner `node`, `pnpm` or `claude`, the words free of `; & | < > ( ) { } $` backtick, backslash and newline
+  - given exactly `NAME=$(mktemp -d) && HOME=$NAME <runner> <words>` (or `;`; `$NAME`, `"$NAME"` or `${NAME}`), the runner `node`, `claude` or `pnpm mods:<verb>` (not `pnpm exec`, which runs git), the words free of `; & | < > ( ) { } $` backtick, backslash and newline
   - when the guard reads it, then it runs, and the rest of the line is judged without the `HOME=` (a foreground `claude -p` is still refused)
   - given any other HOME override — a literal dir, `~/other`, `export HOME=…`, a variable never set, set again or rebound between (`read`, `printf -v`, `eval`, `let`, `PWD`), set in a subshell, a skipped branch or a pipe, a mktemp with a template or `-p`, `'$H'` single-quoted, git (also through `bash -c`, `env`, `xcrun`), a command chained or piped after, a heredoc or process substitution — then it is refused naming the `HOME` override
   - decision: the door is an allowlist of the whole line, since the local bug review found a deny-list of rebinders leaking (printf -v, eval, a subshell); git stays out, since a HOME with no gitconfig drops the signing and identity the commit rules rest on

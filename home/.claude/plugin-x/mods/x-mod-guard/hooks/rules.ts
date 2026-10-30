@@ -221,10 +221,10 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
 }
 // a test door (FRM-470), an allowlist of the whole line: `NAME=$(mktemp -d) && HOME=$NAME <runner> <plain words>`, two commands and
 // nothing between or after them. the HOME is an empty dir this line made, so the hook never sees the real config. the runner is
-// one a mods test uses: git (also through a shell, `env` or `eval`) with no gitconfig drops the signing and identity the commit
-// rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
+// one a mods test uses (node, claude, a `pnpm mods:` verb): git through a shell, `env`, `eval` or `pnpm exec` with no gitconfig
+// drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
 const FRESH_HOME =
-    /^([A-Za-z]\w*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|pnpm|claude)(?: [^;&|<>(){}`$\\\n]*)?$/;
+    /^([A-Za-z]\w*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
 function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
     if (r.rule === 'home') {
         // a git command must also act inside the tmp

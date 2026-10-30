@@ -16,7 +16,7 @@ the x marketplace lists x-mod-stash, the one worth sharing; x-mod-guard, x-mod-r
   - the load lines come from the session's `--debug-file`, never the screen: cc draws on the alternate screen, which keeps no scrollback
   - its verbs: `hover <label>`, `click <label>`, `type <text>` (with Enter: a prompt or a `/board`), `fill <text>` (a draft) — each prints the frame once the screen quiets — `status` (the server pid, the cc pid and the session holding the slot, exit 0; free, exit 1); the desktop look stays dima's eye
   - stop it with `kill $(cat $TMPDIR/mods-live/<mod>/server.pid)`
-  - `--plant <file> <anchor> <replacement>` (no mod dir) serves a scratch copy with that one change, the tree untouched; an anchor matching 0 or 2+ times refuses first
+  - `--plant <file> <anchor> <replacement>` (no mod dir) serves a scratch copy (removed on stop) with that one change, the tree untouched; an anchor matching 0 or 2+ times refuses first
 - `pnpm mods:probe <mod dir> "<prompt>"` runs one headless session with a dev copy in place of the live mod of the same name and exits 1 unless the engine read the dev copy (FRM-392); the swap rides the child's process env, since a `--settings` env swap loads the live copy
 - a mod outside `CLAUDE_CODE_PLUGIN_DIRS` is probed live with `claude -p "<prompt>" --plugin-dir <mod> --allowedTools=Bash`, run with `run_in_background` (x-mod-guard refuses a foreground `claude -p`, FRM-395; `# fg-ok: <why>` for a real need); an env var on the command line loses to the one in `settings.json`, and `--allowedTools` without `=` eats the prompt
 

@@ -70,6 +70,16 @@ const REFUSED = [
     ['git through bash -c', "H=$(mktemp -d) && HOME=$H bash -c 'git status'"],
     ['git through env', 'H=$(mktemp -d) && HOME=$H env git status'],
     ['git through xcrun', 'H=$(mktemp -d) && HOME=$H xcrun git status'],
+    ['git through pnpm exec', 'H=$(mktemp -d) && HOME=$H pnpm exec git status'],
+    [
+        'a shell through pnpm exec',
+        "H=$(mktemp -d) && HOME=$H pnpm exec sh -c 'git status'",
+    ],
+    [
+        'pnpm with a dir flag',
+        'H=$(mktemp -d) && HOME=$H pnpm --dir ~/frame exec git status',
+    ],
+    ['pnpm past the mods verbs', 'H=$(mktemp -d) && HOME=$H pnpm test'],
     ['a subpath of the fresh dir', 'H=$(mktemp -d) && HOME=$H/sub node x'],
     ['a second HOME', 'H=$(mktemp -d) && HOME=$H HOME=/etc node x'],
     ['a process substitution', 'H=$(mktemp -d) && HOME=$H node <(echo x)'],

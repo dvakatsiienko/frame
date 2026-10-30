@@ -46,5 +46,5 @@ export function plantedCopy(file: string, anchor: string, replacement: string) {
         inCopy,
         text.replace(anchor, () => replacement),
     );
-    return { file: inCopy, mod: copy };
+    return { file: inCopy, mod: copy, root: dirname(copy) };
 }
