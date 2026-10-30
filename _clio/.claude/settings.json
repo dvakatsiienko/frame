@@ -43,6 +43,16 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "mcp__ccd_session__start_session",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/summon-brief-stamp.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
