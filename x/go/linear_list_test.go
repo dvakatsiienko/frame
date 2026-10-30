@@ -116,6 +116,53 @@ func TestAnEmptyListOfKnownNamesIsJustEmpty(t *testing.T) {
 	}
 }
 
+func TestTheSignedListReadsEachSignAgainstItsBody(t *testing.T) {
+	t.Parallel()
+	signedAs := "lane: side\n\nsee FRM-12, PK-3 and https://e.com/a\n\n"
+	linked := "lane: side\n\nsee [FRM-12](https://linear.app/x-com/issue/FRM-12/s) and [https://e.com/b](https://e.com/b)\n\n"
+	cases := []struct{ id, body, want string }{
+		{"FRM-1", signedBody("lane: side\n\nedited after the sign\n\n", "", signedAs), signDrifted},
+		{"FRM-2", signedBody("lane: side\n\nsee [FRM-12](https://linear.app/x-com/issue/FRM-12/s), [PK-3](https://linear.app/x-com/issue/PK-3) and <https://e.com/a>\n\n", "", signedAs), signMatch},
+		{"FRM-3", signedBody(signedAs+"\n\n", "", signedAs), signMatch},
+		{"FRM-4", signedBody(linked, "", linked), signMatch},
+		{"FRM-5", signedAs + "## signed\n\n✍️ signed 2026-10-23 — no hash line\n", signNoHash},
+		{"FRM-6", signedAs, signNoHash},
+	}
+	var nodes []string
+	for _, c := range cases {
+		description, _ := json.Marshal(c.body)
+		nodes = append(nodes, `{"identifier":"`+c.id+`","title":"t","priority":3,"estimate":null,"description":`+string(description)+
+			`,"state":{"name":"Todo","type":"unstarted"},"project":null,"labels":{"nodes":[{"name":"signed"}]}}`)
+	}
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issues":{"nodes":[` + strings.Join(nodes, ",") + `],"pageInfo":{"hasNextPage":false}}}}`
+	})
+
+	envelope, got := runLinear(t, server, nil, "linear", "list", "--team", "FRM", "--label", "signed")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	rows := tickets(t, envelope)
+	for i, c := range cases {
+		if i >= len(rows) || rows[i]["sign"] != c.want {
+			t.Errorf("%s: sign %v, want %q", c.id, rows[min(i, len(rows)-1)]["sign"], c.want)
+		}
+	}
+}
+
+func TestAListWithoutTheSignedLabelCarriesNoSign(t *testing.T) {
+	t.Parallel()
+	server := newFakeLinear(t, listAnswer("false"))
+	envelope, _ := runLinear(t, server, nil, "linear", "list", "--team", "FRM")
+	if call := server.requests()[0]; strings.Contains(call.Query, "description") {
+		t.Errorf("a plain list fetched bodies:\n%s", call.Query)
+	}
+	if _, has := tickets(t, envelope)[0]["sign"]; has {
+		t.Errorf("a plain list row carries a sign: %v", tickets(t, envelope)[0])
+	}
+}
+
 func TestListMarksACappedPage(t *testing.T) {
 	t.Parallel()
 	server := newFakeLinear(t, listAnswer("true"))

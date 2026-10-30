@@ -17,9 +17,21 @@ type listRow struct {
 	Estimate  *float64 `json:"estimate"`
 	Project   string   `json:"project,omitempty"`
 	Labels    []string `json:"labels"`
+	Sign      string   `json:"sign,omitempty"`
 }
 
 const rowFields = `identifier title priority estimate state { name type } project { name } labels(first: 20) { nodes { name } }`
+
+// a list filtered to signed tickets reads each body against its sign; any other list stays one light query
+func listsSigned(flags Flags) bool {
+	labels, _ := flags["label"].(string)
+	for label := range strings.SplitSeq(labels, ",") {
+		if strings.EqualFold(strings.TrimSpace(label), "signed") {
+			return true
+		}
+	}
+	return false
+}
 
 // listFilter is linear's own IssueFilter: every name resolves on linear's side, in the same request
 func listFilter(flags Flags) map[string]any {
@@ -60,10 +72,14 @@ func linearList(r *Run, _ []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	vars := map[string]any{"filter": listFilter(flags)}
-	field, query := "issues", "query($filter: IssueFilter) { issues(first: 50, filter: $filter) { nodes { "+rowFields+" } pageInfo { hasNextPage } } }"
+	signed, fields := listsSigned(flags), rowFields
+	if signed {
+		fields += " description"
+	}
+	field, query := "issues", "query($filter: IssueFilter) { issues(first: 50, filter: $filter) { nodes { "+fields+" } pageInfo { hasNextPage } } }"
 	if search, _ := flags["search"].(string); search != "" {
 		vars["term"] = search
-		field, query = "searchIssues", "query($term: String!, $filter: IssueFilter) { searchIssues(term: $term, first: 50, filter: $filter) { nodes { "+rowFields+" } pageInfo { hasNextPage } } }"
+		field, query = "searchIssues", "query($term: String!, $filter: IssueFilter) { searchIssues(term: $term, first: 50, filter: $filter) { nodes { "+fields+" } pageInfo { hasNextPage } } }"
 	}
 	var data map[string]json.RawMessage
 	r.Wait("listing as "+actor, func() { data, _, err = gql(actor, query, vars) })
@@ -71,11 +87,12 @@ func linearList(r *Run, _ []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	var page connection[struct {
-		Identifier string   `json:"identifier"`
-		Title      string   `json:"title"`
-		Priority   int      `json:"priority"`
-		Estimate   *float64 `json:"estimate"`
-		State      struct {
+		Identifier  string   `json:"identifier"`
+		Title       string   `json:"title"`
+		Priority    int      `json:"priority"`
+		Estimate    *float64 `json:"estimate"`
+		Description *string  `json:"description"`
+		State       struct {
 			Name string `json:"name"`
 			Type string `json:"type"`
 		} `json:"state"`
@@ -91,6 +108,13 @@ func linearList(r *Run, _ []string, flags Flags) (any, error) {
 			Priority: node.Priority, Estimate: node.Estimate, Labels: []string{}}
 		if node.Project != nil {
 			row.Project = node.Project.Name
+		}
+		if signed {
+			body := ""
+			if node.Description != nil {
+				body = *node.Description
+			}
+			row.Sign, _, _ = bodySign(body)
 		}
 		for _, label := range node.Labels.Nodes {
 			row.Labels = append(row.Labels, label.Name)
@@ -162,6 +186,16 @@ func unknownName(actor string, flags Flags) error {
 	return nil
 }
 
+func signStyle(sign string) lipgloss.Style {
+	switch sign {
+	case signMatch:
+		return ui.ok
+	case signDrifted:
+		return ui.er
+	}
+	return ui.dim
+}
+
 func listBoardOf(rows []listRow, capped bool, actor string) frame {
 	count := fmt.Sprintf("%d tickets, as %s", len(rows), actor)
 	if capped {
@@ -173,6 +207,9 @@ func listBoardOf(rows []listRow, capped bool, actor string) frame {
 		state := stateStyle(row.StateType).Render(fmt.Sprintf("%-12s", clip(row.State, 12)))
 		labels := ui.dim.Render(strings.Join(row.Labels, " "))
 		head := ui.bold.Render(fmt.Sprintf("%-9s", row.ID)) + " " + state + " "
+		if row.Sign != "" {
+			head += signStyle(row.Sign).Render(fmt.Sprintf("%-8s", row.Sign)) + " "
+		}
 		room := w - lipgloss.Width(head) - lipgloss.Width(labels) - 2
 		b.rows = append(b.rows, head+ui.fg.Render(clip(row.Title, max(room, 10)))+"  "+labels)
 	}
