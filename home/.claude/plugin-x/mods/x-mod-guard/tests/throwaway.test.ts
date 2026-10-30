@@ -76,6 +76,11 @@ const LIFTED = [
         'a HOME inside the job tmp for a command that is not git',
         `HOME=${JOB}/tmp/h pnpm test`,
     ],
+    ['a gate with its stderr merged', `cd ${TMP} && pnpm test 2>&1 | tail -3`],
+    [
+        'a sweep with output to /dev/null',
+        `cd ${TMP} && git add -A >/dev/null 2>&1`,
+    ],
     ['the lifts inside a nested shell', `bash -c 'cd ${TMP} && git add -A'`],
 ] as const;
 
@@ -330,6 +335,38 @@ const OUTSIDE = [
     [
         'a CDPATH that lands the cd in frame',
         `cd ${TMP} && CDPATH=/ cd repo && git add -A`,
+        {},
+    ],
+    [
+        'a gitdir pointer written through >&',
+        `cd ${TMP} && echo 'gitdir: /repo/.git' >& .git && git add -A`,
+        {},
+    ],
+    [
+        'a gitdir pointer written through >&.git',
+        `cd ${TMP} && echo 'gitdir: /repo/.git' >&.git && git add -A`,
+        {},
+    ],
+    [
+        'a gitdir pointer written through >|',
+        `cd ${TMP} && echo 'gitdir: /repo/.git' >| .git && git add -A`,
+        {},
+    ],
+    [
+        'a shell startup file written under a HOME in the tmp',
+        `HOME=${JOB}/tmp/h; echo 'cd /repo' >> ${JOB}/tmp/h/.zshenv; cd ${TMP} && git add -A`,
+        {},
+    ],
+    ['a ~user path after -C', `cd ${TMP} && git -C ~dima/frame add -A`, {}],
+    ['a ~- path after -C', `cd ${TMP} && git -C ~- commit -m x`, {}],
+    [
+        'a command hidden in $(( ))',
+        `cd ${TMP} && git add -A && echo $(( $(git -C /repo add -A; echo 1) ))`,
+        {},
+    ],
+    [
+        'a command hidden in a heredoc body',
+        `cd ${TMP} && git add -A && cat <<EOF\n$(git -C /repo add -A)\nEOF`,
         {},
     ],
 ] as const;
