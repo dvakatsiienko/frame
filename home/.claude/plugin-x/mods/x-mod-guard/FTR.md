@@ -263,15 +263,16 @@
   - given a session the registry names anything but 🦉 clio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and clio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
-- 🧭 a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
+- ✅ a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
   - given a session the registry names anything but 🦉 clio (a nested shell and an eval count)
   - when it runs `x linear api` with an `issueUpdate`, `issueBatchUpdate` or `issueCreate`, or a query the shell expands from a variable or a substitution or xargs feeds in, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file` (also behind `x as <member> --`), then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
-  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, an actor held in a variable, or a line that drops x's agent marks (`CLAUDECODE` or `AI_AGENT` unset or emptied, `env -i`), with which x acts as dima on a tty, then the call is flagged `as-dima`
+  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, an actor held in a variable, or a line whose segments before the x call drop `CLAUDECODE` (unset, emptied, `export -n`, `typeset +x`, `env -i`, `env -`, `env -u`/`--unset=`, `env -S '…'`, env by path), with which x acts as dima on a tty, then the call is flagged `as-dima`
   - and a warning keeps every check below it in play: a force-push or an untick'd sign after it is still refused
+  - and another tool's `-i` on the line (`grep -i`, `sed -i`), `CLAUDECODE=1` and an `env -i` after the x call run
   - and clio's session, `x linear set <id> --state …`, `x linear body --set`, `x linear api` queries and a quoted mention run; a session the registry does not list runs them, fail open; a thread whose title only mentions clio is still a member
-  - decision: warn-only (`WARN_ONLY`) until sixth sense says clean, then refused in its own commit (clio, 2026-10-30, mods/AGENTS.md § the rules)
+  - decision: warned until sixth sense's clean on 4e73424a (round 3, 2026-10-30), refused since in its own commit (mods/AGENTS.md § the rules); the same forms with `command env`, `genv` or another tty-means-dima spelling are carried to the next mods lane as an x fix (clio, 2026-10-30)
   - proof: tests/linearwrite.test.ts
-- 🧭 one sign ask names several tickets, and one tick signs each (FRM-459, o49)
+- ✅ one sign ask names several tickets, and one tick signs each (FRM-459, o49)
   - given an orbit ask `✍️ sign FRM-1, FRM-2: <title>` (also `FRM-1 and FRM-2`, `FRM-1 FRM-2`)
   - when dima ticks it, then `x linear set <id> --add-label signed` and `x linear body <id> --set <file>` land on each id it names, and an id it does not name (`FRM-3`, or `FRM-14` beside `FRM-1`) stays refused
   - proof: tests/ticks.test.ts

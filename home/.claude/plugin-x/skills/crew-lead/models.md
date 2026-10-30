@@ -10,7 +10,7 @@
   - `--bg` (1h): opus 4.1M ÷ steps · sonnet 4.1M ÷ steps · fable 8.2M ÷ steps · haiku 2.0M ÷ steps
   - subagent (5m): opus 2.6M ÷ steps · sonnet 2.6M ÷ steps · fable 5.1M ÷ steps · haiku 1.3M ÷ steps
   - on an opus `--bg`: ≤10 steps → reuse up to ~410k · ~50 steps (a ticket) → under ~80k · 100+ (a feature) → summon fresh. effort changes the steps, never the prices.
-- idle past the cache life → cold, a reuse rewrites the whole context at the write price → spawn fresh, unless its knowledge is the job. **a `--bg` session goes cold after 1h idle, a subagent after 5 min** — a finished subagent revived by `SendMessage` minutes later is almost always a cold reuse.
+- idle past the cache life → cold, a reuse rewrites the whole context at the write price → spawn fresh, unless its knowledge is the job; a lane's sixth sense is always reused by message, cold or not. **a `--bg` session goes cold after 1h idle, a subagent after 5 min** — a finished subagent revived by `SendMessage` minutes later is almost always a cold reuse.
 - the taxonomy, by cost: clio (one long session, its context is the job) · `--bg` codie (watchable) · implement-spec subagents (bulk) · fork (pays the parent's whole context) · `helper` (sonnet, mechanical) · bare probe (`claude -p --safe-mode`, almost no base) · crow (resident, 🔥 keeps it warm).
 
 **the spec-run balance** (dima, 2026-10-06: «plain --bg coder is better for granular work, where i'd like to see the results in place. and implement-spec looks very good of under the hood work»):

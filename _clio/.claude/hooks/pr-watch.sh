@@ -36,7 +36,7 @@ pass() {
         key="$r#$n"
         if [ "$(seen "$key:head")" != "$sha" ]; then
           if [ -n "$(seen "$key:head")" ]; then echo "~ 🟡 ${r#*/}#$n new commit $sha · $title · $url"
-          else echo "🔵 ${r#*/}#$n opened on $sha — summon its sixth sense · $title · $url"; fi
+          else echo "🔵 ${r#*/}#$n opened on $sha — hand it to its lane's sixth sense (summon one only if the lane has none) ·$title · $url"; fi
           mark "$key:head" "$sha"
         fi
         # keyed on head and verified sha both: a clean that lands after a delta line still prints «ready»

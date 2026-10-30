@@ -4,7 +4,7 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { liveStore } from './store.ts';
 
 // FRM-459: a ticket body is written through `x linear body --set`, and nobody but dima acts as dima; the coordinator's session is
-// exempt and a session the registry does not list fails open. both rules ship warn-only, so most tests set the store's «enforce»
+// exempt and a session the registry does not list fails open. both rules refuse since sixth sense's clean (4e73424a)
 const SID = 'm1m1m1m1-0000';
 
 function world(on: On, name: string | null = '☕️ 🔧 codie') {
@@ -40,10 +40,6 @@ function world(on: On, name: string | null = '☕️ 🔧 codie') {
     });
     return { ran, store };
 }
-const enforced = (store: Map<string, unknown>) => {
-    store.set('rule-mode:linear-body', 'enforce');
-    store.set('rule-mode:as-dima', 'enforce');
-};
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
 
@@ -83,7 +79,6 @@ for (const [shape, typed] of [
 ] as const)
     test(`a member's body write past the door is refused naming it: ${shape}`, async ($, on) => {
         const w = world(on);
-        enforced(w.store);
         const r = await bash($, typed);
         expect([w.ran, r.deny?.includes(BODY_DOOR)]).toEqual([[], true]);
     });
@@ -100,12 +95,34 @@ for (const [shape, typed] of [
     ['the agent var emptied', 'CLAUDECODE= x linear read FRM-1'],
     ['an emptied environment', 'env -i x linear read FRM-1'],
     ['the agent var unset first', 'unset CLAUDECODE; x linear read FRM-1'],
+    ['the agent var emptied first', 'CLAUDECODE=; x linear read FRM-1'],
+    ['an export emptying it', 'export CLAUDECODE=; x linear read FRM-1'],
+    ['an export -n', 'export -n CLAUDECODE; x linear read FRM-1'],
+    ['a typeset +x', 'typeset +x CLAUDECODE; x linear read FRM-1'],
+    ['env --unset=', 'env --unset=CLAUDECODE x linear read FRM-1'],
+    ['env -', 'env - x linear read FRM-1'],
+    ['a clustered env -iv', 'env -iv x linear read FRM-1'],
+    [
+        'env by path',
+        '/usr/bin/env -u CLAUDECODE script -q /dev/null x linear read FRM-1',
+    ],
+    [
+        'env -S with an empty assignment',
+        "env -S 'CLAUDECODE= x linear comment FRM-1 --body-file f'",
+    ],
+    [
+        'env --split-string= with -u',
+        "env --split-string='-u CLAUDECODE x linear read FRM-1'",
+    ],
+    [
+        'an unset inside bash -c',
+        "bash -c 'unset CLAUDECODE; x linear read FRM-1'",
+    ],
     ['x as dima', 'x as dima -- linear issue view FRM-1'],
     ['in a nested shell', `bash -c 'x linear read FRM-1 --as dima'`],
 ] as const)
     test(`a member acting as dima is refused: ${shape}`, async ($, on) => {
         const w = world(on);
-        enforced(w.store);
         const r = await bash($, typed);
         expect([w.ran, r.deny?.includes('without --as')]).toEqual([[], true]);
     });
@@ -120,11 +137,16 @@ for (const typed of [
     'x linear comment FRM-1 --as codie --body-file f.md',
     'x linear read FRM-1 --comments',
     'x as codie -- linear issue list',
+    'grep -i foo f; x linear read FRM-1',
+    "sed -i '' s/a/b/ f.md && x linear read FRM-1",
+    'x linear read FRM-1 | grep -i done',
+    'CLAUDECODE=1 x linear read FRM-1',
+    'x linear read FRM-1; env -i ls',
+    'x linear comment FRM-1 --body-file f.md # use env -i',
     "echo 'x linear read FRM-1 --as dima'",
 ])
     test(`a member runs: ${typed}`, async ($, on) => {
         const w = world(on);
-        enforced(w.store);
         const r = await bash($, typed);
         expect([w.ran, r.deny]).toEqual([[typed], undefined]);
     });
@@ -132,14 +154,12 @@ for (const typed of [
 for (const typed of [UPDATE, 'x linear read FRM-1 --as dima'])
     test(`the coordinator's session runs: ${typed.slice(0, 40)}`, async ($, on) => {
         const w = world(on, '🦉 clio');
-        enforced(w.store);
         const r = await bash($, typed);
         expect([w.ran, r.deny]).toEqual([[typed], undefined]);
     });
 
 test('a session the registry does not list runs both, fail open', async ($, on) => {
     const w = world(on, null);
-    enforced(w.store);
     await bash($, UPDATE);
     await bash($, 'x linear read FRM-1 --as dima');
     expect(w.ran).toHaveLength(2);
@@ -147,7 +167,6 @@ test('a session the registry does not list runs both, fail open', async ($, on) 
 
 test('a thread whose title mentions clio is still a member', async ($, on) => {
     const w = world(on, '🌗 🔧 codie: clio fixes | FRM-9');
-    enforced(w.store);
     const r = await bash($, UPDATE);
     expect([w.ran, r.deny === undefined]).toEqual([[], false]);
 });
@@ -156,25 +175,15 @@ for (const [rule, typed] of [
     ['linear-body', UPDATE],
     ['as-dima', 'x linear read FRM-1 --as dima'],
 ] as const)
-    test(`${rule} warns first: the call runs and the model reads what would have been refused`, async ($, on) => {
+    test(`${rule} is refused with no store setting, kept as a refusal`, async ($, on) => {
         const w = world(on);
         const r = await bash($, typed);
-        const noted = JSON.stringify(r.context ?? []);
         const kinds = [...w.store.entries()]
             .filter(([k]) => k.startsWith('event:'))
-            .map(([, v]) => (v as { kind: string }).kind);
-        expect([w.ran, noted.includes(`rule ${rule}`), kinds]).toEqual([
-            [typed],
+            .map(([, v]) => v as { kind: string; rule: string });
+        expect([w.ran, r.deny !== undefined, kinds]).toMatchObject([
+            [],
             true,
-            ['warned'],
+            [{ kind: 'refused', rule }],
         ]);
     });
-
-test('a warning keeps the other checks in play: a force-push after it is still refused', async ($, on) => {
-    const w = world(on);
-    const r = await bash(
-        $,
-        'x linear read FRM-1 --as dima; git push --force origin main',
-    );
-    expect([w.ran, r.deny === undefined]).toEqual([[], false]);
-});

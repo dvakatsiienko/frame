@@ -3,20 +3,38 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    rmSync,
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { plantedCopy } from './live-plant.ts';
+import { plantedCopy as plantedCopyOf } from './live-plant.ts';
+
+// every dir a test makes, its fixtures and the copies, goes when the test ends: frame's commit hook runs this file
+const made: string[] = [];
+afterEach(() => {
+    for (const dir of made.splice(0))
+        rmSync(dir, { force: true, recursive: true });
+});
+const tempDir = (prefix: string) => {
+    const dir = mkdtempSync(join(tmpdir(), prefix));
+    made.push(dir);
+    return dir;
+};
+const plantedCopy = (file: string, anchor: string, replacement: string) => {
+    const p = plantedCopyOf(file, anchor, replacement);
+    made.push(p.root);
+    return p;
+};
 
 const copies = () =>
     readdirSync(tmpdir()).filter((n) => n.startsWith('mods-live-plant-'));
 
 function fixture(text: string) {
-    const mod = join(mkdtempSync(join(tmpdir(), 'plant-fix-')), 'x-mod-fix');
+    const mod = join(tempDir('plant-fix-'), 'x-mod-fix');
     mkdirSync(join(mod, '.claude-plugin'), { recursive: true });
     mkdirSync(join(mod, 'hooks'));
     writeFileSync(
@@ -74,14 +92,14 @@ describe('plantedCopy', () => {
     });
 
     it('refuses a file outside any mod', () => {
-        const dir = mkdtempSync(join(tmpdir(), 'plant-none-'));
+        const dir = tempDir('plant-none-');
         const file = join(dir, 'a.ts');
         writeFileSync(file, 'x');
         expect(() => plantedCopy(file, 'x', 'y')).toThrow('not inside a mod');
     });
 
     it('refuses a file beside the mods, where plugin x holds the manifest above', () => {
-        const root = mkdtempSync(join(tmpdir(), 'plant-plugin-'));
+        const root = tempDir('plant-plugin-');
         mkdirSync(join(root, '.claude-plugin'));
         writeFileSync(join(root, '.claude-plugin/plugin.json'), '{"name":"x"}');
         mkdirSync(join(root, 'mods'));
