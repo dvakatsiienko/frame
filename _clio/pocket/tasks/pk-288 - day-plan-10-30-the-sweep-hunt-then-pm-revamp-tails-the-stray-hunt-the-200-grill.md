@@ -150,4 +150,22 @@ W707 (2026-10-30 17:54, dima): CLI lane, let's have it active for now.
 W708 (2026-10-30 17:54, dima): once CLI lane completes the current chunk, tell it to park.
 W709 (2026-10-30 17:54, dima): i'll see the pace and time about to start the next CLI chunk or not.
 W710 (2026-10-30 17:54, dima): ideally, i want the stacked PRs chunk for CLI to be completed today.
+
+late grooms of 2026-10-30 17:59–18:14 and steers o3, o28, o41, o44 (helga, 18:16), homed here for the main lane; each was answered or acted on the turn it landed:
+W711 (2026-10-30 17:59, dima): a switch of a modslane coder mid-flight from Sonnet 5.5 to Opus 5.5 is a banned move. do not do it.
+W712 (2026-10-30 17:59, dima): print a rule in habits, or in a crew lead skill, not to switch models mid-flight. it causes a full cache recalculation, and it is expensive.
+W713 (2026-10-30 17:59, dima): a model switch mid-flight is allowed only on my word, if i allow it.
+W714 (2026-10-30 17:59, dima): as of now, keep the modslane codie on Sonnet 5.5 as it is.
+W715 (2026-10-30 17:59, dima): i want the APM module fixed today and resolved today.
+W716 (2026-10-30 18:07, dima): do a full scale pm module big picture review.
+W717 (2026-10-30 18:07, dima): i am fine with 5h pace, going ahead.
+W718 (2026-10-30 18:07, dima): we have 40% budget, proceed.
+W719 (2026-10-30 18:14, dima): if the mods lane is finished, collect its retro.
+W720 (2026-10-30 18:14, dima): then stop the mods lane codie.
+W723 (2026-10-30 o28, dima): it may still be useful at some point.
+W724 (2026-10-30 o28, dima): i want to take a close look at it first, then decide if it is truly not worth it.
+W721 (2026-10-30 o3, dima): let's try one more wave and see what its findings bring.
+W722 (2026-10-30 o3, dima): stop the waves if all is good.
+W725 (2026-10-30 o41, dima): now, all at once.
+W726 (2026-10-30 o44, dima): wisphunter and wishkeep too.
 <!-- SECTION:NOTES:END -->
