@@ -146,6 +146,10 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-10-29 · prompt-groom · 1 · 0 · W3-W23, 21 lines; asks: W6 W10; FRM-455 W1-W2 held by cclio, not touched; pasted_content wrapper dropped, body kept
 - 2026-10-29 · prompt-groom · 1 · 0 · 2026-10-29-1753: W24-W25, 2 lines, asks 0 | 2026-10-29-1803: W26-W32, 7 lines, asks W26 W28 W29 W30 W32 | 2026-10-29-1809: W33-W38 (cclio said W27; W26-W32 taken by 1803, so next free used), asks W33 W35 | 2026-10-28-1711 (FRM-426): W7 (first free per wish block, last W6), ask W7; 1803 raw line 1 is a side-sessions-event wrapper, skipped
 - 2026-10-29 · prompt-groom · 1 · 0 · 2026-10-28-1755 (FRM-467): W272-W275, 4 lines, asks 0; first free W272 = next after the wish block's last W271 (W1 is the tick line)
+- 2026-10-30 · inbox-prep · 1 · 0 · inbox-prep 2026-10-30: 2 items, 2 asks, check 4/4
+- 2026-10-30 · prompt-groom · 1 · 0 · 1458 groomed: W518-W543, Q1-Q3
+- 2026-10-30 · prompt-groom · 1 · 0 · 1512 groomed: W544-W554
+- 2026-10-30 · prompt-groom · 1 · 0 · 1436 groomed: W555-W582, Q1-Q5
 
 ## rounds
 
