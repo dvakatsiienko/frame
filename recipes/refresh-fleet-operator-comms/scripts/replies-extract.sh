@@ -7,7 +7,7 @@ since=$1 out=$2 sample=${3:-220}
 mkdir -p "$out"
 turns="$out/turns.jsonl"
 : > "$turns"
-for dir in -Users-dima-frame-cclio -Users-dima-frame--clio -Users-dima-frame -Users-dima-projects-bytes; do
+for dir in -Users-dima-projects-dotfiles-cclio -Users-dima-frame-cclio -Users-dima-frame--clio -Users-dima-frame -Users-dima-projects-bytes; do
   for f in "$HOME/.claude/projects/$dir"/*.jsonl; do
     [ -e "$f" ] || continue
     jq -c 'select((.isSidechain|not) and (.entrypoint=="cli" or .entrypoint=="claude-desktop"))
