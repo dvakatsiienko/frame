@@ -67,7 +67,7 @@ out:
 - given an area whose code is newer than its home doc, when clio answers, then the reply says «docs lag the code by N days»
 - given an area path that no longer exists, when clio gathers, then the answer names the dead path, never a quiet «nothing new»
 - given dima steers with a stale picture of an area (his words contradict its file), when clio replies, then one line offers a catch-up on that area, and never twice per area per session
-- given «remind me to …» (a reminder), when clio reads it, then `x:remind` loads, never catch-up
+- given «remind me to …» (a reminder), when clio reads it, then `clio:remind` loads, never catch-up
 - given a catch-up ran, then the area's stamp in `~/.local/state/clio/catch-up.json` is today
 
 - **teach** (dima, 2026-10-15: «optionally pipe through matt's teach skill») — offered as a route only when an area deserves real study; teach is a multi-session course of html lessons, too heavy as a default
