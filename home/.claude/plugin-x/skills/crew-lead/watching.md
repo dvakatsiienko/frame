@@ -23,7 +23,7 @@
   time (2.1.251).
 - 🚨 **remote control has ONE owner per session** (loser prints 4090). Start in the terminal, treat
   the desktop Code tab as join-only. 📌 handover direction untested — assert no cause.
-- **codie needing a browser runs `--bg` with `agent-browser`** (`x:browser-headless`), which works from any session; the Browser pane exists only in a desktop thread, and a lane member keeps `agent-browser` there too (dima o69)
+- **codie needing a browser runs `--bg` with `agent-browser`** (`x:browser-headless`), which works from any session; the Browser pane exists only in a desktop thread, and those are only the mods codie and clio's side channels (dima o69)
 
 ## lifetime and stopping
 
