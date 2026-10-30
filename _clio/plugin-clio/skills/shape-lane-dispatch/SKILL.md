@@ -24,6 +24,8 @@ read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines per 
 
 then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.md`: 17 of 20 flagged lines passed the lint and missed the want): write the want plus the lines to a file and run `pnpm -C ~/frame crow:plan-critique <file>`; each finding is folded or answered in one line before the seal.
 
+an exit line whose check reads shared state (a live session, `~/.local/state`, the tree) says how it stays steady; one that can flake is rewritten before the seal (a retro of 10-30)
+
 ## 4 · the seal
 
 `x brief preflight` passes; it reads the exit lines from the spec (FRM-423). a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules and its `FTR.md` decisions are read against the lines: a line they forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is now 🦭 sealed; the print collapses it to one row: `🦭 **sealed**, N exit lines`.

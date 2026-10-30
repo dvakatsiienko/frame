@@ -21,6 +21,8 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 
 ## mutations
 
+- a pane that renders several board nodes needs a test seam that plants a throw in one node, so one bad node is proven not to blank the board (FRM-431 codie)
+- a plant run from a `--bg` (cli-entrypoint) session is proven with `mods:live --plant` under that entrypoint: user settings' env beats the swapped plugin dirs there (FRM-470 sixth sense)
 - most real findings come from mutations: swap one anchor, watch the test go red, restore it, through `red-proof` (FRM-382 sixth sense: 6 of 8 findings)
 - a mutation anchor matches a whole line, never a substring: `) : null}` matched a deeper-indented twin and broke the module load (FRM-382 codie)
 - every tick or marker door gets a mutation proving its refusal test bites, and every rewrite door a probe inside a compound line (`&&`, `|`, `#`, a newline) (FRM-427 sixth sense retro)

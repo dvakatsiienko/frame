@@ -12,7 +12,7 @@ _clio/memory/dima-stories.md	11200	seed 2026-10-16, today's size + 15 %
 _clio/memory/dima-strategy-branches.md	3800	seed 2026-10-16, today's size + 15 %
 _clio/memory/dima-strategy.md	4300	seed 2026-10-16, today's size + 15 %
 _clio/memory/habit-capability-tips.md	2000	seed 2026-10-16; raised 2026-10-28 for dima's browser-pane rule (web clicking is mine)
-_clio/memory/habit-cto.md	2900	seed 2026-10-16, today's size + 15 %
+_clio/memory/habit-cto.md	3050	seed 2026-10-16, today's size + 15 %; +150 2026-10-30 halt flush: a fix names its rule's other homes and its trigger (dima's yes)
 _clio/memory/habit-ctx-load-balancing.md	2100	seed 2026-10-16, today's size + 15 %; +100 2026-10-27: the pace-park wake (FRM-462)
 _clio/memory/habit-dima-comms.md	9600	2026-10-19: renamed from habit-dima-comms-pacing, craft-pm's pending block moved in; its size + 15 %
 _clio/memory/habit-guide-fold.md	1500	seed 2026-10-16, today's size + 15 %
@@ -29,7 +29,7 @@ _clio/plugin-clio/skills/author-blueprint/references/n8n.md	2700	seed 2026-10-18
 _clio/plugin-clio/skills/author-blueprint/references/readable.md	2800	2026-10-23: dima's bold-keywords and notes-tile asks, two lines
 _clio/plugin-clio/skills/author-blueprint/SKILL.md	2900	2026-10-21 raised: readable rules + the mapped-area line (dima)
 _clio/plugin-clio/skills/boot/references/board.md	2200	seed 2026-10-16, its size + 15 %
-_clio/plugin-clio/skills/boot/SKILL.md	14450	2026-10-29: +250 a side channel at the boot starts first and non-blocking (dima's flush edit); 2026-10-28: +400 the weekly pass gets its duckdb door (pnpm memory:pass, dima o33); seed 2026-10-16, today's size + 15 %; +200 2026-10-27: round 4's inbox groom copy and the main lane's linear slot; +200 2026-10-28: FRM-464 side-item takeover
+_clio/plugin-clio/skills/boot/SKILL.md	14700	2026-10-29: +250 a side channel at the boot starts first and non-blocking (dima's flush edit); 2026-10-28: +400 the weekly pass gets its duckdb door (pnpm memory:pass, dima o33); seed 2026-10-16, today's size + 15 %; +200 2026-10-27: round 4's inbox groom copy and the main lane's linear slot; +200 2026-10-28: FRM-464 side-item takeover; +250 2026-10-30 halt flush: one raw drop note per quote line (dima's yes)
 _clio/plugin-clio/skills/checkpoint/SKILL.md	8400	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/dima-intervenes/SKILL.md	5200	2026-10-21: the fix mode joined (PK-173, dima's wish), 4.5 KB + 15 %
 _clio/plugin-clio/skills/evergreen/references/merge-round.md	3200	seed 2026-10-16, its size + 15 %
@@ -46,7 +46,7 @@ _clio/plugin-clio/skills/pm/references/workspace.md	2700	seed 2026-10-16, its si
 _clio/plugin-clio/skills/pm/SKILL.md	13800	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/remind/SKILL.md	2500	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/shape-idea/SKILL.md	5500	2026-10-23: ends in one shaped ticket, the non-mechanical trigger (PK-263, o91)
-_clio/plugin-clio/skills/shape-lane-dispatch/SKILL.md	7100	2026-10-25: dima's tickets-flow calls (o74): the linear state at dispatch, the cancel rule, a mid-lane wish in the ticket; +100 2026-10-27: round 4's ↩️ route, per-chunk wish line and proposal path; +300 2026-10-27: FRM-462's cancel-after-🚀, pace park and one-chunk steer lines; +300 2026-10-30: pm review round 2 (o14): quick guard chunk pre-approval, FTR.md at the seal, queue-order offer; +200 2026-10-30: pm review rounds 3-4, the joiner marks and the slices dir (dima o46), room for the verb wiring
+_clio/plugin-clio/skills/shape-lane-dispatch/SKILL.md	7300	2026-10-25: dima's tickets-flow calls (o74): the linear state at dispatch, the cancel rule, a mid-lane wish in the ticket; +100 2026-10-27: round 4's ↩️ route, per-chunk wish line and proposal path; +300 2026-10-27: FRM-462's cancel-after-🚀, pace park and one-chunk steer lines; +300 2026-10-30: pm review round 2 (o14): quick guard chunk pre-approval, FTR.md at the seal, queue-order offer; +200 2026-10-30: pm review rounds 3-4, the joiner marks and the slices dir (dima o46), room for the verb wiring; +200 2026-10-30 halt flush: an exit line on shared state says how it stays steady (dima's yes)
 _clio/plugin-clio/skills/shape-lane/SKILL.md	6000	seed 2026-10-16, today's size + 15 %; +100 2026-10-27: round 4's ↩️ route, per-chunk wish line and proposal path; +300 2026-10-30: pm review round 2 (o14): a re-sign repeats the pre-approval, his word after 🚀 is the re-sign
 _clio/plugin-clio/skills/shape-recipe/SKILL.md	6800	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/shape-test-drive/SKILL.md	5400	seed 2026-10-16, today's size + 15 %
