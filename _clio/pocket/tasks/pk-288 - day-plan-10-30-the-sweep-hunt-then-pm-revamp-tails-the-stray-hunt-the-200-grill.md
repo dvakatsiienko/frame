@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-30T13:46:00Z'
-updated_date: '2026-10-30T16:16:00Z'
+updated_date: '2026-10-30T16:43:00Z'
 labels:
   - m
 dependencies: []
@@ -168,4 +168,23 @@ W721 (2026-10-30 o3, dima): let's try one more wave and see what its findings br
 W722 (2026-10-30 o3, dima): stop the waves if all is good.
 W725 (2026-10-30 o41, dima): now, all at once.
 W726 (2026-10-30 o44, dima): wisphunter and wishkeep too.
+
+late grooms of 2026-10-30 18:18–18:37 (helga, 18:42), the main lane's instructions, each acted on the turn it landed; W740 lives in FRM-478, W741 in the next mods lane's spec until its ticket:
+W732 (2026-10-30 18:20, dima): you can spawn two wishkeepers, because the not-wishkeeper-covered scope is quite big.
+W742 (2026-10-30 18:37, dima, o50 steer): let's have it as a line in the skill for now.
+W743 (2026-10-30 18:37, dima, o50 steer): if it repeats, then mechanical protection is needed.
+W727 (2026-10-30 18:18, dima): proceed with frm-419.
+W728 (2026-10-30 18:18, dima): print me interesting details about the wisp/wish hunting wave.
+W729 (2026-10-30 18:19, dima): do a siesta with wishkeeper against your actual main lane progress.
+W730 (2026-10-30 18:19, dima): it seems you forget about siestas, and wishkeeper did not run for a while.
+W731 (2026-10-30 18:19, dima): ask him to hunt everything not hunted.
+W733 (2026-10-30 18:25, dima): CLI lane, once it fully resolves the current chunk and merges, collect the retro and stop them.
+W734 (2026-10-30 18:25, dima): there is no 5-hour window capacity for the next chunk.
+W735 (2026-10-30 18:26, dima): tell Sila Lane to fix everything.
+W736 (2026-10-30 18:26, dima): i accept a merge only when everything is working and verified.
+W737 (2026-10-30 18:37, dima): PK-285 is a little later, no capacity today. plan after monday reset.
+W738 (2026-10-30 18:37, dima): and i do this with your side channel.
+W739 (2026-10-30 18:37, dima): tell codie to use the memory-altering skill for skill updates and memory updates.
+W740 (2026-10-30 18:37, dima): yes, and connect the sonnet grade ticket to the nearest possible mods lane chunk, or just fold a sonnet grade in as a step of the closest existing mods lane chunk, so it is not forgotten.
+W741 (2026-10-30 18:37, dima): and not duplicated, because you keep summoning two double verifiers for two days in a row.
 <!-- SECTION:NOTES:END -->
