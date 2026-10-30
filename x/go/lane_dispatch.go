@@ -85,9 +85,16 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	}
 	// outside every checkout: a .scratch/ in the worktree would keep the tree from its decamp at land
 	// one dir name with codie's lane plan and x lane landed's retros: the spec's feature, else the lane
-	feature := lane
-	if paths, _ := laneSpecSection(mainCheckout(frameRoot()), args[0]); len(paths) > 0 {
-		feature = filepath.Base(filepath.Dir(paths[0]))
+	feature := ""
+	for _, id := range args {
+		of := lane
+		if paths, _ := laneSpecSection(mainCheckout(frameRoot()), id); len(paths) > 0 {
+			of = filepath.Base(filepath.Dir(paths[0]))
+		}
+		if feature != "" && of != feature {
+			return nil, usageFail(args[0]+" sits in lane spec "+feature+", "+id+" in "+of+": one dispatch is one lane", "x lane dispatch <one lane's ids> --session <sid> --lane <name>")
+		}
+		feature = of
 	}
 	if feature != "" {
 		plan.Slices = home(filepath.Join(stateDir(), "lanes", feature, "issues")) + "/ — codie's to-tickets slices"

@@ -60,6 +60,8 @@ func TestLandedRedsEveryGapAndWritesNothing(t *testing.T) {
 	// another ticket's retros say nothing about this one's
 	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-codie-retro.md"), "retro\n")
 	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-sixth-sense-retro.md"), "retro\n")
+	// a comment naming both words is no look card
+	*w.comments = `[{"body":"not proven, not checked yet: the card comes with the done report"}]`
 
 	envelope, got := w.landed(t)
 
@@ -310,11 +312,15 @@ func TestLandedRefusesAPrThatIsNotTheTickets(t *testing.T) {
 func TestLandedKeepsATreeHoldingAnIgnoredFileOnlyAPersonMakes(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
-	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".env.local\nnode_modules/\n")
+	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".env.local\nnode_modules/\ndist/\n.DS_Store\n.worktree-offset\n")
 	env := w.laneTree(t, "env")
 	write(t, filepath.Join(env, ".env.local"), "KEY=a value only dima typed\n")
+	// what a seed, an install, a build and finder leave in a bytes tree
 	built := w.laneTree(t, "built")
 	write(t, filepath.Join(built, "node_modules/pkg/index.js"), "module.exports = 1\n")
+	write(t, filepath.Join(built, "dist/app.js"), "built\n")
+	write(t, filepath.Join(built, ".DS_Store"), "finder\n")
+	write(t, filepath.Join(built, ".worktree-offset"), "3\n")
 
 	_, got := w.landed(t, "--apply")
 
@@ -323,6 +329,18 @@ func TestLandedKeepsATreeHoldingAnIgnoredFileOnlyAPersonMakes(t *testing.T) {
 	}
 	if exists(built) {
 		t.Errorf("a tree whose only ignored files are node_modules must decamp:\n%s", got.stdout)
+	}
+}
+
+func TestLandedRedsTheLinearLinesForATicketLinearDoesNotKnow(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	w.server = newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":null}}` })
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 wish") || !strings.Contains(out, "linear sent no issue FRM-1") {
+		t.Errorf("a null issue must red the wish line, never read as no W-lines:\n%s", out)
 	}
 }
 

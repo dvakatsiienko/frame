@@ -187,7 +187,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		look.detail, look.fix = "linear did not read: "+berr.Error(), "x linear read "+id
 		wish.ok, wish.detail, wish.fix = false, look.detail, look.fix
 	default:
-		look.ok = slices.ContainsFunc(issue.Comments.Nodes, func(c struct{ Body string }) bool { return lookCard.MatchString(c.Body) })
+		look.ok = slices.ContainsFunc(issue.Comments.Nodes, func(c struct{ Body string }) bool { return isLookCard(c.Body) })
 		if look.ok {
 			look.detail = "a comment on " + id + " carries the look card"
 		}
@@ -199,8 +199,12 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	return lines, nil
 }
 
-// the look card's two fields every done report carries (crew-codie how-you-work.md § the look card)
-var lookCard = regexp.MustCompile(`(?is)\bproven\b.*\bnot checked\b`)
+// the look card's two fields every done report carries, each a «- **field**:» line (crew-codie how-you-work.md)
+var lookFields = []*regexp.Regexp{regexp.MustCompile(`(?im)^\W*proven\W*:`), regexp.MustCompile(`(?im)^\W*not checked\W*:`)}
+
+func isLookCard(body string) bool {
+	return !slices.ContainsFunc(lookFields, func(field *regexp.Regexp) bool { return !field.MatchString(body) })
+}
 
 type landedRead struct {
 	Description string
@@ -217,7 +221,7 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 		return landedRead{}, err
 	}
 	var read landedRead
-	if raw, found := data["issue"]; !found || json.Unmarshal(raw, &read) != nil {
+	if raw, found := data["issue"]; !found || string(raw) == "null" || json.Unmarshal(raw, &read) != nil {
 		return landedRead{}, &Fail{Msg: "linear sent no issue " + id, Next: "x linear read " + id}
 	}
 	return read, nil
@@ -307,8 +311,9 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 	return trees, nil
 }
 
-// the ignored files a tree's seed, install and build make again: a frame tree holds 30 of them
-var regenerable = regexp.MustCompile(`(^|/)(node_modules|\.next|\.turbo)/$|^x/go/bin/$|/\.claude-plugin/types/|^home/\.claude/plugin-x/mods/[^/]+/tsconfig\.json$`)
+// the ignored files a person makes and no seed or build makes again: env and local files, keys. every other
+// ignored file (node_modules, dist, a seed's offset, .DS_Store; a frame tree holds 30) goes with the tree
+var personMade = regexp.MustCompile(`(^|/)(\.env[^/]*|[^/]*\.local(\.[^/]+)?|[^/]*\.(pem|key|p12))/?$`)
 
 func resolved(path string) string {
 	if real, err := filepath.EvalSymlinks(path); err == nil {
@@ -334,7 +339,7 @@ func treeDirt(tree string, selves []string, mergedHead string) string {
 		switch {
 		case !strings.HasPrefix(line, "!!"):
 			changed = append(changed, file)
-		case file != ".scratch/" && !regenerable.MatchString(file):
+		case personMade.MatchString(file):
 			ignored = append(ignored, file)
 		}
 	}

@@ -55,6 +55,20 @@ func runDispatchIn(t *testing.T, server *fakeLinear, frame string, args ...strin
 	return runLinear(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, append([]string{"lane", "dispatch"}, args...)...)
 }
 
+func TestDispatchRefusesTicketsFromTwoLaneSpecs(t *testing.T) {
+	t.Parallel()
+	frame := repo(t)
+	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — one\n")
+	write(t, filepath.Join(frame, ".scratch/feat-b/spec.md"), "# feat b\n\n## FRM-2 — two\n")
+	server := dispatchServer(t, dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}})
+
+	envelope, got := runDispatchIn(t, server, frame, "FRM-1", "FRM-2", "--session", "s1", "--lane", "cli-9")
+
+	if got.code != 2 || !strings.Contains(jsonOf(envelope["error"]), "one dispatch is one lane") {
+		t.Errorf("exit %d, want a usage refusal naming both specs:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestDispatchNamesTheSlicesDirAfterTheSpecsFeature(t *testing.T) {
 	t.Parallel()
 	frame := repo(t)
