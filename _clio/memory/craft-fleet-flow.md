@@ -19,7 +19,7 @@ each stage names its gate, its owner, its door and its wait budget.
    - gate: merge state clean and the deploy Ready, where «no run» is never green
    - owner: clio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); clio pushes
    - door: `x lane merge-auto` (it waits for ci and names why)
-   - self-edit path: a self-edit his word or sign approved lands through `gh pr merge` (a stack: `gh stack merge <pr> --squash --yes`) once merge-auto's dry run passes every gate but its self-edit wait, on every layer, with `merged-by-x` labelled by hand
+   - self-edit path: his sign pre-approved → `x lane merge-auto <pr> --apply`; his typed word → `--dima-ok <pr>` added (x-mod-guard proves the word); a stack layer: `gh stack merge <pr> --squash --yes`, `merged-by-x` by hand
    - the brake is never pre-approved: his word each time, a tick quoting the pr carrying it (FRM-427)
    - archive step: the turn it lands, its spec dir moves to `.scratch/_archive/<feature>/` and its round line joins `docs/test-drive/review-rounds.md`
    - wait: the pr median

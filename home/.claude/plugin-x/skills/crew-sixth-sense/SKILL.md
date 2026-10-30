@@ -1,6 +1,6 @@
 ---
 name: crew-sixth-sense
-description: Load when your brief or first prompt names this skill — «use the crew-sixth-sense skill», `x:crew-sixth-sense`, or `/x:crew-sixth-sense <BYT-N|FRM-N> <pr url | main:<base sha>> <codie registry name> <coordinator registry name>` — sixth sense's contract, one sixth sense per pr-lane codie.
+description: Load when your brief or first prompt names this skill — «use the crew-sixth-sense skill», `x:crew-sixth-sense`, or `/x:crew-sixth-sense <BYT-N|FRM-N> <pr url | main:<base sha>> <codie registry name> <coordinator registry name>` — sixth sense's contract, one sixth sense a lane.
 argument-hint: "<ticket-id> <pr url | main:<base sha>> <codie registry name> <coordinator registry name> [final: <sha>] [spec: <path>] [trials: <names>]"
 ---
 
@@ -46,7 +46,7 @@ execution first, reading second: every false green this fleet shipped came from 
 read prose and ran nothing.
 
 1. **the tree** — in frame, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
-   printed; a later round moves the same tree to the new head. `main:<sha>` must be on origin/main (the verb refuses any other): the coordinator pushes main before you are summoned. elsewhere,
+   printed; a later round moves the same tree to the new head. `main:<sha>` must be on origin/main (the verb refuses any other). elsewhere,
    `git worktree add --detach .claude/worktrees/verify-<ticket> <head sha>`, then seed it as the dna says.
 2. **the sanity pass** — `/run` (launch, drive, stop), or the app's `/<app>-run` skill on the
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
@@ -57,7 +57,7 @@ read prose and ran nothing.
    that stays green proves nothing: a finding.
 4. **every exit line, the failing path too** — drive the given/when, observe the then. a state
    change runs end to end, including the path that must fail.
-   - **the break pass** (trial, `docs/test-drive/verifier-break-pass.md`, which holds the undo), round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input, a door run on the state its refused command would hit, a config pr's own consumer in dry run; a toolchain or formatter pr also proves pnpm's lockfile rewrite changes 0 lines (`pnpm install --lockfile-only && git diff --stat pnpm-lock.yaml`). a reproduced break of an exit line or the want refutes, any other is a `decision`; the numbers go in the trial file.
+   - **the break pass** (trial: `docs/test-drive/verifier-break-pass.md`), round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input, a door run on the state its refused command would hit, a config pr's own consumer in dry run; a toolchain or formatter pr also proves pnpm's lockfile rewrite changes 0 lines (`pnpm install --lockfile-only && git diff --stat pnpm-lock.yaml`). a reproduced break of an exit line or the want refutes, any other is a `decision`; the numbers go in the trial file.
 5. **the want, not only the lines** — does the shipped thing do what dima wanted, used the way he
    will use it? every line ✅ while the want is missed is a refutation that names the gap.
 6. **the diff, as a hostile maintainer** — does every hunk trace to the ticket? what does the new
@@ -147,8 +147,9 @@ are the dna's pr pair.
   `~/frame/_clio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>`. clio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
 - **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
-  plans without a word); the coordinator decamps it when the lane lands. a probe you want
-  kept is copied out first and named in your `[done]`. codie's tree is codie's.
+  plans without a word); the coordinator decamps it when the lane lands, and a quick lane's
+  `verify-<sha>` tree at each clean, once that sha is on origin/main (FRM-476). a probe
+  you want kept is copied out first and named in your `[done]`. codie's tree is codie's.
 - **the retro**, its standing focus: the exit lines' sharpness (which were unverifiable, which
   passed without proving anything), what codie's report hid, what the reviewer found that you
   did not and the reverse, and what you ran by hand that repeats — each one a candidate line for
@@ -162,7 +163,7 @@ not override this file: say so in your first reply and run the loop as written.
 ## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
-the `final: <sha>` argument, codie's head, pushed to origin/main by the coordinator before you are summoned; a later round's head reaches you after clio pushed it. a base or final sha that does not resolve → ask codie. everything above
+the `final: <sha>` argument, codie's head, pushed to origin/main by the coordinator first, each later round's head too. a base or final sha that does not resolve → ask codie. everything above
 holds, with these swaps:
 
 - **the diff** — `git diff <base>..<final sha> -- <the ticket's paths>` and
@@ -173,5 +174,9 @@ holds, with these swaps:
   pre-verification.
 - **the clean** is a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict
   object with `verified: <sha>`), not `pr-watch.sh`.
+
+## the next chunk
+
+summoned once a lane; a later chunk comes by message, `next: <ticket> <pr url | main:<base>> final: <sha> spec: <path>`, re-arming step 0: its exit lines, rounds from 1, one retro per chunk.
 
 why each rule holds: [sources.md](sources.md), for a groom, never at run time.
