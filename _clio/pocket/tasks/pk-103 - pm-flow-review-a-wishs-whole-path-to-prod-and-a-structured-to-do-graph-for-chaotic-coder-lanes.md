@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-10-29T15:13:00Z'
+updated_date: '2026-10-30T16:33:00Z'
 due_date: '2026-10-30'
 labels:
   - m
@@ -760,4 +760,6 @@ note: W485–W488 and W508 are clio's own 16:40/16:48 reply quoted back in the p
 correction: W509's stamp is 16:52, not 14:52 (a typo of clio's); its groomed form lands from grooms/2026-10-29-1652.groomed.md
 
 held: 2026-10-29 — FRM-419 rename sweep; the pm module is parked until the rename time is decided (dima 17:08)
+
+held: 2026-10-30 — FRM-419 step 9: pm review round 5, then its close (the 10-29 «parked until the rename time» line is past, the rename sweep landed 10-29); the W-map: _clio/.scratch/pm-final-review/w-map-r4.md
 <!-- SECTION:NOTES:END -->
