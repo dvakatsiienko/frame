@@ -178,11 +178,19 @@ async function serve() {
             // live mod; without the user settings the swap alone names the dirs
             '--setting-sources',
             'project,local',
+            // the user's default mode came with the user settings: a frame session must not stop at a permission dialog
+            '--permission-mode',
+            'bypassPermissions',
         ],
         {
             cols: COLS,
             cwd: process.cwd(),
-            env: { ...process.env, CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':') },
+            // the watch var also came from the user settings' env
+            env: {
+                ...process.env,
+                CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':'),
+                CLAUDE_CODE_PLUGIN_DIR_WATCH: '1',
+            },
             name: 'xterm-256color',
             rows: ROWS,
         },
