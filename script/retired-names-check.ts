@@ -6,7 +6,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import { addedLines } from './lib/fleet-hazards-check.ts';
-import { retiredForms, retiredHits } from './lib/retired-names.ts';
+import { retiredHits, retiredPattern } from './lib/retired-names.ts';
 
 const git = (...args: string[]) =>
     execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 26 });
@@ -38,9 +38,6 @@ const stagedHits = () =>
         });
 
 const treeHits = () => {
-    const pattern = retiredForms
-        .map((form) => form.replace(/[-:]/g, '\\$&'))
-        .join('|');
     let found = '';
     try {
         found = git(
@@ -51,7 +48,7 @@ const treeHits = () => {
             '-n',
             '-i',
             '-E',
-            pattern,
+            retiredPattern,
         );
     } catch {
         return [];

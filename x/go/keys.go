@@ -34,7 +34,7 @@ import (
 var members = []string{"clio", "codie", "dima"}
 
 // a role word resolves to the member it names (dima, 2026-10-29: «both words resolve»)
-var memberAliases = map[string]string{"coder": "codie"}
+var memberAliases = map[string]string{"coder": "codie", "cclio": "clio"} // read-both
 
 func memberNamed(name string) (string, bool) {
 	name = cmp.Or(memberAliases[name], name)

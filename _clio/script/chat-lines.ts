@@ -7,13 +7,17 @@ import { parseArgs } from 'node:util';
 import { liveSessions, transcriptOf } from './session-registry.ts';
 
 const CLIO_NAME = '🦉 clio';
+const OLD_CLIO_NAME = '🦉 cclio'; // read-both
 const MAX_CHARS = 300;
 const STAMP = '📄 last report:';
 const STEER = /^- (o\d+) .*his steer: «(.*?)»(?: ·|$)/;
 
 // «Side chat» sessions write to the same project dir, so the live «🦉 clio» session is asked first
 function defaultTranscript(): string {
-    const live = liveSessions().find((session) => session.name === CLIO_NAME);
+    const live = liveSessions().find(
+        (session) =>
+            session.name === CLIO_NAME || session.name === OLD_CLIO_NAME,
+    );
     const own = live && transcriptOf(live.sessionId);
     if (own) return own;
     console.error(

@@ -75,7 +75,7 @@ def replay(path, rule, subagent=False):
                 signals[block["type"]] += 1
                 if not loaded:
                     misses.append((entry.get("timestamp", "")[:16], block.get("type"), hit))
-    if not subagent and os.path.basename(os.path.dirname(path)).endswith(("-frame--clio", "-frame-cclio")):  # read-both: the dir before 10-29
+    if not subagent and os.path.basename(os.path.dirname(path)).endswith(("-frame--clio", "-frame-cclio", "-Users-dima-projects-dotfiles-cclio")):  # read-both: the dir before 10-29
         role = "clio"
     return role or "other", signals, misses
 

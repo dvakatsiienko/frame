@@ -12,8 +12,9 @@ skills=~/frame/home/.claude/plugin-x/skills
 for role in codie sixth-sense coder verifier designer cloud; do
   printf '%s' "$opening" | grep -q "<command-name>/x:crew-${role}</command-name>" || continue
   case $role in coder) role=codie ;; verifier) role=sixth-sense ;; esac
+  case $role in sixth-sense) who="sixth sense" ;; designer) who="the designer" ;; cloud) who="a cloud session" ;; *) who=$role ;; esac
   files="${skills}/crew-${role}/SKILL.md"
   [ "$role" = codie ] && files="$files and ${skills}/crew-codie/how-you-work.md"
-  echo "🛑 STOP — you are ${role} and this session was just compacted; your crew-${role} contract did not survive it whole. your NEXT tool call is Read ${files}, in full — no other tool, message, comment or reviewer request before it, even when the summary says what to do next. they bind as they did at spawn; then resume from the summary."
+  echo "🛑 STOP — you are ${who} and this session was just compacted; your crew-${role} contract did not survive it whole. your NEXT tool call is Read ${files}, in full — no other tool, message, comment or reviewer request before it, even when the summary says what to do next. they bind as they did at spawn; then resume from the summary."
   exit 0
 done

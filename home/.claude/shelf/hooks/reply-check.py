@@ -186,7 +186,7 @@ def grill_drift(prose: str, session: str) -> str:
 
 
 def waits_without_dima(prose: str, session: str) -> bool:
-    if not re.search(r"(^|\s)clio$", session_name(session)) or not open_asks(session):
+    if not re.search(r"(^|\s)c?clio$", session_name(session)) or not open_asks(session):  # read-both: cclio before the 10-29 rename
         return False
     return not any("dima" in line for line in WAIT_LINE.findall(prose))
 

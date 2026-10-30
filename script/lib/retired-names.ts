@@ -13,8 +13,12 @@ export const retiredForms = [
     'sync: cw',
 ] as const;
 
+export const retiredPattern = retiredForms
+    .map((form) => form.replace(/[-:]/g, '\\$&'))
+    .join('|');
+
 const formPattern = new RegExp(
-    `(?<![A-Za-z0-9])(${retiredForms.map((form) => form.replace(/[-:]/g, '\\$&')).join('|')})(?![A-Za-z0-9])`,
+    `(?<![A-Za-z0-9])(${retiredPattern})(?![A-Za-z0-9])`,
     'gi',
 );
 
