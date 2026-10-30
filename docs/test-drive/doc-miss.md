@@ -16,4 +16,4 @@ until: 2026-10-30
 
 ## verdict
 
-- 2026-10-30 · **scattered, not worth a rag index** (pending dima's close of FRM-177): 1 miss in 18 days (10-27, a charter with no path to it, fixed by naming the path); `rg`, the barrel and the knowledge shelf found every other doc · per the card, FRM-177 closes as not worth the effort on his word
+- 2026-10-30 · **scattered: 1 miss in 18 days** (10-27, a charter with no path to it, fixed by naming the path); `rg`, the barrel and the knowledge shelf found every other doc · FRM-177 stays open: dima looks at it first, then decides (his 17:12 steer: «it may still be useful at some point»)
