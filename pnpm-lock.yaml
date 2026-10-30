@@ -225,8 +225,8 @@ importers:
         specifier: 8.3.0
         version: 8.3.0
       style-dictionary:
-        specifier: 5.7.0
-        version: 5.7.0
+        specifier: 5.7.1
+        version: 5.7.1
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
@@ -2991,8 +2991,8 @@ packages:
     resolution: {integrity: sha512-aulFJcD6YK8V1G7iRB5tigAP4TsHBZZrOV8pjV++zdUwmeV8uzbY7yn6h9MswN62adStNZFuCIx4haBnRuMDaw==}
     engines: {node: '>=18'}
 
-  style-dictionary@5.7.0:
-    resolution: {integrity: sha512-imy4PuzqWTCpPE9YMcDSlqtb9zV4wj8I06hRDpt+/HTJVH88KKuMx0X++/PMDjQAGptSxqIkYiulOSwSL5r6Kw==}
+  style-dictionary@5.7.1:
+    resolution: {integrity: sha512-qO9WsyR5jZWz8+5JRtehn7HF8YAvm+Jd8UxiYHtvZhYSNwfMfAVOBK1anjdZwbH+njFb7xuQsjqpD+djPXErcw==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
@@ -5713,7 +5713,7 @@ snapshots:
 
   strip-final-newline@4.0.0: {}
 
-  style-dictionary@5.7.0:
+  style-dictionary@5.7.1:
     dependencies:
       '@bundled-es-modules/deepmerge': 4.3.2
       '@bundled-es-modules/glob': 13.0.6

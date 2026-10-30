@@ -130,7 +130,7 @@
         "node-pty": "1.1.0",
         "odiff-bin": "4.5.0",
         "string-width": "8.3.0",
-        "style-dictionary": "5.7.0",
+        "style-dictionary": "5.7.1",
         "tailwindcss": "4.3.3",
         "typescript": "7.0.2",
         "utopia-core": "1.6.0",
