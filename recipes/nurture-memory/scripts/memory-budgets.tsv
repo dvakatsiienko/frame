@@ -137,5 +137,5 @@ import/raycast/extensions/x-ray/AGENTS.md	2700	seed 2026-10-16, today's size + 1
 recipes/AGENTS.md	8100	seed 2026-10-16, today's size + 15 %
 schedule/AGENTS.md	2700	seed 2026-10-16, today's size + 15 %
 speak/AGENTS.md	3100	seed 2026-10-16, today's size + 15 %
-x/AGENTS.md	9900	seed 2026-10-16, today's size + 15 %; 2026-10-23 +300 B: the cli lanes' verify-recipe line (halt flush o197)
+x/AGENTS.md	10100	seed 2026-10-16, today's size + 15 %; 2026-10-23 +300 B: the cli lanes' verify-recipe line (halt flush o197); 2026-10-30 +200 B: the git archive adequacy line (FRM-467 sixth sense retro)
 x/go/AGENTS.md	3900	seed 2026-10-16, today's size + 15 %
