@@ -81,6 +81,18 @@ test('a spawn naming the old skill id inline is refused too', async ($, on) => {
     expect(w.ran).toEqual([]);
 });
 
+test('a brief file naming the old skill id is checked too, and refused without a stamp', async ($, on) => {
+    const w = world(on, {
+        '/repo/briefs/old.md': `${OLD_SKILL} FRM-1 build the thing\n`,
+    });
+    const r = await bash(
+        $,
+        'claude --bg -n codie --model opus "$(cat briefs/old.md)" --remote-control',
+    );
+    expect(r.deny).toContain('x brief check /repo/briefs/old.md --repo /repo');
+    expect(w.ran).toEqual([]);
+});
+
 test('a claude --bg without /x:crew-codie runs', async ($, on) => {
     const w = world(on, {});
     const command = "claude --bg -n probe 'say ok'";

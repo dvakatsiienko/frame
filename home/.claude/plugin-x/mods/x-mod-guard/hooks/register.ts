@@ -115,6 +115,34 @@ async function briefFindings($: EngineInterface, text: string) {
         : [];
 }
 
+// a start_session spawn is a member spawn like `claude --bg`: the gate that refuses a --bg brief leaving a live trial
+// unnamed (frame's script/test-drive-list.ts --spawn-hook) reads its prompt as the same command (FRM-467). It answers
+// the refusal's reason, or none; it throws when the gate breaks, and the spawn goes then
+const START_SESSION = 'mcp__ccd_session__start_session';
+async function trialGap($: EngineInterface, prompt: string) {
+    const home = await $.env.get('HOME');
+    const command = `claude --bg '${prompt.replaceAll("'", "'\\''")}'`;
+    const run = await $.process.run(
+        ['node', `${home}/frame/script/test-drive-list.ts`, '--spawn-hook'],
+        {
+            stdin: JSON.stringify({ tool_input: { command } }),
+            timeoutMs: 8000,
+        },
+    );
+    if (!run.stdout.trim()) return undefined;
+    const out = JSON.parse(run.stdout) as {
+        hookSpecificOutput?: {
+            permissionDecision?: string;
+            permissionDecisionReason?: string;
+        };
+    };
+    const decision = out.hookSpecificOutput;
+    return decision?.permissionDecision === 'deny'
+        ? decision.permissionDecisionReason
+        : undefined;
+}
+
+const CODIE_IDS = ['/x:crew-codie', '/x:crew-coder']; // read-both: the skill id before 10-29
 // what x brief check stamps: sha256 over the file's raw bytes, under $X_STATE or ~/.local/state/x (x/go/brief.go)
 async function readBrief(
     $: EngineInterface,
@@ -130,7 +158,9 @@ async function readBrief(
         .join('');
     const state = (await $.env.get('X_STATE')) || `${home}/.local/state/x`;
     return {
-        isCodie: new TextDecoder().decode(bytes).includes('/x:crew-codie'),
+        isCodie: CODIE_IDS.some((id) =>
+            new TextDecoder().decode(bytes).includes(id),
+        ),
         isStamped: await $.fs.exists(`${state}/briefs/${sum}.json`),
     };
 }
@@ -240,6 +270,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
     'raw-plugin-update',
+    'spawn-trial',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -1286,6 +1317,40 @@ export const register: Register = (on) => {
     on('turn.complete', async ($, e, next) => {
         if (!e.agentId) await $.state.set(TOLD, '').catch(() => undefined);
         return next(e);
+    });
+
+    // an MCP tool is outside the typed tool table, so the hook reads every call and answers the one it names
+    on('tool.call', async ($, e, next) => {
+        if ((e.tool as string) !== START_SESSION) return next(e);
+        const prompt = (e as { prompt?: unknown }).prompt;
+        const reason =
+            typeof prompt === 'string'
+                ? await trialGap($, prompt).catch(() => undefined)
+                : undefined;
+        if (!reason) return next(e);
+        const door =
+            'name each live trial in the brief with how the lane uses it, or write «trial skipped: <name> — <why>»; a blind trial stays unnamed';
+        const isWarn = await isWarnOnly($, 'spawn-trial');
+        await record($, {
+            command: 'start_session',
+            door,
+            kind: isWarn ? 'warned' : 'refused',
+            rule: 'spawn-trial',
+            target: 'live trial',
+            why: reason,
+        }).catch(() => undefined);
+        if (!isWarn)
+            return {
+                deny: `x-mod-guard stopped this spawn. instead: ${door}. why: ${reason}`,
+            };
+        const ran = await next(e);
+        return {
+            ...ran,
+            context: [
+                ...(ran.context ?? []),
+                wouldRefuse('spawn-trial', `${door}. why: ${reason}`),
+            ],
+        } as never;
     });
 
     on('agent.spawn', async ($, e, next) => {
