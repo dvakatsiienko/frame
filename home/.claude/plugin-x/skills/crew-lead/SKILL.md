@@ -50,7 +50,7 @@ the split is **disposable vs watchable**, never research vs code.
 
 ## preflight — every summon, in order
 
-- **reuse or summon** — an idle member revives by message with its context intact; the grid in [models.md](models.md) § summon or reuse decides.
+- **reuse or summon** — an idle member revives by message, context intact; [models.md](models.md) § summon or reuse decides. one sixth sense a lane, reused by message
 - **trust key** — a `--bg` summon reads its exact folder in `~/.claude.json` (`projects[<path>].hasTrustDialogAccepted`), never a trusted parent; a new summon home gets the key in one command, `jq … ~/.claude.json > tmp && mv tmp ~/.claude.json`, since every live session writes that file; never a `cp` from an older copy.
 - **spare age** — every `--bg` summon claims a pre-warmed `claude bg-spare`, and a day-old spare once booted codie without the repo's root `AGENTS.md`. `ps -o pid,lstart,command -ax | grep '[b]g-spare'`; older than a day → `claude daemon stop --keep-workers`, then summon. the brief's «name your loaded AGENTS.md paths» line is the belt.
 - **app essentials** — the target app passes `node ~/projects/bytes/script/apps-essentials.ts --app <app>` (`x:app-setup-essentials`); a red row is filled before the summon, or the brief says which row codie fills first. a 🟡 row rides the brief too, after the app's wisps.
