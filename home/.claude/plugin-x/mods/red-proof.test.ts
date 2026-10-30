@@ -25,16 +25,25 @@ function fixture() {
 }
 
 describe('red-proof --cmd --pairs', () => {
-    it('goes red on each named swap, green on the restored file, and returns the bytes', () => {
+    const run = () => {
         const { copy, file, pairs } = fixture();
         const r = spawnSync(
             BIN,
             ['--cmd', '--pairs', pairs, file, '--', 'cmp', '-s', file, copy],
             { encoding: 'utf8' },
         );
+        return { file, r };
+    };
+
+    it('goes red on each named swap and green on the restored file', () => {
+        const { r } = run();
         expect(r.status).toBe(0);
         expect(r.stdout.match(/^RED/gm)).toHaveLength(2);
         expect(r.stdout).toContain('GREEN restored');
+    });
+
+    it('returns the bytes after the swaps', () => {
+        const { file } = run();
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
     });
 
