@@ -266,7 +266,7 @@
 - 🧭 a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
   - given a session the registry names anything but 🦉 clio (a nested shell and an eval count)
   - when it runs `x linear api` with an `issueUpdate`, `issueBatchUpdate` or `issueCreate`, or a query the shell expands from a variable or a substitution or xargs feeds in, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file` (also behind `x as <member> --`), then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
-  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, an actor held in a variable, or a line whose segments before the x call drop `CLAUDECODE` (unset, emptied, `export -n`, `typeset +x`, `env -i`, `env -`, `env -u`/`--unset=`), with which x acts as dima on a tty, then the call is flagged `as-dima`
+  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, an actor held in a variable, or a line whose segments before the x call drop `CLAUDECODE` (unset, emptied, `export -n`, `typeset +x`, `env -i`, `env -`, `env -u`/`--unset=`, `env -S '…'`, env by path), with which x acts as dima on a tty, then the call is flagged `as-dima`
   - and a warning keeps every check below it in play: a force-push or an untick'd sign after it is still refused
   - and another tool's `-i` on the line (`grep -i`, `sed -i`), `CLAUDECODE=1` and an `env -i` after the x call run
   - and clio's session, `x linear set <id> --state …`, `x linear body --set`, `x linear api` queries and a quoted mention run; a session the registry does not list runs them, fail open; a thread whose title only mentions clio is still a member

@@ -39,9 +39,18 @@ function segmentDrops(words: string[]): boolean {
     }
     const [name, ...rest] = words.slice(i);
     if (name === undefined) return false;
-    if (name === 'env') {
+    // by path too: `/usr/bin/env -u CLAUDECODE …`
+    if (name.split('/').at(-1) === 'env') {
         for (let j = 0; j < rest.length; j++) {
             const w = rest[j] ?? '';
+            // env's split-string: its words run as an env command line of their own
+            const split =
+                w === '-S' || w === '--split-string'
+                    ? rest[++j]
+                    : (w.match(/^(?:-S|--split-string=)(.+)$/)?.[1] ??
+                      undefined);
+            if (split !== undefined)
+                return segmentDrops(['env', ...split.split(/\s+/)]);
             if (/^[A-Za-z_]\w*=/.test(w)) {
                 if (isEmptied(w)) return true;
                 continue;

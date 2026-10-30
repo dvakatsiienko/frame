@@ -108,6 +108,18 @@ for (const [shape, typed] of [
     ['env -', 'env - x linear read FRM-1'],
     ['a clustered env -iv', 'env -iv x linear read FRM-1'],
     [
+        'env by path',
+        '/usr/bin/env -u CLAUDECODE script -q /dev/null x linear read FRM-1',
+    ],
+    [
+        'env -S with an empty assignment',
+        "env -S 'CLAUDECODE= x linear comment FRM-1 --body-file f'",
+    ],
+    [
+        'env --split-string= with -u',
+        "env --split-string='-u CLAUDECODE x linear read FRM-1'",
+    ],
+    [
         'an unset inside bash -c',
         "bash -c 'unset CLAUDECODE; x linear read FRM-1'",
     ],
