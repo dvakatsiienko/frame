@@ -67,20 +67,30 @@ const LOCAL_GIT = new Set(['git-discard', 'git-rewrite']);
 // what a throwaway repo under the job's own tmp lifts (FRM-467): a sweep (`git add -A`, a pathless commit), the identity
 // a `-c user.*` or `git config user.*` sets, a gate piped to tail, and a HOME that itself points into the job tmp
 const IDENTITY = /^user\.(?:name|email)$/i;
+// `git config --global|--system|--file|--blob` writes a config that is not the throwaway repo's
+function writesOutsideRepo(c: Command) {
+    return gitParts(c.args).subArgs.some((w) =>
+        /^(?:--global|--system|--file|-f|--blob|--worktree)(?:=|$)/.test(
+            w.text,
+        ),
+    );
+}
 function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
-    if (r.rule === 'home')
-        return [
-            ...c.assigns,
-            ...(c.name === 'export' ? c.args.map((w) => w.text) : []),
-        ]
+    if (r.rule === 'home') {
+        // an export covers the commands after it, and a git command must also act inside the tmp
+        if (c.name === 'export' || (c.name === 'git' && !isThrowaway(c, ctx)))
+            return false;
+        return c.assigns
             .filter((a) => a.startsWith('HOME='))
             .every((a) => isJobTmp(resolve(a.slice(5), '/', ctx), ctx));
+    }
     if (r.rule === 'git-sweep') return c.name === 'git' && isThrowaway(c, ctx);
     if (r.rule === 'gate-pipe') return isThrowaway(c, ctx);
     if (r.rule === 'bypass')
         return (
             c.name === 'git' &&
             r.targets.every((t) => IDENTITY.test(t)) &&
+            !writesOutsideRepo(c) &&
             isThrowaway(c, ctx)
         );
     return false;
@@ -120,7 +130,7 @@ function without(c: Command, r: Refusal, next: Command | undefined) {
 function isScratchGit(c: Command, r: Refusal, ctx: Context) {
     if (c.name !== 'git' || !LOCAL_GIT.has(r.rule)) return false;
     const { sub, subArgs } = gitParts(c.args);
-    if (sub === 'push') return false;
+    if (sub === 'push' || actsIn(c, ctx) === undefined) return false;
     const dir = gitDir(c, ctx);
     const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
     return paths.every(
@@ -174,6 +184,15 @@ export function tmpDirs(
         const dir = actsIn(c, ctx);
         return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
+}
+// a link or a worktree the command makes puts a path of the job tmp somewhere else before its git runs, which the
+// caller's look at the disk cannot see
+export function makesLinks(command: string, cwd: string) {
+    return commandsDeep(command, cwd).some(
+        (c) =>
+            c.name === 'ln' ||
+            (c.name === 'git' && gitParts(c.args).sub === 'worktree'),
+    );
 }
 export function refusals(
     command: string,

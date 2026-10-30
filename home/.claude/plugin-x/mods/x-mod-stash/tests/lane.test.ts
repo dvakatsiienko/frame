@@ -270,26 +270,36 @@ test('a second open lane of one topic is refused, naming the open one and its fi
     ]);
 });
 
-test('a second card for the same lane is refused whatever its title, naming the live card', async ($, on) => {
+const LIVE_FIX =
+    'orbit glide: lane l1 «mods settings» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over';
+
+test('a second card naming the lane plan file a live card holds is refused whatever its title', async ($, on) => {
     const w = world(on);
     await start($);
     await linkedPlan($, w);
-    const again = await denied($, {
-        act: 'create',
-        items: undefined,
-        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
-        title: 'another name for the same lane',
-    });
-    const piped = await denied($, {
-        act: 'create',
-        items: ITEMS,
-        title: 'mods settings | FRM-9',
-    });
-    expect([again, piped, kept(w).map((l) => l.id)]).toEqual([
-        'orbit glide: lane l1 «mods settings» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
-        'orbit glide: lane l1 «mods settings» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over',
-        ['l1'],
-    ]);
+    expect(
+        await denied($, {
+            act: 'create',
+            items: undefined,
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+            title: 'another name for the same lane',
+        }),
+    ).toBe(LIVE_FIX);
+    expect(kept(w).map((l) => l.id)).toEqual(['l1']);
+});
+
+test("a title whose topic ends at « | » is the live lane's topic", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    expect(
+        await denied($, {
+            act: 'create',
+            items: ITEMS,
+            title: 'mods settings | FRM-9',
+        }),
+    ).toBe(LIVE_FIX);
+    expect(kept(w).map((l) => l.id)).toEqual(['l1']);
 });
 
 const CLIO_TITLES = ['🦉 cclio', '🦉clio', '🦉 clio']; // read-both: a tab resumed under the old title
@@ -303,8 +313,8 @@ for (const title of CLIO_TITLES)
         expect(kept(w).map((l) => l.id)).toEqual(['l1']);
     });
 
-test('a session that only ends in clio is not the lane owner', async ($, on) => {
-    world(on, { name: '☕️ 🔧 mods lane codie' });
+test('a session whose name only ends in clio is not the lane owner', async ($, on) => {
+    world(on, { name: '⚡ 🔧 codie: board for clio' });
     await start($);
     expect(
         await denied($, { act: 'create', items: ITEMS, title: 'mods x' }),

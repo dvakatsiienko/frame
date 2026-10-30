@@ -53,15 +53,15 @@ const bash = ($: Engine, command: string) =>
 
 const DOOR = 'backlog task edit SP-1 --append-notes';
 
-test('--notes over a task that holds notes is refused inside bash -c and eval too', async ($, on) => {
-    const w = world(on, { '/repo/.backlog/tasks': NOTED });
-    for (const command of [
-        `bash -c "backlog task edit SP-1 --notes 'new'"`,
-        `eval "backlog task edit SP-1 --notes 'new'"`,
-    ])
+for (const command of [
+    `bash -c "backlog task edit SP-1 --notes 'new'"`,
+    `eval "backlog task edit SP-1 --notes 'new'"`,
+])
+    test(`--notes over a task that holds notes is refused inside «${command.split(' ')[0]}»`, async ($, on) => {
+        const w = world(on, { '/repo/.backlog/tasks': NOTED });
         expect((await bash($, command)).deny).toContain(DOOR);
-    expect(w.ran).toEqual([]);
-});
+        expect(w.ran).toEqual([]);
+    });
 
 test('--notes over a task that holds notes is refused naming --append-notes', async ($, on) => {
     const w = world(on, { '/repo/.backlog/tasks': NOTED });
@@ -76,7 +76,7 @@ test('--notes= over a task that holds notes is refused naming --append-notes', a
 });
 
 test('BACKLOG_CWD names the project whose task is read', async ($, on) => {
-    const w = world(on, { '/proj/.backlog/tasks': NOTED });
+    world(on, { '/proj/.backlog/tasks': NOTED });
     const r = await bash(
         $,
         "BACKLOG_CWD=/proj backlog task edit SP-1 --notes 'n'",

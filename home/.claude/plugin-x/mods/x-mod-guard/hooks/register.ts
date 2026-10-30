@@ -2,6 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
+import { TICKET_KEY } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
@@ -17,6 +18,7 @@ import {
     installDirs,
     isSignAsk,
     isStashKill,
+    makesLinks,
     mergeAutoCall,
     mergeAutoPr,
     mergeAutoRepo,
@@ -94,8 +96,11 @@ const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why:
 // an Agent prompt naming a ticket id, a backticked path or file, or one of matt's skills is a brief (FRM-392); the id
 // shape copies brief.go's ticketID, which a mod cannot import. a SendMessage is never checked: reports name skills and
 // example paths on purpose, and the sixth sense's verdict was refused three times live (13:40)
-const BRIEF_SIGN =
-    /\b(?:FRM|BYT|DOT)-\d+\b|`[^`\n]*\/[^`\n]*`|`[\w.@~-]+\.[a-z]{1,5}`|\bmattpocock-skills:|\bmatt's `?[a-z]/;
+const BRIEF_SHAPES =
+    /`[^`\n]*\/[^`\n]*`|`[\w.@~-]+\.[a-z]{1,5}`|\bmattpocock-skills:|\bmatt's `?[a-z]/;
+const BRIEF_SIGN = new RegExp(
+    `\\b(?:${TICKET_KEY}|DOT)-\\d+\\b|${BRIEF_SHAPES.source}`,
+);
 // of x brief check's findings only a missing path and a skill's user quiz refuse; a quoted code term is a message's own
 const BRIEF_REFUSES = /^line \d+: (?:path|quiz) .+$/gm;
 // a relative path the session's repo lacks may live in another repo, which an absolute or ~/ path names (dima's o66)
@@ -777,7 +782,11 @@ async function lookUp(
     const unsafeTmp = new Set<string>();
     if (ctx.jobDir)
         for (const dir of new Set(tmpDirs(command, cwd, ctx)))
-            if (await isTmpEscape($, dir, ctx.jobDir)) unsafeTmp.add(dir);
+            if (
+                makesLinks(command, cwd) ||
+                (await isTmpEscape($, dir, ctx.jobDir))
+            )
+                unsafeTmp.add(dir);
     const { value: helped = [] } = await $.state
         .get(HELPED)
         .catch(() => ({ value: [] }));
@@ -852,6 +861,10 @@ async function projectsWithMilestones($: EngineInterface, asked: string[]) {
                 ? (projects.pageInfo.endCursor ?? undefined)
                 : undefined;
             if (!after) break;
+            if (page === PAGES_MAX - 1)
+                throw new Error(
+                    'linear holds more projects than the check reads',
+                );
         }
         const keys = nodes
             .filter((n) => n.projectMilestones.nodes.length)

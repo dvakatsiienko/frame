@@ -92,6 +92,7 @@
   - then it runs, and the rest of the command is judged without the lifted part, so a force-push or `--no-verify` beside a `-c user.name` stays refused
   - given the same command in frame's checkout, in a repo under `/tmp` outside the job dir, after a `cd` out of the tmp, with `git -C` or `--git-dir` or `GIT_DIR` or `GIT_WORK_TREE` pointing elsewhere, in a tmp worktree of frame or through a symlink in the tmp, or with `CLAUDE_JOB_DIR` unset or empty, then it is refused as before
   - given a `HOME` under the job tmp beside `git -C <frame> add -A`, then the sweep stays refused: HOME adds to the git-dir check and never stands in for it
+  - given a variable the line rebinds (`for`, `read`, `+=`, `unset`, `export`), a `cd -`, `pushd` or `popd`, a path with a `$` left in it, a `GIT_DIR` exported earlier, a `-c core.worktree`, a `git config --global|--system|--file`, an `export HOME=`, or a link or worktree the same command makes (`ln`, `git worktree`), then nothing is lifted: the line cannot say where git acts
   - decision: the lift is a loosening, so it ships live; the sweep no longer lifts under `/tmp` or `/var/folders` (the 10-08 temp roots keep discard and rewrite only), since the done test names frame, `/tmp` and the job tmp apart
   - proof: tests/throwaway.test.ts
 - ✅ clio cleans up its fleet's scratch without dima's word

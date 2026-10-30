@@ -72,6 +72,10 @@ const LIFTED = [
         'R=$(mktemp -d "$CLAUDE_JOB_DIR/tmp/r.XXXX") && cd "$R" && git init -q && git add -A && git commit -m x',
     ],
     ['a repo path held in a variable', `R=${TMP}; git -C "$R" add -A`],
+    [
+        'a HOME inside the job tmp for a command that is not git',
+        `HOME=${JOB}/tmp/h pnpm test`,
+    ],
     ['the lifts inside a nested shell', `bash -c 'cd ${TMP} && git add -A'`],
 ] as const;
 
@@ -154,6 +158,73 @@ const OUTSIDE = [
         {},
     ],
     ['a variable that holds frame', 'R=/repo; cd "$R" && git add -A', {}],
+    [
+        'a git config --global from the tmp',
+        `cd ${TMP} && git config --global user.email t@x`,
+        {},
+    ],
+    [
+        'a HOME inside the tmp for a git command acting in frame',
+        `HOME=${JOB}/tmp/h git commit -m x -- a.ts`,
+        {},
+    ],
+    ['an export of HOME', `export HOME=${JOB}/tmp/h`, {}],
+    [
+        'a mktemp that is only the second half of the substitution',
+        'R=$(echo /repo || mktemp -d "$CLAUDE_JOB_DIR/tmp/x.XXXX"); cd "$R" && git add -A',
+        {},
+    ],
+    [
+        'a mktemp substitution followed by a path that climbs out',
+        'R=$(mktemp -d "$CLAUDE_JOB_DIR/tmp/x.XXXX")/../../../../repo; cd "$R" && git add -A',
+        {},
+    ],
+    [
+        'a variable rebound by for',
+        `R=${TMP}; for R in /repo; do cd "$R" && git add -A; done`,
+        {},
+    ],
+    [
+        'a variable rebound by read',
+        `R=${TMP}; read R <<< /repo; cd "$R" && git add -A`,
+        {},
+    ],
+    [
+        'a variable rebound by +=',
+        `R=${TMP}; R+=/../../../../repo; cd "$R" && git add -A`,
+        {},
+    ],
+    [
+        'a cd - back to frame',
+        `cd /repo; cd ${TMP}; cd -; git config user.name x`,
+        {},
+    ],
+    ['a pushd into frame', `cd ${TMP} && pushd /repo && git add -A`, {}],
+    [
+        'a GIT_DIR exported by an earlier part',
+        `cd ${TMP} && export GIT_DIR=/repo/.git; git add -A`,
+        {},
+    ],
+    [
+        'a dir with a variable left in it',
+        'X=../../../../repo; cd $CLAUDE_JOB_DIR/tmp/$X && git -c user.name=x commit -am y',
+        {},
+    ],
+    [
+        'a core.worktree pointed at frame',
+        `cd ${TMP} && git -c core.worktree=/repo reset --hard`,
+        {},
+    ],
+    [
+        'a symlink the same command makes',
+        `ln -s /repo ${JOB}/tmp/x && cd ${JOB}/tmp/x && git add -A`,
+        {},
+    ],
+    [
+        'a worktree the same command makes',
+        `git worktree add ${JOB}/tmp/w && cd ${JOB}/tmp/w && git -c user.name=x commit -am y`,
+        {},
+    ],
 ] as const;
 
 for (const [shape, command, opts] of OUTSIDE)

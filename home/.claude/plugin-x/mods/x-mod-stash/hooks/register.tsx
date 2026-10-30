@@ -3500,13 +3500,11 @@ const COLUMNS = {
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
 // a member is the name's last word: a codie named «… + crow at decisions» is not crow (2026-10-10)
-// read-both: a clio tab resumed under its old title (cclio) is still the coordinator
-const isCoordinator = (name: string) =>
-    /(^|\s|\p{Extended_Pictographic}️?)c?clio$/u.test(name);
+// the whole name, so a member named «… notes for clio» is not her
+const isCoordinator = (name: string) => /^(?:🦉\s*)?c?clio$/u.test(name.trim()); // read-both: a clio tab under its old title
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
-// read-both: a crow tab resumed under its old title (c?crow)
 const pinOf = (name: string) =>
-    isCoordinator(name) ? 0 : /(^|\s)c?crow$/.test(name) ? 1 : 2;
+    isCoordinator(name) ? 0 : /(^|\s)c?crow$/.test(name) ? 1 : 2; // read-both: a crow tab under its old title
 
 async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);

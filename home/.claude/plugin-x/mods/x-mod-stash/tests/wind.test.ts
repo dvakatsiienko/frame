@@ -72,7 +72,11 @@ function world(
         return { text: '' };
     });
     on('turn.complete', () => ({ text: '' }));
-    on('session.compact', (_$, e) => ({ messages: e.messages }));
+    on('session.compact', (_$, e) =>
+        e.messages[0]?.text === 'veto'
+            ? ({ skip: 'vetoed' } as never)
+            : { messages: e.messages },
+    );
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     return { clock, commands, lines, store };
@@ -330,6 +334,17 @@ for (const state of ['asked', 'writing'] as const)
         expect(w.store.has(`wind:${SID}`)).toBe(false);
     });
 
+test('a compact another hook skipped keeps the wind', async ($, on) => {
+    const w = world(on);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await start($);
+    await $.session.compact({
+        messages: [{ role: 'user', text: 'veto', toolUses: [] }],
+        trigger: 'auto',
+    } as never);
+    expect(w.store.has(`wind:${SID}`)).toBe(true);
+});
+
 test('a compact keeps a wind that is refreshing, and a precompute keeps a writing one', async ($, on) => {
     const w = world(on);
     w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
@@ -377,16 +392,6 @@ for (const [who, isOwner] of [
         await say($);
         expect(notes(w.lines).join('\n')).toContain(DIMAS_WORDS);
     });
-
-test("a compact that ran, the wind's or a threshold one, submits no /reload-skills: cc sends the skill list again itself", async ($, on) => {
-    const w = world(on);
-    await start($);
-    await compact($, 'auto');
-    await w.clock.advance(2_000);
-    expect(w.commands.filter((c) => c.startsWith('/reload-skills'))).toEqual(
-        [],
-    );
-});
 
 for (const [what, call] of [
     ['an agent', { tool: 'Agent' }],

@@ -419,11 +419,6 @@
   - when an agent, a background command or a background session starts after `pending: none` and before the compact, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it
   - then the note the session reads carries dima's words whole (W4, FRM-431), for codie and for clio alike
   - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a background command started after pending: none makes the wind refuse / both notes carry dima's words
-- ✅ no compact is followed by a `/reload-skills`
-  - given a compact ran in the main session (a second wind's, the threshold's or a typed one)
-  - when it ends, then the mod submits no `/reload-skills`
-  - decision: cc sends the whole skill list again after a compact since 2.1.304, and the reload answered «none added or removed» (probe, refresh-cc-mods #5, 2026-10-30); it also fired twice after one compact
-  - proof: tests/wind.test.ts::a compact that ran submits no /reload-skills
 - ✅ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
   - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
   - proof: tests/board.test.ts::🐦‍🔥 second wind switched off draws no button and no line; tests/wind.test.ts::🐦‍🔥 second wind switched off never compacts, even with a handoff named; tests/switches.test.ts op refused
@@ -569,7 +564,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time its sending window ends; x-mod-guard reads it
   - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press inside the window takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
-  - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it, then the record holds the new text and its quoted command, and x-mod-guard lets that command through (FRM-467 exit 3)
+  - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it on this board, then the record holds the new text and its quoted command; a press on a glide card writes none (below, dima's pick a, 2026-10-30)
   - decision: a tick on a glide card, made in clio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write; pinned by tests/orbit.test.ts::a mark from another board's glide card writes no tick record (FRM-467, kept after a try that wrote one)
   - and a second press inside the 5 s unsends it: no turn ever takes it
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before

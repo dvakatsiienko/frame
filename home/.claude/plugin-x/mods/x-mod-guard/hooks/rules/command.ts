@@ -184,20 +184,36 @@ export function peel(raw: Word[]): Peeled {
 // other shape is unknown
 function pathAssigned(value: string, subst: Parsed['segments'][number][]) {
     if (/^(\/|~|\$\{?CLAUDE_JOB_DIR\}?\/)/.test(value)) return value;
-    if (!value.startsWith('$(')) return undefined;
-    for (const x of subst) {
-        const m = peel(x.words);
-        if (m.name !== 'mktemp') continue;
-        const ops = operands(m.args);
-        if (hasFlag(m.args, ['--directory'], 'd') && ops[0]) return ops[0];
-    }
-    return undefined;
+    // only a substitution that is exactly one mktemp: `$(echo ~/frame || mktemp -d …)` prints something else
+    const [only] = subst;
+    if (value !== '$(…)' || subst.length !== 1 || !only) return undefined;
+    const m = peel(only.words);
+    const ops = operands(m.args);
+    return m.name === 'mktemp' && hasFlag(m.args, ['--directory'], 'd')
+        ? ops[0]
+        : undefined;
 }
+const REBINDERS = new Set([
+    'declare',
+    'export',
+    'for',
+    'local',
+    'mapfile',
+    'printf',
+    'read',
+    'readarray',
+    'readonly',
+    'select',
+    'typeset',
+    'unset',
+]);
 // each segment as the command it runs, `cd` followed; a `cd $R` or `git -C $R` follows a `R=<path>` set earlier in the command
 export function commands(parsed: Parsed, cwd: string): Command[] {
     const out: Command[] = [];
     let dir = cwd;
     const vars = new Map<string, string>();
+    // GIT_DIR or GIT_WORK_TREE set by an earlier segment points every later git elsewhere
+    const sticky: string[] = [];
     const expand = (t: string) =>
         t.replace(
             /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?(?=\/|$)/,
@@ -207,10 +223,23 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
     peeled.forEach(({ s, ...c }, k) => {
         for (const a of c.assigns) {
             const at = a.indexOf('=');
+            const name = a.slice(0, at);
             const path = pathAssigned(a.slice(at + 1), s.subst);
-            if (path) vars.set(a.slice(0, at), path);
-            else vars.delete(a.slice(0, at));
+            if (name.endsWith('+')) vars.delete(name.slice(0, -1));
+            else if (path) vars.set(name, path);
+            else vars.delete(name);
         }
+        const appended = s.words[0]?.text.match(/^([A-Za-z_][A-Za-z0-9_]*)\+=/);
+        if (appended?.[1]) vars.delete(appended[1]);
+        // a command that rebinds a variable other than by `NAME=` (read, for, unset, declare, export R=…) forgets it
+        if (REBINDERS.has(c.name))
+            for (const w of c.args) vars.delete(w.text.replace(/\+?=.*$/, ''));
+        sticky.push(
+            ...[
+                ...c.assigns,
+                ...(c.name === 'export' ? c.args.map((w) => w.text) : []),
+            ].filter((a) => /^GIT_(?:DIR|WORK_TREE)=/.test(a)),
+        );
         if (!c.name) return;
         if (c.name === 'git')
             c.args = c.args.map((w, i) =>
@@ -222,11 +251,22 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
         for (let j = k - 1; j >= 0 && peeled[j]?.s.sep === '|'; j--)
             piped.push(peeled[j] as Peeled);
         const feeders = [...s.subst.map((x) => peel(x.words)), ...piped];
-        if (c.name === 'cd') {
-            const to = expand(c.args[0]?.text ?? '~');
+        if (c.name === 'cd' || c.name === 'pushd' || c.name === 'popd') {
+            const target = operands(c.args)[0];
+            // `cd -`, `popd` and a bare `pushd` land where the line cannot say: left as a `$` the rules never trust
+            const to =
+                target === undefined && c.name !== 'cd'
+                    ? '$OLDPWD'
+                    : expand(target === '-' ? '$OLDPWD' : (target ?? '~'));
             dir = /^[/~$]/.test(to) ? to : `${dir}/${to}`;
         }
-        out.push({ ...c, dir, feeders, sep: s.sep });
+        out.push({
+            ...c,
+            assigns: [...c.assigns, ...sticky],
+            dir,
+            feeders,
+            sep: s.sep,
+        });
     });
     return out;
 }
@@ -320,14 +360,22 @@ const GIT_REDIRECT_FLAG = /^--(?:git-dir|work-tree)(?:=|$)/;
 export function actsIn(c: Command, ctx: Context) {
     const isRedirected =
         c.assigns.some((a) => /^GIT_(?:DIR|WORK_TREE)=/.test(a)) ||
-        c.args.some((w) => GIT_REDIRECT_FLAG.test(w.text));
+        c.args.some((w) => GIT_REDIRECT_FLAG.test(w.text)) ||
+        gitParts(c.args).configs.some((k) =>
+            /^core\.(?:worktree|gitdir)=/i.test(k),
+        );
     if (isRedirected) return undefined;
     return c.name === 'git' ? gitDir(c, ctx) : resolve(c.dir, '/', ctx);
 }
 // a command that acts inside the job's own tmp and stays there: its repo is a throwaway one, the git it runs is local
 export function isThrowaway(c: Command, ctx: Context) {
     const dir = actsIn(c, ctx);
-    return dir !== undefined && isJobTmp(dir, ctx) && !ctx.unsafeTmp?.has(dir);
+    return (
+        dir !== undefined &&
+        !dir.includes('$') &&
+        isJobTmp(dir, ctx) &&
+        !ctx.unsafeTmp?.has(dir)
+    );
 }
 // every file a command writes, resolved: `>` and `>>` targets, `tee`, `sd` and `sed -i` files, python's `open(…, 'w')`.
 // x-mod-holds' files are checked against it; a path held in a variable is not read

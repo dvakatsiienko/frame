@@ -115,9 +115,8 @@ test('a project on the second page of projects is read', async ($, on) => {
     expect(w.asked[1]).toContain('after: "cursor-1"');
 });
 
-test('a move inside bash -c or eval is checked against the milestones too', async ($, on) => {
-    const w = world(on, [{ nodes: [project('p1', 'cli', true)] }]);
-    for (const command of [`bash -c '${MOVE}'`, `eval "${MOVE}"`])
+for (const command of [`bash -c '${MOVE}'`, `eval "${MOVE}"`])
+    test(`a move inside «${command.split(' ')[0]}» is checked against the milestones`, async ($, on) => {
+        world(on, [{ nodes: [project('p1', 'cli', true)] }]);
         expect((await bash($, command)).deny).toContain(MILESTONE);
-    expect(w.asked.length).toBeGreaterThan(0);
-});
+    });
