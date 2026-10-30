@@ -96,6 +96,12 @@
   - decision: the lift rests on an allowlist of the whole command, never on a parse of where git acts: sixth sense's round 1 found 27 forms the parse could not follow, so a form off the list is refused (clio's pick, 2026-10-30)
   - decision: the lift is a loosening, so it ships live; the sweep no longer lifts under `/tmp` or `/var/folders` (the 10-08 temp roots keep discard and rewrite only), since the done test names frame, `/tmp` and the job tmp apart
   - proof: tests/throwaway.test.ts
+- ✅ a hook runs under a HOME the same command made (FRM-470)
+  - given a command that sets a variable to a bare `$(mktemp -d)` (no template, no pipe), then runs a non-git command with `HOME=$VAR` (quotes and braces allowed)
+  - when the guard reads it, then it runs, and the rest of the command is judged without the `HOME=`, so `HOME=$H rm -rf x` still asks for trash
+  - given `HOME=/tmp/x`, `HOME=~/other`, `export HOME=…`, a variable never set, set again, read again or set in the same segment, a mktemp with a template, a pipe or `-p`, a second `HOME=`, git, or a hidden substitution or heredoc, then it is refused naming the `HOME` override
+  - decision: git stays out, since a HOME with no gitconfig drops the signing and identity the commit rules rest on
+  - proof: tests/homedoor.test.ts; `mods/home-door.test.ts` runs a made-up HOME for real and checks `~/.local/state` and `~/.local/state/x` hold the same names after (two levels, since other sessions write below them all day)
 - ✅ clio cleans up its fleet's scratch without dima's word
   - given a session rooted under `~/frame/_clio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
   - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one

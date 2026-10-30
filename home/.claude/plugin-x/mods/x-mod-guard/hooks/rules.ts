@@ -219,6 +219,19 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
         )
     );
 }
+// a test door (FRM-470): `H=$(mktemp -d) && HOME=$H node <hook>`. the HOME is an empty dir this command made, so the hook never
+// sees the real config; git stays out, since a HOME with no gitconfig drops the signing and identity the commit rules rest on
+function isFreshHome(c: Command) {
+    const homes = c.assigns.filter((a) => a.startsWith('HOME='));
+    return (
+        c.name !== 'git' &&
+        homes.length > 0 &&
+        homes.every((a) => {
+            const name = a.slice(5).match(/^"?\$\{?([A-Za-z_]\w*)\}?"?$/)?.[1];
+            return name !== undefined && c.fresh.includes(name);
+        })
+    );
+}
 function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
     if (r.rule === 'home') {
         // a git command must also act inside the tmp
@@ -354,7 +367,13 @@ export function refusals(
             c,
             next: list[i + 1],
         };
-        while (found && isPlain && isThrowawayLift(rest.c, found, ctx)) {
+        while (
+            found &&
+            ((isPlain && isThrowawayLift(rest.c, found, ctx)) ||
+                (found.rule === 'home' &&
+                    !HIDDEN.test(command) &&
+                    isFreshHome(rest.c)))
+        ) {
             const stripped = without(rest.c, found, rest.next);
             const isSame =
                 stripped.c.args.length === rest.c.args.length &&
