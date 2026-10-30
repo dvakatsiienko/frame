@@ -82,6 +82,45 @@ func TestLandedApplyArchivesTheSpecAndNothingElse(t *testing.T) {
 	}
 }
 
+func TestLandedApplyDecampsOnlyTheCleanTrees(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	// worktrees share info/exclude, so a gitignored .scratch/ hides from git status as it does in frame
+	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".scratch/\n")
+	trees := map[string]string{}
+	for _, name := range []string{"clean", "loose", "scratch", "unpushed"} {
+		trees[name] = filepath.Join(w.repo, ".claude/worktrees", name)
+		gitT(t, w.repo, "worktree", "add", "-q", trees[name], "-b", "codie/FRM-1-"+name)
+	}
+	write(t, filepath.Join(trees["loose"], "loose.txt"), "not committed\n")
+	write(t, filepath.Join(trees["scratch"], ".scratch/notes.md"), "a plan\n")
+	write(t, filepath.Join(trees["unpushed"], "y.txt"), "local only\n")
+	gitT(t, trees["unpushed"], "add", "y.txt")
+	gitT(t, trees["unpushed"], "commit", "-q", "-m", "local only")
+	// hooksHome runs lefthook install through pnpm; the fixture has no node_modules
+	bin := t.TempDir()
+	write(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\nexit 0\n")
+
+	envelope, got := runLinear(t, w.server, []string{"X_STATE=" + w.state, "PATH=" + bin + ":" + os.Getenv("PATH")},
+		"lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
+
+	out := linesOf(envelope)
+	if exists(trees["clean"]) || strings.Contains(gitT(t, w.repo, "worktree", "list"), trees["clean"]) {
+		t.Errorf("the clean tree was not decamped:\n%s", out)
+	}
+	for name, reason := range map[string]string{"loose": "loose.txt", "scratch": "holds a .scratch/ dir", "unpushed": "on no remote"} {
+		if !exists(trees[name]) {
+			t.Errorf("the %s tree was removed", name)
+		}
+		if !strings.Contains(out, reason) {
+			t.Errorf("want the %s tree's reason %q in:\n%s", name, reason, out)
+		}
+	}
+	if got.code != 1 {
+		t.Errorf("exit %d, want 1: three trees still stand", got.code)
+	}
+}
+
 func TestLandedPassesWhenEveryLineIsMet(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)

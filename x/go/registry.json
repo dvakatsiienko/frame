@@ -251,12 +251,13 @@
             },
             "name": "lane landed",
             "needsApply": true,
-            "purpose": "print a merged lane's after-merge list, each chore met or red with its fix; --apply archives the spec",
-            "steps": ["read", "archive"],
+            "purpose": "print a merged lane's after-merge chores, met or red with a fix; --apply archives the spec, decamps clean trees",
+            "steps": ["read", "archive", "decamp"],
             "touches": [
-                "github — the pr's merged state, read",
+                "github — the pr's merged state and head branch, read",
                 "linear — the ticket's W-lines, read",
                 "<main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/",
+                "<main checkout>/.claude/worktrees/<tree> — a lane tree clean by the root rule, decamped",
                 "~/.local/state/x/lanes/<feature>/ — the retros, read"
             ]
         },

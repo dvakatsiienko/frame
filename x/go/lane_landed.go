@@ -31,6 +31,8 @@ type landedPlan struct {
 	id, pr  string
 	specDir string
 	archive string
+	main    string
+	clean   []string
 }
 
 // landedPlanOf reads every after-merge chore of a ticket's lane; nothing here writes
@@ -47,7 +49,7 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	plan := landedPlan{id: id, pr: flagString(flags, "pr")}
 	var lines []landedLine
 	if err := r.Step("read", "the pr, the spec, the review line, the retros, the trees, the wish", func() (string, error) {
-		lines, plan.specDir, plan.archive, err = landedLines(repo, id, plan.pr, flags)
+		lines, err = landedLines(repo, &plan, flags)
 		return plural(len(lines), "line"), err
 	}); err != nil {
 		return nil, err
@@ -59,24 +61,31 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	return plan, nil
 }
 
-func landedLines(repo, id, pr string, flags Flags) (lines []landedLine, specDir, archive string, err error) {
+func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine, err error) {
+	id, pr := plan.id, plan.pr
 	main := repo
 	if common, linked, werr := worktreeOf(repo); werr == nil && linked {
 		main = filepath.Dir(common)
 	}
+	plan.main = main
 
 	merged := landedLine{name: "merged"}
+	headRef := ""
 	if pr != "" {
 		ghRepo, rerr := repoOf(flags)
 		if rerr != nil {
-			return nil, "", "", rerr
+			return nil, rerr
 		}
 		var read struct {
 			Merged bool `json:"merged"`
+			Head   struct {
+				Ref string `json:"ref"`
+			} `json:"head"`
 		}
 		if _, ferr := ghFetch(asCodie, githubBase()+"/repos/"+ghRepo+"/pulls/"+pr, &read); ferr != nil {
-			return nil, "", "", ferr
+			return nil, ferr
 		}
+		headRef = read.Head.Ref
 		merged.ok, merged.detail, merged.fix = read.Merged, "#"+pr+" merged", "x lane merge-auto "+pr+" --apply"
 		if !read.Merged {
 			merged.detail = "#" + pr + " is not merged"
@@ -90,10 +99,10 @@ func landedLines(repo, id, pr string, flags Flags) (lines []landedLine, specDir,
 	spec := landedLine{name: "spec", fix: "x lane landed " + id + " --apply"}
 	feature := ""
 	if paths, _ := laneSpecSection(repo, id); len(paths) > 0 {
-		specDir = filepath.Dir(paths[0])
-		feature = filepath.Base(specDir)
-		archive = filepath.Join(filepath.Dir(specDir), archived, feature)
-		spec.detail = home(specDir) + " is not archived"
+		plan.specDir = filepath.Dir(paths[0])
+		feature = filepath.Base(plan.specDir)
+		plan.archive = filepath.Join(filepath.Dir(plan.specDir), archived, feature)
+		spec.detail = home(plan.specDir) + " is not archived"
 	} else if found := archivedSpec(main, id); found != "" {
 		feature = filepath.Base(filepath.Dir(found))
 		spec.ok, spec.detail = true, home(filepath.Dir(found))
@@ -127,6 +136,27 @@ func landedLines(repo, id, pr string, flags Flags) (lines []landedLine, specDir,
 	}
 	lines = append(lines, retros)
 
+	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
+	plan.clean = nil
+	var kept, notes []string
+	for _, tree := range laneTrees(main, repo, id, headRef) {
+		if tree.reason == "" {
+			plan.clean = append(plan.clean, tree.path)
+			notes = append(notes, home(tree.path)+" is clean, decamped on --apply")
+			continue
+		}
+		kept = append(kept, tree.path)
+		notes = append(notes, home(tree.path)+" stays: "+tree.reason)
+	}
+	if len(notes) > 0 {
+		trees.ok, trees.detail = false, strings.Join(notes, "; ")
+		trees.fix = "x lane landed " + id + " --apply"
+		if len(plan.clean) == 0 {
+			trees.fix = "commit and push in " + home(kept[0]) + ", then x lane decamp " + home(kept[0]) + " --apply"
+		}
+	}
+	lines = append(lines, trees)
+
 	wish := landedLine{name: "wish", ok: true, detail: "no W-lines in the body"}
 	if actor, aerr := actorOf(Flags{}); aerr == nil {
 		if issue, berr := fetchBody(actor, id); berr == nil && issue.Description != nil {
@@ -136,7 +166,60 @@ func landedLines(repo, id, pr string, flags Flags) (lines []landedLine, specDir,
 		}
 	}
 	lines = append(lines, wish)
-	return lines, specDir, archive, nil
+	return lines, nil
+}
+
+type laneTree struct{ path, reason string }
+
+// laneTrees lists the ticket's trees under .claude/worktrees/, each with why it must stay, or clean by
+// the root rule: no change in git status, no .scratch/ dir, no commit on no remote
+func laneTrees(main, self, id, headRef string) []laneTree {
+	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
+	if err != nil {
+		return nil
+	}
+	under := filepath.Join(main, ".claude", "worktrees") + string(filepath.Separator)
+	var trees []laneTree
+	for block := range strings.SplitSeq(listed, "\n\n") {
+		var path, branch string
+		for line := range strings.SplitSeq(block, "\n") {
+			if v, ok := strings.CutPrefix(line, "worktree "); ok {
+				path = v
+			}
+			if v, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
+				branch = v
+			}
+		}
+		if !strings.HasPrefix(path, under) || branch == "" || !(strings.HasPrefix(branch, "codie/"+id+"-") || branch == headRef) {
+			continue
+		}
+		trees = append(trees, laneTree{path, treeDirt(path, self)})
+	}
+	return trees
+}
+
+func treeDirt(tree, self string) string {
+	var reasons []string
+	if same, _ := filepath.EvalSymlinks(self); same == tree || self == tree {
+		reasons = append(reasons, "x runs from it")
+	}
+	if status, _ := gitIn(tree, "status", "--porcelain"); status.out != "" {
+		var files []string
+		for line := range strings.SplitSeq(status.out, "\n") {
+			// run trims stdout, so the first line may have lost its leading status blank
+			if len(line) > 2 {
+				files = append(files, strings.TrimSpace(line[2:]))
+			}
+		}
+		reasons = append(reasons, "changes in "+strings.Join(files, ", "))
+	}
+	if exists(filepath.Join(tree, ".scratch")) {
+		reasons = append(reasons, "holds a .scratch/ dir")
+	}
+	if ahead, _ := gitIn(tree, "rev-list", "HEAD", "--not", "--remotes=origin"); ahead.out != "" {
+		reasons = append(reasons, plural(len(strings.Split(ahead.out, "\n")), "commit")+" on no remote")
+	}
+	return strings.Join(reasons, ", ")
 }
 
 // the archived spec that holds § id, beside the main checkout's other specs
@@ -152,10 +235,10 @@ func archivedSpec(main, id string) string {
 }
 
 func askLanded(plan any) string {
-	return "archive " + plan.(landedPlan).id + "'s lane spec?"
+	return "archive " + plan.(landedPlan).id + "'s lane spec and decamp its clean trees?"
 }
 
-// laneLanded moves the spec dir into the archive, the one write, then reads the list again
+// laneLanded moves the spec dir into the archive and decamps the clean trees, then reads the list again
 func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	plan := planned.(landedPlan)
 	if plan.specDir != "" {
@@ -167,6 +250,16 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 				return "", err
 			}
 			return home(plan.archive), os.Rename(plan.specDir, plan.archive)
+		}); err != nil {
+			return nil, err
+		}
+	}
+	for _, tree := range plan.clean {
+		if err := r.Step("decamp", home(tree), func() (string, error) {
+			if err := removeTree(plan.main, tree); err != nil {
+				return "", err
+			}
+			return hooksHome(plan.main, tree)
 		}); err != nil {
 			return nil, err
 		}
