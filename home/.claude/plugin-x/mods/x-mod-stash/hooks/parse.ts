@@ -125,6 +125,7 @@ const MEMBERS = {
     crow: '🐦‍⬛',
     designer: '🎨',
     dima: '🙋‍♂️',
+    helga: '🎀',
     'helper-lite': '🪶',
     researcher: '🐝',
     'sixth sense': '🔦',
@@ -328,14 +329,11 @@ export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 // its own name, badge or not — «🐦‍⬛ crow», which the registry writes with a space for the joiner
 const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
 const THREAD_NAME = /^(⚡️?|🌗|🌘)\s+\S+\s+(?:[^:\s]+\s+)*[\w-]+:\s+\S/u;
-// standing sidecars named by a bare word, not by the lane pattern: helga is clio's copyist (rules/fleet-identity.md)
-const SIDECARS = new Set(['helga']);
 export function isFleetName(name: string) {
     return (
         FLEET_NAME.test(name) ||
         THREAD_NAME.test(name) ||
-        Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim()) ||
-        SIDECARS.has(name.replace(/[^\w\s-]/gu, '').trim())
+        Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim())
     );
 }
 

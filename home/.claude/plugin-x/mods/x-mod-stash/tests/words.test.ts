@@ -53,6 +53,12 @@ test("a skill name, a quote, a session name and another member's badge keep thei
     expect(boldFleetWords(text).text).toBe(text);
 });
 
+test('helga prints bold with her badge', () => {
+    expect(boldFleetWords('ask helga to edit').text).toBe(
+        'ask **🎀 helga** to edit',
+    );
+});
+
 test('a badged word only gains the bold', () => {
     expect(boldFleetWords('a ✨ wisp here').text).toBe('a **✨ wisp** here');
 });
