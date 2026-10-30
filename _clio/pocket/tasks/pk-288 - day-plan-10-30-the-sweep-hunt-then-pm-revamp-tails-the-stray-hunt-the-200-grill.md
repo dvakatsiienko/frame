@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-30T13:46:00Z'
-updated_date: '2026-10-30T14:47:00Z'
+updated_date: '2026-10-30T16:16:00Z'
 labels:
   - m
 dependencies: []
@@ -63,4 +63,91 @@ answered on the 14:41 boot board: sequential waves over the full scope, each spl
 2026-10-30 16:46: W535 done (the review boundary line, with W534 and W536)
 
 2026-10-30 16:48 homed: W583 standing (a findings report at each noticeable finish, kept for the day); W609 done (round-2 fixes under way: prose, _clio checks, cli lane 3); W610 done (mods lane 3 continues: FRM-470, FRM-459); W611 done (codie's second wind, 16:32); W612 done (clio's second wind, 16:14); W613 done (cli lane 3 dispatched with the rename probe)
+
+late grooms of 2026-10-30 16:37–17:54 (helga, 18:12), homed here at 18:18 for the main lane; most were acted on the same turn they were said (round 3, the sonnet rule, FRM-444, the joiners); the halt sorts any still open into its ticket:
+W583 (2026-10-30 15:34, dima): print a report with interesting findings when you finish noticeable part and reply.
+W613 (2026-10-30 16:14, dima): yes, start a CLI lane chunk and tell it to verify as much as possible related to rename sweep found issues, and actually do a planned chunk.
+W619 (2026-10-30 16:38, dima): when done, print what else you can solve.
+W620 (2026-10-30 16:42, dima): three tickets from the lane retros: `x mods edit test` running the same gates as the commit hook; a verb that reverts a change to its base for test runs (🔦 sixth sense hand-rolled one twice); and `x linear comment` posting 🔦 sixth sense's verdict under 🔧 codie's name.
+W621 (2026-10-30 16:42, dima): two small docs additions: a guard lift's exit line says «allowlist» (`exit-lines.md`); and `git archive` as the revert trick (x/AGENTS.md).
+W622 (2026-10-30 16:42, dima): a quick signing pass (shape-lane fast) for the two new verbs `x lane dispatched` and `x lane landed`, so they join cli lane 3.
+W623 (2026-10-30 16:42, dima): the mods lane's next chunk, once you tick it on the board.
+W625 (2026-10-30 16:48, dima): once this batch is done, find other stuff you can solve and propose.
+W626 (2026-10-30 16:48, dima): hunt everywhere: pocket, linear etc.
+W627 (2026-10-30 16:57, dima): past tense reads odd.
+W628 (2026-10-30 16:57, dima): i think that doing stuff in work trees and leaving work trees behind is not a good idea.
+W629 (2026-10-30 16:57, dima): i think that once a work tree gets merged, it should be cleaned up automatically, always, on all surfaces.
+W630 (2026-10-30 16:57, dima): do and fix the habit.
+W631 (2026-10-30 16:57, dima): would be good, let's shape mils a little.
+W632 (2026-10-30 16:57, dima): let's see.
+W633 (2026-10-30 16:57, dima): pk-159: touch it; i plan to solve it within your side channel, maybe tomorrow.
+W634 (2026-10-30 16:57, dima): let's solve PK-285.
+W636 (2026-10-30 16:57, dima): although the probe can be broken a little: you started this check with the old X-W plugin (i reinstalled it yesterday in the rename sweep scope, and installed this new one, X Cloud Chat).
+W637 (2026-10-30 16:57, dima): go see how it is currently set up, and if you can do a probe properly.
+W638 (2026-10-30 16:57, dima): if not, tell what needs to be done to make this probe possible.
+W639 (2026-10-30 17:00, dima): and find a good place where to place them in the chunk sequence.
+W640 (2026-10-30 17:12, dima): also, tell a little bit about stack PRs.
+W641 (2026-10-30 17:12, dima): when the stack PRs trial finishes, i want to know if stack PRs are actually useful or just a maintenance burden and dead weight.
+W642 (2026-10-30 17:12, dima): okay, but it wants an avatar drawn the same as clio, coder and reviewer have.
+W643 (2026-10-30 17:12, dima): clean it.
+W644 (2026-10-30 17:13, dima): o29: okay, but move carefully and ensure that everything is in a good spot.
+W645 (2026-10-30 17:17, dima): there is a flaw.
+W646 (2026-10-30 17:17, dima): currently i see two mods lane sixth senses.
+W647 (2026-10-30 17:17, dima): one of them is redundant, and yesterday you made the same mistake.
+W648 (2026-10-30 17:17, dima): you shouldn't respond with another verifier for each chunk.
+W649 (2026-10-30 17:17, dima): you can reuse existing ones.
+W650 (2026-10-30 17:17, dima): do not breed unnecessary sixth senses.
+W651 (2026-10-30 17:18, dima): stop old mods lane sixth sense and keep the newer one.
+W652 (2026-10-30 17:18, dima): and stop summoning new sixth senses.
+W653 (2026-10-30 17:20, dima): x-com-chat: it is currently my pet app that i use as part of my portfolio, but it's very basic and simply a showcase type of app.
+W654 (2026-10-30 17:20, dima): it doesn't give me any functionality or benefits: a very plain agentic chat on a very basic free model.
+W655 (2026-10-30 17:20, dima): it has no useful functionality, so it stays parked as part of my portfolio for now, until we build more good apps (like X, Trophises, or Speak app) that we could use as part of my portfolio.
+W656 (2026-10-30 17:20, dima): then, possibly, X Comcom Chat has two routes: either we make something good and useful out of it, or we delete it.
+W657 (2026-10-30 17:21, dima): you are at 53% of CTX at the moment.
+W658 (2026-10-30 17:21, dima): find a good spot to second wind.
+W660 (2026-10-30 17:21, dima): you have budget up to 60-65% of CTX.
+W661 (2026-10-30 17:29, dima): i'm not sure if CLI is a good home for this wish, because CLI is terminal-only.
+W662 (2026-10-30 17:29, dima): for an own CC usage tool, i was considering something like a mini desktop app, a floating island in a Dynamic Island screen, or maybe some MacOS menu bar thing that would show usage.
+W663 (2026-10-30 17:29, dima): i have recent utils for that currently, and it's fine.
+W664 (2026-10-30 17:29, dima): i think a better move is just to cancel it, because we have too much stuff to do, and CC usage tracker tools are redundant at the moment.
+W665 (2026-10-30 17:29, dima): mark BYT-72 as unnecessary and cancel it.
+W666 (2026-10-30 17:29, dima): yes, answer about stacked PRs.
+W667 (2026-10-30 17:29, dima): i want details to know if they are useful or dead weight.
+W668 (2026-10-30 17:29, dima): i think if you want to plan it upfront and let coders decide, they will always use regular PRs, which makes me think stacked PRs are useless for us at this moment.
+W669 (2026-10-30 17:29, dima): tell if it is the case.
+W670 (2026-10-30 17:29, dima): and if it is not, then tell how they could be useful and how to use them effectively.
+W671 (2026-10-30 17:29, dima): x cloud plugin: i installed it in chat tab as a plugin.
+W672 (2026-10-30 17:29, dima): it is active there.
+W673 (2026-10-30 17:29, dima): a catch column.
+W674 (2026-10-30 17:29, dima): it may be visible only after your restart, so check yourself and double-check after tomorrow's boot.
+W675 (2026-10-30 17:29, dima): set a reminder for yourself.
+W676 (2026-10-30 17:36, dima): i approve.
+W677 (2026-10-30 17:36, dima): fold into a ticket to measure stack PRs precisely.
+W678 (2026-10-30 17:36, dima): let's measure it.
+W679 (2026-10-30 17:39, dima): then plan to gather the missing details from the ongoing stack PRs run.
+W680 (2026-10-30 17:39, dima): let's see what we can optimize there.
+W681 (2026-10-30 17:39, dima): maybe stack PRs are actually useful, but we use them incorrectly.
+W682 (2026-10-30 17:47, dima): it is not good; only Opus 5.5 should be a codie.
+W686 (2026-10-30 17:50, dima): it is a flaw.
+W687 (2026-10-30 17:50, dima): no, QuickLane shouldn't be Sonnet 5.5 by default.
+W690 (2026-10-30 17:50, dima): i treat a chunk that Sonnet 5.5 completed as not verified.
+W691 (2026-10-30 17:50, dima): once the next chunk for modslane is completed, it needs to validate what Sonnet 5.5 completed today.
+W692 (2026-10-30 17:50, dima): provide a full code review and see how Sonnet 5.5 did the work.
+W694 (2026-10-30 17:50, dima): let's explore how Sonnet 5.5 completed its chunk.
+W695 (2026-10-30 17:50, dima): let's plan a review whenever we start the next modslane chunk with Opus 5.5.
+W696 (2026-10-30 17:54, dima): it was valid when we had more blueprinting tools, but we have now settled on Excalidraw, and i think this ticket is no longer relevant.
+W697 (2026-10-30 17:54, dima): go see if it is not relevant anymore, and whether we have any tools to bench out from.
+W698 (2026-10-30 17:54, dima): then close it, because FigJam is not usable for us, and we currently have only Draw.io and Excalidraw.
+W699 (2026-10-30 17:54, dima): i don't like Draw.io.
+W700 (2026-10-30 17:54, dima): Excalidraw is the only good tool for now.
+W701 (2026-10-30 17:54, dima): allow current Sonnet 5.5 to fully finish modslane chunk and park, so we can evaluate its work during the ongoing modslane chunk, but let's plan it with Opus 5.5.
+W702 (2026-10-30 17:54, dima): then it is not today anymore.
+W703 (2026-10-30 17:54, dima): once current modslane is fully finished, stop everyone in modslane and plan next modslane with Opus 5.5.
+W704 (2026-10-30 17:54, dima): it should open with a review of what Sonnet 5.5 completed today.
+W705 (2026-10-30 17:54, dima): first, review and provide a grade, so we know if we can use Sonnet 5.5 more proactively for coding, because previously i wasn't trusting Sonnet 5.5 enough for coding.
+W706 (2026-10-30 17:54, dima): it may change if the grade is good, but as of now, let's use only Opus 5.5 for code.
+W707 (2026-10-30 17:54, dima): CLI lane, let's have it active for now.
+W708 (2026-10-30 17:54, dima): once CLI lane completes the current chunk, tell it to park.
+W709 (2026-10-30 17:54, dima): i'll see the pace and time about to start the next CLI chunk or not.
+W710 (2026-10-30 17:54, dima): ideally, i want the stacked PRs chunk for CLI to be completed today.
 <!-- SECTION:NOTES:END -->
