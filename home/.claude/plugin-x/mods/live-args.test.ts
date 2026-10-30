@@ -29,6 +29,23 @@ describe('parseLive', () => {
         });
     });
 
+    it('reads --plant with its file, anchor and replacement, an empty replacement included', () => {
+        expect(parseLive(['--plant', 'a.ts', 'x', 'y'])).toEqual({
+            anchor: 'x',
+            file: 'a.ts',
+            kind: 'plant',
+            replacement: 'y',
+        });
+        expect(parseLive(['--plant', 'a.ts', 'x', '']).kind).toBe('plant');
+        expect(
+            [
+                ['--plant', 'a.ts', 'x'],
+                ['--plant', 'a.ts', 'x', 'y', 'z'],
+                ['--plant'],
+            ].map((argv) => parseLive(argv).kind),
+        ).toEqual(['usage', 'usage', 'usage']);
+    });
+
     it('refuses a verb with no text, an unknown verb, status with text and no mod', () => {
         expect(
             [

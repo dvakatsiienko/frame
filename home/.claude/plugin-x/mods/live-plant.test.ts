@@ -1,0 +1,65 @@
+import {
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+import { plantedCopy } from './live-plant.ts';
+
+const copies = () =>
+    readdirSync(tmpdir()).filter((n) => n.startsWith('mods-live-plant-'));
+
+function fixture(text: string) {
+    const mod = join(mkdtempSync(join(tmpdir(), 'plant-fix-')), 'x-mod-fix');
+    mkdirSync(join(mod, '.claude-plugin'), { recursive: true });
+    mkdirSync(join(mod, 'hooks'));
+    writeFileSync(
+        join(mod, '.claude-plugin/plugin.json'),
+        '{"name":"x-mod-fix"}',
+    );
+    const file = join(mod, 'hooks/register.ts');
+    writeFileSync(file, text);
+    return { file, mod };
+}
+
+describe('plantedCopy', () => {
+    it('plants one change in a copy and leaves the original bytes alone', () => {
+        const { file, mod } = fixture('const a = 1;\nconst b = 2;\n');
+        const p = plantedCopy(file, 'const b = 2;', 'const b = 99;');
+        expect(readFileSync(p.file, 'utf8')).toBe(
+            'const a = 1;\nconst b = 99;\n',
+        );
+        expect(readFileSync(file, 'utf8')).toBe('const a = 1;\nconst b = 2;\n');
+        expect(p.mod).not.toBe(mod);
+        expect(
+            readFileSync(join(p.mod, '.claude-plugin/plugin.json'), 'utf8'),
+        ).toBe('{"name":"x-mod-fix"}');
+    });
+
+    it('takes a replacement holding $ as written', () => {
+        const { file } = fixture('go();\n');
+        const p = plantedCopy(file, 'go();', "const $& = '$1';");
+        expect(readFileSync(p.file, 'utf8')).toBe("const $& = '$1';\n");
+    });
+
+    it('refuses an anchor that matches 0 or 2+ times before it copies anything', () => {
+        const { file } = fixture('a\na\n');
+        const before = copies().length;
+        expect(() => plantedCopy(file, 'a', 'b')).toThrow('matches 2 times');
+        expect(() => plantedCopy(file, 'zzz', 'b')).toThrow('matches 0 times');
+        expect(() => plantedCopy(file, '', 'b')).toThrow('matches 0 times');
+        expect(copies().length).toBe(before);
+    });
+
+    it('refuses a file outside any mod', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'plant-none-'));
+        const file = join(dir, 'a.ts');
+        writeFileSync(file, 'x');
+        expect(() => plantedCopy(file, 'x', 'y')).toThrow('not inside a mod');
+    });
+});
