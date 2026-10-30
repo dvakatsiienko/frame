@@ -59,8 +59,9 @@ suggest the sender side (`/handoff` in the old thread).
    - `name [ref]` duplicated → often one session resumed twice (same sessionId, two pids):
      prefer the non-idle/most-recent; no reply → retry the twin, then FILE MODE.
    - topic only → match against registry names; no exact hit → FILE MODE, not guessing.
-2. `SendMessage` the request. It MUST carry the full protocol inline (the receiver may never
-   have seen this skill). Template — where marked, paste the entire CST-SPEC.md:
+2. `x handoff request '<target>'` (plus `--target-line '<focus>'` when the user stated one) prints the
+   request with CST-SPEC.md inlined whole; `SendMessage` its `data.message` as printed, since the receiver
+   may never have seen this skill. The verb reads its template from this fence:
 
 ```
 HANDOFF REQUEST — priority interrupt.

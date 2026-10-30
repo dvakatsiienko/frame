@@ -432,6 +432,28 @@
         {
             "args": [
                 {
+                    "description": "the peer session the request goes to, its ListAgents name",
+                    "name": "target"
+                }
+            ],
+            "flags": {
+                "target-line": {
+                    "description": "the focus this thread takes over, printed as one TARGET: line",
+                    "type": "string",
+                    "value": "focus"
+                }
+            },
+            "name": "handoff request",
+            "needsApply": false,
+            "purpose": "print the handoff request a peer session gets, CST-SPEC.md inlined whole; sends nothing, the caller sends it",
+            "touches": [
+                "home/.claude/plugin-x/skills/handoff-ingest/SKILL.md — the request template, read",
+                "home/.claude/plugin-x/CST-SPEC.md — inlined byte for byte, read"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "the brief file, markdown",
                     "name": "brief"
                 }

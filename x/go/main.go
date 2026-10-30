@@ -62,6 +62,7 @@ var impls = map[string]Impl{
 	"handoff ingest":   {Run: handoffIngest},
 	"handoff write":    {Run: handoffWrite, Undone: "nothing was written"},
 	"handoff delete":   {Run: handoffDelete, Undone: "nothing was deleted"},
+	"handoff request":  {Run: handoffRequest},
 	"brief check":      {Run: briefCheck, Undone: "nothing was stamped"},
 	"brief preflight":  {Run: briefPreflight},
 	"as":               {Run: as, Undone: "the command did not run"},
