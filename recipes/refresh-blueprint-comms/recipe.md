@@ -32,10 +32,16 @@ dima's, 2026-10-21 (chat, folded, PK-243):
 
 > «Excalidraw is just a tool. It's good enough … it doesn't satisfy me fully because it doesn't have comments, although it has them, but they are gated behind a subscription. … print in a recipe that I want a better blueprinting app. Possibly I'd want a custom one, maybe at some point, but not now because we have lots to do.» (2026-10-30)
 
+dima's, from FRM-444 (canceled 2026-10-30, the bench died with FigJam and draw.io; these three wait for the next run):
+
+- grow the blueprints habit gradually: only crucial or complex parts that benefit from a board; blueprints are the source of truth for those
+- groom the recipe with these wants, rerun it fully, apply the results, test on the existing boards
+- the recipe board 📐 refresh-crew-coordinator is refreshed with everything learned from drawing the pm board
+
 ## the run
 
 - the tool must stay local, free, fast for clio to read and edit, and editable by dima's drag — the grill in `_clio/blueprints/PRODUCT.md` is the bar every candidate is scored against; cost breaks ties
-- draw.io leads every vector: the blueprint tool since the 10-23 bench (`docs/test-drive/blueprints.md` § verdict); n8n only for automations; FigJam and Obsidian Canvas are re-checked only when the run asks «is there a better one?»
+- Excalidraw leads every vector: the blueprint tool since 2026-10-30 ([FRM-450](https://linear.app/x-com/issue/FRM-450), `docs/test-drive/excalidraw.md`); draw.io stays only as a fallback dima dislikes, FigJam is unusable for us (dima, 2026-10-30), n8n only for automations; a better app is re-checked only when the run asks «is there a better one?»
 - suggest a run when: a blueprint trial ends, a tool on the list ships a major, or dima says a tool feels clunky
 
 1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
