@@ -24,4 +24,6 @@ close: answered at the boot — #55 is the hosted renovate app (dead since 10-13
 
 <!-- SECTION:NOTES:BEGIN -->
 raw drop (2026-10-30 inbox, dima): **bytes issues** 2 evergreen dependency dashboards - why? some of them true other is a dupe, looks like.
+
+close: W516 done — answered on the 10-30 boot board, bytes #55 closed
 <!-- SECTION:NOTES:END -->

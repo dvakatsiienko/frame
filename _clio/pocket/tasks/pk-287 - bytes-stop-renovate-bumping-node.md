@@ -24,4 +24,6 @@ close: the 4 hard node pins in bytes workflows now read .node-version (the major
 
 <!-- SECTION:NOTES:BEGIN -->
 raw drop (2026-10-30 inbox, dima): **bytes evergreen** [still wants to update node](https://github.com/dvakatsiienko/bytes/pull/136) but we dicided to update it ourselves when we want it (not regularly). how to stop evergreen from bumping node?
+
+close: W517 done — bytes workflows read .node-version (f15a2316), CI green
 <!-- SECTION:NOTES:END -->
