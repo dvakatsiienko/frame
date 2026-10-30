@@ -21,7 +21,7 @@ each stage names its gate, its owner, its door and its wait budget.
    - door: `x lane merge-auto` (it waits for ci and names why)
    - self-edit path: his sign pre-approved → `x lane merge-auto <pr> --apply`; his typed word → `--dima-ok <pr>` added (x-mod-guard proves the word); a stack layer: `gh stack merge <pr> --squash --yes`, `merged-by-x` by hand
    - the brake is never pre-approved: his word each time, a tick quoting the pr carrying it (FRM-427)
-   - archive step: the turn it lands, its spec dir moves to `.scratch/_archive/<feature>/` and its round line joins `docs/test-drive/review-rounds.md`
+   - archive step: the merge turn ends with `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`): the spec archived once every chunk merged, the clean trees decamped; each 🔴 it prints is a chore left with its fix, the review-rounds line among them
    - wait: the pr median
 9. **look** — gate: one look card (what, where, try, proven, not checked — never empty), with a shot for anything rendered; owner: dima; door: `SendUserFile`; wait: his next time at the keyboard
 10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`, and a changed mapped area gets its blueprint redrawn once the steers land (`_clio/blueprints/AGENTS.md`); owner: clio; door: `clio:halt`, `x fleet flow`; wait: the same day
