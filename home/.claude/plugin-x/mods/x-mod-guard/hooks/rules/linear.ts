@@ -1,3 +1,4 @@
+import { parse } from '../shell.ts';
 import { type Refusal, commandsDeep } from './command.ts';
 
 // FRM-459: a ticket body is written through `x linear body --set` (it refuses a body changed since the pull), and nobody acts as
@@ -24,7 +25,83 @@ function rawBody(words: string[]): Refusal | undefined {
         : undefined;
 }
 
+// x reads an agent from CLAUDECODE or AI_AGENT and, with both empty on a tty, acts as dima (x/go/linear.go); cc sets only
+// CLAUDECODE, so a line that empties it or the whole env before an x call is read as acting as dima. judged per segment, on its
+// own words, so another tool's `-i` (grep, sed) never counts
+const AGENT = /^CLAUDECODE$/;
+const SHELLS = new Set(['sh', 'bash', 'zsh']);
+const isEmptied = (a: string) => /^CLAUDECODE=(?:''|"")?$/.test(a);
+function segmentDrops(words: string[]): boolean {
+    let i = 0;
+    while (/^[A-Za-z_]\w*=/.test(words[i] ?? '')) {
+        if (isEmptied(words[i] ?? '')) return true;
+        i++;
+    }
+    const [name, ...rest] = words.slice(i);
+    if (name === undefined) return false;
+    if (name === 'env') {
+        for (let j = 0; j < rest.length; j++) {
+            const w = rest[j] ?? '';
+            if (/^[A-Za-z_]\w*=/.test(w)) {
+                if (isEmptied(w)) return true;
+                continue;
+            }
+            if (!w.startsWith('-')) break;
+            if (w === '-' || w === '--ignore-environment') return true;
+            if (/^-[A-Za-z]*i[A-Za-z]*$/.test(w)) return true;
+            const unset =
+                w === '-u' || w === '--unset'
+                    ? rest[++j]
+                    : (w.match(/^(?:-u|--unset=)(.+)$/)?.[1] ?? undefined);
+            if (
+                unset !== undefined &&
+                (AGENT.test(unset) || /[$`]/.test(unset))
+            )
+                return true;
+        }
+        return false;
+    }
+    const ops = rest.filter((w) => !/^[-+]/.test(w));
+    if (name === 'unset')
+        return ops.some((o) => AGENT.test(o) || /[$`]/.test(o));
+    if (['export', 'declare', 'typeset', 'readonly', 'local'].includes(name)) {
+        const isUnexport = rest.some((w) => /^(?:-n|\+x)$/.test(w));
+        return ops.some((o) => (isUnexport && AGENT.test(o)) || isEmptied(o));
+    }
+    return false;
+}
+// the segments up to the first x call, a nested shell's script and an eval's words read the same way
+function dropsAgent(command: string): boolean {
+    for (const s of parse(command).segments) {
+        const words = s.words.map((w) => w.text);
+        if (segmentDrops(words)) return true;
+        const head = words.find((w) => !/^[A-Za-z_]\w*=/.test(w));
+        const dashC = SHELLS.has(head ?? '')
+            ? words.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
+            : -1;
+        const nested =
+            dashC >= 0
+                ? words[dashC + 1]
+                : head === 'eval'
+                  ? words.slice(words.indexOf('eval') + 1).join(' ')
+                  : undefined;
+        if (nested && dropsAgent(nested)) return true;
+        if (head === 'x') return false;
+    }
+    return false;
+}
+
+// an x linear or x as call anywhere in the line, `env - x linear …` included, where the parse sees no `x` command
+const X_CALL = /(?:^|[\s;&|('"])x\s+(?:--?\w[\w-]*\s+)*(?:linear|as)\b/;
+
 export function linearWrite(command: string, cwd: string): Refusal | undefined {
+    if (X_CALL.test(command) && dropsAgent(command))
+        return {
+            door: 'run it without --as; an agent acts as its own member',
+            rule: 'as-dima',
+            targets: ['CLAUDECODE'],
+            why: 'x acts as dima when CLAUDECODE is gone on a tty; an agent keeps its own member',
+        };
     for (const c of commandsDeep(command, cwd)) {
         const words = c.args.map((w) => w.text);
         const bare = words.filter((w) => !w.startsWith('-'));
@@ -53,13 +130,7 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
             isAsVerb &&
             (bare[1]?.toLowerCase() === 'dima' ||
                 isOpaque(c.args.find((w) => w.text === bare[1])));
-        // x reads an agent from CLAUDECODE or AI_AGENT, and with both gone on a tty it acts as dima (x/go/linear.go)
-        const dropsAgent =
-            c.assigns.some((a) => /^(?:CLAUDECODE|AI_AGENT)=/.test(a)) ||
-            /(?:^|\s)-u\s*(?:CLAUDECODE|AI_AGENT)\b|(?:^|\s)-i(?:\s|$)|--ignore-environment|\bunset\s+(?:CLAUDECODE|AI_AGENT)\b/.test(
-                command,
-            );
-        if ((isLinear || isAsVerb) && (hasActor || isAsDima || dropsAgent))
+        if ((isLinear || isAsVerb) && (hasActor || isAsDima))
             return {
                 door: 'run it without --as; an agent acts as its own member',
                 rule: 'as-dima',

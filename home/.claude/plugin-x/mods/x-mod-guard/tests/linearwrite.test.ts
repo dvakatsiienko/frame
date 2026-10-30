@@ -100,6 +100,17 @@ for (const [shape, typed] of [
     ['the agent var emptied', 'CLAUDECODE= x linear read FRM-1'],
     ['an emptied environment', 'env -i x linear read FRM-1'],
     ['the agent var unset first', 'unset CLAUDECODE; x linear read FRM-1'],
+    ['the agent var emptied first', 'CLAUDECODE=; x linear read FRM-1'],
+    ['an export emptying it', 'export CLAUDECODE=; x linear read FRM-1'],
+    ['an export -n', 'export -n CLAUDECODE; x linear read FRM-1'],
+    ['a typeset +x', 'typeset +x CLAUDECODE; x linear read FRM-1'],
+    ['env --unset=', 'env --unset=CLAUDECODE x linear read FRM-1'],
+    ['env -', 'env - x linear read FRM-1'],
+    ['a clustered env -iv', 'env -iv x linear read FRM-1'],
+    [
+        'an unset inside bash -c',
+        "bash -c 'unset CLAUDECODE; x linear read FRM-1'",
+    ],
     ['x as dima', 'x as dima -- linear issue view FRM-1'],
     ['in a nested shell', `bash -c 'x linear read FRM-1 --as dima'`],
 ] as const)
@@ -120,6 +131,12 @@ for (const typed of [
     'x linear comment FRM-1 --as codie --body-file f.md',
     'x linear read FRM-1 --comments',
     'x as codie -- linear issue list',
+    'grep -i foo f; x linear read FRM-1',
+    "sed -i '' s/a/b/ f.md && x linear read FRM-1",
+    'x linear read FRM-1 | grep -i done',
+    'CLAUDECODE=1 x linear read FRM-1',
+    'x linear read FRM-1; env -i ls',
+    'x linear comment FRM-1 --body-file f.md # use env -i',
     "echo 'x linear read FRM-1 --as dima'",
 ])
     test(`a member runs: ${typed}`, async ($, on) => {
