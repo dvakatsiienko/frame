@@ -89,19 +89,20 @@ brief says which, and when it does not, ask once, up front.
 «final» is a handshake: nothing merges before it, and it comes after your own review, once
 `x lane review <pr>` exits 0. when the last step is done, work this list in order:
 
-1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. running it once found 3 of 8 real defects that five reviewers and 61 tests missed. a live proof that writes
+1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. a live proof that writes
    shared pr state (the body, labels) is sixth sense's; you prove locally.
 2. **the local review pair, in parallel**: `mattpocock-skills:code-review` over the branch (matt's standards and
    spec review, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
    while its free quota lasts (`coderabbit review --usage`; none left → matt's code-review alone). fix what
    both find, push.
+   - the built-in `/code-review` hunts bugs; matt's grades against the house rules and the spec's exit lines. every lane runs matt's; a big change (~300+ lines, a rename, a migration) adds the built-in beside a paired `wisphunter` card (dima, 2026-10-30)
 3. **one local review per sixth sense round** (dima, 2026-10-22): before each sixth sense round after the first, the pair
    reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching sixth sense's
    3 rounds; each review gets one graded line (reviewer, findings, useful or noise) in your done report,
    which names `local reviews: <n>`; your worktree cannot write the shared log, so clio copies the lines into
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
-4. **with a sixth sense** named in the brief (`🌗 🔎 <scope> sixth sense: #<pr>`): «final» is a `SendMessage` to it,
+4. **with a sixth sense** named in the brief (`🌗 🔎 sixth sense: <scope> | #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: «final» goes to the coordinator, who pushes main and summons sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense and to clio, who pushes it). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
    was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop

@@ -4,7 +4,7 @@
 
 - **the role contract opens it** — a fresh `--bg` summon's prompt starts `/x:crew-codie …` (or `/x:crew-sixth-sense …`), and the slash expands; a running session gets it by a `SendMessage` saying «load the `x:crew-codie` skill», since a slash in a message never expands (`author-memory/references/skill.md` § placeholders). clio adds only the job (the lane's spec path, `clio:shape-lane-dispatch` § 2), the ticket, its own registry name, and any skill the work drifts into.
 - **every other skill rides plain words that name it** — only the prompt's first slash expands, so the brief repeats the role in plain words as if the slash never expanded («use the crew-codie skill») and names the rest the same way: «use the guide-go skill to …», never «follow our go rules». a complete brief mutes the skill router, so an unnamed skill is an unloaded one. each summoned member's first reply lists the skills it loaded; one line per summon, named vs loaded, goes to `docs/test-drive/skill-named-load.md`.
-- **on a sixth sense yes, codie's brief names its sixth sense** `🌗 🔎 <scope> sixth sense: #<pr>` (`sixth sense: main` on a quick lane), the number added once the pr exists; codie with no sixth sense named hands its pr straight to dima.
+- **on a sixth sense yes, codie's brief names its sixth sense** `🌗 🔎 sixth sense: <scope> | #<pr>` (`| main` on a quick lane), the number added once the pr exists; codie with no sixth sense named hands its pr straight to dima.
 - 🚧 **a `not yours: …` line** — what another member owns, written as a fence («crossing it is a stop and a question»), so codie never duplicates or crosses it; the exit lines are the termination half.
 - 🧭 **context pointers, never restatement** (dima's yes, 2026-10-07: «both are very useful ideas»): a brief or a `SendMessage` names the spec (`.scratch/<feature>/`), the pocket item, the commit or the research doc, and adds only what none of them holds. a restated ticket drifts from its source the moment either changes.
 - **a brief whose proof needs dima's hands says so at the top** and asks up front.
@@ -27,6 +27,7 @@
 - **a ui-shaped ask gets its data measured before anything is drawn**.
 - **a comparison brief names the question and the cheapest artifact that answers it** — one showcase screen per arm, never three full builds. a tui brief asks for vhs pngs (freeze cannot replay ink or bubbletea) and says «the shots are the test for redraws»; parallel arms share one shooter and one registry, said up front.
 - **a no-pr lane still runs a local code review before its report**.
+- **a brief names the review by its job**: matt's `code-review` grades against the house rules and the spec, the built-in `/code-review` hunts bugs and joins it for a big change (`x:crew-codie` § the list, step 2; dima, 2026-10-30).
 - **a verify-kit brief for an app that moves in-page says «cold open and in-page move»**.
 - **a latency-bound tool measures each stage before the stack is chosen**.
 - **a capability is chosen after grepping its word across the whole types file**.
