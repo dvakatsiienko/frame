@@ -95,7 +95,7 @@ brief says which, and when it does not, ask once, up front.
    spec review, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
    while its free quota lasts (`coderabbit review --usage`; none left → matt's code-review alone). fix what
    both find, push.
-   - the built-in `/code-review` hunts bugs; matt's grades against the house rules and the spec's exit lines. every lane runs matt's; a big change (~300+ lines, a rename, a migration) adds the built-in beside a paired `wisphunter` card (dima, 2026-10-30)
+   - the built-in `/code-review` hunts bugs; matt's grades against the house rules and the spec's exit lines. every lane runs matt's; a big change adds the built-in beside a paired `wisphunter` card (dima, 2026-10-30)
 3. **one local review per sixth sense round** (dima, 2026-10-22): before each sixth sense round after the first, the pair
    reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching sixth sense's
    3 rounds; each review gets one graded line (reviewer, findings, useful or noise) in your done report,

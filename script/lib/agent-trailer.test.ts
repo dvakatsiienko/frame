@@ -11,6 +11,8 @@ describe('roleFor', () => {
         ['⚡ 🔧 codie: BYT-100', 'codie'],
         ['☕️ 🔧 BYT-100 code: review gate', 'codie'],
         ['🌗 🔎 cli lane sixth sense: #125', 'sixth-sense'],
+        ['⚡ 🔧 codie: mods lane 3 | FRM-467', 'codie'],
+        ['🌗 🔎 sixth sense: cli lane | #125', 'sixth-sense'],
         ['☕️ 🔎 BYT-100 verify: #125', 'sixth-sense'],
         ['🎀 helga', 'helga'],
         ['frame-df', 'frame-df'],
