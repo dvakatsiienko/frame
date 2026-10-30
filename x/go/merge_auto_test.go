@@ -878,6 +878,20 @@ func TestMergeAutoHoldsASignWhoseOnlyDriftIsLinearsLinkRewrite(t *testing.T) {
 	}
 }
 
+// an id relinked anywhere but its own linear issue is an edit, never linear's rewrite
+func TestMergeAutoWaitsWhenAnIDLinkPointsElsewhere(t *testing.T) {
+	t.Parallel()
+	signedAs := signAbove + "see FRM-12\n\n"
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+	w.signs(t, "FRM-9", signedBody(signAbove+"see [FRM-12](https://evil.example/x)\n\n", "merge: pre-approved\n", signedAs))
+
+	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); len(merges) != 0 || !strings.Contains(got.stdout, "body changed") {
+		t.Fatalf("exit %d, %d merges, want a wait on a relinked id:\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
 func TestMergeAutoTakesTheTicketFromTheBranchName(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "x/go/merge_auto.go")

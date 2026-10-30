@@ -88,8 +88,10 @@ const (
 
 var (
 	// a markdown link linear writes over a bare id or url after the write
-	linkRewrite = regexp.MustCompile(`\[([^\]\n]+)\]\(([^)\s]+)\)`)
+	linkRewrite = regexp.MustCompile(`\[([^\[\]\n]+)\]\(([^)\s]+)\)`)
 	bareID      = regexp.MustCompile(`^(?:FRM|BYT|PK)-\d+$`)
+	// linear links an id only to that id's own issue page; any other target is an edit
+	issueURL = regexp.MustCompile(`^https://linear\.app/[\w-]+/issue/((?:FRM|BYT|PK)-\d+)(?:/[^\s)]*)?$`)
 	angleURL    = regexp.MustCompile(`<(https?://[^>\s]+)>`)
 )
 
@@ -112,7 +114,7 @@ func signedBlock(body string) (above, block string, ok bool) {
 func asSigned(above string) string {
 	folded := linkRewrite.ReplaceAllStringFunc(above, func(link string) string {
 		m := linkRewrite.FindStringSubmatch(link)
-		if bareID.MatchString(m[1]) || m[1] == m[2] {
+		if target := issueURL.FindStringSubmatch(m[2]); m[1] == m[2] || (bareID.MatchString(m[1]) && target != nil && target[1] == m[1]) {
 			return m[1]
 		}
 		return link
