@@ -129,6 +129,9 @@ const MEMBERS = {
     researcher: '🐝',
     'sixth sense': '🔦',
 } as const;
+// a lane role key (`sixth-sense`) or a member's name, to the badge the fleet prints it with
+export const memberBadge = (name: string) =>
+    MEMBERS[name.replaceAll('-', ' ') as keyof typeof MEMBERS];
 const BADGES = {
     ...MEMBERS,
     freebie: '🍀',

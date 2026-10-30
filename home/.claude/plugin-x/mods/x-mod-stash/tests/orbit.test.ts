@@ -1378,6 +1378,30 @@ test("an agent's own orbit ops never write a tick", async ($, on) => {
     expect(writes).toEqual([]);
 });
 
+test("a tick on a followed-up ask from another board's glide card writes the tick record", async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    await add($, ['push `git push origin --delete old`', 'yes']);
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'yes',
+        text: '⚠️ delete `git push origin --delete cloud/x-help-drift`',
+    });
+    const at = await w.clock.now();
+    w.store.set(`marks:${SID}:o1`, { at, mark: 'accepted' });
+    await w.clock.advance(5_000);
+    expect(writes.at(-1)).toEqual([
+        {
+            at: at + 5_000,
+            id: 'o1',
+            targets: ['git push origin --delete cloud/x-help-drift'],
+            text: '⚠️ delete `git push origin --delete cloud/x-help-drift`',
+        },
+    ]);
+});
+
 test('a 🛎️ press in orbit ends mobile mode', async ($, on) => {
     const w = world(on);
     await start($);

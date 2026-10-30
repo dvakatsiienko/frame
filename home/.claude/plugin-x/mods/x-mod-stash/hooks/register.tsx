@@ -58,6 +58,7 @@ import {
     dropWaitAside,
     isFleetName,
     linkTickets,
+    memberBadge,
     noticeOf,
     numberCircled,
     parseWait,
@@ -1152,6 +1153,9 @@ async function absorbMarks($: EngineInterface) {
             };
         }),
     });
+    // dima's press on a glide card is his tick as much as a press here: x-mod-guard reads the record only tickAsk writes
+    for (const a of o.asks)
+        if (marks[a.id] && !a.isLocked && !a.isResolved) await tickAsk($, a.id);
     // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
     // stays for the next take, and its card never sees the steer missing in between
     for (const [id, m] of Object.entries(marks)) {
@@ -2063,7 +2067,8 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
 // the registry names the coordinator, so a handoff's new 🦉 clio keeps the lanes
 async function isLaneOwner($: EngineInterface) {
     const name = await sessionName($);
-    return name !== undefined && bare(name) === bare(LANE_OWNER);
+    const owners = [LANE_OWNER, '🦉 cclio']; // read-both: a clio tab resumed under its old title keeps the lanes
+    return name !== undefined && owners.some((o) => bare(name) === bare(o));
 }
 
 // a clio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
@@ -3495,7 +3500,8 @@ const COLUMNS = {
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
 // a member is the name's last word: a codie named «… + crow at decisions» is not crow (2026-10-10)
-const isCoordinator = (name: string) => /(^|\s)clio$/.test(name);
+// read-both: a clio tab resumed under its old title (cclio) is still the coordinator
+const isCoordinator = (name: string) => /(^|\s)c?clio$/.test(name);
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(^|\s)crow$/.test(name) ? 1 : 2;
@@ -5324,7 +5330,7 @@ export const register: Register = (on) => {
                         const markSid = lane.memberSids?.[role] ?? sid;
                         const card = `lane:${lane.id}:${role}`;
                         const isOpen = !isFolded(card);
-                        const badge = role === 'codie' ? '🔧' : '🔎';
+                        const badge = memberBadge(role);
                         return (
                             <Box
                                 flexDirection='column'
@@ -5422,7 +5428,7 @@ export const register: Register = (on) => {
                                                 .catch(() => undefined)
                                         }
                                         plain>
-                                        {`· ${w.role === 'codie' ? '🔧' : '🔎'} ${w.role.replace('-', ' ')} ${w.n}`}
+                                        {`· ${memberBadge(w.role)} ${w.role.replace('-', ' ')} ${w.n}`}
                                     </Button>
                                 ))}
                             </Box>

@@ -627,7 +627,7 @@ test('a codie subcard sits above a sixth sense subcard, each folded to its count
     ]).toEqual([expect.any(Number), false]);
     expect(
         (text?.indexOf('🙋 🔧 codie · 2 asks') ?? -1) <
-            (text?.indexOf('🙋 🔎 sixth sense · 1 ask') ?? -1),
+            (text?.indexOf('🙋 🔦 sixth sense · 1 ask') ?? -1),
     ).toBe(true);
 });
 
@@ -643,7 +643,7 @@ test('a member with asks heads its subcard in bold amber with a 🙋; at 0 it re
     };
     expect([
         await head('🙋 🔧 codie · 1 ask'),
-        await head('🔎 sixth sense · 0 asks'),
+        await head('🔦 sixth sense · 0 asks'),
     ]).toEqual([
         [true, '#d9661a'],
         [true, undefined],
