@@ -616,14 +616,81 @@ describe('wish accounting', () => {
         });
     });
 
-    test('a close: line citing every W-id passes', () => {
-        expect(
-            checkPocket(
-                wishConfig,
-                [closed('close: W1 done, W2 dropped')],
-                wishToday,
-            ),
-        ).toEqual([]);
+    describe("a dropped clause needs dima's verdict", () => {
+        const red =
+            "PK-1: dropped W2 with no verdict of dima's: cite the orbit id (oN) or «dima <date|HH:MM>» in the same clause";
+
+        test('a dropped clause with no verdict goes red', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done, W2 dropped')],
+                    wishToday,
+                ),
+            ).toEqual([red]);
+        });
+
+        test('a dropped clause citing an orbit id passes', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done, W2 dropped (o14)')],
+                    wishToday,
+                ),
+            ).toEqual([]);
+        });
+
+        test('a dropped clause citing «dima <date>» passes', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done, W2 dropped (dima 2026-10-30)')],
+                    wishToday,
+                ),
+            ).toEqual([]);
+        });
+
+        test('a dropped clause citing «dima <HH:MM>» passes', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done, W2 dropped (dima 09:15)')],
+                    wishToday,
+                ),
+            ).toEqual([]);
+        });
+
+        test('a verdict in another clause does not cover a dropped one', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done (o14), W2 dropped')],
+                    wishToday,
+                ),
+            ).toEqual([red]);
+        });
+
+        test('a done clause needs no verdict', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done, W2 done')],
+                    wishToday,
+                ),
+            ).toEqual([]);
+        });
+
+        test('an item older than the rules date is not judged', () => {
+            const old = task(
+                {
+                    created_date: '2026-10-13 10:00',
+                    status: 'done',
+                    updated_date: '2026-10-21 10:00',
+                },
+                '- W1 keep the words\n- W2 second\n<!-- SECTION:NOTES:BEGIN -->\nclose: W1 done, W2 dropped\n<!-- SECTION:NOTES:END -->',
+            );
+            expect(checkPocket(wishConfig, [old], '2026-10-21')).toEqual([]);
+        });
     });
 });
 
