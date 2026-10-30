@@ -13,7 +13,28 @@ function world(on: On, files: string[] = []) {
     on('env.get', (_$, e) => ({
         value: e.name === 'CLAUDE_JOB_DIR' ? JOB : '/home',
     }));
-    on('fs.exists', (_$, e) => ({ value: files.includes(e.path) }));
+    // the job's own dirs exist, and nothing is a link; no repo stands above them
+    on('fs.exists', (_$, e) => ({
+        value: files.includes(e.path) || e.path.startsWith(JOB),
+    }));
+    on('fs.stat', (_$, e) => ({
+        value: {
+            isLink: false,
+            kind: 'dir',
+            mtimeMs: 0,
+            realPath: e.path,
+            size: 0,
+        },
+    }));
+    on('process.run', () => ({
+        value: {
+            exitCode: 128,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: '',
+        },
+    }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
@@ -74,10 +95,6 @@ const SCRATCH = [
         'git filter-branch',
         `cd ${JOB}/tmp/clone && git filter-branch --tree-filter x`,
     ],
-    [
-        'git add . in a mktemp repo',
-        'cd /var/folders/x1/T/tmp.ab12 && git add .',
-    ],
     ['git reset --hard in /tmp', 'cd /tmp/fixture && git reset --hard'],
 ] as const;
 
@@ -91,6 +108,10 @@ for (const [shape, command] of SCRATCH)
 // the same commands one step outside the job's tmp
 const OUTSIDE = [
     ['git add -A in the job dir', `cd ${JOB} && git add -A`],
+    [
+        'git add . in a mktemp repo outside the job tmp',
+        'cd /var/folders/x1/T/tmp.ab12 && git add .',
+    ],
     ['git checkout -- in the repo', 'git checkout -- a.ts'],
     [
         'a path that climbs out of the tmp',

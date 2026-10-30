@@ -19,6 +19,8 @@ export type Context = {
     isClio?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches
     cleanTrees?: Set<string>;
+    // the job-tmp dirs where a symlink or a repo whose git dir sits outside the job tmp (a worktree of frame) reaches out
+    unsafeTmp?: Set<string>;
     // the dirs whose working tree changed a package.json or pnpm-workspace.yaml since HEAD (FRM-393)
     manifestDirs?: Set<string>;
     // the backlog tasks a `--notes` edit names whose file already holds notes, keyed by notes.ts's notedKey
@@ -175,19 +177,50 @@ export function peel(raw: Word[]): Peeled {
         writes: writes(raw),
     };
 }
-// each segment as the command it runs, `cd` followed
+// the path a `NAME=` assignment holds: a literal path, or the template of an `$(mktemp -d <template>)`; a value of any
+// other shape is unknown
+function pathAssigned(value: string, subst: Parsed['segments'][number][]) {
+    if (/^(\/|~|\$\{?CLAUDE_JOB_DIR\}?\/)/.test(value)) return value;
+    if (!value.startsWith('$(')) return undefined;
+    for (const x of subst) {
+        const m = peel(x.words);
+        if (m.name !== 'mktemp') continue;
+        const ops = operands(m.args);
+        if (hasFlag(m.args, ['--directory'], 'd') && ops[0]) return ops[0];
+    }
+    return undefined;
+}
+// each segment as the command it runs, `cd` followed; a `cd $R` or `git -C $R` follows a `R=<path>` set earlier in the command
 export function commands(parsed: Parsed, cwd: string): Command[] {
     const out: Command[] = [];
     let dir = cwd;
+    const vars = new Map<string, string>();
+    const expand = (t: string) =>
+        t.replace(
+            /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?(?=\/|$)/,
+            (m, name: string) => vars.get(name) ?? m,
+        );
     const peeled = parsed.segments.map((s) => ({ ...peel(s.words), s }));
     peeled.forEach(({ s, ...c }, k) => {
+        for (const a of c.assigns) {
+            const at = a.indexOf('=');
+            const path = pathAssigned(a.slice(at + 1), s.subst);
+            if (path) vars.set(a.slice(0, at), path);
+            else vars.delete(a.slice(0, at));
+        }
         if (!c.name) return;
+        if (c.name === 'git')
+            c.args = c.args.map((w, i) =>
+                c.args[i - 1]?.text === '-C'
+                    ? { ...w, text: expand(w.text) }
+                    : w,
+            );
         const piped: Peeled[] = [];
         for (let j = k - 1; j >= 0 && peeled[j]?.s.sep === '|'; j--)
             piped.push(peeled[j] as Peeled);
         const feeders = [...s.subst.map((x) => peel(x.words)), ...piped];
         if (c.name === 'cd') {
-            const to = c.args[0]?.text ?? '~';
+            const to = expand(c.args[0]?.text ?? '~');
             dir = /^[/~$]/.test(to) ? to : `${dir}/${to}`;
         }
         out.push({ ...c, dir, feeders, sep: s.sep });
@@ -262,6 +295,20 @@ export function isJobTmp(path: string, ctx: Context) {
         !!ctx.jobDir &&
         path.startsWith(`${resolve(`${ctx.jobDir}/tmp`, '/', ctx)}/`)
     );
+}
+// where a command acts: git's own dir, else its cwd; undefined when an env or a flag points git at another repo
+const GIT_REDIRECT_FLAG = /^--(?:git-dir|work-tree)(?:=|$)/;
+export function actsIn(c: Command, ctx: Context) {
+    const isRedirected =
+        c.assigns.some((a) => /^GIT_(?:DIR|WORK_TREE)=/.test(a)) ||
+        c.args.some((w) => GIT_REDIRECT_FLAG.test(w.text));
+    if (isRedirected) return undefined;
+    return c.name === 'git' ? gitDir(c, ctx) : resolve(c.dir, '/', ctx);
+}
+// a command that acts inside the job's own tmp and stays there: its repo is a throwaway one, the git it runs is local
+export function isThrowaway(c: Command, ctx: Context) {
+    const dir = actsIn(c, ctx);
+    return dir !== undefined && isJobTmp(dir, ctx) && !ctx.unsafeTmp?.has(dir);
 }
 // every file a command writes, resolved: `>` and `>>` targets, `tee`, `sd` and `sed -i` files, python's `open(…, 'w')`.
 // x-mod-holds' files are checked against it; a path held in a variable is not read

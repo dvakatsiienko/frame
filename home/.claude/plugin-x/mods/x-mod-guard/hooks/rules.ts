@@ -4,12 +4,14 @@ import {
     type Context,
     type Refusal,
     type Verdict,
+    actsIn,
     adds,
     commands,
     gitDir,
     gitParts,
     hasFlag,
     isJobTmp,
+    isThrowaway,
     operands,
     resolve,
 } from './rules/command.ts';
@@ -59,7 +61,60 @@ const TEMP_ROOTS = [
 ];
 // a scratch clone under the job's own tmp or an os temp root: everything its local git does stays there; a push or a
 // skipped hook does not
-const LOCAL_GIT = new Set(['git-discard', 'git-rewrite', 'git-sweep']);
+const LOCAL_GIT = new Set(['git-discard', 'git-rewrite']);
+// what a throwaway repo under the job's own tmp lifts (FRM-467): a sweep (`git add -A`, a pathless commit), the identity
+// a `-c user.*` or `git config user.*` sets, a gate piped to tail, and a HOME that itself points into the job tmp
+const IDENTITY = /^user\.(?:name|email)$/i;
+function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
+    if (r.rule === 'home')
+        return [
+            ...c.assigns,
+            ...(c.name === 'export' ? c.args.map((w) => w.text) : []),
+        ]
+            .filter((a) => a.startsWith('HOME='))
+            .every((a) => isJobTmp(resolve(a.slice(5), '/', ctx), ctx));
+    if (r.rule === 'git-sweep') return c.name === 'git' && isThrowaway(c, ctx);
+    if (r.rule === 'gate-pipe') return isThrowaway(c, ctx);
+    if (r.rule === 'bypass')
+        return (
+            c.name === 'git' &&
+            r.targets.every((t) => IDENTITY.test(t)) &&
+            isThrowaway(c, ctx)
+        );
+    return false;
+}
+// the command with the lifted part taken off, so the rules that sat behind it judge what is left: a `-c user.name=t`
+// must not hide a force-push in the same command
+function without(c: Command, r: Refusal, next: Command | undefined) {
+    if (r.rule === 'home')
+        return {
+            c: {
+                ...c,
+                assigns: c.assigns.filter((a) => !a.startsWith('HOME=')),
+            },
+            next,
+        };
+    if (r.rule === 'gate-pipe') return { c: { ...c, sep: ';' as const }, next };
+    if (r.rule === 'bypass')
+        return {
+            c: {
+                ...c,
+                args: c.args.filter(
+                    (w, i) =>
+                        !(
+                            (w.text === '-c' &&
+                                IDENTITY.test(
+                                    c.args[i + 1]?.text.split('=')[0] ?? '',
+                                )) ||
+                            (c.args[i - 1]?.text === '-c' &&
+                                IDENTITY.test(w.text.split('=')[0] ?? ''))
+                        ),
+                ),
+            },
+            next,
+        };
+    return { c, next };
+}
 function isScratchGit(c: Command, r: Refusal, ctx: Context) {
     if (c.name !== 'git' || !LOCAL_GIT.has(r.rule)) return false;
     const { sub, subArgs } = gitParts(c.args);
@@ -106,6 +161,28 @@ function isCleanup(c: Command, r: Refusal, ctx: Context) {
         trees.every((t) => SCRATCH_TREE.test(t) && ctx.cleanTrees?.has(t))
     );
 }
+// the job-tmp dirs a throwaway lift would rest on, for the caller to look up on disk: a symlink or a worktree there
+// reaches out of the tmp; a nested shell's script and an eval count too
+export function tmpDirs(
+    command: string,
+    cwd: string,
+    ctx: Context = {},
+): string[] {
+    return commands(parse(command), cwd).flatMap((c) => {
+        const dir = actsIn(c, ctx);
+        const own = dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
+        const dashC = SHELLS.has(c.name)
+            ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
+            : -1;
+        const script = dashC >= 0 ? c.args[dashC + 1]?.text : undefined;
+        const nested = script
+            ? tmpDirs(script, c.dir, ctx)
+            : c.name === 'eval'
+              ? tmpDirs(c.args.map((w) => w.text).join(' '), c.dir, ctx)
+              : [];
+        return [...own, ...nested];
+    });
+}
 export function refusals(
     command: string,
     cwd: string,
@@ -115,16 +192,31 @@ export function refusals(
     const list = commands(parsed, cwd);
     const out: Refusal[] = [];
     list.forEach((c, i) => {
-        const found =
-            floor(c, ctx) ??
-            hazard(c, ctx) ??
-            lockfile(c, ctx) ??
-            overwrite(c, ctx) ??
-            lint(c, list[i + 1]) ??
-            missingAdd(c, ctx) ??
-            brief(c, ctx) ??
-            notes(c, ctx) ??
-            milestone(c, ctx);
+        const judge = (cmd: Command, next: Command | undefined) =>
+            floor(cmd, ctx) ??
+            hazard(cmd, ctx) ??
+            lockfile(cmd, ctx) ??
+            overwrite(cmd, ctx) ??
+            lint(cmd, next) ??
+            missingAdd(cmd, ctx) ??
+            brief(cmd, ctx) ??
+            notes(cmd, ctx) ??
+            milestone(cmd, ctx);
+        let found = judge(c, list[i + 1]);
+        // a lifted rule hides every rule behind it, so the command is judged again without the lifted part
+        let rest: { c: Command; next: Command | undefined } = {
+            c,
+            next: list[i + 1],
+        };
+        while (found && isThrowawayLift(rest.c, found, ctx)) {
+            const stripped = without(rest.c, found, rest.next);
+            const isSame =
+                stripped.c.args.length === rest.c.args.length &&
+                stripped.c.assigns.length === rest.c.assigns.length &&
+                stripped.c.sep === rest.c.sep;
+            rest = stripped;
+            found = isSame ? undefined : judge(rest.c, rest.next);
+        }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
         // a nested shell's script is a command too

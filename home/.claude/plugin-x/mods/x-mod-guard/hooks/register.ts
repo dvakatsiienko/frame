@@ -32,6 +32,7 @@ import {
     signWord,
     stashAsked,
     stashKills,
+    tmpDirs,
     withDimaOk,
 } from './rules.ts';
 
@@ -645,6 +646,39 @@ async function isCleanTree($: EngineInterface, tree: string) {
     return !!orphans && orphans.exitCode === 0 && orphans.stdout.trim() === '';
 }
 
+// a job-tmp dir whose real path, or whose repo's git dir, lies outside the real job tmp: a symlink at frame, a worktree
+// of frame. A dir not yet made is judged by its nearest ancestor; a lookup that fails counts as outside
+async function isTmpEscape($: EngineInterface, dir: string, jobDir: string) {
+    const real = async (p: string) =>
+        (await $.fs.stat(p, { resolve: true })).realPath ?? p;
+    const isInside = (p: string, root: string) =>
+        p === root || p.startsWith(`${root}/`);
+    try {
+        const root = await real(`${jobDir}/tmp`);
+        let at = dir;
+        while (at !== '/' && !(await $.fs.exists(at)))
+            at = at.slice(0, at.lastIndexOf('/')) || '/';
+        if (!isInside(await real(at), root)) return true;
+        const git = await $.process.run(
+            [
+                'git',
+                '-C',
+                at,
+                'rev-parse',
+                '--path-format=absolute',
+                '--git-common-dir',
+            ],
+            { cwd: at },
+        );
+        // no repo up from here yet: a `git init` in the tmp makes its own
+        return (
+            git.exitCode === 0 && !isInside(await real(git.stdout.trim()), root)
+        );
+    } catch {
+        return true;
+    }
+}
+
 // a manifest the working tree changed since HEAD: `CI=1 pnpm install` would freeze the lockfile against it
 async function isManifestChanged($: EngineInterface, dir: string) {
     const r = await $.process
@@ -708,6 +742,10 @@ async function lookUp(
         if (source !== undefined && !/--help|['"]-h['"]/.test(source))
             helpless.add(path);
     }
+    const unsafeTmp = new Set<string>();
+    if (ctx.jobDir)
+        for (const dir of new Set(tmpDirs(command, cwd, ctx)))
+            if (await isTmpEscape($, dir, ctx.jobDir)) unsafeTmp.add(dir);
     const { value: helped = [] } = await $.state
         .get(HELPED)
         .catch(() => ({ value: [] }));
@@ -729,6 +767,7 @@ async function lookUp(
                 : [],
         missing,
         notedTasks,
+        unsafeTmp,
     };
 }
 
