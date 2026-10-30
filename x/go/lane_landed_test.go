@@ -60,8 +60,8 @@ func TestLandedRedsEveryGapAndWritesNothing(t *testing.T) {
 	// another ticket's retros say nothing about this one's
 	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-codie-retro.md"), "retro\n")
 	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-sixth-sense-retro.md"), "retro\n")
-	// a comment naming both words is no look card
-	*w.comments = `[{"body":"not proven, not checked yet: the card comes with the done report"}]`
+	// a comment naming both words is no look card, and neither is a card missing its «not checked:» field
+	*w.comments = `[{"body":"not proven, not checked yet: the card comes with the done report"},{"body":"- **what**: the verb\n- **proven**: go test ok"}]`
 
 	envelope, got := w.landed(t)
 
@@ -290,22 +290,40 @@ func TestLandedReadsAQuickLaneMergedAndDecampsItsVerifyTree(t *testing.T) {
 
 func TestLandedRefusesAPrThatIsNotTheTickets(t *testing.T) {
 	t.Parallel()
-	w := newLandedWorld(t)
-	gitT(t, w.repo, "remote", "add", "origin", "https://github.com/o/r.git")
-	other := filepath.Join(w.repo, ".claude/worktrees/other")
-	gitT(t, w.repo, "worktree", "add", "-q", other, "-b", "codie/FRM-2-other")
-	server, _ := fakeGithub(t, map[string]string{repoPath + "/pulls/8": `{"merged":true,"body":"- ticket: FRM-2","head":{"ref":"codie/FRM-2-other","sha":"abc"}}`})
-	keys := keysFixture(t, map[string]string{
-		"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder",
-		"keychain:x-token-linear-codie:x":  farFuture + ":tok-codie",
-		"keychain:x-token-linear-clio:x":   farFuture + ":tok-clio",
-	})
+	cases := []struct {
+		name, body string
+		refused    bool
+	}{
+		{"another ticket's pr", `- ticket: FRM-2`, true},
+		{"FRM-1 only inside a fence", "- ticket: FRM-2\\n\\n```text\\n- ticket: FRM-1\\n```", true},
+		{"a longer id that starts FRM-1", `- ticket: FRM-1x\n- ticket: FRM-12`, true},
+		// a joined chunk: the pr's branch is the lane's first ticket, its body names FRM-1 too
+		{"a joined chunk's pr, named in its body", `- ticket: FRM-2\n- ticket: FRM-1`, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			gitT(t, w.repo, "remote", "add", "origin", "https://github.com/o/r.git")
+			other := filepath.Join(w.repo, ".claude/worktrees/other")
+			gitT(t, w.repo, "worktree", "add", "-q", other, "-b", "codie/FRM-2-other")
+			server, _ := fakeGithub(t, map[string]string{repoPath + "/pulls/8": `{"merged":true,"body":"` + c.body + `","head":{"ref":"codie/FRM-2-other","sha":"abc"}}`})
+			keys := keysFixture(t, map[string]string{
+				"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder",
+				"keychain:x-token-linear-codie:x":  farFuture + ":tok-codie",
+				"keychain:x-token-linear-clio:x":   farFuture + ":tok-clio",
+			})
 
-	got := runAs(t, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL, "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
-		"lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "8", "--apply")
+			got := runAs(t, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL, "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
+				"lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "8", "--apply")
 
-	if !exists(other) || got.code == 0 || !strings.Contains(got.stdout, "is not FRM-1's pr") {
-		t.Errorf("exit %d, want FRM-2's pr refused and its tree kept:\n%s", got.code, got.stdout)
+			if refused := strings.Contains(got.stdout, "is not FRM-1's pr"); refused != c.refused {
+				t.Errorf("refused %v, want %v:\n%s", refused, c.refused, got.stdout)
+			}
+			if c.refused && (!exists(other) || got.code == 0) {
+				t.Errorf("exit %d, a refused pr must keep FRM-2's tree:\n%s", got.code, got.stdout)
+			}
+		})
 	}
 }
 
