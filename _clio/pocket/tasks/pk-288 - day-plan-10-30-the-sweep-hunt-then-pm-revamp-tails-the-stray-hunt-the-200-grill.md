@@ -59,4 +59,6 @@ W582 (2026-10-30 14:36, dima): go see issues yourself too.
 answered on the 14:41 boot board: sequential waves over the full scope, each split in disjoint slices (W560); matt's grades against the house rules and the spec's exit lines, the built-in hunts bugs — matt's fit the sweep better; 3 waves ran, 16 → 3 → 2
 
 2026-10-30 16:45 homed (prompt-groom --day found them unhomed): W518–W519 done (3 sweep waves of matt's code-review, 16 → 3 → 2); W533 done (mods lane 3 rider); W534–W536 done (the review boundary line in crew-codie step 2 and crew-lead briefing); W537 done (wave 0); W538 done (bytes node pins); W539 done (bytes #55 closed, the hosted renovate app uninstalled); W540–W541, W550, W553 done (vorssaint 3.4.3 confirmed on #2164); W542 done (the side fork archived); W543 done (bytes renovate chores); W544 done (thread names format); W545–W546 done (renovate app checked uninstalled); W551 done (the review line, y); W554 done (mobile mode off)
+
+2026-10-30 16:46: W535 done (the review boundary line, with W534 and W536)
 <!-- SECTION:NOTES:END -->
