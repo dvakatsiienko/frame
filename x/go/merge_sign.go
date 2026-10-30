@@ -92,7 +92,7 @@ var (
 	bareID      = regexp.MustCompile(`^(?:FRM|BYT|PK)-\d+$`)
 	// linear links an id only to that id's own issue page; any other target is an edit
 	issueURL = regexp.MustCompile(`^https://linear\.app/[\w-]+/issue/((?:FRM|BYT|PK)-\d+)(?:/[^\s)]*)?$`)
-	angleURL    = regexp.MustCompile(`<(https?://[^>\s]+)>`)
+	angleURL = regexp.MustCompile(`<(https?://[^>\s]+)>`)
 )
 
 // signedBlock splits a body at the ## signed block that closes it: an earlier heading sits in a quote or a fence
