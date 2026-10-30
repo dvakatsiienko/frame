@@ -263,6 +263,17 @@
   - given a session the registry names anything but 🦉 clio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and clio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
+- 🧭 a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
+  - given a session the registry names anything but 🦉 clio (a nested shell and an eval count)
+  - when it runs `x linear api` with an `issueUpdate`, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file`, then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
+  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima` or `x as dima`, then the call is flagged `as-dima`
+  - and clio's session, `x linear set <id> --state …`, `x linear body --set`, `x linear api` queries and a quoted mention run; a session the registry does not list runs them, fail open; a thread whose title only mentions clio is still a member
+  - decision: warn-only (`WARN_ONLY`) until sixth sense says clean, then refused in its own commit (clio, 2026-10-30, mods/AGENTS.md § the rules)
+  - proof: tests/linearwrite.test.ts
+- 🧭 one sign ask names several tickets, and one tick signs each (FRM-459, o49)
+  - given an orbit ask `✍️ sign FRM-1, FRM-2: <title>` (also `FRM-1 and FRM-2`, `FRM-1 FRM-2`)
+  - when dima ticks it, then `x linear set <id> --add-label signed` and `x linear body <id> --set <file>` land on each id it names, and an id it does not name (`FRM-3`, or `FRM-14` beside `FRM-1`) stays refused
+  - proof: tests/ticks.test.ts
 - ✅ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt names that pr (FRM-423)
   - given a Bash call running `x lane merge-auto … --dima-ok <pr>` (or `--dima-ok=<pr>`)
   - when dima's last prompt typed at the composer or sent over the bridge names the pr as a whole word, `104` or `#104`, by the same match as a dima-ok marker

@@ -635,9 +635,16 @@ export function signWord(
     return undefined;
 }
 const TICKET = new RegExp(`^(${TICKET_KEY})-\\d+$`);
-// a sign ask, `✍️ sign <id>: <title>`, its id matched whole
+// a sign ask, `✍️ sign <id>: <title>` or `✍️ sign <id>, <id>: <title>` for a batch (FRM-459 o49): each id named is matched whole,
+// and an id the ask does not list is not signed by it
+const SIGN_ASK = new RegExp(
+    `(?:^|\\s)✍️ sign ((?:${TICKET_KEY})-\\d+(?:(?:,\\s*|\\s+and\\s+|\\s+)(?:${TICKET_KEY})-\\d+)*):`,
+    'u',
+);
 export const isSignAsk = (text: string, id: string) =>
-    new RegExp(`(^|\\s)✍️ sign ${id}:`, 'u').test(text);
+    SIGN_ASK.exec(text)?.[1]
+        ?.split(/[,\s]+(?:and\s+)?/)
+        .includes(id) ?? false;
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`; a bare `#<n>`
 // or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1)
 export const quotesPr = (text: string, repo: string, pr: string) =>

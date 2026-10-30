@@ -6,6 +6,7 @@ import { TICKET_KEY } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
+import { linearWrite } from './rules/linear.ts';
 import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
@@ -273,7 +274,9 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // sixth sense says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
+    'as-dima',
     'frozen-lockfile',
+    'linear-body',
     'raw-plugin-update',
     'spawn-trial',
 ]);
@@ -1016,6 +1019,25 @@ export const register: Register = (on) => {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
                 return enforce(
                     raw,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+            }
+        }
+        // a body written past `x linear body --set`, or an actor of dima's, from a member's session: the registry lists its name
+        // and it is not clio's, a session the registry does not list fails open (FRM-459)
+        const write = linearWrite(typed, cwd);
+        if (write) {
+            const sid = await $.session.id().catch(() => undefined);
+            const name = sid ? await sessionName($, sid) : undefined;
+            const coordinators = ['\u{1F989}clio', '\u{1F989}cclio']; // read-both: a clio tab resumed under its old title
+            if (
+                name !== undefined &&
+                !coordinators.includes(name.replaceAll(/[\s‍]/g, ''))
+            ) {
+                const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
+                return enforce(
+                    write,
                     `nothing in this command ran — ${said}`,
                     said,
                 );
