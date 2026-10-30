@@ -155,6 +155,36 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1608 W594-W612 asks=7
 - 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1614 W613 asks=0
 - 2026-10-30 · prompt-groom · 1 · 0 · 2026-10-30-1632 W614 asks=1
+- 2026-10-30 · prompt-groom · 1 · 0 · W615-W618 (4). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W619 (1). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W620-W624 (5). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W625-W626 (2). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W627-W638 (12). 6 asks Q1-Q6.
+- 2026-10-30 · prompt-groom · 1 · 0 · no W-lines (asks only). 2 asks Q1-Q2.
+- 2026-10-30 · prompt-groom · 1 · 0 · W639 (1). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W640-W643 (4). 9 asks Q1-Q9.
+- 2026-10-30 · prompt-groom · 1 · 0 · W644 (1). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W645-W650 (6). 1 ask Q1.
+- 2026-10-30 · prompt-groom · 1 · 0 · W651-W652 (2). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W653-W656 (4). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W657-W660 (4). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W661-W675 (15). 3 asks Q1-Q3.
+- 2026-10-30 · prompt-groom · 1 · 0 · no W-lines (asks only). 4 asks Q1-Q4.
+- 2026-10-30 · prompt-groom · 1 · 0 · W676-W678 (3). 8 asks Q1-Q8.
+- 2026-10-30 · prompt-groom · 1 · 0 · no W-lines (asks only). 2 asks Q1-Q2.
+- 2026-10-30 · prompt-groom · 1 · 0 · W679-W681 (3). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · no W-lines (asks only). 1 ask Q1.
+- 2026-10-30 · prompt-groom · 1 · 0 · W682 (1). 1 ask Q1.
+- 2026-10-30 · prompt-groom · 1 · 0 · W683-W695 (13). no asks.
+- 2026-10-30 · prompt-groom · 1 · 0 · W696-W710 (15). 1 ask Q1.
+- 2026-10-30 · prompt-groom · 1 · 0 · W711-W715 (5); asks Q1-Q4
+- 2026-10-30 · prompt-groom · 1 · 0 · W716-W718 (3); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W719-W720 (2); ask Q1
+- 2026-10-30 · prompt-groom · 1 · 0 · W721-W722 (2); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · no W-lines; ask Q1
+- 2026-10-30 · prompt-groom · 1 · 0 · W723-W724 (2); ask Q1
+- 2026-10-30 · prompt-groom · 1 · 0 · W725 (1); no asks
+- 2026-10-30 · prompt-groom · 1 · 0 · W726 (1); no asks
 
 ## rounds
 
