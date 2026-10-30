@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var dispatchedLine = "🚀 dispatched "
+const dispatchedLine = "🚀 dispatched "
 
 // one mark a dispatch writes: write when it is missing, set when the ticket already carries it
 type dispatchMark struct {
@@ -136,6 +136,13 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 		ticket.input["delegateId"] = found.Users.Nodes[0].ID
 	}
 	line := dispatchedLine + time.Now().Format("2006-01-02") + " — " + lane + ", codie " + session
+	if dispatched {
+		for held := range strings.SplitSeq(block, "\n") {
+			if strings.Contains(held, dispatchedLine) {
+				line = strings.TrimSpace(held)
+			}
+		}
+	}
 	mark("🚀 line", !dispatched, line)
 	if !dispatched {
 		if session == "" || lane == "" {

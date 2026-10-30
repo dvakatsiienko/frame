@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -70,22 +71,27 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	plan.main = main
 
 	merged := landedLine{name: "merged"}
-	headRef := ""
+	var headRef, mergedHead string
 	if pr != "" {
-		ghRepo, rerr := repoOf(flags)
-		if rerr != nil {
-			return nil, rerr
+		// --repo here is the checkout's path, so the github slug comes from its origin
+		ghRepo := originSlugIn(repo)
+		if ghRepo == "" {
+			return nil, usageFail(home(repo)+" has no github origin to read #"+pr+" from", "git -C "+home(repo)+" remote -v")
 		}
 		var read struct {
 			Merged bool `json:"merged"`
 			Head   struct {
 				Ref string `json:"ref"`
+				Sha string `json:"sha"`
 			} `json:"head"`
 		}
 		if _, ferr := ghFetch(asCodie, githubBase()+"/repos/"+ghRepo+"/pulls/"+pr, &read); ferr != nil {
 			return nil, ferr
 		}
 		headRef = read.Head.Ref
+		if read.Merged {
+			mergedHead = read.Head.Sha
+		}
 		merged.ok, merged.detail, merged.fix = read.Merged, "#"+pr+" merged", "x lane merge-auto "+pr+" --apply"
 		if !read.Merged {
 			merged.detail = "#" + pr + " is not merged"
@@ -98,7 +104,8 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 
 	spec := landedLine{name: "spec", fix: "x lane landed " + id + " --apply"}
 	feature := ""
-	if paths, _ := laneSpecSection(repo, id); len(paths) > 0 {
+	// the main checkout's spec: a lane tree's own .scratch copy would archive inside a tree about to go
+	if paths, _ := laneSpecSection(main, id); len(paths) > 0 {
 		plan.specDir = filepath.Dir(paths[0])
 		feature = filepath.Base(plan.specDir)
 		plan.archive = filepath.Join(filepath.Dir(plan.specDir), archived, feature)
@@ -138,31 +145,41 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean = nil
-	var kept, notes []string
-	for _, tree := range laneTrees(main, repo, id, headRef) {
+	var notes []string
+	found, terr := laneTrees(main, repo, id, headRef, mergedHead)
+	for _, tree := range found {
 		if tree.reason == "" {
 			plan.clean = append(plan.clean, tree.path)
 			notes = append(notes, home(tree.path)+" is clean, decamped on --apply")
 			continue
 		}
-		kept = append(kept, tree.path)
 		notes = append(notes, home(tree.path)+" stays: "+tree.reason)
-	}
-	if len(notes) > 0 {
-		trees.ok, trees.detail = false, strings.Join(notes, "; ")
-		trees.fix = "x lane landed " + id + " --apply"
-		if len(plan.clean) == 0 {
-			trees.fix = "commit and push in " + home(kept[0]) + ", then x lane decamp " + home(kept[0]) + " --apply"
+		if trees.fix == "" {
+			trees.fix = "settle " + home(tree.path) + " (" + tree.reason + "), then x lane decamp " + home(tree.path) + " --apply"
 		}
+	}
+	switch {
+	case terr != nil:
+		trees.ok, trees.detail, trees.fix = false, "the worktree list did not read: "+terr.Error(), "git -C "+home(main)+" worktree list"
+	case len(plan.clean) > 0:
+		trees.ok, trees.detail, trees.fix = false, strings.Join(notes, "; "), "x lane landed "+id+" --apply"
+	case len(notes) > 0:
+		trees.ok, trees.detail = false, strings.Join(notes, "; ")
 	}
 	lines = append(lines, trees)
 
 	wish := landedLine{name: "wish", ok: true, detail: "no W-lines in the body"}
-	if actor, aerr := actorOf(Flags{}); aerr == nil {
-		if issue, berr := fetchBody(actor, id); berr == nil && issue.Description != nil {
-			if n := len(wishItem.FindAllString(*issue.Description, -1)); n > 0 {
-				wish.detail = fmt.Sprintf("%s for the close proposal: x linear read %s", plural(n, "W-line"), id)
-			}
+	actor, berr := actorOf(flags)
+	var issue bodyIssue
+	if berr == nil {
+		issue, berr = fetchBody(actor, id)
+	}
+	switch {
+	case berr != nil:
+		wish.ok, wish.detail, wish.fix = false, "linear did not read: "+berr.Error(), "x linear read "+id
+	case issue.Description != nil:
+		if n := len(wishItem.FindAllString(*issue.Description, -1)); n > 0 {
+			wish.detail = fmt.Sprintf("%s for the close proposal: x linear read %s", plural(n, "W-line"), id)
 		}
 	}
 	lines = append(lines, wish)
@@ -172,13 +189,18 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 type laneTree struct{ path, reason string }
 
 // laneTrees lists the ticket's trees under .claude/worktrees/, each with why it must stay, or clean by
-// the root rule: no change in git status, no .scratch/ dir, no commit on no remote
-func laneTrees(main, self, id, headRef string) []laneTree {
+// the root rule: no change in git status, no .scratch/ dir, every commit on an origin ref or in the merged pr
+func laneTrees(main, repo, id, headRef, mergedHead string) ([]laneTree, error) {
 	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	under := filepath.Join(main, ".claude", "worktrees") + string(filepath.Separator)
+	// git lists a path as it was added, which may run through a symlink (/var → /private/var)
+	under := resolved(filepath.Join(main, ".claude", "worktrees")) + string(filepath.Separator)
+	selves := []string{resolved(repo), resolved(frameRoot())}
+	if cwd, cerr := top(); cerr == nil {
+		selves = append(selves, resolved(cwd))
+	}
 	var trees []laneTree
 	for block := range strings.SplitSeq(listed, "\n\n") {
 		var path, branch string
@@ -190,20 +212,31 @@ func laneTrees(main, self, id, headRef string) []laneTree {
 				branch = v
 			}
 		}
-		if !strings.HasPrefix(path, under) || branch == "" || !(strings.HasPrefix(branch, "codie/"+id+"-") || branch == headRef) {
+		if !strings.HasPrefix(resolved(path), under) || branch == "" || !(strings.HasPrefix(branch, "codie/"+id+"-") || branch == headRef) {
 			continue
 		}
-		trees = append(trees, laneTree{path, treeDirt(path, self)})
+		trees = append(trees, laneTree{path, treeDirt(path, selves, mergedHead)})
 	}
-	return trees
+	return trees, nil
 }
 
-func treeDirt(tree, self string) string {
+func resolved(path string) string {
+	if real, err := filepath.EvalSymlinks(path); err == nil {
+		return real
+	}
+	return path
+}
+
+func treeDirt(tree string, selves []string, mergedHead string) string {
 	var reasons []string
-	if same, _ := filepath.EvalSymlinks(self); same == tree || self == tree {
+	if slices.Contains(selves, resolved(tree)) {
 		reasons = append(reasons, "x runs from it")
 	}
-	if status, _ := gitIn(tree, "status", "--porcelain"); status.out != "" {
+	status, _ := gitIn(tree, "status", "--porcelain")
+	switch {
+	case !status.ok:
+		reasons = append(reasons, "git status failed")
+	case status.out != "":
 		var files []string
 		for line := range strings.SplitSeq(status.out, "\n") {
 			// run trims stdout, so the first line may have lost its leading status blank
@@ -216,8 +249,17 @@ func treeDirt(tree, self string) string {
 	if exists(filepath.Join(tree, ".scratch")) {
 		reasons = append(reasons, "holds a .scratch/ dir")
 	}
-	if ahead, _ := gitIn(tree, "rev-list", "HEAD", "--not", "--remotes=origin"); ahead.out != "" {
-		reasons = append(reasons, plural(len(strings.Split(ahead.out, "\n")), "commit")+" on no remote")
+	// a squash merge leaves the branch's commits off main, and a deleted branch leaves them on no remote:
+	// a tree still at the merged pr's head holds nothing the pr did not carry
+	at, _ := gitIn(tree, "rev-parse", "HEAD")
+	if mergedHead == "" || at.out != mergedHead {
+		ahead, _ := gitIn(tree, "rev-list", "HEAD", "--not", "--remotes=origin")
+		switch {
+		case !ahead.ok:
+			reasons = append(reasons, "git rev-list failed")
+		case ahead.out != "":
+			reasons = append(reasons, plural(len(strings.Split(ahead.out, "\n")), "commit")+" on no remote")
+		}
 	}
 	return strings.Join(reasons, ", ")
 }
@@ -244,7 +286,7 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	if plan.specDir != "" {
 		if err := r.Step("archive", "the spec dir into .scratch/"+archived, func() (string, error) {
 			if exists(plan.archive) {
-				return "", &Fail{Refused: true, Msg: home(plan.archive) + " already exists: two lanes share the feature name", Next: "rename one of them by hand"}
+				return "", &Fail{Refused: true, Msg: home(plan.archive) + " already exists: two lanes share the feature name", Next: "mv " + home(plan.specDir) + " " + home(plan.archive) + "-" + strings.ToLower(plan.id)}
 			}
 			if err := os.MkdirAll(filepath.Dir(plan.archive), 0o755); err != nil {
 				return "", err

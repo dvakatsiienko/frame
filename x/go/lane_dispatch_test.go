@@ -93,10 +93,14 @@ func TestDispatchAgainReportsEveryMarkSetAndSendsNothing(t *testing.T) {
 	done := signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — cli-3, codie s1\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
 	server := dispatchServer(t, dispatchState{body: done, state: "In Progress", delegate: "codie", labels: []string{"agent"}})
 
-	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
+	// a later re-run with no lane or session reports the line the ticket holds, not one built from today
+	envelope, got := runDispatch(t, server, "FRM-1", "--apply")
 
 	if got.code != 0 || strings.Count(jsonOf(envelope["data"]), `"set"`) != 4 {
 		t.Fatalf("exit %d, want every mark already set:\n%s", got.code, got.stdout)
+	}
+	if !strings.Contains(jsonOf(envelope["data"]), "🚀 dispatched 2026-10-30 — cli-3, codie s1") {
+		t.Errorf("the 🚀 mark does not quote the ticket's own line:\n%s", got.stdout)
 	}
 	if n := len(mutations(server)); n != 0 {
 		t.Errorf("%d mutations on a dispatched ticket", n)
