@@ -169,7 +169,16 @@ async function serve() {
     // named, so the fleet board reads what it is
     const session = pty.spawn(
         'claude',
-        ['-n', `mods-live: ${name}`, '--debug-file', debugLog],
+        [
+            '-n',
+            `mods-live: ${name}`,
+            '--debug-file',
+            debugLog,
+            // a cli-entrypoint cc (a --bg session's) lets settings.json's env beat the swapped plugin dirs, so the child loads the
+            // live mod; without the user settings the swap alone names the dirs
+            '--setting-sources',
+            'project,local',
+        ],
         {
             cols: COLS,
             cwd: process.cwd(),
