@@ -21,6 +21,13 @@ import {
 
 const day = '2026-10-26';
 
+const steer = (id: string, text: string) =>
+    JSON.stringify({
+        attachment: { content: [`- ${id} · his steer: «${text}»`] },
+        timestamp: '2026-10-26T09:15:00Z',
+        type: 'attachment',
+    });
+
 describe('ungroomedStamps', () => {
     const text = [
         'W301 (2026-10-26 09:12, dima): fold this',
@@ -220,20 +227,26 @@ describe('--day', () => {
 
     function run(opts: {
         grooms?: Record<string, string>;
+        isLinearDown?: boolean;
         linear?: string;
-        now?: string;
+        now?: string | null;
         pocket?: Record<string, string>;
         prompts?: string;
+        steers?: string[];
     }) {
         const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
         try {
-            // linear is stubbed: x prints one ticket body
+            // linear is stubbed: x prints one ticket body, or fails when it is down
             mkdirSync(join(root, 'bin'));
             writeFileSync(
                 join(root, 'bin', 'x'),
-                `#!/bin/sh\necho '${JSON.stringify({ data: { issues: { nodes: [{ description: opts.linear ?? '', identifier: 'FRM-1' }] } } })}'\n`,
+                opts.isLinearDown
+                    ? '#!/bin/sh\nexit 1\n'
+                    : `#!/bin/sh\necho '${JSON.stringify({ data: { issues: { nodes: [{ description: opts.linear ?? '', identifier: 'FRM-1' }] } } })}'\n`,
                 { mode: 0o755 },
             );
+            const transcript = join(root, 't.jsonl');
+            writeFileSync(transcript, (opts.steers ?? []).join('\n'));
             for (const [dir, files] of [
                 ['grooms', opts.grooms],
                 ['pocket', opts.pocket],
@@ -253,8 +266,11 @@ describe('--day', () => {
                     join(import.meta.dirname, 'prompt-groom.ts'),
                     '--day',
                     day,
-                    '--now',
-                    opts.now ?? '10:30',
+                    ...(opts.now === null
+                        ? []
+                        : ['--now', opts.now ?? '10:30']),
+                    '--transcript',
+                    transcript,
                 ],
                 {
                     encoding: 'utf8',
@@ -265,6 +281,7 @@ describe('--day', () => {
                         POCKET_DIR: join(root, 'pocket'),
                         PROMPT_GROOM_DIR: join(root, 'grooms'),
                         PROMPT_RAW_DIR: join(root, 'prompts'),
+                        TZ: 'UTC',
                     },
                 },
             );
@@ -286,7 +303,7 @@ describe('--day', () => {
 
     test('a groomed prompt passes', () => {
         expect(
-            run({ grooms: groomed(), pocket: { 'a.md': 'W1 home' } }).status,
+            run({ grooms: groomed(), pocket: { 'a.md': 'W1 ship it' } }).status,
         ).toBe(0);
     });
 
@@ -314,10 +331,75 @@ describe('--day', () => {
         expect(out.stdout).toContain(`W7 (${day}-1000.groomed.md) — no home`);
     });
 
-    test('a groomed W-id in a recent linear body passes', () => {
+    test('a groomed W-line whose text is in a recent linear body passes', () => {
         expect(
-            run({ grooms: groomed('W7'), linear: 'folded W7 here' }).status,
+            run({ grooms: groomed('W7'), linear: 'folded ship it here' })
+                .status,
         ).toBe(0);
+    });
+
+    test('a W-id alone does not home a W-line, ids repeat across items', () => {
+        const out = run({
+            grooms: groomed('W7'),
+            pocket: { 'a.md': 'W7 (2026-10-01 08:00, dima): another thing' },
+        });
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('W7');
+    });
+
+    test('a W-line homed by its stamp alone passes', () => {
+        expect(
+            run({
+                grooms: groomed('W7'),
+                pocket: { 'a.md': `W2 (${day} 10:00, dima): reworded` },
+            }).status,
+        ).toBe(0);
+    });
+
+    test('an ungroomed steer of the day reds in the prompt shape', () => {
+        const out = run({
+            prompts: '',
+            steers: [steer('o69', 'ship it now')],
+        });
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('o69 — no groom: ship it now');
+        expect(out.stdout).toContain('prompt-groom.ts o69');
+    });
+
+    test('a groomed steer and a no-wish steer pass', () => {
+        expect(
+            run({
+                grooms: {
+                    [`${day}-o68.groomed.md`]: `W1 (${day} 09:15, dima, o68 steer): other wish\n`,
+                    [`${day}.no-wish.md`]: 'o69 — just a thanks\n',
+                },
+                pocket: { 'a.md': 'other wish' },
+                prompts: '',
+                steers: [steer('o68', 'other'), steer('o69', 'thanks')],
+            }).status,
+        ).toBe(0);
+    });
+
+    test('a steer of another day is not checked', () => {
+        expect(
+            run({
+                prompts: '',
+                steers: [steer('o69', 'x').replace('10-26', '10-25')],
+            }).status,
+        ).toBe(0);
+    });
+
+    test('a past day counts every prompt as old without --now', () => {
+        const out = run({ now: null, prompts: '## 23:45\n\nlate wish\n\n' });
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('23:45 — no groom: late wish');
+    });
+
+    test('linear down: one 🟡 line, the prompt reds still print, exit 1', () => {
+        const out = run({ isLinearDown: true });
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('🟡 linear not read');
+        expect(out.stdout).toContain('10:00 — no groom: ship the thing');
     });
 
     test('a prompt of a harness event alone passes', () => {
@@ -340,8 +422,10 @@ describe('--day', () => {
 
     test('a groomed W-id in a pocket file passes', () => {
         expect(
-            run({ grooms: groomed('W7'), pocket: { 'a.md': 'see W7 here' } })
-                .status,
+            run({
+                grooms: groomed('W7'),
+                pocket: { 'a.md': 'see ship it here' },
+            }).status,
         ).toBe(0);
     });
 });
@@ -359,13 +443,6 @@ describe('prompt-groom inbox', () => {
 });
 
 describe('prompt-groom oN (FRM-451)', () => {
-    const steer = (id: string, text: string) =>
-        JSON.stringify({
-            attachment: { content: [`- ${id} · his steer: «${text}»`] },
-            timestamp: '2026-10-26T09:15:00Z',
-            type: 'attachment',
-        });
-
     function groom(id: string) {
         const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
         try {

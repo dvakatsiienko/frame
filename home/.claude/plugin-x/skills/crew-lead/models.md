@@ -15,7 +15,7 @@
 
 **the spec-run balance** (dima, 2026-10-06: «plain --bg coder is better for granular work, where i'd like to see the results in place. and implement-spec looks very good of under the hood work»):
 - a `--bg` codie for granular work dima watches: UI, side lanes, anything he steers in place
-- `implement-spec` subagents for bulk work under the hood; each ticket picks its model — sonnet 5.5 for a mechanical ticket, opus for judgment; clio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
+- `implement-spec` subagents for bulk work under the hood; every code ticket on opus 5.5 until dima reads the sonnet grade (the next mods lane's opener); clio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
 - a `--bg` codie hands its big reads and mechanical edits to subagents, so its own context stays lean (`x:crew-codie`)
 
 ## picking the model — Dima's contract, never re-derived

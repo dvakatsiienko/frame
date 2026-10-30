@@ -1,7 +1,7 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
-//        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM]   red each prompt of that day (default today) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), and each W-id of that day's groomed files found in no pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today
+//        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose stamp and text are in no pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
 import { execFileSync } from 'node:child_process';
 import {
     existsSync,
@@ -121,6 +121,31 @@ export function rawPromptAt(dayFile: string, hhmm: string) {
     return prompts.length > 0 ? prompts.join('\n\n---\n\n') : undefined;
 }
 
+// the `HH:MM — <why>` and `oN — <why>` lines of a no-wish file: a prompt minute or an orbit steer that carries no wish
+const noWishIds = (noWishText: string) =>
+    new Set(
+        [...noWishText.matchAll(/^(\d{2}:\d{2}|o\d+) — /gm)].map(
+            ([, id]) => id,
+        ),
+    );
+
+// the day's orbit steers (the newest of each id) with no groom and no no-wish line
+function ungroomedSteers(
+    steers: { day: string; id: string; text: string }[],
+    day: string,
+    noWishText: string,
+) {
+    const noWish = noWishIds(noWishText);
+    const latest = new Map(
+        steers.filter((s) => s.day === day).map((s) => [s.id, s.text]),
+    );
+    return [...latest]
+        .filter(
+            ([id, text]) => !noWish.has(id) && !groomedOnDisk(day, id, text),
+        )
+        .map(([id, text]) => ({ id, text }));
+}
+
 // a prompt of the day file older than 10 minutes at `now` with no groom and no no-wish line; a prompt of slash commands or local-command echoes alone carries no wish
 export function ungroomedPrompts(
     dayText: string,
@@ -131,9 +156,7 @@ export function ungroomedPrompts(
 ) {
     const minutes = (hhmm: string) =>
         Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3));
-    const noWish = new Set(
-        [...noWishText.matchAll(/^(\d{2}:\d{2}) — /gm)].map(([, hhmm]) => hhmm),
-    );
+    const noWish = noWishIds(noWishText);
     const times = new Set(
         dayText.match(/^## \d{2}:\d{2}$/gm)?.map((head) => head.slice(3)),
     );
@@ -196,22 +219,36 @@ export function homelessWishes(
         .map((file) => readFileSync(file, 'utf8'))
         .concat(linear.map(([, body]) => body))
         .join('\n');
-    const homed = new Set(homes.match(/\bW\d+\b/g));
+    // W-ids repeat across items, so a line is homed by its stamp or its text, never its id
+    const isHomed = (line: string) => {
+        const stamp = line.match(
+            /\(\d{4}-\d{2}-\d{2} (?:\d{2}:\d{2}|inbox), dima/,
+        )?.[0];
+        const text = line
+            .replace(/^\s*(?:[*-]\s+)?W\d+/, '')
+            .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
+            .replace(/^[\s·:]+/, '')
+            .trim();
+        return (
+            (stamp !== undefined && homes.includes(stamp)) ||
+            (text !== '' && homes.includes(text))
+        );
+    };
     return readdirSync(groomDir)
         .filter(
             (name) =>
                 name.startsWith(`${day}-`) && name.endsWith('.groomed.md'),
         )
         .flatMap((name) =>
-            [
-                ...new Set(
-                    readFileSync(path.join(groomDir, name), 'utf8').match(
-                        /\bW\d+\b/g,
-                    ),
+            (
+                readFileSync(path.join(groomDir, name), 'utf8').match(W_LINE) ??
+                []
+            )
+                .filter((line) => !isHomed(line))
+                .map(
+                    (line) =>
+                        [line.match(/\bW\d+\b/)?.[0] ?? line, name] as const,
                 ),
-            ]
-                .filter((id) => !homed.has(id))
-                .map((id) => [id, name] as const),
         );
 }
 
@@ -226,8 +263,8 @@ export function newUnstamped(text: string, head: string) {
     );
 }
 
-// the newest steer of that id in clio's transcript (the given one, else the newest under her project dir)
-function steerText(id: string, transcript?: string) {
+// every steer in clio's transcript (the given one, else the newest under her project dir), with the local day it landed
+function transcriptSteers(transcript?: string) {
     // read-both: the live dir since the 10-29 move, and the old one for history
     const file =
         transcript ??
@@ -240,13 +277,22 @@ function steerText(id: string, transcript?: string) {
                     .map((name) => path.join(dir, name)),
             )
             .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
-    if (!file || !existsSync(file)) return undefined;
+    if (!file || !existsSync(file)) return [];
     return readFileSync(file, 'utf8')
         .split('\n')
         .filter(Boolean)
-        .flatMap((row) => steersOf(JSON.parse(row)))
-        .findLast((steer) => steer.id === id)?.text;
+        .flatMap((row) => {
+            const entry: Parameters<typeof steersOf>[0] = JSON.parse(row);
+            const day = entry.timestamp
+                ? new Date(entry.timestamp).toLocaleDateString('sv')
+                : '';
+            return steersOf(entry).map((steer) => ({ ...steer, day }));
+        });
 }
+
+// the newest steer of that id
+const steerText = (id: string, transcript?: string) =>
+    transcriptSteers(transcript).findLast((steer) => steer.id === id)?.text;
 
 function helgaUp() {
     const agents = JSON.parse(
@@ -302,38 +348,57 @@ if (import.meta.main) {
             ? (args[1] ?? '')
             : today.toLocaleDateString('sv');
         const nowAt = args.indexOf('--now');
+        // a past day is over: every prompt of it is old
         const now =
             nowAt >= 0
                 ? (args[nowAt + 1] ?? '')
-                : today.toLocaleTimeString('sv').slice(0, 5);
+                : day < today.toLocaleDateString('sv')
+                  ? '23:59'
+                  : today.toLocaleTimeString('sv').slice(0, 5);
         const read = (file: string) =>
             existsSync(file) ? readFileSync(file, 'utf8') : '';
-        const prompts = ungroomedPrompts(
-            read(path.join(promptDir, `${day}.md`)),
-            day,
-            now,
-            read(path.join(groomDir, `${day}.no-wish.md`)),
-        );
-        const homeless = existsSync(groomDir)
-            ? homelessWishes(
-                  day,
-                  path.join(home, 'frame/.scratch'),
-                  linearBodies(),
-              )
-            : [];
-        for (const { hhmm, text } of prompts)
+        const noWishText = read(path.join(groomDir, `${day}.no-wish.md`));
+        const transcriptAt = args.indexOf('--transcript');
+        const missing = [
+            ...ungroomedPrompts(
+                read(path.join(promptDir, `${day}.md`)),
+                day,
+                now,
+                noWishText,
+            ).map(({ hhmm, text }) => ({ id: hhmm, text })),
+            ...ungroomedSteers(
+                transcriptSteers(
+                    transcriptAt >= 0 ? args[transcriptAt + 1] : undefined,
+                ),
+                day,
+                noWishText,
+            ),
+        ];
+        let linear: [string, string][] | undefined;
+        try {
+            linear = linearBodies();
+        } catch {
+            console.error(
+                '🟡 linear not read — the no-home check skipped, the prompt reds below still stand',
+            );
+        }
+        const homeless =
+            linear && existsSync(groomDir)
+                ? homelessWishes(day, path.join(home, 'frame/.scratch'), linear)
+                : [];
+        for (const { id, text } of missing)
             console.log(
-                `🔴 ${hhmm} — no groom: ${text.replace(/\s+/g, ' ').slice(0, 60)} — ${groomStep(`${hhmm} --date ${day}`)}, or add «${hhmm} — <why>» to ${path.join(groomDir, `${day}.no-wish.md`)}`,
+                `🔴 ${id} — no groom: ${text.replace(/\s+/g, ' ').slice(0, 60)} — ${groomStep(`${id} --date ${day}`)}, or add «${id} — <why>» to ${path.join(groomDir, `${day}.no-wish.md`)}`,
             );
         for (const [id, file] of homeless)
             console.log(
-                `🔴 ${id} (${file}) — no home: a groomed W-line in no pocket task file, no spec.md and no recent linear body`,
+                `🔴 ${id} (${file}) — no home: a groomed W-line whose stamp and text sit in no pocket task file, no spec.md and no recent linear body`,
             );
-        if (prompts.length + homeless.length === 0)
+        if (missing.length + homeless.length === 0 && linear)
             console.log(
-                `🟢 ${day} at ${now}: every prompt older than 10 minutes has a groom or a no-wish line, and every groomed W-id has a home (scanned: ${promptDir}/${day}.md, ${groomDir}, ${pocketDir}, ${home}/frame/.scratch/**/spec.md, linear tickets updated yesterday or today)`,
+                `🟢 ${day} at ${now}: every prompt older than 10 minutes and every steer has a groom or a no-wish line, and every groomed W-line has a home (scanned: ${promptDir}/${day}.md, ${groomDir}, ${pocketDir}, ${home}/frame/.scratch/**/spec.md, linear tickets updated yesterday or today)`,
             );
-        process.exitCode = prompts.length + homeless.length ? 1 : 0;
+        process.exitCode = missing.length + homeless.length ? 1 : 0;
     } else if (args[0] === '--check' || args[0] === '--linear') {
         const day = new Date().toLocaleDateString('sv');
         // --linear: every ticket updated yesterday or today, a newly born one included (the halt's door; a halt after midnight still sees the day before)

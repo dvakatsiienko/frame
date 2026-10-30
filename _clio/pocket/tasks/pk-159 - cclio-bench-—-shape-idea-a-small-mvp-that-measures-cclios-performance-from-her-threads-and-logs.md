@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-10-30T13:09:00Z'
+updated_date: '2026-10-30T16:16:00Z'
 due_date: '2026-10-30'
 labels:
   - m
@@ -36,4 +36,7 @@ kept: 2026-10-28 — a later shape-idea wish that belongs in linear; it carries 
 kept: 2026-10-29 — dima o2: «keep it parked, i'll take care of it with fork (try)»
 
 10-30: the otel proposal moved with the coordinator home: _clio/.scratch/otel/proposal.md (the 10-16 note above names the old path)
+
+W633 (2026-10-30 16:57, dima): pk-159: touch it; i plan to solve it within your side channel, maybe tomorrow.
+kept: 2026-10-30 — dima plans it for his side channel, maybe 10-31; the old «waiting for the memory sweep (FRM-267)» is past, FRM-267 is Done
 <!-- SECTION:NOTES:END -->
