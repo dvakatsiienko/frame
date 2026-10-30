@@ -38,7 +38,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 - **price**: $2 / $10, cache reads $0.10 (0.05×, cut from $0.20 on 2026-10-07), writes $2.50 (5m). 1M / 128K. **[vendor]**
 - **effort**: `medium` in Claude Code, `high` on the API; never `low` for code (skips verification **[vendor]**), never `xhigh`/`max` (~193K tokens a task, dearer than opus max **[bench]**).
-- **pick for**: quick-lane codie (PK-47: clean, `docs/test-drive/sonnet-coder.md`) **[measured]**, `helper`, `scout`, retrieval lanes under an opus lead.
+- **pick for**: `helper`, `scout`, retrieval lanes under an opus lead.
 - **never**: the main codie of a side lane, the sole sixth sense, design work.
 - **numbers**: below opus at every matched effort — AA 41 vs 51 at medium **[bench]**; opus low (87.4 %) matched sonnet high (87.6 %) at +7 % cost per solved task **[vendor]**; review catch 6/13 vs opus 8/13 (CodeRabbit) **[bench]**.
 

@@ -60,7 +60,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **the pr mode** — a side-lane or shift brief says `pr mode: plain` or `pr mode: stacked`; stacked only while the stacked-prs trial runs, for 2+ dependent parts, its brief naming `docs/test-drive/stacked-prs.md`
 - **the argv** — literal, `-n` before the prompt, the prompt before `--remote-control` (the flag once ate a 1.5 kB brief as its rc label):
   - side lane: `cd <repo> && claude --bg -n '🌗 🔧 codie: <scope> | BYT-N' --model opus --effort medium "$(cat <brief file>)" --remote-control`
-  - quick lane on main: `cd <repo> && claude --bg -n '⚡ 🔧 codie: <scope> | BYT-N' --model sonnet --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "$(cat <brief file>)" --remote-control`
+  - quick lane on main: `cd <repo> && claude --bg -n '⚡ 🔧 codie: <scope> | BYT-N' --model opus --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "$(cat <brief file>)" --remote-control`
   - side-lane sixth sense, once the pr exists: `cd <repo> && claude --bg -n '🌗 🔎 sixth sense: <scope> | #<pr>' --model opus --effort medium '/x:crew-sixth-sense BYT-N <pr url> <codie registry name> <clio registry name> spec: <spec path> trials: <names>' --remote-control`
   - quick-lane sixth sense, on codie's «final»: the same line with `-n '⚡ 🔎 sixth sense: <scope> | main'` and `main:<base sha>` in place of the pr url, plus `final: <head sha>` before `spec:`, pushed by clio first (a later round's head too)
   - `spec:` is the lane's spec path, so sixth sense grades the spec's exit lines; it comes after the four arguments, before `trials:`

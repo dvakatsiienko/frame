@@ -28,7 +28,7 @@
 - **fable-5.1** — spawned only on his word, at `medium`; for design work «not lower than medium, maybe high, not extrahigh, not max» (dima, 2026-10-01 — the 09-06 «always low» rule is retired); Dima spends that budget
   on his own turns. Anything Dima reads → fable flavour: *«opus picks pragmatically, fable =
   flavour»*.
-- **sonnet-5.5** — **the quick-lane codie default** (dima, 2026-10-10, after PK-47: 18M tokens, 54 min, clean; `docs/test-drive/sonnet-coder.md`): `--model sonnet --effort medium`; feature and app lanes stay opus. also routine, fully specified work and the `helper` card; never hard multi-step.
+- **sonnet-5.5** — never a default codie: every codie runs opus 5.5, quick lanes and mods included; sonnet is a codie only as a deliberate pick, named in the brief, for a lane that needs little reasoning and few decisions (dima, 2026-10-30: «Sonnet 5.5 is a weak model for mods. Only Opus 5.5 is a coder»; a sonnet-built chunk counts as not verified until an opus review reads it). routine, fully specified work and the `helper` card; never hard multi-step.
 - **haiku-5.5** — the haiku pick since 2026-10-08 (dima): retrieval, extraction, bulk transforms, a sidekick subagent under an opus lead, bare probes. `--model haiku` resolves to `claude-haiku-5-5` on cc 2.1.294 (probed 2026-10-08). 📌 not for complex agentic coding (Terminal-Bench 4.0 39.2 %), not at low effort on long prompts; as a classifier engine it is unmeasured.
 - 🎯 the effort baseline, the cards and every subagent rule (fan-out, the haiku crew, the delegate list): `x:crew-subagent`
 - Full cards, prices and the evidence: [references/model-cards.md](references/model-cards.md), on demand.
