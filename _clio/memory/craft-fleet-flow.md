@@ -29,7 +29,7 @@ each stage names its gate, its owner, its door and its wait budget.
 the lane is the ticket's first body line, `lane: <kind>` (the four kinds: `fleet-vibe` § entities, lane), the kind word only. clio proposes it and silence accepts; codie pings at a named trigger and clio promotes. a lane's 🛼 glide title reads `<topic> — <what>`, one colon only, the card head's (dima, 2026-10-12).
 
 - **freebie** — done in place by me, no ticket, no spec: drop, build, land, look; a bigger one is a **☘️ almost-freebie** (`fleet-vibe`): a helper card i brief and prove (a small UI ask: `DESIGN.md` + a shot, a `docs/test-drive/design-drift.md` line)
-- **quick lane** — on main, no pr, no sign, a spec, a sixth sense on dima's yes/no in his pick (`main:<base sha>`): drop, dispatch, build, land, look, fold; a prototype is a quick lane that never lands
+- **quick lane** — on main, no pr, no sign, a spec, a sixth sense on dima's yes/no in his pick (`main:<base sha>`): drop, dispatch, build, land, look, fold
 - **side lane** and **shift** — worktree, pr and sixth sense: every stage; an app or redesign opens with shape and design
 
 ## lane init — the contract (dima, 2026-10-23, PK-263)

@@ -37,4 +37,12 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-10-23 · frame#104 · crew verifier (Opus 5.5) · 2 rounds, 1 of 1 useful (the built-out count padded 185 vs 160 run, caught by a `-json` recount); a round 4 min against 13 before, the gate ~49 s · useful
 - 2026-10-25 · bytes#130, bytes#132, frame#110 (FRM-411) · crew verifier (Opus 5.5) + the shared ci reviewer · 1 round each, all clean; 3 P2 notes useful (exit line 8 wording vs atelier, an unasked stryker rider, `x lane review` naming review-approved.yml on frame); the ci reviewer's first frame round clean on the new shared key · useful
 
+- 2026-10-29 · frame 74994434..cfb2fe36 + bytes 0c8ceeab..3b7add0d (the rename sweep, dima-mode codie on main) · built-in /code-review, codie's 8 angles, round 1 · 2 findings (fleet_ops title word bounds, reply-check crow substring), both fixed · useful
+- 2026-10-29 · the rename sweep · 🐆 wisphunter paired beside the built-in, round 1 · 7: 5 real bugs fixed, 1 by-design, 1 nit fixed · useful
+- 2026-10-29 · the rename sweep · matt's code-review, standards card (wisphunter), round 2 · 9: 7 fixed, 1 declined (a hidden constraint), 1 nit · useful
+- 2026-10-29 · the rename sweep · matt's code-review, spec card (wisphunter), round 2 · 3 + 1 question, all real, all fixed — the only catches nothing else made (the profile redraw never run, 43 live card heads, the github-contrib o67 line) · useful
+- 2026-10-29 · the rename sweep · 13 intermediate wisphunter runs per slice, 1–3 min each · caught what the final rounds would have, earlier · useful
+- 2026-10-30 · the rename sweep post-run, wave 1 (clio) · matt's code-review, standards card (wisphunter) · 8 + 1 question: drifted read-both lists missing `cclio` in 3 readers, a narrowed dir match, a half-renamed comment, 2 smells, 2 nits · useful
+- 2026-10-30 · the rename sweep post-run, wave 1 (clio) · matt's code-review, spec card (wisphunter) · 8: the guard's exceptions wider than the spec, an open pocket item missed, live state outside git (desktop presets, a state-file key, token caches), 2 spec lines half-done, `pnpm check` missing from exit 3's evidence · useful
+
 ## verdict

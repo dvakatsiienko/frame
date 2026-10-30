@@ -36,4 +36,17 @@ group by 1 order by 2 desc;
 
 ## rounds
 
+### round 1 — the rename sweep, 2026-10-29 (dima-mode codie, Opus 5.5)
+- 15 runs, 41.3 min of review wall time, median 2.2 min, range 1.0–7.8; 65k–216k tokens a run where recorded
+- yield, runs from step 5 on: ~48 findings, ~46 real and acted on, 1 by-design, 1 declined for a hidden constraint, 0 pure noise; every bug sat in a gate-green tree
+- catches nobody else made: a renamed word inside dima's quote, the only old-role-key test lost, the guard's underscore hole, the `clio:*` preflight owner, the profile redraw never run (spec axis)
+- use: plain card + codie's brief 12×, paired beside the built-in `/code-review` 1×, as matt's two axis cards 2×; the brief decides the yield — naming the read-both rule and «already fixed, do not re-report» kept it on new ground
+- fit, built-in `/code-review`: not a drop-in, the skill bars subagents for its own angles, so the pair runs side by side; the card found 5 real bugs the angles missed, the angles 2 low ones the card missed
+- fit, matt's `code-review`: a drop-in, each axis one card
+- codie's verdict: adopt as the default review card, keep per-slice runs, brief it with the rules the diff must keep
+
+### round 2 — the rename sweep post-run wave 1, 2026-10-30 (clio, Opus 5.5)
+- matt's two axes as cards, background, ~5 min (standards, 184k tokens, 48 calls) and ~8 min (spec, 129k, 66 calls)
+- 16 findings, 8 per axis, all real on read; the spec card checked live state outside git with the brief's `rg`, which is where the sweep's last misses sat
+
 ## verdict
