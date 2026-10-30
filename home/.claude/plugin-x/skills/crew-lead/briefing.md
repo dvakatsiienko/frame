@@ -47,7 +47,7 @@
 ## the pr
 
 - **a pr clio opens for codie is opened as the codie app** — codie opens its own with `x lane pr-open`; when clio opens one: `GH_TOKEN=$(node ~/frame/script/github-agent-token.ts) gh pr create …` renders as `x-codie-cc[bot]`, a plain `gh` makes it dima's.
-- **a watch lives until its pr merges or closes, never until its codie stops** — `📡 pr-watch` (`~/frame/_clio/.claude/hooks/pr-watch.sh`, armed by `clio:boot`) wakes clio when a pr first appears («opened — summon its sixth sense»), on a new commit, and once per head when green, so sixth sense is summoned off it within a minute and a summon arms no watch of its own. a cloud report lands on a `cloud/<slug>` branch the same hook sees.
+- **a watch lives until its pr merges or closes, never until its codie stops** — `📡 pr-watch` (`~/frame/_clio/.claude/hooks/pr-watch.sh`, armed by `clio:boot`) wakes clio when a pr first appears («opened — hand it to its lane's sixth sense»), on a new commit, and once per head when green, so the lane's one sixth sense gets it within a minute (summoned only when the lane has none) and a summon arms no watch of its own. a cloud report lands on a `cloud/<slug>` branch the same hook sees.
 - **one codie with two prs in sequence gets one sixth sense that takes them in turn**.
 - **before a merge, `review:clean` is green on the head**: the one ci round at «final», or past it clio's `gh pr review --approve` on sixth sense's clean; never a hand relabel.
 - **sixth sense's cap stop goes to clio**, who drives the side lane fully, decides the merge and tells dima the stop as info (dima, o60); dima is never added as reviewer (2026-10-22: he does not read prs).
