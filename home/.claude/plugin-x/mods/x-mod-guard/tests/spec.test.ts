@@ -84,9 +84,8 @@ test('the refusal is kept as a guard event', async ($, on) => {
     ).toEqual(['spec']);
 });
 
-test('«enforce» in the store refuses the job unsent', async ($, on) => {
+test('a job with no spec path is refused unsent', async ($, on) => {
     const w = world(on);
-    w.store.set('rule-mode:spec', 'enforce');
     const r = await send($, JOB);
     expect([w.sent, r.deny]).toEqual([[], expect.stringContaining(NOTE)]);
 });

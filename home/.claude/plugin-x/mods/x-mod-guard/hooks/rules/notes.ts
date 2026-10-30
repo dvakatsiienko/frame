@@ -1,9 +1,8 @@
-import { parse } from '../shell.ts';
 import {
     type Command,
     type Context,
     type Refusal,
-    commands,
+    commandsDeep,
     hasFlag,
     operands,
     resolve,
@@ -29,7 +28,7 @@ function notesEdit(c: Command, ctx: Context): NotesEdit | undefined {
 export const notedKey = (e: NotesEdit) => `${e.root}\n${e.id.toLowerCase()}`;
 
 export function notesEdits(command: string, cwd: string, ctx: Context = {}) {
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const e = notesEdit(c, ctx);
         return e ? [e] : [];
     });

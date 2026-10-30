@@ -1,9 +1,8 @@
-import { parse } from '../shell.ts';
 import {
     type Command,
     type Context,
     type Refusal,
-    commands,
+    commandsDeep,
 } from './command.ts';
 
 // only new creates and moves are read: tickets already outside a milestone stay as they are (FRM-417)
@@ -111,7 +110,7 @@ function projectMove(c: Command): ProjectMove | undefined {
 
 // the projects a command moves tickets into, for the caller to ask linear about
 export function projectMoves(command: string, cwd: string) {
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const m = projectMove(c);
         return m ? [m] : [];
     });

@@ -1,4 +1,5 @@
 import type { Parsed, Sep, Word } from '../shell.ts';
+import { parse } from '../shell.ts';
 
 // a refusal names its door; an escape marker must name every one of its targets
 export type Refusal = {
@@ -55,6 +56,8 @@ type Peeled = {
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
 export type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
 export const VAULT = 'iCloud~md~obsidian';
+// the linear teams whose ticket ids the rules read: `x schema linear` lists the workspace's, and a new team joins here
+export const TICKET_KEY = ['FRM', 'BYT'].join('|');
 // each wrapper, and its options that take the next word as their value
 const WRAPPERS = new Map<string, string[]>([
     ['builtin', []],
@@ -226,6 +229,22 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
         out.push({ ...c, dir, feeders, sep: s.sep });
     });
     return out;
+}
+// every command of a line, a nested shell's script and an eval's words included, so a lookup sees what a rule will
+const NESTED_SHELLS = new Set(['sh', 'bash', 'zsh']);
+export function commandsDeep(command: string, cwd: string): Command[] {
+    return commands(parse(command), cwd).flatMap((c) => {
+        const dashC = NESTED_SHELLS.has(c.name)
+            ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
+            : -1;
+        const script = dashC >= 0 ? c.args[dashC + 1]?.text : undefined;
+        const nested = script
+            ? commandsDeep(script, c.dir)
+            : c.name === 'eval'
+              ? commandsDeep(c.args.map((w) => w.text).join(' '), c.dir)
+              : [];
+        return [c, ...nested];
+    });
 }
 // git's own options before the subcommand; `-c` values kept, since two of them are floor
 export function gitParts(args: Word[]) {

@@ -3,10 +3,12 @@ import {
     type Command,
     type Context,
     type Refusal,
+    TICKET_KEY,
     type Verdict,
     actsIn,
     adds,
     commands,
+    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
@@ -168,19 +170,9 @@ export function tmpDirs(
     cwd: string,
     ctx: Context = {},
 ): string[] {
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const dir = actsIn(c, ctx);
-        const own = dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
-        const dashC = SHELLS.has(c.name)
-            ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
-            : -1;
-        const script = dashC >= 0 ? c.args[dashC + 1]?.text : undefined;
-        const nested = script
-            ? tmpDirs(script, c.dir, ctx)
-            : c.name === 'eval'
-              ? tmpDirs(c.args.map((w) => w.text).join(' '), c.dir, ctx)
-              : [];
-        return [...own, ...nested];
+        return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
 }
 export function refusals(
@@ -473,7 +465,7 @@ export function signWord(
     }
     return undefined;
 }
-const TICKET = /^(FRM|BYT)-\d+$/;
+const TICKET = new RegExp(`^(${TICKET_KEY})-\\d+$`);
 // a sign ask, `✍️ sign <id>: <title>`, its id matched whole
 export const isSignAsk = (text: string, id: string) =>
     new RegExp(`(^|\\s)✍️ sign ${id}:`, 'u').test(text);

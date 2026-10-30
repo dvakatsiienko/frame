@@ -1,7 +1,9 @@
+import { TICKET_KEY } from './command.ts';
+
 // a list or a ticket in a «>» quote or a code fence is someone's words, never the job
 export const TO_MEMBER = /🔧|🔎|\b(?:codie|coder|sixth sense|verifier)\b/i; // read-both: names before the 10-29 rename
 const SPEC_PATH = /\.scratch\/[^\s/]+\/spec\.md\b/;
-const TICKET = /\b(FRM|BYT)-\d+\b/;
+const TICKET = new RegExp(`\\b(${TICKET_KEY})-\\d+\\b`);
 const ITEM = /^\s*\d{1,2}[.)]\s+\S/;
 const QUOTE = /^\s*>/;
 const FENCE = /^\s*(```|~~~)/;

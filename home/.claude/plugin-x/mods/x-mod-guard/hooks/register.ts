@@ -65,6 +65,7 @@ type ProjectsReply = {
                 slugId: string;
                 projectMilestones: { nodes: unknown[] };
             }[];
+            pageInfo?: { endCursor?: string | null; hasNextPage?: boolean };
         };
     };
 };
@@ -782,7 +783,10 @@ async function lookUp(
         .catch(() => ({ value: [] }));
     const moves = projectMoves(command, cwd);
     const milestoneProjects = moves.length
-        ? await projectsWithMilestones($).catch(() => undefined)
+        ? await projectsWithMilestones(
+              $,
+              moves.map((m) => m.project.toLowerCase()),
+          ).catch(() => undefined)
         : undefined;
     return {
         briefs,
@@ -803,29 +807,63 @@ async function lookUp(
 }
 
 // the projects that hold milestones, read from linear once a day; it throws when linear cannot be read, and the call
-// then runs with a warn (fail open, like pocket-check's closed-ticket net)
+// then runs with a warn (fail open, like pocket-check's closed-ticket net). A move into a project the cache holds
+// without milestones reads again after ten minutes, since a project can gain its first one; an unreachable linear is
+// not asked again for a minute, so each move does not wait the timeout out again
 const MILESTONES = 'linear-milestones';
+const LINEAR_DOWN = 'linear-down';
 const DAY_MS = 86_400_000;
-const PROJECTS_QUERY =
-    '{ projects(first: 250) { nodes { id name slugId projectMilestones(first: 1) { nodes { id } } } } }';
-async function projectsWithMilestones($: EngineInterface) {
+const RECHECK_MS = 600_000;
+const DOWN_MS = 60_000;
+const PAGES_MAX = 10;
+const projectsQuery = (after?: string) =>
+    `{ projects(first: 250${after ? `, after: "${after}"` : ''}) { nodes { id name slugId projectMilestones(first: 1) { nodes { id } } } pageInfo { hasNextPage endCursor } } }`;
+async function projectsWithMilestones($: EngineInterface, asked: string[]) {
     const now = await $.clock.now();
     const kept = (await $.store.get(MILESTONES).catch(() => undefined)) as
         | { at: number; keys: string[] }
         | undefined;
-    if (kept && now - kept.at < DAY_MS) return new Set(kept.keys);
-    const run = await $.process.run(['x', 'linear', 'api', PROJECTS_QUERY], {
-        timeoutMs: 8000,
-    });
-    if (run.exitCode !== 0) throw new Error(run.stderr);
-    const nodes = (JSON.parse(run.stdout) as ProjectsReply).data?.projects
-        ?.nodes;
-    if (!nodes) throw new Error('linear sent no projects');
-    const keys = nodes
-        .filter((n) => n.projectMilestones.nodes.length)
-        .flatMap((n) => [n.id, n.name, n.slugId].map((k) => k.toLowerCase()));
-    await $.store.set(MILESTONES, { at: now, keys });
-    return new Set(keys);
+    const age = kept ? now - kept.at : Infinity;
+    const isStale =
+        age >= DAY_MS ||
+        (age >= RECHECK_MS && asked.some((p) => !kept?.keys.includes(p)));
+    if (kept && !isStale) return new Set(kept.keys);
+    const down = (await $.store.get(LINEAR_DOWN).catch(() => undefined)) as
+        | number
+        | undefined;
+    if (typeof down === 'number' && now - down < DOWN_MS)
+        throw new Error('linear was unreachable a moment ago');
+    try {
+        const nodes: NonNullable<
+            NonNullable<ProjectsReply['data']>['projects']
+        >['nodes'] = [];
+        let after: string | undefined;
+        for (let page = 0; page < PAGES_MAX; page++) {
+            const run = await $.process.run(
+                ['x', 'linear', 'api', projectsQuery(after)],
+                { timeoutMs: 8000 },
+            );
+            if (run.exitCode !== 0) throw new Error(run.stderr);
+            const projects = (JSON.parse(run.stdout) as ProjectsReply).data
+                ?.projects;
+            if (!projects?.nodes) throw new Error('linear sent no projects');
+            nodes.push(...projects.nodes);
+            after = projects.pageInfo?.hasNextPage
+                ? (projects.pageInfo.endCursor ?? undefined)
+                : undefined;
+            if (!after) break;
+        }
+        const keys = nodes
+            .filter((n) => n.projectMilestones.nodes.length)
+            .flatMap((n) =>
+                [n.id, n.name, n.slugId].map((k) => k.toLowerCase()),
+            );
+        await $.store.set(MILESTONES, { at: now, keys });
+        return new Set(keys);
+    } catch (err) {
+        await $.store.set(LINEAR_DOWN, now).catch(() => undefined);
+        throw err;
+    }
 }
 const milestoneSkipped = (projects: string[]) =>
     `x-mod-guard: the milestone check was skipped — linear could not be read, so whether ${projects.join(', ')} holds milestones is unknown; name --milestone if it does`;
