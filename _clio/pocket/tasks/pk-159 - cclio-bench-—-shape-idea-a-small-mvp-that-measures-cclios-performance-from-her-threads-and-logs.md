@@ -1,12 +1,12 @@
 ---
 id: PK-159
 title: >-
-  cclio bench — shape-idea: a small mvp that measures cclio's performance from
-  her threads and logs
+  clio bench — shape-idea: a small mvp that measures clio's performance from her
+  threads and logs
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-10-29T11:28:00Z'
+updated_date: '2026-10-30T13:09:00Z'
 due_date: '2026-10-30'
 labels:
   - m
