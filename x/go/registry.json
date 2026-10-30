@@ -12,7 +12,7 @@
         },
         {
             "example": "x linear read FRM-1 FRM-2 --comments",
-            "gist": "tickets in native graphql: ids, states and labels resolve inside x",
+            "gist": "tickets in native graphql, every name resolved inside x",
             "identity": "every verb acts as one member: clio's session or a terminal-less caller as the clio app, any other agent session as the codie app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
             "name": "linear",
             "rawDoor": "x linear api"
