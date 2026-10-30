@@ -19,7 +19,7 @@ repo with another tracker, or none, follows its own conventions.
 ## what a member never does
 
 - create a ticket, edit a body, move a state or a label: clio does it the turn your ping lands.
-  the slices `to-tickets` cuts live in `.scratch/<feature>/issues/`, never in linear
+  the slices `to-tickets` cuts live in `~/.local/state/x/lanes/<feature>/issues/`, never in linear or a worktree
 - start a ticket labelled `human` (dima, 2026-09-30, after BYT-86 was proposed as a shift
   candidate); labels are read from the ticket the same turn, never recalled
 - invent an id: an id comes from dima, the conversation or the branch name, never a plausible grep;

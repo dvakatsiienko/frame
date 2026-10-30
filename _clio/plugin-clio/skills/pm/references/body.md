@@ -26,7 +26,7 @@ read before a ticket create, a body rewrite, or a comment clio writes (`clio:pm`
   - each chunk section opens with its own `wish: FRM-N` in place of a problem statement, never restates the want, and cites the W-lines each part serves (`script/wish-cover.ts` exits 0 on it)
   - steers on the how land in the spec, and its outcome folds into the closing word when the run lands
 - run check, logged in `docs/test-drive/spec-pipeline.md`: «did `to-spec` need anything outside the body?»
-- slices: the slices `to-tickets` cuts live in codie's worktree `.scratch/<feature>/issues/`, never in linear
+- slices: the slices `to-tickets` cuts live in `~/.local/state/x/lanes/<feature>/issues/`, never in linear or a worktree
 
 - 🚨 **dima's words never go into a comment**: the body is read by everyone, a comment by a
   graphql fetch. comments carry trail only — run stamps, «done, see commit», a member's done report
