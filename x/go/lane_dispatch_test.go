@@ -107,14 +107,31 @@ func TestDispatchAgainReportsEveryMarkSetAndSendsNothing(t *testing.T) {
 	}
 }
 
+func TestDispatchWritesAgainAfterADispatchWasTakenBack(t *testing.T) {
+	t.Parallel()
+	back := signedBody(dispatchAbove, "🚀 dispatched 2026-10-29 — cli-2, codie s0\n↩️ back to Todo 2026-10-29\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+	server := dispatchServer(t, dispatchState{body: back, state: "Todo", labels: []string{"agent", "signed"}})
+
+	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3")
+
+	if out := jsonOf(envelope["plan"]); got.code != 4 || strings.Count(out, `"write"`) != 4 {
+		t.Errorf("exit %d, want all four marks to write again after the ↩️ line:\n%s", got.code, out)
+	}
+	if out := jsonOf(envelope["plan"]); !strings.Contains(out, "lanes/cli-3/issues/") {
+		t.Errorf("the plan does not name the lane's slices dir outside the worktree:\n%s", out)
+	}
+}
+
 func TestDispatchRefusesATicketWithNoSign(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
-		name string
-		s    dispatchState
+		name, want string
+		s          dispatchState
 	}{
-		{"no ## signed block", dispatchState{body: dispatchAbove, state: "Todo", labels: []string{"agent", "signed"}}},
-		{"neither the label nor a 🚀 line", dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent"}}},
+		{"no ## signed block", "no ## signed block", dispatchState{body: dispatchAbove, state: "Todo", labels: []string{"agent", "signed"}}},
+		{"neither the label nor a 🚀 line", "its sign is missing", dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent"}}},
+		{"a drifted sign", "sign reads drifted", dispatchState{body: signedBody(dispatchAbove, "", "the body dima signed\n"), state: "Todo", labels: []string{"agent", "signed"}}},
+		{"a sign with no hash", "sign reads no hash", dispatchState{body: dispatchAbove + "## signed\n\n✍️ signed 2026-10-23\n", state: "Todo", labels: []string{"agent", "signed"}}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -123,8 +140,8 @@ func TestDispatchRefusesATicketWithNoSign(t *testing.T) {
 
 			envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
 
-			if got.code == 0 || !strings.Contains(jsonOf(envelope["error"]), "sign") {
-				t.Errorf("exit %d, want a refusal naming the sign:\n%s", got.code, got.stdout)
+			if got.code == 0 || !strings.Contains(jsonOf(envelope["error"]), c.want) {
+				t.Errorf("exit %d, want a refusal naming %q:\n%s", got.code, c.want, got.stdout)
 			}
 			if n := len(mutations(server)); n != 0 {
 				t.Errorf("%d mutations on a refused ticket", n)

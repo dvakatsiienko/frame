@@ -29,6 +29,7 @@ type dispatchTicket struct {
 
 type dispatchPlan struct {
 	Tickets []dispatchTicket `json:"tickets"`
+	Slices  string           `json:"slices,omitempty"`
 	Glide   string           `json:"glide"`
 	Window  string           `json:"window"`
 }
@@ -82,6 +83,10 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		}
 		plan.Tickets = append(plan.Tickets, ticket)
 	}
+	// outside every checkout: a .scratch/ in the worktree would keep the tree from its decamp at land
+	if lane != "" {
+		plan.Slices = home(filepath.Join(stateDir(), "lanes", lane, "issues")) + "/ — codie's to-tickets slices"
+	}
 	plan.Glide = "orbit glide, act link, role codie, session " + cmp.Or(session, "<sid>") + " — clio's call, x never calls orbit"
 	plan.Window = fiveHourWindow()
 	return plan, nil
@@ -98,10 +103,14 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 	}
 	_, block, signed := signedBlock(body)
 	labelAt := slices.IndexFunc(issue.Labels.Nodes, func(l idName) bool { return strings.EqualFold(l.Name, "signed") })
-	dispatched := strings.Contains(block, dispatchedLine)
+	// a ↩️ line takes a dispatch back, so only a 🚀 after the last one counts
+	dispatched := strings.LastIndex(block, dispatchedLine) > max(strings.LastIndex(block, "↩️"), -1)
+	sign, _, _ := bodySign(body)
 	switch {
 	case !signed:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries no ## signed block: a chunk is signed before its dispatch", Next: "x linear read " + id}
+	case sign != signMatch:
+		return dispatchTicket{}, &Fail{Refused: true, Msg: id + "'s sign reads " + sign + ": the body moved since dima signed it, so it is signed again before its dispatch", Next: "x linear list --team " + strings.SplitN(id, "-", 2)[0] + " --label signed"}
 	case labelAt < 0 && !dispatched:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries neither the signed label nor a 🚀 dispatched line: its sign is missing", Next: "x linear read " + id}
 	}
@@ -137,11 +146,9 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 	}
 	line := dispatchedLine + time.Now().Format("2006-01-02") + " — " + lane + ", codie " + session
 	if dispatched {
-		for held := range strings.SplitSeq(block, "\n") {
-			if strings.Contains(held, dispatchedLine) {
-				line = strings.TrimSpace(held)
-			}
-		}
+		from := strings.LastIndex(block, dispatchedLine)
+		line, _, _ = strings.Cut(block[from:], "\n")
+		line = strings.TrimSpace(line)
 	}
 	mark("🚀 line", !dispatched, line)
 	if !dispatched {

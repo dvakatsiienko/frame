@@ -64,14 +64,13 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 
 func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine, err error) {
 	id, pr := plan.id, plan.pr
-	main := repo
-	if common, linked, werr := worktreeOf(repo); werr == nil && linked {
-		main = filepath.Dir(common)
-	}
+	main := mainCheckout(repo)
 	plan.main = main
+	// the spec and the review log live in frame; the pr and the trees in the lane's repo (bytes, say)
+	frame := mainCheckout(frameRoot())
 
 	merged := landedLine{name: "merged"}
-	var headRef, mergedHead string
+	var headRef, headSha, mergedHead string
 	if pr != "" {
 		// --repo here is the checkout's path, so the github slug comes from its origin
 		ghRepo := originSlugIn(repo)
@@ -88,7 +87,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		if _, ferr := ghFetch(asCodie, githubBase()+"/repos/"+ghRepo+"/pulls/"+pr, &read); ferr != nil {
 			return nil, ferr
 		}
-		headRef = read.Head.Ref
+		headRef, headSha = read.Head.Ref, read.Head.Sha
 		if read.Merged {
 			mergedHead = read.Head.Sha
 		}
@@ -105,12 +104,17 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	spec := landedLine{name: "spec", fix: "x lane landed " + id + " --apply"}
 	feature := ""
 	// the main checkout's spec: a lane tree's own .scratch copy would archive inside a tree about to go
-	if paths, _ := laneSpecSection(main, id); len(paths) > 0 {
-		plan.specDir = filepath.Dir(paths[0])
-		feature = filepath.Base(plan.specDir)
-		plan.archive = filepath.Join(filepath.Dir(plan.specDir), archived, feature)
-		spec.detail = home(plan.specDir) + " is not archived"
-	} else if found := archivedSpec(main, id); found != "" {
+	if paths, _ := laneSpecSection(frame, id); len(paths) > 0 {
+		dir := filepath.Dir(paths[0])
+		feature = filepath.Base(dir)
+		if waiting := unmergedChunks(main, paths[0], id); len(waiting) > 0 {
+			spec.detail = home(dir) + " waits on " + strings.Join(waiting, ", ") + ": a spec moves when its every chunk merged"
+			spec.fix = "land " + strings.Join(waiting, ", ") + ", then x lane landed " + id + " --apply"
+		} else {
+			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, feature)
+			spec.detail = home(dir) + " is not archived"
+		}
+	} else if found := archivedSpec(frame, id); found != "" {
 		feature = filepath.Base(filepath.Dir(found))
 		spec.ok, spec.detail = true, home(filepath.Dir(found))
 	} else {
@@ -120,7 +124,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 
 	rounds := landedLine{name: "review-rounds", detail: "no line names " + id + " in docs/test-drive/review-rounds.md",
 		fix: "add the lane's graded lines to docs/test-drive/review-rounds.md"}
-	if raw, rerr := os.ReadFile(filepath.Join(main, "docs/test-drive/review-rounds.md")); rerr == nil && regexp.MustCompile(`\b`+regexp.QuoteMeta(id)+`\b`).Match(raw) {
+	if raw, rerr := os.ReadFile(filepath.Join(frame, "docs/test-drive/review-rounds.md")); rerr == nil && regexp.MustCompile(`\b`+regexp.QuoteMeta(id)+`\b`).Match(raw) {
 		rounds.ok, rounds.detail = true, "a line names "+id
 	}
 	lines = append(lines, rounds)
@@ -132,7 +136,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		dir := filepath.Join(stateDir(), "lanes", feature)
 		var missing []string
 		for _, role := range []string{"codie", "sixth-sense"} {
-			if found, _ := filepath.Glob(filepath.Join(dir, "*-"+role+"-retro.md")); len(found) == 0 {
+			if found, _ := filepath.Glob(filepath.Join(dir, "*-"+id+"-"+role+"-retro.md")); len(found) == 0 {
 				missing = append(missing, role)
 			}
 		}
@@ -146,7 +150,7 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean = nil
 	var notes []string
-	found, terr := laneTrees(main, repo, id, headRef, mergedHead)
+	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead})
 	for _, tree := range found {
 		if tree.reason == "" {
 			plan.clean = append(plan.clean, tree.path)
@@ -188,9 +192,37 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 
 type laneTree struct{ path, reason string }
 
+// what names a lane's trees beyond its codie/<ticket>-* branches: the pr, its head, its head once merged
+type laneRefs struct{ pr, headRef, headSha, mergedHead string }
+
+func mainCheckout(dir string) string {
+	if common, linked, err := worktreeOf(dir); err == nil && linked {
+		return filepath.Dir(common)
+	}
+	return dir
+}
+
+var chunkHeading = regexp.MustCompile(`(?m)^## ((?:FRM|BYT|PK)-\d+)\b`)
+
+// unmergedChunks names the spec's other chunks with no commit on origin/main; a squash merge carries the pr
+// body's «- ticket:» lines, so a chunk merged in the same pr reads merged
+func unmergedChunks(repo, spec, id string) []string {
+	raw, _ := os.ReadFile(spec)
+	var waiting []string
+	for _, m := range chunkHeading.FindAllStringSubmatch(string(raw), -1) {
+		if m[1] != id && !slices.Contains(waiting, m[1]) && len(ticketCommits(repo, m[1])) == 0 {
+			waiting = append(waiting, m[1])
+		}
+	}
+	return waiting
+}
+
 // laneTrees lists the ticket's trees under .claude/worktrees/, each with why it must stay, or clean by
-// the root rule: no change in git status, no .scratch/ dir, every commit on an origin ref or in the merged pr
-func laneTrees(main, repo, id, headRef, mergedHead string) ([]laneTree, error) {
+// the root rule: no change in git status, no .scratch/ dir, every commit on an origin ref or in the merged pr.
+// a lane tree is a codie/<ticket>-* branch or the pr's head ref; a detached one is sixth sense's verify tree,
+// named verify-pr-<n> or sitting at the pr's head
+func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
+	mergedHead := refs.mergedHead
 	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
 	if err != nil {
 		return nil, err
@@ -203,16 +235,23 @@ func laneTrees(main, repo, id, headRef, mergedHead string) ([]laneTree, error) {
 	}
 	var trees []laneTree
 	for block := range strings.SplitSeq(listed, "\n\n") {
-		var path, branch string
+		var path, branch, sha string
+		detached := false
 		for line := range strings.SplitSeq(block, "\n") {
 			if v, ok := strings.CutPrefix(line, "worktree "); ok {
 				path = v
 			}
+			if v, ok := strings.CutPrefix(line, "HEAD "); ok {
+				sha = v
+			}
 			if v, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
 				branch = v
 			}
+			detached = detached || line == "detached"
 		}
-		if !strings.HasPrefix(resolved(path), under) || branch == "" || !(strings.HasPrefix(branch, "codie/"+id+"-") || branch == headRef) {
+		ours := branch != "" && (strings.HasPrefix(branch, "codie/"+id+"-") || branch == refs.headRef)
+		verify := detached && refs.pr != "" && (filepath.Base(path) == "verify-pr-"+refs.pr || (refs.headSha != "" && sha == refs.headSha))
+		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
 		trees = append(trees, laneTree{path, treeDirt(path, selves, mergedHead)})
@@ -283,6 +322,9 @@ func askLanded(plan any) string {
 // laneLanded moves the spec dir into the archive and decamps the clean trees, then reads the list again
 func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	plan := planned.(landedPlan)
+	if merged := plan.lines[0]; !merged.ok {
+		return nil, &Fail{Refused: true, Msg: "the lane has not landed (" + merged.detail + "): --apply archives and decamps only after the merge", Next: merged.fix}
+	}
 	if plan.specDir != "" {
 		if err := r.Step("archive", "the spec dir into .scratch/"+archived, func() (string, error) {
 			if exists(plan.archive) {

@@ -227,7 +227,8 @@
             "steps": ["read", "write"],
             "touches": [
                 "linear — each ticket's signed label, state, delegate and sign block, written",
-                "~/.claude/shelf/cc-usage-window.json — the 5h window, read"
+                "~/.claude/shelf/cc-usage-window.json — the 5h window, read",
+                "~/.local/state/x/lanes/<lane>/issues/ — the slices dir, named for the brief"
             ]
         },
         {
@@ -256,8 +257,9 @@
             "touches": [
                 "github — the pr's merged state and head branch, read",
                 "linear — the ticket's W-lines, read",
-                "<main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/",
-                "<main checkout>/.claude/worktrees/<tree> — a lane tree clean by the root rule, decamped",
+                "<frame main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/ once every chunk merged",
+                "<frame main checkout>/docs/test-drive/review-rounds.md — read",
+                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped",
                 "~/.local/state/x/lanes/<feature>/ — the retros, read"
             ]
         },

@@ -40,7 +40,7 @@ func (w landedWorld) done(t *testing.T) {
 
 func (w landedWorld) landed(t *testing.T, args ...string) (map[string]any, asRun) {
 	t.Helper()
-	return runLinear(t, w.server, []string{"X_STATE=" + w.state}, append([]string{"lane", "landed", "FRM-1", "--repo", w.repo}, args...)...)
+	return runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo}, append([]string{"lane", "landed", "FRM-1", "--repo", w.repo}, args...)...)
 }
 
 func linesOf(envelope map[string]any) string {
@@ -50,6 +50,9 @@ func linesOf(envelope map[string]any) string {
 func TestLandedRedsEveryGapAndWritesNothing(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
+	// another ticket's retros say nothing about this one's
+	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-codie-retro.md"), "retro\n")
+	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-sixth-sense-retro.md"), "retro\n")
 
 	envelope, got := w.landed(t)
 
@@ -105,7 +108,7 @@ func TestLandedApplyDecampsOnlyTheCleanTrees(t *testing.T) {
 	gitT(t, trees["unpushed"], "add", "y.txt")
 	gitT(t, trees["unpushed"], "commit", "-q", "-m", "local only")
 	// hooksHome runs lefthook install through pnpm; the fixture has no node_modules
-	envelope, got := runLinear(t, w.server, []string{"X_STATE=" + w.state, stubPnpm(t)},
+	envelope, got := runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
 		"lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
 
 	out := linesOf(envelope)
@@ -150,6 +153,9 @@ func TestLandedApplyDecampsASquashMergedTreeWhoseBranchIsGone(t *testing.T) {
 	gitT(t, squashed, "add", "y.txt")
 	gitT(t, squashed, "commit", "-q", "-m", "the pr")
 	merged := gitT(t, squashed, "rev-parse", "HEAD")
+	// sixth sense's verify tree: detached at the pr's head
+	verify := filepath.Join(w.repo, ".claude/worktrees/verify-pr-7")
+	gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, merged)
 	// a second tree of the lane with work the pr never carried
 	local := w.laneTree(t, "local")
 	write(t, filepath.Join(local, "z.txt"), "local only\n")
@@ -162,14 +168,71 @@ func TestLandedApplyDecampsASquashMergedTreeWhoseBranchIsGone(t *testing.T) {
 		"keychain:x-token-linear-clio:x":   farFuture + ":tok-clio",
 	})
 
-	got := runAs(t, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL, "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, stubPnpm(t)},
+	got := runAs(t, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL, "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
 		"lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "7", "--apply")
 
 	if exists(squashed) {
 		t.Errorf("the squash-merged tree at the pr's head was kept:\n%s", got.stdout)
 	}
+	if exists(verify) {
+		t.Errorf("the detached verify tree at the merged head was kept:\n%s", got.stdout)
+	}
 	if !exists(local) || !strings.Contains(got.stdout, "1 commit on no remote") {
 		t.Errorf("the tree with a local-only commit must stay and say why:\n%s", got.stdout)
+	}
+}
+
+func TestLandedReadsTheSpecFromFrameAndTheMergeFromTheLanesRepo(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	// a bytes lane: its commit lands in its own repo, its spec stays in frame
+	lane := repo(t)
+	write(t, filepath.Join(lane, "app.txt"), "the app change\n")
+	gitT(t, lane, "add", "app.txt")
+	gitT(t, lane, "commit", "-q", "-m", "the app change", "-m", "- ticket: FRM-1")
+	gitT(t, lane, "update-ref", "refs/remotes/origin/main", "HEAD")
+	tree := filepath.Join(lane, ".claude/worktrees/app")
+	gitT(t, lane, "worktree", "add", "-q", tree, "-b", "codie/FRM-1-app")
+
+	envelope, _ := runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
+		"lane", "landed", "FRM-1", "--repo", lane, "--apply")
+
+	if !exists(filepath.Join(w.repo, ".scratch/_archive/lane-1/spec.md")) {
+		t.Errorf("frame's spec did not archive for a lane merged in another repo:\n%s", linesOf(envelope))
+	}
+	if exists(tree) {
+		t.Errorf("the lane repo's clean tree was not decamped:\n%s", linesOf(envelope))
+	}
+}
+
+func TestLandedKeepsASpecWhoseSiblingChunkIsStillBuilding(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — landed\n\n## FRM-2 — still building\n")
+
+	envelope, got := w.landed(t, "--apply")
+
+	if !exists(filepath.Join(w.repo, ".scratch/lane-1/spec.md")) {
+		t.Fatal("the spec moved while FRM-2 has no commit on origin/main")
+	}
+	if out := linesOf(envelope); !strings.Contains(out, "waits on FRM-2") || got.code != 1 {
+		t.Errorf("exit %d, want the spec line red naming FRM-2:\n%s", got.code, out)
+	}
+}
+
+func TestLandedApplyRefusesALaneThatHasNotMerged(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	tree := w.laneTree(t, "early")
+
+	envelope, got := w.landed(t, "--apply")
+
+	if !exists(filepath.Join(w.repo, ".scratch/lane-1/spec.md")) || !exists(tree) {
+		t.Fatal("--apply wrote before the lane merged")
+	}
+	if !strings.Contains(jsonOf(envelope["error"]), "has not landed") || got.code == 0 {
+		t.Errorf("exit %d, want a refusal naming the missing merge:\n%s", got.code, got.stdout)
 	}
 }
 
@@ -179,7 +242,7 @@ func TestLandedArchivesTheMainCheckoutsSpecFromALaneTree(t *testing.T) {
 	tree := w.laneTree(t, "copy")
 	write(t, filepath.Join(tree, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — the chunk\n")
 
-	runLinear(t, w.server, []string{"X_STATE=" + w.state, stubPnpm(t)}, "lane", "landed", "FRM-1", "--repo", tree, "--apply")
+	runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)}, "lane", "landed", "FRM-1", "--repo", tree, "--apply")
 
 	if !exists(filepath.Join(w.repo, ".scratch/_archive/lane-1/spec.md")) || exists(filepath.Join(tree, ".scratch/_archive")) {
 		t.Error("the main checkout's spec must move into its own archive, never the tree's copy")
@@ -191,7 +254,7 @@ func TestLandedKeepsTheTreeXRunsFrom(t *testing.T) {
 	w := newLandedWorld(t)
 	tree := w.laneTree(t, "here")
 
-	got := xIn(t, tree, []string{"X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, stubPnpm(t)},
+	got := xIn(t, tree, []string{"X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
 		"lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
 
 	if !exists(tree) || !strings.Contains(got.stdout, "x runs from it") {
