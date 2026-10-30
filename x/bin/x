@@ -40,6 +40,7 @@ if ((stale)); then
     echo "x: building from ${go} with ${gobin}" >&2
     dev=
     is_dev && dev=1
+    mkdir -p "${go}/bin"
     printf '%s\n' "${dev}" >"${go}/bin/.dev"
     # a temp file then a rename: two shells building at once never run a half-written binary.
     # -buildvcs=false: go's stamp runs git status, which dies in a git-crypt tree still locked — the
