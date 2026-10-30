@@ -31,7 +31,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **subagent, fork, worktree agent** — disposable, inside the coordinator: `x:crew-subagent`.
 - **background session** (`claude --bg`) — real, survives a coordinator reset, takes `--model` and `--effort`, summoned with `--remote-control` so dima can join it. the default door for coding.
 - **the desktop thread** — a Code-tab session clio starts and closes herself; the member pings back by `SendMessage`. a steer clio relays is never dima's grant to the member, who confirms with him.
-  - start: `mcp__ccd_session__start_session`, `initiation: user_asked`, `context: fresh`, the app dir as `cwd` (root when the job crosses apps), `use_worktree: false`, the registry name as title, a one-line pointer to the brief file as prompt — proven on FRM-427, 2026-10-28
+  - start: `mcp__ccd_session__start_session`, `initiation: user_asked`, `context: fresh`, the app dir as `cwd` (root when the job crosses apps), `use_worktree: false`, `model: claude-opus-5-5`, `effort: medium`, the registry name as title, a one-line pointer to the brief file as prompt — proven on FRM-427, 2026-10-28
   - close: `mcp__ccd_session_mgmt__archive_session` at its lane's end, proven 2026-10-28 (FRM-427's thread); the app refuses it while the thread is pinned or open on dima's screen, then the archive is his click
 - **desktop threads are only the mods codie and clio's side channels (fresh and fork); every other member is `--bg`** (dima, 2026-10-28): a `--bg` session draws no mods in the desktop app, and he watches mods live in codie's own tab
   - a mods lane is always a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live; its sixth sense is optional, his call per lane (dima, 2026-10-27)
@@ -62,6 +62,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **the argv** — literal, `-n` before the prompt, the prompt before `--remote-control` (the flag once ate a 1.5 kB brief as its rc label):
   - side lane: `cd <repo> && claude --bg -n '🌗 🔧 codie: <scope> | BYT-N' --model opus --effort medium "$(cat <brief file>)" --remote-control`
   - quick lane on main: `cd <repo> && claude --bg -n '⚡ 🔧 codie: <scope> | BYT-N' --model opus --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "$(cat <brief file>)" --remote-control`
+  - a lane's first chunk only; later chunks get a `next:` message (`x:crew-sixth-sense` § the next chunk)
   - side-lane sixth sense, once the pr exists: `cd <repo> && claude --bg -n '🌗 🔎 sixth sense: <scope> | #<pr>' --model opus --effort medium '/x:crew-sixth-sense BYT-N <pr url> <codie registry name> <clio registry name> spec: <spec path> trials: <names>' --remote-control`
   - quick-lane sixth sense, on codie's «final»: the same line with `-n '⚡ 🔎 sixth sense: <scope> | main'` and `main:<base sha>` in place of the pr url, plus `final: <head sha>` before `spec:`, pushed by clio first (a later round's head too)
   - `spec:` is the lane's spec path, so sixth sense grades the spec's exit lines; it comes after the four arguments, before `trials:`
