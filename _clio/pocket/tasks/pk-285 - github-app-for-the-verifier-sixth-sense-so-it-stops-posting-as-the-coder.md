@@ -4,7 +4,7 @@ title: github app for the verifier (sixth sense), so it stops posting as the cod
 status: open
 assignee: []
 created_date: '2026-10-29T14:50:00Z'
-updated_date: '2026-10-30T16:16:00Z'
+updated_date: '2026-10-30T16:39:00Z'
 due_date: '2026-10-30'
 labels:
   - s
@@ -41,4 +41,6 @@ correction 2026-10-29 17:00 (wishkeeper): W485–W488 above are clio's 16:40 rep
 
 W634 (2026-10-30 16:57, dima): let's solve PK-285.
 W642 (2026-10-30 17:12, dima): okay, but it wants an avatar drawn the same as clio, coder and reviewer have.
+
+kept: 2026-10-30 — dima 18:37: «a little later, no capacity today. plan after monday reset. and i do this with your side channel»; a ⏰ reminder due 2026-11-02 carries it
 <!-- SECTION:NOTES:END -->
