@@ -79,6 +79,7 @@ for (const [shape, typed] of [
     ['an issueCreate', UPDATE.replace('issueUpdate', 'issueCreate')],
     ['a query held in a variable', 'Q=$(cat q.graphql); x linear api "$Q"'],
     ['a query from a substitution', 'x linear api "$(cat q.graphql)"'],
+    ['a query fed through xargs', 'cat q.graphql | xargs -0 x linear api'],
 ] as const)
     test(`a member's body write past the door is refused naming it: ${shape}`, async ($, on) => {
         const w = world(on);
@@ -92,6 +93,13 @@ for (const [shape, typed] of [
     ['--as=dima', 'x linear comment FRM-1 --as=dima --body-file f.md'],
     ['an actor held in a variable', 'A=dima; x linear read FRM-1 --as $A'],
     ['x as a variable', 'A=dima; x as "$A" -- linear issue list'],
+    [
+        'the agent vars unset by env',
+        'env -u CLAUDECODE -u AI_AGENT x linear read FRM-1',
+    ],
+    ['the agent var emptied', 'CLAUDECODE= x linear read FRM-1'],
+    ['an emptied environment', 'env -i x linear read FRM-1'],
+    ['the agent var unset first', 'unset CLAUDECODE; x linear read FRM-1'],
     ['x as dima', 'x as dima -- linear issue view FRM-1'],
     ['in a nested shell', `bash -c 'x linear read FRM-1 --as dima'`],
 ] as const)

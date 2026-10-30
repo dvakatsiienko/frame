@@ -265,8 +265,8 @@
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
 - 🧭 a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
   - given a session the registry names anything but 🦉 clio (a nested shell and an eval count)
-  - when it runs `x linear api` with an `issueUpdate`, `issueBatchUpdate` or `issueCreate`, or a query the shell expands from a variable or a substitution, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file` (also behind `x as <member> --`), then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
-  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, or an actor held in a variable, then the call is flagged `as-dima`
+  - when it runs `x linear api` with an `issueUpdate`, `issueBatchUpdate` or `issueCreate`, or a query the shell expands from a variable or a substitution or xargs feeds in, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file` (also behind `x as <member> --`), then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
+  - when it runs an `x linear` verb or `x as` with `--as dima`, `--as=dima`, `x as dima`, an actor held in a variable, or a line that drops x's agent marks (`CLAUDECODE` or `AI_AGENT` unset or emptied, `env -i`), with which x acts as dima on a tty, then the call is flagged `as-dima`
   - and a warning keeps every check below it in play: a force-push or an untick'd sign after it is still refused
   - and clio's session, `x linear set <id> --state …`, `x linear body --set`, `x linear api` queries and a quoted mention run; a session the registry does not list runs them, fail open; a thread whose title only mentions clio is still a member
   - decision: warn-only (`WARN_ONLY`) until sixth sense says clean, then refused in its own commit (clio, 2026-10-30, mods/AGENTS.md § the rules)

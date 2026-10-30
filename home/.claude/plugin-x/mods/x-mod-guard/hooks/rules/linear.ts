@@ -53,7 +53,13 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
             isAsVerb &&
             (bare[1]?.toLowerCase() === 'dima' ||
                 isOpaque(c.args.find((w) => w.text === bare[1])));
-        if ((isLinear || isAsVerb) && (hasActor || isAsDima))
+        // x reads an agent from CLAUDECODE or AI_AGENT, and with both gone on a tty it acts as dima (x/go/linear.go)
+        const dropsAgent =
+            c.assigns.some((a) => /^(?:CLAUDECODE|AI_AGENT)=/.test(a)) ||
+            /(?:^|\s)-u\s*(?:CLAUDECODE|AI_AGENT)\b|(?:^|\s)-i(?:\s|$)|--ignore-environment|\bunset\s+(?:CLAUDECODE|AI_AGENT)\b/.test(
+                command,
+            );
+        if ((isLinear || isAsVerb) && (hasActor || isAsDima || dropsAgent))
             return {
                 door: 'run it without --as; an agent acts as its own member',
                 rule: 'as-dima',
@@ -72,9 +78,12 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
         if (isLinear && bare[at + 1] === 'api') {
             // the query is one word; a variable, a substitution or xargs hides it, and an unreadable query counts
             const query = words.join(' ');
-            const isHidden = c.args.some(
-                (w, i) => isOpaque(w) && c.args[i - 1]?.text !== '--vars',
-            );
+            // xargs appends its input as the query, which the line never shows
+            const isHidden =
+                c.wrappers.includes('xargs') ||
+                c.args.some(
+                    (w, i) => isOpaque(w) && c.args[i - 1]?.text !== '--vars',
+                );
             if (BODY_MUTATION.test(query) || isHidden)
                 return {
                     door: `${BODY_DOOR}; a state or label move is x linear set`,
