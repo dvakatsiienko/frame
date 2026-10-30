@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -114,6 +115,14 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
+	if err := r.Step("resolve", "each exit-line command resolves here, none is run", func() (string, error) {
+		before := len(found)
+		found = append(found, resolveFindings(exitText, repo)...)
+		return plural(len(found)-before, "finding"), nil
+	}); err != nil {
+		return nil, err
+	}
+
 	var shipped []string
 	if err := r.Step("main", "what origin/main already holds", func() (string, error) {
 		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
@@ -205,13 +214,81 @@ func xCommandFindings(body string, registry []Verb) []finding {
 	seen := map[string]bool{}
 	refs, newSpans, newFlags := exitCommands(body)
 	for _, ref := range refs {
-		if newSpans[ref.text] {
+		if declaredNew(ref.text, newSpans) {
 			continue
 		}
 		for _, f := range xSegmentFindings(ref, registry, newFlags) {
 			if key := fmt.Sprint(f.Line, f.Kind, f.What); !seen[key] {
 				seen[key] = true
 				found = append(found, f)
+			}
+		}
+	}
+	return found
+}
+
+// `x brief summon brief.md` is the lane's own once `x brief summon` (new) sits anywhere in the spec
+func declaredNew(span string, newSpans map[string]bool) bool {
+	for declared := range newSpans {
+		if span == declared || strings.HasPrefix(span, declared+" ") {
+			return true
+		}
+	}
+	return false
+}
+
+// the first words that make a span a command; any other span (`match`, `## signed`, `spec:`) is a value
+var (
+	commandHeads = []string{"node", "go", "git", "gh", "rg", "jq"}
+	// a lone `docs/nope.md` or `/clear` names a thing; only a script runs
+	scriptPath = regexp.MustCompile(`^[\w.~$/{}-]*/[\w.-]+\.(?:sh|zsh|ts|mjs|js|py)$`)
+)
+
+// resolveFindings reds an exit-line command that cannot run here: a pnpm script its package lacks, a head off
+// the PATH, a file argument or script that does not exist. it resolves and never executes: an unattended
+// preflight must not write. `x` spans are the verbs step's
+func resolveFindings(body, repo string) []finding {
+	var found []finding
+	files := repoFiles(repo)
+	refs, newSpans, _ := exitCommands(body)
+	for _, ref := range refs {
+		if declaredNew(ref.text, newSpans) {
+			continue
+		}
+		for _, segment := range shellSep.Split(argument.ReplaceAllString(ref.text, "_"), -1) {
+			words := strings.Fields(segment)
+			if len(words) == 0 {
+				continue
+			}
+			head := words[0]
+			switch {
+			case head == "x":
+				continue
+			case head == "pnpm":
+				if kind, why := pnpmMissing(strings.Join(words, " "), repo); kind != "" {
+					found = append(found, finding{ref.line, kind, strings.Join(words[:min(2, len(words))], " "), why})
+				}
+				continue
+			case slices.Contains(commandHeads, head):
+				if _, err := exec.LookPath(head); err != nil {
+					found = append(found, finding{ref.line, "command", head, "not on the PATH"})
+					continue
+				}
+			case scriptPath.MatchString(head):
+				if kind, why := pathMissing(head, repo, files); kind != "" {
+					found = append(found, finding{ref.line, kind, head, why})
+				}
+			default:
+				continue
+			}
+			for _, word := range words[1:] {
+				if strings.HasPrefix(word, "-") || strings.ContainsAny(word, "*_") || strings.Contains(word, "...") ||
+					!strings.Contains(word, "/") || !isPathLike(word) {
+					continue
+				}
+				if kind, why := pathMissing(word, repo, files); kind != "" {
+					found = append(found, finding{ref.line, kind, word, why})
+				}
 			}
 		}
 	}

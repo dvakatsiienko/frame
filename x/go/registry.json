@@ -467,8 +467,8 @@
                 }
             },
             "name": "brief preflight",
-            "purpose": "read a ticket before a lane: numbered exit lines, real x verbs and flags, nothing already on main, no redesign wording",
-            "steps": ["read", "lint", "verbs", "main"]
+            "purpose": "read a ticket before a lane: numbered exit lines whose commands resolve, nothing already on main, no redesign wording",
+            "steps": ["read", "lint", "verbs", "resolve", "main"]
         },
         {
             "args": [
