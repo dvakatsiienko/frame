@@ -227,8 +227,7 @@
             "steps": ["read", "write"],
             "touches": [
                 "linear — each ticket's signed label, state, delegate and sign block, written",
-                "~/.claude/shelf/cc-usage-window.json — the 5h window, read",
-                "~/.local/state/x/lanes/<lane>/issues/ — the slices dir, named for the brief"
+                "~/.claude/shelf/cc-usage-window.json — the 5h window, read"
             ]
         },
         {

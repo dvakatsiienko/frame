@@ -104,7 +104,7 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 	_, block, signed := signedBlock(body)
 	labelAt := slices.IndexFunc(issue.Labels.Nodes, func(l idName) bool { return strings.EqualFold(l.Name, "signed") })
 	// a ↩️ line takes a dispatch back, so only a 🚀 after the last one counts
-	dispatched := strings.LastIndex(block, dispatchedLine) > max(strings.LastIndex(block, "↩️"), -1)
+	dispatched := strings.LastIndex(block, dispatchedLine) > strings.LastIndex(block, "↩️")
 	sign, _, _ := bodySign(body)
 	switch {
 	case !signed:

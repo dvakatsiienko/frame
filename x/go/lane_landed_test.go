@@ -40,7 +40,7 @@ func (w landedWorld) done(t *testing.T) {
 
 func (w landedWorld) landed(t *testing.T, args ...string) (map[string]any, asRun) {
 	t.Helper()
-	return runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo}, append([]string{"lane", "landed", "FRM-1", "--repo", w.repo}, args...)...)
+	return runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)}, append([]string{"lane", "landed", "FRM-1", "--repo", w.repo}, args...)...)
 }
 
 func linesOf(envelope map[string]any) string {
@@ -153,9 +153,11 @@ func TestLandedApplyDecampsASquashMergedTreeWhoseBranchIsGone(t *testing.T) {
 	gitT(t, squashed, "add", "y.txt")
 	gitT(t, squashed, "commit", "-q", "-m", "the pr")
 	merged := gitT(t, squashed, "rev-parse", "HEAD")
-	// sixth sense's verify tree: detached at the pr's head
-	verify := filepath.Join(w.repo, ".claude/worktrees/verify-pr-7")
+	// sixth sense's verify trees: one only at the pr's head, one only by its frame name
+	verify := filepath.Join(w.repo, ".claude/worktrees/verify-at-head")
 	gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, merged)
+	named := filepath.Join(w.repo, ".claude/worktrees/verify-pr-7")
+	gitT(t, w.repo, "worktree", "add", "-q", "--detach", named, "origin/main")
 	// a second tree of the lane with work the pr never carried
 	local := w.laneTree(t, "local")
 	write(t, filepath.Join(local, "z.txt"), "local only\n")
@@ -176,6 +178,9 @@ func TestLandedApplyDecampsASquashMergedTreeWhoseBranchIsGone(t *testing.T) {
 	}
 	if exists(verify) {
 		t.Errorf("the detached verify tree at the merged head was kept:\n%s", got.stdout)
+	}
+	if exists(named) {
+		t.Errorf("the detached verify-pr-7 tree was kept:\n%s", got.stdout)
 	}
 	if !exists(local) || !strings.Contains(got.stdout, "1 commit on no remote") {
 		t.Errorf("the tree with a local-only commit must stay and say why:\n%s", got.stdout)
@@ -217,6 +222,36 @@ func TestLandedKeepsASpecWhoseSiblingChunkIsStillBuilding(t *testing.T) {
 	}
 	if out := linesOf(envelope); !strings.Contains(out, "waits on FRM-2") || got.code != 1 {
 		t.Errorf("exit %d, want the spec line red naming FRM-2:\n%s", got.code, out)
+	}
+}
+
+func TestLandedArchivesASpecWhoseSiblingChunkMergedToo(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — landed\n\n## FRM-2 — landed in the same squash\n")
+	write(t, filepath.Join(w.repo, "z.txt"), "the squash\n")
+	gitT(t, w.repo, "add", "z.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "the squash", "-m", "- ticket: FRM-2")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	w.landed(t, "--apply")
+
+	if !exists(filepath.Join(w.repo, ".scratch/_archive/lane-1/spec.md")) {
+		t.Error("the spec stayed though every chunk has a commit on origin/main")
+	}
+}
+
+func TestLandedDecampsAVerifyTreeNamedForTheTicket(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	// a bytes-style verify tree, no --pr to match it by
+	verify := filepath.Join(w.repo, ".claude/worktrees/verify-FRM-1")
+	gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, "origin/main")
+
+	_, got := w.landed(t, "--apply")
+
+	if exists(verify) {
+		t.Errorf("the verify-FRM-1 tree was not decamped:\n%s", got.stdout)
 	}
 }
 

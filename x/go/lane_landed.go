@@ -108,8 +108,8 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		dir := filepath.Dir(paths[0])
 		feature = filepath.Base(dir)
 		if waiting := unmergedChunks(main, paths[0], id); len(waiting) > 0 {
-			spec.detail = home(dir) + " waits on " + strings.Join(waiting, ", ") + ": a spec moves when its every chunk merged"
-			spec.fix = "land " + strings.Join(waiting, ", ") + ", then x lane landed " + id + " --apply"
+			spec.detail = home(dir) + " waits on " + strings.Join(waiting, ", ") + ", no commit on " + home(main) + "'s origin/main: a spec moves when its every chunk merged"
+			spec.fix = "git -C " + home(main) + " fetch origin main, or land " + strings.Join(waiting, ", ") + "; then x lane landed " + id + " --apply"
 		} else {
 			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, feature)
 			spec.detail = home(dir) + " is not archived"
@@ -220,7 +220,7 @@ func unmergedChunks(repo, spec, id string) []string {
 // laneTrees lists the ticket's trees under .claude/worktrees/, each with why it must stay, or clean by
 // the root rule: no change in git status, no .scratch/ dir, every commit on an origin ref or in the merged pr.
 // a lane tree is a codie/<ticket>-* branch or the pr's head ref; a detached one is sixth sense's verify tree,
-// named verify-pr-<n> or sitting at the pr's head
+// named verify-pr-<n> (frame), verify-<ticket> (any other repo) or sitting at the pr's head
 func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 	mergedHead := refs.mergedHead
 	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
@@ -250,7 +250,8 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 			detached = detached || line == "detached"
 		}
 		ours := branch != "" && (strings.HasPrefix(branch, "codie/"+id+"-") || branch == refs.headRef)
-		verify := detached && refs.pr != "" && (filepath.Base(path) == "verify-pr-"+refs.pr || (refs.headSha != "" && sha == refs.headSha))
+		name := filepath.Base(path)
+		verify := detached && (name == "verify-"+id || (refs.pr != "" && name == "verify-pr-"+refs.pr) || (refs.headSha != "" && sha == refs.headSha))
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
