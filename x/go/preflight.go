@@ -227,25 +227,30 @@ func xCommandFindings(body string, registry []Verb) []finding {
 	return found
 }
 
-// `x brief summon brief.md` is the lane's own once `x brief summon` (new) sits anywhere in the spec
+// `x lane dispatch FRM-1 --session s1` is the lane's own once `x lane dispatch <ticket> --session <sid>` (new)
+// sits anywhere in the spec: the declared verb path is its words before the first placeholder, option or flag
 func declaredNew(span string, newSpans map[string]bool) bool {
+	words := strings.Fields(span)
 	for declared := range newSpans {
-		if span == declared || strings.HasPrefix(span, declared+" ") {
+		path := strings.Fields(declared)
+		if cut := slices.IndexFunc(path, func(w string) bool { return strings.ContainsAny(w[:1], "<[-") }); cut >= 0 {
+			path = path[:cut]
+		}
+		if len(path) >= 2 && len(words) >= len(path) && slices.Equal(words[:len(path)], path) {
 			return true
 		}
 	}
 	return false
 }
 
-// the first words that make a span a command; any other span (`match`, `## signed`, `spec:`) is a value
+// a placeholder or a quoted argument, as one word no file check reads
 const argMark = "\x00arg\x00"
 
 var (
+	// the first words that make a span a command; any other span (`match`, `## signed`, `spec:`) is a value
 	commandHeads = []string{"node", "go", "git", "gh", "rg", "jq"}
-	// a lone `docs/nope.md` or `/clear` names a thing; only a script runs
-	scriptPath = regexp.MustCompile(`^[\w.~$/{}-]*/[\w.-]+\.(?:sh|zsh|ts|mjs|js|py)$`)
-	// the flags whose next word is a value, never a file: a go subtest name, a node -e body, a pnpm dir
-	resolveValueFlags = []string{"-run", "-bench", "-C", "-e", "--eval", "-p", "--print", "--filter", "--dir"}
+	// a remote-tracking ref (`origin/main`) is a git revision, never a file
+	remoteRef = regexp.MustCompile(`^(?:origin|upstream)/`)
 )
 
 // a word preflight checks on disk: a path with a slash, never a placeholder, a glob, a go package pattern,
@@ -281,7 +286,9 @@ func resolveFindings(body, repo string) []finding {
 			case head == "x":
 				continue
 			case head == "pnpm":
-				if kind, why := pnpmMissing(strings.Join(words, " "), repo); kind != "" {
+				if _, err := exec.LookPath(head); err != nil {
+					found = append(found, finding{ref.line, "command", head, "not on the PATH"})
+				} else if kind, why := pnpmMissing(strings.Join(words, " "), repo); kind != "" {
 					found = append(found, finding{ref.line, kind, strings.Join(words[:min(2, len(words))], " "), why})
 				}
 				continue
@@ -290,7 +297,8 @@ func resolveFindings(body, repo string) []finding {
 					found = append(found, finding{ref.line, "command", head, "not on the PATH"})
 					continue
 				}
-			case scriptPath.MatchString(head):
+			// a lone `docs/nope.md` or `/clear` names a thing; only a script runs
+			case strings.Contains(head, "/") && scriptFile.MatchString(head):
 				if kind, why := pathMissing(head, repo, files); kind != "" {
 					found = append(found, finding{ref.line, kind, head, why})
 				}
@@ -298,7 +306,8 @@ func resolveFindings(body, repo string) []finding {
 				continue
 			}
 			for i, word := range words {
-				if i == 0 || strings.HasPrefix(word, "-") || slices.Contains(resolveValueFlags, words[i-1]) || !fileArgument(word) {
+				if i == 0 || strings.HasPrefix(word, "-") || valueFlags[words[i-1]] || !fileArgument(word) ||
+					(head == "git" && remoteRef.MatchString(word)) {
 					continue
 				}
 				if kind, why := pathMissing(word, repo, files); kind != "" {
@@ -426,7 +435,7 @@ func xWalk(line int, words []string, registry []Verb, newFlags map[string]bool) 
 func mainVerbs(repo string) []string {
 	got, _ := gitIn(repo, "show", "origin/main:x/go/registry.json")
 	if !got.ok {
-		got, _ = gitIn(filepath.Dir(filepath.Dir(sourceDir())), "show", "origin/main:x/go/registry.json")
+		got, _ = gitIn(frameRoot(), "show", "origin/main:x/go/registry.json")
 	}
 	var registry struct {
 		Verbs []struct {

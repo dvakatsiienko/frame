@@ -440,7 +440,7 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 
 // a skill's SKILL.md: plugin-x's own, else matt's newest cached version; "" when there is none
 func pluginSkill(name string) string {
-	if raw, err := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(sourceDir())), "home/.claude/plugin-x/skills", name, "SKILL.md")); err == nil {
+	if raw, err := os.ReadFile(filepath.Join(frameRoot(), "home/.claude/plugin-x/skills", name, "SKILL.md")); err == nil {
 		return string(raw)
 	}
 	home, _ := os.UserHomeDir()

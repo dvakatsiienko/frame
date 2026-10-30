@@ -47,6 +47,7 @@ var impls = map[string]Impl{
 	"lane verify-tree": {Run: verifyTree, Undone: "no worktree was added"},
 	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
 	"lane decamp":      {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp},
+	"lane dispatch":    {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "no mark was written", Ask: askDispatch},
 	"lane seed":        {Run: seed, Undone: "the tree is as the hook left it"},
 	"lane review":      {Run: laneReview, Undone: "no review was requested"},
 	"lane pr-body":     {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
@@ -453,6 +454,14 @@ func (o ordered) MarshalJSON() ([]byte, error) {
 		parts[i] = marshal(field.key) + ":" + marshal(field.value)
 	}
 	return []byte("{" + strings.Join(parts, ",") + "}"), nil
+}
+
+// the frame tree x runs from; a test points it at a fixture tree
+func frameRoot() string {
+	if root := os.Getenv("X_FRAME_ROOT"); root != "" && os.Getenv("X_TEST") != "" {
+		return root
+	}
+	return filepath.Dir(filepath.Dir(sourceDir()))
 }
 
 func sourceDir() string {

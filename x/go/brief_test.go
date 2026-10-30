@@ -6,8 +6,7 @@ import (
 	"testing"
 )
 
-// the parser table the guard's brief rule reads too (parked for the mods lane): each token and whether
-// brief check may call it a missing path
+// each token and whether brief check may call it a missing path; the guard's brief rule is meant to read it next
 var pathTable = []struct {
 	token       string
 	missingPath bool
@@ -63,9 +62,11 @@ func TestBriefCheckReportsOnlyARealMissingPath(t *testing.T) {
 	got := xIn(t, dir, []string{"HOME=" + home}, "brief", "check", "brief.md")
 
 	for _, c := range pathTable {
-		if reported := strings.Contains(got.stdout, "path "+c.token+" "); reported != c.missingPath {
-			t.Errorf("%s: reported as a missing path %v, want %v", c.token, reported, c.missingPath)
-		}
+		t.Run(c.token, func(t *testing.T) {
+			if reported := strings.Contains(got.stdout, "path "+c.token+" "); reported != c.missingPath {
+				t.Errorf("reported as a missing path %v, want %v", reported, c.missingPath)
+			}
+		})
 	}
 	if got.code == 0 {
 		t.Errorf("exit 0, want the real missing paths to red:\n%s", got.stdout)

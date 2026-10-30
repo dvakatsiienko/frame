@@ -148,10 +148,15 @@ func TestTheSignedListReadsEachSignAgainstItsBody(t *testing.T) {
 		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
 	}
 	rows := tickets(t, envelope)
+	if len(rows) != len(cases) {
+		t.Fatalf("%d rows, want %d:\n%s", len(rows), len(cases), got.stdout)
+	}
 	for i, c := range cases {
-		if i >= len(rows) || rows[i]["sign"] != c.want {
-			t.Errorf("%s: sign %v, want %q", c.id, rows[min(i, len(rows)-1)]["sign"], c.want)
-		}
+		t.Run(c.id, func(t *testing.T) {
+			if rows[i]["sign"] != c.want {
+				t.Errorf("sign %v, want %q", rows[i]["sign"], c.want)
+			}
+		})
 	}
 }
 

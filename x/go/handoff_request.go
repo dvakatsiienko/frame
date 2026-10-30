@@ -19,7 +19,7 @@ const specMark = "<INLINE THE SPEC: full text of CST-SPEC.md>"
 // a request pasted by hand once shipped a cut spec, and the receiver may never have seen the skill
 func handoffRequest(r *Run, args []string, flags Flags) (any, error) {
 	target := args[0]
-	plugin := filepath.Join(filepath.Dir(filepath.Dir(sourceDir())), "home/.claude/plugin-x")
+	plugin := filepath.Join(frameRoot(), "home/.claude/plugin-x")
 	skill, err := os.ReadFile(filepath.Join(plugin, "skills/handoff-ingest/SKILL.md"))
 	if err != nil {
 		return nil, &Fail{Msg: "no handoff-ingest skill at " + home(plugin), Next: "x schema handoff request"}
@@ -30,7 +30,7 @@ func handoffRequest(r *Run, args []string, flags Flags) (any, error) {
 	}
 	m := requestFence.FindSubmatch(skill)
 	if m == nil || !strings.Contains(string(m[1]), specMark) {
-		return nil, &Fail{Msg: "the handoff-ingest skill holds no request template with the spec mark", Next: "read " + home(filepath.Join(plugin, "skills/handoff-ingest/SKILL.md"))}
+		return nil, &Fail{Msg: "the handoff-ingest skill holds no request template with the spec mark", Next: "x schema handoff request"}
 	}
 	message := targetLine.ReplaceAllString(string(m[1]), "")
 	if focus := strings.TrimSpace(flagString(flags, "target-line")); focus != "" {

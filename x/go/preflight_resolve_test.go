@@ -65,11 +65,12 @@ func TestPreflightPassesAnExitLineWhoseCommandsResolve(t *testing.T) {
 	cases := []struct{ name, exits string }{
 		{"every command resolves", "1. given a tree, when `pnpm retired-names:check` and `git grep -n 'a|b' docs/` and `go test ./...` and `script/real.sh` run, then they exit 0\n"},
 		{"a (new) verb", "1. given `x brief summon` (new), when `x brief summon brief.md` runs, then it exits 0\n"},
+		{"a (new) verb declared with placeholders", "1. given `x lane dispatch <ticket> --session <sid>` (new), when `x lane dispatch FRM-1 --session s1` runs, then it exits 0\n"},
 		{"value spans only", "1. given a body, when the list reads it, then its sign reads `match`, `## signed` holds `merge: pre-approved` and `spec:`\n"},
 		{"names a brief holds, not commands", "1. given a brief naming `Explore.md`, `/clear`, `scratch/foo` and `docs/nope.md`, when `x lane unlock` runs, then it exits 0\n"},
 		{"a placeholder argument", "1. given a ticket, when `node script/real.sh <id>` runs, then it exits 0\n"},
 		{"a flag's value", "1. given a tree, when `go -C x/go test -run TestA/b_c .` and `node -e 'a/b'` run, then they exit 0\n"},
-		{"git refs and ranges", "1. given a tree, when `git show HEAD:docs/shipped.md` and `git log origin/main..HEAD` run, then they exit 0\n"},
+		{"git refs and ranges", "1. given a tree, when `git show HEAD:docs/shipped.md` and `git log origin/main..HEAD` and `git diff origin/main -- docs/` run, then they exit 0\n"},
 		{"a pnpm dir under home", "1. given a tree, when `pnpm -C ~/frame plant` runs, then it exits 0\n"},
 		{"an unexpanded variable", "1. given a plugin, when `node ${CLAUDE_PLUGIN_ROOT}/bin/a.mjs` runs, then it exits 0\n"},
 	}

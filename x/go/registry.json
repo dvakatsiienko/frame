@@ -204,6 +204,35 @@
         {
             "args": [
                 {
+                    "description": "the signed chunk tickets the summon took, FRM-N or BYT-N",
+                    "isVariadic": true,
+                    "name": "ticket"
+                }
+            ],
+            "flags": {
+                "lane": {
+                    "description": "the lane name the 🚀 line records, e.g. cli-3",
+                    "type": "string",
+                    "value": "name"
+                },
+                "session": {
+                    "description": "the summoned codie's session id the 🚀 line records",
+                    "type": "string",
+                    "value": "sid"
+                }
+            },
+            "name": "lane dispatch",
+            "needsApply": true,
+            "purpose": "write a summoned lane's dispatch marks on its signed tickets in one update each; a re-run reports them set",
+            "steps": ["read", "write"],
+            "touches": [
+                "linear — each ticket's signed label, state, delegate and sign block, written",
+                "~/.claude/shelf/cc-usage-window.json — the 5h window, read"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "the pr number",
                     "name": "pr"
                 }
@@ -515,7 +544,9 @@
             "touches": [
                 "~/.local/state/x/briefs — the x brief check stamp, read",
                 "~/.claude.json — the summon home's trust key, read",
-                "script/test-drive-list.ts --spawn-hook — the live trials that fit, run"
+                "script/test-drive-list.ts --spawn-hook — the live trials that fit, run",
+                "ps — the age of each claude bg-spare, read",
+                "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run"
             ]
         },
         {

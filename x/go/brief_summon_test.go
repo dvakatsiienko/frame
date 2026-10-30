@@ -45,77 +45,107 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 	return path
 }
 
-func (w summonWorld) summon(t *testing.T, command string) ran {
+func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
-	return xIn(t, w.repo, []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame}, "brief", "summon", command)
+	return xIn(t, w.repo, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame}, env...), "brief", "summon", command)
+}
+
+// a bytes checkout is known by its essentials script; this one fails every app
+func (w summonWorld) bytesHome(t *testing.T) string {
+	t.Helper()
+	bytes := filepath.Join(w.repo, "bytes")
+	write(t, filepath.Join(bytes, "script/apps-essentials.ts"), "process.exit(1)\n")
+	claudeJSON, _ := json.Marshal(map[string]any{"projects": map[string]any{bytes: map[string]any{"hasTrustDialogAccepted": true}}})
+	write(t, filepath.Join(w.home, ".claude.json"), string(claudeJSON))
+	return bytes
 }
 
 func codieArgv(repo, brief string) string {
 	return "cd " + repo + " && claude --bg -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
 }
 
-func TestBriefSummonPassesABriefThatMeetsEveryStep(t *testing.T) {
+func sixthArgv(w summonWorld, tail string) string {
+	return "cd " + w.repo + " && claude --bg -n '🌗 🔎 sixth sense: #7' --model opus --effort medium '/x:crew-sixth-sense FRM-1 https://github.com/o/r/pull/7 codie clio" + tail + " trials: tdd' --remote-control"
+}
+
+func TestBriefSummonPassesACommandThatMeetsEveryStep(t *testing.T) {
 	t.Parallel()
-	w := newSummonWorld(t)
-	command := codieArgv(w.repo, w.brief(t, goodBrief, true))
+	cases := []struct {
+		name    string
+		command func(t *testing.T, w summonWorld) string
+	}{
+		{"a codie brief", func(t *testing.T, w summonWorld) string { return codieArgv(w.repo, w.brief(t, goodBrief, true)) }},
+		{"a sixth sense argv with spec:", func(_ *testing.T, w summonWorld) string { return sixthArgv(w, " spec: .scratch/lane-1/spec.md") }},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			command := c.command(t, w)
 
-	got := w.summon(t, command)
+			got := w.summon(t, command)
 
-	if got.code != 0 || got.data["argv"] != command {
-		t.Fatalf("exit %d, want 0 printing the argv:\n%s", got.code, got.stdout)
+			if got.code != 0 || got.data["argv"] != command {
+				t.Errorf("exit %d, want 0 printing the argv:\n%s", got.code, got.stdout)
+			}
+		})
 	}
 }
 
 func TestBriefSummonRefusesABriefThatSkipsAStep(t *testing.T) {
 	t.Parallel()
-	sixth := func(w summonWorld, tail string) string {
-		return "cd " + w.repo + " && claude --bg -n '🌗 🔎 sixth sense: #7' --model opus --effort medium '/x:crew-sixth-sense FRM-1 https://github.com/o/r/pull/7 codie clio" + tail + " trials: tdd' --remote-control"
-	}
 	cases := []struct {
 		name, step string
 		command    func(t *testing.T, w summonWorld) string
+		env        []string
 	}{
+		{"-n after the prompt", "argv", func(t *testing.T, w summonWorld) string {
+			return "cd " + w.repo + " && claude --bg \"$(cat " + w.brief(t, goodBrief, true) + ")\" -n 'x' --remote-control"
+		}, nil},
+		{"a spare older than a day", "spare", func(t *testing.T, w summonWorld) string {
+			return codieArgv(w.repo, w.brief(t, goodBrief, true))
+		}, []string{"X_SPARES=1-02:03:04 claude bg-spare\n"}},
+		{"a bytes app that fails its essentials", "essentials", func(t *testing.T, w summonWorld) string {
+			return codieArgv(w.bytesHome(t), w.brief(t, goodBrief+"\nthe app: apps/atelier/\n", true))
+		}, nil},
+		{"no cd, so the cwd is the home, untrusted", "trust", func(t *testing.T, w summonWorld) string {
+			write(t, filepath.Join(w.home, ".claude.json"), `{"projects":{}}`)
+			return "claude --bg -n 'x' \"$(cat " + w.brief(t, goodBrief, true) + ")\" --remote-control"
+		}, nil},
 		{"no role skill on its first line", "role", func(t *testing.T, w summonWorld) string {
 			return codieArgv(w.repo, w.brief(t, strings.Replace(goodBrief, "/x:crew-codie ", "", 1), true))
-		}},
+		}, nil},
 		{"no wish in its first 10 lines", "wish", func(t *testing.T, w summonWorld) string {
 			return codieArgv(w.repo, w.brief(t, strings.Replace(goodBrief, "wish: none\n", "", 1), true))
-		}},
+		}, nil},
 		{"no brief check stamp for its bytes", "stamp", func(t *testing.T, w summonWorld) string {
 			return codieArgv(w.repo, w.brief(t, goodBrief, false))
-		}},
+		}, nil},
 		{"a fitting trial neither named nor skipped", "trials", func(t *testing.T, w summonWorld) string {
 			return codieArgv(w.repo, w.brief(t, strings.Replace(goodBrief, "- `tdd`: each exit line red first\n", "", 1), true))
-		}},
+		}, nil},
 		{"the prompt after --remote-control", "argv", func(t *testing.T, w summonWorld) string {
 			brief := w.brief(t, goodBrief, true)
 			return "cd " + w.repo + " && claude --bg -n '🌗 🔧 codie: FRM-1' --remote-control \"$(cat " + brief + ")\""
-		}},
+		}, nil},
 		{"a summon home without its trust key", "trust", func(t *testing.T, w summonWorld) string {
 			write(t, filepath.Join(w.home, ".claude.json"), `{"projects":{}}`)
 			return codieArgv(w.repo, w.brief(t, goodBrief, true))
-		}},
+		}, nil},
 		{"a sixth sense argv missing spec:", "sixth sense", func(_ *testing.T, w summonWorld) string {
-			return sixth(w, "")
-		}},
+			return sixthArgv(w, "")
+		}, nil},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := newSummonWorld(t)
 
-			got := w.summon(t, c.command(t, w))
+			got := w.summon(t, c.command(t, w), c.env...)
 
 			if got.code == 0 || !strings.Contains(got.stdout, "step "+c.step+":") {
 				t.Errorf("exit %d, want a refusal naming step %q:\n%s", got.code, c.step, got.stdout)
 			}
 		})
 	}
-	t.Run("a sixth sense argv with spec: passes", func(t *testing.T) {
-		t.Parallel()
-		w := newSummonWorld(t)
-		if got := w.summon(t, sixth(w, " spec: .scratch/lane-1/spec.md")); got.code != 0 {
-			t.Errorf("exit %d, want a full sixth sense argv to pass:\n%s", got.code, got.stdout)
-		}
-	})
 }
