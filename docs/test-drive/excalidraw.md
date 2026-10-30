@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-11-02
 dies-when: the verdict line below is written
 fits: clio
@@ -38,3 +38,5 @@ born 2026-10-25 from the PK-276 research and bench (dima: «let's try Excalidraw
 - 2026-10-25 · round 1, the PWA as his editor: the reshuffle and two redraws were written to `board.excalidraw` (committed 16:47) while his PWA tab held the file open · the tab never showed them until he reloaded, and a tile he dropped in the tab never reached the file · a miss against the stress list's «⌘O / ⌘S on a local file»: the PWA holds a copy, not a live view; each redraw needs his ⌘O, each edit of his his ⌘S
 
 ## verdict
+
+- 2026-10-30 · **adopted, closed early** (dima, 16:08: «we 100% need a blueprint like this. Excalidraw is just a tool. It's good enough … let's have Excalidraw as a main blueprinting tool for now»): 2 rounds, the crew-pm board v7 redrawn today with 2 texts re-wrapped and its render checked; the miss stays — the PWA holds a copy, so each redraw needs his ⌘O · FigJam is still the best tool, out on its free quota; comments in Excalidraw sit behind Excalidraw+, not bought · draw.io stays installed as the fallback, n8n stays for automation only

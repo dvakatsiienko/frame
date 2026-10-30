@@ -30,6 +30,8 @@ dima's, 2026-10-21 (chat, folded, PK-243):
 
 > «I left a comment on the board and you didn't answer it — can you see comments when you edit FigJam? what does it take to read them, and is it expensive to read them each time?»
 
+> «Excalidraw is just a tool. It's good enough … it doesn't satisfy me fully because it doesn't have comments, although it has them, but they are gated behind a subscription. … print in a recipe that I want a better blueprinting app. Possibly I'd want a custom one, maybe at some point, but not now because we have lots to do.» (2026-10-30)
+
 ## the run
 
 - the tool must stay local, free, fast for clio to read and edit, and editable by dima's drag — the grill in `_clio/blueprints/PRODUCT.md` is the bar every candidate is scored against; cost breaks ties
