@@ -33,3 +33,4 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-11-01 · recipe-candidates · 🟡 5 stale recipes sit on the main road (speak, designer, job-market, writing-for-humans, browser-headless never run) · asked: orbit; the research-doc scan not run
 - 2026-11-01 · evergreen · could not run: its turn is the Wednesday boot; the renovate count is on the boot board · —
 - 2026-11-01 · skill-shape · 🔴 1 strength-3 open: the evergreen read hand-computes renovate rows (a script) · asked: orbit; 24 lows carried unchecked, thin read
+- 2026-11-01 · correction · the day's run was partial: evergreen not run (its Wednesday turn), install-census without fire counts, recipe-candidates without the research-doc scan, skill-shape a thin read; fast-jev was a frozen trial, not an enable with no install · —
