@@ -4,7 +4,7 @@ description: load on dima's «prep», «sign», «re-sign», «grill <ticket>»,
 
 # /clio:shape-lane — dima's ✍️ sign on a chunk
 
-dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». this is his part of lane init: a grill that ends in his ✍️ sign. the machine part — the spec, the exit lines, the summon — is `clio:shape-lane-dispatch`; the contract (the states, where each thing lives, re-sign, a lane per milestone) is `craft-fleet-flow` § lane init.
+dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». this is his part of lane init: a grill that ends in his ✍️ sign. the machine part — the spec, the exit lines, the summon — is `clio:shape-lane-dispatch`; the contract is `craft-fleet-flow` § lane init.
 
 it runs over any ticket: a safety-net re-grill after `clio:shape-idea`, the real shaping for a ticket born without it.
 
@@ -44,7 +44,7 @@ the grill and the groom come first: the chunk is healthy — good content, a goo
 - **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask
 - on the sign: `x linear set FRM-N --add-label signed --state Todo` (out of Triage; a re-sign keeps a started state); then `sortOrder` (a move resets it)
 - and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `clio:pm` `references/body.md`)
-  - the hash is the first 8 of `shasum -a 256` over the body above `## signed`
+  - the hash: first 8 of sha256 over the raw body above `## signed`, its blank line in; a dry `x lane dispatch FRM-N` proves it
   - a line in the block is never edited: history is how a lane gets debugged
 
 - **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
