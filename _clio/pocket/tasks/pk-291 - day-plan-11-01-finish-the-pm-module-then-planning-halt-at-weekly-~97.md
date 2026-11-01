@@ -4,7 +4,7 @@ title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 
 status: open
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
-updated_date: '2026-11-01T12:56:00Z'
+updated_date: '2026-11-01T13:07:00Z'
 labels:
   - s
 dependencies: []
@@ -38,7 +38,7 @@ W813 (2026-11-01 14:19, dima): ⚠️ health at risk: an open milestone is missi
 W814 (2026-11-01 14:19, dima): proceed with 419.
 W815 (2026-11-01 14:19, dima): close proposals: let's gradually close them turn by turn, not all at once.
 W816 (2026-11-01 14:19, dima): during each turn or review round, print me two tickets to close, approve: briefly tell what each was about and why it can be closed.
-W817 (2026-11-01 14:19, dima): also, when you are waiting for reviews, find some stuff to sell for yourself.
+W817 (2026-11-01 14:19, dima): also, when you are waiting for reviews, find some stuff to solve yourself.
 W818 (2026-11-01 14:19, dima): /x:mobile-mode 10min
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -61,4 +61,13 @@ answered 2026-11-01 14:4x in clio's reply: W821, W822, W826, W827
 W859 (2026-11-01 14:51, dima): what's next? ❓
 W860 (2026-11-01 14:51, dima): when all fixes have landed, start a new pm review wave.
 W861 (2026-11-01 14:51, dima): and find some stuff to solve for yourself meanwhile.
+
+W862 (2026-11-01 15:02, dima): mobile mode off means stop printing «⏳ waiting on your word», only orbit.
+W863 (2026-11-01 15:06, dima): proceed.
+W864 (2026-11-01 15:06, dima): also, double-check if every wish is resolved against the pm module review that was planned.
+W865 (2026-11-01 15:06, dima): also, look for any additional tails related to this overall area scope to be done in these nearest turns, because you're currently almost at 50% context.
+W866 (2026-11-01 15:06, dima): before planning, once all pm-related stuff is resolved, i'd like to second-wind you, so we plan on a fresh context after your second wind.
+W869 (2026-11-01 14:19, dima): what is the «queue»? ❓
+W870 (2026-11-01 14:19, dima): can you add it to a queue? ❓
+W869–W870 answered 14:31 (the queue explained, x screens framed added)
 <!-- SECTION:NOTES:END -->
