@@ -236,6 +236,7 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-01 · prompt-groom · W1014-W1022 (dima 17:45) · 0 · 9 lines, 1 question as own ❓ line; wispr maps applied
 - 2026-11-01 · prompt-groom · o74 (orbit steer 74, not groomed) · 1 · raw file missing: grooms/2026-11-01-o74.raw.md does not exist
 - 2026-11-01 · prompt-groom · W1023-W1031 (dima 17:54) · 0 · 9 lines, no question marks; wispr maps applied; pasted_content wrapper dropped
+- 2026-11-01 · prompt-groom · W1033-W1045 · 0 · 18:34 prompt groomed, 13 lines, wispr x pocket applied, questions on W1038 and W1039
 
 ## rounds
 
