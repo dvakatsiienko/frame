@@ -4,7 +4,7 @@ title: github app for the verifier (sixth sense), so it stops posting as the cod
 status: done
 assignee: []
 created_date: '2026-10-29T14:50:00Z'
-updated_date: '2026-11-01T16:31:00Z'
+updated_date: '2026-11-01T16:32:00Z'
 due_date: '2026-11-02'
 labels:
   - s
@@ -46,4 +46,6 @@ kept: 2026-10-30 — dima 18:37: «a little later, no capacity today. plan after
 
 ticket: FRM-484
 close: done 2026-11-01 by the side channel — the app x-sixth-sense-cc (id 5568410) live on frame and bytes, the key in 1Password and the Keychain, a token proven; the wiring moved to FRM-484
+
+close: W1, W485–W495, W634 moved to FRM-484 (its wish block); W642 done — the dalmatian avatar is the app's logo, brand/avatars/fleet/sixth-sense/
 <!-- SECTION:NOTES:END -->
