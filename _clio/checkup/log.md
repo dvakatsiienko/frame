@@ -27,3 +27,9 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-11-01 · agnix · could not run: weekly at 94 % · —
 - 2026-11-01 · cli-purpose · could not run: weekly at 94 % · —
 - 2026-11-01 · evergreen · could not run: weekly at 94 % · —
+- 2026-11-01 · agnix · 🟢 0 errors, 35 warnings, 44 info (v0.59.0; 31 warnings on 10-22) · —
+- 2026-11-01 · cli-purpose · 🔴 9 verbs at 0 calls in 14 days (handoff delete, handoff request, brief summon, fleet audit, fleet ops, probe bare, probe session, knowledge list, knowledge read); top raw heads python3 1,176, git diff 387, backlog 324 · asked: orbit
+- 2026-11-01 · install-census · 🔴 3 stray cache folders (a temp clone, cclio still written today, fast-jev-compaction enabled with no install) · asked: orbit; fire counts not run
+- 2026-11-01 · recipe-candidates · 🟡 5 stale recipes sit on the main road (speak, designer, job-market, writing-for-humans, browser-headless never run) · asked: orbit; the research-doc scan not run
+- 2026-11-01 · evergreen · could not run: its turn is the Wednesday boot; the renovate count is on the boot board · —
+- 2026-11-01 · skill-shape · 🔴 1 strength-3 open: the evergreen read hand-computes renovate rows (a script) · asked: orbit; 24 lows carried unchecked, thin read

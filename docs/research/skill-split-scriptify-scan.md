@@ -63,3 +63,11 @@ Ticket: FRM-238, FRM-239
 ## looked at, no candidate
 
 guide-code, guide-typescript, guide-react, guide-ui-ux, step-by-step, walkthrough, writing-for-humans, yt-transcript (already scripted), browser-headless (already run.sh), app-setup-essentials (script holds the list), crew-subagent, crew-designer (takes procedure is judgment), shape-lane, shape-idea, shape-recipe, research, flawlog, shift (checkup scripted), author-memory, author-blueprint, mobile-mode, cclio-mode, art-kit, guide-conventions.
+
+## run 2026-11-01
+
+since 2026-10-19; the first run's strength-3 items re-checked against current text: evergreen split, pm split, siesta 3.5, checkpoint/halt chat lines, halt sweep, crew-lead preflight and handoff-ingest request are fixed (references, `helper-count.ts`, `chat-lines.ts`, `halt-sweep.ts`, `x brief summon`, `x handoff request`).
+
+- script: `_clio/plugin-clio/skills/evergreen/references/read.md` (still open from the first run) — the renovate card derives tier, age and ci by hand from the branch name, `createdAt` and `statusCheckRollup`, then runs `pnpm why`, `npm view <dependant> peerDependencies` and `npm view <pkg> time --json` per pr. Fix: a `_clio/script` evergreen-read script prints one row per renovate pr (tier, age, ci, peer-range verdict, previous-major date).
+
+strength 1-2 seen, not listed: 24 carried from the first run without a re-check (6 split, 3 split at 1, 12 script, cmt commit-msg lint, gazette-new, boot mini mode); none new in the changed files.
