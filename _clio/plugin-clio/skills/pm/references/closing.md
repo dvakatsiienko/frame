@@ -2,11 +2,11 @@
 
 read before any close, cancel, merge or reshape proposal (`clio:pm` § write and close).
 
-## closing — proposed, never performed
+## closing — proposed, except the four auto-closes
 
 auto-close is for four named cases, each said out loud: **stale** (the body proves it), **dupe**
 (the surviving id named), **freebie done in place** (shipped this turn), **landed** (merged, its done
-test run live and the close test below passed: closed in the merge turn after `x lane landed`, named in the reply; an open ❓ or an unmet W-line makes it a proposal; W830). everything else goes to a printed «closable, because …» list and waits for his word, two closes a turn, each with
+test run live and the close test below passed: closed in the merge turn after `x lane landed`, named in the reply; an open ❓ or an unmet W-line makes it a proposal; W830, W850). everything else goes to a printed «closable, because …» list and waits for his word, two closes a turn, each with
 what it was and why it can close (W815–W816).
 
 - each entry passes the close test: what became better (the closing word), what strays (findings,
