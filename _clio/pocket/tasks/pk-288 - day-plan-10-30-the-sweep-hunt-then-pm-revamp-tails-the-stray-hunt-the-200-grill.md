@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-30T13:46:00Z'
-updated_date: '2026-11-01T12:21:00Z'
+updated_date: '2026-11-01T13:17:00Z'
 labels:
   - m
 dependencies: []
@@ -189,4 +189,29 @@ W740 (2026-10-30 18:37, dima): yes, and connect the sonnet grade ticket to the n
 W741 (2026-10-30 18:37, dima): and not duplicated, because you keep summoning two double verifiers for two days in a row.
 
 kept: 2026-11-01 — today's plan lives in PK-291; its own W-lines ask dima at the halt before it closes
+
+W744 (2026-10-30 18:37, dima): wave 4 of reviews against your PM module, big picture, showed lots of highs still, so round 5 is needed? if yes, proceed.
+W766 (2026-10-30 18:56, dima): do everything that you plan, but keep them parked for now.
+W767 (2026-10-30 18:56, dima): maybe we will find some issues that a coder from CLI lane can fix.
+W768 (2026-10-30 18:56, dima): resolve everything after 120 merges and tell where we are.
+W769 (2026-10-30 18:56, dima): look at the 5-hour window and tell what else you can do.
+W770 (2026-10-30 18:56, dima): propose whether it is worth running a full-scale review of the PM module now or waiting for tomorrow.
+W771 (2026-10-30 18:56, dima): in my mind, we have space for the review, but the review can find some issues that would want a coder to fix.
+W772 (2026-10-30 18:56, dima): we don't have capacity for that, so i'm in doubt.
+W773 (2026-10-30 18:56, dima): propose what else you could solve.
+W774 (2026-10-30 18:56, dima): if nothing meaningful is found, maybe we will run a full-scale review now, but let me think.
+W775 (2026-10-30 18:56, dima): first, resolve everything and propose what you could solve first.
+W776 (2026-10-30 18:56, dima): i mean some meaningful ticket, not the chores that you would still do at a
+W763 (2026-10-30 18:56, dima, o52 steer): i ticked.
+W747 (2026-10-30 18:42, dima): let's not overextend with the main lane.
+W748 (2026-10-30 18:42, dima): do only the necessary stuff related to FRM 419, and stay parked.
+W749 (2026-10-30 18:42, dima): let CLI lane fully finish, and let's see where we land there, 5-hour-window-wise.
+W750 (2026-10-30 18:42, dima): you still need to have capacity for a hold.
+W751 (2026-10-30 18:42, dima): ask CLI lane how far they are from fully resolving its chunk and merging it.
+W752 (2026-10-30 18:42, dima): we have 13% of space to do everything.
+W753 (2026-10-30 18:42, dima): i think around 5 probably won't fit, so let's park until CLI lane fully resolves.
+W754 (2026-10-30 18:42, dima): then let's see what we can do.
+W764 (2026-10-30 19:06, dima, o56 steer): yes, and auto-grill it, auto-sign via shape-idea | shape-lane.
+W765 (2026-10-30 19:06, dima, o56 steer): and connect to the first next mods chunk (or fold into it) as a rider.
+done 2026-10-30 in their own turn (the 18:37–19:06 session tactics; W764–W765 duplicate W746 in FRM-478), recorded 2026-11-01 by the round-8 map
 <!-- SECTION:NOTES:END -->
