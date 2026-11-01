@@ -4,7 +4,7 @@ title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 
 status: open
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
-updated_date: '2026-11-01T12:42:00Z'
+updated_date: '2026-11-01T12:56:00Z'
 labels:
   - s
 dependencies: []
@@ -57,4 +57,8 @@ W826 (2026-11-01 14:38, dima): what is -n? ❓
 W832 (2026-11-01 14:38, dima): mobile mode off.
 W817 (2026-11-01 14:19, dima): also, when you are waiting for reviews, find some stuff to solve yourself.
 answered 2026-11-01 14:4x in clio's reply: W821, W822, W826, W827
+
+W859 (2026-11-01 14:51, dima): what's next? ❓
+W860 (2026-11-01 14:51, dima): when all fixes have landed, start a new pm review wave.
+W861 (2026-11-01 14:51, dima): and find some stuff to solve for yourself meanwhile.
 <!-- SECTION:NOTES:END -->
