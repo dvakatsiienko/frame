@@ -217,6 +217,9 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-01 · prompt-groom · W967-W968 (orbit steer 24) · 0 · 2 lines
 - 2026-11-01 · prompt-groom · W969-W972 (orbit steer 25) · 0 · 4 lines
 - 2026-11-01 · prompt-groom · W973-W975 (orbit steer 26) · 0 · 3 lines
+- 2026-11-01 · prompt-groom · W976 (orbit steer 38) · 0 · 1 line, 1 question as own ❓ line
+- 2026-11-01 · prompt-groom · W977 (orbit steer 41) · 0 · 1 line
+- 2026-11-01 · prompt-groom · W978 (orbit steer 46) · 0 · 1 line
 
 ## rounds
 
