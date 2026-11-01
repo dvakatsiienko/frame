@@ -55,6 +55,9 @@ describe('ciState', () => {
             ciState([{ __typename: 'StatusContext', state: 'FAILURE' }]),
         ).toBe('red');
     });
+    test('only skipped checks is none, never green', () => {
+        expect(ciState([{ ...ok, conclusion: 'SKIPPED' }])).toBe('none');
+    });
     test('no checks at all is none, never green', () => {
         expect(ciState([])).toBe('none');
     });
@@ -85,6 +88,18 @@ describe('peerVerdict', () => {
         );
         expect(peerVerdict('vitest', '5.0.5', dependants.slice(2))).toBe('ok');
     });
+    test('a hyphen range admits its ends and the majors between', () => {
+        const hy = [{ name: 'hy', peers: { react: '16.8.0 - 18' } }];
+        expect(peerVerdict('react', '17.0.0', hy)).toBe('ok');
+        expect(peerVerdict('react', '18.0.0', hy)).toBe('ok');
+        expect(peerVerdict('react', '19.0.0', hy)).toBe('blocked by hy');
+    });
+    test('a spaced «>= 8» admits 9, and a bare «>4» excludes 4', () => {
+        const spaced = [{ name: 'sp', peers: { eslint: '>= 8' } }];
+        expect(peerVerdict('eslint', '9.0.0', spaced)).toBe('ok');
+        const strict = [{ name: 'st', peers: { eslint: '>4' } }];
+        expect(peerVerdict('eslint', '4.9.0', strict)).toBe('blocked by st');
+    });
     test('an open «>=4 <6» range admits 5 and excludes 6', () => {
         const open = [{ name: 'open', peers: { vitest: '>=4 <6' } }];
         expect(peerVerdict('vitest', '5.1.0', open)).toBe('ok');
@@ -100,6 +115,13 @@ describe('pr body and pnpm why', () => {
             { from: '2.8.2', pkg: '@raycast/api', to: '2.10.1' },
             { from: '1.0.0', pkg: 'plain-pkg', to: '2.0.0' },
         ]);
+    });
+    test('a dependant with a version is read at that version', () => {
+        expect(
+            dependantNames([
+                { dependents: [{ name: 'runner', version: '1.2.0' }] },
+            ]),
+        ).toEqual(['runner@1.2.0']);
     });
     test('dependants skip the workspace projects', () => {
         expect(

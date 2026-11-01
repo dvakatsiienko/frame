@@ -85,5 +85,6 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   ] | if length == 0 then "🟢 milestones healthy" else .[] end)
 ' || echo "roadmap prefetch: linear unreachable"
 # a signed chunk whose body moved since the sign is refused by x lane dispatch; the boot names it first (2026-11-01: 14 drifted behind a green label check)
-drift=$(for t in FRM BYT; do x linear list --team "$t" --label signed 2>/dev/null | jq -r '.data.tickets[]? | select(.sign != "match") | "\(.id) (\(.sign))"'; done | paste -sd, - | sed 's/,/, /g')
-[ -n "$drift" ] && echo "🟡 signed chunks dispatch would refuse: $drift — re-sign, or a ✏️ changed line"
+# a started chunk is already dispatched, and dispatch lets its 🚀 line stand
+drift=$(for t in FRM BYT; do x linear list --team "$t" --label signed 2>/dev/null | jq -r '.data.tickets[]? | select(.sign != "match" and .stateType != "started") | "\(.id) (\(.sign))"'; done | paste -sd, - | sed 's/,/, /g')
+if [ -n "$drift" ]; then echo "🟡 signed chunks dispatch would refuse: $drift — re-sign, or a ✏️ changed line"; fi

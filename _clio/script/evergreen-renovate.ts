@@ -44,7 +44,8 @@ export function ciState(rollup: Check[]): CiState {
         return 'red';
     if (states.some((state) => ['PENDING', 'EXPECTED', ''].includes(state)))
         return 'pending';
-    return 'green';
+    // all skipped, neutral or stale means nothing ran
+    return states.includes('SUCCESS') ? 'green' : 'none';
 }
 
 export function ageDays(createdAt: string, now: Date) {
@@ -75,16 +76,23 @@ export function admitsMajor(range: string, major: number) {
     return range.split('||').some((alt) =>
         alt
             .trim()
+            // «16.8.0 - 18» is «>=16.8.0 <=18»; «>= 8» is «>=8»
+            .replace(/^(\S+)\s+-\s+(\S+)$/, '>=$1 <=$2')
+            .replace(/(>=|<=|>|<|=|\^|~)\s+/g, '$1')
             .split(/\s+/)
             .filter(Boolean)
             .every((part) => {
-                const match = /^(\^|~|>=|<=|>|<|=)?v?(\d+|\*|x)/i.exec(part);
+                const match = /^(\^|~|>=|<=|>|<|=)?v?(\d+|\*|x)(\.\d)?/i.exec(
+                    part,
+                );
                 if (!match) return true;
-                const [, op = '', value = ''] = match;
+                const [, op = '', value = '', minor] = match;
                 if (value === '*' || value.toLowerCase() === 'x') return true;
                 const bound = Number(value);
-                if (op === '>=' || op === '>') return major >= bound;
-                if (op === '<') return major < bound;
+                // «>4» is «>=5», while «>4.2» still admits a later 4.x
+                if (op === '>') return minor ? major >= bound : major > bound;
+                if (op === '>=') return major >= bound;
+                if (op === '<') return minor ? major <= bound : major < bound;
                 if (op === '<=') return major <= bound;
                 return major === bound;
             }),
@@ -111,7 +119,10 @@ export function dependantNames(why: WhyEntry[]) {
             why.flatMap(({ dependents = [] }) =>
                 dependents
                     .filter(({ depField }) => depField === undefined)
-                    .map(({ name }) => name),
+                    // the installed version's peers, never the latest's
+                    .map(({ name, version }) =>
+                        version ? `${name}@${version}` : name,
+                    ),
             ),
         ),
     ];
@@ -229,7 +240,7 @@ export interface Dependant {
 }
 
 export interface WhyEntry {
-    dependents?: { depField?: string; name: string }[];
+    dependents?: { depField?: string; name: string; version?: string }[];
 }
 
 interface Pr {
