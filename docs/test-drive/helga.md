@@ -225,6 +225,17 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-01 · prompt-groom · W983-W986 (orbit steer 60) · 0 · 4 lines, 3 questions as own ❓ lines
 - 2026-11-01 · prompt-groom · W987-W988 (orbit steer 61) · 0 · 2 lines, 2 questions as own ❓ lines
 - 2026-11-01 · prompt-groom · W989-W992 (orbit steer 62) · 0 · 4 lines, 2 questions as own ❓ lines
+- 2026-11-01 · prompt-groom · W994-W995 (orbit steer 64) · 0 · 2 lines, no questions
+- 2026-11-01 · prompt-groom · W996-W1001 (orbit steer 67) · 0 · 6 lines, 5 questions as own ❓ lines
+- 2026-11-01 · prompt-groom · W1002 (orbit steer 68) · 0 · 1 line, no questions
+- 2026-11-01 · prompt-groom · W1003 (orbit steer 69) · 0 · 1 line, 1 question as own ❓ line
+- 2026-11-01 · prompt-groom · W1004-W1007 (orbit steer 69, re-groomed; old W1003 superseded) · 0 · 4 lines, no questions
+- 2026-11-01 · prompt-groom · W1008-W1011 (orbit steer 70) · 0 · 4 lines, no questions
+- 2026-11-01 · prompt-groom · W1012 (orbit steer 72) · 0 · 1 line, no questions
+- 2026-11-01 · prompt-groom · W1013 (orbit steer 73) · 0 · 1 line, no questions
+- 2026-11-01 · prompt-groom · W1014-W1022 (dima 17:45) · 0 · 9 lines, 1 question as own ❓ line; wispr maps applied
+- 2026-11-01 · prompt-groom · o74 (orbit steer 74, not groomed) · 1 · raw file missing: grooms/2026-11-01-o74.raw.md does not exist
+- 2026-11-01 · prompt-groom · W1023-W1031 (dima 17:54) · 0 · 9 lines, no question marks; wispr maps applied; pasted_content wrapper dropped
 
 ## rounds
 
