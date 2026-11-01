@@ -43,6 +43,8 @@ floods; no other member prints one.
 
 **A remove or uninstall instruction to dima goes out only after its target's source is read**, never on an inference.
 
+**An ask that needs his hand names the exact place** — the built-in pane or his Chrome, the app, the screen — so his first try lands (11-01: an n8n sign-in went to Chrome, not the pane).
+
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 
 
