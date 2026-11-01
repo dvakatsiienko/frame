@@ -347,13 +347,13 @@ describe('--day', () => {
         expect(out.stdout).toContain('W7');
     });
 
-    test('a W-line homed by its stamp alone passes', () => {
-        expect(
-            run({
-                grooms: groomed('W7'),
-                pocket: { 'a.md': `W2 (${day} 10:00, dima): reworded` },
-            }).status,
-        ).toBe(0);
+    test('a sibling line sharing the stamp does not home a W-line', () => {
+        const out = run({
+            grooms: groomed('W7'),
+            pocket: { 'a.md': `W2 (${day} 10:00, dima): another line` },
+        });
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain(`W7 (${day}-1000.groomed.md) — no home`);
     });
 
     test('an ungroomed steer of the day reds in the prompt shape', () => {

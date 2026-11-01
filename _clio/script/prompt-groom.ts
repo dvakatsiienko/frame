@@ -219,20 +219,14 @@ export function homelessWishes(
         .map((file) => readFileSync(file, 'utf8'))
         .concat(linear.map(([, body]) => body))
         .join('\n');
-    // W-ids repeat across items, so a line is homed by its stamp or its text, never its id
+    // ids repeat across items and one prompt's lines share a stamp, so only the line's own text homes it
     const isHomed = (line: string) => {
-        const stamp = line.match(
-            /\(\d{4}-\d{2}-\d{2} (?:\d{2}:\d{2}|inbox), dima/,
-        )?.[0];
         const text = line
             .replace(/^\s*(?:[*-]\s+)?W\d+/, '')
             .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
             .replace(/^[\s·:]+/, '')
             .trim();
-        return (
-            (stamp !== undefined && homes.includes(stamp)) ||
-            (text !== '' && homes.includes(text))
-        );
+        return text !== '' && homes.includes(text);
     };
     return readdirSync(groomDir)
         .filter(
