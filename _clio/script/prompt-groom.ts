@@ -284,6 +284,12 @@ function transcriptSteers(transcript?: string) {
         });
 }
 
+export const ungroomedSteersToday = (
+    day: string,
+    noWishText: string,
+    transcript?: string,
+) => ungroomedSteers(transcriptSteers(transcript), day, noWishText);
+
 // the newest steer of that id
 const steerText = (id: string, transcript?: string) =>
     transcriptSteers(transcript).findLast((steer) => steer.id === id)?.text;
