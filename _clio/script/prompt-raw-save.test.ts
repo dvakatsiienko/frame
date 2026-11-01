@@ -27,14 +27,33 @@ describe('groomNudge', () => {
 });
 
 describe('siestaNudge', () => {
-    test('three of clio’s own commits make a siesta due', () => {
-        expect(siestaNudge(['🐞 a', '📜 b', '🔧 c', ''], '14:00')).toContain(
-            '3 of clio',
-        );
+    const log = (...commits: [string, ...string[]][]) =>
+        commits.map((c) => `\0${c.join('\n')}\n`).join('');
+    test('three files across clio’s commits make a siesta due', () => {
+        expect(
+            siestaNudge(
+                log(['🐞 a', 'x/a.ts', 'x/b.ts'], ['🔧 c', 'x/c.ts']),
+                '14:00',
+            ),
+        ).toContain('3 file(s)');
+    });
+    test('one skill file alone makes a siesta due', () => {
+        expect(
+            siestaNudge(
+                log(['📜 a', '_clio/plugin-clio/skills/boot/SKILL.md']),
+                '14:00',
+            ),
+        ).toContain('memory, rule or skill');
     });
     test('the pocket’s auto commits do not count', () => {
         expect(
-            siestaNudge(['🐞 a', '📜 pocket: pk-1 (auto)', '🔧 c'], '14:00'),
+            siestaNudge(
+                log(
+                    ['🐞 a', 'x/a.ts'],
+                    ['📜 pocket: pk-1 (auto)', 'p/1.md', 'p/2.md'],
+                ),
+                '14:00',
+            ),
         ).toBeUndefined();
     });
 });

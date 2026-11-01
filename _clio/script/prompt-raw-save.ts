@@ -45,11 +45,21 @@ export function groomNudge(
         : undefined;
 }
 
-// clio's own commits since the last siesta stamp, the pocket's auto commits left out; 3+ is a siesta due
-export function siestaNudge(subjects: string[], since: string) {
-    const mine = subjects.filter((s) => s && !s.endsWith('(auto)'));
-    return mine.length >= 3
-        ? `🌤️ siesta due: ${mine.length} of clio's commits since ${since} — load clio:siesta`
+// clio's commits since the siesta stamp as `git log --name-only --format=%x00%s`, the pocket's auto commits left out;
+// the siesta skill's trigger: 3+ files, or any memory, rule or skill file
+export function siestaNudge(log: string, since: string) {
+    const files = new Set(
+        log
+            .split('\0')
+            .map((commit) => commit.trim().split('\n'))
+            .filter(([subject]) => subject && !subject.endsWith('(auto)'))
+            .flatMap(([, ...paths]) => paths.filter(Boolean)),
+    );
+    const memory = [...files].some((f) =>
+        /(^|\/)(memory|rules|skills)\//.test(f),
+    );
+    return files.size >= 3 || memory
+        ? `🌤️ siesta due: ${files.size} file(s) of clio's since ${since}${memory ? ', memory, rule or skill among them' : ''} — load clio:siesta`
         : undefined;
 }
 
@@ -60,9 +70,9 @@ export function entryFor(prompt: string, at: Date) {
 }
 
 if (import.meta.main) {
-    const { prompt = '' } = JSON.parse(readFileSync(0, 'utf8') || '{}') as {
-        prompt?: string;
-    };
+    const { prompt = '', transcript_path } = JSON.parse(
+        readFileSync(0, 'utf8') || '{}',
+    ) as { prompt?: string; transcript_path?: string };
     const text = dimasText(prompt);
     if (text) {
         const now = new Date();
@@ -87,7 +97,9 @@ if (import.meta.main) {
             day,
             now.toLocaleTimeString('sv').slice(0, 5),
             noWishText,
-            ungroomedSteersToday(day, noWishText).map((s) => s.id),
+            ungroomedSteersToday(day, noWishText, transcript_path).map(
+                (s) => s.id,
+            ),
         );
         if (nudge) console.log(nudge);
         const stamp = path.join(
@@ -97,7 +109,7 @@ if (import.meta.main) {
         const since = existsSync(stamp)
             ? readFileSync(stamp, 'utf8').trim()
             : `${day}T00:00`;
-        const subjects = execFileSync(
+        const log = execFileSync(
             'git',
             [
                 '-C',
@@ -105,11 +117,12 @@ if (import.meta.main) {
                 'log',
                 `--since=${since}`,
                 '--grep=^Agent: clio',
-                '--format=%s',
+                '--name-only',
+                '--format=%x00%s',
             ],
             { encoding: 'utf8' },
-        ).split('\n');
-        const siesta = siestaNudge(subjects, since);
+        );
+        const siesta = siestaNudge(log, since);
         if (siesta) console.log(siesta);
     }
 }

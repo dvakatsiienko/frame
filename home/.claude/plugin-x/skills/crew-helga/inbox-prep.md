@@ -36,6 +36,7 @@ not content: leave it out. each item becomes one block:
 - a `prompt-groom` W-line is stamp-first: `W<n> (YYYY-MM-DD HH:MM, dima): text` (`inbox` in place of the time for an inbox day), never `W<n> · text (stamp)`
 - his voice, first person: «i want…», «my idea…», as he wrote it; never «he» or «dima»
 - a line he pasted from clio's reply (the line above his `←`, a quoted board line) is context, never his words: it names what his line answers and gets no W-line
+- in a `prompt-groom` chore a question is its own `W<n> … ❓` line, never an unnumbered ask
 - a question stays a question, in the asks and in the bullets: a suggestive one («map them yourself, rather than
   via helga?») lands as an ask, never as a decided bullet; «they are not git tracked yes?» is never the
   bullet «they are not git tracked»

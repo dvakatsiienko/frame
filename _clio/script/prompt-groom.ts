@@ -1,7 +1,7 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
-//        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose stamp and text are in no pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
+//        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose text is in no pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
 import { execFileSync } from 'node:child_process';
 import {
     existsSync,
@@ -218,15 +218,24 @@ export function homelessWishes(
     ]
         .map((file) => readFileSync(file, 'utf8'))
         .concat(linear.map(([, body]) => body))
-        .join('\n');
-    // ids repeat across items and one prompt's lines share a stamp, so only the line's own text homes it
+        .join('\n')
+        .split('\n');
+    // a stamp is shared by one prompt's lines and a short text recurs anywhere, so the id and the text home it together, on one line
     const isHomed = (line: string) => {
+        const id = line.match(/\bW\d+\b/)?.[0];
         const text = line
             .replace(/^\s*(?:[*-]\s+)?W\d+/, '')
             .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
             .replace(/^[\s·:]+/, '')
             .trim();
-        return text !== '' && homes.includes(text);
+        return (
+            id !== undefined &&
+            text !== '' &&
+            homes.some(
+                (home) =>
+                    new RegExp(`\\b${id}\\b`).test(home) && home.includes(text),
+            )
+        );
     };
     return readdirSync(groomDir)
         .filter(
@@ -392,7 +401,7 @@ if (import.meta.main) {
             );
         for (const [id, file] of homeless)
             console.log(
-                `🔴 ${id} (${file}) — no home: a groomed W-line whose stamp and text sit in no pocket task file, no spec.md and no recent linear body`,
+                `🔴 ${id} (${file}) — no home: a groomed W-line whose text sits in no pocket task file, no spec.md and no recent linear body`,
             );
         if (missing.length + homeless.length === 0 && linear)
             console.log(

@@ -331,11 +331,20 @@ describe('--day', () => {
         expect(out.stdout).toContain(`W7 (${day}-1000.groomed.md) — no home`);
     });
 
-    test('a groomed W-line whose text is in a recent linear body passes', () => {
+    test('a groomed W-line whose id and text share a line of a recent linear body passes', () => {
         expect(
-            run({ grooms: groomed('W7'), linear: 'folded ship it here' })
+            run({ grooms: groomed('W7'), linear: '* W7 folded: ship it here' })
                 .status,
         ).toBe(0);
+    });
+
+    test('a W-line text found without its id does not home it', () => {
+        const out = run({
+            grooms: groomed('W7'),
+            linear: 'folded ship it here',
+        });
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain(`W7 (${day}-1000.groomed.md) — no home`);
     });
 
     test('a W-id alone does not home a W-line, ids repeat across items', () => {
@@ -373,7 +382,7 @@ describe('--day', () => {
                     [`${day}-o68.groomed.md`]: `W1 (${day} 09:15, dima, o68 steer): other wish\n`,
                     [`${day}.no-wish.md`]: 'o69 — just a thanks\n',
                 },
-                pocket: { 'a.md': 'other wish' },
+                pocket: { 'a.md': 'W1 other wish' },
                 prompts: '',
                 steers: [steer('o68', 'other'), steer('o69', 'thanks')],
             }).status,
@@ -424,7 +433,7 @@ describe('--day', () => {
         expect(
             run({
                 grooms: groomed('W7'),
-                pocket: { 'a.md': 'see ship it here' },
+                pocket: { 'a.md': 'W7 see ship it here' },
             }).status,
         ).toBe(0);
     });
