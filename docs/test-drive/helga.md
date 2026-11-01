@@ -202,6 +202,13 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-10-30 · prompt-groom · 0 · 1 · 1906 rework: W777-W794 added, Q1 what is planned
 - 2026-11-01 · inbox-prep · 1 · 0 · inbox-prep 2026-11-01: 1 item, 2 asks, check 2/2 exit 0; PK-290 home kept
 - 2026-11-01 · prompt-groom · W795-W801 (prompt 1), W802-W818 (prompt 2) · 0 · 2 prompts groomed, 2 files, map sent
+- 2026-11-01 · prompt-groom · W819 (o1), W820 (o2) · 0 · 2 orbit steers groomed, 2 files
+- 2026-11-01 · prompt-groom · W821-W844 · 0 · 1 prompt groomed, 24 W-lines, 4 questions as W-lines
+- 2026-11-01 · prompt-groom · W845-W846 (o7), W847-W849 (o8) · 0 · 2 orbit steers groomed, 5 W-lines, 1 question as W-line
+- 2026-11-01 · prompt-groom · W850-W861 · 0 · 1 raw file, 12 W-lines, 2 questions as own W-lines
+- 2026-11-01 · prompt-groom · W862 (1502), W863-W866 (1506), W867-W868 (o12) · 0 · 3 items groomed, 7 W-lines, 0 questions as own W-lines
+- 2026-11-01 · prompt-groom · W871-W878 (1508) · 0 · 8 lines, side-channel probe + measure/close
+- 2026-11-01 · prompt-groom · W879-W882 (1523) · 0 · 4 lines, 2 questions as own ❓ lines
 
 ## rounds
 
