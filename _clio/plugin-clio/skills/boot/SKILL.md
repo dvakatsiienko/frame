@@ -35,6 +35,7 @@ with its tickets in `sortOrder`. **that block is the answer to «what's next»**
 and the next ticket from it; never re-query what it already printed.
 
 ## 3. inbox sweep 📬
+- the boot prompt itself, past its slash line, carries his wishes: `node script/prompt-groom.ts <its HH:MM>` rides helga's first chore, so the board plans from groomed lines
 - non-empty → helga preps it first: start or revive **🎀 helga** right after the digest (the start
   command: `docs/test-drive/helga.md` § the start; a sidecar needs no `x:crew-lead`), send it an
   `inbox-prep` brief (blocking) that names the coordinator as `🦉 clio`, exactly as ListAgents prints it (a session id or the desktop title bounced its receipt, 2026-10-18), and do steps 4–5 while it runs; its receipt lands → read `inbox-helga.md`

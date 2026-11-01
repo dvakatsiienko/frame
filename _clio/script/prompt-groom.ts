@@ -72,7 +72,7 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
 // the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of helga's prep
 export const groomStep = (hhmm: string) =>
     hhmm.startsWith('inbox')
-        ? "copy that day's checked inbox-helga.md to grooms/<day>-inbox.groomed.md (boot step 3) with each item's `raw drop (<day> inbox, dima): …` note in it, or re-prep with helga"
+        ? "copy that day's checked inbox-helga.md byte for byte to grooms/<day>-inbox.groomed.md (boot step 3) and fix the pocket note to one quote line per note, never the groomed file, or re-prep with helga"
         : `run \`node script/prompt-groom.ts ${hhmm}\``;
 
 export function ungroomedStamps(
