@@ -25,5 +25,5 @@ dima is on a small screen with a software keyboard, often lying down. every repl
 - **the ⏳ fence comes back** (mods draw nothing on mobile): follow x-mod-stash's no-board reminder, which every prompt carries while this mode is on; an orbit mark made on the mac still counts.
 - **🔭 stays the reply's last line** while it is on, even if the mac moves it into the band: his phone draws no mods
 
-mode ends on dima's word: «back at the mac», `/mobile-mode off`, or a 🛎️ or ↩️ press in the board's orbit (he is at the mac; a note, a speak press or a row's ↗ is not). a
+mode ends on dima's word: «back at the mac», «mobile mode off» typed plain, `/mobile-mode off`, or a 🛎️ or ↩️ press in the board's orbit (he is at the mac; a note, a speak press or a row's ↗ is not). a
 new topic does not end it; once it ends the fence goes and the asks live in orbit again.
