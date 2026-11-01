@@ -257,6 +257,25 @@ export function homelessWishes(
 
 const W_LINE = /^\s*(?:[*-]\s+)?W\d+\b.*$/gm;
 
+// a prompt groom's (never the inbox prep's) `❓ ask` line with no W-id: [file, line]
+export function unnumberedAsks(day: string, dir: string) {
+    return readdirSync(dir)
+        .filter(
+            (name) =>
+                name.startsWith(`${day}-`) &&
+                name.endsWith('.groomed.md') &&
+                !name.endsWith('-inbox.groomed.md'),
+        )
+        .flatMap((name) =>
+            readFileSync(path.join(dir, name), 'utf8')
+                .split('\n')
+                .filter(
+                    (line) => /❓\s*ask/i.test(line) && !/\bW\d+\b/.test(line),
+                )
+                .map((line) => [name, line.trim()] as const),
+        );
+}
+
 // a W-line added since HEAD must carry its prompt's stamp, or it slips past the groom check
 export function newUnstamped(text: string, head: string) {
     const before = new Set(head.match(W_LINE) ?? []);
@@ -403,11 +422,18 @@ if (import.meta.main) {
             console.log(
                 `🔴 ${id} (${file}) — no home: a groomed W-line whose id and text share no line of a pocket task file, no spec.md and no recent linear body`,
             );
-        if (missing.length + homeless.length === 0 && linear)
+        // a prompt groom's question is a W-line; an unnumbered ask line is invisible to the home check
+        const asks = existsSync(groomDir) ? unnumberedAsks(day, groomDir) : [];
+        for (const [file, line] of asks)
+            console.log(
+                `🔴 ${file} — an unnumbered ask, no home check sees it: ${line.slice(0, 60)} — make it a \`W<n> … ❓\` line`,
+            );
+        const reds = missing.length + homeless.length + asks.length;
+        if (reds === 0 && linear)
             console.log(
                 `🟢 ${day} at ${now}: every prompt older than 10 minutes and every steer has a groom or a no-wish line, and every groomed W-line has a home (scanned: ${promptDir}/${day}.md, ${groomDir}, ${pocketDir}, ${home}/frame/.scratch/**/spec.md, linear tickets updated yesterday or today)`,
             );
-        process.exitCode = missing.length + homeless.length ? 1 : 0;
+        process.exitCode = reds ? 1 : 0;
     } else if (args[0] === '--check' || args[0] === '--linear') {
         const day = new Date().toLocaleDateString('sv');
         // --linear: every ticket updated yesterday or today, a newly born one included (the halt's door; a halt after midnight still sees the day before)

@@ -17,7 +17,29 @@ import {
     rawPromptAt,
     strayRaws,
     ungroomedStamps,
+    unnumberedAsks,
 } from './prompt-groom.ts';
+
+describe('unnumberedAsks', () => {
+    const day = '2026-11-01';
+    const dir = mkdtempSync(join(tmpdir(), 'asks-'));
+    writeFileSync(
+        join(dir, `${day}-1419.groomed.md`),
+        `W1 (${day} 14:19, dima): a wish\n❓ ask (${day} 14:19, dima): what is it?\nW2 (${day} 14:19, dima): a numbered one ❓\n`,
+    );
+    writeFileSync(
+        join(dir, `${day}-inbox.groomed.md`),
+        '❓ asks:\n  1. the inbox prep keeps its own shape ❓ ask\n',
+    );
+    test('a prompt groom’s ask with no W-id is named', () => {
+        expect(unnumberedAsks(day, dir)).toEqual([
+            [
+                `${day}-1419.groomed.md`,
+                `❓ ask (${day} 14:19, dima): what is it?`,
+            ],
+        ]);
+    });
+});
 
 const day = '2026-10-26';
 
