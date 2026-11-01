@@ -66,6 +66,7 @@ proposed approach, get the word — THEN execute.** It never means hunt-and-clos
 
 - resolve-in-place is for **freebies** (§ the freebie rule), done instead of folded — and still reported, every time
 - **grooming walks run the freebie test on each ticket** (§ the freebie rule): a pass is solved in the walk and reported; the rest list for dima's word
+- **«do everything, ask me a round»** (dima, 11-01, W1007 «your part is to execute»): run it all, one ask round at the end; the window is his
 - the tell this exists: a session fixed and closed two tickets upfront where Dima expected a
   proposal; his read — *«proactivity is a nice thing but not always»*
 
