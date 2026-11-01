@@ -386,7 +386,7 @@
             "id": "6:309",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⌨️ claude --bg</b><br><span style=\"font-size:20px\">the default door for coding</span>",
+            "value": "<b style=\"font-size:26px\">⌨️ claude --bg</b><br><span style=\"font-size:20px\">the default door for coding; every codie runs Opus 5.5, no --bg thread of any role on Sonnet yet</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -450,7 +450,7 @@
             "id": "6:325",
             "parent": "6:294",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🍴 a side channel</b><br><span style=\"font-size:20px\">clio:side-channel opens one, fresh or forked; banner, edits only in its own worktree, side-labelled pocket items, the boot takes them over</span>",
+            "value": "<b style=\"font-size:26px\">🍴 a side channel</b><br><span style=\"font-size:20px\">clio:side-channel opens a fresh or forked 🦉 clio (side) session, both doors proven; banner, edits only in its own worktree, the boot takes them over</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -578,7 +578,7 @@
             "id": "6:360",
             "parent": "6:349",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFECBD;strokeColor=#FFC943;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔎 names its sixth sense</b><br><span style=\"font-size:20px\">on a sixth sense yes</span>",
+            "value": "<b style=\"font-size:26px\">🔎 names its sixth sense</b><br><span style=\"font-size:20px\">on a sixth sense yes; one a lane, on the first chunk only; a joiner chunk's gets a next: message at its pr or codie's final, never at the steer</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -946,7 +946,7 @@
             "id": "6:482",
             "parent": "6:463",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">📝 retro + glide end</b><br><span style=\"font-size:20px\">beside the lane plan in ~/.local/state/x/lanes; the glide ends at siesta</span>",
+            "value": "<b style=\"font-size:26px\">📝 retro + glide end</b><br><span style=\"font-size:20px\">beside the lane plan in ~/.local/state/x/lanes; the glide ends at siesta (hook: 🌤️ siesta due; step 0 prints the old stamp, writes the new)</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1343,7 +1343,7 @@
             "id": "23:238",
             "parent": "7:236",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#FFE0C2;strokeColor=#FF9E42;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎀 helga grooms it</b><br><span style=\"font-size:20px\">every wish-bearing prompt; his raw words land in the notes at once</span>",
+            "value": "<b style=\"font-size:26px\">🎀 helga grooms it</b><br><span style=\"font-size:20px\">every prompt and orbit steer of his; the prompt hook nudges on an ungroomed one; his raw words land in the notes at once</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1359,7 +1359,7 @@
             "id": "23:242",
             "parent": "7:236",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 folded into W-lines</b><br><span style=\"font-size:20px\">his words, one point a line, ❓ for his questions; copied, never paraphrased</span>",
+            "value": "<b style=\"font-size:26px\">🦉 folded into W-lines</b><br><span style=\"font-size:20px\">his words, one point a line, a question its own W<n> … ❓ line; copied, never paraphrased; homed only where id and text share a line</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1743,7 +1743,7 @@
             "id": "23:380",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 clio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks)</span>",
+            "value": "<b style=\"font-size:26px\">🦉 clio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks); a new cli or mods chunk merges into a fitting signed one, else shaped at birth, fixes ahead of features</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1759,7 +1759,7 @@
             "id": "23:384",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">🦭 the seal at dispatch: the spec's exit lines gradable; no exit lines, no summon</span>",
+            "value": "<b style=\"font-size:26px\">⚙️ x brief preflight</b><br><span style=\"font-size:20px\">🦭 the seal at dispatch: exit lines gradable, else no summon; x lane dispatch --apply writes the four marks: signed off, In Progress, codie delegate, 🚀 line</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2031,7 +2031,7 @@
             "id": "23:490",
             "parent": "23:487",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🔀 land — clio approves + merges</b><br><span style=\"font-size:20px\">sixth sense clean (≤3 rounds, a local review each), ci once at «final»; a self-edit or the brake waits for dima</span>",
+            "value": "<b style=\"font-size:26px\">🔀 land — clio approves + merges</b><br><span style=\"font-size:20px\">sixth sense clean (≤3 rounds, a local review each), ci once at «final»; the merge turn runs x lane landed --apply; a self-edit or the brake waits for dima</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2079,7 +2079,7 @@
             "id": "23:502",
             "parent": "23:487",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🎫 close, with a closing word</b><br><span style=\"font-size:20px\">proposed, never performed; 3 auto-close cases</span>",
+            "value": "<b style=\"font-size:26px\">🎫 close, with a closing word</b><br><span style=\"font-size:20px\">proposed, never performed; 4 auto-closes, the 4th «landed»: done test ran live, closed in the merge turn and named; an open ❓ or unmet W-line → Todo, ↩️ line</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2159,7 +2159,7 @@
             "id": "fx:sweep",
             "parent": "23:487",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">⚙️ the halt's lingering sweep</b><br><span style=\"font-size:20px\">In Progress, landed, asks still open → Todo; a ↩️ line names why and what is left</span>",
+            "value": "<b style=\"font-size:26px\">⚙️ the halt's lingering sweep</b><br><span style=\"font-size:20px\">x lane landed runs first; landed tickets close, the rest listed at once; an open ask → Todo, a ↩️ line names why and what is left</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2382,7 +2382,7 @@
             "id": "7:233",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
-            "value": "x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-10-27",
+            "value": "x:crew-lead · x:crew-subagent · crew-dna · drawn one to one, 2026-10-21, synced 2026-11-01",
             "vertex": "1"
         },
         "geometry": {
@@ -2414,7 +2414,7 @@
             "id": "7:235",
             "parent": "1",
             "style": "strokeColor=none;fillColor=none;html=0;whiteSpace=nowrap;align=left;verticalAlign=top;spacing=0;fontFamily=Helvetica Neue;fontSize=28;fontStyle=0;fontColor=#444444;",
-            "value": "craft-pm · clio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-10-27 · ⚠️ = my reading, not in the files",
+            "value": "craft-pm · clio:pm · craft-fleet-flow · drawn one to one, 2026-10-22 · synced 2026-11-01 · ⚠️ = my reading, not in the files",
             "vertex": "1"
         },
         "geometry": {
