@@ -2,7 +2,7 @@
 date: 2026-11-01
 slug: the-pm-module-closed-the-roadmap-split-in-two
 tickets: [FRM-419, FRM-460, FRM-481, FRM-482, FRM-443, FRM-483, FRM-484, FRM-480, BYT-94, BYT-106, BYT-129, BYT-128, FRM-360, FRM-387]
-posted: {health: no}
+posted: {health: fleet}
 ---
 
 # 🗞️ clio's gazette · the pm module closed, the roadmap split in two
