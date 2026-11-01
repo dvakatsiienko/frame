@@ -16,6 +16,7 @@ one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a summoned session, an
   unanswered question put to dima, an unpushed commit
 - **side channels and forks first**: each live `(side` or `(fork` session (`list_sessions`) sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged now (`clio:side-channel`), kept or dropped only on his word
+- **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door; a tree it keeps prints why
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
   — every hit without the `standing` label: landed and proven is closed now and named (closing.md, landed); the rest
@@ -23,7 +24,6 @@ one short message, then straight into phase 1:
   with asks left open moves to Todo, never closes, and its `## signed` block gets
   `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again; its way back is a re-sign (`shape-lane-dispatch` § 6)
 - **the stop list holds the `--bg` members and the lane codies' desktop threads** (the digest names them); a session it marks 👤 is dima's own and stays as he left it.
-- **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door; a tree it keeps prints why
 - **the codie roster, two questions per codie: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
   `claude agents --json` is the check, never memory. **a codie the CST
   calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎀 helga is on the roster too**: `claude stop <its id>` beside crow's, the boot starts it fresh. **crow is on the roster too** — its stop is phase 5's last line, named in this
