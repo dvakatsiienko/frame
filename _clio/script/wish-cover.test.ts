@@ -14,6 +14,7 @@ import {
     citedIds,
     itemsForTicket,
     missingText,
+    normalize,
     repeatedIds,
     sectionsFor,
     uncovered,
@@ -288,5 +289,18 @@ describe('wish-cover', () => {
         expect(
             missingText('- W7\n- W8 real words', ['W7 W8 real words']),
         ).toEqual([['W7', '']]);
+    });
+});
+
+describe('normalize, against linear’s rewrites of a body', () => {
+    test('an autolinked domain reads as the word that was written', () => {
+        expect(normalize('the [draw.io](<http://draw.io>) mini flow')).toBe(
+            normalize('the draw.io mini flow'),
+        );
+    });
+    test('an escaped bracket or tilde reads as written', () => {
+        expect(normalize('W201 (13:34) \\[pasted\\] the \\~35 % loss')).toBe(
+            normalize('W201 (13:34) [pasted] the ~35 % loss'),
+        );
     });
 });

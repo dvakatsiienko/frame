@@ -53,13 +53,18 @@ export function sectionsFor(draft: string, id: string) {
 }
 
 export function normalize(text: string) {
-    return text
-        .replace(/\[[^\]]*\]\(<?([^)>\s]+)>?\)|<(https?:[^>\s]+)>/g, '$1$2')
-        .toLowerCase()
-        .replace(/[«»“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-        .replace(/\s+/g, ' ')
-        .trim();
+    return (
+        text
+            // linear escapes markdown it would otherwise render: \[ \] \_ \* \` \~ and the rest
+            .replace(/\\([[\]_*`#~<>|+.!-])/g, '$1')
+            // linear autolinks a bare id, url or domain as [text](<url>): its text is what was written
+            .replace(/\[([^\]]*)\]\(<?[^)>\s]+>?\)|<(https?:[^>\s]+)>/g, '$1$2')
+            .toLowerCase()
+            .replace(/[«»“”]/g, '"')
+            .replace(/[‘’]/g, "'")
+            .replace(/\s+/g, ' ')
+            .trim()
+    );
 }
 
 // cited W-lines whose own text no draft carries
