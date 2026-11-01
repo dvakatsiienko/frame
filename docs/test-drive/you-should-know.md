@@ -1,6 +1,6 @@
 ---
 status: frozen
-until: 2026-10-30
+until: 2026-11-02
 ---
 
 # test drive — cc-plugin-you-should-know

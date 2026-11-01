@@ -1,6 +1,6 @@
 ---
 status: frozen
-until: 2026-10-31
+until: 2026-11-02
 dies-when: the verdict line below is written
 ---
 

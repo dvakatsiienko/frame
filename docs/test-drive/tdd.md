@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-18
+until: 2026-11-19
 fits: codie
 ---
 

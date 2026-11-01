@@ -200,6 +200,8 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-10-30 · prompt-groom · 1 · 0 · o56 W764-W765 0 asks
 - 2026-10-30 · prompt-groom · 0 · 1 · 1856 rework: W766-W776 added, dictation not context
 - 2026-10-30 · prompt-groom · 0 · 1 · 1906 rework: W777-W794 added, Q1 what is planned
+- 2026-11-01 · inbox-prep · 1 · 0 · inbox-prep 2026-11-01: 1 item, 2 asks, check 2/2 exit 0; PK-290 home kept
+- 2026-11-01 · prompt-groom · W795-W801 (prompt 1), W802-W818 (prompt 2) · 0 · 2 prompts groomed, 2 files, map sent
 
 ## rounds
 
