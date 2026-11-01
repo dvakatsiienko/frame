@@ -40,8 +40,8 @@ boot prefetch prints it; **that block answers «what's next».**
   only on his tick: its start date and first milestone set, its milestone queued (dima,
   2026-10-22, PK-103 round 3); a project's status follows the milestone queue, never the tick (grill 7 Q3)
 - **one initiative, its steps are the phases** (grill 7): the cross-project milestone order lives in the
-  initiative body's `## the milestone queue`, reordered the turn he picks; the boot prints the phase,
-  the next 3 steps, the next 7 milestones and the health line (two queue checks, no clock)
+  initiative body's two queues, `## the main road` and `## the side tracks queue` (FRM-460, 2026-11-01), reordered the turn he picks; the boot prints the phase,
+  the next 3 steps, the first 5 of each queue and the health line (two queue checks, no clock)
 
 ## the branches — notes in `dima-strategy-branches.md`, read on demand
 
