@@ -132,7 +132,7 @@
             "id": "3:273",
             "parent": "3:247",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🪐 6 · the summon word</b><br><span style=\"font-size:20px\">his pick of signed chunks is the summon; a quick lane's pick says sixth sense yes or no</span>",
+            "value": "<b style=\"font-size:26px\">🪐 6 · the summon word</b><br><span style=\"font-size:20px\">his pick of signed chunks (a quick lane's too) is the summon; a quick lane's pick says sixth sense yes or no</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -1743,7 +1743,7 @@
             "id": "23:380",
             "parent": "23:361",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#C2E5FF;strokeColor=#3DADFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🦉 clio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks); a new cli or mods chunk merges into a fitting signed one, else shaped at birth, fixes ahead of features</span>",
+            "value": "<b style=\"font-size:26px\">🦉 clio:shape-lane</b><br><span style=\"font-size:20px\">grill the chunk, then ✍️ sign it: done test, milestone, lane, repo, its order (blocks); a new cli or mods chunk merges into a fitting signed one, else shaped at birth, fixes ahead of features; the hash covers the raw body, sortOrder rewritten after the sign</span>",
             "vertex": "1"
         },
         "geometry": {
@@ -2254,7 +2254,7 @@
             "id": "30:440",
             "parent": "30:434",
             "style": "rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=80;fillColor=#DCCCFF;strokeColor=#874FFF;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🙋‍♂️ a step opens on his tick</b><br><span style=\"font-size:20px\">a close asks «open N+1?»; then its start date + first milestone, queued; status follows the queue</span>",
+            "value": "<b style=\"font-size:26px\">🙋‍♂️ a step opens on his tick</b><br><span style=\"font-size:20px\">a close asks «open N+1?»; then its start date + first milestone, queued; status follows its queue: the main road (apps → cv) or the side tracks (ci, cli, mods)</span>",
             "vertex": "1"
         },
         "geometry": {
