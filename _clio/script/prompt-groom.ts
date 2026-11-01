@@ -15,6 +15,7 @@ import {
 import path from 'node:path';
 
 import { steersOf } from './chat-lines.ts';
+import { normalize } from './wish-cover.ts';
 
 const home = process.env.HOME ?? '';
 const promptDir =
@@ -228,12 +229,15 @@ export function homelessWishes(
             .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
             .replace(/^[\s·:]+/, '')
             .trim();
+        // linear rewrites a body it stores (\~ for ~, autolinks), so both sides read through wish-cover's normalize
+        const wanted = normalize(text);
         return (
             id !== undefined &&
             text !== '' &&
             homes.some(
                 (home) =>
-                    new RegExp(`\\b${id}\\b`).test(home) && home.includes(text),
+                    new RegExp(`\\b${id}\\b`).test(home) &&
+                    normalize(home).includes(wanted),
             )
         );
     };
