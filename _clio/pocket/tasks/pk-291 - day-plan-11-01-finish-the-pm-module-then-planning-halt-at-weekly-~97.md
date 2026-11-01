@@ -4,7 +4,7 @@ title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 
 status: open
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
-updated_date: '2026-11-01T13:07:00Z'
+updated_date: '2026-11-01T13:33:00Z'
 labels:
   - s
 dependencies: []
@@ -70,4 +70,17 @@ W866 (2026-11-01 15:06, dima): before planning, once all pm-related stuff is res
 W869 (2026-11-01 14:19, dima): what is the «queue»? ❓
 W870 (2026-11-01 14:19, dima): can you add it to a queue? ❓
 W869–W870 answered 14:31 (the queue explained, x screens framed added)
+
+W871 (2026-11-01 15:08, dima): previously, we made your side channel work, and we probed only fork.
+W872 (2026-11-01 15:08, dima): fork was proven to be working, but we didn't test it on another site, the fresh thread, fully.
+W873 (2026-11-01 15:08, dima): while you're not working in, e.g., not fork but a fresh side channel, let's probe it now.
+W874 (2026-11-01 15:08, dima): go create one.
+W875 (2026-11-01 15:08, dima): i'll solve your things with a side channel.
+W876 (2026-11-01 15:08, dima): and measure it right away.
+W877 (2026-11-01 15:08, dima): if it works, then the second half of a test is done, and you can close the ticket related to side channel soft work.
+W878 (2026-11-01 15:08, dima): summon from scratch should work, and the related ticket can be closed.
+W879 (2026-11-01 15:23, dima): final check, is the blueprint in a healthy state, reflecting the full flow we currently have, 100%? ❓
+W880 (2026-11-01 15:23, dima): anything drifted? ❓
+W881 (2026-11-01 15:23, dima): if no drift is spotted, i approve the close of the pm module, and if all is good, go and second wind.
+W882 (2026-11-01 15:23, dima): otherwise, sync the blueprint with the current state if some drifts are spotted, and also second wind and close everything related to the pm module.
 <!-- SECTION:NOTES:END -->
