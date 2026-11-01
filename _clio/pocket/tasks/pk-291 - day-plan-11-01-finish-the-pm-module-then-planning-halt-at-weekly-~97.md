@@ -4,7 +4,7 @@ title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 
 status: open
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
-updated_date: '2026-11-01T12:27:00Z'
+updated_date: '2026-11-01T12:42:00Z'
 labels:
   - s
 dependencies: []
@@ -47,4 +47,14 @@ W818 (2026-11-01 14:19, dima): /x:mobile-mode 10min
 <!-- SECTION:NOTES:BEGIN -->
 W819 (2026-11-01 14:19, dima, o1 steer): plan to halt at ~97-98% so i have space to play nms with cw thread. (i chat while playing)
 W820 (2026-11-01 14:19, dima, o2 steer): not yet, but maybe.
+
+W821 (2026-11-01 14:38, dima): 🫟 x screens framed ← what is it about? ❓
+W822 (2026-11-01 14:38, dima): why was it added at the end of the queue? ❓
+W823 (2026-11-01 14:38, dima): o4: close.
+W824 (2026-11-01 14:38, dima): o5: close.
+W825 (2026-11-01 14:38, dima): o6: no verdict yet, a question instead (W826).
+W826 (2026-11-01 14:38, dima): what is -n? ❓
+W832 (2026-11-01 14:38, dima): mobile mode off.
+W817 (2026-11-01 14:19, dima): also, when you are waiting for reviews, find some stuff to solve yourself.
+answered 2026-11-01 14:4x in clio's reply: W821, W822, W826, W827
 <!-- SECTION:NOTES:END -->
