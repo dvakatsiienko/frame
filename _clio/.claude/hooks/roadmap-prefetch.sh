@@ -19,7 +19,7 @@ if [ "${1:-}" = --outline ]; then
   [ -n "$body" ] && printf '%s\n' "$body" > "$out" && sed -n '3,$p' "$out"
   exit 0
 fi
-linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\"]}}, projectMilestone: {null: true}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
+linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\", \"duplicate\"]}}, projectMilestone: {null: true}, labels: {every: {name: {nin: [\"standing\", \"someday\", \"stash\"]}}}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
 | jq -r '
   .data as $d |
   "-- the roadmap board: copy it as is into the opening reply, drift line as fixed (dima, 2026-10-25) --",
