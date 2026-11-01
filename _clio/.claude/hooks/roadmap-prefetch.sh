@@ -14,7 +14,7 @@ if [ "${1:-}" = --outline ]; then
     "- order: " + ([$d.initiative.content | split("\n")[] | select(test("^[0-9]+\\. ")) | sub("^[0-9]+\\. "; "") | (split(" — ")[0]) + (if test("\\(done [0-9]") then " ✅" else "" end)] | join(" → ")),
     "- now: " + (($desc | capture("now: (?<n>[^.]*)").n) // "?"),
     "- next: " + (($desc | capture("next: (?<n>[^.]*)").n) // "?"),
-    "- started mils: " + ([$d.projectMilestones.nodes[] | ([.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length) as $done | (.issues.nodes | length) as $all | select($done > 0 and $done < $all) | "\(.project.name) · \(.name) \($done)/\($all)"] | join(", ") | if . == "" then "none" else . end)
+    "- started mils: " + ([$d.projectMilestones.nodes[] | ([.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate")))] | length) as $done | (.issues.nodes | length) as $all | select($done > 0 and $done < $all) | "\(.project.name) · \(.name) \($done)/\($all)"] | join(", ") | if . == "" then "none" else . end)
   ') || exit 0
   [ -n "$body" ] && printf '%s\n' "$body" > "$out" && sed -n '3,$p' "$out"
   exit 0
@@ -49,7 +49,7 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   "",
   (["**the main road**", $mainLive], ["**the side tracks**", $sideLive] | .[0], "",
     (.[1][:5] | to_entries[] | .value as $m
-      | "\([$m.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\($m.issues.nodes | length)" as $count
+      | "\([$m.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate")))] | length)/\($m.issues.nodes | length)" as $count
       | "\(.key + 1). \($m.name) \($count)"),
     ""),
   (if ($drift | length) > 0 then "🧾 status drift, fix it this turn: \($drift | join(" · "))" else empty end),
@@ -62,8 +62,8 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   ($d.projectRelations.nodes | map("\(.project.name) \(.anchorType) → \(.relatedProject.name) \(.relatedAnchorType)") | join("\n") | if . == "" then "none" else . end),
   "-- open milestones, tickets in execution order (sortOrder) --",
   ($d.projectMilestones.nodes
-    | map(select([.issues.nodes[] | select(.state.type != "completed" and .state.type != "canceled")] | length > 0))
-    | map("\(.project.name) · \(.name) · \([.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\(.issues.nodes | length) · " + ([.issues.nodes[] | select(.state.type != "completed" and .state.type != "canceled")] | sort_by(.sortOrder) | map(.identifier) | join(" → ")))
+    | map(select([.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate") | not))] | length > 0))
+    | map("\(.project.name) · \(.name) · \([.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate")))] | length)/\(.issues.nodes | length) · " + ([.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate") | not))] | sort_by(.sortOrder) | map(.identifier) | join(" → ")))
     | join("\n")),
   "-- milestone health --",
   ([(if $d.initiative.projects.pageInfo.hasNextPage then "🟡 initiative: projects capped at 20, health incomplete" else empty end),
@@ -72,7 +72,7 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
     ($d.projectMilestones.nodes[] | select(.issues.nodes | length >= 30) | "🟡 \(.project.name) · \(.name): 30+ tickets, its counts capped"),
     # a side lane never stalls: the next 4 chunks of each of the first 3 side tracks are signed or already dispatched (dima, 2026-11-01, o46)
     ($sideLive[:3][] | .name as $n
-      | [.issues.nodes[] | select(.state.type != "completed" and .state.type != "canceled")] | sort_by(.sortOrder) | .[:4]
+      | [.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate") | not))] | sort_by(.sortOrder) | .[:4]
       | [.[] | select((.state.type | IN("triage", "backlog", "unstarted")) and ([.labels.nodes[].name] | index("signed") == null)) | .identifier]
       | select(length > 0) | "🟡 side track \($n): next chunks unsigned — \(join(", "))"),
     ($d.initiative.projects.nodes[] | .name as $p

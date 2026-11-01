@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → pm revamp ✅ → speak → chords → trophy-sys → portfolio
 - now: step 3 closes with planning, speak v2 next
 - next: chords v2, trophy-sys v2, the cv; beside: ci → cli, mods
-- started mils: fleet · 🐉 fleet tools sharpened 7/14, fleet · 🐋 the board reads true 4/6, cli · 🐉 review loop gets verbs 7/25, fleet · 🐋 safer, quieter mods 11/19, fleet · 🐋 pm revamp tails landed 9/10
+- started mils: fleet · 🐉 fleet tools sharpened 7/15, fleet · 🐋 the board reads true 4/6, cli · 🐉 review loop gets verbs 9/22, fleet · 🐋 safer, quieter mods 10/19, fleet · 🐋 pm revamp tails landed 8/9
