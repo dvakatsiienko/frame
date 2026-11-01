@@ -4,8 +4,9 @@ read before any close, cancel, merge or reshape proposal (`clio:pm` § write and
 
 ## closing — proposed, never performed
 
-auto-close is for three named cases, each said out loud: **stale** (the body proves it), **dupe**
-(the surviving id named), **freebie done in place** (shipped this turn). everything else goes to a
+auto-close is for four named cases, each said out loud: **stale** (the body proves it), **dupe**
+(the surviving id named), **freebie done in place** (shipped this turn), **landed** (merged, its done
+test run live, closed in the merge turn: dima, 2026-11-01, «no hanged tickets»). everything else goes to a
 printed «closable, because …» list and waits for his word.
 
 - each entry passes the close test: what became better (the closing word), what strays (findings,

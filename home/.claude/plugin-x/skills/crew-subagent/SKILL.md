@@ -9,7 +9,7 @@ a subagent is disposable: it runs inside your session, dies with it, and dima ca
 
 ## when to delegate
 
-- **a chore goes to a card** (dima, 2026-10-04: «delegate more dumb work to sonnet»): `helper-lite` (Haiku 5.5) for reads, counts and spelled-out edits; `helper` (Sonnet 5.5) when an edit needs care; `researcher` (Opus 5.5) for a bounded question answered from sources; `wisphunter` (Opus 5.5) for every code review of a diff, never `researcher` or `helper`; `retro` for finished transcripts; `scout` to locate code. the card list with each one's model is `rules/fleet-identity.md` § the subagents
+- **a chore goes to a card** (dima, 2026-10-04: «delegate more dumb work to sonnet»): `helper-lite` (Haiku 5.5) for reads, counts and spelled-out edits; `helper` (Sonnet 5.5) when an edit needs care, never source code until FRM-478's grade (code goes to an opus card); `researcher` (Opus 5.5) for a bounded question answered from sources; `wisphunter` (Opus 5.5) for every code review of a diff, never `researcher` or `helper`; `retro` for finished transcripts; `scout` to locate code. the card list with each one's model is `rules/fleet-identity.md` § the subagents
 - **a big read stays out of your context** — a number off a transcript, a log or a json dump goes to `helper-lite`, never a hand `jq` in your own thread; only its short answer comes back, and its diff is read before anything lands
 - **in clio, a stateful chore goes to helga instead** — a pocket write, a commit through the gate, inbox prep; a stateless one (a rename sweep, a read) stays a fresh `helper-lite`
 

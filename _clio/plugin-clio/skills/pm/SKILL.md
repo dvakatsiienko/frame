@@ -69,7 +69,7 @@ traps:
 ## write and close — read the reference first, every time
 
 - 📖 **a create, a body rewrite or a comment → read [references/body.md](references/body.md) first**: the body order (lane, wish, dima notes … closing word), writing, run markers. no body is written from memory of this section
-- 📖 **a close, cancel, merge or reshape → read [references/closing.md](references/closing.md) first**: the three auto-close cases, the close test, the ask-guard
+- 📖 **a close, cancel, merge or reshape → read [references/closing.md](references/closing.md) first**: the four auto-close cases, the close test, the ask-guard
 - what holds even without the read: a rewrite starts with a full-body fetch (`x linear body`); dima's words survive every edit and never go into a comment; every id is a link; a body clio creates and every comment clio writes end with the run marker `⸻ 🪪 <run> · <model> · agent run stamp — please keep 🙏`
 
 ## reading — how deep
