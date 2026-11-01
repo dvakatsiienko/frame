@@ -29,7 +29,7 @@ each stage names its gate, its owner, its door and its wait budget.
 the lane is the ticket's first body line, `lane: <kind>` (the four kinds: `fleet-vibe` § entities, lane), the kind word only. clio proposes it and silence accepts; codie pings at a named trigger and clio promotes. a lane's 🛼 glide title reads `<topic> — <what>`, one colon only, the card head's (dima, 2026-10-12).
 
 - **freebie** — done in place by me, no ticket, no spec: drop, build, land, look; a bigger one is a **☘️ almost-freebie** (`fleet-vibe`): a helper card i brief and prove (a small UI ask: `DESIGN.md` + a shot, a `docs/test-drive/design-drift.md` line)
-- **quick lane** — on main, no pr, no sign, a spec, a sixth sense on dima's yes/no in his pick (`main:<base sha>`): drop, dispatch, build, land, look, fold
+- **quick lane** — on main, no pr, signed like every chunk (dispatch refuses an unsigned one), a spec, a sixth sense on dima's yes/no in his pick (`main:<base sha>`): drop, sign, dispatch, build, land, look, fold
 - **side lane** and **shift** — worktree, pr and sixth sense: every stage; an app or redesign opens with shape and design
 
 ## lane init — the contract (dima, 2026-10-23, PK-263)
@@ -43,7 +43,7 @@ the lane is the ticket's first body line, `lane: <kind>` (the four kinds: `fleet
 - **a new chunk in a hot area (cli, mods) joins the queue, never its tail** (dima, 2026-11-01: «it should be your default behavior»): first merge it into a signed chunk of the same area that it truly fits, re-signed; a new chunk only when none fits or the fit is already too big to extend, shaped at birth and proposed for his sign, placed by importance, a fix ahead of features
 - **re-sign**: a change to a signed ticket — dima's new wish, clio's extend, merge or split — gets a proposed re-sign, `shape-lane` again plus an appended re-signed line (format: `body.md`); a tiny change may skip the grill, never the line; after dispatch a re-sign re-seals the spec
 - **a lane is one codie plus an optional sixth sense, walking its area's signed chunks in their `blocks` order, one milestone after another** (dima o46, 2026-10-28: «two milestones can be easily solved by one coder lane, one by one»); one glide step per chunk; a joiner must be signed and from a milestone the lane walks; a parallel split is an option, never a rule; mods prefer one lane, since parallel mods codies interfere (o46, o67); a shift walks milestones in the initiative's queue order (dima o112)
-- **📐 a spec on every lane with a member** — side, shift, quick, a designer or research lane; a quick lane needs no sign
+- **📐 a spec on every lane with a member** — side, shift, quick, a designer or research lane
 - **the main lane may be signed too** (a trial, dima o110, W140–W141): our own steps as one chunk, `lane: main`, no codie and no spec; its 🛼 glide card is its progress
 - **size**: a chunk is S by default, M allowed and watched as a trial (`memory/_reminders.md`); no split rule
 - **dispatch is shift-safe**: anything that needs dima — a signed decision the code broke, a merge his sign did not pre-approve, a roadblock — parks that chunk with its reason in its spec, and the next signed chunk runs; clio drives the side lane fully and tells him as info, a round-3 stop included (dima, 2026-10-27, o60)

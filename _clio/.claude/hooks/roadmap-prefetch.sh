@@ -19,7 +19,7 @@ if [ "${1:-}" = --outline ]; then
   [ -n "$body" ] && printf '%s\n' "$body" > "$out" && sed -n '3,$p' "$out"
   exit 0
 fi
-linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\", \"duplicate\"]}}, projectMilestone: {null: true}, labels: {every: {name: {nin: [\"standing\", \"someday\", \"stash\"]}}}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
+linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\", \"duplicate\"]}}, projectMilestone: {null: true}, labels: {every: {name: {nin: [\"standing\", \"someday\", \"stash\"]}}}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 30) { nodes { identifier sortOrder state { type } labels(first: 1, filter: {name: {eq: \"signed\"}}) { nodes { name } } } } } } }" 2>/dev/null \
 | jq -r '
   .data as $d |
   "-- the roadmap board: copy it as is into the opening reply, drift line as fixed (dima, 2026-10-25) --",
@@ -68,6 +68,13 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   "-- milestone health --",
   ([(if $d.initiative.projects.pageInfo.hasNextPage then "🟡 initiative: projects capped at 20, health incomplete" else empty end),
     (if $d.projectMilestones.pageInfo.hasNextPage then "🟡 milestones capped at 50, health incomplete" else empty end),
+    # 30 per milestone keeps the query under the linear 10k complexity cap with the signed label read
+    ($d.projectMilestones.nodes[] | select(.issues.nodes | length >= 30) | "🟡 \(.project.name) · \(.name): 30+ tickets, its counts capped"),
+    # a side lane never stalls: the next 4 chunks of each of the first 3 side tracks are signed or already dispatched (dima, 2026-11-01, o46)
+    ($sideLive[:3][] | .name as $n
+      | [.issues.nodes[] | select(.state.type != "completed" and .state.type != "canceled")] | sort_by(.sortOrder) | .[:4]
+      | [.[] | select((.state.type | IN("triage", "backlog", "unstarted")) and ([.labels.nodes[].name] | index("signed") == null)) | .identifier]
+      | select(length > 0) | "🟡 side track \($n): next chunks unsigned — \(join(", "))"),
     ($d.initiative.projects.nodes[] | .name as $p
       | [$d.projectMilestones.nodes[] | select(.project.name == $p)] as $ms
       | (if .issues.pageInfo.hasNextPage then "🟡 \($p): unassigned issues capped at 50, health incomplete" else empty end),
