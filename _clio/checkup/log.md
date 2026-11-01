@@ -14,3 +14,16 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-10-19 · naming-entity-first · 🟢 282 names, 0 lead with a verb · —
 - 2026-10-22 · agnix · 🟢 0 errors, 31 warnings, 45 info (v0.59.0) · —
 - 2026-10-27 · postponed · 🟡 dima: «postpone 4+ days, no capacity» · next due 2026-11-03
+- 2026-11-01 · naming-entity-first · 🟢 310 names, 0 lead with a verb · —
+- 2026-11-01 · hook-health · 🔴 SessionStart:compact p95 18 s (n 14); PostToolUse:Bash 12 errors in 4,079 runs, unattributed · asked: both, orbit
+- 2026-11-01 · memory-lint · 🟢 · —
+- 2026-11-01 · go-vulns · 🟢 · —
+- 2026-11-01 · pocket · 🟢 · —
+- 2026-11-01 · test-drives · 🟡 7 due within 3 days, 8 without a test card · —
+- 2026-11-01 · boot-digest · 🟢 · —
+- 2026-11-01 · skill-shape · could not run: weekly at 94 %, a helper card · —
+- 2026-11-01 · install-census · could not run: weekly at 94 %, a helper-lite count · —
+- 2026-11-01 · recipe-candidates · could not run: weekly at 94 %, a helper card · —
+- 2026-11-01 · agnix · could not run: weekly at 94 % · —
+- 2026-11-01 · cli-purpose · could not run: weekly at 94 % · —
+- 2026-11-01 · evergreen · could not run: weekly at 94 % · —
