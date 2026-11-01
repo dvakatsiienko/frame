@@ -3,10 +3,10 @@ id: PK-103
 title: >-
   pm flow review: a wish's whole path to prod, and a structured to-do graph for
   chaotic coder lanes
-status: open
+status: done
 assignee: []
 created_date: 2026-10-13 10:40
-updated_date: '2026-11-01T11:43:00Z'
+updated_date: '2026-11-01T13:24:00Z'
 due_date: '2026-11-02'
 labels:
   - m
@@ -762,4 +762,6 @@ correction: W509's stamp is 16:52, not 14:52 (a typo of clio's); its groomed for
 held: 2026-10-29 — FRM-419 rename sweep; the pm module is parked until the rename time is decided (dima 17:08)
 
 held: 2026-10-30 — FRM-419 step 9: pm review round 5, then its close (the 10-29 «parked until the rename time» line is past, the rename sweep landed 10-29); the W-map: _clio/.scratch/pm-final-review/w-map-r4.md
+
+close: 2026-11-01 — the pm flow review finished with FRM-419: 389 W-lines, 367 done, 17 in their tickets verbatim, 3 dropped on his word, 0 open (round 8 map, dima's o13)
 <!-- SECTION:NOTES:END -->
