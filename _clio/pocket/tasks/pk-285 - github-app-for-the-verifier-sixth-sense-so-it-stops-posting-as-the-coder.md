@@ -1,10 +1,10 @@
 ---
 id: PK-285
 title: github app for the verifier (sixth sense), so it stops posting as the coder
-status: open
+status: done
 assignee: []
 created_date: '2026-10-29T14:50:00Z'
-updated_date: '2026-11-01T11:43:00Z'
+updated_date: '2026-11-01T16:31:00Z'
 due_date: '2026-11-02'
 labels:
   - s
@@ -43,4 +43,7 @@ W634 (2026-10-30 16:57, dima): let's solve PK-285.
 W642 (2026-10-30 17:12, dima): okay, but it wants an avatar drawn the same as clio, coder and reviewer have.
 
 kept: 2026-10-30 — dima 18:37: «a little later, no capacity today. plan after monday reset. and i do this with your side channel»; a ⏰ reminder due 2026-11-02 carries it
+
+ticket: FRM-484
+close: done 2026-11-01 by the side channel — the app x-sixth-sense-cc (id 5568410) live on frame and bytes, the key in 1Password and the Keychain, a token proven; the wiring moved to FRM-484
 <!-- SECTION:NOTES:END -->
