@@ -158,6 +158,12 @@ const checks: Check[] = [
                 health.status === 0 &&
                 !/402|billing|credit/i.test(health.stdout + health.stderr);
             if (on === jevUp) return true;
+            // a parked trial stays off even when jev answers (dima, 2026-11-01, o70: «keep it parked»)
+            const drive = readFileSync(
+                join(frame, 'docs/test-drive/jev-compaction.md'),
+                'utf8',
+            );
+            if (!on && /^status: frozen$/m.test(drive)) return true;
             return on
                 ? 'on at clio scope while jev refuses — a compaction would call a dead api; set it false in _clio/.claude/settings.json'
                 : 'jev answers again — turn the plugin back on at clio scope, its test drive prefers it';
