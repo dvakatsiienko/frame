@@ -1,10 +1,10 @@
 ---
 id: PK-289
 title: wish-cover reds a multi-chunk spec forever
-status: open
+status: done
 assignee: []
 created_date: '2026-10-30T17:13:00Z'
-updated_date: '2026-11-01T12:21:00Z'
+updated_date: '2026-11-01T12:57:00Z'
 labels:
   - s
 dependencies: []
@@ -23,4 +23,6 @@ the wish-cover hook checks every W-line of a multi-section spec against the file
 
 <!-- SECTION:NOTES:BEGIN -->
 kept: 2026-11-01 — clio's script fix, queued behind the pm module (dima's order)
+
+close: 2026-11-01 — already fixed: the hook checks every wish: id against its own section; proven on a two-chunk .scratch spec, green when copied, red on a reworded W798 in chunk 2
 <!-- SECTION:NOTES:END -->
