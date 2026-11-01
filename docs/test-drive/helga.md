@@ -209,6 +209,14 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-01 · prompt-groom · W862 (1502), W863-W866 (1506), W867-W868 (o12) · 0 · 3 items groomed, 7 W-lines, 0 questions as own W-lines
 - 2026-11-01 · prompt-groom · W871-W878 (1508) · 0 · 8 lines, side-channel probe + measure/close
 - 2026-11-01 · prompt-groom · W879-W882 (1523) · 0 · 4 lines, 2 questions as own ❓ lines
+- 2026-11-01 · prompt-groom · W883-W938 (1557) · 0 · 56 lines, 4 questions as own ❓ lines, wispr fixes applied
+- 2026-11-01 · prompt-groom · W939-W946 (o19) · 0 · 8 lines, speak→bytes move steer
+- 2026-11-01 · prompt-groom · W947-W952 (o20) · 0 · 6 lines, 5 questions as own ❓ lines
+- 2026-11-01 · prompt-groom · W953-W959 (o21) · 0 · 7 lines, no questions
+- 2026-11-01 · prompt-groom · W960-W966 (1620) · 0 · 7 lines, 1 question as own ❓ line, clio Q5 label dropped
+- 2026-11-01 · prompt-groom · W967-W968 (orbit steer 24) · 0 · 2 lines
+- 2026-11-01 · prompt-groom · W969-W972 (orbit steer 25) · 0 · 4 lines
+- 2026-11-01 · prompt-groom · W973-W975 (orbit steer 26) · 0 · 3 lines
 
 ## rounds
 
