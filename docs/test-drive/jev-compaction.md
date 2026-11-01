@@ -1,12 +1,12 @@
 ---
 status: frozen
-until: 2026-11-03
+until: 2026-11-10
 ---
 
 # jev compaction — fast-jev-compaction on clio checkpoints, vs the built-in summary
 
 Ticket: [FRM-268](https://linear.app/x-com/issue/FRM-268)
-dies-when: the verdict line below is written (2026-10-31 — frozen with the jev credit 10-05 → ~10-18, dima) — adopted at cclio scope, or uninstalled
+dies-when: the verdict line below is written (2026-11-10 — parked: jev is useful, we lack the capacity to tend it; dima, 2026-11-01, o70) — adopted at cclio scope, or uninstalled
 
 dima, 2026-10-01: «are you sure? in video the author told that compaction by jev is lightning fast. it's like
 seconds, whereas built-in auto-compaction happens in minutes» — and the repo: «maybe try this?

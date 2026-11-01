@@ -71,7 +71,7 @@ on partly done, flatten an exact string into prose casing.
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - a memory line holds the instruction; its story goes where `x:author-memory` says (a column-0 html comment, never inline)
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
-- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a summon flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md` <!-- cc -->
+- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first, through `x knowledge read <file>` so the shelf logs which files earn their place: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a summon flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md` <!-- cc -->
 
 ## coding preferences
 <!-- sync: cloud-chat -->
