@@ -7,6 +7,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T15:59:00Z'
+updated_date: '2026-11-01T16:16:00Z'
 labels:
   - s
 dependencies: []
@@ -20,3 +21,9 @@ ordinal: 15000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 two transit folders still sit under ~/.claude/shelf; same report path as above
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+side channel's FRM-464 verdict 11-01: boot, role and two-way messaging proven; not exercised: the pocket side label and the worktree round-trip (EnterWorktree → x lane commit → clio's merge); prove both with the next side channel's first small repo edit and one pocket item. the worktree hook also blocked a redirect into $TMPDIR
+<!-- SECTION:NOTES:END -->
