@@ -17,7 +17,7 @@ pnpm skill:evergreen-apps
 ```
 
 the lanes, one line each; a quiet lane prints nothing:
-- **renovate** — tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`), age from `createdAt`, ci from `statusCheckRollup`; the dashboard's vulnerability and abandoned sections are digest lines, and a dashboard untouched for a day is a ⚠️ card first: renovate stopped (the boot digest reds it too)
+- **renovate** — `node ~/frame/_clio/script/evergreen-renovate.ts [--json]` prints one row per pr (tier, age, ci, the moves; on a major the peer verdict and the previous major's date), the rules it encodes: tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`), age from `createdAt`, ci from `statusCheckRollup`; the dashboard's vulnerability and abandoned sections are digest lines, and a dashboard untouched for a day is a ⚠️ card first: renovate stopped (the boot digest reds it too)
 - **outdated** — the truth the bot is judged against: after a round every repo package is current (dima, 2026-10-28); exit 1 means rows behind, never a failure
 - **brew** — the same digest; brew itself too: a major is a digest line (auto-update once jumped 4 → 7 unseen)
 - **pnpm -g** — every global's notes over the range, read like renovate's
