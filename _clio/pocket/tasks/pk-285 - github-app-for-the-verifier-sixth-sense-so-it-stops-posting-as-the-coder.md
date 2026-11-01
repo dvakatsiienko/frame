@@ -48,4 +48,6 @@ ticket: FRM-484
 close: done 2026-11-01 by the side channel — the app x-sixth-sense-cc (id 5568410) live on frame and bytes, the key in 1Password and the Keychain, a token proven; the wiring moved to FRM-484
 
 close: W1, W485–W495, W634 moved to FRM-484 (its wish block); W642 done — the dalmatian avatar is the app's logo, brand/avatars/fleet/sixth-sense/
+
+close: W1, W485, W486, W487, W488, W489, W490, W491, W492, W493, W494, W495, W634 moved to FRM-484; W642 done (the dalmatian avatar is the app's logo)
 <!-- SECTION:NOTES:END -->
