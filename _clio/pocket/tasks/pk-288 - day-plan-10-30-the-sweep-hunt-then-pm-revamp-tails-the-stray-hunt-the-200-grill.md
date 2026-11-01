@@ -6,13 +6,13 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-30T13:46:00Z'
-updated_date: '2026-10-30T16:43:00Z'
+updated_date: '2026-11-01T12:21:00Z'
 labels:
   - m
 dependencies: []
-priority: now
+priority: next
 type: wish
-ordinal: 9999
+ordinal: 12000
 ---
 
 ## Description
@@ -187,4 +187,6 @@ W738 (2026-10-30 18:37, dima): and i do this with your side channel.
 W739 (2026-10-30 18:37, dima): tell codie to use the memory-altering skill for skill updates and memory updates.
 W740 (2026-10-30 18:37, dima): yes, and connect the sonnet grade ticket to the nearest possible mods lane chunk, or just fold a sonnet grade in as a step of the closest existing mods lane chunk, so it is not forgotten.
 W741 (2026-10-30 18:37, dima): and not duplicated, because you keep summoning two double verifiers for two days in a row.
+
+kept: 2026-11-01 — today's plan lives in PK-291; its own W-lines ask dima at the halt before it closes
 <!-- SECTION:NOTES:END -->

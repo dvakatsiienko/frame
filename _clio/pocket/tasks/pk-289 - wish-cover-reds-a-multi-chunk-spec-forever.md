@@ -4,6 +4,7 @@ title: wish-cover reds a multi-chunk spec forever
 status: open
 assignee: []
 created_date: '2026-10-30T17:13:00Z'
+updated_date: '2026-11-01T12:21:00Z'
 labels:
   - s
 dependencies: []
@@ -17,3 +18,9 @@ ordinal: 9999
 <!-- SECTION:DESCRIPTION:BEGIN -->
 the wish-cover hook checks every W-line of a multi-section spec against the file's first wish: line only, so a lane spec with several chunks (mods-lane-3, cli-3) reds on every write. from the 10-30 halt flush; tomorrow's main lane, a clio script fix
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+kept: 2026-11-01 — clio's script fix, queued behind the pm module (dima's order)
+<!-- SECTION:NOTES:END -->
