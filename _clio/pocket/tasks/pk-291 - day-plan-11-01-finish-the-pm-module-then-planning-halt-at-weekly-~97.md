@@ -4,6 +4,7 @@ title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 
 status: open
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
+updated_date: '2026-11-01T12:27:00Z'
 labels:
   - s
 dependencies: []
@@ -40,3 +41,10 @@ W816 (2026-11-01 14:19, dima): during each turn or review round, print me two ti
 W817 (2026-11-01 14:19, dima): also, when you are waiting for reviews, find some stuff to sell for yourself.
 W818 (2026-11-01 14:19, dima): /x:mobile-mode 10min
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+W819 (2026-11-01 14:19, dima, o1 steer): plan to halt at ~97-98% so i have space to play nms with cw thread. (i chat while playing)
+W820 (2026-11-01 14:19, dima, o2 steer): not yet, but maybe.
+<!-- SECTION:NOTES:END -->
