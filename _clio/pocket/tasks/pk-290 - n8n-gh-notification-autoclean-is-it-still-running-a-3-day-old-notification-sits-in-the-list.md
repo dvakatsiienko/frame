@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-01T11:42:00Z'
-updated_date: '2026-11-01T14:20:00Z'
+updated_date: '2026-11-01T15:06:00Z'
 labels:
   - xs
 dependencies: []
@@ -29,4 +29,6 @@ raw drop (2026-11-01 inbox, dima): my notification autocleaning n8n flow — doe
 close: 2026-11-01 16:21 — the flow runs nightly (green 10-22…10-31); today's run was missed at 10:00 while the mac slept and n8n replays no missed trigger; the catch-up ran by hand in the pane, «Workflow executed successfully». the 3-day-old notification is an unread issue (n8n-io checklist), which the sweep never touches by design. the missed-trigger fix is orbit's ask
 
 close: W1 done — answered: the flow works; the old notification is an unread issue it never sweeps; the missed run caught up by hand
+
+follow-up done 2026-11-01 17:07: the sweep's trigger moved from 03:00 in n8n's default zone (10:00 Kyiv) to 23:00 Europe/Kyiv, the workflow's own timezone set (dima's o56)
 <!-- SECTION:NOTES:END -->
