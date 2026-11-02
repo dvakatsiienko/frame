@@ -319,6 +319,97 @@ describe('the door claim with no source (PK-224)', () => {
     });
 });
 
+describe('a check in the claim’s own sentence, never its paragraph (FRM-487 3b)', () => {
+    it('logs a can’t whose paragraph holds a backtick only in another sentence', () => {
+        expect(logged('the hook cannot see that tool. the log sits in `~/.claude/shelf`.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain(
+            'unproven-cant\tcannot',
+        );
+    });
+
+    it('logs a door claim whose paragraph holds a link only in another sentence', () => {
+        const reply = 'the async api takes no commit message. the squash is in [the docs](https://docs.github.com/x).';
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toContain('door-claim\t');
+    });
+});
+
+// clio's two replies dima caught on 2026-11-02 (transcript e1ac9b71), the claim paragraphs verbatim, a name cut
+const caughtOnlyPath =
+    'So the only path is Rockstar Support unlinking Steam, and both requests are with them. While you wait:\n- close this screen without «Resend code», so the quota doesn\'t run out again';
+const caughtOneDoor =
+    '**Every new-ticket form is down for you tonight**, so the 500 isn\'t tied to the linking form. Most likely it\'s the «maximum submissions» limit, which the site shows as a server error (inference). That leaves one door that works now: **reply to Rockstar\'s 11:44 email.** The reply text from my 19:27 message already says their form is broken.';
+
+describe('the dead-end claim with no check (FRM-487)', () => {
+    it.each([
+        'the only door is the support form.',
+        'so the only path is support.',
+        'the only way in is a reinstall.',
+        'that leaves one door left: the email.',
+        'there is no other way to relink it.',
+        'every form is down tonight.',
+        'all the forms are down tonight.',
+        'nothing works from here.',
+        'that leaves one door: the email reply.',
+    ])('logs «%s» and names it at the next prompt', (reply) => {
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toContain('dead-end\t');
+        stop(reply);
+        expect(nextPrompt()).toContain('no check in its sentence');
+    });
+
+    it.each([
+        'I tried the reinstall, and the only path left is support.',
+        'the only path is support: `x linear read FRM-1` shows both requests closed.',
+        'the only path is support (inference).',
+        'every form is down tonight, tested on three forms.',
+    ])('passes «%s», the check inside the claim’s sentence', (reply) => {
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+    });
+
+    it.each([
+        'the guard reads `rules.ts`. so the only path is support.',
+        'see [the form](https://example.com/form). so the only path is support.',
+        'the cause is the limit (inference). so the only path is support.',
+    ])('logs «%s», the clear in another sentence', (reply) => {
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toContain('dead-end\t');
+    });
+
+    it.each([
+        '**the only path is support.** I tried the reinstall.',
+        'the only path is support.) I tried the reinstall.',
+        'the only path is support.» I tried the reinstall.',
+        'the only path is support, not tested.',
+        'the only path is support, never tested.',
+        'everything is down tonight.',
+    ])('logs «%s», no check of its own', (reply) => {
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toContain('dead-end\t');
+    });
+
+    it.each([
+        'that is not the only way in.',
+        'it isn\'t the only path.',
+        'replies saying «only door» or «nothing works» get flagged.',
+        'the only path is support: `x linear read a. b` shows both closed.',
+        'the only way is a cli call, e.g. `x linear read FRM-1` returns 500.',
+        '- the only path is support,\n  `x linear read FRM-1` shows both closed',
+    ])('passes «%s»', (reply) => {
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+    });
+
+    it('keeps a wrapped bullet’s source on its can’t', () => {
+        expect(logged('- the hook cannot see it,\n  `rg foo` shows none', mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+    });
+
+    it('logs a claim whose only backtick names no command', () => {
+        expect(logged('the only path is `support`.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain('dead-end\t');
+    });
+
+    it.each([
+        ['15:18 «only path»', caughtOnlyPath, 'only path'],
+        ['19:35 «one door left»', caughtOneDoor, 'leaves one door'],
+    ])('flags the caught %s reply', (_, reply, claim) => {
+        expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toContain(`dead-end\t${claim}`);
+    });
+});
+
 describe('a checked claim with no evidence call (FRM-429)', () => {
     it.each(['the files are copied whole.', 'I checked the files.', 'I verified the files.', 'proven: the files match.', 'the table is verified by read-back.'])(
         'logs «%s» in a turn with no evidence call',

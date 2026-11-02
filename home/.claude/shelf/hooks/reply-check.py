@@ -99,8 +99,45 @@ def store_entry(key: str) -> dict:
         return (json.load(f) or {}).get(key) or {}
 
 
+# a sentence ends at . ! ? (past a closing ** ) » " ”), never inside inline code or after e.g., i.e., vs., etc.
+SENTENCE_END = re.compile(r"(?<!\be\.g\.)(?<!\bi\.e\.)(?<!\bvs\.)(?<!\betc\.)(?:(?<=[.!?])|(?<=[.!?][)»\"”])|(?<=[.!?]\*\*))\s+")
+# a line opens a new unit only as a list item, a heading or an emoji lead; any other line continues the one above
+UNIT_START = re.compile(r"^\s*(?:[-*+•]\s|\d+[.)]\s|#|[^\w\s`(«\"'*\[])")
+
+
+def sentences(prose: str) -> list[str]:
+    masked = INLINE_CODE.sub(lambda m: re.sub(r"\s", "\x01", m.group(0)), prose)
+    units: list[str] = []
+    for para in re.split(r"\n\s*\n", masked):
+        for i, line in enumerate(para.split("\n")):
+            if i and units and not UNIT_START.match(line):
+                units[-1] += " " + line.strip()
+            else:
+                units.append(line)
+    return [s.replace("\x01", " ") for u in units for s in SENTENCE_END.split(u) if s.strip()]
+
+
+# a claim is cleared by a check inside its own sentence only: a source in another sentence never covers it (crow, 2026-11-02)
 def unproven_cants(prose: str) -> list[str]:
-    return [m.group(0) for para in re.split(r"\n\s*\n", prose) if "`" not in para for m in [CANT.search(para)] if m]
+    return [m.group(0) for s in sentences(prose) if not SOURCE.search(s) for m in [CANT.search(s)] if m]
+
+
+# an absolute dead end stated with no try behind it (FRM-487: «only path», «every form is down, one door left», both wrong)
+DEAD_END = re.compile(
+    r"\b(?:(?<!not the )(?<!n't the )only (?:door|path|way)|(?:one|last) (?:door|path|way) left|leaves? (?:just |only )?one (?:door|path|way)|no other (?:door|path|way)"
+    r"|(?:every(?:thing)?|all)\b[^.\n]{0,40}?\b(?:is|are) down|nothing works)\b",
+    re.I,
+)
+# the check that clears it: a try, a test, an inference label, or a backticked command (a cli head or a script path, never any backtick)
+TRIED = re.compile(r"\b(?:i|we) (?:just )?tried\b|(?<!not )(?<!never )\btested\b|\(inference\)|`(?:(?:x|pnpm|node|go|git|gh|rg|jq|claude|python3)\s[^`]*|[^`\s]*/[^`\s]*\.(?:sh|py|ts|mts))`", re.I)
+
+
+def dead_ends(prose: str) -> list[str]:
+    # a «quoted» claim is named, not made
+    return [m.group(0) for s in sentences(prose) if not TRIED.search(s) for m in [DEAD_END.search(GUILLEMETS.sub("", s))] if m]
+
+
+GUILLEMETS = re.compile(r"«[^»\n]*»")
 
 
 # a claim of «every / all / whole» wider than its check (10-16: «7 quotes stay whole», «every skill», «all the scripts exist»)
@@ -122,7 +159,7 @@ SOURCE = re.compile(r"`|https?://|\]\(")
 
 
 def door_claims(prose: str) -> list[str]:
-    return [m.group(0)[:40] for para in re.split(r"\n\s*\n", prose) if not SOURCE.search(para) for m in [DOOR_CLAIM.search(para)] if m]
+    return [m.group(0)[:40] for s in sentences(prose) if not SOURCE.search(s) for m in [DOOR_CLAIM.search(s)] if m]
 
 
 # a claim stated as checked needs a command or read in the turn (the top #dima-caught type, flat at 10 vs 10, 2026-10-28).
@@ -417,6 +454,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("unproven-cant", word) for word in unproven_cants(prose)]
     found += [("wide-claim", claim) for claim in wide_claims(prose)]
     found += [("door-claim", claim) for claim in door_claims(prose)]
+    found += [("dead-end", claim) for claim in dead_ends(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (crow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -478,6 +516,8 @@ def main() -> None:
         reminds.append("a 🔭 line named crow — a wake never holds the session")
     if by_rule("wait-without-dima"):
         reminds.append("an open orbit ask and no 🔭 line naming **🙋‍♂️ dima** — end on `🔭 waiting on **🙋‍♂️ dima**`")
+    if by_rule("dead-end"):
+        reminds.append(f"«{by_rule('dead-end')[0]}» with no check in its sentence — name the try or the command beside it, or mark it (inference)")
     if by_rule("table"):
         reminds.append("a markdown table — `- key — value` bullets")
     late, stale = by_rule("future-stamp"), by_rule("stale-stamp")
