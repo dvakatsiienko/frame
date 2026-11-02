@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T16:13:00Z'
+updated_date: '2026-11-02T16:20:00Z'
 labels:
   - s
 dependencies: []
@@ -130,4 +130,6 @@ W1338 (2026-11-02 17:59, dima): it's most important, and maybe let's then create
 W1339 (2026-11-02 17:59, dima): i can properly relink them to my main Rockstar account? ❓
 W1340 (2026-11-02 17:59, dima): if unlinking works, the whole problem is solved because i will use my main account instead.
 W1341 (2026-11-02 17:59, dima): i'm not a fan of having additional broken email and some stray account on Rockstar's side.
+
+state 11-02 18:20 (dima): 2FA unlinked ✓ on umaturman3 (ticket #38245301 can rest). unlink ticket next: Submit a Request → Account; the 425-char note drafted.
 <!-- SECTION:NOTES:END -->
