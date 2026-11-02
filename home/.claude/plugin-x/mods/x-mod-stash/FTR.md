@@ -432,9 +432,9 @@
   - proof: tests/orbit.test.ts::open asks come back when the session is resumed in a new process (+ phases, folded card, mobile mode, held member pings, week-old drop, ids keep counting, /clear empty)
 
 - ✅ an ask carries one link dima opens in a click (brief 8)
-  - given clio adds an ask with `link` — an https url, an `obsidian://` url, or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
+  - given clio adds an ask with `link` — an https url, an `obsidian://open` url (a writing `new` or `overwrite` url is refused), or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
   - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>` (an obsidian url: its note), a press opening it through `open`; any other link (`http://`, `file://`, a bare word) is refused and no ask lands
-  - proof: tests/orbit.test.ts::an ask's https link draws as a link to that url / an ask's file link opens through open / file link may hold spaces / obsidian:// link / an http url, a file:// url and a bare word are still refused
+  - proof: tests/orbit.test.ts::an ask's https link draws as a link to that url / an ask's file link opens through open / file link may hold spaces / obsidian:// link / an obsidian:// link that writes (new, overwrite) is refused / an http url, a file:// url and a bare word are still refused
 - ✅ a clio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
   - given clio's session loaded `clio:boot` and has printed no reply as long as the board (300 characters or more) since
   - when `start_session` returns, whose own hint says «then end your turn»

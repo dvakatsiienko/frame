@@ -1935,7 +1935,20 @@ test('a link that is neither an https url nor a file path is refused, and no ask
     await start($);
     const r = await addLinked($, 'javascript:alert(1)');
     expect([r.deny, w.store.has('asks:o1o1o1o1-orbit')]).toEqual([
-        'orbit add: link «javascript:alert(1)» is neither an https url, an obsidian:// url nor a file path (/… or ~/…)',
+        'orbit add: link «javascript:alert(1)» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)',
+        false,
+    ]);
+});
+
+test('an obsidian:// link that writes (new, overwrite) is refused, and no ask lands', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await addLinked(
+        $,
+        'obsidian://new?vault=v&file=_hq%2Finbox&overwrite=true',
+    );
+    expect([r.deny, w.store.has('asks:o1o1o1o1-orbit')]).toEqual([
+        'orbit add: link «obsidian://new?vault=v&file=_hq%2Finbox&» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)',
         false,
     ]);
 });
