@@ -893,6 +893,3 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: on the board, not at summon — a `--bg` codie starts through Bash, and `agent.spawn` sees only Agent-tool subagents
   - proof: tests/board.test.ts::the board marks a background session named off the fleet pattern; ::a cold row off the fleet pattern keeps ⚠, never ❄️ — not asserted: standing-member no-⚠ only via helga-sidecar test
 
-## scripts
-
-- ✅ `pnpm mods:writes [days]` counts the fleet's file writes by channel — Edit/Write against each Bash shape — across `~/.claude/projects` transcripts, and how many Bash writes the holds veto can read, so the gap can be measured again
