@@ -1,5 +1,4 @@
 # path	budget bytes	reason for the last raise — a raise is a reviewed, useful add (recipes/nurture-memory/recipe.md § his standing calls)
-AGENTS.md	10900	seed 2026-10-16, today's size + 15 %
 _clio/.claude/agents/wishkeeper.md	5300	seed 2026-10-16, its size + 15 %
 _clio/AGENTS.md	3600	seed 2026-10-16, today's size + 15 %
 _clio/blueprints/AGENTS.md	3700	2026-10-27: the board version line (dima, W282); 2026-10-25: the tickets-flow board's sources listed whole, so the drift check sees every file its tiles cite (round 2 finding)
@@ -55,6 +54,7 @@ _clio/plugin-clio/skills/side-channel/SKILL.md	1850	2026-10-29: +100 a fork's br
 _clio/plugin-clio/skills/siesta/SKILL.md	5000	seed 2026-10-16, today's size + 15 %; 2026-10-30 +200 B: the groom check step, a landed lane's trees decamped (dima); +200 B: a quick lane's verify trees decamped, a pace park resumed (pm review round 4, dima's W629); +100 2026-10-30: 2.5 calls x lane landed, the one decamp door (#120 wiring); 2026-11-01 round 6: the siesta stamp, two closes a turn, the smart-fit merge rule
 _clio/plugin-clio/skills/system-checkup/SKILL.md	7600	2026-10-20: the recipe-candidates check joined (dima: FRM-270's scan on every checkup); before: 6900 for install-census moved from nurture-memory
 _crow/AGENTS.md	11900	seed 2026-10-16, today's size + 15 %
+AGENTS.md	10900	seed 2026-10-16, today's size + 15 %
 docs/knowledge/AGENTS.md	1900	seed 2026-10-16, today's size + 15 %
 gifs/AGENTS.md	1200	seed 2026-10-16, today's size + 15 %
 gmail/AGENTS.md	2100	seed 2026-10-16, today's size + 15 %
@@ -81,16 +81,18 @@ home/.claude/plugin-x/skills/crew-adviser/SKILL.md	11200	seed 2026-10-16, today'
 home/.claude/plugin-x/skills/crew-cloud/references/brief-no-plugin.md	2700	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-cloud/SKILL.md	10700	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-codie/SKILL.md	11800	seed 2026-10-16, today's size + 15 %; +300 on 2026-10-30 for the built-in vs matt's review line (dima approved the line; the raise is clio's)
-home/.claude/plugin-x/skills/crew-helga/SKILL.md	6500	seed 2026-10-16, today's size + 15 %; +200 2026-10-27: the fork refusal (FRM-430); +100 on 2026-10-30 for the receipt's SendMessage line (a silent receipt, wave 0); 2026-11-01: pm review round 5 fixes (a question is a W-line, next: timing, the boot grooms its own prompt)
 home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md	7000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-designer/SKILL.md	11700	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-dna/SKILL.md	6450	seed 2026-10-16, today's size + 15 %; 2026-10-30 +150 B: a bounced send is retried once, then named (crow's catch, mods lane 3)
+home/.claude/plugin-x/skills/crew-helga/SKILL.md	6500	seed 2026-10-16, today's size + 15 %; +200 2026-10-27: the fork refusal (FRM-430); +100 on 2026-10-30 for the receipt's SendMessage line (a silent receipt, wave 0); 2026-11-01: pm review round 5 fixes (a question is a W-line, next: timing, the boot grooms its own prompt)
 home/.claude/plugin-x/skills/crew-lead/references/card-craft.md	3200	seed 2026-10-19, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/references/model-cards.md	8200	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md	37100	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/SKILL.md	11800	seed 2026-10-16 at size + 15 %; +300 on 2026-10-27 for the desktop-tab limit line (dima); +200 on 2026-10-30 for the no-mid-flight model switch ban (dima); +200 on 2026-10-30 for opus on the desktop door and the first-chunk-only sixth sense summon (dima, pm review round 4)
-home/.claude/plugin-x/skills/crew-subagent/SKILL.md	4900	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-sixth-sense/SKILL.md	12600	seed 2026-10-16, today's size + 15 %; +700 on 2026-10-30 for § the next chunk and the verify-tree decamp (dima's one-sixth-sense and worktree words)
+home/.claude/plugin-x/skills/crew-subagent/SKILL.md	4900	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/firelink/references/steamac.md	5900	seed 2026-11-02, its size + 15 %
+home/.claude/plugin-x/skills/firelink/SKILL.md	8500	seed 2026-11-02, its size + 15 %
 home/.claude/plugin-x/skills/github-contrib/SKILL.md	9000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-code/SKILL.md	4300	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-conventions/SKILL.md	1700	seed 2026-10-16, today's size + 15 %
@@ -139,4 +141,3 @@ schedule/AGENTS.md	2700	seed 2026-10-16, today's size + 15 %
 speak/AGENTS.md	3100	seed 2026-10-16, today's size + 15 %
 x/AGENTS.md	10100	seed 2026-10-16, today's size + 15 %; 2026-10-23 +300 B: the cli lanes' verify-recipe line (halt flush o197); 2026-10-30 +200 B: the git archive adequacy line (FRM-467 sixth sense retro)
 x/go/AGENTS.md	3900	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/firelink/SKILL.md	8500	seed 2026-11-02, its size + 15 %

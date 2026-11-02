@@ -48,22 +48,14 @@ parse the file with a short `python3`, never read it whole (`games` is ~260 rows
 - `scripts/swap-watch.sh` — read-only mac swap / memory pressure every 5 s, for a stutter
 - `~/Library/Application Support/es.fxgam.steamac/game-stats.json` — per-session fps (avg, p50, 1 % low), hitches/min, per appid: read it before calling a game «runs well»
 
-### inside the vm
+### before any vm work — read [references/steamac.md](references/steamac.md)
 
-- library `~/.local/share/Steam/steamapps/common/`, manifests `appmanifest_<appid>.acf`; each game has its own proton prefix `steamapps/compatdata/<appid>/pfx` — nothing (a launcher, a sign-in) is shared between games
-- disk: `/home` is ~127 GB and runs near full; `df -h ~` before a big download
-- a remote command whose path has spaces goes in as a script on stdin: `steamac-ssh.sh 'bash -s' < script.sh`; inline quoting breaks
-- the session is gamescope gaming mode: a window steam did not start stays invisible; desktop mode is Steam → Power → Switch to Desktop (restarts the session, pauses downloads)
-- a first launch stuck on «Running install script» (a vcredist under proton): the installer waits on an invisible dialog — `ps` shows `vcredist_x86.exe` / `msiexec` at 0 cpu; end those two pids (name them to dima first) and the game starts; proton ships the runtimes anyway
-- windows mods with an asi loader usually need the launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%` (general proton practice, untested here)
-
-### rockstar games in the vm
-
-- a rockstar title starts the Rockstar Games Launcher in steam mode (`-steamAppId`): it signs in to the Rockstar account linked to his steam account on rockstar's server; no local reset changes that, and every game's fresh launcher lands on the same account
-- the steam link is not on rockstargames.com's Connections page: it forms only in the launcher, and unlinks only through rockstar support, asked from the linked account
-- «Verify your email» codes count against a quota: never press «Resend code» in a loop; «too many emails» locks the address for hours
-- bully, max payne 1–2 and the old gta trilogy run without the launcher
-- the live case (gta iv on a typo email, 2026-11): pocket PK-298
+it holds the probed vm (proton versions, paths, steamac's own config), what i can do over ssh, the tweak ladder for a game that won't run, and the rockstar launcher. the traps that bite before you open it:
+- each game has its own proton prefix (`steamapps/compatdata/<appid>/pfx`): nothing is shared, a launcher or a sign-in included
+- gaming mode hides any window steam did not start
+- a launch stuck on «Running install script» = a vcredist waiting on an invisible dialog: end its two installer pids, named to dima first
+- a remote path with spaces goes in as a script: `steamac-ssh.sh 'bash -s' < script.sh`
+- a rockstar game signs in to whatever rockstar account steam is linked to, server-side; never «Resend code» in a loop
 
 ## 3. where every game piece lives
 
