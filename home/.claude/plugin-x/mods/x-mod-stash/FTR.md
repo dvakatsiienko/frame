@@ -164,10 +164,14 @@
   - given ⏰ was off when the reset passed
   - when dima switches ⏰ on later
   - then the session that reset left capped is not woken; ⏰ on before the reset still wakes it (o102)
-  - makes: one `waker` key in x-mod-stash's `$.store`, `{ on }`, so a restart keeps the switch; the cap and the reset it was sent for live in `$.state` (`cap`); a `cap-seen` key keeps the last 5 error-ended or «session limit» turns, `{ at, isCapped, text }`, the text cut at 300
+  - makes: one `waker` key in x-mod-stash's `$.store`, `{ on }`, so a restart keeps the switch; the cap and the reset it was sent for live in `$.state` (`cap`); a `cap-seen` key keeps the last 5 error-ended or «session limit» turns, `{ at, isCapped, isUnread?, text }`, the text cut at 300
   - given a session's turn ends in error with an empty answer and its transcript's last assistant entry is the cap (`error: rate_limit`, «hit your session limit · resets 9:30pm (Europe/Kiev)»)
   - when the hook reads that entry
   - then the wake arms for the reset the entry names, the 5h reset from the last measure when the entry names none, and `cap-seen` keeps the entry's text (FRM-488)
+  - given an error end whose entry carries no cap signal (a reworded cap) while the 5h window reads ≥ 95 %
+  - when the hook reads it
+  - then the wake still arms at the measured 5h reset, `cap-seen` marks the row `isUnread`, and a toast says «⏰ waker: an unrecognised cap — check FRM-488»; under 95 % nothing arms and nothing toasts
+  - decision: the signals rank, the first that answers wins — the entry's typed `quotaLimits` (`rateLimitType: five_hour`, an exact `resetsAt`), its `error: rate_limit` unless the text names the weekly limit or credits, «session limit» on a `<synthetic>` entry, then the full window; so a reworded message still arms (dima, 2026-11-02: «what if Anthropic changes how this message is shaped?»)
   - decision: «on the cap» is measured, not inferred: at both caps of 2026-11-02 (20:59, 21:00) the turn ended `reason: error` with `e.answer` empty; the cap's text lives only in the transcript's last assistant entry, so an error end reads it there; the weekly cap and spent credits read otherwise and are left alone
   - decision: each session wakes itself at the reset its last measure named, a few seconds after; no message crosses sessions, and a capped session that never measured waits for its first measure
   - decision: off unless dima clicks — «I don't want this to be permanent … gated behind a button, like the hot button, but global» (dima, 2026-10-09)

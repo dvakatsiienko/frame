@@ -26,6 +26,11 @@ async function session(
 ) {
     const clock = mock.clock(on, { now });
     on('env.get', () => ({ value: '/home/test' }));
+    const toasts: string[] = [];
+    on('ui.toast', (_$, e) => {
+        toasts.push(e.text);
+        return { value: undefined };
+    });
     on('process.run', () => ({
         value: {
             exitCode: 0,
@@ -81,7 +86,7 @@ async function session(
         props,
         surface: 'desktop',
     });
-    return { clock, resumes, store, ui };
+    return { clock, resumes, store, toasts, ui };
 }
 
 function endTurn($: Engine, answer: string, reason: 'answer' | 'error') {
@@ -450,4 +455,40 @@ test('a weekly quota entry arms no 5h wake', async ($, on) => {
     await endTurn($, '', 'error');
     await s.clock.advance(40 * MIN);
     expect(s.resumes).toEqual([]);
+});
+
+test('a cap read from the full window alone logs an unread cap-seen row and toasts', async ($, on) => {
+    const at = '2026-11-02T19:00:40.955Z';
+    const now = Date.parse(at) + 500;
+    const s = await session(
+        $,
+        on,
+        {},
+        now,
+        now + 20 * MIN,
+        `${reworded(at)}\n`,
+        100,
+    );
+    await endTurn($, '', 'error');
+    expect(s.store['cap-seen']).toEqual([
+        { at: now, isCapped: true, isUnread: true, text: '' },
+    ]);
+    expect(s.toasts).toEqual(['⏰ waker: an unrecognised cap — check FRM-488']);
+});
+
+test('an error end under 95 % with no cap signal logs no unread row and no toast', async ($, on) => {
+    const s = await session(
+        $,
+        on,
+        {},
+        NOW,
+        undefined,
+        `${reworded('2026-11-02T19:00:40.955Z')}\n`,
+        50,
+    );
+    await endTurn($, '', 'error');
+    expect(s.store['cap-seen']).toEqual([
+        { at: NOW, isCapped: false, text: '' },
+    ]);
+    expect(s.toasts).toEqual([]);
 });

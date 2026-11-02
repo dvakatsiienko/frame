@@ -2428,14 +2428,16 @@ async function keepCapSeen(
     $: EngineInterface,
     text: string,
     isCapped: boolean,
+    isUnread = false,
 ) {
     const kept =
         ((await $.store.get(CAP_SEEN).catch(() => undefined)) as
-            | { at: number; isCapped: boolean; text: string }[]
+            | { at: number; isCapped: boolean; isUnread?: true; text: string }[]
             | undefined) ?? [];
     const seen = {
         at: await $.clock.now(),
         isCapped,
+        ...(isUnread ? { isUnread: true as const } : {}),
         text: text.slice(0, 300),
     };
     await $.store
@@ -4129,8 +4131,17 @@ export const register: Register = (on) => {
                 ? { resetsAt: resetOf(read?.resetsAt, await $.clock.now()) }
                 : undefined;
         await $.state.set(CAP, cap ?? null).catch(() => undefined);
+        // a cap only the full window named is a shape the hook could not read: never silent (dima, 2026-11-02)
+        const isUnread = cap !== undefined && !read && !CAPPED.test(e.answer);
         if (e.reason === 'error' || /session limit/i.test(e.answer))
-            await keepCapSeen($, read?.text ?? e.answer, cap !== undefined);
+            await keepCapSeen(
+                $,
+                read?.text ?? e.answer,
+                cap !== undefined,
+                isUnread,
+            );
+        if (isUnread)
+            $.ui.toast('⏰ waker: an unrecognised cap — check FRM-488');
         await armWake($);
         // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
