@@ -200,9 +200,8 @@
   - decision: a pane of its own, dima's pick a of four homes tried side by side (16:20); the band is capped by cc's `maxRows` and the fold-out scrolled the list out of sight, the grid in the band would still shift the layout as parts grow, a dialog-mannered pane looked the same as a plain one, and a tab row inside 🚦 is kept as an idea (`../api-map.md`)
   - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the pane, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
-  - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
-  - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
-  - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; clio's «build the rest of slice 05 meanwhile»)
+  - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
+  - decision: the band's parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; clio's «build the rest of slice 05 meanwhile»)
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given any part switched off, then the whole feature is off, for every model too: nothing drawn, no line of it in a prompt or a tool result, no turn it would start, and its orbit op refused in one line naming the switch; switched back on, all of it returns
     - the `assumed` section, `🌔 phases`, `🛼 glide`: their lines leave, ops `assume` `plan` `glide` refused
@@ -520,7 +519,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the board's 4 s poll holds its redraw while a field was typed into in the last 3 s — after the save delay it was the one redraw left that snapped the field back (dima's o8, 16:54)
   - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ▶️ ⏹️, then the steer; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the steer shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
-  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️` then the pick bold, the mock's card shape (dima, 17:00; the «pick» word dropped at 17:08: «➡️ already tells it is a pick»)
+  - decision: the id leads its ask in bold — `o6: waker v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️` then the pick bold, the mock's card shape (dima, 17:00; the «pick» word dropped at 17:08: «➡️ already tells it is a pick»)
   - decision: the header reads `🪐 orbit`, no count (dima, 16:54; was `🪐 orbit: n`)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of steer — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
@@ -614,39 +613,13 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
   - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
 
-## the prompt enhancer — enhance | prev | new
+## the prompt — the tickets it names
 
-- ✅ enhance swaps in a cleaned-up prompt
-  - decision: the buttons are 🪄 ⏪ ⏩, named on hover «enhance prompt», «your text», «enhanced text» (dima, 23:13)
-  - decision: ⏪ ⏩ stay drawn while 🪄 runs, so the row never jumps; a press on them waits out the call (dima, 23:17)
-  - 📌 a mod reload cuts a running call; the next start drops its «running», so ⏪ ⏩ work again at once
-  - makes: the box's text, rewritten; `enhancer.md` beside the hooks is what Haiku reads as its rules
-  - given dima typed or dictated a prompt
-  - when he presses `🪄` in the band
-  - then Haiku 5.5 is called once with the rules, every slash command and his wispr dictionary's mishearing rows (never a snippet), and the box holds its answer: misheard names fixed, a skill he asks for as its `/name`, ticket ids written `FRM-N`
-  - decision: only wispr's mishearing rows reach Haiku, picked by wispr's own `isSnippet` flag — a snippet once expanded «my email address» into the literal address (dima, 2026-10-11 11:11)
-  - decision: while it runs 🪄 rests dimmed as if disabled, no spinner and no «🪄…» — the api has no `disabled`, a press then does nothing, and a spinner breaks the no-repainting rule (dima, 2026-10-11 11:56)
 - ✅ a prompt that names a ticket hands the session the ticket
-  - given dima sends a prompt naming `FRM-N` or `BYT-N`, typed or enhanced
+  - given dima sends a prompt naming `FRM-N` or `BYT-N`, typed or dictated
   - when it reaches the session
   - then the session gets one model-only line per ticket linear knows: its id, title, state and link, read by the mod through `x linear`; the box keeps a plain `FRM-N`; a peer's prompt, an unknown id or x down adds nothing
   - decision: the session needs the ticket, not a link to it — a link in the box was long and never clickable, a painted id was only paint (dima's o14, 23:07)
-- ✅ prev and new swap back with no call
-  - given he pressed enhance
-  - when he presses `⏪`, then `⏩`
-  - then prev puts back his own text exactly as he typed it, and new brings the enhanced text back with any edits he made to it, and an emptied box (a sent prompt) is never taken for an edit; a second `enhance` makes exactly one more call
-  - 📌 on the desktop a fill drops a trailing newline (FRM-382 step 0), so «exactly» holds for any text that does not end in one
-  - given he sent the box
-  - then ⏪ and ⏩ leave the band until the next enhance (dima's o11, 2026-10-11 11:11)
-- ✅ his typing wins
-  - given enhance is running
-  - when he types in the box, or presses enhance again
-  - then the answer is dropped and his text stays; the second press makes no call
-  - decision: the drop reads the box when Haiku answers, not each keystroke: the test harness raises no `prompt.edit`, and the call itself runs to its end (a few cents of Haiku)
-- ✅ an error leaves his text alone
-  - given Haiku errors, answers nothing, or takes over 30 s
-  - when the call ends
-  - then the box keeps his text and the band names the reason in one red line
 
 ## cost questions — the price facts, never recall (todo 17)
 

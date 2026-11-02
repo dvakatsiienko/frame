@@ -12,7 +12,6 @@ import type {
     RemoteMark,
     StashCap,
     StashDigest,
-    StashEnhancer,
     StashEntry,
     StashLane,
     StashMember,
@@ -193,11 +192,6 @@ export const PARTS = [
         label: '⏳ time to the 5h reset',
     },
     { group: 'stash · band', key: 'stash.wait', label: '🔭 wait line' },
-    {
-        group: 'stash · band',
-        key: 'stash.enhancer',
-        label: '🪄 ⏪ ⏩ enhancer',
-    },
     { group: 'stash · band', key: 'stash.hot', label: '🔥 keep-hot' },
     { group: 'stash · band', key: 'stash.waker', label: '⏰ waker' },
     { group: 'stash · band', key: 'stash.afk', label: '💨 afk' },
@@ -367,12 +361,6 @@ const START_SESSION_TOOL = 'mcp__ccd_session__start_session';
 const BOOT_NOTE = 'the boot continues; the board ends the turn';
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b|\bmobile mode off\b/i;
-// the prompt enhancer: Haiku rewrites the box on a press; prev and new swap the two texts back with no call
-const ENHANCER = { key: 'enhancer', plugin: 'x-mod-stash' } as const;
-const ENHANCE_MODEL = 'claude-haiku-5-5';
-const ENHANCE_MS = 30_000;
-const WISPR_DB = 'Library/Application Support/Wispr Flow/flow.sqlite';
-let isEnhancing = false;
 const TICKET_ID_ALL = /(?<!\[)\b(?:FRM|BYT)-\d+\b(?!\])/g;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
@@ -1226,47 +1214,6 @@ function noBoardReminder(o: StashOrbit, isOn: IsPartOn) {
     return `no board reaches dima: end the reply with the asks fence, «⏳ waiting on your word:», every open orbit ask${ids} with its id and pick, and each new ask as one ➡️ line${moves}. his answers come back in his prompt; resolve the ones he answered by id through ${ORBIT_TOOL} while 🪐 orbit is switched on.${stale}`;
 }
 
-const enhancerOf = async ($: EngineInterface): Promise<StashEnhancer> =>
-    (await $.state.get(ENHANCER)).value ?? { status: 'idle' };
-const saveEnhancer = ($: EngineInterface, next: StashEnhancer) =>
-    $.state.set(ENHANCER, next).catch(() => undefined);
-
-// what Haiku reads beside the prompt: the rules, every slash command by name, and dima's wispr dictionary
-async function enhancerSystem($: EngineInterface) {
-    const rules = await $.fs.read(`${$.plugin.root}/enhancer.md`);
-    const commands = (await $.command.list().catch(() => []))
-        .map((c) => `/${c.name} — ${c.description}`)
-        .join('\n');
-    const dictionary = await $.process
-        .run([
-            'sqlite3',
-            '-readonly',
-            '-separator',
-            ' → ',
-            `${await $.env.get('HOME')}/${WISPR_DB}`,
-            'select coalesce(isSnippet, 0), phrase, replacement from Dictionary where isDeleted = 0 and replacement is not null',
-        ])
-        .catch(() => undefined);
-    // only the mishearing rows: wispr flags a snippet (a short cue for a long text), whose extra lines lead with no flag
-    // (dima, 2026-10-11 11:11)
-    const heard =
-        dictionary?.exitCode === 0
-            ? dictionary.stdout
-                  .split('\n')
-                  .filter((l) => l.startsWith('0 → '))
-                  .map((l) => l.slice('0 → '.length))
-                  .join('\n')
-            : '(unreadable now)';
-    return [
-        { text: rules },
-        { text: `the slash commands:\n${commands}` },
-        {
-            cache: true as const,
-            text: `dima's dictionary, heard → meant:\n${heard}`,
-        },
-    ];
-}
-
 // what each ticket a prompt names is, read through `x linear`, so the session starts with it instead of looking it up;
 // x down or an unknown id adds nothing (dima's o14, 23:07)
 async function ticketNote($: EngineInterface, text: string) {
@@ -1306,97 +1253,6 @@ async function ticketNote($: EngineInterface, text: string) {
     } catch {
         return undefined;
     }
-}
-
-// one call per press; a keystroke while it runs keeps his text and drops the answer, an error leaves the box alone
-async function enhance($: EngineInterface) {
-    // set before any await, so a second press in the same moment finds it
-    if (isEnhancing) return;
-    isEnhancing = true;
-    try {
-        await enhanceOnce($);
-    } finally {
-        isEnhancing = false;
-    }
-}
-
-async function enhanceOnce($: EngineInterface) {
-    const before = await enhancerOf($);
-    const pressed = (await $.prompt.read()).text;
-    if (!pressed.trim()) return;
-    await saveEnhancer($, { ...before, error: undefined, status: 'running' });
-    const stop = new AbortController();
-    const timer = $.clock.after(ENHANCE_MS, () => stop.abort());
-    let answer: string | undefined;
-    let failure: string | undefined;
-    try {
-        const r = await $.model.complete(
-            {
-                maxTokens: 2048,
-                model: ENHANCE_MODEL,
-                prompt: pressed,
-                system: await enhancerSystem($),
-            },
-            { signal: stop.signal },
-        );
-        if (r.isAnswered && r.text.trim()) answer = r.text.trim();
-        else
-            failure = stop.signal.aborted
-                ? `Haiku took over ${ENHANCE_MS / 1000} s`
-                : `Haiku gave no prompt back (${r.isAnswered ? 'empty' : r.reason})`;
-    } catch (err) {
-        failure = errorText(err);
-    }
-    timer.cancel();
-    // read again, not `before`: a send while Haiku answered cleared ⏪ ⏩, and that stays
-    const now = await enhancerOf($);
-    if ((await $.prompt.read()).text !== pressed)
-        return saveEnhancer($, { ...now, status: 'idle' });
-    if (answer === undefined)
-        return saveEnhancer($, {
-            ...now,
-            error: `enhance: ${failure}; your text is untouched`,
-            status: 'idle',
-        });
-    if (answer === pressed)
-        return saveEnhancer($, {
-            ...now,
-            error: 'enhance: Haiku found nothing to change',
-            status: 'idle',
-        });
-    const filled = await $.prompt.fill({ text: answer });
-    // a refused fill keeps the answer, so new can try the box again
-    await saveEnhancer($, {
-        error: filled.isFilled
-            ? undefined
-            : `enhance: the box did not take the answer (${filled.refusal ?? 'a hook kept it out'}); press new to retry`,
-        latest: answer,
-        original: pressed,
-        status: 'idle',
-    });
-}
-
-// prev keeps whatever he changed in the enhanced text, so new brings his edits back with it
-async function enhancePrev($: EngineInterface) {
-    const s = await enhancerOf($);
-    if (s.status === 'running' || s.original === undefined) return;
-    const box = (await $.prompt.read()).text;
-    // an empty box is a sent prompt, never an edit: it keeps the enhanced text for new
-    const latest = box === s.original || !box.trim() ? s.latest : box;
-    await saveEnhancer($, { ...s, error: undefined, latest });
-    await $.prompt.fill({ text: s.original });
-}
-
-async function enhanceNew($: EngineInterface) {
-    const s = await enhancerOf($);
-    if (s.status === 'running' || s.latest === undefined) return;
-    const filled = await $.prompt.fill({ text: s.latest });
-    await saveEnhancer($, {
-        ...s,
-        error: filled.isFilled
-            ? undefined
-            : `enhance: the box did not take the text (${filled.refusal ?? 'a hook kept it out'})`,
-    });
 }
 
 // dima marks or steers asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
@@ -3932,10 +3788,6 @@ export const register: Register = (on) => {
             turnAfk = kept.turn.afk;
         }
         digest = kept.view?.digest;
-        // a reload unloads the old module and aborts its Haiku call, so a stored «running» is stale
-        const enhancer = await enhancerOf($);
-        if (enhancer.status === 'running')
-            await saveEnhancer($, { ...enhancer, status: 'idle' });
         await load($);
         await armHot($);
         await armWake($);
@@ -4022,9 +3874,6 @@ export const register: Register = (on) => {
         if (isUser) {
             // dima read the away digest once he types again
             digest = undefined;
-            // a sent box ends the enhance: ⏪ ⏩ leave the band (dima's o11, 11:11)
-            const { status } = await enhancerOf($);
-            await saveEnhancer($, { status });
             if (BACK_AT_MAC.test(e.text))
                 await $.state.set(MOBILE, false).catch(() => undefined);
         }
@@ -6556,9 +6405,6 @@ export const register: Register = (on) => {
                     // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
                     const view =
                         (await $.state.get(VIEW)).value ?? viewOf(false);
-                    const enhancer = (await $.state.get(ENHANCER)).value ?? {
-                        status: 'idle' as const,
-                    };
                     const o = (await $.state.get(ORBIT)).value ?? orbit;
                     const ui = $.ui.resolve(e);
                     const { Box, Text, Button } = ui;
@@ -6973,58 +6819,6 @@ export const register: Register = (on) => {
                     );
                     // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
                     // edge (dima's o6 and o7, 22:03)
-                    // 🪄 ⏪ ⏩, beside the switches, each named on hover in a few words (dima, 23:13); while the call runs 🪄 rests
-                    // dimmed as if disabled, the api has no `disabled` and a press then is a no-op (dima, 2026-10-11 11:56); each emoji
-                    // draws two cells, so its card sits two past it
-                    const isEnhancing = enhancer.status === 'running';
-                    const enhancerJSX = (
-                        <Box
-                            flexDirection='row'
-                            flexShrink={0}
-                            gap={1}
-                            key='enhancer'>
-                            {tip(
-                                'enh:enhance',
-                                isEnhancing
-                                    ? 'enhancing; type to cancel'
-                                    : 'enhance prompt',
-                                <Button
-                                    dimColor={isEnhancing}
-                                    key='enh:enhance'
-                                    onPress={() => void enhance($)}
-                                    plain>
-                                    🪄
-                                </Button>,
-                                { right: 3 },
-                            )}
-                            {enhancer.original !== undefined
-                                ? tip(
-                                      'enh:prev',
-                                      'your text',
-                                      <Button
-                                          key='enh:prev'
-                                          onPress={() => void enhancePrev($)}
-                                          plain>
-                                          ⏪
-                                      </Button>,
-                                      { right: 3 },
-                                  )
-                                : null}
-                            {enhancer.latest !== undefined
-                                ? tip(
-                                      'enh:new',
-                                      'enhanced text',
-                                      <Button
-                                          key='enh:new'
-                                          onPress={() => void enhanceNew($)}
-                                          plain>
-                                          ⏩
-                                      </Button>,
-                                      { right: 3 },
-                                  )
-                                : null}
-                        </Box>
-                    );
                     // each «waiting on <who>» part of a 🔭 wait prints <who> bold, its «— how» tail plain (dima, 2026-10-10 23:54)
                     const waitJSX = (wait: string) =>
                         wait.split('; ').map((part, i) => (
@@ -7073,7 +6867,6 @@ export const register: Register = (on) => {
                                     </Box>
                                 ) : null}
                             </Box>
-                            {isShown('stash.enhancer') ? enhancerJSX : null}
                             {switches}
                         </Box>
                     );
@@ -7145,14 +6938,6 @@ export const register: Register = (on) => {
                             {row}
                             {/* the terminal reads the 5h and ctx on sline's line; the desktop keeps the bars (dima, 15:06) */}
                             {Svg ? meters : null}
-                            {enhancer.error ? (
-                                <Text
-                                    color='error'
-                                    key='enh:error'
-                                    wrap='truncate-end'>
-                                    {enhancer.error}
-                                </Text>
-                            ) : null}
                             {meter?.note ? (
                                 <Text color='error' wrap='truncate-end'>
                                     {meter.note}

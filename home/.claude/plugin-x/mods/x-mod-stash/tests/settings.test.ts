@@ -63,8 +63,8 @@ async function band($: Engine) {
     });
 }
 
-const hasEnhancer = async (ui: Awaited<ReturnType<typeof band>>) =>
-    (await ui.find({ key: 'enh:enhance', type: 'Button' })) !== undefined;
+const hasWaker = async (ui: Awaited<ReturnType<typeof band>>) =>
+    (await ui.find({ key: 'waker', type: 'Button' })) !== undefined;
 
 // the 🎛️ pane, mounted once per test (a second mount of the same requestId throws)
 const pane = ($: Engine) =>
@@ -91,8 +91,8 @@ test('🎛️ opens the settings pane: a switch per part, grouped under its mod'
     expect([
         opened.includes('stash-settings'),
         (await view.find({ text: 'stash · band', type: 'Text' }))?.text,
-        (await view.find({ key: 'part:stash.enhancer', type: 'Button' }))?.text,
-    ]).toEqual([true, 'stash · band', '🪄 ⏪ ⏩ enhancer']);
+        (await view.find({ key: 'part:stash.waker', type: 'Button' }))?.text,
+    ]).toEqual([true, 'stash · band', '⏰ waker']);
 });
 
 test('the band draws no settings of its own', async ($, on) => {
@@ -100,7 +100,7 @@ test('the band draws no settings of its own', async ($, on) => {
     const ui = await band($);
     await ui.press({ key: 'settings' });
     expect([
-        await ui.find({ key: 'part:stash.enhancer' }),
+        await ui.find({ key: 'part:stash.waker' }),
         await ui.find({ key: 'compact-at' }),
     ]).toEqual([undefined, undefined]);
 });
@@ -111,20 +111,20 @@ test('a shown part is an accent button, a hidden one dim, with no shown or hidde
     const view = await pane($);
     const look = async () => {
         const b = await view.find({
-            key: 'part:stash.enhancer',
+            key: 'part:stash.waker',
             type: 'Button',
         });
         const row = await view.find({
-            key: 'settings:row:stash.enhancer',
+            key: 'settings:row:stash.waker',
             type: 'Box',
         });
         return [b?.props.variant, b?.props.dimColor, row?.text];
     };
     const before = await look();
-    await view.press({ key: 'part:stash.enhancer' });
+    await view.press({ key: 'part:stash.waker' });
     expect([before, await look()]).toEqual([
-        ['primary', undefined, '🪄 ⏪ ⏩ enhancer'],
-        [undefined, true, '🪄 ⏪ ⏩ enhancer'],
+        ['primary', undefined, '⏰ waker'],
+        [undefined, true, '⏰ waker'],
     ]);
 });
 
@@ -150,32 +150,32 @@ test('a second 🎛️ press closes the pane and leaves no transcript rows', asy
     ]).toEqual([true, 0]);
 });
 
-test('hiding the enhancer takes its buttons off the band and saves the switch', async ($, on) => {
+test('hiding the ⏰ waker takes its button off the band and saves the switch', async ($, on) => {
     const { store } = world(on);
     const ui = await band($);
     const view = await pane($);
-    await view.press({ key: 'part:stash.enhancer' });
-    expect([await hasEnhancer(ui), store.get('shown')]).toEqual([
+    await view.press({ key: 'part:stash.waker' });
+    expect([await hasWaker(ui), store.get('shown')]).toEqual([
         false,
-        { 'stash.enhancer': false },
+        { 'stash.waker': false },
     ]);
 });
 
 test('a switch another session saved shows here after one poll', async ($, on) => {
     const { clock, store } = world(on);
     const ui = await band($);
-    store.set('shown', { 'stash.enhancer': false });
+    store.set('shown', { 'stash.waker': false });
     await clock.advance(4000);
-    expect(await hasEnhancer(ui)).toBe(false);
+    expect(await hasWaker(ui)).toBe(false);
 });
 
-test('one flip back brings the enhancer buttons again', async ($, on) => {
+test('one flip back brings the ⏰ button again', async ($, on) => {
     const { store } = world(on);
-    store.set('shown', { 'stash.enhancer': false });
+    store.set('shown', { 'stash.waker': false });
     const ui = await band($);
     const view = await pane($);
-    await view.press({ key: 'part:stash.enhancer' });
-    expect(await hasEnhancer(ui)).toBe(true);
+    await view.press({ key: 'part:stash.waker' });
+    expect(await hasWaker(ui)).toBe(true);
 });
 
 // each band part: drawn by default, gone one poll after another session hides it
@@ -205,8 +205,8 @@ for (const [part, query] of BAND_PARTS)
 
 test('a switch saved before the session starts holds from its first draw', async ($, on) => {
     const { store } = world(on);
-    store.set('shown', { 'stash.enhancer': false });
-    expect(await hasEnhancer(await band($))).toBe(false);
+    store.set('shown', { 'stash.waker': false });
+    expect(await hasWaker(await band($))).toBe(false);
 });
 
 test("a flip keeps another session's switch it has not polled yet", async ($, on) => {
@@ -214,10 +214,10 @@ test("a flip keeps another session's switch it has not polled yet", async ($, on
     await band($);
     const view = await pane($);
     store.set('shown', { 'stash.chips': false });
-    await view.press({ key: 'part:stash.enhancer' });
+    await view.press({ key: 'part:stash.waker' });
     expect(store.get('shown')).toEqual({
         'stash.chips': false,
-        'stash.enhancer': false,
+        'stash.waker': false,
     });
 });
 

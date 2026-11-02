@@ -11,7 +11,7 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 
 - a mod change is proven by `claude plugin test <a scratch copy>` plus a headless `claude -p --settings <file>` run, so the live mod is never the test bench (FRM-356)
 
-- a model-backed part (the enhancer) gets one live run beside its mocked tests — `claude -p --model claude-haiku-5-5` with the real prompt files; the mocks hid the snippet expansion the live run found (FRM-382 sixth sense)
+- a model-backed part gets one live run beside its mocked tests — `claude -p --model claude-haiku-5-5` with the real prompt files; the mocks hid the snippet expansion the live run found (FRM-382 sixth sense)
 - `claude -p` inside a `while read` loop eats the loop's stdin; pass `</dev/null` (FRM-382 sixth sense)
 - `mods:live` cannot show bold, the desktop layout or a real 5h reset; those stay dima's eye each round, said in the report (FRM-382 codie)
 

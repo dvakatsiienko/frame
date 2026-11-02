@@ -105,8 +105,6 @@ _Avoid_: guess, assumed ask
 clio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; on by default, `/quiet off` (or 🎛️) its revert.
 _Avoid_: mute, silent mode, filter
 
-**Enhancer**:
-The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
 _Avoid_: prompt rewriter, polish
 
 **Mobile mode**:
