@@ -15,8 +15,26 @@ const SID = 'w4k3w4k3-aaaa';
 const CAPPED = "You've hit your session limit · resets 11:40pm (Europe/Kiev)";
 
 // a session whose stash store already holds `store`, its 5h reset 30 min out
-async function session($: Engine, on: On, store: Record<string, unknown> = {}) {
-    const clock = mock.clock(on, { now: NOW });
+async function session(
+    $: Engine,
+    on: On,
+    store: Record<string, unknown> = {},
+    now = NOW,
+    fiveHour = now + 30 * MIN,
+    tail = '',
+    percentUsed = 100,
+) {
+    const clock = mock.clock(on, { now });
+    on('env.get', () => ({ value: '/home/test' }));
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: tail,
+        },
+    }));
     on('store.get', (_$, e) => ({ value: store[e.key] }));
     on('store.set', (_$, e) => {
         store[e.key] = e.value;
@@ -52,8 +70,8 @@ async function session($: Engine, on: On, store: Record<string, unknown> = {}) {
         rateLimits: [
             {
                 kind: 'five_hour',
-                percentUsed: 100,
-                resetsAt: new Date(NOW + 30 * MIN).toISOString(),
+                percentUsed,
+                resetsAt: new Date(fiveHour).toISOString(),
             },
         ],
     });
@@ -212,4 +230,224 @@ test('an answer that only talks about limits is not kept as a cap', async ($, on
     const s = await session($, on);
     await endTurn($, 'the rate limit doc says 5h', 'answer');
     expect(s.store['cap-seen']).toBeUndefined();
+});
+
+// tonight's cap entries as the transcript holds them (clio e1ac9b71 at 19:00:40Z and 14:29:41Z, codie 6aa1af14 at
+// 18:59:20Z): the turn ends in error with an empty answer, the cap text lives only here
+// the real entry carries the typed quota; `quota: false` drops it, the text alone then names the cap and its reset
+const capLine = (at: string, reset: string, resetsAt?: string) =>
+    JSON.stringify({
+        error: 'rate_limit',
+        isApiErrorMessage: true,
+        ...(resetsAt
+            ? {
+                  quotaLimits: {
+                      rateLimitType: 'five_hour',
+                      resetsAt: Date.parse(resetsAt) / 1000,
+                      status: 'rejected',
+                  },
+              }
+            : {}),
+        message: {
+            content: [
+                {
+                    text: `- You've hit your session limit\n- resets ${reset} (Europe/Kiev)`,
+                    type: 'text',
+                },
+            ],
+            model: '<synthetic>',
+            role: 'assistant',
+        },
+        timestamp: at,
+        type: 'assistant',
+    });
+const userLine = JSON.stringify({
+    message: { content: 'go on' },
+    timestamp: '2026-11-02T18:59:19.000Z',
+    type: 'user',
+});
+
+for (const [name, at, reset, wakeAt] of [
+    [
+        'clio 21:00',
+        '2026-11-02T19:00:40.955Z',
+        '9:30pm',
+        '2026-11-02T19:30:00.000Z',
+    ],
+    [
+        'codie 20:59',
+        '2026-11-02T18:59:20.452Z',
+        '9:30pm',
+        '2026-11-02T19:30:00.000Z',
+    ],
+    [
+        'clio 16:29',
+        '2026-11-02T14:29:41.822Z',
+        '4:30pm',
+        '2026-11-02T14:30:00.000Z',
+    ],
+] as const)
+    test(`the ${name} cap, read from the transcript, wakes the session once at the reset it names`, async ($, on) => {
+        const now = Date.parse(at) + 500;
+        const s = await session(
+            $,
+            on,
+            { waker: { on: true } },
+            now,
+            now + 3 * 60 * MIN,
+            `${userLine}\n${capLine(at, reset, wakeAt)}\n`,
+        );
+        await endTurn($, '', 'error');
+        await s.clock.advance(Date.parse(wakeAt) - now - 1000);
+        expect(s.resumes).toEqual([]);
+        await s.clock.advance(10_000);
+        expect(s.resumes).toHaveLength(1);
+    });
+
+test('the cap read from the transcript is kept in cap-seen', async ($, on) => {
+    const at = '2026-11-02T19:00:40.955Z';
+    const s = await session(
+        $,
+        on,
+        {},
+        Date.parse(at) + 500,
+        undefined,
+        `${capLine(at, '9:30pm', '2026-11-02T19:30:00.000Z')}\n`,
+    );
+    await endTurn($, '', 'error');
+    expect(s.store['cap-seen']).toEqual([
+        {
+            at: Date.parse(at) + 500,
+            isCapped: true,
+            text: "- You've hit your session limit\n- resets 9:30pm (Europe/Kiev)",
+        },
+    ]);
+});
+
+test('a cap entry with no reset it can read waits for the 5h reset the measure named', async ($, on) => {
+    const at = '2026-11-02T19:00:40.955Z';
+    const now = Date.parse(at) + 500;
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        now,
+        now + 20 * MIN,
+        `${capLine(at, 'soon')}\n`,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(21 * MIN);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('an error end whose last entry is no cap arms nothing', async ($, on) => {
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        NOW,
+        undefined,
+        `${JSON.stringify({ error: 'overloaded', message: { content: [{ text: 'API Error: 529', type: 'text' }] }, timestamp: '2026-11-02T18:00:00.000Z', type: 'assistant' })}\n`,
+        50,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(40 * MIN);
+    expect(s.resumes).toEqual([]);
+});
+
+const reworded = (at: string, error?: string) =>
+    JSON.stringify({
+        ...(error ? { error } : {}),
+        message: {
+            content: [
+                { text: 'Usage cap reached. Come back later.', type: 'text' },
+            ],
+        },
+        timestamp: at,
+        type: 'assistant',
+    });
+
+test('a reworded cap that keeps the rate_limit field still arms, at the 5h reset', async ($, on) => {
+    const at = '2026-11-02T19:00:40.955Z';
+    const now = Date.parse(at) + 500;
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        now,
+        now + 20 * MIN,
+        `${reworded(at, 'rate_limit')}\n`,
+        50,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(21 * MIN);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('a reworded cap with no field arms at the 5h reset while the window reads 100 %', async ($, on) => {
+    const at = '2026-11-02T19:00:40.955Z';
+    const now = Date.parse(at) + 500;
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        now,
+        now + 20 * MIN,
+        `${reworded(at)}\n`,
+        100,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(21 * MIN);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('a cap whose named reset is its own minute waits for the measured reset, never re-caps at once', async ($, on) => {
+    const at = '2026-11-02T19:30:02.000Z';
+    const now = Date.parse(at) + 500;
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        now,
+        Date.parse('2026-11-02T19:30:40.000Z'),
+        `${capLine(at, '9:30pm')}\n`,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(30_000);
+    expect(s.resumes).toEqual([]);
+    await s.clock.advance(20_000);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('a cap with no typed quota arms at the reset its text names', async ($, on) => {
+    const at = '2026-11-02T18:59:20.452Z';
+    const now = Date.parse(at) + 500;
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        now,
+        now + 3 * 60 * MIN,
+        `${capLine(at, '9:30pm')}\n`,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(Date.parse('2026-11-02T19:29:59.000Z') - now);
+    expect(s.resumes).toEqual([]);
+    await s.clock.advance(10_000);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('a weekly quota entry arms no 5h wake', async ($, on) => {
+    const s = await session(
+        $,
+        on,
+        { waker: { on: true } },
+        NOW,
+        undefined,
+        `${JSON.stringify({ error: 'rate_limit', message: { content: [{ text: 'Usage limit reached.', type: 'text' }], model: '<synthetic>' }, quotaLimits: { rateLimitType: 'seven_day', resetsAt: 9_999_999 }, timestamp: '2026-11-02T18:00:00.000Z', type: 'assistant' })}\n`,
+        50,
+    );
+    await endTurn($, '', 'error');
+    await s.clock.advance(40 * MIN);
+    expect(s.resumes).toEqual([]);
 });

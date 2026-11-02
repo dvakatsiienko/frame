@@ -350,6 +350,107 @@ export function isFleetName(name: string) {
 // the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
 // prints the timestamp of each SendMessage call whose `to` names her; a call its result answered `success:false`
 // (unreachable, refused by a plugin, a dead socket) never reached her, so it is left out
+// the last lines of a session's transcript, found by its session id: the 5h cap ends a turn as an API error with an empty
+// answer, and its text lives only in the transcript's last assistant entry (FRM-488, measured at two caps 2026-11-02)
+// the newest file of that id, when two project dirs hold one
+export const TRANSCRIPT_TAIL =
+    'f=$(ls -t "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | head -n 1); [ -n "$f" ] && tail -n 40 "$f"';
+
+const CAP_TEXT = /hit your session limit/i;
+
+// the cap the transcript's last assistant entry names, with the reset it names; undefined when that entry is no 5h cap.
+// the signals rank (dima, 2026-11-02, «what if Anthropic changes how this message is shaped?»): the entry's typed quota
+// (`rateLimitType: five_hour`, an exact `resetsAt`), then its `error: rate_limit` unless the text names the weekly limit or
+// credits, then the words «session limit» on an entry cc wrote itself (`<synthetic>`), never on a model's answer
+export function capOf(
+    tail: string,
+): { resetsAt?: number; text: string } | undefined {
+    for (const line of tail.trim().split('\n').reverse()) {
+        let entry: {
+            error?: unknown;
+            message?: { content?: unknown; model?: unknown };
+            quotaLimits?: { rateLimitType?: unknown; resetsAt?: unknown };
+            timestamp?: unknown;
+            type?: unknown;
+        };
+        try {
+            entry = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        if (entry?.type !== 'assistant') continue;
+        const parts = Array.isArray(entry.message?.content)
+            ? entry.message.content
+            : [];
+        const text = parts
+            .flatMap((p: { text?: unknown; type?: unknown } | null) =>
+                p?.type === 'text' && typeof p.text === 'string'
+                    ? [p.text]
+                    : [],
+            )
+            .join('\n');
+        const quota = entry.quotaLimits;
+        if (quota?.rateLimitType !== undefined) {
+            if (quota.rateLimitType !== 'five_hour') return undefined;
+            return typeof quota.resetsAt === 'number'
+                ? { resetsAt: quota.resetsAt * 1000, text }
+                : textCap(text, entry.timestamp);
+        }
+        if (entry.error === 'rate_limit')
+            return OTHER_LIMIT.test(text)
+                ? undefined
+                : textCap(text, entry.timestamp);
+        if (entry.message?.model === '<synthetic>' && CAP_TEXT.test(text))
+            return textCap(text, entry.timestamp);
+        return undefined;
+    }
+    return undefined;
+}
+
+const OTHER_LIMIT = /weekly|credit/i;
+
+function textCap(text: string, timestamp: unknown) {
+    const at =
+        typeof timestamp === 'string' ? Date.parse(timestamp) : Number.NaN;
+    return {
+        resetsAt: Number.isNaN(at) ? undefined : capReset(text, at),
+        text,
+    };
+}
+
+// «resets 9:30pm (Europe/Kiev)» as the first instant at or after `at` whose wall clock in that zone reads 21:30
+export function capReset(text: string, at: number): number | undefined {
+    const m = /resets (\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*\(([^)]+)\)/i.exec(
+        text,
+    );
+    if (!m?.[1] || !m[3] || !m[4]) return undefined;
+    const target =
+        ((Number(m[1]) % 12) + (m[3].toLowerCase() === 'pm' ? 12 : 0)) * 60 +
+        Number(m[2] ?? 0);
+    const zone = m[4];
+    try {
+        const wallOf = (t: number) => {
+            const wall = new Intl.DateTimeFormat('en-GB', {
+                hour: '2-digit',
+                hourCycle: 'h23',
+                minute: '2-digit',
+                timeZone: zone,
+            }).formatToParts(t);
+            const read = (type: string) =>
+                Number(wall.find((p) => p.type === type)?.value);
+            return read('hour') * 60 + read('minute');
+        };
+        const minute = at - (at % 60_000);
+        const guess =
+            minute + ((((target - wallOf(at)) % 1440) + 1440) % 1440) * 60_000;
+        // a DST change between now and the reset moves the wall clock an hour: read the guess back and shift once
+        const drift = ((((target - wallOf(guess)) % 1440) + 2160) % 1440) - 720;
+        return guess + drift * 60_000;
+    } catch {
+        return undefined;
+    }
+}
+
 export const LEDGER_SENDS = [
     't=$(cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null)',
     `bad=$(printf '%s\\n' "$t" | grep -F '\\"success\\":false' | sed -n 's/.*"tool_use_id":"\\([^"]*\\)".*/\\1/p')`,

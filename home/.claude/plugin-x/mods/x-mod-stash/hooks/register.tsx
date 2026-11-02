@@ -50,10 +50,12 @@ import {
 import {
     type BackgroundTask,
     LEDGER_SENDS,
+    TRANSCRIPT_TAIL,
     backgroundWait,
     backgroundWaits,
     boldFleetWords,
     bulletDots,
+    capOf,
     dropWaitAside,
     isFleetName,
     linkTickets,
@@ -604,6 +606,9 @@ export const isWork = (tool: string, command?: string) =>
 let isPrimed = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
+// the 5h window's fill at the last measure: an error end this full is read as the cap when no entry names it (FRM-488)
+let fiveHourPercent: number | undefined;
+const CAP_FULL_PERCENT = 95;
 // the dir the session started in: its project, whose .claude settings the threshold input writes
 let projectDir: string | undefined;
 let cap: StashCap | undefined;
@@ -2438,6 +2443,21 @@ async function keepCapSeen(
         .catch(() => undefined);
 }
 
+// the reset a cap waits on: the one its entry named, unless that is already past (a text reset read to the minute),
+// then the 5h reset the last measure named
+const resetOf = (named: number | undefined, now: number) =>
+    named !== undefined && named > now ? named : fiveHourResetsAt;
+
+async function capFromTranscript($: EngineInterface) {
+    const sid = await currentId($);
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!sid || !home) return undefined;
+    const out = await $.process
+        .run(['sh', '-c', TRANSCRIPT_TAIL, 'sh', home, sid])
+        .catch(() => undefined);
+    return out ? capOf(out.stdout) : undefined;
+}
+
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
 // never fires
 async function armWake($: EngineInterface) {
@@ -4096,14 +4116,21 @@ export const register: Register = (on) => {
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
-        // a stop on the 5h cap waits for the reset; any other end clears it
+        // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
+        // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
+        const read =
+            e.reason === 'error' && !CAPPED.test(e.answer)
+                ? await capFromTranscript($)
+                : undefined;
+        // the signals rank: the entry's typed field or its words, the answer's words, then a 5h window this full
+        const isFull = (fiveHourPercent ?? 0) >= CAP_FULL_PERCENT;
         cap =
-            e.reason === 'error' && CAPPED.test(e.answer)
-                ? { resetsAt: fiveHourResetsAt }
+            e.reason === 'error' && (read || CAPPED.test(e.answer) || isFull)
+                ? { resetsAt: resetOf(read?.resetsAt, await $.clock.now()) }
                 : undefined;
         await $.state.set(CAP, cap ?? null).catch(() => undefined);
         if (e.reason === 'error' || /session limit/i.test(e.answer))
-            await keepCapSeen($, e.answer, cap !== undefined);
+            await keepCapSeen($, read?.text ?? e.answer, cap !== undefined);
         await armWake($);
         // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
@@ -4133,6 +4160,7 @@ export const register: Register = (on) => {
     on('session.measure', async ($, e, next) => {
         const w = e.rateLimits.find((r) => r.kind === 'five_hour');
         const resetsAt = w?.resetsAt ? Date.parse(w.resetsAt) : undefined;
+        if (w) fiveHourPercent = w.percentUsed;
         if (resetsAt !== undefined) {
             fiveHourResetsAt = resetsAt;
             // capped before any measure named the reset: wait for this one

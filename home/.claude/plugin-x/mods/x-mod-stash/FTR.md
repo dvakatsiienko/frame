@@ -165,7 +165,10 @@
   - when dima switches ⏰ on later
   - then the session that reset left capped is not woken; ⏰ on before the reset still wakes it (o102)
   - makes: one `waker` key in x-mod-stash's `$.store`, `{ on }`, so a restart keeps the switch; the cap and the reset it was sent for live in `$.state` (`cap`); a `cap-seen` key keeps the last 5 error-ended or «session limit» turns, `{ at, isCapped, text }`, the text cut at 300
-  - decision: «on the cap» is a turn that ended in error with «hit your session limit» — the text the 5h cap writes (8 transcript rows, 2026-10-08); the weekly cap and spent credits read otherwise and are left alone. inferred from transcripts, no capped turn seen through the hook yet; `cap-seen` holds the first real one's text, which turns this into a measured line
+  - given a session's turn ends in error with an empty answer and its transcript's last assistant entry is the cap (`error: rate_limit`, «hit your session limit · resets 9:30pm (Europe/Kiev)»)
+  - when the hook reads that entry
+  - then the wake arms for the reset the entry names, the 5h reset from the last measure when the entry names none, and `cap-seen` keeps the entry's text (FRM-488)
+  - decision: «on the cap» is measured, not inferred: at both caps of 2026-11-02 (20:59, 21:00) the turn ended `reason: error` with `e.answer` empty; the cap's text lives only in the transcript's last assistant entry, so an error end reads it there; the weekly cap and spent credits read otherwise and are left alone
   - decision: each session wakes itself at the reset its last measure named, a few seconds after; no message crosses sessions, and a capped session that never measured waits for its first measure
   - decision: off unless dima clicks — «I don't want this to be permanent … gated behind a button, like the hot button, but global» (dima, 2026-10-09)
 - ⬜ 💨 afk turns ⏰ on with it (riders 11-02)

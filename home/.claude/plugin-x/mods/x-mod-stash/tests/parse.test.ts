@@ -2,6 +2,8 @@ import { expect, test } from 'claude-code/testing';
 
 import {
     backgroundWait,
+    capOf,
+    capReset,
     isFleetName,
     parseWait,
     waitSpans,
@@ -137,4 +139,54 @@ test('an unmarked waiting-on keeps its whole <who> bold, as a background task re
         { isBold: false, text: 'waiting on ' },
         { isBold: true, text: '🦅 scout +1' },
     ]);
+});
+
+const entry = (
+    error: string | undefined,
+    text: string,
+    at = '2026-11-02T19:00:40.955Z',
+) =>
+    JSON.stringify({
+        ...(error ? { error } : {}),
+        message: { content: [{ text, type: 'text' }] },
+        timestamp: at,
+        type: 'assistant',
+    });
+
+test('a rate_limit entry naming the weekly limit is no 5h cap', () => {
+    expect(
+        capOf(
+            entry(
+                'rate_limit',
+                "You've hit your weekly limit · resets Nov 5, 9am",
+            ),
+        ),
+    ).toBe(undefined);
+});
+
+test('a rate_limit entry about spent credits is no 5h cap', () => {
+    expect(capOf(entry('rate_limit', 'Credit balance too low'))).toBe(
+        undefined,
+    );
+});
+
+test('a «session limit» quote in an answer with no error field is no cap', () => {
+    expect(
+        capOf(
+            entry(
+                undefined,
+                'the waker reads «hit your session limit» from the transcript',
+            ),
+        ),
+    ).toBe(undefined);
+});
+
+test('the reset lands on its wall clock across a DST fall-back', () => {
+    // Kyiv leaves EEST at 04:00 local on 2026-10-25: 01:30 EEST is 22:30Z, 6:30am EET is 04:30Z
+    expect(
+        capReset(
+            'resets 6:30am (Europe/Kiev)',
+            Date.parse('2026-10-24T22:30:00.000Z'),
+        ),
+    ).toBe(Date.parse('2026-10-25T04:30:00.000Z'));
 });
