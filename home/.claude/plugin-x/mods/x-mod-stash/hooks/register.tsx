@@ -146,7 +146,7 @@ const QUIET_ON = 'quiet-comms';
 // (dima, 10-13 17:49)
 const UNDO_WINDOW = 'undo-window';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
-const LINES = { max: 7, min: 5 } as const;
+const LINES = { isWhole: true, max: 7, min: 5 } as const;
 // how long held member pings wait before the hidden idle append, in minutes (dima, 16:53: 10 by default, maybe 15)
 const QUIET_WAIT = 'quiet-wait';
 // the undo window's length in seconds, set beside its switch (dima, 10-13 18:01)
@@ -3552,14 +3552,18 @@ async function flipPart($: EngineInterface, key: string) {
 
 // a 🎛️ number knob's value: a whole or decimal number inside its range, else undefined — a half-typed «0.» or an out of
 // range «8» on the way to nothing is never applied
-function numberOf(v: unknown, range: { min: number; max: number }) {
+function numberOf(
+    v: unknown,
+    range: { min: number; max: number; isWhole?: boolean },
+) {
     const text =
         typeof v === 'number'
             ? String(v)
             : typeof v === 'string'
               ? v.trim()
               : '';
-    if (!/^\d+(\.\d+)?$/.test(text)) return undefined;
+    if (!(range.isWhole ? /^\d+$/ : /^\d+(\.\d+)?$/).test(text))
+        return undefined;
     const n = Number(text);
     return n >= range.min && n <= range.max ? n : undefined;
 }
@@ -4146,25 +4150,32 @@ export const register: Register = (on) => {
 
     // the drawing: the reply's ·-list shows as bullets while it streams, before the stored row exists
     on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
-        const switches = (await $.state.get(VIEW)).value?.shown ?? {};
-        const dotted =
-            switches['stash.bullets'] !== false
-                ? bulletDots(e.props.text)
-                : e.props.text;
-        // each fix is mechanical and behind its own switch; reply-check no longer logs what these redraw (todo 29)
-        const fixes: [string, (t: string) => string][] = [
-            ['stash.circled', numberCircled],
-            ['stash.tickets', linkTickets],
-            ['stash.waitaside', dropWaitAside],
-        ];
-        const fixed = fixes.reduce(
-            (t, [key, fix]) => (switches[key] !== false ? fix(t) : t),
-            dotted,
-        );
-        const { text } =
-            switches['stash.boldwords'] !== false
-                ? boldFleetWords(fixed)
-                : { text: fixed };
+        // a fix that throws draws the reply as written, never a blank
+        let text: string;
+        try {
+            const switches = (await $.state.get(VIEW)).value?.shown ?? {};
+            const dotted =
+                switches['stash.bullets'] !== false
+                    ? bulletDots(e.props.text)
+                    : e.props.text;
+            // each fix is mechanical and behind its own switch; reply-check no longer logs what these redraw (todo 29)
+            const fixes: [string, (t: string) => string][] = [
+                ['stash.circled', numberCircled],
+                ['stash.tickets', linkTickets],
+                ['stash.waitaside', dropWaitAside],
+            ];
+            const fixed = fixes.reduce(
+                (t, [key, fix]) => (switches[key] !== false ? fix(t) : t),
+                dotted,
+            );
+            text = (
+                switches['stash.boldwords'] !== false
+                    ? boldFleetWords(fixed)
+                    : { text: fixed }
+            ).text;
+        } catch {
+            return next(e);
+        }
         if (text === e.props.text) return next(e);
         return next({ ...e, props: { ...e.props, text } });
     });
@@ -4932,13 +4943,6 @@ export const register: Register = (on) => {
                         kept: Record<string, boolean>,
                         card: string,
                     ) => kept[card] ?? FOLDED_CARD.test(card);
-                    const flipFold = async (card: string) => {
-                        const was = (await $.state.get(FOLDS)).value ?? {};
-                        await $.state.set(FOLDS, {
-                            ...was,
-                            [card]: !foldedOf(was, card),
-                        });
-                    };
                     const isFolded = (card: string) => foldedOf(folds, card);
                     // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
                     const foldJSX = (card: string) => (
