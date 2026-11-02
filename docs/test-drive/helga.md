@@ -248,6 +248,9 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-02 · prompt-groom · 1310 · 0 · 1310: 5 lines, W1090-W1093, 2 ❓; codie: left of ← is context, right of ← groomed as W1090; 'planed' corrected to 'planned'
 - 2026-11-02 · prompt-groom · 1312+1316+o13 · 0 · 1312: W1094; 1316: W1095 + W1096 ❓; o13: W1097 (o13 steer stamp); 'ater'/'daed' typos fixed; W1094-W1097 appended to PK-297 notes
 - 2026-11-02 · prompt-groom · 1326+1339 · 0 · 1326: W1098 + W1099 ❓; lines 1-10 are pasted clio board, context, no W-line; 1339: W1100; W1098-W1100 appended to PK-297 notes
+- 2026-11-02 · prompt-groom · 1345+1354+1405+o16+o18 · 0 · W1101-W1128; 5 files; 1345: 1 ❓ x2 ❓; 1354: 4 ❓; 1405: 2 ❓; o16/o18 stamps absent in brief (date only); 14:03 no raw file in list, no line made; typo 'is there is' -> 'is there a', 'did not managed' -> 'did not manage', 'when he done' -> 'when he is done'; W1101-W1128 appended to PK-297 notes
+- 2026-11-02 · prompt-groom · 1411 · 0 · 14:11 groomed W1133-W1142, homed in PK-297; W1127/W1128 stamps fixed by clio; --day and pocket-check green
+- 2026-11-02 · prompt-groom · 1440 · 0 · 14:40 groomed W1143-W1180, homed in PK-298 (new, gta iv launcher); 14:23 no-wish added; --day and pocket-check green
 
 ## rounds
 
