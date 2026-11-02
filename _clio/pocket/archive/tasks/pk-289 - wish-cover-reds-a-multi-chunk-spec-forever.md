@@ -26,3 +26,4 @@ kept: 2026-11-01 — clio's script fix, queued behind the pm module (dima's orde
 
 close: 2026-11-01 — already fixed: the hook checks every wish: id against its own section; proven on a two-chunk .scratch spec, green when copied, red on a reworded W798 in chunk 2
 <!-- SECTION:NOTES:END -->
+close-fix: 2026-11-02 — the 11-01 «already fixed» was wrong: the hook still ran every id over the whole spec; fixed for real in 92075ee4 and 2fb (the fallback), proven on mods lane 4's spec (wishkeeper, siesta 11-02)

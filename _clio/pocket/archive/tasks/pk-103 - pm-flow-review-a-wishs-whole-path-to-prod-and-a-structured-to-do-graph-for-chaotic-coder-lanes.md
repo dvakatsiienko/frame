@@ -591,9 +591,9 @@ W341 (2026-10-29 13:44, dima): let's figure out if the lane question is solved, 
 W342 (2026-10-29 13:44, dima): the other renaming part is smaller: summoning vs spawning.
 W343 (2026-10-29 13:44, dima): i thought to have a separation in terminology.
 W344 (2026-10-29 13:44, dima): currently, we call everything spawning.
-W345 (2026-10-29 13:44, dima): for example, you spawn a subagent, a researcher, a helper, a secror (?), a coder, or a verifier.
+W345 (2026-10-29 13:44, dima): for example, you spawn a subagent, a researcher, a helper, a ccrow, a coder, or a verifier.
 W346 (2026-10-29 13:44, dima): you spawn everyone.
-W347 (2026-10-29 13:44, dima): i was thinking to split verbs into summoning versus spawning, where summoning means creating a persistent thread either via the `-dbg` flag or via session start (e.g., create a desktop thread).
+W347 (2026-10-29 13:44, dima): i was thinking to split verbs into summoning versus spawning, where summoning means creating a persistent thread either via the `--bg` flag or via session start (e.g., create a desktop thread).
 W348 (2026-10-29 13:44, dima): the ones that you created today, your fork, and your side-lane coder on mods lane: this is all about summoning.
 W349 (2026-10-29 13:44, dima): for me as well, when i create a full-scale desktop thread, i summon a desktop thread, or i summon a thread in a terminal.
 W350 (2026-10-29 13:44, dima): spawning will be for smaller stuff instead, as subagents.
@@ -614,7 +614,7 @@ W364 (2026-10-29 13:44, dima): as a simple example, i would treat a blueprint th
 W365 (2026-10-29 13:44, dima): these are all parts of Clio facility because it's everything that you do and no one else does.
 W366 (2026-10-29 13:44, dima): this is my proposal to create a name for the area that you are operating in.
 W367 (2026-10-29 13:44, dima): let's grill on it too.
-W368 (2026-10-29 13:44, dima): propose what parts of stuff you want to be outlined in a Clio SA Clio facility, except for the one example i've just described about the blueprint. ❓
+W368 (2026-10-29 13:44, dima): propose what parts of stuff you want to be outlined in a cclio facility, except for the one example i've just described about the blueprint. ❓
 W369 (2026-10-29 13:44, dima): also think critically about it, because i feel that, for a clear facility to correctly outline the correct scope that you are operating in, its description has to be present somewhere in your memory, at least maybe even in global memory.
 W370 (2026-10-29 13:44, dima): propose if this is ever needed. ❓
 W371 (2026-10-29 13:44, dima): this is another place to drift, because if your area of responsibilities changes or updates, then the Clio facility description has to be updated too.
@@ -627,7 +627,7 @@ W377 (2026-10-29 13:44, dima): this is because if we decide to rename even you, 
 W378 (2026-10-29 13:44, dima): let's think carefully and decide who we want to rename overall.
 W379 (2026-10-29 13:44, dima): decide on new names, then flush all updates at once. ❗
 W380 (2026-10-29 13:44, dima): before starting, when we get to this part, print me all spawnable names that we have.
-W381 (2026-10-29 13:44, dima): everyone, including Clio, Cristicro, Composer, your fork, coder, verifier, crew lead, and all subagents.
+W381 (2026-10-29 13:44, dima): everyone, including Clio, ccrow, Composer, your fork, coder, verifier, crew lead, and all subagents.
 W382 (2026-10-29 13:44, dima): let's see a full picture of all crew members in Fleet and see how we can rename them.
 
 re-fold 2026-10-29 13:51 (wispr, crow catch): W345 «a secror (?)» → «a ccrow»; W347 «`-dbg` flag» → «`--bg` flag»; W368 «a Clio SA Clio facility» → «a cclio facility»; W381 «Cristicro» → «ccrow»
