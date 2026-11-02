@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T16:20:00Z'
+updated_date: '2026-11-02T16:31:00Z'
 labels:
   - s
 dependencies: []
@@ -16,26 +16,23 @@ ordinal: 17000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**the problem, whole** — so dima never re-explains it (dima, 11-02 14:55: «I already redescribed it today and yesterday»)
+**the problem, whole** — so dima never re-explains it (dima, 11-02 14:55: «I already redescribed it today and yesterday»; rewritten 18:31 to the live state)
 
-- want: play GTA IV (Steam, appid 12210) in the FX Steam Launcher vm on the mac, signed in as his main Rockstar account, and see whether it runs well enough
-- block: in Steam mode the Rockstar Games Launcher signs in to the Rockstar account linked to his Steam account, and that is an old one on `imagnumm.satellite@gmail.com` (two m's), name maybe «habasi_the_cat», password unknown; Gmail says the address does not exist (deleted for inactivity, or a typo that never existed — inference), so «Verify your email» never gets its code; a few retries hit «too many emails» (ref dc482472-ddca-4332-b118-93fd86828d63, #1.1900.5)
-- main account: `thankyou___` on `imagnum.satellite@gmail.com` (one m), created 2013-09-16; connections: PSN `ripeluokte` (2022-01-07), Google, Amazon; no Steam. Steam persona is also `ripeluokte`
-- the vm: no local sign-in to reset — GTA IV prefix `compatdata/12210`, Social Club `Profiles/` empty, log «DeleteAutoSignInData: Exists: failed»; the link is server-side (clio, 11-02)
-- Rockstar policy: Steam is never on the web Connections page; it links only in the launcher at a Steam game's first start, and unlinks only through support, asked from the linked account itself, with a written consent line ([article](https://support.rockstargames.com/articles/1UjsMnPSkIDsNXlF8LRbKO), [policy](https://support.rockstargames.com/articles/2oNIpiDc3LQizEOPSmPUHn), [form](https://support.rockstargames.com/request/account/account-settings/linking-unlinking-accounts))
-- steam's Rockstar titles: GTA V Legacy 17 h (its progress may sit on the old account — inference), Bully 15.3 h, Max Payne 3 11 h, Max Payne 6.5 h, GTA IV 5.9 h, Max Payne 2 3.3 h, L.A. Noire 0.6 h, the GTA III / VC / SA pairs under 0.3 h
+- want: play GTA IV (Steam, appid 12210) in the FX Steam Launcher vm on the mac, signed in as his main Rockstar account `thankyou___`, with no stray account left on a typo email
+- the old Rockstar account: `umaturman3`, created 2012-03-24, on `imagnumm.satellite@gmail.com` (two m's) — a typo address that never existed; dima registered it 15:32 and owns its inbox now; signed in 17:53; owns GTA V, Max Payne 3, L.A. Noire; Steam is linked to it (the launcher in Steam mode signs in here, server-side)
+- main account: `thankyou___` on `imagnum.satellite@gmail.com` (one m), created 2013-09-16; connections: PSN `ripeluokte`, Google, Amazon; no Steam
+- 2FA on umaturman3: a half-saved 1Password authenticator locked it (17:53); ticket #38245301 (Trouble signing in → lost authenticator); dima unlinked the device and set 2FA again properly in 1Password (18:20)
+- Rockstar policy: Steam unlinks only through support, asked from the linked account ([article](https://support.rockstargames.com/articles/1UjsMnPSkIDsNXlF8LRbKO), [policy](https://support.rockstargames.com/articles/2oNIpiDc3LQizEOPSmPUHn), [form](https://support.rockstargames.com/request/account/account-settings/linking-unlinking-accounts)); forum reports say an unlink can drop the games' tie to the old account (inference), so the unlink note asks Rockstar to confirm the games and progress survive the relink first
+- the vm: no local sign-in to reset; the link is server-side
 
-**state log**
-- 11-01 16:08 request #38239985 «lost account»; 16:11 closed solved: «unable to recover … cannot verify that you are the owner»
-- 11-02 14:48 reply sent (dima's text): not recovery, unlink Steam from the imagnumm account, link to thankyou___; Steam proof offered
-- 11-02 14:55 2nd reply sent: the consent line + «tell me what information you need to verify it»
-- 11-02 14:55 dima downloads Bully in the vm to see if it shows the launcher email (clio's guess: Bully SE runs without the Rockstar launcher, so likely nothing — inference)
-- dima's fear: Rockstar refuses the unlink for the same reason (can't verify the old account)
+**tickets**
+- #38239985 (11-01, from the main account, «lost account»): resolved; two follow-ups 11-02 14:48/14:55
+- #38245301 (11-02, from umaturman3, 2FA): resolved, chat closed
+- the unlink ticket (Account → Account settings → Linking / unlinking accounts): submit fails with 500 «200.1.5» (18:28); the 425-char note is in the 18:16 reply
 
 **next**
-- watch the inbox for Rockstar's answer; no GTA IV launch until then (quota)
-- answered yes → start GTA IV from Steam, sign in as thankyou___, then measure fps via `es.fxgam.steamac/game-stats.json`
-- refused → ask which proof works (Steam purchase receipt, the Steam login on the request); last resort: the dedicated linking form above
+- file the unlink ticket (the form again in another browser, or an email reply to #38245301's thread)
+- Rockstar confirms the games survive → unlink, link Steam to thankyou___, start GTA IV, measure fps via `es.fxgam.steamac/game-stats.json`
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
@@ -132,4 +129,6 @@ W1340 (2026-11-02 17:59, dima): if unlinking works, the whole problem is solved 
 W1341 (2026-11-02 17:59, dima): i'm not a fan of having additional broken email and some stray account on Rockstar's side.
 
 state 11-02 18:20 (dima): 2FA unlinked ✓ on umaturman3 (ticket #38245301 can rest). unlink ticket next: Submit a Request → Account; the 425-char note drafted.
+
+18:31 (clio): description rewritten to the live state (wishkeeper siesta high: it still told the 14:55 story). the old description's lines live in git history; dima's W-lines untouched.
 <!-- SECTION:NOTES:END -->
