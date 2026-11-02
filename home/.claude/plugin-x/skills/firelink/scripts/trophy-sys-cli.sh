@@ -5,17 +5,18 @@
 set -uo pipefail
 source ~/.zshrc 2>/dev/null
 app=/Users/dima/projects/bytes/apps/trophy-sys
-verb=${1:?verb: profile games game news stats snapshot steam-profile steam-games steam-game steam-wishlist}
+verb=${1:?verb: profile games game news stats stats-sync snapshot steam-profile steam-games steam-game steam-wishlist}
 shift
 args=() out=/tmp/ts-$verb.json
 while (( $# )); do
   if [[ $1 == --out ]]; then out=$2; shift 2; else args+=$1; shift; fi
 done
-raw=$out.raw
+raw=$(mktemp "${TMPDIR:-/tmp}/ts-raw.XXXXXX")
 (cd $app && node --env-file=.env --env-file-if-exists=.env.local src/server/cli.ts $verb $args > $raw 2>&1)
 python3 - "$raw" "$out" <<'EOF'
-import json, sys
+import json, os, sys
 s = open(sys.argv[1]).read()
+os.unlink(sys.argv[1])
 starts = [i for i in (s.find('['), s.find('{')) if i >= 0]
 if not starts:
     print('no json in output:\n' + s[:800]); sys.exit(1)
