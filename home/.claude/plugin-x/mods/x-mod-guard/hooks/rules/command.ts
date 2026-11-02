@@ -34,6 +34,8 @@ export type Context = {
     helpless?: Set<string>;
     // the clis whose bare `--help` already ran this session
     helped?: Set<string>;
+    // the registry names of the live sixth senses, read only when the command summons one (FRM-479)
+    sixthSenses?: string[];
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };

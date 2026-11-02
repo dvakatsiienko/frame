@@ -364,6 +364,15 @@
   - then it runs with a would-refuse note and a `warned` event under `spawn-trial`, until its sixth sense says clean; with `rule-mode:spawn-trial` = enforce it is refused with the gate's own reason
   - given a prompt naming every live trial, or a gate that breaks, then it runs
   - proof: tests/spawn-trial.test.ts
+- ⬜ a second sixth sense for a lane with a live one is refused at the summon (FRM-479)
+  - given a `claude --bg -n '<mode> 🔎 sixth sense: <scope> | <what>'` (or `--name`, `--name=`) and a registry row (`~/.claude/sessions/<pid>.json`) whose name is a sixth sense of the same scope, its process alive
+  - when x-mod-guard reads the call
+  - then it runs with a would-refuse note and a `warned` event under `spawn-sixth-sense`, until its sixth sense says clean; with `rule-mode:spawn-sixth-sense` = enforce it is refused naming the live one and the message to send it instead, `next: <ticket> <target> final: <sha> spec: <path>`, its ticket, target, `final:` and `spec:` read from the summon's own `/x:crew-sixth-sense` line
+  - given a lane with no live sixth sense, a sixth sense of another lane, a codie summon, a row whose process is gone, or a row whose pid now runs another process, then it summons as before
+  - decision: the lane is the name's scope, the text between `:` and `|`, spaces dropped and case folded, so a mode badge or a casing never makes a twin; a name with no `|` (`⚡ 🔎 sixth sense: main`) has no scope and is never judged, since two repos' quick lanes read alike
+  - decision: alive means `ps` names the row's pid with the start time the row wrote, read in UTC under the C locale as the registry writes it; a row outlives a crash and a pid comes back as another process
+  - decision: the registry is read only for a call that summons a sixth sense; a broken read or `ps` lets the summon go (fail open, like the brief check)
+  - proof: tests/sixth-sense.test.ts
 - ✅ a brief file naming the pre-rename skill id is checked like a codie brief
   - given `claude --bg "$(cat <file>)"` where the file names `/x:crew-coder` and holds no `x brief check` stamp, then it is refused with the check door (read-both)
   - proof: tests/brief.test.ts::a brief file naming the old skill id is checked too, and refused without a stamp

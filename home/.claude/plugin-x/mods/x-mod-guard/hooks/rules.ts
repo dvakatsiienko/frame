@@ -30,6 +30,7 @@ import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
 import { landings, overwrite } from './rules/overwrite.ts';
+import { spawnSixthSense } from './rules/sixth-sense.ts';
 import { type Parsed, parse } from './shell.ts';
 
 // the paths every git add in the command names, for the caller to look up on disk; a path an earlier part of the
@@ -374,6 +375,7 @@ export function refusals(
             lint(cmd, next) ??
             missingAdd(cmd, ctx) ??
             brief(cmd, ctx) ??
+            spawnSixthSense(cmd, ctx) ??
             notes(cmd, ctx) ??
             milestone(cmd, ctx) ??
             opaque(cmd, hiddenBy);

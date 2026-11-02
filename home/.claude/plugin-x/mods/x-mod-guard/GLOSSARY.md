@@ -72,4 +72,8 @@ _Avoid_: cloud delete
 The file `x brief check` writes on a clean pass, keyed by the sha256 of the brief's bytes; a codie summon runs only when its brief file has one.
 _Avoid_: brief approval, check mark
 
+**Lane scope**:
+The part of a thread name between `:` and `|` (`⚡ 🔎 sixth sense: mods lane 4 | main` → `mods lane 4`), spaces dropped and case folded; a name with no `|` has none. two sixth senses with one lane scope are twins, and only one may be live.
+_Avoid_: lane id, lane name
+
 **Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; guard refuses a Bash write to a held file.

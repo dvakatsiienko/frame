@@ -11,6 +11,7 @@ import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
+import { isSixthSense, sixthSenseSummons } from './rules/sixth-sense.ts';
 import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
 import {
     addedPaths,
@@ -241,6 +242,56 @@ async function registryEntry($: EngineInterface, sid: string) {
     return undefined;
 }
 
+// the registry names of the sixth senses whose process still runs: a row outlives a crash, and a pid comes back as another
+// process, so ps must name the pid with the start time the row wrote, in UTC as the registry writes it (FRM-479)
+async function liveSixthSenses($: EngineInterface) {
+    const dir = `${await $.env.get('HOME')}/.claude/sessions`;
+    const rows: { name: string; pid: number; start?: string }[] = [];
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (!f.name.endsWith('.json')) continue;
+        try {
+            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
+                name?: unknown;
+                pid?: unknown;
+                procStart?: unknown;
+            };
+            if (
+                typeof v.name === 'string' &&
+                typeof v.pid === 'number' &&
+                isSixthSense(v.name)
+            )
+                rows.push({
+                    name: v.name,
+                    pid: v.pid,
+                    start:
+                        typeof v.procStart === 'string'
+                            ? v.procStart.replaceAll(/\s+/g, ' ')
+                            : undefined,
+                });
+        } catch {}
+    }
+    if (!rows.length) return [];
+    const ps = await $.process.run(
+        ['ps', '-o', 'pid=,lstart=', '-p', rows.map((r) => r.pid).join(',')],
+        { env: { LC_ALL: 'C', TZ: 'UTC' }, timeoutMs: 4000 },
+    );
+    const running = new Map(
+        ps.stdout.split('\n').flatMap((line) => {
+            const m = line.trim().match(/^(\d+)\s+(.+)$/);
+            return m
+                ? [[Number(m[1]), m[2]?.replaceAll(/\s+/g, ' ').trim()]]
+                : [];
+        }),
+    );
+    return rows
+        .filter(
+            (r) =>
+                running.has(r.pid) &&
+                (!r.start || running.get(r.pid) === r.start),
+        )
+        .map((r) => r.name);
+}
+
 async function sessionName($: EngineInterface, sid: string) {
     return (await registryEntry($, sid))?.name;
 }
@@ -288,6 +339,7 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
     'opaque-head',
     'raw-plugin-update',
+    'spawn-sixth-sense',
     'spawn-trial',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
@@ -795,6 +847,9 @@ async function lookUp(
     const { value: helped = [] } = await $.state
         .get(HELPED)
         .catch(() => ({ value: [] }));
+    const sixthSenses = sixthSenseSummons(command, cwd).length
+        ? await liveSixthSenses($).catch(() => [])
+        : [];
     const moves = projectMoves(command, cwd);
     const milestoneProjects = moves.length
         ? await projectsWithMilestones(
@@ -816,6 +871,7 @@ async function lookUp(
                 : [],
         missing,
         notedTasks,
+        sixthSenses,
         unsafeTmp,
     };
 }
