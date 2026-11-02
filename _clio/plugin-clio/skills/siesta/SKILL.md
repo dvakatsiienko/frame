@@ -15,7 +15,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 
 ## the flow, in one turn
 
-0. `cat ~/.local/state/clio/siesta-last; date +%FT%T > ~/.local/state/clio/siesta-last` — the printed old value is `<last siesta>` for 1, 2.5, 2.6, 3.5
+0. Read `~/.local/state/clio/siesta-last`, then Write the new stamp (`YYYY-MM-DDTHH:MM:SS`) with the Write tool — the old value is `<last siesta>` for 1, 2.5, 2.6, 3.5
 
 1. **wishkeeper**, unless the batch is small (under 3 files and no memory, rule or skill file): spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` only on dima's ask), with the commit range since the last siesta, the ticket ids touched, the pocket items touched, clio's session transcript path (for its promises and claims checks) and the open orbit asks (so it skips what is already asked) — nothing more; it reads the tickets' want itself
 2. **meanwhile, the pick, in this order**: due reminders first, then the pocket (a red `node script/pocket-check.ts` puts it before the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
