@@ -1382,6 +1382,22 @@ test('a 🔁 replay press writes no tick', async ($, on) => {
     expect(writes.flat()).toEqual([]);
 });
 
+test("a follow drops the ask's tick record: his word answered the old question (S3)", async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'yes',
+        text: 'push `backup`',
+    });
+    expect(writes.at(-1)).toEqual([]);
+});
+
 test("an agent's own orbit ops never write a tick", async ($, on) => {
     world(on);
     const writes = tickLog(on);

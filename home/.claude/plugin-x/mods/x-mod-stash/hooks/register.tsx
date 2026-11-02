@@ -1459,6 +1459,15 @@ async function tickAsk($: EngineInterface, id: string) {
     );
 }
 
+async function dropTicks($: EngineInterface, id: string) {
+    const { value: kept = [] } = await $.state.get(TICKS);
+    if (kept.some((t) => t.id === id))
+        await $.state.set(
+            TICKS,
+            kept.filter((t) => t.id !== id),
+        );
+}
+
 // his prompt sends a tick still sending: its record holds from now, never from the window's end (S2)
 async function sendTicks($: EngineInterface, ids: string[]) {
     if (!ids.length) return;
@@ -3516,10 +3525,12 @@ const COLUMNS = {
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
 // a member is the name's last word: a codie named «… + crow at decisions» is not crow (2026-10-10)
 // the whole name, so a member named «… notes for clio» is not her
-const isCoordinator = (name: string) => /^(?:🦉\s*)?c?clio$/u.test(name.trim()); // read-both: a clio tab under its old title
+// a name read through bare(), so a space or a zero-width joiner never changes who it is (S5)
+export const isCoordinator = (name: string) =>
+    /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
-const pinOf = (name: string) =>
-    isCoordinator(name) ? 0 : /(^|\s)c?crow$/.test(name) ? 1 : 2; // read-both: a crow tab under its old title
+export const pinOf = (name: string) =>
+    isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
 async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);
@@ -3809,6 +3820,8 @@ async function orbitCall(
     );
     if ('deny' in op) return { deny: op.deny };
     await saveOrbit($, op.orbit);
+    // a follow asks a new question: his tick on the old one is no longer his word on it (S3)
+    if (input.op === 'follow') await dropTicks($, oneLine(input.id));
     if (input.op === 'add')
         gridQs.push(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
