@@ -70,6 +70,47 @@ export const stashSweep = (dir: string, file: string): Refusal => ({
     why: `a whole-tree git stash also sets aside ${file}, which another session holds`,
 });
 
+// one class, judged after every other rule: a command whose name the line never typed as it runs — a `$` it cannot fill, a
+// brace list, a name a variable takes several values for or `$(echo …)` prints, or a script printed into a shell, sourced
+// or held in a git alias; the door names the literal spelling (dima's o1 and o35)
+export function opaque(c: Command, hiddenBy?: string): Refusal | undefined {
+    if (!c.name || c.name === '[' || c.name === '[[') return undefined;
+    const spell = (
+        why: string,
+        door = `spell it as it runs: \`${c.name}\``,
+    ): Refusal => ({
+        door,
+        rule: 'opaque-head',
+        targets: [c.name],
+        why,
+    });
+    // `"$@"` and `$1` are a function's own arguments; `$(( $(date +%s) - t ))` reads as a group headed by its substitution
+    const isArithmetic =
+        c.name === '$(…)' && c.args.some((w) => /^[-+*/%]$/.test(w.text));
+    const head = c.head;
+    if (
+        /[$`]/.test(c.name) &&
+        !/^\$\{?[@*0-9]\}?$/.test(c.name) &&
+        !isArithmetic
+    )
+        return spell(
+            'a command named by a variable the line never fills runs what the guard cannot read',
+            'spell the command out, or run the script it names by path',
+        );
+    // a brace list widens to every name in it: `r{m,}` is rm
+    if (!head?.hasQuote && /\{[^}]*(?:,|\.\.)[^}]*\}/.test(head?.text ?? ''))
+        return spell('a brace in a command name runs whatever it widens to');
+    if (head?.isFilled)
+        return spell(
+            'a command name a variable takes several values for, or a substitution prints, hides what runs',
+        );
+    if (hiddenBy)
+        return spell(
+            `a command inside ${hiddenBy} never shows as typed`,
+            `run it as its own command: \`${c.name} …\``,
+        );
+    return undefined;
+}
 // the builtins that set a variable from their operands (`declare -x HOME=…`)
 const DECLARERS = new Set([
     'export',
@@ -82,22 +123,6 @@ const DECLARERS = new Set([
 const FINDERS = new Set(['pgrep', 'ps', 'pidof', 'lsof', 'grep', 'rg', 'awk']);
 export function floor(c: Command, ctx: Context): Refusal | undefined {
     const ops = operands(c.args);
-    // a head the walker could not fill (`$R` bound twice or by read, `${X:-rm}`, `"$@"`) runs what no rule read
-    // `"$@"` and `$1` are a function's own arguments, filled only by a `set --` on the line
-    // an `$(( $(date +%s) - t ))` reads as a group headed by its substitution: a lone operator after it is arithmetic
-    const isArithmetic =
-        c.name === '$(…)' && c.args.some((w) => /^[-+*/%]$/.test(w.text));
-    if (
-        /[$`]/.test(c.name) &&
-        !/^\$\{?[@*0-9]\}?$/.test(c.name) &&
-        !isArithmetic
-    )
-        return {
-            door: 'spell the command out, or run the script it names by path',
-            rule: 'opaque-head',
-            targets: [c.name],
-            why: 'a command named by a variable the line never fills runs what the guard cannot read',
-        };
     if (c.name === 'rm' || c.name === 'unlink')
         return {
             door: TRASH,

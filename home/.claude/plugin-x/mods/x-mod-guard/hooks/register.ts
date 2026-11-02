@@ -31,7 +31,7 @@ import {
     refusals,
     remoteSlug,
     removedTrees,
-    signWord,
+    signWords,
     stashAsked,
     stashKills,
     tmpDirs,
@@ -1120,41 +1120,43 @@ export const register: Register = (on) => {
         // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
         // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
         // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
-        const sign = signWord(typed, cwd, ctx);
-        const signText =
-            sign?.file === undefined ||
-            sign.file.includes('$') ||
-            writtenPaths(typed, cwd, ctx).includes(sign.file)
-                ? undefined
-                : await signFile($, sign.file);
-        const isNewSign =
-            sign !== undefined &&
-            (sign.file === undefined ||
+        // every sign on the line is judged on its own (R2: a second sign behind an old one)
+        const written = writtenPaths(typed, cwd, ctx);
+        for (const sign of signWords(typed, cwd, ctx)) {
+            const signText =
+                sign.file === undefined ||
+                sign.file.includes('$') ||
+                written.includes(sign.file)
+                    ? undefined
+                    : await signFile($, sign.file);
+            const isNewSign =
+                sign.file === undefined ||
                 signText === undefined ||
-                (await hasNewSignLine($, sign.id, signText)));
-        // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
-        if (
-            isNewSign &&
-            !(await tickFor(
-                $,
-                `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
-                (t) => isSignAsk(t.text, sign.id),
-            ))
-        ) {
-            const r = {
-                door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
-                rule: 'sign-untick',
-                targets: [sign.id],
-                why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
-            };
-            const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
-            {
-                const stop = await enforce(
-                    r,
-                    `nothing in this command ran — ${said}`,
-                    said,
-                );
-                if (stop) return stop;
+                (await hasNewSignLine($, sign.id, signText));
+            // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
+            if (
+                isNewSign &&
+                !(await tickFor(
+                    $,
+                    `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
+                    (t) => isSignAsk(t.text, sign.id),
+                ))
+            ) {
+                const r = {
+                    door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
+                    rule: 'sign-untick',
+                    targets: [sign.id],
+                    why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
+                };
+                const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
+                {
+                    const stop = await enforce(
+                        r,
+                        `nothing in this command ran — ${said}`,
+                        said,
+                    );
+                    if (stop) return stop;
+                }
             }
         }
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)

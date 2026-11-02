@@ -14,6 +14,7 @@ import {
     gitDir,
     gitParts,
     hasFlag,
+    hidingScript,
     isFlag,
     isJobTmp,
     isThrowaway,
@@ -22,7 +23,7 @@ import {
     peel,
     resolve,
 } from './rules/command.ts';
-import { floor } from './rules/floor.ts';
+import { floor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
@@ -359,6 +360,7 @@ export function refusals(
     cwd: string,
     ctx: Context = {},
     isPlain = isPlainScript(command, cwd, ctx),
+    hiddenBy?: string,
 ): Refusal[] {
     const parsed = parse(command);
     const list = commands(parsed, cwd);
@@ -373,7 +375,8 @@ export function refusals(
             missingAdd(cmd, ctx) ??
             brief(cmd, ctx) ??
             notes(cmd, ctx) ??
-            milestone(cmd, ctx);
+            milestone(cmd, ctx) ??
+            opaque(cmd, hiddenBy);
         let found = judge(c, list[i + 1]);
         // a lifted rule hides every rule behind it, so the command is judged again without the lifted part
         let rest: { c: Command; next: Command | undefined } = {
@@ -397,7 +400,15 @@ export function refusals(
             out.push(found);
         // a nested script is commands too: a shell's, an eval's, env -S's, find -exec's, a function body (command.ts)
         for (const script of nestedScripts(c))
-            out.push(...refusals(script, c.dir, ctx, isPlain));
+            out.push(
+                ...refusals(
+                    script,
+                    c.dir,
+                    ctx,
+                    isPlain,
+                    hiddenBy ?? hidingScript(c),
+                ),
+            );
     });
     for (const r of [
         background(list),
@@ -592,13 +603,14 @@ export function mergeAutoPr(words: string[]) {
         .find((w) => !w.startsWith('-'));
     return pr?.match(/(\d+)\/?$/)?.[1];
 }
-// a sign on a ticket: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
+// every sign on a line: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
 // reads for a sign line (FRM-427, o197)
-export function signWord(
+export function signWords(
     command: string,
     cwd: string,
     ctx: Context = {},
-): { id: string; file?: string } | undefined {
+): { id: string; file?: string }[] {
+    const out: { id: string; file?: string }[] = [];
     for (const c of commandsDeep(command, cwd)) {
         const words = c.args.map((w) => w.text);
         const bare = words.filter((w) => !w.startsWith('-'));
@@ -625,13 +637,13 @@ export function signWord(
             const added = value('--add-label').flatMap((v) => v.split(','));
             // x matches labels by name ignoring case; a label the shell fills in may be the sign
             if (added.some((l) => /^signed$/i.test(l.trim()) || /[$`]/.test(l)))
-                return { id };
+                out.push({ id });
             continue;
         }
         const [file] = value('--set');
-        if (file) return { file: resolve(file, c.dir, ctx), id };
+        if (file) out.push({ file: resolve(file, c.dir, ctx), id });
     }
-    return undefined;
+    return out;
 }
 const TICKET = new RegExp(`^(${TICKET_KEY})-\\d+$`);
 // a sign ask, `✍️ sign <id>: <title>` or `✍️ sign <id>, <id>: <title>` for a batch (FRM-459 o49): each id named is matched whole,

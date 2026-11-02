@@ -354,6 +354,32 @@ test("a body write behind a grep of its own file keeps today's sign line and run
     expect([signFlagged(r), ran]).toEqual([false, [command]]);
 });
 
+// lane 4 R2: every sign on the line is judged, and a body file the line writes by cp, mv or a nested shell counts as new
+for (const [why, command] of [
+    [
+        'a label sign after an old body sign',
+        'x linear body FRM-1 --set /repo/b.md && x linear set FRM-2 --add-label signed',
+    ],
+    [
+        'a body copied in by cp',
+        'cp /repo/signed.md /repo/b.md && x linear body FRM-1 --set /repo/b.md',
+    ],
+    [
+        'a body moved in by mv',
+        'mv /repo/signed.md /repo/b.md && x linear body FRM-1 --set /repo/b.md',
+    ],
+    [
+        'a body written in bash -c',
+        "bash -c 'cat /repo/s.md > /repo/b.md' && x linear body FRM-1 --set /repo/b.md",
+    ],
+] as const)
+    test(`a sign the line hides is refused: ${why}`, async ($, on) => {
+        world(on, [], SIGNED_TODAY());
+        on('fs.read', () => ({ value: SIGNED_TODAY() }));
+        const r = await bash($, command);
+        expect(signFlagged(r)).toBe(true);
+    });
+
 // lane 4 R1: the sign file is read before the command runs, so one the command writes, one it cannot read and one behind a
 // variable each count as a new sign
 for (const [why, command, read] of [

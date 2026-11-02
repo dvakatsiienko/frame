@@ -43,8 +43,10 @@ export type Verdict =
     | { kind: 'escaped'; refusals: Refusal[]; targets: string[] };
 // wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
 // envArgs: the words env and exec took for themselves (`-i`, `-u NAME`, `-c`); envSplit: env -S's string; bodies: its heredocs
+// head: the word the name came from
 type Peeled = {
     name: string;
+    head?: Word;
     args: Word[];
     envArgs: string[];
     envSplit?: string;
@@ -249,6 +251,7 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         bodies,
         envArgs,
         ...(envSplit !== undefined && { envSplit }),
+        ...(first && { head: first }),
         name: first ? basename(first.text) : '',
         reads: reads(raw),
         stdouts: stdouts(raw),
@@ -376,6 +379,7 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             if (printed)
                 return printed.map((a) => ({
                     isExpanding: a.isExpanding,
+                    isFilled: true,
                     text: a.text,
                 }));
             return [w];
@@ -537,6 +541,7 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                     ...rest.map((text) => ({ isExpanding: false, text })),
                     ...c.args,
                 ],
+                head: { isExpanding: false, isFilled: true, text: name },
                 name,
             };
         });
@@ -691,6 +696,22 @@ export function commandsDeep(
             ? nestedScripts(c).flatMap((s) => commandsDeep(s, c.dir, depth + 1))
             : []),
     ]);
+}
+// a script the line never shows as typed: printed into a shell or `source`, a `<( … )` sourced, a git alias's body
+export function hidingScript(c: Command) {
+    if (
+        c.name === 'git' &&
+        gitParts(c.args).configs.some((k) => /^alias\./i.test(k))
+    )
+        return 'a git alias';
+    if (c.name === 'source' || c.name === '.') return `${c.name} of a script`;
+    const isDashC = c.args.some((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text));
+    const printer = c.feeders.find(
+        (f) => f.name === 'echo' || f.name === 'printf',
+    );
+    if (SHELLS.has(c.name) && !isDashC && printer)
+        return `${printer.name} piped into ${c.name}`;
+    return undefined;
 }
 // a typed path the shell fills or climbs at run time: a variable, a glob, a `~user`, a `..`
 export const isUnsafePath = (path: string) =>

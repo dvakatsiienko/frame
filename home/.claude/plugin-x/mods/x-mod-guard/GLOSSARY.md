@@ -25,7 +25,7 @@ A command the fleet floor (invariant 8 and the tooling rules) never runs unasked
 _Avoid_: dangerous command, destructive op
 
 **Opaque head**:
-A command whose name stays a `$` after the walker fills every value it can read on the line (`${X:-rm}`, `read R; $R`): it runs what no rule read.
+A command whose name the line never types as it runs: a `$` the walker cannot fill (`${X:-rm}`, `read R; $R`), a brace list, a value a variable takes several of, an `$(echo …)`, or a command inside a script printed into a shell, sourced or held in a git alias.
 _Avoid_: dynamic command, unknown command
 
 **Hazard lint**:

@@ -20,6 +20,8 @@ const writes: [string, string, string[]][] = [
         ['/repo/x.ts'],
     ],
     ['a write after a cd', 'cd sub && echo hi > x.ts', ['/repo/sub/x.ts']],
+    ['a cp onto a file', 'cp a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
+    ['a write in bash -c', "bash -c 'echo hi > x.ts'", ['/repo/x.ts']],
 ];
 for (const [shape, command, files] of writes)
     test(`reads the file a Bash write targets: ${shape}`, () => {

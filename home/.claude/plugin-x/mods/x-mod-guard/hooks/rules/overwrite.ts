@@ -6,6 +6,7 @@ import {
     SD_VALUE,
     basename,
     commands,
+    commandsDeep,
     hasFlag,
     isFlag,
     isJobTmp,
@@ -47,9 +48,11 @@ export function writtenPaths(command: string, cwd: string, ctx: Context = {}) {
         /open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wax]/g,
     ))
         if (m[1]) out.push(resolve(m[1], cwd, ctx));
-    const parsed = parse(command);
-    for (const c of commands(parsed, cwd)) {
+    // every command the walker finds, a nested shell's included; a cp, mv, ln or install lands on its dest
+    for (const c of commandsDeep(command, cwd)) {
         const dir = resolve(c.dir, '/', ctx);
+        if (['cp', 'mv', 'ln', 'install'].includes(c.name))
+            out.push(...landings(c, ctx).map((l) => l.path));
         const named = [...c.writes, ...c.appends];
         const ops = operands(c.args);
         if (c.name === 'tee') named.push(...ops);

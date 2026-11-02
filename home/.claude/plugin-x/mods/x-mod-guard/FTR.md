@@ -208,12 +208,12 @@
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
 
-- ⬜ a command named by a variable the line never fills is flagged `opaque-head`, warn-only (dima's o1, 2026-11-02)
-  - given a Bash call whose command name stays a `$` after the walker fills what it can (`${X:-rm}`, `read R; $R`, `$(cat f) args`)
-  - when x-mod-guard reads it, then it warns «would refuse» with the door «spell the command out, or run the script it names by path»
-  - and `"$@"`/`$1` (a function's arguments) and an `$(( $(date +%s) - t ))` are never flagged
-  - measured: the 7-day replay, 15,327 calls, flags 3 (a script held in a variable, a loop var inside a function body twice)
-  - proof: tests/escapes.ts `open` rows of class opaque-head, flipped to `refused` when the rule leaves `WARN_ONLY`
+- ⬜ a command whose name hides is flagged `opaque-head` with its literal spelling, one class rule, warn-only (dima's o1, o35, 2026-11-02)
+  - given a Bash call whose command name is a `$` the line never fills (`${X:-rm}`, `read R; $R`, `$(cat f) args`), a brace list (`r{m,}`), a value a variable takes several of on the line (a loop var, a rebind) or an `$(echo …)` prints, or a command walked out of a script printed into a shell (`printf … | bash`, `echo … | sh`), a `source`/`.` or a git alias (`-c alias.s=status`)
+  - when x-mod-guard reads it, after every other rule (a floor or hazard rule on the same command wins), then it warns «would refuse» with the door naming the spelling as it runs (`spell it as it runs: \`ls\``, `run it as its own command: \`ls …\``)
+  - and a typed name, a path held in one literal (`S=/tmp/s; $S/run.sh`), `bash -c "…"`, a heredoc into a shell, `"$@"`/`$1` and an `$(( $(date +%s) - t ))` are never flagged
+  - measured: the 7-day replay, 15,373 calls, flags 20 commands on 4 calls (a script held in a variable, `command -v $n` over a loop, printf piped into bash)
+  - proof: tests/opaque.test.ts; tests/escapes.ts `open` rows of class opaque-head, flipped to `refused` when the rule leaves `WARN_ONLY`
 - ✅ a new rule warns before it refuses (dima's o70)
   - given a rule listed in `WARN_ONLY`
   - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its sixth sense says clean): <the refusal>»

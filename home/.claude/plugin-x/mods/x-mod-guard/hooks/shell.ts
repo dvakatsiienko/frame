@@ -4,11 +4,13 @@
 
 // at: the word's offset in the command, kept only for a bare word — plain characters, no quote, escape or expansion
 // hasQuote: some of the word sat in quotes or behind a backslash, so the shell neither splits nor globs that part
+// isFilled: the walker wrote it from a variable's value or a printed substitution, never typed
 export type Word = {
     text: string;
     isExpanding: boolean;
     at?: number;
     hasQuote?: boolean;
+    isFilled?: boolean;
 };
 export type Sep = ';' | '&&' | '||' | '|' | '&' | '(' | ')';
 // subst: the commands inside this command's `$( … )` and backticks; bodies: its heredocs' text, in order
