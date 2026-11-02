@@ -1,6 +1,6 @@
 ---
 name: game-research
-description: load BEFORE researching a game or games for info — «research», «what's the state of», «is there a patch», «60fps», «remaster», «which platform», «mods», «what should i play next», a trophy-guide site to vet. a game he just picked goes to game-prep, a finished one to game-archive.
+description: load BEFORE researching a game or games for info — «research», «what's the state of», «is there a patch», «60fps», «remaster», «which platform», «mods», «what should i play next», a trophy-guide site to vet. a game he just picked goes to game-seed, a finished one to game-finish.
 ---
 
 # game-research — dig, verify, file it read-aloud

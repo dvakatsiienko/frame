@@ -1,9 +1,9 @@
 ---
-name: game-prep
+name: game-seed
 description: load when dima picks his next game, or says «seed», «set up», «prep» or «start» a game — before writing its project files or his dima-<game> doc.
 ---
 
-# game-prep — seed a game before he presses start
+# game-seed — seed a game before he presses start
 
 the rules behind each step: memory `game-seed-framework`, `trophy-sources`, `games-db-layout`, `doc-format`, `thread-opener`. this skill is the order.
 

@@ -1,9 +1,9 @@
 ---
-name: game-archive
+name: game-finish
 description: load when dima says he finished, platinumed, dropped or wants to archive a game, or asks to resume an archived one.
 ---
 
-# game-archive — close a game so nothing is lost
+# game-finish — close a game so nothing is lost
 
 the step detail: `/mnt/project-files/games/README.md` § finishing a game. the why: memory `game-finish-flow`. this skill is the order.
 
@@ -43,4 +43,4 @@ the step detail: `/mnt/project-files/games/README.md` § finishing a game. the w
 ## 5. next pick
 
 - a landed standing game (memory `games-taste-queue`) is the next game
-- otherwise `game-research`, what-next variant; his pick → `game-prep`
+- otherwise `game-research`, what-next variant; his pick → `game-seed`
