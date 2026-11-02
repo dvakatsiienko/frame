@@ -2438,13 +2438,6 @@ async function keepCapSeen(
         .catch(() => undefined);
 }
 
-// a one-shot: the catch shelf's per-owner and per-day keys no code reads; it leaves once the live store shows them gone
-async function dropCatchKeys($: EngineInterface) {
-    for (const key of await $.store.keys())
-        if (key.startsWith('catch-count:') || key.startsWith('catch-shelf:'))
-            await $.store.delete(key);
-}
-
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
 // never fires
 async function armWake($: EngineInterface) {
@@ -3732,7 +3725,6 @@ async function orbitCall(
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
-        await dropCatchKeys($).catch(() => undefined);
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
         // a hot reload's start carries the shell's cwd, which follows a `cd`: the root stays the project's
