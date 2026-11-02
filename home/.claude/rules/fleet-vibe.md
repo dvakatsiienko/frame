@@ -49,8 +49,8 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **slay** = push (git push). «go slay» → push it.
 - **🍀 freebie** (badge: dima, 2026-10-08) = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
 - **☘️ almost-freebie** (dima, 2026-10-25) = past a freebie's 5 calls, short of codie: one helper card clio briefs and proves. <!-- cc -->
-- **⚖️ worth it** (dima, 2026-11-02) = new surface earns its plan: what it removes against today's door, the cheaper door turned down, its upkeep — a ticket's `## worth` section; root invariant 3. «worth it?» → run the check before planning. <!-- cc -->
-- **🔌 fleet wired** (dima, 2026-11-02) = new surface has a real caller in the fleet; its shape is being grilled (PK-299, the worth-it pocket item). <!-- cc -->
+- **⚖️ worth it** (dima, 2026-11-02) = new surface earns its plan: what it removes against today's door, the cheaper door turned down, its upkeep — a ticket's `## ⚖️ worth it` section; root invariant 3. «worth it?» → run the check before planning. <!-- cc -->
+- **🔌 fleet wired** (dima, 2026-11-02) = new surface has a real caller in the fleet: a `🔌 fleet wired: <caller>` line in its `## ⚖️ worth it` section, the caller edit in the same chunk, one real call before its ticket closes (dima's word alone exempts a rare event). <!-- cc -->
 - **propose** = answer → approve → act: print the answer/plan, stop, execute only on his word. Prefixes any ask.
 - **rewind** = reprint the last report (the `📄` line at a report's end) in full; `rewind <topic>` reprints an older one. for when member traffic pushed it out of view.
 - **pause** = hold off, stop what you are doing, i will steer.

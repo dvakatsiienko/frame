@@ -10,7 +10,7 @@ the machine part of lane init, clio's alone: dima signed the chunks in `clio:sha
 
 «what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker, no `lane: main` (ours, never codie's) and no `human` or `needs human` label, grouped by milestone in the initiative's queue order (main road, then side tracks), each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane walks its area's milestones one after another, each one's chunks in their `blocks` chain (codie's ticket order inside a chunk is its lane plan). his pick is the summon word: no second ask. a sixth sense comes by default; a quick lane's pick also says sixth sense yes or no. a quick lane is signed like any chunk (`x lane dispatch` refuses one with no `## signed` block); a quick chunk that edits the guards, the review workflows or merge-auto carries his merge pre-approval as a `## signed` line (`clio:shape-lane` § 3).
 
-**a chunk signed before its `## worth` section existed** (root invariant 3): if it adds new surface, it gets the section and crow's read (`clio:shape-lane` § 3) before its spec; a fail goes to dima as one `🧐` line, the chunk waits for his call.
+**a chunk signed before its `## ⚖️ worth it` section existed** (root invariant 3): if it adds new surface, it gets the section and crow's read (`clio:shape-lane` § 3) before its spec; a fail goes to dima as one `🧐` line, the chunk waits for his call.
 
 ## 2 · the spec
 
@@ -22,7 +22,7 @@ read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain te
 
 ## 3 · the exit lines
 
-read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines per chunk into the spec. the last line is the **want line**, seeded from the ticket's 🎯 done test: it replays dima's want or the incident behind the ticket, and sixth sense grades it apart from the rest. dima reads only the want line, printed and counted per the trial in `docs/test-drive/want-line.md`. a line that carries a decision he never made parks the chunk for a re-sign. a chunk that makes or changes an app carries a line for its FTR lines and glossary words. a ticket whose script clio's hooks call carries a line naming who wires it.
+read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines per chunk into the spec. the last line is the **want line**, seeded from the ticket's 🎯 done test: it replays dima's want or the incident behind the ticket, and sixth sense grades it apart from the rest. dima reads only the want line, printed and counted per the trial in `docs/test-drive/want-line.md`. a line that carries a decision he never made parks the chunk for a re-sign. a chunk that makes or changes an app carries a line for its FTR lines and glossary words. a new-surface chunk carries a 🔌 fleet wired line: its diff holds the caller edit its `🔌 fleet wired:` line names; a caller that fires rarely (a cap, a hazard) gets a staged trigger or a replay, and a staging that is hard or costly goes to dima as one 🧐 line: only his word makes it an exception.
 
 then the **blind critic**, on every lane (`docs/research/exit-lines-delegation.md`: 17 of 20 flagged lines passed the lint and missed the want): write the want plus the lines to a file and run `pnpm -C ~/frame crow:plan-critique <file>`; each finding is folded or answered in one line before the seal.
 

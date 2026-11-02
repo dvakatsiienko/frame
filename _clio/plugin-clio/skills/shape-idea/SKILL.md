@@ -36,7 +36,7 @@ word. skipping a step happens only on his word, named out loud.
    then, on every shape, a plan critic: write the plan to a file and run `pnpm -C ~/frame crow:plan-critique
    <file>` — a fresh one-shot on crow's day arm, blind to the thread; its verdict and ≤5 located
    findings go to dima beside the grill (FRM-336).
-5. **the cut** — the smallest version worth using, and a written «out» list of what it is not.
+5. **the cut** — the smallest version worth using, and a written «out» list of what it is not. it is ⚖️ worth it, and its `🔌 fleet wired:` caller is named (root invariant 3).
    it names the **polish tier**: an internal tool stops at «works and clear»; a showcase app
    (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the
    look comes from, and a reviewer who sees a generic look clicks away.

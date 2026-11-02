@@ -81,8 +81,8 @@ destination, and waits for his verdict on every one; «closable, because …» i
 
 - **a small fix inside our own tooling is a freebie, done without asking** (dima, 2026-10-14: «you can do stuff like this as a freebie without asking me») — still reported, every time
 - **the freebie test counts tool calls, never minutes** (dima, 2026-10-22: models overestimate time): 1–5 tool calls i can name, no word of his, no lane → done that turn by whoever holds it; more calls, still no word or lane → a **☘️ almost-freebie**, one helper card; else its home by the birth test (`habit-shared-files` § the pocket)
-- **new surface is never a freebie** — a cli verb, a script, a hook, a mod part, a skill, a recipe, an app feature: it carries a `## worth` section (root invariant 3, the format in `clio:pm` `references/body.md`) at any size
-- **the kill side, at every milestone close**: what had 0 uses in 30 days faces ⚖️ worth it again — verbs on `x stats`, guard rules on their warns and refusals in its store; a part with no counter is printed «unmeasured», never «kept»; a guard row is judged by what it covers
+- **new surface is never a freebie** — a cli verb, a script, a hook, a mod part, a skill, a recipe, an app feature: it carries a `## ⚖️ worth it` section with its `🔌 fleet wired:` caller (root invariant 3, format: `clio:pm` `references/body.md`) at any size
+- **the kill side, at every milestone close**: what had 0 uses in 30 days gets one revive try (wire it to a caller), then faces ⚖️ worth it again — verbs on `x stats`, guard rules on their warns and refusals in its store; a part with no counter is printed «unmeasured», never «kept»; a guard row is judged by what it covers
 
 Dima: *«if i ask for a freebie but it turns out not to be one — better tell me than try to solve it, because
 i often ask for "small things" without knowing the details. and if it turns out not to be a freebie, then

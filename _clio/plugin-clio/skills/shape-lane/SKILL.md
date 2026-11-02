@@ -35,7 +35,7 @@ load `mattpocock-skills:grilling` and run its ❓ round as written — the front
 
 ## 3 · what the sign carries
 
-dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane walks its area's milestones one after another, `craft-fleet-flow` § lane init); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); on new surface its `## worth` section (root invariant 3), read by crow (`pnpm crow:plan-critique <body file>`) before the sign ask, so the author never grades its own pitch; and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess.
+dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane walks its area's milestones one after another, `craft-fleet-flow` § lane init); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); on new surface its `## ⚖️ worth it` section with its `🔌 fleet wired:` caller (root invariant 3), read by crow (`pnpm crow:plan-critique <body file>`) before the sign ask, so the author never grades its own pitch; and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess.
 
 ## 4 · the sign
 

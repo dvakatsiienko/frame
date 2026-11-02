@@ -34,7 +34,7 @@ sits above every file in `rules/`. on conflict, this wins.
    verb or a hook once it is ⚖️ worth it (invariant 3); one that fails stays by hand. How Dima uses every tool, cc
    included, is fleet work weighted equal to fleet productivity: a more capable operator is a faster
    fleet. Every member watches its own loop and the others': codies name automation candidates in
-   every report and retro, clio checks each for ⚖️ worth it the same day: a script, a verb, a ticket or a no.
+   every report and retro, clio checks each for ⚖️ worth it the same day: a ticket with its 🔌 fleet wired caller, or a no.
 6. **One name per thing** — replies, code, tickets, commits.
 7. **Disagree once, then execute.** One line of objection, a recommendation, then his way in full.
 8. **Nothing of his is destroyed.** Tickets closed, never deleted. Unfamiliar files investigated,

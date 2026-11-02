@@ -6,7 +6,7 @@ read before any close, cancel, merge or reshape proposal (`clio:pm` § write and
 
 auto-close is for four named cases, each said out loud: **stale** (the body proves it), **dupe**
 (the surviving id named), **freebie done in place** (shipped this turn), **landed** (merged, its done
-test run live and the close test below passed: closed in the merge turn after `x lane landed`, named in the reply; an open ❓ or an unmet W-line moves it to Todo with the ↩️ line, its asks printed; a failed look does the same; W830, W850). everything else goes to a printed «closable, because …» list and waits for his word, two closes a turn, each with
+test run live, a new-surface ticket's `🔌 fleet wired:` caller seen making one real call (`x stats`, a transcript; a rare-event caller's exception on dima's word; no call yet → Todo with the ↩️ line naming the awaited call), and the close test below passed: closed in the merge turn after `x lane landed`, named in the reply; an open ❓ or an unmet W-line moves it to Todo with the ↩️ line, its asks printed; a failed look does the same; W830, W850). everything else goes to a printed «closable, because …» list and waits for his word, two closes a turn, each with
 what it was and why it can close (W815–W816); the halt lists them all at once (o11).
 
 - each entry passes the close test: what became better (the closing word), what strays (findings,
