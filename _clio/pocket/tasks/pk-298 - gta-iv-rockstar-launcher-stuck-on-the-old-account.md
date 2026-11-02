@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T13:26:00Z'
+updated_date: '2026-11-02T13:32:00Z'
 labels:
   - s
 dependencies: []
@@ -92,4 +92,6 @@ state 11-02 15:04 (clio): Bully runs in the vm — its Steam install script hung
 state 11-02 15:18 (clio): Max Payne 3 (appid 204100) installed its own fresh Rockstar launcher and still opened «Verify your email» for imagnumm — proof the binding is server-side (Steam ticket → linked account), never local. A standalone (Platform: PC) launcher runs but stays hidden under gamescope's gaming mode. No local route left; the unlink is Rockstar support's only. Bypassing the account check is off the table (their terms, ban risk).
 
 state 11-02 15:27 (clio): the decisive probe — dima tries to sign up imagnumm.satellite at accounts.google.com/signup. «username taken» = it existed and was deleted (Google never reissues; recovery only ~20–30 days after deletion, unconfirmed) → only Rockstar can help. available = it never existed (a typo at Rockstar sign-up) → he takes it, the old Rockstar account's codes then reach him, and he fixes the account himself. @gmail.com is Google-only (plus @googlemail.com).
+
+state 11-02 15:32 (dima): imagnumm.satellite@gmail.com was free and he created it — so the old Rockstar account sat on a typo address that never existed. He now owns its inbox: codes reach him, the old account is recoverable by its own email. Next: verify the code in the launcher once the quota allows, reset that account's password, then choose: play on it, or have support move Steam to thankyou___ (asked from the old account itself, which their rule wants).
 <!-- SECTION:NOTES:END -->
