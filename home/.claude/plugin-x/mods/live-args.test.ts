@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseLive } from './live-args.ts';
+import { parseLive, requestOf } from './live-args.ts';
 
 describe('parseLive', () => {
     it('reads a bare mod dir as serve', () => {
@@ -55,5 +55,22 @@ describe('parseLive', () => {
                 [],
             ].map((argv) => parseLive(argv).kind),
         ).toEqual(['usage', 'usage', 'usage', 'usage']);
+    });
+});
+
+describe('requestOf', () => {
+    it.each([
+        ['an empty file, read before the write landed', ''],
+        ['half a write', '{"label":"🎛'],
+        ['an unknown verb', '{"label":"x","what":"drag"}'],
+        ['no label', '{"what":"hover"}'],
+    ])('reads %s as no request', (_, text) => {
+        expect(requestOf(text)).toBeUndefined();
+    });
+    it('reads a whole request', () => {
+        expect(requestOf('{"label":"🎛️","what":"hover"}')).toEqual({
+            label: '🎛️',
+            what: 'hover',
+        });
     });
 });

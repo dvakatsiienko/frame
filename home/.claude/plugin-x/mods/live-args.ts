@@ -31,3 +31,20 @@ export function parseLive(argv: readonly string[]): LiveArgs {
     if (!isVerb(verb) || !rest.length) return { kind: 'usage' };
     return { kind: 'act', mod, text: rest.join(' '), verb };
 }
+
+// a client verb's request as the server reads it: a file read mid-write, or one of no known shape, is no request, never a
+// throw in the watch callback, which would take the server down with its pty
+export function requestOf(
+    text: string,
+): { label: string; what: LiveVerb } | undefined {
+    try {
+        const r = JSON.parse(text) as { label?: unknown; what?: unknown };
+        return typeof r.label === 'string' &&
+            typeof r.what === 'string' &&
+            isVerb(r.what)
+            ? { label: r.label, what: r.what }
+            : undefined;
+    } catch {
+        return undefined;
+    }
+}

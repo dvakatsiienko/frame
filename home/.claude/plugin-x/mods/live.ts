@@ -21,7 +21,7 @@ import { dirname, join, resolve } from 'node:path';
 import xterm from '@xterm/headless';
 import pty from 'node-pty';
 
-import { type LiveVerb, parseLive } from './live-args.ts';
+import { type LiveVerb, parseLive, requestOf } from './live-args.ts';
 import { plantedCopy } from './live-plant.ts';
 import { reloadVerdict, sourceHash } from './live-verdict.ts';
 import { SWAP_SOURCES, liveDirs, manifestName, swapDir } from './probe.ts';
@@ -112,7 +112,9 @@ async function act(what: LiveVerb, label: string) {
         process.exit(2);
     }
     rmSync(response, { force: true });
-    writeFileSync(request, JSON.stringify({ label, what }));
+    // written whole, then renamed in, so the server never reads half a request
+    writeFileSync(`${request}.tmp`, JSON.stringify({ label, what }));
+    renameSync(`${request}.tmp`, request);
     const until = Date.now() + ACT_MS;
     while (Date.now() < until) {
         if (existsSync(response)) {
@@ -317,11 +319,10 @@ async function serve() {
     // and releases there, type writes the text, then Enter once the prompt has drawn it
     watch(dir, async (_event, file) => {
         if (file !== 'hover.request' || !existsSync(request)) return;
-        const { label, what } = JSON.parse(readFileSync(request, 'utf8')) as {
-            label: string;
-            what: LiveVerb;
-        };
+        const asked = requestOf(readFileSync(request, 'utf8'));
         rmSync(request, { force: true });
+        if (!asked) return;
+        const { label, what } = asked;
         const isTyped = what === 'type' || what === 'fill';
         const at = isTyped ? undefined : cellOf(term, label);
         const cell = at && `${at.x + 1};${at.y + 1}`;
