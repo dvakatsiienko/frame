@@ -211,6 +211,7 @@
 - ✅ a new rule warns before it refuses (dima's o70)
   - given a rule listed in `WARN_ONLY`
   - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its sixth sense says clean): <the refusal>»
+  - and every check below the warned rule still runs: a floor command, a sign or a merge word later on the line is refused as if the warned rule were not there (`claude plugin update x && rm -rf build` refuses the rm)
   - when it fires on an Agent spawn, then the agent runs — a spawn takes no note
   - then the event is kept as `warned`, and the day's tally counts it apart
   - given «enforce» in the store's `rule-mode:<rule>`, then a listed rule refuses; «warn» there does nothing — every session writes that store, so it can never switch a rule off (sixth sense's 15:08 probe turned the `rm` floor off)
@@ -260,7 +261,7 @@
 
 - ✅ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
   - decision: warned for a week, refused from 2026-10-18 (dima's o234): 0 raw-linear warnings in the week's otel tap
-  - given a session the registry names anything but 🦉 clio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
+  - given a session the registry names anything but 🦉 clio, when it runs `linear issue view`, `linear api` or `linear issue comment add` (inside a nested shell too), then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and clio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
 - ✅ a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)

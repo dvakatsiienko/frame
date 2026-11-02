@@ -1012,16 +1012,9 @@ export const register: Register = (on) => {
                 why: r.why,
             });
             if (!isWarn) return deny(denial);
-            const ran = await go();
-            return ran.deny !== undefined
-                ? ran
-                : {
-                      ...ran,
-                      context: [
-                          ...(ran.context ?? []),
-                          wouldRefuse(r.rule, note),
-                      ],
-                  };
+            // a warning keeps every check below in play: the caller goes on, and the note rides the run (R8)
+            warns.push(wouldRefuse(r.rule, note));
+            return undefined;
         };
         // a file another live session holds (x-mod-holds) is refused before any other rule; holds has no escape
         const held = await heldBy($, command, cwd, ctx).catch(() => undefined);
@@ -1029,23 +1022,27 @@ export const register: Register = (on) => {
         const sweep = await stashOver($, command, cwd, ctx).catch(
             () => undefined,
         );
-        if (sweep)
-            return enforce(
+        if (sweep) {
+            const stop = await enforce(
                 sweep,
                 `nothing in this command ran — x-mod-guard stopped this one command. instead: ${sweep.door}. why: ${sweep.why}.`,
                 `instead: ${sweep.door}. why: ${sweep.why}`,
             );
+            if (stop) return stop;
+        }
         // a refusal, never a warning, so it stays out of WARN_ONLY: a warn would fire after the block it means to
         // prevent (dima's o102)
         const fg =
             e.tool === 'Bash' && e.run_in_background !== true
                 ? foregroundClaude(command, cwd)
                 : undefined;
-        if (fg)
-            return enforce(
+        if (fg) {
+            const stop = await enforce(
                 fg,
                 `nothing in this command ran — x-mod-guard stopped this one command. instead: ${fg.door}. why: ${fg.why}.`,
             );
+            if (stop) return stop;
+        }
         // a member's raw linear read or comment, as typed (before the api rewrite), names its x linear door; clio's runs (FRM-398)
         const raw = rawLinear(typed, cwd);
         if (raw) {
@@ -1057,11 +1054,14 @@ export const register: Register = (on) => {
                 !clioNames.includes(name.replaceAll(/[\s\u200d]/g, ''))
             ) {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
-                return enforce(
-                    raw,
-                    `nothing in this command ran — ${said}`,
-                    said,
-                );
+                {
+                    const stop = await enforce(
+                        raw,
+                        `nothing in this command ran — ${said}`,
+                        said,
+                    );
+                    if (stop) return stop;
+                }
             }
         }
         // a body written past `x linear body --set`, or an actor of dima's, from a member's session: the registry lists its name
@@ -1076,12 +1076,14 @@ export const register: Register = (on) => {
                 !coordinators.includes(name.replaceAll(/[\s‍]/g, ''))
             ) {
                 const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
-                if (!(await isWarnOnly($, write.rule)))
-                    return enforce(
+                if (!(await isWarnOnly($, write.rule))) {
+                    const stop = await enforce(
                         write,
                         `nothing in this command ran — ${said}`,
                         said,
                     );
+                    if (stop) return stop;
+                }
                 // a warning keeps the checks below in play: `enforce` would run the whole line here and skip them
                 await record($, {
                     command,
@@ -1098,7 +1100,14 @@ export const register: Register = (on) => {
         const bump = rawPluginUpdate(typed, cwd);
         if (bump) {
             const said = `x-mod-guard stopped this one command. instead: ${bump.door}. why: ${bump.why}.`;
-            return enforce(bump, `nothing in this command ran — ${said}`, said);
+            {
+                const stop = await enforce(
+                    bump,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+                if (stop) return stop;
+            }
         }
         // dima's tick on an ask quoting the pr is his word for merge-auto, never for the brake (FRM-427)
         const mergeCall = mergeAutoCall(typed, cwd);
@@ -1154,7 +1163,14 @@ export const register: Register = (on) => {
                 why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
             };
             const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
-            return enforce(r, `nothing in this command ran — ${said}`, said);
+            {
+                const stop = await enforce(
+                    r,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+                if (stop) return stop;
+            }
         }
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
@@ -1169,11 +1185,14 @@ export const register: Register = (on) => {
                 (await prTick()) !== undefined;
             if (unproven.length && !isTicked) {
                 const said = `x-mod-guard stopped this one command. instead: ${word.door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
-                return enforce(
-                    { ...word, targets: unproven },
-                    `nothing in this command ran — ${said}`,
-                    said,
-                );
+                {
+                    const stop = await enforce(
+                        { ...word, targets: unproven },
+                        `nothing in this command ran — ${said}`,
+                        said,
+                    );
+                    if (stop) return stop;
+                }
             }
             // the flag goes right after the call's own words, only on a command every other rule lets run
         } else if (
@@ -1214,7 +1233,12 @@ export const register: Register = (on) => {
                 quotesCommand(command),
             );
             if (!tick)
-                return enforce(verdict.refusal, message(verdict.refusal));
+                return (
+                    (await enforce(
+                        verdict.refusal,
+                        message(verdict.refusal),
+                    )) ?? go()
+                );
             await record($, {
                 command,
                 door: `dima's tick on ${tick.id}`,

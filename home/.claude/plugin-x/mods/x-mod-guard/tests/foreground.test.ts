@@ -28,6 +28,7 @@ for (const typed of [
     "claude -p 'hi'",
     "cd /tmp && claude --print --model haiku 'hi'",
     "for i in 1 2; do claude -p 'x'; done",
+    "bash -c 'claude -p hi'",
 ])
     test(`a foreground claude -p is refused with run_in_background named: ${typed}`, async ($, on) => {
         const w = world(on);

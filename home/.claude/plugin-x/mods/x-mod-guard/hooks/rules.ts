@@ -522,7 +522,7 @@ export function foregroundClaude(
     const parsed = parse(command);
     if (parsed.comments.some((c) => /^\s*fg-ok:\s*\S/.test(c)))
         return undefined;
-    const isClaudeP = commands(parsed, cwd).some(
+    const isClaudeP = commandsDeep(command, cwd).some(
         (c) =>
             c.name === 'claude' &&
             c.args.some((w) => w.text === '-p' || w.text === '--print'),
@@ -542,7 +542,7 @@ export function rawPluginUpdate(
     command: string,
     cwd: string,
 ): Refusal | undefined {
-    for (const c of commands(parse(command), cwd)) {
+    for (const c of commandsDeep(command, cwd)) {
         if (c.name !== 'claude') continue;
         const [a, b, d] = c.args.map((w) => w.text);
         if (a !== 'plugin') continue;
@@ -704,7 +704,7 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
 // a member reads and comments on tickets through x linear, never the raw cli (FRM-398, rules-lazy/linear-flow.md);
 // clio's own session is never asked, the caller checks the registry name
 export function rawLinear(command: string, cwd: string): Refusal | undefined {
-    for (const c of commands(parse(command), cwd)) {
+    for (const c of commandsDeep(command, cwd)) {
         if (c.name !== 'linear') continue;
         const [a, b, d] = c.args.map((w) => w.text);
         const isComment = a === 'issue' && b === 'comment' && d === 'add';

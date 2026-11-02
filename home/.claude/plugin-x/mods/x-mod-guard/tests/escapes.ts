@@ -1044,4 +1044,16 @@ EOF`,
     ],
     ['refused', 'hazard', 'trash of $HOME quoted', 'trash "$HOME"'],
     ['refused', 'hazard', 'trash of ~/', 'trash ~/'],
+    [
+        'refused',
+        'raw-linear',
+        'a raw linear read inside bash -c',
+        "bash -c 'linear issue view FRM-1'",
+    ],
+    [
+        'refused',
+        'warn-skip',
+        'a warn-only rule ahead of a floor command',
+        'claude plugin update x@x && rm -rf build',
+    ],
 ];
