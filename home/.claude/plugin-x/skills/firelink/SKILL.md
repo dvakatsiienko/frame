@@ -41,7 +41,7 @@ parse the file with a short `python3`, never read it whole (`games` is ~260 rows
 
 `/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial: a no-name open-source project, kept only if games run well): valve's arm64 SteamOS in a libkrun vm. chain: game dx9–11 → DXVK (Proton, x86 via FEX) → Venus → MoltenVK or KosmicKrisp → Metal.
 
-- `scripts/steamac-play.sh` — launch with the caps the app can't save ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)): gpu 10 GiB, `MESA_KK_COMPILE_THREADS=4`, control fifo `~/.local/share/steamac/control.fifo`; `~/Applications/FX Steam (safe).app` is his dock applet running it (adhoc-signed: `codesign --force -s -` after an edit)
+- `scripts/steamac-play.sh` — launch with the caps the app can't save ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)): gpu 10 GiB, `MESA_KK_COMPILE_THREADS=4`, control fifo `~/.local/share/steamac/control.fifo`; dima starts it from `~/Desktop/steam-fx-safe.app`, a Finder alias of `~/Applications/FX Steam (safe).app` — an applescript applet that runs this script (adhoc-signed: `codesign --force -s -` after an edit); never `/Applications/FX Steam Launcher.app` directly, which skips the caps
 - `scripts/steamac-ssh.sh [cmd]` — shell into the vm, `steamos@127.0.0.1:2222`, key `~/.ssh/steamac_ed25519`; «connection refused» = vm off; first run `--install-key`
 - `scripts/steamac-askpass.sh` — the SteamOS password from the keychain (`es.fxgam.steamac.guest-password`), for `--install-key` only; never echo it
 - `scripts/steamac-update.sh` — swaps in the latest github release (sha256, gatekeeper, team-id `V25VKGTW55`), quits the vm first; settings and the disk stay
