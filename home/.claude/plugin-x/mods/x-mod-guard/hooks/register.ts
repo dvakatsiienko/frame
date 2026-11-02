@@ -834,14 +834,12 @@ async function signFile($: EngineInterface, file: string) {
         .catch(() => undefined);
     return run?.exitCode === 0 ? run.stdout : undefined;
 }
-// the sign lines dated today in a body about to be written that the ticket's current body lacks; an unreadable linear
-// counts every one as new, so the tick is still asked
+// the sign lines in a body about to be written that the ticket's current body lacks word for word, whatever their date:
+// a backdated line, one dated tomorrow and an old line whose text changed are all new (sixth sense R1 on FRM-478); an
+// unreadable linear counts every one as new, so the tick is still asked
+const SIGN_LINE = /^✍️ (re-)?signed /u;
 async function hasNewSignLine($: EngineInterface, id: string, body: string) {
-    const today = new RegExp(
-        `^✍️ (re-)?signed ${day(await $.clock.now())}`,
-        'u',
-    );
-    const lines = body.split('\n').filter((l) => today.test(l));
+    const lines = body.split('\n').filter((l) => SIGN_LINE.test(l));
     if (!lines.length) return false;
     const run = await $.process.run(['x', 'linear', 'read', id], {
         timeoutMs: 8000,
@@ -1117,7 +1115,7 @@ export const register: Register = (on) => {
                   )
                 : undefined;
         };
-        // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
+        // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line is a new sign
         // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
         // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
         // every sign on the line is judged on its own (R2: a second sign behind an old one)

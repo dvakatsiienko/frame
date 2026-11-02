@@ -291,13 +291,19 @@ const today = () => {
     const two = (n: number) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
 };
+// the current body holds only an old sign line; a sign line it lacks is new whatever its date (sixth sense R1: a backdated
+// or tomorrow-dated line, or an old line's text widened, ran with no tick)
+const HELD = '✍️ signed 2026-10-23 — scope A · body 5a0d10c0';
 for (const [line, isFlagged] of [
     [`✍️ signed ${today()} · body 5a0d10c0`, true],
     [`✍️ re-signed ${today()} — a rider`, true],
-    ['✍️ signed 2026-10-23 · body 5a0d10c0', false],
+    [HELD, false],
+    ['✍️ signed 2026-10-23 — scope A and B · body 5a0d10c0', true],
+    ['✍️ signed 1969-12-31 · body 11112222', true],
+    ['✍️ signed 2099-01-02 · body 11112222', true],
 ] as const)
-    test(`a body set holding «${line.slice(0, 22)}» is ${isFlagged ? 'refused' : 'run'} with no tick`, async ($, on) => {
-        world(on);
+    test(`a body set holding «${line.slice(0, 40)}» is ${isFlagged ? 'refused' : 'run'} with no tick`, async ($, on) => {
+        world(on, [], `## wish\n\nx\n\n## signed\n\n${HELD}\n`);
         on('fs.read', () => ({
             value: `## wish\n\nx\n\n## signed\n\n${line}\n`,
         }));
