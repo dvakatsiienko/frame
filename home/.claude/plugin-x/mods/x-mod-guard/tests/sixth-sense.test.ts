@@ -84,19 +84,15 @@ const bash = ($: Engine, command: string) =>
 // clio's quick-lane summon, in crew-lead's shape (SKILL.md § the quick lane)
 const SECOND = `cd ~/frame && claude --bg -n '${LIVE}' --model opus --effort medium '/x:crew-sixth-sense FRM-479 main:c5d775b4 ⚡ 🔧 codie: mods lane 4 | FRM-479 🦉 clio final: 9d82517f spec: .scratch/mods-lane-4/spec.md trials: none' --remote-control`;
 
-test('a second sixth sense for a lane with a live one runs warn-only, naming the live one', async ($, on) => {
+test('a second sixth sense for a lane with a live one is refused with no store switch', async ($, on) => {
     const w = world(on, [ROW], { 64218: START });
     const r = await bash($, SECOND);
-    expect(r.deny).toBeUndefined();
-    expect(w.ran).toEqual([SECOND]);
-    expect(r.context?.join('\n')).toContain(
-        `would refuse this (rule spawn-sixth-sense`,
-    );
+    expect(w.ran).toEqual([]);
+    expect(r.deny).toContain(`«${LIVE}»`);
 });
 
-test('enforced, a second sixth sense for a live lane is refused with the next: message its summon carries', async ($, on) => {
+test('a second sixth sense for a live lane is refused with the next: message its summon carries', async ($, on) => {
     const w = world(on, [ROW], { 64218: START });
-    w.store.set('rule-mode:spawn-sixth-sense', 'enforce');
     const r = await bash($, SECOND);
     expect(w.ran).toEqual([]);
     expect(r.deny).toContain(`«${LIVE}»`);
@@ -107,7 +103,6 @@ test('enforced, a second sixth sense for a live lane is refused with the next: m
 
 test('a --name= spelling names the summoned thread, its skill line read mid-prompt', async ($, on) => {
     const w = world(on, [ROW], { 64218: START });
-    w.store.set('rule-mode:spawn-sixth-sense', 'enforce');
     const r = await bash(
         $,
         `claude --bg --name='⚡ 🔎 sixth sense: mods lane 4 | x' 'use the skill: /x:crew-sixth-sense FRM-1 https://github.com/x/y/pull/12 c d'`,
@@ -122,7 +117,6 @@ test('a --name= spelling names the summoned thread, its skill line read mid-prom
 
 test('a re-cased name under another mode badge names the same lane', async ($, on) => {
     const w = world(on, [ROW], { 64218: START });
-    w.store.set('rule-mode:spawn-sixth-sense', 'enforce');
     const r = await bash(
         $,
         `claude --bg -n '🌗 🔎 sixth sense: Mods Lane 4 | #12' 'go'`,
@@ -174,7 +168,6 @@ const PASSES = [
 for (const [shape, rows, alive, command] of PASSES)
     test(`${shape} summons as before`, async ($, on) => {
         const w = world(on, [...rows], alive);
-        w.store.set('rule-mode:spawn-sixth-sense', 'enforce');
         const r = await bash($, command);
         expect(r.deny).toBeUndefined();
         expect(r.context?.join('\n') ?? '').not.toContain('spawn-sixth-sense');

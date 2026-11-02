@@ -339,7 +339,6 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
     'opaque-head',
     'raw-plugin-update',
-    'spawn-sixth-sense',
     'spawn-trial',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
