@@ -815,6 +815,30 @@ async function lookUp(
 // then runs with a warn (fail open, like pocket-check's closed-ticket net). A move into a project the cache holds
 // without milestones reads again after ten minutes, since a project can gain its first one; an unreachable linear is
 // not asked again for a minute, so each move does not wait the timeout out again
+// the sign lines dated today in a body about to be written that the ticket's current body lacks; an unreadable linear
+// counts every one as new, so the tick is still asked
+async function hasNewSignLine($: EngineInterface, id: string, body: string) {
+    const today = new RegExp(
+        `^✍️ (re-)?signed ${day(await $.clock.now())}`,
+        'u',
+    );
+    const lines = body.split('\n').filter((l) => today.test(l));
+    if (!lines.length) return false;
+    const run = await $.process.run(['x', 'linear', 'read', id], {
+        timeoutMs: 8000,
+    });
+    let current: string | undefined;
+    try {
+        current = (
+            JSON.parse(run.stdout) as {
+                data?: { tickets?: { description?: string }[] };
+            }
+        ).data?.tickets?.[0]?.description;
+    } catch {}
+    if (run.exitCode !== 0 || current === undefined) return true;
+    const held = new Set(current.split('\n'));
+    return lines.some((l) => !held.has(l));
+}
 const MILESTONES = 'linear-milestones';
 const LINEAR_DOWN = 'linear-down';
 const DAY_MS = 86_400_000;
@@ -1110,14 +1134,16 @@ export const register: Register = (on) => {
             return go(withDimaOk(command, pr));
         }
         // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
+        // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line)
         const sign = signWord(typed, cwd, ctx);
         const isNewSign =
             sign !== undefined &&
             (sign.file === undefined ||
-                new RegExp(
-                    `✍️ (re-)?signed ${day(await $.clock.now())}`,
-                    'u',
-                ).test(await $.fs.read(sign.file).catch(() => '')));
+                (await hasNewSignLine(
+                    $,
+                    sign.id,
+                    await $.fs.read(sign.file).catch(() => ''),
+                )));
         if (
             verdict.kind === 'run' &&
             isNewSign &&

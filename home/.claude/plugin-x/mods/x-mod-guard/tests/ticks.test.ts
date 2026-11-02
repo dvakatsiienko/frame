@@ -9,7 +9,8 @@ import { liveStore } from './store.ts';
 const NOW = 1_000_000;
 type Tick = { at: number; id: string; targets: string[]; text: string };
 
-function world(on: On, ticks: Tick[] = []) {
+// `body` is the ticket's current description as linear holds it; none = linear cannot be read
+function world(on: On, ticks: Tick[] = [], body?: string) {
     mock.clock(on, { now: NOW });
     const store = liveStore(on);
     const ran: string[] = [];
@@ -27,13 +28,17 @@ function world(on: On, ticks: Tick[] = []) {
     // the cwd's origin, which merge-auto reads its repo from when no --repo names one
     on('process.run', (_$, e) => ({
         value: {
-            exitCode: 0,
+            exitCode: e.argv.includes('read') && body === undefined ? 1 : 0,
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
             stdout: e.argv.includes('get-url')
                 ? 'git@github.com:dvakatsiienko/bytes.git\n'
-                : '',
+                : e.argv.includes('read')
+                  ? JSON.stringify({
+                        data: { tickets: [{ description: body }] },
+                    })
+                  : '',
         },
     }));
     on('tool.call', (_$, e) => {
@@ -226,6 +231,35 @@ for (const [line, isFlagged] of [
         on('fs.read', () => ({
             value: `## wish\n\nx\n\n## signed\n\n${line}\n`,
         }));
+        const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+        expect(signFlagged(r)).toBe(isFlagged);
+    });
+
+// FRM-478 rider: a body write on a ticket signed today carries that sign line unchanged; only a sign line the current
+// body lacks is a new sign
+const SIGNED_TODAY = () =>
+    `## wish\n\n* W1 (2026-10-30, dima): x\n\n## signed\n\n✍️ signed ${today()} · body 5a0d10c0\n`;
+const TINY = () =>
+    `${SIGNED_TODAY().replace('W1 ', 'W609 ')}✏️ changed ${today()} — W1 renumbered W609, no re-sign: tiny · body 77aa00ff\n`;
+for (const [why, current, next, isFlagged] of [
+    ["a tiny write keeping today's sign line", SIGNED_TODAY, TINY, false],
+    [
+        "a write changing today's sign line",
+        SIGNED_TODAY,
+        () => SIGNED_TODAY().replace('5a0d10c0', '99999999'),
+        true,
+    ],
+    [
+        'a sign line the body lacks',
+        () => SIGNED_TODAY().split('✍️')[0] ?? '',
+        SIGNED_TODAY,
+        true,
+    ],
+    ['a tiny write while linear cannot be read', undefined, TINY, true],
+] as const)
+    test(`${why} is ${isFlagged ? 'refused' : 'run'} with no tick`, async ($, on) => {
+        world(on, [], current?.());
+        on('fs.read', () => ({ value: next() }));
         const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
         expect(signFlagged(r)).toBe(isFlagged);
     });
