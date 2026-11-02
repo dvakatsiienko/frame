@@ -35,6 +35,7 @@ for (const command of [
     'f(){ "$@"; }; f ls',
     'echo $(( $(date +%s) - 5 ))',
     '"/Applications/My App/bin/x" y',
+    'for n in ls cat; do command -v $n; done',
 ])
     test(`a command typed as it runs is not flagged: ${JSON.stringify(command)}`, () => {
         expect(flagged(command)).toEqual([]);

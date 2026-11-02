@@ -1157,24 +1157,14 @@ EOF`,
         'a warn-only verdict ahead of a floor command',
         'CI=1 pnpm add zod && rm -rf x',
     ],
+    ['refused', 'opaque-head', 'a head with a default value', '${X:-rm} -rf x'],
     [
-        'open',
+        'refused',
         'opaque-head',
-        'a head with a default value (warn-only until sixth sense)',
-        '${X:-rm} -rf x',
-    ],
-    [
-        'open',
-        'opaque-head',
-        'a head from a non-echo substitution (warn-only until sixth sense)',
+        'a head from a non-echo substitution',
         '$(cat cmd.txt) -rf x',
     ],
-    [
-        'open',
-        'opaque-head',
-        'a head read from stdin (warn-only until sixth sense)',
-        'read R; $R -rf x',
-    ],
+    ['refused', 'opaque-head', 'a head read from stdin', 'read R; $R -rf x'],
     // lane 4 R3: a quoted [[ opens no test
     [
         'refused',

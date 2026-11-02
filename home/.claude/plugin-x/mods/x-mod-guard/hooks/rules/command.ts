@@ -230,6 +230,9 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         }
         const values = WRAPPERS.get(basename(head));
         if (!values) break;
+        // `command -v x` / `-V` names x, never runs it
+        if (head === 'command' && /^-[a-zA-Z]*[vV]/.test(words[1]?.text ?? ''))
+            break;
         const wrapper = basename(head);
         wrappers.push(wrapper);
         words = words.slice(1);
