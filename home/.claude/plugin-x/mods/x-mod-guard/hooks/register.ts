@@ -834,13 +834,32 @@ async function signFile($: EngineInterface, file: string) {
         .catch(() => undefined);
     return run?.exitCode === 0 ? run.stdout : undefined;
 }
-// the sign lines in a body about to be written that the ticket's current body lacks word for word, whatever their date:
-// a backdated line, one dated tomorrow and an old line whose text changed are all new (sixth sense R1 on FRM-478); an
-// unreadable linear counts every one as new, so the tick is still asked
+// a new sign: a sign line the ticket's current body lacks word for word, whatever its date (a backdated line, one dated
+// tomorrow, an old line whose text changed: sixth sense R1 on FRM-478), or a block x now grants a merge from where it did
+// not, or from another sign (R2: a pre-approval added, a cancel deleted); an unreadable linear counts it as new
 const SIGN_LINE = /^✍️ (re-)?signed /u;
+// what x's merge door grants from a body's last ## signed block (x/go/merge_sign.go readSign): the sign line the grant
+// hangs on ('' when the block holds none, and x reads the whole block), or undefined when it grants nothing — a cancel
+// or a re-sign pending after the last sign voids it, and a grant needs a `merge: pre-approved` line after it
+function grantOf(body: string) {
+    const heading = [...body.matchAll(/^## signed\s*$/gmu)].at(-1);
+    if (!heading) return undefined;
+    const rest = body.slice((heading.index ?? 0) + heading[0].length);
+    const end = rest.search(/^## /mu);
+    const block = end < 0 ? rest : rest.slice(0, end);
+    const lines = block.split('\n');
+    const at = lines.findLastIndex((l) => /^✍️ (re-)?signed\b/u.test(l));
+    const since = lines.slice(Math.max(at, 0));
+    if (since.some((l) => /^(🚫 cancelled|✍️ re-sign pending)\b/u.test(l)))
+        return undefined;
+    if (!since.some((l) => /^merge: pre-approved\s*$/u.test(l)))
+        return undefined;
+    return at < 0 ? '' : lines[at];
+}
 async function hasNewSignLine($: EngineInterface, id: string, body: string) {
     const lines = body.split('\n').filter((l) => SIGN_LINE.test(l));
-    if (!lines.length) return false;
+    const grant = grantOf(body);
+    if (!lines.length && grant === undefined) return false;
     const run = await $.process.run(['x', 'linear', 'read', id], {
         timeoutMs: 8000,
     });
@@ -854,7 +873,10 @@ async function hasNewSignLine($: EngineInterface, id: string, body: string) {
     } catch {}
     if (run.exitCode !== 0 || current === undefined) return true;
     const held = new Set(current.split('\n'));
-    return lines.some((l) => !held.has(l));
+    return (
+        lines.some((l) => !held.has(l)) ||
+        (grant !== undefined && grantOf(current) !== grant)
+    );
 }
 const MILESTONES = 'linear-milestones';
 const LINEAR_DOWN = 'linear-down';

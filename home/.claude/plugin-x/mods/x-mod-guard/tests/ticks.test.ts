@@ -311,6 +311,67 @@ for (const [line, isFlagged] of [
         expect(signFlagged(r)).toBe(isFlagged);
     });
 
+// x's merge door grants from the whole ## signed block (x/go/merge_sign.go readSign), so a write that makes the block
+// grant where it did not, or grant from another sign, asks the tick too; one that only narrows it runs (sixth sense R2)
+const BLOCK =
+    '## wish\n\nx\n\n## signed\n\n✍️ signed 2026-10-23 — scope A · body 5a0d10c0\n';
+for (const [why, current, next, isFlagged] of [
+    [
+        'a pre-approval added under a re-sign that follows a cancel',
+        `${BLOCK}🚫 cancelled 2026-10-24 — scope moved\n✍️ re-signed 2026-10-25 — scope B · body 5a0d10c0\n`,
+        `${BLOCK}🚫 cancelled 2026-10-24 — scope moved\n✍️ re-signed 2026-10-25 — scope B · body 5a0d10c0\nmerge: pre-approved\n`,
+        true,
+    ],
+    [
+        'a pre-approval added under an old sign',
+        BLOCK,
+        `${BLOCK}merge: pre-approved\n`,
+        true,
+    ],
+    [
+        'a cancel line deleted',
+        `${BLOCK}merge: pre-approved\n🚫 cancelled 2026-10-24 — scope moved\n`,
+        `${BLOCK}merge: pre-approved\n`,
+        true,
+    ],
+    [
+        'a re-sign pending line deleted',
+        `${BLOCK}merge: pre-approved\n✍️ re-sign pending — scope moved\n`,
+        `${BLOCK}merge: pre-approved\n`,
+        true,
+    ],
+    [
+        'the sign line deleted under a pre-approval, a tiny line kept',
+        `${BLOCK}merge: pre-approved\n`,
+        '## wish\n\nx\n\n## signed\n\nmerge: pre-approved\n✏️ changed 1970-01-01 — tiny · body 11112222\n',
+        true,
+    ],
+    [
+        'a cancel line added',
+        `${BLOCK}merge: pre-approved\n`,
+        `${BLOCK}merge: pre-approved\n🚫 cancelled 2026-10-24 — scope moved\n`,
+        false,
+    ],
+    [
+        'a tiny line added under a pre-approved sign',
+        `${BLOCK}merge: pre-approved\n`,
+        `${BLOCK}merge: pre-approved\n✏️ changed 1970-01-01 — tiny · body 11112222\n`,
+        false,
+    ],
+    [
+        'a body change above an unchanged block',
+        `${BLOCK}merge: pre-approved\n`,
+        `${BLOCK.replace('x\n', 'y\n')}merge: pre-approved\n`,
+        false,
+    ],
+] as const)
+    test(`${why}: the body set is ${isFlagged ? 'refused' : 'run'} with no tick`, async ($, on) => {
+        world(on, [], current);
+        on('fs.read', () => ({ value: next }));
+        const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+        expect(signFlagged(r)).toBe(isFlagged);
+    });
+
 // FRM-478 rider: a body write on a ticket signed today carries that sign line unchanged; only a sign line the current
 // body lacks is a new sign
 const SIGNED_TODAY = () =>
