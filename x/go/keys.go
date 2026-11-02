@@ -27,7 +27,8 @@ import (
 // keys is the one place a token comes from. each secret is read where it lives (checked 2026-10-07):
 // dima's linear key in 1password (dev/linear-golden, through the x-fleet service account, `op read`
 // in-process — `op run` masks a child's stdout), each member's linear oauth pair and the github app
-// keys in the macos keychain. a minted token is cached in the keychain until it nears expiry, written
+// keys in the macos keychain, twins of the 1password masters `dev/linear-<member>-golden` and
+// `dev/github-<app>-golden` (username = the id, credential = the secret). a minted token is cached in the keychain until it nears expiry, written
 // through `security -i` on stdin. no secret reaches argv, stdout, a trace or a file in a repo.
 // X_KEYS names a json fixture that stands in for both stores; under X_TEST nothing else is read.
 
