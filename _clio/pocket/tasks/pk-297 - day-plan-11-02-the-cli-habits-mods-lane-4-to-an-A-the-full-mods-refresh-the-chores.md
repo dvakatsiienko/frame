@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T12:24:00Z'
+updated_date: '2026-11-02T12:26:00Z'
 labels:
   - m
 dependencies: []
@@ -112,4 +112,15 @@ W1129 (2026-11-02 14:23, dima, o23 steer): yes and propose good patterned names 
 W1130 (2026-11-02 14:23, dima, o25 steer): are all chores solved? ❓
 W1131 (2026-11-02 14:23, dima, o25 steer): if yes, i'd like to solve some of my other chores.
 W1132 (2026-11-02 14:23, dima, o25 steer): tell when i can ask.
+
+W1133 (2026-11-02 14:11, dima): all linear apps (yours, coder, and verifier) are in keychain? ❓
+W1134 (2026-11-02 14:11, dima): why not in 1p? ❓
+W1135 (2026-11-02 14:11, dima): gh apps for you all are in 1p dev vault.
+W1136 (2026-11-02 14:11, dima): maybe move there? ❓
+W1137 (2026-11-02 14:11, dima): i updated verifier linear app with avatar.
+W1138 (2026-11-02 14:11, dima): wire it everywhere so verifier uses its app on all surfaces, on GitHub and in Linear.
+W1139 (2026-11-02 14:11, dima): Whenever Sixth Sense posts into GitHub or Linear, it uses its corresponding app.
+W1140 (2026-11-02 14:11, dima): Update all habits everywhere.
+W1141 (2026-11-02 14:11, dima): Then print what else is left to park you, so you can just observe the lane.
+W1142 (2026-11-02 14:11, dima): I have some other chores for you.
 <!-- SECTION:NOTES:END -->
