@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T20:24:00Z'
+updated_date: '2026-11-02T20:25:00Z'
 labels:
   - m
 dependencies: []
@@ -272,4 +272,6 @@ W1521 (2026-11-02 22:08, dima): focus: cases where you proposed a CLI verb for p
 W1522 (2026-11-02 22:08, dima): focus: stuff made for CLI but not wired up to a system properly (the solution in the other case).
 W1523 (2026-11-02 22:09, dima): did you use a subagent for retro? ❓
 W1524 (2026-11-02 22:10, dima): yes, do it via card.
+
+W1525 (2026-11-02 22:12, dima): about 3 new retros proposal (ticket), needs a shape-line/idea? ❓
 <!-- SECTION:NOTES:END -->
