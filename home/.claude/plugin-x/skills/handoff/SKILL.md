@@ -1,7 +1,7 @@
 ---
 name: handoff
 argument-hint: "[focus on] | spawn [focus on] | <session-id|name> [focus on] | list | peek <slug> | delete"
-description: Load on /handoff with any argument shape — focus, spawn, «session-id or name» push, list, peek «slug», delete — and on an incoming HANDOFF REQUEST message.
+description: Load on /handoff with any argument shape — focus, spawn, «session-id or name» push, list, peek «slug», delete.
 ---
 
 # Handoff (sender)
@@ -67,18 +67,12 @@ Offer with a 💡 tip, specific and occasional, never a running commentary.
 - **Cross-thread awareness** — one topic worked in both frontends → offer a sync handoff
   rather than letting both sides work blind.
 
-## delivery failure — triggers A and D
+## delivery failure — trigger D
 
 A send bounces (error, "not reachable") → do NOT retry inline. Write the CST to the store
 immediately, then send ONE one-line message carrying only the path; that bounces too → tell
 your user the path. Never leave a bounced send without the file written — the file tier is the
 delivery guarantee.
-
-## Trigger A — incoming `HANDOFF REQUEST` message
-
-Priority interrupt. The message carries its own protocol (the requester may run another spec
-version) — follow THEM, reply to its `from` address. Then resume in-flight work exactly where
-it was. Bounce → the rule above.
 
 ## Trigger B — `/handoff [focus]` (pre-emptive)
 
@@ -112,10 +106,11 @@ applies in full. One line: summoned `<name>`; manage via `claude agents`.
 
 ## Trigger D — `/handoff <session> [focus]` (push to a live peer)
 
-1. Resolve like `handoff-ingest` peer mode: `ListAgents` fresh; map ids via
+1. Resolve the peer: `ListAgents` fresh; map ids via
    `jq -r 'select(.sessionId|startswith("<prefix>")) | "\(.pid) \(.name) \(.status)"' ~/.claude/sessions/*.json`;
    expect the runtime to demand the ref on a first bare-name send (the error carries it —
-   resend). Unresolvable → fall back to Trigger B, one line (peer unreachable, file written).
+   resend). A duplicated `name [ref]` is often one session resumed twice: prefer the
+   most recent. Unresolvable → fall back to Trigger B, one line (peer unreachable, file written).
 2. Produce the CST, `write` it to the store — **file is the default transport**; inline only if
    explicitly asked. The envelope's `data.path` is the path; use it verbatim in step 3.
 3. `SendMessage` a short notification: path + ingest contract inline (the receiver may never
@@ -129,6 +124,13 @@ A CST (Continuation State Transfer) of my thread is at <path>. Read it, then ing
 4. Bounce on name, ref, and twin → the delivery failure rule; the file is already in the
    store, tell the user the path.
 5. One line: CST pushed to `<target ref>`. The ACK is informational — never block on it.
+
+KNOWN CC BUG (closed unfixed upstream; re-probe with `test -S`, and drop this paragraph and sline's
+`peerSocketAlive`/⚠ segment when a probe shows it gone): a session can register in `~/.claude/sessions/`
+with its `/tmp/cc-socks/<pid>.sock` never bound — outgoing sends work, inbound is dead, ListAgents
+omits it, peers get "not reachable". Verify: `test -S /tmp/cc-socks/<pid>.sock`; heal via restart
+or `/exit` + `claude --continue`; the file in the store covers delivery meanwhile. Tracking:
+[claude-code#85497](https://github.com/anthropics/claude-code/issues/85497).
 
 ## Trigger E — `/handoff delete`
 

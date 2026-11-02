@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -29,18 +27,17 @@ func files(exts ...string) completer {
 }
 
 var argCompleters = map[string]completer{
-	"slug":     func(Verb, []string) ([]string, cobra.ShellCompDirective) { return pendingSlugs(), none },
-	"shell":    fixed("zsh", "bash", "fish"),
-	"brief":    files("md"),
-	"settings": files("json"),
-	"prompt":   fixed(),
-	"title":    fixed(),
-	"verb":     schemaWords,
+	"slug":   func(Verb, []string) ([]string, cobra.ShellCompDirective) { return pendingSlugs(), none },
+	"shell":  fixed("zsh", "bash", "fish"),
+	"brief":  files("md"),
+	"prompt": fixed(),
+	"title":  fixed(),
+	"verb":   schemaWords,
 	"name": func(verb Verb, _ []string) ([]string, cobra.ShellCompDirective) {
 		if verb.Family() == "knowledge" {
 			return shelfNames(), none
 		}
-		return probeNames(), none
+		return nil, none
 	},
 }
 
@@ -92,15 +89,4 @@ func schemaWords(_ Verb, done []string) ([]string, cobra.ShellCompDirective) {
 		}
 	}
 	return slices.Compact(words), none
-}
-
-func probeNames() []string {
-	dirs, _ := os.ReadDir(filepath.Join(stateDir(), "probes"))
-	var names []string
-	for _, dir := range dirs {
-		if dir.IsDir() {
-			names = append(names, dir.Name())
-		}
-	}
-	return names
 }

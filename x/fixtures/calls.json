@@ -532,36 +532,6 @@
             "status": "ok"
         },
         {
-            "argv": [
-                "probe",
-                "session",
-                "canary",
-                "{world}/probe-settings.json",
-                "say hi"
-            ],
-            "cwd": "{world}/repo",
-            "data": {
-                "name": "canary",
-                "resumed": false
-            },
-            "env": {
-                "PATH": "{world}/bin:/usr/bin:/bin"
-            },
-            "exit": 0,
-            "id": "probe-session-json",
-            "mode": "pipe",
-            "status": "ok"
-        },
-        {
-            "argv": ["probe", "session", "Bad Name", "{}", "say hi"],
-            "cwd": "{world}/repo",
-            "exit": 2,
-            "id": "probe-session-bad-name",
-            "mode": "pipe",
-            "next": "x probe session --help",
-            "status": "usage"
-        },
-        {
             "argv": ["knowledge", "list"],
             "cols": 120,
             "cwd": "{world}/repo",
@@ -637,7 +607,6 @@
         "lane unlock": "{ tree, unlocked }",
         "overview": "{ groups: { <family>: [{ name, purpose }] } }",
         "probe bare": "{ answer, costUsd, cwd, model, ms, sessionId, tokens }",
-        "probe session": "{ answer, costUsd, dir, model, ms, name, resumed, sessionId, tokens, transcript? }",
         "schema": "{ verbs: [...] } — --level full (default): each verb's whole schema; --level short: [{ name, purpose }]"
     },
     "env": {

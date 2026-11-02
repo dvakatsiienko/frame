@@ -2,13 +2,10 @@ package main
 
 import (
 	"cmp"
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 )
@@ -93,76 +90,4 @@ func probeBare(r *Run, args []string, flags Flags) (any, error) {
 	}
 	r.Done(got.summary(), "")
 	return append(got.data(), kv{"cwd", dir}), nil
-}
-
-var probeName = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
-
-func probeSession(r *Run, args []string, flags Flags) (any, error) {
-	name, settings, prompt := args[0], args[1], args[2]
-	picked, _ := flags["model"].(string)
-	model := cmp.Or(picked, "haiku")
-	if !probeName.MatchString(name) {
-		return nil, usageFail("a probe name is lowercase words and dashes, not "+name, "x probe session --help")
-	}
-	// the session runs from its scratch dir, so a settings path is made absolute first
-	if !strings.HasPrefix(strings.TrimSpace(settings), "{") {
-		abs, err := filepath.Abs(settings)
-		if err != nil || !exists(abs) {
-			return nil, usageFail("no settings file at "+settings+" — a path, or inline json", "x probe session --help")
-		}
-		settings = abs
-	}
-	dir := filepath.Join(stateDir(), "probes", name)
-	record := filepath.Join(dir, "session.json")
-	r.Open(name + ", " + model)
-
-	var saved struct {
-		SessionID string `json:"sessionId"`
-	}
-	if err := r.Step("dir", "the probe's scratch dir", func() (string, error) {
-		if raw, err := os.ReadFile(record); err == nil {
-			_ = json.Unmarshal(raw, &saved)
-		}
-		if saved.SessionID != "" {
-			return "resuming " + short(saved.SessionID) + " in " + home(dir), nil
-		}
-		if err := os.MkdirAll(dir, 0o700); err != nil {
-			return "", err
-		}
-		saved.SessionID = uuid()
-		return "a new session in " + home(dir), nil
-	}); err != nil {
-		return nil, err
-	}
-	resumed := exists(record)
-	session := []string{"--session-id", saved.SessionID}
-	if resumed {
-		session = []string{"--resume", saved.SessionID}
-	}
-	got, err := ask(r, dir, model, append(append([]string{"--setting-sources", "project", "--settings", settings}, session...), "--", prompt))
-	if err != nil {
-		return nil, err
-	}
-	raw, _ := json.Marshal(saved)
-	if err := os.WriteFile(record, raw, 0o600); err != nil {
-		return nil, err
-	}
-	next := fmt.Sprintf("x probe session %s %s <next prompt>", name, quote(args[1]))
-	r.Done(got.summary(), next)
-	out := append(got.data(), kv{"dir", dir}, kv{"name", name}, kv{"resumed", resumed})
-	// cc keeps a session under its cwd with / and . turned into -; named only when it is there
-	userHome, _ := os.UserHomeDir()
-	transcript := filepath.Join(userHome, ".claude/projects", strings.NewReplacer("/", "-", ".", "-").Replace(dir), saved.SessionID+".jsonl")
-	if exists(transcript) {
-		out = append(out, kv{"transcript", transcript})
-	}
-	return out, nil
-}
-
-func uuid() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	b[6] = b[6]&0x0f | 0x40
-	b[8] = b[8]&0x3f | 0x80
-	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }

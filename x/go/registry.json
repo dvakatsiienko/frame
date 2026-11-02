@@ -493,28 +493,6 @@
         {
             "args": [
                 {
-                    "description": "the peer session the request goes to, its ListAgents name",
-                    "name": "target"
-                }
-            ],
-            "flags": {
-                "target-line": {
-                    "description": "the focus this thread takes over, printed as one TARGET: line",
-                    "type": "string",
-                    "value": "focus"
-                }
-            },
-            "name": "handoff request",
-            "needsApply": false,
-            "purpose": "print the handoff request a peer session gets, CST-SPEC.md inlined whole; sends nothing, the caller sends it",
-            "touches": [
-                "home/.claude/plugin-x/skills/handoff-ingest/SKILL.md — the request template, read",
-                "home/.claude/plugin-x/CST-SPEC.md — inlined byte for byte, read"
-            ]
-        },
-        {
-            "args": [
-                {
                     "description": "the brief file, markdown",
                     "name": "brief"
                 }
@@ -1023,32 +1001,6 @@
             "name": "probe bare",
             "purpose": "ask a claude -p session with no CLAUDE.md, rules, plugins, hooks or MCP, from a temp dir; prints the answer and its cost",
             "steps": ["ask"]
-        },
-        {
-            "args": [
-                {
-                    "description": "the probe name; its scratch dir and session id live under ~/.local/state/x/probes/<name>",
-                    "name": "name"
-                },
-                {
-                    "description": "a settings json file, or inline json, for --settings",
-                    "name": "settings"
-                },
-                {
-                    "description": "the prompt, one argument",
-                    "name": "prompt"
-                }
-            ],
-            "flags": {
-                "model": {
-                    "description": "the model, haiku by default",
-                    "type": "string",
-                    "value": "model"
-                }
-            },
-            "name": "probe session",
-            "purpose": "run a named claude -p probe with a settings json from a scratch dir; the same name again resumes that session",
-            "steps": ["dir", "ask"]
         },
         {
             "name": "knowledge list",

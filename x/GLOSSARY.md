@@ -89,6 +89,6 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **scratch copy** — a live mod file pulled out for a bg session to edit; a push writes it back
 - **overlay** — a throwaway copy of a mod with its scratch copies laid over it; x tests the overlay, never the live mod
 - **plugin cache** — where claude code installs a released plugin; a bump is proven when claude reports the new version there, never by a dir alone
-- **probe** — a `claude -p` session run from a dir no repo owns, so our setup cannot answer for it: `bare` (no setup at all) or `session` (named, resumable)
+- **probe** — a `claude -p` session run from a dir no repo owns, so our setup cannot answer for it: `bare`, no setup at all
 - **knowledge shelf** — `docs/knowledge/`, the fleet's reference files. avoid: bare «shelf» — `~/.claude/shelf/` is a different dir
 - **verified date** — the day a knowledge file was last checked against the world; a file with none is **unverified**. avoid: stamp

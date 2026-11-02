@@ -318,11 +318,6 @@
   - given a prompt
   - when `x probe bare '<prompt>'` runs
   - then `claude -p --safe-mode --strict-mcp-config --no-session-persistence` answers from a temp dir, haiku by default, and the board shows the answer as markdown with its cost
-- ✅ `x probe session` keeps a named probe across calls
-  - makes: `~/.local/state/x/probes/<name>/` with the session id
-  - given a name and a settings json
-  - when it runs twice with the same name
-  - then the second call resumes the first session
 
 ## knowledge
 

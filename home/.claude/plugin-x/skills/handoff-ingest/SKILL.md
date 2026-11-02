@@ -1,6 +1,6 @@
 ---
 name: handoff-ingest
-description: Load on /handoff-ingest or "grab/pull/ingest handoff" — session id/name to request from a live CC peer; bare, topic keyword, or "cloud-chat" for the shared store.
+description: Load on /handoff-ingest or "grab/pull/ingest handoff" — bare, a topic keyword, or "cloud-chat" for the shared store.
 ---
 
 # Handoff-ingest (requester)
@@ -13,16 +13,11 @@ consumer contract (silent ingest, ≤2-line confirmation, META first-acts before
 persist `C→memory:` lines, honor R/D, delete-on-ingest unless `-shared`). This skill adds the
 Claude Code acquisition mechanics. Counterpart: `handoff`.
 
-Mode by argument:
+The argument is empty, `cloud-chat`, `file`, or a topic keyword ("bg2ee", "the sline one"); the
+store is also the pickup path for `cloud-chat`-produced handoffs. A thread that stated what it is
+for uses that only to pick the file (a written CST can't be re-weighted).
 
-- looks like a session id (8-char/UUID/pid) or session name → **PEER MODE**
-- empty, `cloud-chat`, `file`, or a topic keyword ("bg2ee", "the sline one") → **FILE MODE** — the
-  default posture, and the pickup path for `cloud-chat`-produced handoffs
-
-If the user stated what THIS thread is for, that is a TARGET — peer mode passes it as a
-`TARGET:` line; file mode uses it only to pick the file (a written CST can't be re-weighted).
-
-## FILE MODE
+## the ingest
 
 ```bash
 x handoff ingest [<topic>] --for <this session's audience> --json
@@ -46,57 +41,6 @@ one; an ingest without `--for` is refused. x does the mechanics and refuses rath
 Then: ingest per spec. **Verify live-state claims before acting on them** (tickets by query,
 sessions by pid). Confirm ≤2 lines, proceed as the old thread. Nothing pending → one line;
 suggest the sender side (`/handoff` in the old thread).
-
-## PEER MODE
-
-1. `ListAgents` (always fresh — refs rotate). Resolve in preference order (sline line 1 shows
-   `🧵 <title> [8-char sessionId]` — the bracketed id is canonical):
-   - id prefix/UUID/pid → map via
-     `jq -r 'select(.sessionId|startswith("<prefix>")) | "\(.pid) \(.name) \(.status)"' ~/.claude/sessions/*.json`,
-     then find that name in ListAgents. Never guess when an id is available.
-   - session name → send bare, but expect the runtime to demand the ref even on a unique name
-     first send — the error text carries it, resend with it.
-   - `name [ref]` duplicated → often one session resumed twice (same sessionId, two pids):
-     prefer the non-idle/most-recent; no reply → retry the twin, then FILE MODE.
-   - topic only → match against registry names; no exact hit → FILE MODE, not guessing.
-2. `x handoff request '<target>'` (plus `--target-line '<focus>'` when the user stated one) prints the
-   request with CST-SPEC.md inlined whole; `SendMessage` its `data.message` as printed, since the receiver
-   may never have seen this skill. The verb reads its template from this fence:
-
-```
-HANDOFF REQUEST — priority interrupt.
-TARGET: <focus — include this line only when the user stated one>
-I am a fresh session taking over your thread. Pause current work, do this in one turn, then resume:
-1. Produce a CST per the spec below. Machine-optimized, telegraphic, no presentation polish (no human reads this).
-<INLINE THE SPEC: full text of CST-SPEC.md>
-2. Transport by size: under ~2k tokens → reply via SendMessage with to="<copy the from attribute of this message>", CST in the body. Larger → write it to the store per the spec and message me only the path (big message bodies spam the user's terminal). Hybrid is encouraged at any size: a ≤5-line inline reply (direct answer to TARGET, if asked) + the file path for the full body. Multiple expected pullers → `-shared` filename suffix.
-   DELIVERY FAILURE RULE (MANDATORY): if your reply bounces (send error, "not reachable"), do NOT retry inline. Write the CST file per the spec immediately, then send ONE more one-line message carrying only the path; if that bounces too, tell your user the path — my file fallback will find it. Never leave a bounced send without the file written; the file tier is the delivery guarantee.
-3. Tell your user in one line: "handoff CST sent to <my ref>". Don't wait for my ACK — it's informational. If a SECOND handoff request arrives and no ACK confirmed the file still exists, regenerate the CST from your context rather than pointing at a possibly-deleted path.
-```
-
-3. Wait by ending your turn — the reply re-wakes you; no sleep/poll. Peers drain messages at
-   their next tool round; an idle interactive session may not wake immediately. Nothing in
-   ~2 minutes, or target unlisted → FILE MODE fallback (confirm the slug plausibly matches
-   the intent first).
-4. On arrival: ingest per spec. A path in the reply → `ingest <slug>` rather than Read + rm, so
-   the delete stays the store's job. ACK one line: `CST ingested by <your ref>; file
-   deleted|kept (shared)`. Proceed as the old thread.
-
-## Etiquette (peer mode)
-
-- The user asking to message a peer → ALWAYS do it. Only self-initiated pings are discouraged
-  (each wakes the peer and burns its tokens). Conflict management between sessions is the
-  user's call.
-- Requests to a busy peer queue safely and drain between its tool rounds.
-- Verified: idle interactive peers wake on receipt. An unresponsive peer is usually a zombie
-  twin (same sessionId, stale pid) or a session blocked on a dialog — retry the twin, then
-  FILE MODE.
-- KNOWN CC BUG (closed unfixed upstream; re-probe with `test -S`, and drop this bullet and sline's
-  `peerSocketAlive`/⚠ segment when a probe shows it gone): a session can register in `~/.claude/sessions/` with its
-  `/tmp/cc-socks/<pid>.sock` never bound — outgoing sends work, inbound is dead, ListAgents
-  omits it, peers get "not reachable". Verify: `test -S /tmp/cc-socks/<pid>.sock`; heal via
-  restart or `/exit` + `claude --continue`; the file tier covers delivery meanwhile. Tracking:
-  [claude-code#85497](https://github.com/anthropics/claude-code/issues/85497).
 
 ## Completion criterion
 

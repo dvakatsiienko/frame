@@ -397,29 +397,6 @@ func TestProbeBareAsksWithNoSetupFromOutsideAnyRepo(t *testing.T) {
 	}
 }
 
-func TestProbeSessionResumesItsOwnSession(t *testing.T) {
-	t.Parallel()
-	dir := world(t)
-	env := []string{"PATH=" + dir + "/bin:" + os.Getenv("PATH"), "X_STATE=" + filepath.Join(dir, "state")}
-	settings := filepath.Join(dir, "probe-settings.json")
-
-	first := xIn(t, dir, env, "probe", "session", "canary", settings, "remember plum")
-	second := xIn(t, dir, env, "probe", "session", "canary", settings, "which word?")
-
-	calls := claudeCalls(t, dir)
-	id, _ := first.data["sessionId"].(string)
-	if first.code != 0 || second.code != 0 || second.data["resumed"] != true {
-		t.Fatalf("exits %d %d, second %v", first.code, second.code, second.data)
-	}
-	if !strings.Contains(calls[0], "--session-id") || !strings.Contains(calls[1], "--resume") {
-		t.Errorf("want a new session, then a resume: %v", calls)
-	}
-	want, _ := filepath.EvalSymlinks(filepath.Join(dir, "state/probes/canary"))
-	if !strings.HasPrefix(calls[1], want+" ") || !strings.Contains(calls[1], "--settings "+settings) {
-		t.Errorf("the resume ran as %q, want cwd %s and the settings %s (session %s)", calls[1], want, settings, id)
-	}
-}
-
 func TestKnowledgeReadLogsTheRead(t *testing.T) {
 	t.Parallel()
 	state := t.TempDir()
