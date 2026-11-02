@@ -1095,9 +1095,16 @@ export const register: Register = (on) => {
             const repo =
                 mergeAutoRepo(mergeCall.words) ??
                 (await repoOf($, mergeCall.dir));
+            // only his newest tick is his word on a merge, as only his last typed prompt is (FRM-478)
+            const { value: ticks = [] } = await $.state
+                .get(TICKS)
+                .catch(() => ({ value: [] }));
+            const newest = Math.max(...ticks.map((t) => t.at));
             return repo
-                ? tickFor($, `pr:${repo}#${pr}`, (t) =>
-                      quotesPr(t.text, repo, pr),
+                ? tickFor(
+                      $,
+                      `pr:${repo}#${pr}`,
+                      (t) => t.at === newest && quotesPr(t.text, repo, pr),
                   )
                 : undefined;
         };

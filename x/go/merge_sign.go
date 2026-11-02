@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -76,7 +77,7 @@ func (d *mergeDecision) selfWait(pr pullHead, self []string) (string, error) {
 		return "", nil
 	}
 	return "self-edit, needs dima's word — " + strings.Join(self, ", ") + "; " + sign.detail +
-		"; once his own prompt names #" + d.PR + ": x lane merge-auto " + d.PR + " --apply --dima-ok " + d.PR, nil
+		"; once his own prompt names #" + d.PR + " or he ticks an orbit ask «⚠️ merge " + path.Base(d.Repo) + "#" + d.PR + "»: x lane merge-auto " + d.PR + " --apply --dima-ok " + d.PR, nil
 }
 
 // what a ticket's last body hash says about the body above its sign block

@@ -441,6 +441,19 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 	}
 }
 
+// FRM-478: the self-edit wait names both doors to dima's word, his typed prompt and his tick on a merge ask
+func TestMergeAutoSelfEditWaitNamesTheTickDoor(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts", "x/go/merge_auto.go")
+
+	got := w.run(t, "7", "--apply")
+
+	err := envelopeOf(got).Error
+	if got.code != 1 || !strings.Contains(err, "or he ticks an orbit ask «⚠️ merge ") || !strings.Contains(err, "#7»") {
+		t.Fatalf("exit %d, error %q, want the tick door for #7", got.code, err)
+	}
+}
+
 // commitAt lands a commit on seed's main at a fixed committer date and pushes it
 func commitAt(t *testing.T, w *mergeWorld, date string, args ...string) string {
 	t.Helper()

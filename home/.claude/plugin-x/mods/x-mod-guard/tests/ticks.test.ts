@@ -124,6 +124,39 @@ test('a bare merge-auto --apply on a tick quoting the pr carries --dima-ok', asy
     ]);
 });
 
+// FRM-478 rider (W745–W746): a tick on «⚠️ merge <repo>#<n>» carries his word like the url does; only his newest tick
+// counts, as only his last typed prompt does
+const BARE = 'x lane merge-auto 104 --apply';
+const FLAGGED = `${BARE} --dima-ok 104`;
+for (const [why, ticks, isCarried] of [
+    [
+        'a tick on «⚠️ merge bytes#104»',
+        [tick('⚠️ merge bytes#104: the guard fix')],
+        true,
+    ],
+    ['no tick', [], false],
+    ['a tick on another pr', [tick('⚠️ merge bytes#1045: another')], false],
+    ["a tick on another repo's pr", [tick('⚠️ merge frame#104: frame')], false],
+    [
+        'a tick naming the pr without «merge»',
+        [tick('read bytes#104 first')],
+        false,
+    ],
+    [
+        'a merge tick a newer tick superseded',
+        [
+            tick('⚠️ merge bytes#104: the guard fix', NOW - 10),
+            tick('next: the docs', NOW - 1),
+        ],
+        false,
+    ],
+] as const)
+    test(`a bare merge-auto --apply on ${why} ${isCarried ? 'carries' : 'gets no'} --dima-ok`, async ($, on) => {
+        const { ran } = world(on, [...ticks]);
+        await bash($, BARE);
+        expect(ran).toEqual([isCarried ? FLAGGED : BARE]);
+    });
+
 test('the brake never takes a tick: --release-brake still needs his typed word', async ($, on) => {
     const { ran } = world(on, [tick(`merge ${PR}`)]);
     const r = await bash(
