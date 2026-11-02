@@ -18,7 +18,7 @@ his rules live in project memory; this skill is the order. read the leaves it na
 - one fact → `WebSearch` standard, one confirming page
 - a state or «why» question → `WebSearch` extended, then `WebFetch` the primary pages
 - wide or several games → `x-cloud-chat:research` lanes, launched detached on the mac, under `~/.local/share/research-lanes/games/<date>-<slug>/`
-- bot-blocked page (psnprofiles, wikis) → `pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out <file>` on the mac (memory `web-bot-blocked-fetch`)
+- bot-blocked page (psnprofiles, wikis) → `pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out <file>` on the mac (`firelink` § 2)
 
 ## 3. judging what comes back
 

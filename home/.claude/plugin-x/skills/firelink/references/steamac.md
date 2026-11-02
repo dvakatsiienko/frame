@@ -1,8 +1,10 @@
 # steamac — the vm in depth
 
-read from `firelink/SKILL.md` § 2 before any vm work: what the vm holds, what clio can do in it, the tweak ladder for a game that will not run, and the rockstar launcher.
+read from `firelink/SKILL.md` § 3 before any vm work: what the vm holds, what clio can do in it, the tweak ladder for a game that will not run, and the rockstar launcher.
 
 ## the vm, as probed 2026-11-02
+
+the render chain: game dx9–11 → DXVK (Proton, x86 via FEX) → Venus → MoltenVK or KosmicKrisp → Metal.
 
 - SteamOS 0.4.5, aarch64, 8 cores, 11 GB ram; `/home` ~127 GB and runs near full: `df -h ~` before a download
 - proton: `Proton 11.0 (ARM64)` is the default (on Steam Linux Runtime 4 arm64), `Proton 10.0` is the x86 one through FEX; no per-game override is set yet (`config/config.vdf` → `CompatToolMapping` empty)
@@ -28,7 +30,7 @@ read from `firelink/SKILL.md` § 2 before any vm work: what the vm holds, what c
 4. a launch option (Properties → Launch options), general proton practice, untested here unless marked: `PROTON_USE_WINED3D=1` (dx9–11 through opengl instead of DXVK), `PROTON_NO_ESYNC=1` / `PROTON_NO_FSYNC=1` (hangs), `WINEDLLOVERRIDES="dinput8=n,b"` (asi mod loaders), the `VKD3D_*` set steamac pre-sets for dx12
 5. a stutter: `scripts/swap-watch.sh` on the mac; the caps in `steamac-play.sh`
 6. a broken prefix: a fresh one is `compatdata/<appid>` moved aside — ask first, saves may live inside it (`pfx/drive_c/users/steamuser/Documents`, `AppData`)
-7. every try lands as one line in the game's home (§ 3) or the live pocket item, so the next session starts from it
+7. every try lands as one line in the game's home (§ 4) or the live pocket item, so the next session starts from it
 
 results so far: against the storm, manor lords, system shock, noita, dwarf fortress fine; satisfactory p50 20; gta iv p50 60, avg 47, 1 % low 15, 65 hitches/min (11-01); bully reaches its menu (11-02)
 

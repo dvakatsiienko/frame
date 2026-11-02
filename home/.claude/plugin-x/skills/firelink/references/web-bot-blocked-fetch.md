@@ -1,17 +1,25 @@
 # web-bot-blocked-fetch — game wikis and psnprofiles through the mac
 
-moved here 2026-11-02 from the «stuff» project file `tools/web-bot-blocked-fetch.md` (dima: every game door lives in firelink). script `~/frame/script/web-bot-blocked-fetch.ts`, data dir `~/.local/share/web-bot-blocked-fetch/`.
+script `~/frame/script/web-bot-blocked-fetch.ts`, data dir `~/.local/share/web-bot-blocked-fetch/`.
 
 ## why it exists
 
-- the cloud proxy refuses `psnprofiles.com`, `nomanssky.miraheze.org` (pages and `api.php`) and fandom with `connect_rejected`, before the site answers. WebFetch fails there too, and WebSearch doesn't index miraheze
+- the cloud proxy refuses the SKILL.md § 2 hosts with `connect_rejected` before the site answers; WebSearch doesn't index miraheze
 - the mac reaches them: `"web-bot-blocked:fetch": "./script/op-run.sh node ./script/web-bot-blocked-fetch.ts"` in `~/frame/package.json`
 
 ## how to run
 
 - always a login shell: `zsh -lc 'pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>"'`
-- a long page → `--out ~/.local/share/web-bot-blocked-fetch/<game>/<name>.md`, then `rg` over the file, never read it whole
 - `--index <wiki host>` lists a mediawiki's articles, `- Title — URL` per line (miraheze nms: 3,535 articles, 6.7 s)
+
+## habits
+
+- a long page goes to `--out` and gets `rg`'d, never read whole; `WebFetch` raises an approval card, so pages go through the mac
+- a trophy answer: psnprofiles guide + comments first; powerpyx fills gaps and cross-checks; platget, trueachievements and steam guides as extra checks. name every disagreement, the safe play first. he finds powerpyx ugly and ad-heavy
+- a mediawiki takes an article url; a search url or a missing title fails with «no wiki page», then `--index <wiki host>`. a thin fandom (cloudpunk) has no item pages at all
+- a value, price or stat question reads the infobox (`== Infobox ==`), which the plain extract drops
+- an answer no page states is an inference from absence, said as one
+- what you read lands in the game's folder (SKILL.md § 4), sourced
 
 ## the paths inside
 
@@ -32,4 +40,4 @@ moved here 2026-11-02 from the «stuff» project file `tools/web-bot-blocked-fet
 
 ## caches on the mac
 
-- `~/.local/share/web-bot-blocked-fetch/no-mans-sky/wiki-index.md` and `psnprofiles-guide.md` beside it. no cloud copy: without the mac no article is readable anyway
+- `~/.local/share/web-bot-blocked-fetch/<game>/`; nms holds `wiki-index.md` + `psnprofiles-guide.md`. no cloud copy

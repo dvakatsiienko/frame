@@ -1,12 +1,12 @@
 ---
 name: firelink
-description: Load BEFORE any question about Dima's games — what he owns, played, earned or wishlisted on psn or steam (trophies, achievements, platinum, rarity, «what's left», «what to play next») — and before launching, updating, debugging or shelling into the steamac vm (FX Steam Launcher, SteamOS, proton, the rockstar launcher in it).
+description: Load BEFORE any question about Dima's games — what he owns, played, earned or wishlisted on psn or steam (trophies, achievements, platinum, rarity, «what's left», «what to play next»), an item, quest or wiki page to look up, where a game's notes live — and before launching, updating, debugging or shelling into the steamac vm (FX Steam Launcher, SteamOS, proton, the rockstar launcher in it).
 argument-hint: "<trophy-sys verb> [arg] | vm play | vm ssh [cmd] | vm update"
 ---
 
 # firelink — every door into dima's games
 
-three doors, one skill: **psn** and **steam** through trophy-sys (the truth for libraries and trophies), and **steamac**, the vm that plays his windows steam games on the mac. § 3 maps where every other game piece lives.
+four doors, one skill: **psn** and **steam** through trophy-sys, **game pages** (wikis, psnprofiles, guides) through the mac's fetch, and **steamac**, the vm that plays his windows steam games on the mac. § 4 maps where every other game piece lives.
 
 **lane** — `cc`: Bash, the scripts below · `cloud-chat` desktop: the `x-cloud-chat__firelink_tracker` and `x-cloud-chat__firelink_steamac` mcp tools (the same scripts, read-only, no `snapshot`) · `cloud-chat` / project thread: the mac's desktop commander, `mcp__remote-devices__plugin_desktop-commander_desktop-commander__start_process` (the unprefixed one runs in the cloud vm, never count it).
 
@@ -38,9 +38,22 @@ parse the file with a short `python3`, never read it whole.
 - never guess an id: read it from `games` / `steam-games`; never `pnpm -s` (pnpm 12 removed it, no json)
 - secrets: `.env` holds `NPSSO`, `STEAM_API_KEY`, `STEAM_ID64` — never ask for, never print
 
-## 2. steamac — windows steam games on the mac
+## 2. game pages — wikis, psnprofiles, guides
 
-`/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial: a no-name open-source project, kept only if games run well): valve's arm64 SteamOS in a libkrun vm. chain: game dx9–11 → DXVK (Proton, x86 via FEX) → Venus → MoltenVK or KosmicKrisp → Metal.
+the cloud refuses psnprofiles, fandom, miraheze, wikipedia and steam; the mac reaches them:
+
+```zsh
+ls ~/.local/share/web-bot-blocked-fetch/<game>/   # cache first: a seed leaves the psnp guide here
+pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out ~/.local/share/web-bot-blocked-fetch/<game>/<name>.md   # then rg it
+```
+
+- 📌 the verb only: a raw `curl` through the mac is blocked as bot-check circumvention; `WebSearch` finds urls
+- trophies: the psnprofiles guide and its comments first, powerpyx second, never powerpyx as his main read
+- wiki traps and the rest: [references/web-bot-blocked-fetch.md](references/web-bot-blocked-fetch.md)
+
+## 3. steamac — windows steam games on the mac
+
+`/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial, kept only if games run well): valve's arm64 SteamOS in a libkrun vm.
 
 - `scripts/steamac-play.sh` — launch with the caps the app can't save ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)): gpu 10 GiB, `MESA_KK_COMPILE_THREADS=4`, control fifo `~/.local/share/steamac/control.fifo`; dima starts it from `~/Desktop/steam-fx-safe.app`, a Finder alias of `~/Applications/FX Steam (safe).app` — an applescript applet that runs this script (adhoc-signed: `codesign --force -s -` after an edit); never `/Applications/FX Steam Launcher.app` directly, which skips the caps
 - `scripts/steamac-ssh.sh [cmd]` — shell into the vm, `steamos@127.0.0.1:2222`, key `~/.ssh/steamac_ed25519`; «connection refused» = vm off; first run `--install-key`
@@ -58,15 +71,15 @@ it holds the probed vm (proton versions, paths, steamac's own config), what i ca
 - a remote path with spaces goes in as a script: `steamac-ssh.sh 'bash -s' < script.sh`
 - a rockstar game signs in to whatever rockstar account steam is linked to, server-side; never «Resend code» in a loop
 
-## 3. where every game piece lives
+## 4. where every game piece lives
 
-facts about a game go to its home below, never into this skill. a temporary map: dima plans to move every game note into obsidian `games/`, date open; until then a game's notes may sit in any of these, so check the notion and obsidian lines before saying «no notes» (scanned whole 2026-11-02: nothing game-related lives outside them).
+facts about a game go to its home below, never into this skill. until every game note moves into obsidian `games/`, check the notion and obsidian lines before saying «no notes».
 
 - 🗂 claude project «stuff» files (`/mnt/project-files/`, cloud only, an rclone drive with no history) — `games/<game>/index.md` + topic files, `games/README.md`, `games/_finished/`, `tools/trophy-sys.md` (id cache), `games/_finished/_archive/<game>/doc/` (finished docs, one .md per tab); its local copy `~/projects/cw/stuff/psn-trophy-tracker-local.md`, last synced 2026-09-19
 - 🧠 project memory (same project, `team/silo`) — his taste, queue, verdicts. cloud only
 - 📄 claude docs `dima-<game>` — his pinned per-game doc, url in that game's `index.md`; `dima-games-inbox`
-- 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — every game page sits under it, nested sub-pages included (builds, quests): life is strange remastered, rogue legacy 2, bg1ee, bg2ee, alters, factorio, elden ring, dark souls 1 remastered, dark souls 3, nioh, dave the diver, game dev tycoon, ios; ids: `ntn api v1/blocks/<root id>/children`
-- 🪨 obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/`, `x:notes`; icloud last-writer-wins, writes on his ask) — `games/play next.md` (the owned-games pick list, the folder everything moves into), `sv/` stardew valley (10 notes), `z_cotl/` cult of the lamb (5), `z_rim/` rimworld (23), `gear/console.md` (ps5 pro + dualsense edge); the `z_` prefix marks a finished game
+- 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — every game page sits under it, sub-pages included; list: `ntn api v1/blocks/<root id>/children`
+- 🪨 obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/`, `x:notes`; icloud last-writer-wins, writes on his ask) — `games/play next.md` (the owned-games pick list, the folder everything moves into), `sv/` stardew valley, `z_cotl/` cult of the lamb, `z_rim/` rimworld, `gear/console.md` (ps5 pro + dualsense edge); the `z_` prefix marks a finished game
 - 🏆 trophy-sys code — `~/projects/bytes/apps/trophy-sys` (its `AGENTS.md` before any edit); research `~/frame/docs/research/npsso-renewal.md`, `trophy-sys-notes-store.md`
-- 🌐 game wikis and psnprofiles — `pnpm -C ~/frame --silent web-bot-blocked:fetch <url>` reads what a plain fetch can't (a MediaWiki through its api, `--index <wiki host>` lists its articles; the rest through firecrawl, 1 credit a page); its cache `~/.local/share/web-bot-blocked-fetch/<game>/`; more: [references/web-bot-blocked-fetch.md](references/web-bot-blocked-fetch.md)
+- 🌐 game pages — § 2; the cache `~/.local/share/web-bot-blocked-fetch/<game>/`
 - 💾 local saves — `~/Library/Application Support/HelloGames` (nms mac), `~/Library/Application Support/Steam` (mac steam), `~/.local/share/Hinterland` (the long dark), `~/.local/share/StardewValley`
