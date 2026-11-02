@@ -201,6 +201,25 @@ const signFlagged = (r: { deny?: string }) =>
     (r.deny ?? '').includes('then sign');
 const SIGN = 'x linear set FRM-1 --add-label signed';
 
+// R3: a sign rides no other door — a tick on the line's guarded command or its pr never carries the sign
+for (const [why, line, ticks] of [
+    [
+        'a ticked mirror push',
+        `${MIRROR} && ${SIGN}`,
+        [tick(`⚠️ mirror: \`${MIRROR}\``)],
+    ],
+    [
+        'a ticked merge-auto',
+        `x lane merge-auto 104 --apply && ${SIGN}`,
+        [tick(`merge ${PR}`)],
+    ],
+] as const)
+    test(`a sign chained after ${why} is still refused`, async ($, on) => {
+        const { ran } = world(on, [...ticks]);
+        const r = await bash($, line);
+        expect([signFlagged(r), ran]).toEqual([true, []]);
+    });
+
 for (const [why, ticks] of [
     ['no tick', []],
     ['a tick on «FRM-14 …»', [tick('✍️ sign FRM-14: a longer ticket')]],

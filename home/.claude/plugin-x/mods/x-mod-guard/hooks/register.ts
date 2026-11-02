@@ -79,6 +79,13 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
+// whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
+const points = (s: string) =>
+    [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));
+const cut = (s: string, n: number) => {
+    const all = points(s);
+    return all.length > n ? `${all.slice(0, n).join('')}…` : all.join('');
+};
 // a clio session's own code edits: the 8th gets one note that a bigger job belongs to a helper
 const CODE_FILE = /\.(ts|tsx|go|sh|py|swift)$/;
 const EDITS = { key: 'edits', plugin: 'x-mod-guard' } as const;
@@ -246,7 +253,7 @@ async function record(
     const value: GuardEvent = {
         ...event,
         at,
-        command: line.length > SHOWN ? `${line.slice(0, SHOWN)}…` : line,
+        command: cut(line, SHOWN),
         name: await sessionName($, sid),
         sid,
     };
@@ -624,10 +631,7 @@ async function logOrigin(
     const was = ((await $.store.get(ORIGINS)) ?? []) as {
         text?: string;
     }[];
-    // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
-    const whole = (s: string) =>
-        [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));
-    const head = (s: string) => whole(s).slice(0, 80).join('');
+    const head = (s: string) => points(s).slice(0, 80).join('');
     const row = {
         at: await $.clock.now(),
         attachments: e.attachments?.length ?? 0,
@@ -934,7 +938,8 @@ export const register: Register = (on) => {
         const warns: string[] = [];
         const cwd = await $.session.cwd();
         const home = await $.env.get('HOME');
-        const root = await $.session.root().catch(() => cwd);
+        // a failed root reads as no session's, never the cwd a `cd` moved (R6)
+        const root = await $.session.root().catch(() => '');
         const ctx: Context = {
             home,
             isClio: isUnder(root, `${home}/frame/_clio`),
@@ -1118,6 +1123,39 @@ export const register: Register = (on) => {
                   )
                 : undefined;
         };
+        // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
+        // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
+        // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
+        const sign = signWord(typed, cwd, ctx);
+        const signText =
+            sign?.file === undefined ||
+            sign.file.includes('$') ||
+            writtenPaths(typed, cwd, ctx).includes(sign.file)
+                ? undefined
+                : await signFile($, sign.file);
+        const isNewSign =
+            sign !== undefined &&
+            (sign.file === undefined ||
+                signText === undefined ||
+                (await hasNewSignLine($, sign.id, signText)));
+        // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
+        if (
+            isNewSign &&
+            !(await tickFor(
+                $,
+                `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
+                (t) => isSignAsk(t.text, sign.id),
+            ))
+        ) {
+            const r = {
+                door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
+                rule: 'sign-untick',
+                targets: [sign.id],
+                why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
+            };
+            const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
+            return enforce(r, `nothing in this command ran — ${said}`, said);
+        }
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);
         if (word) {
@@ -1149,39 +1187,6 @@ export const register: Register = (on) => {
                 `dima's tick quotes pr ${pr}, so it carries his word: --dima-ok ${pr}`,
             );
             return go(withDimaOk(command, pr));
-        }
-        // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
-        // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
-        // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
-        const sign = signWord(typed, cwd, ctx);
-        const signText =
-            sign?.file === undefined ||
-            sign.file.includes('$') ||
-            writtenPaths(typed, cwd, ctx).includes(sign.file)
-                ? undefined
-                : await signFile($, sign.file);
-        const isNewSign =
-            sign !== undefined &&
-            (sign.file === undefined ||
-                signText === undefined ||
-                (await hasNewSignLine($, sign.id, signText)));
-        if (
-            verdict.kind === 'run' &&
-            isNewSign &&
-            !(await tickFor(
-                $,
-                `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
-                (t) => isSignAsk(t.text, sign.id),
-            ))
-        ) {
-            const r = {
-                door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
-                rule: 'sign-untick',
-                targets: [sign.id],
-                why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
-            };
-            const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
-            return enforce(r, `nothing in this command ran — ${said}`, said);
         }
         if (verdict.kind === 'run') return go();
         // dima's tick on an ask quoting every target is his word, no marker needed (FRM-427)
@@ -1273,9 +1278,7 @@ export const register: Register = (on) => {
             try {
                 const home = await $.env.get('HOME');
                 // the session's root, never its cwd: a clio cd'd into ~/frame is still clio, codie cd'd into clio is not
-                const root = await $.session
-                    .root()
-                    .catch(() => $.session.cwd());
+                const root = await $.session.root().catch(() => '');
                 if (!isUnder(root, `${home}/frame/_clio`)) return result;
                 const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
                 await $.state.set(EDITS, n);
@@ -1303,7 +1306,7 @@ export const register: Register = (on) => {
             return result;
         try {
             const home = await $.env.get('HOME');
-            const root = await $.session.root().catch(() => $.session.cwd());
+            const root = await $.session.root().catch(() => '');
             if (!isUnder(root, `${home}/frame/_clio`)) return result;
             const n = ((await $.state.get(IMAGES)).value ?? 0) + 1;
             await $.state.set(IMAGES, n);

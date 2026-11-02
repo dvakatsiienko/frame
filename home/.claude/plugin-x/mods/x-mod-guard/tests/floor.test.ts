@@ -223,6 +223,14 @@ test('a multi-line refusal is kept on one line', async ($, on) => {
     });
 });
 
+test('a long refusal is cut by whole code points, no half emoji kept (R5)', async ($, on) => {
+    const store = liveStore(on);
+    world(on);
+    const head = `rm x ${'a'.repeat(154)}😀`;
+    await bash($, `${head}bbb`);
+    expect([...store.values()][0]).toMatchObject({ command: `${head}…` });
+});
+
 test('a refusal is kept as a guard event', async ($, on) => {
     const store = liveStore(on);
     world(on);

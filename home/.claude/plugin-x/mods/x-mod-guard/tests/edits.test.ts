@@ -3,12 +3,14 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { liveStore } from './store.ts';
 
-function world(on: On, cwd: string, root = cwd) {
+function world(on: On, cwd: string, root: string | null = cwd) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: cwd }));
-    on('session.root', () => ({ value: root }));
+    on('session.root', () =>
+        root === null ? { deny: 'no root' } : { value: root },
+    );
     on('env.get', () => ({ value: '/home' }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
 }
@@ -59,6 +61,14 @@ test("clio cd'd into ~/frame still gets the note at the 8th edit", async ($, on)
 
 test("a codie cd'd into clio's dir gets no note", async ($, on) => {
     world(on, '/home/frame/_clio', '/home/frame');
+    for (let i = 1; i <= 10; i++) {
+        const r = await edit($, '/home/frame/x/a.ts');
+        expect(r.context ?? []).toHaveLength(0);
+    }
+});
+
+test("an unreadable root never reads a cd into clio's dir as clio (R6)", async ($, on) => {
+    world(on, '/home/frame/_clio', null);
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/x/a.ts');
         expect(r.context ?? []).toHaveLength(0);
