@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T16:00:00Z'
+updated_date: '2026-11-02T16:11:00Z'
 labels:
   - s
 dependencies: []
@@ -100,4 +100,6 @@ state 11-02 15:37 (dima): wiring the old Rockstar account to the new inbox hit �
 state 11-02 17:53 (dima): signed in to imagnumm gmail + the old Rockstar account (umaturman3, created 2012-03-24) in Safari, still signed in. owns gta v, max payne 3, la noire; steam shows linked in its profile, no unlink on the website. a 1Password authenticator setup half-failed: Rockstar registered the authenticator, but the 1P item «Rockstar Games (old dupe)» has an empty one-time password field (clio checked the shape, 17:55: no secret saved) → no codes, sign-out = locked out. his ask: still unlink steam from the old account; fix the 2FA; one support request or two?
 
 state 11-02 17:59 (dima): Security → 2-Step device «Unlink» needs an authenticator code + password: no self-fix. he still wants the unlink (relink the games to his main account; no stray account on a typo email). order: 1) a 2FA reset request from the signed-in account (drafted 18:00), 2) a follow-up asking the unlink, with Rockstar confirming the Steam games and their progress move to thankyou___ intact.
+
+state 11-02 18:10 (clio): 2FA ticket #38245301 filed from umaturman3 (Trouble signing in → Lost Access to or Missing Authenticator App, Steam-authenticated); its ticket chat caps at 500 chars, a short note drafted. main inbox: 4 «Sign-In Detected» alerts archived to All Mail; the #38239985 thread (5 mails) kept. the imagnumm inbox is outside himalaya.
 <!-- SECTION:NOTES:END -->
