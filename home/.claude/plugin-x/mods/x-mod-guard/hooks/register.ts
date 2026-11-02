@@ -1141,16 +1141,20 @@ export const register: Register = (on) => {
             return go(withDimaOk(command, pr));
         }
         // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line dated today is a new sign
-        // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line)
+        // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
+        // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
         const sign = signWord(typed, cwd, ctx);
+        const signText =
+            sign?.file === undefined ||
+            sign.file.includes('$') ||
+            writtenPaths(typed, cwd, ctx).includes(sign.file)
+                ? undefined
+                : await $.fs.read(sign.file).catch(() => undefined);
         const isNewSign =
             sign !== undefined &&
             (sign.file === undefined ||
-                (await hasNewSignLine(
-                    $,
-                    sign.id,
-                    await $.fs.read(sign.file).catch(() => ''),
-                )));
+                signText === undefined ||
+                (await hasNewSignLine($, sign.id, signText)));
         if (
             verdict.kind === 'run' &&
             isNewSign &&

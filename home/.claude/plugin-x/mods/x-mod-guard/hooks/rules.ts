@@ -653,12 +653,12 @@ export const isSignAsk = (text: string, id: string) =>
         ?.split(/[,\s]+(?:and\s+)?/)
         .includes(id) ?? false;
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`, or reads
-// `merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1)
+// `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1)
 export const quotesPr = (text: string, repo: string, pr: string) =>
     (text.includes(`github.com/${repo}/pull/${pr}`) &&
         !new RegExp(`github\\.com/${repo}/pull/${pr}\\d`).test(text)) ||
     new RegExp(
-        `(?:^|\\s)merge ${repo.split('/').at(-1)}#${pr}(?!\\d)`,
+        `(?:^|\\s)⚠️ merge ${(repo.split('/').at(-1) ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}#${pr}(?!\\d)`,
         'u',
     ).test(text);
 // the repo a merge-auto call merges in: its --repo, or the caller reads the cwd's origin

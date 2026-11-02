@@ -32,7 +32,9 @@ function world(on: On, name: string | null = '☕️ 🔧 codie') {
     on('fs.read', (_$, e) =>
         e.path === '/home/.claude/sessions/1.json'
             ? { value: JSON.stringify({ name, sessionId: SID }) }
-            : { deny: 'no such file' },
+            : e.path === '/repo/b.md'
+              ? { value: '## wish\n\nx\n' }
+              : { deny: 'no such file' },
     );
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');

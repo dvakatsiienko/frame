@@ -143,6 +143,16 @@ for (const [why, ticks, isCarried] of [
         false,
     ],
     [
+        'a tick on «do not merge bytes#104»',
+        [tick('do not merge bytes#104 yet')],
+        false,
+    ],
+    [
+        'a tick on another repo of a like name',
+        [tick('⚠️ merge bytesX#104: no')],
+        false,
+    ],
+    [
         'a merge tick a newer tick superseded',
         [
             tick('⚠️ merge bytes#104: the guard fix', NOW - 10),
@@ -295,6 +305,31 @@ for (const [why, current, next, isFlagged] of [
         on('fs.read', () => ({ value: next() }));
         const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
         expect(signFlagged(r)).toBe(isFlagged);
+    });
+
+// lane 4 R1: the sign file is read before the command runs, so one the command writes, one it cannot read and one behind a
+// variable each count as a new sign
+for (const [why, command, read] of [
+    [
+        'a sign file the same command writes',
+        `cat > /repo/b.md <<EOF\n✍️ signed ${today()} · body 1\nEOF\nx linear body FRM-1 --set /repo/b.md`,
+        { value: '## wish\n\nx\n' },
+    ],
+    [
+        'a sign file behind a variable',
+        'x linear body FRM-1 --set $TMPDIR/b.md',
+        { value: '' },
+    ],
+    [
+        'a sign file that cannot be read',
+        'x linear body FRM-1 --set /repo/b.md',
+        { deny: 'no such file' },
+    ],
+] as const)
+    test(`${why} is refused with no tick`, async ($, on) => {
+        world(on, [], SIGNED_TODAY());
+        on('fs.read', () => read);
+        expect(signFlagged(await bash($, command))).toBe(true);
     });
 
 // the want line, FRM-427 exit 10: the 10-22 o4/o9 case — one ask quoting a guarded target and the pr, ticked once — and
