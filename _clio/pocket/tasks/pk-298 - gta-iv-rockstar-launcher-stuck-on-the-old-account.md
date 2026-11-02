@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T16:31:00Z'
+updated_date: '2026-11-02T18:01:00Z'
 labels:
   - s
 dependencies: []
@@ -131,4 +131,38 @@ W1341 (2026-11-02 17:59, dima): i'm not a fan of having additional broken email 
 state 11-02 18:20 (dima): 2FA unlinked ✓ on umaturman3 (ticket #38245301 can rest). unlink ticket next: Submit a Request → Account; the 425-char note drafted.
 
 18:31 (clio): description rewritten to the live state (wishkeeper siesta high: it still told the 14:55 story). the old description's lines live in git history; dima's W-lines untouched.
+
+W1345 (2026-11-02 18:07, dima): verify if all fields are OK.
+W1346 (2026-11-02 18:07, dima): and i send.
+W1347 (2026-11-02 18:07, dima): there is no text box to attach to.
+W1348 (2026-11-02 18:07, dima): follow up on this clarification message right away.
+W1349 (2026-11-02 18:07, dima): once i create another request, i will send it via email instead.
+W1350 (2026-11-02 18:10, dima): the screenshot shows the ticket about tfa cancellation, so i just send it into that text box, right? ❓
+W1351 (2026-11-02 18:10, dima): yes, your message does not fit.
+W1352 (2026-11-02 18:11, dima): maybe trim? ❓
+W1353 (2026-11-02 18:11, dima): or email? ❓
+W1354 (2026-11-02 18:16, dima): sent to chat box.
+W1355 (2026-11-02 18:16, dima): so i create a new ticket about unlinking? ❓
+W1356 (2026-11-02 18:16, dima): «account linking» category sends me to «connections» page in a profile, it is not a request link.
+W1357 (2026-11-02 18:16, dima): what's then? ❓
+W1358 (2026-11-02 18:22, dima): 2fa i set properly now.
+W1363 (2026-11-02 18:25, dima): account settings → linking / unlinking accounts? ❓
+W1364 (2026-11-02 18:25, dima): this one has a textbox.
+W1367 (2026-11-02 18:38, dima): i try later.
+W1368 (2026-11-02 18:38, dima): meanwhile.
+W1369 (2026-11-02 18:38, dima): since 2fa is working, is it worth to try gta4 with my recovered acc (double mm)? ❓
+W1370 (2026-11-02 18:38, dima): or wait until unlink to not mess up any syncing? ❓
+
+state 11-02 19:34 (dima): every new-ticket door returns 500 (200.1.5): Linking/unlinking and Other account settings issue, Safari and Firefox; plus «maximum ticket submissions». #38245301's reply got an answer pointing back at the broken form, ticket closed. next: reply to that email with the form-is-broken note (drafted 19:27); new form tomorrow.
+
+W1450 (2026-11-02 19:23, dima): rockstar: the submit ticket door doesn't work.
+W1451 (2026-11-02 19:23, dima): it provides a server-side error.
+W1452 (2026-11-02 19:23, dima): i tested in firefox.
+W1453 (2026-11-02 19:23, dima): how to submit a new ticket to unlink my steam account properly? ❓
+W1455 (2026-11-02 19:35, dima): no, let's do today.
+W1456 (2026-11-02 19:35, dima): maybe let's use the previous forms that worked to create a support request, the ones that we used to actually submit a ticket about the FA issue.
+W1457 (2026-11-02 19:35, dima): it's a different area, but since no other door is working, i will just go via that route and explain what is wrong and why i, e.g., use another door.
+W1458 (2026-11-02 19:40, dima): works? ❓
+W1459 (2026-11-02 19:40, dima): i paste the text right after ticket is created.
+W1460 (2026-11-02 19:45, dima): ok i try later.
 <!-- SECTION:NOTES:END -->

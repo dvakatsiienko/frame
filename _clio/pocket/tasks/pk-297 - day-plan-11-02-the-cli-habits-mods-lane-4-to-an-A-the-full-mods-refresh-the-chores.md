@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T16:13:00Z'
+updated_date: '2026-11-02T18:01:00Z'
 labels:
   - m
 dependencies: []
@@ -191,4 +191,22 @@ W1263 (2026-11-02 16:57, dima): so guard first warns, and blocks if warns does n
 W1264 (2026-11-02 16:57, dima): does warns get counted? ❓
 W1265 (2026-11-02 16:57, dima): i agree with this model.
 W1314 (2026-11-02 17:47, dima): tell wishkeeper and crow review results.
+
+W1359 (2026-11-02 18:22, dima): don't start new activities yourself until i ask.
+W1360 (2026-11-02 18:25, dima): what's mods coder doing? ❓
+W1361 (2026-11-02 18:25, dima): 479 is solved and he started a new chunk 477? ❓
+W1362 (2026-11-02 18:25, dima): between each chunk coder should have a second wind.
+W1365 (2026-11-02 18:29, dima): after current mods lane chunk, park.
+W1366 (2026-11-02 18:29, dima): pace catchup.
+W1371 (2026-11-02 18:39, dima): proceed with your asks now, sup with cuts? ❓
+W1372 (2026-11-02 18:39, dima): print here and tell the reasons for cuts.
+
+W1446 (2026-11-02 19:22, dima): let's plan it.
+W1447 (2026-11-02 19:22, dima): current 5h is 77%.
+W1448 (2026-11-02 19:22, dima): i enabled it.
+W1449 (2026-11-02 19:23, dima): what else chores are pending? ❓
+W1454 (2026-11-02 19:23, dima): no waste burn.
+W1461 (2026-11-02 19:45, dima): proceed with lane, observe for now.
+W1462 (2026-11-02 19:45, dima): and SW.
+W1463 (2026-11-02 19:23, dima, o65 steer): just run the lane, it should burn the window naturally.
 <!-- SECTION:NOTES:END -->

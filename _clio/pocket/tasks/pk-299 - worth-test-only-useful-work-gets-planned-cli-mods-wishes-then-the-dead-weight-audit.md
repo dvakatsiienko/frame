@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T15:29:00Z'
-updated_date: '2026-11-02T16:36:00Z'
+updated_date: '2026-11-02T17:15:00Z'
 labels:
   - m
 dependencies: []
@@ -86,4 +86,80 @@ W1343 (2026-11-02 18:13, dima, o50 steer): it is quite important.
 W1344 (2026-11-02 18:13, dima, o50 steer): maybe let's have it right after 478? ❓
 
 18:36 (dima o56): the cut list waits — «wait with this. keep all data… once I solve this Rockstar stuff, I can do a lot of stuff at once». data kept: ~/frame/.scratch/worth-test/audit-data.md, cut-list.md (7 cut, 25 keep, 9 unclear). FRM-486 owns the guard part (clean 18:35).
+
+W1373 (2026-11-02 18:45, dima): cut, useless.
+W1374 (2026-11-02 18:45, dima): full cut with no tails left + settings delete.
+W1375 (2026-11-02 18:45, dima): well it was turned off because there was no real use case for me to activate it, because i carefully watch the 5-hour window, and we didn't have a case for that.
+W1376 (2026-11-02 18:45, dima): it has a real use case.
+W1377 (2026-11-02 18:45, dima): it is for cases when i go full IFK and leave you alone, and if you would reach the 5-hour limit and everyone stops suddenly.
+W1378 (2026-11-02 18:45, dima): this is intended to wake everyone up.
+W1379 (2026-11-02 18:45, dima): does it work like this currently? ❓
+W1380 (2026-11-02 18:45, dima): if it is functional, then it is actually a useful mod.
+W1381 (2026-11-02 18:45, dima): what does it do? ❓
+W1382 (2026-11-02 18:45, dima): why is it not being used, actually? ❓
+W1383 (2026-11-02 18:45, dima): maybe it is because of a habits gap? ❓
+W1384 (2026-11-02 18:45, dima): same, why not used? ❓
+W1385 (2026-11-02 18:45, dima): useless or improper habits? ❓
+W1386 (2026-11-02 18:45, dima): approve the cut if truly useless.
+W1387 (2026-11-02 18:45, dima): but since it counts, it may help with measures? ❓
+W1388 (2026-11-02 18:45, dima): or not? ❓
+W1389 (2026-11-02 18:45, dima): do we have some other more powerful thing to measure? ❓
+W1390 (2026-11-02 18:45, dima): same, what does it actually do? ❓
+W1391 (2026-11-02 18:45, dima): why is it not being used as a habit gap? ❓
+W1392 (2026-11-02 18:45, dima): clean.
+W1393 (2026-11-02 18:45, dima): i think this uncovers another issue with our system because we build stuff and do not wire it up to our system properly.
+W1394 (2026-11-02 18:45, dima): built stuff just gets parked and not used.
+W1395 (2026-11-02 18:45, dima): how to solve this? ❓
+W1396 (2026-11-02 18:45, dima): stuff that we build in cli in mods should actually be used, but how to make it work and how to prevent it from being abandoned in the future? ❓
+W1397 (2026-11-02 18:45, dima): whenever we create new stuff in cli, for example, we have to actually wire it up to the correct places in the system.
+W1398 (2026-11-02 18:45, dima): until stuff is wired up, a ticket should not be closed.
+W1399 (2026-11-02 18:45, dima): i think an exit criterion for each addition should include a wiring-up step.
+W1400 (2026-11-02 18:45, dima): it's for your shaping ideas part, or for dispatching Elaine, or something like this.
+W1401 (2026-11-02 18:45, dima): propose how to solve it.
+W1402 (2026-11-02 18:59, dima): tell codie to clean it now.
+W1403 (2026-11-02 18:59, dima): and verifier can test (rider to 477).
+W1404 (2026-11-02 18:59, dima): we have a chance to test it now because the current 5-hour window is 67%, and the reset is in 2 hours 40 minutes.
+W1405 (2026-11-02 18:59, dima): i can artificially speed you up, so we are about 98% in 2 hours, for example.
+W1406 (2026-11-02 18:59, dima): then i ask you to push, so you burn it to 100%.
+W1407 (2026-11-02 18:59, dima): i enable a waker mod and observe what happens to everyone during that.
+W1408 (2026-11-02 18:59, dima): you measure from your side too.
+W1409 (2026-11-02 18:59, dima): if this plan works for you, then let's have it and resume a mod slain, so we see it in action.
+W1410 (2026-11-02 18:59, dima): well, it actually looks like a useful verb.
+W1411 (2026-11-02 18:59, dima): why don't coders use it, and how to make coders use them? ❓
+W1412 (2026-11-02 18:59, dima): maybe let's mark it as a candidate for deletion if we won't manage to make it work or if it will be useless.
+W1413 (2026-11-02 18:59, dima): let's try it on today's hold, and if we won't find a way to make it work, then cut.
+W1414 (2026-11-02 18:59, dima): ok cut, same — rider to next mods chunk so no tails left.
+W1415 (2026-11-02 18:59, dima): cut, as a rider.
+W1416 (2026-11-02 18:59, dima): cut.
+W1417 (2026-11-02 18:59, dima): i assume this one you can cut yourself? ❓
+W1418 (2026-11-02 18:59, dima): resume mods lane now.
+W1419 (2026-11-02 18:59, dima): (or prep the scope first, create an updates spec with all riders included, then resume the lane.)
+W1420 (2026-11-02 18:59, dima): your wired idea: ok, let's try.
+W1421 (2026-11-02 18:59, dima): but /mattpocock-skills:grill-me first, to have it working properly.
+W1422 (2026-11-02 18:59, dima): think from different angles about it to have it in good shape, and consult with Cicero.
+W1423 (2026-11-02 18:59, dima): after it is shaped, a wishkeeper over it.
+W1424 (2026-11-02 18:59, dima): also today, we produced two new keywords: wired, and some other we created a bit earlier today, the one related to not creating redundant stuff.
+W1425 (2026-11-02 18:59, dima): what is the kw? ❓
+W1426 (2026-11-02 18:59, dima): how do you think? ❓
+W1427 (2026-11-02 18:59, dima): is it worth having them in our fleet vibe as official keywords for everyone? ❓
+W1428 (2026-11-02 18:59, dima): you would also print them in bold and propose top 7 emojis for both of them.
+
+W1429 (2026-11-02 18:36, dima, o56 steer): wait with this.
+W1430 (2026-11-02 18:36, dima, o56 steer): keep all data, let's solve this.
+W1431 (2026-11-02 18:36, dima, o56 steer): once i solve this rockstar stuff, i can do a lot of stuff at once.
+W1432 (2026-11-02 18:59, dima, o57 steer): yes with main prompt steers.
+W1433 (2026-11-02 18:59, dima, o58 steer): rider for current mods lane (do first) so we can test it right away via artificial 100% 5h (exceed by intent for test purpose).
+W1434 (2026-11-02 18:59, dima, o59 steer): let's try to revive? ❓
+W1435 (2026-11-02 18:59, dima, o59 steer): if not works cut.
+
+W1436 (2026-11-02 19:06, dima): maybe ⚖️ worth it? ❓
+W1437 (2026-11-02 19:06, dima): for me easier to understand.
+W1438 (2026-11-02 19:06, dima): 🔌 fleet wired? ❓
+W1439 (2026-11-02 19:06, dima): agree with
+W1440 (2026-11-02 19:11, dima): q3 — yes, for rare stuff, we try to test it out manually via set-up circumstances, but if it is hard or we have no time for it, we can just mark it as solved as an exception.
+W1441 (2026-11-02 19:11, dima): i tell when.
+W1442 (2026-11-02 19:11, dima): wired
+W1443 (2026-11-02 19:11, dima): worth
+W1444 (2026-11-02 19:11, dima): will you update the hashtags also with my proposed names? ❓
+W1445 (2026-11-02 19:11, dima): i want everything consistent and easy to read and understand by myself.
 <!-- SECTION:NOTES:END -->
