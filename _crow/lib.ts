@@ -39,6 +39,7 @@ export const armModels = {
 } as const satisfies Record<Arm, string>;
 
 // no user settings source: no user hooks, plugins or mods; disableAllHooks would block the mods in `pluginDirs` too (probed 2026-10-06)
+// cc 2.1.309 honours bypass only from user settings, so the allowlist is what stops the prompts (2026-11-02)
 export function claudeArgs(
     arm: Arm,
     pluginDirs = '',
@@ -57,6 +58,17 @@ export function claudeArgs(
             env: { CLAUDE_CODE_PLUGIN_DIRS: pluginDirs },
             permissions: {
                 additionalDirectories: ['~'],
+                allow: [
+                    'Bash',
+                    'Read',
+                    'Edit',
+                    'Write',
+                    'Glob',
+                    'Grep',
+                    'SendMessage',
+                    'ListAgents',
+                    'mcp__x-mod-stash',
+                ],
                 defaultMode: 'bypassPermissions',
             },
             skipDangerousModePermissionPrompt: true,
