@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T12:26:00Z'
+updated_date: '2026-11-02T14:32:00Z'
 labels:
   - m
 dependencies: []
@@ -123,4 +123,58 @@ W1139 (2026-11-02 14:11, dima): Whenever Sixth Sense posts into GitHub or Linear
 W1140 (2026-11-02 14:11, dima): Update all habits everywhere.
 W1141 (2026-11-02 14:11, dima): Then print what else is left to park you, so you can just observe the lane.
 W1142 (2026-11-02 14:11, dima): I have some other chores for you.
+
+W1187 (2026-11-02 15:43, dima): meanwhile.
+W1188 (2026-11-02 15:43, dima): the firelink skill.
+W1189 (2026-11-02 15:43, dima): I created it yesterday via a cowork project because the doors into my games are scattered across the system: the PSN API, the Steam API, and now this Steam FX.
+W1190 (2026-11-02 15:43, dima): Steam FX is actually under the trial.
+W1191 (2026-11-02 15:43, dima): I tested it out because it's actually an open-source project by a no-name developer, so I will see how it goes and if it actually brings any value.
+W1192 (2026-11-02 15:43, dima): Despite the fact that it can launch Windows games, not all of them can run smoothly, so I will test it out.
+W1193 (2026-11-02 15:43, dima): Still, there are already three doors into my games.
+W1194 (2026-11-02 15:43, dima): That's why I decided to create this skill, although it was created very quickly via a fast prompt and not very precisely.
+W1195 (2026-11-02 15:43, dima): Go review the skill.
+W1196 (2026-11-02 15:43, dima): Use the author-memory skill to sharpen it and groom it properly, so it has a good description and good body, and all necessary info is inside of the skill itself.
+W1197 (2026-11-02 15:43, dima): Also scan the system for my game parts where everything is stored.
+W1198 (2026-11-02 15:43, dima): Does this skill properly contain all necessary essential data about accessing my game doors? ❓
+W1199 (2026-11-02 15:43, dima): As far as I remember, some time ago, some scripts were created for the hello cowork thread to access my PSN, and those scripts are probably parked at Trophises app.
+W1200 (2026-11-02 15:43, dima): Trophises app has the actual server and the custom scripts.
+W1201 (2026-11-02 15:43, dima): Look for anything that would be good to fold into the skill scripts and actual info, so everything is collocated.
+W1202 (2026-11-02 15:43, dima): Whenever I would want to ask anyone in the fleet to do something with my games, anyone would just read this skill and solve it that way.
+W1203 (2026-11-02 15:43, dima): Also propose if this skill is worth breaking down into PSN, Steam, and Steam FX doors, or if it's fine to have it in a single text skill.
+W1204 (2026-11-02 15:59, dima): the vm.
+W1205 (2026-11-02 15:59, dima): A new version was released.
+W1206 (2026-11-02 15:59, dima): I currently have 196, and 197 was released.
+W1207 (2026-11-02 15:59, dima): What's there? ❓
+W1208 (2026-11-02 15:59, dima): Something useful? ❓
+W1209 (2026-11-02 15:59, dima): How to update this Steam FX Launcher properly? ❓
+W1210 (2026-11-02 15:59, dima): When I press Update, it just downloads a new launcher, so I just drag and drop it from Downloads, or what? ❓
+W1211 (2026-11-02 15:59, dima): Is it that simple? ❓
+W1212 (2026-11-02 15:59, dima): I need to close the launcher before dragging.
+W1213 (2026-11-02 15:59, dima): If yes, do everything yourself.
+W1214 (2026-11-02 15:59, dima): Update me to the newest version and tell me what the updates are.
+W1215 (2026-11-02 15:59, dima): And resume mod coder.
+W1216 (2026-11-02 15:59, dima): Tell him to start the chunk.
+W1217 (2026-11-02 15:59, dima): We are caught up with the pace.
+W1218 (2026-11-02 15:59, dima): commit and slay frame so cw gets updated skill.
+
+W1219 (2026-11-02 15:53, dima): its active or not?
+W1220 (2026-11-02 15:53, dima): do i need to ask cw thread to move it into a skill?
+W1221 (2026-11-02 15:53, dima): Yes, expand a skill about this Steam FX VM's specifics so all the gotchas and tricks are there, along with all your capabilities.
+W1222 (2026-11-02 15:53, dima): What you can do with that is the most important part because I assume that to make each game work, it requires some specific tweaks and settings and attempts to tweak Proton or some other settings.
+W1223 (2026-11-02 15:53, dima): The specifics have to be inside of the skill to avoid finding the workarounds and doors each time.
+W1224 (2026-11-02 16:24, dima): why mods coder re-grading for so long?
+W1225 (2026-11-02 16:24, dima): Maybe my ask is too vague, and coder will infinitely try to improve to A grade, or what?
+W1226 (2026-11-02 16:24, dima): What would be a meaningful out criterion of coder code upgrades?
+W1227 (2026-11-02 16:24, dima): How far is he from finishing?
+W1228 (2026-11-02 16:24, dima): Go.
+W1229 (2026-11-02 16:25, dima): let's narrow the refactoring so coder finishes meaningfully with set target and starts actual chunk.
+W1230 (2026-11-02 16:29, dima): the firelink skill.
+W1231 (2026-11-02 16:29, dima): does it have all game doors covered?
+W1232 (2026-11-02 16:29, dima): I have some scattered data in my Notion about games, and in Obsidian.
+W1233 (2026-11-02 16:29, dima): Obsidian is very unstructured.
+W1234 (2026-11-02 16:29, dima): It currently has a games folder and a few folders about games I've completed: Stardew Valley, Cult of the Lamp, and RimWorld.
+W1235 (2026-11-02 16:29, dima): Does the skill point to all places in Obsidian and Notion?
+W1236 (2026-11-02 16:29, dima): If not, temporarily add a map in the skill to all places where data about my games is stored until I find a way to collocate them properly.
+W1237 (2026-11-02 16:29, dima): I plan to move everything into Obsidian.
+W1238 (2026-11-02 16:29, dima): I don't know when, though.
 <!-- SECTION:NOTES:END -->

@@ -251,6 +251,9 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-02 · prompt-groom · 1345+1354+1405+o16+o18 · 0 · W1101-W1128; 5 files; 1345: 1 ❓ x2 ❓; 1354: 4 ❓; 1405: 2 ❓; o16/o18 stamps absent in brief (date only); 14:03 no raw file in list, no line made; typo 'is there is' -> 'is there a', 'did not managed' -> 'did not manage', 'when he done' -> 'when he is done'; W1101-W1128 appended to PK-297 notes
 - 2026-11-02 · prompt-groom · 1411 · 0 · 14:11 groomed W1133-W1142, homed in PK-297; W1127/W1128 stamps fixed by clio; --day and pocket-check green
 - 2026-11-02 · prompt-groom · 1440 · 0 · 14:40 groomed W1143-W1180, homed in PK-298 (new, gta iv launcher); 14:23 no-wish added; --day and pocket-check green
+- 2026-11-02 · prompt-groom · 1455 · 0 · 14:55 groomed W1181-W1186, homed in PK-298 via --append-notes; pasted Rockstar text as context; --day and pocket-check green
+- 2026-11-02 · prompt-groom · 1543-1559 · 0 · groomed 15:43 (W1187-W1203) and 15:59 (W1204-W1218) into PK-297; no-wish 15:32, 15:37, o30; groom check and pocket-check green
+- 2026-11-02 · prompt-groom · 1553-1629 · 0 · groomed 15:53 (W1219-W1223), 16:24 (W1224-W1228), 16:25 (W1229), 16:29 (W1230-W1238) into PK-297; no-wish 16:15, 16:18 answered; groom check and pocket-check green
 
 ## rounds
 
