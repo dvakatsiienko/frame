@@ -6,3 +6,4 @@
 - 2026-10-12 · run #4: engine unchanged (2.1.296); api-map a build behind; quiet loss path, 2 cwd keys, redact fail-open · ~10 min · exa $0.10, parallel, researcher · `mods/AGENTS.md`, `api-map.md`, `workarounds.md`, test drive
 - 2026-10-12 · run #4's two probes (lane l12): `$.state` resets at `/clear` (set, clear, read empty); `prompt.edit` drops a rewrite past ~50 ms (45 lands, 60 dropped) · ~5 min · `mods:live`, a throwaway mod · `mods/AGENTS.md`, `api-map.md`
 - 2026-10-30 · run #5, the delta only (2.1.297→314): ~25 mods lines, redact's re-entry branch dead since 2.1.301, idle compaction vs keep-hot, 9 probes · ~7 min · researcher card, Opus 5.5 · findings in `.scratch/refresh-cc-mods-5/`, distill rides FRM-467 (mods lane 3)
+- 2026-11-02 · run #6, the delta only (2.1.314→316): no mods engine change; sub-agents keep an inherited model on a wake · ~3 min · release notes read by clio, no lanes · noop
