@@ -47,7 +47,7 @@ function varValue(vars: string | undefined, name: string | undefined) {
 }
 
 // the linear words a command runs: the raw cli, `x as <member> -- linear …`, or x's own `x linear …`
-function linearWords(c: Command) {
+export function linearWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'linear') return { isX: false, words };
     if (c.name !== 'x') return undefined;

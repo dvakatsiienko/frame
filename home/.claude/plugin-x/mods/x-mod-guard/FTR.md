@@ -359,6 +359,17 @@
   - decision: fail open on an unread linear, like pocket-check's closed-ticket net; tickets already outside a milestone are never read (dima's FRM-417 call)
   - proof: tests/holes.test.ts::«${command}» is refused naming a milestone; «${command}» runs; «git commit -m "guard --project"» is not read as a linear call; with linear unreachable the create runs, warned that the milestone check was skipped; the projects read is cached for a day; tests/milestone-cache.test.ts::a move inside «…» is checked against the milestones
 
+- ⬜ a cli or mods ticket is planned only with a `## worth` section (FRM-486)
+  - given a raw `linear issue create` (typed, or through `x as <member> -- linear …`) into project `cli` (case-blind), or into `fleet` with a milestone whose name holds `mods` (named, or an id resolved through `x linear api`)
+  - and its body — `--description-file` resolved against the command's cwd, `--description` or `-d`, or `--description-file -` fed by a heredoc or by `cat <file> |` — has no `## worth` heading (any case, outside a code fence) followed by a non-blank line before the next heading
+  - when x-mod-guard reads it
+  - then it runs with a would-refuse note naming the door (`## worth`, `none — fix` or `none — chore` for plain work) and a `warned` event under `worth`, until its sixth sense says clean; a body file the hook cannot read, or one behind a variable, counts as having none
+  - given `x linear body <id> --set <file>` or a raw `linear issue update <id> --description-file` that adds a `✍️ re-signed` line the ticket lacks, on a ticket in scope (its project, milestone and body read through `x linear read`, 3 s), whose `## worth` section is the same after whitespace collapses and whose new line holds no `worth unchanged —`, then it is warned the same way; a changed section or the phrase runs; a read that fails counts as unchanged and the note names it, and so does a body file the same command writes
+  - decision: both bodies are read the way linear stores markdown — `*` and `+` list markers as `-`, punctuation escapes dropped — so a stored body linear rewrote compares with the file it came from
+  - given a create into any other project, a `fleet` create in another milestone, or a body with a filled section, then it runs untouched
+  - decision: the section's shape is `clio:pm`'s `references/body.md`; the milestone the rule reads is the one the milestone rule already forces, never the title
+  - proof: tests/worth.test.ts
+
 - ✅ a start_session spawn is read by the live-trial gate (FRM-467)
   - given a `start_session` call whose prompt leaves a live trial unnamed, as a `claude --bg` spawn would (frame's `script/test-drive-list.ts --spawn-hook`)
   - then it runs with a would-refuse note and a `warned` event under `spawn-trial`, until its sixth sense says clean; with `rule-mode:spawn-trial` = enforce it is refused with the gate's own reason

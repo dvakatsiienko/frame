@@ -14,6 +14,13 @@ import { rewrite } from './rules/rewrite.ts';
 import { isSixthSense, sixthSenseSummons } from './rules/sixth-sense.ts';
 import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
 import {
+    RESIGN_DOOR,
+    hasResign,
+    resignGap,
+    worthCreates,
+    worthRewrites,
+} from './rules/worth.ts';
+import {
     addedPaths,
     check,
     foregroundClaude,
@@ -292,6 +299,53 @@ async function liveSixthSenses($: EngineInterface) {
         .map((r) => r.name);
 }
 
+// a milestone id's name, read through x's api door (FRM-486); undefined when linear does not answer in 3 s
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+async function milestoneName($: EngineInterface, id: string) {
+    const run = await $.process.run(
+        [
+            'x',
+            'linear',
+            'api',
+            `query { projectMilestone(id: "${id}") { name } }`,
+        ],
+        { timeoutMs: 3000 },
+    );
+    if (run.exitCode !== 0) return undefined;
+    const name = (
+        JSON.parse(run.stdout) as {
+            data?: { projectMilestone?: { name?: unknown } };
+        }
+    ).data?.projectMilestone?.name;
+    return typeof name === 'string' ? name : undefined;
+}
+// a ticket's body, project and milestone as linear holds them, through the door sign-untick reads; undefined past 3 s
+async function ticketOf($: EngineInterface, id: string) {
+    const run = await $.process.run(['x', 'linear', 'read', id], {
+        timeoutMs: 3000,
+    });
+    if (run.exitCode !== 0) return undefined;
+    const t = (
+        JSON.parse(run.stdout) as {
+            data?: {
+                tickets?: {
+                    description?: unknown;
+                    milestone?: unknown;
+                    project?: unknown;
+                }[];
+            };
+        }
+    ).data?.tickets?.[0];
+    return typeof t?.description === 'string'
+        ? {
+              description: t.description,
+              milestone:
+                  typeof t.milestone === 'string' ? t.milestone : undefined,
+              project: typeof t.project === 'string' ? t.project : '',
+          }
+        : undefined;
+}
+
 async function sessionName($: EngineInterface, sid: string) {
     return (await registryEntry($, sid))?.name;
 }
@@ -340,6 +394,7 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'opaque-head',
     'raw-plugin-update',
     'spawn-trial',
+    'worth',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -849,6 +904,25 @@ async function lookUp(
     const sixthSenses = sixthSenseSummons(command, cwd).length
         ? await liveSixthSenses($).catch(() => [])
         : [];
+    const worthFiles = new Map<string, string | undefined>();
+    const milestoneNames = new Map<string, string>();
+    for (const create of worthCreates(command, cwd, ctx)) {
+        if ('file' in create.body && !worthFiles.has(create.body.file))
+            worthFiles.set(
+                create.body.file,
+                await signFile($, create.body.file).catch(() => undefined),
+            );
+        if (
+            create.milestone &&
+            UUID.test(create.milestone) &&
+            create.project.toLowerCase() === 'fleet'
+        ) {
+            const name = await milestoneName($, create.milestone).catch(
+                () => undefined,
+            );
+            if (name) milestoneNames.set(create.milestone, name);
+        }
+    }
     const moves = projectMoves(command, cwd);
     const milestoneProjects = moves.length
         ? await projectsWithMilestones(
@@ -863,6 +937,7 @@ async function lookUp(
         helpless,
         kinds,
         manifestDirs,
+        milestoneNames,
         milestoneProjects,
         milestoneUnread:
             moves.length && !milestoneProjects
@@ -872,6 +947,7 @@ async function lookUp(
         notedTasks,
         sixthSenses,
         unsafeTmp,
+        worthFiles,
     };
 }
 
@@ -1233,6 +1309,46 @@ export const register: Register = (on) => {
                     if (stop) return stop;
                 }
             }
+        }
+        // a re-sign on a cli or mods ticket carries a changed `## worth` section or says why it stands (FRM-486); a ticket linear
+        // cannot read counts as unchanged, and the warning names the failed read
+        for (const rewrite of worthRewrites(typed, cwd, ctx)) {
+            // a body this command writes cannot be read before it runs: judged unread, like the sign check's
+            const isWritten = written.includes(rewrite.file);
+            const rewritten = isWritten
+                ? undefined
+                : await signFile($, rewrite.file);
+            if (
+                !isWritten &&
+                (rewritten === undefined || !hasResign(rewritten))
+            )
+                continue;
+            const current = await ticketOf($, rewrite.id).catch(
+                () => undefined,
+            );
+            if (
+                current &&
+                rewritten !== undefined &&
+                !resignGap(rewritten, current)
+            )
+                continue;
+            const r = {
+                door: RESIGN_DOOR,
+                rule: 'worth',
+                targets: [rewrite.id],
+                why: isWritten
+                    ? `the body for ${rewrite.id} is a file this command writes, so its \`## worth\` section cannot be read before the call`
+                    : current
+                      ? `a re-sign on ${rewrite.id} keeps its \`## worth\` section as it was, and its line names no reason`
+                      : `x-mod-guard could not read ${rewrite.id} from linear, so its \`## worth\` section counts as unchanged`,
+            };
+            const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
+            const stop = await enforce(
+                r,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
         }
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);

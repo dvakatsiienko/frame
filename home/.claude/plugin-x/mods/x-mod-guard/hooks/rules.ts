@@ -31,6 +31,7 @@ import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
 import { landings, overwrite } from './rules/overwrite.ts';
 import { spawnSixthSense } from './rules/sixth-sense.ts';
+import { worth } from './rules/worth.ts';
 import { type Parsed, parse } from './shell.ts';
 
 // the paths every git add in the command names, for the caller to look up on disk; a path an earlier part of the
@@ -378,6 +379,7 @@ export function refusals(
             spawnSixthSense(cmd, ctx) ??
             notes(cmd, ctx) ??
             milestone(cmd, ctx) ??
+            worth(cmd, ctx) ??
             opaque(cmd, hiddenBy);
         let found = judge(c, list[i + 1]);
         // a lifted rule hides every rule behind it, so the command is judged again without the lifted part

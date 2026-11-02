@@ -36,6 +36,10 @@ export type Context = {
     helped?: Set<string>;
     // the registry names of the live sixth senses, read only when the command summons one (FRM-479)
     sixthSenses?: string[];
+    // the body files a ticket create hands linear, as read before the call; undefined when the hook cannot read one (FRM-486)
+    worthFiles?: Map<string, string | undefined>;
+    // a create's milestone id, resolved to its name through linear
+    milestoneNames?: Map<string, string>;
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };

@@ -72,6 +72,10 @@ _Avoid_: cloud delete
 The file `x brief check` writes on a clean pass, keyed by the sha256 of the brief's bytes; a codie summon runs only when its brief file has one.
 _Avoid_: brief approval, check mark
 
+**Worth section**:
+A ticket body's `## worth` heading with at least one non-blank line under it before the next heading: what the work removes against today's door, or `none — fix` / `none — chore` for plain work; a cli or mods ticket is planned only with one.
+_Avoid_: value line, worth line
+
 **Lane scope**:
 The part of a thread name between `:` and `|` (`⚡ 🔎 sixth sense: mods lane 4 | main` → `mods lane 4`), spaces dropped and case folded; a name with no `|` has none. two sixth senses with one lane scope are twins, and only one may be live.
 _Avoid_: lane id, lane name
