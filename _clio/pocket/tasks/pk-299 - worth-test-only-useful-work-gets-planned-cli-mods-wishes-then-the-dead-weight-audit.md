@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T15:29:00Z'
-updated_date: '2026-11-02T16:13:00Z'
+updated_date: '2026-11-02T16:36:00Z'
 labels:
   - m
 dependencies: []
@@ -84,4 +84,6 @@ W1313 (2026-11-02 17:41, dima): tell when you can solve my rockstar acc question
 W1342 (2026-11-02 18:13, dima, o50 steer): actually, pick a good spot for it in a mods lane.
 W1343 (2026-11-02 18:13, dima, o50 steer): it is quite important.
 W1344 (2026-11-02 18:13, dima, o50 steer): maybe let's have it right after 478? ❓
+
+18:36 (dima o56): the cut list waits — «wait with this. keep all data… once I solve this Rockstar stuff, I can do a lot of stuff at once». data kept: ~/frame/.scratch/worth-test/audit-data.md, cut-list.md (7 cut, 25 keep, 9 unclear). FRM-486 owns the guard part (clean 18:35).
 <!-- SECTION:NOTES:END -->
