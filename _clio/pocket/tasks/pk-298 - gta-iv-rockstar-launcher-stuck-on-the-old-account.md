@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T13:05:00Z'
+updated_date: '2026-11-02T13:18:00Z'
 labels:
   - s
 dependencies: []
@@ -88,4 +88,6 @@ W1185 (2026-11-02 14:55, dima): Fold all the data about the problem so I don't n
 W1186 (2026-11-02 14:55, dima): I'm currently downloading «bully» into the FX Steam Launcher to see if it will pick up the launcher email.
 
 state 11-02 15:04 (clio): Bully runs in the vm — its Steam install script hung on vcredist_x86 under Proton; ending the two installer processes (vcredist_x86.exe, msiexec) let it through, and the game reached its menu. Bully has no Rockstar launcher, so it can't show the linked email. A local launcher reset can't help: the vm keeps no sign-in, the link is server-side. Another launcher game (Max Payne 3, GTA V, L.A. Noire) lands on the same old account and may send another code.
+
+state 11-02 15:18 (clio): Max Payne 3 (appid 204100) installed its own fresh Rockstar launcher and still opened «Verify your email» for imagnumm — proof the binding is server-side (Steam ticket → linked account), never local. A standalone (Platform: PC) launcher runs but stays hidden under gamescope's gaming mode. No local route left; the unlink is Rockstar support's only. Bypassing the account check is off the table (their terms, ban risk).
 <!-- SECTION:NOTES:END -->
