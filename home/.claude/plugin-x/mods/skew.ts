@@ -88,6 +88,14 @@ export function verdict(
     let isRed = false;
     const versions = Object.keys(engines).sort(byVersion);
     const checked = versions.filter((v) => engines[v]);
+    // a validate that failed or changed its output parses to no event, which would fit every engine
+    for (const [mod, events] of Object.entries(hooked))
+        if (events.size === 0) {
+            isRed = true;
+            lines.push(
+                `mods:skew: ${mod}: claude plugin validate named no hooked event, so nothing was checked`,
+            );
+        }
     if (bundle && 'error' in bundle) {
         isRed = true;
         lines.push(`mods:skew: ${bundle.error}, the desktop cc is unnamed`);
@@ -218,7 +226,10 @@ if (import.meta.main) {
         const r = spawnSync('claude', ['plugin', 'validate', join(root, mod)], {
             encoding: 'utf8',
         });
-        hooked[mod] = hookedEvents(`${r.stdout}${r.stderr}`);
+        hooked[mod] =
+            r.status === 0
+                ? hookedEvents(`${r.stdout}${r.stderr}`)
+                : new Set<string>();
     }
     const { isRed, lines } = verdict(hooked, engines, bundle);
     console.log(lines.join('\n'));

@@ -86,6 +86,14 @@ describe('verdict', () => {
         });
     });
 
+    it('is red when validate read no hooked event off a mod, naming it', () => {
+        const r = verdict({ 'x-mod-a': new Set() }, { '2.1.299': engine });
+        expect([r.isRed, r.lines[0]]).toEqual([
+            true,
+            'mods:skew: x-mod-a: claude plugin validate named no hooked event, so nothing was checked',
+        ]);
+    });
+
     it('is red when no live engine could be checked at all', () => {
         expect(
             verdict(
