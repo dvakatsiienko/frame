@@ -46,6 +46,7 @@ comparison brief).
   proposed, decided, the 🎯 done test, out — and every question the wish leaves open lands as a `?` line under
   it in the same turn, asked at the next siesta. a chaotic wish is normal; a wish that reaches
   `to-spec` with an open `?` is the failure.
+- **the worth bar reads every wish too** (root invariant 3, W1247): at the fold and the shape-idea pick, a doubtful wish gets one `🧐 doubt: <why, what he'd lose>` line in that reply, then his call
 - **shape-idea or not, per wish** (dima, 2026-10-23, o91): the fold proposes it as an orbit ask — a new app, a new feature, or a change to how a product part works → `clio:shape-idea`; plain, mechanical work → a full ticket folded straight away, never a thin one. his pick decides; the path after it is `craft-fleet-flow` § lane init.
 
 ## milestones first — initiatives → 🎑 milestones → our flow
@@ -80,6 +81,8 @@ destination, and waits for his verdict on every one; «closable, because …» i
 
 - **a small fix inside our own tooling is a freebie, done without asking** (dima, 2026-10-14: «you can do stuff like this as a freebie without asking me») — still reported, every time
 - **the freebie test counts tool calls, never minutes** (dima, 2026-10-22: models overestimate time): 1–5 tool calls i can name, no word of his, no lane → done that turn by whoever holds it; more calls, still no word or lane → a **☘️ almost-freebie**, one helper card; else its home by the birth test (`habit-shared-files` § the pocket)
+- **new surface is never a freebie** — a cli verb, a script, a hook, a mod part, a skill, a recipe, an app feature: it carries a `## worth` section (root invariant 3, the format in `clio:pm` `references/body.md`) at any size
+- **the kill side, at every milestone close**: what had 0 uses in 30 days faces the worth bar — verbs on `x stats`, guard rules on their warns and refusals in its store; a part with no counter is printed «unmeasured», never «kept»; a guard row is judged by what it covers
 
 Dima: *«if i ask for a freebie but it turns out not to be one — better tell me than try to solve it, because
 i often ask for "small things" without knowing the details. and if it turns out not to be a freebie, then
