@@ -9,7 +9,7 @@ artifacts:
   - home/.claude/plugin-x/mods/workarounds.md
 script: none
 was: [refresh-branch-mods, refresh-mods]
-groomed: 2026-10-12 (dima)
+groomed: 2026-11-02 (dima)
 ---
 
 # refresh-cc-mods
@@ -18,11 +18,17 @@ Keeps the fleet's cc mods (function-hook plugins, `home/.claude/plugin-x/mods/`)
 what the api can do now, what others built, and whether anything useful is left for us. Born
 2026-10-05. The standing story is [FRM-304](https://linear.app/x-com/issue/FRM-304).
 
+## contents
+
+- the want
+- the run
+- vectors
+- artifacts
+- findings
+
 ## the want
 
 > mods would allow us to solve lots of issues, including my UX and DX, and maybe even some issues from flowlog or fleet flow issues (2026-10-05)
-
-> I still explore them myself and can't tell for sure how much fleet should be aware of mods (2026-10-05)
 
 > we have more ideas for mods … let's exhaust full list, until nothing else useful to do with mods (2026-10-05)
 
@@ -39,6 +45,10 @@ what the api can do now, what others built, and whether anything useful is left 
 > what other common operations would existing mods be missing, and what features and knobs would you want to smoothen your moves? (2026-10-12)
 
 > my mods wants: know how to make mods look pretty; how to organize them in the UI (layout). my number one mods issues: the lack of space in the desktop app to lay mods out; not knowing what mods can render — no component library to see what i, you or a coder can actually draw; not knowing the best use of mods overall — which mods would help us, given our troubles and bottlenecks. prior art is what i'm most interested in: there is a very large number of mods out there, and borrowing from them should be researched precisely (2026-10-12)
+
+clio's proposal, ticked by dima (o4, 2026-11-02): safer, quieter mods — the guard and the comms mods never fail silently.
+
+settled: «I still explore them myself and can't tell for sure how much fleet should be aware of mods» (2026-10-05) — the 10-19 adoption answered it (dima's tick o6, 2026-11-02).
 
 his standing calls: session.measure «not yet, i don't need another ctx meter»; spoken pings «not yet … speak only when i press f4»; sline stays a statusline, not a mod; a mod-authoring skill → no, `mods/AGENTS.md` is the home.
 
@@ -66,7 +76,8 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 7. **a mod's reach into other sessions** — sending a peer message, reading another session's state, delivering into a tool result's `context`; the size caps on a tool description and on that `context`
 8. **pretty mods** — what makes a mod look good: the visual patterns in the best published mods, color, density, glyphs, motion, light and dark
 9. **layout in a tight space** — how others fit many mods into the desktop side pane and the terminal: folding, tabs, priority, one board vs many
-10. **the component gallery** — every element a mod can render (text, boxes, buttons, inputs, markdown, links, status lines, notifications), how each looks on desktop and in the terminal; the answer feeds a living gallery we can open
+10. **shell-parsing guards — runs first** — how others read a bash command for policy (real parsers such as `mvdan/sh` or `tree-sitter-bash` vs hand-rolled), and adversarial escape tables for command allow/deny hooks (dima o10, 2026-11-02)
+11. **re-ask and standing-instruction catchers — runs first** — prior art for a hook that keeps a session-wide instruction in view, and one that flags a «done» claim against a tracker (dima o10, 2026-11-02)
 
 ### analysis
 
@@ -83,6 +94,10 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 11. **leftovers** — dev-mods dirs past their probe, a mod still loaded after its source moved
 12. **clio's wants list** — each open want of the coordinator's (brief 8 on 10-12) read against the api: buildable, workaround, or engine gap
 13. **our bottlenecks → mods** — the flawlog, the comms ledger and the retros read for the troubles a mod could remove; a ranked list of mods we do not have yet
+
+### cut
+
+- the component gallery (every element a mod can render, a living gallery page) — dima o13, 2026-11-02: «no, let's not rush with it, i think it will be a dead weight»
 
 ## artifacts
 
