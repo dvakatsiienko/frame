@@ -9,7 +9,11 @@ const REASON =
     'the brief misses live trials that fit a codie lane: fixture-trial';
 const TOOL = 'mcp__ccd_session__start_session';
 
-function world(on: On, gate: 'answers' | 'breaks' = 'answers') {
+function world(
+    on: On,
+    gate: 'answers' | 'breaks' = 'answers',
+    tool: 'runs' | 'denies' = 'runs',
+) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const asked: string[] = [];
@@ -45,7 +49,11 @@ function world(on: On, gate: 'answers' | 'breaks' = 'answers') {
             },
         };
     });
-    on('tool.call', () => ({ result: {}, text: 'started' }));
+    on('tool.call', () =>
+        tool === 'denies'
+            ? { deny: 'not now' }
+            : { result: {}, text: 'started' },
+    );
     return { asked, store };
 }
 
@@ -61,6 +69,12 @@ test('a spawn leaving a live trial unnamed runs warn-only, naming what it would 
         undefined,
         expect.stringContaining(`would refuse this (rule spawn-trial`),
     ]);
+});
+
+test('a warned spawn the tool itself denies comes back as its denial, no note added', async ($, on) => {
+    world(on, 'answers', 'denies');
+    const r = await start($, UNNAMED);
+    expect([r.deny, r.context]).toEqual(['not now', undefined]);
 });
 
 test('the warned spawn leaves a warned event under the spawn-trial rule', async ($, on) => {

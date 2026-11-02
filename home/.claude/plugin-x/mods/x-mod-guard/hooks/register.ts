@@ -1498,13 +1498,14 @@ export const register: Register = (on) => {
                 deny: `x-mod-guard stopped this spawn. instead: ${door}. why: ${reason}`,
             };
         const ran = await next(e);
+        if (ran.deny !== undefined) return ran;
         return {
             ...ran,
             context: [
                 ...(ran.context ?? []),
                 wouldRefuse('spawn-trial', `${door}. why: ${reason}`),
             ],
-        } as never;
+        };
     });
 
     on('agent.spawn', async ($, e, next) => {
