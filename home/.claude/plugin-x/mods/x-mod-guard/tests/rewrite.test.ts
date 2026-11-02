@@ -73,6 +73,8 @@ test('a rewrite tells the model what ran', async ($, on) => {
 
 const KEPT = [
     'pnpm test -- -s',
+    'pnpm build -s',
+    'pnpm run build -s',
     'echo \'==q\' "-s" \\==q',
     '[[ $a == b ]] && echo y',
     "cat <<'EOF'\n==q\nEOF",

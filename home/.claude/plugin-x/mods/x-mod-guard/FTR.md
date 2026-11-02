@@ -27,7 +27,7 @@
   - given `set -- $VAR` (or `${VAR}`) unquoted, then it is refused with the door `${=VAR}`, zsh's split — zsh never splits the parameter, so a watch on `$1` sees one word and dies silent; `set -- ${=VAR}` and `set -- "$A" b` run (FRM-337)
   - then a gate tool run to list or print (`--help`, `--version`, `--listFilesOnly`, `--showConfig`, `vitest list`) piped into `grep` runs, and so does a gate ended by `;` before the pipe (FRM-337)
 - ✅ a shape with one right spelling is rewritten, never refused
-  - given a Bash call holds `pnpm -s` (before any `--`), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
+  - given a Bash call holds `pnpm -s` (before the script's name: `pnpm build -s` hands it to the script), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
   - ✅ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
@@ -226,7 +226,7 @@
   - proof: tests/silent.test.ts::with guard notes silent, a warn-only rule still says it would refuse, plus the rewrite, hint and floor-refusal cases
 
 - ✅ `CI=1 pnpm` with a frozen lockfile is flagged, warn-only (FRM-393)
-  - given `CI=1 pnpm add|remove …`, or `CI=1 pnpm install` while `git diff --name-only HEAD` in its dir names a `package.json` or `pnpm-workspace.yaml`, with no `--no-frozen-lockfile`
+  - given `CI=1 pnpm add|remove …` (past `--filter`, `-C` and their values), or `CI=1 pnpm install` while `git diff --name-only HEAD` in its dir names a `package.json` or `pnpm-workspace.yaml`, with no `--no-frozen-lockfile`
   - then the guard names the flag: `CI=1` freezes the lockfile, the dep change never reaches it and the commit ships half
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until sixth sense says clean (o70); the `fleet-hazards.md` line left with this rule
@@ -254,7 +254,7 @@
   - proof: tests/plugin-update.test.ts::a raw plugin update runs, warned with x plugin bump named; with the rule enforced, a raw plugin update is refused; runs unwarned
 
 - ✅ a backlog notes edit that would wipe notes is refused naming `--append-notes` (PK-150, FRM-425)
-  - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (clio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
+  - given `backlog task edit <id> --notes …` (or `--notes=…`, the id before or after it), and the task's file under the tasks dir — `<backlog_directory>/tasks` when the repo's `backlog.config.yml` names one (clio's pocket: `pocket`), else `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above, holds text between its `SECTION:NOTES` markers
   - then nothing runs, and the refusal names `backlog task edit <id> --append-notes <text>`
   - given an empty notes block, no notes section, `--append-notes`, or an id no task file matches, then it runs unwarned
   - decision: refuse: the warn stage ran until FRM-425's sixth sense clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`

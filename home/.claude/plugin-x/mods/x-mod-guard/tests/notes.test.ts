@@ -69,6 +69,12 @@ test('--notes over a task that holds notes is refused naming --append-notes', as
     expect([w.ran, r.deny?.includes(DOOR)]).toEqual([[], true]);
 });
 
+test('--notes before the id over a task that holds notes is still refused (F6)', async ($, on) => {
+    const w = world(on, { '/repo/.backlog/tasks': NOTED });
+    const r = await bash($, "backlog task edit --notes 'new' SP-1");
+    expect([w.ran, r.deny?.includes(DOOR)]).toEqual([[], true]);
+});
+
 test('--notes= over a task that holds notes is refused naming --append-notes', async ($, on) => {
     const w = world(on, { '/repo/.backlog/tasks': NOTED });
     const r = await bash($, "backlog task edit SP-1 --notes='new'");

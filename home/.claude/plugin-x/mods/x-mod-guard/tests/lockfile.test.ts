@@ -35,6 +35,8 @@ for (const typed of [
     'CI=1 pnpm add zod',
     'CI=1 pnpm remove zod',
     'cd /repo && env CI=1 pnpm add -D vitest',
+    'CI=1 pnpm --filter web add zod',
+    'CI=1 pnpm -C apps/web add zod',
 ])
     test(`a frozen dep change is flagged with the flag named: ${typed}`, async ($, on) => {
         world(on);

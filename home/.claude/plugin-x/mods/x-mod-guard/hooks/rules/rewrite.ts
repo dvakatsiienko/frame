@@ -9,10 +9,17 @@ export function edits(segments: Segment[]): Edit[] {
     return segments.flatMap((s) => {
         const isTest = s.words[0]?.text === '[[';
         const peeled = peel(s.words);
-        const end = peeled.args.findIndex((w) => w.text === '--');
+        // pnpm's own flags stop at the script's name: `pnpm build -s` hands -s to the script
+        const verbAt = peeled.args.findIndex((w) => !w.text.startsWith('-'));
+        const scriptAt =
+            peeled.args[verbAt]?.text === 'run'
+                ? peeled.args.findIndex(
+                      (w, i) => i > verbAt && !w.text.startsWith('-'),
+                  )
+                : verbAt;
         const pnpmFlags =
             peeled.name === 'pnpm'
-                ? peeled.args.slice(0, end < 0 ? undefined : end)
+                ? peeled.args.slice(0, scriptAt < 0 ? undefined : scriptAt)
                 : [];
         const own = s.words.flatMap((w): Edit[] => {
             if (w.at === undefined) return [];

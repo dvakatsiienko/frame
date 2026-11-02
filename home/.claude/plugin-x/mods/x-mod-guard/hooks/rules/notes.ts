@@ -12,8 +12,11 @@ import {
 // (PK-150); `--append-notes` keeps it
 export type NotesEdit = { id: string; root: string };
 
+// a task id (`SP-1`, `task-12`, `pk-297.1`, a bare `12`), so a flag's value never reads as one
+const TASK_ID = /^(?:[A-Za-z]+-)?\d+(?:\.\d+)*$/;
 function notesEdit(c: Command, ctx: Context): NotesEdit | undefined {
-    const [verb, sub, id] = operands(c.args);
+    const [verb, sub, ...rest] = operands(c.args);
+    const id = rest.find((o) => TASK_ID.test(o));
     if (c.name !== 'backlog' || verb !== 'task' || sub !== 'edit' || !id)
         return undefined;
     if (!hasFlag(c.args, ['--notes'])) return undefined;
