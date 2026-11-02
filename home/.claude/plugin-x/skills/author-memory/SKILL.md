@@ -62,4 +62,4 @@ a named command → its `--help` holds the flag; a file → it exists; a ticket 
 ## references
 
 - [memory.md](references/memory.md) — the buckets in full, the cc mechanics with their probes, the papers, the context budget, precedence
-- [skill.md](references/skill.md) — frontmatter, descriptions, the listing budget, invocation control, structure rules, placeholders, evals
+- [skill-craft.md](references/skill-craft.md) — frontmatter, descriptions, the listing budget, invocation control, structure rules, placeholders, evals

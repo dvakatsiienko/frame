@@ -1,7 +1,7 @@
 ---
 kind: nurture
 owner: coordinator
-artifacts: [home/.claude/plugin-x/skills/author-memory/references/memory.md, home/.claude/plugin-x/skills/author-memory/references/memory-project.md, home/.claude/plugin-x/skills/author-memory/references/skill.md]
+artifacts: [home/.claude/plugin-x/skills/author-memory/references/memory.md, home/.claude/plugin-x/skills/author-memory/references/memory-project.md, home/.claude/plugin-x/skills/author-memory/references/skill-craft.md]
 script: none
 groomed: 2026-10-16 (dima)
 was: [nurture-skills]
@@ -71,7 +71,7 @@ dima, 2026-08-27, the purpose:
 
 - the groom opens with the prune: stray test-drive leftovers, dated ones, ones he doesn't like, ones never proven; the marketplace and project-scoped skills too — only what proved useful stays (10-14)
 - a skill nobody fires that costs context is a prune candidate before any hillclimb (10-06)
-- `x:author-memory` stays one skill with references `memory.md`, `memory-project.md`, `skill.md` (10-13)
+- `x:author-memory` stays one skill with references `memory.md`, `memory-project.md`, `skill-craft.md` (10-13)
 
 ## the run
 
@@ -106,7 +106,7 @@ dima, 2026-08-27, the purpose:
 
 1. **groom this recipe** — `clio:shape-recipe` step 0: every want line true, every vector serving one, skills included. done: dima's word, `groomed:` stamped. (open)
 2. **research** — no write before it lands. first the snapshot diff, the cheapest: re-download anthropic's two pages as `.md`, `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots. then the vectors, all lanes at once (`clio:shape-recipe`) + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane landed or failed out loud. (template)
-3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory and skill edits (`author-memory/references/skill.md` takes the skill mechanics and the evals prior art), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
+3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory and skill edits (`author-memory/references/skill-craft.md` takes the skill mechanics and the evals prior art), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
 4. **the vertical audit — which memories bleed the most**: the rank is `resident × never-used`, tokens at 2.89 chars/token, measured on disk (`/context` shows the boot snapshot). (template)
    - **the mechanical pass**, code only: a closed `FRM-N` / `BYT-N` within 2 lines of open-state words (`tracks it`, `trial`, `awaiting`, `pending`; run #1: 12 flagged, 11 real) · a dead `@import` · barrel omissions both ways · a named rule, skill or doc that is gone · a named flag missing from `--help` · research past `dies-when`. today `memory-lint` runs at commit (budgets, merged bullets); the rest of this pass runs here, by script, until each check joins it (PK-169). a naive path regex flagged 94 with ~2 real, so it stays out
    - **inventory and map** (his order, run #1): every memory file across repos → cc's default «go upd memory» asked twice, diff-based (right places? poems?) → the connection graph drawn from one script's numbers (sizes, pointers, inbound links, dead `rules/` pointers, the voice and format wiring) → the groom list, no edit before it. the connector pass (pointers, precedence, placement) stays apart from content pruning; an isolated leaf is where dima looks first
@@ -139,8 +139,8 @@ dima, 2026-08-27, the purpose:
    - done: every file's groom-list line reads `- ✅ <path> — <before> → <after> B · lenses: dupe · superseded · enforced · unused · no-op · altitude · trim · merge · placement · deferral · protected — <what moved>`, each lens with its verdict; «unchanged» is a verdict only with the evidence for every lens; `recipes/nurture-memory/scripts/groom-list-check.sh` exits 0
 8. **the order across layers**: root `CLAUDE.md` → `rules/` → all resident memory (clio leaves; the pm surfaces are reviewed here, `.scratch/memory-sweep/issues/085-pm-review.md`) → project leaves (frame, `bytes`, `dvakatsiienko`, `inner-marker`, `reinforcement-learning`; clio leaves read all first, keep / trim / move, judge filenames, then a filename sweep). a project leaf: `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, the project examined before the file, a restated environment becomes a pointer, a tutorial goes; what a leaf owes is `author-memory/references/memory-project.md`. `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)). done: every layer through step 7. (template)
    - **the structure rethink** (dima, 2026-10-21, PK-175): after the fleet layer and before step 9's skills, the clio leaves are judged whole from another angle — balanced by moment (every turn or on a trigger), modularized (one decision per leaf, a split or merge where off), mapped twice (a dataviz page shows the weight, a FigJam board the overall picture). the lens (inference: unmeasured, from skills missing on intention triggers): a line leaves resident memory only when a hook can see its trigger; an intention (choosing a tool, naming a thing, writing a report) stays resident, an event (a url, a command, a file read) moves behind its hook. done: every leaf judged, each move on dima's word. (open)
-9. **skills** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory. the rulebook is `author-memory/references/skill.md` and `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation); a skill line that restates or contradicts resident memory or a sibling keeps one home. (open)
-   1. **the skills research** — a small run of its own, before the groom: the `skills:` vectors, all lanes at once (`clio:shape-recipe`), distilled into `author-memory/references/skill.md`, bytes before and after. done: every lane landed or failed out loud, the doc touched or «unchanged»
+9. **skills** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory. the rulebook is `author-memory/references/skill-craft.md` and `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation); a skill line that restates or contradicts resident memory or a sibling keeps one home. (open)
+   1. **the skills research** — a small run of its own, before the groom: the `skills:` vectors, all lanes at once (`clio:shape-recipe`), distilled into `author-memory/references/skill-craft.md`, bytes before and after. done: every lane landed or failed out loud, the doc touched or «unchanged»
    2. **the census and the install hunt** — `clio:system-checkup` runs both as its `install-census` check, more often than this recipe runs (dima, 2026-10-19); here, read its ranked list, `_clio/checkup/install-census.md`, or run `checkup install-census` when that file is older than 14 days. done: the ranked list in the run file
    3. **the prune**: every skill, plugin and mod the census shows unproven goes before any other work on it — a stray test-drive leftover, a dated one, one dima never liked, one that never earned its place; each a keep or drop pick for dima. done: every unproven entry verdicted
    4. **the conflict hunt** — every surviving skill against resident memory (root `CLAUDE.md`, `rules/`, clio leaves) and its siblings: a duplicated or contradicting line gets one home. done: every hit verdicted
@@ -203,12 +203,12 @@ dima, 2026-08-27, the purpose:
 - the context budget: dima's «what do we do wrong» outranks any token number
 - skills: memory and skill authoring practice, what writes well for agents now
 - skills: the cc skills docs delta since the snapshot in `docs/research/skill-authoring-best-practices/` (loading, descriptions, `disable-model-invocation`, plugin evals, `/skill-doctor`)
-- skills: plugin eval methods, and prior art in skill evals and hillclimbing (`author-memory/references/skill.md` § evals — prior art)
+- skills: plugin eval methods, and prior art in skill evals and hillclimbing (`author-memory/references/skill-craft.md` § evals — prior art)
 
 ### analysis
 
 - run #1's finding, re-checked: opus writes long by default; ~70 % of written text was not needed
-- `author-memory/references/skill.md`'s best practices against our files: a practice we miss is a finding
+- `author-memory/references/skill-craft.md`'s best practices against our files: a practice we miss is a finding
 - which memories misfired or sat unused: `refresh-fleet-ops`' skill-load measure; a leaf never load-bearing since the last sweep is a retirement candidate
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?
 - placement drift: a leaf past one decision, a fact at the wrong altitude
@@ -222,7 +222,7 @@ dima, 2026-08-27, the purpose:
 
 - `home/.claude/plugin-x/skills/author-memory/references/memory.md` — the memory authoring craft (placement, mechanics, measurements); the distill folds cc mechanics and our rules in; the per-file lenses live in step 7 here
 - `home/.claude/plugin-x/skills/author-memory/references/memory-project.md` — what a project leaf owes; updated from step 8
-- `home/.claude/plugin-x/skills/author-memory/references/skill.md` — the skill authoring craft and its evals prior art; step 9.1's distill folds new mechanics and our rules in
+- `home/.claude/plugin-x/skills/author-memory/references/skill-craft.md` — the skill authoring craft and its evals prior art; step 9.1's distill folds new mechanics and our rules in
 
 ## findings
 
