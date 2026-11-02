@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T15:55:00Z'
-updated_date: '2026-11-02T11:31:00Z'
+updated_date: '2026-11-02T19:43:00Z'
 labels:
   - s
 dependencies: []
@@ -33,4 +33,6 @@ W1031 (2026-11-01 17:54, dima): print how many chunks are planned to fully execu
 
 <!-- SECTION:NOTES:BEGIN -->
 kept: 2026-11-02 — dima stayed at the keyboard today (12:16 «you stay parked and watch side lane»); the shop-trip shift did not run, moved to next
+
+close: 2026-11-02 — the shop-trip shift never ran, moot
 <!-- SECTION:NOTES:END -->

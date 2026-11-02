@@ -1,10 +1,10 @@
 ---
 id: PK-291
 title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 %'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
-updated_date: '2026-11-02T15:30:00Z'
+updated_date: '2026-11-02T19:43:00Z'
 labels:
   - s
 dependencies: []
@@ -83,4 +83,8 @@ W879 (2026-11-01 15:23, dima): final check, is the blueprint in a healthy state,
 W880 (2026-11-01 15:23, dima): anything drifted? ❓
 W881 (2026-11-01 15:23, dima): if no drift is spotted, i approve the close of the pm module, and if all is good, go and second wind.
 W882 (2026-11-01 15:23, dima): otherwise, sync the blueprint with the current state if some drifts are spotted, and also second wind and close everything related to the pm module.
+
+close: 2026-11-02 — a past day plan, its lines homed or done
+
+close: 2026-11-02 — W-lines done: W795 W796 W797 W798 W799 W800 W801 W802 W803 W804 W805 W806 W807 W808 W809 W810 W811 W812 W813 W814 W815 W816 W817 W818 W819 W820 W821 W822 W823 W824 W825 W826 W832 W859 W860 W861 W862 W863 W864 W865 W866 W869 W870 W871 W872 W873 W874 W875 W876 W877 W878 W879 W880 W881 W882
 <!-- SECTION:NOTES:END -->
