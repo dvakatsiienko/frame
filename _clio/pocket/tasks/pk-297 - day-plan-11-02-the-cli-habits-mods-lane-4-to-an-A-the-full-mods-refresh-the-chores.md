@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T18:01:00Z'
+updated_date: '2026-11-02T18:03:00Z'
 labels:
   - m
 dependencies: []
@@ -209,4 +209,8 @@ W1454 (2026-11-02 19:23, dima): no waste burn.
 W1461 (2026-11-02 19:45, dima): proceed with lane, observe for now.
 W1462 (2026-11-02 19:45, dima): and SW.
 W1463 (2026-11-02 19:23, dima, o65 steer): just run the lane, it should burn the window naturally.
+
+W1464 (2026-11-02 19:51, dima): /x:handoff-ingest cc-20261022-pm-revamp-checkpoint-3
+W1465 (2026-11-02 19:51, dima): burn until ~92-95% so there is slight space.
+W1466 (2026-11-02 19:51, dima): then, when it is ~30min until 5h reset, proceed and push to 100% so the window is short.
 <!-- SECTION:NOTES:END -->
