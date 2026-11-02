@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # github-token-wrap — run one `gh` call as the calling member's github app: a sixth sense session as
-# x-sixth-sense-cc, any other as x-codie-cc (FRM-484). every gh call that WRITES to a pr or issue in our
+# x-sixth-sense-cc, clio's as x-clio-cc, any other as x-codie-cc (FRM-484). every gh call that WRITES to a pr or issue in our
 # repos goes through this, so the post wears the app and never dima. usage: github-token-wrap pr comment 76 --body …
 set -euo pipefail
 [ "${1:-}" = gh ] && shift  # a leading `gh` is tolerated: two briefs wrote `github-token-wrap gh pr …`
 app=x-codie-cc
 if [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then
 	name=$(jq -r --arg sid "$CLAUDE_CODE_SESSION_ID" 'select(.sessionId == $sid) | .name // empty' "${X_SESSIONS:-$HOME/.claude/sessions}"/*.json 2>/dev/null | head -1)
-	case "$name" in *"sixth sense"*) app=x-sixth-sense-cc ;; esac
+	case "$name" in
+	*"sixth sense"*) app=x-sixth-sense-cc ;;
+	"🦉"*clio) app=x-clio-cc ;;
+	esac
 fi
 GH_TOKEN=$(cd ~/frame && pnpm --silent github:agent-token "$app") exec gh "$@"
