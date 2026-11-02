@@ -115,6 +115,7 @@ the boot prints every open milestone with the roadmap block, so a stale one misi
 
 - attach anything finished this session to its milestone, and anything newly started
 - a milestone linear marked done gets one informative line to dima, never an approval ask (dima, 2026-10-22, PK-103 W146)
+- the kill side (`craft-pm`): each verb in `x stats --days 30 | jq .data.unused` gets a revive try or a ⚖️ ask (o90)
 - if the work drifted away from every milestone, that is the signal the **roadmap** moved. update
   the linear initiative «roadmap» in the same pass (`memory/dima-strategy.md`, the roadmap section)
   rather than bending the milestones to fit

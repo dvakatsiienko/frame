@@ -10,7 +10,7 @@ test run live, a new-surface ticket's `🔌 fleet wired:` caller seen making one
 what it was and why it can close (W815–W816); the halt lists them all at once (o11).
 
 - each entry passes the close test: what became better (the closing word), what strays (findings,
-  sub-items, dima notes the close would orphan), each wish W-line met, moved (FRM-N) or open → Todo; its milestone's count read
+  sub-items, dima notes the close would orphan), each wish W-line met, moved (FRM-N) or open → Todo; its milestone's count read; a milestone's last close runs the kill side, `x stats --days 30 | jq .data.unused`, each 0-call verb revived or put to dima (o90)
 - 🙋‍♂️ **the ask-guard, above every skill template**: a close, cancel, merge or reshape of a ticket
   carrying dima's asks prints them first, one line each with its destination (answered here, moves
   to X, dies); the ticket cannot close until he verdicts each — «yes let's do», «not important anymore», or a steer; no answer, not resolved
