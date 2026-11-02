@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
+updated_date: '2026-11-02T11:31:00Z'
 labels:
   - m
 dependencies: []
@@ -65,3 +66,12 @@ W1091 (2026-11-02 13:10, dima): mods refresh.
 W1092 (2026-11-02 13:10, dima): why did you not print me the report about recipe run? ❓
 W1093 (2026-11-02 13:10, dima): and why did you not print a grill into a thread? ❓
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+W1094 (2026-11-02 13:12, dima): after mods coder is done with fixes after sonnet, tell to park. i see his ctx, maybe compact then proceed with planned chunk.
+W1095 (2026-11-02 13:16, dima): proceed.
+W1096 (2026-11-02 13:16, dima): what else out of chores are left? ❓
+W1097 (2026-11-02 13:25, dima, o13 steer): no, let's not rush with it. i think it will be a dead weight.
+<!-- SECTION:NOTES:END -->
