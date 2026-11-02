@@ -1,15 +1,22 @@
 // the shapes a live credential takes; a 1Password `op://` reference is not one
+// a key starts where no letter or digit sits before it: `\b` misses one glued after `_` (`KEY_sk-ant-…`)
 const SECRETS = [
-    /\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/g,
-    /\bgh[pousr]_[A-Za-z0-9]{30,}/g,
-    /\bgithub_pat_[A-Za-z0-9_]{40,}/g,
-    /\bxox[abprs]-[A-Za-z0-9-]{10,}/g,
-    /\bAKIA[0-9A-Z]{16}\b/g,
-    /\blin_api_[A-Za-z0-9]{30,}/g,
-    /\bops_[A-Za-z0-9_-]{40,}/g,
+    /(?<![A-Za-z0-9])sk-(?:ant-)?[A-Za-z0-9_-]{20,}/g,
+    /(?<![A-Za-z0-9])[sr]k_live_[A-Za-z0-9]{20,}/g,
+    /(?<![A-Za-z0-9])gh[pousr]_[A-Za-z0-9]{30,}/g,
+    /(?<![A-Za-z0-9])github_pat_[A-Za-z0-9_]{40,}/g,
+    /(?<![A-Za-z0-9])xox[abprs]-[A-Za-z0-9-]{10,}/g,
+    /(?<![A-Za-z0-9])xapp-\d-[A-Za-z0-9-]{10,}/g,
+    /(?<![A-Za-z0-9])(?:AKIA|ASIA)[0-9A-Z]{16}\b/g,
+    /(?<=aws_secret_access_key["']?\s*[=:]\s*["']?)[A-Za-z0-9/+]{40}(?![A-Za-z0-9/+])/gi,
+    /(?<![A-Za-z0-9])lin_api_[A-Za-z0-9]{30,}/g,
+    /(?<![A-Za-z0-9])ops_[A-Za-z0-9_-]{40,}/g,
+    /(?<![A-Za-z0-9])npm_[A-Za-z0-9]{36}(?![A-Za-z0-9])/g,
+    /(?<![A-Za-z0-9])AIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_-])/g,
 ];
+// an ssh, pem or pgp private key, armour to armour
 const PRIVATE_KEY =
-    /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g;
+    /-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----/g;
 const PLACEHOLDER = /‹[^‹›\n]{1,6}…[0-9a-f]{8}›/g;
 
 // placeholder → secret, for one session
@@ -30,7 +37,7 @@ export const placeholderOf = (secret: string) =>
 
 // A text with every secret masked one way: its first six characters and `…‹redacted›`.
 export function maskText(text: string): string {
-    let out = text.replace(PRIVATE_KEY, '[redacted private key]');
+    let out = text.replace(PRIVATE_KEY, '‹redacted private key›');
     for (const re of SECRETS)
         out = out.replace(re, (m) => `${m.slice(0, 6)}…‹redacted›`);
     return out;

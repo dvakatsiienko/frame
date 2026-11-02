@@ -8,7 +8,7 @@
 ## every row a session keeps
 
 - ✅ a secret never lands in a transcript
-  - given a tool prints an api key or token (`sk-…`, `ghp_…`, `github_pat_…`, `xoxb-…`, `AKIA…`, `lin_api_…`, `ops_…`, a private key block)
+  - given a tool prints an api key or token (`sk-…`, `sk_live_…` / `rk_live_…`, `ghp_…`, `github_pat_…`, `xoxb-…`, `xapp-…`, `AKIA…` / `ASIA…`, an `aws_secret_access_key` value, `lin_api_…`, `ops_…`, `npm_…`, `AIza…`, an ssh, pem or pgp private key block), glued after `_` too (`KEY_sk-ant-…`)
   - when the session keeps that row
   - then the transcript and the model read a placeholder: `‹`, the value's first six characters, `…`, eight hex characters of its hash, `›` — `‹sk-ant…1a2b3c4d›`
   - decision: one `session.append` hook rewrites every row — a tool result, a prompt, a reply — since the engine stores and sends the rewritten form; the screen may flash the raw row first

@@ -31,7 +31,7 @@ test('masks a private key block whole', () => {
         maskText(
             'a\n-----BEGIN OPENSSH PRIVATE KEY-----\nFAKE\nFAKE\n-----END OPENSSH PRIVATE KEY-----\nb',
         ),
-    ).toBe('a\n[redacted private key]\nb');
+    ).toBe('a\n‹redacted private key›\nb');
 });
 
 test('keeps a 1password reference readable', () => {
@@ -86,4 +86,38 @@ test('a submitted prompt reaches the engine masked, before it is queued', async 
         seen.some((t) => t.includes(FAKE_KEY)),
         seen.some((t) => /‹sk-ant…[0-9a-f]{8}›/.test(t)),
     ]).toEqual([false, true]);
+});
+
+// R1 H4 and H6: shapes the first list missed, built by concatenation so no scanner reads a key in the repo
+const F = 'FAKE0fake1FAKE2fake3FAKE4fake5FAKE6fake7FAKE8fake9';
+const MORE: [string, string][] = [
+    ['a stripe live key', `sk${'_live_'}${F.slice(0, 24)}`],
+    ['a stripe restricted key', `rk${'_live_'}${F.slice(0, 24)}`],
+    ['a slack app token', `xa${'pp-1-'}A0B1C2-1234-${F.slice(0, 20)}`],
+    ['an npm token', `np${'m_'}${F.slice(0, 36)}`],
+    ['a google api key', `AI${'za'}${F.slice(0, 35)}`],
+    ['an aws session key id', `AS${'IA'}${'FAKE0FAKE1FAKE23'}`],
+];
+for (const [kind, secret] of MORE)
+    test(`masks ${kind}`, () => {
+        expect(maskText(`token=${secret} done`)).toBe(
+            `token=${secret.slice(0, 6)}…‹redacted› done`,
+        );
+    });
+
+test('masks a key glued after an underscore, the prefix kept', () => {
+    const key = `sk${'-ant-'}${F.slice(0, 30)}`;
+    expect(maskText(`KEY_${key}`)).toBe(`KEY_${key.slice(0, 6)}…‹redacted›`);
+});
+
+test('masks an aws secret by its key name', () => {
+    const secret = `${F.slice(0, 20)}/+${F.slice(0, 18)}`;
+    expect(maskText(`aws_secret_access_key = ${secret}`)).toBe(
+        `aws_secret_access_key = ${secret.slice(0, 6)}…‹redacted›`,
+    );
+});
+
+test('masks a pgp private key block whole, with no glob characters', () => {
+    const block = `-----BEGIN PGP ${'PRIVATE'} KEY BLOCK-----\nxyz\n-----END PGP ${'PRIVATE'} KEY BLOCK-----`;
+    expect(maskText(`a\n${block}\nb`)).toBe('a\n‹redacted private key›\nb');
 });
