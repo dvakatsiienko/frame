@@ -36,6 +36,11 @@ const FIXED = [
     ],
     ['an == in a [ test', '[ a == b ]', "[ a '==' b ]"],
     [
+        'an =word after a quoted [[',
+        "grep -F '[[' a.sh && echo =q",
+        "grep -F '[[' a.sh && echo '=q'",
+    ],
+    [
         'an unquoted --include glob',
         'grep -rn x --include=*.ts .',
         "grep -rn x '--include=*.ts' .",

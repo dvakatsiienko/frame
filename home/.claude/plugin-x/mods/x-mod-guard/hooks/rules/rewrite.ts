@@ -1,5 +1,5 @@
 import { type Segment, type Word, parse } from '../shell.ts';
-import { peel } from './command.ts';
+import { peel, testSpan } from './command.ts';
 
 // zsh reads `[[ a == b ]]`'s operator as syntax, never as a path
 const TEST_OPERATORS = new Set(['=', '==', '=~']);
@@ -22,8 +22,10 @@ export function edits(segments: Segment[]): Edit[] {
             peeled.name === 'pnpm'
                 ? peeled.args.slice(0, scriptAt < 0 ? undefined : scriptAt)
                 : [];
-        const own = s.words.flatMap((w): Edit[] => {
-            if (w.text === '[[' || w.text === ']]') inTest = w.text === '[[';
+        const start = inTest;
+        inTest = testSpan(s.words, start);
+        const own = s.words.flatMap((w, i): Edit[] => {
+            const isInTest = testSpan(s.words.slice(0, i + 1), start);
             if (w.at === undefined) return [];
             if (w.text === '-s' && pnpmFlags.includes(w))
                 return [
@@ -47,7 +49,7 @@ export function edits(segments: Segment[]): Edit[] {
             if (
                 w.text.startsWith('=') &&
                 w.text !== '=' &&
-                !(inTest && TEST_OPERATORS.has(w.text))
+                !(isInTest && TEST_OPERATORS.has(w.text))
             )
                 return [
                     {

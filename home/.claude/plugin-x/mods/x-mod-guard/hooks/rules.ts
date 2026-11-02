@@ -620,11 +620,24 @@ export function signWords(
                 (bare[i + 1] === 'set' || bare[i + 1] === 'body'),
         );
         if (c.name !== 'x' || at < 0) continue;
-        // the ticket the verb acts on is its first id, as x reads args[0]; never a --parent's or a --blocks'
-        const id = words.find(
+        // the ticket the verb acts on is its first id, as x reads args[0]; never a --parent's or a --blocks'. a loop var the
+        // walker filled with every value it takes stands for each of them, so each id is a sign of its own (R3)
+        const ids = words.filter(
             (w, i) => TICKET.test(w) && !isFlag(words[i - 1] ?? ''),
         );
-        if (!id) continue;
+        // an id the line never shows (`$ID`, xargs' `{}`) is a sign no tick names
+        const slot = bare[at + 2];
+        const hidden =
+            slot !== undefined &&
+            (/[$`{}]/.test(slot) || c.wrappers.includes('xargs'))
+                ? slot
+                : undefined;
+        const firstId = ids[0] ?? hidden;
+        if (!firstId) continue;
+        const looped = c.args.some(
+            (w) => w.isExpanding && /^\$\{?\w+\}?$/.test(w.text),
+        );
+        const signed = looped && ids.length ? ids : [firstId];
         const value = (flag: string) =>
             words.flatMap((w, i) =>
                 w === flag
@@ -637,11 +650,17 @@ export function signWords(
             const added = value('--add-label').flatMap((v) => v.split(','));
             // x matches labels by name ignoring case; a label the shell fills in may be the sign
             if (added.some((l) => /^signed$/i.test(l.trim()) || /[$`]/.test(l)))
-                out.push({ id });
+                out.push(...signed.map((id) => ({ id })));
             continue;
         }
         const [file] = value('--set');
-        if (file) out.push({ file: resolve(file, c.dir, ctx), id });
+        if (file)
+            out.push(
+                ...signed.map((id) => ({
+                    file: resolve(file, c.dir, ctx),
+                    id,
+                })),
+            );
     }
     return out;
 }

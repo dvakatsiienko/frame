@@ -1175,4 +1175,18 @@ EOF`,
         'a head read from stdin (warn-only until sixth sense)',
         'read R; $R -rf x',
     ],
+    // lane 4 R3: a quoted [[ opens no test
+    [
+        'refused',
+        'reader',
+        'a quoted [[ ahead of a force push',
+        "grep -F '[[' a.sh && git push --force",
+    ],
+    ['refused', 'reader', 'an echoed [[ ahead of an rm', "echo '[['; rm -rf x"],
+    [
+        'refused',
+        'reader',
+        'a quoted ]] ahead of a reset',
+        "grep -c ']]' f.sh; git reset --hard",
+    ],
 ];

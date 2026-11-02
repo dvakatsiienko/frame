@@ -354,6 +354,27 @@ test("a body write behind a grep of its own file keeps today's sign line and run
     expect([signFlagged(r), ran]).toEqual([false, [command]]);
 });
 
+// lane 4 R3: a loop's every id is a sign of its own, so a tick on one id never signs the next
+test('a loop signing two ids on a tick for one is refused', async ($, on) => {
+    world(on, [tick('✍️ sign FRM-1: x')]);
+    const r = await bash(
+        $,
+        'for id in FRM-1 FRM-2; do x linear set $id --add-label signed; done',
+    );
+    expect(signFlagged(r)).toBe(true);
+});
+
+for (const command of [
+    'x linear set "$ID" --add-label signed',
+    'ID=$(cat id); x linear set $ID --add-label signed',
+    'echo FRM-2 | xargs -I{} x linear set {} --add-label signed',
+])
+    test(`a sign whose id the line never shows is refused on any tick: ${command}`, async ($, on) => {
+        world(on, [tick('✍️ sign FRM-1: x')]);
+        const r = await bash($, command);
+        expect(signFlagged(r)).toBe(true);
+    });
+
 // lane 4 R2: every sign on the line is judged, and a body file the line writes by cp, mv or a nested shell counts as new
 for (const [why, command] of [
     [

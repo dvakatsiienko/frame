@@ -127,6 +127,22 @@ const KEYWORDS = new Set([
     'coproc',
     'function',
 ]);
+// a `[[ … ]]` test opens on an unquoted `[[` where a command name stands and closes on an unquoted `]]`; the parser splits
+// it at its `&&`, so the state runs across segments: the state after this segment's words
+export function testSpan(words: Word[], isOpen: boolean) {
+    const head = words.find(
+        (w) =>
+            !KEYWORDS.has(w.text) &&
+            !/^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(w.text),
+    );
+    let open = isOpen;
+    for (const w of words) {
+        if (w.hasQuote) continue;
+        if (w.text === '[[' && w === head) open = true;
+        else if (w.text === ']]') open = false;
+    }
+    return open;
+}
 export const SD_VALUE = new Set(['-n', '--max-replacements', '-f', '--flags']);
 const REDIRECT = /^\d*(>>?|<>?|&>>?|>[|!])&?$/;
 const REDIRECT_JOINED = /^\d*(>>?|<(?!<)|&>>?|>[|!])&?\S/;
@@ -335,8 +351,7 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
     let isInTest = false;
     const filled = parsed.segments.map((s) => {
         const isTest = isInTest;
-        for (const w of s.words)
-            if (w.text === '[[' || w.text === ']]') isInTest = w.text === '[[';
+        isInTest = testSpan(s.words, isInTest);
         // a word bound to several literals: the command runs as each of them (a head), or takes each (an argument)
         const alternates = new Map<string, string[]>();
         const inherited = [...fed].flatMap(([name, by]) =>
