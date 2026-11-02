@@ -47,7 +47,7 @@ if [ "${#paths[@]}" -gt 0 ] && [ -n "$state" ]; then
 	mkdir -p "$state"
 	msg="$(mktemp "$state/msg.XXXXXX")"
 	printf '📜 pocket: %s (auto)\n\nthe pocket hook committed this pocket write\n' "$(IFS=,; printf '%s' "${ids[*]-}")" >"$msg"
-	(cd "$root" && nohup bash -c 'state=$1; m=$2; shift 2; if "$@" >>"$state/log.txt" 2>&1 </dev/null; then echo ok >"$state/last"; else echo "refused $(date "+%F %H:%M")" >"$state/last"; fi; trash "$m"' _ "$state" "$msg" ${POCKET_COMMIT_CMD:-x lane commit} "$msg" -- "${paths[@]}" >/dev/null 2>&1 &)
+	(cd "$root" && nohup bash -c 'state=$1; m=$2; shift 2; if "$@" >>"$state/log.txt" 2>&1 </dev/null; then echo ok >"$state/last"; else echo "refused $(date "+%F %H:%M")" >"$state/last"; fi; rm -f -- "$m"' _ "$state" "$msg" ${POCKET_COMMIT_CMD:-x lane commit} "$msg" -- "${paths[@]}" >/dev/null 2>&1 &)
 fi
 
 [ "$status" = 0 ] && [ -z "$refused" ] && exit 0
