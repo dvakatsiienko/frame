@@ -145,3 +145,71 @@ test('a session started with the waker on shows ⏰ lit', async ($, on) => {
         'secondary',
     );
 });
+
+const isWakerOn = (store: Record<string, unknown>) =>
+    (store.waker as { on?: boolean } | undefined)?.on === true;
+
+test('💨 afk switched on turns ⏰ on, and afk off puts ⏰ back off', async ($, on) => {
+    const s = await session($, on);
+    await s.ui.press({ key: 'afk' });
+    expect(isWakerOn(s.store)).toBe(true);
+    expect((await s.ui.find({ key: 'waker' }))?.props.variant).toBe(
+        'secondary',
+    );
+    await s.ui.press({ key: 'afk' });
+    expect(isWakerOn(s.store)).toBe(false);
+});
+
+test('⏰ already on stays on through an afk round trip', async ($, on) => {
+    const s = await session($, on, { waker: { on: true } });
+    await s.ui.press({ key: 'afk' });
+    await s.ui.press({ key: 'afk' });
+    expect(isWakerOn(s.store)).toBe(true);
+});
+
+test('a press on ⏰ while afk is on still switches it', async ($, on) => {
+    const s = await session($, on);
+    await s.ui.press({ key: 'afk' });
+    await s.ui.press({ key: 'waker' });
+    expect(isWakerOn(s.store)).toBe(false);
+});
+
+test('afk on alone wakes a session stopped on the cap at the reset', async ($, on) => {
+    const s = await session($, on);
+    await s.ui.press({ key: 'afk' });
+    await endTurn($, CAPPED, 'error');
+    await s.clock.advance(40 * MIN);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('a turn that ends in an error keeps the text the hook saw', async ($, on) => {
+    const s = await session($, on);
+    await endTurn($, CAPPED, 'error');
+    await endTurn($, 'done', 'answer');
+    expect(s.store['cap-seen']).toEqual([
+        { at: NOW, isCapped: true, text: CAPPED },
+    ]);
+});
+
+test('a ⏰ press during afk stands after afk goes off', async ($, on) => {
+    const s = await session($, on, { waker: { on: true } });
+    await s.ui.press({ key: 'afk' });
+    await s.ui.press({ key: 'waker' });
+    await s.ui.press({ key: 'afk' });
+    expect(isWakerOn(s.store)).toBe(false);
+});
+
+test('afk switched on before the waker rider leaves ⏰ as it is when it goes off', async ($, on) => {
+    const s = await session($, on, {
+        afk: { at: 0, on: true },
+        waker: { on: true },
+    });
+    await s.ui.press({ key: 'afk' });
+    expect(isWakerOn(s.store)).toBe(true);
+});
+
+test('an answer that only talks about limits is not kept as a cap', async ($, on) => {
+    const s = await session($, on);
+    await endTurn($, 'the rate limit doc says 5h', 'answer');
+    expect(s.store['cap-seen']).toBeUndefined();
+});

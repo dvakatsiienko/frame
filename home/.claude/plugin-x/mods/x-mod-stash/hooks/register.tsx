@@ -300,6 +300,9 @@ const RESUME =
     'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
 // a few seconds past the reset, so the window has turned before the resume goes out
 const WAKE_SLACK_MS = 5000;
+// the last few error-ended turns as the hook saw them, so the cap's real text is measured, never inferred (riders 11-02)
+const CAP_SEEN = 'cap-seen';
+const CAP_SEEN_MAX = 5;
 // the board's one palette, every card's colours read from it (dima's o107, 21:17): mid-tones at 3.2:1 or more on a light
 // pane and 4.2:1 on a dark one; `dim` is the theme's own gray; `calm` is the ctx meter's blue
 export const PALETTE = {
@@ -2560,6 +2563,25 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
     }
 }
 
+async function keepCapSeen(
+    $: EngineInterface,
+    text: string,
+    isCapped: boolean,
+) {
+    const kept =
+        ((await $.store.get(CAP_SEEN).catch(() => undefined)) as
+            | { at: number; isCapped: boolean; text: string }[]
+            | undefined) ?? [];
+    const seen = {
+        at: await $.clock.now(),
+        isCapped,
+        text: text.slice(0, 300),
+    };
+    await $.store
+        .set(CAP_SEEN, [...kept, seen].slice(-CAP_SEEN_MAX))
+        .catch(() => undefined);
+}
+
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
 // never fires
 async function armWake($: EngineInterface) {
@@ -4231,6 +4253,8 @@ export const register: Register = (on) => {
                 ? { resetsAt: fiveHourResetsAt }
                 : undefined;
         await $.state.set(CAP, cap ?? null).catch(() => undefined);
+        if (e.reason === 'error' || /session limit/i.test(e.answer))
+            await keepCapSeen($, e.answer, cap !== undefined);
         await armWake($);
         // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
@@ -6540,7 +6564,14 @@ export const register: Register = (on) => {
                     const { Box, Text, Button } = ui;
                     const handleAfkFlip = async () => {
                         const was = (await $.store.get(AFK_KEY)) as
-                            | { at?: number; on?: boolean }
+                            | {
+                                  at?: number;
+                                  on?: boolean;
+                                  wakerBefore?: boolean;
+                              }
+                            | undefined;
+                        const wakerWas = (await $.store.get(WAKER_KEY)) as
+                            | { on?: boolean }
                             | undefined;
                         // the store's value, never the module copy: another session may have flipped it since the last poll
                         afk = !was?.on;
@@ -6551,13 +6582,34 @@ export const register: Register = (on) => {
                         await $.store.set(AFK_KEY, {
                             at: await $.clock.now(),
                             on: afk,
+                            ...(afk
+                                ? { wakerBefore: wakerWas?.on === true }
+                                : {}),
                         });
+                        // afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
+                        if (afk || was?.wakerBefore !== undefined) {
+                            isWaker = afk || was?.wakerBefore === true;
+                            await $.store.set(WAKER_KEY, { on: isWaker });
+                        }
                         await publish($);
                     };
                     // one switch for every session, kept in the store so a restart keeps it
                     const handleWakerFlip = async () => {
                         isWaker = !view.isWaker;
                         await $.store.set(WAKER_KEY, { on: isWaker });
+                        // a press during afk is what afk off puts back
+                        const away = (await $.store.get(AFK_KEY)) as
+                            | {
+                                  at?: number;
+                                  on?: boolean;
+                                  wakerBefore?: boolean;
+                              }
+                            | undefined;
+                        if (away?.on)
+                            await $.store.set(AFK_KEY, {
+                                ...away,
+                                wakerBefore: isWaker,
+                            });
                         await publish($);
                     };
                     const handleHotFlip = async () => {
