@@ -4,13 +4,13 @@ title: 'day plan 11-01: finish the pm module, then planning, halt at weekly ~97 
 status: open
 assignee: []
 created_date: '2026-11-01T12:21:00Z'
-updated_date: '2026-11-01T13:33:00Z'
+updated_date: '2026-11-02T15:30:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: wish
-ordinal: 9999
+ordinal: 18000
 ---
 
 ## Description
