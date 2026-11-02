@@ -8,9 +8,10 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    rmSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 type Run = { clockReads?: string[]; mod: string; output: string };
@@ -224,6 +225,8 @@ if (import.meta.main) {
                 `${mod}: a clock read outside $.clock (date bomb), give it the $.clock fallback or a clock-ok line above:\n${clock.map((c) => `  ${c}`).join('\n')}\n`,
             );
         runs.push({ clockReads: clock, mod, output, status: r.status });
+        if (values.extra)
+            rmSync(dirname(dir), { force: true, recursive: true });
     }
     const line = summary(runs);
     console.log(`\n${line}`);

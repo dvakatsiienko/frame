@@ -19,6 +19,9 @@ export function sourceHash(mod: string) {
     return hash.digest('hex');
 }
 
+// how long a save waits for the engine's load line
+export const RELOAD_MS = 8000;
+
 // the engine skips a module it already loaded unchanged, so «no new load» on a same-hash save is health, not a red
 export function reloadVerdict(v: {
     isReloaded: boolean;
@@ -34,5 +37,5 @@ export function reloadVerdict(v: {
         !/not loaded/.test(v.line)
     )
         return `reload ok: no hook changed, still loaded: ${v.line}`;
-    return `reload error: the engine logged no load of ${v.name} in 8 s${v.line ? `; last: ${v.line}` : ''}`;
+    return `reload error: the engine logged no load of ${v.name} in ${RELOAD_MS / 1000} s${v.line ? `; last: ${v.line}` : ''}`;
 }

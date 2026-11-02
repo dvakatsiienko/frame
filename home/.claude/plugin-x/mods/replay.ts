@@ -52,6 +52,10 @@ function recentTranscripts(days: number) {
 
 if (import.meta.main) {
     const days = Number(process.argv[2] ?? 2);
+    if (!Number.isInteger(days) || days < 1) {
+        console.error('usage: pnpm mods:replay [days]  (a whole number ≥ 1)');
+        process.exit(2);
+    }
     const calls = recentTranscripts(days).flatMap((f) =>
         bashCalls(readFileSync(f, 'utf8')),
     );

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vitest';
@@ -81,11 +81,14 @@ function sends(rows: unknown[]) {
         join(home, '.claude/projects/-p/sid-1.jsonl'),
         rows.map((r) => JSON.stringify(r)).join('\n'),
     );
-    return spawnSync('sh', ['-c', LEDGER_SENDS, 'sh', home, 'sid-1', 'clio'], {
-        encoding: 'utf8',
-    })
-        .stdout.split('\n')
-        .filter(Boolean);
+    const out = spawnSync(
+        'sh',
+        ['-c', LEDGER_SENDS, 'sh', home, 'sid-1', 'clio'],
+        { encoding: 'utf8' },
+    ).stdout;
+    // frame's commit hook runs this file: its fixtures leave with it
+    rmSync(home, { force: true, recursive: true });
+    return out.split('\n').filter(Boolean);
 }
 const call = (id: string, at: string) => ({
     message: {

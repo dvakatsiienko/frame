@@ -9,6 +9,7 @@ import {
     readFileSync,
     readdirSync,
     realpathSync,
+    rmSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -18,6 +19,8 @@ const fake = ['sk-ant-api03-', 'PROBE'.repeat(5)].join('');
 const placeholder = /‹sk-ant…[0-9a-f]{8}›/;
 const cwd = realpathSync(mkdtempSync(join(tmpdir(), 'probe-x-mod-redact-')));
 const out = join(cwd, 'out.txt');
+// the dir holds the planted key in out.txt: it leaves when the probe does
+process.on('exit', () => rmSync(cwd, { force: true, recursive: true }));
 const sessionId = randomUUID();
 
 const run = spawnSync(

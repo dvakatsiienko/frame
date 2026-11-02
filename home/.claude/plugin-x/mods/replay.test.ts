@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 import { expect, test } from 'vitest';
 
 import { bashCalls, tally } from './replay.ts';
@@ -34,3 +36,20 @@ test('counts a hint once per command that fires it, and leaves quiet commands ou
     );
     expect([...fired.values()].map((c) => c.length)).toEqual([1]);
 });
+
+test.each(['abc', '0', '1.5'])(
+    'a days argument of %s is a usage error, never a NaN-day replay',
+    (days) => {
+        const r = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'replay.ts'), days],
+            {
+                encoding: 'utf8',
+            },
+        );
+        expect([r.status, r.stderr]).toEqual([
+            2,
+            expect.stringContaining('usage: pnpm mods:replay'),
+        ]);
+    },
+);

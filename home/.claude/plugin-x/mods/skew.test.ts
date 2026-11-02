@@ -1,7 +1,7 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import {
     bundleOf,
@@ -107,6 +107,8 @@ describe('verdict', () => {
 describe('the desktop app side', () => {
     const asar = `x;function q_(){return JSON.parse('{"version":"2.1.309","manifest":{"version":"2.1.309"}}')}`;
     const dir = mkdtempSync(join(tmpdir(), 'skew-'));
+    // frame's commit hook runs this file: its fixtures leave with it
+    afterAll(() => rmSync(dir, { force: true, recursive: true }));
 
     it('reads the bundled cc version out of the app archive', () => {
         expect(bundledVersion(asar)).toBe('2.1.309');

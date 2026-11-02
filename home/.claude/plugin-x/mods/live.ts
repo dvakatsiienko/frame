@@ -16,20 +16,19 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import xterm from '@xterm/headless';
 import pty from 'node-pty';
 
 import { type LiveVerb, parseLive, requestOf } from './live-args.ts';
 import { plantedCopy } from './live-plant.ts';
-import { reloadVerdict, sourceHash } from './live-verdict.ts';
+import { RELOAD_MS, reloadVerdict, sourceHash } from './live-verdict.ts';
 import { SWAP_SOURCES, liveDirs, manifestName, swapDir } from './probe.ts';
 
 const COLS = 140;
 const ROWS = 40;
 const QUIET_MS = 600;
-const RELOAD_MS = 8000;
 // a typed prompt answers only once its turn quiets down
 const ACT_MS = 60_000;
 
@@ -164,7 +163,7 @@ async function serve() {
     });
     // the dev copy takes the live mod's place in the child's own plugin dirs, as mods:probe does: a second copy on
     // --plugin-dir lost the name clash to the live one (PK-65); a mod not live yet joins last
-    const home = process.env.HOME ?? '';
+    const home = homedir();
     const dirs = swapDir(liveDirs(home), mod, name, (d) =>
         manifestName(d, home),
     );
