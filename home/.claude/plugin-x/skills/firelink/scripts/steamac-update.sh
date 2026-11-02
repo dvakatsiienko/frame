@@ -12,7 +12,8 @@ gh release download "$tag" -R fxgl/steamac -p "FX-Steam-Launcher-${tag#v}.dmg" -
 want=$(gh release view "$tag" -R fxgl/steamac --json assets -q '.assets[]|select(.name|endswith(".dmg"))|.digest')
 [[ "sha256:$(shasum -a 256 "$dmg" | cut -d' ' -f1)" == "$want" ]] || { print "hash mismatch"; exit 1; }
 spctl -a -t open --context context:primary-signature "$dmg"
-codesign -dv "$dmg" 2>&1 | grep -q "TeamIdentifier=$team" || { print "wrong signer"; exit 1; }
+signer=$(codesign -dv "$dmg" 2>&1)
+[[ "$signer" == *"TeamIdentifier=$team"* ]] || { print "wrong signer"; exit 1; }
 if pgrep -qf "$app/Contents/MacOS/steamac-vm"; then
   osascript -e 'quit app "FX Steam Launcher"' || true
   for i in {1..60}; do pgrep -qf "$app/Contents/MacOS/steamac-vm" || break; sleep 2; done
