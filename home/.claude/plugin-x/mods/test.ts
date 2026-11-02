@@ -91,13 +91,7 @@ export function failures(output: string) {
 // `$.clock` to await names itself with `// clock-ok: <why>` on the line above. answers the 1-based lines of each read
 export function clockReads(source: string) {
     const blank = (m: string) => m.replace(/[^\n]/g, ' ');
-    const code = source
-        .replace(CLOCK_FALLBACK, blank)
-        .replace(
-            /(^|[ \t])\/\/[^\n]*/gm,
-            (m, lead: string) => lead + blank(m.slice(lead.length)),
-        )
-        .replace(/^[ \t]*\*[^\n]*/gm, blank);
+    const code = codeOnly(source.replace(CLOCK_FALLBACK, blank));
     const lines = source.split('\n');
     const hits: number[] = [];
     for (const m of code.matchAll(CLOCK_READ)) {
@@ -107,7 +101,73 @@ export function clockReads(source: string) {
     }
     return hits;
 }
-const CLOCK_READ = /\bDate\s*\.\s*now\b|\bnew\s+Date\b(?!\s*\(\s*[^)\s])/g;
+const CLOCK_READ =
+    /\bDate\s*\.\s*now\b|\bDate\s*\[|\{[^}]*\bnow\b[^}]*\}\s*=\s*Date\b|\bnew\s+Date\b(?!\s*\(\s*[^)\s])/g;
+// the source with comments and string text blanked, newlines kept: a regex over the raw text cannot tell a `//` inside a
+// string from a comment. a template's `${ … }` stays code
+function codeOnly(source: string) {
+    let out = '';
+    // each open template's brace depth, innermost last; a `}` at depth 0 closes the placeholder back into the template
+    const templates: number[] = [];
+    let i = 0;
+    const keep = (c: string) => (c === '\n' ? '\n' : ' ');
+    while (i < source.length) {
+        const c = source[i] as string;
+        const next = source[i + 1];
+        if (c === '/' && next === '/') {
+            while (i < source.length && source[i] !== '\n') {
+                out += ' ';
+                i++;
+            }
+        } else if (c === '/' && next === '*') {
+            const end = source.indexOf('*/', i + 2);
+            const stop = end < 0 ? source.length : end + 2;
+            for (; i < stop; i++) out += keep(source[i] as string);
+        } else if (c === "'" || c === '"') {
+            out += c;
+            for (
+                i++;
+                i < source.length && source[i] !== c && source[i] !== '\n';
+                i++
+            ) {
+                if (source[i] === '\\') {
+                    out += ' ';
+                    i++;
+                }
+                out += keep(source[i] as string);
+            }
+            if (i < source.length) out += source[i++];
+        } else if (c === '`' || (c === '}' && templates.at(-1) === 0)) {
+            if (c === '}') templates.pop();
+            out += c;
+            let isPlaceholder = false;
+            for (i++; i < source.length && source[i] !== '`'; i++) {
+                if (source[i] === '\\') {
+                    out += ' ';
+                    i++;
+                } else if (source[i] === '$' && source[i + 1] === '{') {
+                    out += '${';
+                    i += 2;
+                    templates.push(0);
+                    isPlaceholder = true;
+                    break;
+                }
+                out += keep(source[i] as string);
+            }
+            if (!isPlaceholder && i < source.length) out += source[i++];
+        } else {
+            if (templates.length && c === '{')
+                templates[templates.length - 1] =
+                    (templates.at(-1) as number) + 1;
+            if (templates.length && c === '}')
+                templates[templates.length - 1] =
+                    (templates.at(-1) as number) - 1;
+            out += c;
+            i++;
+        }
+    }
+    return out;
+}
 const CLOCK_FALLBACK =
     /\$\.clock\s*\.\s*now\(\s*\)\s*\.catch\(\s*(?:\(\s*\)\s*=>\s*Date\.now\(\s*\)|Date\.now)\s*,?\s*\)/g;
 

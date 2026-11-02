@@ -103,6 +103,29 @@ describe('clockReads', () => {
             'a();\nb(Date.now());\nc(new Date());',
             [2, 3],
         ],
+        [
+            'a // inside a string before the read',
+            "log('a // b', Date.now());",
+            [1],
+        ],
+        [
+            'a continuation line that starts with *',
+            'const t = a\n    * Date.now();',
+            [2],
+        ],
+        ['now destructured off Date', 'const { now } = Date;\nnow();', [1]],
+        ['now read by index', "Date['now']();", [1]],
+        ['a read inside a template placeholder', 'f(`at ${Date.now()}`);', [1]],
+        [
+            'a read after a template that held a placeholder',
+            'f(`${a}`);\ng(Date.now());',
+            [2],
+        ],
+        [
+            'a read inside a nested template',
+            'f(`${a ? `x${Date.now()}` : 1}`);',
+            [1],
+        ],
     ])('reds %s', (_, source, lines) => {
         expect(clockReads(source)).toEqual(lines);
     });
@@ -120,7 +143,10 @@ describe('clockReads', () => {
         ['new Date of a value across lines', 'new Date(\n    at,\n);'],
         ['a clock-ok line above', '// clock-ok: a sync render\nf(Date.now());'],
         ['a line comment', '// Date.now() is what a test cannot fake'],
-        ['a doc comment line', ' * new Date() reads the wall clock'],
+        ['a doc comment line', '/**\n * new Date() reads the wall clock\n */'],
+        ['a block comment mid-line', 'f(/* Date.now() */ 1);'],
+        ['a read inside a string', "log('Date.now() is banned');"],
+        ['a read inside a template', 'f(`Date.now()`);'],
         ["another object's now", 'myDate.now();'],
     ])('passes %s', (_, source) => {
         expect(clockReads(source)).toEqual([]);
