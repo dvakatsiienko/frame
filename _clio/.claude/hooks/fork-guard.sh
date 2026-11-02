@@ -101,7 +101,7 @@ fork-edit | fork-bash)
 		[ -n "$hit" ] || exit 0
 	fi
 	sid=$(jq -r '.session_id // ""' <<<"$input" | cut -c1-8)
-	jq -n --arg why "a fork edits only inside its own worktree: call EnterWorktree with name «fork-$sid» first, then edit and commit there (x lane commit); the main merges its branch worktree-fork-$sid" \
+	jq -n --arg why "a fork edits only inside its own worktree: call EnterWorktree with name «fork-${sid}» first, then edit and commit there (x lane commit); the main merges its branch worktree-fork-$sid" \
 		'{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $why}}'
 	;;
 main-only)
