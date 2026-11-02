@@ -59,13 +59,13 @@ it holds the probed vm (proton versions, paths, steamac's own config), what i ca
 
 ## 3. where every game piece lives
 
-facts about a game go to its home below, never into this skill.
+facts about a game go to its home below, never into this skill. a temporary map: dima plans to move every game note into obsidian `games/`, date open; until then a game's notes may sit in any of these, so check the notion and obsidian lines before saying «no notes» (scanned whole 2026-11-02: nothing game-related lives outside them).
 
 - 🗂 claude project «stuff» files (`/mnt/project-files/`, cloud only, an rclone drive with no history) — `games/<game>/index.md` + topic files, `games/README.md`, `games/_finished/`, `tools/trophy-sys.md` (the manual and the npCommId / appid cache); its local copy `~/projects/cw/stuff/psn-trophy-tracker-local.md`, last synced 2026-09-19
 - 🧠 project memory (same project, `team/silo`) — his taste, queue, verdicts. cloud only
 - 📄 claude docs `dima-<game>` — his pinned per-game doc, url in that game's `index.md`; `dima-games-inbox`
-- 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — one child page per game
-- 🪨 obsidian vault (`x:notes`; icloud last-writer-wins, writes on his ask) — `games/play next.md` (the owned-games pick list), `sv/` stardew valley, `z_cotl/` cult of the lamb, `z_rim/` rimworld, `gear/console.md` (ps5 pro + dualsense edge)
+- 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — every game page sits under it, nested sub-pages included (builds, quests): life is strange remastered, rogue legacy 2, bg1ee, bg2ee, alters, factorio, elden ring, dark souls 1 remastered, dark souls 3, nioh, dave the diver, game dev tycoon, ios; ids: `ntn api v1/blocks/<root id>/children`
+- 🪨 obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/`, `x:notes`; icloud last-writer-wins, writes on his ask) — `games/play next.md` (the owned-games pick list, the folder everything moves into), `sv/` stardew valley (10 notes), `z_cotl/` cult of the lamb (5), `z_rim/` rimworld (23), `gear/console.md` (ps5 pro + dualsense edge); the `z_` prefix marks a finished game
 - 🏆 trophy-sys code — `~/projects/bytes/apps/trophy-sys` (its `AGENTS.md` before any edit); research `~/frame/docs/research/npsso-renewal.md`, `trophy-sys-notes-store.md`
 - 🌐 page cache — `~/.local/share/web-bot-blocked-fetch/<game>/` (psnprofiles, wiki dumps)
 - 💾 local saves — `~/Library/Application Support/HelloGames` (nms mac), `~/Library/Application Support/Steam` (mac steam), `~/.local/share/Hinterland` (the long dark), `~/.local/share/StardewValley`
