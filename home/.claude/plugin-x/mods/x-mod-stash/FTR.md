@@ -589,7 +589,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ the 🐠 catch shelf is gone (dima, 2026-10-28: «full delete but surgical»)
   - given any session, then orbit has no `catch` op (a call is refused as an unknown op), the board draws no 🐠 card, ⚙️ settings has no `🐠 catch` row, and no prompt carries catch.md
   - given an orbit kept with caught pieces, then it loads without them
-  - decision: clio's keep-in-mind shelf (FRM-386, PK-96) left at dima's word; its store keys `catch-shelf:clio` and `catch-count:<day>` are no longer read
+  - decision: clio's keep-in-mind shelf (FRM-386, PK-96) left at dima's word; its store keys left the store on 2026-11-02
   - proof: tests/orbit.test.ts::orbit has no catch op: the schema names none, a call is refused as unknown; ::an orbit kept with caught pieces loads without them, and the board draws no 🐠; grep -n '🐠\
 - ✅ a resolve on a ticked ask says what shipped (FRM-427, PK-204)
   - given dima ticked an ask, when a session resolves it with a closing word holding neither «as ticked» nor «changed: <what>», or with none, then the tool refuses the resolve naming both words

@@ -2438,27 +2438,6 @@ async function keepCapSeen(
         .catch(() => undefined);
 }
 
-// a one-shot: store keys and switch rows no code reads; this function leaves once the live store shows them gone
-const LEFTOVER_KEYS = ['steer-two', 'breath-ab', 'catch-shelf', 'catch-count'];
-const LEFTOVER_PARTS = ['stash.catch', 'stash.enhancer'];
-async function dropLeftovers($: EngineInterface) {
-    const keys = await $.store.keys();
-    for (const key of LEFTOVER_KEYS)
-        if (keys.includes(key)) await $.store.delete(key);
-    const kept = (await $.store.get(SHOWN)) as
-        | Record<string, boolean>
-        | undefined;
-    if (!kept || !LEFTOVER_PARTS.some((part) => part in kept)) return;
-    await $.store.set(
-        SHOWN,
-        Object.fromEntries(
-            Object.entries(kept).filter(
-                ([part]) => !LEFTOVER_PARTS.includes(part),
-            ),
-        ),
-    );
-}
-
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
 // never fires
 async function armWake($: EngineInterface) {
@@ -3746,7 +3725,6 @@ async function orbitCall(
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
-        await dropLeftovers($).catch(() => undefined);
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
         // a hot reload's start carries the shell's cwd, which follows a `cd`: the root stays the project's
