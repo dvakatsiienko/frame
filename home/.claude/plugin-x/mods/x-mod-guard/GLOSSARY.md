@@ -24,6 +24,10 @@ _Avoid_: fix, alternative, suggestion
 A command the fleet floor (invariant 8 and the tooling rules) never runs unasked: `rm`, a kill by pattern, a git discard or rewrite, a gate bypass, a `mv` in the vault, a `HOME` override, `npm -g`, `pip install`.
 _Avoid_: dangerous command, destructive op
 
+**Opaque head**:
+A command whose name stays a `$` after the walker fills every value it can read on the line (`${X:-rm}`, `read R; $R`): it runs what no rule read.
+_Avoid_: dynamic command, unknown command
+
 **Hazard lint**:
 A command shape that runs but goes wrong quietly, taken from `rules/fleet-hazards.md`: a `$` the shell eats, a gate piped into `head`, a trailing `&`.
 _Avoid_: warning, smell

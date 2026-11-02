@@ -77,6 +77,10 @@ for (const [shape, typed] of [
     ['an issueCreate', UPDATE.replace('issueUpdate', 'issueCreate')],
     ['a query held in a variable', 'Q=$(cat q.graphql); x linear api "$Q"'],
     ['a query from a substitution', 'x linear api "$(cat q.graphql)"'],
+    [
+        'an ansi-c escaped mutation',
+        "x linear api $'mutation { issue\\x55pdate(id: 1) }'",
+    ],
     ['a query fed through xargs', 'cat q.graphql | xargs -0 x linear api'],
 ] as const)
     test(`a member's body write past the door is refused naming it: ${shape}`, async ($, on) => {
@@ -120,6 +124,45 @@ for (const [shape, typed] of [
         'an unset inside bash -c',
         "bash -c 'unset CLAUDECODE; x linear read FRM-1'",
     ],
+    ['a printf -v', "printf -v CLAUDECODE %s ''; x linear read FRM-1"],
+    ['a read', 'read CLAUDECODE </dev/null; x linear read FRM-1'],
+    ['an IFS read -r', "IFS= read -r CLAUDECODE <<< ''; x linear read FRM-1"],
+    ['a mapfile', 'mapfile -t CLAUDECODE </dev/null; x linear read FRM-1'],
+    ['a for loop var', 'for CLAUDECODE in ""; do x linear read FRM-1; done'],
+    [
+        'a function run after the unset',
+        'f(){ x linear read FRM-1; }; unset CLAUDECODE; f',
+    ],
+    [
+        'a function run with the var emptied',
+        'f(){ x linear read FRM-1; }; CLAUDECODE= f',
+    ],
+    ['a trap run at exit', "trap 'x linear read FRM-1' EXIT; unset CLAUDECODE"],
+    [
+        'a loop that unsets after the call',
+        'for i in 1 2; do x linear read FRM-1; unset CLAUDECODE; done',
+    ],
+    [
+        'a while loop that empties after the call',
+        'while :; do x linear read FRM-1; CLAUDECODE=; done',
+    ],
+    [
+        'a bare local in a function',
+        'f(){ local CLAUDECODE; x linear read FRM-1; }; f',
+    ],
+    ['a clustered export -fn', 'export -fn CLAUDECODE; x linear read FRM-1'],
+    ['a clustered typeset +rx', 'typeset +rx CLAUDECODE; x linear read FRM-1'],
+    ['an ansi-c hex actor', "x linear read FRM-1 --as $'\\x64ima'"],
+    ['an ansi-c octal x as', "x as $'\\144ima' -- gh pr list"],
+    ['a brace actor', 'x linear comment FRM-1 --as=dim{a,a} --body-file f'],
+    ['a glob actor', 'x linear read FRM-1 --as d?ma'],
+    ['xargs -I@', 'echo dima | xargs -I@ x linear read FRM-1 --as @'],
+    ['xargs -J%', 'echo dima | xargs -J% x linear read FRM-1 --as %'],
+    ['xargs into x as', 'echo dima | xargs -I@ x as @ -- gh pr list'],
+    [
+        'xargs into --as=',
+        'xargs -I{} x linear comment FRM-1 --as={} --body-file f',
+    ],
     ['x as dima', 'x as dima -- linear issue view FRM-1'],
     ['in a nested shell', `bash -c 'x linear read FRM-1 --as dima'`],
 ] as const)
@@ -143,7 +186,8 @@ for (const typed of [
     "sed -i '' s/a/b/ f.md && x linear read FRM-1",
     'x linear read FRM-1 | grep -i done',
     'CLAUDECODE=1 x linear read FRM-1',
-    'x linear read FRM-1; env -i ls',
+    'export CLAUDECODE; x linear read FRM-1',
+    "printf '%s' CLAUDECODE; x linear read FRM-1",
     'x linear comment FRM-1 --body-file f.md # use env -i',
     "echo 'x linear read FRM-1 --as dima'",
 ])

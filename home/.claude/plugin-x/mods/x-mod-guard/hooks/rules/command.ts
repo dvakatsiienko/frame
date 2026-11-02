@@ -1,4 +1,4 @@
-import type { Parsed, Sep, Word } from '../shell.ts';
+import type { Parsed, Segment, Sep, Word } from '../shell.ts';
 import { parse } from '../shell.ts';
 
 // a refusal names its door; an escape marker must name every one of its targets
@@ -295,14 +295,47 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?(?=\/|$)/,
             (m, name: string) => vars.get(name) ?? m,
         );
-    // a `NAME=<literal>` set earlier fills a later `$NAME` / `${NAME}` word, so `R=rm; $R -rf x` reads as rm; an
-    // `$(echo <literal>)` head reads as its words
-    const literals = new Map<string, string>();
+    // every literal a name takes on the line (`R=rm`, `for R in rm`, `read R <<< rm`, `R=$(echo rm)`, `y=$x`), in any order
+    // or branch, since the walker never reads which runs: one value fills a later `$R`; an argument takes every value; a head
+    // with two values, or one the line cannot read (`read R`, `R=$(cat f)`), stays a `$` for the opaque-head rule
+    const literals = new Map<
+        string,
+        { values: string[]; isUnknown: boolean }
+    >();
+    const bind = (name: string, values: string[], isUnknown = false) => {
+        const was = literals.get(name) ?? { isUnknown: false, values: [] };
+        literals.set(name, {
+            isUnknown: was.isUnknown || isUnknown,
+            values: [...new Set([...was.values, ...values])],
+        });
+    };
     // a value that only names other variables (`V="$HOME/vault"`) fills a later `$V/…` as its text, still expanding
     const templates = new Map<string, string>();
     // a `NAME=$( … )` hands its substitutions to every later word naming $NAME: `P=$(pgrep x); kill $P` is fed by pgrep
     const fed = new Map<string, Peeled[]>();
+    // a value naming only names that hold one literal, filled: `R=$D/.bin/x` with `D=/tmp/d` is /tmp/d/.bin/x
+    const single = (value: string) =>
+        value.replace(/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/g, (m, n: string) => {
+            const b = literals.get(n);
+            return b?.values.length === 1 && !b.isUnknown
+                ? (b.values[0] ?? m)
+                : m;
+        });
+    // the words a lone `$( echo … )` or `$( printf … )` prints
+    const echoed = (subst: Segment[]) => {
+        const [only] = subst;
+        if (subst.length !== 1 || !only) return undefined;
+        const inner = peel(only.words);
+        return ['echo', 'printf'].includes(inner.name) ? inner.args : undefined;
+    };
+    // a `[[ … ]]` split at its `&&` leaves test operands as segments; they run nothing
+    let isInTest = false;
     const filled = parsed.segments.map((s) => {
+        const isTest = isInTest;
+        for (const w of s.words)
+            if (w.text === '[[' || w.text === ']]') isInTest = w.text === '[[';
+        // a word bound to several literals: the command runs as each of them (a head), or takes each (an argument)
+        const alternates = new Map<string, string[]>();
         const inherited = [...fed].flatMap(([name, by]) =>
             s.words.some((w) =>
                 new RegExp(`\\$\\{?${name}(?![A-Za-z0-9_])`).test(w.text),
@@ -310,51 +343,120 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 ? by
                 : [],
         );
-        const words = s.words.flatMap((w, j): Word[] => {
-            const name = w.text.match(
-                /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/,
-            )?.[1];
-            const value = name === undefined ? undefined : literals.get(name);
-            const [, prefixed, rest = ''] =
-                w.text.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?(\/.*)?$/) ?? [];
+        const words = s.words.flatMap((w): Word[] => {
+            const [, name, rest = ''] =
+                w.text.match(
+                    /^\$\{=?([A-Za-z_][A-Za-z0-9_]*|[@*0-9])\}(.*)$/s,
+                ) ??
+                w.text.match(/^\$([A-Za-z_][A-Za-z0-9_]*|[@*0-9])(\/.*)?$/s) ??
+                [];
+            const bound = name === undefined ? undefined : literals.get(name);
             const template =
-                prefixed === undefined ? undefined : templates.get(prefixed);
-            if (value === undefined && template !== undefined)
+                name === undefined ? undefined : templates.get(name);
+            if (
+                !bound?.values.length &&
+                template !== undefined &&
+                /^(?:\/|$)/.test(rest)
+            )
                 return [{ ...w, isExpanding: true, text: template + rest }];
-            if (value !== undefined)
-                return w.hasQuote
-                    ? [{ isExpanding: false, text: value }]
-                    : value
-                          .split(/\s+/)
-                          .filter(Boolean)
-                          .map((text) => ({ isExpanding: false, text }));
-            const [only] = s.subst;
-            if (j === 0 && w.text === '$(…)' && s.subst.length === 1 && only) {
-                const inner = peel(only.words);
-                if (['echo', 'printf'].includes(inner.name))
-                    return inner.args.map((a) => ({
-                        isExpanding: a.isExpanding,
-                        text: a.text,
-                    }));
-            }
+            const one = bound?.values.length === 1 && !bound.isUnknown;
+            const values = bound?.values.map((v) => v + rest) ?? [];
+            const split = (v: string) =>
+                v
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map((text) => ({ isExpanding: false, text }));
+            if (one)
+                return w.hasQuote && name !== '@' && name !== '*'
+                    ? [{ isExpanding: false, text: values[0] ?? '' }]
+                    : split(values[0] ?? '');
+            if (bound && !bound.isUnknown && values.length)
+                alternates.set(w.text, values);
+            const printed = w.text === '$(…)' ? echoed(s.subst) : undefined;
+            if (printed)
+                return printed.map((a) => ({
+                    isExpanding: a.isExpanding,
+                    text: a.text,
+                }));
             return [w];
         });
-        for (const w of s.words) {
-            const m = w.text.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s);
+        const texts = s.words.map((w) => w.text);
+        const head = texts.findIndex(
+            (t) => !/^[A-Za-z_][A-Za-z0-9_]*\+?=/s.test(t),
+        );
+        // a prefix assignment (`R=x cmd`) lasts for that command only, so it binds nothing for the rest of the line
+        const assigning = s.words.filter(
+            (w, i) =>
+                (head < 0 || i > head) &&
+                /^[A-Za-z_][A-Za-z0-9_]*\+?=/s.test(w.text),
+        );
+        for (const w of head < 0 ? s.words : assigning) {
+            const m = w.text.match(/^([A-Za-z_][A-Za-z0-9_]*)(\+?)=(.*)$/s);
             if (m?.[1] === undefined) continue;
-            const value = m[2] ?? '';
-            literals.delete(m[1]);
-            templates.delete(m[1]);
-            fed.delete(m[1]);
-            if (!w.isExpanding) literals.set(m[1], value);
-            else if (value.includes('$(…)') && s.subst.length)
-                fed.set(
-                    m[1],
-                    s.subst.map((x) => peel(x.words)),
+            const [, key, plus, value = ''] = m;
+            templates.delete(key);
+            fed.delete(key);
+            const from = value.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/)?.[1];
+            const via = from === undefined ? undefined : literals.get(from);
+            const said = value === '$(…)' ? echoed(s.subst) : undefined;
+            if (plus) bind(key, [], true);
+            else if (!w.isExpanding) bind(key, [value]);
+            else if (via) bind(key, via.values, via.isUnknown);
+            else if (said)
+                bind(
+                    key,
+                    [said.map((a) => a.text).join(' ')],
+                    said.some((a) => a.isExpanding),
                 );
-            else if (!/[`(]/.test(value)) templates.set(m[1], value);
+            else if (!/[$`]/.test(single(value))) bind(key, [single(value)]);
+            else {
+                bind(key, [], true);
+                if (value.includes('$(…)') && s.subst.length)
+                    fed.set(
+                        key,
+                        s.subst.map((x) => peel(x.words)),
+                    );
+                else if (!/[`(]/.test(value)) templates.set(key, value);
+            }
         }
-        return { ...s, inherited, words };
+        // the builtins that bind a name another way: a loop's words, read's here-string, `set --`'s positions, an unset
+        const verb = texts[head < 0 ? texts.length : head];
+        const after = s.words.slice(head + 1);
+        if (verb === 'for' || verb === 'select') {
+            const key = after[0]?.text ?? '';
+            const list = after.slice(2);
+            bind(
+                key,
+                list.filter((w) => !w.isExpanding).map((w) => w.text),
+                after[1]?.text !== 'in' || list.some((w) => w.isExpanding),
+            );
+        } else if (
+            verb === 'read' ||
+            verb === 'mapfile' ||
+            verb === 'readarray'
+        ) {
+            const here = after.findIndex((w) => w.text === '<<<');
+            const said = here >= 0 ? after[here + 1] : undefined;
+            for (const w of after.slice(0, here < 0 ? undefined : here))
+                if (!/^-/.test(w.text))
+                    bind(
+                        w.text,
+                        said && !said.isExpanding ? [said.text] : [],
+                        !said || said.isExpanding,
+                    );
+        } else if (verb === 'set' && after[0]?.text === '--') {
+            const list = after.slice(1);
+            const isUnknown = list.some((w) => w.isExpanding);
+            bind('@', [list.map((w) => w.text).join(' ')], isUnknown);
+            bind('*', [list.map((w) => w.text).join(' ')], isUnknown);
+            for (const [i, w] of list.entries())
+                bind(String(i + 1), [w.text], w.isExpanding);
+        } else if (verb && REBINDERS.has(verb))
+            for (const w of after) {
+                const key = w.text.match(/^([A-Za-z_][A-Za-z0-9_]*)/)?.[1];
+                if (key && !w.text.includes('=')) bind(key, [], true);
+            }
+        return { ...s, alternates, inherited, isTest, words };
     });
     const peeled = filled.map((s) => ({
         ...peel(
@@ -364,7 +466,8 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
         s,
     }));
     peeled.forEach(({ s, ...c }, k) => {
-        for (const a of c.assigns) {
+        // a prefix assignment binds for its own command only
+        for (const a of c.name ? [] : c.assigns) {
             const at = a.indexOf('=');
             const name = a.slice(0, at);
             const path = pathAssigned(a.slice(at + 1), s.subst);
@@ -383,6 +486,7 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 ...(c.name === 'export' ? c.args.map((w) => w.text) : []),
             ].filter((a) => /^GIT_(?:DIR|WORK_TREE)=/.test(a)),
         );
+        if (s.isTest) return;
         // a bare redirect (`> f`, `exec > f`, `{ …; } > f`) writes with no command
         if (
             !c.name &&
@@ -415,13 +519,35 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                     : expand(target === '-' ? '$OLDPWD' : (target ?? '~'));
             dir = /^[/~$]/.test(to) ? to : `${dir}/${to}`;
         }
-        out.push({
-            ...c,
-            assigns: [...c.assigns, ...sticky],
-            dir,
-            feeders,
-            sep: s.sep,
+        // an argument keeps its `$` word for the rules that read it, beside every value it may take
+        c.args = c.args.flatMap((w) => [
+            w,
+            ...(s.alternates.get(w.text) ?? []).flatMap((v) =>
+                v
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map((text) => ({ isExpanding: false, text })),
+            ),
+        ]);
+        const runs = (s.alternates.get(c.name) ?? []).map((v): Peeled => {
+            const [name = '', ...rest] = v.split(/\s+/).filter(Boolean);
+            return {
+                ...c,
+                args: [
+                    ...rest.map((text) => ({ isExpanding: false, text })),
+                    ...c.args,
+                ],
+                name,
+            };
         });
+        for (const run of runs.length ? runs : [c])
+            out.push({
+                ...run,
+                assigns: [...run.assigns, ...sticky],
+                dir,
+                feeders,
+                sep: s.sep,
+            });
     });
     return out;
 }
@@ -454,6 +580,27 @@ export const SHELLS = new Set([
     'mksh',
     'fish',
 ]);
+// a shell or `source` reads its script from stdin through these operands
+const STDIN_PATHS = new Set([
+    '-',
+    '/dev/stdin',
+    '/dev/fd/0',
+    '/proc/self/fd/0',
+]);
+// what a feeder writes to a shell's stdin: echo's words past its flags, each printf operand alone and together (its format
+// fills them in), a heredoc body
+function printed(f: Peeled): string[] {
+    const texts = f.args.map((a) => a.text);
+    if (f.name === 'echo') {
+        const at = texts.findIndex((t) => !/^-[neE]+$/.test(t));
+        return [texts.slice(at < 0 ? texts.length : at).join(' ')];
+    }
+    if (f.name === 'printf') {
+        const ops = texts.slice(texts[0] === '--' ? 1 : 0);
+        return [...ops, ops.slice(1).join(' ')];
+    }
+    return f.bodies;
+}
 // a word as the shell would read it back as one argv entry
 const quoted = (w: string) => `'${w.replaceAll("'", "'\\''")}'`;
 // the scripts a command runs that the line does not show as commands: a shell's `-c` script, or what it reads on stdin
@@ -461,7 +608,8 @@ const quoted = (w: string) => `'${w.replaceAll("'", "'\\''")}'`;
 // env -S's string; `find -exec` and `fd -x` commands; a function's body
 export function nestedScripts(c: Command): string[] {
     const texts = c.args.map((w) => w.text);
-    if (SHELLS.has(c.name)) {
+    const isSource = c.name === 'source' || c.name === '.';
+    if (SHELLS.has(c.name) || isSource) {
         const dashC = texts.findIndex((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
         if (dashC >= 0) {
             const script = texts.slice(dashC + 1).find((t) => t !== '--');
@@ -474,7 +622,8 @@ export function nestedScripts(c: Command): string[] {
         ).filter((o) => !o.startsWith('<<<'));
         const isStdin =
             texts.some((t) => /^-[A-Za-z]*s[A-Za-z]*$/.test(t)) ||
-            !script.length;
+            !script.length ||
+            STDIN_PATHS.has(script[0] ?? '');
         if (!isStdin) return [];
         const here = texts.flatMap((t, i) =>
             t === '<<<'
@@ -483,11 +632,7 @@ export function nestedScripts(c: Command): string[] {
                   ? [t.slice(3)]
                   : [],
         );
-        const piped = c.feeders.flatMap((f) =>
-            ['echo', 'printf'].includes(f.name)
-                ? [f.args.map((a) => a.text).join(' ')]
-                : f.bodies,
-        );
+        const piped = c.feeders.flatMap(printed);
         return [...here, ...c.bodies, ...piped];
     }
     if (c.name === 'eval') return [texts.join(' ')];
@@ -497,10 +642,13 @@ export function nestedScripts(c: Command): string[] {
         return operands(c.args).flatMap(
             (o) => o.match(/^[^=]+=(.+)$/s)?.[1] ?? [],
         );
+    // a `!` alias runs its shell text, any other names a git subcommand with its flags
     if (c.name === 'git')
-        return gitParts(c.args).configs.flatMap(
-            (k) => k.match(/^alias\.[^=]+=!(.+)$/is)?.[1] ?? [],
-        );
+        return gitParts(c.args).configs.flatMap((k) => {
+            const body = k.match(/^alias\.[^=]+=(.+)$/is)?.[1];
+            if (body === undefined) return [];
+            return body.startsWith('!') ? [body.slice(1)] : [`git ${body}`];
+        });
     const out: string[] = [];
     if (c.envSplit !== undefined)
         out.push(

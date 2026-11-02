@@ -41,6 +41,46 @@ type Frame = {
 // a `$` the shell expands: a name, a digit, `{`, `(` or a special parameter
 const EXPANDS = /[A-Za-z0-9_{(@*#?!$-]/;
 const NAME = /[A-Za-z_][A-Za-z0-9_]*/y;
+const ANSI_LETTERS: Record<string, string> = {
+    E: '\x1b',
+    a: '\x07',
+    b: '\b',
+    e: '\x1b',
+    f: '\f',
+    n: '\n',
+    r: '\r',
+    t: '\t',
+    v: '\v',
+};
+const ANSI_CODES = [
+    [/^[0-7]{1,3}/, 8, 0],
+    [/^x([0-9A-Fa-f]{1,2})/, 16, 1],
+    [/^u([0-9A-Fa-f]{1,4})/, 16, 1],
+    [/^U([0-9A-Fa-f]{1,8})/, 16, 1],
+] as const;
+// the text one `$'…'` escape after its backslash stands for, and the chars it used: bash's whole set, so `$'\x64ima'` is dima
+function ansiEscape(command: string, at: number): [string, number] {
+    const rest = command.slice(at, at + 9);
+    for (const [shape, base, skip] of ANSI_CODES) {
+        const m = rest.match(shape);
+        if (m)
+            return [
+                String.fromCodePoint(
+                    Number.parseInt(m[0].slice(skip), base) % 0x110000,
+                ),
+                m[0].length,
+            ];
+    }
+    const esc = rest[0] ?? '';
+    if (esc === 'c' && rest[1])
+        return [
+            String.fromCharCode(
+                (rest[1].toUpperCase().charCodeAt(0) ?? 0) & 31,
+            ),
+            2,
+        ];
+    return [ANSI_LETTERS[esc] ?? esc, esc ? 1 : 0];
+}
 
 export function parse(command: string): Parsed {
     const segments: Segment[] = [];
@@ -182,9 +222,9 @@ export function parse(command: string): Parsed {
             while (j < command.length && command[j] !== "'") {
                 const ch = command[j] ?? '';
                 if (ch === '\\') {
-                    const esc = command[j + 1] ?? '';
-                    out += { n: '\n', t: '\t' }[esc] ?? esc;
-                    j += 2;
+                    const [text, used] = ansiEscape(command, j + 1);
+                    out += text;
+                    j += 1 + used;
                 } else {
                     out += ch;
                     j++;

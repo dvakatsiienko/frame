@@ -1,4 +1,10 @@
-import { type Command, type Refusal, SHELLS, commandsDeep } from './command.ts';
+import type { Word } from '../shell.ts';
+import {
+    type Command,
+    type Refusal,
+    basename,
+    commandsDeep,
+} from './command.ts';
 
 // FRM-459: a ticket body is written through `x linear body --set` (it refuses a body changed since the pull), and nobody acts as
 // dima. the caller checks the session is not the coordinator's. a nested shell's script and an eval count
@@ -30,71 +36,67 @@ function rawBody(words: string[]): Refusal | undefined {
 // command the walker finds counts (a nested shell, an eval, env -S, a brace or if block, a wrapper), each judged on its own
 // words, so another tool's `-i` (grep, sed) never counts
 const AGENT = 'CLAUDECODE';
-// a name a glob or a variable may stand for: `CLAUDE*`, `CLAUDE{CODE,X}`, `$V`
-const mayBeAgent = (name: string) =>
-    name === AGENT ||
-    /[$`]/.test(name) ||
-    (/[*?[{]/.test(name) &&
-        new RegExp(
-            `^${name
-                .replace(/[.+^()|\\]/g, '\\$&')
-                .replaceAll('*', '.*')
-                .replaceAll('?', '.')
-                .replace(
-                    /\{([^}]*)\}/g,
-                    (_m, alts: string) => `(?:${alts.split(',').join('|')})`,
-                )}$`,
-        ).test(AGENT));
+// a name a glob, a brace or a variable may stand for: `CLAUDE*`, `CLAUDE{CODE,X}`, `$V`; a member's name holds none
+const isUnreadable = (name: string) => /[$`*?[\]{}]/.test(name);
+const mayBeAgent = (name: string) => name === AGENT || isUnreadable(name);
 // an assignment that empties CLAUDECODE, or fills it with what the shell decides
 const isEmptied = (a: string) => /^CLAUDECODE=(?:''|""|.*[$`].*)?$/.test(a);
-// 'local': the drop reaches this command only (an env flag, a prefix assignment); 'persist': every later command (an
-// unset, an export, a bare assignment, or a local drop on a shell that runs a script)
-function dropsAgentHere(c: Command): 'local' | 'persist' | undefined {
-    const here = dropsOwn(c);
-    if (here === 'local' && (SHELLS.has(c.name) || c.name === 'eval'))
-        return 'persist';
-    return here;
-}
-function dropsOwn(c: Command): 'local' | 'persist' | undefined {
-    if (c.assigns.some(isEmptied)) return c.name ? 'local' : 'persist';
+// the builtins that bind a name from what they read: `read CLAUDECODE`, `for CLAUDECODE in`, `printf -v CLAUDECODE`
+const READERS = new Set(['read', 'mapfile', 'readarray']);
+const LOOPS = new Set(['for', 'select']);
+const DECLARERS = new Set([
+    'export',
+    'declare',
+    'typeset',
+    'readonly',
+    'local',
+]);
+// a command that empties CLAUDECODE, unsets it or rebinds it, for itself or the rest of the line
+function dropsAgent(c: Command) {
+    if (c.assigns.some(isEmptied)) return true;
     const env = c.envArgs;
     for (let j = 0; j < env.length; j++) {
         const w = env[j] ?? '';
-        if (['-', '-i', '-c', '--ignore-environment'].includes(w))
-            return 'local';
+        if (['-', '-i', '-c', '--ignore-environment'].includes(w)) return true;
         if (/^-[A-Za-z]*i[A-Za-z]*$/.test(w) && c.wrappers.includes('env'))
-            return 'local';
+            return true;
         const unset =
             w === '-u' || w === '--unset'
                 ? env[++j]
                 : w.match(/^(?:-u|--unset=)(.+)$/)?.[1];
-        if (unset !== undefined && mayBeAgent(unset)) return 'local';
+        if (unset !== undefined && mayBeAgent(unset)) return true;
     }
-    const ops = c.args.map((w) => w.text).filter((w) => !/^[-+]/.test(w));
-    if (c.name === 'unset') return ops.some(mayBeAgent) ? 'persist' : undefined;
-    if (
-        ['export', 'declare', 'typeset', 'readonly', 'local'].includes(c.name)
-    ) {
-        const isUnexport = c.args.some((w) => /^(?:-n|\+x)$/.test(w.text));
-        return ops.some((o) => (isUnexport && mayBeAgent(o)) || isEmptied(o))
-            ? 'persist'
-            : undefined;
+    const words = c.args.map((w) => w.text);
+    const flags = words.filter((w) => /^[-+]/.test(w));
+    // a name operand: the part before an `=`
+    const names = words
+        .filter((w) => !/^[-+]/.test(w))
+        .map((w) => w.split('=')[0] ?? w);
+    if (c.name === 'unset') return names.some(mayBeAgent);
+    if (READERS.has(c.name)) return names.some(mayBeAgent);
+    if (LOOPS.has(c.name)) return mayBeAgent(names[0] ?? '');
+    if (c.name === 'printf') {
+        const at = words.findIndex((w) => w.startsWith('-v'));
+        const name = words[at] === '-v' ? words[at + 1] : words[at]?.slice(2);
+        return at >= 0 && mayBeAgent(name ?? '');
     }
-    return undefined;
+    if (DECLARERS.has(c.name)) {
+        if (words.some(isEmptied)) return true;
+        // `-n`/`+x` in any cluster unexports; a bare `local`, `declare` or `typeset` shadows the export in a function
+        const isUnexport =
+            flags.some((f) => /^-[A-Za-z]*n|^\+[A-Za-z]*x/.test(f)) ||
+            !['export', 'readonly'].includes(c.name);
+        return isUnexport && names.some(mayBeAgent);
+    }
+    return false;
 }
 const isXCall = (c: Command) =>
     c.name === 'x' &&
     c.args.some((w) => w.text === 'linear' || w.text === 'as');
-// an x call the line reaches with CLAUDECODE gone: a drop on the call itself, or one earlier that persists
-function actsAsDima(all: Command[]) {
-    let isGone = false;
-    for (const c of all) {
-        const drop = dropsAgentHere(c);
-        if (isXCall(c) && (isGone || drop)) return true;
-        if (drop === 'persist') isGone = true;
-    }
-    return false;
-}
+// a line with an x call where any command drops CLAUDECODE: the walker lists a function body, a trap or a loop body where
+// it is written, never in the order it runs, so a drop anywhere on the line counts
+const actsAsDima = (all: Command[]) =>
+    all.some(isXCall) && all.some(dropsAgent);
 
 export function linearWrite(command: string, cwd: string): Refusal | undefined {
     const all = commandsDeep(command, cwd);
@@ -123,24 +125,20 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
         const isOpaque = (
             w: { text: string; isExpanding: boolean } | undefined,
         ) => w?.isExpanding && /[$`]/.test(w.text);
-        // an actor of dima's, or one the guard cannot read: a variable, or xargs filling it in (`--as` last, or `{}`)
-        const isFilled = (w: { text: string } | undefined) =>
-            c.wrappers.includes('xargs') &&
-            (w === undefined || /\{\}/.test(w.text));
-        const hasActor = c.args.some(
-            (w, i) =>
-                (w.text === '--as' &&
-                    (c.args[i + 1]?.text.toLowerCase() === 'dima' ||
-                        isOpaque(c.args[i + 1]) ||
-                        isFilled(c.args[i + 1]))) ||
-                /^--as=dima$/i.test(w.text) ||
-                (w.text.startsWith('--as=') && isOpaque(w)),
+        // an actor of dima's, or one the guard cannot read: a variable, a glob or brace the shell widens, or any actor under
+        // xargs, whose input can fill it through `{}` or any `-I`/`-J` mark
+        const isDimaActor = (w: Word | undefined, text = w?.text ?? '') =>
+            c.wrappers.includes('xargs') ||
+            text.toLowerCase() === 'dima' ||
+            (!!w?.isExpanding && /[$`]/.test(text)) ||
+            (!w?.hasQuote && /[*?[\]{}]/.test(text));
+        const hasActor = c.args.some((w, i) =>
+            w.text === '--as'
+                ? isDimaActor(c.args[i + 1])
+                : w.text.startsWith('--as=') && isDimaActor(w, w.text.slice(5)),
         );
         const isAsDima =
-            isAsVerb &&
-            (bare[1]?.toLowerCase() === 'dima' ||
-                isOpaque(c.args.find((w) => w.text === bare[1])) ||
-                isFilled(c.args.find((w) => w.text === bare[1])));
+            isAsVerb && isDimaActor(c.args.find((w) => w.text === bare[1]));
         if ((isLinear || isAsVerb) && (hasActor || isAsDima))
             return {
                 door: 'run it without --as; an agent acts as its own member',
@@ -151,7 +149,7 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
         if (isAsVerb) {
             const dash = words.indexOf('--');
             const inner = dash >= 0 ? words.slice(dash + 1) : [];
-            if (inner[0]?.split('/').at(-1) === 'linear') {
+            if (basename(inner[0] ?? '') === 'linear') {
                 const found = rawBody(inner.slice(1));
                 if (found) return found;
             }

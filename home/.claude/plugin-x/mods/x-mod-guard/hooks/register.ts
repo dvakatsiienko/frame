@@ -286,6 +286,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // sixth sense says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
+    'opaque-head',
     'raw-plugin-update',
     'spawn-trial',
 ]);
@@ -1072,24 +1073,12 @@ export const register: Register = (on) => {
             const name = sid ? await sessionName($, sid) : undefined;
             if (name !== undefined && !isCoordinator(name)) {
                 const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
-                if (!(await isWarnOnly($, write.rule))) {
-                    const stop = await enforce(
-                        write,
-                        `nothing in this command ran — ${said}`,
-                        said,
-                    );
-                    if (stop) return stop;
-                }
-                // a warning keeps the checks below in play: `enforce` would run the whole line here and skip them
-                await record($, {
-                    command,
-                    door: write.door,
-                    kind: 'warned',
-                    rule: write.rule,
-                    target: write.targets[0] ?? '',
-                    why: write.why,
-                });
-                warns.push(wouldRefuse(write.rule, said));
+                const stop = await enforce(
+                    write,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+                if (stop) return stop;
             }
         }
         // a raw plugin update names x plugin bump, every session's door (FRM-389 exit 7); warn-only until its sixth sense
@@ -1228,13 +1217,14 @@ export const register: Register = (on) => {
                 guardedOf(command),
                 quotesCommand(command),
             );
-            if (!tick)
-                return (
-                    (await enforce(
-                        verdict.refusal,
-                        message(verdict.refusal),
-                    )) ?? go()
-                );
+            // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it
+            if (!tick) {
+                for (const r of found.length ? found : [verdict.refusal]) {
+                    const stop = await enforce(r, message(r));
+                    if (stop) return stop;
+                }
+                return go();
+            }
             await record($, {
                 command,
                 door: `dima's tick on ${tick.id}`,

@@ -6,8 +6,9 @@ const TEST_OPERATORS = new Set(['=', '==', '=~']);
 type Edit = { at: number; from: string; to: string; why: string };
 // a shape with one right spelling, fixed in place: `pnpm -s` and an unquoted `=`-led word
 export function edits(segments: Segment[]): Edit[] {
+    // a `[[ … ]]` opens anywhere in a segment (`if [[`, `! [[`) and spans the segments its `&&` splits
+    let inTest = false;
     return segments.flatMap((s) => {
-        const isTest = s.words[0]?.text === '[[';
         const peeled = peel(s.words);
         // pnpm's own flags stop at the script's name: `pnpm build -s` hands -s to the script
         const verbAt = peeled.args.findIndex((w) => !w.text.startsWith('-'));
@@ -22,6 +23,7 @@ export function edits(segments: Segment[]): Edit[] {
                 ? peeled.args.slice(0, scriptAt < 0 ? undefined : scriptAt)
                 : [];
         const own = s.words.flatMap((w): Edit[] => {
+            if (w.text === '[[' || w.text === ']]') inTest = w.text === '[[';
             if (w.at === undefined) return [];
             if (w.text === '-s' && pnpmFlags.includes(w))
                 return [
@@ -45,7 +47,7 @@ export function edits(segments: Segment[]): Edit[] {
             if (
                 w.text.startsWith('=') &&
                 w.text !== '=' &&
-                !(isTest && TEST_OPERATORS.has(w.text))
+                !(inTest && TEST_OPERATORS.has(w.text))
             )
                 return [
                     {

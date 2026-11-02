@@ -82,6 +82,22 @@ const DECLARERS = new Set([
 const FINDERS = new Set(['pgrep', 'ps', 'pidof', 'lsof', 'grep', 'rg', 'awk']);
 export function floor(c: Command, ctx: Context): Refusal | undefined {
     const ops = operands(c.args);
+    // a head the walker could not fill (`$R` bound twice or by read, `${X:-rm}`, `"$@"`) runs what no rule read
+    // `"$@"` and `$1` are a function's own arguments, filled only by a `set --` on the line
+    // an `$(( $(date +%s) - t ))` reads as a group headed by its substitution: a lone operator after it is arithmetic
+    const isArithmetic =
+        c.name === '$(…)' && c.args.some((w) => /^[-+*/%]$/.test(w.text));
+    if (
+        /[$`]/.test(c.name) &&
+        !/^\$\{?[@*0-9]\}?$/.test(c.name) &&
+        !isArithmetic
+    )
+        return {
+            door: 'spell the command out, or run the script it names by path',
+            rule: 'opaque-head',
+            targets: [c.name],
+            why: 'a command named by a variable the line never fills runs what the guard cannot read',
+        };
     if (c.name === 'rm' || c.name === 'unlink')
         return {
             door: TRASH,
