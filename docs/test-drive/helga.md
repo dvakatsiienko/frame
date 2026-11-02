@@ -237,6 +237,17 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-01 · prompt-groom · o74 (orbit steer 74, not groomed) · 1 · raw file missing: grooms/2026-11-01-o74.raw.md does not exist
 - 2026-11-01 · prompt-groom · W1023-W1031 (dima 17:54) · 0 · 9 lines, no question marks; wispr maps applied; pasted_content wrapper dropped
 - 2026-11-01 · prompt-groom · W1033-W1045 · 0 · 18:34 prompt groomed, 13 lines, wispr x pocket applied, questions on W1038 and W1039
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-1216 · W1047-W1057 · 3 asks · 11 sentences mapped
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-1237 · W1058-W1076 · 6 ❓ · 4 ← context lines no W-line
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-1239 · W1077 · 0 ❓
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-o1 · W1078 · 0 ❓
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-1251 · W1079 · 0 ❓
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-1247 · W1080-W1082 · 2 ❓
+- 2026-11-02 · prompt-groom · 1 · 0 · prompt-groom 2026-11-02-1259 · W1083-W1086 · 0 ❓ · 1 ← context line
+- 2026-11-02 · prompt-groom · 1255 · 0 · 1255: 3 lines, W1087-W1089, 2 ❓; --- separator dropped
+- 2026-11-02 · prompt-groom · 1310 · 0 · 1310: 5 lines, W1090-W1093, 2 ❓; codie: left of ← is context, right of ← groomed as W1090; 'planed' corrected to 'planned'
+- 2026-11-02 · prompt-groom · 1312+1316+o13 · 0 · 1312: W1094; 1316: W1095 + W1096 ❓; o13: W1097 (o13 steer stamp); 'ater'/'daed' typos fixed; W1094-W1097 appended to PK-297 notes
+- 2026-11-02 · prompt-groom · 1326+1339 · 0 · 1326: W1098 + W1099 ❓; lines 1-10 are pasted clio board, context, no W-line; 1339: W1100; W1098-W1100 appended to PK-297 notes
 
 ## rounds
 

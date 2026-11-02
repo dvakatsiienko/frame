@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-11-02
 ---
 
@@ -17,3 +17,7 @@ the rule: every reply that shows dima a want line prints it as `want line n/5, u
 - 2/5 · 2026-10-11 · FRM-391 (settings) · «given the enhancer mvp dima does not find useful yet, when he opens 🎛️ and hides it, then it vanishes from the board in every open session and stays hidden after a reload» → dima (o47): «no, keep it where it is, but have a toggle setting for it to show/hide it on the mods UI» — the line read as removing the enhancer; the want is a show/hide toggle, the enhancer stays
 - 3/5 · 2026-10-29 · FRM-431 (mods engine) · exit 6, the live frame of a broken pane node, the second-wind refusal and mods:skew · dima: «Honestly, I didn't really get this 3/file line. It's too tricky for me to dive in right now, but if it is useful for you, then keep it. Only keep it if it is truly useful.» · read: not useful to him as printed
   - dima 2026-10-29 16:25 (o57): the want line stays in specs as the verifier's replay of his want; it is no longer printed to him
+
+## verdict
+
+- 2026-11-02 · **closed** (dima's o18 tick) · 3 of 5 prints counted in 23 days; his 10-29 o57 call already moved the want line off his screen: it stays in every spec as the last exit line, graded by sixth sense, never printed to him

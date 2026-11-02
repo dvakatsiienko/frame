@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T11:31:00Z'
+updated_date: '2026-11-02T11:39:00Z'
 labels:
   - m
 dependencies: []
@@ -74,4 +74,8 @@ W1094 (2026-11-02 13:12, dima): after mods coder is done with fixes after sonnet
 W1095 (2026-11-02 13:16, dima): proceed.
 W1096 (2026-11-02 13:16, dima): what else out of chores are left? ❓
 W1097 (2026-11-02 13:25, dima, o13 steer): no, let's not rush with it. i think it will be a dead weight.
+
+W1098 (2026-11-02 13:26, dima): do this first, sixth sense at linear, x pocket and pocket queue after that.
+W1099 (2026-11-02 13:26, dima): do a siesta + wishkeeper at some point. maybe now? ❓
+W1100 (2026-11-02 13:39, dima): proceed with leftover chores.
 <!-- SECTION:NOTES:END -->
