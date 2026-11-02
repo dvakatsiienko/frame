@@ -326,6 +326,14 @@ describe('a check in the claim’s own sentence, never its paragraph (FRM-487 3b
         );
     });
 
+    it('logs a can’t whose sentence backticks only a bare name', () => {
+        expect(logged('`firecrawl` is down, so I can\'t fetch it.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain('unproven-cant\t');
+    });
+
+    it('logs a door claim whose sentence backticks only a bare name', () => {
+        expect(logged('the `x` cli has no door for it.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain('door-claim\t');
+    });
+
     it('logs a door claim whose paragraph holds a link only in another sentence', () => {
         const reply = 'the async api takes no commit message. the squash is in [the docs](https://docs.github.com/x).';
         expect(logged(reply, mkdtempSync(join(tmpdir(), 'rc-')))).toContain('door-claim\t');

@@ -155,7 +155,8 @@ DOOR_CLAIM = re.compile(
     rf"\b{DOOR_NOUN}\b[^.\n]{{0,50}}\b(?:takes no|needs|requires|only (?:takes|accepts|supports|works|reads|writes)|never (?:reads|writes|syncs|takes)|(?:does not|doesn't|cannot|can't) (?:support|take|read|write|sync|reach|accept)|has no (?:way|door|access)|is limited to)\b",
     re.I,
 )
-SOURCE = re.compile(r"`|https?://|\]\(")
+# a source is a link, a backticked command (a cli head) or a backticked path, file or file:line; a bare `name` is none
+SOURCE = re.compile(r"https?://|\]\(|`(?:x|pnpm|node|go|git|gh|rg|jq|claude|python3)\s[^`]*`|`[^`\s]*(?:/|\.[a-z]{1,4}\b|:\d)[^`]*`", re.I)
 
 
 def door_claims(prose: str) -> list[str]:
