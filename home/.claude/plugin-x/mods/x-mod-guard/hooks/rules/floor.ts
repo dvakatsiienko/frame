@@ -32,6 +32,7 @@ const STASH_READS = new Set([
     'store',
 ]);
 const STASH_VALUE = new Set(['-m', '--message', '--pathspec-from-file']);
+const WHOLE_TREE = /^(?:\.\/?|\*|:\/?\*?|:\(top\)\*?)$/;
 export function stashSweeps(command: string, cwd: string, ctx: Context) {
     const dirs: string[] = [];
     for (const c of commands(parse(command), cwd)) {
@@ -41,23 +42,24 @@ export function stashSweeps(command: string, cwd: string, ctx: Context) {
         const words = subArgs.map((w) => w.text);
         const verb = words.find((w) => !w.startsWith('-'));
         if (verb && STASH_READS.has(verb)) continue;
-        if (
-            words.includes('--') ||
-            words.some((w) => w.startsWith('--pathspec-from-file'))
-        )
-            continue;
-        // a push names pathspecs after its flags; a bare stash and `save <message>` take none
+        if (words.some((w) => w.startsWith('--pathspec-from-file'))) continue;
+        // a push names pathspecs after its flags or a `--`; a bare stash and `save <message>` take none
+        const rest = words.indexOf('--');
         const paths =
-            verb === 'push'
-                ? words
-                      .slice(words.indexOf('push') + 1)
-                      .filter(
-                          (w, i, all) =>
-                              !w.startsWith('-') &&
-                              !STASH_VALUE.has(all[i - 1] ?? ''),
-                      )
-                : [];
-        if (!paths.length) dirs.push(gitDir(c, ctx));
+            rest >= 0
+                ? words.slice(rest + 1)
+                : verb === 'push'
+                  ? words
+                        .slice(words.indexOf('push') + 1)
+                        .filter(
+                            (w, i, all) =>
+                                !w.startsWith('-') &&
+                                !STASH_VALUE.has(all[i - 1] ?? ''),
+                        )
+                  : [];
+        // `.`, `*` or a top pathspec names the whole tree under it
+        if (!paths.length || paths.some((p) => WHOLE_TREE.test(p)))
+            dirs.push(gitDir(c, ctx));
     }
     return dirs;
 }
@@ -68,6 +70,14 @@ export const stashSweep = (dir: string, file: string): Refusal => ({
     why: `a whole-tree git stash also sets aside ${file}, which another session holds`,
 });
 
+// the builtins that set a variable from their operands (`declare -x HOME=…`)
+const DECLARERS = new Set([
+    'export',
+    'declare',
+    'typeset',
+    'local',
+    'readonly',
+]);
 // what reads process ids by name
 const FINDERS = new Set(['pgrep', 'ps', 'pidof', 'lsof', 'grep', 'rg', 'awk']);
 export function floor(c: Command, ctx: Context): Refusal | undefined {
@@ -123,8 +133,8 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
             why: 'a plain mv in the vault breaks every wikilink to the note',
         };
     if (
-        c.assigns.some((a) => a.startsWith('HOME=')) ||
-        (c.name === 'export' && ops.some((o) => o.startsWith('HOME=')))
+        c.assigns.some((a) => /^HOME\+?=/.test(a)) ||
+        (DECLARERS.has(c.name) && ops.some((o) => /^HOME\+?=/.test(o)))
     )
         return {
             door: 'run it without the HOME override',
@@ -134,7 +144,11 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         };
     if (
         c.name === 'npm' &&
-        hasFlag(c.args, ['--global', '--location=global'], 'g')
+        (hasFlag(c.args, ['--global', '--location=global'], 'g') ||
+            c.args.some(
+                (w, i) =>
+                    w.text === '--location' && c.args[i + 1]?.text === 'global',
+            ))
     )
         return {
             door: 'brew first, else pnpm add -g',
@@ -143,13 +157,19 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
             why: 'npm -g is not used here',
         };
     const isPip = /^pip\d*(\.\d+)?$/.test(c.name) && ops[0] === 'install';
+    // `-m pip` or glued `-mpip`: the words after it are pip's
     const pipAt = c.args.findIndex(
-        (w, i) => w.text === '-m' && c.args[i + 1]?.text === 'pip',
+        (w, i) =>
+            w.text === '-mpip' ||
+            (w.text === '-m' && c.args[i + 1]?.text === 'pip'),
+    );
+    const pipArgs = c.args.slice(
+        pipAt + (c.args[pipAt]?.text === '-mpip' ? 1 : 2),
     );
     const isPyPip =
         /^python\d*(\.\d+)?$/.test(c.name) &&
         pipAt >= 0 &&
-        operands(c.args.slice(pipAt + 2))[0] === 'install';
+        operands(pipArgs)[0] === 'install';
     if (isPip || isPyPip)
         return {
             door: 'uv pip install',

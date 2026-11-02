@@ -126,7 +126,7 @@ const KEYWORDS = new Set([
     'function',
 ]);
 export const SD_VALUE = new Set(['-n', '--max-replacements', '-f', '--flags']);
-const REDIRECT = /^\d*(>>?|<|&>>?|>[|!])&?$/;
+const REDIRECT = /^\d*(>>?|<>?|&>>?|>[|!])&?$/;
 const REDIRECT_JOINED = /^\d*(>>?|<(?!<)|&>>?|>[|!])&?\S/;
 export const basename = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
@@ -151,9 +151,12 @@ export function operands(args: Word[]) {
     }
     return out;
 }
-// a `>` that truncates its target; `>>` appends and `>&` names a descriptor
-const TRUNCATE = /^\d*&?>[|!]?$/;
-const TRUNCATE_JOINED = /^\d*&?>[|!]?([^>&|!].*)$/;
+// a `>` that truncates its target, or a `<>` that writes over it in place; `>>` appends and `>&` names a descriptor
+const TRUNCATE = /^\d*(?:&?>[|!]?|<>)$/;
+const TRUNCATE_JOINED = /^\d*(?:&?>[|!]?|<>)([^>&|!].*)$/;
+// the device files a write onto loses nothing
+const HARMLESS_DEV =
+    /^\/dev\/(?:null|zero|u?random|tty|std(?:in|out|err)|fd\/)/;
 const READ = /^\d*<$/;
 const READ_JOINED = /^\d*<([^<&>].*)$/;
 // the paths a redirect names, apart (`> f`) or joined (`>f`)
@@ -167,7 +170,7 @@ function redirected(words: Word[], apart: RegExp, joined: RegExp) {
 }
 const writes = (words: Word[]) =>
     redirected(words, TRUNCATE, TRUNCATE_JOINED).filter(
-        (to) => !to.startsWith('/dev/'),
+        (to) => !HARMLESS_DEV.test(to),
     );
 export const reads = (words: Word[]) => redirected(words, READ, READ_JOINED);
 const STDOUT = /^[1&]?>>?$/;
@@ -195,7 +198,7 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
             words = words.slice(1);
             continue;
         }
-        if (/^[A-Za-z_][A-Za-z0-9_]*=/.test(head)) {
+        if (/^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(head)) {
             assigns.push(head);
             words = words.slice(1);
             continue;
@@ -295,12 +298,29 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
     // a `NAME=<literal>` set earlier fills a later `$NAME` / `${NAME}` word, so `R=rm; $R -rf x` reads as rm; an
     // `$(echo <literal>)` head reads as its words
     const literals = new Map<string, string>();
+    // a value that only names other variables (`V="$HOME/vault"`) fills a later `$V/…` as its text, still expanding
+    const templates = new Map<string, string>();
+    // a `NAME=$( … )` hands its substitutions to every later word naming $NAME: `P=$(pgrep x); kill $P` is fed by pgrep
+    const fed = new Map<string, Peeled[]>();
     const filled = parsed.segments.map((s) => {
+        const inherited = [...fed].flatMap(([name, by]) =>
+            s.words.some((w) =>
+                new RegExp(`\\$\\{?${name}(?![A-Za-z0-9_])`).test(w.text),
+            )
+                ? by
+                : [],
+        );
         const words = s.words.flatMap((w, j): Word[] => {
             const name = w.text.match(
                 /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/,
             )?.[1];
             const value = name === undefined ? undefined : literals.get(name);
+            const [, prefixed, rest = ''] =
+                w.text.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?(\/.*)?$/) ?? [];
+            const template =
+                prefixed === undefined ? undefined : templates.get(prefixed);
+            if (value === undefined && template !== undefined)
+                return [{ ...w, isExpanding: true, text: template + rest }];
             if (value !== undefined)
                 return w.hasQuote
                     ? [{ isExpanding: false, text: value }]
@@ -322,10 +342,19 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
         for (const w of s.words) {
             const m = w.text.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s);
             if (m?.[1] === undefined) continue;
-            if (w.isExpanding) literals.delete(m[1]);
-            else literals.set(m[1], m[2] ?? '');
+            const value = m[2] ?? '';
+            literals.delete(m[1]);
+            templates.delete(m[1]);
+            fed.delete(m[1]);
+            if (!w.isExpanding) literals.set(m[1], value);
+            else if (value.includes('$(…)') && s.subst.length)
+                fed.set(
+                    m[1],
+                    s.subst.map((x) => peel(x.words)),
+                );
+            else if (!/[`(]/.test(value)) templates.set(m[1], value);
         }
-        return { ...s, words };
+        return { ...s, inherited, words };
     });
     const peeled = filled.map((s) => ({
         ...peel(
@@ -372,7 +401,11 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
         const piped: Peeled[] = [];
         for (let j = k - 1; j >= 0 && peeled[j]?.s.sep === '|'; j--)
             piped.push(peeled[j] as Peeled);
-        const feeders = [...s.subst.map((x) => peel(x.words)), ...piped];
+        const feeders = [
+            ...s.subst.map((x) => peel(x.words)),
+            ...piped,
+            ...s.inherited,
+        ];
         if (c.name === 'cd' || c.name === 'pushd' || c.name === 'popd') {
             const target = operands(c.args)[0];
             // `cd -`, `popd` and a bare `pushd` land where the line cannot say: left as a `$` the rules never trust

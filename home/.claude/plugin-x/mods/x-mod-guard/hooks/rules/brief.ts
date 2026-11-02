@@ -11,14 +11,18 @@ const CODIE = '/x:crew-codie';
 // a command that prints a file: its last operand is the file (`sed -n p <file>`, `head -n 99 <file>`)
 const READERS = new Set(['cat', 'sed', 'head', 'tail', 'awk', 'less', 'bat']);
 const INLINE = 'inline-brief';
-// a `claude --bg` call's brief file: the one `$(cat <path>)`, `cat <path> |` or `< <path>` reads
+// a `claude --bg` call's brief file: the one `$(cat <path>)`, `$(< <path>)`, `cat <path> |` or `< <path>` reads
 function spawnBrief(c: Command, ctx: Context) {
     if (c.name !== 'claude' || !c.args.some((w) => w.text === '--bg'))
         return undefined;
     const dir = resolve(c.dir, '/', ctx);
     const text =
         c.feeders.flatMap((f) =>
-            READERS.has(f.name) ? operands(f.args).slice(-1) : [],
+            READERS.has(f.name)
+                ? operands(f.args).slice(-1)
+                : f.name
+                  ? []
+                  : f.reads.slice(0, 1),
         )[0] ?? c.reads[0];
     return {
         dir,

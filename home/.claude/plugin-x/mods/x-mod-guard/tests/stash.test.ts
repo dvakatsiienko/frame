@@ -97,6 +97,9 @@ const SWEEPS = [
     'git stash push -m wip',
     'git stash save wip',
     'cd /repo && git stash push --include-untracked',
+    'git stash push .',
+    'git stash push -- .',
+    "git stash push ':/'",
 ] as const;
 for (const typed of SWEEPS)
     test(`a whole-tree stash while another session holds a file is refused: ${typed}`, async ($, on) => {

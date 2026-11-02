@@ -23,6 +23,18 @@ const ROOT_STEP = 'hand dima the step — these are his, in System Settings';
 const PRUNE = 'leave the prune to dima — name it in your report';
 const LINEAR = 'linear closes, never deletes — cancel it (state Canceled)';
 const DELETE = new Set(['delete', 'rm', 'remove']);
+// op's global flags that take a value: `op --account a item delete` deletes
+const OP_VALUED = new Set([
+    '--account',
+    '--cache',
+    '--config',
+    '--encoding',
+    '--format',
+    '--session',
+]);
+// a leading `$HOME` names home: `trash "$HOME"` is a top dir
+const homed = (o: string, ctx: Context) =>
+    ctx.home ? o.replace(/^\$\{?HOME\}?(?=\/|$)/, ctx.home) : o;
 // the railway commands with a delete verb, aliases included (`railway <cmd> --help`, 2026-10-27); a sandbox's is `destroy`
 const RAILWAY_DELETE = new Set([...DELETE, 'destroy']);
 const RAILWAY_PARTS = new Set([
@@ -69,6 +81,7 @@ export function trashedPaths(command: string, cwd: string, ctx: Context = {}) {
     return commands(parse(command), cwd).flatMap((c) =>
         c.name === 'trash'
             ? operands(c.args)
+                  .map((o) => homed(o, ctx))
                   .filter((o) => !o.includes('$'))
                   .map((o) => resolve(o, resolve(c.dir, '/', ctx), ctx))
             : [],
@@ -93,6 +106,8 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
     );
     if (c.name === 'dd' && device)
         return system('dd onto a device', [device.text.slice(3)]);
+    const deviceWrite = c.writes.find((w) => w.startsWith('/dev/'));
+    if (deviceWrite) return system('a redirect onto a device', [deviceWrite]);
     if (/^(mkfs|newfs)/.test(c.name)) return system(c.name, or(ops, c.name));
     if (
         (c.name === 'chmod' || c.name === 'chown') &&
@@ -168,8 +183,16 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
             `railway ${ops.slice(0, railwayAt + 1).join(' ')}`,
             or(ops.slice(railwayAt + 1), 'railway'),
         );
-    if (c.name === 'op' && DELETE.has(ops[1] ?? ''))
-        return remote(`op ${ops[0]} ${ops[1]}`, or(ops.slice(2), 'op'));
+    const opOps =
+        c.name === 'op'
+            ? operands(
+                  c.args.filter(
+                      (_, i) => !OP_VALUED.has(c.args[i - 1]?.text ?? ''),
+                  ),
+              )
+            : [];
+    if (c.name === 'op' && DELETE.has(opOps[1] ?? ''))
+        return remote(`op ${opOps[0]} ${opOps[1]}`, or(opOps.slice(2), 'op'));
     if (c.name === 'security' && /^delete-/.test(ops[0] ?? ''))
         return remote(`security ${ops[0]}`, [ops[0] ?? 'security']);
     if (c.name === 'linear' && ops[0] === 'issue' && DELETE.has(ops[1] ?? ''))
@@ -182,11 +205,15 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
 
     const top =
         c.name === 'trash'
-            ? ops.filter((o) => {
-                  if (o.includes('$')) return false;
-                  const path = resolve(o, dir, ctx);
-                  return ctx.kinds?.get(path) !== 'file' && isTopDir(path, ctx);
-              })
+            ? ops
+                  .map((o) => homed(o, ctx))
+                  .filter((o) => {
+                      if (o.includes('$')) return false;
+                      const path = resolve(o, dir, ctx);
+                      return (
+                          ctx.kinds?.get(path) !== 'file' && isTopDir(path, ctx)
+                      );
+                  })
             : [];
     if (top.length)
         return {
