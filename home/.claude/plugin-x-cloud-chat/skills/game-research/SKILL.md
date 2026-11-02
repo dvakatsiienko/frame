@@ -39,4 +39,4 @@ his rules live in project memory; this skill is the order. read the leaves it na
   - read-aloud shape (memory `read-aloud`): verdict first, plain sentences, `## sources` at the end, a closing `<!-- claude notes -->` for what's unverified and what was left out
 - each game touched: its `index.md` gets today's state and ▶ next
 - a verdict or wish of his → the memory leaf that owns it, dated, his words
-- the reply: verdict, three to five reasons, the file attached; no md tables
+- the reply: verdict, three to five reasons, the file attached
