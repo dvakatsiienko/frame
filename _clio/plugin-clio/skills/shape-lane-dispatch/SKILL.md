@@ -19,6 +19,7 @@ read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain te
 - the code is read against each chunk's `decided`: a signed decision the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
 - every rider rides in the spec, named at dispatch or added as a steer; a rider found only in a commit is a sixth sense finding
+- a decided line that names a door by reference («the door `sign-untick` uses», «the same clears») lists that door's cases or says «only these» (11 spec holes in mods lane 4's retros, 2026-11-02)
 
 ## 3 · the exit lines
 

@@ -59,3 +59,6 @@ slice (b) of the pm review closed after round 2, though round 2 had found two hi
 
 ## «can't believe that» again · 2026-11-01
 at 17:06 I said only the halt fit the last 2 % and named no store I had searched. he wrote «are you sure nothing left to solve? can't believe that» — and the next look found ten items across five stores, three of them closing his own unanswered lines. the same evening he said it a third way: «do not halt!», when I read his «wrap up at 96 %» as a halt while work was still on the table.
+
+## «the only door» twice · 2026-11-02
+at 15:18 I said the gta iv launcher had «only one path left, Rockstar Support»; at 19:35 that «every new-ticket form is down, one door left». both came from one failed try. both times he pushed for another door before any reason, and the door worked: the gmail probe freed the typo address in one page load, the sign-in form took the ticket at 19:40. a firmer intention held four hours; the fix became a check, FRM-487, which flags an absolute «can't» with no probe named.
