@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T13:37:00Z'
+updated_date: '2026-11-02T16:00:00Z'
 labels:
   - s
 dependencies: []
@@ -96,4 +96,8 @@ state 11-02 15:27 (clio): the decisive probe — dima tries to sign up imagnumm.
 state 11-02 15:32 (dima): imagnumm.satellite@gmail.com was free and he created it — so the old Rockstar account sat on a typo address that never existed. He now owns its inbox: codes reach him, the old account is recoverable by its own email. Next: verify the code in the launcher once the quota allows, reset that account's password, then choose: play on it, or have support move Steam to thankyou___ (asked from the old account itself, which their rule wants).
 
 state 11-02 15:37 (dima): wiring the old Rockstar account to the new inbox hit «too many emails» again — paused until the lock clears. support note held: «not yet» (o30).
+
+state 11-02 17:53 (dima): signed in to imagnumm gmail + the old Rockstar account (umaturman3, created 2012-03-24) in Safari, still signed in. owns gta v, max payne 3, la noire; steam shows linked in its profile, no unlink on the website. a 1Password authenticator setup half-failed: Rockstar registered the authenticator, but the 1P item «Rockstar Games (old dupe)» has an empty one-time password field (clio checked the shape, 17:55: no secret saved) → no codes, sign-out = locked out. his ask: still unlink steam from the old account; fix the 2FA; one support request or two?
+
+state 11-02 17:59 (dima): Security → 2-Step device «Unlink» needs an authenticator code + password: no self-fix. he still wants the unlink (relink the games to his main account; no stray account on a typo email). order: 1) a 2FA reset request from the signed-in account (drafted 18:00), 2) a follow-up asking the unlink, with Rockstar confirming the Steam games and their progress move to thankyou___ intact.
 <!-- SECTION:NOTES:END -->
