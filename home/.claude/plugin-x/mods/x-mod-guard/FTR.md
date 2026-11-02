@@ -228,12 +228,12 @@
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
   - proof: tests/lints.test.ts::a sha pushed to main in frame is refused with its fix; a ref pushed to refs/heads/main in bytes is refused with its fix; …: the near miss runs
 
-- ✅ a command whose name hides is refused as `opaque-head` with its literal spelling, one class rule (dima's o1, o35; enforced after R3 on his o2, 2026-11-02)
+- ⬜ a command whose name hides is flagged `opaque-head` with its literal spelling, one class rule, warn-only (dima's o1, o35; 16:57 «i agree with this model»: enforce at step 11 on zero false refusals in the 7-day replay and sixth sense's clean)
   - given a Bash call whose command name is a `$` the line never fills (`${X:-rm}`, `read R; $R`, `$(cat f) args`), a brace list (`r{m,}`), a value a variable takes several of on the line (a loop var, a rebind) or an `$(echo …)` prints, or a command walked out of a script printed into a shell (`printf … | bash`, `echo … | sh`), a `source`/`.` or a git alias (`-c alias.s=status`)
-  - when x-mod-guard reads it, after every other rule (a floor or hazard rule on the same command wins), then that one command is refused with the door naming the spelling as it runs (`spell it as it runs: \`ls\``, `run it as its own command: \`ls …\``)
+  - when x-mod-guard reads it, after every other rule (a floor or hazard rule on the same command wins), then it warns «would refuse» with the door naming the spelling as it runs (`spell it as it runs: \`ls\``, `run it as its own command: \`ls …\``)
   - and a typed name, a path held in one literal (`S=/tmp/s; $S/run.sh`), `command -v $n`, `bash -c "…"`, a heredoc into a shell, `"$@"`/`$1` and an `$(( $(date +%s) - t ))` are never flagged
   - measured: the 7-day replay, 15,373 calls, flags 20 commands on 4 calls (a script held in a variable, `command -v $n` over a loop, printf piped into bash)
-  - proof: tests/opaque.test.ts::a hidden command name is flagged with its spelling; a command typed as it runs is not flagged; tests/escapes.ts rows of class opaque-head
+  - proof: tests/opaque.test.ts::a hidden command name is flagged with its spelling; a command typed as it runs is not flagged; tests/escapes.ts `open` rows of class opaque-head, flipped to `refused` at step 11
 - ✅ a new rule warns before it refuses (dima's o70)
   - given a rule listed in `WARN_ONLY`
   - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its sixth sense says clean): <the refusal>»

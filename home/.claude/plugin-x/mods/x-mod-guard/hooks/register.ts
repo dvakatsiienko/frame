@@ -286,6 +286,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // sixth sense says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
+    'opaque-head',
     'raw-plugin-update',
     'spawn-trial',
 ]);
