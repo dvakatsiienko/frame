@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T16:36:00Z'
-updated_date: '2026-11-02T16:13:00Z'
+updated_date: '2026-11-02T20:27:00Z'
 labels:
   - s
 dependencies: []
@@ -59,4 +59,6 @@ W1272 (2026-11-02 17:01, dima): each abstraction is not free, and we need to bui
 W1273 (2026-11-02 17:01, dima): is it worth it? ❓
 W1274 (2026-11-02 17:01, dima): if it is truly useful, i agree, but tell me if it is actually truly useful.
 W1275 (2026-11-02 17:01, dima): if it is, then shape it, but if it is not, then let's rethink and maybe discard this idea.
+
+kept 2026-11-02 — its 33 W-lines get accounted tomorrow, folds 11-03 F8
 <!-- SECTION:NOTES:END -->

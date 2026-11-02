@@ -4,13 +4,13 @@ title: 'folds 11-03: today''s retros and flawlog, unfold one per batch'
 status: open
 assignee: []
 created_date: '2026-11-02T20:27:00Z'
-updated_date: '2026-11-02T20:27:00Z'
+updated_date: '2026-11-02T20:28:00Z'
 labels:
   - m
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 20000
 ---
 
 ## Implementation Notes
