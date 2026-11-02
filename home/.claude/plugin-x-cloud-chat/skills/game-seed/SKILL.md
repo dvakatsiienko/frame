@@ -21,6 +21,7 @@ the rules behind each step: memory `game-seed-framework`, `trophy-sources`, `gam
 - powerpyx for gaps; no guide there → say so, never guess a url
 - two trophy lists (ps4 + ps5) → name both and which one he earns
 - a disagreement → a 📌 callout naming both sides, the safe play first
+- surprise trophies: tag every trophy the game gives no way to track (visit all, talk to all, collect all with no counter); signals are a guide saying «note down» or «keep track», and a rarity far below the story trophies. cloudpunk's Nivalis Tourist (100+ locations, no visited list) is the example
 
 ## 3. size — propose S or L, he confirms in a word
 
@@ -31,9 +32,10 @@ the rules behind each step: memory `game-seed-framework`, `trophy-sources`, `gam
 
 - mine: `/mnt/project-files/games/<full-kebab-name>/index.md` (fixed sections), `trophies.md` with the whole guide, the cross-check and sources
 - his doc `dima-<full-game-name>`, one doc in tabs:
-  - 🚀 main: run-shaped requirements and new-game settings first, then missables in the order he meets them, then tips
+  - 🚀 main: run-shaped requirements and new-game settings first, then a «🕵️ track from the start» block for the surprise trophies, then missables in the order he meets them, then tips
   - 🏆 trophies: progression order, grindy and missable first
   - 📬 q&a
+  - a checklist tab for a surprise trophy with a long list (cloudpunk 🗺️ locations), at seed time
 - one playthrough: batch trophies, never plan a replay a single run carries
 - remind him once to switch the doc to serif
 
