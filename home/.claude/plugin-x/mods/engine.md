@@ -57,6 +57,8 @@ the facts a mod round needs only when a probe or a test bites; the doors and rul
   - doors worth knowing before building, all types-only: `agent.offer` `{ isOffered: false }` withholds an agent type (`AgentOfferResult`); `agent.spawn` answers `{ deny }`; `$.model.classify` (weigh it beside jev); `$.ui.selection`, `undefined` with fullscreen off, in `-p` and on a surface that reports none; `session.send` / `session.receive`
   - hooks run in the terminal, the desktop Code tab and headless `claude -p` (live: the budget probe); on the host under remote control too, drawing in the local terminal only (the overview's «Where mods run», run #4); in a cloud session where the build allows one (types: `AgentSpawnInput`)
   - a `Button` with both `label` and `Text` children draws the label on the desktop; the harness reads the children, so a test never sees it (mods todo 28, 2026-10-13)
+  - a hook matching `Bash` now also runs on Monitor tool commands and may block or ask there, never approve or rewrite (2.1.314 changelog, unprobed); x-mod-guard's matcher already takes `Bash|Monitor`
+  - a transcript line names the event and the plugin when an earlier plugin skips one of a mod's hooks (2.1.304 changelog, unprobed): a free health signal for a hold that goes quiet
   - `$.command.run` resolves only after the command ran, so a typed prompt can slip in between two awaited runs (the second-wind ingest, 656cfd8c)
 
   - drawings: `RenderSurface` is `terminal | desktop | mobile | vscode`  — the terminal draws the whole tree, the others where they have a slot

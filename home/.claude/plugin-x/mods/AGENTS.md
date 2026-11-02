@@ -46,6 +46,6 @@ mods:probe: an unchecked «loaded from <dev>» once stood beside a run sixth sen
 ## where the rest lives
 
 - `engine.md` — what the engine does, probed: lifetimes, budgets, rewrite semantics, cross-session marks, drawing and hover, the test-harness traps; read its section when a probe or a test bites
-- `workarounds.md` — every mods want the engine can't do yet: the want, the upstream issue, the workaround, the undo; codie, on a new engine gap, adds its entry in the same commit as the workaround (dima, 2026-10-10); `refresh-cc-mods` re-checks it each run
+- `workarounds.md` — every mods want the engine can't do yet, with its undo; codie, on a new engine gap, adds its entry in the same commit as the workaround (dima, 2026-10-10); `refresh-cc-mods` re-checks it each run
 - `api-map.md` — every hook event by name, and the fleet ideas; at a cc bump diff its list against `EngineEventOf`
 - `<mod>/FTR.md` + `<mod>/GLOSSARY.md` — read your section before changing what x-mod-stash, x-mod-redact, x-mod-guard or x-mod-holds does

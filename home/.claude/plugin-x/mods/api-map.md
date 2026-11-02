@@ -1,6 +1,7 @@
 # mods api map — every hook event, one line each
 
-read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.312 (refresh-cc-mods run #5, 2026-10-30);
+read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.312 (refresh-cc-mods run #5, 2026-10-30; `ui.place`
+added from the 2.1.316 types, run #7, 2026-11-02);
 the types file wins on any conflict. 📌 the fleet runs both builds and each rewrites a mod's types on load (stash's
 copy flipped twice in a minute), so the file's first line names the build you are reading. find an event by
 grepping its quoted name (`'tool.call'`) — names survive a bump, line numbers never did. at a bump, diff three
@@ -9,7 +10,7 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 
 ## ui — drawing and input
 
-- `ui.render` — the engine is about to draw a component; return the tree. the sites (`RenderComponent`): `AbovePrompt` (the band) and `Pane`, plus the engine's own rows a mod may redraw — `AskUserQuestion` `UserMessage` `AssistantMessage` `ToolUse` `ToolResult` `ToolGroup` `ToolProgress` `CommandOutput` `Spinner` `TurnDuration` `InfoNotice` `SessionMode` `PromptHint`; `ToolProgress`, `TurnDuration` and `InfoNotice` draw in the terminal only (reference, «Render sites»)
+- `ui.render` — the engine is about to draw a component; return the tree. the sites (`RenderComponent`): `AbovePrompt` (the band) and `Pane`, plus the engine's own rows a mod may redraw — `AskUserQuestion` `UserMessage` `AssistantMessage` `ToolUse` `ToolResult` `ToolGroup` `ToolProgress` `CommandOutput` `Spinner` `TurnDuration` `InfoNotice` `SessionMode` `PromptHint` `Placed` (2.1.316, see `ui.place`); `ToolProgress`, `TurnDuration` and `InfoNotice` draw in the terminal only (reference, «Render sites»)
 - `ui.resolve` — once per surface, component and plugin at load (not per draw); `e` names the surface and component, never the props
 - `ui.press` — a `Button` a render hook drew was pressed; `element` is its `key`
 - `ui.input` — an `Input` changed or was submitted
@@ -18,11 +19,12 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 - `ui.fault` — a `Client` this plugin drew failed on a surface (did not load, failed to draw, or threw after); observe only, the engine redraws the site, so fall back by leaving the `Client` out
 - `ui.scroll` — a site's window is about to move: wheel or scroll keys on a `Pane` or the band
 - `ui.focus` — a site's focus ring is about to move: Tab, arrows, a click, an `autoFocus`
+- `ui.place` — `$.ui.place({ id })` puts one row at the transcript's end; it scrolls with the conversation and draws what `ui.render` answers for `Placed` (a hook reads `e.props.id` and `e.props.plugin`). display only: the model and the transcript never read it and `--resume` brings none back; outside fullscreen a compaction ends the row (2.1.316, types). 📌 new in 2.1.316 while the desktop bundles 2.1.309, so `pnpm mods:skew` holds a mod using it back
 
 ## tools and agents
 
 - `tool.call` — a tool is about to run; return `{ deny }` to refuse, or rewrite the result and add `context`
-- `tool.check` — the engine decides whether a call may run, after `tool.call` and PreToolUse, before the mode settles an ask
+- `tool.check` — the engine decides whether a call may run, after `tool.call` and PreToolUse, before the mode settles an ask; `e.isReadOnly` is `true` only when the tool says this input is read-only (absent = read it as a write; the tool's word, no proof of no effect)
 - `tool.describe` — once per tool, when its schema is first rendered; rewrite the description or defer it
 - `agent.offer` — an agent type is offered to the model, in the listing and at dispatch; `next(e)` resolves `{ isOffered: true }`
 - `agent.spawn` — the Agent tool is about to start a subagent, everything decided, its model not resolved yet
@@ -37,7 +39,7 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 - `prompt.autocomplete` — the person types in the prompt box; answer `{ suggestions }`, rows joining the typeahead beneath the engine's own
 - `prompt.mention` — a prompt names a path after `@`, before the engine reads it; answer `{ deny }` or add `context`. no `tool.call` is raised for this read, so a Bash or Read guard never sees it
 - `prompt.section` — once per named system-prompt section; rewrite its text
-- `prompt.context` — once per conversation, the context blocks the first user message carries
+- `prompt.context` — once per conversation, the context blocks the first user message carries; whether it fires again after a compaction or `/clear` is unprobed (standing-orders' author claims it re-hands once after each)
 - `prompt.compose` — the whole system prompt as `{ sections }`, in send order
 - `prompt.attachment` — a message the engine injects on its own: a reminder, a mode change, a mentioned file
 - `skill.prompt` — a skill's prompt is expanded for the model (`/name`, the Skill tool, a preload)
@@ -130,7 +132,7 @@ the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)
 - session: `session.id` `session.cwd` `session.root` `session.repo` `session.model` `session.messages` (this session's own, or one of its agents') `session.turns` `session.usage` `session.surface` `session.surfaces` `session.version` `session.authorize` `session.identity` (managed mods only, 2.1.299)
 - state and store: `state.get` `state.set` `store.get` `store.set` `store.delete` `store.keys`
 - tools: `tool.list` `tool.register`
-- ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.notify` `ui.view` (`$.ui.view({ agentId })` shows an agent's transcript in the main view, `{}` goes back) `ui.blit` `ui.selection` (`undefined` with fullscreen off, in `-p`, and on a surface that reports none)
+- ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.notify` `ui.view` (`$.ui.view({ agentId })` shows an agent's transcript in the main view, `{}` goes back) `ui.blit` `ui.place` `ui.selection` (`undefined` with fullscreen off, in `-p`, and on a surface that reports none)
 
 ## fleet ideas — candidates, none built (2026-10-05)
 
@@ -142,6 +144,10 @@ clio folds dima's picks into a ticket; a built idea leaves this list.
 - a «while you were away» digest — when `💨` turns off, each session's «needs you first, then done» (from augbastos/afkswitch's README, FRM-319)
 - a pr + ci column on the board — one `gh api graphql` query per pr on a 60 s `$.clock.every`, pr urls caught from prompts, replies and `gh pr create` output (from sezaakgun/cc-pr-tracker `hooks/register.tsx`, FRM-319); its cost is the per-tick `gh` call x-mod-stash's FTR already names
 - tabs inside a pane — a row of `Button`s at a pane's top, the picked one `variant='primary'`, each drawing its own body: proven in 🚦 as FRM-391's mock b (dima, 16:20: «very useful knowledge, keep it for future parts of the board if there is not enough space»); the surface also tabs every open pane on its own, which is how 🎛️ sits beside 🚦
+- a done-claim catcher — `turn.complete` runs a regex over the answer («done|finished|fixed|resolved…») and, while the tracker shows open items, `$.prompt.suggest`s «items … still open»; swap the source's own checklist for Linear (from oMaN-Rod/claude-code-widgets `plugins/done-widget` `register.tsx:281-300` @ 8be9f67; no published mod checks a done claim against an external tracker)
+- a standing-instruction catcher — pick «never…/from now on…» out of `prompt.submit` with an imperative-vs-remark grammar, offer it in a band to keep, re-hand it on `prompt.context` (from joeldg/claude-mods `standing-orders` `orders.ts:91-165`, `register.tsx:305-349` @ 221157f)
+- a proof-required tick and a Stop re-ask for the 🪐 orbit — `close_loop` refuses a tick with no proof; on `classic.Stop` re-ask Claude to close or drop each open loop, `stop_hook_active` guarding the loop (from charlie947/mod-maker `plugins/open-loops` `register.tsx:128-140` @ 0bf4e80)
+- board rows that never reflow — one-line rows cut with an ellipsis, a fixed-height control strip, so new data never moves what is below it (from Plagemes/claude-mods `mods/mods-hub` README)
 - parked: spawn gating — `agent.spawn` refusing or rerouting a spawn the fleet rules forbid; the warn-only hints it grew from were dropped: «0 for 1 on its first real fire, and a toast never reaches the session it corrects» (dima, 2026-10-05)
 
 ## comms pieces — what the api gives (refresh-cc-mods, 2026-10-10, cc 2.1.296; «?» = unprobed by us)
