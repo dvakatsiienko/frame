@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-01T11:43:00Z'
-due_date: '2026-11-02'
+updated_date: '2026-11-02T19:49:00Z'
+due_date: '2026-11-03'
 labels:
   - m
 dependencies: []
@@ -39,4 +39,6 @@ kept: 2026-10-29 — dima o2: «keep it parked, i'll take care of it with fork (
 
 W633 (2026-10-30 16:57, dima): pk-159: touch it; i plan to solve it within your side channel, maybe tomorrow.
 kept: 2026-10-30 — dima plans it for his side channel, maybe 10-31; the old «waiting for the memory sweep (FRM-267)» is past, FRM-267 is Done
+
+moved 2026-11-02 21:50 (dima o78): tomorrow, solved with dima in a clio side channel
 <!-- SECTION:NOTES:END -->
