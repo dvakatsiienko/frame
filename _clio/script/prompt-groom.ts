@@ -1,6 +1,8 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
-//        node prompt-groom.ts --check <file…>               red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
+//        node prompt-groom.ts --standing [YYYY-MM-DD]       print the day's open ` #standing` W-lines, one a line (FRM-482; a new day starts empty)
+//        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
+//        node prompt-groom.ts --check <file…>              red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
 //        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose id and text share no line of a pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
 import { execFileSync } from 'node:child_process';
 import {
@@ -262,6 +264,45 @@ export function homelessWishes(
 const W_LINE = /^\s*(?:[*-]\s+)?W\d+\b.*$/gm;
 
 // a prompt groom's (never the inbox prep's) `❓ ask` line with no W-id: [file, line]
+// a session-wide instruction of dima's: helga tags its W-line ` #standing`; a lift turns it ` #lifted` (FRM-482)
+function dayGrooms(day: string, dir: string) {
+    return readdirSync(dir)
+        .filter(
+            (name) =>
+                name.startsWith(`${day}-`) && name.endsWith('.groomed.md'),
+        )
+        .map((name) => path.join(dir, name));
+}
+
+export function openStanding(day: string, dir: string) {
+    return dayGrooms(day, dir).flatMap((file) =>
+        readFileSync(file, 'utf8')
+            .split('\n')
+            .filter((line) => / #standing\s*$/.test(line))
+            .map((line) => ({
+                id: line.match(/\bW\d+\b/)?.[0] ?? '',
+                text: line.trim(),
+            })),
+    );
+}
+
+export function liftStanding(day: string, dir: string, id: string) {
+    const lifted: string[] = [];
+    for (const file of dayGrooms(day, dir)) {
+        const text = readFileSync(file, 'utf8');
+        const next = text.replace(
+            /^(.*\b(W\d+)\b.*) #standing(\s*)$/gm,
+            (line, head: string, wid: string, tail: string) => {
+                if (id !== 'all' && wid !== id) return line;
+                lifted.push(wid);
+                return `${head} #lifted${tail}`;
+            },
+        );
+        if (next !== text) writeFileSync(file, next);
+    }
+    return lifted;
+}
+
 export function unnumberedAsks(day: string, dir: string) {
     return readdirSync(dir)
         .filter(
@@ -374,6 +415,21 @@ function startHelga() {
 
 if (import.meta.main) {
     const args = process.argv.slice(2);
+    const today = new Date().toLocaleDateString('sv');
+    if (args[0] === '--standing') {
+        for (const line of openStanding(args[1] ?? today, groomDir))
+            console.log(line.text);
+        process.exit(0);
+    }
+    if (args[0] === '--lift') {
+        const lifted = liftStanding(today, groomDir, args[1] ?? '');
+        console.log(
+            lifted.length
+                ? `lifted: ${lifted.join(', ')}`
+                : `nothing open matches ${args[1] ?? ''}`,
+        );
+        process.exit(lifted.length ? 0 : 1);
+    }
     if (args[0] === '--day') {
         const today = new Date();
         const day = /^\d{4}-\d{2}-\d{2}$/.test(args[1] ?? '')

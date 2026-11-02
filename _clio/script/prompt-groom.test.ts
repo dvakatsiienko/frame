@@ -13,12 +13,64 @@ import { describe, expect, test } from 'vitest';
 
 import {
     dayBefore,
+    liftStanding,
     newUnstamped,
+    openStanding,
     rawPromptAt,
     strayRaws,
     ungroomedStamps,
     unnumberedAsks,
 } from './prompt-groom.ts';
+
+describe('standing lines', () => {
+    const groomed = () => {
+        const dir = mkdtempSync(join(tmpdir(), 'groom-standing-'));
+        writeFileSync(
+            join(dir, '2026-11-01-1419.groomed.md'),
+            'W1 (2026-11-01 14:19, dima): find some stuff to solve for yourself meanwhile. #standing\n',
+        );
+        writeFileSync(
+            join(dir, '2026-11-02-1216.groomed.md'),
+            'W2 (2026-11-02 12:16, dima): find some stuff to solve meanwhile. #standing\nW3 (2026-11-02 12:16, dima): why did mobile mode turn on? ❓\n',
+        );
+        writeFileSync(
+            join(dir, '2026-11-02-1310.groomed.md'),
+            'W4 (2026-11-02 13:10, dima): ask me a round at the end. #standing\n',
+        );
+        return dir;
+    };
+
+    test('only the day’s open standing lines are printed', () => {
+        const dir = groomed();
+        expect(openStanding('2026-11-02', dir).map((l) => l.id)).toEqual([
+            'W2',
+            'W4',
+        ]);
+        rmSync(dir, { recursive: true });
+    });
+
+    test('a lifted line stops printing and the others stay', () => {
+        const dir = groomed();
+        expect(liftStanding('2026-11-02', dir, 'W2')).toEqual(['W2']);
+        expect(openStanding('2026-11-02', dir).map((l) => l.id)).toEqual([
+            'W4',
+        ]);
+        expect(
+            readFileSync(join(dir, '2026-11-02-1216.groomed.md'), 'utf8'),
+        ).toContain('meanwhile. #lifted');
+        rmSync(dir, { recursive: true });
+    });
+
+    test('lifting all leaves no open line that day and touches no other day', () => {
+        const dir = groomed();
+        expect(liftStanding('2026-11-02', dir, 'all')).toEqual(['W2', 'W4']);
+        expect(openStanding('2026-11-02', dir)).toEqual([]);
+        expect(openStanding('2026-11-01', dir).map((l) => l.id)).toEqual([
+            'W1',
+        ]);
+        rmSync(dir, { recursive: true });
+    });
+});
 
 describe('unnumberedAsks', () => {
     const day = '2026-11-01';
