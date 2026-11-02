@@ -1,6 +1,6 @@
 ---
 name: firelink
-description: Load BEFORE any question about Dima's games — what he owns, played, earned or wishlisted on psn or steam (trophies, achievements, platinum, rarity, «what's left», «what to play next»), an item, quest or wiki page to look up, where a game's notes live — and before launching, updating, debugging or shelling into the steamac vm (FX Steam Launcher, SteamOS, proton, the rockstar launcher in it).
+description: Load BEFORE any question about Dima's games — what he owns, played, earned or wishlisted on psn or steam (trophies, achievements, platinum, rarity, «what's left», «what to play next»), any item, quest, mechanic or tip question about a game he plays, a wiki, psnprofiles or guide page to read, or where a game's notes live — and before launching, updating, debugging or shelling into the steamac vm (FX Steam Launcher, SteamOS, proton, the rockstar launcher in it).
 argument-hint: "<trophy-sys verb> [arg] | vm play | vm ssh [cmd] | vm update"
 ---
 
@@ -43,17 +43,20 @@ parse the file with a short `python3`, never read it whole.
 the cloud refuses psnprofiles, fandom, miraheze, wikipedia and steam; the mac reaches them:
 
 ```zsh
-ls ~/.local/share/web-bot-blocked-fetch/<game>/   # cache first: a seed leaves the psnp guide here
+ls ~/.local/share/web-bot-blocked-fetch/<game>/   # cache first: a seed leaves the psnp guide and comments here
 pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out ~/.local/share/web-bot-blocked-fetch/<game>/<name>.md   # then rg it
 ```
 
 - 📌 the verb only: a raw `curl` through the mac is blocked as bot-check circumvention; `WebSearch` finds urls
 - trophies: the psnprofiles guide and its comments first, powerpyx second, never powerpyx as his main read
-- wiki traps and the rest: [references/web-bot-blocked-fetch.md](references/web-bot-blocked-fetch.md)
+- a mediawiki takes an article url; a search url or a missing title fails with «no wiki page», then `--index <wiki host>`
+- a value, price or stat question reads the infobox (`== Infobox ==`), which the plain extract drops
+- an answer no page states is an inference from absence, said as one
+- cross-checks and measurements: [references/web-bot-blocked-fetch.md](references/web-bot-blocked-fetch.md)
 
 ## 3. steamac — windows steam games on the mac
 
-`/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial, kept only if games run well): valve's arm64 SteamOS in a libkrun vm.
+`/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial: a no-name open-source project, kept only if games run well): valve's arm64 SteamOS in a libkrun vm.
 
 - `scripts/steamac-play.sh` — launch with the caps the app can't save ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)): gpu 10 GiB, `MESA_KK_COMPILE_THREADS=4`, control fifo `~/.local/share/steamac/control.fifo`; dima starts it from `~/Desktop/steam-fx-safe.app`, a Finder alias of `~/Applications/FX Steam (safe).app` — an applescript applet that runs this script (adhoc-signed: `codesign --force -s -` after an edit); never `/Applications/FX Steam Launcher.app` directly, which skips the caps
 - `scripts/steamac-ssh.sh [cmd]` — shell into the vm, `steamos@127.0.0.1:2222`, key `~/.ssh/steamac_ed25519`; «connection refused» = vm off; first run `--install-key`
@@ -78,7 +81,7 @@ facts about a game go to its home below, never into this skill. until every game
 - 🗂 claude project «stuff» files (`/mnt/project-files/`, cloud only, an rclone drive with no history) — `games/<game>/index.md` + topic files, `games/README.md`, `games/_finished/`, `tools/trophy-sys.md` (id cache), `games/_finished/_archive/<game>/doc/` (finished docs, one .md per tab); its local copy `~/projects/cw/stuff/psn-trophy-tracker-local.md`, last synced 2026-09-19
 - 🧠 project memory (same project, `team/silo`) — his taste, queue, verdicts. cloud only
 - 📄 claude docs `dima-<game>` — his pinned per-game doc, url in that game's `index.md`; `dima-games-inbox`
-- 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — every game page sits under it, sub-pages included; list: `ntn api v1/blocks/<root id>/children`
+- 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — every game page sits under it, sub-pages included (builds, quests); list them: `ntn api v1/blocks/<root id>/children`
 - 🪨 obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/`, `x:notes`; icloud last-writer-wins, writes on his ask) — `games/play next.md` (the owned-games pick list, the folder everything moves into), `sv/` stardew valley, `z_cotl/` cult of the lamb, `z_rim/` rimworld, `gear/console.md` (ps5 pro + dualsense edge); the `z_` prefix marks a finished game
 - 🏆 trophy-sys code — `~/projects/bytes/apps/trophy-sys` (its `AGENTS.md` before any edit); research `~/frame/docs/research/npsso-renewal.md`, `trophy-sys-notes-store.md`
 - 🌐 game pages — § 2; the cache `~/.local/share/web-bot-blocked-fetch/<game>/`
