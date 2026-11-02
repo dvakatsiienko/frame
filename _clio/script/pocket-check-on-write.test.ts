@@ -30,7 +30,7 @@ const argvLog = join(fixtures, 'argv.txt');
 const commitStub = join(fixtures, 'commit-stub.sh');
 writeFileSync(
     commitStub,
-    `#!/bin/sh\nfor a in "$@"; do printf '%s\\n' "$a"; done > "${argvLog}.tmp"\nmv "${argvLog}.tmp" "${argvLog}"\n`,
+    `#!/bin/sh\ncp "$1" "${argvLog}.msg"\nfor a in "$@"; do printf '%s\\n' "$a"; done > "${argvLog}.tmp"\nmv "${argvLog}.tmp" "${argvLog}"\n`,
     { mode: 0o755 },
 );
 
@@ -159,9 +159,19 @@ describe('the pocket hook commits every pocket write', () => {
         run(bash('backlog task edit 7 -s done'), 'true');
         const argv = stubArgv();
         expect(argv?.slice(1)).toEqual(['--', task]);
-        expect(readFileSync(argv?.[0] ?? '', 'utf8')).toContain(
+        expect(readFileSync(`${argvLog}.msg`, 'utf8')).toContain(
             '📜 pocket: pk-7 (auto)',
         );
+    });
+
+    test('the commit message file is gone once the commit ran', () => {
+        writeFileSync(join(frame, task), 'x');
+        run(bash('backlog task edit 7 -s done'), 'true');
+        const message = stubArgv()?.[0] ?? '';
+        const pause = new Int32Array(new SharedArrayBuffer(4));
+        for (let wait = 0; wait < 40 && existsSync(message); wait += 1)
+            Atomics.wait(pause, 0, 0, 50);
+        expect(existsSync(message)).toBe(false);
     });
 
     test('a red check still blocks and still commits', () => {
