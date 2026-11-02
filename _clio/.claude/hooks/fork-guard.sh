@@ -25,7 +25,8 @@ cc_pid() {
 me=$(cc_pid)
 main_pid=$(sed -n 's/^pid=//p' "$main_file" 2>/dev/null)
 # the main is classified positively: its own pid, or the seat is free (none recorded, or that pid is dead)
-is_main() { [ -z "$main_pid" ] || [ "$main_pid" = "$me" ] || ! kill -0 "$main_pid" 2>/dev/null; }
+# ps, never kill -0: a sandboxed shell (Claude.app's disclaimer, a desktop commander shell) may be denied the signal
+is_main() { [ -z "$main_pid" ] || [ "$main_pid" = "$me" ] || ! ps -p "$main_pid" >/dev/null 2>&1; }
 
 case "${1:-}" in
 start)
