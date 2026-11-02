@@ -41,6 +41,12 @@ export function liveDirs(home: string) {
 }
 
 // the folder the engine read the mod's hooks from, out of the child's debug lines; undefined when it never loaded
+// a cli-entrypoint cc (a --bg session's) lets settings.json's env beat the swapped plugin dirs, so a child that reads the
+// user settings loads the live mod; without them the swap alone names the dirs. mods:live and mods:probe both spawn with it
+export const SWAP_SOURCES = ['--setting-sources', 'project,local'];
+export function probeArgv(prompt: string, debugFile: string, extra: string[]) {
+    return ['-p', prompt, '--debug-file', debugFile, ...SWAP_SOURCES, ...extra];
+}
 export function loadedFrom(lines: string[], name: string) {
     const read = new RegExp(
         `Read hooks\\.json for plugin ${name} \\([^)]*\\): (.+)/hooks/hooks\\.json$`,
@@ -74,7 +80,7 @@ if (import.meta.main) {
     const extra = rest[0] === '--' ? rest.slice(1) : rest;
     const run = spawnSync(
         'claude',
-        ['-p', prompt as string, '--debug-file', debugFile, ...extra],
+        probeArgv(prompt as string, debugFile, extra),
         {
             cwd: tmp,
             encoding: 'utf8',

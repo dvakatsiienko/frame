@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { loadedFrom, swapDir } from './probe.ts';
+import { loadedFrom, probeArgv, swapDir } from './probe.ts';
 
 const names: Record<string, string> = {
     '~/m/x-mod-guard': 'x-mod-guard',
@@ -52,5 +52,17 @@ describe('loadedFrom', () => {
 
     it('is undefined when the mod never loaded', () => {
         expect(loadedFrom([], 'x-mod-guard')).toBeUndefined();
+    });
+});
+
+describe('probeArgv', () => {
+    it('reads no user settings, so a --bg parent cannot beat the swapped plugin dirs', () => {
+        const argv = probeArgv('hi', '/t/debug.log', ['--model', 'x']);
+        expect(
+            argv.slice(
+                argv.indexOf('--setting-sources'),
+                argv.indexOf('--setting-sources') + 2,
+            ),
+        ).toEqual(['--setting-sources', 'project,local']);
     });
 });

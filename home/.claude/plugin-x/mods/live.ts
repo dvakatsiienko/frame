@@ -24,7 +24,7 @@ import pty from 'node-pty';
 import { type LiveVerb, parseLive } from './live-args.ts';
 import { plantedCopy } from './live-plant.ts';
 import { reloadVerdict, sourceHash } from './live-verdict.ts';
-import { liveDirs, manifestName, swapDir } from './probe.ts';
+import { SWAP_SOURCES, liveDirs, manifestName, swapDir } from './probe.ts';
 
 const COLS = 140;
 const ROWS = 40;
@@ -174,10 +174,7 @@ async function serve() {
             `mods-live: ${name}`,
             '--debug-file',
             debugLog,
-            // a cli-entrypoint cc (a --bg session's) lets settings.json's env beat the swapped plugin dirs, so the child loads the
-            // live mod; without the user settings the swap alone names the dirs
-            '--setting-sources',
-            'project,local',
+            ...SWAP_SOURCES,
             // the user's default mode came with the user settings: a frame session must not stop at a permission dialog
             '--permission-mode',
             'bypassPermissions',
