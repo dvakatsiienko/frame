@@ -79,6 +79,10 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
+// the registry name is clio's: spaces and zero-width joiners dropped, the way x-mod-stash's bare() reads a name
+const COORDINATORS = ['🦉clio', '🦉cclio']; // read-both: a clio tab resumed under its old title
+const isCoordinator = (name: string) =>
+    COORDINATORS.includes(name.replaceAll(/[\s\u200d]/g, ''));
 // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
 const points = (s: string) =>
     [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));
@@ -1048,11 +1052,7 @@ export const register: Register = (on) => {
         if (raw) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            const clioNames = ['🦉clio', '🦉cclio']; // read-both: a clio tab resumed under its old title
-            if (
-                name !== undefined &&
-                !clioNames.includes(name.replaceAll(/[\s\u200d]/g, ''))
-            ) {
+            if (name !== undefined && !isCoordinator(name)) {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
                 {
                     const stop = await enforce(
@@ -1070,11 +1070,7 @@ export const register: Register = (on) => {
         if (write) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            const coordinators = ['\u{1F989}clio', '\u{1F989}cclio']; // read-both: a clio tab resumed under its old title
-            if (
-                name !== undefined &&
-                !coordinators.includes(name.replaceAll(/[\s‍]/g, ''))
-            ) {
+            if (name !== undefined && !isCoordinator(name)) {
                 const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
                 if (!(await isWarnOnly($, write.rule))) {
                     const stop = await enforce(
