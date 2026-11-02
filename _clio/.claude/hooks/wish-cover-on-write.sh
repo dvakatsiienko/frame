@@ -40,6 +40,7 @@ command -v node >/dev/null || { jq -n '{systemMessage: "wish-cover: node missing
 # a lane spec holds a wish line per chunk section: every id in the file is checked against its own section
 reds=""
 sections="$(mktemp -d)"
+trap 'trash "$sections"' EXIT
 # the lines above the first wish line join the first section
 awk -v d="$sections" '
 	/^[Ww]ish: *\[?(PK|FRM|BYT|pk|frm|byt)-[0-9]+/ { match($0, /[A-Za-z]+-[0-9]+/); cur = toupper(substr($0, RSTART, RLENGTH)) }
@@ -47,10 +48,12 @@ awk -v d="$sections" '
 	{ if (pre != "") { printf "%s", pre >> (d "/" cur ".md"); pre = "" } print >> (d "/" cur ".md") }
 ' "$file"
 for id in $(grep -iE "$idline" "$file" | grep -iEo '(PK|FRM|BYT)-[0-9]+' | tr a-z A-Z | sort -u); do
-	out="$(node "$(dirname "$0")/../../script/wish-cover.ts" "$id" "$sections/$id.md" 2>&1)" && continue
+	# an id named beside another on one wish line has no section of its own: the whole file is its draft
+	draft="$sections/$id.md"
+	[ -f "$draft" ] || draft="$file"
+	out="$(node "$(dirname "$0")/../../script/wish-cover.ts" "$id" "$draft" 2>&1)" && continue
 	[ $? -eq 1 ] || { jq -n --arg reason "wish-cover: could not run for $id on $file — ${out}" '{decision: "block", reason: $reason}'; exit 0; }
 	reds+="$(grep '^✗' <<<"$out")"$'\n'
 done
-trash "$sections"
-[ -n "$reds" ] || exit 0
+[ -n "${reds//$'\n'/}" ] || exit 0
 jq -n --arg reason "wish-cover is red on $file — copy the wish's words verbatim: $reds" '{decision: "block", reason: $reason}'
