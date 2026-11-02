@@ -4,7 +4,7 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
-// FRM-486: a cli or mods ticket is planned only with a `## worth` section; a re-sign carries a changed one or says why not.
+// FRM-486: a cli or mods ticket is planned only with a `## ⚖️ worth it` section; a re-sign carries a changed one or says why not.
 // warn-only until its sixth sense says clean. files: body files on disk; tickets: what `x linear read <id>` answers
 const NOW = 1_000_000;
 type Ticket = { description: string; milestone?: string; project?: string };
@@ -78,7 +78,8 @@ const warned = (r: { context?: readonly string[] }) =>
     (r.context ?? []).join('\n').includes('would refuse this (rule worth');
 
 const NO_WORTH = '## wish\n\nW1\n\n## why\n\na reason\n';
-const WORTH = '## wish\n\nW1\n\n## worth\n\nnone — fix\n\n## why\n\na reason\n';
+const WORTH =
+    '## wish\n\nW1\n\n## ⚖️ worth it\n\nnone — fix\n\n## why\n\na reason\n';
 const CREATE = (flags: string) =>
     `x as clio -- linear issue create --title t ${flags}`;
 
@@ -97,7 +98,16 @@ test('the worth note names the section and the plain-work words', async ($, on) 
         $,
         CREATE('--project cli --milestone v --description-file b.md'),
     );
-    expect(r.context?.join('\n')).toMatch(/## worth.*none — fix/s);
+    expect(r.context?.join('\n')).toMatch(/## ⚖️ worth it.*none — fix/s);
+});
+
+test('a section with no fleet wired line is named as such', async ($, on) => {
+    world(on, { '/repo/b.md': '## ⚖️ worth it\n\nremoves the hand ping\n' });
+    const r = await bash(
+        $,
+        CREATE('--project cli --milestone v --description-file b.md'),
+    );
+    expect(r.context?.join('\n')).toContain('names no `🔌 fleet wired:');
 });
 
 test('a body behind a variable is named as unreadable, not as empty', async ($, on) => {
@@ -124,6 +134,16 @@ test('the warned create leaves a warned event under the worth rule', async ($, o
 
 const FLAGGED = [
     [
+        'the old heading, before ⚖️ worth it',
+        CREATE('--project cli --milestone v --description-file b.md'),
+        { '/repo/b.md': '## worth\n\nnone — fix\n' },
+    ],
+    [
+        'a worth it section with no fleet wired line',
+        CREATE('--project cli --milestone v --description-file b.md'),
+        { '/repo/b.md': '## ⚖️ worth it\n\nremoves the hand ping\n' },
+    ],
+    [
         '--project=CLI, the name read case-blind',
         CREATE('--project=CLI --milestone v --description-file b.md'),
         { '/repo/b.md': NO_WORTH },
@@ -136,12 +156,12 @@ const FLAGGED = [
     [
         'an empty worth section',
         CREATE('--project cli --milestone v --description-file b.md'),
-        { '/repo/b.md': '## worth\n\n\n## why\n\nx\n' },
+        { '/repo/b.md': '## ⚖️ worth it\n\n\n## why\n\nx\n' },
     ],
     [
         'a worth heading inside a code fence',
         CREATE('--project cli --milestone v --description-file b.md'),
-        { '/repo/b.md': '## wish\n\n```\n## worth\n\nnone — fix\n```\n' },
+        { '/repo/b.md': '## wish\n\n```\n## ⚖️ worth it\n\nnone — fix\n```\n' },
     ],
     [
         'a body file that cannot be read',
@@ -192,6 +212,14 @@ test('a fleet create whose milestone id resolves to a mods milestone is warned',
 
 const CLEAN = [
     [
+        'a worth it section with its fleet wired line',
+        CREATE('--project cli --milestone v --description-file b.md'),
+        {
+            '/repo/b.md':
+                '## ⚖️ worth it\n\nremoves the hand ping\n- 🔌 fleet wired: clio:pm calls it at every sign\n',
+        },
+    ],
+    [
         'a worth section with a line',
         CREATE('--project cli --milestone v --description-file b.md'),
         { '/repo/b.md': WORTH },
@@ -199,18 +227,23 @@ const CLEAN = [
     [
         'a worth heading in another case',
         CREATE('--project cli --milestone v --description-file b.md'),
-        { '/repo/b.md': '## Worth\n\nremoves the hand ping\n' },
+        {
+            '/repo/b.md':
+                '## ⚖️ Worth It\n\nremoves the hand ping\n🔌 fleet wired: clio:pm\n',
+        },
     ],
     [
         'an inline body with a worth section',
         CREATE(
-            "--project cli --milestone v --description '## worth\n\nnone — chore\n'",
+            "--project cli --milestone v --description '## ⚖️ worth it\n\nnone — chore\n'",
         ),
         {},
     ],
     [
         'a -d body with a worth section',
-        CREATE("--project cli --milestone v -d '## worth\n\nnone — fix\n'"),
+        CREATE(
+            "--project cli --milestone v -d '## ⚖️ worth it\n\nnone — fix\n'",
+        ),
         {},
     ],
     [
@@ -220,7 +253,7 @@ const CLEAN = [
     ],
     [
         'a heredoc body with a worth section',
-        `${CREATE('--project cli --milestone v --description-file -')} <<'EOF'\n## worth\n\nnone — chore\nEOF`,
+        `${CREATE('--project cli --milestone v --description-file -')} <<'EOF'\n## ⚖️ worth it\n\nnone — chore\nEOF`,
         {},
     ],
     [

@@ -73,7 +73,7 @@ The file `x brief check` writes on a clean pass, keyed by the sha256 of the brie
 _Avoid_: brief approval, check mark
 
 **Worth section**:
-A ticket body's `## worth` heading with at least one non-blank line under it before the next heading: what the work removes against today's door, or `none — fix` / `none — chore` for plain work; a cli or mods ticket is planned only with one.
+A ticket body's `## ⚖️ worth it` heading with at least one non-blank line under it before the next heading: what the work removes against today's door and a `🔌 fleet wired: <caller>` line naming who calls the new surface, or `none — fix` / `none — chore` for plain work; a cli or mods ticket is planned only with one.
 _Avoid_: value line, worth line
 
 **Lane scope**:

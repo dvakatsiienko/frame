@@ -8,16 +8,20 @@ import {
 } from './command.ts';
 import { linearWords } from './milestone.ts';
 
-// FRM-486: a cli or mods ticket is planned only past the worth bar — a `## worth` section saying what it removes, or
-// `none — fix|chore` for plain work (clio:pm's references/body.md); a re-sign carries a changed section or says why not
+// FRM-486: a cli or mods ticket is planned only past ⚖️ worth it — a `## ⚖️ worth it` section saying what it removes
+// and a `🔌 fleet wired: <caller>` line, or `none — fix|chore` for plain work (clio:pm's references/body.md); a re-sign
+// carries a changed section or says why not
 export const WORTH_DOOR =
-    "add a `## worth` section — what it removes against today's door, before → after; plain work writes `none — fix` or `none — chore` under it";
+    "add a `## ⚖️ worth it` section — what it removes against today's door, before → after, and a `🔌 fleet wired: <caller>` line naming who calls the new surface; plain work writes `none — fix` or `none — chore` under it";
 export const RESIGN_DOOR =
-    'change the `## worth` section to the new scope, or end the re-signed line with `worth unchanged — <why>`';
+    'change the `## ⚖️ worth it` section to the new scope, or end the re-signed line with `worth unchanged — <why>`';
 const UNCHANGED = /worth unchanged —/;
 const RESIGNED = /^✍️ re-signed\b/u;
 const FENCE = /^\s*(```|~~~)/;
 const HEADING = /^#{1,6}\s/;
+const WORTH_HEADING = /^##\s+⚖\uFE0F?\s*worth it\s*$/iu;
+const WIRED = /^\s*(?:-\s+)?🔌\s*fleet wired:\s*\S/u;
+const PLAIN = /none — (?:fix|chore)\b/;
 
 type Body = { file: string } | { text: string } | { hidden: true };
 type Create = { project: string; milestone?: string; body: Body };
@@ -91,7 +95,7 @@ export const isWorthScope = (project: string, milestone?: string) => {
     return p === 'cli' || (p === 'fleet' && /mods/i.test(milestone ?? ''));
 };
 
-// the `## worth` section's text, any case, outside code fences, up to the next heading; undefined when there is none
+// the `## ⚖️ worth it` section's text, any case, outside code fences, up to the next heading; undefined when there is none
 export function worthSection(body: string) {
     let isFenced = false;
     let text: string[] | undefined;
@@ -103,7 +107,7 @@ export function worthSection(body: string) {
         }
         if (HEADING.test(line)) {
             if (text) break;
-            if (/^##\s+worth\s*$/i.test(line)) text = [];
+            if (WORTH_HEADING.test(line)) text = [];
             continue;
         }
         text?.push(line);
@@ -117,7 +121,16 @@ const plain = (line: string) =>
         .replace(/^(\s*)[*+]\s/, '$1- ');
 const collapse = (s: string | undefined) =>
     s?.split('\n').map(plain).join(' ').replaceAll(/\s+/g, ' ').trim();
-const hasWorth = (body: string) => !!collapse(worthSection(body));
+// what a section lacks: all of it, its `🔌 fleet wired:` line, or nothing; plain work needs no wired line
+function worthGap(body: string) {
+    const section = worthSection(body);
+    if (!collapse(section)) return 'section' as const;
+    const lines = (section ?? '').split('\n').map(plain);
+    return PLAIN.test(collapse(section) ?? '') ||
+        lines.some((l) => WIRED.test(l))
+        ? undefined
+        : ('wired' as const);
+}
 
 export function worth(c: Command, ctx: Context): Refusal | undefined {
     const create = createOf(c, ctx);
@@ -133,15 +146,18 @@ export function worth(c: Command, ctx: Context): Refusal | undefined {
             : 'text' in body
               ? body.text
               : undefined;
-    if (text !== undefined && hasWorth(text)) return undefined;
+    const gap = text === undefined ? 'section' : worthGap(text);
+    if (!gap) return undefined;
     return {
         door: WORTH_DOOR,
         rule: 'worth',
         targets: [create.project],
         why:
             text === undefined
-                ? 'the body cannot be read before the call, so it shows no `## worth` section'
-                : `a ${create.project} ticket is planned only with a \`## worth\` section, and this body has none`,
+                ? 'the body cannot be read before the call, so it shows no `## ⚖️ worth it` section'
+                : gap === 'wired'
+                  ? `a ${create.project} ticket's \`## ⚖️ worth it\` section names no \`🔌 fleet wired: <caller>\` line`
+                  : `a ${create.project} ticket is planned only with a \`## ⚖️ worth it\` section, and this body has none`,
     };
 }
 

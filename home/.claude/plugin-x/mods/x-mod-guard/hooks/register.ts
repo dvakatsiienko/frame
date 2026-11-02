@@ -1310,7 +1310,7 @@ export const register: Register = (on) => {
                 }
             }
         }
-        // a re-sign on a cli or mods ticket carries a changed `## worth` section or says why it stands (FRM-486); a ticket linear
+        // a re-sign on a cli or mods ticket carries a changed `## ⚖️ worth it` section or says why it stands (FRM-486); a ticket linear
         // cannot read counts as unchanged, and the warning names the failed read
         for (const rewrite of worthRewrites(typed, cwd, ctx)) {
             // a body this command writes cannot be read before it runs: judged unread, like the sign check's
@@ -1337,10 +1337,10 @@ export const register: Register = (on) => {
                 rule: 'worth',
                 targets: [rewrite.id],
                 why: isWritten
-                    ? `the body for ${rewrite.id} is a file this command writes, so its \`## worth\` section cannot be read before the call`
+                    ? `the body for ${rewrite.id} is a file this command writes, so its \`## ⚖️ worth it\` section cannot be read before the call`
                     : current
-                      ? `a re-sign on ${rewrite.id} keeps its \`## worth\` section as it was, and its line names no reason`
-                      : `x-mod-guard could not read ${rewrite.id} from linear, so its \`## worth\` section counts as unchanged`,
+                      ? `a re-sign on ${rewrite.id} keeps its \`## ⚖️ worth it\` section as it was, and its line names no reason`
+                      : `x-mod-guard could not read ${rewrite.id} from linear, so its \`## ⚖️ worth it\` section counts as unchanged`,
             };
             const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
             const stop = await enforce(
