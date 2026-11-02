@@ -19,7 +19,8 @@ func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, session, want string }{
 		{"a member session acts as codie", "⚡ 🔧 codie: FRM-399", "codie"},
-		{"sixth sense is a member too", "⚡ 🔎 sixth sense: FRM-399", "codie"},
+		{"sixth sense acts as its own app", "⚡ 🔎 sixth sense: FRM-399", "sixth-sense"},
+		{"sixth sense under its badge too", "🌗 🔦 sixth sense: frame | #12", "sixth-sense"},
 		{"clio stays clio", "🦉 clio", "clio"},
 		{"clio as the registry stores her keeps clio", "🦉  clio", "clio"},
 	}

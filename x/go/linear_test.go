@@ -56,9 +56,10 @@ func (f *fakeLinear) requests() []gqlCall {
 // every member holds a far-future cached token, so no test mints
 func linearKeys(t *testing.T) string {
 	return keysFixture(t, map[string]string{
-		"op://dev/linear-golden/credential": "lin_api_dima",
-		"keychain:x-token-linear-clio:x":    farFuture + ":tok-clio",
-		"keychain:x-token-linear-codie:x":   farFuture + ":tok-codie",
+		"op://dev/linear-golden/credential":     "lin_api_dima",
+		"keychain:x-token-linear-clio:x":        farFuture + ":tok-clio",
+		"keychain:x-token-linear-codie:x":       farFuture + ":tok-codie",
+		"keychain:x-token-linear-sixth-sense:x": farFuture + ":tok-sixth-sense",
 	})
 }
 

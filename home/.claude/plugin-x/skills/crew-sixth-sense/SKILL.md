@@ -173,7 +173,7 @@ holds, with these swaps:
 - **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to codie's own
   pre-verification.
 - **the clean** is a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict
-  object with `verified: <sha>`), not `pr-watch.sh`.
+  object with `verified: <sha>`), not `pr-watch.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
 
 ## the next chunk
 

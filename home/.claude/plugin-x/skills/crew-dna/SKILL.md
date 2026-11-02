@@ -62,7 +62,7 @@ this file says how every member does it. A section headed with roles binds only 
 
 **identity**
 - linear: read with `x linear read`, write only your one comment with `x linear comment <id>` (`rules-lazy/linear-flow.md`) <!-- mac -->
-- github writes wear `github-token-wrap`; a bare `gh` write posts as dima <!-- mac -->
+- github writes wear `github-token-wrap` (your own app, by session name); a bare `gh` write posts as dima <!-- mac -->
 - every comment notifies dima: one per assignment
 
 **the loop**

@@ -22,8 +22,8 @@ import (
 
 var ticketShape = regexp.MustCompile(`^[A-Z]+-\d+$`)
 
-// an agent acts as the clio app, a member's session (its registry name is not 🦉 clio) as the codie app, dima on his
-// own terminal as himself; --as names anyone else (FRM-399)
+// an agent acts as the clio app, a sixth sense session as its own app (FRM-484), any other member's session as the
+// codie app, dima on his own terminal as himself; --as names anyone else (FRM-399)
 func actorOf(flags Flags) (string, error) {
 	if given, _ := flags["as"].(string); given != "" {
 		named, known := memberNamed(given)
@@ -38,6 +38,9 @@ func actorOf(flags Flags) (string, error) {
 	}
 	if name, ok := sessionName(); ok {
 		bare := strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "")
+		if strings.Contains(bare, "sixthsense") {
+			return "sixth-sense", nil
+		}
 		if bare != "🦉clio" && bare != "🦉cclio" { // read-both: a clio tab resumed under its old title
 			return "codie", nil
 		}
