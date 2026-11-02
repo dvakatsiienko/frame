@@ -76,3 +76,5 @@ codie cannot see a surface; dima walks each, ticks what holds, notes what does n
 ## verdict
 
 - 2026-10-19 · **adopted** (dima, o96): «mods have proven themselves … very good but have some flaws and a lot of issues, but still, they are useful … we adopt them and use them.» the fleet-awareness question settled as `rules/fleet-mods.md` (one section per mod) plus each mod's own contract; the flaws ride the mods lane (PK-120). numbers: 8 log lines 10-05 → 10-12, every surface ticked, the Bash blind spot measured at ~37 % of writes taking no hold.
+
+- 2026-11-02 · round · ⏰ waker burn test (`.scratch/waker-test/plan.md`): **fail, measured**. the 5h cap stopped codie (20:59) and clio (21:00); at the 21:30 reset no session got a «resume». `cap-seen` holds both turn ends as `reason: error` with `e.answer` empty, so `CAPPED` (`x-mod-stash/hooks/register.tsx:292`) never matched and `armWake` never armed. FTR's «inferred» line (the cap text arrives in the answer) is now disproven; the fix needs another cap signal (the error end beside a 5h window at 100 %).
