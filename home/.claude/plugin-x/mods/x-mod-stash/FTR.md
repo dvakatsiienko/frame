@@ -74,8 +74,8 @@
   - then its context holds `now HH:MM`, so a reply's 📄 stamp copies the clock
   - decision: three 📄 stamps were guessed ahead of the clock on 10-07 and `reply-check` refused each one, a correction turn every time; crow named the fix, dima said yes
 - ✅ a ·-joined list in a reply becomes bullets before dima sees it
-  - given a reply line in prose like `the crew: a · b · c` (outside a fence, inline code and the 📄 line)
-  - then the drawing (`ui.render` on `AssistantMessage`, every surface) and the stored row (`session.append`, the response door) both read `the crew:` and one `- ` line per item; a `·` list inside a bullet nests under it
+  - given a reply line in prose like `the crew: a · b · c` (outside a fence, inline code, a heading, a table row, a quote and the 📄 line, whose markdown bullets would break)
+  - then the drawing (`ui.render` on `AssistantMessage`, every surface) and the stored row (`session.append`, the response door) both read `the crew:` and one `- ` line per item; a `·` list inside a bullet or a numbered item nests under it, the number kept
   - then `reply-check.py` never sees the dot, so its block and the «Hook re-prompted Claude» second reply never happen; it stays as the net
   - proven live 2026-10-08: a headless reply told to print `the crew: chores · researcher · retro` came out as bullets in one turn; the Stop hook reads the rewritten row (a probe mod saw it)
 - ✅ a bare fleet word or member in a reply prints bold with its badge before dima sees it

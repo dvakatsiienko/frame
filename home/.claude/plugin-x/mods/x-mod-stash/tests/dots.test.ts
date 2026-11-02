@@ -26,3 +26,13 @@ test('a fence, inline code and the 📄 line keep their ·', () => {
     ].join('\n');
     expect(bulletDots(text)).toBe(text);
 });
+
+// a heading, a table row and a quote keep their dots: bullets there break the markdown (R1 bulletDots P1)
+for (const text of ['## a · b', '| a · b | c |', '> a · b'])
+    test(`a line whose markdown a bullet would break keeps its dots: ${text}`, () => {
+        expect(bulletDots(text)).toBe(text);
+    });
+
+test('a numbered item keeps its number, its dots as sub-bullets', () => {
+    expect(bulletDots('1. fixed: a · b')).toBe('1. fixed:\n   - a\n   - b');
+});

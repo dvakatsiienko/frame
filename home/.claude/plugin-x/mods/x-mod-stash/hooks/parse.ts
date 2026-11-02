@@ -1,12 +1,18 @@
 // a ·-joined list in prose, rewritten as bullets the way the output rules want it (reply-check blocks the dot);
-// fences, inline code and the 📄 stamp line keep theirs
+// fences, inline code, headings, tables, quotes and the 📄 stamp line keep theirs; a numbered item keeps its number
 export function bulletDots(text: string) {
     let isFence = false;
     return text
         .split('\n')
         .flatMap((line) => {
             if (/^\s*```/.test(line)) isFence = !isFence;
-            if (isFence || line.includes('📄')) return [line];
+            // a heading, a table row or a quote breaks as bullets, so it keeps its dots
+            if (
+                isFence ||
+                line.includes('📄') ||
+                /^\s*(?:#{1,6}\s|\||>)/.test(line)
+            )
+                return [line];
             // inline code masked at the same length, so split offsets land on the real line
             const masked = line.replace(/`[^`\n]*`/g, (m) =>
                 '\0'.repeat(m.length),
@@ -20,9 +26,11 @@ export function bulletDots(text: string) {
             }
             parts.push(line.slice(from));
             const [indent, bullet, head] = (parts[0] ?? '')
-                .match(/^(\s*)(-\s+)?(.*)$/)
+                .match(/^(\s*)((?:-|\d{1,3}[.)])\s+)?(.*)$/)
                 ?.slice(1) ?? ['', undefined, ''];
-            const pad = bullet ? `${indent}  ` : (indent ?? '');
+            const pad = bullet
+                ? `${indent}${' '.repeat(bullet.trimEnd().length + 1)}`
+                : (indent ?? '');
             // a label ends at the first item's last colon: `the crew: a · b` keeps `the crew:` as its line
             const colon = (head ?? '').lastIndexOf(': ');
             const label =
