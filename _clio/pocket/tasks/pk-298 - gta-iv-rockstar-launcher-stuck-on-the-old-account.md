@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T16:11:00Z'
+updated_date: '2026-11-02T16:13:00Z'
 labels:
   - s
 dependencies: []
@@ -102,4 +102,32 @@ state 11-02 17:53 (dima): signed in to imagnumm gmail + the old Rockstar account
 state 11-02 17:59 (dima): Security → 2-Step device «Unlink» needs an authenticator code + password: no self-fix. he still wants the unlink (relink the games to his main account; no stray account on a typo email). order: 1) a 2FA reset request from the signed-in account (drafted 18:00), 2) a follow-up asking the unlink, with Rockstar confirming the Steam games and their progress move to thankyou___ intact.
 
 state 11-02 18:10 (clio): 2FA ticket #38245301 filed from umaturman3 (Trouble signing in → Lost Access to or Missing Authenticator App, Steam-authenticated); its ticket chat caps at 500 chars, a short note drafted. main inbox: 4 «Sign-In Detected» alerts archived to All Mail; the #38239985 thread (5 mails) kept. the imagnumm inbox is outside himalaya.
+
+W1315 (2026-11-02 17:53, dima): i successfully signed in into imagnumm.satellite@gmail.com — gmail and rockstar acc both.
+W1316 (2026-11-02 17:53, dima): rockstar acc username umaturman3, created on Mar 24, 2012.
+W1317 (2026-11-02 17:53, dima): but i created another issue accidentally.
+W1318 (2026-11-02 17:53, dima): i was trying to set up a 2FA authenticator via OnePassword and messed it up in a way where the authenticator actually gets registered, and now it is connected to my Rockstar account.
+W1319 (2026-11-02 17:53, dima): the actual one-time password did not hook up to OnePassword, and now i'm blocked because the Rockstar account expects an authenticator code.
+W1320 (2026-11-02 17:53, dima): now it expects it from OnePassword, not from Gmail.
+W1321 (2026-11-02 17:53, dima): this 2FA password is not functioning in OnePassword itself, and to remove 1p 2FA from the Rockstar account, i need to actually print the current 2FA code, which i don't have because 1p 2FA messed up.
+W1322 (2026-11-02 17:53, dima): how to solve? ❓
+W1323 (2026-11-02 17:53, dima): himalaya: my previous rockstar support request is not outdated.
+W1324 (2026-11-02 17:53, dima): i still want to unlink my Steam account from my old Rockstar account, but now i have access to my Rockstar account, although with a twist.
+W1325 (2026-11-02 17:53, dima): now i have another issue with this 2FA.
+W1326 (2026-11-02 17:53, dima): how to properly reshape my request to Rockstar support to unlink my old account from Steam, and actually how to solve my 2FA problem? ❓
+W1327 (2026-11-02 17:53, dima): do i need to create another request for Rockstar support, or what? ❓
+W1328 (2026-11-02 17:53, dima): 3 games are attached to old acc: gta 5, max payne 3, la noire.
+W1329 (2026-11-02 17:53, dima): steam is connected to old acc (shows in profile), i see no way to unlink it from rockstar acc website.
+W1330 (2026-11-02 17:53, dima): i've signed in to both Gmail and Rockstar old accounts in Safari, and currently i still have signed in.
+W1331 (2026-11-02 17:53, dima): i assume when i sign out of the Rockstar account, i will be logged out again because the 2FA doesn't work.
+W1332 (2026-11-02 17:53, dima): while i sign in, how to properly solve everything? ❓
+W1333 (2026-11-02 17:59, dima): asks 2fa and pwd.
+W1334 (2026-11-02 17:59, dima): can't solve? ❓
+W1335 (2026-11-02 17:59, dima): i actually still wanted to unlink (e.g., to relink my games to my main Rockstar account).
+W1336 (2026-11-02 17:59, dima): how is it possible to drop access to games if i bought those games on Steam? ❓
+W1337 (2026-11-02 17:59, dima): either way, let's first shape the request to Rockstar about resetting my 2FA first.
+W1338 (2026-11-02 17:59, dima): it's most important, and maybe let's then create an additional follow-up for Steam unlinking that describes the current state of what i have with my account and still asks for unlinking, but to verify from Rockstar's side that my games won't be wiped? ❓
+W1339 (2026-11-02 17:59, dima): i can properly relink them to my main Rockstar account? ❓
+W1340 (2026-11-02 17:59, dima): if unlinking works, the whole problem is solved because i will use my main account instead.
+W1341 (2026-11-02 17:59, dima): i'm not a fan of having additional broken email and some stray account on Rockstar's side.
 <!-- SECTION:NOTES:END -->

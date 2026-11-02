@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T14:32:00Z'
+updated_date: '2026-11-02T16:13:00Z'
 labels:
   - m
 dependencies: []
@@ -177,4 +177,18 @@ W1235 (2026-11-02 16:29, dima): Does the skill point to all places in Obsidian a
 W1236 (2026-11-02 16:29, dima): If not, temporarily add a map in the skill to all places where data about my games is stored until I find a way to collocate them properly.
 W1237 (2026-11-02 16:29, dima): I plan to move everything into Obsidian.
 W1238 (2026-11-02 16:29, dima): I don't know when, though.
+
+W1254 (2026-11-02 16:53, dima): coder asked me but i do not understand whats better here.
+W1255 (2026-11-02 16:53, dima): propose.
+W1256 (2026-11-02 16:53, dima): and sw you are 57%.
+W1257 (2026-11-02 16:54, dima): mods coder finished refactoring? ❓
+W1258 (2026-11-02 16:54, dima): before chunk he needs a compaction (important).
+W1259 (2026-11-02 16:54, dima): sw mods coder before the chunk.
+W1260 (2026-11-02 16:54, dima): lets do after SW.
+W1261 (2026-11-02 16:54, dima): start with pocket explanation.
+W1262 (2026-11-02 16:55, dima): what is coder ask is about? ❓
+W1263 (2026-11-02 16:57, dima): so guard first warns, and blocks if warns does not work? ❓
+W1264 (2026-11-02 16:57, dima): does warns get counted? ❓
+W1265 (2026-11-02 16:57, dima): i agree with this model.
+W1314 (2026-11-02 17:47, dima): tell wishkeeper and crow review results.
 <!-- SECTION:NOTES:END -->

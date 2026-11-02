@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T16:36:00Z'
-updated_date: '2026-11-01T16:36:00Z'
+updated_date: '2026-11-02T16:13:00Z'
 labels:
   - s
 dependencies: []
@@ -48,4 +48,15 @@ W1019 (2026-11-01 17:45, dima): we have, e.g., PM/tickets to find inconsistencie
 W1020 (2026-11-01 17:45, dima): another idea is to run that CLI script that checks if cli moves in the right direction.
 W1021 (2026-11-01 17:45, dima): or run the refresh-cc-mods recipe.
 W1022 (2026-11-01 17:45, dima): we didn't run it for a while.
+
+W1266 (2026-11-02 17:01, dima): so you already have some helper scripts for backlog? ❓
+W1267 (2026-11-02 17:01, dima): a question.
+W1268 (2026-11-02 17:01, dima): will the CLI verb for pocket truly help you? ❓
+W1269 (2026-11-02 17:01, dima): i'm mostly concerned about creating wrappers over wrappers.
+W1270 (2026-11-02 17:01, dima): we have all this CLI stuff with the wrappers, and i was thinking about whether it is truly useful and not dead weight, especially for backlog.
+W1271 (2026-11-02 17:01, dima): i saw it's your mainstream tool and you use it a lot, but what is actually easier: for you to write backlog CLI arcs by hand, or truly automated via CLI? ❓
+W1272 (2026-11-02 17:01, dima): each abstraction is not free, and we need to build it and maintain it.
+W1273 (2026-11-02 17:01, dima): is it worth it? ❓
+W1274 (2026-11-02 17:01, dima): if it is truly useful, i agree, but tell me if it is actually truly useful.
+W1275 (2026-11-02 17:01, dima): if it is, then shape it, but if it is not, then let's rethink and maybe discard this idea.
 <!-- SECTION:NOTES:END -->
