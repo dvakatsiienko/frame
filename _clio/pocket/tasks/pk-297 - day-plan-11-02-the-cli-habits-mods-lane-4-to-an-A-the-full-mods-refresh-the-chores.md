@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T11:39:00Z'
+updated_date: '2026-11-02T12:24:00Z'
 labels:
   - m
 dependencies: []
@@ -78,4 +78,38 @@ W1097 (2026-11-02 13:25, dima, o13 steer): no, let's not rush with it. i think i
 W1098 (2026-11-02 13:26, dima): do this first, sixth sense at linear, x pocket and pocket queue after that.
 W1099 (2026-11-02 13:26, dima): do a siesta + wishkeeper at some point. maybe now? ❓
 W1100 (2026-11-02 13:39, dima): proceed with leftover chores.
+
+W1101 (2026-11-02 13:45, dima): mods coder and you want a second wind.
+W1102 (2026-11-02 13:45, dima): ask coder how far he is from finishing the refactoring? ❓
+W1103 (2026-11-02 13:45, dima): and same for yourself.
+W1104 (2026-11-02 13:45, dima): when you can SW? ❓
+W1105 (2026-11-02 13:45, dima): pick a good point.
+W1106 (2026-11-02 13:54, dima): explain a little what is it about? ❓
+W1107 (2026-11-02 13:54, dima): a thing to borrow into our mods or into fleet tools overall? ❓
+W1108 (2026-11-02 13:54, dima): why do you want it? ❓
+W1109 (2026-11-02 13:54, dima): how it is useful? ❓
+W1110 (2026-11-02 13:54, dima): print links to mods you want borrow from.
+W1111 (2026-11-02 13:54, dima): cli coder did not manage to even try it.
+W1112 (2026-11-02 13:54, dima): push deadline 7+ days.
+W1113 (2026-11-02 13:54, dima): i forgot what it is about.
+W1114 (2026-11-02 13:54, dima): remind.
+W1115 (2026-11-02 13:54, dima): keep the app, drop the reminder.
+W1116 (2026-11-02 13:54, dima): i adopt.
+W1117 (2026-11-02 14:05, dima): Do the clicks for me.
+W1118 (2026-11-02 14:05, dima): is there a zsh native tool? ❓
+W1119 (2026-11-02 14:05, dima): or unbash can actually be adapted to my setup? ❓
+W1120 (2026-11-02 14:05, dima): i generally like it if it solves all known 180 escapes.
+W1121 (2026-11-02 14:05, dima): lets try.
+W1122 (2026-11-02 14:05, dima): and test drive it for 1week and measure.
+W1123 (2026-11-02 14:05, dima): linear https://linear.app/x-com/settings/api/applications/new is opened in browser pane.
+W1124 (2026-11-02 14:05, dima): do everything yourself.
+W1125 (2026-11-02 14:05, dima): mods coder: we are overduing the 5h pace.
+W1126 (2026-11-02 14:05, dima): tell mods coder to park and catchup with pace when he is done with refactoring.
+W1127 (2026-11-02, dima, o16 steer): main prompt.
+W1128 (2026-11-02, dima, o18 steer): main prompt.
+
+W1129 (2026-11-02 14:23, dima, o23 steer): yes and propose good patterned names for every new entry, to align with existing ones.
+W1130 (2026-11-02 14:23, dima, o25 steer): are all chores solved? ❓
+W1131 (2026-11-02 14:23, dima, o25 steer): if yes, i'd like to solve some of my other chores.
+W1132 (2026-11-02 14:23, dima, o25 steer): tell when i can ask.
 <!-- SECTION:NOTES:END -->
