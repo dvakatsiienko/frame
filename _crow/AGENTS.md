@@ -71,11 +71,11 @@ skill reaches it as text. a contract change goes there, never here.
   asserted», and a bypass session holds it unless `crossSessionInbound` is `accept` (probed
   2.1.291: the control logged «Held peer message … not delivered»).
 - **`disableAllHooks` blocks mods too** — cc answers «hooks module not loaded: only managed
-  plugins and built-in plugins run» (haiku probe, 2026-10-06). so crow starts with
-  `--setting-sources project,local`: no user hooks, plugins or mods. the global `CLAUDE.md`
-  still loads, the global `rules/` do not. `--settings` adds back what crow needs: the bypass mode and `~` as an
-  extra dir (without them Bash is denied), `crossSessionInbound`, and `CLAUDE_CODE_PLUGIN_DIRS`
-  holding the stash mod only. under `--bg`, `true &` still runs, because `x-mod-guard` is not loaded; a tab loads it and refuses `true &`.
+  plugins and built-in plugins run» (haiku probe, 2026-10-06).
+- **crow starts with `--setting-sources user,project,local`** (2026-11-02, dima's «bypass»): cc 2.1.309 refuses a `--bg`
+  bypass launch whose user settings are off, so the user hooks and mods load in crow too, x-mod-guard
+  among them. `--settings` adds the bypass mode, `~` as an extra dir, `crossSessionInbound` and
+  `CLAUDE_CODE_PLUGIN_DIRS`; the proof is crow's status line reading «bypass permissions on».
 - **`--settings` hooks merge with the user hooks** — `{"hooks":{}}` blanks nothing, so the user
   source must go to shed them (probed 2026-10-06).
 - **a project `.claude/rules/` loads only real files** — a symlinked dir, symlinked files and

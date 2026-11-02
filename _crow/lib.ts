@@ -57,17 +57,6 @@ export function claudeArgs(
             env: { CLAUDE_CODE_PLUGIN_DIRS: pluginDirs },
             permissions: {
                 additionalDirectories: ['~'],
-                allow: [
-                    'Bash',
-                    'Read',
-                    'Edit',
-                    'Write',
-                    'Glob',
-                    'Grep',
-                    'SendMessage',
-                    'ListAgents',
-                    'mcp__x-mod-stash',
-                ],
                 defaultMode: 'bypassPermissions',
             },
             skipDangerousModePermissionPrompt: true,
