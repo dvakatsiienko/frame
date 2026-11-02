@@ -10,7 +10,8 @@ const NOW = 1_000_000;
 type Tick = { at: number; id: string; targets: string[]; text: string };
 
 // `body` is the ticket's current description as linear holds it; none = linear cannot be read
-function world(on: On, ticks: Tick[] = [], body?: string) {
+// cat: what a `cat` of the body file prints, when the hook's own read cannot reach it
+function world(on: On, ticks: Tick[] = [], body?: string, cat?: string) {
     mock.clock(on, { now: NOW });
     const store = liveStore(on);
     const ran: string[] = [];
@@ -28,17 +29,24 @@ function world(on: On, ticks: Tick[] = [], body?: string) {
     // the cwd's origin, which merge-auto reads its repo from when no --repo names one
     on('process.run', (_$, e) => ({
         value: {
-            exitCode: e.argv.includes('read') && body === undefined ? 1 : 0,
+            exitCode:
+                (e.argv.includes('read') && body === undefined) ||
+                (e.argv[0] === 'cat' && cat === undefined)
+                    ? 1
+                    : 0,
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
-            stdout: e.argv.includes('get-url')
-                ? 'git@github.com:dvakatsiienko/bytes.git\n'
-                : e.argv.includes('read')
-                  ? JSON.stringify({
-                        data: { tickets: [{ description: body }] },
-                    })
-                  : '',
+            stdout:
+                e.argv[0] === 'cat'
+                    ? (cat ?? '')
+                    : e.argv.includes('get-url')
+                      ? 'git@github.com:dvakatsiienko/bytes.git\n'
+                      : e.argv.includes('read')
+                        ? JSON.stringify({
+                              data: { tickets: [{ description: body }] },
+                          })
+                        : '',
         },
     }));
     on('tool.call', (_$, e) => {
@@ -306,6 +314,26 @@ for (const [why, current, next, isFlagged] of [
         const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
         expect(signFlagged(r)).toBe(isFlagged);
     });
+
+// clio's 13:34 report: a read of the sign file in the same line is no write, so her unchanged sign line still runs
+test('a body file the hook cannot read is read through cat, so an unchanged sign line runs', async ($, on) => {
+    const { ran } = world(on, [], SIGNED_TODAY(), SIGNED_TODAY());
+    on('fs.read', () => ({ deny: 'outside the readable paths' }));
+    const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+    expect([signFlagged(r), ran]).toEqual([
+        false,
+        ['x linear body FRM-1 --set /repo/b.md'],
+    ]);
+});
+
+test("a body write behind a grep of its own file keeps today's sign line and runs", async ($, on) => {
+    const { ran } = world(on, [], SIGNED_TODAY());
+    on('fs.read', () => ({ value: SIGNED_TODAY() }));
+    const command =
+        "grep -c '^## signed' /repo/b.md; x linear body FRM-1 --set /repo/b.md";
+    const r = await bash($, command);
+    expect([signFlagged(r), ran]).toEqual([false, [command]]);
+});
 
 // lane 4 R1: the sign file is read before the command runs, so one the command writes, one it cannot read and one behind a
 // variable each count as a new sign

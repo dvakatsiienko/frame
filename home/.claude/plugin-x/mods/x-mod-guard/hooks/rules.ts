@@ -3,6 +3,7 @@ import {
     type Command,
     type Context,
     type Refusal,
+    SHELLS,
     TICKET_KEY,
     type Verdict,
     actsIn,
@@ -16,6 +17,7 @@ import {
     isFlag,
     isJobTmp,
     isThrowaway,
+    nestedScripts,
     operands,
     peel,
     resolve,
@@ -29,7 +31,6 @@ import { notes } from './rules/notes.ts';
 import { landings, overwrite } from './rules/overwrite.ts';
 import { type Parsed, parse } from './shell.ts';
 
-const SHELLS = new Set(['sh', 'bash', 'zsh']);
 // the paths every git add in the command names, for the caller to look up on disk; a path an earlier part of the
 // same command makes (a > redirect, touch, mkdir, a cp or mv dest) is there by the time the add runs
 export function addedPaths(command: string, cwd: string, ctx: Context = {}) {
@@ -125,8 +126,12 @@ const ENV_MOVERS = new Set(['CDPATH', 'ENV', 'IFS', 'PATH', 'SHELL']);
 const HIDDEN = /`|[<>]\(|\$\(\(|(?<!<)<<(?!<)|>\||>&(?!\d|-)/;
 const isTmpPath = (path: string, dir: string, ctx: Context) => {
     const p = resolve(path, dir, ctx);
-    // a `~` left after the home is filled in is `~user` or `~-`, which the shell expands
-    return !/[`$*?[{\\~]/.test(p) && isJobTmp(p, ctx);
+    // a `~` left after the home is filled in is `~user` or `~-`, which the shell expands; a typed `..` may climb a symlink
+    return (
+        !/[`$*?[{\\~]/.test(p) &&
+        !/(?:^|\/)\.\.(?:\/|$)/.test(path) &&
+        isJobTmp(p, ctx)
+    );
 };
 type Plain = ReturnType<typeof peel>;
 // dir: where the command runs; undefined for one inside a `$( … )`, which then takes no git
@@ -146,6 +151,8 @@ function isPlainCommand(c: Plain, dir: string | undefined, ctx: Context) {
                 !/^\.(?!gitignore$)/.test(basename(to))),
     );
     if (c.wrappers.length > 0 || !isEnvOk || !isRedirectOk) return false;
+    // a bare assignment, `R=<path>`: its substitution is judged as a command of its own
+    if (!c.name) return true;
     if (SHELLS.has(c.name))
         return c.args.length === 2 && c.args[0]?.text === '-c';
     if (!PLAIN_NAMES.has(c.name)) return false;
@@ -224,21 +231,24 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
 // one a mods test uses (node, claude, a `pnpm mods:` verb): git through a shell, `env`, `eval` or `pnpm exec` with no gitconfig
 // drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
 const FRESH_HOME =
-    /^([A-Za-z]\w*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
+    /^([A-Za-z][A-Za-z0-9]*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
 // pnpm reads -C, --dir, --filter and the like anywhere among its words, so a `pnpm mods:` line carries none of them
 const isFreshHomeLine = (command: string) =>
     FRESH_HOME.test(command) &&
-    !(
-        command.includes(' pnpm mods:') &&
-        command.split(/\s+/).some((w) => PNPM_REDIRECTS.test(w))
+    !ENV_MOVERS.has(command.match(FRESH_HOME)?.[1] ?? '') &&
+    !commands(parse(command), '/').some(
+        (c) =>
+            c.name === 'pnpm' &&
+            c.args.some((w) => PNPM_REDIRECTS.test(w.text)),
     );
 function isThrowawayLift(c: Command, r: Refusal, ctx: Context) {
     if (r.rule === 'home') {
-        // a git command must also act inside the tmp
-        if (c.name === 'git' && !isThrowaway(c, ctx)) return false;
+        // the command must act inside the tmp too: a HOME there alone never lifts a command run from frame, and a shell or a
+        // script it hands on would carry the HOME to git
+        if (!isThrowaway(c, ctx) || nestedScripts(c).length) return false;
         return c.assigns
             .filter((a) => a.startsWith('HOME='))
-            .every((a) => isJobTmp(resolve(a.slice(5), '/', ctx), ctx));
+            .every((a) => isTmpPath(a.slice(5), '/', ctx));
     }
     if (r.rule === 'git-sweep') return c.name === 'git' && isThrowaway(c, ctx);
     if (r.rule === 'gate-pipe') return isThrowaway(c, ctx);
@@ -287,6 +297,9 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
     const { sub, subArgs } = gitParts(c.args);
     if (sub === 'push' || actsIn(c, ctx) === undefined) return false;
     const dir = gitDir(c, ctx);
+    const { at } = gitParts(c.args);
+    if (/[`$~]/.test(dir) || /(?:^|\/)\.\.(?:\/|$)/.test(at ?? ''))
+        return false;
     const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
     return paths.every(
         (p) =>
@@ -382,22 +395,9 @@ export function refusals(
         }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
-        // a nested shell's script is a command too
-        // `-c` alone or in a cluster: `bash -lc`
-        const dashC = SHELLS.has(c.name)
-            ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
-            : -1;
-        const script = dashC >= 0 ? c.args[dashC + 1] : undefined;
-        if (script) out.push(...refusals(script.text, c.dir, ctx, isPlain));
-        if (c.name === 'eval')
-            out.push(
-                ...refusals(
-                    c.args.map((w) => w.text).join(' '),
-                    c.dir,
-                    ctx,
-                    isPlain,
-                ),
-            );
+        // a nested script is commands too: a shell's, an eval's, env -S's, find -exec's, a function body (command.ts)
+        for (const script of nestedScripts(c))
+            out.push(...refusals(script, c.dir, ctx, isPlain));
     });
     for (const r of [
         background(list),
@@ -566,35 +566,25 @@ export function rawPluginUpdate(
 // x lane merge-auto trusts a --dima-ok <pr> that reached it, so this is the proof: dima's own last prompt names the pr
 // (FRM-423 o140, the guard's door); the caller checks the prompt
 // a command's `x lane merge-auto` call, one in a nested shell or an eval included: its words and the dir it runs in
-export function mergeAutoCall(
+export function mergeAutoCalls(
     command: string,
     cwd: string,
-): { words: string[]; dir: string } | undefined {
-    for (const c of commands(parse(command), cwd)) {
+): { words: string[]; dir: string }[] {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const words = c.args.map((w) => w.text);
-        // a nested shell's script, or an eval's words, is a command too
-        const dashC = SHELLS.has(c.name)
-            ? words.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
-            : -1;
-        const nested =
-            dashC >= 0
-                ? words[dashC + 1]
-                : c.name === 'eval'
-                  ? words.join(' ')
-                  : undefined;
-        const inner = nested ? mergeAutoCall(nested, c.dir) : undefined;
-        if (inner) return inner;
         // x's root booleans (--json, --board) sit before the family or between it and the verb
         const bare = words.filter((w) => !w.startsWith('-'));
         const isMerge = bare.some(
             (w, i) => w === 'lane' && bare[i + 1] === 'merge-auto',
         );
-        if (c.name === 'x' && isMerge) return { dir: c.dir, words };
-    }
-    return undefined;
+        return c.name === 'x' && isMerge ? [{ dir: c.dir, words }] : [];
+    });
 }
-export const mergeAutoWords = (command: string, cwd: string) =>
-    mergeAutoCall(command, cwd)?.words;
+// the one merge-auto call a tick can carry: a line with two never takes one
+export function mergeAutoCall(command: string, cwd: string) {
+    const calls = mergeAutoCalls(command, cwd);
+    return calls.length === 1 ? calls[0] : undefined;
+}
 // the pr a merge-auto call merges: the first bare word after the verb, a pr url read as its number
 export function mergeAutoPr(words: string[]) {
     const pr = words
@@ -609,7 +599,7 @@ export function signWord(
     cwd: string,
     ctx: Context = {},
 ): { id: string; file?: string } | undefined {
-    for (const c of commands(parse(command), cwd)) {
+    for (const c of commandsDeep(command, cwd)) {
         const words = c.args.map((w) => w.text);
         const bare = words.filter((w) => !w.startsWith('-'));
         const at = bare.findIndex(
@@ -618,10 +608,10 @@ export function signWord(
                 (bare[i + 1] === 'set' || bare[i + 1] === 'body'),
         );
         if (c.name !== 'x' || at < 0) continue;
-        // the ticket the verb acts on, never a --parent's
-        const id = words
-            .filter((w, i) => TICKET.test(w) && words[i - 1] !== '--parent')
-            .at(-1);
+        // the ticket the verb acts on is its first id, as x reads args[0]; never a --parent's or a --blocks'
+        const id = words.find(
+            (w, i) => TICKET.test(w) && !isFlag(words[i - 1] ?? ''),
+        );
         if (!id) continue;
         const value = (flag: string) =>
             words.flatMap((w, i) =>
@@ -633,7 +623,9 @@ export function signWord(
             );
         if (bare[at + 1] === 'set') {
             const added = value('--add-label').flatMap((v) => v.split(','));
-            if (added.some((l) => l.trim() === 'signed')) return { id };
+            // x matches labels by name ignoring case; a label the shell fills in may be the sign
+            if (added.some((l) => /^signed$/i.test(l.trim()) || /[$`]/.test(l)))
+                return { id };
             continue;
         }
         const [file] = value('--set');
@@ -683,15 +675,16 @@ export function withDimaOk(command: string, pr: string) {
             words[0] === 'x' &&
             bare.some((w, i) => w === 'lane' && bare[i + 1] === 'merge-auto');
         const last = seg.words.at(-1);
-        if (!isMerge || last?.at === undefined) continue;
+        if (!isMerge || last?.at === undefined || mergeAutoPr(words) !== pr)
+            continue;
         const end = last.at + last.text.length;
         return `${command.slice(0, end)} --dima-ok ${pr}${command.slice(end)}`;
     }
     return undefined;
 }
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
-    const words = mergeAutoWords(command, cwd);
-    if (!words) return undefined;
+    const words = mergeAutoCalls(command, cwd).flatMap((c) => c.words);
+    if (!words.length) return undefined;
     const targets = words.flatMap((w, i) =>
         w === '--dima-ok'
             ? [words[i + 1] ?? '']

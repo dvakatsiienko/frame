@@ -9,7 +9,7 @@ function world(on: On, w: World = {}) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
     const ran: string[] = [];
-    const { cwd = '/repo', reals = {}, commonDirs = {} } = w;
+    const { cwd = '/repo', reals = {}, commonDirs = {}, files = [] } = w;
     on('session.id', () => ({ value: 'e1e1e1e1-0000' }));
     on('session.cwd', () => ({ value: cwd }));
     on('env.get', (_$, e) => ({
@@ -19,7 +19,7 @@ function world(on: On, w: World = {}) {
     on('fs.stat', (_$, e) => ({
         value: {
             isLink: false,
-            kind: 'dir',
+            kind: files.includes(e.path) ? 'file' : 'dir',
             mtimeMs: 0,
             realPath: reals[e.path] ?? e.path,
             size: 0,

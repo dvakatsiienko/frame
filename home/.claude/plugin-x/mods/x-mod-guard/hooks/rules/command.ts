@@ -42,9 +42,13 @@ export type Verdict =
     | { kind: 'refused'; refusal: Refusal }
     | { kind: 'escaped'; refusals: Refusal[]; targets: string[] };
 // wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
+// envArgs: the words env and exec took for themselves (`-i`, `-u NAME`, `-c`); envSplit: env -S's string; bodies: its heredocs
 type Peeled = {
     name: string;
     args: Word[];
+    envArgs: string[];
+    envSplit?: string;
+    bodies: string[];
     assigns: string[];
     wrappers: string[];
     writes: string[];
@@ -63,14 +67,49 @@ const WRAPPERS = new Map<string, string[]>([
     ['builtin', []],
     ['command', []],
     ['doas', ['-u']],
-    ['env', ['-u', '-C', '-S']],
+    ['arch', []],
+    ['caffeinate', ['-t', '-w']],
+    ['env', ['-u', '-C', '-S', '-P', '-L', '-U', '--unset', '--chdir']],
     ['exec', ['-a']],
     ['nice', ['-n']],
     ['nohup', []],
+    ['npx', ['-p', '--package']],
+    ['parallel', ['-j', '-S', '--jobs']],
+    ['script', ['-F', '-t', '-T']],
+    ['stdbuf', ['-i', '-o', '-e']],
     ['sudo', ['-u', '-g', '-U', '-C', '-h', '-p', '-r', '-t', '-D']],
     ['time', []],
     ['timeout', ['-s', '-k', '--signal', '--kill-after']],
-    ['xargs', ['-I', '-n', '-P', '-L', '-s', '-d', '-E', '-J', '-R']],
+    [
+        'xargs',
+        [
+            '-I',
+            '-n',
+            '-P',
+            '-L',
+            '-s',
+            '-d',
+            '-E',
+            '-J',
+            '-R',
+            '-S',
+            '-a',
+            '--max-args',
+            '--max-lines',
+            '--max-procs',
+            '--max-chars',
+            '--arg-file',
+            '--delimiter',
+            '--eof',
+            '--replace',
+        ],
+    ],
+]);
+// a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`
+const RUNNERS = new Map([
+    ['pnpm', ['exec', 'dlx']],
+    ['npm', ['exec', 'x']],
+    ['bun', ['x']],
 ]);
 const KEYWORDS = new Set([
     'if',
@@ -83,10 +122,12 @@ const KEYWORDS = new Set([
     '!',
     '{',
     '}',
+    'coproc',
+    'function',
 ]);
 export const SD_VALUE = new Set(['-n', '--max-replacements', '-f', '--flags']);
-const REDIRECT = /^\d*(>>?|<|&>>?)&?$/;
-const REDIRECT_JOINED = /^\d*(>>?|<|&>>?)&?\S/;
+const REDIRECT = /^\d*(>>?|<|&>>?|>[|!])&?$/;
+const REDIRECT_JOINED = /^\d*(>>?|<(?!<)|&>>?|>[|!])&?\S/;
 export const basename = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
 // `-rf` holds f; a long flag is matched whole
@@ -111,8 +152,8 @@ export function operands(args: Word[]) {
     return out;
 }
 // a `>` that truncates its target; `>>` appends and `>&` names a descriptor
-const TRUNCATE = /^\d*&?>$/;
-const TRUNCATE_JOINED = /^\d*&?>([^>&].*)$/;
+const TRUNCATE = /^\d*&?>[|!]?$/;
+const TRUNCATE_JOINED = /^\d*&?>[|!]?([^>&|!].*)$/;
 const READ = /^\d*<$/;
 const READ_JOINED = /^\d*<([^<&>].*)$/;
 // the paths a redirect names, apart (`> f`) or joined (`>f`)
@@ -142,10 +183,12 @@ function dropRedirects(words: Word[]) {
     return out;
 }
 // a command with its assignments, shell keywords and wrappers peeled off
-export function peel(raw: Word[]): Peeled {
+export function peel(raw: Word[], bodies: string[] = []): Peeled {
     let words = dropRedirects(raw);
     const assigns: string[] = [];
     const wrappers: string[] = [];
+    const envArgs: string[] = [];
+    let envSplit: string | undefined;
     for (;;) {
         const head = words[0]?.text ?? '';
         if (KEYWORDS.has(head)) {
@@ -157,22 +200,52 @@ export function peel(raw: Word[]): Peeled {
             words = words.slice(1);
             continue;
         }
+        const verbs = RUNNERS.get(basename(head));
+        if (verbs?.includes(words[1]?.text ?? '')) {
+            wrappers.push(`${basename(head)} ${words[1]?.text}`);
+            words = words.slice(2);
+            while (isFlag(words[0]?.text ?? '')) words = words.slice(1);
+            continue;
+        }
         const values = WRAPPERS.get(basename(head));
         if (!values) break;
-        wrappers.push(basename(head));
+        const wrapper = basename(head);
+        wrappers.push(wrapper);
         words = words.slice(1);
-        while (isFlag(words[0]?.text ?? '')) {
+        const isEnv = wrapper === 'env' || wrapper === 'exec';
+        // env's `-` is its -i
+        while (
+            isFlag(words[0]?.text ?? '') ||
+            (wrapper === 'env' && words[0]?.text === '-')
+        ) {
             const flag = words[0]?.text ?? '';
-            words = words.slice(values.includes(flag) ? 2 : 1);
+            const long = flag.split('=')[0] ?? flag;
+            const takes = values.includes(flag);
+            if (isEnv)
+                envArgs.push(flag, ...(takes ? [words[1]?.text ?? ''] : []));
+            if (
+                wrapper === 'env' &&
+                (flag === '-S' || flag === '--split-string')
+            )
+                envSplit = words[1]?.text ?? '';
+            else if (wrapper === 'env' && /^-S./.test(flag))
+                envSplit = flag.slice(2);
+            else if (wrapper === 'env' && long === '--split-string')
+                envSplit = flag.slice(long.length + 1);
+            words = words.slice(takes ? 2 : 1);
         }
-        // timeout's duration
-        if (basename(head) === 'timeout') words = words.slice(1);
+        // timeout's duration, script's log file
+        if (wrapper === 'timeout' || wrapper === 'script')
+            words = words.slice(1);
     }
     const [first, ...args] = words;
     return {
         appends: redirected(raw, APPEND, APPEND_JOINED),
         args,
         assigns,
+        bodies,
+        envArgs,
+        ...(envSplit !== undefined && { envSplit }),
         name: first ? basename(first.text) : '',
         reads: reads(raw),
         stdouts: stdouts(raw),
@@ -219,7 +292,48 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?(?=\/|$)/,
             (m, name: string) => vars.get(name) ?? m,
         );
-    const peeled = parsed.segments.map((s) => ({ ...peel(s.words), s }));
+    // a `NAME=<literal>` set earlier fills a later `$NAME` / `${NAME}` word, so `R=rm; $R -rf x` reads as rm; an
+    // `$(echo <literal>)` head reads as its words
+    const literals = new Map<string, string>();
+    const filled = parsed.segments.map((s) => {
+        const words = s.words.flatMap((w, j): Word[] => {
+            const name = w.text.match(
+                /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/,
+            )?.[1];
+            const value = name === undefined ? undefined : literals.get(name);
+            if (value !== undefined)
+                return w.hasQuote
+                    ? [{ isExpanding: false, text: value }]
+                    : value
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .map((text) => ({ isExpanding: false, text }));
+            const [only] = s.subst;
+            if (j === 0 && w.text === '$(…)' && s.subst.length === 1 && only) {
+                const inner = peel(only.words);
+                if (['echo', 'printf'].includes(inner.name))
+                    return inner.args.map((a) => ({
+                        isExpanding: a.isExpanding,
+                        text: a.text,
+                    }));
+            }
+            return [w];
+        });
+        for (const w of s.words) {
+            const m = w.text.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s);
+            if (m?.[1] === undefined) continue;
+            if (w.isExpanding) literals.delete(m[1]);
+            else literals.set(m[1], m[2] ?? '');
+        }
+        return { ...s, words };
+    });
+    const peeled = filled.map((s) => ({
+        ...peel(
+            s.words,
+            s.bodies.map((b) => b.text),
+        ),
+        s,
+    }));
     peeled.forEach(({ s, ...c }, k) => {
         for (const a of c.assigns) {
             const at = a.indexOf('=');
@@ -240,12 +354,20 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 ...(c.name === 'export' ? c.args.map((w) => w.text) : []),
             ].filter((a) => /^GIT_(?:DIR|WORK_TREE)=/.test(a)),
         );
-        if (!c.name) return;
+        // a bare redirect (`> f`, `exec > f`, `{ …; } > f`) writes with no command
+        if (
+            !c.name &&
+            !c.writes.length &&
+            !c.appends.length &&
+            !c.assigns.length &&
+            c.envSplit === undefined
+        )
+            return;
         if (c.name === 'git')
             c.args = c.args.map((w, i) =>
                 c.args[i - 1]?.text === '-C'
                     ? { ...w, text: expand(w.text) }
-                    : w,
+                    : { ...w, text: gitLong(w.text) },
             );
         const piped: Peeled[] = [];
         for (let j = k - 1; j >= 0 && peeled[j]?.s.sep === '|'; j--)
@@ -270,22 +392,137 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
     });
     return out;
 }
-// every command of a line, a nested shell's script and an eval's words included, so a lookup sees what a rule will
-const NESTED_SHELLS = new Set(['sh', 'bash', 'zsh']);
-export function commandsDeep(command: string, cwd: string): Command[] {
-    return commands(parse(command), cwd).flatMap((c) => {
-        const dashC = NESTED_SHELLS.has(c.name)
-            ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
-            : -1;
-        const script = dashC >= 0 ? c.args[dashC + 1]?.text : undefined;
-        const nested = script
-            ? commandsDeep(script, c.dir)
-            : c.name === 'eval'
-              ? commandsDeep(c.args.map((w) => w.text).join(' '), c.dir)
-              : [];
-        return [c, ...nested];
-    });
+// git takes any unique prefix of a long flag: `--har` is --hard. a prefix of one the rules read is read as it
+const GIT_LONGS = [
+    '--delete',
+    '--force',
+    '--force-with-lease',
+    '--hard',
+    '--mirror',
+    '--no-gpg-sign',
+    '--no-verify',
+    '--staged',
+    '--worktree',
+];
+function gitLong(word: string) {
+    if (!/^--[a-z-]{2,}$/.test(word) || GIT_LONGS.includes(word)) return word;
+    return (
+        GIT_LONGS.filter((l) => l.startsWith(word)).sort(
+            (a, b) => a.length - b.length,
+        )[0] ?? word
+    );
 }
+export const SHELLS = new Set([
+    'sh',
+    'bash',
+    'zsh',
+    'dash',
+    'ksh',
+    'mksh',
+    'fish',
+]);
+// a word as the shell would read it back as one argv entry
+const quoted = (w: string) => `'${w.replaceAll("'", "'\\''")}'`;
+// the scripts a command runs that the line does not show as commands: a shell's `-c` script, or what it reads on stdin
+// (a heredoc, a `<<<` string, an echo or a cat heredoc piped in); an eval's words; trap, alias and `!` git alias strings;
+// env -S's string; `find -exec` and `fd -x` commands; a function's body
+export function nestedScripts(c: Command): string[] {
+    const texts = c.args.map((w) => w.text);
+    if (SHELLS.has(c.name)) {
+        const dashC = texts.findIndex((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
+        if (dashC >= 0) {
+            const script = texts.slice(dashC + 1).find((t) => t !== '--');
+            return script === undefined ? [] : [script];
+        }
+        const script = operands(
+            c.args.filter(
+                (w, i) => w.text !== '<<<' && c.args[i - 1]?.text !== '<<<',
+            ),
+        ).filter((o) => !o.startsWith('<<<'));
+        const isStdin =
+            texts.some((t) => /^-[A-Za-z]*s[A-Za-z]*$/.test(t)) ||
+            !script.length;
+        if (!isStdin) return [];
+        const here = texts.flatMap((t, i) =>
+            t === '<<<'
+                ? [texts[i + 1] ?? '']
+                : t.startsWith('<<<')
+                  ? [t.slice(3)]
+                  : [],
+        );
+        const piped = c.feeders.flatMap((f) =>
+            ['echo', 'printf'].includes(f.name)
+                ? [f.args.map((a) => a.text).join(' ')]
+                : f.bodies,
+        );
+        return [...here, ...c.bodies, ...piped];
+    }
+    if (c.name === 'eval') return [texts.join(' ')];
+    // a script held in a string: trap's action, an alias's body, a git alias that starts with `!`
+    if (c.name === 'trap') return operands(c.args).slice(0, 1);
+    if (c.name === 'alias')
+        return operands(c.args).flatMap(
+            (o) => o.match(/^[^=]+=(.+)$/s)?.[1] ?? [],
+        );
+    if (c.name === 'git')
+        return gitParts(c.args).configs.flatMap(
+            (k) => k.match(/^alias\.[^=]+=!(.+)$/is)?.[1] ?? [],
+        );
+    const out: string[] = [];
+    if (c.envSplit !== undefined)
+        out.push(
+            [
+                'env',
+                c.envSplit,
+                ...(c.name ? [quoted(c.name)] : []),
+                ...texts.map(quoted),
+            ].join(' '),
+        );
+    const runs = (from: number, end: (t: string) => boolean) => {
+        const rest = texts.slice(from + 1);
+        const stop = rest.findIndex(end);
+        const words = stop < 0 ? rest : rest.slice(0, stop);
+        if (words.length) out.push(words.map(quoted).join(' '));
+    };
+    if (c.name === 'find')
+        texts.forEach((t, i) => {
+            if (['-exec', '-execdir', '-ok', '-okdir'].includes(t))
+                runs(i, (w) => w === ';' || w === '+');
+        });
+    if (c.name === 'fd')
+        texts.forEach((t, i) => {
+            if (['-x', '--exec', '-X', '--exec-batch'].includes(t))
+                runs(i, () => false);
+        });
+    const brace = c.args.findIndex((w) => w.text === '{' && !w.hasQuote);
+    if (brace >= 0) runs(brace, (w) => w === '}');
+    return out;
+}
+// every command of a line, each nested script's commands included, so a lookup sees what a rule will
+export function commandsDeep(
+    command: string,
+    cwd: string,
+    depth = 0,
+): Command[] {
+    return commands(parse(command), cwd).flatMap((c) => [
+        c,
+        ...(depth < 8
+            ? nestedScripts(c).flatMap((s) => commandsDeep(s, c.dir, depth + 1))
+            : []),
+    ]);
+}
+// a typed path the shell fills or climbs at run time: a variable, a glob, a `~user`, a `..`
+export const isUnsafePath = (path: string) =>
+    /[`$*?[{\\~]/.test(path) || /(?:^|\/)\.\.(?:\/|$)/.test(path);
+// git's own options that take the next word as their value
+const GIT_VALUED = new Set([
+    '--git-dir',
+    '--work-tree',
+    '--namespace',
+    '--attr-source',
+    '--super-prefix',
+    '--list-cmds',
+]);
 // git's own options before the subcommand; `-c` values kept, since two of them are floor
 export function gitParts(args: Word[]) {
     const configs: string[] = [];
@@ -295,7 +532,10 @@ export function gitParts(args: Word[]) {
         const t = args[i]?.text ?? '';
         if (t === '-c') configs.push(args[++i]?.text ?? '');
         else if (t === '-C') at = args[++i]?.text;
-        else if (t === '--git-dir' || t === '--work-tree') i++;
+        else if (t === '--config-env') configs.push(args[++i]?.text ?? '');
+        else if (t.startsWith('--config-env='))
+            configs.push(t.slice('--config-env='.length));
+        else if (GIT_VALUED.has(t)) i++;
         else if (!isFlag(t)) break;
     }
     return {

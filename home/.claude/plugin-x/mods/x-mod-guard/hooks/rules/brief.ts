@@ -1,14 +1,15 @@
-import { parse } from '../shell.ts';
 import {
     type Command,
     type Context,
     type Refusal,
-    commands,
+    commandsDeep,
     operands,
     resolve,
 } from './command.ts';
 
 const CODIE = '/x:crew-codie';
+// a command that prints a file: its last operand is the file (`sed -n p <file>`, `head -n 99 <file>`)
+const READERS = new Set(['cat', 'sed', 'head', 'tail', 'awk', 'less', 'bat']);
 const INLINE = 'inline-brief';
 // a `claude --bg` call's brief file: the one `$(cat <path>)`, `cat <path> |` or `< <path>` reads
 function spawnBrief(c: Command, ctx: Context) {
@@ -17,7 +18,7 @@ function spawnBrief(c: Command, ctx: Context) {
     const dir = resolve(c.dir, '/', ctx);
     const text =
         c.feeders.flatMap((f) =>
-            f.name === 'cat' ? operands(f.args) : [],
+            READERS.has(f.name) ? operands(f.args).slice(-1) : [],
         )[0] ?? c.reads[0];
     return {
         dir,
@@ -26,7 +27,7 @@ function spawnBrief(c: Command, ctx: Context) {
 }
 // the brief files every codie summon in the command reads, for the caller to hash and look up
 export function briefPaths(command: string, cwd: string, ctx: Context = {}) {
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const path = spawnBrief(c, ctx)?.file?.path;
         return path ? [path] : [];
     });

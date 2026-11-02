@@ -73,8 +73,8 @@ const LIFTED = [
     ],
     ['a repo path held in a variable', `R=${TMP}; git -C "$R" add -A`],
     [
-        'a HOME inside the job tmp for a command that is not git',
-        `HOME=${JOB}/tmp/h pnpm test`,
+        'a HOME inside the job tmp for a command run in the tmp that is not git',
+        `cd ${TMP} && HOME=${JOB}/tmp/h pnpm test`,
     ],
     ['a gate with its stderr merged', `cd ${TMP} && pnpm test 2>&1 | tail -3`],
     [

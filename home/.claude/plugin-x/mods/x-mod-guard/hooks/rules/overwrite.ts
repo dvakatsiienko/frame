@@ -10,7 +10,6 @@ import {
     isFlag,
     isJobTmp,
     operands,
-    or,
     resolve,
 } from './command.ts';
 
@@ -113,7 +112,19 @@ export function overwrite(c: Command, ctx: Context): Refusal | undefined {
     const isForced =
         c.name === 'mv' ||
         (c.name === 'cp' && hasFlag(c.args, ['--force'], 'f'));
-    const isKept = hasFlag(c.args, ['--no-clobber'], 'ni');
+    // the last of -n, -i and -f wins: `mv -nf` overwrites
+    const last = c.args
+        .flatMap((w) =>
+            w.text === '--no-clobber' || w.text === '--interactive'
+                ? ['n']
+                : w.text === '--force'
+                  ? ['f']
+                  : /^-[A-Za-z]+$/.test(w.text)
+                    ? [...w.text.slice(1)].filter((ch) => 'nif'.includes(ch))
+                    : [],
+        )
+        .at(-1);
+    const isKept = last === 'n' || last === 'i';
     if (!(isNull || isForced) || isKept) return undefined;
     const [to, ...into] = landings(c, ctx);
     if (!to) return undefined;

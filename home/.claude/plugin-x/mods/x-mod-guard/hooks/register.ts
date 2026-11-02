@@ -721,7 +721,7 @@ async function isManifestChanged($: EngineInterface, dir: string) {
     const r = await $.process
         .run(['git', 'diff', '--name-only', 'HEAD'], { cwd: dir })
         .catch(() => null);
-    if (!r || r.exitCode !== 0) return false;
+    if (r?.exitCode !== 0) return false;
     return r.stdout
         .split('\n')
         .some((f) =>
@@ -815,6 +815,16 @@ async function lookUp(
 // then runs with a warn (fail open, like pocket-check's closed-ticket net). A move into a project the cache holds
 // without milestones reads again after ten minutes, since a project can gain its first one; an unreachable linear is
 // not asked again for a minute, so each move does not wait the timeout out again
+// a body file as the command will read it: the engine's read, else `cat` (the hook may not reach every path the shell
+// does, clio's scratchpad for one); undefined when neither reads it
+async function signFile($: EngineInterface, file: string) {
+    const read = await $.fs.read(file).catch(() => undefined);
+    if (read !== undefined) return read;
+    const run = await $.process
+        .run(['cat', file], { timeoutMs: 4000 })
+        .catch(() => undefined);
+    return run?.exitCode === 0 ? run.stdout : undefined;
+}
 // the sign lines dated today in a body about to be written that the ticket's current body lacks; an unreadable linear
 // counts every one as new, so the tick is still asked
 async function hasNewSignLine($: EngineInterface, id: string, body: string) {
@@ -1149,7 +1159,7 @@ export const register: Register = (on) => {
             sign.file.includes('$') ||
             writtenPaths(typed, cwd, ctx).includes(sign.file)
                 ? undefined
-                : await $.fs.read(sign.file).catch(() => undefined);
+                : await signFile($, sign.file);
         const isNewSign =
             sign !== undefined &&
             (sign.file === undefined ||

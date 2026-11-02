@@ -17,7 +17,6 @@ import {
     peel,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
-import { rewrite } from './rewrite.ts';
 
 // a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 sixth sense, the
 // 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds
@@ -174,7 +173,7 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
     const subOps = operands(subArgs);
     const config = configs.find(
         (k) =>
-            /^commit\.gpgsign=false$/i.test(k) ||
+            /^commit\.gpgsign=(?:false|no|off|0)$/i.test(k) ||
             /^user\.(name|email)=/i.test(k),
     );
     if (config) {

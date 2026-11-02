@@ -148,11 +148,17 @@ export function lint(
         };
     const isListing =
         hasFlag(c.args, LISTING) || ops.includes('list') || ops.includes('ls');
+    // a runner's own gate (`pnpm exec biome check`) is a gate too; one reached through npx is a new refusal, held for
+    // dima's pick (FRM-472, o9), so it is not read yet
+    const runner = c.wrappers.find((w) => /^(?:pnpm|npm|bun) /.test(w));
     const isGate =
         !isListing &&
+        !c.wrappers.includes('npx') &&
         (['tsc', 'vitest'].includes(c.name) ||
-            (['pnpm', 'npm', 'yarn', 'bun'].includes(c.name) &&
-                ops.some((o) => GATE.test(o))));
+            ((['pnpm', 'npm', 'yarn', 'bun'].includes(c.name) || runner) &&
+                [...(runner ? ['exec', c.name] : []), ...ops].some((o) =>
+                    GATE.test(o),
+                )));
     if (pipedTo && isGate)
         return {
             door: 'run the gate unpiped and read its exit code',
@@ -227,7 +233,8 @@ export function unbraced(parsed: Parsed): Refusal | undefined {
     };
 }
 export function background(list: Command[]): Refusal | undefined {
-    const last = list.findLastIndex((c) => c.sep === '&');
+    // a bare redirect backgrounded (`( … ) > f &`) is a new reach of this rule, held for dima's pick (FRM-472, o9)
+    const last = list.findLastIndex((c) => c.sep === '&' && c.name);
     if (
         last < 0 ||
         list
