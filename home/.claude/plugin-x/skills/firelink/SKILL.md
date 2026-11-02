@@ -14,16 +14,17 @@ three doors, one skill: **psn** and **steam** through trophy-sys (the truth for 
 
 ## 1. trophy-sys — psn + steam, the only truth
 
-`~/projects/bytes/apps/trophy-sys`: psn through the unofficial `psn-api` (NPSSO), steam through the Steam Web API (key); its web app is [trophy-sys.vercel.app](https://trophy-sys.vercel.app). call it BEFORE answering; never answer from memory, a note or a guide site. tracker down or mac unreachable → say so and stop.
+`~/projects/bytes/apps/trophy-sys`: psn through the unofficial `psn-api` (NPSSO), steam through the Steam Web API (key). call it BEFORE answering; never answer from memory, a note or a guide site. tracker down or mac unreachable → say so and stop.
 
 ```zsh
 <base>/scripts/trophy-sys-cli.sh <verb> [arg] [--out <file>]   # clean json to a file, prints path + shape
 ```
 
-parse the file with a short `python3`, never read it whole (`games` is ~260 rows, `steam-games` ~340).
+parse the file with a short `python3`, never read it whole.
 
 - psn: `profile` · `games` (whole library, takes no number) · `game <npCommId>` (full list, rarity %) · `news` (earned since the last baseline) · `stats` · `stats-sync` and `snapshot` write state: only on his explicit ask
 - steam: `steam-profile` · `steam-games` · `steam-game <appid>` (achievements + global rarity %) · `steam-wishlist` (`priority: 0` = unset)
+- mac build or windows-only, per game: `<base>/scripts/steam-platforms.py [--mac | --windows-only]` (store api, cached; first run ~15 min)
 
 ### gotchas that bit
 
