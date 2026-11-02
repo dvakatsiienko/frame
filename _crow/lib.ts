@@ -38,8 +38,7 @@ export const armModels = {
     opus: 'claude-opus-5-5',
 } as const satisfies Record<Arm, string>;
 
-// no user settings source: no user hooks, plugins or mods; disableAllHooks would block the mods in `pluginDirs` too (probed 2026-10-06)
-// cc 2.1.309 honours bypass only from user settings, so the allowlist is what stops the prompts (2026-11-02)
+// user settings on: cc 2.1.309 refuses a --bg bypass launch without them (probed 2026-11-02, dima's «bypass»), so user hooks run in crow too
 export function claudeArgs(
     arm: Arm,
     pluginDirs = '',
@@ -51,7 +50,7 @@ export function claudeArgs(
         '--effort',
         effort,
         '--setting-sources',
-        'project,local',
+        'user,project,local',
         '--settings',
         JSON.stringify({
             crossSessionInbound: 'accept',
