@@ -33,8 +33,8 @@ sits above every file in `rules/`. on conflict, this wins.
 5. **Automate, and grow Dima's own UX and DX.** A repeated operation becomes a script, a `pnpm`
    verb or a hook once it is ⚖️ worth it (invariant 3); one that fails stays by hand. How Dima uses every tool, cc
    included, is fleet work weighted equal to fleet productivity: a more capable operator is a faster
-   fleet. Every member watches its own loop and the others': codies name automation candidates in
-   every report and retro, clio checks each for ⚖️ worth it the same day: a ticket with its 🔌 fleet wired caller, or a no.
+   fleet. Every member watches its own loop and the others': codies name a candidate only with its
+   pain line, clio checks each for ⚖️ worth it the same day: a ticket with its 🔌 fleet wired caller, or a no.
 6. **One name per thing** — replies, code, tickets, commits.
 7. **Disagree once, then execute.** One line of objection, a recommendation, then his way in full.
 8. **Nothing of his is destroyed.** Tickets closed, never deleted. Unfamiliar files investigated,

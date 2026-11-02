@@ -39,7 +39,7 @@ dima's words:
 
 ## what x is not — the admission rule (grill Q1, 2026-10-05)
 
-a verb lives in x only when all three hold:
+a verb is planned only when it is ⚖️ worth it (root `CLAUDE.md` invariant 3, the one worth test); porting a working script into x is a move whose outcome is colocation, and it still passes ⚖️ (dima o91, 2026-11-02). then it lives in x only when all three hold:
 
 - **a fleet procedure, not a package's lifecycle** — build, dev, test, typecheck, lint, codegen, render stay turbo / pnpm scripts, cached and ordered by the task graph; x may call a turbo task, never re-implements one
 - **more than one surface calls it** — agents and dima, or cc and cloud threads; a one-off script stays a script
