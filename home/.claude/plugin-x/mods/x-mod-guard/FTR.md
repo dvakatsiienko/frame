@@ -20,12 +20,14 @@
   - given dima's prompt, typed in this turn (the word ends with the turn), holds, in one sentence with no negation, the word «stash» (never inside `x-mod-stash`), a kill verb (drop, kill, delete, clear) and the repo's name
   - when the session runs `git stash drop` in that repo (its toplevel, never the cwd)
   - then it runs; `git stash clear` needs «all» or «clear» in the sentence too; the same drop in another repo, a negated ask («don't touch the stash in bytes»), and any command with a nested shell, or one pointed at another repo by `GIT_DIR=`, `--git-dir` or `--work-tree`, stay refused; «that's all» never widens a drop into a clear, and «clearly» is no kill verb (FRM-426)
+  - proof: tests/stash-drop.test.ts::a drop in the repo dima named runs on his kill-the-stash prompt; the same drop in another repo stays refused; stash clear stays refused after a prompt that says only kill; stash clear runs when dima says clear all stashes in the repo; a negated kill ask keeps the refusal: «don't drop the stash in bytes»; a drop pointed at another repo by env or flag stays refused; «that's all» never widens a drop into a stash clear; «clearly» is not a kill verb; a drop beside a nested shell is never let through
 - ✅ a hazard shape is refused with its fix, and its near miss runs
   - given a Bash call holds: an `sd` replacement holding `$`, in double quotes (the shell eats it) or single (sd reads `$NAME` as a capture ref and writes it empty — `under $CLAUDE_JOB_DIR/tmp` wrote `/tmp`, 2026-10-08), door python or the Edit tool; an `sd` find led by `-` with no `--`; an unbraced `$var` before `:<letter>` (a zsh modifier) or a non-ascii character; `sd`, or `sed -i`, on `.github/workflows/*`; a trailing `&` with no `wait` or `sleep` after it; a gate (`typecheck`, `test`, `check`, `tsc`, `vitest`, a `family:test` or `family:gate` script such as `pnpm x-go:gate`) piped into `head`, `tail` or `grep`; a `git push` piped into `grep`; a `git commit` with no `--` paths, `git add -A` / `--all` / `.`
   - given an `x knowledge read <name>` whose stdout goes to `/dev/null` or a file (`>`, `1>`, `&>`, `>>`), then it is refused: «read it plainly», since the read is logged as read while nothing reaches the session (FRM-371, helper-lite 10-09); a plain read, `| head` and `2>/dev/null` run
   - then it is refused with its fix; `$HOST:8080`, `$HOST:/tmp`, `pgrep -l x; kill <pid>`, `kill $(cat x.pid)` and a search for `--no-verify` run; the shape one step away (a replacement with no `$`, `--`, `${var}`, `sed -n`, a `sleep` after the `&`, an unpiped gate, `git ls-remote`, `-- <paths>`) runs
   - given `set -- $VAR` (or `${VAR}`) unquoted, then it is refused with the door `${=VAR}`, zsh's split — zsh never splits the parameter, so a watch on `$1` sees one word and dies silent; `set -- ${=VAR}` and `set -- "$A" b` run (FRM-337)
   - then a gate tool run to list or print (`--help`, `--version`, `--listFilesOnly`, `--showConfig`, `vitest list`) piped into `grep` runs, and so does a gate ended by `;` before the pipe (FRM-337)
+  - proof: tests/lints.test.ts::${lint} is refused with its fix; ${lint}: the near miss runs; ${command} is not a piped gate
 - ✅ a shape with one right spelling is rewritten, never refused
   - given a Bash call holds `pnpm -s` (before the script's name: `pnpm build -s` hands it to the script), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
@@ -39,6 +41,7 @@
   - given a `git add` or `git commit` whose repo is frame or bytes (the cwd, a `cd`, or `-C`), then it runs with one line naming `x lane commit`; in any other repo no line is added
   - then `x gh pr`, `x lane commit`, `x as <member> -- gh …`, a `gh api` with a body or a non-GET method, quoted text and a heredoc body get no line
   - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
+  - proof: tests/hint.test.ts::a raw pr read runs with an x gh pr hint: …; a raw git add or commit in frame or bytes runs with an x lane commit hint: …; no hint for: …
 - ✅ a `gh --jq` call gets a gojq hint (FRM-394)
   - given a Bash call runs `gh … --jq <program>` (also `--jq=…` or `-q`), then it runs as typed and the model reads: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`
   - given `gh … --json f | jq …`, then no hint
@@ -47,6 +50,7 @@
 - ✅ an `rg` that skips dot dirs gets a `--hidden` hint (PK-139)
   - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
   - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
+  - proof: tests/hint.test.ts::an rg that skips dot dirs runs with a --hidden hint: …; an rg that reaches dot dirs or needs none gets no hint: …
 - ✅ a pipe into `jq` before `&&` gets a pipestatus hint (FRM-428, PK-188)
   - given `gh api repos/x/y | jq .name && echo ok`, then it runs as typed and the model reads: the `&&` after `| jq` reads jq's exit, not the producer's — check `$pipestatus[1]` (zsh) or start with `set -o pipefail`
   - given a pipe ending in `jq` with nothing after it, `;` after it, or a command naming `pipefail`, then no hint
@@ -81,11 +85,13 @@
   - given an earlier part of the same command makes the path — a `>` redirect, `touch`, `mkdir`, a `cp` or `mv` dest (`echo x > f && git add f`) — then it runs; an add before the command makes it is still refused
   - decision: git aborts the whole add on one unmatched pathspec, and a commit after it lands partial — the old path after a `git mv` was the case (fleet-hazards, the bash tool)
   - 📌 a tracked file already deleted is refused too; `git rm <path>` stages it. a `git add` inside `bash -c` or `eval` is not looked up
+  - proof: tests/paths.test.ts::a git add of a missing path is refused, naming the path; a git add whose every path exists runs; a git add of a path ${shape} made earlier in the same command runs; a git add before the command makes the path is still refused; a git add after a cd is checked against that dir
 - ✅ a scratch clone runs its local git
   - given a git discard or a local rewrite (`branch -D`, `worktree remove|prune`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp` (spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`) or an os temp root (`/tmp`, `/private/tmp`, `/var/folders`, where `mktemp -d` lands), through `cd` or `-C`
   - decision: the temp roots joined after sixth sense lost ~8 calls to fixture repos under `mktemp -d` (FRM-346's retro, dima, 2026-10-08)
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
+  - proof: tests/paths.test.ts::${shape} in a scratch clone runs; ${shape} is refused
 - ✅ a throwaway repo under the job tmp runs its git hygiene (FRM-467)
   - given a git command whose own dir resolves under `$CLAUDE_JOB_DIR/tmp` — through `cd`, `git -C`, or a variable set earlier in the command to a path or to `$(mktemp -d <template under the job tmp>)`
   - when it is a sweep (`add -A`, `add .`, a bare `commit`), a `-c user.name|email` or `git config user.*`, a gate piped to `tail`, or a command run in the tmp carrying a `HOME=` that itself points under the job tmp (no variable in it; never a shell or a script it hands on, FRM-478)
@@ -109,15 +115,18 @@
   - decision: dima wants everything clear when he returns, parking only things like backup restores; a dirty tree keeps git's own refusal, so `--force` still asks (FRM-356, 2026-10-09)
   - then a tree holding a `.scratch/` dir, or whose HEAD reaches a commit no branch or remote branch does, still asks; so does a tree the lookup could not read
   - decision: git's dirty check misses both — a gitignored `.scratch/` plan goes with the tree, and a detached HEAD's commits are orphaned (sixth sense's find; dima, 2026-10-09)
+  - proof: tests/cleanup.test.ts::clio cleans up without dima's word: …; clio still asks: …; clio asks to remove a tree holding a .scratch plan: …; clio asks to remove a tree whose HEAD has commits no branch reaches: …; clio asks to remove a scratch tree whose lookup fails; a session outside clio still asks to remove a scratch tree
 - ✅ a command that only names git runs
   - given `cat .github/workflows/ci.yml`, `github-token-wrap gh pr edit 1 --add-label x`, `lefthook run commit-msg` or `bash <script> "$VAR"`
   - then x-mod-guard runs it: git rules read the command's name, never a substring
   - 📌 the «names git» refusals the 10-08 retros counted come from cc's own worktree isolation («a worktree-isolated session's git operations must target its own worktree»), which no mod reaches (FRM-356)
+  - proof: tests/words.test.ts::a command that only names git runs: …
 - ✅ a job's own tmp takes writes over its own files
   - given a `>` redirect, a heredoc into a file, an `mv` or a `cp -f` onto a file that exists under `$CLAUDE_JOB_DIR/tmp` (spelled out, as the variable, or after a `cd` there), a script run by path writing its own log included
   - then it runs; the same write onto a repo path, another job's tmp or a path climbing out with `..` is refused as before
   - decision: the FRM-340 retros counted ~15 hand rewrites of codie's and sixth sense's own scratch writes (FRM-341); `rm` stays refused there too, `trash` is the door
   - 📌 the `zsh -f <script>` and `gh --jq '.[0]'` refusals FRM-341 names left no x-mod-guard event — inference: cc's own worktree-isolation guard refused them, which no mod reaches
+  - proof: tests/jobtmp.test.ts::${shape} in the job's own tmp runs; a > over ${shape} is still refused
 - ✅ an escape lets one refused command run
   - given dima said yes to a refused command
   - when the command ends with `# dima-ok: <targets>`, naming every target the refusal named (split by spaces or commas)
@@ -125,6 +134,7 @@
   - when the marker names another target, or only some of them (`rm -rf ~/keep tmp.txt # dima-ok: tmp.txt`)
   - then the command is refused as before
   - decision: the target is the command's own — its paths, pattern or branch; the rule's own word when it names none (`HEAD`, `&`, `-s`) — and the refusal prints the exact marker, so codie never guesses it
+  - proof: tests/floor.test.ts::${family} runs with a dima-ok naming its target; a dima-ok naming another target is refused; a dima-ok naming one of two targets is refused
 - ✅ a dima-ok marker counts only when dima's own last prompt names its target
   - given a command whose `# dima-ok:` marker names every target
   - when dima's last prompt typed at the composer or sent over the bridge names each target as a whole word, case-sensitive: each edge is the prompt's end, a space, a quote (`«»`, `“”` included), punctuation or a dash; a `.` or `/` closes it before a space or the end (`build.`, `/x/build/`)
@@ -135,6 +145,7 @@
   - then it is refused, naming the targets his prompt lacks (rule `dima-ok-unproven`); a peer's message, a task notification, an sdk or a plugin prompt never counts
   - makes: dima's last typed prompt in x-mod-guard's `$.state`, written only by its `prompt.submit` hook, so no tool call can forge it
   - decision: a model appended `# dima-ok:` on its own in a live probe and passed (2026-10-09); dima chose the proof, `$.state` over a file since no Bash parse can stop a write through a variable (FRM-356)
+  - proof: tests/proof.test.ts::a dima-ok marker with no prompt from dima is refused; a dima-ok marker runs when dima's last typed prompt names its target; a dima-ok marker runs when dima's prompt came over the bridge; a ${kind} prompt naming the target never proves a dima-ok marker; a dima-ok marker is refused when dima's last prompt names the target in another case; a dima-ok marker runs when dima's prompt names the target before a full stop; a dima-ok marker is refused when dima's prompt holds the target only inside a word: …; a short target never proves itself inside a word: …; a bare-symbol target runs when dima pastes its marker phrase; a bare-symbol target is refused when dima names it only in prose; a target dima quotes or dashes the way he writes runs: …; a path target runs when dima names it with a trailing slash; only dima's last typed prompt counts
 - ✅ dima's tick on an orbit ask is his word (FRM-427, FRM-409)
   - given dima ticked an open ask that quotes the whole guarded command in one backtick span, spacing aside (`` ⚠️ mirror: `git push --mirror origin` ``); a span quoting another command that names the same target (`` `git push origin main` ``), or the target unquoted in prose, proves nothing (dima's tick on sixth sense's ask, 2026-10-28), once its 5 s sending window passed
   - then the guarded command runs with no `# dima-ok` typed, and a marker his prompt never named runs too; the escape is kept with the ask's id
@@ -153,16 +164,19 @@
   - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; an overrun runs the same `.catch` — types: `CatchHandler`, «run afresh when it throws, misreturns or overruns»)
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
   - decision: `.catch` answers `{ deny }` — a hook without one is skipped and the command would run
+  - proof: tests/floor.test.ts::a guard that fails refuses the command
 - ✅ every refusal and escape is kept as a guard event
   - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, the rule that fired, door, target, and why it was refused; the newest 50 kept
   - given the store write fails, then the verdict stands: a refusal still refuses with its own door, a dima-ok command still runs, and the log reads «x-mod-guard: the event was not kept»
   - decision: nothing draws the events — x-mod-stash's 🛡️ row left in FRM-354 («too noisy»); the refusal itself still reaches the session that ran the command
+  - proof: tests/floor.test.ts::a refusal is kept as a guard event; a refusal's event keeps why it was refused; a dima-ok command runs when its store write fails; a multi-line refusal is kept on one line; a long refusal is cut by whole code points, no half emoji kept (R5)
 - ✅ every day's refusals and escapes are counted past the kept events
   - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped, rules: { <rule>: { refused, escaped } } }`, the local day; counts older than 30 days are dropped
   - then `x fleet flow` prints the day's total and a `guard by rule, refused/escaped` line, busiest rule first, so noise and real catches separate (FRM-341)
   - then a halt sums the day's keys for the whole day, however many events the newest-50 cut has dropped
   - decision: one key per session a day — two sessions never write the same key, so a count is never lost to a race; a count that fails to write never changes the refusal
   - 📌 the Bash and `Monitor` tools are read (a Monitor's `command`, every rule, FRM-337); a `!` line in the prompt goes through unread
+  - proof: tests/day.test.ts::a day's refusals and escapes are counted past the kept events; a day's count names the rule behind each refusal and escape
 
 - ✅ a system, overwrite, prune or remote-delete command is refused with its door
   - given a Bash call runs one of:
@@ -178,12 +192,14 @@
   - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
   - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list); a file under a claude session's own scratchpad is never an overwrite (PK-138)
   - 📌 not read: an overwrite inside `bash -c` or `eval` (the lookup reads the top command only), `tee`, `truncate`, `rsync --delete`; a remote delete sent through `gh api` or a raw `curl` to any api but linear's
+  - proof: tests/additions.test.ts::${group}: ${shape} is refused with its door; ${group}: ${shape} runs; sudo ahead of a floor command keeps the floor door
 
 - ✅ an obsidian cli call never acts on the active note by accident
   - given `obsidian <verb> --help` (or `-h`), then it is refused with the door «obsidian --help, bare»: the cli runs the verb on the active note instead of printing help
   - given `obsidian delete` with no `path=` or `file=`, then it is refused with the door `obsidian delete path=<vault path>`
   - then a bare `obsidian --help` and `obsidian delete path=_hq/old.md` run
   - decision: `obsidian delete --help` moved dima's `_hq/memory-sweep.md` into the trash on 2026-10-07, restored the same minute (pocket 27)
+  - proof: tests/lints.test.ts::an obsidian verb with --help is refused with its fix; obsidian delete with no file named is refused with its fix; an obsidian verb with --help: the near miss runs
 
 - ✅ a codie summon runs only on a brief that passed `x brief check`
   - given a `claude --bg` call whose prompt carries `/x:crew-codie` — in the command, or in the brief file it reads through `"$(cat <path>)"`, `cat <path> |` or `< <path>`, resolved from the dir its `cd` left
@@ -193,20 +209,24 @@
   - given a `claude --bg` without `/x:crew-codie` (a probe, crow), then it runs; `# dima-ok: <target>` lets a refused one run, as in every rule
   - decision: x-mod-guard sees the command before the shell runs it, so it cannot hash an expanded `$(cat …)` — it reads the named file itself (FRM-311)
   - 📌 harness-proven only; a live summon through the gate is unprobed until x v1.1 lands on main
+  - proof: tests/brief.test.ts::a codie spawn whose brief file has a stamp runs; a codie spawn whose brief changed after its check is refused with the check door; a codie spawn with the brief inline is refused, asking for a brief file; a claude --bg without /x:crew-codie runs; a codie spawn ending in a dima-ok marker runs; a brief read through < whose file names /x:crew-codie is checked; a stamp under X_STATE counts, as x brief check writes it there
 
 - ✅ a refusal says nothing in the command ran
   - given a Bash call x-mod-guard refuses, a chained command included
   - then the reason opens with «nothing in this command ran — », so no one assumes the first half ran
   - decision: a chained command is refused whole; an agent once took its first half as run
+  - proof: tests/lints.test.ts::a refusal says nothing in the command ran
 - ✅ a worktree session whose shell left its tree is pointed back
   - given a session rooted under `<repo>/.claude/worktrees/` whose shell cwd sits outside that tree (a `cd ~/frame && …` left it in main)
   - when its Bash or Monitor call is refused (by x-mod-guard or beneath it) or fails
   - then the refusal or the result carries «this worktree session's shell left its tree for <cwd>: cd <tree>, or EnterWorktree(path: "<tree>")»; a call that runs, or one inside the tree, gets nothing (FRM-337)
   - 📌 harness-proven only: that cc's own isolation refusal reaches the mod as a deny or an error beneath `tool.call` is unprobed — a live worktree session `cd`ed to main would show it
+  - proof: tests/drift.test.ts::a worktree session refused outside its tree is pointed back with EnterWorktree; a worktree session whose call fails outside its tree gets the hint; a call that runs outside the tree gets no hint; a refusal inside the tree gets no hint
 - ✅ a hand-typed push to main is refused with `x lane push`
   - given a Bash `git push <remote> <sha-or-ref>:main` (or `:refs/heads/main`) run inside `~/frame` or `~/projects/bytes`, `cd` or `-C` included
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
+  - proof: tests/lints.test.ts::a sha pushed to main in frame is refused with its fix; a ref pushed to refs/heads/main in bytes is refused with its fix; …: the near miss runs
 
 - ⬜ a command whose name hides is flagged `opaque-head` with its literal spelling, one class rule, warn-only (dima's o1, o35, 2026-11-02)
   - given a Bash call whose command name is a `$` the line never fills (`${X:-rm}`, `read R; $R`, `$(cat f) args`), a brace list (`r{m,}`), a value a variable takes several of on the line (a loop var, a rebind) or an `$(echo …)` prints, or a command walked out of a script printed into a shell (`printf … | bash`, `echo … | sh`), a `source`/`.` or a git alias (`-c alias.s=status`)
@@ -243,6 +263,7 @@
   - then the guard names the fix «move the comment to the line's end»: everything after an unquoted `#` is a comment, so the commands it hides never run
   - given `echo a; trash x # deadline: 5 s`, `echo 'a # b; c'`, or a comment ending its line before the next one, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until sixth sense's clean, refusing since (FRM-427 round 2, 2026-10-28); a comment of prose holding a `;` fires too (1 of 5 shapes in a 3-day replay, 16 fires in 16,275 calls)
+  - proof: tests/midline.test.ts::a comment before more commands is refused: …; runs unrefused: …
 
 - ✅ three slips get a hint line, the command runs as typed (PK-67, the 10-11 halt flush)
   - given an `sd`, `sed -i` or `python` write into a file under `~/frame` or `~/projects/bytes`, then the hint names `Edit`, which fires the format and hold hooks a scripted replace skips; an append, a redirect or a path outside the repos gets none
@@ -264,12 +285,14 @@
   - then nothing runs, and the refusal names `backlog task edit <id> --append-notes <text>`
   - given an empty notes block, no notes section, `--append-notes`, or an id no task file matches, then it runs unwarned
   - decision: refuse: the warn stage ran until FRM-425's sixth sense clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
+  - proof: tests/notes.test.ts::--notes over a task that holds notes is refused naming --append-notes; --notes before the id over a task that holds notes is still refused (F6); --notes= over a task that holds notes is refused naming --append-notes; --notes over a task that holds notes is refused inside «…»; tests/holes.test.ts::--notes over a pocket task that holds notes is refused naming --append-notes; BACKLOG_CWD names the pocket repo from anywhere
 
 - ✅ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
   - decision: warned for a week, refused from 2026-10-18 (dima's o234): 0 raw-linear warnings in the week's otel tap
   - given a session the registry names anything but 🦉 clio, when it runs `linear issue view`, `linear api` or `linear issue comment add` (inside a nested shell too), then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and clio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as clio, a member's door is `x linear read`
+  - proof: tests/linear.test.ts::a member's raw linear is refused with the door named: …; clio's session runs the raw linear cli; clio's raw linear api still takes the x linear rewrite; a session the registry does not list runs it, fail open; a member runs: …
 - ✅ a member writes a ticket body only through `x linear body --set`, and nobody but dima acts as dima (FRM-459)
   - given a session the registry names anything but 🦉 clio (a nested shell and an eval count)
   - when it runs `x linear api` with an `issueUpdate`, `issueBatchUpdate` or `issueCreate`, or a query the shell expands from a variable or a substitution or xargs feeds in, or the raw cli's `linear issue update|create` with `--description`, `-d` or `--description-file` (also behind `x as <member> --`), then the call is flagged `linear-body`, naming `x linear body <id> --set <file>`
@@ -323,6 +346,7 @@
   - then the refusal is kept as a guard event (`fork: <description>`), like a Bash refusal
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
+  - proof: tests/spawn.test.ts::a fork with no why-fork line is refused with a fresh agent and helper; a fork with a why-fork line runs; a fresh agent is left alone; a refused fork is kept as a guard event
 
 - ✅ a linear ticket put into a project with milestones names one (FRM-417, FRM-425)
   - given a Bash `linear issue create|update|edit --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` (inline, or `$p` with its value in `--vars`) — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId` (or `projectMilestoneId: null`)
@@ -333,6 +357,7 @@
   - given linear cannot be read, then it runs, and the model reads «the milestone check was skipped» naming the project
   - decision: refuse: the warn stage ran until FRM-425's sixth sense clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open on an unread linear, like pocket-check's closed-ticket net; tickets already outside a milestone are never read (dima's FRM-417 call)
+  - proof: tests/holes.test.ts::«${command}» is refused naming a milestone; «${command}» runs; «git commit -m "guard --project"» is not read as a linear call; with linear unreachable the create runs, warned that the milestone check was skipped; the projects read is cached for a day; tests/milestone-cache.test.ts::a move inside «…» is checked against the milestones
 
 - ✅ a start_session spawn is read by the live-trial gate (FRM-467)
   - given a `start_session` call whose prompt leaves a live trial unnamed, as a `claude --bg` spawn would (frame's `script/test-drive-list.ts --spawn-hook`)
@@ -341,6 +366,7 @@
   - proof: tests/spawn-trial.test.ts
 - ✅ a brief file naming the pre-rename skill id is checked like a codie brief
   - given `claude --bg "$(cat <file>)"` where the file names `/x:crew-coder` and holds no `x brief check` stamp, then it is refused with the check door (read-both)
+  - proof: tests/brief.test.ts::a brief file naming the old skill id is checked too, and refused without a stamp
 
 ## every SendMessage
 
@@ -351,6 +377,7 @@
   - given no item, 1 or 2 items with no ticket, a list or a ticket in a `>` quote or a code fence, a spec path (read as named, never opened, so a worktree cwd behaves the same), a session not named codie or sixth sense, or a sender that is itself codie or sixth sense (its findings, its «final»), then it is sent
   - decision: refuse: the warn stage ran until FRM-425's sixth sense clean on 96cb52ce (2026-10-27), then left `WARN_ONLY`
   - decision: fail open — a message is never stopped by a broken check
+  - proof: tests/spec.test.ts::a 3-item job to a codie is refused unsent; a one-line message to a codie is sent unwarned; items numbered «1)» count as a list; a numbered list inside a «>» quote is not a job; a numbered list inside a code fence is not a job; a 3-item job naming its spec path is sent unwarned; a 3-item message to a session that is not a codie is sent unwarned; the refusal is kept as a guard event; a job with no spec path is refused unsent; a 3-item job to an old-named member is refused unsent: …; tests/holes.test.ts::a ${shape} send naming a ticket to «…» is refused; sixth sense's findings to its codie are sent; a ticket named only inside a quote leaves the 3+ rule; a ticket send naming its spec path is sent; a 2-item send naming no ticket is sent, the 3+ rule unchanged; a 3-item send naming no ticket is refused
 
 ## every Edit and Write
 
@@ -360,6 +387,7 @@
   - given other file types, or a session outside `~/frame/_clio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
+  - proof: tests/edits.test.ts::the 8th code edit in a clio session carries the delegate note, once; the 8th edit still runs, never blocked; edits to non-code files do not count; clio cd'd into ~/frame still gets the note at the 8th edit; a codie cd'd into clio's dir gets no note; a session outside clio gets no note; the edit count leaves nothing in the shared store
 - ✅ a clio session's 3rd image Read in a turn gets a helper-lite nudge (FRM-428, PK-148)
   - given a session whose root is under `~/frame/_clio` reads its 3rd `.png` `.jpg` `.jpeg` `.gif` `.webp` `.heic` `.bmp` or `.tiff` in one turn (the main loop, never a subagent's)
   - then the Read runs and the model gets one note naming `helper-lite` and `rules/fleet-tooling.md`; the 1st, 2nd and 4th get none
@@ -374,6 +402,7 @@
   - decision: cc's own Write lets an unread existing file be replaced (measured 2026-10-09); a tracked test file was lost that way and restored from git (FRM-350)
   - makes: the session's seen paths in x-mod-guard's `$.state`, real paths, gone with the session
   - 📌 a file read by `cat` in Bash does not count as read; the Read tool is the door
+  - proof: tests/unread.test.ts::a Write over a tracked file never read is refused naming the Read; a Write over a tracked file runs after a Read of it; a Write over an untracked file runs unread; a Write of a new file runs
 - ✅ no live hook edit while the mod's own tests are red (FRM-361)
   - given a mod named in `CLAUDE_CODE_PLUGIN_DIRS` whose `claude plugin test` exits red
   - when an `Edit`, `Write` or `MultiEdit` targets a file under that mod's `hooks/`, by any path that resolves there
@@ -393,10 +422,13 @@
   - decision: guard refuses it, so one Bash parser reads every command — x-mod-holds had a second, simpler one until FRM-350
   - then a hold whose holder sat idle 30 min, whose pid died, or whose landed file is clean in git does not refuse
   - then a relative path is read from the dir every `cd` before it left, the way every guard rule reads it
+  - proof: tests/held.test.ts::a Bash write to another session's held file is refused with the holder named; a Bash write to a file held by a dead session runs; a Bash write to a held file already clean in git runs; a Bash write to a file held by a session idle 30 min runs; a Bash write after `cd X;` is read from X; a Bash write to a held file not written yet is refused through a linked folder; reads the file a Bash write targets: …
 - ✅ a whole-tree `git stash` is refused while another session holds a file in that repo (FRM-428 rider; verified clean round 2)
   - given A holds `x.ts` in `/repo`, when B runs `git stash`, `git stash -u`, `git stash save …` or `git stash push` with no pathspec there, or with `.`, `*` or `:/` for one, then nothing runs: rule `stash-sweep` refuses it, door `git stash push -u -- <your paths>`, naming A's file
   - given a pathspec (`git stash push -- y.ts`), a read verb (`list`, `show`, `pop`, `apply`), another repo, or no live holder, then it runs
+  - proof: tests/stash.test.ts::a whole-tree stash while another session holds a file is refused: …; no stash-sweep warning: …; a whole-tree stash with no live holder elsewhere runs unwarned
 - ✅ a Bash command the parser cannot read goes through
   - given A holds `x.ts`
   - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses
   - then the command runs — a parse miss fails open, like a broken store
+  - proof: tests/held.test.ts::finds no write in a variable path

@@ -24,11 +24,13 @@ two sessions, A and B, in one checkout.
   - decision: the holder is named by the first 8 characters of its session id; every session in one checkout shares the repo name
   - decision: the hold keeps the real path in its own case and git runs on it, so a symlinked leaf (`~/.claude/CLAUDE.md`) is held like its target
   - decision: the key is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
+  - proof: tests/holds.test.ts::a first edit takes the hold
 - ✅ an edit refused beneath the holds leaves no hold (FRM-428, PK-264)
   - given A's first edit of `x.ts` is refused by a hook beneath (x-mod-guard)
   - when B edits `x.ts`
   - then the edit goes through; a hold A's earlier edit landed stays held
-  - proof: tests/holds.test.ts::an edit refused beneath the holds leaves no hold; a refused edit keeps the hold an earlier edit landed- ✅ the holder keeps editing
+  - proof: tests/holds.test.ts::an edit refused beneath the holds leaves no hold; a refused edit keeps the hold an earlier edit landed
+- ✅ the holder keeps editing
   - given A holds `x.ts`
   - when A edits it again
   - then the edit goes through
@@ -36,36 +38,45 @@ two sessions, A and B, in one checkout.
   - given A holds `x.ts`
   - when B edits `y.ts`
   - then the edit goes through
+  - proof: tests/holds.test.ts::other files stay free
 - ✅ a commit releases
   - given A committed `x.ts`
   - when B edits it
   - then the edit goes through and A's hold is gone
   - decision: clean releases only a hold whose edit landed — while A's permission prompt is open the file is clean and still A's
   - and a commit run through Bash releases at once, `git -C <dir>`, `git -c <k=v>` and `git --no-pager` ahead of `commit` included (H5)
+  - proof: tests/holds.test.ts::a commit releases the holder's file; tests/holds.test.ts::a commit through Bash releases the clean holds before the turn ends; tests/holds.test.ts::a commit behind git's own options releases the clean holds too (H5)
 - ✅ a commit through Bash releases at once
   - given A holds `x.ts` and commits it through Bash (`x lane commit …`, `git commit …`) mid-turn
   - then A's clean holds drop from the store right after the command, so B's edit goes through; a command that commits nothing keeps them to the turn's end (FRM-337)
   - decision: before, a hold dropped only at A's turn end or on B's next try — a coordinator in one long turn kept its holds ~30 min past the commit and blocked FRM-336's codie
+  - proof: tests/holds.test.ts::a commit through Bash releases the clean holds before the turn ends; tests/holds.test.ts::a commit behind git's own options releases the clean holds too (H5); tests/holds.test.ts::a Bash command that commits nothing keeps the holds until the turn ends
 - ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted
   - when B edits it
   - then B is refused
+  - proof: tests/holds.test.ts::a new file stays held until committed
 - ✅ a dead holder releases
   - given A's process was killed
   - when B edits A's file
   - then the edit goes through
   - decision: the pid is the `$PPID` a mod's child sees (measured: the `claude` process), kept with its start time, so a reused pid reads as dead
+  - proof: tests/holds.test.ts::a dead holder releases
 - ✅ an idle holder releases
   - given A's last turn ended over 30 minutes ago
   - when B edits A's file
   - then the edit goes through
   - decision: 30 min — prior art ranged 5–120, and 5 min dropped long turns
+  - proof: tests/holds.test.ts::a holder idle for 30 min releases; tests/holds.test.ts::a holder idle under 30 min keeps the hold
 - ✅ one winner in a race
   - given A and B edit the same new file in the same second
   - then never both of them hold it
   - decision: no compare-and-set, so after its write a claim that sees any rival yields; a true tie refuses both and the next try settles it — earliest `at` let both win when one session's write landed late (sixth sense round 1)
+  - proof: tests/holds.test.ts::one winner when two sessions take a new file in the same second; tests/holds.test.ts::one winner when a rival writes while the claim is in flight
 - ✅ a broken store never blocks work
   - given the store file is unreadable
   - when B edits
   - then the edit goes through and the error is logged
+  - proof: tests/holds.test.ts::a broken store never blocks an edit
 - ✅ a Bash write to a held file is refused — by x-mod-guard, which reads this store; its `FTR.md`, «held files» (FRM-350)
+  - proof: x-mod-guard/tests/held.test.ts::a Bash write to another session's held file is refused with the holder named

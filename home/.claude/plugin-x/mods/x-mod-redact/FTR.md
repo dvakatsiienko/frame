@@ -20,6 +20,7 @@
   - given the same key appears in two rows
   - then both read the same placeholder, so the model can tell two keys apart and name the one it means
   - decision: the placeholder's tail is a hash of the value (fnv-1a), so it is stable across rows without a counter; a second value that hashes to a taken placeholder is masked for good instead, never restored to the wrong value
+  - proof: tests/vault.test.ts::one value reads as one placeholder; tests/vault.test.ts::a placeholder taken by another value masks one way
 - ✅ a placeholder the model uses in a tool call runs with the real value
   - given dima pastes a fake key in a prompt
   - when the model runs a Bash command that names its placeholder
@@ -35,10 +36,12 @@
 - ✅ a 1Password reference stays readable
   - given a row holds `op://dev/<item>/credential`
   - then it is kept as written — a reference is the safe form the fleet rules ask for, not a secret
+  - proof: tests/vault.test.ts::a 1password reference stays readable; tests/redact.test.ts::keeps a 1password reference readable
 - ✅ a vault error never lets a secret through
   - given the vault cannot be written (three version checks lost to parallel rows, or `$.state` failing)
   - when a row or a tool result carries a secret
   - then it is masked one way — its first six characters and `…‹redacted›` — and the error is logged; the row is never blocked
+  - proof: tests/vault.test.ts::a vault error masks the row one way and logs it
 - ✅ a failing hook never lets a secret through
   - given the row hook or the tool hook throws, overruns its 10 s or answers a wrong shape
   - then its `.catch` runs in its place: the row goes on masked one way, the tool's result (replayed, or run with its placeholders as written) is masked one way, and a log line names the failure
