@@ -3,10 +3,10 @@ id: PK-292
 title: >-
   shop-trip shift 11-02: one side lane runs while dima is out, the plan in
   _clio/shifts/2026-11-02-shop-trip.md
-status: open
+status: done
 assignee: []
 created_date: '2026-11-01T15:55:00Z'
-updated_date: '2026-11-02T19:43:00Z'
+updated_date: '2026-11-02T19:44:00Z'
 labels:
   - s
 dependencies: []
@@ -35,4 +35,6 @@ W1031 (2026-11-01 17:54, dima): print how many chunks are planned to fully execu
 kept: 2026-11-02 — dima stayed at the keyboard today (12:16 «you stay parked and watch side lane»); the shop-trip shift did not run, moved to next
 
 close: 2026-11-02 — the shop-trip shift never ran, moot
+
+close: 2026-11-02 — dropped W1023 W1024 W1025 W1026 W1027 W1028 W1029 W1030 W1031 (o77, dima 21:42: the shift never ran, moot)
 <!-- SECTION:NOTES:END -->
