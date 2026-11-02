@@ -1333,6 +1333,34 @@ test("a 🛎️ press writes the tick record: the ask's id, text, quoted targets
     ]);
 });
 
+test('a press that lands on an ask his prompt already locked keeps the tick record (S1)', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
+    await say($, 'go');
+    await ui.press({ key: 'orbit:accepted:o1' }).catch(() => undefined);
+    expect(writes.at(-1)).toEqual([expect.objectContaining({ id: 'o1' })]);
+});
+
+test("his prompt inside the sending window sends the tick now: the record's time is the prompt's (S2)", async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(1_000);
+    const sent = await w.clock.now();
+    await say($, 'go');
+    expect(writes.at(-1)).toEqual([
+        expect.objectContaining({ at: sent, id: 'o1' }),
+    ]);
+});
+
 test('a second 🛎️ press inside the sending window takes the tick back', async ($, on) => {
     world(on);
     const writes = tickLog(on);

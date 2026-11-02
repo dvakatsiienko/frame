@@ -1438,6 +1438,8 @@ const quotedOf = (text: string) =>
     [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
 async function tickAsk($: EngineInterface, id: string) {
     const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
+    // a press on a frame drawn before his prompt locked the ask changed nothing, so it keeps the record (S1)
+    if (ask?.isLocked || ask?.isResolved) return;
     const { value: kept = [] } = await $.state.get(TICKS);
     const rest = kept.filter((t) => t.id !== id);
     const isTicked = ask?.mark === 'accepted' && !ask.isLocked;
@@ -1454,6 +1456,19 @@ async function tickAsk($: EngineInterface, id: string) {
                   } satisfies StashTick,
               ].slice(-TICKS_KEPT)
             : rest,
+    );
+}
+
+// his prompt sends a tick still sending: its record holds from now, never from the window's end (S2)
+async function sendTicks($: EngineInterface, ids: string[]) {
+    if (!ids.length) return;
+    const now = await $.clock.now();
+    const { value: kept = [] } = await $.state.get(TICKS);
+    await $.state.set(
+        TICKS,
+        kept.map((t) =>
+            ids.includes(t.id) && t.at > now ? { ...t, at: now } : t,
+        ),
     );
 }
 
@@ -4001,6 +4016,10 @@ export const register: Register = (on) => {
                     (x) => !wrong.includes(x),
                 ),
             });
+        await sendTicks(
+            $,
+            marked.filter((a) => a.mark === 'accepted').map((a) => a.id),
+        ).catch(() => undefined);
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder =
             (await $.state.get(MOBILE)).value || !isOn('stash.orbit')
