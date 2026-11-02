@@ -716,7 +716,7 @@ W463 (2026-10-29 14:28, dima): these are all ideas. i still expect you to propos
 W464 (2026-10-29 14:28, dima): retro → ? i have no ideas. ❓
 W465 (2026-10-29 14:28, dima): researcher → ? i have no ideas. ❓
 W466 (2026-10-29 14:28, dima): explore → probably leave like this? we disabled the explore builtin, so we can name it any way we want. i have no ideas. ❓
-W467 (2026-10-29 14:28, dima): finally, a folder rename: frame/_clio → frame/_clio.
+W467 (2026-10-29 14:28, dima): finally, a folder rename: frame/cclio → frame/_clio.
 W468 (2026-10-29 14:28, dima): why? because frame grew a lot and now has a lot of files and folders; it's sometimes hard for me to find your folder in a vertical list in Cursor Explorer.
 W469 (2026-10-29 14:28, dima): an underscore at the start of the folder name would hoist it to the top, and let me easily find the folders i need most.
 W470 (2026-10-29 14:28, dima): this change will affect a lot of diffs, so i'm not sure i really want it.
