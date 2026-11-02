@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-02
 ---
 
@@ -45,3 +45,7 @@ one line per use: date · case · blocks it drew · dima's verdict · note
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 whiteboard test drive (dev.fast, cli-driven) — first real case: review the cli a/b/c arms (FRM-284) when they report; log in `docs/test-drive/whiteboard.md`; the verdict compares head to head with show-me, then the whiteboard recipe is written from the real uses. dima 2026-10-06: «let's test drive it … create and execute the whiteboard app recipe» — set 2026-10-06
+
+## verdict
+
+- 2026-11-02 · **adopted** (dima: «keep the app, drop the reminder. i adopt») · 4 rounds on 10-06 (FRM-284's a/b/c review), his «looks good for me, let's keep for now» · the app stays installed, no trial date, reached for on a code walkthrough

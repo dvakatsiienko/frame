@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-02
+until: 2026-11-09
 fits: codie sixth-sense
 ---
 
@@ -17,3 +17,8 @@ the shape: the spawn prompt opens with the role slash (`/x:crew-codie …`); eve
 one line per spawn: date, member, named skills, loaded skills, misses
 
 - 2026-10-29 · ⚡ 🔧 mods lane 3 coder (FRM-426, desktop thread) · named: x:crew-coder, plugin-authoring, guide-typescript, mods/AGENTS.md, api-map · loaded (its first reply): x:crew-coder, crew-dna, how-you-work, plugin-authoring, guide-typescript, mods/AGENTS.md, api-map · misses 0 · extra: a pocket read under _clio/ autoloaded cclio AGENTS.md into it (it stayed the coder)
+
+**test card:** we believe naming every skill in plain words gets it loaded · we test it by every summon's first reply (named vs loaded) · we measure named, loaded and the misses per summon · we're right if 5 summons in a row load every named skill
+**kill rule:** a summon whose first reply lists nothing twice in a row
+
+- 2026-11-02 · ⚡ 🔧 codie mods lane 4 · named: crew-codie, plugin-authoring, guide-code, guide-typescript, crew-subagent · loaded: crew-codie, crew-dna, plugin-authoring, crew-subagent · missed: guide-code, guide-typescript (no .ts edit yet at the first reply) · extended once to 11-09 (dima's o17 tick)

@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-02
+until: 2026-11-10
 fits: codie:go
 blind: true
 ---
@@ -19,3 +19,5 @@ dima, 2026-10-13: a tool used is not a tool proven useful. the next cli codie's 
 
 - 2026-10-13 · baseline: 15 fleet transcripts ran `dlv` (rg over `~/.claude/projects`, newest 10-12); usefulness unrecorded
 - 2026-10-22 · [FRM-401](https://linear.app/x-com/issue/FRM-401) + [FRM-403](https://linear.app/x-com/issue/FRM-403) cli coder · 0 `dlv` runs, not reached for · one red whose cause sat outside the diff (a test fixture's push died on dima's global `pushInsteadOf` https → ssh); the test's own failure output named it in one read, so delve had nothing to add — every other red was in the diff
+
+- 2026-11-02 · extended once to 11-10 (dima: «cli coder did not managed to even try it. push deadline 7+ days»); the next cli lane's brief names it, the round is logged at its retro
