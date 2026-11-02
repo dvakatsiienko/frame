@@ -74,4 +74,26 @@ describe('red-proof --cmd --pairs', () => {
         await closed;
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
     }, 15_000);
+
+    // a swap that breaks the module's load fails every test whatever it reads, so it proves nothing: named apart from a red
+    it('names a swap that broke the load, and fails, instead of counting it red', () => {
+        const { file, pairs } = fixture();
+        const r = spawnSync(
+            BIN,
+            [
+                '--cmd',
+                '--pairs',
+                pairs,
+                file,
+                '--',
+                'sh',
+                '-c',
+                `grep -q 'const b = 2;' ${file} || { echo 'SyntaxError: Unexpected token' >&2; exit 1; }`,
+            ],
+            { encoding: 'utf8' },
+        );
+        expect([r.status, r.stdout.match(/did not load/g)?.length]).toEqual([
+            1, 1,
+        ]);
+    });
 });

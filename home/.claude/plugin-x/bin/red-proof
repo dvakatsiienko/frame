@@ -26,9 +26,12 @@ if [ "${1-}" = --cmd ]; then
   fi
   set -- "${args[@]}" "${cmd[*]}"
 fi
+# each run's output is kept: a swap that breaks the load fails every test whatever it reads, so it is named apart from a red
+out=$(mktemp)
 run() {
-  if [ ${#cmd[@]} -gt 0 ]; then "${cmd[@]}"; else npx vitest run "$test"; fi >/dev/null 2>&1
+  if [ ${#cmd[@]} -gt 0 ]; then "${cmd[@]}"; else npx vitest run "$test"; fi >"$out" 2>&1
 }
+LOAD_ERROR='SyntaxError|did not load|Cannot find module|ERR_MODULE_NOT_FOUND|Failed to load|Transform failed|\[setup failed\]|\[build failed\]'
 anchors=() replacements=()
 if [ "${1-}" = --pairs ]; then
   [ $# -eq 4 ] || usage
@@ -58,7 +61,7 @@ backup=$(mktemp)
 cp -p "$file" "$backup"
 # touch: a build cache keyed on mtime (the x shim) must not keep the mutated build
 restore() { cp -p "$backup" "$file"; touch "$file"; }
-trap 'restore; rm -f "$backup"' EXIT
+trap 'restore; rm -f "$backup" "$out"' EXIT
 trap 'exit 130' INT TERM
 
 all_red=1
@@ -68,7 +71,16 @@ for i in "${!anchors[@]}"; do
   restore
   label="mutated"
   [ "${1-}" = --pairs ] && label="«${anchors[$i]}»"
-  [ $red = 1 ] && echo "RED   ${label}: the test failed, as it should" || { echo "✗     ${label}: the test still passed — it does not read this line"; all_red=0; }
+  if [ $red = 1 ] && grep -Eq "$LOAD_ERROR" "$out"; then
+    echo "✗     ${label}: the run did not load — a load error, not a failing test; its output ends:"
+    tail -5 "$out" | sed 's/^/      /'
+    all_red=0
+  elif [ $red = 1 ]; then
+    echo "RED   ${label}: the test failed, as it should"
+  else
+    echo "✗     ${label}: the test still passed — it does not read this line"
+    all_red=0
+  fi
 done
 cmp -s "$backup" "$file" || { echo "✗     restore: $file differs from its original" >&2; exit 1; }
 if run; then green=1; else green=0; fi
