@@ -236,8 +236,9 @@ async function releaseClean($: EngineInterface, sid: string) {
     return left;
 }
 
-// a commit run through the shell, `git commit` or `x lane commit`
-const COMMIT = /\b(git|x\s+lane)\s+(-C\s+\S+\s+)?commit\b/;
+// a commit run through the shell, `git commit` (past git's own `-C <dir>`, `-c <k=v>` and `--flags`) or `x lane commit`
+const COMMIT =
+    /\b(?:git(?:\s+(?:-[Cc]\s+\S+|--[a-z][a-z-]*(?:=\S+)?))*|x\s+lane)\s+commit\b/;
 
 // a turn ended: start the idle clock and drop the holds whose files are clean again
 async function settle($: EngineInterface) {

@@ -5,7 +5,7 @@
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
-no two sessions write the same file: a session's first edit of a file holds it until the file is committed, the session ends or it sits idle 30 min. nothing draws the holds: the refusal names the holder (x-mod-stash's 🔒 chip left in FRM-354).
+no two sessions write the same file git can commit: a session's first edit of a file holds it until the file is committed, the session ends or it sits idle 30 min; a file outside a repo, or one git ignores, reads clean and is never held (a commit is how a hold ends, and such a file has none). nothing draws the holds: the refusal names the holder (x-mod-stash's 🔒 chip left in FRM-354).
 
 ## edits
 
@@ -41,6 +41,7 @@ two sessions, A and B, in one checkout.
   - when B edits it
   - then the edit goes through and A's hold is gone
   - decision: clean releases only a hold whose edit landed — while A's permission prompt is open the file is clean and still A's
+  - and a commit run through Bash releases at once, `git -C <dir>`, `git -c <k=v>` and `git --no-pager` ahead of `commit` included (H5)
 - ✅ a commit through Bash releases at once
   - given A holds `x.ts` and commits it through Bash (`x lane commit …`, `git commit …`) mid-turn
   - then A's clean holds drop from the store right after the command, so B's edit goes through; a command that commits nothing keeps them to the turn's end (FRM-337)

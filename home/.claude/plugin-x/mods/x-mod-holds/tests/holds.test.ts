@@ -389,6 +389,15 @@ test('a commit through Bash releases the clean holds before the turn ends', asyn
     );
 });
 
+for (const command of [
+    'git -c user.useConfigOnly=true commit -m x -- x.ts',
+    'git --no-pager commit -m x -- x.ts',
+    'git -C /repo -c core.editor=true commit -m x',
+])
+    test(`a commit behind git's own options releases the clean holds too (H5): ${command}`, async ($, on) => {
+        expect(await holdsAfterBash($, on, command)).toEqual([]);
+    });
+
 test('a Bash command that commits nothing keeps the holds until the turn ends', async ($, on) => {
     expect(await holdsAfterBash($, on, 'ls')).toHaveLength(1);
 });
