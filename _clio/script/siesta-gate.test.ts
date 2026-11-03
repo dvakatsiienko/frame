@@ -279,18 +279,16 @@ describe('the siesta comes due', () => {
         expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
     });
 
-    test.each(['⚡ 🔎 sixth sense: clio-lean | main'])(
-        'a done ping from «%s» makes it due',
-        (name) => {
-            const home = fixtureHome();
-            prompt(home, {
-                prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] round 3 clean\n</cross-session-message>`,
-            });
-            expect(said(stop(home, stopInput(home), true))).toContain(
-                'siesta due',
-            );
-        },
-    );
+    test.each([
+        '⚡ 🔎 sixth sense: clio-lean | main',
+        '🌗 🎨 designer: speak | BYT-1',
+    ])('a done ping from «%s» makes it due', (name) => {
+        const home = fixtureHome();
+        prompt(home, {
+            prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] round 3 clean\n</cross-session-message>`,
+        });
+        expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
+    });
 
     test.each(['🎀 helga', '🦉 clio (side)', '🐦 ⬛ crow'])(
         'a done ping from «%s» makes none due',
