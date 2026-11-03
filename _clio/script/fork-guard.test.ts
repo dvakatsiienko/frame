@@ -214,6 +214,18 @@ describe('fork-guard fork-edit', () => {
             ),
         ).toContain('«fork-d1bbf86b»');
     });
+
+    test.each([
+        'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9/../../memory/habit-cto.md',
+        'x lane commit /tmp/m.txt -- home/.claude/pocket/tasks/pk-1.md',
+        'cd /Users/dima/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9/../../../home/.claude/CLAUDE.md"',
+        'cd /etc && x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
+    ])(
+        'a pocket-shaped path that escapes the pocket is refused: %s',
+        (command) => {
+            expect(bash(command)).toContain('«fork-d1bbf86b»');
+        },
+    );
 });
 
 describe('fork-guard announce', () => {

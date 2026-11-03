@@ -96,9 +96,11 @@ fork-edit | fork-bash)
 		done
 		# its own pocket items (pocket-add --side) are the one commit a fork makes in main, or x-mod-holds keeps them held (FRM-472 07c)
 		q="[\"']"
-		dir="([^ ;&|\"']*/)?pocket/tasks/pk-"
-		pocket="($q$dir[^;&|\"']*\.md$q|$dir[^ ;&|\"']*\.md)"
-		grep -qE "^ *(cd [^ ;&|]+ && )?x lane commit [^ ;&|]+ -- *($pocket *)+$" <<<"$cmd" && exit 0
+		# anchored: _clio/pocket/tasks/pk-<name>.md or pocket/tasks/…, no / after pk- (so no ..), a cd only to frame or _clio
+		dir="(_clio/)?pocket/tasks/pk-"
+		pocket="($q$dir[^/;&|\"']*\.md$q|$dir[^/ ;&|\"']*\.md)"
+		home="(~|$HOME)/frame(/_clio)?/?"
+		grep -qE "^ *(cd $home && )?x lane commit [^ ;&|]+ -- *($pocket *)+$" <<<"$cmd" && exit 0
 		# an in-place verb writes where the shell stands
 		if [ -z "$hit" ] && grep -qE '(^|[;&|] *)(sd|sed -i|mv|cp|trash|rm|git (commit|add|checkout|reset|stash)|x lane commit)( |$)' <<<"$cmd"; then
 			in_main_checkout "$cwd" && hit=$cwd
