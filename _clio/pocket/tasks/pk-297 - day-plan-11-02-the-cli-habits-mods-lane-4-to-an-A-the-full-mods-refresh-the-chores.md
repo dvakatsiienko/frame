@@ -1,18 +1,16 @@
 ---
 id: PK-297
-title: >-
-  day plan 11-02: the cli habits, mods lane 4 to an A, the full mods refresh,
-  the chores
+title: 'day plan 11-02, rolled to 11-03: the cli habits, mods lane 4, the chores'
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-02T20:25:00Z'
+updated_date: '2026-11-03T10:46:00Z'
 labels:
   - m
 dependencies: []
-priority: now
+priority: next
 type: wish
-ordinal: 9999
+ordinal: 25000
 ---
 
 ## Description
@@ -274,4 +272,24 @@ W1523 (2026-11-02 22:09, dima): did you use a subagent for retro? ❓
 W1524 (2026-11-02 22:10, dima): yes, do it via card.
 
 W1525 (2026-11-02 22:12, dima): about 3 new retros proposal (ticket), needs a shape-line/idea? ❓
+
+rolled to 11-03, dima's 10:17 board reply:
+W1531 (2026-11-03 10:17, dima): ⏰ 💸 today: turn off the max $100 auto-renew, at least 24 h before the 11-05 renewal. it's on the order as item 2. ← turned off.
+W1532 (2026-11-03 10:17, dima): ⏰ the skill router re-measure is due today (router OFF). ← let's push the reminder a few days forward, 5+.
+W1533 (2026-11-03 10:17, dima): ⏰ jev router back on → the CLAUDE.md skills lines. ← too.
+W1534 (2026-11-03 10:17, dima): ⏰ jev unfrozen? → FRM-453: the browser-use video, and FRM-452: the jev-ultrafast trial. ← too ❓
+W1535 (2026-11-03 10:17, dima): ⏰ 🩺 the first whole system checkup: a checkup ran on 11-01, so this may be done. your call to drop it. ← drop.
+W1536 (2026-11-03 10:17, dima): freeze.app ← it's supposed to be a charm's freeze. but i am not sure i want that one too. switch to charm's freeze; i'll see if i want it.
+W1537 (2026-11-03 10:17, dima): [vorssaint-utils#2164](https://github.com/vorssaint/vorssaint-utils/issues/2164), your issue: partly fixed in 3.4.3, waiting on your close. ← closed.
+W1538 (2026-11-03 10:17, dima): speak v2 is in the plan but not for today.
+W1539 (2026-11-03 10:17, dima): today, let's run the mods lane, and solve chores (lots of them); i'll tell. your prios:
+W1540 (2026-11-03 10:17, dima): stale: test drives quicksilver, stryker and you-should-know are owed a verdict (6 more due within 3 days). ← let's do these too.
+W1541 (2026-11-03 10:17, dima): stale: PK-297 rolls or closes. ← let's do.
+W1542 (2026-11-03 10:17, dima): stale: the chords branch-badge 🍀 freebie. ← let's do.
+W1543 (2026-11-03 10:17, dima): stale: the n8n ci reds up to 11-02 16:08. ← let's do.
+W1544 (2026-11-03 10:17, dima): solve everything from yesterday (you folded).
+W1545 (2026-11-03 10:17, dima): solve all possible chores and stray tickets you find. no tails should be left; only major stuff like speak v2, chords, sys, cli ci and mods scopes (majors) should be present. solve everything else you see.
+W1546 (2026-11-03 10:17, dima): solve my side chores (i paste).
+W1547 (2026-11-03 10:17, dima): stay parked and help the lane finish.
+W1548 (2026-11-03 10:17, dima): mods: the next chunks FRM-489 and FRM-485 are unsigned, and FRM-480 drifted and needs a re-sign. ← do now, so we start a lane.
 <!-- SECTION:NOTES:END -->

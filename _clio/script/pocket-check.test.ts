@@ -995,4 +995,15 @@ describe('the prompt groom (FRM-418)', () => {
         );
         expect(checkPocket(config, [side], day, day, () => false)).toEqual([]);
     });
+
+    test('a side-channel-owned item is groomed in its side channel, not here', () => {
+        const owned = task(
+            {
+                labels: ['s', 'side-channel-owned'],
+                updated_date: `${day} 09:30`,
+            },
+            '\nW302 (2026-10-26 09:12, dima): a fold',
+        );
+        expect(checkPocket(config, [owned], day, day, () => false)).toEqual([]);
+    });
 });

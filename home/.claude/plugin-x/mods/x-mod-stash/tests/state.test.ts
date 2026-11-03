@@ -104,25 +104,6 @@ const band = ($: Engine) =>
         surface: 'desktop',
     });
 
-test('the away digest still shows after a reload', async ($, on) => {
-    await reloaded($, on, {
-        view: {
-            afk: false,
-            digest: {
-                done: [{ name: 'd0d0d0d0', sid: 'd0d0d0d0-done' }],
-                needs: [],
-            },
-            entries: {},
-            isBoardOpen: false,
-            isHot: false,
-        },
-    });
-    const ui = await band($);
-    expect(
-        await ui.find({ text: 'done · d0d0d0d0', type: 'Text' }),
-    ).toBeTruthy();
-});
-
 test('a reload in a running turn never pings it with keep-hot', async ($, on) => {
     const s = await reloaded(
         $,

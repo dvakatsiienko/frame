@@ -1,6 +1,10 @@
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { dimasText, groomNudge, siestaNudge } from './prompt-raw-save.ts';
+import { dimasText, groomNudge, sideChannelNudge } from './prompt-raw-save.ts';
 
 const notice =
     '<system-reminder>\nThe user\'s fork "🦉 clio (fork)" finished a turn.\n</system-reminder>\n';
@@ -26,38 +30,6 @@ describe('groomNudge', () => {
     });
 });
 
-describe('siestaNudge', () => {
-    const log = (...commits: [string, ...string[]][]) =>
-        commits.map((c) => `\0${c.join('\n')}\n`).join('');
-    test('three files across clio’s commits make a siesta due', () => {
-        expect(
-            siestaNudge(
-                log(['🐞 a', 'x/a.ts', 'x/b.ts'], ['🔧 c', 'x/c.ts']),
-                '14:00',
-            ),
-        ).toContain('3 file(s)');
-    });
-    test('one skill file alone makes a siesta due', () => {
-        expect(
-            siestaNudge(
-                log(['📜 a', '_clio/plugin-clio/skills/boot/SKILL.md']),
-                '14:00',
-            ),
-        ).toContain('memory, rule or skill');
-    });
-    test('the pocket’s auto commits do not count', () => {
-        expect(
-            siestaNudge(
-                log(
-                    ['🐞 a', 'x/a.ts'],
-                    ['📜 pocket: pk-1 (auto)', 'p/1.md', 'p/2.md'],
-                ),
-                '14:00',
-            ),
-        ).toBeUndefined();
-    });
-});
-
 describe('dimasText', () => {
     test('a prompt behind an app notice keeps his words, without the notice', () => {
         expect(dimasText(`${notice}${notice}proceed with slice b`)).toBe(
@@ -75,5 +47,88 @@ describe('dimasText', () => {
                 '<cross-session-message from="x">hi</cross-session-message>',
             ),
         ).toBe(undefined);
+    });
+});
+
+describe('sideChannelNudge', () => {
+    const fixture = (pid: number | undefined) => {
+        const home = mkdtempSync(join(tmpdir(), 'side-'));
+        const dir = join(home, '.claude/sessions');
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(
+            join(dir, `${process.pid}.json`),
+            JSON.stringify({ name: '🦉 clio', sessionId: 's-clio' }),
+        );
+        if (pid)
+            writeFileSync(
+                join(dir, `${pid}.json`),
+                JSON.stringify({ name: '⚡ 🔧 codie: clio-lean | FRM-494' }),
+            );
+        return home;
+    };
+
+    test.each([
+        'my rockstar account is stuck on an old email, can you look',
+        'what should i buy now, the $200 plan?',
+        'turn off the auto-renew before friday',
+    ])(
+        'a personal chore while a lane runs is offered the side channel: «%s»',
+        (text) => {
+            const line = sideChannelNudge(text, fixture(process.ppid));
+            expect(line).toContain('side channel?');
+            expect(line?.split('\n')).toHaveLength(1);
+        },
+    );
+
+    test.each([
+        'codie: the Sonnet grade card is in ← Tell mods lane coder to do a full tech review',
+        'You may rearrange the execution order because fixes may be important',
+        'they are gated behind a subscription. Let’s have Excalidraw as a main blueprinting tool',
+    ])('a fleet prompt from the log prints none: «%s»', (text) => {
+        expect(sideChannelNudge(text, fixture(process.ppid))).toBeUndefined();
+    });
+
+    test('a half-written registry file never crashes it', () => {
+        const home = fixture(process.ppid);
+        writeFileSync(join(home, '.claude/sessions/12.json'), '{"na');
+        expect(sideChannelNudge('what should i buy now', home)).toContain(
+            'side channel?',
+        );
+    });
+
+    test.each([
+        'what is the plan for the cli lane after this',
+        'the billing page of the speak app needs a pass',
+    ])('a fleet prompt with plan or billing prints none: «%s»', (text) => {
+        expect(sideChannelNudge(text, fixture(process.ppid))).toBeUndefined();
+    });
+
+    test('the hook prints the side line for his prompt', () => {
+        const home = fixture(process.ppid);
+        const out = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'prompt-raw-save.ts')],
+            {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    HOME: home,
+                    PROMPT_GROOM_DIR: join(home, 'grooms'),
+                    PROMPT_RAW_DIR: join(home, 'prompts'),
+                },
+                input: JSON.stringify({ prompt: 'what should i buy now' }),
+            },
+        );
+        expect(out.status).toBe(0);
+        expect(out.stdout).toContain('side channel?');
+    });
+
+    test('with no live lane, a personal chore prints none', () => {
+        expect(
+            sideChannelNudge('what should i buy now', fixture(999_999)),
+        ).toBeUndefined();
+        expect(
+            sideChannelNudge('what should i buy now', fixture(undefined)),
+        ).toBeUndefined();
     });
 });

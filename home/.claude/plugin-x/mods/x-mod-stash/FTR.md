@@ -48,9 +48,9 @@
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
   - given a listed task's end notice arrives (`completed`, `failed`, `killed` or `stopped`), then it leaves the waits: the row reads «waiting on <who>» for the tasks still running, with the ended ones counted beside it, «(1 done, 2 failed)», and with none left «<who> done» or «<who> failed»; the notice counts whether it reaches the session as a delivery or as a prompt; a notice for a task the reply never listed changes nothing (FRM-426, PK-147; fixtures are real notices in `tests/notices.ts`, the failed one a background command's, since no failed agent notice exists in ~1,500 transcripts)
 - ✅ a mid-turn reload keeps the turn and what only the band held
-  - given a turn is running and dima's away digest shows
+  - given a turn is running
   - when a mod file is saved and x-mod-stash reloads mid-turn
-  - then the band shows the same digest, the turn stays busy, and keep-hot never pings into it
+  - then the turn stays busy, and keep-hot never pings into it
   - decision: everything the band and the board draw is one `view` value in `$.state`, and the running turn one `turn` value; a render reads `view` and redraws when the poll or a hook writes it, so the band calls no `$.ui.invalidate` at all (FRM-348)
 - ✅ every control in the row names itself on hover: a dim card beside it
   - given the row draws
@@ -104,19 +104,6 @@
 - ✅ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
   - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
   - proof: tests/afk.test.ts::the button flips afk on terminal / on desktop (variant undefined to secondary); icon 💨 at register.tsx:6711 — not asserted: decision line; icon grepped, not asserted
-- ✅ an away digest when 💨 turns off: what needs dima first, then what finished
-  - given afk is on and two sessions end a reply, one with an open orbit ask and one without
-  - when dima turns 💨 off
-  - then the band he pressed it in shows «while you were away», a `needs you · <session> · 🪐 n` line per session with asks, then a `done · <session>` line per session that only finished
-  - and a reply that ended before afk went on stays out
-  - and a session the registry shows busy when 💨 turns off is not done yet, so it stays out
-  - and a session that ended its reply, then exited, while afk was on is listed as done
-  - when dima sends his next prompt
-  - then the digest is gone
-  - decision: built from what each session's x-mod-stash already keeps — its asks and its last reply, now stamped with the reply's time and session name (FRM-325)
-  - decision: only the band where 💨 went off shows it; every other band just sees afk end
-  - decision: an exit (any `session.end` but `/clear` and a resume) keeps the session's last reply, marked ended, and drops the rest of its keys; a start drops ended replies a day old
-  - proof: tests/digest.test.ts::the away digest lists what needs dima before what finished (+ ended before afk, next prompt folds, still busy, exited during afk, digest switch) — not asserted: header text «while you were away» itself not asserted
 - ✅ afk reaches a running turn
   - given a session is mid-turn
   - when dima flips afk
@@ -207,7 +194,7 @@
   - decision: a pane of its own, dima's pick a of four homes tried side by side (16:20); the band is capped by cc's `maxRows` and the fold-out scrolled the list out of sight, the grid in the band would still shift the layout as parts grow, a dialog-mannered pane looked the same as a plain one, and a tab row inside 🚦 is kept as an idea (`../api-map.md`)
   - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the pane, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
-  - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
+  - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; clio's «build the rest of slice 05 meanwhile»)
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given any part switched off, then the whole feature is off, for every model too: nothing drawn, no line of it in a prompt or a tool result, no turn it would start, and its orbit op refused in one line naming the switch; switched back on, all of it returns
@@ -464,7 +451,7 @@
   - decision: 2048 holds while any 2.1.295 session runs; 2.1.296 raised cc's cap to 4096 (brief 9 item 6, refresh-cc-mods run #4)
   - proof: tests/orbit.test.ts::orbit's description fits the 2048 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
-- makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` and the away digest count them; orbit itself lives in the session's `$.state`
+- makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` counts them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
 - 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
 
@@ -500,6 +487,16 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the member takes the card's mark into its orbit, or he types on while it does
   - then the field keeps what he typed: the mark leaves only after the orbit holds it and only if it is still the one read, and a steer typed on the card replaces the member's own (dima, 2026-10-29: «text … gets occasionally deleted when I print too fast»)
   - proof: tests/orbit.test.ts::a steer typed on another board while its mark is taken in survives for the next take; ::a card steer lands over the member's own unless it typed into that box a moment ago; ::a remote mark landing while dim…
+- ✅ a typed steer survives every redraw (FRM-492)
+  - given an ask's steer box with a landed save
+  - when dima types 60+ characters without a pause while another session, the poll or a reload redraws the board
+  - then every character he typed stays in the box: it draws the text it mounted with until a write that replaces the steer
+  - and a turn's clear or a follow on that ask empties the box, remounting it when it already drew empty
+  - decision: the box's mounted text and remount count live on the ask in `$.state`; typing saves only the steer, and every other write that changes the steer moves them — no typing history to cap (it kept 50 texts, and a longer burst read the last save as an outside write and drew it back); the other steer boxes keep the history, trimmed at each landed save instead of capped
+  - decision: a flush waits for every steer save it ran, and mark and steer writes run one at a time, and a box's save counts as typing for its own ask alone — two boxes saved together once put the first one's steer back to none while it still showed
+  - decision: a typed save counts itself on the ask, so a write made from a read older than his last typed save keeps what he typed; a new process draws a fresh pane, so what the old box mounted with is dropped
+  - decision: a board read as closed while a box was typed into in the last 3 s stays open, and a pane read that fails clears nothing — a failed read once cleared every draft on a board still on screen
+  - proof: tests/orbit.test.ts::a long burst after a saved steer never redraws the field to the old save; ::after a reload the steer box draws what it mounted with, not the steer typed since; ::a poll that reads the board closed while a steer is typed keeps the field as drawn; ::a follow-up clears dima's steer on the old question; tests/fields.test.ts::a burst of more than 50 keystrokes after a landed save keeps drawing what the field showed; ::a write from a read older than his last typed save keeps his steer and what the box mounted with; ::a typed save from an older read never rolls back the box's remount; ::a backspace back to a landed text keeps the save still in flight as his own; tests/orbit.test.ts::a steer box resumed in a new process draws the kept steer; ::a failed panes read after a quiet pause keeps the box as drawn; ::two steer boxes flushed together keep both steers; ::two steer boxes saved by their timers in one step keep both steers; ::a prompt right after typing a steer on a ticked ask joins it with that steer (a guard: the harness settles each act, so the race it covers never opens there)
 - ✅ a steer box keeps its view where he left it, and fills its row
   - given dima typed a long steer into a box on an ask or an assumption
   - when the board redraws and typing has gone quiet

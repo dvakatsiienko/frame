@@ -4,7 +4,7 @@ title: 'folds 11-03: today''s retros and flawlog, unfold one per batch'
 status: open
 assignee: []
 created_date: '2026-11-02T20:27:00Z'
-updated_date: '2026-11-02T20:28:00Z'
+updated_date: '2026-11-03T10:05:00Z'
 labels:
   - m
 dependencies: []
@@ -56,4 +56,12 @@ F8 · cuts and closes waiting
 - FRM-479: wired into x-mod-guard, never fired; o94 asks to close as a rare event
 - PK-288 and PK-291 were closed by helga with every W-line cited done, unread by clio: re-read both against their homes
 - the cut list's 9 unclear parts (`.scratch/worth-test/cut-list.md` § 3), after Rockstar (dima o56, o76)
+
+retro batch 2026-11-03 (clio): 338 sessions, 14 days, opus 5.5 on the batch api, ~$54 of the gifted $100; 2,622 findings in ~/frame/.scratch/retro-batch/findings-2026-11-03.json, themes + fixes in ~/frame/.scratch/retro-batch/themes-2026-11-03.md — folds read the themes file first
+
+W1700 (2026-11-03 11:40, dima): actually, currently i solve PK159 with your side channel, which is somewhat related to the retro you just collected.
+W1701 (2026-11-03 11:40, dima): go and tell side channel about your latest findings of the retro, and maybe side channel can utilize part of it in PK159.
+W1702 (2026-11-03 11:41, dima): so, what should we do with this retro? ❓
+W1703 (2026-11-03 11:41, dima): how to utilize it, to get use of it? ❓
+W1704 (2026-11-03 11:41, dima): what are the most useful findings, or are you still waiting for the retro results? ❓
 <!-- SECTION:NOTES:END -->

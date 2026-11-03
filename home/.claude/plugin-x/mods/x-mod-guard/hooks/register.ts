@@ -1,8 +1,8 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
-import type { Brief, Context, Refusal } from './rules/command.ts';
-import { TICKET_KEY } from './rules/command.ts';
+import type { Brief, Context, Refusal, Written } from './rules/command.ts';
+import { TICKET_KEY, UNREAD, laidOver, resolve } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
@@ -27,6 +27,9 @@ import {
     installDirs,
     isSignAsk,
     isStashKill,
+    lineWrites,
+    markedBy,
+    markers,
     mergeAutoCall,
     mergeAutoPr,
     mergeAutoRepo,
@@ -390,11 +393,14 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // sixth sense says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
+    'bare-push',
     'frozen-lockfile',
+    'hooks-bypass',
     'opaque-head',
     'raw-plugin-update',
     'spawn-trial',
     'worth',
+    'write-then-run',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -633,6 +639,7 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const TOLD = { key: 'told', plugin: 'x-mod-guard' } as const;
+const WRITTEN = { key: 'written', plugin: 'x-mod-guard' } as const;
 const HELPED = { key: 'helped', plugin: 'x-mod-guard' } as const;
 const IMAGES = { key: 'images', plugin: 'x-mod-guard' } as const;
 // cc core refuses a worktree command naming git where it cannot prove the git stays in the tree — a heredoc body, a
@@ -842,6 +849,90 @@ async function isManifestChanged($: EngineInterface, dir: string) {
         .some((f) =>
             /(^|\/)(package\.json|pnpm-workspace\.yaml)$/.test(f.trim()),
         );
+}
+
+// the turn's written files, newest kept: a few scripts is the shape, so a big Write keeps only its head
+const WRITTEN_FILES = 16;
+const WRITTEN_CHARS = 32_000;
+async function markWritten($: EngineInterface, files: Written[]) {
+    if (!files.length) return;
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = {}, version } = await $.state.get(WRITTEN);
+        // an unread mark keeps nothing for a file the turn never kept
+        const kept = files.reduce<Written[]>(
+            (out, file) =>
+                file[1] !== UNREAD ||
+                value[file[0]] !== undefined ||
+                out.some(([w]) => w === file[0])
+                    ? [...out, file]
+                    : out,
+            [],
+        );
+        const next = [...laidOver(new Map(Object.entries(value)), kept)].map(
+            ([path, text]) => [
+                path,
+                text.length > WRITTEN_CHARS
+                    ? `${text.slice(0, WRITTEN_CHARS)}${UNREAD}`
+                    : text,
+            ],
+        );
+        const { isSet } = await $.state.set(
+            WRITTEN,
+            Object.fromEntries(next.slice(-WRITTEN_FILES)),
+            { ifVersion: version },
+        );
+        if (isSet) return;
+    }
+}
+// an Edit of a file the turn wrote changes the text a later run reads; an edit the kept text cannot place leaves it unread
+type TextEdit = {
+    old_string: string;
+    new_string: string;
+    replace_all?: boolean;
+};
+async function editWritten(
+    $: EngineInterface,
+    path: string,
+    edits: TextEdit[],
+) {
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = {}, version } = await $.state.get(WRITTEN);
+        const kept = value[path];
+        if (kept === undefined) return;
+        let text: string | undefined = kept;
+        for (const e of edits) {
+            if (text === undefined || !text.includes(e.old_string)) {
+                text = undefined;
+                break;
+            }
+            text = e.replace_all
+                ? text.replaceAll(e.old_string, e.new_string)
+                : text.replace(e.old_string, () => e.new_string);
+        }
+        const { isSet } = await $.state.set(
+            WRITTEN,
+            { ...value, [path]: text ?? UNREAD },
+            { ifVersion: version },
+        );
+        if (isSet) return;
+    }
+}
+async function unreadWritten($: EngineInterface, paths: string[]) {
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = {}, version } = await $.state.get(WRITTEN);
+        const kept = paths.filter((p) => value[p] !== undefined);
+        if (!kept.length) return;
+        const { isSet } = await $.state.set(
+            WRITTEN,
+            { ...value, ...Object.fromEntries(kept.map((p) => [p, UNREAD])) },
+            { ifVersion: version },
+        );
+        if (isSet) return;
+    }
+}
+async function turnWritten($: EngineInterface) {
+    const { value = {} } = await $.state.get(WRITTEN);
+    return new Map(Object.entries(value));
 }
 
 // parallel Reads in one step each add their path: a write that lost the race reads again
@@ -1100,6 +1191,7 @@ export const register: Register = (on) => {
             home,
             isClio: isUnder(root, `${home}/frame/_clio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
+            written: await turnWritten($).catch(() => undefined),
         };
         const facts = await lookUp($, command, cwd, ctx);
         const verdict = check(command, cwd, { ...ctx, ...facts });
@@ -1124,6 +1216,21 @@ export const register: Register = (on) => {
                         ? `${result.deny} — ${ISOLATED_DOOR}`
                         : result.deny,
                 );
+            // a line that errors may have run any of its writes before the error, so what it wrote is unread
+            const writes = lineWrites(run, cwd, ctx);
+            await markWritten($, writes).catch(() => undefined);
+            if (result.isError)
+                await unreadWritten(
+                    $,
+                    writes.map(([p]) => p),
+                ).catch(() => undefined);
+            // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw
+            await unreadWritten(
+                $,
+                writtenPaths(run, cwd, ctx).filter(
+                    (p) => !writes.some(([w]) => w === p),
+                ),
+            ).catch(() => undefined);
             const isQuiet = await isSilent($, ctx.home);
             // a quiet session spends no verb hint it never showed
             await rememberHelps($, [
@@ -1386,6 +1493,42 @@ export const register: Register = (on) => {
             return go(withDimaOk(command, pr));
         }
         if (verdict.kind === 'run') return go();
+        // the marker is only a claim: dima's own last prompt, or his tick, must name every target the marked refusals named
+        const runMarked = async (marked: Refusal[]) => {
+            const { value: said = '' } = await $.state.get(PROMPT);
+            const named = [...new Set(marked.flatMap((r) => r.targets))].filter(
+                (t) => !namesWhole(said, t),
+            );
+            const unproven =
+                named.length &&
+                (await tickFor($, guardedOf(command), quotesCommand(command)))
+                    ? []
+                    : named;
+            if (unproven.length) {
+                await record($, {
+                    command,
+                    door: UNPROVEN_DOOR,
+                    kind: 'refused',
+                    rule: 'dima-ok-unproven',
+                    target: unproven[0] ?? '',
+                    why: UNPROVEN_WHY,
+                });
+                return deny(
+                    `nothing in this command ran — x-mod-guard stopped it. instead: ${UNPROVEN_DOOR}. why: ${UNPROVEN_WHY}; it does not name: ${unproven.join(' ')}`,
+                );
+            }
+            const targets = markers(command);
+            await record($, {
+                command,
+                door: marked.map((r) => r.door).join('; '),
+                kind: 'escaped',
+                rule: [...new Set(marked.map((r) => r.rule))].join(', '),
+                target: targets.join(', '),
+                why: marked.map((r) => r.why).join('; '),
+            });
+            $.ui.log(`x-mod-guard: ran on dima-ok: ${targets.join(', ')}`);
+            return go();
+        };
         // dima's tick on an ask quoting every target is his word, no marker needed (FRM-427)
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
@@ -1410,13 +1553,17 @@ export const register: Register = (on) => {
                 guardedOf(command),
                 quotesCommand(command),
             );
-            // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it
+            // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it, and
+            // one the marker names waits for the marker's own proof, so a warn-only flag never turns a proven marker into a deny
             if (!tick) {
-                for (const r of found.length ? found : [verdict.refusal]) {
+                const isMarked = markedBy(command);
+                const all = found.length ? found : [verdict.refusal];
+                for (const r of all.filter((r) => !isMarked(r))) {
                     const stop = await enforce(r, message(r));
                     if (stop) return stop;
                 }
-                return go();
+                const marked = all.filter(isMarked);
+                return marked.length ? runMarked(marked) : go();
             }
             await record($, {
                 command,
@@ -1431,39 +1578,7 @@ export const register: Register = (on) => {
             );
             return go();
         }
-        // the marker is only a claim: dima's own last prompt, or his tick, must name every target the refusals named
-        const { value: said = '' } = await $.state.get(PROMPT);
-        const named = [
-            ...new Set(verdict.refusals.flatMap((r) => r.targets)),
-        ].filter((t) => !namesWhole(said, t));
-        const unproven =
-            named.length &&
-            (await tickFor($, guardedOf(command), quotesCommand(command)))
-                ? []
-                : named;
-        if (unproven.length) {
-            await record($, {
-                command,
-                door: UNPROVEN_DOOR,
-                kind: 'refused',
-                rule: 'dima-ok-unproven',
-                target: unproven[0] ?? '',
-                why: UNPROVEN_WHY,
-            });
-            return deny(
-                `nothing in this command ran — x-mod-guard stopped it. instead: ${UNPROVEN_DOOR}. why: ${UNPROVEN_WHY}; it does not name: ${unproven.join(' ')}`,
-            );
-        }
-        await record($, {
-            command,
-            door: verdict.refusals.map((r) => r.door).join('; '),
-            kind: 'escaped',
-            rule: [...new Set(verdict.refusals.map((r) => r.rule))].join(', '),
-            target: verdict.targets.join(', '),
-            why: verdict.refusals.map((r) => r.why).join('; '),
-        });
-        $.ui.log(`x-mod-guard: ran on dima-ok: ${verdict.targets.join(', ')}`);
-        return go();
+        return runMarked(verdict.refusals);
     }).catch(() => ({ deny: FAILED }));
 
     on(
@@ -1585,6 +1700,27 @@ export const register: Register = (on) => {
             if (result.deny === undefined && !result.isError)
                 // bookkeeping only: the call already ran, so a failed mark never turns it into a refusal
                 await markSeen($, real).catch(() => undefined);
+            if (
+                e.tool === 'Write' &&
+                typeof e.content === 'string' &&
+                result.deny === undefined &&
+                !result.isError
+            )
+                await markWritten($, [
+                    [resolve(path, '/', {}), e.content],
+                ]).catch(() => undefined);
+            // MultiEdit is missing from this build's tool types but reaches the hook live
+            const tool: string = e.tool;
+            const edits =
+                e.tool === 'Edit'
+                    ? [e as unknown as TextEdit]
+                    : tool === 'MultiEdit'
+                      ? ((e as unknown as { edits?: TextEdit[] }).edits ?? [])
+                      : [];
+            if (edits.length && result.deny === undefined && !result.isError)
+                await editWritten($, resolve(path, '/', {}), edits).catch(
+                    () => undefined,
+                );
             return result;
         },
     ).catch(() => ({ deny: FAILED }));
@@ -1648,7 +1784,10 @@ export const register: Register = (on) => {
 
     // his word on the stash holds for the turn it was typed in (FRM-426 exit 1: «in this turn»)
     on('turn.complete', async ($, e, next) => {
-        if (!e.agentId) await $.state.set(TOLD, '').catch(() => undefined);
+        if (!e.agentId) {
+            await $.state.set(TOLD, '').catch(() => undefined);
+            await $.state.set(WRITTEN, {}).catch(() => undefined);
+        }
         return next(e);
     });
 

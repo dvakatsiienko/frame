@@ -5,7 +5,7 @@ argument-hint: "[what to drop, comma-separated]"
 
 # /clio:checkpoint [drop …]
 
-**the trigger is his: his word, or a 🐦‍🔥 second wind press on my sessions row**, its note slipstreamed into my next turn — he watches the context himself (dima, 2026-10-21); during a shift the trigger is mine, `clio:shift` § surviving a compaction. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
+**the trigger is his: his word, or a 🐦‍🔥 second wind press on my sessions row**, its note slipstreamed into my next turn — he watches the context himself (dima, 2026-10-21); while he is afk, a shift or not, the trigger is mine at about 55 % context, never past 60 %, `clio:shift` § surviving a compaction. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
 the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as possible; memory as precise as possible after the resume; only the unwanted absent. the drop list is mine to decide, no approval round: «when you run checkpoint, just print me a compact prompt upfront, saving a turn».
 
 📌 who runs the compact: on his word, `/compact` is his to type and the ritual ends by handing him the line; on a 🐦‍🔥 press, it ends with the stash tool's `second-wind` op naming the CST slug, and the mod runs the compact + ingest at that turn's end.
@@ -79,8 +79,8 @@ on a 🐦‍🔥 press: no fence; the `second-wind` op with the CST slug, and th
 ✂️ **end** ✂️
 
 the first thins the thread with the hint as the steer; the second restores the precise state on
-top of what the compact kept. **then resume every paused member** — one «resume» each with `notify_when_idle: true` (a compact drops every idle subscription, silently), named from the CST roster, and
-`trash ~/.local/state/crow/paused` for crow — and read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
+top of what the compact kept. **then read the 5h window, then resume every paused member** — one «resume» each with `notify_when_idle: true` (a compact drops every idle subscription, silently), named from the CST roster, and
+`trash ~/.local/state/crow/paused` for crow — and read whatever they held; a window past pace keeps them parked (`habit-ctx-load-balancing`). **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).

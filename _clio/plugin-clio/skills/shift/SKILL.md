@@ -7,7 +7,7 @@ argument-hint: "<plan file>"
 
 A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits. A shift
 **decides, logs and continues**. The plan file is the authority; the last shift file in
-`_clio/shifts/` is the template. A shift over ✍️ signed chunks names them in its plan and runs each through
+`_clio/shifts/` that ran (`status: done`) is the template. A shift over ✍️ signed chunks names them in its plan and runs each through
 `clio:shape-lane-dispatch` in their order (lane init's contract: `craft-fleet-flow` § lane init) — nothing in it waits on dima.
 
 ## presence — his afk switch drives it (dima, 2026-10-22, PK-103 W107, W108)
@@ -29,13 +29,25 @@ state lives on disk, never only in context: after **every** step, the plan file'
 the current step, the decisions and the open asks. the `SessionStart:compact` hook (`.claude/hooks/shift-recompact.sh`)
 re-reads a plan whose header says `status: running` after a compaction, and `pnpm shift:checkup` proves the hook.
 
-- **the checkpoint is mine while he is away**: at 600–700k context I run `clio:checkpoint` myself, at the end of a step, never mid-chunk (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»). `get_usage` reads it after every step.
+- **second winds are mine to plan, for everyone** (dima, 2026-11-03: «since you observe and you can plan, pick good times for everyone … and you should second wind everyone»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»):
+  - the line: about 55 % context, never past 60 %, at a step's end, never mid-chunk — mine through `clio:checkpoint`, a shift or his «afk» without one (o73); `get_usage` reads my context and the 5h window after every step
+  - context grows slowly on a shift, so each wind is planned a step ahead, never rushed: after every step i read my own % and each member's (every brief asks a member to name its % in each ping), and a member near the line gets «second wind after this step» from me
+  - everyone means everyone live: codie, sixth sense, crow, helga, and a parked side channel
+
+## hot caches — no member goes cold
+
+dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any thread inactive for 50 minutes is auto-woken by keep-hot». cold ~$0.80 vs warm ~$0.02 per 100k Opus 5.5 member (`crew-lead` model-cards).
+
+- keep-hot (🔥, `x-mod-stash`) pings a session 50 min after its last turn; afk on arms it in every Remote Control session, any other session needs its 🔥 pressed
+- the shift's start checks each member: a `--bg` member summoned with `--remote-control` is covered by afk; a desktop thread (the mods codie, the side channel) gets its row's 🔥 asked of dima before he leaves
+- a member keep-hot cannot reach gets a `SendMessage` «keep-warm: reply `ok`» at 25 min idle, my `Monitor` expiry (30 min, its cap) the beat
 
 ## 1 · start — the last chat message
 
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift
-- the app passes `apps:essentials`
-- write `status: running`, `afk:` (on/off at the start), the budget line (a % of the week) and the members into the plan file
+- a bytes app in the plan passes `apps:essentials`
+- write `status: running`, `afk:` (on/off at the start), the budget line (a % of the week), the members and each lane's merge rule into the plan file
+- arm the hot-cache heartbeat (§ hot caches)
 - one message to dima: mode, members, budget, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
@@ -43,9 +55,9 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 Every decision is one of three:
 
 - **reversible** → take the default, log `decided: X — undo: Y`, continue
-- **irreversible or external** (a merge, a delete, prod, a message, a setting, a move or drop of a line of dima's) → park it with its
-  reason, never block other work on it; a merge is no park: a clean pr lands by the gate, and a self-edit lands when its
-  chunk's `## signed` carries `merge: pre-approved`
+- **irreversible or external** (a delete, prod, a message, a setting, a move or drop of a line of dima's) → park it with its
+  reason, never block other work on it
+- **a merge lands itself** (dima, 2026-11-03: «the usual pattern for shift is that you merge automatically without my approval»): a clean pr by the gate, a self-edit when its chunk's `## signed` carries `merge: pre-approved`, a quick lane's chunk by its close; each one only after its pre-merge 🌤️ siesta, wishkeeper over the chunk (`docs/test-drive/pre-merge-siesta.md`). a day's exception — «hold this lane at ready for my ok» — is written into the plan file's rules for that lane only, never into this skill
 - **taste** → build one default, flag it for the report
 
 - a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
@@ -65,23 +77,8 @@ In the plan file, then one chat message:
 - stated plainly: **an unanswered item counts as accepted**, except one that moves, defers or drops a line of his or closes a ticket: that waits for his verdict (`craft-pm` § the ask-guard)
 - the spend, the steer log, what the next plan changes
 - the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
-- then the return sections, every shift, one or two lines each, in plain words:
-  - **how it went**: per lane, merged / parked / not run
-  - **what waited on dima**: each wait, and how it resolved — his word, or a decision of clio's with its reason
-  - **compactions**: count, and what survived each
-  - **failures**: ci, keys, access, permissions, the 5h window — each with its state now
-  - **merging**: count, and anything a checkup or a sixth sense held
-  - **retros**: filed per member
-  - **the flow**: planning, briefs, comms — good and off, with the fix for each off
-  - **ticket readiness**: which tickets ran straight, which exit lines were rewritten mid-lane and why
-  - **anything else** dima would want: one line or `none`
+- then the return sections, one or two plain lines each: how it went (per lane: merged, parked, not run), what waited on dima and how it resolved, second winds (who, when, what survived), failures with their state now, merges and what held one, retros per member, the flow (good and off, a fix per off), ticket readiness (exit lines rewritten mid-lane, and why), anything else or `none`
 
-Retros in, members stopped, the plan's `status:` flipped to `done`, orbit asks back on.
-
-Then the hand-over, because dima returns to a cold cache: his first question to a long shift thread re-writes the whole context at the 1h write price.
-
-- the full report goes out as an Artifact — he reads it on any device for free
-- a CST (`x:handoff`) carries the open asks and names this thread's transcript path (`~/.claude/projects/<project>/<session id>.jsonl`) for the tricky questions
-- the chat message ends on one line: «questions → a fresh clio, `/clio:boot <slug>`»
+Retros in, members stopped, the heartbeat stopped, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
 
 **Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.

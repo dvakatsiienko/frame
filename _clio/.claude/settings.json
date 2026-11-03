@@ -92,6 +92,16 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "SendMessage",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts sent'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Write|Edit",
         "hooks": [
           {
@@ -154,6 +164,11 @@
             "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh announce",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts prompt'",
+            "timeout": 5
           }
         ]
       }
@@ -175,6 +190,11 @@
             "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/session-probe.sh'",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts stop'",
+            "timeout": 10
           }
         ]
       }
@@ -186,6 +206,11 @@
             "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {} --precompact'",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts compact'",
+            "timeout": 5
           }
         ]
       }

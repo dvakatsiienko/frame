@@ -101,12 +101,20 @@ for (const typed of [
     "sd -F 'a' 'b' x.ts",
     "sed -i '' 's/a/b/' x.ts",
     "python3 - <<'EOF'\nopen('x.ts', 'w').write(s)\nEOF",
+    "perl -pi -e 's/a/b/' x.ts",
 ])
     test(`a scripted replace into a repo file names Edit: ${typed.split('\n')[0]}`, async ($, on) => {
         const w = world(on, HOME_REPO);
         const r = await bash($, typed);
         expect([w.ran, edited(r.context).length]).toEqual([[typed], 1]);
     });
+
+// FRM-472: a replacer that only reads (`sed -n`) beside a write it did not make (`curl -o`) is no scripted replace
+test('a read-only sed beside a curl -o runs unhinted', async ($, on) => {
+    world(on, HOME_REPO);
+    const r = await bash($, 'curl -so x.ts https://e.com/x && sed -n 1p x.ts');
+    expect(edited(r.context)).toEqual([]);
+});
 
 test('a scripted replace outside the repos runs unhinted', async ($, on) => {
     world(on, '/tmp/scratch');

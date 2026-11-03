@@ -1,5 +1,5 @@
 ---
-status: frozen
+status: dropped
 until: 2026-11-02
 ---
 
@@ -39,10 +39,6 @@ one line per round: date · session · card topic · useful / known / noise · t
 
 meant to run in the desktop app, but it never does: its `turn.step` check passes only with a terminal surface or its own above-prompt render, which the desktop never reaches (0 of 16 big desktop sessions vs 32 terminal, 10-06 → 10-10). no desktop ban in the code. upstream: [claude-code#100843](https://github.com/anthropics/claude-code/issues/100843). off everywhere while frozen (dima, 2026-10-14: it may run in the background with no output); turned back on in `_clio/.claude/settings.json` when it thaws. thaws when #100843 closes fixed; the read: `.scratch/memory-sweep/you-should-know-desktop.md`.
 
-## verdict
-
-(10-10: dropped, then reset on 10-14 — dima wants it the day it works in the desktop app)
-
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 you-should-know test drive, one week to 2026-10-13 — the built-in `cc-plugin-you-should-know`, on in dima's terminal sessions (user scope, so coders get it too); walk the stress list in `docs/test-drive/you-should-know.md`, one log line per card. on 10-13: keep on, keep for dima only, or off. dima 2026-10-06: «how to test drive it? can i test drive now?» — set 2026-10-06
@@ -52,3 +48,7 @@ meant to run in the desktop app, but it never does: its `turn.step` check passes
 **test card:** we believe the «you should know» card helps dima in cclio's thread · we test it by enabling it for cclio's folder only, every other session off · we measure cards shown per day in cclio's desktop thread and dima's keep/dismiss · we're right if it shows in cclio's desktop thread at least daily and dima keeps more than he dismisses.
 **kill rule:** research after the 10-14 second wind proves the card cannot render in a desktop-app thread → dropped.
 **first:** research whether the card works in a desktop-app thread (he saw a screenshot that says it does; it never popped in cclio's thread), then check the cclio-folder-only enablement is actually on.
+
+## verdict
+
+🚫 dropped 2026-11-03 — dima: «it works only in cc build cli in terminal, it doesn't work in the desktop app», useful there; checked 14:15: the card's own bug, upstream [#100843](https://github.com/anthropics/claude-code/issues/100843) («never runs checks in the desktop Code tab»), still open, watched in changedetector; the 10-10 drop and 10-14 reset ran on the same want — the day it works in the desktop app. the plugin is already off in every settings layer. revive when #100843 closes fixed.

@@ -46,16 +46,15 @@ function varValue(vars: string | undefined, name: string | undefined) {
     }
 }
 
-// the linear words a command runs: the raw cli, `x as <member> -- linear …`, or x's own `x linear …`
+// the linear words a command runs: the raw cli (an `x as <member> --` is peeled to it), or x's own `x linear …`
 export function linearWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'linear') return { isX: false, words };
     if (c.name !== 'x') return undefined;
-    // x takes any flag before its family (`x --json linear …`, `x --board as codie …`): the family is the first
-    // `linear` or `as` with only flags or flag values ahead of it
+    // x takes any flag before its family (`x --json linear …`, `x --board as codie …`)
     const family = words.findIndex(
         (w, i) =>
-            (w === 'linear' || w === 'as') &&
+            w === 'linear' &&
             words
                 .slice(0, i)
                 .every(
@@ -63,26 +62,15 @@ export function linearWords(c: Command) {
                         v.startsWith('-') || words[j - 1]?.startsWith('-'),
                 ),
     );
-    if (words[family] === 'linear')
-        return { isX: true, words: words.slice(family + 1) };
-    const raw = words[family] === 'as' ? afterMember(words, family + 1) : -1;
-    return words[raw] === 'linear'
-        ? { isX: false, words: words.slice(raw + 1) }
+    return family >= 0
+        ? { isX: true, words: words.slice(family + 1) }
         : undefined;
 }
 
-// `as <member> [--] <command…>`: its flags (`--json`, `--board`, `--help`) sit before or after the member, `--` is optional
-function afterMember(words: string[], from: number) {
-    let isMemberRead = false;
-    for (let i = from; i < words.length; i++) {
-        const w = words[i] ?? '';
-        if (w === '--') return i + 1;
-        if (w.startsWith('-')) continue;
-        if (isMemberRead) return i;
-        isMemberRead = true;
-    }
-    return -1;
-}
+// x linear's verb: the first word naming one, past root flags and their values (`--json`, `--vars '{…}'`); `--as`'s value
+// is a member, never a verb
+export const xLinearVerbAt = (words: string[]) =>
+    words.findIndex((w, i) => X_VERBS.has(w) && words[i - 1] !== '--as');
 
 function projectMove(c: Command): ProjectMove | undefined {
     const linear = linearWords(c);
@@ -90,7 +78,7 @@ function projectMove(c: Command): ProjectMove | undefined {
     const { isX, words } = linear;
     // the verb may follow root flags (`--json`, `--as codie`, `--team FRM`); a later word that names a verb is a value
     const head = isX
-        ? words.findIndex((w, i) => X_VERBS.has(w) && words[i - 1] !== '--as')
+        ? xLinearVerbAt(words)
         : words.findIndex((w) => w === 'api' || w === 'issue');
     if (words[head] === 'api') {
         const text = words.join(' ');
@@ -102,7 +90,7 @@ function projectMove(c: Command): ProjectMove | undefined {
     const isMove = isX
         ? words[head] === 'set'
         : words[head] === 'issue' &&
-          ['create', 'update', 'edit'].includes(words[head + 1] ?? '');
+          ['create', 'update'].includes(words[head + 1] ?? '');
     const project = isMove ? flag(words, '--project') : undefined;
     if (!project) return undefined;
     return { hasMilestone: !!flag(words, '--milestone'), project };

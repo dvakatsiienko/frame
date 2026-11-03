@@ -342,7 +342,7 @@ asked for the canary with no tools.
   no vendor number for Opus 5.5. the one public measurement is on Opus 4.6, a user's blind recall test
   reading a whole document with no search: 24/25 at 200K, 1/25 at 500K
   ([claude-code#34279](https://github.com/anthropics/claude-code/issues/34279), 2026-03-14) — a different model and a
-  worst case, so the 600–700k manual checkpoint keeps no vendor basis either way.
+  worst case, so the 60 % manual checkpoint keeps no vendor basis either way.
 - **idle compaction** (2.1.299) [docs]: an interactive terminal session, 1h cache, ≥200K context, ~54 min
   idle; whether a `--bg` session counts [unknown].
 - 📌 `/compact` via `-p --resume` works, which makes this a cheap re-runnable probe.

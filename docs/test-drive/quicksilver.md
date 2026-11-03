@@ -1,6 +1,6 @@
 ---
 status: frozen
-until: 2026-11-02
+until: 2026-11-08
 dies-when: the test drive closes with adopted or dropped (by 2026-10-28 — frozen with the jev credit 10-05 → ~10-18, dima)
 ---
 

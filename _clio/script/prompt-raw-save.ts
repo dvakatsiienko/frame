@@ -1,7 +1,12 @@
 // clio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
 // so a wish folded from it is groomed from his exact words (pm revamp grill 8, dima's W59, o88, o93)
-import { execFileSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import {
+    appendFileSync,
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+} from 'node:fs';
 import path from 'node:path';
 
 import { ungroomedPrompts, ungroomedSteersToday } from './prompt-groom.ts';
@@ -45,22 +50,50 @@ export function groomNudge(
         : undefined;
 }
 
-// clio's commits since the siesta stamp as `git log --name-only --format=%x00%s`, the pocket's auto commits left out;
-// the siesta skill's trigger: 3+ files, or any memory, rule or skill file
-export function siestaNudge(log: string, since: string) {
-    const files = new Set(
-        log
-            .split('\0')
-            .map((commit) => commit.trim().split('\n'))
-            .filter(([subject]) => subject && !subject.endsWith('(auto)'))
-            .flatMap(([, ...paths]) => paths.filter(Boolean)),
-    );
-    const memory = [...files].some((f) =>
-        /(^|\/)(memory|rules|skills)\//.test(f),
-    );
-    return files.size >= 3 || memory
-        ? `🌤️ siesta due: ${files.size} file(s) of clio's since ${since}${memory ? ', memory, rule or skill among them' : ''} — load clio:siesta`
+// measured over his raw prompts 10-30 → 11-03: these hit only personal chores; «order», «card», «subscription»,
+// «anthropic», «plan» and «billing» hit fleet prompts too, so they stay out
+const PERSONAL_CHORE =
+    /\b(email|buy|auto-renew|refund|invoice|recruiter|tax|bank)\b/i;
+
+// a personal chore mixed into a running lane's thread is offered clio's side channel, one line
+export function sideChannelNudge(text: string, home: string) {
+    return PERSONAL_CHORE.test(text) && isLaneLive(home)
+        ? '🪟 side channel? a personal chore while a lane runs — `clio:side-channel` keeps it out of the lane'
         : undefined;
+}
+
+// a live lane is a live session whose registry name carries codie
+function isLaneLive(home: string) {
+    const dir = path.join(home, '.claude/sessions');
+    if (!existsSync(dir)) return false;
+    return readdirSync(dir)
+        .filter((f) => /^\d+\.json$/.test(f))
+        .some((f) => {
+            const name = registryName(path.join(dir, f));
+            return (
+                Boolean(name?.includes('codie')) &&
+                isAlive(Number.parseInt(f, 10))
+            );
+        });
+}
+
+// a registry file cc is mid-writing reads as no name, never a crash of the prompt hook
+function registryName(file: string) {
+    try {
+        return (JSON.parse(readFileSync(file, 'utf8')) as { name?: string })
+            .name;
+    } catch {
+        return undefined;
+    }
+}
+
+function isAlive(pid: number) {
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 export function entryFor(prompt: string, at: Date) {
@@ -102,27 +135,7 @@ if (import.meta.main) {
             ),
         );
         if (nudge) console.log(nudge);
-        const stamp = path.join(
-            process.env.HOME ?? '',
-            '.local/state/clio/siesta-last',
-        );
-        const since = existsSync(stamp)
-            ? readFileSync(stamp, 'utf8').trim()
-            : `${day}T00:00`;
-        const log = execFileSync(
-            'git',
-            [
-                '-C',
-                path.join(process.env.HOME ?? '', 'frame'),
-                'log',
-                `--since=${since}`,
-                '--grep=^Agent: clio',
-                '--name-only',
-                '--format=%x00%s',
-            ],
-            { encoding: 'utf8' },
-        );
-        const siesta = siestaNudge(log, since);
-        if (siesta) console.log(siesta);
+        const side = sideChannelNudge(text, process.env.HOME ?? '');
+        if (side) console.log(side);
     }
 }

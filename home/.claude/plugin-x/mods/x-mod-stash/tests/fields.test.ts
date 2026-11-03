@@ -4,6 +4,7 @@ import {
     type FieldDraft,
     fieldView,
     isTypingAt,
+    mounted,
     typedInto,
 } from '../hooks/register.tsx';
 
@@ -70,4 +71,67 @@ test('the poll counts a field typed into within 3 s as typing, and an older one 
         isTypingAt([T], T + 3100),
         isTypingAt([], T),
     ]).toEqual([true, false, false]);
+});
+
+// FRM-492: the history once kept 50 texts, so a burst of 52+ after a landed save read that save as an outside write
+// and drew it over what was typed since
+test('a burst of more than 50 keystrokes after a landed save keeps drawing what the field showed', () => {
+    let draft = typeAll('', 'a heron');
+    const landed = fieldView(draft, 'a heron', T + 2000);
+    draft = landed.kind === 'held' ? landed.draft : draft;
+    let text = 'a heron';
+    for (let i = 0; i < 60; i++) {
+        text += 'x';
+        const at = T + 3000 + i * 100;
+        const v = fieldView(draft, 'a heron', at);
+        draft = typedInto(
+            v.kind === 'held' ? v.draft : undefined,
+            v.kind === 'held' ? v.draft.drawn : 'a heron',
+            text,
+            at,
+        );
+    }
+    expect(drawn(draft, 'a heron', T + 9500)).toBe('');
+});
+
+// FRM-492 local review: a typed-back save still in flight stays his own
+test('a backspace back to a landed text keeps the save still in flight as his own', () => {
+    const view = fieldView(typeAll('', 'a', 'ab', 'a'), 'a', T + 400);
+    const held = view.kind === 'held' ? view.draft : undefined;
+    expect(drawn(held, 'ab', T + 500)).toBe('');
+});
+
+// FRM-492 local review: a write made from a read older than his last typed save keeps what he typed
+const ask = { id: 'o1', pick: 'x', text: 'name a bird' };
+test('a write from a read older than his last typed save keeps his steer and what the box mounted with', () => {
+    const was = { ...ask, rev: 2, shown: '', steer: 'abcd' };
+    const stale = {
+        ...ask,
+        mark: 'accepted' as const,
+        rev: 1,
+        shown: '',
+        steer: 'abc',
+    };
+    expect(mounted(was, stale, false)).toEqual({ ...was, mark: 'accepted' });
+});
+
+test("a typed save from an older read never rolls back the box's remount", () => {
+    const was = { ...ask, gen: 1, rev: 1, shown: '' };
+    expect(mounted(was, { ...ask, rev: 1, steer: 'x' }, true)).toEqual({
+        ...ask,
+        gen: 1,
+        rev: 2,
+        shown: '',
+        steer: 'x',
+    });
+});
+
+test('a clear from a read as fresh as the last typed save empties the box, remounting it', () => {
+    const was = { ...ask, rev: 1, shown: '', steer: 'ab' };
+    expect(mounted(was, { ...ask, rev: 1 }, false)).toEqual({
+        ...ask,
+        gen: 1,
+        rev: 1,
+        shown: '',
+    });
 });

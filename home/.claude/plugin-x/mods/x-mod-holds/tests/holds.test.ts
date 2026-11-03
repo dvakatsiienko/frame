@@ -233,6 +233,33 @@ test('a refused edit keeps the hold an earlier edit landed', async ($, on) => {
     );
 });
 
+// FRM-472 07c (dima's o19): an edit the tool refused wrote nothing, so its hold never blocks a rival until 30 min idle
+test('an edit that errored leaves no hold', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    w.fails.next = true;
+    const errored = await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect([errored.isError, (await edit($, w, '/repo/x.ts')).deny]).toEqual([
+        true,
+        undefined,
+    ]);
+});
+
+test('an errored edit keeps the hold an earlier edit landed', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    w.fails.next = true;
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
 test('a commit releases a hold whose first edit failed', async ($, on) => {
     mock.store(on);
     const w = world(on);

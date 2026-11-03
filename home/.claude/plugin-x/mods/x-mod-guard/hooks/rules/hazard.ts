@@ -1,11 +1,10 @@
-import { parse } from '../shell.ts';
 import {
     ASK,
     type Command,
     type Context,
     type Refusal,
     VAULT,
-    commands,
+    commandsDeep,
     hasFlag,
     operands,
     or,
@@ -78,7 +77,7 @@ function isTopDir(path: string, ctx: Context) {
 }
 // what a `trash` would take, so lookUp can stat each: a regular file is never a top dir
 export function trashedPaths(command: string, cwd: string, ctx: Context = {}) {
-    return commands(parse(command), cwd).flatMap((c) =>
+    return commandsDeep(command, cwd).flatMap((c) =>
         c.name === 'trash'
             ? operands(c.args)
                   .map((o) => homed(o, ctx))

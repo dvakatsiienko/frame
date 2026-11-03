@@ -168,6 +168,73 @@ describe('fork-guard fork-edit', () => {
     test('the main edits its checkout freely', () => {
         expect(edit(String(process.pid), join(repo, 'a.md'))).toBe('');
     });
+
+    const bash = (command: string) =>
+        run(
+            ['fork-bash'],
+            String(process.ppid),
+            state,
+            JSON.stringify({
+                cwd: repo,
+                session_id: 'd1bbf86b-x',
+                tool_input: { command },
+            }),
+        ).stdout;
+
+    test('a fork commits its own pocket items in a main checkout', () => {
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a side item.md"',
+            ),
+        ).toBe('');
+        expect(
+            bash('x lane commit /tmp/m.txt -- "pocket/tasks/pk-9 - a.md"'),
+        ).toBe('');
+        expect(
+            bash(
+                'cd ~/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
+            ),
+        ).toBe('');
+    });
+
+    test('a fork commit naming any other path in a main checkout is refused', () => {
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md" a.md',
+            ),
+        ).toContain('«fork-d1bbf86b»');
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"; rm a.md',
+            ),
+        ).toContain('«fork-d1bbf86b»');
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md other/b.md',
+            ),
+        ).toContain('«fork-d1bbf86b»');
+    });
+
+    test.each([
+        'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9/../../memory/habit-cto.md',
+        'x lane commit /tmp/m.txt -- home/.claude/pocket/tasks/pk-1.md',
+        'cd ~/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9/../../../home/.claude/CLAUDE.md"',
+        'x lane commit --amend -- _clio/pocket/tasks/pk-9.md',
+        'cd /etc && x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
+        'git reset --hard\nx lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
+        'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 $(rm -rf x).md"',
+        'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 `rm -rf x`.md"',
+        'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-*.md',
+        'x lane commit T>README.md -- pocket/tasks/pk-a.md',
+        'x lane commit T -- pocket/tasks/pk-<(touch${IFS}x).md',
+        'x lane commit /tmp/m.txt -- pocket/tasks/pk-a\tREADME.md',
+        'x lane commit /tmp/m.txt -- pocket/tasks/pk-a\rREADME.md',
+    ])(
+        'a pocket-shaped path that escapes the pocket is refused: %s',
+        (command) => {
+            expect(bash(command)).toContain('«fork-d1bbf86b»');
+        },
+    );
 });
 
 describe('fork-guard announce', () => {

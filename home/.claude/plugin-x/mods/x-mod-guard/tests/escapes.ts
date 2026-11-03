@@ -1189,4 +1189,259 @@ EOF`,
         'a quoted ]] ahead of a reset',
         "grep -c ']]' f.sh; git reset --hard",
     ],
+    // FRM-472 R3 row 2: the HOME door runs only node and the mods verbs; a claude child under it commits unsigned
+    [
+        'refused',
+        'home-door',
+        'a claude child under a fresh HOME',
+        'H=$(mktemp -d) && HOME=$H claude --bg -p "commit and push"',
+    ],
+    // FRM-472 R3 row 3: a runner's verb found past its own flags
+    ['refused', 'runner', 'pnpm -C ahead of exec', 'pnpm -C app exec rm -rf x'],
+    [
+        'refused',
+        'runner',
+        'pnpm --filter ahead of exec',
+        'pnpm --filter web exec git stash clear',
+    ],
+    [
+        'refused',
+        'runner',
+        'pnpm --dir= ahead of dlx',
+        'pnpm --dir=app dlx rm -rf x',
+    ],
+    [
+        'refused',
+        'runner',
+        'pnpm -r ahead of exec',
+        'pnpm -r exec git stash clear',
+    ],
+    ['refused', 'runner', 'bunx', 'bunx git stash clear'],
+    ['refused', 'runner', 'pnpx with a flag', 'pnpx --yes rm -rf x'],
+    // FRM-472 exit 2: a heredoc into ssh runs on the remote shell, as does ssh's command
+    [
+        'refused',
+        'reader',
+        'a heredoc into ssh',
+        'ssh host <<EOF\nrm -rf x\nEOF',
+    ],
+    ['refused', 'reader', "ssh's remote command", "ssh -p 22 host 'rm -rf x'"],
+    // FRM-472 review: ssh reads options and a `--` after the host too; an unquoted $(cat <<EOF) head splits on spaces
+    ['refused', 'reader', "ssh's command after --", 'ssh host -- rm -rf x'],
+    [
+        'refused',
+        'reader',
+        "ssh's command after an option past the host",
+        'ssh host -t -p 22 rm -rf x',
+    ],
+    [
+        'refused',
+        'reader',
+        'an unquoted cat heredoc as the head',
+        '$(cat <<EOF\nrm -rf x\nEOF\n)',
+    ],
+    [
+        'refused',
+        'reader',
+        'an eval of a cat heredoc',
+        'eval "$(cat <<EOF\nrm -rf x\nEOF\n)"',
+    ],
+    // FRM-472 R3 row 11: echo's flags are not what it prints
+    [
+        'refused',
+        'reader',
+        'a head echoed past -n',
+        'x=$(echo -n rm); $x -rf ~/frame',
+    ],
+    // R3 row 15: a packed env flag whose last letter takes a value
+    [
+        'refused',
+        'linear-as-dima',
+        'env -vu CLAUDECODE',
+        'env -vu CLAUDECODE x linear read FRM-1',
+    ],
+    // R3 row 16: what a feeder prints, filled
+    [
+        'refused',
+        'reader',
+        'a printf format filled',
+        "printf 'git push %s\\n' --force | bash",
+    ],
+    [
+        'refused',
+        'reader',
+        'a cat herestring into a shell',
+        "cat <<<'rm -rf x' | bash",
+    ],
+    [
+        'refused',
+        'reader',
+        'xargs feeding bash -c',
+        "printf 'rm -rf x\\0' | xargs -0 bash -c",
+    ],
+    // R3 row 21: more wrappers that run the next word
+    ['refused', 'wrapper', 'gtimeout', 'gtimeout 5 rm -rf ~/frame'],
+    ['refused', 'wrapper', 'flock', 'flock /tmp/l rm -rf x'],
+    ['refused', 'wrapper', 'watch', 'watch -n 1 rm -rf x'],
+    ['refused', 'wrapper', 'chronic', 'chronic rm -rf x'],
+    ['refused', 'wrapper', 'unbuffer', 'unbuffer rm -rf x'],
+    // FRM-472 review P0: a cluster's first valued letter takes the rest, as getopt reads it
+    [
+        'refused',
+        'wrapper',
+        'xargs -rI packed with its mark',
+        'ls | xargs -rIfiles rm -rf files',
+    ],
+    [
+        'refused',
+        'wrapper',
+        'sudo -Eu packed with its user',
+        'sudo -Euroot rm -rf x',
+    ],
+    // FRM-472 exit 7: sudo drops CLAUDECODE, so the guard refuses under it what it refuses bare
+    ['refused', 'sudo', 'sudo ahead of an rm', 'sudo rm -rf x'],
+    ['refused', 'sudo', 'sudo ahead of a bash -c', "sudo bash -c 'rm -rf x'"],
+    [
+        'refused',
+        'sudo',
+        'sudo ahead of a push in frame',
+        'sudo git push',
+        { cwd: '/home/frame' },
+    ],
+    // FRM-472 exit 3: warn-only until step 11
+    [
+        'open',
+        'bare-push',
+        'a plain push from frame (warn-only until step 11)',
+        'git push',
+        { cwd: '/home/frame' },
+    ],
+    [
+        'open',
+        'hooks-bypass',
+        'a commit with hooksPath emptied (warn-only until step 11)',
+        'git -c core.hooksPath=/dev/null commit -m x -- a.ts',
+    ],
+    // FRM-472 R3 row 7: a job tmp that is frame (a symlink, a worktree) never lifts a local git discard
+    [
+        'refused',
+        'symlink',
+        'a reset in a tmp that links to frame',
+        `cd ${TMP} && git reset --hard`,
+        { reals: { [TMP]: '/repo' } },
+    ],
+    [
+        'refused',
+        'git-dir',
+        'a clean in a tmp that is a frame worktree',
+        `cd ${TMP} && git clean -fdx`,
+        { commonDirs: { [TMP]: '/repo/.git' } },
+    ],
+    // R3 row 9: x linear's verb found past its flags' values
+    [
+        'refused',
+        'linear-body',
+        'a --vars value ahead of api',
+        `x linear --vars '{"a":1}' api 'mutation { issueUpdate(id: "FRM-1", input: {description: "x"}) { success } }'`,
+    ],
+    // R3 row 10: `x as <member> --` runs its command, read like find -exec's
+    [
+        'refused',
+        'x-as',
+        'env linear behind x as',
+        'x as codie -- env linear issue update FRM-1 -d x',
+    ],
+    [
+        'refused',
+        'x-as',
+        'bash -c behind x as',
+        "x as codie -- bash -c 'rm -rf x'",
+    ],
+    // R3 rows 12–14: an alias takes the call's own args; a persisted alias is read as it is set; a known value counts beside an unknown
+    [
+        'refused',
+        'alias',
+        'a -c alias given --force',
+        'git -c alias.p=push p --force',
+    ],
+    [
+        'refused',
+        'alias',
+        'a persisted alias that force-pushes',
+        "git config alias.x 'push -f'; git x",
+    ],
+    [
+        'refused',
+        'alias',
+        'a persisted ! alias',
+        "git config --global alias.p '!rm -rf ~/frame'",
+    ],
+    [
+        'refused',
+        'reader',
+        'a known flag beside an unknown one',
+        'F=--force; [ -n "$X" ] && F=$X; git push origin $F',
+    ],
+    // FRM-472 review: a persisted alias reaches the later call that names it; git 2.46's `config set` persists one too
+    [
+        'refused',
+        'alias',
+        'a persisted alias given --force later on the line',
+        'git config alias.p push; git p --force',
+    ],
+    [
+        'refused',
+        'alias',
+        'an alias persisted by git config set',
+        "git config set alias.x 'push -f'",
+    ],
+    // sixth sense round 1: su's -c string, and an unquoted heredoc's $( … ) and backticks run as the heredoc is read
+    ['refused', 'reader', "su's -c string", "su -c 'rm -rf x'"],
+    ['refused', 'reader', "su's -c in a cluster", "su -lc 'rm -rf x'"],
+    ['refused', 'reader', "su's --command=", "su --command='rm -rf x'"],
+    [
+        'refused',
+        'reader',
+        'a $( … ) beside quotes in an unquoted heredoc',
+        `cat <<EOF > f.md\nit\\"s don't $(rm -rf x) won't\nEOF`,
+    ],
+    [
+        'refused',
+        'reader',
+        'a $( … ) in an unquoted heredoc kept as a file',
+        'cat <<EOF > f.md\n$(rm -rf x)\nEOF',
+    ],
+    [
+        'refused',
+        'reader',
+        'a backtick in an unquoted heredoc kept as a file',
+        'cat <<EOF > f.md\nnow `rm -rf x`\nEOF',
+    ],
+    // FRM-472 review: every shell that reads a heredoc on stdin
+    ...(
+        [
+            ['sh -s', 'sh -s'],
+            ['zsh', 'zsh'],
+            ['a shell by its path', '/bin/bash'],
+            ['env bash', 'env bash'],
+            ['sudo sh', 'sudo sh'],
+            ['bash -s --', 'bash -s -- a'],
+            // sixth sense round 1, exit 2 twins
+            ['bash -o pipefail', 'bash -o pipefail'],
+            ['bash -euo pipefail', 'bash -euo pipefail'],
+            ['a shell ssh runs with args', 'ssh box bash -s -- a'],
+            ['a shell ssh runs', 'ssh box bash -s'],
+            ['sudo -s', 'sudo -s'],
+            ['sudo -i', 'sudo -i'],
+            ['su', 'su'],
+            ['su - root', 'su - root'],
+        ] as const
+    ).map(
+        ([shape, shell]): Row => [
+            'refused',
+            'reader',
+            `a heredoc into ${shape}`,
+            `${shell} <<EOF\nrm -rf x\nEOF`,
+        ],
+    ),
 ];

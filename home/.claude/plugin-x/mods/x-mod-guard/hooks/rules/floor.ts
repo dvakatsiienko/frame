@@ -1,4 +1,3 @@
-import { parse } from '../shell.ts';
 import {
     ASK,
     type Command,
@@ -8,13 +7,14 @@ import {
     STASH,
     TRASH,
     VAULT,
-    commands,
+    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
     operands,
     or,
     peel,
+    resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
 
@@ -35,7 +35,7 @@ const STASH_VALUE = new Set(['-m', '--message', '--pathspec-from-file']);
 const WHOLE_TREE = /^(?:\.\/?|\*|:\/?\*?|:\(top\)\*?)$/;
 export function stashSweeps(command: string, cwd: string, ctx: Context) {
     const dirs: string[] = [];
-    for (const c of commands(parse(command), cwd)) {
+    for (const c of commandsDeep(command, cwd)) {
         if (c.name !== 'git') continue;
         const { sub, subArgs } = gitParts(c.args);
         if (sub !== 'stash') continue;
@@ -97,9 +97,22 @@ export function opaque(c: Command, hiddenBy?: string): Refusal | undefined {
             'a command named by a variable the line never fills runs what the guard cannot read',
             'spell the command out, or run the script it names by path',
         );
-    // a brace list widens to every name in it: `r{m,}` is rm
-    if (!head?.hasQuote && /\{[^}]*(?:,|\.\.)[^}]*\}/.test(head?.text ?? ''))
-        return spell('a brace in a command name runs whatever it widens to');
+    // a brace list widens to every name in it: `r{m,}` is rm, and the door names each
+    const brace = head?.hasQuote
+        ? undefined
+        : (head?.text ?? '').match(/^(.*?)\{([^{}]*(?:,|\.\.)[^{}]*)\}(.*)$/s);
+    if (brace) {
+        const [, before = '', list = '', after = ''] = brace;
+        const words = list.includes(',')
+            ? list.split(',').map((w) => `\`${before}${w}${after}\``)
+            : [];
+        return spell(
+            'a brace in a command name runs whatever it widens to',
+            words.length
+                ? `spell it as it runs: ${words.join(' or ')}`
+                : 'spell the command out',
+        );
+    }
     if (head?.isFilled)
         return spell(
             'a command name a variable takes several values for, or a substitution prints, hides what runs',
@@ -353,6 +366,79 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
             rule: 'push-lane',
             targets: [toMain],
             why: 'a hand-typed sha or ref pushed to main skips the read-back',
+        };
+    return undefined;
+}
+// a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
+export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
+    // the environment git reads its config from: a prefix, or an export that lasts for the calls after it
+    const env = [
+        ...c.assigns,
+        ...(['export', 'declare', 'typeset'].includes(c.name)
+            ? operands(c.args)
+            : []),
+    ];
+    const fromEnv = env.flatMap(
+        (a) =>
+            a.match(/^GIT_CONFIG_KEY_\d+=(.*)$/)?.[1] ??
+            (/^GIT_CONFIG_PARAMETERS=.*core\.hookspath/is.test(a)
+                ? 'core.hooksPath'
+                : []),
+    );
+    if (c.name !== 'git' && !fromEnv.length) return undefined;
+    const { configs, sub, subArgs } = gitParts(c.args);
+    // `-f`/`--file`/`--blob` name where git config writes, never the key
+    const ops = operands(
+        subArgs.filter(
+            (w, i) => !/^(-f|--file|--blob)$/.test(subArgs[i - 1]?.text ?? ''),
+        ),
+    );
+    const [key, value] = ops[0] === 'set' ? ops.slice(1) : ops;
+    // a read, a list or an unset swaps nothing; only a key given a value persists
+    const isSet =
+        value !== undefined &&
+        !subArgs.some((w) => /^(--get|--unset|--list$|-l$)/.test(w.text));
+    // a `-c` or `--config-env` key, one `git config` persists, or one the environment hands git (`GIT_CONFIG_KEY_<n>`)
+    const hooks = [
+        ...configs,
+        ...(sub === 'config' && key && isSet ? [key] : []),
+        ...fromEnv,
+    ].find((k) => /^core\.hookspath(?:=|$)/i.test(k));
+    if (hooks)
+        return {
+            door: 'fix what the hook refused, then run it without the override',
+            rule: 'hooks-bypass',
+            targets: [hooks.split('=')[0] ?? hooks],
+            why: '-c core.hooksPath swaps out the hooks a commit or push runs',
+        };
+    // the repo a push leaves from: where it runs, or the tree a `--git-dir` or `GIT_DIR` names
+    if (c.name !== 'git') return undefined;
+    const named =
+        c.args.flatMap((w, i) =>
+            w.text.startsWith('--git-dir=')
+                ? [w.text.slice('--git-dir='.length)]
+                : w.text === '--git-dir'
+                  ? [c.args[i + 1]?.text ?? '']
+                  : [],
+        )[0] ??
+        c.assigns.flatMap((a) => a.match(/^GIT_DIR=(.+)$/)?.[1] ?? [])[0];
+    const dir =
+        named === undefined
+            ? gitDir(c, ctx)
+            : resolve(named, gitDir(c, ctx), ctx).replace(/\/\.git\/?$/, '');
+    const frame = `${ctx.home}/frame`;
+    if (
+        sub === 'push' &&
+        ctx.home &&
+        (dir === frame || dir.startsWith(`${frame}/`)) &&
+        !dir.startsWith(`${frame}/.claude/worktrees/`) &&
+        !hasFlag(subArgs, ['--dry-run'], 'n')
+    )
+        return {
+            door: "x lane push — it pushes HEAD's sha and reads the remote back",
+            rule: 'bare-push',
+            targets: ['push'],
+            why: 'a plain git push from frame skips the read-back and the push gates x lane push runs',
         };
     return undefined;
 }

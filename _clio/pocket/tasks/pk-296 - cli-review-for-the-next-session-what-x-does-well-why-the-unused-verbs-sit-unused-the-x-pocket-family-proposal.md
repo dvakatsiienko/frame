@@ -6,13 +6,13 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T16:36:00Z'
-updated_date: '2026-11-02T20:27:00Z'
+updated_date: '2026-11-03T17:11:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 29000
 ---
 
 ## Description

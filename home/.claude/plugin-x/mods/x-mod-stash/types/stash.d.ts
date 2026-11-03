@@ -34,12 +34,6 @@ export type RemoteMark = {
 // the session's last main turn stopped on the 5h cap: the reset it waits for, and the reset a resume already went for
 export type StashCap = { resetsAt?: number; sentFor?: number };
 
-// what the fleet did while dima was afk
-export type StashDigest = {
-    needs: { sid: string; name: string; asks: number }[];
-    done: { sid: string; name: string }[];
-};
-
 // one row of the fleet board
 export type StashMember = {
     sid: string;
@@ -90,7 +84,6 @@ export type StashView = {
     afk: boolean;
     isHot: boolean;
     isWaker: boolean;
-    digest?: StashDigest;
     isBoardOpen: boolean;
     // this session's own second wind, for the band's button
     wind?: StashWind['state'];
@@ -131,6 +124,11 @@ export type OrbitAsk = {
     link?: string;
     mark?: 'accepted' | 'rejected';
     steer?: string;
+    // the text the steer box mounted with, and its remount count: typing never moves either; rev counts typed saves, so
+    // a write made from an older read keeps what he typed (FRM-492)
+    shown?: string;
+    gen?: number;
+    rev?: number;
     isLocked?: boolean;
     isChanged?: boolean;
     isResolved?: boolean;

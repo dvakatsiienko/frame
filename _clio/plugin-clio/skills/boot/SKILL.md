@@ -46,7 +46,7 @@ and the next ticket from it; never re-query what it already printed.
   and its `ordinal`, the checked prep copied to `~/.local/state/clio/grooms/<date>-inbox.groomed.md` (the groom check reads it), and its inbox line a leading `✅ PK-N` (the halt reset reads it); resolution paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 - a raw drop goes into its pocket item as one `raw drop (<day> inbox, dima): …` note per quote line, never two lines joined (notes are append-only, and a joined one reds the groom check for good)
-- 🍴 a side channel's pocket items are taken over: `backlog task list --labels side --plain`, each `backlog task edit <id> --remove-label side`, sorted like an inbox drop
+- 🍴 a side channel's pocket items are taken over: `backlog task list --labels side --plain`, each `backlog task edit <id> --remove-label side`, sorted like an inbox drop; a `side-channel-owned` item stays its channel's, the board prints «🍴 side-channel-owned: N»
 
 ## 4. continuity
 - 📬 **pending handoff addressed to you → PULL IT NOW** via `/x:handoff-ingest`; a topic

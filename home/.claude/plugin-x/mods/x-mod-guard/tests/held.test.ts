@@ -22,6 +22,26 @@ const writes: [string, string, string[]][] = [
     ['a write after a cd', 'cd sub && echo hi > x.ts', ['/repo/sub/x.ts']],
     ['a cp onto a file', 'cp a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
     ['a write in bash -c', "bash -c 'echo hi > x.ts'", ['/repo/x.ts']],
+    // FRM-472 R3 row 17
+    ['perl -pi', "perl -pi -e 's/a/b/' x.ts", ['/repo/x.ts']],
+    ['dd of=', 'dd if=a.ts of=x.ts', ['/repo/x.ts']],
+    ['curl -o', 'curl -fsSL -o x.ts https://e.com/x', ['/repo/x.ts']],
+    ['curl --output=', 'curl --output=x.ts https://e.com/x', ['/repo/x.ts']],
+    ['curl -so, packed', 'curl -so x.ts https://e.com/x', ['/repo/x.ts']],
+    ['rsync', 'rsync -a a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
+    ['ditto', 'ditto a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
+    ['git checkout --', 'git checkout -- x.ts', ['/repo/x.ts']],
+    ['git restore', 'git restore x.ts', ['/repo/x.ts']],
+    ['cp -t', 'cp -t dir a.ts', ['/repo/dir', '/repo/dir/a.ts']],
+    // FRM-472 review: rsync's -t keeps times, it names no dest; git -C moves where restore writes
+    ['rsync -t', 'rsync -t a.ts dir', ['/repo/dir', '/repo/dir/a.ts']],
+    ['git -C restore', 'git -C app restore x.ts', ['/repo/app/x.ts']],
+    ['git restore -SW', 'git restore -SW x.ts', ['/repo/x.ts']],
+    [
+        'perl -pi with two -e',
+        "perl -pi -e 's/a/b/' -e 's/c/d/' x.ts",
+        ['/repo/x.ts'],
+    ],
 ];
 for (const [shape, command, files] of writes)
     test(`reads the file a Bash write targets: ${shape}`, () => {
@@ -33,6 +53,7 @@ const reads: [string, string][] = [
     ['a quoted arrow', "echo 'a > b'"],
     ['sed without -i', "sed 's/a/b/' x.ts"],
     ['a variable path', 'echo hi > "$out"'],
+    ['git restore --staged', 'git restore --staged x.ts'],
 ];
 for (const [shape, command] of reads)
     test(`finds no write in ${shape}`, () => {

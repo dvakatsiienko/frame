@@ -1,5 +1,11 @@
-// one helga receipt line into its trial's receipt log, above `## rounds` (PK-133): helga stops hand-typing them
-import { readFileSync, writeFileSync } from 'node:fs';
+// one helga receipt line into its trial's receipt log, above `## rounds` (PK-133), and into clio's receipts log,
+// which the siesta card reads, so a green receipt never has to wake her (FRM-494)
+import {
+    appendFileSync,
+    mkdirSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 
 const MARK = '\n## rounds';
@@ -10,6 +16,15 @@ export function addReceipt(body: string, fields: string[], day: string) {
     const line = `- ${[day, ...fields].join(' · ')}\n`;
     const head = body.slice(0, at).replace(/\n*$/, '\n');
     return `${head}${line}${body.slice(at)}`;
+}
+
+export function logReceipt(home: string, fields: string[], at: Date) {
+    const dir = path.join(home, '.local/state/clio/grooms');
+    mkdirSync(dir, { recursive: true });
+    appendFileSync(
+        path.join(dir, 'receipts.log'),
+        `${[at.toISOString(), ...fields].join('\t')}\n`,
+    );
 }
 
 if (import.meta.main) {
@@ -26,5 +41,6 @@ if (import.meta.main) {
     );
     const day = new Date().toLocaleDateString('sv');
     writeFileSync(file, addReceipt(readFileSync(file, 'utf8'), fields, day));
+    logReceipt(process.env.HOME ?? '', fields, new Date());
     console.log(`helga-receipt: ${fields[0]} logged`);
 }

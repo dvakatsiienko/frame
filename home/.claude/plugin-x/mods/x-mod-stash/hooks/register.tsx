@@ -11,7 +11,6 @@ import type {
     QuietPing,
     RemoteMark,
     StashCap,
-    StashDigest,
     StashEntry,
     StashLane,
     StashMember,
@@ -82,7 +81,8 @@ type Entry = StashEntry;
 type AskDoor = {
     prefix: string;
     mark: (a: OrbitAsk, mark: 'accepted' | 'rejected') => void;
-    steer: (a: OrbitAsk, value: string) => void;
+    // resolves once the steer is written: a flush before a prompt waits on it
+    steer: (a: OrbitAsk, value: string) => unknown;
 };
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
 // waits: every background task's own name when the reply set no 🔭, so the board can list them all
@@ -200,11 +200,6 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
     { group: 'stash · band', key: 'stash.ctx', label: '🧠 ctx bar (desktop)' },
-    {
-        group: 'stash · band',
-        key: 'stash.digest',
-        label: 'while you were away',
-    },
     { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
@@ -522,8 +517,16 @@ export function fieldView(
     // a text field never swaps its value for the stored one: the surface scrolls a field back to its start on any value
     // change, equal text or not; a number is short, so it may snap back to the stored value
     if (isNumber && now - draft.at >= FIELD_QUIET_MS) return { kind: 'saved' };
+    // a landed save drops the texts typed before it, since saves land in order: the history holds only what is in
+    // flight, with no cap a long burst could overflow (FRM-492)
     return {
-        draft: isOwn && !draft.isLanded ? { ...draft, isLanded: true } : draft,
+        draft: isOwn
+            ? {
+                  ...draft,
+                  isLanded: true,
+                  sent: draft.sent.slice(draft.sent.indexOf(saved)),
+              }
+            : draft,
         kind: 'held',
     };
 }
@@ -536,7 +539,7 @@ export const typedInto = (
     at: now,
     drawn: draft?.drawn ?? drawn,
     isLanded: draft?.isLanded ?? false,
-    sent: [...(draft?.sent ?? []).slice(-50), text],
+    sent: [...(draft?.sent ?? []), text],
 });
 // a steer field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
 const isNumberField = (key: string) =>
@@ -571,16 +574,86 @@ function field($: EngineInterface, key: string, saved: string) {
             );
             // a number is a few characters and never scrolls: it saves on each keystroke, as its refusal line needs
             if (isNumberField(key)) return void save();
-            pendingSaves.get(key)?.timer.cancel();
-            pendingSaves.set(key, {
-                save,
-                timer: $.clock.after(FIELD_SAVE_MS, () => {
-                    pendingSaves.delete(key);
-                    void save();
-                }),
-            });
+            typed($, key, save);
         },
         value,
+    };
+}
+
+// when each ask's own steer box was last typed into
+const askTypedAt = new Map<string, number>();
+// every field's last keystroke, for the holds that wait out typing
+const typedAts = () => [
+    ...[...drafts.values()].map((d) => d.at),
+    ...askTypedAt.values(),
+];
+function typed($: EngineInterface, key: string, save: () => unknown) {
+    pendingSaves.get(key)?.timer.cancel();
+    pendingSaves.set(key, {
+        save,
+        timer: $.clock.after(FIELD_SAVE_MS, () => {
+            pendingSaves.delete(key);
+            void save();
+        }),
+    });
+}
+// an ask's own steer box draws the text it mounted with, under its remount count, both kept on the ask in $.state: no
+// history to cap, and a reload, a poll or another session's redraw never changes its value; only a write that
+// replaces the steer does (FRM-492)
+function askBox($: EngineInterface, a: OrbitAsk) {
+    const key = `orbit:steer:${a.id}`;
+    return {
+        key: a.gen ? `${key}#${a.gen}` : key,
+        type: (text: string, save: () => unknown) => {
+            // clock-ok: a keystroke lands in a sync handler, where $.clock.now() cannot be awaited
+            askTypedAt.set(key, Date.now());
+            typed($, key, save);
+        },
+        value: a.shown ?? a.steer ?? '',
+    };
+}
+function steerBox($: EngineInterface, prefix: string, a: OrbitAsk) {
+    return prefix === 'orbit'
+        ? askBox($, a)
+        : field($, `${prefix}:steer:${a.id}`, a.steer ?? '');
+}
+// what an ask's steer box mounts with after a write, always read off the stored ask: typing keeps what it showed; any
+// other change to the steer shows the new one, under a new key when the box already shows that text, since the surface
+// keeps typed text under an unchanged value; a write made from a read older than his last typed save keeps his steer
+export function mounted(
+    was: OrbitAsk | undefined,
+    a: OrbitAsk,
+    isTyped: boolean,
+): OrbitAsk {
+    if (!was) return a;
+    const { gen: _gen, rev: _rev, shown: _shown, steer, ...rest } = a;
+    const box = (
+        shown: string | undefined,
+        gen: number | undefined,
+        rev = was.rev,
+    ) => ({
+        ...(shown === undefined ? {} : { shown }),
+        ...(gen ? { gen } : {}),
+        ...(rev ? { rev } : {}),
+    });
+    const withSteer = (s: string | undefined) =>
+        s === undefined ? {} : { steer: s };
+    const drew = was.shown ?? was.steer ?? '';
+    if (isTyped)
+        return steer === was.steer
+            ? { ...rest, ...withSteer(steer), ...box(was.shown, was.gen) }
+            : {
+                  ...rest,
+                  ...withSteer(steer),
+                  ...box(drew, was.gen, (was.rev ?? 0) + 1),
+              };
+    if ((a.rev ?? 0) !== (was.rev ?? 0) || steer === was.steer)
+        return { ...rest, ...withSteer(was.steer), ...box(was.shown, was.gen) };
+    const shown = steer ?? '';
+    return {
+        ...rest,
+        ...withSteer(steer),
+        ...box(shown, shown === drew ? (was.gen ?? 0) + 1 : was.gen),
     };
 }
 
@@ -623,10 +696,6 @@ let isBusy = false;
 let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
-
-// what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
-type Digest = StashDigest;
-let digest: Digest | undefined;
 
 const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
 // mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
@@ -1047,10 +1116,27 @@ async function playPress($: EngineInterface, text: string) {
     await refreshSpeaking($);
 }
 
-// kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` and the away
-// digest count every session's
-async function saveOrbit($: EngineInterface, next: StashOrbit) {
-    orbit = next;
+// kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` counts every
+// session's
+async function saveOrbit(
+    $: EngineInterface,
+    next: StashOrbit,
+    // the one ask a steer box saved: only its steer is typing; every other ask is a read the save carried along
+    typedId?: string,
+) {
+    const was =
+        (await $.state.get(ORBIT).catch(() => undefined))?.value?.asks ??
+        orbit.asks;
+    orbit = {
+        ...next,
+        asks: next.asks.map((a) =>
+            mounted(
+                was.find((w) => w.id === a.id),
+                a,
+                a.id === typedId,
+            ),
+        ),
+    };
     await $.state
         .set(ORBIT, orbit)
         .catch((err) =>
@@ -1116,7 +1202,7 @@ async function marksOf($: EngineInterface, sid: string) {
 // a steer typed into this session's own box a moment ago is newer than a card's edit that lands now
 const isTypedHere = (askId: string) =>
     isTypingAt(
-        [drafts.get(`orbit:steer:${askId}`)?.at ?? 0],
+        [askTypedAt.get(`orbit:steer:${askId}`) ?? 0],
         // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
         Date.now(),
     );
@@ -1280,10 +1366,24 @@ async function changeAssumed(
     });
 }
 
+// one mark or steer write at a time: two boxes saved together each read the orbit before the other wrote it, and the
+// later save put the earlier one's steer back to none while its box still showed it (FRM-492)
+let marking: Promise<unknown> = Promise.resolve();
 async function markAsks(
     $: EngineInterface,
     change: (a: OrbitAsk) => OrbitAsk,
     isMark = false,
+    typedId?: string,
+) {
+    const run = marking.then(() => markAsksNow($, change, isMark, typedId));
+    marking = run.catch(() => undefined);
+    await run;
+}
+async function markAsksNow(
+    $: EngineInterface,
+    change: (a: OrbitAsk) => OrbitAsk,
+    isMark: boolean,
+    typedId: string | undefined,
 ) {
     // only a 🛎️ or ↩️ press means dima is at the mac: a steer or a speak press never ends mobile mode (dima, 11:16)
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
@@ -1291,7 +1391,23 @@ async function markAsks(
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
     );
-    await saveOrbit($, { ...o, asks });
+    await saveOrbit($, { ...o, asks }, typedId);
+}
+
+// an unmounted box mounts again with the stored steer: a fold or a closed board drops what each box mounted with
+async function unmountSteers($: EngineInterface) {
+    askTypedAt.clear();
+    const o = await currentOrbit($);
+    if (!o.asks.some((a) => a.shown !== undefined)) return;
+    orbit = {
+        ...o,
+        asks: o.asks.map(({ shown: _, ...a }) => a),
+    };
+    await $.state
+        .set(ORBIT, orbit)
+        .catch((err) =>
+            $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`),
+        );
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
@@ -2079,7 +2195,7 @@ async function forget($: EngineInterface, sid: string) {
         if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
 }
 
-// a session that exited keeps only its last reply, marked ended, so an away digest still counts it as done
+// a session that exited keeps only its last reply, marked ended, dropped a day later
 async function retire($: EngineInterface, sid: string) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
     await forget($, sid);
@@ -2131,7 +2247,10 @@ async function resumeState($: EngineInterface): Promise<StashOrbit> {
     if (kept.folds) await $.state.set(FOLDS, kept.folds);
     if (kept.mobile) await $.state.set(MOBILE, true);
     if (kept.quiet?.held.length) await $.state.set(QUIET, kept.quiet);
-    return kept.orbit ? steeredOrbit(kept.orbit) : EMPTY_ORBIT;
+    if (!kept.orbit) return EMPTY_ORBIT;
+    // a new process draws a fresh pane: no box holds what the old one mounted with (FRM-492)
+    const o = steeredOrbit(kept.orbit);
+    return { ...o, asks: o.asks.map(({ shown: _, ...a }) => a) };
 }
 
 // an ended session's reply is dropped a day after it ended, a kept state a week after its last save
@@ -2202,7 +2321,6 @@ async function load($: EngineInterface) {
 function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
-        digest,
         isBoardOpen,
         isHot: Boolean(hot),
         isSettingsOpen,
@@ -2653,10 +2771,16 @@ let compactTrail: number[] = [];
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
-    // a closed board unmounts its fields: the next open draws the stored text, not a held one
-    if (!isBoardOpen && drafts.size) {
+    // a closed board unmounts its fields: the next open draws the stored text, not a held one; a board typed into
+    // within the quiet window is on screen, whatever the read said (FRM-492)
+    if (
+        isBoardOpen === false &&
+        // clock-ok: compared with the fields' own Date.now() stamps, so both sides read one clock
+        !isTypingAt(typedAts(), Date.now())
+    ) {
         await flushFields();
         drafts.clear();
+        await unmountSteers($);
     }
     // a lane clio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
@@ -2689,7 +2813,7 @@ async function publish($: EngineInterface) {
         if (
             boardText !== boardPublished &&
             !isTypingAt(
-                [...drafts.values()].map((d) => d.at),
+                typedAts(),
                 // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
                 Date.now(),
             )
@@ -2698,7 +2822,7 @@ async function publish($: EngineInterface) {
             await $.state.set(BOARD_VIEW, board).catch(() => undefined);
         }
     }
-    const view = viewOf(isBoardOpen);
+    const view = viewOf(isBoardOpen === true);
     const text = JSON.stringify(view);
     if (text === published) return;
     published = text;
@@ -3143,42 +3267,6 @@ export const markOf = (m: {
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
-// every session whose reply ended since `since`: those that left asks first, then those that finished —
-// a session the registry still shows busy has not finished; one that exited meanwhile has
-async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
-    const needs: Digest['needs'] = [];
-    const done: Digest['done'] = [];
-    const keys = await $.store.keys();
-    const running = new Set(
-        (await registry($).catch(() => []))
-            .filter((r) => r.isAlive && statusOf(r.base.status).isWorking)
-            .map((r) => r.base.sid),
-    );
-    for (const key of keys) {
-        if (!key.startsWith(PREFIX)) continue;
-        const v = (await $.store.get(key)) as Entry | undefined;
-        if (!v || v.at < since || !v.asks.length) continue;
-        const sid = key.slice(PREFIX.length);
-        needs.push({ asks: v.asks.length, name: v.name ?? short(sid), sid });
-    }
-    for (const key of keys) {
-        if (!key.startsWith(REPLY)) continue;
-        const sid = key.slice(REPLY.length);
-        const v = (await $.store.get(key)) as Partial<Reply> | undefined;
-        if (
-            v?.at === undefined ||
-            v.at < since ||
-            running.has(sid) ||
-            needs.some((n) => n.sid === sid)
-        )
-            continue;
-        done.push({ name: v.name ?? short(sid), sid });
-    }
-    const byName = (a: { name: string }, b: { name: string }) =>
-        a.name.localeCompare(b.name);
-    return { done: done.sort(byName), needs: needs.sort(byName) };
-}
-
 type Registered = {
     pid: number;
     bg: boolean;
@@ -3432,9 +3520,10 @@ export const isCoordinator = (name: string) =>
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
+// undefined when the read fails: a failed read says nothing about the board (FRM-492)
 async function isOpen($: EngineInterface) {
-    const panes = await $.ui.panes().catch(() => []);
-    return panes.some((p) => p.id === BOARD);
+    const panes = await $.ui.panes().catch(() => undefined);
+    return panes?.some((p) => p.id === BOARD);
 }
 
 async function openBoard($: EngineInterface) {
@@ -3809,7 +3898,6 @@ export const register: Register = (on) => {
             pinged = kept.turn.isPinged;
             turnAfk = kept.turn.afk;
         }
-        digest = kept.view?.digest;
         await load($);
         await armHot($);
         await armWake($);
@@ -3893,12 +3981,8 @@ export const register: Register = (on) => {
         const isUser =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
-        if (isUser) {
-            // dima read the away digest once he types again
-            digest = undefined;
-            if (BACK_AT_MAC.test(e.text))
-                await $.state.set(MOBILE, false).catch(() => undefined);
-        }
+        if (isUser && BACK_AT_MAC.test(e.text))
+            await $.state.set(MOBILE, false).catch(() => undefined);
         await startTurn($, e.text, isUser);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const at = new Date(await $.clock.now());
@@ -4839,8 +4923,14 @@ export const register: Register = (on) => {
                         );
                     // the steer keeps every keystroke, no Enter needed
                     const handleSteer = (id: string, value: string) =>
-                        void markAsks($, (x) =>
-                            x.id === id ? { ...x, steer: steerOf(value) } : x,
+                        markAsks(
+                            $,
+                            (x) =>
+                                x.id === id
+                                    ? { ...x, steer: steerOf(value) }
+                                    : x,
+                            false,
+                            id,
                         );
                     // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
                     // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
@@ -4864,6 +4954,7 @@ export const register: Register = (on) => {
                                 // a fold remounts its fields: they draw the stored text again
                                 await flushFields();
                                 drafts.clear();
+                                await unmountSteers($);
                                 const was =
                                     (await $.state.get(FOLDS)).value ?? {};
                                 await $.state.set(FOLDS, {
@@ -5048,17 +5139,14 @@ export const register: Register = (on) => {
                                             minWidth={0}>
                                             <Input
                                                 key={
-                                                    field(
-                                                        $,
-                                                        `${door.prefix}:steer:${a.id}`,
-                                                        a.steer ?? '',
-                                                    ).key
+                                                    steerBox($, door.prefix, a)
+                                                        .key
                                                 }
                                                 onInput={(value: string) => {
-                                                    field(
+                                                    steerBox(
                                                         $,
-                                                        `${door.prefix}:steer:${a.id}`,
-                                                        a.steer ?? '',
+                                                        door.prefix,
+                                                        a,
                                                     ).type(value, () => {
                                                         return door.steer(
                                                             a,
@@ -5071,11 +5159,8 @@ export const register: Register = (on) => {
                                                 }
                                                 placeholder='steer'
                                                 value={
-                                                    field(
-                                                        $,
-                                                        `${door.prefix}:steer:${a.id}`,
-                                                        a.steer ?? '',
-                                                    ).value
+                                                    steerBox($, door.prefix, a)
+                                                        .value
                                                 }
                                             />
                                         </Box>
@@ -6272,7 +6357,7 @@ export const register: Register = (on) => {
         }
     });
 
-    // a /clear or a resume leaves the conversation behind; an exit leaves its last reply for the away digest
+    // a /clear or a resume leaves the conversation behind; an exit keeps only its last reply
     on('session.end', async ($, e, next) => {
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
@@ -6433,8 +6518,8 @@ export const register: Register = (on) => {
         return { ...r, context: [...(r.context ?? []), ...notes] };
     });
 
-    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars,
-    // the away digest and a refused threshold's one line
+    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars
+    // and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         try {
             return cleanTree(
@@ -6460,10 +6545,6 @@ export const register: Register = (on) => {
                             | undefined;
                         // the store's value, never the module copy: another session may have flipped it since the last poll
                         afk = !was?.on;
-                        digest =
-                            !afk && was?.on && was.at !== undefined
-                                ? await awayDigest($, was.at)
-                                : undefined;
                         await $.store.set(AFK_KEY, {
                             at: await $.clock.now(),
                             on: afk,
@@ -6947,31 +7028,6 @@ export const register: Register = (on) => {
                                   )}
                         </Box>
                     );
-                    const away =
-                        isShown('stash.digest') &&
-                        view.digest &&
-                        (view.digest.needs.length || view.digest.done.length)
-                            ? [
-                                  <Text dimColor key='away'>
-                                      while you were away
-                                  </Text>,
-                                  ...view.digest.needs.map((n) => (
-                                      <Text
-                                          key={`away:n:${n.sid}`}
-                                          wrap='truncate-end'>
-                                          {`needs you · ${n.name} · 🪐 ${n.asks}`}
-                                      </Text>
-                                  )),
-                                  ...view.digest.done.map((d) => (
-                                      <Text
-                                          dimColor
-                                          key={`away:d:${d.sid}`}
-                                          wrap='truncate-end'>
-                                          {`done · ${d.name}`}
-                                      </Text>
-                                  )),
-                              ]
-                            : [];
                     return (
                         <Box flexDirection='column'>
                             {row}
@@ -6982,7 +7038,6 @@ export const register: Register = (on) => {
                                     {meter.note}
                                 </Text>
                             ) : null}
-                            {away}
                             {await next(e)}
                         </Box>
                     );

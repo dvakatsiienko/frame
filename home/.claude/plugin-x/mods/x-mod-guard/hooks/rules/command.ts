@@ -16,6 +16,8 @@ export type Context = {
     missing?: Set<string>;
     kinds?: Map<string, 'file' | 'dir' | 'other'>;
     briefs?: Map<string, Brief>;
+    // the files earlier calls of the running turn wrote, by resolved path: a run of one reads its text
+    written?: ReadonlyMap<string, string>;
     // the session is clio's: it cleans its fleet's scratch trees and branches on its own
     isClio?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches
@@ -43,10 +45,12 @@ export type Context = {
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };
+// a file a command writes: its resolved path, the text, and whether the text is appended
+export type Written = [path: string, text: string, isAppend?: boolean];
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }
-    | { kind: 'escaped'; refusals: Refusal[]; targets: string[] };
+    | { kind: 'escaped'; refusals: Refusal[] };
 // wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
 // envArgs: the words env and exec took for themselves (`-i`, `-u NAME`, `-c`); envSplit: env -S's string; bodies: its heredocs
 // head: the word the name came from
@@ -82,6 +86,13 @@ const WRAPPERS = new Map<string, string[]>([
     ['nice', ['-n']],
     ['nohup', []],
     ['npx', ['-p', '--package']],
+    ['gtimeout', ['-s', '-k', '--signal', '--kill-after']],
+    ['flock', ['-w', '-E', '--timeout', '--conflict-exit-code']],
+    ['watch', ['-n', '--interval']],
+    ['chronic', []],
+    ['unbuffer', []],
+    ['bunx', ['-p', '--package']],
+    ['pnpx', []],
     ['parallel', ['-j', '-S', '--jobs']],
     ['script', ['-F', '-t', '-T']],
     ['stdbuf', ['-i', '-o', '-e']],
@@ -113,11 +124,37 @@ const WRAPPERS = new Map<string, string[]>([
         ],
     ],
 ]);
-// a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`
+// the wrapper `x as <member>` leaves on the command it runs, the member after it
+export const X_AS = 'x as ';
+export const asMember = (c: { wrappers: string[] }) =>
+    c.wrappers.find((w) => w.startsWith(X_AS))?.slice(X_AS.length);
+// a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`; the verb may sit past the
+// runner's own flags (`pnpm -C app exec`), the values of those listed skipped with them
 const RUNNERS = new Map([
-    ['pnpm', ['exec', 'dlx']],
-    ['npm', ['exec', 'x']],
-    ['bun', ['x']],
+    [
+        'pnpm',
+        {
+            values: [
+                '-C',
+                '--dir',
+                '-F',
+                '--filter',
+                '--filter-prod',
+                '--loglevel',
+                '--reporter',
+                '--workspace-concurrency',
+            ],
+            verbs: ['exec', 'dlx'],
+        },
+    ],
+    [
+        'npm',
+        {
+            values: ['-w', '--workspace', '--prefix', '--loglevel'],
+            verbs: ['exec', 'x'],
+        },
+    ],
+    ['bun', { values: ['--cwd'], verbs: ['x'] }],
 ]);
 const KEYWORDS = new Set([
     'if',
@@ -216,6 +253,8 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
     const wrappers: string[] = [];
     const envArgs: string[] = [];
     let envSplit: string | undefined;
+    // `sudo -s` or `-i` with no command left runs root's shell, reading stdin
+    let isRootShell = false;
     for (;;) {
         const head = words[0]?.text ?? '';
         if (KEYWORDS.has(head)) {
@@ -227,10 +266,28 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
             words = words.slice(1);
             continue;
         }
-        const verbs = RUNNERS.get(basename(head));
-        if (verbs?.includes(words[1]?.text ?? '')) {
-            wrappers.push(`${basename(head)} ${words[1]?.text}`);
-            words = words.slice(2);
+        // `x as <member> [--] <command…>` runs its command as that member: a wrapper, its member kept on it
+        const asAt =
+            basename(head) === 'x'
+                ? xAsCommand(words.slice(1).map((w) => w.text))
+                : -1;
+        if (asAt >= 0 && asAt + 1 < words.length) {
+            const rest = words.slice(1, asAt + 1).map((w) => w.text);
+            const member = rest
+                .slice(rest.indexOf('as') + 1)
+                .find((t) => !isFlag(t));
+            wrappers.push(`${X_AS}${member ?? ''}`);
+            words = words.slice(asAt + 1);
+            continue;
+        }
+        const runner = RUNNERS.get(basename(head));
+        let verbAt = 1;
+        while (runner && isFlag(words[verbAt]?.text ?? ''))
+            verbAt += runner.values.includes(words[verbAt]?.text ?? '') ? 2 : 1;
+        const verb = words[verbAt]?.text ?? '';
+        if (runner?.verbs.includes(verb)) {
+            wrappers.push(`${basename(head)} ${verb}`);
+            words = words.slice(verbAt + 1);
             while (isFlag(words[0]?.text ?? '')) words = words.slice(1);
             continue;
         }
@@ -250,12 +307,41 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         ) {
             const flag = words[0]?.text ?? '';
             const long = flag.split('=')[0] ?? flag;
-            const takes = values.includes(flag);
+            if (
+                wrapper === 'sudo' &&
+                (/^-[A-Za-z]*[si]/.test(flag) ||
+                    long === '--shell' ||
+                    long === '--login')
+            )
+                isRootShell = true;
+            // a short cluster read as getopt does: its first valued letter takes the rest, or the next word when last
+            const letters: string =
+                /^-[A-Za-z]/.test(flag) && !values.includes(flag)
+                    ? flag.slice(1)
+                    : '';
+            const at = [...letters].findIndex((l) => values.includes(`-${l}`));
+            const inline =
+                at >= 0 && at < letters.length - 1
+                    ? letters.slice(at + 1)
+                    : undefined;
+            const takes =
+                values.includes(flag) || (at >= 0 && inline === undefined);
             if (isEnv)
-                envArgs.push(flag, ...(takes ? [words[1]?.text ?? ''] : []));
+                envArgs.push(
+                    ...(at >= 0
+                        ? [...letters.slice(0, at + 1)].map((l) => `-${l}`)
+                        : [flag]),
+                    ...(takes
+                        ? [words[1]?.text ?? '']
+                        : inline === undefined
+                          ? []
+                          : [inline]),
+                );
             if (
                 wrapper === 'env' &&
-                (flag === '-S' || flag === '--split-string')
+                (flag === '-S' ||
+                    flag === '--split-string' ||
+                    (letters[at] === 'S' && inline === undefined))
             )
                 envSplit = words[1]?.text ?? '';
             else if (wrapper === 'env' && /^-S./.test(flag))
@@ -264,8 +350,8 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
                 envSplit = flag.slice(long.length + 1);
             words = words.slice(takes ? 2 : 1);
         }
-        // timeout's duration, script's log file
-        if (wrapper === 'timeout' || wrapper === 'script')
+        // timeout's duration, script's log file, flock's lock file
+        if (['timeout', 'gtimeout', 'script', 'flock'].includes(wrapper))
             words = words.slice(1);
     }
     const [first, ...args] = words;
@@ -277,7 +363,7 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         envArgs,
         ...(envSplit !== undefined && { envSplit }),
         ...(first && { head: first }),
-        name: first ? basename(first.text) : '',
+        name: first ? basename(first.text) : isRootShell ? 'sh' : '',
         reads: reads(raw),
         stdouts: stdouts(raw),
         wrappers,
@@ -349,12 +435,37 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 ? (b.values[0] ?? m)
                 : m;
         });
-    // the words a lone `$( echo … )` or `$( printf … )` prints
-    const echoed = (subst: Segment[]) => {
+    // the words a lone `$( echo … )`, `$( printf … )` or `$( cat <<EOF … )` prints: echo's past its flags, printf's
+    // format filled, cat's text as one word that keeps its lines (split on whitespace where the $(…) is unquoted), each with
+    // its trailing newlines dropped as the shell does
+    const echoed = (subst: Segment[], isSplit: boolean): Word[] | undefined => {
         const [only] = subst;
         if (subst.length !== 1 || !only) return undefined;
-        const inner = peel(only.words);
-        return ['echo', 'printf'].includes(inner.name) ? inner.args : undefined;
+        const inner = peel(
+            only.words,
+            only.bodies.map((b) => b.text),
+        );
+        if (inner.name === 'echo') {
+            const at = inner.args.findIndex((a) => !/^-[neE]+$/.test(a.text));
+            return at < 0 ? [] : inner.args.slice(at);
+        }
+        if (inner.name === 'printf') {
+            const isExpanding = inner.args.some((a) => a.isExpanding);
+            return (printed(inner)[0] ?? '')
+                .replace(/\n+$/, '')
+                .split(/[ \t]+/)
+                .filter(Boolean)
+                .map((text) => ({ isExpanding, text }));
+        }
+        const text =
+            inner.name === 'cat' && !operands(inner.args).length
+                ? printed(inner)[0]
+                : undefined;
+        if (text === undefined) return undefined;
+        const kept = text.replace(/\n+$/, '');
+        return (isSplit ? kept.split(/\s+/).filter(Boolean) : [kept]).map(
+            (t) => ({ isExpanding: false, text: t }),
+        );
     };
     // a `[[ … ]]` split at its `&&` leaves test operands as segments; they run nothing
     let isInTest = false;
@@ -397,9 +508,10 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 return w.hasQuote && name !== '@' && name !== '*'
                     ? [{ isExpanding: false, text: values[0] ?? '' }]
                     : split(values[0] ?? '');
-            if (bound && !bound.isUnknown && values.length)
-                alternates.set(w.text, values);
-            const printed = w.text === '$(…)' ? echoed(s.subst) : undefined;
+            // a value the line cannot read beside known ones still runs as each known one
+            if (values.length) alternates.set(w.text, values);
+            const printed =
+                w.text === '$(…)' ? echoed(s.subst, !w.hasQuote) : undefined;
             if (printed)
                 return printed.map((a) => ({
                     isExpanding: a.isExpanding,
@@ -426,7 +538,7 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             fed.delete(key);
             const from = value.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/)?.[1];
             const via = from === undefined ? undefined : literals.get(from);
-            const said = value === '$(…)' ? echoed(s.subst) : undefined;
+            const said = value === '$(…)' ? echoed(s.subst, false) : undefined;
             if (plus) bind(key, [], true);
             else if (!w.isExpanding) bind(key, [value]);
             else if (via) bind(key, via.values, via.isUnknown);
@@ -624,12 +736,62 @@ function printed(f: Peeled): string[] {
         const at = texts.findIndex((t) => !/^-[neE]+$/.test(t));
         return [texts.slice(at < 0 ? texts.length : at).join(' ')];
     }
-    if (f.name === 'printf') {
-        const ops = texts.slice(texts[0] === '--' ? 1 : 0);
-        return [...ops, ops.slice(1).join(' ')];
-    }
-    return f.bodies;
+    if (f.name === 'printf')
+        return [printfText(texts.slice(texts[0] === '--' ? 1 : 0))];
+    return [...f.bodies, ...herestrings(texts)];
 }
+// what printf prints: its format with each conversion filled from the operands in turn, the format reused while operands
+// last, and `\n`, `\t`, `\0` read as bash does (a NUL, xargs -0's split, as a line end)
+export function printfText([format = '', ...rest]: string[]) {
+    const conversion = /%[-+ #0-9.]*([sbdiqcxX%])/g;
+    const isFilling = [...format.matchAll(conversion)].some(
+        (m) => m[1] !== '%',
+    );
+    let at = 0;
+    let out = '';
+    do
+        out += format.replace(conversion, (_m, k: string) =>
+            k === '%' ? '%' : (rest[at++] ?? ''),
+        );
+    while (isFilling && at < rest.length);
+    return out
+        .replaceAll('\\n', '\n')
+        .replaceAll('\\t', '\t')
+        .replaceAll('\\0', '\n');
+}
+// the strings a command's `<<<` hands its stdin, joined or a word apart
+const herestrings = (texts: string[]) =>
+    texts.flatMap((t, i) =>
+        t === '<<<'
+            ? [texts[i + 1] ?? '']
+            : t.startsWith('<<<')
+              ? [t.slice(3)]
+              : [],
+    );
+// ssh's options that take the next word as their value
+const SSH_VALUED = new Set([
+    '-B',
+    '-b',
+    '-c',
+    '-D',
+    '-E',
+    '-e',
+    '-F',
+    '-I',
+    '-i',
+    '-J',
+    '-L',
+    '-l',
+    '-m',
+    '-O',
+    '-o',
+    '-p',
+    '-Q',
+    '-R',
+    '-S',
+    '-W',
+    '-w',
+]);
 // a word as the shell would read it back as one argv entry
 const quoted = (w: string) => `'${w.replaceAll("'", "'\\''")}'`;
 // the scripts a command runs that the line does not show as commands: a shell's `-c` script, or what it reads on stdin
@@ -642,27 +804,67 @@ export function nestedScripts(c: Command): string[] {
         const dashC = texts.findIndex((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
         if (dashC >= 0) {
             const script = texts.slice(dashC + 1).find((t) => t !== '--');
-            return script === undefined ? [] : [script];
+            if (script !== undefined) return [script];
+            // `… | xargs bash -c`: each item xargs reads becomes the script
+            return c.wrappers.includes('xargs')
+                ? c.feeders.flatMap(printed)
+                : [];
         }
-        const script = operands(
-            c.args.filter(
-                (w, i) => w.text !== '<<<' && c.args[i - 1]?.text !== '<<<',
-            ),
-        ).filter((o) => !o.startsWith('<<<'));
-        const isStdin =
-            texts.some((t) => /^-[A-Za-z]*s[A-Za-z]*$/.test(t)) ||
-            !script.length ||
-            STDIN_PATHS.has(script[0] ?? '');
-        if (!isStdin) return [];
-        const here = texts.flatMap((t, i) =>
-            t === '<<<'
-                ? [texts[i + 1] ?? '']
-                : t.startsWith('<<<')
-                  ? [t.slice(3)]
-                  : [],
+        const args = c.args.filter(
+            (w, i) =>
+                w.text !== '<<<' &&
+                c.args[i - 1]?.text !== '<<<' &&
+                !w.text.startsWith('<<<'),
         );
+        const isStdin =
+            readsStdin(args) || STDIN_PATHS.has(shellOperands(args)[0] ?? '');
+        if (!isStdin) return [];
         const piped = c.feeders.flatMap(printed);
-        return [...here, ...c.bodies, ...piped];
+        return [...herestrings(texts), ...c.bodies, ...piped];
+    }
+    // su runs its -c string, or else what it reads on stdin, in the user's shell
+    if (c.name === 'su') {
+        const inline = texts.find((t) => t.startsWith('--command='));
+        if (inline) return [inline.slice('--command='.length)];
+        const at = texts.findIndex(
+            (t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t) || t === '--command',
+        );
+        if (at >= 0) return texts.slice(at + 1, at + 2);
+        return [
+            ...herestrings(texts),
+            ...c.bodies,
+            ...c.feeders.flatMap(printed),
+        ];
+    }
+    // ssh runs its command, or else what it reads on stdin, in the remote shell
+    if (c.name === 'ssh') {
+        let i = 0;
+        while (i < texts.length && isFlag(texts[i] ?? ''))
+            i += SSH_VALUED.has(texts[i] ?? '') ? 2 : 1;
+        // options, then one `--`, may follow the host too
+        let at = i + 1;
+        while (
+            at < texts.length &&
+            isFlag(texts[at] ?? '') &&
+            texts[at] !== '--'
+        )
+            at += SSH_VALUED.has(texts[at] ?? '') ? 2 : 1;
+        if (texts[at] === '--') at++;
+        const remote = texts.slice(at);
+        const stdin = [
+            ...herestrings(texts),
+            ...c.bodies,
+            ...c.feeders.flatMap(printed),
+        ];
+        if (!remote.length) return stdin;
+        // a remote shell with no script of its own reads the stdin ssh hands it
+        const [head] = commands(parse(remote.join(' ')), c.dir);
+        const isShellOnStdin =
+            head !== undefined &&
+            SHELLS.has(head.name) &&
+            !head.args.some((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text)) &&
+            readsStdin(head.args);
+        return [remote.join(' '), ...(isShellOnStdin ? stdin : [])];
     }
     if (c.name === 'eval') return [texts.join(' ')];
     // a script held in a string: trap's action, an alias's body, a git alias that starts with `!`
@@ -671,13 +873,21 @@ export function nestedScripts(c: Command): string[] {
         return operands(c.args).flatMap(
             (o) => o.match(/^[^=]+=(.+)$/s)?.[1] ?? [],
         );
-    // a `!` alias runs its shell text, any other names a git subcommand with its flags
-    if (c.name === 'git')
-        return gitParts(c.args).configs.flatMap((k) => {
-            const body = k.match(/^alias\.[^=]+=(.+)$/is)?.[1];
-            if (body === undefined) return [];
-            return body.startsWith('!') ? [body.slice(1)] : [`git ${body}`];
-        });
+    // a `-c alias.<name>=<body>` runs for the call that names it, with that call's args; a persisted alias is read as set
+    if (c.name === 'git') {
+        const { configs, sub, subArgs } = gitParts(c.args);
+        const persisted = persistedAlias(c);
+        return [
+            ...configs.flatMap((k) => {
+                const [, name, body] = k.match(/^alias\.([^=]+)=(.+)$/is) ?? [];
+                if (body === undefined) return [];
+                const isNamed = sub.toLowerCase() === name?.toLowerCase();
+                return [aliasRun(body, isNamed ? subArgs : [])];
+            }),
+            ...(persisted ? [aliasRun(persisted[1], [])] : []),
+        ];
+    }
+
     const out: string[] = [];
     if (c.envSplit !== undefined)
         out.push(
@@ -720,6 +930,101 @@ export function commandsDeep(
             ? nestedScripts(c).flatMap((s) => commandsDeep(s, c.dir, depth + 1))
             : []),
     ]);
+}
+// the files a command writes with the text it writes them: a heredoc into cat or tee, an echo or a printf format, each to its
+// `>`, `>>` and tee targets, resolved where the command runs; an append is marked so it adds to the text written before
+export function writtenScripts(c: Command, ctx: Context): Written[] {
+    const text =
+        c.name === 'echo' || c.name === 'printf'
+            ? printed(c)[0]
+            : (c.name === 'cat' || c.name === 'tee') && c.bodies.length
+              ? c.bodies.join('\n')
+              : undefined;
+    if (text === undefined) return [];
+    const tees = c.name === 'tee' ? operands(c.args) : [];
+    const isTeeAppend = hasFlag(c.args, ['--append'], 'a');
+    return [
+        ...c.writes.map((p) => [p, false] as const),
+        ...c.appends.map((p) => [p, true] as const),
+        ...tees.map((p) => [p, isTeeAppend] as const),
+    ].map(([p, isAppend]) => [resolve(p, c.dir, ctx), text, isAppend]);
+}
+// stands for text the turn wrote that the guard could not keep: past its size cap, or edited in a way the kept text misses
+export const UNREAD = '\u0000x-mod-guard: unread';
+// the writes laid over the files written so far, in order: `>` replaces a file's text, `>>` adds to it; newest last
+export function laidOver(files: Map<string, string>, writes: Written[]) {
+    for (const [path, text, isAppend] of writes) {
+        const before = isAppend ? files.get(path) : undefined;
+        files.delete(path);
+        files.set(path, before === undefined ? text : `${before}\n${text}`);
+    }
+    return files;
+}
+// the alias a `git config [--global] [set] alias.<name> <body>` persists, its name lowercased as git reads it
+export function persistedAlias(c: Command): [string, string] | undefined {
+    if (c.name !== 'git') return undefined;
+    const { sub, subArgs } = gitParts(c.args);
+    const ops = operands(subArgs);
+    const [key, body] = ops[0] === 'set' ? ops.slice(1) : ops;
+    const name =
+        sub === 'config' ? key?.match(/^alias\.(.+)$/is)?.[1] : undefined;
+    return name && body ? [name.toLowerCase(), body] : undefined;
+}
+// what a git alias runs: a `!` body's shell text, any other body as a git subcommand, the call's own args handed on
+export function aliasRun(body: string, args: Word[]) {
+    const tail = args.map((w) => ` ${quoted(w.text)}`).join('');
+    return body.startsWith('!')
+        ? `${body.slice(1)}${tail}`
+        : `git ${body}${tail}`;
+}
+// a shell's operands: past its flags and the option names `-o`/`+o`/`-O`/`+O` take
+export function shellOperands(args: Word[]) {
+    return args
+        .filter((w, i) => !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? ''))
+        .filter((w) => !/^[-+]/.test(w.text) || w.text === '-')
+        .map((w) => w.text);
+}
+// a shell given no script, `-s` or a lone `-` reads its script on stdin, its operands only positional args; an `-s`
+// past the script is the script's own arg
+export function readsStdin(args: Word[]) {
+    const [first] = shellOperands(args);
+    const at = args.findIndex(
+        (w, i) =>
+            !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? '') &&
+            (!/^[-+]/.test(w.text) || w.text === '-'),
+    );
+    return (
+        first === undefined ||
+        first === '-' ||
+        args.slice(0, at).some((w) => /^-[A-Za-z]*s[A-Za-z]*$/.test(w.text))
+    );
+}
+// the file a command runs as a script: a shell's or `source`'s first operand, what a shell reads on stdin from a `< file`
+// or a `cat file |`, or a head typed as a path (`./x.sh`)
+export function scriptRun(c: Command, ctx: Context) {
+    const isSource = c.name === 'source' || c.name === '.';
+    const texts = c.args.map((w) => w.text);
+    const isDashC = texts.some((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
+    const [feeder] = c.feeders;
+    const catted =
+        c.feeders.length === 1 && feeder?.name === 'cat'
+            ? operands(feeder.args)
+            : [];
+    const stdin =
+        c.reads.at(-1) ?? (catted.length === 1 ? catted[0] : undefined);
+    const [first] = shellOperands(c.args);
+    const isOnStdin = SHELLS.has(c.name) && readsStdin(c.args);
+    const path =
+        (SHELLS.has(c.name) || isSource) && !isDashC
+            ? isOnStdin
+                ? stdin
+                : first
+            : c.head?.text.includes('/')
+              ? c.head.text
+              : undefined;
+    return path === undefined || STDIN_PATHS.has(path)
+        ? undefined
+        : resolve(path, c.dir, ctx);
 }
 // a script the line never shows as typed: printed into a shell or `source`, a `<( … )` sourced, a git alias's body
 export function hidingScript(c: Command) {
@@ -847,3 +1152,27 @@ export function isThrowaway(c: Command, ctx: Context) {
 // x-mod-holds' files are checked against it; a path held in a variable is not read
 const APPEND = /^\d*&?>>$/;
 const APPEND_JOINED = /^\d*&?>>([^&].*)$/;
+// where `x [flags] as <member> [flags] [--]` hands over its command, or -1: x takes flags before its family, and the
+// member's own flags sit before or after it
+function xAsCommand(words: string[]) {
+    const family = words.findIndex(
+        (w, i) =>
+            (w === 'linear' || w === 'as') &&
+            words
+                .slice(0, i)
+                .every(
+                    (v, j) =>
+                        v.startsWith('-') || words[j - 1]?.startsWith('-'),
+                ),
+    );
+    if (words[family] !== 'as') return -1;
+    let isMemberRead = false;
+    for (let i = family + 1; i < words.length; i++) {
+        const w = words[i] ?? '';
+        if (w === '--') return i + 1;
+        if (w.startsWith('-')) continue;
+        if (isMemberRead) return i;
+        isMemberRead = true;
+    }
+    return -1;
+}

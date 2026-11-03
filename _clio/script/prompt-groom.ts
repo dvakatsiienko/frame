@@ -1,5 +1,6 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
+//        node prompt-groom.ts --next <PK-N|FRM-N|BYT-N>      print the home's next wish id, W1 for an empty home (PK-312)
 //        node prompt-groom.ts --standing [YYYY-MM-DD]       print the day's open ` #standing` W-lines, one a line (FRM-482; a new day starts empty)
 //        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
 //        node prompt-groom.ts --check <file…>              red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
@@ -413,9 +414,32 @@ function startHelga() {
     );
 }
 
+// a wish id numbers on inside its home, never from a global counter (PK-312, dima o94, o96, o98)
+export const nextWishId = (homeText: string): string =>
+    `W${Math.max(0, ...[...homeText.matchAll(/^\s*(?:[*-]\s+)?W(\d+)\b/gm)].map((m) => Number(m[1]))) + 1}`;
+
+const homeText = (home: string): string => {
+    if (/^PK-\d+$/i.test(home)) {
+        const [file] = globSync(
+            `{tasks,archive/tasks}/${home.toLowerCase()} - *.md`,
+            { cwd: pocketDir },
+        );
+        if (!file) throw new Error(`no pocket item ${home}`);
+        return readFileSync(path.join(pocketDir, file), 'utf8');
+    }
+    const out = JSON.parse(
+        execFileSync('x', ['linear', 'body', home], { encoding: 'utf8' }),
+    );
+    return readFileSync(out.data.file, 'utf8');
+};
+
 if (import.meta.main) {
     const args = process.argv.slice(2);
     const today = new Date().toLocaleDateString('sv');
+    if (args[0] === '--next') {
+        console.log(nextWishId(homeText(args[1] ?? '')));
+        process.exit(0);
+    }
     if (args[0] === '--standing') {
         for (const line of openStanding(args[1] ?? today, groomDir))
             console.log(line.text);
@@ -561,8 +585,8 @@ if (import.meta.main) {
         if (!helgaUp()) startHelga();
         console.log(
             isSteer
-                ? `prompt-groom: dima's ${day} ${hhmm} steer, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} <HH:MM>, dima, ${hhmm} steer)», first number <N>, written to ${groomFile(day, hhmm, 'groomed')}`
-                : `prompt-groom: dima's ${day} ${hhmm} prompt, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} ${hhmm}, dima)», first number <N>, written to ${groomFile(day, hhmm, 'groomed')}`,
+                ? `prompt-groom: dima's ${day} ${hhmm} steer, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} <HH:MM>, dima, ${hhmm} steer)», first number from «prompt-groom.ts --next <home>», written to ${groomFile(day, hhmm, 'groomed')}`
+                : `prompt-groom: dima's ${day} ${hhmm} prompt, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} ${hhmm}, dima)», first number from «prompt-groom.ts --next <home>», written to ${groomFile(day, hhmm, 'groomed')}`,
         );
     }
 }

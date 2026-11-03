@@ -114,10 +114,13 @@ test('a HOME override that is refused names the HOME rule', async ($, on) => {
     expect(String(r.deny)).toContain('HOME');
 });
 
-test('the rules behind the lifted HOME still judge the rest of the line', async ($, on) => {
+// FRM-472 R3 row 2: a claude child under an empty HOME runs its git with no identity and no signing
+test('a claude child under a fresh HOME is refused naming the HOME rule', async ($, on) => {
     const w = world(on);
-    const r = await bash($, "H=$(mktemp -d) && HOME=$H claude -p 'hi'");
-    expect(r.deny).toBeDefined();
-    expect(String(r.deny)).not.toContain('HOME');
-    expect(w.ran).toEqual([]);
+    const r = await $.tool.call({
+        command: "H=$(mktemp -d) && HOME=$H claude -p 'hi'",
+        run_in_background: true,
+        tool: 'Bash',
+    });
+    expect([String(r.deny).includes('HOME'), w.ran]).toEqual([true, []]);
 });

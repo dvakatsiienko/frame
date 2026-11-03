@@ -63,3 +63,10 @@
 ## 2026-10-15 20:26 · background members keep writing to orbit
 - dima: «I discard my previous claim about --bg sessions shouldn't write to orbit. Actually, they should, because Clio shapes a glide mode for each lane, and glide mode has a small place where I see coders' and verifiers' lanes ask there. I still can see them, and I actually liked to see them there, so keep it.»
 - so: a lane member's orbit asks are seen on the 🛼 glide card, never a silent loss. a --bg member's ask is a miss only when it sits in no lane (no glide card), then it belongs in its ping to clio. crow keeps its own phases (dima, 20:20: «if marginal and cheap, keep it»).
+
+## 2026-11-02 15:47 · self-lesson, logged (not a dima steer)
+- a pace call reads the reset clock time from the thread (clio: «resets around 16:30»), never the packet's rounded «resets in 1 h»; my 15:12 resume note was over pace by 4 % and dima re-parked it.
+
+## 2026-11-03 14:51 · shift watch, a standing hunt
+- dima: «We are enabling a shift mode. Keep an eye on Cleo and help her to catch misses. We are testing the driving shift skill and finding weak spots in this process, so keep an eye on it and find everything that looks like a weak spot in a shift mode.»
+- so: while a shift runs, every wake also hunts the shift skill and clio's slips against the plan's rules. findings go to clio as `crow · HH:MM · <finding> · <evidence>` batches for the plan's `## shift watch` (crow writes no file but this one); a live hazard still goes as a note.

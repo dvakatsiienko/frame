@@ -2,7 +2,9 @@ import { parse } from '../shell.ts';
 import {
     type Command,
     type Context,
+    asMember,
     commands,
+    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
@@ -10,7 +12,7 @@ import {
     resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
-import { writtenPaths } from './overwrite.ts';
+import { commandWrites, pythonWrites } from './overwrite.ts';
 
 const PR_HINT =
     'x-mod-guard hint: `x gh pr <n>` reads a pr — its checks and all three comment feeds, newest first — in one call';
@@ -187,7 +189,7 @@ function rgMissesDots(c: Command, ctx: Context) {
         (r) => r === frame || r === `${frame}/home` || r === ctx.home,
     );
 }
-const REPLACERS = new Set(['sd', 'sed', 'python', 'python3']);
+const REPLACERS = new Set(['sd', 'sed', 'perl', 'python', 'python3']);
 const isJsonish = (text: string) => /^\s*[[{].*["\\]/s.test(text);
 const isGhJq = (args: Command['args']) =>
     args.some(
@@ -211,11 +213,15 @@ function isPullsRead(args: Command['args']) {
 export function hints(command: string, cwd: string, ctx: Context) {
     const found = new Set<string>();
     const all = commands(parse(command), cwd);
-    if (
-        all.some((c) => REPLACERS.has(c.name)) &&
-        writtenPaths(command, cwd, ctx).some((p) => isOwnRepo(p, ctx))
-    )
-        found.add(EDIT_HINT);
+    // what the replacers write themselves, never a file another command on the line writes
+    const replaced = commandsDeep(command, cwd)
+        .filter((c) => REPLACERS.has(c.name))
+        .flatMap((c) =>
+            c.name.startsWith('python')
+                ? pythonWrites(command, cwd, ctx)
+                : commandWrites(c, ctx),
+        );
+    if (replaced.some((p) => isOwnRepo(p, ctx))) found.add(EDIT_HINT);
     if (
         /\bwhile\b[^;\n]*\bread\b/.test(command) &&
         all.some(
@@ -248,6 +254,7 @@ export function hints(command: string, cwd: string, ctx: Context) {
         const [sub, verb] = c.args.map((w) => w.text);
         if (
             c.name === 'gh' &&
+            asMember(c) === undefined &&
             ((sub === 'pr' && (verb === 'view' || verb === 'checks')) ||
                 (sub === 'api' && isPullsRead(c.args.slice(1))))
         )

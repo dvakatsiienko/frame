@@ -290,7 +290,6 @@ const NO_MODEL: Record<string, string> = {
     'stash.chips': 'band chips, drawn only',
     'stash.circled': 'a redraw of the reply on screen, drawn only',
     'stash.ctx': 'a band bar, drawn only',
-    'stash.digest': 'a band card for dima, drawn only',
     'stash.pace': 'a band number, drawn only',
     'stash.reset': 'a band timer, drawn only',
     'stash.rowmeta': 'board row text, drawn only',

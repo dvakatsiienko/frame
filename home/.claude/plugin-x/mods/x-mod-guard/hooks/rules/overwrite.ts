@@ -7,6 +7,8 @@ import {
     basename,
     commands,
     commandsDeep,
+    gitDir,
+    gitParts,
     hasFlag,
     isFlag,
     isJobTmp,
@@ -16,15 +18,24 @@ import {
 
 // an mv or cp's dest, then the file each source lands on when that dest is a dir
 export function landings(c: Command, ctx: Context) {
-    const ops = operands(c.args);
-    const dest = ops.at(-1);
-    if (ops.length < 2 || dest === undefined) return [];
+    // `cp -t <dir> <src…>` names its dest first; rsync's and ditto's -t is another flag
+    const t = ['cp', 'mv', 'ln', 'install'].includes(c.name)
+        ? c.args.findIndex((w) => w.text === '-t')
+        : -1;
+    const into = t >= 0 ? c.args[t + 1]?.text : undefined;
+    const ops = operands(
+        t < 0 ? c.args : c.args.filter((_, i) => i !== t && i !== t + 1),
+    );
+    const dest = into ?? ops.at(-1);
+    const sources = into === undefined ? ops.slice(0, -1) : ops;
+    if (!sources.length || dest === undefined) return [];
     const to = resolve(dest, resolve(c.dir, '/', ctx), ctx);
     return [
         { path: to, text: dest },
-        ...ops
-            .slice(0, -1)
-            .map((src) => ({ path: `${to}/${basename(src)}`, text: dest })),
+        ...sources.map((src) => ({
+            path: `${to}/${basename(src)}`,
+            text: dest,
+        })),
     ];
 }
 // the paths a command may write over, for the caller to look up on disk
@@ -33,7 +44,7 @@ export function overwrittenPaths(
     cwd: string,
     ctx: Context = {},
 ) {
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const dir = resolve(c.dir, '/', ctx);
         const moved =
             c.name === 'mv' || c.name === 'cp'
@@ -42,27 +53,74 @@ export function overwrittenPaths(
         return [...c.writes.map((w) => resolve(w, dir, ctx)), ...moved];
     });
 }
-export function writtenPaths(command: string, cwd: string, ctx: Context = {}) {
+// python's `open('<file>', 'w'|'a'|'x')`, read off the raw text since its script is no shell
+export const pythonWrites = (command: string, cwd: string, ctx: Context) =>
+    [...command.matchAll(/open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wax]/g)].flatMap(
+        (m) => (m[1] ? [resolve(m[1], cwd, ctx)] : []),
+    );
+// the files one command writes: its redirects, a cp, mv, ln, install, rsync or ditto dest, and each tool's own file flag
+export function commandWrites(c: Command, ctx: Context) {
+    const dir = resolve(c.dir, '/', ctx);
     const out: string[] = [];
-    for (const m of command.matchAll(
-        /open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wax]/g,
-    ))
-        if (m[1]) out.push(resolve(m[1], cwd, ctx));
-    // every command the walker finds, a nested shell's included; a cp, mv, ln or install lands on its dest
-    for (const c of commandsDeep(command, cwd)) {
-        const dir = resolve(c.dir, '/', ctx);
-        if (['cp', 'mv', 'ln', 'install'].includes(c.name))
-            out.push(...landings(c, ctx).map((l) => l.path));
-        const named = [...c.writes, ...c.appends];
-        const ops = operands(c.args);
-        if (c.name === 'tee') named.push(...ops);
-        if (c.name === 'sd') named.push(...sdFiles(c.args));
-        if (c.name === 'sed') named.push(...sedFiles(c.args));
-        for (const n of named)
-            if (n && !n.startsWith('/dev/') && !n.includes('$'))
-                out.push(resolve(n, dir, ctx));
-    }
-    return [...new Set(out)];
+    if (['cp', 'mv', 'ln', 'install', 'rsync', 'ditto'].includes(c.name))
+        out.push(...landings(c, ctx).map((l) => l.path));
+    const named = [...c.writes, ...c.appends];
+    const ops = operands(c.args);
+    if (c.name === 'tee') named.push(...ops);
+    if (c.name === 'perl' && c.args.some((w) => /^-\w*i/.test(w.text)))
+        named.push(...perlFiles(c.args));
+    if (c.name === 'dd')
+        named.push(...ops.flatMap((o) => o.match(/^of=(.+)$/)?.[1] ?? []));
+    if (c.name === 'curl') named.push(...curlOutputs(c.args));
+    if (c.name === 'sd') named.push(...sdFiles(c.args));
+    if (c.name === 'sed') named.push(...sedFiles(c.args));
+    const isPlain = (n: string) =>
+        !!n && !n.startsWith('/dev/') && !n.includes('$');
+    for (const n of named) if (isPlain(n)) out.push(resolve(n, dir, ctx));
+    // a checkout's files sit in the tree git runs in, -C included
+    if (c.name === 'git')
+        for (const n of checkedOut(c))
+            if (isPlain(n)) out.push(resolve(n, gitDir(c, ctx), ctx));
+    return out;
+}
+// every file a line writes, a nested shell's included
+export function writtenPaths(command: string, cwd: string, ctx: Context = {}) {
+    return [
+        ...new Set([
+            ...pythonWrites(command, cwd, ctx),
+            ...commandsDeep(command, cwd).flatMap((c) => commandWrites(c, ctx)),
+        ]),
+    ];
+}
+// curl's -o / --output file
+function curlOutputs(args: Word[]) {
+    return args.flatMap((w, i) =>
+        w.text === '--output' || /^-[A-Za-z]*o$/.test(w.text)
+            ? [args[i + 1]?.text ?? '']
+            : w.text.startsWith('--output=')
+              ? [w.text.slice('--output='.length)]
+              : [],
+    );
+}
+// the worktree files a `git checkout -- <f>` or `git restore <f>` writes back
+function checkedOut(c: Command) {
+    const { sub, subArgs } = gitParts(c.args);
+    const texts = subArgs.map((w) => w.text);
+    // `--staged` alone writes the index, never the worktree
+    const isStagedOnly =
+        hasFlag(subArgs, ['--staged'], 'S') &&
+        !hasFlag(subArgs, ['--worktree'], 'W');
+    if (sub === 'restore') return isStagedOnly ? [] : operands(subArgs);
+    const dash = texts.indexOf('--');
+    return sub === 'checkout' && dash >= 0 ? texts.slice(dash + 1) : [];
+}
+// perl's files: every operand past its script, which is the first operand unless an `-e`/`-E` holds it
+function perlFiles(args: Word[]) {
+    const isExpr = (t = '') => /^-\w*[eE]$/.test(t);
+    const ops = args
+        .filter((w, i) => !isFlag(w.text) && !isExpr(args[i - 1]?.text))
+        .map((w) => w.text);
+    return args.some((w) => isExpr(w.text)) ? ops : ops.slice(1);
 }
 // sd's files follow its find and replace; a flag in SD_VALUE eats the word after it
 function sdFiles(args: Word[]) {

@@ -5,9 +5,13 @@ import {
     type Refusal,
     SHELLS,
     TICKET_KEY,
+    UNREAD,
     type Verdict,
+    type Written,
     actsIn,
     adds,
+    aliasRun,
+    asMember,
     basename,
     commands,
     commandsDeep,
@@ -18,18 +22,22 @@ import {
     isFlag,
     isJobTmp,
     isThrowaway,
+    laidOver,
     nestedScripts,
     operands,
     peel,
+    persistedAlias,
     resolve,
+    scriptRun,
+    writtenScripts,
 } from './rules/command.ts';
-import { floor, opaque } from './rules/floor.ts';
+import { floor, gitDoor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
-import { landings, overwrite } from './rules/overwrite.ts';
+import { commandWrites, landings, overwrite } from './rules/overwrite.ts';
 import { spawnSixthSense } from './rules/sixth-sense.ts';
 import { worth } from './rules/worth.ts';
 import { type Parsed, parse } from './shell.ts';
@@ -38,7 +46,7 @@ import { type Parsed, parse } from './shell.ts';
 // same command makes (a > redirect, touch, mkdir, a cp or mv dest) is there by the time the add runs
 export function addedPaths(command: string, cwd: string, ctx: Context = {}) {
     const made = new Set<string>();
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const added = adds(c, ctx)
             .map((a) => a.path)
             .filter((p) => !made.has(p));
@@ -231,10 +239,10 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
 }
 // a test door (FRM-470), an allowlist of the whole line: `NAME=$(mktemp -d) && HOME=$NAME <runner> <plain words>`, two commands and
 // nothing between or after them. the HOME is an empty dir this line made, so the hook never sees the real config. the runner is
-// one a mods test uses (node, claude, a `pnpm mods:` verb): git through a shell, `env`, `eval` or `pnpm exec` with no gitconfig
-// drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
+// one a mods test uses (node, a `pnpm mods:` verb): git through a shell, `env`, `eval`, `pnpm exec` or a claude child with no
+// gitconfig drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
 const FRESH_HOME =
-    /^([A-Za-z][A-Za-z0-9]*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
+    /^([A-Za-z][A-Za-z0-9]*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
 // pnpm reads -C, --dir, --filter and the like anywhere among its words, so a `pnpm mods:` line carries none of them
 const isFreshHomeLine = (command: string) =>
     FRESH_HOME.test(command) &&
@@ -303,6 +311,8 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
     const { at } = gitParts(c.args);
     if (/[`$~]/.test(dir) || /(?:^|\/)\.\.(?:\/|$)/.test(at ?? ''))
         return false;
+    // a job tmp that is frame underneath (a symlink, a worktree) is no scratch
+    if (ctx.unsafeTmp?.has(actsIn(c, ctx) ?? dir)) return false;
     const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
     return paths.every(
         (p) =>
@@ -315,7 +325,7 @@ const SCRATCH_TREE = /\/\.claude\/(worktrees\/[^/]+|jobs\/[^/]+\/tmp\/.+)$/;
 // the scratch trees a clio `git worktree remove` names, for the caller to look up; a tree elsewhere asks anyway
 export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
     if (!ctx.isClio) return [];
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         if (c.name !== 'git') return [];
         const { sub, subArgs } = gitParts(c.args);
         const ops = operands(subArgs);
@@ -356,6 +366,21 @@ export function tmpDirs(
         return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
 }
+// the files a line leaves written, path to text, for the runs a later call of the turn makes, in line order; a file
+// it rewrites another way (sd, sed -i) is left unread, and the writes after lay over that
+export function lineWrites(command: string, cwd: string, ctx: Context) {
+    return commandsDeep(command, cwd).flatMap((c) => {
+        const scripts = writtenScripts(c, ctx);
+        return [
+            ...scripts,
+            ...commandWrites(c, ctx)
+                .filter((p) => !scripts.some(([s]) => s === p))
+                .map((p): Written => [p, UNREAD]),
+        ];
+    });
+}
+// the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
+const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
 // isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
 export function refusals(
     command: string,
@@ -367,7 +392,61 @@ export function refusals(
     const parsed = parse(command);
     const list = commands(parsed, cwd);
     const out: Refusal[] = [];
+    // the files the turn and the line have written so far, by path: a later `bash s.sh`, `source s.sh` or `./s.sh` runs that text
+    const written = new Map(ctx.written);
+    // the git aliases the line has persisted so far, by name
+    const aliases = new Map<string, string>();
     list.forEach((c, i) => {
+        const ran = scriptRun(c, ctx);
+        const body = ran === undefined ? undefined : written.get(ran);
+        // read with the line's own writes, and without itself: a script that runs itself is read once
+        const others = new Map(written);
+        if (ran !== undefined) others.delete(ran);
+        // text the guard could not keep runs unread: said, beside what the kept part trips
+        if (ran !== undefined && body?.includes(UNREAD))
+            out.push({
+                door: `read ${ran} first, then run its commands as a call of their own`,
+                rule: 'write-then-run',
+                targets: [ran],
+                why: `${ran} was written this turn past what the guard keeps (32k characters, or an edit it could not follow), so what it runs is unread`,
+            });
+        if (body !== undefined)
+            out.push(
+                ...refusals(
+                    body.replaceAll(UNREAD, ''),
+                    c.dir,
+                    { ...ctx, written: others },
+                    isPlain,
+                    hiddenBy,
+                )
+                    .filter((r) => !TYPED_LINE.has(r.rule))
+                    .map((r) => ({
+                        ...r,
+                        rule: 'write-then-run',
+                        why: `${ran} was written earlier this turn, and running it runs a refused command (rule ${r.rule}): ${r.why}`,
+                    })),
+            );
+        const scripts = writtenScripts(c, ctx);
+        laidOver(written, scripts);
+        // a kept script the line rewrites another way (sd, sed -i) holds text the guard never saw
+        for (const p of commandWrites(c, ctx))
+            if (written.has(p) && !scripts.some(([s]) => s === p))
+                written.set(p, UNREAD);
+        const { sub, subArgs } = gitParts(c.args);
+        const alias =
+            c.name === 'git' ? aliases.get(sub.toLowerCase()) : undefined;
+        if (alias !== undefined)
+            out.push(
+                ...refusals(
+                    aliasRun(alias, subArgs),
+                    c.dir,
+                    ctx,
+                    isPlain,
+                    hiddenBy ?? 'a git alias',
+                ),
+            );
+        const persisted = persistedAlias(c);
+        if (persisted) aliases.set(...persisted);
         const judge = (cmd: Command, next: Command | undefined) =>
             floor(cmd, ctx) ??
             hazard(cmd, ctx) ??
@@ -402,6 +481,10 @@ export function refusals(
         }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
+        // a door flag speaks where no rule stopped the command or dima's marker lets that rule through, and never hides one
+        const door =
+            found && !markedBy(command)(found) ? undefined : gitDoor(c, ctx);
+        if (door) out.push(door);
         // a nested script is commands too: a shell's, an eval's, env -S's, find -exec's, a function body (command.ts)
         for (const script of nestedScripts(c))
             out.push(
@@ -467,17 +550,22 @@ const ALL_WORD = word(
     'clear|all (?:of )?(?:the )?stash(?:es)?|every stash|stash(?:es)? all',
 );
 // a command that points git at another dir by env or flag runs where the word never named
+// a git pointed elsewhere, read off the parsed words so quotes cannot split it: an env name, or git's own flag
 const REDIRECTED =
-    /(?<![\w-])GIT_(?:DIR|WORK_TREE)=|--(?:git-dir|work-tree)(?![\w-])/;
+    /^GIT_(?:DIR|WORK_TREE|COMMON_DIR)=|^--(?:git-dir|work-tree)(?:=|$)/;
+const isRedirected = (c: Command) =>
+    [...c.assigns, ...c.args.map((w) => w.text)].some((t) =>
+        REDIRECTED.test(t),
+    );
 const NEGATED =
     /(?<![\w-])(?:do not|never|not|no|without|avoid|stop|leave)(?![\w-])|n['’]t(?![\w-])/i;
 export const isStashKill = (r: Refusal) =>
     r.rule === 'git-discard' && /^git stash (drop|clear) /.test(r.why);
-// every stash drop or clear of the command with the git dir it runs in; a command with a nested shell or eval names
-// none, since a script's stash drop could ride beside a plain one
+// every stash drop or clear of the command with the git dir it runs in, nested ones included as the refusals read them; a
+// command with a shell or eval names none, since a script's stash drop could ride beside a plain one
 export function stashKills(command: string, cwd: string, ctx: Context = {}) {
-    if (REDIRECTED.test(command)) return [];
-    const list = commands(parse(command), cwd);
+    const list = commandsDeep(command, cwd);
+    if (list.some(isRedirected)) return [];
     if (list.some((c) => SHELLS.has(c.name) || c.name === 'eval')) return [];
     return list.flatMap((c) => {
         if (c.name !== 'git') return [];
@@ -512,12 +600,17 @@ export function check(
 ): Verdict {
     const found = refusals(command, cwd, ctx);
     if (!found.length) return { kind: 'run' };
-    const marked = markers(command);
-    // a marker names one target, or several split by spaces or commas; every target of a refusal must be named
-    const ok = new Set(marked.flatMap((m) => [m, ...m.split(/[\s,]+/)]));
-    const open = found.find((r) => !r.targets.every((t) => ok.has(t)));
+    const isMarked = markedBy(command);
+    const open = found.find((r) => !isMarked(r));
     if (open) return { kind: 'refused', refusal: open };
-    return { kind: 'escaped', refusals: found, targets: marked };
+    return { kind: 'escaped', refusals: found };
+}
+// a marker names one target, or several split by spaces or commas; a refusal is marked when every target is named
+export function markedBy(command: string) {
+    const ok = new Set(
+        markers(command).flatMap((m) => [m, ...m.split(/[\s,]+/)]),
+    );
+    return (r: Refusal) => r.targets.every((t) => ok.has(t));
 }
 export function message(r: Refusal) {
     return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
@@ -525,7 +618,7 @@ export function message(r: Refusal) {
 
 // the dirs a `CI=1 pnpm install` in this command runs in, for the caller to check for a changed manifest
 export function installDirs(command: string, cwd: string, ctx: Context = {}) {
-    return frozenInstallDirs(commands(parse(command), cwd), ctx);
+    return frozenInstallDirs(commandsDeep(command, cwd), ctx);
 }
 
 // a foreground `claude -p` holds the session's thread until it ends: a probe of eight runs blocked clio for 3 minutes
@@ -740,7 +833,7 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
 // clio's own session is never asked, the caller checks the registry name
 export function rawLinear(command: string, cwd: string): Refusal | undefined {
     for (const c of commandsDeep(command, cwd)) {
-        if (c.name !== 'linear') continue;
+        if (c.name !== 'linear' || asMember(c) !== undefined) continue;
         const [a, b, d] = c.args.map((w) => w.text);
         const isComment = a === 'issue' && b === 'comment' && d === 'add';
         const isRead = (a === 'issue' && b === 'view') || a === 'api';
