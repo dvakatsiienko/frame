@@ -79,6 +79,22 @@ const FLAGGED = [
         'a hooksPath set through GIT_CONFIG_KEY',
         'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m x -- a.ts',
     ],
+    // sixth sense round 2, exit 3 twins
+    [
+        'hooks-bypass',
+        'a hooksPath persisted to a named config file',
+        'git config -f .git/config core.hooksPath /dev/null',
+    ],
+    [
+        'hooks-bypass',
+        'a hooksPath in GIT_CONFIG_PARAMETERS',
+        "GIT_CONFIG_PARAMETERS=\"'core.hooksPath'='/dev/null'\" git commit -m x -- a.ts",
+    ],
+    [
+        'hooks-bypass',
+        'a hooksPath key exported for later calls',
+        'export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null',
+    ],
     [
         'hooks-bypass',
         'a hooksPath through --config-env',
@@ -108,6 +124,15 @@ const PLAIN = [
         'git push',
     ],
     ['a dry-run push', '/home/frame', 'git push --dry-run'],
+    // local review of round 1: reading or unsetting hooksPath swaps nothing
+    ['a hooksPath read', '/home/frame', 'git config core.hooksPath'],
+    ['a hooksPath --get', '/home/frame', 'git config --get core.hooksPath'],
+    ['a hooksPath --unset', '/home/frame', 'git config --unset core.hooksPath'],
+    [
+        'a hooksPath --unset of one value',
+        '/home/frame',
+        'git config --unset core.hooksPath /dev/null',
+    ],
     [
         'another -c on a commit',
         '/home/frame',

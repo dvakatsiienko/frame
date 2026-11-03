@@ -825,7 +825,11 @@ export function nestedScripts(c: Command): string[] {
     }
     // su runs its -c string, or else what it reads on stdin, in the user's shell
     if (c.name === 'su') {
-        const at = texts.findIndex((t) => t === '-c' || t === '--command');
+        const inline = texts.find((t) => t.startsWith('--command='));
+        if (inline) return [inline.slice('--command='.length)];
+        const at = texts.findIndex(
+            (t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t) || t === '--command',
+        );
         if (at >= 0) return texts.slice(at + 1, at + 2);
         return [
             ...herestrings(texts),
@@ -860,7 +864,7 @@ export function nestedScripts(c: Command): string[] {
             head !== undefined &&
             SHELLS.has(head.name) &&
             !head.args.some((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text)) &&
-            !shellOperands(head.args).length;
+            readsStdin(head.args);
         return [remote.join(' '), ...(isShellOnStdin ? stdin : [])];
     }
     if (c.name === 'eval') return [texts.join(' ')];
@@ -977,9 +981,18 @@ export function aliasRun(body: string, args: Word[]) {
 // a shell's operands: past its flags and the option names `-o`/`+o`/`-O`/`+O` take
 export function shellOperands(args: Word[]) {
     return args
-        .filter((w, i) => !/^[-+][oO]$/.test(args[i - 1]?.text ?? ''))
+        .filter((w, i) => !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? ''))
         .filter((w) => !/^[-+]/.test(w.text) || w.text === '-')
         .map((w) => w.text);
+}
+// a shell given no script, `-s` or a lone `-` reads its script on stdin, its operands only positional args
+export function readsStdin(args: Word[]) {
+    const [first] = shellOperands(args);
+    return (
+        first === undefined ||
+        first === '-' ||
+        args.some((w) => /^-[A-Za-z]*s[A-Za-z]*$/.test(w.text))
+    );
 }
 // the file a command runs as a script: a shell's or `source`'s first operand, what a shell reads on stdin from a `< file`
 // or a `cat file |`, or a head typed as a path (`./x.sh`)
@@ -994,10 +1007,13 @@ export function scriptRun(c: Command, ctx: Context) {
             : [];
     const stdin =
         c.reads.at(-1) ?? (catted.length === 1 ? catted[0] : undefined);
+    const [first] = shellOperands(c.args);
+    const isOnStdin = SHELLS.has(c.name) && readsStdin(c.args);
     const path =
         (SHELLS.has(c.name) || isSource) && !isDashC
-            ? (shellOperands(c.args)[0] ??
-              (SHELLS.has(c.name) ? stdin : undefined))
+            ? isOnStdin
+                ? stdin
+                : first
             : c.head?.text.includes('/')
               ? c.head.text
               : undefined;

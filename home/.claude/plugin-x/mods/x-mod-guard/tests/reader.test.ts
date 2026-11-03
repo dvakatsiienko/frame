@@ -46,6 +46,15 @@ const PASSES = [
     ['a harmless $( … ) in a heredoc', 'cat <<EOF > f.md\nnow $(date)\nEOF'],
     ['a heredoc ssh hands to cat', 'ssh box "cat > f" <<EOF\nrm -rf x\nEOF'],
     ['a bash -o option with no script', 'bash -o pipefail -c ls'],
+    // local review of round 1: an escaped quote in a heredoc body; an echo a body only assigns
+    [
+        'a heredoc with an escaped quote',
+        'cat <<EOF > notes.md\nEscape a quote as \\" in bash.\nrm -rf build\nis what clean does.\nEOF',
+    ],
+    [
+        'an echo a shell heredoc only assigns',
+        'bash <<EOF\nmsg=$(echo "git push --force is banned")\nEOF',
+    ],
 ] as const;
 for (const [shape, command] of PASSES)
     test(`a harmless command the reader opens runs unwarned: ${shape}`, async ($, on) => {

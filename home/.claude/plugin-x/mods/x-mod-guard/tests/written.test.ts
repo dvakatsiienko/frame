@@ -50,6 +50,23 @@ const RUN_AFTER_WRITE = [
     ['a script piped from cat', "echo 'rm -rf x' > s.sh; cat s.sh | sh"],
     ['a script past bash -o', "echo 'rm -rf x' > s.sh; bash -o errexit s.sh"],
     [
+        'a script past bash -eo',
+        "echo 'rm -rf x' > s.sh; bash -eo pipefail s.sh",
+    ],
+    [
+        'a script fed to bash -s with args',
+        "echo 'rm -rf x' > s.sh; bash -s arg < s.sh",
+    ],
+    [
+        'a script piped to bash -s --',
+        "echo 'rm -rf x' > s.sh; cat s.sh | bash -s -- a",
+    ],
+    ['a script fed to bash -', "echo 'rm -rf x' > s.sh; bash - < s.sh"],
+    [
+        'a script past bash -euo',
+        "echo 'rm -rf x' > s.sh; bash -euo pipefail s.sh",
+    ],
+    [
         'a line appended by tee -a',
         'cat <<EOF > s.sh\nrm -rf x\nEOF\ntee -a s.sh <<EOF\nls\nEOF\nbash s.sh',
     ],
@@ -182,6 +199,36 @@ for (const [shape, body, from, to, isWarned] of EDITED)
             JSON.stringify(await bash($, 'bash x.sh')).includes(WARNED),
         ).toBe(isWarned);
     });
+
+// sixth sense round 2: a Bash rewrite of a kept script leaves its text unread; a write inside sh -c is kept too
+for (const rewrite of [
+    "sd 'ls' 'pwd' x.sh",
+    "sed -i '' 's/ls/pwd/' x.sh",
+    'echo pwd | tee x.sh',
+])
+    test(`a written script a Bash call rewrites warns as unread: ${rewrite}`, async ($, on) => {
+        world(on);
+        await write($, '/repo/x.sh', 'ls\n');
+        await bash($, rewrite);
+        expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+    });
+
+test('a script written inside sh -c is read when a later call runs it', async ($, on) => {
+    world(on);
+    await bash($, `sh -c "echo 'rm -rf x' > s.sh"`);
+    expect(JSON.stringify(await bash($, 'bash s.sh'))).toContain(WARNED);
+});
+
+test('a written script a MultiEdit changes is read as edited', async ($, on) => {
+    world(on);
+    await write($, '/repo/x.sh', 'ls\n');
+    await $.tool.call({
+        edits: [{ new_string: 'rm -rf x', old_string: 'ls' }],
+        file_path: '/repo/x.sh',
+        tool: 'MultiEdit',
+    } as never);
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
 
 test('a written script longer than the guard keeps still warns when run', async ($, on) => {
     world(on);

@@ -92,11 +92,11 @@ export function parse(command: string): Parsed {
     let words: Word[] = [];
     let subst: Segment[] = [];
     let bodies: { text: string }[] = [];
-    // into: the substitutions of the command that owns an unquoted heredoc, where its body's `$( … )` and backticks join
+    // isExpanding: an unquoted delimiter, so the body's `$( … )` and backticks run as it is read
     const pending: {
         delimiter: string;
         body: { text: string };
-        into?: Segment[];
+        isExpanding?: boolean;
     }[] = [];
     let text = '';
     let isWord = false;
@@ -262,7 +262,7 @@ export function parse(command: string): Parsed {
     };
     const skipHeredocs = () => {
         while (pending.length) {
-            const { delimiter, body, into } = pending.shift() ?? {
+            const { delimiter, body, isExpanding } = pending.shift() ?? {
                 body: { text: '' },
                 delimiter: '',
             };
@@ -275,15 +275,14 @@ export function parse(command: string): Parsed {
                 lines.push(line);
             }
             body.text = lines.join('\n');
-            // an unquoted body expands as a double-quoted string does, so its substitutions run as it is read: commands of
-            // the line, and feeders of the command that owns the heredoc; the last segment is the string itself
-            if (into) {
-                const inner = parse(
-                    `"${body.text.replace(/"/g, '\\"')}"`,
-                ).segments;
-                segments.push(...inner.slice(0, -1));
-                into.push(...inner.flatMap((s) => s.subst));
-            }
+            // an unquoted body expands as a double-quoted string does, so its substitutions run as commands of the line; a
+            // `"` is escaped unless a backslash already does it, and the last segment is the string itself
+            if (isExpanding)
+                segments.push(
+                    ...parse(
+                        `"${body.text.replace(/(\\*)"/g, (m, bs: string) => (bs.length % 2 ? m : `${bs}\\"`))}"`,
+                    ).segments.slice(0, -1),
+                );
         }
     };
     const heredoc = () => {
@@ -314,7 +313,7 @@ export function parse(command: string): Parsed {
             pending.push({
                 body,
                 delimiter,
-                ...(!isQuotedEnd && { into: subst }),
+                ...(!isQuotedEnd && { isExpanding: true }),
             });
             bodies.push(body);
         }

@@ -371,17 +371,38 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
 }
 // a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
 export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
-    if (c.name !== 'git') return undefined;
+    // the environment git reads its config from: a prefix, or an export that lasts for the calls after it
+    const env = [
+        ...c.assigns,
+        ...(['export', 'declare', 'typeset'].includes(c.name)
+            ? operands(c.args)
+            : []),
+    ];
+    const fromEnv = env.flatMap(
+        (a) =>
+            a.match(/^GIT_CONFIG_KEY_\d+=(.*)$/)?.[1] ??
+            (/^GIT_CONFIG_PARAMETERS=.*core\.hookspath/is.test(a)
+                ? 'core.hooksPath'
+                : []),
+    );
+    if (c.name !== 'git' && !fromEnv.length) return undefined;
     const { configs, sub, subArgs } = gitParts(c.args);
-    const ops = operands(subArgs);
-    const [key] = ops[0] === 'set' ? ops.slice(1) : ops;
+    // `-f`/`--file`/`--blob` name where git config writes, never the key
+    const ops = operands(
+        subArgs.filter(
+            (w, i) => !/^(-f|--file|--blob)$/.test(subArgs[i - 1]?.text ?? ''),
+        ),
+    );
+    const [key, value] = ops[0] === 'set' ? ops.slice(1) : ops;
+    // a read, a list or an unset swaps nothing; only a key given a value persists
+    const isSet =
+        value !== undefined &&
+        !subArgs.some((w) => /^(--get|--unset|--list$|-l$)/.test(w.text));
     // a `-c` or `--config-env` key, one `git config` persists, or one the environment hands git (`GIT_CONFIG_KEY_<n>`)
     const hooks = [
         ...configs,
-        ...(sub === 'config' && key ? [key] : []),
-        ...c.assigns.flatMap(
-            (a) => a.match(/^GIT_CONFIG_KEY_\d+=(.*)$/)?.[1] ?? [],
-        ),
+        ...(sub === 'config' && key && isSet ? [key] : []),
+        ...fromEnv,
     ].find((k) => /^core\.hookspath(?:=|$)/i.test(k));
     if (hooks)
         return {
@@ -391,6 +412,7 @@ export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
             why: '-c core.hooksPath swaps out the hooks a commit or push runs',
         };
     // the repo a push leaves from: where it runs, or the tree a `--git-dir` or `GIT_DIR` names
+    if (c.name !== 'git') return undefined;
     const named =
         c.args.flatMap((w, i) =>
             w.text.startsWith('--git-dir=')

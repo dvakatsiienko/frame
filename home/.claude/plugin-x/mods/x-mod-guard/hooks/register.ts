@@ -907,6 +907,19 @@ async function editWritten(
         if (isSet) return;
     }
 }
+async function unreadWritten($: EngineInterface, paths: string[]) {
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = {}, version } = await $.state.get(WRITTEN);
+        const kept = paths.filter((p) => value[p] !== undefined);
+        if (!kept.length) return;
+        const { isSet } = await $.state.set(
+            WRITTEN,
+            { ...value, ...Object.fromEntries(kept.map((p) => [p, UNREAD])) },
+            { ifVersion: version },
+        );
+        if (isSet) return;
+    }
+}
 async function turnWritten($: EngineInterface) {
     const { value = {} } = await $.state.get(WRITTEN);
     return new Map(Object.entries(value));
@@ -1197,6 +1210,15 @@ export const register: Register = (on) => {
                 await markWritten($, lineWrites(run, cwd, ctx)).catch(
                     () => undefined,
                 );
+            // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw
+            if (!result.isError)
+                await unreadWritten(
+                    $,
+                    writtenPaths(run, cwd, ctx).filter(
+                        (p) =>
+                            !lineWrites(run, cwd, ctx).some(([w]) => w === p),
+                    ),
+                ).catch(() => undefined);
             const isQuiet = await isSilent($, ctx.home);
             // a quiet session spends no verb hint it never showed
             await rememberHelps($, [
@@ -1675,20 +1697,18 @@ export const register: Register = (on) => {
                 await markWritten($, [
                     [resolve(path, '/', {}), e.content],
                 ]).catch(() => undefined);
-            if (
-                e.tool === 'Edit' &&
-                typeof e.old_string === 'string' &&
-                typeof e.new_string === 'string' &&
-                result.deny === undefined &&
-                !result.isError
-            )
-                await editWritten($, resolve(path, '/', {}), [
-                    {
-                        new_string: e.new_string,
-                        old_string: e.old_string,
-                        replace_all: e.replace_all === true,
-                    },
-                ]).catch(() => undefined);
+            // MultiEdit is missing from this build's tool types but reaches the hook live
+            const tool: string = e.tool;
+            const edits =
+                e.tool === 'Edit'
+                    ? [e as unknown as TextEdit]
+                    : tool === 'MultiEdit'
+                      ? ((e as unknown as { edits?: TextEdit[] }).edits ?? [])
+                      : [];
+            if (edits.length && result.deny === undefined && !result.isError)
+                await editWritten($, resolve(path, '/', {}), edits).catch(
+                    () => undefined,
+                );
             return result;
         },
     ).catch(() => ({ deny: FAILED }));

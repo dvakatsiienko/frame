@@ -1397,6 +1397,14 @@ EOF`,
     ],
     // sixth sense round 1: su's -c string, and an unquoted heredoc's $( … ) and backticks run as the heredoc is read
     ['refused', 'reader', "su's -c string", "su -c 'rm -rf x'"],
+    ['refused', 'reader', "su's -c in a cluster", "su -lc 'rm -rf x'"],
+    ['refused', 'reader', "su's --command=", "su --command='rm -rf x'"],
+    [
+        'refused',
+        'reader',
+        'a $( … ) beside quotes in an unquoted heredoc',
+        `cat <<EOF > f.md\nit\\"s don't $(rm -rf x) won't\nEOF`,
+    ],
     [
         'refused',
         'reader',
@@ -1420,6 +1428,8 @@ EOF`,
             ['bash -s --', 'bash -s -- a'],
             // sixth sense round 1, exit 2 twins
             ['bash -o pipefail', 'bash -o pipefail'],
+            ['bash -euo pipefail', 'bash -euo pipefail'],
+            ['a shell ssh runs with args', 'ssh box bash -s -- a'],
             ['a shell ssh runs', 'ssh box bash -s'],
             ['sudo -s', 'sudo -s'],
             ['sudo -i', 'sudo -i'],

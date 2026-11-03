@@ -367,7 +367,7 @@ export function tmpDirs(
 }
 // the files a line leaves written, path to text, for the runs a later call of the turn makes
 export const lineWrites = (command: string, cwd: string, ctx: Context) =>
-    commands(parse(command), cwd).flatMap((c) => writtenScripts(c, ctx));
+    commandsDeep(command, cwd).flatMap((c) => writtenScripts(c, ctx));
 // the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
 const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
 // isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
