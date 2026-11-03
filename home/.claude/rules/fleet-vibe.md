@@ -58,6 +58,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **🫧 spawn** = start an in-process `Agent` card (`x:crew-subagent`). <!-- cc -->
 - **⏹️ stop** = end a summoned thread. <!-- cc -->
 - **⚗️ facility** = clio's area: her passport's **owns** and the `clio:*` skills. <!-- cc -->
+- **verdicts** (dima, 2026-11-03) = a member's word on work handed back to it: **🌼 clean** (it holds; sixth sense's word), **🩹 fix** (a missed check, redone), **🪜 escalate** (nothing to redo: it climbs one rung, up to dima). <!-- cc -->
 
 ## shell words — the few git aliases that are fleet vocabulary
 
