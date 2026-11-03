@@ -810,15 +810,14 @@ export function nestedScripts(c: Command): string[] {
                 ? c.feeders.flatMap(printed)
                 : [];
         }
-        const script = shellOperands(
-            c.args.filter(
-                (w, i) => w.text !== '<<<' && c.args[i - 1]?.text !== '<<<',
-            ),
-        ).filter((o) => !o.startsWith('<<<'));
+        const args = c.args.filter(
+            (w, i) =>
+                w.text !== '<<<' &&
+                c.args[i - 1]?.text !== '<<<' &&
+                !w.text.startsWith('<<<'),
+        );
         const isStdin =
-            texts.some((t) => /^-[A-Za-z]*s[A-Za-z]*$/.test(t)) ||
-            !script.length ||
-            STDIN_PATHS.has(script[0] ?? '');
+            readsStdin(args) || STDIN_PATHS.has(shellOperands(args)[0] ?? '');
         if (!isStdin) return [];
         const piped = c.feeders.flatMap(printed);
         return [...herestrings(texts), ...c.bodies, ...piped];

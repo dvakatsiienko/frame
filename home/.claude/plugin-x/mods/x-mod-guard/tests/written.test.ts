@@ -87,6 +87,11 @@ const RUN_AFTER_WRITE = [
         'a script given -s and a word',
         "echo 'rm -rf x' > s.sh; bash s.sh -s staging",
     ],
+    [
+        'a script past -o, given -s',
+        "echo 'rm -rf x' > s.sh; bash -o errexit s.sh -s",
+    ],
+    ['a script past --, given -s', "echo 'rm -rf x' > s.sh; bash -- s.sh -s"],
 ] as const;
 for (const [shape, command] of RUN_AFTER_WRITE)
     test(`a script written then run warns naming the rule its body trips: ${shape}`, async ($, on) => {
@@ -113,6 +118,8 @@ const PLAIN = [
         "echo 'ls # list' > x.sh && bash x.sh",
     ],
     ['a background job in the file', "echo 'sleep 1 &' > x.sh && bash x.sh"],
+    // local review of round 4: a heredoc to a shell that runs a script is never its script
+    ['a heredoc beside a script given -s', 'bash s.sh -s <<EOF\nrm -rf x\nEOF'],
 ] as const;
 for (const [shape, command] of PLAIN)
     test(`a write then run passes unwarned: ${shape}`, async ($, on) => {
@@ -237,6 +244,19 @@ for (const [shape, line, isWrite] of REWRITTEN_IN_LINE)
         if (isWrite) await write($, '/repo/x.sh', 'ls\n');
         expect(JSON.stringify(await bash($, line))).toContain(WARNED);
     });
+
+test('a script a line writes, then rewrites, warns as unread in a later call', async ($, on) => {
+    world(on);
+    await bash($, "echo ls > x.sh && sed -i '' 's/ls/pwd/' x.sh");
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
+
+test('a written script a line that errors writes over warns as unread', async ($, on) => {
+    world(on, true);
+    await write($, '/repo/x.sh', 'ls\n');
+    await bash($, "echo 'rm -rf x' > x.sh; false");
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
 
 test('a written script rewritten in a line that errors warns as unread', async ($, on) => {
     world(on, true);

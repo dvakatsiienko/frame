@@ -7,6 +7,7 @@ import {
     TICKET_KEY,
     UNREAD,
     type Verdict,
+    type Written,
     actsIn,
     adds,
     aliasRun,
@@ -365,9 +366,19 @@ export function tmpDirs(
         return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
 }
-// the files a line leaves written, path to text, for the runs a later call of the turn makes
-export const lineWrites = (command: string, cwd: string, ctx: Context) =>
-    commandsDeep(command, cwd).flatMap((c) => writtenScripts(c, ctx));
+// the files a line leaves written, path to text, for the runs a later call of the turn makes; a file the line wrote,
+// then rewrote another way (sd, sed -i), is left unread
+export function lineWrites(command: string, cwd: string, ctx: Context) {
+    const out: Written[] = [];
+    for (const c of commandsDeep(command, cwd)) {
+        const scripts = writtenScripts(c, ctx);
+        out.push(...scripts);
+        for (const p of commandWrites(c, ctx))
+            if (out.some(([w]) => w === p) && !scripts.some(([s]) => s === p))
+                out.push([p, UNREAD]);
+    }
+    return out;
+}
 // the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
 const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
 // isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's

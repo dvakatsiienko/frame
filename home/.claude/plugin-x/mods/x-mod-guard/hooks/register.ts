@@ -1206,16 +1206,19 @@ export const register: Register = (on) => {
                         ? `${result.deny} — ${ISOLATED_DOOR}`
                         : result.deny,
                 );
-            if (!result.isError)
-                await markWritten($, lineWrites(run, cwd, ctx)).catch(
-                    () => undefined,
-                );
-            // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw, a line
-            // that errors included: its rewrite may have run before the error
+            // a line that errors may have run any of its writes before the error, so what it wrote is unread
+            const writes = lineWrites(run, cwd, ctx);
+            await markWritten(
+                $,
+                result.isError
+                    ? writes.map(([p]): Written => [p, UNREAD])
+                    : writes,
+            ).catch(() => undefined);
+            // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw
             await unreadWritten(
                 $,
                 writtenPaths(run, cwd, ctx).filter(
-                    (p) => !lineWrites(run, cwd, ctx).some(([w]) => w === p),
+                    (p) => !writes.some(([w]) => w === p),
                 ),
             ).catch(() => undefined);
             const isQuiet = await isSilent($, ctx.home);
