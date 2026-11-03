@@ -1210,15 +1210,14 @@ export const register: Register = (on) => {
                 await markWritten($, lineWrites(run, cwd, ctx)).catch(
                     () => undefined,
                 );
-            // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw
-            if (!result.isError)
-                await unreadWritten(
-                    $,
-                    writtenPaths(run, cwd, ctx).filter(
-                        (p) =>
-                            !lineWrites(run, cwd, ctx).some(([w]) => w === p),
-                    ),
-                ).catch(() => undefined);
+            // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw, a line
+            // that errors included: its rewrite may have run before the error
+            await unreadWritten(
+                $,
+                writtenPaths(run, cwd, ctx).filter(
+                    (p) => !lineWrites(run, cwd, ctx).some(([w]) => w === p),
+                ),
+            ).catch(() => undefined);
             const isQuiet = await isSilent($, ctx.home);
             // a quiet session spends no verb hint it never showed
             await rememberHelps($, [

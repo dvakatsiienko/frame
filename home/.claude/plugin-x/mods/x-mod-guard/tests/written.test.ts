@@ -5,7 +5,7 @@ import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
 // FRM-472 exit 8: a script the line writes and then runs is read as its commands, warn-only until its sixth sense says clean
-function world(on: On) {
+function world(on: On, isError = false) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
@@ -28,7 +28,10 @@ function world(on: On) {
     }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
-        return { result: {}, text: 'ran' };
+        // isError fails Bash calls only, so a Write that seeds a script still lands
+        return isError && 'command' in e
+            ? { isError: true as const, result: {}, text: 'ran' }
+            : { result: {}, text: 'ran' };
     });
     return { ran };
 }
@@ -77,6 +80,12 @@ const RUN_AFTER_WRITE = [
     [
         'a dot of a path in a dir',
         "echo 'rm -rf x' > /tmp/d/x.sh; . /tmp/d/x.sh",
+    ],
+    // sixth sense round 3: an -s past the script is the script's own arg
+    ['a script given -s as its arg', "echo 'rm -rf x' > s.sh; bash s.sh -s"],
+    [
+        'a script given -s and a word',
+        "echo 'rm -rf x' > s.sh; bash s.sh -s staging",
     ],
 ] as const;
 for (const [shape, command] of RUN_AFTER_WRITE)
@@ -212,6 +221,29 @@ for (const rewrite of [
         await bash($, rewrite);
         expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
     });
+
+// sixth sense round 3: a rewrite in the line that runs the script, or in a line that errors, leaves its text unread too
+const REWRITTEN_IN_LINE = [
+    ['after a Write', "sed -i '' 's/ls/pwd/' x.sh && bash x.sh", true],
+    [
+        'after a heredoc in the line',
+        "cat > x.sh <<EOF\nls\nEOF\nsed -i '' 's/ls/pwd/' x.sh; bash x.sh",
+        false,
+    ],
+] as const;
+for (const [shape, line, isWrite] of REWRITTEN_IN_LINE)
+    test(`a written script rewritten in the line that runs it warns as unread: ${shape}`, async ($, on) => {
+        world(on);
+        if (isWrite) await write($, '/repo/x.sh', 'ls\n');
+        expect(JSON.stringify(await bash($, line))).toContain(WARNED);
+    });
+
+test('a written script rewritten in a line that errors warns as unread', async ($, on) => {
+    world(on, true);
+    await write($, '/repo/x.sh', 'ls\n');
+    await bash($, "sed -i '' 's/ls/pwd/' x.sh; false");
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
 
 test('a script written inside sh -c is read when a later call runs it', async ($, on) => {
     world(on);

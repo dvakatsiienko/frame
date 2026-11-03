@@ -36,7 +36,7 @@ import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
-import { landings, overwrite } from './rules/overwrite.ts';
+import { commandWrites, landings, overwrite } from './rules/overwrite.ts';
 import { spawnSixthSense } from './rules/sixth-sense.ts';
 import { worth } from './rules/worth.ts';
 import { type Parsed, parse } from './shell.ts';
@@ -415,7 +415,12 @@ export function refusals(
                         why: `${ran} was written earlier this turn, and running it runs a refused command (rule ${r.rule}): ${r.why}`,
                     })),
             );
-        laidOver(written, writtenScripts(c, ctx));
+        const scripts = writtenScripts(c, ctx);
+        laidOver(written, scripts);
+        // a kept script the line rewrites another way (sd, sed -i) holds text the guard never saw
+        for (const p of commandWrites(c, ctx))
+            if (written.has(p) && !scripts.some(([s]) => s === p))
+                written.set(p, UNREAD);
         const { sub, subArgs } = gitParts(c.args);
         const alias =
             c.name === 'git' ? aliases.get(sub.toLowerCase()) : undefined;

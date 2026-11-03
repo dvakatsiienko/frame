@@ -985,13 +985,19 @@ export function shellOperands(args: Word[]) {
         .filter((w) => !/^[-+]/.test(w.text) || w.text === '-')
         .map((w) => w.text);
 }
-// a shell given no script, `-s` or a lone `-` reads its script on stdin, its operands only positional args
+// a shell given no script, `-s` or a lone `-` reads its script on stdin, its operands only positional args; an `-s`
+// past the script is the script's own arg
 export function readsStdin(args: Word[]) {
     const [first] = shellOperands(args);
+    const at = args.findIndex(
+        (w, i) =>
+            !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? '') &&
+            (!/^[-+]/.test(w.text) || w.text === '-'),
+    );
     return (
         first === undefined ||
         first === '-' ||
-        args.some((w) => /^-[A-Za-z]*s[A-Za-z]*$/.test(w.text))
+        args.slice(0, at).some((w) => /^-[A-Za-z]*s[A-Za-z]*$/.test(w.text))
     );
 }
 // the file a command runs as a script: a shell's or `source`'s first operand, what a shell reads on stdin from a `< file`
