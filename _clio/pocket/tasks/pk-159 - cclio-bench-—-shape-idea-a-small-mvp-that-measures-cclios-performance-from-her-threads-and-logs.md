@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T14:15:00Z'
+updated_date: '2026-11-03T19:12:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -318,4 +318,6 @@ W1853 (2026-11-03 14:35, dima, o75 steer): No, let's do it slightly the other wa
 W1854 (2026-11-03 14:35, dima, o75 steer): Currently, your shift should tell you to merge yourself, and it is correct, but my ask to hold with merge is an exception for today.
 
 moved: W1834–W1854 → PK-308 (dima o85, 2026-11-03 16:15)
+
+2026-11-03 21:12 — the crow part is shaped as [FRM-502](https://linear.app/x-com/issue/FRM-502) (dima: «current crow chunk is a part of pk-159, i solved the first part with the side channel»); left here: prompting helga to Sonnet 5.5, dima with the side channel on 11-04
 <!-- SECTION:NOTES:END -->

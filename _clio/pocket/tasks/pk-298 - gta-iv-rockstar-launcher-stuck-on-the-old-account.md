@@ -4,7 +4,7 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-03T17:23:00Z'
+updated_date: '2026-11-03T18:58:00Z'
 labels:
   - s
   - side-channel-owned
@@ -172,4 +172,6 @@ state 11-02 20:08 (clio, inference): every form tried tonight returned 500 (link
 side-channel-owned on dima's word (2026-11-03 19:14: «resign rockstar-related ticket to side channel-owned»)
 
 state 11-03 19:23 (dima, side channel): GTA IV runs — he signed in to the Rockstar launcher inside the FX Steam vm and played; performance lags a bit («that's for later»). support still locked (cooldown, he thinks), so the old-account unlink waits. «Let's solve PK-298 a little later.»
+
+state 11-03 20:57 (side channel, browser pane): the double-M Gmail shows #38245301 closed 11-02 11:44 EST by Oluwatomisin S., who only pointed back at the linking/unlinking form — the unlink was never filed. tonight's vanishing pending request fits Rockstar's banner: Support and Account Management maintenance 2026-11-03 18:00–21:00 UTC (inference: requests made in the window were not stored). dima's pick: submit the 424-char text after 23:00 local, then watch dashboard → Gmail → dashboard.
 <!-- SECTION:NOTES:END -->
