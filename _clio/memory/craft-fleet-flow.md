@@ -17,7 +17,7 @@ each stage names its gate, its owner, its door and its wait budget.
 7. **verify** — gate: sixth sense says clean, or its round-3 stop goes to clio; owner: sixth sense; door: `x:crew-sixth-sense`; wait: 3 rounds
 8. **land**
    - gate: merge state clean and the deploy Ready, where «no run» is never green
-   - owner: clio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); clio pushes
+   - owner: clio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); clio pushes (a quick lane's codie its own head, 11-03)
    - door: `x lane merge-auto` (it waits for ci and names why)
    - self-edit path: his sign pre-approved → `x lane merge-auto <pr> --apply`; his typed word → `--dima-ok <pr>` added (x-mod-guard proves the word); a stack layer: `gh stack merge <pr> --squash --yes`, `merged-by-x` by hand
    - the brake is never pre-approved: his word each time, a tick quoting the pr carrying it (FRM-427)

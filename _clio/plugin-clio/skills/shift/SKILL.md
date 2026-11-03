@@ -18,6 +18,17 @@ one shift, day or night; how it drives follows the band's afk switch (💨, x-mo
 - **afk off** — he is near for now: a y/n ping only for a real decision, batched at a siesta.
 - a shift started with afk off gets one line: «afk is off — near for now, or a slip?»
 
+## the 5h ladder — no lane runs far ahead of pace (dima, 2026-11-03, PK-314, PK-308)
+
+pace = the elapsed share of the 5h window; over = used − pace. read after every step, in every mode, until he says «go» for a burn day; when two rungs hold, the higher wins: ≤ 1 h › 90 % › +5 › 70–80 % › resume; the first 10 % of a fresh window parks nobody:
+- **+5 over pace** → everyone parks at a pit stop, resumes at −2 to 0; +10 is never meant to be reached
+- **~70–80 % used** → no lane starts its next chunk
+- **90 % used** → everyone parks; once ≤ 1 h is left, everyone runs to 100 % and the waker resumes them after the reset
+- **≤ 1 h left** → in a shift, every lane starts its next useful chunk and burns (no waste burning); with him at the keyboard, ask first; i log who sits idle at the cap and resume each by hand after the reset, since the waker wakes only a session the cap stopped
+- **a park**: the running step finishes, nothing new starts — subagents, reviews and reads included; at 90 % running ones stop and re-run after the resume
+- **a resume** runs in lane order (clio, the lane building, then the reviewers), the meter read between each; my own second wind runs before a park, never on the resume
+- while everyone is parked, FRM-500's pace watch tells me when a rung changes; until it lands, my own 🔥 stays on and each keep-hot wake reads the meter and acts on its rung
+
 ## comms while he is away
 
 - the main thread is clio's own log: only what a post-compaction clio or a returning dima needs.
@@ -38,17 +49,15 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 
 dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any thread inactive for 50 minutes is auto-woken by keep-hot». cold ~$0.80 vs warm ~$0.02 per 100k Opus 5.5 member (`crew-lead` model-cards).
 
-- keep-hot (🔥, `x-mod-stash`) pings a session 50 min after its last turn; afk on arms it in every Remote Control session, any other session needs its 🔥 pressed
-- the shift's start checks each member: a `--bg` member summoned with `--remote-control` is covered by afk; a desktop thread (the mods codie, the side channel) gets its row's 🔥 asked of dima before he leaves
-- a member keep-hot cannot reach gets a `SendMessage` «keep-warm: reply `ok`» at 25 min idle, my `Monitor` expiry (30 min, its cap) the beat
+- keep-hot (🔥, `x-mod-stash`) pings a session 50 min after its last turn; every member's 🔥 is on from the shift's start, mine included: on its 🌌 sessions row once FRM-499 lands, until then crow's `armHot` door; no hand beat
 
 ## 1 · start — the last chat message
 
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
-- write `status: running`, `afk:` (on/off at the start), the budget line (a % of the week), the members and each lane's merge rule into the plan file
-- arm the hot-cache heartbeat (§ hot caches)
-- one message to dima: mode, members, budget, when the report lands. **from here the shift is on.**
+- write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces (dima, 2026-11-03, PK-308)
+- every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end (dima, 2026-11-03, PK-308); the ⏰ waker is on, or i ask him to switch it before he leaves
+- one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
 
@@ -62,6 +71,9 @@ Every decision is one of three:
 
 - a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
 - codie's premise doubt is built and flagged the same minute, never found at review
+- every «done / fixed / sealed / reset» i log or tell names the command that read it back, with its exit code; a member's relay says `measured:` or `inference:`, and no ticket is born from an `inference:` line mid-shift
+- a joiner chunk gets its spec section, `x brief preflight` and `x lane dispatch --apply` before its steer; its reviewers match its `## signed` line
+- in a quick lane codie pushes its own head through `x lane push` and sends «round N» straight to sixth sense (dima, 2026-11-03, replacing his 10-27 rule)
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
 - **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
@@ -79,6 +91,6 @@ In the plan file, then one chat message:
 - the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
 - then the return sections, one or two plain lines each: how it went (per lane: merged, parked, not run), what waited on dima and how it resolved, second winds (who, when, what survived), failures with their state now, merges and what held one, retros per member, the flow (good and off, a fix per off), ticket readiness (exit lines rewritten mid-lane, and why), anything else or `none`
 
-Retros in, members stopped, the heartbeat stopped, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
+Retros in, members stopped, 🔥 and the pace watch off, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
 
 **Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.
