@@ -16,6 +16,8 @@ import path from 'node:path';
 export const gate = { isBlocking: true };
 const FILES_DUE = 15;
 const MISSED_AFTER_MS = 30 * 60_000;
+const POCKET_WRITE =
+    /pocket-(add|move)\.ts|backlog task (create|edit|archive)\b/;
 // a turn whose prompt opens with one of these is the fleet's, never his; the app prepends reminders to his own prompts
 const NOT_DIMA = [
     '<cross-session-message',
@@ -168,14 +170,14 @@ export function cardLines(home: string, transcriptPath?: string) {
             return (
                 r.type === 'user' &&
                 typeof content === 'string' &&
-                /^(Another Claude session sent a message:\n)?<cross-session-message[^>]*from-name="[^"]*helga[^>]*>\s*(?!\[done\])[^\n]*\breceipt\b/.test(
+                /^(Another Claude session sent a message:\n)?<cross-session-message[^>]*from-name="[^"]*helga[^>]*>\s*(?!\[done\])[^\n]*\breceipt\b/i.test(
                     content,
                 ) &&
                 new Date(r.timestamp ?? 0).getTime() > since
             );
         }).length;
     return [
-        `pocket writes by hand: ${handPocketWrites(home)}`,
+        `pocket writes by hand: ${handPocketWrites(transcriptPath)}`,
         ...missed.map(
             ([at = '', cls = '', head = '']) =>
                 `missed receipt: ${cls} sent ${new Date(at).toLocaleTimeString('sv').slice(0, 5)} — ${head}`,
@@ -184,29 +186,22 @@ export function cardLines(home: string, transcriptPath?: string) {
     ];
 }
 
-function handPocketWrites(home: string) {
+// clio's own pocket writes today, read from her transcript: her pocket hook commits helga's writes under clio's trailer too,
+// so git cannot tell them apart
+function handPocketWrites(transcriptPath?: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const env = Object.fromEntries(
-        Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')),
-    );
-    const log = spawnSync(
-        'git',
-        [
-            '-C',
-            path.join(home, 'frame'),
-            'log',
-            `--since=${today.toISOString()}`,
-            '--no-merges',
-            '--format=%(trailers:key=Agent,valueonly)',
-            '--',
-            '_clio/pocket',
-        ],
-        { encoding: 'utf8', env },
-    ).stdout;
-    return (log ?? '')
-        .split('\n')
-        .filter((agent) => agent.split(' · ')[0]?.trim() === 'clio').length;
+    return readLines(transcriptPath)
+        .flatMap((l) => parsed<TranscriptRow & { timestamp?: string }>(l) ?? [])
+        .filter((r) => new Date(r.timestamp ?? 0).getTime() >= today.getTime())
+        .flatMap((r) => toolUses([r]))
+        .filter(
+            (u) =>
+                ((u.name === 'Write' || u.name === 'Edit') &&
+                    (u.input?.file_path ?? '').includes('/_clio/pocket/')) ||
+                (u.name === 'Bash' &&
+                    POCKET_WRITE.test(u.input?.command ?? '')),
+        ).length;
 }
 
 function tabbed(file: string) {
@@ -311,7 +306,9 @@ function unreadResumes(transcriptPath?: string) {
         (u) =>
             u.name === 'mcp__ccd_session_mgmt__get_usage' ||
             (u.name === 'Bash' &&
-                (u.input?.command ?? '').includes('cc-usage-window.json')),
+                (u.input?.command ?? '').includes('cc-usage-window.json')) ||
+            (u.name === 'Read' &&
+                (u.input?.file_path ?? '').endsWith('cc-usage-window.json')),
     );
     if (hasRead) return [];
     return uses
@@ -529,6 +526,7 @@ type TranscriptRow = {
                   id?: string;
                   input?: {
                       command?: string;
+                      file_path?: string;
                       message?: string;
                       skill?: string;
                       to?: string;

@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -93,6 +94,33 @@ describe('sideChannelNudge', () => {
         expect(sideChannelNudge('what should i buy now', home)).toContain(
             'side channel?',
         );
+    });
+
+    test.each([
+        'what is the plan for the cli lane after this',
+        'the billing page of the speak app needs a pass',
+    ])('a fleet prompt with plan or billing prints none: «%s»', (text) => {
+        expect(sideChannelNudge(text, fixture(process.ppid))).toBeUndefined();
+    });
+
+    test('the hook prints the side line for his prompt', () => {
+        const home = fixture(process.ppid);
+        const out = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'prompt-raw-save.ts')],
+            {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    HOME: home,
+                    PROMPT_GROOM_DIR: join(home, 'grooms'),
+                    PROMPT_RAW_DIR: join(home, 'prompts'),
+                },
+                input: JSON.stringify({ prompt: 'what should i buy now' }),
+            },
+        );
+        expect(out.status).toBe(0);
+        expect(out.stdout).toContain('side channel?');
     });
 
     test('with no live lane, a personal chore prints none', () => {

@@ -741,17 +741,105 @@ describe('the card’s chore lines', () => {
         expect(cardLines(home).join('\n')).not.toContain('missed receipt');
     });
 
-    test('pocket writes by hand count clio’s pocket commits today, never helga’s', () => {
+    test('pocket writes by hand count clio’s own pocket writes today, never a read or helga’s', () => {
         const home = fixtureHome();
-        const repo = join(home, 'frame');
-        mkdirSync(join(repo, '_clio/pocket/tasks'), { recursive: true });
-        writeFileSync(join(repo, '_clio/pocket/tasks/pk-1.md'), 'a');
-        commit(home, 0, 'clio', '📜 pocket: pk-1 (auto)');
-        writeFileSync(join(repo, '_clio/pocket/tasks/pk-2.md'), 'b');
-        commit(home, 0, 'clio', '📜 pocket: pk-2 (auto)');
-        writeFileSync(join(repo, '_clio/pocket/tasks/pk-3.md'), 'c');
-        commit(home, 0, 'helga', '📜 pocket: pk-3 (auto)');
-        expect(cardLines(home)).toContain('pocket writes by hand: 2');
+        const t = join(home, 'clio.jsonl');
+        const use = (
+            input: object,
+            name: string,
+            timestamp = new Date().toISOString(),
+        ) =>
+            JSON.stringify({
+                message: { content: [{ input, name, type: 'tool_use' }] },
+                timestamp,
+                type: 'assistant',
+            });
+        writeFileSync(
+            t,
+            [
+                use(
+                    { command: 'node script/pocket-add.ts "a" --size s' },
+                    'Bash',
+                ),
+                use(
+                    {
+                        file_path:
+                            '/Users/dima/frame/_clio/pocket/tasks/pk-1.md',
+                    },
+                    'Edit',
+                ),
+                use(
+                    { command: "backlog task edit 307 --append-notes 'x'" },
+                    'Bash',
+                ),
+                use(
+                    { command: 'backlog task list --plain --sort ordinal' },
+                    'Bash',
+                ),
+                use(
+                    {
+                        file_path:
+                            '/Users/dima/frame/_clio/pocket/tasks/pk-1.md',
+                    },
+                    'Read',
+                ),
+                use(
+                    { message: 'pocket-write PK-9 fields …', to: '🎀 helga' },
+                    'SendMessage',
+                ),
+                use(
+                    { command: 'node script/pocket-add.ts "b"' },
+                    'Bash',
+                    '2026-01-01T10:00:00Z',
+                ),
+            ].join('\n'),
+        );
+        expect(cardLines(home, t)).toContain('pocket writes by hand: 3');
+    });
+
+    test.each(['Receipt: 3 chores green', 'Chore 4 receipt: PK-1 written'])(
+        'a capitalised receipt «%s» counts as a wake',
+        (body) => {
+            const home = fixtureHome();
+            const t = join(home, 'clio.jsonl');
+            writeFileSync(
+                t,
+                JSON.stringify({
+                    message: {
+                        content: `Another Claude session sent a message:\n<cross-session-message from="x" from-name="🎀 helga">${body}</cross-session-message>`,
+                    },
+                    timestamp: new Date().toISOString(),
+                    type: 'user',
+                }),
+            );
+            expect(cardLines(home, t)).toContain(
+                'receipt wakes since the last siesta: 1',
+            );
+        },
+    );
+
+    test('a send to codie is never logged as a chore', () => {
+        const home = fixtureHome();
+        sent(home, sentTo('⚡ 🔧 codie: x', 'pocket-write chore PK-1'));
+        expect(() =>
+            readFileSync(join(groomDir(home), 'sent.log'), 'utf8'),
+        ).toThrow();
+    });
+
+    test('a receipt older than its send never answers it', () => {
+        const home = fixtureHome();
+        mkdirSync(groomDir(home), { recursive: true });
+        const at = (m: number) =>
+            new Date(Date.now() - m * 60_000).toISOString();
+        writeFileSync(
+            join(groomDir(home), 'sent.log'),
+            `${at(40)}\tpocket-write\tpk-1\n`,
+        );
+        writeFileSync(
+            join(groomDir(home), 'receipts.log'),
+            `${at(50)}\tpocket-write\t1\t0\tPK-0\n`,
+        );
+        expect(cardLines(home).join('\n')).toContain('missed receipt');
     });
 
     test('the 11-03 replay: helga’s receipts woke no turn, a woken one is counted', () => {
@@ -833,6 +921,12 @@ describe('a resume reads the 5h window', () => {
             name: 'Bash',
         },
         { input: {}, name: 'mcp__ccd_session_mgmt__get_usage' },
+        {
+            input: {
+                file_path: '/Users/dima/.claude/shelf/cc-usage-window.json',
+            },
+            name: 'Read',
+        },
     ])('a window read in the same turn clears it', (read) => {
         const home = fixtureHome();
         expect(
