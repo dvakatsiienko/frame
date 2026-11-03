@@ -28,6 +28,9 @@ const PASSES = [
     ['gtimeout', 'gtimeout 5 ls'],
     ['flock', 'flock /tmp/l ls'],
     ['watch', 'watch -n 1 ls'],
+    // FRM-472 review P0: a %% before a conversion never loops the reader
+    ['a printf with %% and a conversion', "printf '100%%d\\n' 5"],
+    ['a printf of %%s alone', "printf '%%s' x"],
 ] as const;
 for (const [shape, command] of PASSES)
     test(`a harmless command the reader opens runs unwarned: ${shape}`, async ($, on) => {

@@ -303,24 +303,34 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         ) {
             const flag = words[0]?.text ?? '';
             const long = flag.split('=')[0] ?? flag;
-            // a packed cluster (`-vu NAME`) takes a value when its last letter does, as getopt reads it, unless its first
-            // letter already took the rest as its own (`-Sstring`)
-            const last = `-${flag.at(-1)}`;
-            const isPacked =
-                /^-[A-Za-z]{2,}$/.test(flag) &&
-                values.includes(last) &&
-                !values.includes(flag.slice(0, 2));
-            const takes = values.includes(flag) || isPacked;
+            // a short cluster read as getopt does: its first valued letter takes the rest, or the next word when last
+            const letters: string =
+                /^-[A-Za-z]/.test(flag) && !values.includes(flag)
+                    ? flag.slice(1)
+                    : '';
+            const at = [...letters].findIndex((l) => values.includes(`-${l}`));
+            const inline =
+                at >= 0 && at < letters.length - 1
+                    ? letters.slice(at + 1)
+                    : undefined;
+            const takes =
+                values.includes(flag) || (at >= 0 && inline === undefined);
             if (isEnv)
                 envArgs.push(
-                    ...(isPacked ? [flag.slice(0, -1), last] : [flag]),
-                    ...(takes ? [words[1]?.text ?? ''] : []),
+                    ...(at >= 0
+                        ? [...letters.slice(0, at + 1)].map((l) => `-${l}`)
+                        : [flag]),
+                    ...(takes
+                        ? [words[1]?.text ?? '']
+                        : inline === undefined
+                          ? []
+                          : [inline]),
                 );
             if (
                 wrapper === 'env' &&
                 (flag === '-S' ||
                     flag === '--split-string' ||
-                    (isPacked && last === '-S'))
+                    (letters[at] === 'S' && inline === undefined))
             )
                 envSplit = words[1]?.text ?? '';
             else if (wrapper === 'env' && /^-S./.test(flag))
@@ -719,7 +729,9 @@ function printed(f: Peeled): string[] {
 // last, and `\n`, `\t`, `\0` read as bash does (a NUL, xargs -0's split, as a line end)
 export function printfText([format = '', ...rest]: string[]) {
     const conversion = /%[-+ #0-9.]*([sbdiqcxX%])/g;
-    const isFilling = /%[-+ #0-9.]*[sbdiqcxX]/.test(format);
+    const isFilling = [...format.matchAll(conversion)].some(
+        (m) => m[1] !== '%',
+    );
     let at = 0;
     let out = '';
     do

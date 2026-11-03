@@ -1271,6 +1271,19 @@ EOF`,
     ['refused', 'wrapper', 'watch', 'watch -n 1 rm -rf x'],
     ['refused', 'wrapper', 'chronic', 'chronic rm -rf x'],
     ['refused', 'wrapper', 'unbuffer', 'unbuffer rm -rf x'],
+    // FRM-472 review P0: a cluster's first valued letter takes the rest, as getopt reads it
+    [
+        'refused',
+        'wrapper',
+        'xargs -rI packed with its mark',
+        'ls | xargs -rIfiles rm -rf files',
+    ],
+    [
+        'refused',
+        'wrapper',
+        'sudo -Eu packed with its user',
+        'sudo -Euroot rm -rf x',
+    ],
     // FRM-472 exit 7: sudo drops CLAUDECODE, so the guard refuses under it what it refuses bare
     ['refused', 'sudo', 'sudo ahead of an rm', 'sudo rm -rf x'],
     ['refused', 'sudo', 'sudo ahead of a bash -c', "sudo bash -c 'rm -rf x'"],
