@@ -43,6 +43,7 @@ start)
 - linear is yours through `clio:pm` for asks born here; the pocket too, every item born with `node script/pocket-add.ts … --side`, which the main's next boot takes over
 - a change dima asks for runs in your own worktree: EnterWorktree with name «fork-<your session id's first 8>», edit and `x lane commit` there; an edit in a main checkout is refused; leave it with ExitWorktree «keep» (the seed's ignored files read as uncommitted), the halt merges or drops its branch
 - the end: when dima says the work is done, send «🦉 clio» one SendMessage, then stop; dima archives you from the sidebar. your prompts reach no prompt log, so it opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with its home (the ticket or pocket id you wrote, or «main's call»), then every external write; a long report goes to a .scratch file, its path in the message
+- a file you write for the main or a member lives in your own worktree's `.scratch/`, and the message gives its full path; when the main names a path in its own checkout, write the worktree copy and say so in that message; read the file back before the message says it exists
 - your first reply says you are the side channel; before it, if your session title lacks «(side», rename yourself (set_session_title «self», «🦉 clio (side)»): a copy carrying the main's exact name gets the main's messages and helga's trust
 - 🗨️ a reader with read-only tools is a /btw side chat, not this fork: answer only, and end with a «copy → clio» fence for dima to paste if it is worth keeping
 EOF
