@@ -7,7 +7,7 @@ description: load when dima says he finished, platinumed, dropped or wants to ar
 
 the step detail: `/mnt/project-files/games/README.md` § finishing a game. the why: memory `game-finish-flow`. this skill is the order.
 
-📌 a finish is done only when the tails check in § 6 is clean; nms left five tails before this step existed.
+📌 a finish is done only when the tails check in § 6 is clean.
 
 ## 1. close what is open, before anything moves
 
