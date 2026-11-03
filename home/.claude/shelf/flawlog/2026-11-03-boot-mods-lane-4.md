@@ -1,0 +1,24 @@
+- 10:08 wisp: wish-cover checks every W-line of a draft against each `wish:` id, so a board citing two pocket items reds on both; narrowed the boot draft to one id. fix: match each W-line to its own item
+- 10:09 slip: freeze.app install date read off kMDItemDateAdded (10-28) instead of the brew receipt (10-06); wishkeeper caught it before the board
+- 10:09 slip (helga): W1529 flipped «you have a free window» to «i have»; fixed in PK-303
+- 10:27 wisp (x-mod-guard): dima ticked o7 «✍️ re-sign FRM-480: …», the guard still refused the body write naming «sign FRM-480»; o5/o6 «✍️ sign …» passed
+- 10:33 wisp (x-mod-guard spawn-trial, warn-only): a desktop codie summon whose prompt points at a brief file reads as missing every trial — the rule reads the prompt, not the file it names
+- 10:40 slip: my FRM-480 hash used s.index(\"## signed\"), which hit an inline `## signed` mention; the verb takes the last heading match. two lines now carry the wrong hash 6b6326bd, a third (f32dc8b7) waits on a fresh tick. same slip likely behind the 11-02 drift
+- 10:40 wisp (x-mod-guard sign rule): one orbit tick covers one body write; a correction write after it is refused again
+- 10:40 correction to dima: «a lapse puts it at risk» was overstated; primary pages name no lapse penalty, only the gap day and the new-subscriber 7-day credit wait
+- 10:58 conflict (two layers): _clio/AGENTS.md «never route around a blocked fetch» vs rules/fleet-tooling.md «a page your fetch cannot read → web-bot-blocked:fetch (firecrawl)»; dima asked for the firecrawl door 10:57. fix: one rule, his call
+- 11:02 proven: firecrawl refuses reddit («we do not support this site»); parallel-cli reaches post bodies, not comments. the tooling line «a page your fetch cannot read → web-bot-blocked:fetch» needs a reddit → parallel-cli note
+- 11:40 wisp (x-mod-holds × fork-guard): a fresh side channel in the main checkout holds pk-305 after two refused Edits; its fork guard refuses its own commit, main is refused by the hold, and the hold only drops after 30 min idle — a deadlock that keeps pocket-check red
+- 11:42 slip: promised «you see the cost estimate first» (11:18, o18 pick) and submitted the batch before he saw a number; estimate was chars/4 ≈ 13.4M tokens, real 23.9M, so ~$30–40 said vs ~$54 billed. fix: an api spend over a few dollars prints an estimate from a measured token count (the count_tokens api on a sample) and stops for his word; goes into api-credits round 2 as a rule of the switch (crow 11:41)
+- 12:16 slip: FRM-472 re-signed for rider 07c with the body unchanged (wishkeeper 13:09); fixed 13:10, rider written into the body
+- 12:33 slip: o23 left open after acting on o24 in the same turn; dima saw the tick come back. fix: FRM-491's tick check
+- 13:25 slip: PK-306 raw drop copied by a prompt-log range that overran the paste (15 lines of later prompts); a correction note appended
+- 13:30 #crow-caught: fork-guard pocket pass passed multi-line commands and $( — P0 from sixth sense; then a redirect, <( and --amend (3 more rounds)
+- 14:01 #crow-caught: «every one woke at 14:00» claimed from a store with no session ids; proven per transcript at 14:04
+- 14:13 slip ×2: sign hashes cut at the first «## signed» string (FRM-480) and taken off the local file (FRM-489, FRM-470); fix: _clio/script/sign-hash.ts reads back from linear
+- 14:24 slip: resolved o66–o68 in the same step as the sign writes; the guard reads only open ticks. re-asked o69–o71; with the ticks open the guard still refused — unexplained, carried
+- 15:52 #dima-caught · the verdict words **🌼 clean**, **🩹 fix**, **🪜 escalate** printed plain in replies, though `rules/fleet-output-format.md` § emoji bolds every fleet word from `fleet-vibe` · fix: bold them on every surface from now; the reply-check hook could catch a plain verdict word
+- 19:34 #wishkeeper-caught: «quotes: shown» written into c230ebf9 with no reply showing dima the line; the gate passed on the trailer alone · fix: the line is shown in the 19:57 reply, the next commit waits for it
+- 19:36 slip: «the P2 was already in codie's rider (8d1c9319)» — the fallback came in b7814576, a later commit · fix: none needed, wording only
+- 20:18 #wishkeeper-slip: the read-only wishkeeper card wrote two git-show blobs into the live mods tree for <1 min (a failed cd into a scratch tree); it stashed them, tree clean at 884214b9 · fix: none yet — the card can run Bash writes; a read-only card would need a guard rule on its redirects
+- 20:39 slip: signing FRM-501 and FRM-500, `x linear body <id>` returned an empty file path and my append + --set wiped both bodies to the signed block alone · fix: restored from the scratchpad copies (49 lines each, read back); the sign is re-asked; a body write reads the fetched file back before appending

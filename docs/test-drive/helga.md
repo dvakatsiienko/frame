@@ -264,6 +264,29 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:37: W1554-W1561, 8 lines, 2 ❓; 10:18/10:19/10:25 marked no-wish
 - 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:43: W1562-W1569 (8 lines, 3 ❓)
 - 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:47: W1570-W1574 (5 lines, 2 ❓; clio's pasted reply lines = context, no W-line)
+- 2026-11-03 · pocket-write · 1 · 0 · PK-312 notes appended (append-notes, verbatim), pocket-check exit 0 all green
+- 2026-11-03 · pocket-write · 1 · 0 · PK-311 W1919 re-groom + close: W1919 done (built 389c6184), append-notes, pocket-check exit 0
+- 2026-11-03 · pocket-write · 1 · 0 · PK-312 three decided lines appended (append-notes), pocket-check exit 0
+- 2026-11-03 · pocket-write · 1 · 0 · PK-312 re-folds W1924 (of W1922), W1925 (of W1923) appended, pocket-check exit 0
+- 2026-11-03 · prompt-groom · 1 · 0 · FRM-499 groom 16:35 → 2026-11-03-1635.groomed.md, W3–W8; sentences map: 1→W3, 2→W4, 3→W5, 4→W6, 5→W7 ❓, 6→W8; desktop-born clause kept in W5
+- 2026-11-03 · pocket-write · 1 · 0 · PK-308 notes: 16:35 steer header + W7, W8 appended (append-notes, verbatim), pocket-check exit 0
+- 2026-11-03 · prompt-groom · 1 · 0 · 19:10 prompt → 2026-11-03-1910.groomed.md + PK-314 W1–W25 (append-notes); map: keep-hot note→W1–W5; pasted block→W6–W9; points 1–4→W10–W21; afk prios→W22–W24; kb→W25. steers, no W-line: 'lets proceed…' para, 'prio now: refined shift behaviour', 'so since i dropped… finish pk-159' para, 'you need a SW'. groomed file was absent, written by helga. pocket-check green
+- 2026-11-03 · prompt-groom · 1 · 0 · CORRECTION to the 19:10 receipt above: pocket-check exit 1, 'now holds 4 items, the cap is 3' (my append only added notes; priority untouched). not green
+- 2026-11-03 · groom · 2 · 0 · 1914 (W26-W32, W33 PK-314) + 1916 (W1911-W1913 PK-308) groomed, appended; pocket-check green; 1916 file corrected to exact raw text
+- 2026-11-03 · groom · 2 · 0 · o103 (W1914-W1916) + 1931 (W1917-W1925) groomed, appended to PK-308; pocket-check green; 15-hour kept as raw
+- 2026-11-03 · groom · 1 · 0 · 1951 (W1926-W1943) groomed, appended to PK-308; o103 tick raw already groomed at 19:31 (W1914-W1916), not re-appended; pocket-check green
+- 2026-11-03 · groom · 1 · 0 · 2006 (W1944-W1951, Q1 answer) groomed, appended to PK-308; aside left as steer; pocket-check green
+- 2026-11-03 · groom · 4 · 0 · W1952-W1961 appended to PK-308; stamped by minute not oN steer, pocket-check RED (20:13, 20:14); groomed files corrected to steer stamp, PK-308 note needs fix (append-only, not done); wispr sold→solved applied to o110 per clio
+- 2026-11-03 · groom · 2 · 0 · 20:26 prompt W1962-W1983 (22 lines, siesta + Q8 quiet-contract, pasted blocks kept whole, arrow dropped) and o120 W1984-W1985 [re: Q8] appended to PK-308; side-sessions-event wrapper skipped; pocket-check green
+- 2026-11-03 · groom · 1 · 0 · 20:30 prompt W1986-W1993 [re: Q8] appended to PK-308 (shift-skill review item); pocket-check green.
+retro (14:43 on):
+1. FRM-499 brief named the raw, no output file: [ask] round-trip.
+2. 19:10 brief said the groomed file existed; it did not, wrote it from raw.
+3. green receipt logged before pocket-check; it was red (cap 3), correction round.
+4. steer grooms lacked the oN steer stamp: 20:13/20:14 red; PK-308 still has minute stamps.
+5. 1916 paraphrase caught on re-read, rewritten before append.
+- 2026-11-03 · groom · 1 · 0 · 20:41 visibility wish groomed to 2026-11-03-2041.groomed.md, W7-W13, lines sent to clio for FRM-499 fold; linear not written (members never write linear)
+- 2026-11-03 · groom · 1 · 0 · 20:57 waker answer groomed to 2026-11-03-2057.groomed.md, W1954-W1958 numbered from --next FRM-500; lines sent to clio to fold; linear not written
 
 ## rounds
 
