@@ -3,10 +3,10 @@ id: PK-303
 title: >-
   anthropic plans change: research wave on the renamed plans and the $200
   decision
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T08:04:00Z'
-updated_date: '2026-11-03T08:05:00Z'
+updated_date: '2026-11-03T09:54:00Z'
 labels:
   - s
 dependencies: []
@@ -41,4 +41,6 @@ raw drop (2026-11-03 inbox, dima): Just a few days ago the usage plans changed f
 raw drop (2026-11-03 inbox, dima): When you have a free window spawn a research wave to gather information about this change: what changed compared to previous rules, how the new plans currently work, and what changes for me with my previously decided plan to buy a $200 plan.
 
 raw drop (2026-11-03 inbox, dima): read [this video](https://youtu.be/Hq2c7pww1Ds) via yt-transcript transit mode.
+
+close: W1528, W1529, W1530 done — research in docs/research/claude-plans-2026-11.md (rename, ultra verification, the api credits, the unverified 5h window, reddit), both videos read in transit; dima picked his lapse plan (o4) and the credits channel moved to PK-304
 <!-- SECTION:NOTES:END -->
