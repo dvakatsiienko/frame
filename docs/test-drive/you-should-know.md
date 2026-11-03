@@ -1,5 +1,5 @@
 ---
-status: frozen
+status: dropped
 until: 2026-11-02
 ---
 
@@ -52,3 +52,7 @@ meant to run in the desktop app, but it never does: its `turn.step` check passes
 **test card:** we believe the «you should know» card helps dima in cclio's thread · we test it by enabling it for cclio's folder only, every other session off · we measure cards shown per day in cclio's desktop thread and dima's keep/dismiss · we're right if it shows in cclio's desktop thread at least daily and dima keeps more than he dismisses.
 **kill rule:** research after the 10-14 second wind proves the card cannot render in a desktop-app thread → dropped.
 **first:** research whether the card works in a desktop-app thread (he saw a screenshot that says it does; it never popped in cclio's thread), then check the cclio-folder-only enablement is actually on.
+
+## verdict
+
+🚫 dropped 2026-11-03 — dima: «it works only in cc build cli in terminal, it doesn't work in the desktop app», useful there; checked 13:34: upstream #99217 (a mod's ui.render not drawn in desktop views) still open, updated 10-30. the plugin is already off in every settings layer. revive when #99217 closes fixed.

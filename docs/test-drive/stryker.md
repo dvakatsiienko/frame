@@ -1,5 +1,6 @@
 ---
-status: frozen
+status: parked
+parked-on: stryker #6210 ships (the vitest 5 runner) and the first bytes lane runs, speak v2 the nearest candidate (dima, 2026-11-03)
 until: 2026-11-02
 dies-when: the verdict line below is written
 ---
