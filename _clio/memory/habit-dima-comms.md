@@ -63,7 +63,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The next moves live in orbit** (`rules/fleet-mods.md`): clio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin). a report turn ends with 1–3 pickable next items as an orbit ask he ticks, never a phases list of holds and parked lines alone (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»).
 
-**A phases line is one chunk with an outcome he would notice, never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38): a done line makes a siesta due (FRM-491), so a reworded or silently dropped line would fake or hide the cadence.
+**A phases line is one chunk with an outcome he would notice, never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38): once FRM-491 lands, a done line makes a siesta due, so a reworded or silently dropped line would fake or hide the cadence.
 
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 

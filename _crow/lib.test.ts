@@ -8,7 +8,7 @@ import {
     utimesSync,
     writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -60,6 +60,19 @@ describe('proposalOf reads a proposal written by Bash', () => {
                 'echo hi | tee -a /a/.scratch/b-proposal.md',
             ),
         ).toEqual({ kind: 'proposal', path: '/a/.scratch/b-proposal.md' });
+    });
+
+    test('a ~ path wakes with the home dir expanded', () => {
+        expect(
+            proposalOf(
+                'Bash',
+                undefined,
+                "cat >> ~/frame/_clio/.scratch/pk159/grill-1-proposal.md <<'EOF'",
+            ),
+        ).toEqual({
+            kind: 'proposal',
+            path: `${homedir()}/frame/_clio/.scratch/pk159/grill-1-proposal.md`,
+        });
     });
 
     test('a command that only reads a proposal file stays quiet', () => {

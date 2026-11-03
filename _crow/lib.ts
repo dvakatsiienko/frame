@@ -696,7 +696,11 @@ export function proposalOf(
         ]
             .map((match) => match[1] ?? '')
             .find((candidate) => PROPOSAL.test(candidate));
-        if (target) return { kind: 'proposal', path: target };
+        if (target)
+            return {
+                kind: 'proposal',
+                path: target.replace(/^~(?=\/)/, homedir()),
+            };
     }
 }
 
