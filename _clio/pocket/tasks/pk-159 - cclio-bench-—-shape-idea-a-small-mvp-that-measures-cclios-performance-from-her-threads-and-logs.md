@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T12:15:00Z'
+updated_date: '2026-11-03T12:16:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -262,4 +262,9 @@ W1801 (2026-11-03 13:10, dima): Let's test it like this as a test drive.
 W1802 (2026-11-03 13:10, dima): Shape the test drive via SQL for this change, and let's monitor it and measure it for 2 weeks.
 W1803 (2026-11-03 13:10, dima): Let's start immediately once the current modslane chunk is ready: start a siesta and Wishkeeper over them.
 W1804 (2026-11-03 13:10, dima): Let's see how it works.
+
+W1805 (2026-11-03 14:16, dima, o59 steer): Okay, but PK159 is split into main parts that are decided on how to improve.
+W1806 (2026-11-03 14:16, dima, o59 steer): There are a few small other additional asks of me: sharpening the crow as an adviser and promoting the whole Helga to Sonnet 5.5.
+W1807 (2026-11-03 14:16, dima, o59 steer): Those two last ones, let's have them with me.
+W1808 (2026-11-03 14:16, dima, o59 steer): Do everything yourself that we already prepped with the Clio side channel, and leave all those two recipe runs when I return.
 <!-- SECTION:NOTES:END -->
