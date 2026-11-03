@@ -4,7 +4,7 @@ title: 'second wind, mechanical: x-mod-stash winds every session at ~55 % ctx'
 status: open
 assignee: []
 created_date: '2026-11-03T12:48:00Z'
-updated_date: '2026-11-03T13:02:00Z'
+updated_date: '2026-11-03T13:12:00Z'
 labels:
   - s
 dependencies: []
@@ -42,4 +42,6 @@ so SW happens for everyone
 outside shift, too.
 ---
 ideally sw is handled mechanically, i suppose it is a place for a miss which is not desirable.
+
+scope widened 15:12 (wishkeeper): the mechanical door also carries the auto-wake for hot caches — W1845 (2026-11-03 14:39, dima): If anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache, so everyone should be auto-woken up and auto-refreshed, cache-wise. the description's W1–W4 are superseded by W1855–W1862 in these notes.
 <!-- SECTION:NOTES:END -->

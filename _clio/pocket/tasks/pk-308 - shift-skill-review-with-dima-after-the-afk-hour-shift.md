@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T13:01:00Z'
+updated_date: '2026-11-03T13:12:00Z'
 labels:
   - s
 dependencies: []
@@ -33,4 +33,6 @@ W1870 (2026-11-03 14:49, dima): You can also use a side channel somehow to check
 W1871 (2026-11-03 14:49, dima): It's up to you.
 W1872 (2026-11-03 14:50, dima): tell when all ready for shift/afk.
 W1873 (2026-11-03 14:50, dima): And final thing for a shift: when you are at about 90% or 87% of the 5-hour window, park everyone, because I want space to hold everyone if we go overboard with the CTX usage.
+
+his 14:39 shift-groom lines, copied from PK-159 (helga's groom, where they first landed): W1834–W1854; the shift-skill review folds them here. PK-159 keeps its copy until dima says drop. raw drops: ~/.local/state/clio/grooms/2026-11-03-1439.raw.md, -1449.raw.md, -1450.raw.md
 <!-- SECTION:NOTES:END -->
