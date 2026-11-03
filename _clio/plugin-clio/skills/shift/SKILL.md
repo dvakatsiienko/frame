@@ -7,7 +7,7 @@ argument-hint: "<plan file>"
 
 A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits. A shift
 **decides, logs and continues**. The plan file is the authority; the last shift file in
-`_clio/shifts/` is the template. A shift over ✍️ signed chunks names them in its plan and runs each through
+`_clio/shifts/` that ran (`status: done`) is the template. A shift over ✍️ signed chunks names them in its plan and runs each through
 `clio:shape-lane-dispatch` in their order (lane init's contract: `craft-fleet-flow` § lane init) — nothing in it waits on dima.
 
 ## presence — his afk switch drives it (dima, 2026-10-22, PK-103 W107, W108)
@@ -30,17 +30,17 @@ the current step, the decisions and the open asks. the `SessionStart:compact` ho
 re-reads a plan whose header says `status: running` after a compaction, and `pnpm shift:checkup` proves the hook.
 
 - **second winds are mine to plan, for everyone** (dima, 2026-11-03: «since you observe and you can plan, pick good times for everyone … and you should second wind everyone»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»):
-  - the line: about 55 % context, never past 60 %, at a step's end, never mid-chunk — mine through `clio:checkpoint`, a shift or his «afk» without one
+  - the line: about 55 % context, never past 60 %, at a step's end, never mid-chunk — mine through `clio:checkpoint`, a shift or his «afk» without one (o73); `get_usage` reads my context and the 5h window after every step
   - context grows slowly on a shift, so each wind is planned a step ahead, never rushed: after every step i read my own % and each member's (every brief asks a member to name its % in each ping), and a member near the line gets «second wind after this step» from me
   - everyone means everyone live: codie, sixth sense, crow, helga, and a parked side channel
 
 ## hot caches — no member goes cold
 
-dima, 2026-11-03: «if anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache». on Opus 5.5 a 100k member re-written cold costs about $0.80, a keep-warm read about $0.02 (`crew-lead` `references/model-cards.md`).
+dima, 2026-11-03: «if anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache». a cold 100k Opus 5.5 member costs ~$0.80, a keep-warm read ~$0.02 (`crew-lead` `references/model-cards.md`).
 
-- the shift's start arms a heartbeat: a `Monitor` until-loop that prints one line every 50 min, so it wakes me too
-- on each beat, every member idle 45 min or more gets one `SendMessage`: «keep-warm: reply `ok`, nothing else»; my own turn on the beat keeps mine warm
-- the beat dies with the shift; an automated door would be a waker part (`x-mod-stash`), unbuilt until it passes ⚖️ worth it
+- the shift's start arms a heartbeat: a `Monitor` with `timeout_ms` 1800000 (its cap), re-armed at each expiry; the expiry notice is the beat, every 30 min, and it wakes me too
+- on each beat, every member idle 25 min or more gets one `SendMessage`: «keep-warm: reply `ok`», so no one reaches 60 min idle; my turn on the beat keeps mine warm
+- the beat dies with the shift; a mechanical door is unbuilt (pk-307)
 
 ## 1 · start — the last chat message
 
