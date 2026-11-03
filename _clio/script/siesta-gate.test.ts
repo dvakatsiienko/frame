@@ -141,25 +141,18 @@ describe('the siesta comes due', () => {
     test('15 files of clio’s block the first stop of the epoch, then stay quiet', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
-        const first = stop(home, stopInput(home), true);
+        const first = stop(home, stopInput(home));
         expect(first).toMatchObject({ decision: 'block' });
         expect(said(first)).toContain('siesta due');
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
-    });
-
-    test('warn-only, the epoch’s one warn never repeats, since a Stop note wakes a turn', () => {
-        const home = fixtureHome();
-        commit(home, 15, 'clio');
-        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
         expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
     test('a new epoch nudges again', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio', '🔧 x', new Date(Date.now() - 60_000));
-        stop(home, stopInput(home), true);
+        stop(home, stopInput(home));
         run(home, ['open']);
-        stop(home, stopInput(home), true);
+        stop(home, stopInput(home));
         writeSiesta(home, { ...siesta(home), open: false });
         commit(
             home,
@@ -168,39 +161,29 @@ describe('the siesta comes due', () => {
             '🐞 another batch',
             new Date(Date.now() + 5000),
         );
-        expect(stop(home, stopInput(home), true)).toMatchObject({
+        expect(stop(home, stopInput(home))).toMatchObject({
             decision: 'block',
         });
-    });
-
-    test('warn-only, the first stop also only warns', () => {
-        const home = fixtureHome();
-        commit(home, 15, 'clio');
-        const out = stop(home, stopInput(home));
-        expect(out).not.toHaveProperty('decision');
-        expect(said(out)).toContain('siesta due');
     });
 
     test('a turn that loaded clio:siesta is not nudged', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
-        expect(
-            stop(home, stopInput(home, 'clio:siesta'), true),
-        ).toBeUndefined();
+        expect(stop(home, stopInput(home, 'clio:siesta'))).toBeUndefined();
     });
 
     test('a siesta waiting on his word counts nothing due', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
         writeSiesta(home, { card_printed: true, highs: [], open: true });
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
     test('a siesta opened but never carded is nudged by its next batch', () => {
         const home = fixtureHome();
         writeSiesta(home, { card_printed: false, highs: [], open: true });
         commit(home, 15, 'clio');
-        expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
     test('a skill load followed by its tool result and its meta text still counts as this turn’s', () => {
@@ -211,7 +194,7 @@ describe('the siesta comes due', () => {
             input.transcript_path,
             `\n${JSON.stringify({ message: { content: [{ type: 'tool_result' }] }, type: 'user' })}\n${JSON.stringify({ isMeta: true, message: { content: [{ text: 'Base directory for this skill', type: 'text' }] }, type: 'user' })}`,
         );
-        expect(stop(home, input, true)).toBeUndefined();
+        expect(stop(home, input)).toBeUndefined();
     });
 
     test('odd files never crash the hook', () => {
@@ -227,7 +210,7 @@ describe('the siesta comes due', () => {
             join(home, '.claude/plugins/store/x-mod-stash_inline-0000.json'),
             'null',
         );
-        expect(said(stop(home, input, true))).toContain('siesta due');
+        expect(said(stop(home, input))).toContain('siesta due');
         prompt(home, { prompt: 'go on' });
         expect(siesta(home).last_turn).toBe('dima');
     });
@@ -236,8 +219,8 @@ describe('the siesta comes due', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
         const active = { ...stopInput(home), stop_hook_active: true };
-        expect(stop(home, active, true)).toBeUndefined();
-        expect(stop(home, stopInput(home), true)).toMatchObject({
+        expect(stop(home, active)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toMatchObject({
             decision: 'block',
         });
     });
@@ -248,7 +231,7 @@ describe('the siesta comes due', () => {
         commit(home, 5, 'clio-side');
         commit(home, 5, 'codie');
         commit(home, 5, 'clio', '📜 pocket: pk-1 (auto)');
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
     test('a phases-done row after the last siesta makes it due, an older one none', () => {
@@ -258,12 +241,12 @@ describe('the siesta comes due', () => {
             rows,
             `${JSON.stringify({ at: new Date(Date.now() - 2 * HOUR).toISOString(), line: 'old' })}\n`,
         );
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
         appendFileSync(
             rows,
             `${JSON.stringify({ at: new Date().toISOString(), line: 'FRM-1 built' })}\n`,
         );
-        expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
     test.each([
@@ -276,7 +259,7 @@ describe('the siesta comes due', () => {
         prompt(home, {
             prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="⚡ 🔧 codie: clio-lean | FRM-1">\n${ping}\n</cross-session-message>`,
         });
-        expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
     test.each([
@@ -287,7 +270,7 @@ describe('the siesta comes due', () => {
         prompt(home, {
             prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] round 3 clean\n</cross-session-message>`,
         });
-        expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
     test.each(['🎀 helga', '🦉 clio (side)', '🐦 ⬛ crow'])(
@@ -297,7 +280,7 @@ describe('the siesta comes due', () => {
             prompt(home, {
                 prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] chore 4: pocket write\n</cross-session-message>`,
             });
-            expect(stop(home, stopInput(home), true)).toBeUndefined();
+            expect(stop(home, stopInput(home))).toBeUndefined();
         },
     );
 
@@ -306,7 +289,7 @@ describe('the siesta comes due', () => {
         prompt(home, {
             prompt: '<cross-session-message from-name="⚡ 🔧 codie: x">\nfinal draft attached\n</cross-session-message>',
         });
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
     test('a member’s progress line makes none due', () => {
@@ -314,7 +297,7 @@ describe('the siesta comes due', () => {
         prompt(home, {
             prompt: '<cross-session-message from="codie">\n[progress] step 2 of FRM-1 done\n</cross-session-message>',
         });
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
     });
 });
 
@@ -369,7 +352,7 @@ describe('the siesta closes on dima’s word', () => {
         const home = fixtureHome();
         store(home, { afk: { on: true } });
         writeSiesta(home, { card_printed: false, highs: [], open: true });
-        stop(home, stopInput(home), true);
+        stop(home, stopInput(home));
         expect(siesta(home).open).toBe(true);
     });
 
@@ -381,7 +364,7 @@ describe('the siesta closes on dima’s word', () => {
             highs: [{ state: 'fixed', text: 'a hole' }],
             open: true,
         });
-        stop(home, stopInput(home), true);
+        stop(home, stopInput(home));
         expect(siesta(home).open).toBe(false);
     });
 
@@ -390,7 +373,7 @@ describe('the siesta closes on dima’s word', () => {
         commit(home, 15, 'clio');
         const outs = [0, 1, 2].map(() => {
             prompt(home, { prompt: NON_DIMA[0] ?? '' });
-            return stop(home, stopInput(home), true);
+            return stop(home, stopInput(home));
         });
         expect(said(outs[0])).toContain('siesta due');
         expect(outs.map((o) => o && 'decision' in o)).toEqual([
@@ -420,7 +403,7 @@ describe('a delivered tick is resolved', () => {
         store(home, {
             [`asks:${SID}`]: { items: [ask('o7', true), ask('o8', false)] },
         });
-        const out = stop(home, stopInput(home), true);
+        const out = stop(home, stopInput(home));
         expect(said(out)).toContain('o7');
         expect(said(out)).not.toContain('o8');
         expect(out).not.toHaveProperty('decision');
@@ -433,41 +416,41 @@ describe('a delivered tick is resolved', () => {
             join(home, '.claude/plugins/store/x-mod-stash_aaa.lock'),
             '{}',
         );
-        expect(said(stop(home, stopInput(home), true))).toContain('o7');
+        expect(said(stop(home, stopInput(home)))).toContain('o7');
     });
 
     test('a store caught mid-write keeps the ticks already nudged', () => {
         const home = fixtureHome();
         store(home, { [`asks:${SID}`]: { items: [ask('o7', true)] } });
-        stop(home, stopInput(home), true);
+        stop(home, stopInput(home));
         writeFileSync(
             join(home, '.claude/plugins/store/x-mod-stash_inline-0000.json'),
             '{"asks:',
         );
-        stop(home, stopInput(home), true);
+        stop(home, stopInput(home));
         store(home, { [`asks:${SID}`]: { items: [ask('o7', true)] } });
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
     test('another session’s tick and a resolved one warn nothing', () => {
         const home = fixtureHome();
         store(home, { 'asks:s-other': { items: [ask('o7', true)] } });
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
     test('a due siesta and a tick print one line naming both, then nothing until a new tick', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
         store(home, { [`asks:${SID}`]: { items: [ask('o7', true)] } });
-        const line = said(stop(home, stopInput(home), true)) ?? '';
+        const line = said(stop(home, stopInput(home))) ?? '';
         expect(line.split('\n')).toHaveLength(1);
         expect(line).toContain('siesta due');
         expect(line).toContain('o7');
-        expect(stop(home, stopInput(home), true)).toBeUndefined();
+        expect(stop(home, stopInput(home))).toBeUndefined();
         store(home, {
             [`asks:${SID}`]: { items: [ask('o7', true), ask('o9', true)] },
         });
-        const next = stop(home, stopInput(home), true);
+        const next = stop(home, stopInput(home));
         expect(said(next)).toContain('o9');
         expect(said(next)).not.toContain('o7');
         expect(next).not.toHaveProperty('decision');
@@ -499,9 +482,7 @@ describe('the cli', () => {
         commit(home, 15, 'clio');
         const out = run(home, ['stop'], JSON.stringify(stopInput(home)));
         expect(out.status).toBe(0);
-        expect(JSON.parse(out.stdout)).toMatchObject({
-            hookSpecificOutput: { hookEventName: 'Stop' },
-        });
+        expect(JSON.parse(out.stdout)).toMatchObject({ decision: 'block' });
     });
 
     test('open stamps siesta-last and opens; card marks it printed with its highs', () => {

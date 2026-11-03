@@ -12,8 +12,8 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 
-// flipped to true in one commit, after clio's wishkeeper siesta on FRM-491
-const IS_BLOCKING = false;
+// the siesta check blocks the epoch's first stop (dima's o78, after sixth sense's clean); false makes it a warn
+const IS_BLOCKING = true;
 const FILES_DUE = 15;
 // a turn whose prompt opens with one of these is the fleet's, never his; the app prepends reminders to his own prompts
 const NOT_DIMA = [
@@ -30,7 +30,7 @@ const MEMBER_DONE = /(^|\n)\s*\[done\]|^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 // only a lane member's done ends a chunk; a sidecar's chore report (helga, clio side, crow) never does
 const LANE_MEMBER = /from-name="[^"]*\b(codie|sixth sense|designer)\b/;
 
-export function stop(home: string, input: StopInput, isBlocking = IS_BLOCKING) {
+export function stop(home: string, input: StopInput) {
     const state = readSiesta(home);
     if (state.open && state.card_printed && isAfk(home) && isSettled(state))
         close(state);
@@ -64,7 +64,7 @@ export function stop(home: string, input: StopInput, isBlocking = IS_BLOCKING) {
             `🛎️ delivered tick(s) unresolved: ${newTicks.join(' ')} — orbit resolve`,
         );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
-    const isBlock = isBlocking && isSiestaNudged;
+    const isBlock = IS_BLOCKING && isSiestaNudged;
     writeSiesta(home, state);
     if (!checks.length) return undefined;
     const line = checks.join('; ');
