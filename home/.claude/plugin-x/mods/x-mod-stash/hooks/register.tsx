@@ -522,8 +522,16 @@ export function fieldView(
     // a text field never swaps its value for the stored one: the surface scrolls a field back to its start on any value
     // change, equal text or not; a number is short, so it may snap back to the stored value
     if (isNumber && now - draft.at >= FIELD_QUIET_MS) return { kind: 'saved' };
+    // a landed save drops the texts typed before it, since saves land in order: the history holds only what is in
+    // flight, with no cap a long burst could overflow (FRM-492)
     return {
-        draft: isOwn && !draft.isLanded ? { ...draft, isLanded: true } : draft,
+        draft: isOwn
+            ? {
+                  ...draft,
+                  isLanded: true,
+                  sent: draft.sent.slice(draft.sent.indexOf(saved)),
+              }
+            : draft,
         kind: 'held',
     };
 }
@@ -536,7 +544,7 @@ export const typedInto = (
     at: now,
     drawn: draft?.drawn ?? drawn,
     isLanded: draft?.isLanded ?? false,
-    sent: [...(draft?.sent ?? []).slice(-50), text],
+    sent: [...(draft?.sent ?? []), text],
 });
 // a steer field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
 const isNumberField = (key: string) =>
@@ -571,16 +579,86 @@ function field($: EngineInterface, key: string, saved: string) {
             );
             // a number is a few characters and never scrolls: it saves on each keystroke, as its refusal line needs
             if (isNumberField(key)) return void save();
-            pendingSaves.get(key)?.timer.cancel();
-            pendingSaves.set(key, {
-                save,
-                timer: $.clock.after(FIELD_SAVE_MS, () => {
-                    pendingSaves.delete(key);
-                    void save();
-                }),
-            });
+            typed($, key, save);
         },
         value,
+    };
+}
+
+// when each ask's own steer box was last typed into
+const askTypedAt = new Map<string, number>();
+// every field's last keystroke, for the holds that wait out typing
+const typedAts = () => [
+    ...[...drafts.values()].map((d) => d.at),
+    ...askTypedAt.values(),
+];
+function typed($: EngineInterface, key: string, save: () => unknown) {
+    pendingSaves.get(key)?.timer.cancel();
+    pendingSaves.set(key, {
+        save,
+        timer: $.clock.after(FIELD_SAVE_MS, () => {
+            pendingSaves.delete(key);
+            void save();
+        }),
+    });
+}
+// an ask's own steer box draws the text it mounted with, under its remount count, both kept on the ask in $.state: no
+// history to cap, and a reload, a poll or another session's redraw never changes its value; only a write that
+// replaces the steer does (FRM-492)
+function askBox($: EngineInterface, a: OrbitAsk) {
+    const key = `orbit:steer:${a.id}`;
+    return {
+        key: a.gen ? `${key}#${a.gen}` : key,
+        type: (text: string, save: () => unknown) => {
+            // clock-ok: a keystroke lands in a sync handler, where $.clock.now() cannot be awaited
+            askTypedAt.set(key, Date.now());
+            typed($, key, save);
+        },
+        value: a.shown ?? a.steer ?? '',
+    };
+}
+function steerBox($: EngineInterface, prefix: string, a: OrbitAsk) {
+    return prefix === 'orbit'
+        ? askBox($, a)
+        : field($, `${prefix}:steer:${a.id}`, a.steer ?? '');
+}
+// what an ask's steer box mounts with after a write, always read off the stored ask: typing keeps what it showed; any
+// other change to the steer shows the new one, under a new key when the box already shows that text, since the surface
+// keeps typed text under an unchanged value; a write made from a read older than his last typed save keeps his steer
+export function mounted(
+    was: OrbitAsk | undefined,
+    a: OrbitAsk,
+    isTyped: boolean,
+): OrbitAsk {
+    if (!was) return a;
+    const { gen: _gen, rev: _rev, shown: _shown, steer, ...rest } = a;
+    const box = (
+        shown: string | undefined,
+        gen: number | undefined,
+        rev = was.rev,
+    ) => ({
+        ...(shown === undefined ? {} : { shown }),
+        ...(gen ? { gen } : {}),
+        ...(rev ? { rev } : {}),
+    });
+    const withSteer = (s: string | undefined) =>
+        s === undefined ? {} : { steer: s };
+    const drew = was.shown ?? was.steer ?? '';
+    if (isTyped)
+        return steer === was.steer
+            ? { ...rest, ...withSteer(steer), ...box(was.shown, was.gen) }
+            : {
+                  ...rest,
+                  ...withSteer(steer),
+                  ...box(drew, was.gen, (was.rev ?? 0) + 1),
+              };
+    if ((a.rev ?? 0) !== (was.rev ?? 0) || steer === was.steer)
+        return { ...rest, ...withSteer(was.steer), ...box(was.shown, was.gen) };
+    const shown = steer ?? '';
+    return {
+        ...rest,
+        ...withSteer(steer),
+        ...box(shown, shown === drew ? (was.gen ?? 0) + 1 : was.gen),
     };
 }
 
@@ -1049,8 +1127,24 @@ async function playPress($: EngineInterface, text: string) {
 
 // kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` and the away
 // digest count every session's
-async function saveOrbit($: EngineInterface, next: StashOrbit) {
-    orbit = next;
+async function saveOrbit(
+    $: EngineInterface,
+    next: StashOrbit,
+    isTyped = false,
+) {
+    const was =
+        (await $.state.get(ORBIT).catch(() => undefined))?.value?.asks ??
+        orbit.asks;
+    orbit = {
+        ...next,
+        asks: next.asks.map((a) =>
+            mounted(
+                was.find((w) => w.id === a.id),
+                a,
+                isTyped,
+            ),
+        ),
+    };
     await $.state
         .set(ORBIT, orbit)
         .catch((err) =>
@@ -1116,7 +1210,7 @@ async function marksOf($: EngineInterface, sid: string) {
 // a steer typed into this session's own box a moment ago is newer than a card's edit that lands now
 const isTypedHere = (askId: string) =>
     isTypingAt(
-        [drafts.get(`orbit:steer:${askId}`)?.at ?? 0],
+        [askTypedAt.get(`orbit:steer:${askId}`) ?? 0],
         // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
         Date.now(),
     );
@@ -1284,6 +1378,7 @@ async function markAsks(
     $: EngineInterface,
     change: (a: OrbitAsk) => OrbitAsk,
     isMark = false,
+    isTyped = false,
 ) {
     // only a 🛎️ or ↩️ press means dima is at the mac: a steer or a speak press never ends mobile mode (dima, 11:16)
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
@@ -1291,7 +1386,23 @@ async function markAsks(
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
     );
-    await saveOrbit($, { ...o, asks });
+    await saveOrbit($, { ...o, asks }, isTyped);
+}
+
+// an unmounted box mounts again with the stored steer: a fold or a closed board drops what each box mounted with
+async function unmountSteers($: EngineInterface) {
+    askTypedAt.clear();
+    const o = await currentOrbit($);
+    if (!o.asks.some((a) => a.shown !== undefined)) return;
+    orbit = {
+        ...o,
+        asks: o.asks.map(({ shown: _, ...a }) => a),
+    };
+    await $.state
+        .set(ORBIT, orbit)
+        .catch((err) =>
+            $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`),
+        );
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
@@ -2131,7 +2242,10 @@ async function resumeState($: EngineInterface): Promise<StashOrbit> {
     if (kept.folds) await $.state.set(FOLDS, kept.folds);
     if (kept.mobile) await $.state.set(MOBILE, true);
     if (kept.quiet?.held.length) await $.state.set(QUIET, kept.quiet);
-    return kept.orbit ? steeredOrbit(kept.orbit) : EMPTY_ORBIT;
+    if (!kept.orbit) return EMPTY_ORBIT;
+    // a new process draws a fresh pane: no box holds what the old one mounted with (FRM-492)
+    const o = steeredOrbit(kept.orbit);
+    return { ...o, asks: o.asks.map(({ shown: _, ...a }) => a) };
 }
 
 // an ended session's reply is dropped a day after it ended, a kept state a week after its last save
@@ -2653,10 +2767,16 @@ let compactTrail: number[] = [];
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
-    // a closed board unmounts its fields: the next open draws the stored text, not a held one
-    if (!isBoardOpen && drafts.size) {
+    // a closed board unmounts its fields: the next open draws the stored text, not a held one; a board typed into
+    // within the quiet window is on screen, whatever the read said (FRM-492)
+    if (
+        !isBoardOpen &&
+        // clock-ok: compared with the fields' own Date.now() stamps, so both sides read one clock
+        !isTypingAt(typedAts(), Date.now())
+    ) {
         await flushFields();
         drafts.clear();
+        await unmountSteers($);
     }
     // a lane clio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
@@ -2689,7 +2809,7 @@ async function publish($: EngineInterface) {
         if (
             boardText !== boardPublished &&
             !isTypingAt(
-                [...drafts.values()].map((d) => d.at),
+                typedAts(),
                 // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
                 Date.now(),
             )
@@ -4839,8 +4959,14 @@ export const register: Register = (on) => {
                         );
                     // the steer keeps every keystroke, no Enter needed
                     const handleSteer = (id: string, value: string) =>
-                        void markAsks($, (x) =>
-                            x.id === id ? { ...x, steer: steerOf(value) } : x,
+                        void markAsks(
+                            $,
+                            (x) =>
+                                x.id === id
+                                    ? { ...x, steer: steerOf(value) }
+                                    : x,
+                            false,
+                            true,
                         );
                     // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
                     // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
@@ -4864,6 +4990,7 @@ export const register: Register = (on) => {
                                 // a fold remounts its fields: they draw the stored text again
                                 await flushFields();
                                 drafts.clear();
+                                await unmountSteers($);
                                 const was =
                                     (await $.state.get(FOLDS)).value ?? {};
                                 await $.state.set(FOLDS, {
@@ -5048,17 +5175,14 @@ export const register: Register = (on) => {
                                             minWidth={0}>
                                             <Input
                                                 key={
-                                                    field(
-                                                        $,
-                                                        `${door.prefix}:steer:${a.id}`,
-                                                        a.steer ?? '',
-                                                    ).key
+                                                    steerBox($, door.prefix, a)
+                                                        .key
                                                 }
                                                 onInput={(value: string) => {
-                                                    field(
+                                                    steerBox(
                                                         $,
-                                                        `${door.prefix}:steer:${a.id}`,
-                                                        a.steer ?? '',
+                                                        door.prefix,
+                                                        a,
                                                     ).type(value, () => {
                                                         return door.steer(
                                                             a,
@@ -5071,11 +5195,8 @@ export const register: Register = (on) => {
                                                 }
                                                 placeholder='steer'
                                                 value={
-                                                    field(
-                                                        $,
-                                                        `${door.prefix}:steer:${a.id}`,
-                                                        a.steer ?? '',
-                                                    ).value
+                                                    steerBox($, door.prefix, a)
+                                                        .value
                                                 }
                                             />
                                         </Box>

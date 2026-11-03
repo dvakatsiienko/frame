@@ -131,6 +131,11 @@ export type OrbitAsk = {
     link?: string;
     mark?: 'accepted' | 'rejected';
     steer?: string;
+    // the text the steer box mounted with, and its remount count: typing never moves either; rev counts typed saves, so
+    // a write made from an older read keeps what he typed (FRM-492)
+    shown?: string;
+    gen?: number;
+    rev?: number;
     isLocked?: boolean;
     isChanged?: boolean;
     isResolved?: boolean;

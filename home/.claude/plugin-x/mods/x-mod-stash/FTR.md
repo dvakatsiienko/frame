@@ -500,6 +500,15 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the member takes the card's mark into its orbit, or he types on while it does
   - then the field keeps what he typed: the mark leaves only after the orbit holds it and only if it is still the one read, and a steer typed on the card replaces the member's own (dima, 2026-10-29: «text … gets occasionally deleted when I print too fast»)
   - proof: tests/orbit.test.ts::a steer typed on another board while its mark is taken in survives for the next take; ::a card steer lands over the member's own unless it typed into that box a moment ago; ::a remote mark landing while dim…
+- ✅ a typed steer survives every redraw (FRM-492)
+  - given an ask's steer box with a landed save
+  - when dima types 60+ characters without a pause while another session, the poll or a reload redraws the board
+  - then every character he typed stays in the box: it draws the text it mounted with until a write that replaces the steer
+  - and a turn's clear or a follow on that ask empties the box, remounting it when it already drew empty
+  - decision: the box's mounted text and remount count live on the ask in `$.state`; typing saves only the steer, and every other write that changes the steer moves them — no typing history to cap (it kept 50 texts, and a longer burst read the last save as an outside write and drew it back); the other steer boxes keep the history, trimmed at each landed save instead of capped
+  - decision: a typed save counts itself on the ask, so a write made from a read older than his last typed save keeps what he typed; a new process draws a fresh pane, so what the old box mounted with is dropped
+  - decision: a board read as closed while a box was typed into in the last 3 s stays open — a failed pane read cleared every draft mid-typing
+  - proof: tests/orbit.test.ts::a long burst after a saved steer never redraws the field to the old save; ::after a reload the steer box draws what it mounted with, not the steer typed since; ::a poll that reads the board closed while a steer is typed keeps the field as drawn; ::a follow-up clears dima's steer on the old question; tests/fields.test.ts::a burst of more than 50 keystrokes after a landed save keeps drawing what the field showed; ::a write from a read older than his last typed save keeps his steer and what the box mounted with; ::a typed save from an older read never rolls back the box's remount; ::a backspace back to a landed text keeps the save still in flight as his own; tests/orbit.test.ts::a steer box resumed in a new process draws the kept steer
 - ✅ a steer box keeps its view where he left it, and fills its row
   - given dima typed a long steer into a box on an ask or an assumption
   - when the board redraws and typing has gone quiet
