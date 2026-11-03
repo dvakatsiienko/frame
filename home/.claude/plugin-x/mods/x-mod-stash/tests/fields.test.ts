@@ -1,12 +1,12 @@
 import { expect, test } from 'claude-code/testing';
 
 import {
-    type FieldDraft,
     fieldView,
     isTypingAt,
     mounted,
     typedInto,
 } from '../hooks/register.tsx';
+import type { FieldDraft } from '../types/stash.d.ts';
 
 // a field never redraws because of its own typing (dima, 16:15 and 16:22: the caret drifted mid-word)
 const T = 1_000_000;

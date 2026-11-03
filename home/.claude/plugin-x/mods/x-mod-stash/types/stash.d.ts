@@ -142,6 +142,19 @@ export type OrbitAsk = {
     isClosed?: boolean;
 };
 
+// a text field's typing as the module tracks it: the text it drew, the texts typed and not yet landed, the last
+// keystroke, and whether a save has landed since it mounted
+export type FieldDraft = {
+    drawn: string;
+    sent: string[];
+    at: number;
+    isLanded: boolean;
+};
+
+// a steer box as its last keystroke or save left it, so a hot reload draws it on: its draft, its remount count, and the
+// text typed since its last save, which the reload drops with its timer (FRM-492)
+export type StashField = { draft?: FieldDraft; gen?: number; pending?: string };
+
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back
 // button marks it wrong, with his steer
 export type OrbitAssumption = {
@@ -258,6 +271,8 @@ declare module 'claude-code' {
             // epoch ms of the last main turn end
             ended: number;
             orbit: StashOrbit;
+            // each text steer box by its key; no drawing reads it, so its writes redraw nothing
+            fields: Record<string, StashField>;
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
             // the fleet's live lanes as this session last read the shelf file
