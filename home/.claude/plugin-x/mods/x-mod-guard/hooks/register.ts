@@ -859,11 +859,14 @@ async function markWritten($: EngineInterface, files: Written[]) {
     for (let tries = 0; tries < 3; tries++) {
         const { value = {}, version } = await $.state.get(WRITTEN);
         // an unread mark keeps nothing for a file the turn never kept
-        const kept = files.filter(
-            ([p, text], i) =>
-                text !== UNREAD ||
-                value[p] !== undefined ||
-                files.slice(0, i).some(([w]) => w === p),
+        const kept = files.reduce<Written[]>(
+            (out, file) =>
+                file[1] !== UNREAD ||
+                value[file[0]] !== undefined ||
+                out.some(([w]) => w === file[0])
+                    ? [...out, file]
+                    : out,
+            [],
         );
         const next = [...laidOver(new Map(Object.entries(value)), kept)].map(
             ([path, text]) => [
@@ -1215,12 +1218,12 @@ export const register: Register = (on) => {
                 );
             // a line that errors may have run any of its writes before the error, so what it wrote is unread
             const writes = lineWrites(run, cwd, ctx);
-            await markWritten(
-                $,
-                result.isError
-                    ? writes.map(([p]): Written => [p, UNREAD])
-                    : writes,
-            ).catch(() => undefined);
+            await markWritten($, writes).catch(() => undefined);
+            if (result.isError)
+                await unreadWritten(
+                    $,
+                    writes.map(([p]) => p),
+                ).catch(() => undefined);
             // a kept script the line rewrote another way (sd, sed -i, a piped tee) holds text the guard never saw
             await unreadWritten(
                 $,

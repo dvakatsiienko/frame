@@ -265,6 +265,19 @@ test('a script never kept that a line rewrites stays unkept, so its run passes',
     expect(JSON.stringify(await bash($, 'bash y.sh'))).not.toContain(WARNED);
 });
 
+// local review of round 5: a new script a line that errors wrote is unread; two rewrites of an unkept file keep nothing
+test('a new script a line that errors wrote warns as unread', async ($, on) => {
+    world(on, true);
+    await bash($, "echo 'ls' > n.sh; false");
+    expect(JSON.stringify(await bash($, 'bash n.sh'))).toContain(WARNED);
+});
+
+test('two rewrites of a script never kept keep nothing, so its run passes', async ($, on) => {
+    world(on);
+    await bash($, "sed -i '' 's/a/b/' y.sh; sed -i '' 's/c/d/' y.sh");
+    expect(JSON.stringify(await bash($, 'bash y.sh'))).not.toContain(WARNED);
+});
+
 test('a written script a line that errors writes over warns as unread', async ($, on) => {
     world(on, true);
     await write($, '/repo/x.sh', 'ls\n');
