@@ -4,7 +4,7 @@ title: 'wish ids per item: PK-159:W3 outside, W3 inside, no global counter'
 status: open
 assignee: []
 created_date: '2026-11-03T14:29:00Z'
-updated_date: '2026-11-03T17:07:00Z'
+updated_date: '2026-11-03T18:47:00Z'
 labels:
   - m
 dependencies: []
@@ -42,4 +42,6 @@ o95 (a wish keeps its birth id everywhere) is replaced by o98
 
 W1924 (2026-11-03 16:39, dima, re-fold of W1922): But if a PK-312 moves to FRM-500, then PK-312 no longer exists, and it points to the wrong PK: a non-existing ticket.
 W1925 (2026-11-03 16:39, dima, re-fold of W1923): Maybe it's better to make it so that if a pocket item moves to Linear, its IDs for word get converted to the corresponding Linear ticket? Or it's fine? ❓
+
+built 2026-11-03 20:48: `prompt-groom.ts --move <PK-N> <FRM-N> <W-id…>` prints the renumbered lines and the «moved:» line (o98); left: wish-cover following a cross-item cite, a pocket-add.test.ts row for --side-channel-owned, and today's hand-carried ids in FRM-499/500/501 left as they are
 <!-- SECTION:NOTES:END -->

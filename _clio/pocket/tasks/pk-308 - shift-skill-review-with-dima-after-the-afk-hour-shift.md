@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T18:14:00Z'
+updated_date: '2026-11-03T18:31:00Z'
 labels:
   - s
 dependencies: []
@@ -154,4 +154,39 @@ W1959 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: Why did they spam you so mu
 W1960 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: A habit miss, or what? ❓
 
 W1961 (2026-11-03 20:14, dima, o110 steer) [re: Q5]: Yes, take care of your side channel as anyone else. A side channel is useful. I actually solved lots of stuff with it before handing over to you, and I have more plans to rebalance this lot. Your second channel is very useful, although it will not always be active.
+
+W1962 (2026-11-03 20:26, dima) [re: siesta]: once we fully grill shift changes, do a siesta with wishkeeper.
+W1963 (2026-11-03 20:26, dima) [re: siesta]: Tell Wishkeeper to:
+W1964 (2026-11-03 20:26, dima) [re: siesta]: Hunt flows in our fix plan.
+W1965 (2026-11-03 20:26, dima) [re: siesta]: Find more inefficiencies in how our shift day runs.
+W1966 (2026-11-03 20:26, dima) [re: siesta]: Compare what flows were and how we fixed them, and if we do correct things with our fixes to your shift.
+W1967 (2026-11-03 20:26, dima) [re: Q8]: spam. The fix, for grill round 2:
+W1968 (2026-11-03 20:26, dima) [re: Q8]: I think it sounds good.
+W1969 (2026-11-03 20:26, dima) [re: Q8]: I like the change.
+W1970 (2026-11-03 20:26, dima) [re: Q8]: Let's try, but I was thinking that effect, this silent comms contract being part only of the crew DNA skill, is kind of not great.
+W1971 (2026-11-03 20:26, dima) [re: Q8]: I think it's because it's too far, since the details about comms live in silent mode.
+W1972 (2026-11-03 20:26, dima) [re: Q8]: Maybe move those instructions into the mod itself so any other thread entirely knows about this info? ❓
+W1973 (2026-11-03 20:26, dima) [re: Q8]: Is it possible to fold info about this silent contract into the mod itself, so it is impossible not to know about this? ❓
+W1974 (2026-11-03 20:26, dima) [re: Q8]: How do you think it is as an idea, and why should we keep this info in the crew DNA skill if quiet comms are essential? ❓
+W1975 (2026-11-03 20:26, dima) [re: Q8]: I don't know of a case where I would want anyone to spam you or anyone else.
+W1976 (2026-11-03 20:26, dima) [re: Q8]: I think that such spamming is not good by its nature.
+W1977 (2026-11-03 20:26, dima) [re: Q8]: By folding this rule at the level of the mod, we are kind of making it impossible for spam to appear in the first place.
+W1978 (2026-11-03 20:26, dima) [re: Q8]: Additionally, having this info in the crew DNA skill is kind of redundant because a skill is then tied to a mod.
+W1979 (2026-11-03 20:26, dima) [re: Q8]: If we change the surface where we operate, for example, if we move to a harder framework, then those lines become partially redundant because other surfaces have other rules.
+W1980 (2026-11-03 20:26, dima) [re: Q8]: At that surface, the rules may be redundant.
+W1981 (2026-11-03 20:26, dima) [re: Q8]: The skill's core DNA, by having that contract inside of the skill, is kind of tied to a mod itself and becomes partially redundant in surfaces where mods are not present.
+W1982 (2026-11-03 20:26, dima) [re: Q8]: How do you think? ❓
+W1983 (2026-11-03 20:26, dima) [re: Q8]: Can we somehow move this quiet comms contract fully to the actual quiet comms mod scope? ❓
+
+W1984 (2026-11-03 20:26, dima, o120 steer) [re: Q8]: can we probe today with mods lane? ❓
+W1985 (2026-11-03 20:26, dima, o120 steer) [re: Q8]: so we know if we can rely on it? ❓
+
+W1986 (2026-11-03 20:30, dima) [re: Q8]: The mod tells the sender at send time.
+W1987 (2026-11-03 20:30, dima) [re: Q8]: Its tool result says «held as progress; tag [ask] to push», so even a session that never read a skill learns the rule the first time it sends.
+W1988 (2026-11-03 20:30, dima) [re: Q8]: Okay, but the mod should clearly say that messages are sleep-streamed by default and should tell how to actually push to you.
+W1989 (2026-11-03 20:30, dima) [re: Q8]: Everyone still should know the differentiation: when anyone should push messages to you, not slipstream.
+W1990 (2026-11-03 20:30, dima) [re: Q8]: For example, a lane is fully ready, or a dispute, or escalation, or a roadblock, or something like this.
+W1991 (2026-11-03 20:30, dima) [re: Q8]: And maybe CrewDNA actually can help these lines.
+W1992 (2026-11-03 20:30, dima) [re: Q8]: Maybe it's not a bad idea.
+W1993 (2026-11-03 20:30, dima) [re: Q8]: Propose: if you think that CrewDNA lines are redundant and Mod can fully solve this, then drop.
 <!-- SECTION:NOTES:END -->
