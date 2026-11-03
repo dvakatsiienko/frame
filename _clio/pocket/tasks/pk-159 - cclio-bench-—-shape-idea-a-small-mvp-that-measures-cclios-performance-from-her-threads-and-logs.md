@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T12:54:00Z'
+updated_date: '2026-11-03T14:15:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -316,4 +316,6 @@ W1851 (2026-11-03 14:39, dima): How we groom it the best way: shape, idea, skill
 W1852 (2026-11-03 14:39, dima): let's groom your shift, start the refreshed state and i go afk ~1h.
 W1853 (2026-11-03 14:35, dima, o75 steer): No, let's do it slightly the other way.
 W1854 (2026-11-03 14:35, dima, o75 steer): Currently, your shift should tell you to merge yourself, and it is correct, but my ask to hold with merge is an exception for today.
+
+moved: W1834–W1854 → PK-308 (dima o85, 2026-11-03 16:15)
 <!-- SECTION:NOTES:END -->

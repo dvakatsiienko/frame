@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T14:03:00Z'
+updated_date: '2026-11-03T14:15:00Z'
 labels:
   - s
 dependencies: []
@@ -67,4 +67,27 @@ W1900 (2026-11-03 15:42, dima): Once it's done, remind me to update your habits,
 Q6 (2026-11-03 15:51, clio, quoted by dima): 🌼 clean
 W1909 (2026-11-03 15:51, dima): Print the keyword in bold.
 W1910 (2026-11-03 15:51, dima): Is it in a fleet vibe? ❓
+
+moved from PK-159 (dima o85, 2026-11-03 16:15)
+W1834 (2026-11-03 14:39, dima): shift.
+W1835 (2026-11-03 14:39, dima): If it is rusty, and if the shop trip plan was not drafted and it wasn't actually dropped, it isn't relevant anymore.
+W1836 (2026-11-03 14:39, dima): Let's take a look at the skill and refresh it.
+W1837 (2026-11-03 14:39, dima): Let's groom it a little.
+W1838 (2026-11-03 14:39, dima): I'm concerned about a few key points:
+W1839 (2026-11-03 14:39, dima): 1. The second wind. It should clearly say that you should keep an eye on your second wind while you're on shift and do a second wind for yourself when you approach 60% (when you're at about 55% or something like this).
+W1840 (2026-11-03 14:39, dima): Do it carefully because your context will grow slowly while you're on shift, so you have plenty of time to plan your second winds properly.
+W1841 (2026-11-03 14:39, dima): No rushes there, and the same for everyone else.
+W1842 (2026-11-03 14:39, dima): Since you observe and you can plan, pick good times for everyone to second shift, and you should second wind everyone.
+W1843 (2026-11-03 14:39, dima): Go there or fire crow, and even a side channel if it is already parked.
+W1844 (2026-11-03 14:39, dima): 2. Shift should enable hot cache state for everyone.
+W1845 (2026-11-03 14:39, dima): If anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache, so everyone should be auto-woken up and auto-refreshed, cache-wise.
+W1846 (2026-11-03 14:39, dima): 3. As I mentioned previously, the usual pattern for shift is that you merge automatically without my approval, but for this certain day, it's an exception.
+W1847 (2026-11-03 14:39, dima): Once merge is ready, stay parked until I approve.
+W1848 (2026-11-03 14:39, dima): 4. The PK159 is still left for you to auto-merge.
+W1849 (2026-11-03 14:39, dima): It's fine, but don't forget wishkeeper and everything else.
+W1850 (2026-11-03 14:39, dima): 5. Take a look at what other parts in shift skill are stale or need a refresher, because we changed what since the previous shift run.
+W1851 (2026-11-03 14:39, dima): How we groom it the best way: shape, idea, skill, or how to properly groom it? Propose. ❓
+W1852 (2026-11-03 14:39, dima): let's groom your shift, start the refreshed state and i go afk ~1h.
+W1853 (2026-11-03 14:35, dima, o75 steer): No, let's do it slightly the other way.
+W1854 (2026-11-03 14:35, dima, o75 steer): Currently, your shift should tell you to merge yourself, and it is correct, but my ask to hold with merge is an exception for today.
 <!-- SECTION:NOTES:END -->
