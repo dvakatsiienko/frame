@@ -69,6 +69,7 @@ Every decision is one of three:
 - **a merge lands itself** (dima, 2026-11-03: «the usual pattern for shift is that you merge automatically without my approval»): a clean pr by the gate, a self-edit when its chunk's `## signed` carries `merge: pre-approved`, a quick lane's chunk by its close; each one only after its pre-merge 🌤️ siesta, wishkeeper over the chunk (`docs/test-drive/pre-merge-siesta.md`). a day's exception — «hold this lane at ready for my ok» — is written into the plan file's rules for that lane only, never into this skill
 - **taste** → build one default, flag it for the report
 
+- the ⏰ waker stays on while he is afk (dima, 2026-11-03): i read its key at every step, and off means i switch it on through FRM-500's door; until that lands, one line asks him
 - a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
 - codie's premise doubt is built and flagged the same minute, never found at review
 - every «done / fixed / sealed / reset» i log or tell names the command that read it back, with its exit code; a member's relay says `measured:` or `inference:`, and no ticket is born from an `inference:` line mid-shift
