@@ -190,18 +190,16 @@ export function cardLines(home: string, transcriptPath?: string) {
 function handPocketWrites(transcriptPath?: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const uses = transcriptRows(transcriptPath)
+    return transcriptRows(transcriptPath)
         .filter((r) => new Date(r.timestamp ?? 0).getTime() >= today.getTime())
-        .flatMap((r) => toolUses([r]));
-    // cc re-appends old rows to a transcript: a tool call counts once, by its id
-    return [
-        ...new Map(uses.map((u, i) => [u.id ?? `#${i}`, u])).values(),
-    ].filter(
-        (u) =>
-            ((u.name === 'Write' || u.name === 'Edit') &&
-                (u.input?.file_path ?? '').includes('/_clio/pocket/')) ||
-            (u.name === 'Bash' && POCKET_WRITE.test(u.input?.command ?? '')),
-    ).length;
+        .flatMap((r) => toolUses([r]))
+        .filter(
+            (u) =>
+                ((u.name === 'Write' || u.name === 'Edit') &&
+                    (u.input?.file_path ?? '').includes('/_clio/pocket/')) ||
+                (u.name === 'Bash' &&
+                    POCKET_WRITE.test(u.input?.command ?? '')),
+        ).length;
 }
 
 // each transcript row once: cc re-appends old rows, the same uuid at two lines
