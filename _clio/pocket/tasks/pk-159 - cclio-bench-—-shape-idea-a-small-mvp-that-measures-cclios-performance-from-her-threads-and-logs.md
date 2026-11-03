@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T11:43:00Z'
+updated_date: '2026-11-03T12:15:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -235,4 +235,31 @@ chunk A shaped → FRM-491 (milestone 🐋 clio runs lean), grill rounds 1–2 s
 label fix (wishkeeper 13:09): W1747, W1748, W1750 are clio's 12:33 reply lines that dima quoted with «←» — context, not his wants; his wants are W1749 and W1751–W1756. FRM-491's wish block leaves the three out.
 
 advisor borrows (side channel, dima's ticks): 4 riders in _clio/.scratch/pk159/advisor-borrows.md — rider 0 «blocked» → «escalate» and rider 1 the fix ladder in crew-subagent join chunk B; rider 2 a budget line before 5+ cards joins chunk D beside crow's spend wake; rider 3 the review round joins chunk F's lane cell. the three verdicts 🌼 clean, 🩹 fix, 🪜 escalate landed in fleet-vibe (03f5382b, merged 13:44)
+
+pre-merge siesta trial (docs/test-drive/pre-merge-siesta.md):
+W1781 (2026-11-03 13:03, dima): I agree with phases, tweaks, and hardening of this part.
+W1782 (2026-11-03 13:03, dima): I think that Cesta should be run once each CLI chunk lands.
+W1783 (2026-11-03 13:03, dima): Do we have any protections and safety nets to see if the CLI chunk landed? ❓
+W1784 (2026-11-03 13:03, dima): I'm not sure whether it should be run before or after the lane is ready to merge.
+W1785 (2026-11-03 13:03, dima): Maybe before.
+W1786 (2026-11-03 13:03, dima): Right before you merge, you first run a siesta and wishkeeper over the chunk to see if all is good.
+W1787 (2026-11-03 13:03, dima): If wishkeeper finds critical issues, then Elaine is allowed to do another round of code fixes and code review, and require round CI code review is still kept at one code review.
+W1788 (2026-11-03 13:03, dima): How do you think? Is it a good idea or not? ❓
+W1789 (2026-11-03 13:03, dima): For this kind of check, what is better: to have a wishkeeper Keeper check or wishkeeper Hunter? ❓
+W1790 (2026-11-03 13:03, dima): Also, a side question: remind if current lanes do a retro when they stop? ❓
+W1791 (2026-11-03 13:03, dima): And how do you process those retros if they are active currently? ❓
+Q1 (2026-11-03 13:10, clio, quoted by dima): folding them per chunk at its pre-merge 🌤️ siesta would keep the pile from growing. That would fit the same rider
+W1792 (2026-11-03 13:10, dima): Yes, piled-up retros are useless because you lose precision when you process them in such large volumes at once, so let's have them more granular (more often).
+W1793 (2026-11-03 13:10, dima): And as for Wishkeeper, yes, let's have them do it once each lane finishes, and let's do siestas after each chunk lens.
+W1794 (2026-11-03 13:10, dima): The process is like this: when chunk lens and Coder check out to you (e.g., tell it's ready to merge), you start a siesta and spawn a wishkeeper against the checked-out coder's work.
+W1795 (2026-11-03 13:10, dima): There is a concern, though, because I feel that wishkeeper Flow will find findings 100% of the time.
+W1796 (2026-11-03 13:10, dima): If wishkeeper Flow has found issues every time you spawn it for yourself, then why wouldn't it find anything against a finished lane? ❓
+W1797 (2026-11-03 13:10, dima): That means that each chunk will have an additional turn for Coder, code review, and Sixth Sense too.
+W1798 (2026-11-03 13:10, dima): It kind of makes each lane a little bit longer, at least maybe 2 minutes, sorry, even 15 minutes, depending on the lane.
+W1799 (2026-11-03 13:10, dima): Maybe it is justified because if something was missed, it is better to be fixed before rather than after.
+W1800 (2026-11-03 13:10, dima): Afterward fixes are always more expensive and require even more time.
+W1801 (2026-11-03 13:10, dima): Let's test it like this as a test drive.
+W1802 (2026-11-03 13:10, dima): Shape the test drive via SQL for this change, and let's monitor it and measure it for 2 weeks.
+W1803 (2026-11-03 13:10, dima): Let's start immediately once the current modslane chunk is ready: start a siesta and Wishkeeper over them.
+W1804 (2026-11-03 13:10, dima): Let's see how it works.
 <!-- SECTION:NOTES:END -->
