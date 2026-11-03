@@ -64,6 +64,14 @@ export function stop(home: string, input: StopInput) {
         checks.push(
             `🛎️ delivered tick(s) unresolved: ${newTicks.join(' ')} — orbit resolve`,
         );
+    const resumes = unreadResumes(input.transcript_path).filter(
+        (id) => !state.nudged_resumes.includes(id),
+    );
+    state.nudged_resumes = [...state.nudged_resumes, ...resumes].slice(-20);
+    if (resumes.length)
+        checks.push(
+            '⏱️ a lane member got «resume» with no 5h window read this turn — read it before the next one',
+        );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
     const isBlock = gate.isBlocking && isSiestaNudged;
     writeSiesta(home, state);
@@ -254,7 +262,7 @@ function clioFiles(home: string, since: Date) {
 }
 
 // this turn: the rows after the last prompt that is neither a tool result nor a skill's own text
-function loadedSiesta(transcriptPath?: string) {
+function thisTurn(transcriptPath?: string) {
     const rows = readLines(transcriptPath).flatMap(
         (l) => parsed<TranscriptRow>(l) ?? [],
     );
@@ -267,7 +275,39 @@ function loadedSiesta(transcriptPath?: string) {
                 r.message.content.some((c) => c.type === 'tool_result')
             ),
     );
-    const turn = rows.slice(start);
+    return rows.slice(start);
+}
+
+function toolUses(turn: TranscriptRow[]) {
+    return turn.flatMap((r) =>
+        Array.isArray(r.message?.content)
+            ? r.message.content.filter((c) => c.type === 'tool_use')
+            : [],
+    );
+}
+
+// a «resume» to a lane member sent in a turn that never read the 5h window (crew-lead's pick-ups)
+function unreadResumes(transcriptPath?: string) {
+    const uses = toolUses(thisTurn(transcriptPath));
+    const hasRead = uses.some(
+        (u) =>
+            u.name === 'mcp__ccd_session_mgmt__get_usage' ||
+            (u.name === 'Bash' &&
+                (u.input?.command ?? '').includes('cc-usage-window.json')),
+    );
+    if (hasRead) return [];
+    return uses
+        .filter(
+            (u) =>
+                u.name === 'SendMessage' &&
+                /\b(codie|sixth sense|designer)\b/.test(u.input?.to ?? '') &&
+                /^\s*resume\b/i.test(u.input?.message ?? ''),
+        )
+        .map((u) => u.id ?? '?');
+}
+
+function loadedSiesta(transcriptPath?: string) {
+    const turn = thisTurn(transcriptPath);
     const opener = turn[0]?.message?.content;
     return (
         (typeof opener === 'string' &&
@@ -365,6 +405,7 @@ function readSiesta(home: string): Siesta {
         epoch: kept.epoch ?? 0,
         highs: kept.highs ?? [],
         nudged_epoch: kept.nudged_epoch ?? 0,
+        nudged_resumes: kept.nudged_resumes ?? [],
         nudged_ticks: kept.nudged_ticks ?? [],
         open: kept.open ?? false,
         pings: kept.pings ?? [],
@@ -453,6 +494,7 @@ type Siesta = {
     epoch: number;
     highs: High[];
     nudged_epoch: number;
+    nudged_resumes: string[];
     nudged_ticks: string[];
     open: boolean;
     pings: string[];
@@ -463,7 +505,17 @@ type TranscriptRow = {
     message?: {
         content?:
             | string
-            | { input?: { skill?: string }; name?: string; type: string }[];
+            | {
+                  id?: string;
+                  input?: {
+                      command?: string;
+                      message?: string;
+                      skill?: string;
+                      to?: string;
+                  };
+                  name?: string;
+                  type: string;
+              }[];
     };
     type?: string;
 };

@@ -45,6 +45,7 @@ the split is **disposable vs watchable**, never research vs code.
   - cli codie: `x:crew-codie`, `x:guide-go`, `x/AGENTS.md`, `x/PRODUCT.md`
   - bytes codie: `x:crew-codie`, `x:guide-typescript` + `x:guide-react`, the app's essentials (§ preflight, app essentials)
   - sixth sense: `x:crew-sixth-sense` with its four arguments
+- **a «resume» to a parked member** reads the 5h window in the same turn first (`get_usage`, or `~/.claude/shelf/cc-usage-window.json`); clio's Stop gate warns on one that did not
 - **a session claiming a lane** (a fork, a resumed twin) is checked against who started it before anyone moves; a member is addressed by the uds path from its last message, which always delivers.
 - **a refresh without dima's hands**: a member clio did not start clears itself (`clear_session` with `"self"` as its turn's last act; clio's clear is refused on a tab dima opened); its registry name stops resolving after the clear, so the pick-up goes by its `local_…` session id.
 
