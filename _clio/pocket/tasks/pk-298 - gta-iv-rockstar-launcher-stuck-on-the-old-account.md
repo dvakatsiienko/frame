@@ -4,9 +4,10 @@ title: 'gta iv: rockstar launcher stuck on the old account'
 status: open
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-02T18:08:00Z'
+updated_date: '2026-11-03T17:14:00Z'
 labels:
   - s
+  - side-channel-owned
 dependencies: []
 priority: next
 type: task
@@ -167,4 +168,6 @@ W1459 (2026-11-02 19:40, dima): i paste the text right after ticket is created.
 W1460 (2026-11-02 19:45, dima): ok i try later.
 
 state 11-02 20:08 (clio, inference): every form tried tonight returned 500 (linking, other account settings, sign-in; Safari + Firefox) — what was tried, not proof that every door is down; dima 19:35 «let's do today», 19:45 «ok i try later»; supersedes the 19:34 line.
+
+side-channel-owned on dima's word (2026-11-03 19:14: «resign rockstar-related ticket to side channel-owned»)
 <!-- SECTION:NOTES:END -->
