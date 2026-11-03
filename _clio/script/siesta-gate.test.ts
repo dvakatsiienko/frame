@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
-import { compact, gate, prompt, stop } from './siesta-gate.ts';
+import { cardLines, compact, gate, prompt, sent, stop } from './siesta-gate.ts';
 
 const SID = 's-clio';
 const HOUR = 3_600_000;
@@ -610,3 +610,141 @@ function run(home: string, args: string[], input = '') {
         { encoding: 'utf8', env: { ...gitEnv(), HOME: home }, input },
     );
 }
+
+describe('the card’s chore lines', () => {
+    const groomDir = (home: string) => join(home, '.local/state/clio/grooms');
+    const sentTo = (to: string, message: string) => ({
+        tool_input: { message, to },
+        tool_name: 'SendMessage',
+    });
+
+    test('a chore sent to helga is one sent.log line; a message to anyone else none', () => {
+        const home = fixtureHome();
+        sent(
+            home,
+            sentTo(
+                '🎀 helga',
+                'prompt-groom chore (non-blocking) from 🦉 clio: …',
+            ),
+        );
+        sent(home, sentTo('⚡ 🔧 codie: x', 'resume'));
+        const lines = readFileSync(join(groomDir(home), 'sent.log'), 'utf8')
+            .trim()
+            .split('\n');
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toContain('\tprompt-groom\t');
+    });
+
+    test('a numbered batch logs one line per chore', () => {
+        const home = fixtureHome();
+        sent(
+            home,
+            sentTo(
+                '🎀 helga',
+                'batch b7\n1 pocket-write PK-1 …\n2 bulk-replace a.md …',
+            ),
+        );
+        expect(
+            readFileSync(join(groomDir(home), 'sent.log'), 'utf8')
+                .trim()
+                .split('\n'),
+        ).toHaveLength(2);
+    });
+
+    test('a sent chore with no receipt past 30 minutes is a missed receipt; a received one is not', () => {
+        const home = fixtureHome();
+        mkdirSync(groomDir(home), { recursive: true });
+        const old = new Date(Date.now() - 40 * 60_000).toISOString();
+        const older = new Date(Date.now() - 50 * 60_000).toISOString();
+        writeFileSync(
+            join(groomDir(home), 'sent.log'),
+            `${older}\tprompt-groom\tgroom 10:17\n${old}\tpocket-write\tpk-1\n`,
+        );
+        writeFileSync(
+            join(groomDir(home), 'receipts.log'),
+            `${new Date(Date.now() - 45 * 60_000).toISOString()}\tprompt-groom\t1\t0\tW1-W3\n`,
+        );
+        const lines = cardLines(home);
+        expect(lines.filter((l) => l.includes('missed receipt'))).toHaveLength(
+            1,
+        );
+        expect(lines.join('\n')).toContain('pocket-write');
+    });
+
+    test('a receipt answers only its own class, and only one send', () => {
+        const home = fixtureHome();
+        mkdirSync(groomDir(home), { recursive: true });
+        const at = (m: number) =>
+            new Date(Date.now() - m * 60_000).toISOString();
+        writeFileSync(
+            join(groomDir(home), 'sent.log'),
+            `${at(60)}\tprompt-groom\tgroom a\n${at(55)}\tprompt-groom\tgroom b\n${at(50)}\tbulk-replace\tswap\n`,
+        );
+        writeFileSync(
+            join(groomDir(home), 'receipts.log'),
+            `${at(45)}\tprompt-groom\t1\t0\tW1\n${at(44)}\tpocket-write\t1\t0\tPK-1\n`,
+        );
+        const missed = cardLines(home).filter((l) =>
+            l.includes('missed receipt'),
+        );
+        expect(missed).toHaveLength(2);
+        expect(missed.join('\n')).toContain('bulk-replace');
+        expect(missed.join('\n')).toContain('groom b');
+    });
+
+    test('a chore sent a minute ago is not missed yet', () => {
+        const home = fixtureHome();
+        mkdirSync(groomDir(home), { recursive: true });
+        writeFileSync(
+            join(groomDir(home), 'sent.log'),
+            `${new Date().toISOString()}\tpocket-write\tpk-1\n`,
+        );
+        expect(cardLines(home).join('\n')).not.toContain('missed receipt');
+    });
+
+    test('pocket writes by hand count clio’s pocket commits today, never helga’s', () => {
+        const home = fixtureHome();
+        const repo = join(home, 'frame');
+        mkdirSync(join(repo, '_clio/pocket/tasks'), { recursive: true });
+        writeFileSync(join(repo, '_clio/pocket/tasks/pk-1.md'), 'a');
+        commit(home, 0, 'clio', '📜 pocket: pk-1 (auto)');
+        writeFileSync(join(repo, '_clio/pocket/tasks/pk-2.md'), 'b');
+        commit(home, 0, 'clio', '📜 pocket: pk-2 (auto)');
+        writeFileSync(join(repo, '_clio/pocket/tasks/pk-3.md'), 'c');
+        commit(home, 0, 'helga', '📜 pocket: pk-3 (auto)');
+        expect(cardLines(home)).toContain('pocket writes by hand: 2');
+    });
+
+    test('the 11-03 replay: helga’s receipts woke no turn, a woken one is counted', () => {
+        const home = fixtureHome();
+        const t = join(home, 'clio.jsonl');
+        const at = (m: number) =>
+            new Date(Date.now() - m * 60_000).toISOString();
+        const row = (timestamp: string, content: string) =>
+            JSON.stringify({ message: { content }, timestamp, type: 'user' });
+        writeFileSync(
+            t,
+            [
+                row(
+                    at(30),
+                    '<cross-session-message from="x" from-name="⚡ 🔧 codie: y">[progress] step 1</cross-session-message>',
+                ),
+                row(at(20), 'dima: go on'),
+            ].join('\n'),
+        );
+        appendFileSync(
+            t,
+            `\n${row(at(15), '<cross-session-message from="x" from-name="🎀 helga">[ask] consult 2: anchor matches twice</cross-session-message>')}`,
+        );
+        expect(cardLines(home, t)).toContain(
+            'receipt wakes since the last siesta: 0',
+        );
+        appendFileSync(
+            t,
+            `\n${row(at(10), '<cross-session-message from="x" from-name="🎀 helga">[progress] receipt b3\n1 prompt-groom · exit 0</cross-session-message>')}`,
+        );
+        expect(cardLines(home, t)).toContain(
+            'receipt wakes since the last siesta: 1',
+        );
+    });
+});

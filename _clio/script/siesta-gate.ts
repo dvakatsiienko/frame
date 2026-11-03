@@ -15,6 +15,7 @@ import path from 'node:path';
 // the siesta check blocks the epoch's first stop (dima's o78, after sixth sense's clean); false makes it a warn
 export const gate = { isBlocking: true };
 const FILES_DUE = 15;
+const MISSED_AFTER_MS = 30 * 60_000;
 // a turn whose prompt opens with one of these is the fleet's, never his; the app prepends reminders to his own prompts
 const NOT_DIMA = [
     '<cross-session-message',
@@ -98,6 +99,96 @@ export function prompt(home: string, input: { prompt?: string }) {
     writeSiesta(home, state);
     // the Stop block speaks once an epoch; his own prompts carry it after, and a prompt hook wakes no extra turn
     return isDima && state.due ? '🌤️ siesta due — load clio:siesta' : undefined;
+}
+
+// clio's chore sends to helga, one line per chore, so the siesta card can name a receipt that never came
+export function sent(home: string, input: SentInput) {
+    const { message = '', to = '' } = input.tool_input ?? {};
+    if (!/\bhelga\b/.test(to)) return;
+    const numbered = [...message.matchAll(/^\d+\s+([a-z][a-z-]*)\b/gm)].map(
+        (m) => m[1] ?? '?',
+    );
+    const classes = numbered.length
+        ? numbered
+        : [message.match(/^([a-z][a-z-]*) chore\b/)?.[1] ?? '?'];
+    const head = (message.split('\n')[0] ?? '').slice(0, 80);
+    const at = new Date().toISOString();
+    mkdirSync(groomsDir(home), { recursive: true });
+    appendFileSync(
+        path.join(groomsDir(home), 'sent.log'),
+        classes.map((c) => `${at}\t${c}\t${head}\n`).join(''),
+    );
+}
+
+// the card's chore lines: pocket writes by hand today, each send no receipt answered within 30 min, receipt-woken turns
+export function cardLines(home: string, transcriptPath?: string) {
+    const sends = tabbed(path.join(groomsDir(home), 'sent.log'));
+    const receipts = tabbed(path.join(groomsDir(home), 'receipts.log'));
+    const missed = sends.filter(([at = '', cls = '']) => {
+        const i = receipts.findIndex(
+            ([rAt = '', rCls = '']) => rCls === cls && rAt >= at,
+        );
+        if (i >= 0) {
+            receipts.splice(i, 1);
+            return false;
+        }
+        return Date.now() - new Date(at).getTime() > MISSED_AFTER_MS;
+    });
+    const since = siestaLast(home).getTime();
+    const wakes = readLines(transcriptPath)
+        .flatMap((l) => parsed<TranscriptRow & { timestamp?: string }>(l) ?? [])
+        .filter((r) => {
+            const content = r.message?.content;
+            return (
+                r.type === 'user' &&
+                typeof content === 'string' &&
+                /^<cross-session-message[^>]*from-name="[^"]*helga/.test(
+                    content,
+                ) &&
+                /\breceipt\b/.test(content) &&
+                new Date(r.timestamp ?? 0).getTime() > since
+            );
+        }).length;
+    return [
+        `pocket writes by hand: ${handPocketWrites(home)}`,
+        ...missed.map(
+            ([at = '', cls = '', head = '']) =>
+                `missed receipt: ${cls} sent ${new Date(at).toLocaleTimeString('sv').slice(0, 5)} — ${head}`,
+        ),
+        `receipt wakes since the last siesta: ${wakes}`,
+    ];
+}
+
+function handPocketWrites(home: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const env = Object.fromEntries(
+        Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')),
+    );
+    const log = spawnSync(
+        'git',
+        [
+            '-C',
+            path.join(home, 'frame'),
+            'log',
+            `--since=${today.toISOString()}`,
+            '--format=%(trailers:key=Agent,valueonly)',
+            '--',
+            '_clio/pocket',
+        ],
+        { encoding: 'utf8', env },
+    ).stdout;
+    return (log ?? '')
+        .split('\n')
+        .filter((agent) => agent.split(' · ')[0]?.trim() === 'clio').length;
+}
+
+function tabbed(file: string) {
+    return readLines(file).map((l) => l.split('\t'));
+}
+
+function groomsDir(home: string) {
+    return path.join(stateDir(home), 'grooms');
 }
 
 export function compact(
@@ -328,7 +419,7 @@ if (import.meta.main) {
     const home = process.env.HOME ?? '';
     const [verb = '', ...args] = process.argv.slice(2);
     const hook = () =>
-        parsed<StopInput & { prompt?: string; trigger?: string }>(
+        parsed<StopInput & SentInput & { prompt?: string; trigger?: string }>(
             readFileSync(0, 'utf8'),
         ) ?? {};
     if (verb === 'stop') {
@@ -338,10 +429,15 @@ if (import.meta.main) {
         const line = prompt(home, hook());
         if (line) console.log(line);
     } else if (verb === 'compact') compact(home, hook());
+    else if (verb === 'sent') sent(home, hook());
+    else if (verb === 'card-lines')
+        console.log(cardLines(home, args[0]).join('\n'));
     else door(home, [verb, ...args]);
 }
 
 /* Types */
+
+type SentInput = { tool_input?: { message?: string; to?: string } };
 
 type StopInput = {
     session_id?: string;

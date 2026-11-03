@@ -92,6 +92,16 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "SendMessage",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts sent'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Write|Edit",
         "hooks": [
           {
