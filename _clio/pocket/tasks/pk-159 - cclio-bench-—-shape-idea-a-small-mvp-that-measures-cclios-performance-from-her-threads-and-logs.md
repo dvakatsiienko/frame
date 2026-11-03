@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T12:16:00Z'
+updated_date: '2026-11-03T12:54:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -267,4 +267,53 @@ W1805 (2026-11-03 14:16, dima, o59 steer): Okay, but PK159 is split into main pa
 W1806 (2026-11-03 14:16, dima, o59 steer): There are a few small other additional asks of me: sharpening the crow as an adviser and promoting the whole Helga to Sonnet 5.5.
 W1807 (2026-11-03 14:16, dima, o59 steer): Those two last ones, let's have them with me.
 W1808 (2026-11-03 14:16, dima, o59 steer): Do everything yourself that we already prepped with the Clio side channel, and leave all those two recipe runs when I return.
+
+W1809 (2026-11-03 14:15, dima): Tell about the most interesting findings, Wishkeeper.
+W1810 (2026-11-03 14:15, dima): For PK 159, anything that wants my attention, bring it to me.
+W1811 (2026-11-03 14:21, dima): yes you can start another side lane for 159 and complete everything that does not wait for me.
+W1812 (2026-11-03 14:21, dima): once done - wishkeeper over it and stop it yourself (fastlane no wtree).
+W1813 (2026-11-03 14:21, dima): But mods lane, keep it as we decided.
+W1814 (2026-11-03 14:21, dima): Once it's ready to merge, wait for my approval.
+W1815 (2026-11-03 14:21, dima): You can start now and tell me if everything is solved so I can go shave and I enable AFK.
+W1816 (2026-11-03 14:24, dima): you are at 57% ctx.
+W1817 (2026-11-03 14:24, dima): And by the way, remind me: what is your policy on second winding when I am afk? ❓
+W1818 (2026-11-03 14:24, dima): afk
+W1819 (2026-11-03 14:24, dima): while i am afk keep side lane coder and sixth sense below 60% if it approaches - SW
+W1820 (2026-11-03 14:25, dima): Yes, I ticketed them again because they have appeared double again.
+W1821 (2026-11-03 14:25, dima): It's an issue in Orbit.
+Q2 (2026-11-03 14:27, clio, quoted by dima): * mine: on a shift it's my own call; otherwise it's your press, as just now
+W1822 (2026-11-03 14:27, dima): Remind: what is the shift policy? ❓
+W1823 (2026-11-03 14:27, dima): Do I need to enable it via a skill? ❓
+W1824 (2026-11-03 14:27, dima): I understand that it's your call, but what is the threshold? ❓
+W1825 (2026-11-03 14:27, dima): Do you watch your own CTX to not go overboard with 80% of the CTX field? ❓
+W1826 (2026-11-03 14:27, dima): What is the boundary when you do a second wind for yourself? ❓
+Q3 (2026-11-03 14:27, clio, quoted by dima): the _clio lane for PK-159
+W1827 (2026-11-03 14:27, dima): don't forget to wishkeeper over it once ready.
+W1828 (2026-11-03 14:33, dima): shift.
+W1829 (2026-11-03 14:33, dima): go see — is it in a good shape? ❓
+W1830 (2026-11-03 14:33, dima): can i run it now while being afk? ❓
+W1831 (2026-11-03 14:33, dima): I did not try that for a while.
+W1832 (2026-11-03 14:33, dima): what do you need from me to start a ~1h shift while i'll be afk? ❓
+W1833 (2026-11-03 14:34, dima): your SW state stuck, it tells that you are compacting but you already did.
+W1834 (2026-11-03 14:39, dima): shift.
+W1835 (2026-11-03 14:39, dima): If it is rusty, and if the shop trip plan was not drafted and it wasn't actually dropped, it isn't relevant anymore.
+W1836 (2026-11-03 14:39, dima): Let's take a look at the skill and refresh it.
+W1837 (2026-11-03 14:39, dima): Let's groom it a little.
+W1838 (2026-11-03 14:39, dima): I'm concerned about a few key points:
+W1839 (2026-11-03 14:39, dima): 1. The second wind. It should clearly say that you should keep an eye on your second wind while you're on shift and do a second wind for yourself when you approach 60% (when you're at about 55% or something like this).
+W1840 (2026-11-03 14:39, dima): Do it carefully because your context will grow slowly while you're on shift, so you have plenty of time to plan your second winds properly.
+W1841 (2026-11-03 14:39, dima): No rushes there, and the same for everyone else.
+W1842 (2026-11-03 14:39, dima): Since you observe and you can plan, pick good times for everyone to second shift, and you should second wind everyone.
+W1843 (2026-11-03 14:39, dima): Go there or fire crow, and even a side channel if it is already parked.
+W1844 (2026-11-03 14:39, dima): 2. Shift should enable hot cache state for everyone.
+W1845 (2026-11-03 14:39, dima): If anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache, so everyone should be auto-woken up and auto-refreshed, cache-wise.
+W1846 (2026-11-03 14:39, dima): 3. As I mentioned previously, the usual pattern for shift is that you merge automatically without my approval, but for this certain day, it's an exception.
+W1847 (2026-11-03 14:39, dima): Once merge is ready, stay parked until I approve.
+W1848 (2026-11-03 14:39, dima): 4. The PK159 is still left for you to auto-merge.
+W1849 (2026-11-03 14:39, dima): It's fine, but don't forget wishkeeper and everything else.
+W1850 (2026-11-03 14:39, dima): 5. Take a look at what other parts in shift skill are stale or need a refresher, because we changed what since the previous shift run.
+W1851 (2026-11-03 14:39, dima): How we groom it the best way: shape, idea, skill, or how to properly groom it? Propose. ❓
+W1852 (2026-11-03 14:39, dima): let's groom your shift, start the refreshed state and i go afk ~1h.
+W1853 (2026-11-03 14:35, dima, o75 steer): No, let's do it slightly the other way.
+W1854 (2026-11-03 14:35, dima, o75 steer): Currently, your shift should tell you to merge yourself, and it is correct, but my ask to hold with merge is an exception for today.
 <!-- SECTION:NOTES:END -->
