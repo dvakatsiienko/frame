@@ -4,6 +4,7 @@ title: 'side channel owns its pocket items: solved there, never taken over at bo
 status: open
 assignee: []
 created_date: '2026-11-03T14:13:00Z'
+updated_date: '2026-11-03T14:16:00Z'
 labels:
   - s
 dependencies: []
@@ -18,3 +19,11 @@ ordinal: 28000
 W1911 (2026-11-03 16:11, dima, in the side channel): do we have support for side-thread pocket tickets — the tickets i want to solve with the side thread? ❓
 today: `pocket-add --side` only marks the birth, and main's boot takes the item over (script/pocket-add.ts:60, FRM-464). side's pick: an owner field `--side` sets, honoured by the boot and pocket-check; new surface → clio:shape-idea and ⚖️ worth it first. ties to the 12:27 fold candidate «a side channel shapes and builds its own asks». first real case: pk-310 (the Finder restart after the halt).
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+* W1914 (2026-11-03 16:15, dima): we need another feature for pocket, possibly a label for pocket items that marks a ticket as a side channel pocket ticket.
+* W1915 (2026-11-03 16:15, dima): some stuff that i plan and want to solve with a side channel, not with you, to balance the load properly — some stuff is better solved inside the channel.
+* W1916 (2026-11-03 16:15, dima): pocket, not linear for now. propose how to have it; it's reasonably simple, so let's quickly shape the idea and have it right now.
+<!-- SECTION:NOTES:END -->
