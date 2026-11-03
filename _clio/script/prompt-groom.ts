@@ -1,6 +1,7 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --next <PK-N|FRM-N|BYT-N>      print the home's next wish id, W1 for an empty home (PK-312)
+//        node prompt-groom.ts --move <PK-N> <FRM-N|BYT-N> <W-id…>   print the wishes renumbered into the ticket's series and the pocket's «moved:» line (o98); writes nothing
 //        node prompt-groom.ts --standing [YYYY-MM-DD]       print the day's open ` #standing` W-lines, one a line (FRM-482; a new day starts empty)
 //        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
 //        node prompt-groom.ts --check <file…>              red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
@@ -418,6 +419,29 @@ function startHelga() {
 export const nextWishId = (homeText: string): string =>
     `W${Math.max(0, ...[...homeText.matchAll(/^\s*(?:[*-]\s+)?W(\d+)\b/gm)].map((m) => Number(m[1]))) + 1}`;
 
+// a pocket wish moving to a ticket takes the ticket's next ids, text and stamp whole; the pocket keeps a moved line (o98)
+export function moveWishes(
+    pocketText: string,
+    ticketText: string,
+    ticket: string,
+    ids: string[],
+) {
+    const wish = new Map(
+        [...pocketText.matchAll(/^\s*(?:[*-]\s+)?(W\d+) (\(.*)$/gm)].map(
+            (m) => [m[1], m[2]],
+        ),
+    );
+    const missing = ids.filter((id) => !wish.has(id));
+    if (missing.length)
+        throw new Error(`not in the pocket item: ${missing.join(', ')}`);
+    let next = Number(nextWishId(ticketText).slice(1));
+    const moved = ids.map((id) => ({ from: id, to: `W${next++}` }));
+    return {
+        lines: moved.map(({ from, to }) => `* ${to} ${wish.get(from)}`),
+        note: `moved: ${moved.map(({ from, to }) => `${from} → ${ticket}:${to}`).join(', ')}`,
+    };
+}
+
 const homeText = (home: string): string => {
     if (/^PK-\d+$/i.test(home)) {
         const [file] = globSync(
@@ -438,6 +462,17 @@ if (import.meta.main) {
     const today = new Date().toLocaleDateString('sv');
     if (args[0] === '--next') {
         console.log(nextWishId(homeText(args[1] ?? '')));
+        process.exit(0);
+    }
+    if (args[0] === '--move') {
+        const [, item = '', ticket = '', ...ids] = args;
+        const { lines, note } = moveWishes(
+            homeText(item),
+            homeText(ticket),
+            ticket,
+            ids,
+        );
+        console.log([...lines, '', note].join('\n'));
         process.exit(0);
     }
     if (args[0] === '--standing') {

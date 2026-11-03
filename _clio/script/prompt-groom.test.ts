@@ -676,3 +676,38 @@ describe('the next wish id of a home (PK-312)', () => {
         expect(nextWishId('## notes\nnothing yet')).toBe('W1');
     });
 });
+
+describe('a pocket wish moving to a ticket is renumbered into its series (PK-312, o98)', () => {
+    const pocket =
+        'W1912 (2026-11-03 19:16, dima): and sharpen shift even more.\nW1975 (2026-11-03 20:26, dima) [re: Q8]: no spam, by nature. ❓\n';
+    const ticket =
+        '## wish\n\n* W1 (2026-11-03 16:39, dima): good idea.\n* W6 (2026-11-03 16:35, dima): six.\n';
+
+    test('the moved lines take the ticket next ids, text and stamp kept whole', async () => {
+        const { moveWishes } = await import('./prompt-groom.ts');
+        const { lines } = moveWishes(pocket, ticket, 'FRM-9', [
+            'W1975',
+            'W1912',
+        ]);
+        expect(lines).toEqual([
+            '* W7 (2026-11-03 20:26, dima) [re: Q8]: no spam, by nature. ❓',
+            '* W8 (2026-11-03 19:16, dima): and sharpen shift even more.',
+        ]);
+    });
+
+    test('the pocket keeps a moved line naming each old and new id', async () => {
+        const { moveWishes } = await import('./prompt-groom.ts');
+        const { note } = moveWishes(pocket, ticket, 'FRM-9', [
+            'W1975',
+            'W1912',
+        ]);
+        expect(note).toBe('moved: W1975 → FRM-9:W7, W1912 → FRM-9:W8');
+    });
+
+    test('an id the pocket item does not hold is refused, nothing moved', async () => {
+        const { moveWishes } = await import('./prompt-groom.ts');
+        expect(() =>
+            moveWishes(pocket, ticket, 'FRM-9', ['W1912', 'W5']),
+        ).toThrow(/W5/);
+    });
+});
