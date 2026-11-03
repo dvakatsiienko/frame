@@ -1,6 +1,12 @@
 // clio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
 // so a wish folded from it is groomed from his exact words (pm revamp grill 8, dima's W59, o88, o93)
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import {
+    appendFileSync,
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+} from 'node:fs';
 import path from 'node:path';
 
 import { ungroomedPrompts, ungroomedSteersToday } from './prompt-groom.ts';
@@ -44,6 +50,52 @@ export function groomNudge(
         : undefined;
 }
 
+// measured over his raw prompts 10-30 → 11-03: these hit only personal chores; «order», «card», «subscription»,
+// «anthropic», «plan» and «billing» hit fleet prompts too, so they stay out
+const PERSONAL_CHORE =
+    /\b(email|buy|auto-renew|refund|invoice|recruiter|tax|bank)\b/i;
+
+// a personal chore mixed into a running lane's thread is offered clio's side channel, one line
+export function sideChannelNudge(text: string, home: string) {
+    return PERSONAL_CHORE.test(text) && isLaneLive(home)
+        ? '🪟 side channel? a personal chore while a lane runs — `clio:side-channel` keeps it out of the lane'
+        : undefined;
+}
+
+// a live lane is a live session whose registry name carries codie
+function isLaneLive(home: string) {
+    const dir = path.join(home, '.claude/sessions');
+    if (!existsSync(dir)) return false;
+    return readdirSync(dir)
+        .filter((f) => /^\d+\.json$/.test(f))
+        .some((f) => {
+            const name = registryName(path.join(dir, f));
+            return (
+                Boolean(name?.includes('codie')) &&
+                isAlive(Number.parseInt(f, 10))
+            );
+        });
+}
+
+// a registry file cc is mid-writing reads as no name, never a crash of the prompt hook
+function registryName(file: string) {
+    try {
+        return (JSON.parse(readFileSync(file, 'utf8')) as { name?: string })
+            .name;
+    } catch {
+        return undefined;
+    }
+}
+
+function isAlive(pid: number) {
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export function entryFor(prompt: string, at: Date) {
     const hh = String(at.getHours()).padStart(2, '0');
     const mm = String(at.getMinutes()).padStart(2, '0');
@@ -83,5 +135,7 @@ if (import.meta.main) {
             ),
         );
         if (nudge) console.log(nudge);
+        const side = sideChannelNudge(text, process.env.HOME ?? '');
+        if (side) console.log(side);
     }
 }
