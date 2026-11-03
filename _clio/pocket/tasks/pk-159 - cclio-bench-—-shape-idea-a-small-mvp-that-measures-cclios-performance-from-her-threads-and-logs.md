@@ -19,7 +19,6 @@ ordinal: 100010
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** the memory sweep (FRM-267) to close — it runs right after.
 inbox 10-16, wish: build a solid cclio bench, not too complex — a script, recipe or other shape that searches her threads, traces and logs for performance data; any shape that proves to work and look good. the goal: optimise her workload. which data to hunt? reviewing a flow model like hers, what would count as not performant? a small mvp, little effort; made solid only if it works at all, and useful. why: the operator-comms recipe found his comms patterns and flaws, the memory fixes after it felt like a x7 upgrade — the same for cclio: what affects her performance now, what to hunt to bench her properly, her own baseline. she reads her threads and logs herself, hunts inefficiencies in her flows, and fixes them. measures are synthesised through grilling and her own grooming pass after. shape it with cclio:shape-idea. order: right after the memory sweep.
 W1575 (2026-11-03 11:16, dima): pk-159 (clio bench): the idea is simple: optimize clio, but how to actually do this is not simple, because there are quite a lot of ways to do that.
 W1576 (2026-11-03 11:16, dima): i think it is a good idea to do it here, because you are a fork, and you are essentially a clio, because you're forked out of a clio.
