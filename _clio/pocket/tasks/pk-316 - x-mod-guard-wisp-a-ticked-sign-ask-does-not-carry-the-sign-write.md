@@ -18,3 +18,9 @@ ordinal: 31000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 21:17 dima ticked o137 «✍️ sign FRM-502: …»; every x linear body --set that added a ## signed line was still refused «ask dima to tick», and the guard store (~/.claude/plugins/store/x-mod-guard_inline-*.json) held no tick or spent key at all. suspects: the tick never reaches the guard's TICKS state (hooks/register.ts tickFor, ~:671), or the parallel orbit resolve in the same step cleared it. blocks FRM-502's sign line.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+21:22 root cause (likely): the 4th sighting today (flawlog 10:27, 10:40, 14:24, and 21:17) — I resolved o137 in the same step as the sign write; tickFor reads only open ticks, so a resolved one carries nothing. fix candidates: the guard keeps a tick valid for its TICK_MS after resolve, and one tick covers a correction write; or a sign verb that waits for the tick, computes the hash from linear (sign-hash.ts) and writes once — the 20:39 jq wipe and the hash drifts are the same door. second sighting = teeth: a guard/verb fix, never a memory line.
+<!-- SECTION:NOTES:END -->
