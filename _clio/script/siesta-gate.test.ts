@@ -42,7 +42,13 @@ function fixtureHome() {
     return home;
 }
 
-function commit(home: string, files: number, agent: string, subject = '🔧 x') {
+function commit(
+    home: string,
+    files: number,
+    agent: string,
+    subject = '🔧 x',
+    at = new Date(),
+) {
     const repo = join(home, 'frame');
     for (let i = 0; i < files; i++)
         writeFileSync(join(repo, `${agent}-${subject.length}-${i}.txt`), 'x');
@@ -55,7 +61,14 @@ function commit(home: string, files: number, agent: string, subject = '🔧 x') 
             '-m',
             `${subject}\n\nAgent: ${agent} · Claude Opus 5.5`,
         ],
-        { cwd: repo, env: gitEnv() },
+        {
+            cwd: repo,
+            env: {
+                ...gitEnv(),
+                GIT_AUTHOR_DATE: at.toISOString(),
+                GIT_COMMITTER_DATE: at.toISOString(),
+            },
+        },
     );
 }
 
@@ -143,12 +156,18 @@ describe('the siesta comes due', () => {
 
     test('a new epoch nudges again', () => {
         const home = fixtureHome();
-        commit(home, 15, 'clio');
+        commit(home, 15, 'clio', '🔧 x', new Date(Date.now() - 60_000));
         stop(home, stopInput(home), true);
         run(home, ['open']);
         stop(home, stopInput(home), true);
         writeSiesta(home, { ...siesta(home), open: false });
-        commit(home, 15, 'clio', '🐞 another batch');
+        commit(
+            home,
+            15,
+            'clio',
+            '🐞 another batch',
+            new Date(Date.now() + 5000),
+        );
         expect(stop(home, stopInput(home), true)).toMatchObject({
             decision: 'block',
         });
@@ -170,11 +189,18 @@ describe('the siesta comes due', () => {
         ).toBeUndefined();
     });
 
-    test('an open siesta counts nothing due', () => {
+    test('a siesta waiting on his word counts nothing due', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
-        writeSiesta(home, { card_printed: false, highs: [], open: true });
+        writeSiesta(home, { card_printed: true, highs: [], open: true });
         expect(stop(home, stopInput(home), true)).toBeUndefined();
+    });
+
+    test('a siesta opened but never carded is nudged by its next batch', () => {
+        const home = fixtureHome();
+        writeSiesta(home, { card_printed: false, highs: [], open: true });
+        commit(home, 15, 'clio');
+        expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
     });
 
     test('a skill load followed by its tool result and its meta text still counts as this turn’s', () => {
@@ -243,6 +269,8 @@ describe('the siesta comes due', () => {
     test.each([
         '[done] FRM-1 shipped, look card on the ticket',
         'final 1a2b3c4 — local review clean',
+        'final main:231772ad f104a04d',
+        '#12 f104a04 final',
     ])('a member’s ping «%s» makes it due', (ping) => {
         const home = fixtureHome();
         prompt(home, {
@@ -386,6 +414,19 @@ describe('a delivered tick is resolved', () => {
         expect(said(stop(home, stopInput(home), true))).toContain('o7');
     });
 
+    test('a store caught mid-write keeps the ticks already nudged', () => {
+        const home = fixtureHome();
+        store(home, { [`asks:${SID}`]: { items: [ask('o7', true)] } });
+        stop(home, stopInput(home), true);
+        writeFileSync(
+            join(home, '.claude/plugins/store/x-mod-stash_inline-0000.json'),
+            '{"asks:',
+        );
+        stop(home, stopInput(home), true);
+        store(home, { [`asks:${SID}`]: { items: [ask('o7', true)] } });
+        expect(stop(home, stopInput(home), true)).toBeUndefined();
+    });
+
     test('another session’s tick and a resolved one warn nothing', () => {
         const home = fixtureHome();
         store(home, { 'asks:s-other': { items: [ask('o7', true)] } });
@@ -425,6 +466,12 @@ describe('a compaction is logged', () => {
 });
 
 describe('the cli', () => {
+    test('a stdin that is not json leaves the hook silent and whole', () => {
+        const home = fixtureHome();
+        const out = run(home, ['stop'], 'not json');
+        expect(out.status).toBe(0);
+    });
+
     test('stop reads the hook json on stdin and prints its verdict', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');

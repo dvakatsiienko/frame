@@ -25,13 +25,16 @@ const NOT_DIMA = [
     'x-mod-stash waker:',
 ];
 const REMINDER = /<system-reminder>[\s\S]*?<\/system-reminder>/g;
-const MEMBER_DONE = /(^|\n)\s*(\[done\]|final [0-9a-f]{7,40}\b)/;
+// a lane's done: `[done]`, or a line naming «final» beside a sha (`final main:<base> <head>`, `<pr> <sha> final`)
+const MEMBER_DONE = /(^|\n)\s*\[done\]|^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 
 export function stop(home: string, input: StopInput, isBlocking = IS_BLOCKING) {
     const state = readSiesta(home);
     if (state.open && state.card_printed && isAfk(home) && isSettled(state))
         close(state);
-    const reasons = state.open ? [] : dueReasons(home, state);
+    // an open siesta pauses the count only once its card printed: one opened and dropped is nudged by its next batch
+    const reasons =
+        state.open && state.card_printed ? [] : dueReasons(home, state);
     const isDue = reasons.length > 0;
     if (isDue && !state.due) state.epoch++;
     state.due = isDue;
@@ -50,8 +53,10 @@ export function stop(home: string, input: StopInput, isBlocking = IS_BLOCKING) {
         checks.push(`🌤️ siesta due: ${reasons.join(', ')} — load clio:siesta`);
     }
     const ticks = deliveredTicks(home, input.session_id);
-    const newTicks = ticks.filter((id) => !state.nudged_ticks.includes(id));
-    state.nudged_ticks = ticks;
+    const newTicks = (ticks ?? []).filter(
+        (id) => !state.nudged_ticks.includes(id),
+    );
+    if (ticks) state.nudged_ticks = ticks;
     if (newTicks.length)
         checks.push(
             `🛎️ delivered tick(s) unresolved: ${newTicks.join(' ')} — orbit resolve`,
@@ -185,27 +190,29 @@ function loadedSiesta(transcriptPath?: string) {
 
 // x-mod-stash mirrors each session's open asks into its store; `isLocked` is a tick that joined a prompt
 function deliveredTicks(home: string, sessionId?: string) {
-    const asks = stashStore(home)[`asks:${sessionId}`] as
+    const store = stashStore(home);
+    if (!store) return undefined;
+    const asks = store[`asks:${sessionId}`] as
         | { items?: { id: string; isLocked?: boolean }[] }
         | undefined;
     return (asks?.items ?? []).filter((a) => a.isLocked).map((a) => a.id);
 }
 
 function isAfk(home: string) {
-    return (stashStore(home).afk as { on?: boolean } | undefined)?.on === true;
+    return (stashStore(home)?.afk as { on?: boolean } | undefined)?.on === true;
 }
 
-function stashStore(home: string): Record<string, unknown> {
+// no store file reads empty; one that does not parse is unknown, so a caller keeps what it knew
+function stashStore(home: string): Record<string, unknown> | undefined {
     const dir = path.join(home, '.claude/plugins/store');
     const file = existsSync(dir)
         ? readdirSync(dir).find((f) => /^x-mod-stash_inline-.*\.json$/.test(f))
         : undefined;
-    const kept = file
-        ? parsed<Record<string, unknown>>(
-              readFileSync(path.join(dir, file), 'utf8'),
-          )
-        : undefined;
-    return kept && typeof kept === 'object' ? kept : {};
+    if (!file) return {};
+    const kept = parsed<Record<string, unknown>>(
+        readFileSync(path.join(dir, file), 'utf8'),
+    );
+    return kept && typeof kept === 'object' ? kept : undefined;
 }
 
 function isSettled(state: Siesta) {
@@ -316,7 +323,10 @@ function door(home: string, [verb, ...args]: string[]) {
 if (import.meta.main) {
     const home = process.env.HOME ?? '';
     const [verb = '', ...args] = process.argv.slice(2);
-    const hook = () => JSON.parse(readFileSync(0, 'utf8') || '{}');
+    const hook = () =>
+        parsed<StopInput & { prompt?: string; trigger?: string }>(
+            readFileSync(0, 'utf8'),
+        ) ?? {};
     if (verb === 'stop') {
         const out = stop(home, hook());
         if (out) console.log(JSON.stringify(out));
