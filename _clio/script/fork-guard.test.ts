@@ -168,6 +168,44 @@ describe('fork-guard fork-edit', () => {
     test('the main edits its checkout freely', () => {
         expect(edit(String(process.pid), join(repo, 'a.md'))).toBe('');
     });
+
+    const bash = (command: string) =>
+        run(
+            ['fork-bash'],
+            String(process.ppid),
+            state,
+            JSON.stringify({
+                cwd: repo,
+                session_id: 'd1bbf86b-x',
+                tool_input: { command },
+            }),
+        ).stdout;
+
+    test('a fork commits its own pocket items in a main checkout', () => {
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a side item.md"',
+            ),
+        ).toBe('');
+    });
+
+    test('a fork commit naming any other path in a main checkout is refused', () => {
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md" a.md',
+            ),
+        ).toContain('«fork-d1bbf86b»');
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"; rm a.md',
+            ),
+        ).toContain('«fork-d1bbf86b»');
+        expect(
+            bash(
+                'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md other/b.md',
+            ),
+        ).toContain('«fork-d1bbf86b»');
+    });
 });
 
 describe('fork-guard announce', () => {
