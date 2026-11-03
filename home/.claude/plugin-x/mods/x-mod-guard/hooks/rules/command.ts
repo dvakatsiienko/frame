@@ -253,6 +253,8 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
     const wrappers: string[] = [];
     const envArgs: string[] = [];
     let envSplit: string | undefined;
+    // `sudo -s` or `-i` with no command left runs root's shell, reading stdin
+    let isRootShell = false;
     for (;;) {
         const head = words[0]?.text ?? '';
         if (KEYWORDS.has(head)) {
@@ -305,6 +307,13 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         ) {
             const flag = words[0]?.text ?? '';
             const long = flag.split('=')[0] ?? flag;
+            if (
+                wrapper === 'sudo' &&
+                (/^-[A-Za-z]*[si]/.test(flag) ||
+                    long === '--shell' ||
+                    long === '--login')
+            )
+                isRootShell = true;
             // a short cluster read as getopt does: its first valued letter takes the rest, or the next word when last
             const letters: string =
                 /^-[A-Za-z]/.test(flag) && !values.includes(flag)
@@ -354,7 +363,7 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         envArgs,
         ...(envSplit !== undefined && { envSplit }),
         ...(first && { head: first }),
-        name: first ? basename(first.text) : '',
+        name: first ? basename(first.text) : isRootShell ? 'sh' : '',
         reads: reads(raw),
         stdouts: stdouts(raw),
         wrappers,
@@ -801,7 +810,7 @@ export function nestedScripts(c: Command): string[] {
                 ? c.feeders.flatMap(printed)
                 : [];
         }
-        const script = operands(
+        const script = shellOperands(
             c.args.filter(
                 (w, i) => w.text !== '<<<' && c.args[i - 1]?.text !== '<<<',
             ),
@@ -813,6 +822,16 @@ export function nestedScripts(c: Command): string[] {
         if (!isStdin) return [];
         const piped = c.feeders.flatMap(printed);
         return [...herestrings(texts), ...c.bodies, ...piped];
+    }
+    // su runs its -c string, or else what it reads on stdin, in the user's shell
+    if (c.name === 'su') {
+        const at = texts.findIndex((t) => t === '-c' || t === '--command');
+        if (at >= 0) return texts.slice(at + 1, at + 2);
+        return [
+            ...herestrings(texts),
+            ...c.bodies,
+            ...c.feeders.flatMap(printed),
+        ];
     }
     // ssh runs its command, or else what it reads on stdin, in the remote shell
     if (c.name === 'ssh') {
@@ -829,12 +848,20 @@ export function nestedScripts(c: Command): string[] {
             at += SSH_VALUED.has(texts[at] ?? '') ? 2 : 1;
         if (texts[at] === '--') at++;
         const remote = texts.slice(at);
-        if (remote.length) return [remote.join(' ')];
-        return [
+        const stdin = [
             ...herestrings(texts),
             ...c.bodies,
             ...c.feeders.flatMap(printed),
         ];
+        if (!remote.length) return stdin;
+        // a remote shell with no script of its own reads the stdin ssh hands it
+        const [head] = commands(parse(remote.join(' ')), c.dir);
+        const isShellOnStdin =
+            head !== undefined &&
+            SHELLS.has(head.name) &&
+            !head.args.some((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text)) &&
+            !shellOperands(head.args).length;
+        return [remote.join(' '), ...(isShellOnStdin ? stdin : [])];
     }
     if (c.name === 'eval') return [texts.join(' ')];
     // a script held in a string: trap's action, an alias's body, a git alias that starts with `!`
@@ -919,6 +946,8 @@ export function writtenScripts(c: Command, ctx: Context): Written[] {
         ...tees.map((p) => [p, isTeeAppend] as const),
     ].map(([p, isAppend]) => [resolve(p, c.dir, ctx), text, isAppend]);
 }
+// stands for text the turn wrote that the guard could not keep: past its size cap, or edited in a way the kept text misses
+export const UNREAD = '\u0000x-mod-guard: unread';
 // the writes laid over the files written so far, in order: `>` replaces a file's text, `>>` adds to it; newest last
 export function laidOver(files: Map<string, string>, writes: Written[]) {
     for (const [path, text, isAppend] of writes) {
@@ -945,14 +974,30 @@ export function aliasRun(body: string, args: Word[]) {
         ? `${body.slice(1)}${tail}`
         : `git ${body}${tail}`;
 }
-// the file a command runs as a script: a shell's or `source`'s first operand, or a head typed as a path (`./x.sh`)
+// a shell's operands: past its flags and the option names `-o`/`+o`/`-O`/`+O` take
+export function shellOperands(args: Word[]) {
+    return args
+        .filter((w, i) => !/^[-+][oO]$/.test(args[i - 1]?.text ?? ''))
+        .filter((w) => !/^[-+]/.test(w.text) || w.text === '-')
+        .map((w) => w.text);
+}
+// the file a command runs as a script: a shell's or `source`'s first operand, what a shell reads on stdin from a `< file`
+// or a `cat file |`, or a head typed as a path (`./x.sh`)
 export function scriptRun(c: Command, ctx: Context) {
     const isSource = c.name === 'source' || c.name === '.';
     const texts = c.args.map((w) => w.text);
     const isDashC = texts.some((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
+    const [feeder] = c.feeders;
+    const catted =
+        c.feeders.length === 1 && feeder?.name === 'cat'
+            ? operands(feeder.args)
+            : [];
+    const stdin =
+        c.reads.at(-1) ?? (catted.length === 1 ? catted[0] : undefined);
     const path =
         (SHELLS.has(c.name) || isSource) && !isDashC
-            ? operands(c.args)[0]
+            ? (shellOperands(c.args)[0] ??
+              (SHELLS.has(c.name) ? stdin : undefined))
             : c.head?.text.includes('/')
               ? c.head.text
               : undefined;

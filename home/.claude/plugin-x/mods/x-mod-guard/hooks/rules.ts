@@ -5,6 +5,7 @@ import {
     type Refusal,
     SHELLS,
     TICKET_KEY,
+    UNREAD,
     type Verdict,
     actsIn,
     adds,
@@ -390,10 +391,18 @@ export function refusals(
         // read with the line's own writes, and without itself: a script that runs itself is read once
         const others = new Map(written);
         if (ran !== undefined) others.delete(ran);
+        // text the guard could not keep runs unread: said, beside what the kept part trips
+        if (ran !== undefined && body?.includes(UNREAD))
+            out.push({
+                door: `read ${ran} first, then run its commands as a call of their own`,
+                rule: 'write-then-run',
+                targets: [ran],
+                why: `${ran} was written this turn past what the guard keeps (32k characters, or an edit it could not follow), so what it runs is unread`,
+            });
         if (body !== undefined)
             out.push(
                 ...refusals(
-                    body,
+                    body.replaceAll(UNREAD, ''),
                     c.dir,
                     { ...ctx, written: others },
                     isPlain,

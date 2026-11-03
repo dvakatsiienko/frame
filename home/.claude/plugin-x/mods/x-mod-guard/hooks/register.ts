@@ -2,7 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal, Written } from './rules/command.ts';
-import { TICKET_KEY, laidOver, resolve } from './rules/command.ts';
+import { TICKET_KEY, UNREAD, laidOver, resolve } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
@@ -859,11 +859,49 @@ async function markWritten($: EngineInterface, files: Written[]) {
     for (let tries = 0; tries < 3; tries++) {
         const { value = {}, version } = await $.state.get(WRITTEN);
         const next = [...laidOver(new Map(Object.entries(value)), files)].map(
-            ([path, text]) => [path, text.slice(0, WRITTEN_CHARS)],
+            ([path, text]) => [
+                path,
+                text.length > WRITTEN_CHARS
+                    ? `${text.slice(0, WRITTEN_CHARS)}${UNREAD}`
+                    : text,
+            ],
         );
         const { isSet } = await $.state.set(
             WRITTEN,
             Object.fromEntries(next.slice(-WRITTEN_FILES)),
+            { ifVersion: version },
+        );
+        if (isSet) return;
+    }
+}
+// an Edit of a file the turn wrote changes the text a later run reads; an edit the kept text cannot place leaves it unread
+type TextEdit = {
+    old_string: string;
+    new_string: string;
+    replace_all?: boolean;
+};
+async function editWritten(
+    $: EngineInterface,
+    path: string,
+    edits: TextEdit[],
+) {
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = {}, version } = await $.state.get(WRITTEN);
+        const kept = value[path];
+        if (kept === undefined) return;
+        let text: string | undefined = kept;
+        for (const e of edits) {
+            if (text === undefined || !text.includes(e.old_string)) {
+                text = undefined;
+                break;
+            }
+            text = e.replace_all
+                ? text.replaceAll(e.old_string, e.new_string)
+                : text.replace(e.old_string, () => e.new_string);
+        }
+        const { isSet } = await $.state.set(
+            WRITTEN,
+            { ...value, [path]: text ?? UNREAD },
             { ifVersion: version },
         );
         if (isSet) return;
@@ -1636,6 +1674,20 @@ export const register: Register = (on) => {
             )
                 await markWritten($, [
                     [resolve(path, '/', {}), e.content],
+                ]).catch(() => undefined);
+            if (
+                e.tool === 'Edit' &&
+                typeof e.old_string === 'string' &&
+                typeof e.new_string === 'string' &&
+                result.deny === undefined &&
+                !result.isError
+            )
+                await editWritten($, resolve(path, '/', {}), [
+                    {
+                        new_string: e.new_string,
+                        old_string: e.old_string,
+                        replace_all: e.replace_all === true,
+                    },
                 ]).catch(() => undefined);
             return result;
         },

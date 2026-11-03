@@ -34,6 +34,18 @@ const PASSES = [
     // FRM-472 review: text that is no shell script is never read as one
     ['a tee heredoc kept as a file', 'tee notes.md <<EOF\nrm -rf x\nEOF'],
     ['a node -e string', `node -e 'console.log("rm -rf x")'`],
+    // sixth sense round 1: a quoted heredoc keeps its $( … ) as text; a harmless one runs; ssh's cat reads data
+    [
+        'a quoted heredoc holding a $( … )',
+        "cat <<'EOF' > f.md\n$(rm -rf x)\nEOF",
+    ],
+    [
+        'an escaped $( in an unquoted heredoc',
+        'cat <<EOF > f.md\n\\$(rm -rf x)\nEOF',
+    ],
+    ['a harmless $( … ) in a heredoc', 'cat <<EOF > f.md\nnow $(date)\nEOF'],
+    ['a heredoc ssh hands to cat', 'ssh box "cat > f" <<EOF\nrm -rf x\nEOF'],
+    ['a bash -o option with no script', 'bash -o pipefail -c ls'],
 ] as const;
 for (const [shape, command] of PASSES)
     test(`a harmless command the reader opens runs unwarned: ${shape}`, async ($, on) => {

@@ -68,6 +68,22 @@ const FLAGGED = [
         'a push with hooksPath, any case',
         'git -c core.hookspath= push',
     ],
+    // sixth sense round 1, exit 3 twins
+    [
+        'hooks-bypass',
+        'a persisted hooksPath',
+        'git config core.hooksPath /dev/null',
+    ],
+    [
+        'hooks-bypass',
+        'a hooksPath set through GIT_CONFIG_KEY',
+        'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m x -- a.ts',
+    ],
+    [
+        'hooks-bypass',
+        'a hooksPath through --config-env',
+        'git --config-env=core.hooksPath=H commit -m x -- a.ts',
+    ],
 ] as const;
 for (const [rule, shape, command] of FLAGGED)
     test(`${shape} runs flagged with its rule and door`, async ($, on) => {
@@ -109,6 +125,17 @@ for (const [shape, cwd, command] of PLAIN)
         ]).toEqual([undefined, false, [command]]);
     });
 
+// sixth sense round 1: a push pointed at frame by its git dir is the same push, from any cwd
+for (const command of [
+    'git --git-dir=/home/frame/.git push',
+    'git --git-dir /home/frame/.git push',
+    'GIT_DIR=/home/frame/.git git push',
+])
+    test(`a push pointed at frame's git dir is flagged from another repo: ${command}`, async ($, on) => {
+        world(on, '/home/projects/bytes');
+        expect(warned(await bash($, command), 'bare-push')).toBe(true);
+    });
+
 // exit 7: sudo drops CLAUDECODE, so what the guard refuses bare it refuses under sudo; a warn-only rule never lets it through
 const STILL_REFUSED = [
     ['sudo ahead of a push', 'sudo git push'],
@@ -128,7 +155,8 @@ for (const [shape, command] of STILL_REFUSED)
         ]);
     });
 
-// exit 9: raw linear has `issue update`, no `edit` alias; the door names x linear, never a verb raw linear lacks
+// exit 9: raw linear has `issue update`, no `edit` alias; the door names x linear, never a verb raw linear lacks — a
+// regression guard only: the `edit` branch was dead, so base passes it too
 test('a raw linear body write is pointed at x linear body, never at an edit alias', async ($, on) => {
     world(on);
     const text = String(

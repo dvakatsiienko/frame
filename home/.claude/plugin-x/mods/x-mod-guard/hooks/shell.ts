@@ -92,7 +92,12 @@ export function parse(command: string): Parsed {
     let words: Word[] = [];
     let subst: Segment[] = [];
     let bodies: { text: string }[] = [];
-    const pending: { delimiter: string; body: { text: string } }[] = [];
+    // into: the substitutions of the command that owns an unquoted heredoc, where its body's `$( … )` and backticks join
+    const pending: {
+        delimiter: string;
+        body: { text: string };
+        into?: Segment[];
+    }[] = [];
     let text = '';
     let isWord = false;
     let isExpanding = false;
@@ -257,7 +262,7 @@ export function parse(command: string): Parsed {
     };
     const skipHeredocs = () => {
         while (pending.length) {
-            const { delimiter, body } = pending.shift() ?? {
+            const { delimiter, body, into } = pending.shift() ?? {
                 body: { text: '' },
                 delimiter: '',
             };
@@ -270,6 +275,15 @@ export function parse(command: string): Parsed {
                 lines.push(line);
             }
             body.text = lines.join('\n');
+            // an unquoted body expands as a double-quoted string does, so its substitutions run as it is read: commands of
+            // the line, and feeders of the command that owns the heredoc; the last segment is the string itself
+            if (into) {
+                const inner = parse(
+                    `"${body.text.replace(/"/g, '\\"')}"`,
+                ).segments;
+                segments.push(...inner.slice(0, -1));
+                into.push(...inner.flatMap((s) => s.subst));
+            }
         }
     };
     const heredoc = () => {
@@ -279,8 +293,10 @@ export function parse(command: string): Parsed {
         while (command[i] === ' ' || command[i] === '\t') i++;
         // the delimiter is one word with its quotes removed, as bash reads it: `<<E"F"` and `<<"E"F` both end at EF
         let delimiter = '';
+        let isQuotedEnd = false;
         while (i < command.length && !/[\s;&|<>()]/.test(command[i] ?? '')) {
             const ch = command[i] ?? '';
+            if (ch === "'" || ch === '"' || ch === '\\') isQuotedEnd = true;
             if (ch === "'" || ch === '"') {
                 const end = command.indexOf(ch, i + 1);
                 delimiter += command.slice(i + 1, end < 0 ? undefined : end);
@@ -295,7 +311,11 @@ export function parse(command: string): Parsed {
         }
         if (delimiter) {
             const body = { text: '' };
-            pending.push({ body, delimiter });
+            pending.push({
+                body,
+                delimiter,
+                ...(!isQuotedEnd && { into: subst }),
+            });
             bodies.push(body);
         }
     };

@@ -1395,6 +1395,20 @@ EOF`,
         'an alias persisted by git config set',
         "git config set alias.x 'push -f'",
     ],
+    // sixth sense round 1: su's -c string, and an unquoted heredoc's $( … ) and backticks run as the heredoc is read
+    ['refused', 'reader', "su's -c string", "su -c 'rm -rf x'"],
+    [
+        'refused',
+        'reader',
+        'a $( … ) in an unquoted heredoc kept as a file',
+        'cat <<EOF > f.md\n$(rm -rf x)\nEOF',
+    ],
+    [
+        'refused',
+        'reader',
+        'a backtick in an unquoted heredoc kept as a file',
+        'cat <<EOF > f.md\nnow `rm -rf x`\nEOF',
+    ],
     // FRM-472 review: every shell that reads a heredoc on stdin
     ...(
         [
@@ -1404,6 +1418,13 @@ EOF`,
             ['env bash', 'env bash'],
             ['sudo sh', 'sudo sh'],
             ['bash -s --', 'bash -s -- a'],
+            // sixth sense round 1, exit 2 twins
+            ['bash -o pipefail', 'bash -o pipefail'],
+            ['a shell ssh runs', 'ssh box bash -s'],
+            ['sudo -s', 'sudo -s'],
+            ['sudo -i', 'sudo -i'],
+            ['su', 'su'],
+            ['su - root', 'su - root'],
         ] as const
     ).map(
         ([shape, shell]): Row => [

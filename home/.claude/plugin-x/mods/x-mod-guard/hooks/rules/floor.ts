@@ -14,6 +14,7 @@ import {
     operands,
     or,
     peel,
+    resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
 
@@ -372,7 +373,16 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
 export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
     if (c.name !== 'git') return undefined;
     const { configs, sub, subArgs } = gitParts(c.args);
-    const hooks = configs.find((k) => /^core\.hookspath(?:=|$)/i.test(k));
+    const ops = operands(subArgs);
+    const [key] = ops[0] === 'set' ? ops.slice(1) : ops;
+    // a `-c` or `--config-env` key, one `git config` persists, or one the environment hands git (`GIT_CONFIG_KEY_<n>`)
+    const hooks = [
+        ...configs,
+        ...(sub === 'config' && key ? [key] : []),
+        ...c.assigns.flatMap(
+            (a) => a.match(/^GIT_CONFIG_KEY_\d+=(.*)$/)?.[1] ?? [],
+        ),
+    ].find((k) => /^core\.hookspath(?:=|$)/i.test(k));
     if (hooks)
         return {
             door: 'fix what the hook refused, then run it without the override',
@@ -380,7 +390,20 @@ export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
             targets: [hooks.split('=')[0] ?? hooks],
             why: '-c core.hooksPath swaps out the hooks a commit or push runs',
         };
-    const dir = gitDir(c, ctx);
+    // the repo a push leaves from: where it runs, or the tree a `--git-dir` or `GIT_DIR` names
+    const named =
+        c.args.flatMap((w, i) =>
+            w.text.startsWith('--git-dir=')
+                ? [w.text.slice('--git-dir='.length)]
+                : w.text === '--git-dir'
+                  ? [c.args[i + 1]?.text ?? '']
+                  : [],
+        )[0] ??
+        c.assigns.flatMap((a) => a.match(/^GIT_DIR=(.+)$/)?.[1] ?? [])[0];
+    const dir =
+        named === undefined
+            ? gitDir(c, ctx)
+            : resolve(named, gitDir(c, ctx), ctx).replace(/\/\.git\/?$/, '');
     const frame = `${ctx.home}/frame`;
     if (
         sub === 'push' &&

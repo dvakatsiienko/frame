@@ -45,6 +45,10 @@ const RUN_AFTER_WRITE = [
         'a script run by another written on the line',
         "echo 'rm -rf x' > b.sh; echo 'bash b.sh' > a.sh; bash a.sh",
     ],
+    // sixth sense round 1: a written script fed on stdin, or run past a shell's valued option
+    ['a script fed by <', "echo 'rm -rf x' > s.sh; bash < s.sh"],
+    ['a script piped from cat', "echo 'rm -rf x' > s.sh; cat s.sh | sh"],
+    ['a script past bash -o', "echo 'rm -rf x' > s.sh; bash -o errexit s.sh"],
     [
         'a line appended by tee -a',
         'cat <<EOF > s.sh\nrm -rf x\nEOF\ntee -a s.sh <<EOF\nls\nEOF\nbash s.sh',
@@ -150,6 +154,40 @@ for (const [shape, body, isWarned] of SELF_RUN)
             ran.at(-1),
         ]).toEqual([undefined, isWarned, 'bash x.sh']);
     });
+
+// sixth sense round 1: an Edit after the Write changes the text a run reads; a script too long to keep is still warned
+const edit = ($: Engine, path: string, from: string, to: string) =>
+    $.tool.call({
+        file_path: path,
+        new_string: to,
+        old_string: from,
+        tool: 'Edit',
+    });
+const EDITED = [
+    ['an Edit that adds a refused line', 'ls\n', 'ls', 'rm -rf x', true],
+    [
+        'an Edit that takes a refused line out',
+        'rm -rf x\n',
+        'rm -rf x',
+        'ls',
+        false,
+    ],
+] as const;
+for (const [shape, body, from, to, isWarned] of EDITED)
+    test(`a written script is read as edited since: ${shape}`, async ($, on) => {
+        world(on);
+        await write($, '/repo/x.sh', body);
+        await edit($, '/repo/x.sh', from, to);
+        expect(
+            JSON.stringify(await bash($, 'bash x.sh')).includes(WARNED),
+        ).toBe(isWarned);
+    });
+
+test('a written script longer than the guard keeps still warns when run', async ($, on) => {
+    world(on);
+    await write($, '/repo/x.sh', `${'echo a\n'.repeat(6000)}rm -rf x\n`);
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
 
 test('a Write with no refused command runs its script unwarned', async ($, on) => {
     world(on);
