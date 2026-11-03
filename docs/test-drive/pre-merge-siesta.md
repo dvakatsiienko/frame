@@ -20,5 +20,6 @@ Ticket: none
 - the retro fold per chunk — retros folded at the siesta, lines moved, minutes
 
 ## rounds
+- 2026-11-03 · FRM-472 (mods quick lane, 50c3f7db → ff02e946, after sixth sense's clean on round 5) · wishkeeper 13 min, 12 findings: 2 high real (o83 only partly met, 6 unwarned variants with no fixing ticket → pk-309; fork-guard's pocket pass let a tab split a non-pocket path → fixed 052c6e0e, red-proven), 5 medium (the done test says «refused» while the code warns; a stale replay count; an exponential `$((` cost) · hit: both highs were invisible to sixth sense's exit-line grade, one was in clio's own rider
 
 ## verdict
