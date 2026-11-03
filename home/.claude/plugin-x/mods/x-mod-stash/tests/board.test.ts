@@ -1454,8 +1454,28 @@ const hotChip = async (
     sid: string,
 ) => {
     const chip = await view.find({ key: `hot:${sid}`, type: 'Button' });
-    return chip && (chip.props.dimColor ? 'off' : 'on');
+    return chip && (chip.props.variant === 'secondary' ? 'on' : 'off');
 };
+
+// dima's 20:41 shots: on and off read alike as a faint dim; the chip now draws as the band's own 🔥 toggle
+test("a row's 🔥 chip draws as the band's toggle: filled when on, plain when off", async ($, on) => {
+    fleet(on, {}, { bg: [2] });
+    const view = await board($);
+    const look = async () => {
+        const chip = await view.find({ key: `hot:${PEER}`, type: 'Button' });
+        return {
+            dimColor: chip?.props.dimColor,
+            plain: chip?.props.plain,
+            variant: chip?.props.variant,
+        };
+    };
+    const off = await look();
+    await view.press({ key: `hot:${PEER}` });
+    expect([off, await look()]).toEqual([
+        { dimColor: undefined, plain: true, variant: undefined },
+        { dimColor: undefined, plain: undefined, variant: 'secondary' },
+    ]);
+});
 
 test("a --bg member's 🔥 chip writes its key and draws on", async ($, on) => {
     const f = fleet(on, {}, { bg: [2] });

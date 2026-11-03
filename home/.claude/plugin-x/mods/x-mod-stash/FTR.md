@@ -384,11 +384,11 @@
   - proof: tests/board.test.ts::a probe whose session is gone warns on clio's board (+ older than a day, live session's fresh probe none, only a file none, stale probe stays off any board but clio's)
 - ✅ a 🔥 chip on every 🌌 sessions row keeps that session's cache hot, a `--bg` member's included (FRM-499)
   - makes: a `hot:<session id>` key in the store, the one the band's 🔥 reads; its own stash arms the ping
-  - given the board is open, then every row draws a 🔥 left of its 🐦‍🔥, lit while the session's key is in the store, dim while not
+  - given the board is open, then every row draws a 🔥 left of its 🐦‍🔥 as the band's own toggle: the filled `secondary` chip while the session's key is in the store, plain while not, so on and off read at a glance (dima's 20:41 shots: a faint dim read the same both ways)
   - when dima presses a row's 🔥, then the key is written and the chip lights; a second press deletes it and the chip dims
   - given this session's own row, then its chip and the band's 🔥 always show one state, whichever is flipped
   - decision: no new store and no cross-session message; the band's 🔥 stays as it is (dima's o99, re-signed o102)
-  - proof: tests/board.test.ts::a --bg member's 🔥 chip writes its key and draws on (+ a second press deletes, own row chip and band show one state)
+  - proof: tests/board.test.ts::a --bg member's 🔥 chip writes its key and draws on (+ a second press deletes, own row chip and band show one state, a row's 🔥 chip draws as the band's toggle)
 
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 

@@ -6312,16 +6312,23 @@ export const register: Register = (on) => {
                                                 ) : null}
                                             </Box>
                                         ) : null}
-                                        {/* 🔥 keep-hot for any session, a --bg one included: lit while its key is in the store (FRM-499) */}
+                                        {/* 🔥 keep-hot for any session, a --bg one included: the band's own toggle, filled while its key is in
+                                            the store, plain while not — a faint dim read the same both ways (FRM-499, dima's 20:41 shots) */}
                                         {isPartOn('stash.hot') ? (
                                             <Box flexShrink={0}>
                                                 <Button
-                                                    dimColor={!m.isHot}
                                                     key={`hot:${m.sid}`}
                                                     onPress={() =>
                                                         pressHot($, m.sid)
                                                     }
-                                                    plain>
+                                                    {...(m.isHot
+                                                        ? {
+                                                              variant:
+                                                                  'secondary' as const,
+                                                          }
+                                                        : {
+                                                              plain: true as const,
+                                                          })}>
                                                     🔥
                                                 </Button>
                                             </Box>
