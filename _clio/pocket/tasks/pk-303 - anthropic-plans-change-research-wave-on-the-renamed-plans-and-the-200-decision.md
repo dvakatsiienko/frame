@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-03T08:04:00Z'
-updated_date: '2026-11-03T10:33:00Z'
+updated_date: '2026-11-03T11:40:00Z'
 labels:
   - s
 dependencies: []
@@ -91,4 +91,6 @@ close: W1549–W1555, W1562–W1566, W1570–W1573 done — answered in ~/frame/
 close: done, answered in docs/research/claude-plans-2026-11.md and the o4 lapse plan: W1549 W1550 W1551 W1552 W1553 W1554 W1555 W1562 W1563 W1564 W1565 W1566 W1570 W1571 W1572 W1573; moved → PK-304: W1568 W1569 W1574
 
 label fix (wishkeeper 12:20): W1663 W1667 W1668 W1673 W1685 are clio's reply lines dima quoted with «←» — context, not his wants; his want is the «←» answer beside each. W1673 is advice clio withdrew at 10:30.
+
+note (clio, wishkeeper 13:09): the close lines naming each id are the record; the range-style close lines beside them repeat the same ids
 <!-- SECTION:NOTES:END -->
