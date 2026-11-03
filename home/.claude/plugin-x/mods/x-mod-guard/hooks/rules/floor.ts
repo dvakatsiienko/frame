@@ -1,4 +1,3 @@
-import { parse } from '../shell.ts';
 import {
     ASK,
     type Command,
@@ -8,7 +7,7 @@ import {
     STASH,
     TRASH,
     VAULT,
-    commands,
+    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
@@ -35,7 +34,7 @@ const STASH_VALUE = new Set(['-m', '--message', '--pathspec-from-file']);
 const WHOLE_TREE = /^(?:\.\/?|\*|:\/?\*?|:\(top\)\*?)$/;
 export function stashSweeps(command: string, cwd: string, ctx: Context) {
     const dirs: string[] = [];
-    for (const c of commands(parse(command), cwd)) {
+    for (const c of commandsDeep(command, cwd)) {
         if (c.name !== 'git') continue;
         const { sub, subArgs } = gitParts(c.args);
         if (sub !== 'stash') continue;

@@ -40,7 +40,7 @@ import { type Parsed, parse } from './shell.ts';
 // same command makes (a > redirect, touch, mkdir, a cp or mv dest) is there by the time the add runs
 export function addedPaths(command: string, cwd: string, ctx: Context = {}) {
     const made = new Set<string>();
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const added = adds(c, ctx)
             .map((a) => a.path)
             .filter((p) => !made.has(p));
@@ -317,7 +317,7 @@ const SCRATCH_TREE = /\/\.claude\/(worktrees\/[^/]+|jobs\/[^/]+\/tmp\/.+)$/;
 // the scratch trees a clio `git worktree remove` names, for the caller to look up; a tree elsewhere asks anyway
 export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
     if (!ctx.isClio) return [];
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         if (c.name !== 'git') return [];
         const { sub, subArgs } = gitParts(c.args);
         const ops = operands(subArgs);
@@ -548,7 +548,7 @@ export function message(r: Refusal) {
 
 // the dirs a `CI=1 pnpm install` in this command runs in, for the caller to check for a changed manifest
 export function installDirs(command: string, cwd: string, ctx: Context = {}) {
-    return frozenInstallDirs(commands(parse(command), cwd), ctx);
+    return frozenInstallDirs(commandsDeep(command, cwd), ctx);
 }
 
 // a foreground `claude -p` holds the session's thread until it ends: a probe of eight runs blocked clio for 3 minutes

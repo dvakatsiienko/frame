@@ -1218,4 +1218,57 @@ EOF`,
     ],
     ['refused', 'runner', 'bunx', 'bunx git stash clear'],
     ['refused', 'runner', 'pnpx with a flag', 'pnpx --yes rm -rf x'],
+    // FRM-472 exit 2: a heredoc into ssh runs on the remote shell, as does ssh's command
+    [
+        'refused',
+        'reader',
+        'a heredoc into ssh',
+        'ssh host <<EOF\nrm -rf x\nEOF',
+    ],
+    ['refused', 'reader', "ssh's remote command", "ssh -p 22 host 'rm -rf x'"],
+    [
+        'refused',
+        'reader',
+        'an eval of a cat heredoc',
+        'eval "$(cat <<EOF\nrm -rf x\nEOF\n)"',
+    ],
+    // FRM-472 R3 row 11: echo's flags are not what it prints
+    [
+        'refused',
+        'reader',
+        'a head echoed past -n',
+        'x=$(echo -n rm); $x -rf ~/frame',
+    ],
+    // R3 row 15: a packed env flag whose last letter takes a value
+    [
+        'refused',
+        'linear-as-dima',
+        'env -vu CLAUDECODE',
+        'env -vu CLAUDECODE x linear read FRM-1',
+    ],
+    // R3 row 16: what a feeder prints, filled
+    [
+        'refused',
+        'reader',
+        'a printf format filled',
+        "printf 'git push %s\\n' --force | bash",
+    ],
+    [
+        'refused',
+        'reader',
+        'a cat herestring into a shell',
+        "cat <<<'rm -rf x' | bash",
+    ],
+    [
+        'refused',
+        'reader',
+        'xargs feeding bash -c',
+        "printf 'rm -rf x\\0' | xargs -0 bash -c",
+    ],
+    // R3 row 21: more wrappers that run the next word
+    ['refused', 'wrapper', 'gtimeout', 'gtimeout 5 rm -rf ~/frame'],
+    ['refused', 'wrapper', 'flock', 'flock /tmp/l rm -rf x'],
+    ['refused', 'wrapper', 'watch', 'watch -n 1 rm -rf x'],
+    ['refused', 'wrapper', 'chronic', 'chronic rm -rf x'],
+    ['refused', 'wrapper', 'unbuffer', 'unbuffer rm -rf x'],
 ];

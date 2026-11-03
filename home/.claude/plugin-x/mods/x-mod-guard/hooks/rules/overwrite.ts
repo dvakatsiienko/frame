@@ -33,7 +33,7 @@ export function overwrittenPaths(
     cwd: string,
     ctx: Context = {},
 ) {
-    return commands(parse(command), cwd).flatMap((c) => {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const dir = resolve(c.dir, '/', ctx);
         const moved =
             c.name === 'mv' || c.name === 'cp'

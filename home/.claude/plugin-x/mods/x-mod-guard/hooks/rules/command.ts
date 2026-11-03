@@ -84,6 +84,11 @@ const WRAPPERS = new Map<string, string[]>([
     ['nice', ['-n']],
     ['nohup', []],
     ['npx', ['-p', '--package']],
+    ['gtimeout', ['-s', '-k', '--signal', '--kill-after']],
+    ['flock', ['-w', '-E', '--timeout', '--conflict-exit-code']],
+    ['watch', ['-n', '--interval']],
+    ['chronic', []],
+    ['unbuffer', []],
     ['bunx', ['-p', '--package']],
     ['pnpx', []],
     ['parallel', ['-j', '-S', '--jobs']],
@@ -280,12 +285,24 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         ) {
             const flag = words[0]?.text ?? '';
             const long = flag.split('=')[0] ?? flag;
-            const takes = values.includes(flag);
+            // a packed cluster (`-vu NAME`) takes a value when its last letter does, as getopt reads it, unless its first
+            // letter already took the rest as its own (`-Sstring`)
+            const last = `-${flag.at(-1)}`;
+            const isPacked =
+                /^-[A-Za-z]{2,}$/.test(flag) &&
+                values.includes(last) &&
+                !values.includes(flag.slice(0, 2));
+            const takes = values.includes(flag) || isPacked;
             if (isEnv)
-                envArgs.push(flag, ...(takes ? [words[1]?.text ?? ''] : []));
+                envArgs.push(
+                    ...(isPacked ? [flag.slice(0, -1), last] : [flag]),
+                    ...(takes ? [words[1]?.text ?? ''] : []),
+                );
             if (
                 wrapper === 'env' &&
-                (flag === '-S' || flag === '--split-string')
+                (flag === '-S' ||
+                    flag === '--split-string' ||
+                    (isPacked && last === '-S'))
             )
                 envSplit = words[1]?.text ?? '';
             else if (wrapper === 'env' && /^-S./.test(flag))
@@ -294,8 +311,8 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
                 envSplit = flag.slice(long.length + 1);
             words = words.slice(takes ? 2 : 1);
         }
-        // timeout's duration, script's log file
-        if (wrapper === 'timeout' || wrapper === 'script')
+        // timeout's duration, script's log file, flock's lock file
+        if (['timeout', 'gtimeout', 'script', 'flock'].includes(wrapper))
             words = words.slice(1);
     }
     const [first, ...args] = words;
@@ -379,12 +396,34 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 ? (b.values[0] ?? m)
                 : m;
         });
-    // the words a lone `$( echo … )` or `$( printf … )` prints
-    const echoed = (subst: Segment[]) => {
+    // the words a lone `$( echo … )`, `$( printf … )` or `$( cat <<EOF … )` prints: echo's past its flags, printf's
+    // format filled, cat's text as one word that keeps its lines, each with its trailing newlines dropped as the shell does
+    const echoed = (subst: Segment[]): Word[] | undefined => {
         const [only] = subst;
         if (subst.length !== 1 || !only) return undefined;
-        const inner = peel(only.words);
-        return ['echo', 'printf'].includes(inner.name) ? inner.args : undefined;
+        const inner = peel(
+            only.words,
+            only.bodies.map((b) => b.text),
+        );
+        if (inner.name === 'echo') {
+            const at = inner.args.findIndex((a) => !/^-[neE]+$/.test(a.text));
+            return at < 0 ? [] : inner.args.slice(at);
+        }
+        if (inner.name === 'printf') {
+            const isExpanding = inner.args.some((a) => a.isExpanding);
+            return (printed(inner)[0] ?? '')
+                .replace(/\n+$/, '')
+                .split(/[ \t]+/)
+                .filter(Boolean)
+                .map((text) => ({ isExpanding, text }));
+        }
+        const text =
+            inner.name === 'cat' && !operands(inner.args).length
+                ? printed(inner)[0]
+                : undefined;
+        return text === undefined
+            ? undefined
+            : [{ isExpanding: false, text: text.replace(/\n+$/, '') }];
     };
     // a `[[ … ]]` split at its `&&` leaves test operands as segments; they run nothing
     let isInTest = false;
@@ -654,12 +693,60 @@ function printed(f: Peeled): string[] {
         const at = texts.findIndex((t) => !/^-[neE]+$/.test(t));
         return [texts.slice(at < 0 ? texts.length : at).join(' ')];
     }
-    if (f.name === 'printf') {
-        const ops = texts.slice(texts[0] === '--' ? 1 : 0);
-        return [...ops, ops.slice(1).join(' ')];
-    }
-    return f.bodies;
+    if (f.name === 'printf')
+        return [printfText(texts.slice(texts[0] === '--' ? 1 : 0))];
+    return [...f.bodies, ...herestrings(texts)];
 }
+// what printf prints: its format with each conversion filled from the operands in turn, the format reused while operands
+// last, and `\n`, `\t`, `\0` read as bash does (a NUL, xargs -0's split, as a line end)
+export function printfText([format = '', ...rest]: string[]) {
+    const conversion = /%[-+ #0-9.]*([sbdiqcxX%])/g;
+    const isFilling = /%[-+ #0-9.]*[sbdiqcxX]/.test(format);
+    let at = 0;
+    let out = '';
+    do
+        out += format.replace(conversion, (_m, k: string) =>
+            k === '%' ? '%' : (rest[at++] ?? ''),
+        );
+    while (isFilling && at < rest.length);
+    return out
+        .replaceAll('\\n', '\n')
+        .replaceAll('\\t', '\t')
+        .replaceAll('\\0', '\n');
+}
+// the strings a command's `<<<` hands its stdin, joined or a word apart
+const herestrings = (texts: string[]) =>
+    texts.flatMap((t, i) =>
+        t === '<<<'
+            ? [texts[i + 1] ?? '']
+            : t.startsWith('<<<')
+              ? [t.slice(3)]
+              : [],
+    );
+// ssh's options that take the next word as their value
+const SSH_VALUED = new Set([
+    '-B',
+    '-b',
+    '-c',
+    '-D',
+    '-E',
+    '-e',
+    '-F',
+    '-I',
+    '-i',
+    '-J',
+    '-L',
+    '-l',
+    '-m',
+    '-O',
+    '-o',
+    '-p',
+    '-Q',
+    '-R',
+    '-S',
+    '-W',
+    '-w',
+]);
 // a word as the shell would read it back as one argv entry
 const quoted = (w: string) => `'${w.replaceAll("'", "'\\''")}'`;
 // the scripts a command runs that the line does not show as commands: a shell's `-c` script, or what it reads on stdin
@@ -672,7 +759,11 @@ export function nestedScripts(c: Command): string[] {
         const dashC = texts.findIndex((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
         if (dashC >= 0) {
             const script = texts.slice(dashC + 1).find((t) => t !== '--');
-            return script === undefined ? [] : [script];
+            if (script !== undefined) return [script];
+            // `… | xargs bash -c`: each item xargs reads becomes the script
+            return c.wrappers.includes('xargs')
+                ? c.feeders.flatMap(printed)
+                : [];
         }
         const script = operands(
             c.args.filter(
@@ -684,15 +775,21 @@ export function nestedScripts(c: Command): string[] {
             !script.length ||
             STDIN_PATHS.has(script[0] ?? '');
         if (!isStdin) return [];
-        const here = texts.flatMap((t, i) =>
-            t === '<<<'
-                ? [texts[i + 1] ?? '']
-                : t.startsWith('<<<')
-                  ? [t.slice(3)]
-                  : [],
-        );
         const piped = c.feeders.flatMap(printed);
-        return [...here, ...c.bodies, ...piped];
+        return [...herestrings(texts), ...c.bodies, ...piped];
+    }
+    // ssh runs its command, or else what it reads on stdin, in the remote shell
+    if (c.name === 'ssh') {
+        let i = 0;
+        while (i < texts.length && isFlag(texts[i] ?? ''))
+            i += SSH_VALUED.has(texts[i] ?? '') ? 2 : 1;
+        const remote = texts.slice(i + 1);
+        if (remote.length) return [remote.join(' ')];
+        return [
+            ...herestrings(texts),
+            ...c.bodies,
+            ...c.feeders.flatMap(printed),
+        ];
     }
     if (c.name === 'eval') return [texts.join(' ')];
     // a script held in a string: trap's action, an alias's body, a git alias that starts with `!`

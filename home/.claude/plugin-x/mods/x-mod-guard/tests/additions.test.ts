@@ -191,6 +191,14 @@ const REFUSED = [
         'the files inside it',
         [],
     ],
+    // FRM-472 R3 row 21: the disk facts a nested script needs are looked up too
+    [
+        'overwrite',
+        ': > file in a shell',
+        "bash -c ': > notes.md'",
+        'the Write tool',
+        ['/repo/notes.md'],
+    ],
 ] as const;
 
 for (const [group, shape, command, door, files] of REFUSED)
@@ -234,6 +242,12 @@ const RUNS = [
         'top dir',
         'trash of one regular dotfile in ~',
         'trash ~/.zcompdump',
+        ['/home/.zcompdump'],
+    ],
+    [
+        'top dir',
+        'trash of one regular dotfile in ~, in a shell',
+        "bash -c 'trash ~/.zcompdump'",
         ['/home/.zcompdump'],
     ],
     [
