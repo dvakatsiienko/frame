@@ -25,6 +25,7 @@ pace = the elapsed share of the 5h window; over = used − pace. read after ever
 - **~70–80 % used** → no lane starts its next chunk
 - **90 % used** → everyone parks; once ≤ 1 h is left, everyone runs to 100 % and the waker resumes them after the reset
 - **≤ 1 h left** → in a shift, every lane starts its next useful chunk and burns (no waste burning); with him at the keyboard, ask first; i log who sits idle at the cap and resume each by hand after the reset, since the waker wakes only a session the cap stopped
+- **one side lane per 5h window, for now**, unless he asks for more out loud (dima, 2026-11-03: «with two side lanes, everyone will just park and pit-stop and start too frequently»)
 - **a park**: the running step finishes, nothing new starts — subagents, reviews and reads included; at 90 % running ones stop and re-run after the resume
 - **a resume** runs in lane order (clio, the lane building, then the reviewers), the meter read between each; my own second wind runs before a park, never on the resume
 - while everyone is parked, FRM-500's pace watch tells me when a rung changes; until it lands, my own 🔥 stays on and each keep-hot wake reads the meter and acts on its rung
