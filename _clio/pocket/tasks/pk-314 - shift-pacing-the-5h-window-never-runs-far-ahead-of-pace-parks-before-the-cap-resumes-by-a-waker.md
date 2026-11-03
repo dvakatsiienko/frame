@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-03T17:10:00Z'
-updated_date: '2026-11-03T17:11:00Z'
+updated_date: '2026-11-03T17:18:00Z'
 labels:
   - m
 dependencies: []
@@ -49,4 +49,14 @@ W22 (2026-11-03 19:10, dima): so. when i afk and shift is active your prios:
 W23 (2026-11-03 19:10, dima): 1. park everyone more often, do not let 5h pace to go too far ahead, make lanes pit stops instead
 W24 (2026-11-03 19:10, dima): 2. this way, reaching 90% of 5h window will be smoother. if at ~90% 1h or less of 5h is met — you just push everyone until 100% then waker wakes everyone.
 W25 (2026-11-03 19:10, dima): when i am next to kb its also good habit, but when i tell to go, you go. because often i just want to burn 5h window (like right now).
+
+W26 (2026-11-03 19:14, dima): note: today, yesterday, and tomorrow, I push you to do a lot of stuff and stress test, like today, because I'm also burning the weekly usage.
+W27 (2026-11-03 19:14, dima): My current plan will finish on Thursday around 5 pm, so until then, I'm burning my weekly usage by clean activity that we do right now.
+W28 (2026-11-03 19:14, dima): Currently, weekly usage is 60%, which is what I want.
+W29 (2026-11-03 19:14, dima): Today, let's burn the remaining 5-hour window, but also try to do meaningful stuff and finish everyone before the 5-hour window resets.
+W30 (2026-11-03 19:14, dima): Tomorrow, we do similar stuff.
+W31 (2026-11-03 19:14, dima): We burn 5-hour windows fully, and ideally tomorrow or the day after tomorrow, reach 100% of weekly usage or 95%, so I will have space to work with the game project.
+W32 (2026-11-03 19:14, dima): Then I will park and wait until I buy the $200 plan as soon as I planned.
+
+W33 (2026-11-03 19:16, dima): by burning 5h and weekly window i mean that we not just burn, we do useful stuff. no waste burning.
 <!-- SECTION:NOTES:END -->

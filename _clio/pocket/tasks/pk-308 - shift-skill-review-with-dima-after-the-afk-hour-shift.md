@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T17:08:00Z'
+updated_date: '2026-11-03T17:18:00Z'
 labels:
   - s
 dependencies: []
@@ -94,4 +94,8 @@ W1854 (2026-11-03 14:35, dima, o75 steer): Currently, your shift should tell you
 16:35 steer, groomed (W7–W8 of grooms/2026-11-03-1635.groomed.md), acted: the lane parked
 W7 (2026-11-03 16:35, dima): why is the 491 lane active? ❓
 W8 (2026-11-03 16:35, dima): park them.
+
+W1911 (2026-11-03 19:16, dima): retro in how shift lane was.
+W1912 (2026-11-03 19:16, dima): and sharpen shift even more.
+W1913 (2026-11-03 19:16, dima): i taked to crow — she observed lots of spam in your thread, optimization is needed.
 <!-- SECTION:NOTES:END -->
