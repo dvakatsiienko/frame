@@ -20,6 +20,7 @@ the cloud chat leaf `/areas/tooling.md`; the `cc only` section never leaves the 
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
 - **a page your fetch can't read → `pnpm -C ~/frame --silent web-bot-blocked:fetch <url>`** (cloud chat: through Desktop Commander on the mac, wrapped as `zsh -lc '…'` so homebrew's `pnpm` is on PATH) — a MediaWiki page goes through the wiki's free api, `--index <wiki host>` lists every article; anything else through firecrawl, the escape hatch for bot-blocked sites (1 credit a page, 1,000 free a month, key `op://dev/firecrawl-golden/credential`); a docs site that serves `llms.txt` is read directly, never crawled
+  - a source a reply names or quotes is opened first, never quoted from a search snippet; «couldn't open» is said only after `WebFetch` and this door both failed
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
 - **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too
 - **yq** — yaml/toml read-write (`settings.toml`, lefthook)
