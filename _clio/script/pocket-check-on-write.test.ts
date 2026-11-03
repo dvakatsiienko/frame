@@ -38,6 +38,12 @@ const refusingStub = join(fixtures, 'refusing-stub.sh');
 writeFileSync(refusingStub, '#!/bin/sh\necho "gate red" >&2\nexit 1\n', {
     mode: 0o755,
 });
+const emptyStub = join(fixtures, 'empty-stub.sh');
+writeFileSync(
+    emptyStub,
+    '#!/bin/sh\necho \'{"error":"nothing staged under those paths — empty diff, no commit","ok":false}\'\nexit 1\n',
+    { mode: 0o755 },
+);
 const lastCommit = join(fixtures, '.local/state/clio/pocket-commits/last');
 
 function run(event: object, check: string, commit = commitStub) {
@@ -200,6 +206,17 @@ describe('the pocket hook commits every pocket write', () => {
             Atomics.wait(pause, 0, 0, 50);
         const out = run(bash('backlog task edit 7 -s done'), 'true');
         expect(out?.reason).toContain('auto-commit was refused');
+        rmSync(lastCommit, { force: true });
+    });
+
+    test('an empty diff another writer already committed stays green', () => {
+        writeFileSync(join(frame, task), 'x');
+        rmSync(lastCommit, { force: true });
+        run(bash('backlog task edit 7 -s done'), 'true', emptyStub);
+        const pause = new Int32Array(new SharedArrayBuffer(4));
+        for (let wait = 0; wait < 40 && !existsSync(lastCommit); wait += 1)
+            Atomics.wait(pause, 0, 0, 50);
+        expect(readFileSync(lastCommit, 'utf8').trim()).toBe('ok');
         rmSync(lastCommit, { force: true });
     });
 
