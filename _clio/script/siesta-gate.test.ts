@@ -224,6 +224,30 @@ describe('the siesta comes due', () => {
         });
     });
 
+    test.each([
+        '_clio/memory/craft-pm.md',
+        'home/.claude/rules/code.md',
+        '_clio/plugin-clio/skills/boot/SKILL.md',
+    ])('one file of clio’s at «%s» makes it due', (file) => {
+        const home = fixtureHome();
+        const repo = join(home, 'frame');
+        mkdirSync(join(repo, file, '..'), { recursive: true });
+        writeFileSync(join(repo, file), 'x');
+        commit(home, 0, 'clio');
+        expect(said(stop(home, stopInput(home)))).toContain(
+            'memory, rule or skill',
+        );
+    });
+
+    test('another agent’s memory file makes none due', () => {
+        const home = fixtureHome();
+        const repo = join(home, 'frame');
+        mkdirSync(join(repo, '_clio/memory'), { recursive: true });
+        writeFileSync(join(repo, '_clio/memory/craft-pm.md'), 'x');
+        commit(home, 0, 'codie');
+        expect(stop(home, stopInput(home))).toBeUndefined();
+    });
+
     test('14 files, another agent’s, or the pocket’s auto commits make none due', () => {
         const home = fixtureHome();
         commit(home, 14, 'clio');
@@ -312,6 +336,16 @@ describe('an ignored siesta comes back', () => {
         expect(prompt(home, { prompt: 'and another' })).toContain('siesta due');
         run(home, ['open']);
         expect(prompt(home, { prompt: 'go on' })).toBeUndefined();
+    });
+
+    test('a siesta opened and dropped before its card is reminded on his prompts too', () => {
+        const home = fixtureHome();
+        writeSiesta(home, { card_printed: false, highs: [], open: true });
+        commit(home, 15, 'clio');
+        expect(stop(home, stopInput(home))).toMatchObject({
+            decision: 'block',
+        });
+        expect(prompt(home, { prompt: 'next thing' })).toContain('siesta due');
     });
 
     test('a member’s turn never carries it', () => {

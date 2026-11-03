@@ -97,9 +97,7 @@ export function prompt(home: string, input: { prompt?: string }) {
         close(state);
     writeSiesta(home, state);
     // the Stop block speaks once an epoch; his own prompts carry it after, and a prompt hook wakes no extra turn
-    return isDima && state.due && !state.open
-        ? '🌤️ siesta due — load clio:siesta'
-        : undefined;
+    return isDima && state.due ? '🌤️ siesta due — load clio:siesta' : undefined;
 }
 
 export function compact(
@@ -118,12 +116,14 @@ function dueReasons(home: string, state: Siesta) {
     const after = (at: string | number) =>
         new Date(at).getTime() > since.getTime();
     const files = clioFiles(home, since);
+    const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
     const rows = readLines(path.join(stateDir(home), 'phases-done.jsonl'))
         .flatMap((l) => parsed<{ at: string | number }>(l) ?? [])
         .filter((r) => after(r.at));
     const pings = state.pings.filter(after);
     return [
-        files >= FILES_DUE ? `${files} files of clio's` : '',
+        files.length >= FILES_DUE ? `${files.length} files of clio's` : '',
+        isMemory ? "a memory, rule or skill file of clio's" : '',
         rows.length ? `${rows.length} phases line(s) done` : '',
         pings.length ? `${pings.length} member done ping(s)` : '',
     ].filter(Boolean);
@@ -159,7 +159,7 @@ function clioFiles(home: string, since: Date) {
             })
             .flatMap(([, ...paths]) => paths.filter(Boolean)),
     );
-    return files.size;
+    return [...files];
 }
 
 // this turn: the rows after the last prompt that is neither a tool result nor a skill's own text
