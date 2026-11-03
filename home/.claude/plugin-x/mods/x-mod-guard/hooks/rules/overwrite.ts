@@ -7,6 +7,7 @@ import {
     basename,
     commands,
     commandsDeep,
+    gitDir,
     gitParts,
     hasFlag,
     isFlag,
@@ -17,8 +18,10 @@ import {
 
 // an mv or cp's dest, then the file each source lands on when that dest is a dir
 export function landings(c: Command, ctx: Context) {
-    // `cp -t <dir> <src…>` names its dest first
-    const t = c.args.findIndex((w) => w.text === '-t');
+    // `cp -t <dir> <src…>` names its dest first; rsync's and ditto's -t is another flag
+    const t = ['cp', 'mv', 'ln', 'install'].includes(c.name)
+        ? c.args.findIndex((w) => w.text === '-t')
+        : -1;
     const into = t >= 0 ? c.args[t + 1]?.text : undefined;
     const ops = operands(
         t < 0 ? c.args : c.args.filter((_, i) => i !== t && i !== t + 1),
@@ -69,12 +72,15 @@ export function commandWrites(c: Command, ctx: Context) {
     if (c.name === 'dd')
         named.push(...ops.flatMap((o) => o.match(/^of=(.+)$/)?.[1] ?? []));
     if (c.name === 'curl') named.push(...curlOutputs(c.args));
-    if (c.name === 'git') named.push(...checkedOut(c));
     if (c.name === 'sd') named.push(...sdFiles(c.args));
     if (c.name === 'sed') named.push(...sedFiles(c.args));
-    for (const n of named)
-        if (n && !n.startsWith('/dev/') && !n.includes('$'))
-            out.push(resolve(n, dir, ctx));
+    const isPlain = (n: string) =>
+        !!n && !n.startsWith('/dev/') && !n.includes('$');
+    for (const n of named) if (isPlain(n)) out.push(resolve(n, dir, ctx));
+    // a checkout's files sit in the tree git runs in, -C included
+    if (c.name === 'git')
+        for (const n of checkedOut(c))
+            if (isPlain(n)) out.push(resolve(n, gitDir(c, ctx), ctx));
     return out;
 }
 // every file a line writes, a nested shell's included

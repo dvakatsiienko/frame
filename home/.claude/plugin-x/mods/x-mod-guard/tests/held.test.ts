@@ -33,6 +33,9 @@ const writes: [string, string, string[]][] = [
     ['git checkout --', 'git checkout -- x.ts', ['/repo/x.ts']],
     ['git restore', 'git restore x.ts', ['/repo/x.ts']],
     ['cp -t', 'cp -t dir a.ts', ['/repo/dir', '/repo/dir/a.ts']],
+    // FRM-472 review: rsync's -t keeps times, it names no dest; git -C moves where restore writes
+    ['rsync -t', 'rsync -t a.ts dir', ['/repo/dir', '/repo/dir/a.ts']],
+    ['git -C restore', 'git -C app restore x.ts', ['/repo/app/x.ts']],
 ];
 for (const [shape, command, files] of writes)
     test(`reads the file a Bash write targets: ${shape}`, () => {

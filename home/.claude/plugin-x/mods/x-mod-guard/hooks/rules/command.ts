@@ -45,6 +45,8 @@ export type Context = {
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };
+// a file a command writes: its resolved path, the text, and whether the text is appended
+export type Written = [path: string, text: string, isAppend?: boolean];
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }
@@ -425,8 +427,9 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 : m;
         });
     // the words a lone `$( echo … )`, `$( printf … )` or `$( cat <<EOF … )` prints: echo's past its flags, printf's
-    // format filled, cat's text as one word that keeps its lines, each with its trailing newlines dropped as the shell does
-    const echoed = (subst: Segment[]): Word[] | undefined => {
+    // format filled, cat's text as one word that keeps its lines (split on whitespace where the $(…) is unquoted), each with
+    // its trailing newlines dropped as the shell does
+    const echoed = (subst: Segment[], isSplit: boolean): Word[] | undefined => {
         const [only] = subst;
         if (subst.length !== 1 || !only) return undefined;
         const inner = peel(
@@ -449,9 +452,11 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             inner.name === 'cat' && !operands(inner.args).length
                 ? printed(inner)[0]
                 : undefined;
-        return text === undefined
-            ? undefined
-            : [{ isExpanding: false, text: text.replace(/\n+$/, '') }];
+        if (text === undefined) return undefined;
+        const kept = text.replace(/\n+$/, '');
+        return (isSplit ? kept.split(/\s+/).filter(Boolean) : [kept]).map(
+            (t) => ({ isExpanding: false, text: t }),
+        );
     };
     // a `[[ … ]]` split at its `&&` leaves test operands as segments; they run nothing
     let isInTest = false;
@@ -496,7 +501,8 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                     : split(values[0] ?? '');
             // a value the line cannot read beside known ones still runs as each known one
             if (values.length) alternates.set(w.text, values);
-            const printed = w.text === '$(…)' ? echoed(s.subst) : undefined;
+            const printed =
+                w.text === '$(…)' ? echoed(s.subst, !w.hasQuote) : undefined;
             if (printed)
                 return printed.map((a) => ({
                     isExpanding: a.isExpanding,
@@ -523,7 +529,7 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
             fed.delete(key);
             const from = value.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/)?.[1];
             const via = from === undefined ? undefined : literals.get(from);
-            const said = value === '$(…)' ? echoed(s.subst) : undefined;
+            const said = value === '$(…)' ? echoed(s.subst, false) : undefined;
             if (plus) bind(key, [], true);
             else if (!w.isExpanding) bind(key, [value]);
             else if (via) bind(key, via.values, via.isUnknown);
@@ -813,7 +819,16 @@ export function nestedScripts(c: Command): string[] {
         let i = 0;
         while (i < texts.length && isFlag(texts[i] ?? ''))
             i += SSH_VALUED.has(texts[i] ?? '') ? 2 : 1;
-        const remote = texts.slice(i + 1);
+        // options, then one `--`, may follow the host too
+        let at = i + 1;
+        while (
+            at < texts.length &&
+            isFlag(texts[at] ?? '') &&
+            texts[at] !== '--'
+        )
+            at += SSH_VALUED.has(texts[at] ?? '') ? 2 : 1;
+        if (texts[at] === '--') at++;
+        const remote = texts.slice(at);
         if (remote.length) return [remote.join(' ')];
         return [
             ...herestrings(texts),
@@ -894,8 +909,8 @@ export function commandsDeep(
     ]);
 }
 // the files a command writes with the text it writes them: a heredoc into cat or tee, an echo or a printf format, each to its
-// `>`, `>>` and tee targets, resolved where the command runs
-export function writtenScripts(c: Command, ctx: Context): [string, string][] {
+// `>`, `>>` and tee targets, resolved where the command runs; an append is marked so it adds to the text written before
+export function writtenScripts(c: Command, ctx: Context): Written[] {
     const text =
         c.name === 'echo'
             ? printed(c)[0]
@@ -906,10 +921,21 @@ export function writtenScripts(c: Command, ctx: Context): [string, string][] {
                 : undefined;
     if (text === undefined) return [];
     const tees = c.name === 'tee' ? operands(c.args) : [];
-    return [...c.writes, ...c.appends, ...tees].map((p) => [
-        resolve(p, c.dir, ctx),
-        text,
-    ]);
+    const isTeeAppend = hasFlag(c.args, ['--append'], 'a');
+    return [
+        ...c.writes.map((p) => [p, false] as const),
+        ...c.appends.map((p) => [p, true] as const),
+        ...tees.map((p) => [p, isTeeAppend] as const),
+    ].map(([p, isAppend]) => [resolve(p, c.dir, ctx), text, isAppend]);
+}
+// the writes laid over the files written so far, in order: `>` replaces a file's text, `>>` adds to it; newest last
+export function laidOver(files: Map<string, string>, writes: Written[]) {
+    for (const [path, text, isAppend] of writes) {
+        const before = isAppend ? files.get(path) : undefined;
+        files.delete(path);
+        files.set(path, before === undefined ? text : `${before}\n${text}`);
+    }
+    return files;
 }
 // the file a command runs as a script: a shell's or `source`'s first operand, or a head typed as a path (`./x.sh`)
 export function scriptRun(c: Command, ctx: Context) {

@@ -42,6 +42,18 @@ const RUN_AFTER_WRITE = [
     ['an echo run by its path', "echo 'rm -rf x' > x.sh && ./x.sh"],
     ['a printf run by sh', "printf 'rm -rf x\\n' > x.sh; sh x.sh"],
     [
+        'a script run by another written on the line',
+        "echo 'rm -rf x' > b.sh; echo 'bash b.sh' > a.sh; bash a.sh",
+    ],
+    [
+        'a line appended by tee -a',
+        'cat <<EOF > s.sh\nrm -rf x\nEOF\ntee -a s.sh <<EOF\nls\nEOF\nbash s.sh',
+    ],
+    [
+        'a line appended with >>',
+        "echo 'rm -rf x' > s.sh; echo 'ls' >> s.sh; bash s.sh",
+    ],
+    [
         'a dot of a path in a dir',
         "echo 'rm -rf x' > /tmp/d/x.sh; . /tmp/d/x.sh",
     ],
@@ -108,6 +120,36 @@ test('a script an earlier Bash call wrote warns when a later one runs it', async
     await bash($, "echo 'rm -rf x' > x.sh");
     expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
 });
+
+test('a line an earlier Bash call appended is read with the text before it', async ($, on) => {
+    world(on);
+    await bash($, "echo 'rm -rf x' > s.sh");
+    await bash($, "echo 'ls' >> s.sh");
+    expect(JSON.stringify(await bash($, 'bash s.sh'))).toContain(WARNED);
+});
+
+test('a > after a written script replaces its text', async ($, on) => {
+    world(on);
+    await bash($, "echo 'rm -rf x' > s.sh");
+    await bash($, "echo 'ls' > s.sh");
+    expect(JSON.stringify(await bash($, 'bash s.sh'))).not.toContain(WARNED);
+});
+
+const SELF_RUN = [
+    ['runs clean', 'echo hi; bash x.sh\n', false],
+    ['warns on its refused line', 'rm -rf y; bash x.sh\n', true],
+] as const;
+for (const [shape, body, isWarned] of SELF_RUN)
+    test(`a written script that runs itself is read once and ${shape}`, async ($, on) => {
+        const { ran } = world(on);
+        await write($, '/repo/x.sh', body);
+        const r = await bash($, 'bash x.sh');
+        expect([
+            r.deny,
+            JSON.stringify(r).includes(WARNED),
+            ran.at(-1),
+        ]).toEqual([undefined, isWarned, 'bash x.sh']);
+    });
 
 test('a Write with no refused command runs its script unwarned', async ($, on) => {
     world(on);

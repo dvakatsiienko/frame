@@ -1226,6 +1226,20 @@ EOF`,
         'ssh host <<EOF\nrm -rf x\nEOF',
     ],
     ['refused', 'reader', "ssh's remote command", "ssh -p 22 host 'rm -rf x'"],
+    // FRM-472 review: ssh reads options and a `--` after the host too; an unquoted $(cat <<EOF) head splits on spaces
+    ['refused', 'reader', "ssh's command after --", 'ssh host -- rm -rf x'],
+    [
+        'refused',
+        'reader',
+        "ssh's command after an option past the host",
+        'ssh host -t -p 22 rm -rf x',
+    ],
+    [
+        'refused',
+        'reader',
+        'an unquoted cat heredoc as the head',
+        '$(cat <<EOF\nrm -rf x\nEOF\n)',
+    ],
     [
         'refused',
         'reader',

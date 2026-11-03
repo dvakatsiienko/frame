@@ -153,6 +153,20 @@ test('a proven dima-ok runs beside a warn-only flag, the flag still said', async
     ]);
 });
 
+// FRM-472 review: a door flag is said on a command whose own refusal a proven marker lets through
+test('a hooksPath commit his marker lets through still says hooks-bypass', async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, 'commit everything staged');
+    const command =
+        'git -c core.hooksPath=/dev/null commit -m x # dima-ok: commit';
+    const r = await bash($, command);
+    expect([r.deny, warned(r, 'hooks-bypass'), ran]).toEqual([
+        undefined,
+        true,
+        [command],
+    ]);
+});
+
 test('an unproven dima-ok beside a warn-only flag stays refused', async ($, on) => {
     const { ran } = world(on);
     await dimaSays($, 'push it');

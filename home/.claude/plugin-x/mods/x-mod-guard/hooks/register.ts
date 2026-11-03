@@ -1,8 +1,8 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
-import type { Brief, Context, Refusal } from './rules/command.ts';
-import { TICKET_KEY, resolve } from './rules/command.ts';
+import type { Brief, Context, Refusal, Written } from './rules/command.ts';
+import { TICKET_KEY, laidOver, resolve } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
@@ -854,15 +854,13 @@ async function isManifestChanged($: EngineInterface, dir: string) {
 // the turn's written files, newest kept: a few scripts is the shape, so a big Write keeps only its head
 const WRITTEN_FILES = 16;
 const WRITTEN_CHARS = 32_000;
-async function markWritten($: EngineInterface, files: [string, string][]) {
+async function markWritten($: EngineInterface, files: Written[]) {
     if (!files.length) return;
     for (let tries = 0; tries < 3; tries++) {
         const { value = {}, version } = await $.state.get(WRITTEN);
-        const next = Object.entries(value).filter(
-            ([path]) => !files.some(([p]) => p === path),
+        const next = [...laidOver(new Map(Object.entries(value)), files)].map(
+            ([path, text]) => [path, text.slice(0, WRITTEN_CHARS)],
         );
-        for (const [path, text] of files)
-            next.push([path, text.slice(0, WRITTEN_CHARS)]);
         const { isSet } = await $.state.set(
             WRITTEN,
             Object.fromEntries(next.slice(-WRITTEN_FILES)),

@@ -19,6 +19,7 @@ import {
     isFlag,
     isJobTmp,
     isThrowaway,
+    laidOver,
     nestedScripts,
     operands,
     peel,
@@ -382,9 +383,18 @@ export function refusals(
     list.forEach((c, i) => {
         const ran = scriptRun(c, ctx);
         const body = ran === undefined ? undefined : written.get(ran);
+        // read with the line's own writes, and without itself: a script that runs itself is read once
+        const others = new Map(written);
+        if (ran !== undefined) others.delete(ran);
         if (body !== undefined)
             out.push(
-                ...refusals(body, c.dir, ctx, isPlain, hiddenBy)
+                ...refusals(
+                    body,
+                    c.dir,
+                    { ...ctx, written: others },
+                    isPlain,
+                    hiddenBy,
+                )
                     .filter((r) => !TYPED_LINE.has(r.rule))
                     .map((r) => ({
                         ...r,
@@ -392,8 +402,7 @@ export function refusals(
                         why: `${ran} was written earlier this turn, and running it runs a refused command (rule ${r.rule}): ${r.why}`,
                     })),
             );
-        for (const [path, text] of writtenScripts(c, ctx))
-            written.set(path, text);
+        laidOver(written, writtenScripts(c, ctx));
         const judge = (cmd: Command, next: Command | undefined) =>
             floor(cmd, ctx) ??
             hazard(cmd, ctx) ??
@@ -428,8 +437,9 @@ export function refusals(
         }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
-        // a door flag speaks only where no rule already stopped the command, and never hides one
-        const door = found ? undefined : gitDoor(c, ctx);
+        // a door flag speaks where no rule stopped the command or dima's marker lets that rule through, and never hides one
+        const door =
+            found && !markedBy(command)(found) ? undefined : gitDoor(c, ctx);
         if (door) out.push(door);
         // a nested script is commands too: a shell's, an eval's, env -S's, find -exec's, a function body (command.ts)
         for (const script of nestedScripts(c))
