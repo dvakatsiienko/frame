@@ -36,7 +36,7 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 
 ## hot caches — no member goes cold
 
-dima, 2026-11-03: «If anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache, so everyone should be auto-woken up and auto-refreshed, cache-wise». cold ~$0.80 vs warm ~$0.02 per 100k Opus 5.5 member (`crew-lead` model-cards).
+dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any thread inactive for 50 minutes is auto-woken by a waker». cold ~$0.80 vs warm ~$0.02 per 100k Opus 5.5 member (`crew-lead` model-cards).
 
 - the shift's start arms a heartbeat: a `Monitor` with `timeout_ms` 1800000 (its cap), re-armed at each expiry; the expiry notice is the beat, every 30 min, and it wakes me too
 - on each beat, every member idle 25 min or more gets one `SendMessage`: «keep-warm: reply `ok`», so no one reaches 60 min idle; my turn on the beat keeps mine warm
