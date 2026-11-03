@@ -4,7 +4,7 @@ title: 'api credits channel: plan where the $200 a month goes (shape-idea)'
 status: open
 assignee: []
 created_date: '2026-11-03T08:43:00Z'
-updated_date: '2026-11-03T10:05:00Z'
+updated_date: '2026-11-03T10:33:00Z'
 labels:
   - m
 dependencies: []
@@ -64,4 +64,6 @@ W1559 (2026-11-03 10:37, dima): claude code works with a few modes. it works via
 kept: 2026-11-03 — W1665–W1666, W1678–W1681, W1687–W1699, W1705–W1716 joined from the 11:xx turns: the key, the switch (o9), gifted credits only (o11, o15), the batch retro spend; round 2 of shape-idea grills them
 
 W1567 (2026-11-03 10:43, dima): 🛠️ where we could spend them (ideas, nothing built).
+
+label fix (wishkeeper 12:20): W1665 and W1567 are clio's reply lines dima quoted — context, not his wants; grill 2 cites his «←» answers, never these.
 <!-- SECTION:NOTES:END -->

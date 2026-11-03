@@ -1,18 +1,16 @@
 ---
 id: PK-297
-title: >-
-  day plan 11-02: the cli habits, mods lane 4 to an A, the full mods refresh,
-  the chores
+title: 'day plan 11-02, rolled to 11-03: the cli habits, mods lane 4, the chores'
 status: open
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-03T10:05:00Z'
+updated_date: '2026-11-03T10:46:00Z'
 labels:
   - m
 dependencies: []
-priority: now
+priority: next
 type: wish
-ordinal: 9999
+ordinal: 25000
 ---
 
 ## Description
