@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T10:45:00Z'
+updated_date: '2026-11-03T10:51:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -230,4 +230,6 @@ W1764 (2026-11-03 12:32, dima): is it a mod bug or your habit issue? ❓
 W1765 (2026-11-03 12:32, dima): yesterday, we introduced two new quality gradings for our flows: a "worth it" tag and a "wired" tag.
 W1766 (2026-11-03 12:32, dima): does it apply to what we currently do? ❓
 W1767 (2026-11-03 12:32, dima): can we know if what we do currently is worth it? ❓
+
+chunk A shaped → FRM-491 (milestone 🐋 clio runs lean), grill rounds 1–2 settled 12:27–12:45; chunks B–F stay here until each is shaped
 <!-- SECTION:NOTES:END -->
