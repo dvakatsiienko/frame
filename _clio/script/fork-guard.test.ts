@@ -192,7 +192,7 @@ describe('fork-guard fork-edit', () => {
         ).toBe('');
         expect(
             bash(
-                'cd /Users/dima/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
+                'cd ~/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
             ),
         ).toBe('');
     });
