@@ -635,6 +635,45 @@ describe('the card’s chore lines', () => {
         expect(lines[0]).toContain('\tprompt-groom\t');
     });
 
+    test.each([
+        [
+            'groom chore (non-blocking) from 🦉 clio: dima’s 11:16 prompt',
+            'prompt-groom',
+        ],
+        ['halt chore: prompt-groom 14:02 and 14:05', 'prompt-groom'],
+        ['chore: prompt-groom for 10:43', 'prompt-groom'],
+        ['clio: prompt-groom chore 10:37', 'prompt-groom'],
+        ['pocket-write (dima o78): PK-306 fields', 'pocket-write'],
+    ])('a real chore send «%s» logs the class helga writes', (message, cls) => {
+        const home = fixtureHome();
+        sent(home, sentTo('🎀 helga', message));
+        expect(
+            readFileSync(join(groomDir(home), 'sent.log'), 'utf8'),
+        ).toContain(`\t${cls}\t`);
+    });
+
+    test.each([
+        'pause — clio is checkpointing, hold every message',
+        'resume — clio’s second wind is done',
+        'clio: thanks, green received',
+    ])('a message that names no chore class logs nothing: «%s»', (message) => {
+        const home = fixtureHome();
+        sent(home, sentTo('🎀 helga', message));
+        expect(() =>
+            readFileSync(join(groomDir(home), 'sent.log'), 'utf8'),
+        ).toThrow();
+    });
+
+    test('a send before the last siesta is never missed again', () => {
+        const home = fixtureHome();
+        mkdirSync(groomDir(home), { recursive: true });
+        writeFileSync(
+            join(groomDir(home), 'sent.log'),
+            `${new Date(Date.now() - 3 * 3_600_000).toISOString()}\tpocket-write\tpk-1\n`,
+        );
+        expect(cardLines(home).join('\n')).not.toContain('missed receipt');
+    });
+
     test('a numbered batch logs one line per chore', () => {
         const home = fixtureHome();
         sent(
@@ -741,7 +780,14 @@ describe('the card’s chore lines', () => {
         );
         appendFileSync(
             t,
-            `\n${row(at(10), '<cross-session-message from="x" from-name="🎀 helga">[progress] receipt b3\n1 prompt-groom · exit 0</cross-session-message>')}`,
+            `\n${row(at(12), 'Another Claude session sent a message:\n<cross-session-message from="x" from-name="🎀 helga">[done] receipt boot\n1 inbox-prep · exit 0</cross-session-message>')}`,
+        );
+        expect(cardLines(home, t)).toContain(
+            'receipt wakes since the last siesta: 0',
+        );
+        appendFileSync(
+            t,
+            `\n${row(at(10), 'Another Claude session sent a message:\n<cross-session-message from="x" from-name="🎀 helga">[progress] receipt b3\n1 prompt-groom · exit 0</cross-session-message>')}`,
         );
         expect(cardLines(home, t)).toContain(
             'receipt wakes since the last siesta: 1',
@@ -792,6 +838,12 @@ describe('a resume reads the 5h window', () => {
         expect(
             stop(home, turn(home, { id: 'r1', ...read }, resume('t1'))),
         ).toBeUndefined();
+    });
+
+    test('a resume to a member’s session id is a lane member’s too', () => {
+        const home = fixtureHome();
+        const out = stop(home, turn(home, resume('t1', 'local_d02d1c75-aaaa')));
+        expect(said(out)).toContain('5h window');
     });
 
     test('a resume to helga or a plain message to a member warns nothing', () => {

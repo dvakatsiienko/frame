@@ -109,16 +109,32 @@ export function prompt(home: string, input: { prompt?: string }) {
     return isDima && state.due ? '🌤️ siesta due — load clio:siesta' : undefined;
 }
 
+// helga's chore classes, as her receipts write them (crew-helga); clio's «groom chore» is a prompt-groom
+const CHORE_CLASSES = [
+    'bulk-replace',
+    'pocket-write',
+    'gate-retry',
+    'inbox-prep',
+    'prompt-groom',
+];
+const CHORE_CLASS = new RegExp(
+    `\\b(${CHORE_CLASSES.join('|')}|groom(?= chore))\\b`,
+);
+
 // clio's chore sends to helga, one line per chore, so the siesta card can name a receipt that never came
 export function sent(home: string, input: SentInput) {
     const { message = '', to = '' } = input.tool_input ?? {};
     if (!/\bhelga\b/.test(to)) return;
-    const numbered = [...message.matchAll(/^\d+\s+([a-z][a-z-]*)\b/gm)].map(
-        (m) => m[1] ?? '?',
-    );
+    const numbered = [...message.matchAll(/^\d+\s+([a-z][a-z-]*)\b/gm)]
+        .map((m) => m[1] ?? '')
+        .filter((c) => CHORE_CLASSES.includes(c));
+    const first = message.match(CHORE_CLASS)?.[1];
     const classes = numbered.length
         ? numbered
-        : [message.match(/^([a-z][a-z-]*) chore\b/)?.[1] ?? '?'];
+        : first
+          ? [first === 'groom' ? 'prompt-groom' : first]
+          : [];
+    if (!classes.length) return;
     const head = (message.split('\n')[0] ?? '').slice(0, 80);
     const at = new Date().toISOString();
     mkdirSync(groomsDir(home), { recursive: true });
@@ -130,7 +146,10 @@ export function sent(home: string, input: SentInput) {
 
 // the card's chore lines: pocket writes by hand today, each send no receipt answered within 30 min, receipt-woken turns
 export function cardLines(home: string, transcriptPath?: string) {
-    const sends = tabbed(path.join(groomsDir(home), 'sent.log'));
+    const since = siestaLast(home).getTime();
+    const sends = tabbed(path.join(groomsDir(home), 'sent.log')).filter(
+        ([at = '']) => new Date(at).getTime() > since,
+    );
     const receipts = tabbed(path.join(groomsDir(home), 'receipts.log'));
     const missed = sends.filter(([at = '', cls = '']) => {
         const i = receipts.findIndex(
@@ -142,7 +161,6 @@ export function cardLines(home: string, transcriptPath?: string) {
         }
         return Date.now() - new Date(at).getTime() > MISSED_AFTER_MS;
     });
-    const since = siestaLast(home).getTime();
     const wakes = readLines(transcriptPath)
         .flatMap((l) => parsed<TranscriptRow & { timestamp?: string }>(l) ?? [])
         .filter((r) => {
@@ -150,10 +168,9 @@ export function cardLines(home: string, transcriptPath?: string) {
             return (
                 r.type === 'user' &&
                 typeof content === 'string' &&
-                /^<cross-session-message[^>]*from-name="[^"]*helga/.test(
+                /^(Another Claude session sent a message:\n)?<cross-session-message[^>]*from-name="[^"]*helga[^>]*>\s*(?!\[done\])[^\n]*\breceipt\b/.test(
                     content,
                 ) &&
-                /\breceipt\b/.test(content) &&
                 new Date(r.timestamp ?? 0).getTime() > since
             );
         }).length;
@@ -180,6 +197,7 @@ function handPocketWrites(home: string) {
             path.join(home, 'frame'),
             'log',
             `--since=${today.toISOString()}`,
+            '--no-merges',
             '--format=%(trailers:key=Agent,valueonly)',
             '--',
             '_clio/pocket',
@@ -300,7 +318,9 @@ function unreadResumes(transcriptPath?: string) {
         .filter(
             (u) =>
                 u.name === 'SendMessage' &&
-                /\b(codie|sixth sense|designer)\b/.test(u.input?.to ?? '') &&
+                /\b(codie|sixth sense|designer)\b|^(local_|uds:)/.test(
+                    u.input?.to ?? '',
+                ) &&
                 /^\s*resume\b/i.test(u.input?.message ?? ''),
         )
         .map((u) => u.id ?? '?');
