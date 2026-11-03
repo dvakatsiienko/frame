@@ -16,8 +16,8 @@ ordinal: 22000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-W1526 (2026-11-03 inbox, dima) freeze.app is in my applications. wtf is it? ❓
-W1527 (2026-11-03 inbox, dima) i cannot recall when i installed it, or where from. ❓
+W1526 (2026-11-03 inbox, dima): freeze.app is in my applications. wtf is it? ❓
+W1527 (2026-11-03 inbox, dima): i cannot recall when i installed it, or where from. ❓
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
