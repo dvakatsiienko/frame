@@ -858,7 +858,14 @@ async function markWritten($: EngineInterface, files: Written[]) {
     if (!files.length) return;
     for (let tries = 0; tries < 3; tries++) {
         const { value = {}, version } = await $.state.get(WRITTEN);
-        const next = [...laidOver(new Map(Object.entries(value)), files)].map(
+        // an unread mark keeps nothing for a file the turn never kept
+        const kept = files.filter(
+            ([p, text], i) =>
+                text !== UNREAD ||
+                value[p] !== undefined ||
+                files.slice(0, i).some(([w]) => w === p),
+        );
+        const next = [...laidOver(new Map(Object.entries(value)), kept)].map(
             ([path, text]) => [
                 path,
                 text.length > WRITTEN_CHARS

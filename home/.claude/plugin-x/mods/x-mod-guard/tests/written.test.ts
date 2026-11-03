@@ -251,6 +251,20 @@ test('a script a line writes, then rewrites, warns as unread in a later call', a
     expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
 });
 
+// sixth sense round 4: a rewrite then an append in one line leaves a script kept from an earlier call unread
+test('a written script rewritten then appended to in one line warns as unread in a later call', async ($, on) => {
+    world(on);
+    await write($, '/repo/x.sh', 'ls\n');
+    await bash($, "sed -i '' 's/ls/rm -rf x/' x.sh; echo pwd >> x.sh");
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
+
+test('a script never kept that a line rewrites stays unkept, so its run passes', async ($, on) => {
+    world(on);
+    await bash($, "sed -i '' 's/a/b/' y.sh");
+    expect(JSON.stringify(await bash($, 'bash y.sh'))).not.toContain(WARNED);
+});
+
 test('a written script a line that errors writes over warns as unread', async ($, on) => {
     world(on, true);
     await write($, '/repo/x.sh', 'ls\n');

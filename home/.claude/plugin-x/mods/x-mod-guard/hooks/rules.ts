@@ -366,18 +366,18 @@ export function tmpDirs(
         return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
 }
-// the files a line leaves written, path to text, for the runs a later call of the turn makes; a file the line wrote,
-// then rewrote another way (sd, sed -i), is left unread
+// the files a line leaves written, path to text, for the runs a later call of the turn makes, in line order; a file
+// it rewrites another way (sd, sed -i) is left unread, and the writes after lay over that
 export function lineWrites(command: string, cwd: string, ctx: Context) {
-    const out: Written[] = [];
-    for (const c of commandsDeep(command, cwd)) {
+    return commandsDeep(command, cwd).flatMap((c) => {
         const scripts = writtenScripts(c, ctx);
-        out.push(...scripts);
-        for (const p of commandWrites(c, ctx))
-            if (out.some(([w]) => w === p) && !scripts.some(([s]) => s === p))
-                out.push([p, UNREAD]);
-    }
-    return out;
+        return [
+            ...scripts,
+            ...commandWrites(c, ctx)
+                .filter((p) => !scripts.some(([s]) => s === p))
+                .map((p): Written => [p, UNREAD]),
+        ];
+    });
 }
 // the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
 const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
