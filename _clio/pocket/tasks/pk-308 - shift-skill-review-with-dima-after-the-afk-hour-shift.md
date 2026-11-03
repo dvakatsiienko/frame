@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T17:18:00Z'
+updated_date: '2026-11-03T17:52:00Z'
 labels:
   - s
 dependencies: []
@@ -98,4 +98,37 @@ W8 (2026-11-03 16:35, dima): park them.
 W1911 (2026-11-03 19:16, dima): retro in how shift lane was.
 W1912 (2026-11-03 19:16, dima): and sharpen shift even more.
 W1913 (2026-11-03 19:16, dima): i taked to crow — she observed lots of spam in your thread, optimization is needed.
+
+W1914 (2026-11-03 19:31, dima): okay, but maybe let's grill on it first? ❓
+W1915 (2026-11-03 19:31, dima): and do a proper retro? ❓
+W1916 (2026-11-03 19:31, dima): or you already collected? ❓
+
+W1917 (2026-11-03 19:31, dima): I agree with all 103, but the retro is quite big.
+W1918 (2026-11-03 19:31, dima): Can you print the most important parts from the retro and your proposals first? ❓
+W1919 (2026-11-03 19:31, dima): Do you think we need to grill on these changes? ❓
+W1920 (2026-11-03 19:31, dima): The prompt I sent you about shift is quite tricky because you need pretty careful behavior during the shift lane to not allow anyone to go ahead of the pace too far.
+W1921 (2026-11-03 19:31, dima): Do you think you have all the data to properly grow the shift skill to cover all the edge cases? ❓
+W1922 (2026-11-03 19:31, dima): In my mind, there are a lot of them.
+W1923 (2026-11-03 19:31, dima): I just printed my ideas, and there are more tricky parts.
+W1924 (2026-11-03 19:31, dima): I think the best strategy for the shift lane, when I am not near the keyboard, is just to park more frequently and not allow the base of a 15-hour window to go ahead of the base by more than 5% to 10%.
+W1925 (2026-11-03 19:31, dima): When it runs too far, then just park everyone and let the base pull down.
+
+W1926 (2026-11-03 19:51, dima): Shift retro, the top 5 (the full file: retro-2026-11-03.md):
+W1927 (2026-11-03 19:51, dima) [re: Pace never held]: Yes, as I mentioned, today was the exception because I am burning 5 hours of the 5-hour window by intent. But usually, yes, it shouldn't go ahead of more than 5% of the 5-hour window. Because it then makes it harder to recover and keep up with the pace
+W1928 (2026-11-03 19:51, dima) [re: proposal: your rule]: 5 points ahead, until it is gets to ~0.
+W1929 (2026-11-03 19:51, dima) [re: proposal: your rule]: And how do you plan to monitor it? ❓
+W1930 (2026-11-03 19:51, dima) [re: proposal: your rule]: Because to keep an eye on the 5-hour window, you need to actually query it.
+W1931 (2026-11-03 19:51, dima) [re: proposal: your rule]: How do you plan to wake yourself to do those queries while everyone is parked? ❓
+W1932 (2026-11-03 19:51, dima) [re: proposal: idle notices]: Yes, I also noticed that your thread was spammed very much during this shift.
+W1933 (2026-11-03 19:51, dima) [re: proposal: idle notices]: I was surprised by the amount of spam.
+W1934 (2026-11-03 19:51, dima) [re: proposal: idle notices]: You were always, almost always, active and busy with something, but keep hotpings.
+W1935 (2026-11-03 19:51, dima) [re: proposal: idle notices]: Why did you tell us that you want to keep hotpings to not wake everybody? ❓
+W1936 (2026-11-03 19:51, dima) [re: proposal: idle notices]: Keep hotpings are intended to ping everyone, but only when a thread gets inactive for longer than 50 minutes.
+W1937 (2026-11-03 19:51, dima): Shift retro, the top 5 (the full file: retro-2026-11-03.md):
+W1938 (2026-11-03 19:51, dima): Yes, let's grill on retro and on improving your shift lane.
+W1939 (2026-11-03 19:51, dima): Before that, go and ask around, at least Cicro, about how shift goes, because I asked Crow myself before.
+W1940 (2026-11-03 19:51, dima): Crow noticed a lot of inefficiencies in the communications and did have lots of ideas.
+W1941 (2026-11-03 19:51, dima): Go ask around Crow about shift, and maybe even get a retro out of Crow.
+W1942 (2026-11-03 19:51, dima): Maybe consult with side channel as well.
+W1943 (2026-11-03 19:51, dima): Wishkeeper, did you run a Wishkeeper, or do you plan to run it again after the grill? ❓
 <!-- SECTION:NOTES:END -->
