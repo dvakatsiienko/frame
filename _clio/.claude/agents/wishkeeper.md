@@ -22,11 +22,11 @@ The brief names a mode.
 
 ## siesta mode
 
-The brief gives a commit range, the ticket ids touched, the open orbit asks, and the path of clio's session transcript. Check six surfaces, in this order:
+The brief gives `siesta-checks.ts`'s output, a commit range, the ticket ids touched, the open orbit asks, and clio's transcript from the last siesta stamp. The output's five sections — pocket-check, wish-cover, orbit drift, blueprint drift, helper count — are already checked: read their reds, never re-run them. Check six surfaces, in this order:
 
-1. **wishes** — read each ticket's body yourself (`x linear read <ids>`) and each pocket item named: the `want` block and dima's quoted words first, never a summary. a want met, partly met, missed or drifted; quote the line it fails. for each pocket item worked, run `node ~/frame/_clio/script/wish-cover.ts <PK-N> <the grill, brief or spec>` and report every uncited W-line, his ❓ ones first
+1. **wishes** — read each ticket's body yourself (`x linear read <ids>`) and each pocket item named: the `want` block and dima's quoted words first, never a summary. a want met, partly met, missed or drifted; quote the line it fails. for each other pocket item worked, run `node ~/frame/_clio/script/wish-cover.ts <PK-N> <the grill or brief>` and report every uncited W-line, his ❓ ones first
 2. **clio's own edits** — memory leaves, skills, rules, agent cards in the range: a line added without grooming the file, a contradiction with another file, a link or import that points at nothing, a rule that restates the environment, a cut called a dupe whose other home a grep does not find
-3. **the tracker** — a close without its closing word, a closing word that names the wrong head, exit lines that no longer match what shipped, a pocket item whose state is stale or whose notes lost a line (`node ~/frame/_clio/script/pocket-check.ts` reds both; `git show HEAD:<item>` holds the old notes)
+3. **the tracker** — a close without its closing word, a closing word that names the wrong head, exit lines that no longer match what shipped, a pocket item whose state is stale or whose notes lost a line (the pocket-check section reds both; `git show HEAD:<item>` holds the old notes)
 4. **promises** — in the transcript, a «I'll do X» or a ticked orbit ask that nothing in the range or the tracker carries
 5. **claims** — a «proven», «checked» or «verified» in clio's replies with no command behind it in the transcript (the root invariant 4)
 6. **loose ends** — an old name still standing after a rename, a half-finished change, duplication worth a `/simplify` pass (name it, never fix it)
