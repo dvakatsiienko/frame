@@ -101,7 +101,7 @@ fork-edit | fork-bash)
 		pocket="($q$dir[^/;&|\"']*\.md$q|$dir[^/ ;&|\"']*\.md)"
 		home="(~|$HOME)/frame(/_clio)?/?"
 		# one line, no substitution: grep matches per line, and $( or a backtick runs inside the quotes
-		case "$cmd" in *$'\n'* | *'$'* | *'`'* | *'*'* | *'?'* | *'['* | *'<'* | *'>'* | *'('*) ;; *)
+		case "$cmd" in *$'\n'* | *$'\t'* | *$'\r'* | *'$'* | *'`'* | *'*'* | *'?'* | *'['* | *'<'* | *'>'* | *'('*) ;; *)
 			grep -qE "^ *(cd $home && )?x lane commit [^- ;&|][^ ;&|]* -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
 		esac
 		# an in-place verb writes where the shell stands

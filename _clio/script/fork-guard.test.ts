@@ -227,6 +227,8 @@ describe('fork-guard fork-edit', () => {
         'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-*.md',
         'x lane commit T>README.md -- pocket/tasks/pk-a.md',
         'x lane commit T -- pocket/tasks/pk-<(touch${IFS}x).md',
+        'x lane commit /tmp/m.txt -- pocket/tasks/pk-a\tREADME.md',
+        'x lane commit /tmp/m.txt -- pocket/tasks/pk-a\rREADME.md',
     ])(
         'a pocket-shaped path that escapes the pocket is refused: %s',
         (command) => {
