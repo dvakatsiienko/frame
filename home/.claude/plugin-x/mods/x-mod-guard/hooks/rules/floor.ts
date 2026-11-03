@@ -96,9 +96,22 @@ export function opaque(c: Command, hiddenBy?: string): Refusal | undefined {
             'a command named by a variable the line never fills runs what the guard cannot read',
             'spell the command out, or run the script it names by path',
         );
-    // a brace list widens to every name in it: `r{m,}` is rm
-    if (!head?.hasQuote && /\{[^}]*(?:,|\.\.)[^}]*\}/.test(head?.text ?? ''))
-        return spell('a brace in a command name runs whatever it widens to');
+    // a brace list widens to every name in it: `r{m,}` is rm, and the door names each
+    const brace = head?.hasQuote
+        ? undefined
+        : (head?.text ?? '').match(/^(.*?)\{([^{}]*(?:,|\.\.)[^{}]*)\}(.*)$/s);
+    if (brace) {
+        const [, before = '', list = '', after = ''] = brace;
+        const words = list.includes(',')
+            ? list.split(',').map((w) => `\`${before}${w}${after}\``)
+            : [];
+        return spell(
+            'a brace in a command name runs whatever it widens to',
+            words.length
+                ? `spell it as it runs: ${words.join(' or ')}`
+                : 'spell the command out',
+        );
+    }
     if (head?.isFilled)
         return spell(
             'a command name a variable takes several values for, or a substitution prints, hides what runs',

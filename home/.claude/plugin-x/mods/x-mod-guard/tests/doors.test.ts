@@ -1,12 +1,15 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { answerPrompts, dimaSays } from './said.ts';
+
 // FRM-472 07a: a plain push from frame's main checkout and a hooksPath override are flagged naming their door, warn-only
 // until their sixth sense says clean; a rule that refuses today still refuses beside them
 function world(on: On, cwd = '/home/frame') {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
     const ran: string[] = [];
+    answerPrompts(on);
     on('session.id', () => ({ value: 'd1d1d1d1-0000' }));
     on('session.cwd', () => ({ value: cwd }));
     on('env.get', (_$, e) => ({
@@ -135,4 +138,24 @@ test('a raw linear body write is pointed at x linear body, never at an edit alia
         true,
         false,
     ]);
+});
+
+// R3 row 18: a dima-ok marker his prompt proves still lets its refusal through beside a warn-only flag it does not name
+test('a proven dima-ok runs beside a warn-only flag, the flag still said', async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, 'go ahead and rm -rf build');
+    const command = 'git push; rm -rf build # dima-ok: build';
+    const r = await bash($, command);
+    expect([r.deny, warned(r, 'bare-push'), ran]).toEqual([
+        undefined,
+        true,
+        [command],
+    ]);
+});
+
+test('an unproven dima-ok beside a warn-only flag stays refused', async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, 'push it');
+    const r = await bash($, 'git push; rm -rf build # dima-ok: build');
+    expect([r.deny !== undefined, ran]).toEqual([true, []]);
 });

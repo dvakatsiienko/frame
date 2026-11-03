@@ -28,6 +28,8 @@ import {
     isSignAsk,
     isStashKill,
     lineWrites,
+    markedBy,
+    markers,
     mergeAutoCall,
     mergeAutoPr,
     mergeAutoRepo,
@@ -1421,6 +1423,42 @@ export const register: Register = (on) => {
             return go(withDimaOk(command, pr));
         }
         if (verdict.kind === 'run') return go();
+        // the marker is only a claim: dima's own last prompt, or his tick, must name every target the marked refusals named
+        const runMarked = async (marked: Refusal[]) => {
+            const { value: said = '' } = await $.state.get(PROMPT);
+            const named = [...new Set(marked.flatMap((r) => r.targets))].filter(
+                (t) => !namesWhole(said, t),
+            );
+            const unproven =
+                named.length &&
+                (await tickFor($, guardedOf(command), quotesCommand(command)))
+                    ? []
+                    : named;
+            if (unproven.length) {
+                await record($, {
+                    command,
+                    door: UNPROVEN_DOOR,
+                    kind: 'refused',
+                    rule: 'dima-ok-unproven',
+                    target: unproven[0] ?? '',
+                    why: UNPROVEN_WHY,
+                });
+                return deny(
+                    `nothing in this command ran — x-mod-guard stopped it. instead: ${UNPROVEN_DOOR}. why: ${UNPROVEN_WHY}; it does not name: ${unproven.join(' ')}`,
+                );
+            }
+            const targets = markers(command);
+            await record($, {
+                command,
+                door: marked.map((r) => r.door).join('; '),
+                kind: 'escaped',
+                rule: [...new Set(marked.map((r) => r.rule))].join(', '),
+                target: targets.join(', '),
+                why: marked.map((r) => r.why).join('; '),
+            });
+            $.ui.log(`x-mod-guard: ran on dima-ok: ${targets.join(', ')}`);
+            return go();
+        };
         // dima's tick on an ask quoting every target is his word, no marker needed (FRM-427)
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
@@ -1445,13 +1483,17 @@ export const register: Register = (on) => {
                 guardedOf(command),
                 quotesCommand(command),
             );
-            // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it
+            // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it, and
+            // one the marker names waits for the marker's own proof, so a warn-only flag never turns a proven marker into a deny
             if (!tick) {
-                for (const r of found.length ? found : [verdict.refusal]) {
+                const isMarked = markedBy(command);
+                const all = found.length ? found : [verdict.refusal];
+                for (const r of all.filter((r) => !isMarked(r))) {
                     const stop = await enforce(r, message(r));
                     if (stop) return stop;
                 }
-                return go();
+                const marked = all.filter(isMarked);
+                return marked.length ? runMarked(marked) : go();
             }
             await record($, {
                 command,
@@ -1466,39 +1508,7 @@ export const register: Register = (on) => {
             );
             return go();
         }
-        // the marker is only a claim: dima's own last prompt, or his tick, must name every target the refusals named
-        const { value: said = '' } = await $.state.get(PROMPT);
-        const named = [
-            ...new Set(verdict.refusals.flatMap((r) => r.targets)),
-        ].filter((t) => !namesWhole(said, t));
-        const unproven =
-            named.length &&
-            (await tickFor($, guardedOf(command), quotesCommand(command)))
-                ? []
-                : named;
-        if (unproven.length) {
-            await record($, {
-                command,
-                door: UNPROVEN_DOOR,
-                kind: 'refused',
-                rule: 'dima-ok-unproven',
-                target: unproven[0] ?? '',
-                why: UNPROVEN_WHY,
-            });
-            return deny(
-                `nothing in this command ran — x-mod-guard stopped it. instead: ${UNPROVEN_DOOR}. why: ${UNPROVEN_WHY}; it does not name: ${unproven.join(' ')}`,
-            );
-        }
-        await record($, {
-            command,
-            door: verdict.refusals.map((r) => r.door).join('; '),
-            kind: 'escaped',
-            rule: [...new Set(verdict.refusals.map((r) => r.rule))].join(', '),
-            target: verdict.targets.join(', '),
-            why: verdict.refusals.map((r) => r.why).join('; '),
-        });
-        $.ui.log(`x-mod-guard: ran on dima-ok: ${verdict.targets.join(', ')}`);
-        return go();
+        return runMarked(verdict.refusals);
     }).catch(() => ({ deny: FAILED }));
 
     on(

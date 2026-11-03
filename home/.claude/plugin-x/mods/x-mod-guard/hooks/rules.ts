@@ -8,6 +8,7 @@ import {
     type Verdict,
     actsIn,
     adds,
+    asMember,
     basename,
     commands,
     commandsDeep,
@@ -305,6 +306,8 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
     const { at } = gitParts(c.args);
     if (/[`$~]/.test(dir) || /(?:^|\/)\.\.(?:\/|$)/.test(at ?? ''))
         return false;
+    // a job tmp that is frame underneath (a symlink, a worktree) is no scratch
+    if (ctx.unsafeTmp?.has(actsIn(c, ctx) ?? dir)) return false;
     const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
     return paths.every(
         (p) =>
@@ -493,8 +496,13 @@ const ALL_WORD = word(
     'clear|all (?:of )?(?:the )?stash(?:es)?|every stash|stash(?:es)? all',
 );
 // a command that points git at another dir by env or flag runs where the word never named
+// a git pointed elsewhere, read off the parsed words so quotes cannot split it: an env name, or git's own flag
 const REDIRECTED =
-    /(?<![\w-])GIT_(?:DIR|WORK_TREE)=|--(?:git-dir|work-tree)(?![\w-])/;
+    /^GIT_(?:DIR|WORK_TREE|COMMON_DIR)=|^--(?:git-dir|work-tree)(?:=|$)/;
+const isRedirected = (c: Command) =>
+    [...c.assigns, ...c.args.map((w) => w.text)].some((t) =>
+        REDIRECTED.test(t),
+    );
 const NEGATED =
     /(?<![\w-])(?:do not|never|not|no|without|avoid|stop|leave)(?![\w-])|n['’]t(?![\w-])/i;
 export const isStashKill = (r: Refusal) =>
@@ -502,8 +510,8 @@ export const isStashKill = (r: Refusal) =>
 // every stash drop or clear of the command with the git dir it runs in, nested ones included as the refusals read them; a
 // command with a shell or eval names none, since a script's stash drop could ride beside a plain one
 export function stashKills(command: string, cwd: string, ctx: Context = {}) {
-    if (REDIRECTED.test(command)) return [];
     const list = commandsDeep(command, cwd);
+    if (list.some(isRedirected)) return [];
     if (list.some((c) => SHELLS.has(c.name) || c.name === 'eval')) return [];
     return list.flatMap((c) => {
         if (c.name !== 'git') return [];
@@ -538,12 +546,17 @@ export function check(
 ): Verdict {
     const found = refusals(command, cwd, ctx);
     if (!found.length) return { kind: 'run' };
-    const marked = markers(command);
-    // a marker names one target, or several split by spaces or commas; every target of a refusal must be named
-    const ok = new Set(marked.flatMap((m) => [m, ...m.split(/[\s,]+/)]));
-    const open = found.find((r) => !r.targets.every((t) => ok.has(t)));
+    const isMarked = markedBy(command);
+    const open = found.find((r) => !isMarked(r));
     if (open) return { kind: 'refused', refusal: open };
-    return { kind: 'escaped', refusals: found, targets: marked };
+    return { kind: 'escaped', refusals: found };
+}
+// a marker names one target, or several split by spaces or commas; a refusal is marked when every target is named
+export function markedBy(command: string) {
+    const ok = new Set(
+        markers(command).flatMap((m) => [m, ...m.split(/[\s,]+/)]),
+    );
+    return (r: Refusal) => r.targets.every((t) => ok.has(t));
 }
 export function message(r: Refusal) {
     return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
@@ -766,7 +779,7 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
 // clio's own session is never asked, the caller checks the registry name
 export function rawLinear(command: string, cwd: string): Refusal | undefined {
     for (const c of commandsDeep(command, cwd)) {
-        if (c.name !== 'linear') continue;
+        if (c.name !== 'linear' || asMember(c) !== undefined) continue;
         const [a, b, d] = c.args.map((w) => w.text);
         const isComment = a === 'issue' && b === 'comment' && d === 'add';
         const isRead = (a === 'issue' && b === 'view') || a === 'api';

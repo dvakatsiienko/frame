@@ -22,6 +22,17 @@ const writes: [string, string, string[]][] = [
     ['a write after a cd', 'cd sub && echo hi > x.ts', ['/repo/sub/x.ts']],
     ['a cp onto a file', 'cp a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
     ['a write in bash -c', "bash -c 'echo hi > x.ts'", ['/repo/x.ts']],
+    // FRM-472 R3 row 17
+    ['perl -pi', "perl -pi -e 's/a/b/' x.ts", ['/repo/x.ts']],
+    ['dd of=', 'dd if=a.ts of=x.ts', ['/repo/x.ts']],
+    ['curl -o', 'curl -fsSL -o x.ts https://e.com/x', ['/repo/x.ts']],
+    ['curl --output=', 'curl --output=x.ts https://e.com/x', ['/repo/x.ts']],
+    ['curl -so, packed', 'curl -so x.ts https://e.com/x', ['/repo/x.ts']],
+    ['rsync', 'rsync -a a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
+    ['ditto', 'ditto a.ts x.ts', ['/repo/x.ts', '/repo/x.ts/a.ts']],
+    ['git checkout --', 'git checkout -- x.ts', ['/repo/x.ts']],
+    ['git restore', 'git restore x.ts', ['/repo/x.ts']],
+    ['cp -t', 'cp -t dir a.ts', ['/repo/dir', '/repo/dir/a.ts']],
 ];
 for (const [shape, command, files] of writes)
     test(`reads the file a Bash write targets: ${shape}`, () => {

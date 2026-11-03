@@ -2,9 +2,10 @@ import type { Word } from '../shell.ts';
 import {
     type Command,
     type Refusal,
-    basename,
+    asMember,
     commandsDeep,
 } from './command.ts';
+import { linearWords, xLinearVerbAt } from './milestone.ts';
 
 // FRM-459: a ticket body is written through `x linear body --set` (it refuses a body changed since the pull), and nobody acts as
 // dima. the caller checks the session is not the coordinator's. a nested shell's script and an eval count
@@ -91,13 +92,20 @@ function dropsAgent(c: Command) {
     return false;
 }
 const isXCall = (c: Command) =>
-    c.name === 'x' &&
-    c.args.some((w) => w.text === 'linear' || w.text === 'as');
+    asMember(c) !== undefined ||
+    (c.name === 'x' &&
+        c.args.some((w) => w.text === 'linear' || w.text === 'as'));
 // a line with an x call where any command drops CLAUDECODE: the walker lists a function body, a trap or a loop body where
 // it is written, never in the order it runs, so a drop anywhere on the line counts
 const actsAsDima = (all: Command[]) =>
     all.some(isXCall) && all.some(dropsAgent);
 
+const AS_DIMA: Refusal = {
+    door: 'run it without --as; an agent acts as its own member',
+    rule: 'as-dima',
+    targets: ['dima'],
+    why: "nobody but dima acts as dima; an agent's writes carry its own member",
+};
 export function linearWrite(command: string, cwd: string): Refusal | undefined {
     const all = commandsDeep(command, cwd);
     if (actsAsDima(all))
@@ -108,6 +116,15 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
             why: 'x acts as dima when CLAUDECODE is gone on a tty; an agent keeps its own member',
         };
     for (const c of all) {
+        // `x as <member> --` peeled off the command: a member the guard cannot read, or any under xargs, counts as dima
+        const member = asMember(c);
+        if (
+            member !== undefined &&
+            (c.wrappers.includes('xargs') ||
+                member.toLowerCase() === 'dima' ||
+                /[$`*?[\]{}]/.test(member))
+        )
+            return AS_DIMA;
         const words = c.args.map((w) => w.text);
         // a flag's value is no verb: `x linear --as codie api` is the api verb
         const bare = words.filter(
@@ -139,23 +156,13 @@ export function linearWrite(command: string, cwd: string): Refusal | undefined {
         );
         const isAsDima =
             isAsVerb && isDimaActor(c.args.find((w) => w.text === bare[1]));
-        if ((isLinear || isAsVerb) && (hasActor || isAsDima))
-            return {
-                door: 'run it without --as; an agent acts as its own member',
-                rule: 'as-dima',
-                targets: ['dima'],
-                why: "nobody but dima acts as dima; an agent's writes carry its own member",
-            };
-        if (isAsVerb) {
-            const dash = words.indexOf('--');
-            const inner = dash >= 0 ? words.slice(dash + 1) : [];
-            if (basename(inner[0] ?? '') === 'linear') {
-                const found = rawBody(inner.slice(1));
-                if (found) return found;
-            }
-        }
-        const at = bare.indexOf('linear');
-        if (isLinear && bare[at + 1] === 'api') {
+        if ((isLinear || isAsVerb) && (hasActor || isAsDima)) return AS_DIMA;
+        // `x as <m> -- linear …` is walked as its own command (command.ts); a flag's value is never the verb
+        const linear = linearWords(c);
+        if (
+            linear?.isX &&
+            linear.words[xLinearVerbAt(linear.words)] === 'api'
+        ) {
             // the query is one word; a variable, a substitution or xargs hides it, and an unreadable query counts
             const query = words.join(' ');
             // xargs appends its input as the query, which the line never shows

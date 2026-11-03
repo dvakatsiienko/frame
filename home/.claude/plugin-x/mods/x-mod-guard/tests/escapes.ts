@@ -1295,4 +1295,64 @@ EOF`,
         'a commit with hooksPath emptied (warn-only until step 11)',
         'git -c core.hooksPath=/dev/null commit -m x -- a.ts',
     ],
+    // FRM-472 R3 row 7: a job tmp that is frame (a symlink, a worktree) never lifts a local git discard
+    [
+        'refused',
+        'symlink',
+        'a reset in a tmp that links to frame',
+        `cd ${TMP} && git reset --hard`,
+        { reals: { [TMP]: '/repo' } },
+    ],
+    [
+        'refused',
+        'git-dir',
+        'a clean in a tmp that is a frame worktree',
+        `cd ${TMP} && git clean -fdx`,
+        { commonDirs: { [TMP]: '/repo/.git' } },
+    ],
+    // R3 row 9: x linear's verb found past its flags' values
+    [
+        'refused',
+        'linear-body',
+        'a --vars value ahead of api',
+        `x linear --vars '{"a":1}' api 'mutation { issueUpdate(id: "FRM-1", input: {description: "x"}) { success } }'`,
+    ],
+    // R3 row 10: `x as <member> --` runs its command, read like find -exec's
+    [
+        'refused',
+        'x-as',
+        'env linear behind x as',
+        'x as codie -- env linear issue update FRM-1 -d x',
+    ],
+    [
+        'refused',
+        'x-as',
+        'bash -c behind x as',
+        "x as codie -- bash -c 'rm -rf x'",
+    ],
+    // R3 rows 12–14: an alias takes the call's own args; a persisted alias is read as it is set; a known value counts beside an unknown
+    [
+        'refused',
+        'alias',
+        'a -c alias given --force',
+        'git -c alias.p=push p --force',
+    ],
+    [
+        'refused',
+        'alias',
+        'a persisted alias that force-pushes',
+        "git config alias.x 'push -f'; git x",
+    ],
+    [
+        'refused',
+        'alias',
+        'a persisted ! alias',
+        "git config --global alias.p '!rm -rf ~/frame'",
+    ],
+    [
+        'refused',
+        'reader',
+        'a known flag beside an unknown one',
+        'F=--force; [ -n "$X" ] && F=$X; git push origin $F',
+    ],
 ];

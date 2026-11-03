@@ -48,7 +48,7 @@ export type Brief = { isCodie: boolean; isStamped: boolean };
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }
-    | { kind: 'escaped'; refusals: Refusal[]; targets: string[] };
+    | { kind: 'escaped'; refusals: Refusal[] };
 // wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
 // envArgs: the words env and exec took for themselves (`-i`, `-u NAME`, `-c`); envSplit: env -S's string; bodies: its heredocs
 // head: the word the name came from
@@ -122,6 +122,10 @@ const WRAPPERS = new Map<string, string[]>([
         ],
     ],
 ]);
+// the wrapper `x as <member>` leaves on the command it runs, the member after it
+export const X_AS = 'x as ';
+export const asMember = (c: { wrappers: string[] }) =>
+    c.wrappers.find((w) => w.startsWith(X_AS))?.slice(X_AS.length);
 // a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`; the verb may sit past the
 // runner's own flags (`pnpm -C app exec`), the values of those listed skipped with them
 const RUNNERS = new Map([
@@ -256,6 +260,20 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
         if (/^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(head)) {
             assigns.push(head);
             words = words.slice(1);
+            continue;
+        }
+        // `x as <member> [--] <command…>` runs its command as that member: a wrapper, its member kept on it
+        const asAt =
+            basename(head) === 'x'
+                ? xAsCommand(words.slice(1).map((w) => w.text))
+                : -1;
+        if (asAt >= 0 && asAt + 1 < words.length) {
+            const rest = words.slice(1, asAt + 1).map((w) => w.text);
+            const member = rest
+                .slice(rest.indexOf('as') + 1)
+                .find((t) => !isFlag(t));
+            wrappers.push(`${X_AS}${member ?? ''}`);
+            words = words.slice(asAt + 1);
             continue;
         }
         const runner = RUNNERS.get(basename(head));
@@ -466,8 +484,8 @@ export function commands(parsed: Parsed, cwd: string): Command[] {
                 return w.hasQuote && name !== '@' && name !== '*'
                     ? [{ isExpanding: false, text: values[0] ?? '' }]
                     : split(values[0] ?? '');
-            if (bound && !bound.isUnknown && values.length)
-                alternates.set(w.text, values);
+            // a value the line cannot read beside known ones still runs as each known one
+            if (values.length) alternates.set(w.text, values);
             const printed = w.text === '$(…)' ? echoed(s.subst) : undefined;
             if (printed)
                 return printed.map((a) => ({
@@ -798,13 +816,28 @@ export function nestedScripts(c: Command): string[] {
         return operands(c.args).flatMap(
             (o) => o.match(/^[^=]+=(.+)$/s)?.[1] ?? [],
         );
-    // a `!` alias runs its shell text, any other names a git subcommand with its flags
-    if (c.name === 'git')
-        return gitParts(c.args).configs.flatMap((k) => {
-            const body = k.match(/^alias\.[^=]+=(.+)$/is)?.[1];
+    // a `!` alias runs its shell text, any other names a git subcommand with its flags; the call that names the alias hands
+    // it its own args, and a `git config alias.<name> <body>` is read as the alias it persists
+    if (c.name === 'git') {
+        const { configs, sub, subArgs } = gitParts(c.args);
+        const ops = operands(subArgs);
+        const persisted =
+            sub === 'config' && /^alias\./i.test(ops[0] ?? '') && ops[1]
+                ? [`${ops[0]}=${ops[1]}`]
+                : [];
+        return [...configs, ...persisted].flatMap((k) => {
+            const [, name, body] = k.match(/^alias\.([^=]+)=(.+)$/is) ?? [];
             if (body === undefined) return [];
-            return body.startsWith('!') ? [body.slice(1)] : [`git ${body}`];
+            const args =
+                sub.toLowerCase() === name?.toLowerCase()
+                    ? subArgs.map((w) => ` ${quoted(w.text)}`).join('')
+                    : '';
+            return body.startsWith('!')
+                ? [`${body.slice(1)}${args}`]
+                : [`git ${body}${args}`];
         });
+    }
+
     const out: string[] = [];
     if (c.envSplit !== undefined)
         out.push(
@@ -1007,3 +1040,27 @@ export function isThrowaway(c: Command, ctx: Context) {
 // x-mod-holds' files are checked against it; a path held in a variable is not read
 const APPEND = /^\d*&?>>$/;
 const APPEND_JOINED = /^\d*&?>>([^&].*)$/;
+// where `x [flags] as <member> [flags] [--]` hands over its command, or -1: x takes flags before its family, and the
+// member's own flags sit before or after it
+export function xAsCommand(words: string[]) {
+    const family = words.findIndex(
+        (w, i) =>
+            (w === 'linear' || w === 'as') &&
+            words
+                .slice(0, i)
+                .every(
+                    (v, j) =>
+                        v.startsWith('-') || words[j - 1]?.startsWith('-'),
+                ),
+    );
+    if (words[family] !== 'as') return -1;
+    let isMemberRead = false;
+    for (let i = family + 1; i < words.length; i++) {
+        const w = words[i] ?? '';
+        if (w === '--') return i + 1;
+        if (w.startsWith('-')) continue;
+        if (isMemberRead) return i;
+        isMemberRead = true;
+    }
+    return -1;
+}

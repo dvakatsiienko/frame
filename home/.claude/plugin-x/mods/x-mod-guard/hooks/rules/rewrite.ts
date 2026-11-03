@@ -1,5 +1,5 @@
 import { type Segment, type Word, parse } from '../shell.ts';
-import { peel, testSpan } from './command.ts';
+import { asMember, peel, testSpan } from './command.ts';
 
 // zsh reads `[[ a == b ]]`'s operator as syntax, never as a path
 const TEST_OPERATORS = new Set(['=', '==', '=~']);
@@ -66,6 +66,7 @@ export function edits(segments: Segment[]): Edit[] {
         const head = s.words[s.words.indexOf(peeled.args[0] as Word) - 1];
         const viaX =
             peeled.name === 'linear' &&
+            asMember(peeled) === undefined &&
             peeled.args[0]?.text === 'api' &&
             head?.at !== undefined
                 ? [

@@ -12,7 +12,7 @@ for (const [shape, command, door] of [
     ['a loop var', 'for R in ls cat; do $R x; done', '`ls`'],
     ['a rebound var', 'R=ls; true || R=cat; $R x', '`ls`'],
     ['an echo substitution', '$(echo ls) -l', '`ls`'],
-    ['a brace list', 'l{s,} -l', '`l{s,}`'],
+    ['a brace list', 'l{s,} -l', '`ls` or `l`'],
     ['printf piped into a shell', "printf 'ls' | bash", '`ls …`'],
     ['echo piped into a shell', "echo 'ls' | sh", '`ls …`'],
     ['a sourced substitution', 'source <(echo ls)', '`ls …`'],
