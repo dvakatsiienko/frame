@@ -4,7 +4,7 @@ title: 'folds 11-03: today''s retros and flawlog, unfold one per batch'
 status: open
 assignee: []
 created_date: '2026-11-02T20:27:00Z'
-updated_date: '2026-11-02T20:28:00Z'
+updated_date: '2026-11-03T09:37:00Z'
 labels:
   - m
 dependencies: []
@@ -56,4 +56,6 @@ F8 · cuts and closes waiting
 - FRM-479: wired into x-mod-guard, never fired; o94 asks to close as a rare event
 - PK-288 and PK-291 were closed by helga with every W-line cited done, unread by clio: re-read both against their homes
 - the cut list's 9 unclear parts (`.scratch/worth-test/cut-list.md` § 3), after Rockstar (dima o56, o76)
+
+retro batch 2026-11-03 (clio): 338 sessions, 14 days, opus 5.5 on the batch api, ~$54 of the gifted $100; 2,622 findings in ~/frame/.scratch/retro-batch/findings-2026-11-03.json, themes + fixes in ~/frame/.scratch/retro-batch/themes-2026-11-03.md — folds read the themes file first
 <!-- SECTION:NOTES:END -->
