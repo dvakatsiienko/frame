@@ -4,7 +4,7 @@ title: 'api credits channel: plan where the $200 a month goes (shape-idea)'
 status: open
 assignee: []
 created_date: '2026-11-03T08:43:00Z'
-updated_date: '2026-11-03T09:57:00Z'
+updated_date: '2026-11-03T10:05:00Z'
 labels:
   - m
 dependencies: []
@@ -62,4 +62,6 @@ kept: 2026-11-03 — FRM-224 (nvim) is a false match; no linear ticket owns the 
 W1559 (2026-11-03 10:37, dima): claude code works with a few modes. it works via subscription mode and api mode, so i could actually sign in to cc via api, and maybe that way i would use api credits.
 
 kept: 2026-11-03 — W1665–W1666, W1678–W1681, W1687–W1699, W1705–W1716 joined from the 11:xx turns: the key, the switch (o9), gifted credits only (o11, o15), the batch retro spend; round 2 of shape-idea grills them
+
+W1567 (2026-11-03 10:43, dima): 🛠️ where we could spend them (ideas, nothing built).
 <!-- SECTION:NOTES:END -->
