@@ -254,6 +254,16 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 - 2026-11-02 · prompt-groom · 1455 · 0 · 14:55 groomed W1181-W1186, homed in PK-298 via --append-notes; pasted Rockstar text as context; --day and pocket-check green
 - 2026-11-02 · prompt-groom · 1543-1559 · 0 · groomed 15:43 (W1187-W1203) and 15:59 (W1204-W1218) into PK-297; no-wish 15:32, 15:37, o30; groom check and pocket-check green
 - 2026-11-02 · prompt-groom · 1553-1629 · 0 · groomed 15:53 (W1219-W1223), 16:24 (W1224-W1228), 16:25 (W1229), 16:29 (W1230-W1238) into PK-297; no-wish 16:15, 16:18 answered; groom check and pocket-check green
+- 2026-11-02 · prompt-groom · 1725 · 0 · groomed 17:25 as W1239-W1253; not homed (clio's brief asked for receipt only)
+- 2026-11-02 · prompt-groom · 1653-1759 · 0 · 12 prompts groomed W1254-W1341; 1733 no-wish; not homed in PK-297
+- 2026-11-02 · prompt-groom · 1807-1859 · 0 · 1807-1859 groomed+homed. 1845=W1373–W1401 (PK-299), 1859=W1402–W1428 (PK-299). rockstar/gta lines → PK-298, rest → PK-297. no-wish: 1820, 1827, 1829 (500 error), 1830. o56–o59 still red in --day (no groom); not homed, waiting on clio.
+- 2026-11-02 · prompt-groom · 1906-1911 · 0 · 1906=W1436–W1439, 1911=W1440–W1445, all PK-299. pocket RED: W1429–W1435 (o56–o59) lack prompt stamp, can't fix (--notes blocked). day RED on o56–o59.
+- 2026-11-02 · prompt-groom · o56-o59 · 0 · o56-o59 stamps fixed (o56 18:36, o57-59 18:59); PK-299 W1429-W1435 stamp-only edit; pocket-check green, --day green
+- 2026-11-03 · inbox-prep · 1 · 0 · inbox-prep 2026-11-03: 2 items, 6 asks, coverage 6/6, no homes (freeze.app none; PK-288 subject-only)
+- 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:17: W1531-W1553, 23 lines, 30 sentences mapped, 6 ❓
+- 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:37: W1554-W1561, 8 lines, 2 ❓; 10:18/10:19/10:25 marked no-wish
+- 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:43: W1562-W1569 (8 lines, 3 ❓)
+- 2026-11-03 · prompt-groom · 1 · 0 · prompt-groom 2026-11-03 10:47: W1570-W1574 (5 lines, 2 ❓; clio's pasted reply lines = context, no W-line)
 
 ## rounds
 
