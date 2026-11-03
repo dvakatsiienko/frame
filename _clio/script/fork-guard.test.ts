@@ -187,6 +187,14 @@ describe('fork-guard fork-edit', () => {
                 'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a side item.md"',
             ),
         ).toBe('');
+        expect(
+            bash('x lane commit /tmp/m.txt -- "pocket/tasks/pk-9 - a.md"'),
+        ).toBe('');
+        expect(
+            bash(
+                'cd /Users/dima/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
+            ),
+        ).toBe('');
     });
 
     test('a fork commit naming any other path in a main checkout is refused', () => {
