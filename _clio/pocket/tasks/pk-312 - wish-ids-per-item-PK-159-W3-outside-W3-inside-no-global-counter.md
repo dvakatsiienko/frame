@@ -4,7 +4,7 @@ title: 'wish ids per item: PK-159:W3 outside, W3 inside, no global counter'
 status: open
 assignee: []
 created_date: '2026-11-03T14:29:00Z'
-updated_date: '2026-11-03T14:42:00Z'
+updated_date: '2026-11-03T17:07:00Z'
 labels:
   - m
 dependencies: []
@@ -33,4 +33,13 @@ W1922 (2026-11-03 16:39, dima): But if a PK312 moves to FRM500, then PK312 no lo
 W1923 (2026-11-03 16:39, dima): Maybe it's better to make it so that if a pocket item moves to Linear, its IDs for chords get converted to the corresponding Linear ticket? Or it's fine? ❓
 
 decided (dima's tick o98, 16:41): a pocket wish moving to linear is renumbered into the ticket's series (PK-312:Wn → FRM-500:Wn); the archived item keeps «moved: W1–W3 → FRM-500:W1–W3». replaces o95's birth-id-forever
+
+built 2026-11-03 16:34 (722cc851): `prompt-groom.ts --next <PK-N|FRM-N|BYT-N>` prints a home's next wish id, W1 for an empty home; helga's groom brief names the home. left: renumber at the move to linear (o98), wish-cover following a cross-item cite
+
+decided (dima's tick o94, 16:31): old wish ids stay as written, no migration; a new item starts at W1, an old one continues from its own highest
+decided (dima's tick o96, 16:32): the groom names the home first, then numbers from that home (prompt-groom --next)
+o95 (a wish keeps its birth id everywhere) is replaced by o98
+
+W1924 (2026-11-03 16:39, dima, re-fold of W1922): But if a PK-312 moves to FRM-500, then PK-312 no longer exists, and it points to the wrong PK: a non-existing ticket.
+W1925 (2026-11-03 16:39, dima, re-fold of W1923): Maybe it's better to make it so that if a pocket item moves to Linear, its IDs for word get converted to the corresponding Linear ticket? Or it's fine? ❓
 <!-- SECTION:NOTES:END -->

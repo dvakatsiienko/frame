@@ -4,7 +4,7 @@ title: 'side channel owns its pocket items: solved there, never taken over at bo
 status: done
 assignee: []
 created_date: '2026-11-03T14:13:00Z'
-updated_date: '2026-11-03T14:27:00Z'
+updated_date: '2026-11-03T17:07:00Z'
 labels:
   - s
 dependencies: []
@@ -35,4 +35,7 @@ close: built 2026-11-03 16:28 (389c6184): label side-channel-owned, pocket-add -
 close: W1911 done (the label is the support he asked about), W1914 done (label side-channel-owned), W1915 done (a side channel lists and solves them), W1916 done (pocket only, built same day), W1917–W1918 done (the name moved off «side-owned» to side-channel-owned, o88). raw drops: ~/.local/state/clio/grooms/2026-11-03-1611.raw.md, -1615.raw.md, -1618.raw.md
 
 close: W1917 done, W1918 done (the name moved to side-channel-owned, o88)
+
+W1919 (2026-11-03 16:15, dima): we need to support such kinds of tickets in your pocket
+close: W1919 done (built 389c6184)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T14:15:00Z'
+updated_date: '2026-11-03T17:08:00Z'
 labels:
   - s
 dependencies: []
@@ -90,4 +90,8 @@ W1851 (2026-11-03 14:39, dima): How we groom it the best way: shape, idea, skill
 W1852 (2026-11-03 14:39, dima): let's groom your shift, start the refreshed state and i go afk ~1h.
 W1853 (2026-11-03 14:35, dima, o75 steer): No, let's do it slightly the other way.
 W1854 (2026-11-03 14:35, dima, o75 steer): Currently, your shift should tell you to merge yourself, and it is correct, but my ask to hold with merge is an exception for today.
+
+16:35 steer, groomed (W7–W8 of grooms/2026-11-03-1635.groomed.md), acted: the lane parked
+W7 (2026-11-03 16:35, dima): why is the 491 lane active? ❓
+W8 (2026-11-03 16:35, dima): park them.
 <!-- SECTION:NOTES:END -->
