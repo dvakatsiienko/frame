@@ -1189,4 +1189,33 @@ EOF`,
         'a quoted ]] ahead of a reset',
         "grep -c ']]' f.sh; git reset --hard",
     ],
+    // FRM-472 R3 row 2: the HOME door runs only node and the mods verbs; a claude child under it commits unsigned
+    [
+        'refused',
+        'home-door',
+        'a claude child under a fresh HOME',
+        'H=$(mktemp -d) && HOME=$H claude --bg -p "commit and push"',
+    ],
+    // FRM-472 R3 row 3: a runner's verb found past its own flags
+    ['refused', 'runner', 'pnpm -C ahead of exec', 'pnpm -C app exec rm -rf x'],
+    [
+        'refused',
+        'runner',
+        'pnpm --filter ahead of exec',
+        'pnpm --filter web exec git stash clear',
+    ],
+    [
+        'refused',
+        'runner',
+        'pnpm --dir= ahead of dlx',
+        'pnpm --dir=app dlx rm -rf x',
+    ],
+    [
+        'refused',
+        'runner',
+        'pnpm -r ahead of exec',
+        'pnpm -r exec git stash clear',
+    ],
+    ['refused', 'runner', 'bunx', 'bunx git stash clear'],
+    ['refused', 'runner', 'pnpx with a flag', 'pnpx --yes rm -rf x'],
 ];

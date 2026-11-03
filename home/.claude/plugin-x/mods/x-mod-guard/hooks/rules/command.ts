@@ -82,6 +82,8 @@ const WRAPPERS = new Map<string, string[]>([
     ['nice', ['-n']],
     ['nohup', []],
     ['npx', ['-p', '--package']],
+    ['bunx', ['-p', '--package']],
+    ['pnpx', []],
     ['parallel', ['-j', '-S', '--jobs']],
     ['script', ['-F', '-t', '-T']],
     ['stdbuf', ['-i', '-o', '-e']],
@@ -113,11 +115,33 @@ const WRAPPERS = new Map<string, string[]>([
         ],
     ],
 ]);
-// a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`
+// a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`; the verb may sit past the
+// runner's own flags (`pnpm -C app exec`), the values of those listed skipped with them
 const RUNNERS = new Map([
-    ['pnpm', ['exec', 'dlx']],
-    ['npm', ['exec', 'x']],
-    ['bun', ['x']],
+    [
+        'pnpm',
+        {
+            values: [
+                '-C',
+                '--dir',
+                '-F',
+                '--filter',
+                '--filter-prod',
+                '--loglevel',
+                '--reporter',
+                '--workspace-concurrency',
+            ],
+            verbs: ['exec', 'dlx'],
+        },
+    ],
+    [
+        'npm',
+        {
+            values: ['-w', '--workspace', '--prefix', '--loglevel'],
+            verbs: ['exec', 'x'],
+        },
+    ],
+    ['bun', { values: ['--cwd'], verbs: ['x'] }],
 ]);
 const KEYWORDS = new Set([
     'if',
@@ -227,10 +251,14 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
             words = words.slice(1);
             continue;
         }
-        const verbs = RUNNERS.get(basename(head));
-        if (verbs?.includes(words[1]?.text ?? '')) {
-            wrappers.push(`${basename(head)} ${words[1]?.text}`);
-            words = words.slice(2);
+        const runner = RUNNERS.get(basename(head));
+        let verbAt = 1;
+        while (runner && isFlag(words[verbAt]?.text ?? ''))
+            verbAt += runner.values.includes(words[verbAt]?.text ?? '') ? 2 : 1;
+        const verb = words[verbAt]?.text ?? '';
+        if (runner?.verbs.includes(verb)) {
+            wrappers.push(`${basename(head)} ${verb}`);
+            words = words.slice(verbAt + 1);
             while (isFlag(words[0]?.text ?? '')) words = words.slice(1);
             continue;
         }
@@ -720,6 +748,39 @@ export function commandsDeep(
             ? nestedScripts(c).flatMap((s) => commandsDeep(s, c.dir, depth + 1))
             : []),
     ]);
+}
+// the files a command writes with the text it writes them: a heredoc into cat or tee, an echo or a printf format, each to its
+// `>`, `>>` and tee targets, resolved where the command runs
+export function writtenScripts(c: Command, ctx: Context): [string, string][] {
+    const text =
+        c.name === 'echo'
+            ? printed(c)[0]
+            : c.name === 'printf'
+              ? printed(c)[0]?.replaceAll('\\n', '\n')
+              : (c.name === 'cat' || c.name === 'tee') && c.bodies.length
+                ? c.bodies.join('\n')
+                : undefined;
+    if (text === undefined) return [];
+    const tees = c.name === 'tee' ? operands(c.args) : [];
+    return [...c.writes, ...c.appends, ...tees].map((p) => [
+        resolve(p, c.dir, ctx),
+        text,
+    ]);
+}
+// the file a command runs as a script: a shell's or `source`'s first operand, or a head typed as a path (`./x.sh`)
+export function scriptRun(c: Command, ctx: Context) {
+    const isSource = c.name === 'source' || c.name === '.';
+    const texts = c.args.map((w) => w.text);
+    const isDashC = texts.some((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
+    const path =
+        (SHELLS.has(c.name) || isSource) && !isDashC
+            ? operands(c.args)[0]
+            : c.head?.text.includes('/')
+              ? c.head.text
+              : undefined;
+    return path === undefined || STDIN_PATHS.has(path)
+        ? undefined
+        : resolve(path, c.dir, ctx);
 }
 // a script the line never shows as typed: printed into a shell or `source`, a `<( … )` sourced, a git alias's body
 export function hidingScript(c: Command) {

@@ -141,3 +141,19 @@ test('a drop beside a nested shell is never let through', async ($, on) => {
     ).toContain(THROWN);
     expect(ran).toEqual([]);
 });
+
+// FRM-472 R3 row 4: the lift reads every command a refusal reads, so a kill nested in another repo never rides it
+const NESTED_FRAME_KILLS = [
+    ['find -exec', String.raw`find . -exec git -C ~/frame stash clear \;`],
+    ['env -S', "env -S 'git -C ~/frame stash clear'"],
+    ['a function body', 'f() { git -C ~/frame stash clear; }; f'],
+] as const;
+for (const [shape, nested] of NESTED_FRAME_KILLS)
+    test(`a kill in another repo nested beside the asked one stays refused: ${shape}`, async ($, on) => {
+        const { ran } = world(on);
+        await dimaSays($, 'kill the stash in bytes git');
+        expect((await bash($, `${DROP_BYTES} && ${nested}`)).deny).toContain(
+            THROWN,
+        );
+        expect(ran).toEqual([]);
+    });

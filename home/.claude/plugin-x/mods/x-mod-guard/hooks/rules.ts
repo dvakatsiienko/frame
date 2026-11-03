@@ -22,6 +22,8 @@ import {
     operands,
     peel,
     resolve,
+    scriptRun,
+    writtenScripts,
 } from './rules/command.ts';
 import { floor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
@@ -231,10 +233,10 @@ function isPlainScript(script: string, cwd: string, ctx: Context): boolean {
 }
 // a test door (FRM-470), an allowlist of the whole line: `NAME=$(mktemp -d) && HOME=$NAME <runner> <plain words>`, two commands and
 // nothing between or after them. the HOME is an empty dir this line made, so the hook never sees the real config. the runner is
-// one a mods test uses (node, claude, a `pnpm mods:` verb): git through a shell, `env`, `eval` or `pnpm exec` with no gitconfig
-// drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
+// one a mods test uses (node, a `pnpm mods:` verb): git through a shell, `env`, `eval`, `pnpm exec` or a claude child with no
+// gitconfig drops the signing and identity the commit rules rest on. a parse of which variables survive to the second command kept leaking (printf -v, eval, a subshell), so none is read
 const FRESH_HOME =
-    /^([A-Za-z][A-Za-z0-9]*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|claude|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
+    /^([A-Za-z][A-Za-z0-9]*)=\$\(mktemp (?:-d|--directory)\) ?(?:&&|;) ?HOME=(?:\$\1|"\$\1"|\$\{\1\}) (?:node|pnpm mods:[\w:-]+)(?: [^;&|<>(){}`$\\\n]*)?$/;
 // pnpm reads -C, --dir, --filter and the like anywhere among its words, so a `pnpm mods:` line carries none of them
 const isFreshHomeLine = (command: string) =>
     FRESH_HOME.test(command) &&
@@ -357,6 +359,8 @@ export function tmpDirs(
     });
 }
 // isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
+// the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
+const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
 export function refusals(
     command: string,
     cwd: string,
@@ -367,7 +371,23 @@ export function refusals(
     const parsed = parse(command);
     const list = commands(parsed, cwd);
     const out: Refusal[] = [];
+    // the files the line has written so far, by path: a later `bash s.sh`, `source s.sh` or `./s.sh` runs that text
+    const written = new Map<string, string>();
     list.forEach((c, i) => {
+        const ran = scriptRun(c, ctx);
+        const body = ran === undefined ? undefined : written.get(ran);
+        if (body !== undefined)
+            out.push(
+                ...refusals(body, c.dir, ctx, isPlain, hiddenBy)
+                    .filter((r) => !TYPED_LINE.has(r.rule))
+                    .map((r) => ({
+                        ...r,
+                        rule: 'write-then-run',
+                        why: `${ran} was written earlier in this line, and running it runs a refused command (rule ${r.rule}): ${r.why}`,
+                    })),
+            );
+        for (const [path, text] of writtenScripts(c, ctx))
+            written.set(path, text);
         const judge = (cmd: Command, next: Command | undefined) =>
             floor(cmd, ctx) ??
             hazard(cmd, ctx) ??
@@ -473,11 +493,11 @@ const NEGATED =
     /(?<![\w-])(?:do not|never|not|no|without|avoid|stop|leave)(?![\w-])|n['’]t(?![\w-])/i;
 export const isStashKill = (r: Refusal) =>
     r.rule === 'git-discard' && /^git stash (drop|clear) /.test(r.why);
-// every stash drop or clear of the command with the git dir it runs in; a command with a nested shell or eval names
-// none, since a script's stash drop could ride beside a plain one
+// every stash drop or clear of the command with the git dir it runs in, nested ones included as the refusals read them; a
+// command with a shell or eval names none, since a script's stash drop could ride beside a plain one
 export function stashKills(command: string, cwd: string, ctx: Context = {}) {
     if (REDIRECTED.test(command)) return [];
-    const list = commands(parse(command), cwd);
+    const list = commandsDeep(command, cwd);
     if (list.some((c) => SHELLS.has(c.name) || c.name === 'eval')) return [];
     return list.flatMap((c) => {
         if (c.name !== 'git') return [];

@@ -395,6 +395,7 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'raw-plugin-update',
     'spawn-trial',
     'worth',
+    'write-then-run',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
