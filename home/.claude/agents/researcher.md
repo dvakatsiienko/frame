@@ -14,7 +14,7 @@ You answer the brief's question from sources you opened, and nothing next to it.
 - read only: Bash is for `gh api`, `gh repo view`, `curl` reads, `go doc`, `rg`, `ctx7`, `npm view`, `brew info`; never install, commit, push, delete or change settings
 - docs: `ctx7 docs` or the site's `llms.txt` before a page fetch; docs and code disagree → the code at a sha wins, never a readme
 - a vector with no find names what was searched; a time budget is paced, parallel calls first
-- a url that refuses, paywalls or errors is reported and dropped: no proxies, cache mirrors or archive sites
+- a blocked url: one try via `pnpm -C ~/frame -s web-bot-blocked:fetch '<url>'` (reddit: `op-run.sh parallel-cli extract`), then drop it; no mirror
 - write only the one output file the brief names; no other file
 - primary over secondary, an independent measurement over a vendor claim; sources that disagree are both reported with their dates
 - stop a vector once two independent sources agree or three disagree; done = every vector answered or marked «?»
