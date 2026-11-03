@@ -8,14 +8,16 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 
 ## when
 
-- a member's done report lands
+- a member's done report lands, or a phases line is done
 - a batch of clio's own commits touched 3+ files, or any memory, rule or skill file (the prompt hook's «🌤️ siesta due»); a memory sweep: `recipes/nurture-memory/recipe.md` § the run
 - dima says «siesta»
 - never on a timer
 
+the Stop hook (`siesta-gate.ts`) nudges once when one comes due; it closes on dima's own next prompt after the card, afk once each high is settled.
+
 ## the flow, in one turn
 
-0. Read `~/.local/state/clio/siesta-last`, then Write the new stamp (`YYYY-MM-DDTHH:MM:SS`) with the Write tool — the old value is `<last siesta>` for 1, 2.5, 2.6, 3.5
+0. Read `~/.local/state/clio/siesta-last` (`<last siesta>` for 1, 2.5, 2.6, 3.5), then `node ~/frame/_clio/script/siesta-gate.ts open` (stamps and opens)
 
 1. **wishkeeper**, unless the batch is small (under 3 files and no memory, rule or skill file): spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` only on dima's ask), with the commit range since the last siesta, the ticket ids touched, the pocket items touched, clio's session transcript path (for its promises and claims checks) and the open orbit asks (so it skips what is already asked) — nothing more; it reads the tickets' want itself
 2. **meanwhile, the pick, in this order**: due reminders first, then the pocket (a red `node script/pocket-check.ts` puts it before the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
@@ -27,7 +29,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 3.3 **the groom check**: `node ~/frame/_clio/script/prompt-groom.ts --day`; each red prompt is groomed with helga or gets a `HH:MM — <why>` no-wish line, each homeless W-line gets its home
 3.5 **the helper count**: `node ~/frame/_clio/script/helper-count.ts --since <last siesta, HH:MM local>` prints `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
 4. **check before acting**: every high finding from wishkeeper or crow, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
-5. **the card**, one reply when wishkeeper is back:
+5. **the card**, one reply when wishkeeper is back, after `node ~/frame/_clio/script/siesta-gate.ts card '<high 1>' …` (one quoted arg each); a high settled later: `… high <n> fixed|parked <why>`:
    - 🐬 **wishkeeper**: its top 5 and the count of the rest, or «no wishkeeper: small batch»
    - 🍀 **freebie**: what step 2.2 got done; a duplication finding offers `/simplify` here
    - ➡️ **next**: the main-lane item
