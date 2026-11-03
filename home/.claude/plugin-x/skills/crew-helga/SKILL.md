@@ -60,7 +60,7 @@ stop that chore and ask clio in one line, then go on with the next chore, when:
 - the done command fails for a reason the hook did not name
 
 the ask shape: `[ask] consult <chore n>: <the one question>` — an `[ask]` wakes clio, so she never
-reasons from a tree you left half done. a chore that failed sends `[blocked]` the same way.
+reasons from a tree you left half done. a chore that failed sends `[🪜 escalate]` the same way.
 
 ## the receipt — a log line; a message only when clio must act
 
