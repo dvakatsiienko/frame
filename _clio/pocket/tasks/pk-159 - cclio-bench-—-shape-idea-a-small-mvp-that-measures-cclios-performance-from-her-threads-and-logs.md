@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T11:24:00Z'
+updated_date: '2026-11-03T11:43:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -233,4 +233,6 @@ W1767 (2026-11-03 12:32, dima): can we know if what we do currently is worth it?
 chunk A shaped → FRM-491 (milestone 🐋 clio runs lean), grill rounds 1–2 settled 12:27–12:45; chunks B–F stay here until each is shaped
 
 label fix (wishkeeper 13:09): W1747, W1748, W1750 are clio's 12:33 reply lines that dima quoted with «←» — context, not his wants; his wants are W1749 and W1751–W1756. FRM-491's wish block leaves the three out.
+
+advisor borrows (side channel, dima's ticks): 4 riders in _clio/.scratch/pk159/advisor-borrows.md — rider 0 «blocked» → «escalate» and rider 1 the fix ladder in crew-subagent join chunk B; rider 2 a budget line before 5+ cards joins chunk D beside crow's spend wake; rider 3 the review round joins chunk F's lane cell. the three verdicts 🌼 clean, 🩹 fix, 🪜 escalate landed in fleet-vibe (03f5382b, merged 13:44)
 <!-- SECTION:NOTES:END -->
