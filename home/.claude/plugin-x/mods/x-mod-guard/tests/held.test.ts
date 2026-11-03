@@ -36,6 +36,12 @@ const writes: [string, string, string[]][] = [
     // FRM-472 review: rsync's -t keeps times, it names no dest; git -C moves where restore writes
     ['rsync -t', 'rsync -t a.ts dir', ['/repo/dir', '/repo/dir/a.ts']],
     ['git -C restore', 'git -C app restore x.ts', ['/repo/app/x.ts']],
+    ['git restore -SW', 'git restore -SW x.ts', ['/repo/x.ts']],
+    [
+        'perl -pi with two -e',
+        "perl -pi -e 's/a/b/' -e 's/c/d/' x.ts",
+        ['/repo/x.ts'],
+    ],
 ];
 for (const [shape, command, files] of writes)
     test(`reads the file a Bash write targets: ${shape}`, () => {
@@ -47,6 +53,7 @@ const reads: [string, string][] = [
     ['a quoted arrow', "echo 'a > b'"],
     ['sed without -i', "sed 's/a/b/' x.ts"],
     ['a variable path', 'echo hi > "$out"'],
+    ['git restore --staged', 'git restore --staged x.ts'],
 ];
 for (const [shape, command] of reads)
     test(`finds no write in ${shape}`, () => {

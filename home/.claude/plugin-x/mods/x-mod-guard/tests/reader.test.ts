@@ -31,6 +31,9 @@ const PASSES = [
     // FRM-472 review P0: a %% before a conversion never loops the reader
     ['a printf with %% and a conversion', "printf '100%%d\\n' 5"],
     ['a printf of %%s alone', "printf '%%s' x"],
+    // FRM-472 review: text that is no shell script is never read as one
+    ['a tee heredoc kept as a file', 'tee notes.md <<EOF\nrm -rf x\nEOF'],
+    ['a node -e string', `node -e 'console.log("rm -rf x")'`],
 ] as const;
 for (const [shape, command] of PASSES)
     test(`a harmless command the reader opens runs unwarned: ${shape}`, async ($, on) => {

@@ -8,6 +8,7 @@ import {
     type Verdict,
     actsIn,
     adds,
+    aliasRun,
     asMember,
     basename,
     commands,
@@ -23,6 +24,7 @@ import {
     nestedScripts,
     operands,
     peel,
+    persistedAlias,
     resolve,
     scriptRun,
     writtenScripts,
@@ -362,12 +364,12 @@ export function tmpDirs(
         return dir !== undefined && isJobTmp(dir, ctx) ? [dir] : [];
     });
 }
-// isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
 // the files a line leaves written, path to text, for the runs a later call of the turn makes
 export const lineWrites = (command: string, cwd: string, ctx: Context) =>
     commands(parse(command), cwd).flatMap((c) => writtenScripts(c, ctx));
 // the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
 const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
+// isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
 export function refusals(
     command: string,
     cwd: string,
@@ -380,6 +382,8 @@ export function refusals(
     const out: Refusal[] = [];
     // the files the turn and the line have written so far, by path: a later `bash s.sh`, `source s.sh` or `./s.sh` runs that text
     const written = new Map(ctx.written);
+    // the git aliases the line has persisted so far, by name
+    const aliases = new Map<string, string>();
     list.forEach((c, i) => {
         const ran = scriptRun(c, ctx);
         const body = ran === undefined ? undefined : written.get(ran);
@@ -403,6 +407,21 @@ export function refusals(
                     })),
             );
         laidOver(written, writtenScripts(c, ctx));
+        const { sub, subArgs } = gitParts(c.args);
+        const alias =
+            c.name === 'git' ? aliases.get(sub.toLowerCase()) : undefined;
+        if (alias !== undefined)
+            out.push(
+                ...refusals(
+                    aliasRun(alias, subArgs),
+                    c.dir,
+                    ctx,
+                    isPlain,
+                    hiddenBy ?? 'a git alias',
+                ),
+            );
+        const persisted = persistedAlias(c);
+        if (persisted) aliases.set(...persisted);
         const judge = (cmd: Command, next: Command | undefined) =>
             floor(cmd, ctx) ??
             hazard(cmd, ctx) ??

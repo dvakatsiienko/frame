@@ -368,9 +368,7 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         };
     return undefined;
 }
-// a git call that steps past the gate a door holds, flagged beside the rule chain so a refusal on the same command still
-// stands: a plain push from frame's main checkout (its door reads the remote back, and a worktree push dies on the mirror
-// gate anyway), and a `-c core.hooksPath` that swaps the hooks out like --no-verify (FRM-472)
+// a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
 export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
     if (c.name !== 'git') return undefined;
     const { configs, sub, subArgs } = gitParts(c.args);

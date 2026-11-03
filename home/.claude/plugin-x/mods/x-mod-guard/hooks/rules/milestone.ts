@@ -3,7 +3,6 @@ import {
     type Context,
     type Refusal,
     commandsDeep,
-    xAsCommand,
 } from './command.ts';
 
 // only new creates and moves are read: tickets already outside a milestone stay as they are (FRM-417)
@@ -47,7 +46,7 @@ function varValue(vars: string | undefined, name: string | undefined) {
     }
 }
 
-// the linear words a command runs: the raw cli, `x as <member> -- linear …`, or x's own `x linear …`
+// the linear words a command runs: the raw cli (an `x as <member> --` is peeled to it), or x's own `x linear …`
 export function linearWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'linear') return { isX: false, words };
@@ -63,10 +62,8 @@ export function linearWords(c: Command) {
                         v.startsWith('-') || words[j - 1]?.startsWith('-'),
                 ),
     );
-    if (family >= 0) return { isX: true, words: words.slice(family + 1) };
-    const raw = xAsCommand(words);
-    return words[raw] === 'linear'
-        ? { isX: false, words: words.slice(raw + 1) }
+    return family >= 0
+        ? { isX: true, words: words.slice(family + 1) }
         : undefined;
 }
 

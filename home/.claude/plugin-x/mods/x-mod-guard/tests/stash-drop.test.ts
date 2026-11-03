@@ -147,6 +147,9 @@ const NESTED_FRAME_KILLS = [
     ['find -exec', String.raw`find . -exec git -C ~/frame stash clear \;`],
     ['env -S', "env -S 'git -C ~/frame stash clear'"],
     ['a function body', 'f() { git -C ~/frame stash clear; }; f'],
+    ['a trap', "trap 'git -C ~/frame stash clear' EXIT"],
+    ['fd -x', 'fd . -x git -C ~/frame stash clear'],
+    ['a ! git alias', "git -c alias.k='!git -C ~/frame stash clear' k"],
 ] as const;
 // FRM-472 R3 row 6: the lift reads the git dir the shell sees, quotes and GIT_COMMON_DIR included
 const MOVED = [

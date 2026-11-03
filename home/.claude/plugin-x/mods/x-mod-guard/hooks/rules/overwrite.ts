@@ -68,7 +68,7 @@ export function commandWrites(c: Command, ctx: Context) {
     const ops = operands(c.args);
     if (c.name === 'tee') named.push(...ops);
     if (c.name === 'perl' && c.args.some((w) => /^-\w*i/.test(w.text)))
-        named.push(...ops.slice(1));
+        named.push(...perlFiles(c.args));
     if (c.name === 'dd')
         named.push(...ops.flatMap((o) => o.match(/^of=(.+)$/)?.[1] ?? []));
     if (c.name === 'curl') named.push(...curlOutputs(c.args));
@@ -106,9 +106,21 @@ function curlOutputs(args: Word[]) {
 function checkedOut(c: Command) {
     const { sub, subArgs } = gitParts(c.args);
     const texts = subArgs.map((w) => w.text);
-    if (sub === 'restore') return operands(subArgs);
+    // `--staged` alone writes the index, never the worktree
+    const isStagedOnly =
+        hasFlag(subArgs, ['--staged'], 'S') &&
+        !hasFlag(subArgs, ['--worktree'], 'W');
+    if (sub === 'restore') return isStagedOnly ? [] : operands(subArgs);
     const dash = texts.indexOf('--');
     return sub === 'checkout' && dash >= 0 ? texts.slice(dash + 1) : [];
+}
+// perl's files: every operand past its script, which is the first operand unless an `-e`/`-E` holds it
+function perlFiles(args: Word[]) {
+    const isExpr = (t = '') => /^-\w*[eE]$/.test(t);
+    const ops = args
+        .filter((w, i) => !isFlag(w.text) && !isExpr(args[i - 1]?.text))
+        .map((w) => w.text);
+    return args.some((w) => isExpr(w.text)) ? ops : ops.slice(1);
 }
 // sd's files follow its find and replace; a flag in SD_VALUE eats the word after it
 function sdFiles(args: Word[]) {

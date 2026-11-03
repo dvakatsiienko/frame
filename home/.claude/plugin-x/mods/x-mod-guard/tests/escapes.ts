@@ -1382,4 +1382,35 @@ EOF`,
         'a known flag beside an unknown one',
         'F=--force; [ -n "$X" ] && F=$X; git push origin $F',
     ],
+    // FRM-472 review: a persisted alias reaches the later call that names it; git 2.46's `config set` persists one too
+    [
+        'refused',
+        'alias',
+        'a persisted alias given --force later on the line',
+        'git config alias.p push; git p --force',
+    ],
+    [
+        'refused',
+        'alias',
+        'an alias persisted by git config set',
+        "git config set alias.x 'push -f'",
+    ],
+    // FRM-472 review: every shell that reads a heredoc on stdin
+    ...(
+        [
+            ['sh -s', 'sh -s'],
+            ['zsh', 'zsh'],
+            ['a shell by its path', '/bin/bash'],
+            ['env bash', 'env bash'],
+            ['sudo sh', 'sudo sh'],
+            ['bash -s --', 'bash -s -- a'],
+        ] as const
+    ).map(
+        ([shape, shell]): Row => [
+            'refused',
+            'reader',
+            `a heredoc into ${shape}`,
+            `${shell} <<EOF\nrm -rf x\nEOF`,
+        ],
+    ),
 ];

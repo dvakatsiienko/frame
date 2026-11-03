@@ -843,26 +843,19 @@ export function nestedScripts(c: Command): string[] {
         return operands(c.args).flatMap(
             (o) => o.match(/^[^=]+=(.+)$/s)?.[1] ?? [],
         );
-    // a `!` alias runs its shell text, any other names a git subcommand with its flags; the call that names the alias hands
-    // it its own args, and a `git config alias.<name> <body>` is read as the alias it persists
+    // a `-c alias.<name>=<body>` runs for the call that names it, with that call's args; a persisted alias is read as set
     if (c.name === 'git') {
         const { configs, sub, subArgs } = gitParts(c.args);
-        const ops = operands(subArgs);
-        const persisted =
-            sub === 'config' && /^alias\./i.test(ops[0] ?? '') && ops[1]
-                ? [`${ops[0]}=${ops[1]}`]
-                : [];
-        return [...configs, ...persisted].flatMap((k) => {
-            const [, name, body] = k.match(/^alias\.([^=]+)=(.+)$/is) ?? [];
-            if (body === undefined) return [];
-            const args =
-                sub.toLowerCase() === name?.toLowerCase()
-                    ? subArgs.map((w) => ` ${quoted(w.text)}`).join('')
-                    : '';
-            return body.startsWith('!')
-                ? [`${body.slice(1)}${args}`]
-                : [`git ${body}${args}`];
-        });
+        const persisted = persistedAlias(c);
+        return [
+            ...configs.flatMap((k) => {
+                const [, name, body] = k.match(/^alias\.([^=]+)=(.+)$/is) ?? [];
+                if (body === undefined) return [];
+                const isNamed = sub.toLowerCase() === name?.toLowerCase();
+                return [aliasRun(body, isNamed ? subArgs : [])];
+            }),
+            ...(persisted ? [aliasRun(persisted[1], [])] : []),
+        ];
     }
 
     const out: string[] = [];
@@ -912,13 +905,11 @@ export function commandsDeep(
 // `>`, `>>` and tee targets, resolved where the command runs; an append is marked so it adds to the text written before
 export function writtenScripts(c: Command, ctx: Context): Written[] {
     const text =
-        c.name === 'echo'
+        c.name === 'echo' || c.name === 'printf'
             ? printed(c)[0]
-            : c.name === 'printf'
-              ? printed(c)[0]?.replaceAll('\\n', '\n')
-              : (c.name === 'cat' || c.name === 'tee') && c.bodies.length
-                ? c.bodies.join('\n')
-                : undefined;
+            : (c.name === 'cat' || c.name === 'tee') && c.bodies.length
+              ? c.bodies.join('\n')
+              : undefined;
     if (text === undefined) return [];
     const tees = c.name === 'tee' ? operands(c.args) : [];
     const isTeeAppend = hasFlag(c.args, ['--append'], 'a');
@@ -936,6 +927,23 @@ export function laidOver(files: Map<string, string>, writes: Written[]) {
         files.set(path, before === undefined ? text : `${before}\n${text}`);
     }
     return files;
+}
+// the alias a `git config [--global] [set] alias.<name> <body>` persists, its name lowercased as git reads it
+export function persistedAlias(c: Command): [string, string] | undefined {
+    if (c.name !== 'git') return undefined;
+    const { sub, subArgs } = gitParts(c.args);
+    const ops = operands(subArgs);
+    const [key, body] = ops[0] === 'set' ? ops.slice(1) : ops;
+    const name =
+        sub === 'config' ? key?.match(/^alias\.(.+)$/is)?.[1] : undefined;
+    return name && body ? [name.toLowerCase(), body] : undefined;
+}
+// what a git alias runs: a `!` body's shell text, any other body as a git subcommand, the call's own args handed on
+export function aliasRun(body: string, args: Word[]) {
+    const tail = args.map((w) => ` ${quoted(w.text)}`).join('');
+    return body.startsWith('!')
+        ? `${body.slice(1)}${tail}`
+        : `git ${body}${tail}`;
 }
 // the file a command runs as a script: a shell's or `source`'s first operand, or a head typed as a path (`./x.sh`)
 export function scriptRun(c: Command, ctx: Context) {
@@ -1080,7 +1088,7 @@ const APPEND = /^\d*&?>>$/;
 const APPEND_JOINED = /^\d*&?>>([^&].*)$/;
 // where `x [flags] as <member> [flags] [--]` hands over its command, or -1: x takes flags before its family, and the
 // member's own flags sit before or after it
-export function xAsCommand(words: string[]) {
+function xAsCommand(words: string[]) {
     const family = words.findIndex(
         (w, i) =>
             (w === 'linear' || w === 'as') &&
