@@ -1,10 +1,10 @@
 ---
 id: PK-311
 title: 'side channel owns its pocket items: solved there, never taken over at boot'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T14:13:00Z'
-updated_date: '2026-11-03T14:23:00Z'
+updated_date: '2026-11-03T14:25:00Z'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,6 @@ today: `pocket-add --side` only marks the birth, and main's boot takes the item 
 
 W1917 (2026-11-03 16:18, dima): "side-owned" — maybe «side-channel» or «side-channel—owned»? ❓
 W1918 (2026-11-03 16:18, dima): «side-owned» can mean side lane too.
+
+close: built 2026-11-03 16:28 (389c6184): label side-channel-owned, pocket-add --side-channel-owned, boot keeps it out, side-channel lists and closes it; dima's o88–o90. pocket-add's label join tested only by reading, its first live use proves it
 <!-- SECTION:NOTES:END -->
