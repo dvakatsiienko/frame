@@ -4,6 +4,7 @@ title: 'api credits channel: plan where the $200 a month goes (shape-idea)'
 status: open
 assignee: []
 created_date: '2026-11-03T08:43:00Z'
+updated_date: '2026-11-03T08:43:00Z'
 labels:
   - m
 dependencies: []
@@ -20,3 +21,9 @@ W1557 (2026-11-03 10:37, dima): it's a free channel for us in that case, well, a
 W1558 (2026-11-03 10:37, dima): let's plan upfront what we can do with that.
 W1561 (2026-11-03 10:37, dima): if so, propose how to spend them.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+kept: 2026-11-03 — FRM-224 (nvim) is a false match; no linear ticket owns the api credits; the five candidate uses are in clio's 10:39 reply; shape-idea runs after mods lane 4's first final (dima's o8)
+<!-- SECTION:NOTES:END -->
