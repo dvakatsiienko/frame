@@ -56,10 +56,6 @@ _Avoid_: item, task, phase
 Dima's away switch; while on, every session's prompt carries an away note.
 _Avoid_: away mode, shift presence
 
-**Away digest**:
-The lines the band shows when dima turns afk off: the sessions that left him asks, then the ones that finished, since afk went on.
-_Avoid_: summary, recap, catch-up
-
 
 **Board**:
 The `/board` pane: every live session, its state as cc wrote it, what it waits on, and its facts.

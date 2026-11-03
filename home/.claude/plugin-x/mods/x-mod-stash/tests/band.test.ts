@@ -416,3 +416,25 @@ test('the band shows the holders comma-joined, each name bold', async ($, on) =>
         .map((t) => t.text);
     expect(bold).toEqual(['🐬 wishkeeper', '🐝 researcher', '🙋‍♂️ dima']);
 });
+
+// FRM-498 (W1912): turning 💨 off after members finished draws no away block
+test('afk off after two members finished leaves the band as it was with afk on', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await ui.press({ key: 'afk' });
+    const finish = (sid: string) =>
+        $.classic.Stop({
+            last_assistant_message: 'done',
+            session_id: sid,
+            stop_hook_active: false,
+        });
+    await finish('c1c1c1c1-codie');
+    await finish('d2d2d2d2-sixth');
+    const lines = async () =>
+        (await ui.findAll({ type: 'Text' })).map((t) => t.text);
+    const away = await lines();
+    await ui.press({ key: 'afk' });
+    const back = await lines();
+    expect(back.filter((t) => /were away|^done · /.test(t))).toEqual([]);
+    expect(back.length).toBe(away.length);
+});

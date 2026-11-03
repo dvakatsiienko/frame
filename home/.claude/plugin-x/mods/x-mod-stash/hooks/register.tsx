@@ -11,7 +11,6 @@ import type {
     QuietPing,
     RemoteMark,
     StashCap,
-    StashDigest,
     StashEntry,
     StashLane,
     StashMember,
@@ -201,11 +200,6 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
     { group: 'stash · band', key: 'stash.ctx', label: '🧠 ctx bar (desktop)' },
-    {
-        group: 'stash · band',
-        key: 'stash.digest',
-        label: 'while you were away',
-    },
     { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
@@ -703,10 +697,6 @@ let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
 
-// what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
-type Digest = StashDigest;
-let digest: Digest | undefined;
-
 const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
 // mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
 let orbit: StashOrbit = EMPTY_ORBIT;
@@ -1126,8 +1116,8 @@ async function playPress($: EngineInterface, text: string) {
     await refreshSpeaking($);
 }
 
-// kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` and the away
-// digest count every session's
+// kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` counts every
+// session's
 async function saveOrbit(
     $: EngineInterface,
     next: StashOrbit,
@@ -2205,7 +2195,7 @@ async function forget($: EngineInterface, sid: string) {
         if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
 }
 
-// a session that exited keeps only its last reply, marked ended, so an away digest still counts it as done
+// a session that exited keeps only its last reply, marked ended, dropped a day later
 async function retire($: EngineInterface, sid: string) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
     await forget($, sid);
@@ -2331,7 +2321,6 @@ async function load($: EngineInterface) {
 function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
-        digest,
         isBoardOpen,
         isHot: Boolean(hot),
         isSettingsOpen,
@@ -3278,42 +3267,6 @@ export const markOf = (m: {
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
-// every session whose reply ended since `since`: those that left asks first, then those that finished —
-// a session the registry still shows busy has not finished; one that exited meanwhile has
-async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
-    const needs: Digest['needs'] = [];
-    const done: Digest['done'] = [];
-    const keys = await $.store.keys();
-    const running = new Set(
-        (await registry($).catch(() => []))
-            .filter((r) => r.isAlive && statusOf(r.base.status).isWorking)
-            .map((r) => r.base.sid),
-    );
-    for (const key of keys) {
-        if (!key.startsWith(PREFIX)) continue;
-        const v = (await $.store.get(key)) as Entry | undefined;
-        if (!v || v.at < since || !v.asks.length) continue;
-        const sid = key.slice(PREFIX.length);
-        needs.push({ asks: v.asks.length, name: v.name ?? short(sid), sid });
-    }
-    for (const key of keys) {
-        if (!key.startsWith(REPLY)) continue;
-        const sid = key.slice(REPLY.length);
-        const v = (await $.store.get(key)) as Partial<Reply> | undefined;
-        if (
-            v?.at === undefined ||
-            v.at < since ||
-            running.has(sid) ||
-            needs.some((n) => n.sid === sid)
-        )
-            continue;
-        done.push({ name: v.name ?? short(sid), sid });
-    }
-    const byName = (a: { name: string }, b: { name: string }) =>
-        a.name.localeCompare(b.name);
-    return { done: done.sort(byName), needs: needs.sort(byName) };
-}
-
 type Registered = {
     pid: number;
     bg: boolean;
@@ -3945,7 +3898,6 @@ export const register: Register = (on) => {
             pinged = kept.turn.isPinged;
             turnAfk = kept.turn.afk;
         }
-        digest = kept.view?.digest;
         await load($);
         await armHot($);
         await armWake($);
@@ -4029,12 +3981,8 @@ export const register: Register = (on) => {
         const isUser =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
-        if (isUser) {
-            // dima read the away digest once he types again
-            digest = undefined;
-            if (BACK_AT_MAC.test(e.text))
-                await $.state.set(MOBILE, false).catch(() => undefined);
-        }
+        if (isUser && BACK_AT_MAC.test(e.text))
+            await $.state.set(MOBILE, false).catch(() => undefined);
         await startTurn($, e.text, isUser);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const at = new Date(await $.clock.now());
@@ -6409,7 +6357,7 @@ export const register: Register = (on) => {
         }
     });
 
-    // a /clear or a resume leaves the conversation behind; an exit leaves its last reply for the away digest
+    // a /clear or a resume leaves the conversation behind; an exit keeps only its last reply
     on('session.end', async ($, e, next) => {
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
@@ -6570,8 +6518,8 @@ export const register: Register = (on) => {
         return { ...r, context: [...(r.context ?? []), ...notes] };
     });
 
-    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars,
-    // the away digest and a refused threshold's one line
+    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars
+    // and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         try {
             return cleanTree(
@@ -6597,10 +6545,6 @@ export const register: Register = (on) => {
                             | undefined;
                         // the store's value, never the module copy: another session may have flipped it since the last poll
                         afk = !was?.on;
-                        digest =
-                            !afk && was?.on && was.at !== undefined
-                                ? await awayDigest($, was.at)
-                                : undefined;
                         await $.store.set(AFK_KEY, {
                             at: await $.clock.now(),
                             on: afk,
@@ -7084,31 +7028,6 @@ export const register: Register = (on) => {
                                   )}
                         </Box>
                     );
-                    const away =
-                        isShown('stash.digest') &&
-                        view.digest &&
-                        (view.digest.needs.length || view.digest.done.length)
-                            ? [
-                                  <Text dimColor key='away'>
-                                      while you were away
-                                  </Text>,
-                                  ...view.digest.needs.map((n) => (
-                                      <Text
-                                          key={`away:n:${n.sid}`}
-                                          wrap='truncate-end'>
-                                          {`needs you · ${n.name} · 🪐 ${n.asks}`}
-                                      </Text>
-                                  )),
-                                  ...view.digest.done.map((d) => (
-                                      <Text
-                                          dimColor
-                                          key={`away:d:${d.sid}`}
-                                          wrap='truncate-end'>
-                                          {`done · ${d.name}`}
-                                      </Text>
-                                  )),
-                              ]
-                            : [];
                     return (
                         <Box flexDirection='column'>
                             {row}
@@ -7119,7 +7038,6 @@ export const register: Register = (on) => {
                                     {meter.note}
                                 </Text>
                             ) : null}
-                            {away}
                             {await next(e)}
                         </Box>
                     );
