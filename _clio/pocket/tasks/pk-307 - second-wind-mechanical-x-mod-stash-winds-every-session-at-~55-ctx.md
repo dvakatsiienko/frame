@@ -4,7 +4,7 @@ title: 'second wind, mechanical: x-mod-stash winds every session at ~55 % ctx'
 status: open
 assignee: []
 created_date: '2026-11-03T12:48:00Z'
-updated_date: '2026-11-03T13:37:00Z'
+updated_date: '2026-11-03T13:43:00Z'
 labels:
   - s
 dependencies: []
@@ -46,4 +46,6 @@ ideally sw is handled mechanically, i suppose it is a place for a miss which is 
 scope widened 15:12 (wishkeeper): the mechanical door also carries the auto-wake for hot caches — W1845 (2026-11-03 14:39, dima): If anyone goes stale for longer than 1 hour, it should not lose the hot state of its cache, so everyone should be auto-woken up and auto-refreshed, cache-wise. the description's W1–W4 are superseded by W1855–W1862 in these notes.
 
 dima 15:37: «can you see the state of this mod on any thread, and can you actually flip this mod state yourself? … if you cannot, then it actually would be a good idea to add support for it.» → clio reads keep-hot per session from x-mod-stash's store (`hot:<sid>`), but has no door to flip it; the chunk adds one (an orbit op or an x verb), so a shift turns keep-hot on for every member itself
+
+dima 15:42: «For automated second wind, I'd like some settings. For example, in mod settings, I'd like to have the ability to tweak a threshold at which the second wind happens, because it will be hard-coded at 60%, but I like to tweak this value in settings. It's fine for the first iteration for it to work on everyone. If I edit settings to, let's say, 61%, it would apply to all threads, including yourself, so it's fine like this. No need to granularize it very much.» → one 🎛️ settings value, the second-wind threshold %, default 60, global across every session. also: «remind me when the chunk for that will be done»
 <!-- SECTION:NOTES:END -->
