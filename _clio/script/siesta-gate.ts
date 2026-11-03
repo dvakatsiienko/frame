@@ -16,9 +16,9 @@ import path from 'node:path';
 export const gate = { isBlocking: true };
 const FILES_DUE = 15;
 const MISSED_AFTER_MS = 30 * 60_000;
-// a run of a pocket door, at the start of a command or after `&&`, `;` or `|`; a read of the script (sed, rg) never counts
+// a run of a pocket door, at the start of a command, after `&&`, `;` or `|`, or a loop's `do`; a read of the script (sed, rg) never counts
 const POCKET_WRITE =
-    /(^|[;&|]\s*)(node\s+\S*pocket-(add|move)\.ts|(BACKLOG_CWD=\S+\s+)?backlog task (create|edit|archive)\b)/m;
+    /(^|[;&|]\s*|\b(do|then|else)\s+)(node\s+\S*pocket-(add|move)\.ts|(BACKLOG_CWD=\S+\s+)?backlog task (create|edit|archive)\b)/m;
 // a turn whose prompt opens with one of these is the fleet's, never his; the app prepends reminders to his own prompts
 const NOT_DIMA = [
     '<cross-session-message',

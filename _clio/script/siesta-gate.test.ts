@@ -824,9 +824,10 @@ describe('the card’s chore lines', () => {
                 row('t1', 'node script/pocket-add.ts "a"'),
                 row('t2', 'sed -n 40,110p script/pocket-add.ts | grep ordinal'),
                 row('t3', 'rg -n backlog task edit _clio/memory'),
+                row('t4', 'for p in 288 291; do backlog task archive $p; done'),
             ].join('\n'),
         );
-        expect(cardLines(home, t)).toContain('pocket writes by hand: 1');
+        expect(cardLines(home, t)).toContain('pocket writes by hand: 2');
     });
 
     test('a re-appended helga message wakes once', () => {
