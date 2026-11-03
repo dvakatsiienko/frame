@@ -4106,7 +4106,8 @@ export const register: Register = (on) => {
         cap = kept.cap ?? undefined;
         endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
-        hot = (await $.store.get(HOT + selfId)) as typeof hot;
+        const stored = (await $.store.get(HOT + selfId)) as typeof hot;
+        hot = stored && { since: endedAt ?? stored.since };
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
             isBusy = kept.turn.isBusy;
@@ -4448,14 +4449,9 @@ export const register: Register = (on) => {
         const sid = await currentId($);
         if (sid)
             hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
-        if (hot) {
-            const now = await $.clock.now();
-            // a 🌌 sessions chip may delete the key between the read above and this write: never write it back (FRM-499)
-            const isStill =
-                !sid || Boolean(await $.store.get(HOT + sid).catch(() => hot));
-            hot = isStill ? { ...hot, since: now } : undefined;
-            if (hot) await saveHot($);
-        }
+        // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
+        // chip's delete landing between this read and the write (FRM-499)
+        if (hot) hot = { ...hot, since: endedAt ?? (await $.clock.now()) };
         await armHot($);
         await load($);
         return r;
