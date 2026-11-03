@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T17:52:00Z'
+updated_date: '2026-11-03T18:14:00Z'
 labels:
   - s
 dependencies: []
@@ -131,4 +131,27 @@ W1940 (2026-11-03 19:51, dima): Crow noticed a lot of inefficiencies in the comm
 W1941 (2026-11-03 19:51, dima): Go ask around Crow about shift, and maybe even get a retro out of Crow.
 W1942 (2026-11-03 19:51, dima): Maybe consult with side channel as well.
 W1943 (2026-11-03 19:51, dima): Wishkeeper, did you run a Wishkeeper, or do you plan to run it again after the grill? ❓
+
+W1944 (2026-11-03 20:06, dima) [re: Q1]: ❓ Q1
+W1945 (2026-11-03 20:06, dima) [re: Q1]: Correct, but if there is around 1 hour or less left until the 5-hour reset, then start everyone and burn.
+W1946 (2026-11-03 20:06, dima) [re: Q1]: Even if 70-80% is left, the lane can start the next chunk only during shift lane.
+W1947 (2026-11-03 20:06, dima) [re: Q1]: Otherwise, if everyone stops at 70%, for example, and there is 1 hour left until the 5-hour reset, there will be unused space in the 5-hour window.
+W1948 (2026-11-03 20:06, dima) [re: Q1]: The main stop point is 90% of the 5-hour window.
+W1949 (2026-11-03 20:06, dima) [re: Q1]: When 90% is reached in the 5-hour window, park everyone and wait until less than 1 hour of the 5-hour window is left.
+W1950 (2026-11-03 20:06, dima) [re: Q1]: Then you can go 100% with everyone.
+W1951 (2026-11-03 20:06, dima) [re: Q1]: Everyone will hit the limit, and the waker will wake up everyone after the 5-hour reset.
+
+W1952 (2026-11-03 20:13, dima, o107 steer) [re: Q2]: Let's probe it on the next possible opportunity, either with the current mods slain since they are hanging around there, or tomorrow.
+W1953 (2026-11-03 20:13, dima, o107 steer) [re: Q2]: I vote for today.
+
+W1954 (2026-11-03 20:13, dima, o108 steer) [re: Q3]: Yes, but ideally, +10 is not reached at all, so no need to stop anything immediately.  (unless i request because i may want just to burn the window)
+
+W1955 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: Yes, but I thought we already established this practice.
+W1956 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: Why did everyone spam you so much today? ❓
+W1957 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: Go ask around Crow because it can observe or side-channel.
+W1958 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: Let everyone read logs, or maybe even consult with current side lane, demote lane.
+W1959 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: Why did they spam you so much? ❓
+W1960 (2026-11-03 20:13, dima, o109 steer) [re: Q4]: A habit miss, or what? ❓
+
+W1961 (2026-11-03 20:14, dima, o110 steer) [re: Q5]: Yes, take care of your side channel as anyone else. A side channel is useful. I actually solved lots of stuff with it before handing over to you, and I have more plans to rebalance this lot. Your second channel is very useful, although it will not always be active.
 <!-- SECTION:NOTES:END -->
