@@ -16,8 +16,9 @@ import path from 'node:path';
 export const gate = { isBlocking: true };
 const FILES_DUE = 15;
 const MISSED_AFTER_MS = 30 * 60_000;
+// a run of a pocket door, at the start of a command or after `&&`, `;` or `|`; a read of the script (sed, rg) never counts
 const POCKET_WRITE =
-    /pocket-(add|move)\.ts|backlog task (create|edit|archive)\b/;
+    /(^|[;&|]\s*)(node\s+\S*pocket-(add|move)\.ts|(BACKLOG_CWD=\S+\s+)?backlog task (create|edit|archive)\b)/m;
 // a turn whose prompt opens with one of these is the fleet's, never his; the app prepends reminders to his own prompts
 const NOT_DIMA = [
     '<cross-session-message',
@@ -163,19 +164,17 @@ export function cardLines(home: string, transcriptPath?: string) {
         }
         return Date.now() - new Date(at).getTime() > MISSED_AFTER_MS;
     });
-    const wakes = readLines(transcriptPath)
-        .flatMap((l) => parsed<TranscriptRow & { timestamp?: string }>(l) ?? [])
-        .filter((r) => {
-            const content = r.message?.content;
-            return (
-                r.type === 'user' &&
-                typeof content === 'string' &&
-                /^(Another Claude session sent a message:\n)?<cross-session-message[^>]*from-name="[^"]*helga[^>]*>\s*(?!\[done\])[^\n]*\breceipt\b/i.test(
-                    content,
-                ) &&
-                new Date(r.timestamp ?? 0).getTime() > since
-            );
-        }).length;
+    const wakes = transcriptRows(transcriptPath).filter((r) => {
+        const content = r.message?.content;
+        return (
+            r.type === 'user' &&
+            typeof content === 'string' &&
+            /^(Another Claude session sent a message:\n)?<cross-session-message[^>]*from-name="[^"]*helga[^>]*>\s*(?!\[done\])[^\n]*\breceipt\b/i.test(
+                content,
+            ) &&
+            new Date(r.timestamp ?? 0).getTime() > since
+        );
+    }).length;
     return [
         `pocket writes by hand: ${handPocketWrites(transcriptPath)}`,
         ...missed.map(
@@ -191,17 +190,28 @@ export function cardLines(home: string, transcriptPath?: string) {
 function handPocketWrites(transcriptPath?: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return readLines(transcriptPath)
-        .flatMap((l) => parsed<TranscriptRow & { timestamp?: string }>(l) ?? [])
+    const uses = transcriptRows(transcriptPath)
         .filter((r) => new Date(r.timestamp ?? 0).getTime() >= today.getTime())
-        .flatMap((r) => toolUses([r]))
-        .filter(
-            (u) =>
-                ((u.name === 'Write' || u.name === 'Edit') &&
-                    (u.input?.file_path ?? '').includes('/_clio/pocket/')) ||
-                (u.name === 'Bash' &&
-                    POCKET_WRITE.test(u.input?.command ?? '')),
-        ).length;
+        .flatMap((r) => toolUses([r]));
+    // cc re-appends old rows to a transcript: a tool call counts once, by its id
+    return [
+        ...new Map(uses.map((u, i) => [u.id ?? `#${i}`, u])).values(),
+    ].filter(
+        (u) =>
+            ((u.name === 'Write' || u.name === 'Edit') &&
+                (u.input?.file_path ?? '').includes('/_clio/pocket/')) ||
+            (u.name === 'Bash' && POCKET_WRITE.test(u.input?.command ?? '')),
+    ).length;
+}
+
+// each transcript row once: cc re-appends old rows, the same uuid at two lines
+function transcriptRows(transcriptPath?: string) {
+    const rows = readLines(transcriptPath).flatMap(
+        (l) =>
+            parsed<TranscriptRow & { timestamp?: string; uuid?: string }>(l) ??
+            [],
+    );
+    return [...new Map(rows.map((r, i) => [r.uuid ?? `#${i}`, r])).values()];
 }
 
 function tabbed(file: string) {

@@ -797,6 +797,56 @@ describe('the card’s chore lines', () => {
         expect(cardLines(home, t)).toContain('pocket writes by hand: 3');
     });
 
+    test('a re-appended row or a read of the pocket script counts nothing more', () => {
+        const home = fixtureHome();
+        const t = join(home, 'clio.jsonl');
+        const now = new Date().toISOString();
+        const row = (id: string, command: string) =>
+            JSON.stringify({
+                message: {
+                    content: [
+                        {
+                            id,
+                            input: { command },
+                            name: 'Bash',
+                            type: 'tool_use',
+                        },
+                    ],
+                },
+                timestamp: now,
+                type: 'assistant',
+                uuid: `u-${id}`,
+            });
+        writeFileSync(
+            t,
+            [
+                row('t1', 'node script/pocket-add.ts "a"'),
+                row('t1', 'node script/pocket-add.ts "a"'),
+                row('t2', 'sed -n 40,110p script/pocket-add.ts | grep ordinal'),
+                row('t3', 'rg -n backlog task edit _clio/memory'),
+            ].join('\n'),
+        );
+        expect(cardLines(home, t)).toContain('pocket writes by hand: 1');
+    });
+
+    test('a re-appended helga message wakes once', () => {
+        const home = fixtureHome();
+        const t = join(home, 'clio.jsonl');
+        const wake = JSON.stringify({
+            message: {
+                content:
+                    'Another Claude session sent a message:\n<cross-session-message from="x" from-name="🎀 helga">Chore 6 receipt: green</cross-session-message>',
+            },
+            timestamp: new Date().toISOString(),
+            type: 'user',
+            uuid: 'u-w1',
+        });
+        writeFileSync(t, [wake, wake].join('\n'));
+        expect(cardLines(home, t)).toContain(
+            'receipt wakes since the last siesta: 1',
+        );
+    });
+
     test.each(['Receipt: 3 chores green', 'Chore 4 receipt: PK-1 written'])(
         'a capitalised receipt «%s» counts as a wake',
         (body) => {
