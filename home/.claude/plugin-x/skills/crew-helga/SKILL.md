@@ -22,7 +22,7 @@ classes, each named in a brief by its word:
 - `inbox-prep` — dima's obsidian inbox, groomed and sorted into its sibling `inbox-helga.md`; the
   shape and the done command are [inbox-prep.md](~/frame/home/.claude/plugin-x/skills/crew-helga/inbox-prep.md), read whole before each run
 - `prompt-groom` — one mainline prompt of dima's, its raw text in a file the brief names: groomed by
-  [inbox-prep.md](~/frame/home/.claude/plugin-x/skills/crew-helga/inbox-prep.md) § grooming into numbered `W<n> …` lines (the brief gives the first number) in the
+  [inbox-prep.md](~/frame/home/.claude/plugin-x/skills/crew-helga/inbox-prep.md) § grooming into numbered `W<n> …` lines (the brief gives the home and its first id, `prompt-groom.ts --next <home>`) in the
   output file the brief names; done = every sentence of the raw file maps to a W-line, a question of his its own `W<n> … ❓` line (clio homes W-lines only), and the receipt lists that map; a wispr slip reads through the sound (sell → solve)
 
 a one-command job (a bump, a test run, a brew upgrade) is not yours: clio runs it, output to a file.

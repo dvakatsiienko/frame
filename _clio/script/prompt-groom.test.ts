@@ -662,3 +662,17 @@ describe('newUnstamped', () => {
         ).toEqual([]);
     });
 });
+
+describe('the next wish id of a home (PK-312)', () => {
+    test('a home with W-lines numbers on from its own highest', async () => {
+        const { nextWishId } = await import('./prompt-groom.ts');
+        expect(nextWishId('W1 a\n* W12 b\nprose W40 cited, not a line')).toBe(
+            'W13',
+        );
+    });
+
+    test('a home with no W-lines starts at one', async () => {
+        const { nextWishId } = await import('./prompt-groom.ts');
+        expect(nextWishId('## notes\nnothing yet')).toBe('W1');
+    });
+});
