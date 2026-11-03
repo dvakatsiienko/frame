@@ -28,6 +28,11 @@ local promoRule(sender, words) = [{
     deleteRule('address', blocklist.address)
     + deleteRule('domain', ['@' + d for d in blocklist.domain])
     + deleteRule('name', blocklist.name)
+    // tax cabinet: InfoTax delivery notices kept but out of the inbox; no email toggle in the cabinet (dima, 2026-11-03)
+    + [{
+      filter: { and: [{ from: 'e.cabinet@tax.gov.ua' }, { subject: 'InfoTax' }] },
+      actions: { archive: true, markRead: true },
+    }]
     // lanet isp: the autopay nag has no unsubscribe link (dima, 2026-09-28)
     + promoRule('info@lanet.ua', [
       'автоплатіж', 'автоплатежу', 'автоплатежем', 'автоплатежі',
