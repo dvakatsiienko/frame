@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-03T13:30:00Z'
+updated_date: '2026-11-03T14:03:00Z'
 labels:
   - s
 dependencies: []
@@ -54,4 +54,17 @@ you can actually groom this line and make it simpler. just say that to keep ever
 ---
 
 print a very short report of this chunk because i'm on mobile now. only the essentials for me to know what mod chunk changes. i approve then and you proceed because it's inconvenient for me to answer from mobile.
+
+W1886 (2026-11-03 15:35, dima): When I returned from AFK, log O77 and O79.
+W1887 (2026-11-03 15:35, dima): Why do you ask me questions in Orbit while I'm at AFK during shift? ❓
+W1888 (2026-11-03 15:35, dima): I can't answer them if I'm at AFK, or are those important ones? ❓
+W1889 (2026-11-03 15:35, dima): Could you solve them without me? ❓
+W1890 (2026-11-03 15:35, dima): This is to process when I return from AFK, not now.
+W1895 (2026-11-03 15:39, dima): Don't forget to park everyone at about 88% to 92% because it is 3 hours 20 minutes until the 5-hour reset.
+W1896 (2026-11-03 15:39, dima): When we reach that roughly 22% threshold, I'll keep cache of everyone by keeping hot while the time passes.
+W1897 (2026-11-03 15:39, dima): When the 5-hour window closes to reset, we will resume.
+W1900 (2026-11-03 15:42, dima): Once it's done, remind me to update your habits, because once you have the ability to flip-keep-hot mod yourself, you can use it in a shift lane to unload your manual keep-hot.
+Q6 (2026-11-03 15:51, clio, quoted by dima): 🌼 clean
+W1909 (2026-11-03 15:51, dima): Print the keyword in bold.
+W1910 (2026-11-03 15:51, dima): Is it in a fleet vibe? ❓
 <!-- SECTION:NOTES:END -->
