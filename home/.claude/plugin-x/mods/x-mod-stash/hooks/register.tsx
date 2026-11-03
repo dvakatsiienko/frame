@@ -503,13 +503,21 @@ async function flushFields($: EngineInterface) {
     );
     await Promise.all(due.map(([, p]) => p.save()));
     const failed = new Set<string>();
+    let isOffered = false;
     for (const [key, text] of lost)
         await saveTyped($, key, text, bases.get(key)).catch((err) => {
             const tries = (failures.get(key) ?? 0) + 1;
             failures.set(key, tries);
-            if (tries < REPLAY_TRIES) failed.add(key);
+            failed.add(key);
+            if (tries >= REPLAY_TRIES) {
+                // a second give-up on the same box stacks: the board offers the newest, then the one before
+                keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
+                failures.delete(key);
+                unsaved.delete(key);
+                isOffered = true;
+            }
             $.ui.log(
-                `x-mod-stash: a kept steer was not saved (try ${tries} of ${REPLAY_TRIES}): ${errorText(err)}`,
+                `x-mod-stash: a kept steer was not saved (try ${tries} of ${REPLAY_TRIES}${tries >= REPLAY_TRIES ? ', kept for the board to offer back' : ''}): ${errorText(err)}`,
             );
         });
     if (!due.length && !lost.length) return;
@@ -525,6 +533,8 @@ async function flushFields($: EngineInterface) {
             unsaved.delete(key);
         }
     keepFields($);
+    // publish only redraws an open board: on a closed one it would flush again and spend the other replays' tries
+    if (isOffered && (await isOpen($))) await publish($);
 }
 const drafts = new Map<string, FieldDraft>();
 const remounts = new Map<string, number>();
@@ -540,8 +550,10 @@ function landed(key: string, text: string) {
     before.set(key, bases.get(key) ?? '');
     bases.set(key, text);
 }
-// a replay the store keeps refusing is dropped after this many flushes, with a log line each
+// a replay the store refuses this many flushes in a row is tried no more: its text is kept by its box's key and the board
+// offers it back beside the box, never dropped (dima's o123)
 const REPLAY_TRIES = 3;
+const keptSteers = new Map<string, string[]>();
 const failures = new Map<string, number>();
 const saving = new Set<string>();
 const FIELDS = { key: 'fields', plugin: 'x-mod-stash' } as const;
@@ -549,31 +561,37 @@ const FIELDS = { key: 'fields', plugin: 'x-mod-stash' } as const;
 // boxes here, in order, since a keystroke lands in a sync handler where no write can be awaited (FRM-492)
 let fieldsWrite: Promise<unknown> = Promise.resolve();
 let fieldsKept = '';
-// only a box being typed into or holding a draft is kept, so the key never grows with every box ever drawn; a hook that
+// only a box being typed into, holding a draft or a kept steer is kept, so the key never grows with every box ever drawn; a hook that
 // runs before a reloaded module's start takes the kept boxes back first, or it would write the fresh module's empty maps
 function keepFields($: EngineInterface) {
     fieldsWrite = fieldsWrite
         .then(async () => {
             await takeFieldsOnce($);
-            const kept: Record<string, StashField> = {};
-            for (const key of new Set([...drafts.keys(), ...unsaved.keys()])) {
+            const boxes: Record<string, StashField> = {};
+            for (const key of new Set([
+                ...drafts.keys(),
+                ...unsaved.keys(),
+                ...keptSteers.keys(),
+            ])) {
                 const draft = drafts.get(key);
+                const kept = keptSteers.get(key);
                 const gen = remounts.get(key);
                 const pending = unsaved.get(key);
                 const base = bases.get(key);
-                kept[key] = {
+                boxes[key] = {
                     ...(draft ? { draft } : {}),
                     ...(gen ? { gen } : {}),
                     ...(pending === undefined ? {} : { pending }),
                     ...(pending === undefined || base === undefined
                         ? {}
                         : { base }),
+                    ...(kept?.length ? { keptSteers: kept } : {}),
                 };
             }
-            const text = JSON.stringify(kept);
+            const text = JSON.stringify(boxes);
             if (text === fieldsKept) return;
             fieldsKept = text;
-            await $.state.set(FIELDS, kept);
+            await $.state.set(FIELDS, boxes);
         })
         .catch((err) =>
             $.ui.log(`x-mod-stash: steer boxes not kept: ${errorText(err)}`),
@@ -595,22 +613,57 @@ async function takeFields($: EngineInterface) {
             unsaved.set(key, f.pending);
             if (f.base !== undefined) bases.set(key, f.base);
         }
+        if (f.keptSteers?.length && !keptSteers.has(key))
+            keptSteers.set(key, f.keptSteers);
     }
+}
+// a press on a kept steer saves it over whatever the box holds now: his own pick, so no base to yield to
+async function offerBack($: EngineInterface, key: string) {
+    const list = keptSteers.get(key) ?? [];
+    const text = list.at(-1);
+    if (text === undefined) return;
+    const isSaved = await saveTyped($, key, text, undefined, false).catch(
+        (err) => {
+            $.ui.log(
+                `x-mod-stash: a kept steer was not saved: ${errorText(err)}`,
+            );
+            return false;
+        },
+    );
+    // a yield, a gone target or a locked ask wrote nothing: the offer stays
+    if (!isSaved) return;
+    if (list.length > 1) keptSteers.set(key, list.slice(0, -1));
+    else keptSteers.delete(key);
+    landed(key, text);
+    keepFields($);
+    await publish($);
+}
+// ✕ on a kept steer with no box: drops the newest, his choice, so a gone box's text has a way out
+async function dropKept($: EngineInterface, key: string) {
+    const list = keptSteers.get(key) ?? [];
+    if (list.length > 1) keptSteers.set(key, list.slice(0, -1));
+    else keptSteers.delete(key);
+    keepFields($);
+    await publish($);
 }
 // the save a box's closure ran, rebuilt from its key: the closure went with the old module. it lands only while the
 // stored steer is still the one the text was typed over, so a newer steer from another board wins; a text kept with no
-// base came from a module before the base was kept, and lands as it did there
+// base came from a module before the base was kept, and lands as it did there; true only once the steer was written, so
+// a yield, a target gone or a locked ask reads false; `isTyped` false (an offer pressed back) remounts an ask's box
 async function saveTyped(
     $: EngineInterface,
     key: string,
     text: string,
     base?: string,
-) {
+    isTyped = true,
+): Promise<boolean> {
     const steer = steerOf(text);
     const isBase = (now: string | undefined) =>
         base === undefined || sameSteer(now, base);
-    const yielded = () =>
+    const yielded = () => {
         $.ui.log(`x-mod-stash: a kept steer yielded to a newer one (${key})`);
+        return false;
+    };
     const own = /^orbit:(steer|asteer):(.+)$/.exec(key);
     if (own) {
         const o = await currentOrbit($);
@@ -619,44 +672,54 @@ async function saveTyped(
                 ? o.asks.find((a) => a.id === own[2])?.steer
                 : o.assumed?.find((y) => y.id === own[2])?.steer;
         if (!isBase(now)) return yielded();
-        if (own[1] === 'steer')
-            return markAsks(
+        if (own[1] === 'steer') {
+            // a locked or resolved ask takes no steer: markAsks skips it without a word
+            const ask = o.asks.find((a) => a.id === own[2]);
+            if (!ask || ask.isLocked || ask.isResolved) return false;
+            await markAsks(
                 $,
                 (x) => (x.id === own[2] ? { ...x, steer } : x),
                 false,
-                own[2],
+                isTyped ? own[2] : undefined,
             );
-        return changeAssumed($, (y) => (y.id === own[2] ? { ...y, steer } : y));
+            return true;
+        }
+        if (!o.assumed?.some((y) => y.id === own[2])) return false;
+        await changeAssumed($, (y) => (y.id === own[2] ? { ...y, steer } : y));
+        return true;
     }
     if (key === 'plan:steer') {
         const o = await currentOrbit($);
-        if (!o.plan) return;
+        if (!o.plan) return false;
         if (!isBase(o.plan.steer)) return yielded();
-        return saveOrbit($, { ...o, plan: { ...o.plan, steer } });
+        await saveOrbit($, { ...o, plan: { ...o.plan, steer } });
+        return true;
     }
     const step = /^lane:([^:]+):steer$/.exec(key);
     if (step?.[1]) {
         if (!isBase((await laneSteers($))[step[1]]?.steer)) return yielded();
-        return changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
+        await changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
+        return true;
     }
     const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
-    if (!member) return;
+    if (!member) return false;
     const [, laneId, role, askId] = member;
     const lane = ((await $.state.get(LANES)).value ?? []).find(
         (l) => l.id === laneId,
     );
     const sid = lane?.members[role as LaneRole];
-    if (!lane || !sid) return;
+    if (!lane || !sid) return false;
     const ask = ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
         (a) => a.id === askId,
     );
-    if (!ask) return;
+    if (!ask) return false;
     const markSid = lane.memberSids?.[role as LaneRole] ?? sid;
     const mark = (await $.store
         .get(markKey(markSid, ask.id))
         .catch(() => undefined)) as RemoteMark | undefined;
     if (!isBase(mark ? steered(mark).steer : ask.steer)) return yielded();
     await markRemote($, markSid, ask, { isSteerEdit: true, steer });
+    return true;
 }
 export type FieldView =
     | { kind: 'held'; draft: FieldDraft }
@@ -2982,6 +3045,9 @@ async function publish($: EngineInterface) {
             isColour: await readSwitch($, 'colour'),
             isRing: await readSwitch($, 'ring'),
             members: await members($).catch(() => undefined),
+            ...(keptSteers.size
+                ? { keptSteers: Object.fromEntries(keptSteers) }
+                : {}),
             ...((await isLaneOwner($))
                 ? {
                       staleProbes: await staleProbes($, now).catch(
@@ -5077,6 +5143,23 @@ export const register: Register = (on) => {
                             : undefined;
                     // the poll read the registry into the view; the pane only draws it, so a draw costs no file or process read
                     const board = (await $.state.get(BOARD_VIEW)).value;
+                    // a steer the store refused three times, offered back beside its box: a press saves it (dima's o123)
+                    const keptDrawn = new Set<string>();
+                    const keptJSX = (key: string) => {
+                        const list = board?.keptSteers?.[key] ?? [];
+                        const kept = list.at(-1);
+                        if (kept !== undefined) keptDrawn.add(key);
+                        return kept === undefined ? null : (
+                            <Box flexShrink={0} key={`kept:${key}`}>
+                                <Button
+                                    key={`kept:${key}`}
+                                    onPress={() => offerBack($, key)}
+                                    plain>
+                                    {`↩️ kept «${kept.length > 40 ? `${kept.slice(0, 39)}…` : kept}»${list.length > 1 ? ` +${list.length - 1}` : ''}`}
+                                </Button>
+                            </Box>
+                        );
+                    };
                     const now = board?.at ?? 0;
                     const me = (await $.state.get(VIEW)).value?.selfId;
                     // the board's lower half: this session's orbit and its plan, read here so a mark or a tool call redraws it
@@ -5384,6 +5467,12 @@ export const register: Register = (on) => {
                                             />
                                         </Box>
                                     ) : null}
+                                    {/* a locked row takes no steer, so it offers none */}
+                                    {a.isLocked
+                                        ? null
+                                        : keptJSX(
+                                              `${door.prefix}:steer:${a.id}`,
+                                          )}
                                     {/* the steer comes first, the file link after it, at the row's end (dima's shot, 20:57) */}
                                     {a.link ? askLinkJSX(a.id, a.link) : null}
                                 </Box>
@@ -5554,6 +5643,9 @@ export const register: Register = (on) => {
                                                             />
                                                         </Box>
                                                     ) : null}
+                                                    {keptJSX(
+                                                        `orbit:asteer:${x.id}`,
+                                                    )}
                                                 </Box>
                                             </Box>
                                         );
@@ -5902,6 +5994,9 @@ export const register: Register = (on) => {
                                                                         />
                                                                     </Box>
                                                                 ) : null}
+                                                                {keptJSX(
+                                                                    `lane:${lane.id}:steer`,
+                                                                )}
                                                             </Box>
                                                         ) : null}
                                                     </Box>
@@ -6007,6 +6102,7 @@ export const register: Register = (on) => {
                                                           />
                                                       </Box>
                                                   ) : null}
+                                                  {keptJSX('plan:steer')}
                                               </Box>
                                           )}
                                           {foldJSX('phases')}
@@ -6086,10 +6182,34 @@ export const register: Register = (on) => {
                             {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
                         </Text>
                     ) : null;
+                    // a kept steer whose box is not drawn (its ask resolved, its lane gone or folded): shown here with a ✕, the way
+                    // out, read after every card drew its own offers
+                    const keptElsewhereJSX = () =>
+                        Object.entries(board?.keptSteers ?? {})
+                            .filter(([key]) => !keptDrawn.has(key))
+                            .map(([key, list]) => (
+                                <Box
+                                    flexDirection='row'
+                                    gap={1}
+                                    key={`kept-elsewhere:${key}`}>
+                                    <Box flexShrink={1} minWidth={0}>
+                                        <Text dimColor wrap='truncate-end'>
+                                            {`↩️ kept, its box is not on the board: «${list.at(-1) ?? ''}»${list.length > 1 ? ` +${list.length - 1}` : ''}`}
+                                        </Text>
+                                    </Box>
+                                    <Button
+                                        key={`kept-drop:${key}`}
+                                        onPress={() => dropKept($, key)}
+                                        plain>
+                                        ✕
+                                    </Button>
+                                </Box>
+                            ));
                     const arranged = (top: RenderElement) => (
                         <Box flexDirection='column' minHeight={fill}>
                             {stripJSX}
                             {probesJSX}
+                            {keptElsewhereJSX()}
                             {top}
                             {isPartOn('stash.orbit') ? orbitJSX : null}
                             <Box flexGrow={1} key='phases:gap' />

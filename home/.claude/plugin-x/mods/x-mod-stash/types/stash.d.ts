@@ -105,6 +105,8 @@ export type StashBoardView = {
     at: number;
     // clio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»
     staleProbes?: string[];
+    // each kept steer by its box's key, so the board offers it back beside that box
+    keptSteers?: Record<string, string[]>;
 };
 
 // the running turn, kept so a mid-turn reload still knows it: busy, dima's own, a keep-hot ping, afk as it began
@@ -161,6 +163,8 @@ export type StashField = {
     gen?: number;
     pending?: string;
     base?: string;
+    // a replay the store refused three times: tried no more, offered back on the board (dima's o123)
+    keptSteers?: string[];
 };
 
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back

@@ -3578,16 +3578,161 @@ test('a save a reload dropped yields to a steer other than the one it was typed 
     ).toBe('guards');
 });
 
-test('a save a reload dropped that keeps failing is dropped after three flushes', async ($, on) => {
+// dima's o123: a third refusal keeps the text and stops trying, never dropping what he typed
+test('a save a reload dropped that keeps failing is kept after three flushes and tried no more', async ($, on) => {
     const w = world(on, glide());
     const state = keptState(on, {
         fields: { 'lane:l9:steer': { base: '', pending: 'from A' } },
     });
-    w.taps.set = (key) => (key === 'lane-steer:l9' ? 'store down' : undefined);
+    let tries = 0;
+    w.taps.set = (key) => {
+        if (key !== 'lane-steer:l9') return undefined;
+        tries++;
+        return 'store down';
+    };
     await start($);
-    await board($);
+    const ui = await board($);
+    for (const text of ['one', 'two', 'three', 'four']) await say($, text);
+    // keptState's state.set hides the write from the kit, so the pane redraws by hand
+    await ui.redraw();
+    const offer = await ui.find({ key: 'kept:lane:l9:steer', type: 'Button' });
+    expect([
+        tries,
+        JSON.stringify(state.fields ?? {}).includes('from A'),
+        offer?.text,
+    ]).toEqual([3, true, expect.stringContaining('from A')]);
+});
+
+test('a kept steer the board offers back is saved by a press, and the offer leaves', async ($, on) => {
+    const w = world(on, glide());
+    keptState(on, {
+        fields: { 'lane:l9:steer': { base: '', pending: 'from A' } },
+    });
+    let isDown = true;
+    w.taps.set = (key) =>
+        key === 'lane-steer:l9' && isDown ? 'store down' : undefined;
+    await start($);
+    const ui = await board($);
     for (const text of ['one', 'two', 'three']) await say($, text);
-    expect(JSON.stringify(state.fields ?? {}).includes('from A')).toBe(false);
+    isDown = false;
+    await ui.redraw();
+    await ui.press({ key: 'kept:lane:l9:steer' });
+    await ui.redraw();
+    expect([
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+        await ui.find({ key: 'kept:lane:l9:steer', type: 'Button' }),
+    ]).toEqual(['from A', undefined]);
+});
+
+test("a kept steer offered beside an ask's box saves its steer, and the box draws it", async ($, on) => {
+    const w = world(on);
+    const state = keptState(on, {
+        fields: { 'orbit:steer:o1': { keptSteers: ['from A'] } },
+        orbit: {
+            asks: [
+                { id: 'o1', pick: 'pelican', shown: '', text: 'name a bird' },
+            ],
+            next: 2,
+            turns: 1,
+        },
+    });
+    await start($);
+    const ui = await board($);
+    // a poll publishes the board view the offer draws from; keptState hides that write from the kit
+    await w.clock.advance(5_000);
+    await ui.redraw();
+    await ui.press({ key: 'kept:orbit:steer:o1' });
+    await ui.redraw();
+    const box = (await ui.findAll({ type: 'Input' })).find((n) =>
+        n.key?.startsWith('orbit:steer:o1'),
+    );
+    expect([
+        (state.orbit as { asks: { steer?: string }[] }).asks[0]?.steer,
+        box?.props.value,
+        await ui.find({ key: 'kept:orbit:steer:o1', type: 'Button' }),
+    ]).toEqual(['from A', 'from A', undefined]);
+});
+
+test('a kept steer pressed after its ask locked stays offered, never dropped', async ($, on) => {
+    const w = world(on);
+    const state = keptState(on, {
+        fields: { 'orbit:steer:o1': { keptSteers: ['from A'] } },
+        orbit: {
+            asks: [
+                { id: 'o1', pick: 'pelican', shown: '', text: 'name a bird' },
+            ],
+            next: 2,
+            turns: 1,
+        },
+    });
+    await start($);
+    const ui = await board($);
+    await w.clock.advance(5_000);
+    await ui.redraw();
+    const o = state.orbit as { asks: Record<string, unknown>[] };
+    state.orbit = { ...o, asks: [{ ...o.asks[0], isLocked: true }] };
+    await ui.press({ key: 'kept:orbit:steer:o1' });
+    expect([
+        (state.orbit as { asks: { steer?: string }[] }).asks[0]?.steer,
+        JSON.stringify(state.fields ?? {}).includes('from A'),
+    ]).toEqual([undefined, true]);
+});
+
+test('a second give-up on one box stacks: the newest is offered first, then the one before', async ($, on) => {
+    const w = world(on, glide());
+    keptState(on, {
+        fields: {
+            'lane:l9:steer': {
+                base: '',
+                keptSteers: ['from A'],
+                pending: 'from B',
+            },
+        },
+    });
+    let isDown = true;
+    w.taps.set = (key) =>
+        key === 'lane-steer:l9' && isDown ? 'store down' : undefined;
+    await start($);
+    const ui = await board($);
+    for (const text of ['one', 'two', 'three']) await say($, text);
+    isDown = false;
+    await ui.redraw();
+    const offer = async () =>
+        (await ui.find({ key: 'kept:lane:l9:steer', type: 'Button' }))?.text;
+    const both = await offer();
+    await ui.press({ key: 'kept:lane:l9:steer' });
+    await ui.redraw();
+    expect([
+        both,
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+        await offer(),
+    ]).toEqual([
+        expect.stringMatching(/from B.*\+1/),
+        'from B',
+        expect.stringContaining('from A'),
+    ]);
+});
+
+test('a kept steer whose box is gone shows on its own line, and its ✕ drops it', async ($, on) => {
+    const w = world(on);
+    const state = keptState(on, {
+        fields: { 'orbit:steer:o9': { keptSteers: ['a gone ask'] } },
+    });
+    await start($);
+    const ui = await board($);
+    await w.clock.advance(5_000);
+    await ui.redraw();
+    const line = await ui.find({
+        text: /its box is not on the board/,
+        type: 'Text',
+    });
+    await ui.press({ key: 'kept-drop:orbit:steer:o9' });
+    await ui.redraw();
+    expect([
+        line?.text,
+        JSON.stringify(state.fields ?? {}).includes('a gone ask'),
+        await ui.find({ text: /its box is not on the board/, type: 'Text' }),
+    ]).toEqual([expect.stringContaining('a gone ask'), false, undefined]);
 });
 
 test('a save kept with no base, by a module before the base was kept, lands as it did there', async ($, on) => {
