@@ -220,6 +220,10 @@ describe('fork-guard fork-edit', () => {
         'x lane commit /tmp/m.txt -- home/.claude/pocket/tasks/pk-1.md',
         'cd /Users/dima/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9/../../../home/.claude/CLAUDE.md"',
         'cd /etc && x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
+        'git reset --hard\nx lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
+        'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 $(rm -rf x).md"',
+        'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 `rm -rf x`.md"',
+        'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-*.md',
     ])(
         'a pocket-shaped path that escapes the pocket is refused: %s',
         (command) => {
