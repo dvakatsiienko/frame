@@ -2,7 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
-import { TICKET_KEY } from './rules/command.ts';
+import { TICKET_KEY, resolve } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
@@ -27,6 +27,7 @@ import {
     installDirs,
     isSignAsk,
     isStashKill,
+    lineWrites,
     mergeAutoCall,
     mergeAutoPr,
     mergeAutoRepo,
@@ -634,6 +635,7 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const TOLD = { key: 'told', plugin: 'x-mod-guard' } as const;
+const WRITTEN = { key: 'written', plugin: 'x-mod-guard' } as const;
 const HELPED = { key: 'helped', plugin: 'x-mod-guard' } as const;
 const IMAGES = { key: 'images', plugin: 'x-mod-guard' } as const;
 // cc core refuses a worktree command naming git where it cannot prove the git stays in the tree — a heredoc body, a
@@ -843,6 +845,31 @@ async function isManifestChanged($: EngineInterface, dir: string) {
         .some((f) =>
             /(^|\/)(package\.json|pnpm-workspace\.yaml)$/.test(f.trim()),
         );
+}
+
+// the turn's written files, newest kept: a few scripts is the shape, so a big Write keeps only its head
+const WRITTEN_FILES = 16;
+const WRITTEN_CHARS = 32_000;
+async function markWritten($: EngineInterface, files: [string, string][]) {
+    if (!files.length) return;
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = {}, version } = await $.state.get(WRITTEN);
+        const next = Object.entries(value).filter(
+            ([path]) => !files.some(([p]) => p === path),
+        );
+        for (const [path, text] of files)
+            next.push([path, text.slice(0, WRITTEN_CHARS)]);
+        const { isSet } = await $.state.set(
+            WRITTEN,
+            Object.fromEntries(next.slice(-WRITTEN_FILES)),
+            { ifVersion: version },
+        );
+        if (isSet) return;
+    }
+}
+async function turnWritten($: EngineInterface) {
+    const { value = {} } = await $.state.get(WRITTEN);
+    return new Map(Object.entries(value));
 }
 
 // parallel Reads in one step each add their path: a write that lost the race reads again
@@ -1101,6 +1128,7 @@ export const register: Register = (on) => {
             home,
             isClio: isUnder(root, `${home}/frame/_clio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
+            written: await turnWritten($).catch(() => undefined),
         };
         const facts = await lookUp($, command, cwd, ctx);
         const verdict = check(command, cwd, { ...ctx, ...facts });
@@ -1124,6 +1152,10 @@ export const register: Register = (on) => {
                     ISOLATED.test(result.deny)
                         ? `${result.deny} — ${ISOLATED_DOOR}`
                         : result.deny,
+                );
+            if (!result.isError)
+                await markWritten($, lineWrites(run, cwd, ctx)).catch(
+                    () => undefined,
                 );
             const isQuiet = await isSilent($, ctx.home);
             // a quiet session spends no verb hint it never showed
@@ -1586,6 +1618,15 @@ export const register: Register = (on) => {
             if (result.deny === undefined && !result.isError)
                 // bookkeeping only: the call already ran, so a failed mark never turns it into a refusal
                 await markSeen($, real).catch(() => undefined);
+            if (
+                e.tool === 'Write' &&
+                typeof e.content === 'string' &&
+                result.deny === undefined &&
+                !result.isError
+            )
+                await markWritten($, [
+                    [resolve(path, '/', {}), e.content],
+                ]).catch(() => undefined);
             return result;
         },
     ).catch(() => ({ deny: FAILED }));
@@ -1649,7 +1690,10 @@ export const register: Register = (on) => {
 
     // his word on the stash holds for the turn it was typed in (FRM-426 exit 1: «in this turn»)
     on('turn.complete', async ($, e, next) => {
-        if (!e.agentId) await $.state.set(TOLD, '').catch(() => undefined);
+        if (!e.agentId) {
+            await $.state.set(TOLD, '').catch(() => undefined);
+            await $.state.set(WRITTEN, {}).catch(() => undefined);
+        }
         return next(e);
     });
 

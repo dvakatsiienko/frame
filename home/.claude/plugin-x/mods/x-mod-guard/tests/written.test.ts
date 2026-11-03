@@ -15,6 +15,17 @@ function world(on: On) {
     on('fs.exists', () => ({ value: false }));
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', () => ({ value: undefined }));
+    on('turn.complete', () => ({ text: '' }));
+    // nothing is tracked by git here, so a Write over a new file runs
+    on('process.run', () => ({
+        value: {
+            exitCode: 1,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: '',
+        },
+    }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
@@ -71,3 +82,48 @@ for (const [shape, command] of PLAIN)
             [command],
         ]);
     });
+
+// FRM-472 exit 8, across calls: a file an earlier call of the same turn wrote is read when Bash runs it
+const write = ($: Engine, path: string, content: string) =>
+    $.tool.call({ content, file_path: path, tool: 'Write' });
+const RUN_LATER = [
+    ['bash ./x.sh', 'bash ./x.sh'],
+    ['its path', './x.sh'],
+    ['sh x.sh', 'sh x.sh'],
+    ['an absolute path', 'bash /repo/x.sh'],
+] as const;
+for (const [shape, run] of RUN_LATER)
+    test(`a script a Write made this turn warns when Bash runs it: ${shape}`, async ($, on) => {
+        world(on);
+        await write($, '/repo/x.sh', '#!/bin/sh\nrm -rf x\n');
+        const text = JSON.stringify(await bash($, run));
+        expect([text.includes(WARNED), text.includes('trash')]).toEqual([
+            true,
+            true,
+        ]);
+    });
+
+test('a script an earlier Bash call wrote warns when a later one runs it', async ($, on) => {
+    world(on);
+    await bash($, "echo 'rm -rf x' > x.sh");
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).toContain(WARNED);
+});
+
+test('a Write with no refused command runs its script unwarned', async ($, on) => {
+    world(on);
+    await write($, '/repo/x.sh', 'ls\n');
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).not.toContain(WARNED);
+});
+
+test('a script written in an earlier turn is not read', async ($, on) => {
+    world(on);
+    await write($, '/repo/x.sh', 'rm -rf x\n');
+    await $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    expect(JSON.stringify(await bash($, 'bash x.sh'))).not.toContain(WARNED);
+});

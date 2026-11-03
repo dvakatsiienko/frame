@@ -16,6 +16,8 @@ export type Context = {
     missing?: Set<string>;
     kinds?: Map<string, 'file' | 'dir' | 'other'>;
     briefs?: Map<string, Brief>;
+    // the files earlier calls of the running turn wrote, by resolved path: a run of one reads its text
+    written?: ReadonlyMap<string, string>;
     // the session is clio's: it cleans its fleet's scratch trees and branches on its own
     isClio?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches

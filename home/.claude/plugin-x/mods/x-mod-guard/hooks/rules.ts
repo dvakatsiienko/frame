@@ -359,6 +359,9 @@ export function tmpDirs(
     });
 }
 // isPlain: the whole command, a nested shell's script included, is on the lift's lists; a nested call carries its parent's
+// the files a line leaves written, path to text, for the runs a later call of the turn makes
+export const lineWrites = (command: string, cwd: string, ctx: Context) =>
+    commands(parse(command), cwd).flatMap((c) => writtenScripts(c, ctx));
 // the rules on how a typed line reads, never on what a script file runs: a file's `&`, mid-line `#` and `$name:x` are its own
 const TYPED_LINE = new Set(['background', 'comment-midline', 'unbraced']);
 export function refusals(
@@ -371,8 +374,8 @@ export function refusals(
     const parsed = parse(command);
     const list = commands(parsed, cwd);
     const out: Refusal[] = [];
-    // the files the line has written so far, by path: a later `bash s.sh`, `source s.sh` or `./s.sh` runs that text
-    const written = new Map<string, string>();
+    // the files the turn and the line have written so far, by path: a later `bash s.sh`, `source s.sh` or `./s.sh` runs that text
+    const written = new Map(ctx.written);
     list.forEach((c, i) => {
         const ran = scriptRun(c, ctx);
         const body = ran === undefined ? undefined : written.get(ran);
@@ -383,7 +386,7 @@ export function refusals(
                     .map((r) => ({
                         ...r,
                         rule: 'write-then-run',
-                        why: `${ran} was written earlier in this line, and running it runs a refused command (rule ${r.rule}): ${r.why}`,
+                        why: `${ran} was written earlier this turn, and running it runs a refused command (rule ${r.rule}): ${r.why}`,
                     })),
             );
         for (const [path, text] of writtenScripts(c, ctx))
