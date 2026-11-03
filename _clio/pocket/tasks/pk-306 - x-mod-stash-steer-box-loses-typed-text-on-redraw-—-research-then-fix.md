@@ -70,4 +70,6 @@ raw drop (2026-11-03 12:45, dima): Let's test it like this as a test drive. Shap
 
 ticket: FRM-492
 close: W1768–W1780 moved → FRM-492's wish block (signed o37), a priority rider at the head of mods lane 4's slice 08
+
+close: moved → FRM-492: W1768 W1769 W1770 W1771 W1772 W1773 W1774 W1775 W1776 W1777 W1778 W1779 W1780
 <!-- SECTION:NOTES:END -->
