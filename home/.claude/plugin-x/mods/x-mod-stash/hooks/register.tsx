@@ -4449,8 +4449,12 @@ export const register: Register = (on) => {
         if (sid)
             hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
         if (hot) {
-            hot = { ...hot, since: await $.clock.now() };
-            await saveHot($);
+            const now = await $.clock.now();
+            // a 🌌 sessions chip may delete the key between the read above and this write: never write it back (FRM-499)
+            const isStill =
+                !sid || Boolean(await $.store.get(HOT + sid).catch(() => hot));
+            hot = isStill ? { ...hot, since: now } : undefined;
+            if (hot) await saveHot($);
         }
         await armHot($);
         await load($);

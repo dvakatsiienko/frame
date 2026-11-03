@@ -246,6 +246,37 @@ test('a 🔥 key another session deletes a second before the ping is due cancels
     expect(s.pings).toEqual([]);
 });
 
+// sixth sense's round-1 break (SS-W1): the turn end read the key, then wrote it back over a chip's delete
+test('a 🔥 key another session deletes right after the turn end reads it is never written back', async ($, on) => {
+    const raw: Record<string, unknown> = {};
+    let isArmed = false;
+    const store = new Proxy(raw, {
+        get(t, k) {
+            const v = Reflect.get(t, k);
+            if (isArmed && k === `hot:${SID}` && v) {
+                isArmed = false;
+                void Promise.resolve().then(() => delete raw[`hot:${SID}`]);
+            }
+            return v;
+        },
+    });
+    const s = await started($, on, store);
+    await endTurn($);
+    raw[`hot:${SID}`] = { since: NOW };
+    await s.clock.advance(MIN);
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'a turn',
+        wait: false,
+    });
+    await s.clock.advance(MIN);
+    isArmed = true;
+    await endTurn($);
+    const isKept = `hot:${SID}` in raw;
+    await s.clock.advance(60 * MIN);
+    expect([isKept, s.pings]).toEqual([false, []]);
+});
+
 test('🔥 stays on through a 5h window reset', async ($, on) => {
     const s = await started($, on);
     await measure($, 50, 30 * MIN);
