@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-03T10:51:00Z'
+updated_date: '2026-11-03T11:24:00Z'
 due_date: '2026-11-03'
 labels:
   - m
@@ -232,4 +232,6 @@ W1766 (2026-11-03 12:32, dima): does it apply to what we currently do? ❓
 W1767 (2026-11-03 12:32, dima): can we know if what we do currently is worth it? ❓
 
 chunk A shaped → FRM-491 (milestone 🐋 clio runs lean), grill rounds 1–2 settled 12:27–12:45; chunks B–F stay here until each is shaped
+
+label fix (wishkeeper 13:09): W1747, W1748, W1750 are clio's 12:33 reply lines that dima quoted with «←» — context, not his wants; his wants are W1749 and W1751–W1756. FRM-491's wish block leaves the three out.
 <!-- SECTION:NOTES:END -->
