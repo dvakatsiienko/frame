@@ -3092,6 +3092,28 @@ async function armHot($: EngineInterface) {
     });
 }
 
+// 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
+// change and arms or cancels the ping with no turn (FRM-499)
+async function followHot($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const stored = (await $.store.get(HOT + sid)) as typeof hot;
+    if (Boolean(stored) === Boolean(hot)) return;
+    const now = await $.clock.now();
+    hot = stored && { since: isBusy ? now : (endedAt ?? now) };
+    await saveHot($);
+    await armHot($);
+    await publish($);
+}
+
+// a row's 🔥 chip: writes or deletes that session's key; its own stash arms the ping at its next poll
+async function pressHot($: EngineInterface, sid: string) {
+    if (await $.store.get(HOT + sid)) await $.store.delete(HOT + sid);
+    else await $.store.set(HOT + sid, { since: await $.clock.now() });
+    if (sid === (await currentId($))) await followHot($);
+    await load($);
+}
+
 type Member = StashMember;
 
 // `claude-opus-5-5` + `medium` reads «opus 5.5 · medium»; a dated or `[1m]` id drops its tail, an id off the pattern shows as written
@@ -3635,6 +3657,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             held,
             isHeldStuck:
                 !!held && now - Math.min(...held.map((p) => p.at)) > stuckMs,
+            isHot: Boolean(await $.store.get(HOT + r.sid)),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
@@ -4125,6 +4148,7 @@ export const register: Register = (on) => {
                 $.clock.after(POLL_MS, async () => {
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
                     await load($);
+                    await followHot($).catch(() => undefined);
                     await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
@@ -6284,6 +6308,20 @@ export const register: Register = (on) => {
                                                         </Link>
                                                     </Text>
                                                 ) : null}
+                                            </Box>
+                                        ) : null}
+                                        {/* 🔥 keep-hot for any session, a --bg one included: lit while its key is in the store (FRM-499) */}
+                                        {isPartOn('stash.hot') ? (
+                                            <Box flexShrink={0}>
+                                                <Button
+                                                    dimColor={!m.isHot}
+                                                    key={`hot:${m.sid}`}
+                                                    onPress={() =>
+                                                        pressHot($, m.sid)
+                                                    }
+                                                    plain>
+                                                    🔥
+                                                </Button>
                                             </Box>
                                         ) : null}
                                         {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}

@@ -206,6 +206,35 @@ test('🔥 switched off on the band stays off when the next turn ends', async ($
     ]);
 });
 
+// FRM-499: a 🌌 sessions row's 🔥 chip writes the key from another session; an idle member takes no turn to see it
+test('a 🔥 key another session writes while this one idles arms the ping within a minute, no turn taken', async ($, on) => {
+    const store: Record<string, unknown> = {};
+    const s = await started($, on, store);
+    await endTurn($);
+    await s.clock.advance(10 * MIN);
+    store[`hot:${SID}`] = { since: NOW + 10 * MIN };
+    await s.clock.advance(MIN);
+    const lit = (await s.button())?.props.variant;
+    await s.clock.advance(40 * MIN);
+    expect([lit, s.pings]).toEqual([
+        'secondary',
+        [expect.stringContaining('keep-hot ping')],
+    ]);
+});
+
+test('a 🔥 key another session deletes while this one idles cancels the armed ping', async ($, on) => {
+    const store: Record<string, unknown> = { [`hot:${SID}`]: { since: NOW } };
+    const s = await started($, on, store);
+    await endTurn($);
+    await s.clock.advance(10 * MIN);
+    delete store[`hot:${SID}`];
+    await s.clock.advance(50 * MIN);
+    expect([(await s.button())?.props.variant, s.pings]).toEqual([
+        undefined,
+        [],
+    ]);
+});
+
 test('🔥 stays on through a 5h window reset', async ($, on) => {
     const s = await started($, on);
     await measure($, 50, 30 * MIN);

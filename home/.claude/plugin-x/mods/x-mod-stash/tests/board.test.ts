@@ -1447,6 +1447,58 @@ test("the 🎛️ ctx switch, pressed in settings, turns the open board's ring i
     expect([before, await isRing()]).toEqual([true, false]);
 });
 
+/* 🔥 keep-hot chip (FRM-499): every row, a --bg member's included, writes or deletes that session's `hot:<id>` */
+
+const hotChip = async (
+    view: Awaited<ReturnType<typeof board>>,
+    sid: string,
+) => {
+    const chip = await view.find({ key: `hot:${sid}`, type: 'Button' });
+    return chip && (chip.props.dimColor ? 'off' : 'on');
+};
+
+test("a --bg member's 🔥 chip writes its key and draws on", async ($, on) => {
+    const f = fleet(on, {}, { bg: [2] });
+    const view = await board($);
+    const before = await hotChip(view, PEER);
+    await view.press({ key: `hot:${PEER}` });
+    expect([
+        before,
+        f.store.has(`hot:${PEER}`),
+        await hotChip(view, PEER),
+    ]).toEqual(['off', true, 'on']);
+});
+
+test('a second press on the 🔥 chip deletes the key and draws off', async ($, on) => {
+    const f = fleet(on, {}, { bg: [2] });
+    const view = await board($);
+    await view.press({ key: `hot:${PEER}` });
+    await view.press({ key: `hot:${PEER}` });
+    expect([f.store.has(`hot:${PEER}`), await hotChip(view, PEER)]).toEqual([
+        false,
+        'off',
+    ]);
+});
+
+test("a session's own row chip and its band's 🔥 show one state, whichever is flipped", async ($, on) => {
+    const f = fleet(on);
+    const view = await board($);
+    const strip = await band($);
+    const bandHot = async () =>
+        (await strip.findAll({ type: 'Button' })).find((n) => n.key === 'hot')
+            ?.props.variant === 'secondary'
+            ? 'on'
+            : 'off';
+    await view.press({ key: `hot:${HERE}` });
+    const byChip = [await hotChip(view, HERE), await bandHot()];
+    await strip.press({ key: 'hot' });
+    await f.clock.advance(5_000);
+    expect([byChip, [await hotChip(view, HERE), await bandHot()]]).toEqual([
+        ['on', 'on'],
+        ['off', 'off'],
+    ]);
+});
+
 /* 🐦‍🔥 second wind (todo 16): a button beside every row's ctx meter asks that session to refresh at a good stop */
 
 const windButton = async (

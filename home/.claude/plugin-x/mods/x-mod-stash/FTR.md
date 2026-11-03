@@ -132,12 +132,13 @@
   - given the session's last turn ended 17 minutes ago
   - when dima switches 🔥 on
   - then the ping comes 33 minutes later, inside the cache's hour; switched on 50 or more minutes after the turn, it pings at once
-- ✅ 🔥 follows its store key at every turn end
-  - given another process writes or deletes `hot:<session id>` after `session.start` (crow's start script learns its id from the registry, FRM-335)
-  - when the session's turn ends
-  - then 🔥 ticks and the 50-minute ping is armed, or unticks and no ping is armed
+- ✅ 🔥 follows its store key, idle or not
+  - given another process writes or deletes `hot:<session id>` after `session.start` (crow's start script learns its id from the registry, FRM-335; a 🌌 sessions row's 🔥 chip, FRM-499)
+  - when the session's turn ends, or within a minute while it idles with no turn taken
+  - then 🔥 ticks and the 50-minute ping is armed, counted from its last turn end, or unticks and an armed ping never fires
   - given dima switched 🔥 off on the band
   - then the key is gone from the store, so the re-read never switches it back on
+  - proof: tests/hot.test.ts::a 🔥 key another session writes while this one idles arms the ping within a minute, no turn taken (+ deletes … cancels the armed ping, written after start arms at turn end)
 - ✅ ⏰ waker: one global switch in the row beside 🔥, off by default; while on, a session stopped on the 5h cap gets one «resume» at the reset (FRM-365)
   - given ⏰ is off, its default
   - when the 5h window resets
@@ -381,6 +382,13 @@
   - then one amber row at its top reads `🧪 stale probe mods in ~/.claude/dev-mods, unload them: <mod> (<session short id>)`, every stale mod in that row; any other board draws none
   - decision: the registry name says whose board it is, never the cwd; a probe left loaded swallowed clio's 16:03 brief after its proof (pk-93 retro)
   - proof: tests/board.test.ts::a probe whose session is gone warns on clio's board (+ older than a day, live session's fresh probe none, only a file none, stale probe stays off any board but clio's)
+- ✅ a 🔥 chip on every 🌌 sessions row keeps that session's cache hot, a `--bg` member's included (FRM-499)
+  - makes: a `hot:<session id>` key in the store, the one the band's 🔥 reads; its own stash arms the ping
+  - given the board is open, then every row draws a 🔥 left of its 🐦‍🔥, lit while the session's key is in the store, dim while not
+  - when dima presses a row's 🔥, then the key is written and the chip lights; a second press deletes it and the chip dims
+  - given this session's own row, then its chip and the band's 🔥 always show one state, whichever is flipped
+  - decision: no new store and no cross-session message; the band's 🔥 stays as it is (dima's o99, re-signed o102)
+  - proof: tests/board.test.ts::a --bg member's 🔥 chip writes its key and draws on (+ a second press deletes, own row chip and band show one state)
 
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 

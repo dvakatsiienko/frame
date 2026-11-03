@@ -47,6 +47,8 @@ export type StashMember = {
     held?: QuietPing[];
     // a held ping older than the idle wait + 2 min: the 🤫 n reads red
     isHeldStuck?: boolean;
+    // its `hot:<sid>` key is in the store: the row's 🔥 chip draws lit
+    isHot?: boolean;
     asks: number;
     context?: number;
     model?: string;
