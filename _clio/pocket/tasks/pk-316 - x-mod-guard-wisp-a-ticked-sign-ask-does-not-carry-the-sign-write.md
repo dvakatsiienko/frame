@@ -4,12 +4,13 @@ title: 'x-mod-guard wisp: a ticked sign ask does not carry the sign write'
 status: open
 assignee: []
 created_date: '2026-11-03T19:20:00Z'
+updated_date: '2026-11-03T19:20:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 31000
 ---
 
 ## Description
