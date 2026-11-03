@@ -22,7 +22,7 @@ The brief names a mode.
 
 ## siesta mode
 
-The brief gives `siesta-checks.ts`'s output, a commit range, the ticket ids touched, the open orbit asks, and clio's transcript from the last siesta stamp. The output's five sections — pocket-check, wish-cover, orbit drift, blueprint drift, helper count — are already checked: read their reds, never re-run them. Check six surfaces, in this order:
+The brief gives `siesta-checks.ts`'s output, a commit range, the ticket ids touched, the open orbit asks, and clio's transcript path and the stamp to read from. The output's five sections — pocket-check, wish-cover, orbit drift, blueprint drift, helper count — are already checked: read their reds, never re-run them. Check six surfaces, in this order:
 
 1. **wishes** — read each ticket's body yourself (`x linear read <ids>`) and each pocket item named: the `want` block and dima's quoted words first, never a summary. a want met, partly met, missed or drifted; quote the line it fails. for each other pocket item worked, run `node ~/frame/_clio/script/wish-cover.ts <PK-N> <the grill or brief>` and report every uncited W-line, his ❓ ones first
 2. **clio's own edits** — memory leaves, skills, rules, agent cards in the range: a line added without grooming the file, a contradiction with another file, a link or import that points at nothing, a rule that restates the environment, a cut called a dupe whose other home a grep does not find

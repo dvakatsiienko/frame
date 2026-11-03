@@ -1,11 +1,14 @@
 // the siesta's mechanical checks in one run before the wishkeeper spawn (FRM-496): its output joins the brief, so
 // wishkeeper spends its read on judgment, never on re-running a script
-// usage: node siesta-checks.ts --since <HH:MM local> — exits 0 when every section passes
+// usage: node siesta-checks.ts --since <siesta-last stamp, or HH:MM today> — exits 0 when every section passes
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const OUTPUT_LINES = 40;
+const RUN_TIMEOUT_MS = 60_000;
+// wish-cover's own exit when the tracker read fails: an outage, never a missed wish
+const NOT_CHECKED = 2;
 
 function main(home: string, since: string) {
     const scripts = path.join(home, 'frame/_clio/script');
@@ -28,11 +31,18 @@ function script(dir: string, name: string, file: string, args: string[]) {
     const out = spawnSync('node', [path.join(dir, `${file}.ts`), ...args], {
         cwd: dir,
         encoding: 'utf8',
+        timeout: RUN_TIMEOUT_MS,
     });
-    const output = `${out.stdout ?? ''}${out.stderr ?? ''}`
-        .split('\n')
-        .slice(-OUTPUT_LINES)
-        .join('\n');
+    const lines = `${out.stdout ?? ''}${out.stderr ?? ''}`
+        .trimEnd()
+        .split('\n');
+    const cut = lines.length - OUTPUT_LINES;
+    const output = [
+        ...(cut > 0
+            ? [`… ${cut} lines cut, the last ${OUTPUT_LINES} follow`]
+            : []),
+        ...lines.slice(-OUTPUT_LINES),
+    ].join('\n');
     return { exit: out.status ?? 1, name, output };
 }
 
@@ -45,20 +55,26 @@ function wishCover(home: string, scripts: string, since: string) {
               .map((d) => path.join(root, d, 'spec.md'))
               .filter((f) => existsSync(f) && statSync(f).mtimeMs > from)
         : [];
-    const runs = specs.flatMap((file) =>
-        [
-            ...readFileSync(file, 'utf8').matchAll(
-                /^wish: ((?:FRM|BYT|PK)-\d+)/gm,
-            ),
-        ].map((m) =>
-            script(scripts, 'wish-cover', 'wish-cover', [m[1] ?? '', file]),
-        ),
-    );
+    const runs = specs.flatMap((file) => {
+        const ids = [
+            ...readFileSync(file, 'utf8').matchAll(/^wish: .*$/gm),
+        ].flatMap((line) => line[0].match(/\b(?:FRM|BYT|PK)-\d+\b/g) ?? []);
+        return ids.map((id) => ({
+            ...script(scripts, 'wish-cover', 'wish-cover', [id, file]),
+            feature: path.basename(path.dirname(file)),
+        }));
+    });
+    const unchecked = runs.filter((r) => r.exit === NOT_CHECKED).length;
     return {
-        exit: runs.some((r) => r.exit !== 0) ? 1 : 0,
+        exit: runs.some((r) => r.exit !== 0 && r.exit !== NOT_CHECKED) ? 1 : 0,
         name: 'wish-cover',
         output: runs.length
-            ? runs.map((r) => r.output.trimEnd()).join('\n')
+            ? [
+                  ...runs.map((r) => `### ${r.feature}\n${r.output}`),
+                  ...(unchecked
+                      ? [`${unchecked} not checked: the tracker read failed`]
+                      : []),
+              ].join('\n')
             : 'no spec changed in the window',
     };
 }
@@ -113,7 +129,9 @@ function elsewhere(dir: string, prefix: string): boolean {
     );
 }
 
+// a full stamp is its own moment; a bare HH:MM is today's
 function sinceDate(since: string) {
+    if (since.includes('T')) return new Date(since);
     const [h = '0', m = '0'] = since.split(':');
     const at = new Date();
     at.setHours(Number(h), Number(m), 0, 0);
@@ -138,8 +156,10 @@ function parsed(text: string): Record<string, unknown> {
 if (import.meta.main) {
     const at = process.argv.indexOf('--since');
     const since = at > 0 ? process.argv[at + 1] : undefined;
-    if (!since || !/^\d{1,2}:\d{2}$/.test(since)) {
-        console.error('usage: node siesta-checks.ts --since <HH:MM local>');
+    if (!since || !/^(\d{4}-\d\d-\d\dT)?\d{1,2}:\d{2}(:\d{2})?$/.test(since)) {
+        console.error(
+            'usage: node siesta-checks.ts --since <siesta-last stamp, or HH:MM today>',
+        );
         process.exit(2);
     }
     process.exitCode = main(process.env.HOME ?? '', since);

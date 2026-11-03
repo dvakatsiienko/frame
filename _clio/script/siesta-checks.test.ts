@@ -132,6 +132,44 @@ describe('siesta-checks', () => {
         expect(out).not.toContain('FRM-9');
     });
 
+    test('a full stamp opens the window on its own day, so a siesta before midnight still counts', () => {
+        const home = fixtureHome();
+        const yesterday = new Date(Date.now() - 86_400_000);
+        spec(home, 'lane-a', ['FRM-1'], new Date(yesterday.getTime() + 60_000));
+        const stamp = yesterday.toLocaleString('sv').replace(' ', 'T');
+        const out = run(home, stamp).stdout;
+        expect(section(out, 'wish-cover')).toContain('wish-cover ran FRM-1');
+        expect(section(out, 'helper count')).toContain(`--since ${stamp}`);
+    });
+
+    test('every id on a wish line runs, and each run names its spec', () => {
+        const home = fixtureHome();
+        const file = spec(home, 'lane-a', ['PK-219 …, and FRM-401, FRM-403']);
+        const out = section(run(home).stdout, 'wish-cover');
+        for (const id of ['PK-219', 'FRM-401', 'FRM-403'])
+            expect(out).toContain(`wish-cover ran ${id} ${file}`);
+        expect(out).toContain('### lane-a');
+    });
+
+    test('a wish-cover that cannot reach the tracker is not checked, never red', () => {
+        const home = fixtureHome({ 'wish-cover': 2 });
+        spec(home, 'lane-a', ['FRM-1']);
+        const out = run(home);
+        expect(out.status).toBe(0);
+        expect(section(out.stdout, 'wish-cover')).toContain('not checked');
+    });
+
+    test('a long output names the lines it cut', () => {
+        const home = fixtureHome();
+        writeFileSync(
+            join(home, 'frame/_clio/script/pocket-check.ts'),
+            "for (let i = 0; i < 60; i++) console.log('🔴 problem', i);\nprocess.exit(1);\n",
+        );
+        const out = section(run(home).stdout, 'pocket-check');
+        expect(out).toContain('lines cut');
+        expect(out).toContain('problem 59');
+    });
+
     test('a wish-cover red reds its section and the run', () => {
         const home = fixtureHome({ 'wish-cover': 1 });
         spec(home, 'lane-a', ['FRM-1']);
