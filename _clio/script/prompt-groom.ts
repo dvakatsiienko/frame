@@ -414,7 +414,7 @@ function startHelga() {
     );
 }
 
-// a wish id numbers on inside its home, never from a global counter (PK-312, dima o94–o96)
+// a wish id numbers on inside its home, never from a global counter (PK-312, dima o94, o96, o98)
 export const nextWishId = (homeText: string): string =>
     `W${Math.max(0, ...[...homeText.matchAll(/^\s*(?:[*-]\s+)?W(\d+)\b/gm)].map((m) => Number(m[1]))) + 1}`;
 
