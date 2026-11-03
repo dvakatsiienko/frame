@@ -13,13 +13,13 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 - dima says «siesta»
 - never on a timer
 
-the Stop hook (`siesta-gate.ts`) nudges once when one comes due; it closes on dima's own next prompt after the card, afk once each high is settled.
+the Stop hook (`siesta-gate.ts`) blocks once when one comes due, then his prompts carry it until it opens; it closes on dima's own next prompt after the card, afk once each high is settled.
 
 ## the flow, in one turn
 
 0. Read `~/.local/state/clio/siesta-last` (`<last siesta>` for 1, 2.5, 2.6, 3.5), then `node ~/frame/_clio/script/siesta-gate.ts open` (stamps and opens)
 
-1. **wishkeeper**, unless the batch is small (under 3 files and no memory, rule or skill file): spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` only on dima's ask), with the commit range since the last siesta, the ticket ids touched, the pocket items touched, clio's session transcript path (for its promises and claims checks) and the open orbit asks (so it skips what is already asked) — nothing more; it reads the tickets' want itself
+1. **wishkeeper**, unless the batch is small, which only a phases line, a ping or his word can make due (under 3 files, none a memory, rule or skill file): spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` only on dima's ask), with the commit range since the last siesta, the ticket ids touched, the pocket items touched, clio's session transcript path (for its promises and claims checks) and the open orbit asks (so it skips what is already asked) — nothing more; it reads the tickets' want itself
 2. **meanwhile, the pick, in this order**: due reminders first, then the pocket (a red `node script/pocket-check.ts` puts it before the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
 2.2 **a freebie while wishkeeper reads, done, not listed** — the hunt starts in the same message as the wishkeeper spawn, since wishkeeper runs 5–7 min (dima, 2026-10-16: «while wishkeeper is waiting, you could pick up some stuff to do in the meantime for each siesta»). the sources, first hit wins: a small fix spotted this batch, an xs or s pocket item, a trial due within 3 days (`pnpm test-drive:check`) logging a round, an unread changedetector change. an inbox answer dima asked for runs beside it, never in its place; never a file wishkeeper is reading. the card's 🍀 line names what got done, or the sources checked when every one came up empty
 2.5 **finished lanes end here**: every 🛼 glide whose items are all done, or whose last member stopped, gets orbit op `glide` act `end` with its id; a lane merged since the last siesta runs `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door, and so goes each quick lane's `verify-<sha>` tree whose sha is on origin/main (a sixth sense's probes are throwaway, its `[done]` names a kept one); a dirty one is an ⚠️ ask

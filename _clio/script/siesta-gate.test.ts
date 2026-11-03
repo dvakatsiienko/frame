@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
-import { compact, prompt, stop } from './siesta-gate.ts';
+import { compact, gate, prompt, stop } from './siesta-gate.ts';
 
 const SID = 's-clio';
 const HOUR = 3_600_000;
@@ -211,8 +211,7 @@ describe('the siesta comes due', () => {
             'null',
         );
         expect(said(stop(home, input))).toContain('siesta due');
-        prompt(home, { prompt: 'go on' });
-        expect(siesta(home).last_turn).toBe('dima');
+        expect(prompt(home, { prompt: 'go on' })).toContain('siesta due');
     });
 
     test('nothing prints while the stop hook is already active, and the epoch’s nudge waits', () => {
@@ -301,12 +300,68 @@ describe('the siesta comes due', () => {
     });
 });
 
+describe('an ignored siesta comes back', () => {
+    test('after the epoch’s block, his own prompts carry the reminder until it opens', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        expect(stop(home, stopInput(home))).toMatchObject({
+            decision: 'block',
+        });
+        expect(stop(home, stopInput(home))).toBeUndefined();
+        expect(prompt(home, { prompt: 'next thing' })).toContain('siesta due');
+        expect(prompt(home, { prompt: 'and another' })).toContain('siesta due');
+        run(home, ['open']);
+        expect(prompt(home, { prompt: 'go on' })).toBeUndefined();
+    });
+
+    test('a member’s turn never carries it', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        stop(home, stopInput(home));
+        expect(prompt(home, { prompt: NON_DIMA[0] ?? '' })).toBeUndefined();
+    });
+
+    test('the prompt door prints the reminder on stdout', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        stop(home, stopInput(home));
+        expect(
+            run(home, ['prompt'], JSON.stringify({ prompt: 'hi' })).stdout,
+        ).toContain('siesta due');
+    });
+});
+
+describe('the warn-only undo', () => {
+    test('with the block off, the epoch’s first stop warns instead', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        gate.isBlocking = false;
+        try {
+            const out = stop(home, stopInput(home));
+            expect(out).not.toHaveProperty('decision');
+            expect(said(out)).toContain('siesta due');
+        } finally {
+            gate.isBlocking = true;
+        }
+    });
+});
+
+describe('the state file', () => {
+    test('keeps only the keys the gate reads', () => {
+        const home = fixtureHome();
+        writeSiesta(home, { blocked_epoch: 3, last_turn: 'dima', open: false });
+        stop(home, stopInput(home));
+        expect(Object.keys(siesta(home))).not.toContain('blocked_epoch');
+        expect(Object.keys(siesta(home))).not.toContain('last_turn');
+    });
+});
+
 describe('the siesta closes on dima’s word', () => {
     test.each(NON_DIMA)('an open siesta stays open on «%s»', (text) => {
         const home = fixtureHome();
         writeSiesta(home, { card_printed: true, highs: [], open: true });
         prompt(home, { prompt: text });
-        expect(siesta(home)).toMatchObject({ last_turn: 'other', open: true });
+        expect(siesta(home).open).toBe(true);
     });
 
     test('his prompt after the card closes it, a reminder before it never deciding', () => {
@@ -315,7 +370,7 @@ describe('the siesta closes on dima’s word', () => {
         prompt(home, {
             prompt: '<system-reminder>a fork finished</system-reminder>\ngo on',
         });
-        expect(siesta(home)).toMatchObject({ last_turn: 'dima', open: false });
+        expect(siesta(home).open).toBe(false);
     });
 
     test('his prompt before the card leaves it open', () => {

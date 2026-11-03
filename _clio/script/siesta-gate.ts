@@ -13,7 +13,7 @@ import {
 import path from 'node:path';
 
 // the siesta check blocks the epoch's first stop (dima's o78, after sixth sense's clean); false makes it a warn
-const IS_BLOCKING = true;
+export const gate = { isBlocking: true };
 const FILES_DUE = 15;
 // a turn whose prompt opens with one of these is the fleet's, never his; the app prepends reminders to his own prompts
 const NOT_DIMA = [
@@ -64,7 +64,7 @@ export function stop(home: string, input: StopInput) {
             `🛎️ delivered tick(s) unresolved: ${newTicks.join(' ')} — orbit resolve`,
         );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
-    const isBlock = IS_BLOCKING && isSiestaNudged;
+    const isBlock = gate.isBlocking && isSiestaNudged;
     writeSiesta(home, state);
     if (!checks.length) return undefined;
     const line = checks.join('; ');
@@ -82,7 +82,6 @@ export function prompt(home: string, input: { prompt?: string }) {
     const text = (input.prompt ?? '').replace(REMINDER, '').trim();
     const isDima = text !== '' && !NOT_DIMA.some((m) => text.startsWith(m));
     const state = readSiesta(home);
-    state.last_turn = isDima ? 'dima' : 'other';
     if (
         text.startsWith('<cross-session-message') &&
         LANE_MEMBER.test(text.slice(0, text.indexOf('>'))) &&
@@ -97,6 +96,10 @@ export function prompt(home: string, input: { prompt?: string }) {
     )
         close(state);
     writeSiesta(home, state);
+    // the Stop block speaks once an epoch; his own prompts carry it after, and a prompt hook wakes no extra turn
+    return isDima && state.due && !state.open
+        ? '🌤️ siesta due — load clio:siesta'
+        : undefined;
 }
 
 export function compact(
@@ -266,16 +269,14 @@ function readSiesta(home: string): Siesta {
         ? (parsed<Partial<Siesta>>(readFileSync(file, 'utf8')) ?? {})
         : {};
     return {
-        card_printed: false,
-        due: false,
-        epoch: 0,
-        highs: [],
-        last_turn: 'other',
-        nudged_epoch: 0,
-        nudged_ticks: [],
-        open: false,
-        pings: [],
-        ...kept,
+        card_printed: kept.card_printed ?? false,
+        due: kept.due ?? false,
+        epoch: kept.epoch ?? 0,
+        highs: kept.highs ?? [],
+        nudged_epoch: kept.nudged_epoch ?? 0,
+        nudged_ticks: kept.nudged_ticks ?? [],
+        open: kept.open ?? false,
+        pings: kept.pings ?? [],
     };
 }
 
@@ -333,8 +334,10 @@ if (import.meta.main) {
     if (verb === 'stop') {
         const out = stop(home, hook());
         if (out) console.log(JSON.stringify(out));
-    } else if (verb === 'prompt') prompt(home, hook());
-    else if (verb === 'compact') compact(home, hook());
+    } else if (verb === 'prompt') {
+        const line = prompt(home, hook());
+        if (line) console.log(line);
+    } else if (verb === 'compact') compact(home, hook());
     else door(home, [verb, ...args]);
 }
 
@@ -353,7 +356,6 @@ type Siesta = {
     due: boolean;
     epoch: number;
     highs: High[];
-    last_turn: 'dima' | 'other';
     nudged_epoch: number;
     nudged_ticks: string[];
     open: boolean;
