@@ -79,8 +79,8 @@ on a 🐦‍🔥 press: no fence; the `second-wind` op with the CST slug, and th
 ✂️ **end** ✂️
 
 the first thins the thread with the hint as the steer; the second restores the precise state on
-top of what the compact kept. **then resume every paused member** — one «resume» each with `notify_when_idle: true` (a compact drops every idle subscription, silently), named from the CST roster, and
-`trash ~/.local/state/crow/paused` for crow — and read whatever they held; the same turn reads the 5h window (`habit-ctx-load-balancing`), so no member resumes past the park line. **after the ingest, before anything else: re-read `inbox.md` and
+top of what the compact kept. **then read the 5h window, then resume every paused member** — one «resume» each with `notify_when_idle: true` (a compact drops every idle subscription, silently), named from the CST roster, and
+`trash ~/.local/state/crow/paused` for crow — and read whatever they held; a window past pace keeps them parked (`habit-ctx-load-balancing`). **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).
