@@ -45,22 +45,25 @@ function world(on: On) {
     on('session.id', () => ({ value: SID }));
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', () => ({ value: undefined }));
-    // a test flips it to read the board as closed at the next poll
-    const panes = { isClosed: false };
-    on('ui.panes', () => ({
-        value: panes.isClosed
-            ? []
-            : [
-                  {
-                      id: 'fleet-board',
-                      isFocused: false,
-                      isPlaced: true,
-                      isShown: true,
-                      plugin: 'x-mod-stash',
-                      title: 'fleet board',
-                  },
-              ],
-    }));
+    // a test flips it to read the board as closed at the next poll, or to fail the read
+    const panes = { isClosed: false, isFailed: false };
+    on('ui.panes', () => {
+        if (panes.isFailed) throw new Error('panes read failed');
+        return {
+            value: panes.isClosed
+                ? []
+                : [
+                      {
+                          id: 'fleet-board',
+                          isFocused: false,
+                          isPlaced: true,
+                          isShown: true,
+                          plugin: 'x-mod-stash',
+                          title: 'fleet board',
+                      },
+                  ],
+        };
+    });
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({
@@ -231,6 +234,108 @@ test('a poll that reads the board closed while a steer is typed keeps the field 
     panes.isClosed = false;
     await add($, ['a second ask', 'x']);
     expect((await ui.find({ key, type: 'Input' }))?.props.value).toBe('');
+});
+
+// FRM-492 sixth sense round 1: a read that fails says nothing about the board, so it clears nothing even with no typing
+// in the quiet window — a fresh module holds no typing stamp, the state a pause past 3 s leaves
+test('a failed panes read after a quiet pause keeps the box as drawn', async ($, on) => {
+    const { clock, panes } = world(on);
+    const seeded = {
+        asks: [
+            {
+                id: 'o1',
+                pick: 'pelican',
+                rev: 1,
+                shown: '',
+                steer: 'a heron',
+                text: 'name a bird',
+            },
+        ],
+        next: 2,
+        turns: 1,
+    };
+    const state: Record<string, unknown> = { orbit: seeded };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    const ui = await board($);
+    // a fold forgets every typing stamp, the module's and the earlier tests' alike; the box is then seeded as it mounted
+    await ui.press({ key: 'fold:orbit' });
+    await ui.press({ key: 'fold:orbit' });
+    state.orbit = seeded;
+    panes.isFailed = true;
+    await clock.advance(4100);
+    panes.isFailed = false;
+    // a state the test answers redraws nothing by itself
+    await ui.redraw();
+    expect(
+        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
+    ).toBe('');
+});
+
+// FRM-492 sixth sense round 1: two boxes saved together each keep their own steer — one save once wrote the other's
+// older read over it, and the first box still showed text the orbit no longer held
+const steersOf = (store: Map<string, unknown>) =>
+    (
+        (
+            store.get(`asks:${SID}`) as
+                | { items: { id: string; steer?: string }[] }
+                | undefined
+        )?.items ?? []
+    ).map((i) => [i.id, i.steer ?? null]);
+
+test('two steer boxes flushed together keep both steers', async ($, on) => {
+    const { store } = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
+    await ui.input({ key: 'orbit:steer:o2', kind: 'change', text: 'a trout' });
+    await orbit($, { lines: ['one'], op: 'plan' });
+    await add($, ['third', 'x']);
+    expect([
+        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
+        steersOf(store).slice(0, 2),
+    ]).toEqual([
+        '',
+        [
+            ['o1', 'a heron'],
+            ['o2', 'a trout'],
+        ],
+    ]);
+});
+
+// FRM-492 local review: a prompt waits for the steer saves it flushed, so a marked ask locks with its steer
+test('a prompt right after typing a steer on a ticked ask joins it with that steer', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:accepted:o2' });
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
+    await say($, 'next');
+    expect(joined(w.contexts).join('\n')).toContain('his steer: «a heron»');
+});
+
+test('two steer boxes saved by their timers in one step keep both steers', async ($, on) => {
+    const { clock, store } = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
+    await ui.input({ key: 'orbit:steer:o2', kind: 'change', text: 'a trout' });
+    await clock.advance(1600);
+    await add($, ['third', 'x']);
+    expect(steersOf(store).slice(0, 2)).toEqual([
+        ['o1', 'a heron'],
+        ['o2', 'a trout'],
+    ]);
 });
 
 // the steer as the session's published asks hold it, the store mirror every board reads

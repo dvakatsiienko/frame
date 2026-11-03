@@ -82,7 +82,8 @@ type Entry = StashEntry;
 type AskDoor = {
     prefix: string;
     mark: (a: OrbitAsk, mark: 'accepted' | 'rejected') => void;
-    steer: (a: OrbitAsk, value: string) => void;
+    // resolves once the steer is written: a flush before a prompt waits on it
+    steer: (a: OrbitAsk, value: string) => unknown;
 };
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
 // waits: every background task's own name when the reply set no 🔭, so the board can list them all
@@ -1130,7 +1131,8 @@ async function playPress($: EngineInterface, text: string) {
 async function saveOrbit(
     $: EngineInterface,
     next: StashOrbit,
-    isTyped = false,
+    // the one ask a steer box saved: only its steer is typing; every other ask is a read the save carried along
+    typedId?: string,
 ) {
     const was =
         (await $.state.get(ORBIT).catch(() => undefined))?.value?.asks ??
@@ -1141,7 +1143,7 @@ async function saveOrbit(
             mounted(
                 was.find((w) => w.id === a.id),
                 a,
-                isTyped,
+                a.id === typedId,
             ),
         ),
     };
@@ -1374,11 +1376,24 @@ async function changeAssumed(
     });
 }
 
+// one mark or steer write at a time: two boxes saved together each read the orbit before the other wrote it, and the
+// later save put the earlier one's steer back to none while its box still showed it (FRM-492)
+let marking: Promise<unknown> = Promise.resolve();
 async function markAsks(
     $: EngineInterface,
     change: (a: OrbitAsk) => OrbitAsk,
     isMark = false,
-    isTyped = false,
+    typedId?: string,
+) {
+    const run = marking.then(() => markAsksNow($, change, isMark, typedId));
+    marking = run.catch(() => undefined);
+    await run;
+}
+async function markAsksNow(
+    $: EngineInterface,
+    change: (a: OrbitAsk) => OrbitAsk,
+    isMark: boolean,
+    typedId: string | undefined,
 ) {
     // only a 🛎️ or ↩️ press means dima is at the mac: a steer or a speak press never ends mobile mode (dima, 11:16)
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
@@ -1386,7 +1401,7 @@ async function markAsks(
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
     );
-    await saveOrbit($, { ...o, asks }, isTyped);
+    await saveOrbit($, { ...o, asks }, typedId);
 }
 
 // an unmounted box mounts again with the stored steer: a fold or a closed board drops what each box mounted with
@@ -2770,7 +2785,7 @@ async function publish($: EngineInterface) {
     // a closed board unmounts its fields: the next open draws the stored text, not a held one; a board typed into
     // within the quiet window is on screen, whatever the read said (FRM-492)
     if (
-        !isBoardOpen &&
+        isBoardOpen === false &&
         // clock-ok: compared with the fields' own Date.now() stamps, so both sides read one clock
         !isTypingAt(typedAts(), Date.now())
     ) {
@@ -2818,7 +2833,7 @@ async function publish($: EngineInterface) {
             await $.state.set(BOARD_VIEW, board).catch(() => undefined);
         }
     }
-    const view = viewOf(isBoardOpen);
+    const view = viewOf(isBoardOpen === true);
     const text = JSON.stringify(view);
     if (text === published) return;
     published = text;
@@ -3552,9 +3567,10 @@ export const isCoordinator = (name: string) =>
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
+// undefined when the read fails: a failed read says nothing about the board (FRM-492)
 async function isOpen($: EngineInterface) {
-    const panes = await $.ui.panes().catch(() => []);
-    return panes.some((p) => p.id === BOARD);
+    const panes = await $.ui.panes().catch(() => undefined);
+    return panes?.some((p) => p.id === BOARD);
 }
 
 async function openBoard($: EngineInterface) {
@@ -4959,14 +4975,14 @@ export const register: Register = (on) => {
                         );
                     // the steer keeps every keystroke, no Enter needed
                     const handleSteer = (id: string, value: string) =>
-                        void markAsks(
+                        markAsks(
                             $,
                             (x) =>
                                 x.id === id
                                     ? { ...x, steer: steerOf(value) }
                                     : x,
                             false,
-                            true,
+                            id,
                         );
                     // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
                     // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
