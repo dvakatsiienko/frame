@@ -102,7 +102,7 @@ fork-edit | fork-bash)
 		home="(~|$HOME)/frame(/_clio)?/?"
 		# one line, no substitution: grep matches per line, and $( or a backtick runs inside the quotes
 		case "$cmd" in *$'\n'* | *'$'* | *'`'* | *'*'* | *'?'* | *'['* | *'<'* | *'>'* | *'('*) ;; *)
-			grep -qE "^ *(cd $home && )?x lane commit [^ ;&|]+ -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
+			grep -qE "^ *(cd $home && )?x lane commit [^- ;&|][^ ;&|]* -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
 		esac
 		# an in-place verb writes where the shell stands
 		if [ -z "$hit" ] && grep -qE '(^|[;&|] *)(sd|sed -i|mv|cp|trash|rm|git (commit|add|checkout|reset|stash)|x lane commit)( |$)' <<<"$cmd"; then
