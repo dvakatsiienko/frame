@@ -502,24 +502,47 @@ async function flushFields($: EngineInterface) {
             !due.some(([k]) => k === key),
     );
     await Promise.all(due.map(([, p]) => p.save()));
+    const failed = new Set<string>();
     for (const [key, text] of lost)
-        await saveTyped($, key, text).catch((err) =>
+        await saveTyped($, key, text, bases.get(key)).catch((err) => {
+            const tries = (failures.get(key) ?? 0) + 1;
+            failures.set(key, tries);
+            if (tries < REPLAY_TRIES) failed.add(key);
             $.ui.log(
-                `x-mod-stash: a kept steer was not saved: ${errorText(err)}`,
-            ),
-        );
+                `x-mod-stash: a kept steer was not saved (try ${tries} of ${REPLAY_TRIES}): ${errorText(err)}`,
+            );
+        });
     if (!due.length && !lost.length) return;
     // only what this flush saved: a box typed into while it waited keeps its text
-    for (const [key, { text }] of due)
+    for (const [key, { text }] of due) {
+        landed(key, text);
         if (unsaved.get(key) === text) unsaved.delete(key);
+    }
     for (const [key, text] of lost)
-        if (unsaved.get(key) === text) unsaved.delete(key);
+        if (!failed.has(key) && unsaved.get(key) === text) {
+            landed(key, text);
+            failures.delete(key);
+            unsaved.delete(key);
+        }
     keepFields($);
 }
 const drafts = new Map<string, FieldDraft>();
 const remounts = new Map<string, number>();
 // the text each box typed since its last save
 const unsaved = new Map<string, string>();
+// the stored steer each box's unsaved text was typed over, so a replay after a reload knows a newer one came in
+const bases = new Map<string, string>();
+// the base before a box's own last save: a keystroke drawn from a render older than that save still reads it
+const before = new Map<string, string>();
+const sameSteer = (a: string | undefined, b: string | undefined) =>
+    (steerOf(a ?? '') ?? '') === (steerOf(b ?? '') ?? '');
+function landed(key: string, text: string) {
+    before.set(key, bases.get(key) ?? '');
+    bases.set(key, text);
+}
+// a replay the store keeps refusing is dropped after this many flushes, with a log line each
+const REPLAY_TRIES = 3;
+const failures = new Map<string, number>();
 const saving = new Set<string>();
 const FIELDS = { key: 'fields', plugin: 'x-mod-stash' } as const;
 // a hot reload starts a fresh module, and render may not write $.state: a keystroke, a save and an unmount keep the
@@ -537,10 +560,14 @@ function keepFields($: EngineInterface) {
                 const draft = drafts.get(key);
                 const gen = remounts.get(key);
                 const pending = unsaved.get(key);
+                const base = bases.get(key);
                 kept[key] = {
                     ...(draft ? { draft } : {}),
                     ...(gen ? { gen } : {}),
                     ...(pending === undefined ? {} : { pending }),
+                    ...(pending === undefined || base === undefined
+                        ? {}
+                        : { base }),
                 };
             }
             const text = JSON.stringify(kept);
@@ -552,11 +579,11 @@ function keepFields($: EngineInterface) {
             $.ui.log(`x-mod-stash: steer boxes not kept: ${errorText(err)}`),
         );
 }
-let isFieldsTaken = false;
-async function takeFieldsOnce($: EngineInterface) {
-    if (isFieldsTaken) return;
-    isFieldsTaken = true;
-    await takeFields($);
+// one take per module: a draw, a flush or a write that runs before the start waits on the same read
+let fieldsTaken: Promise<void> | undefined;
+function takeFieldsOnce($: EngineInterface) {
+    fieldsTaken ??= takeFields($);
+    return fieldsTaken;
 }
 // a reload's start takes the boxes back, so each draws on as it mounted
 async function takeFields($: EngineInterface) {
@@ -564,30 +591,54 @@ async function takeFields($: EngineInterface) {
     for (const [key, f] of Object.entries(kept)) {
         if (f.draft && !drafts.has(key)) drafts.set(key, f.draft);
         if (f.gen && !remounts.has(key)) remounts.set(key, f.gen);
-        if (f.pending !== undefined && !unsaved.has(key))
+        if (f.pending !== undefined && !unsaved.has(key)) {
             unsaved.set(key, f.pending);
+            if (f.base !== undefined) bases.set(key, f.base);
+        }
     }
 }
-// the save a box's closure ran, rebuilt from its key: the closure went with the old module
-async function saveTyped($: EngineInterface, key: string, text: string) {
+// the save a box's closure ran, rebuilt from its key: the closure went with the old module. it lands only while the
+// stored steer is still the one the text was typed over, so a newer steer from another board wins; a text kept with no
+// base came from a module before the base was kept, and lands as it did there
+async function saveTyped(
+    $: EngineInterface,
+    key: string,
+    text: string,
+    base?: string,
+) {
     const steer = steerOf(text);
+    const isBase = (now: string | undefined) =>
+        base === undefined || sameSteer(now, base);
+    const yielded = () =>
+        $.ui.log(`x-mod-stash: a kept steer yielded to a newer one (${key})`);
     const own = /^orbit:(steer|asteer):(.+)$/.exec(key);
-    if (own?.[1] === 'steer')
-        return markAsks(
-            $,
-            (x) => (x.id === own[2] ? { ...x, steer } : x),
-            false,
-            own[2],
-        );
-    if (own)
+    if (own) {
+        const o = await currentOrbit($);
+        const now =
+            own[1] === 'steer'
+                ? o.asks.find((a) => a.id === own[2])?.steer
+                : o.assumed?.find((y) => y.id === own[2])?.steer;
+        if (!isBase(now)) return yielded();
+        if (own[1] === 'steer')
+            return markAsks(
+                $,
+                (x) => (x.id === own[2] ? { ...x, steer } : x),
+                false,
+                own[2],
+            );
         return changeAssumed($, (y) => (y.id === own[2] ? { ...y, steer } : y));
+    }
     if (key === 'plan:steer') {
         const o = await currentOrbit($);
-        if (o.plan) await saveOrbit($, { ...o, plan: { ...o.plan, steer } });
-        return;
+        if (!o.plan) return;
+        if (!isBase(o.plan.steer)) return yielded();
+        return saveOrbit($, { ...o, plan: { ...o.plan, steer } });
     }
     const step = /^lane:([^:]+):steer$/.exec(key);
-    if (step?.[1]) return changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
+    if (step?.[1]) {
+        if (!isBase((await laneSteers($))[step[1]]?.steer)) return yielded();
+        return changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
+    }
     const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
     if (!member) return;
     const [, laneId, role, askId] = member;
@@ -599,11 +650,13 @@ async function saveTyped($: EngineInterface, key: string, text: string) {
     const ask = ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
         (a) => a.id === askId,
     );
-    if (ask)
-        await markRemote($, lane.memberSids?.[role as LaneRole] ?? sid, ask, {
-            isSteerEdit: true,
-            steer,
-        });
+    if (!ask) return;
+    const markSid = lane.memberSids?.[role as LaneRole] ?? sid;
+    const mark = (await $.store
+        .get(markKey(markSid, ask.id))
+        .catch(() => undefined)) as RemoteMark | undefined;
+    if (!isBase(mark ? steered(mark).steer : ask.steer)) return yielded();
+    await markRemote($, markSid, ask, { isSteerEdit: true, steer });
 }
 export type FieldView =
     | { kind: 'held'; draft: FieldDraft }
@@ -680,7 +733,7 @@ function field($: EngineInterface, key: string, saved: string) {
             );
             // a number is a few characters and never scrolls: it saves on each keystroke, as its refusal line needs
             if (isNumberField(key)) return void save();
-            typed($, key, text, save);
+            typed($, key, text, saved, save);
         },
         value,
     };
@@ -697,9 +750,21 @@ function typed(
     $: EngineInterface,
     key: string,
     text: string,
+    saved: string,
     save: () => unknown,
 ) {
     pendingSaves.get(key)?.timer.cancel();
+    // a burst's first keystroke records the steer it types over; right after his own save the render may still show the
+    // steer before it, and that one is his own save too
+    if (
+        !unsaved.has(key) &&
+        !(
+            bases.has(key) &&
+            (sameSteer(saved, bases.get(key)) ||
+                sameSteer(saved, before.get(key)))
+        )
+    )
+        bases.set(key, saved);
     pendingSaves.set(key, {
         save,
         text,
@@ -711,6 +776,7 @@ function typed(
             } finally {
                 saving.delete(key);
             }
+            landed(key, text);
             if (unsaved.get(key) === text) unsaved.delete(key);
             keepFields($);
         }),
@@ -728,7 +794,7 @@ function askBox($: EngineInterface, a: OrbitAsk) {
         type: (text: string, save: () => unknown) => {
             // clock-ok: a keystroke lands in a sync handler, where $.clock.now() cannot be awaited
             askTypedAt.set(key, Date.now());
-            typed($, key, text, save);
+            typed($, key, text, a.steer ?? '', save);
         },
         value: a.shown ?? a.steer ?? '',
     };
@@ -3983,8 +4049,8 @@ export const register: Register = (on) => {
             : await resumeState($).catch(() => EMPTY_ORBIT);
         isOrbitLoaded = true;
         // a start is where a reload lands: it always takes the kept boxes back
-        isFieldsTaken = true;
-        await takeFields($);
+        fieldsTaken = takeFields($);
+        await fieldsTaken;
         // a reload after the steer rename or the catch removal keeps a held text: the migrated orbit is written back once
         // through saveOrbit, so a resumed orbit's open asks reach the store every board counts from
         if (JSON.stringify(orbit) !== JSON.stringify(kept.orbit ?? EMPTY_ORBIT))
@@ -4972,6 +5038,8 @@ export const register: Register = (on) => {
     );
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
+        // a reload can draw the board before its start: the kept boxes come back first, or each remounts under a new key
+        await takeFieldsOnce($);
         try {
             return cleanTree(
                 await (async () => {

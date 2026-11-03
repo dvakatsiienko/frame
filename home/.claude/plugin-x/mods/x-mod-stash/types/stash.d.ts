@@ -151,9 +151,15 @@ export type FieldDraft = {
     isLanded: boolean;
 };
 
-// a steer box as its last keystroke or save left it, so a hot reload draws it on: its draft, its remount count, and the
-// text typed since its last save, which the reload drops with its timer (FRM-492)
-export type StashField = { draft?: FieldDraft; gen?: number; pending?: string };
+// a steer box as its last keystroke or save left it, so a hot reload draws it on: its draft, its remount count, the
+// text typed since its last save, which the reload drops with its timer, and the stored steer that text was typed over —
+// a replay lands only while the steer is still that one (FRM-492)
+export type StashField = {
+    draft?: FieldDraft;
+    gen?: number;
+    pending?: string;
+    base?: string;
+};
 
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back
 // button marks it wrong, with his steer

@@ -32,13 +32,15 @@ function world(on: On, files: Record<string, string> = {}) {
     // a store in memory the test reads back: the shared store other sessions' boards count from
     const store = new Map<string, unknown>();
     // a test's tap into the store calls, to land another board's write between two of them
+    // a tap that returns a reason refuses that write, as a failing store would
     const taps = {
         delete: (_key: string) => {},
-        set: (_key: string) => {},
+        set: (_key: string): string | undefined => undefined,
     };
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
-        taps.set(e.key);
+        const refused = taps.set(e.key);
+        if (refused) return { deny: refused };
         store.set(e.key, e.value);
         return { value: undefined };
     });
@@ -3482,4 +3484,120 @@ test('a board opened again draws the steer it saved while closed', async ($, on)
     await w.clock.advance(4_100);
     await ui.redraw();
     expect([before, await boxValue(ui, key)]).toEqual(['', 'a heron']);
+});
+
+/* FRM-492 round 4: a replayed save yields to a newer steer, a failed one keeps its text, a draw before start keeps the key */
+
+test('a save a reload dropped never writes over a newer steer from another board', async ($, on) => {
+    const w = world(on, glide());
+    // typed over no steer; a text kept with no base is a module before the base was kept, and lands as it did there
+    keptState(on, {
+        fields: { 'lane:l9:steer': { base: '', pending: 'old from A' } },
+    });
+    w.store.set('lane-steer:l9', { steer: 'newer from B' });
+    await start($);
+    await board($);
+    await say($, 'go');
+    expect(
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+    ).toBe('newer from B');
+});
+
+test('a save a reload dropped that fails is tried again at the next flush', async ($, on) => {
+    const w = world(on, glide());
+    keptState(on, { fields: { 'lane:l9:steer': { pending: 'from A' } } });
+    let isFailing = true;
+    w.taps.set = (key) =>
+        isFailing && key === 'lane-steer:l9' ? 'store down' : undefined;
+    await start($);
+    await board($);
+    await say($, 'go');
+    isFailing = false;
+    await say($, 'again');
+    expect(
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+    ).toBe('from A');
+});
+
+test('a board drawn before a reloaded start keeps each box under its kept key', async ($, on) => {
+    world(on);
+    keptState(on, {
+        fields: {
+            'lane:l8:steer': {
+                draft: { at: 0, drawn: '', isLanded: true, sent: ['typed'] },
+                gen: 2,
+            },
+        },
+        lanes: [
+            {
+                current: 0,
+                history: [],
+                id: 'l8',
+                items: [{ isDone: false, text: 'a' }],
+                members: {},
+                movedAt: 0,
+                // the box's landed save, as the old module last showed the lane
+                steer: 'typed',
+                title: 'drawn early',
+            },
+        ],
+    });
+    const ui = await board($);
+    expect(
+        (await ui.findAll({ type: 'Input' }))
+            .map((n) => n.key)
+            .filter((k) => k?.startsWith('lane:l8:steer')),
+    ).toEqual(['lane:l8:steer#2']);
+});
+
+test('a save a reload dropped lands over the steer it was typed over', async ($, on) => {
+    const w = world(on, glide());
+    keptState(on, {
+        fields: { 'lane:l9:steer': { base: 'cards', pending: 'cards first' } },
+    });
+    w.store.set('lane-steer:l9', { steer: 'cards' });
+    await start($);
+    await board($);
+    await say($, 'go');
+    expect(
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+    ).toBe('cards first');
+});
+
+test('a save a reload dropped yields to a steer other than the one it was typed over', async ($, on) => {
+    const w = world(on, glide());
+    keptState(on, {
+        fields: { 'lane:l9:steer': { base: 'cards', pending: 'cards first' } },
+    });
+    w.store.set('lane-steer:l9', { steer: 'guards' });
+    await start($);
+    await board($);
+    await say($, 'go');
+    expect(
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+    ).toBe('guards');
+});
+
+test('a save a reload dropped that keeps failing is dropped after three flushes', async ($, on) => {
+    const w = world(on, glide());
+    const state = keptState(on, {
+        fields: { 'lane:l9:steer': { base: '', pending: 'from A' } },
+    });
+    w.taps.set = (key) => (key === 'lane-steer:l9' ? 'store down' : undefined);
+    await start($);
+    await board($);
+    for (const text of ['one', 'two', 'three']) await say($, text);
+    expect(JSON.stringify(state.fields ?? {}).includes('from A')).toBe(false);
+});
+
+test('a save kept with no base, by a module before the base was kept, lands as it did there', async ($, on) => {
+    const w = world(on, glide());
+    keptState(on, { fields: { 'lane:l9:steer': { pending: 'cards first' } } });
+    w.store.set('lane-steer:l9', { steer: 'cards' });
+    await start($);
+    await board($);
+    await say($, 'go');
+    expect(
+        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
+    ).toBe('cards first');
 });
