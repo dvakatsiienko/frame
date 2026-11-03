@@ -274,15 +274,39 @@ describe('the siesta comes due', () => {
     ])('a member’s ping «%s» makes it due', (ping) => {
         const home = fixtureHome();
         prompt(home, {
-            prompt: `<cross-session-message from="codie">\n${ping}\n</cross-session-message>`,
+            prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="⚡ 🔧 codie: clio-lean | FRM-1">\n${ping}\n</cross-session-message>`,
         });
         expect(said(stop(home, stopInput(home), true))).toContain('siesta due');
     });
 
+    test.each(['⚡ 🔎 sixth sense: clio-lean | main'])(
+        'a done ping from «%s» makes it due',
+        (name) => {
+            const home = fixtureHome();
+            prompt(home, {
+                prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] round 3 clean\n</cross-session-message>`,
+            });
+            expect(said(stop(home, stopInput(home), true))).toContain(
+                'siesta due',
+            );
+        },
+    );
+
+    test.each(['🎀 helga', '🦉 clio (side)', '🐦 ⬛ crow'])(
+        'a done ping from «%s» makes none due',
+        (name) => {
+            const home = fixtureHome();
+            prompt(home, {
+                prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] chore 4: pocket write\n</cross-session-message>`,
+            });
+            expect(stop(home, stopInput(home), true)).toBeUndefined();
+        },
+    );
+
     test('a member’s «final draft» line makes none due', () => {
         const home = fixtureHome();
         prompt(home, {
-            prompt: '<cross-session-message from="crow">\nfinal draft attached\n</cross-session-message>',
+            prompt: '<cross-session-message from-name="⚡ 🔧 codie: x">\nfinal draft attached\n</cross-session-message>',
         });
         expect(stop(home, stopInput(home), true)).toBeUndefined();
     });

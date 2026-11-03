@@ -1,6 +1,5 @@
 // clio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
 // so a wish folded from it is groomed from his exact words (pm revamp grill 8, dima's W59, o88, o93)
-import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -45,24 +44,6 @@ export function groomNudge(
         : undefined;
 }
 
-// clio's commits since the siesta stamp as `git log --name-only --format=%x00%s`, the pocket's auto commits left out;
-// the siesta skill's trigger: 3+ files, or any memory, rule or skill file
-export function siestaNudge(log: string, since: string) {
-    const files = new Set(
-        log
-            .split('\0')
-            .map((commit) => commit.trim().split('\n'))
-            .filter(([subject]) => subject && !subject.endsWith('(auto)'))
-            .flatMap(([, ...paths]) => paths.filter(Boolean)),
-    );
-    const memory = [...files].some((f) =>
-        /(^|\/)(memory|rules|skills)\//.test(f),
-    );
-    return files.size >= 3 || memory
-        ? `🌤️ siesta due: ${files.size} file(s) of clio's since ${since}${memory ? ', memory, rule or skill among them' : ''} — load clio:siesta`
-        : undefined;
-}
-
 export function entryFor(prompt: string, at: Date) {
     const hh = String(at.getHours()).padStart(2, '0');
     const mm = String(at.getMinutes()).padStart(2, '0');
@@ -102,27 +83,5 @@ if (import.meta.main) {
             ),
         );
         if (nudge) console.log(nudge);
-        const stamp = path.join(
-            process.env.HOME ?? '',
-            '.local/state/clio/siesta-last',
-        );
-        const since = existsSync(stamp)
-            ? readFileSync(stamp, 'utf8').trim()
-            : `${day}T00:00`;
-        const log = execFileSync(
-            'git',
-            [
-                '-C',
-                path.join(process.env.HOME ?? '', 'frame'),
-                'log',
-                `--since=${since}`,
-                '--grep=^Agent: clio',
-                '--name-only',
-                '--format=%x00%s',
-            ],
-            { encoding: 'utf8' },
-        );
-        const siesta = siestaNudge(log, since);
-        if (siesta) console.log(siesta);
     }
 }

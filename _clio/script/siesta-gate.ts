@@ -27,6 +27,8 @@ const NOT_DIMA = [
 const REMINDER = /<system-reminder>[\s\S]*?<\/system-reminder>/g;
 // a lane's done: `[done]`, or a line naming «final» beside a sha (`final main:<base> <head>`, `<pr> <sha> final`)
 const MEMBER_DONE = /(^|\n)\s*\[done\]|^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
+// only a lane member's done ends a chunk; a sidecar's chore report (helga, clio side, crow) never does
+const LANE_MEMBER = /from-name="[^"]*\b(codie|sixth sense)\b/;
 
 export function stop(home: string, input: StopInput, isBlocking = IS_BLOCKING) {
     const state = readSiesta(home);
@@ -83,6 +85,7 @@ export function prompt(home: string, input: { prompt?: string }) {
     state.last_turn = isDima ? 'dima' : 'other';
     if (
         text.startsWith('<cross-session-message') &&
+        LANE_MEMBER.test(text.slice(0, text.indexOf('>'))) &&
         MEMBER_DONE.test(text.slice(text.indexOf('>') + 1))
     )
         state.pings.push(new Date().toISOString());
