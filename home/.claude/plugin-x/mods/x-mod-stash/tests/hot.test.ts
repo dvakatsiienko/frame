@@ -235,6 +235,17 @@ test('a 🔥 key another session deletes while this one idles cancels the armed 
     ]);
 });
 
+// the poll runs every 4 s: a delete just before the ping is due lands between two ticks
+test('a 🔥 key another session deletes a second before the ping is due cancels it', async ($, on) => {
+    const store: Record<string, unknown> = { [`hot:${SID}`]: { since: NOW } };
+    const s = await started($, on, store);
+    await endTurn($);
+    await s.clock.advance(50 * MIN - 1_000);
+    delete store[`hot:${SID}`];
+    await s.clock.advance(MIN);
+    expect(s.pings).toEqual([]);
+});
+
 test('🔥 stays on through a 5h window reset', async ($, on) => {
     const s = await started($, on);
     await measure($, 50, 30 * MIN);

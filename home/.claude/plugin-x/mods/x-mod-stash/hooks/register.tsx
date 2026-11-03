@@ -3084,6 +3084,8 @@ async function armHot($: EngineInterface) {
         hot?.since ?? ((await isAfkWarm($)) ? (endedAt ?? now) : undefined);
     if (since === undefined) return;
     $.clock.after(Math.max(0, since + HOT_MS - now), async () => {
+        // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
+        await followHot($).catch(() => undefined);
         if (isBusy || mine !== hotGen) return;
         if (!hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
@@ -3093,7 +3095,8 @@ async function armHot($: EngineInterface) {
 }
 
 // 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
-// change and arms or cancels the ping with no turn (FRM-499)
+// change and arms or cancels the ping with no turn (FRM-499); it only reads, since a write back could undo a press
+// made between its read and its write
 async function followHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
@@ -3101,7 +3104,6 @@ async function followHot($: EngineInterface) {
     if (Boolean(stored) === Boolean(hot)) return;
     const now = await $.clock.now();
     hot = stored && { since: isBusy ? now : (endedAt ?? now) };
-    await saveHot($);
     await armHot($);
     await publish($);
 }

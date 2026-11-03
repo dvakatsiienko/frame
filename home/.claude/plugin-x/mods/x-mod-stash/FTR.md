@@ -138,7 +138,7 @@
   - then 🔥 ticks and the 50-minute ping is armed, counted from its last turn end, or unticks and an armed ping never fires
   - given dima switched 🔥 off on the band
   - then the key is gone from the store, so the re-read never switches it back on
-  - proof: tests/hot.test.ts::a 🔥 key another session writes while this one idles arms the ping within a minute, no turn taken (+ deletes … cancels the armed ping, written after start arms at turn end)
+  - proof: tests/hot.test.ts::a 🔥 key another session writes while this one idles arms the ping within a minute, no turn taken (+ deletes … cancels the armed ping, deletes a second before the ping is due, written after start arms at turn end)
 - ✅ ⏰ waker: one global switch in the row beside 🔥, off by default; while on, a session stopped on the 5h cap gets one «resume» at the reset (FRM-365)
   - given ⏰ is off, its default
   - when the 5h window resets

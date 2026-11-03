@@ -1481,7 +1481,7 @@ test('a second press on the 🔥 chip deletes the key and draws off', async ($, 
 });
 
 test("a session's own row chip and its band's 🔥 show one state, whichever is flipped", async ($, on) => {
-    const f = fleet(on);
+    fleet(on);
     const view = await board($);
     const strip = await band($);
     const bandHot = async () =>
@@ -1492,7 +1492,6 @@ test("a session's own row chip and its band's 🔥 show one state, whichever is 
     await view.press({ key: `hot:${HERE}` });
     const byChip = [await hotChip(view, HERE), await bandHot()];
     await strip.press({ key: 'hot' });
-    await f.clock.advance(5_000);
     expect([byChip, [await hotChip(view, HERE), await bandHot()]]).toEqual([
         ['on', 'on'],
         ['off', 'off'],
