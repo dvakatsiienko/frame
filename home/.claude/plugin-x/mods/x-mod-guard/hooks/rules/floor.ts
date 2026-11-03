@@ -355,3 +355,34 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         };
     return undefined;
 }
+// a git call that steps past the gate a door holds, flagged beside the rule chain so a refusal on the same command still
+// stands: a plain push from frame's main checkout (its door reads the remote back, and a worktree push dies on the mirror
+// gate anyway), and a `-c core.hooksPath` that swaps the hooks out like --no-verify (FRM-472)
+export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
+    if (c.name !== 'git') return undefined;
+    const { configs, sub, subArgs } = gitParts(c.args);
+    const hooks = configs.find((k) => /^core\.hookspath(?:=|$)/i.test(k));
+    if (hooks)
+        return {
+            door: 'fix what the hook refused, then run it without the override',
+            rule: 'hooks-bypass',
+            targets: [hooks.split('=')[0] ?? hooks],
+            why: '-c core.hooksPath swaps out the hooks a commit or push runs',
+        };
+    const dir = gitDir(c, ctx);
+    const frame = `${ctx.home}/frame`;
+    if (
+        sub === 'push' &&
+        ctx.home &&
+        (dir === frame || dir.startsWith(`${frame}/`)) &&
+        !dir.startsWith(`${frame}/.claude/worktrees/`) &&
+        !hasFlag(subArgs, ['--dry-run'], 'n')
+    )
+        return {
+            door: "x lane push — it pushes HEAD's sha and reads the remote back",
+            rule: 'bare-push',
+            targets: ['push'],
+            why: 'a plain git push from frame skips the read-back and the push gates x lane push runs',
+        };
+    return undefined;
+}

@@ -225,8 +225,20 @@
 - ✅ a hand-typed push to main is refused with `x lane push`
   - given a Bash `git push <remote> <sha-or-ref>:main` (or `:refs/heads/main`) run inside `~/frame` or `~/projects/bytes`, `cd` or `-C` included
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
-  - given a plain `git push`, or the same refspec outside those two repos, then it runs
+  - given the same refspec outside those two repos, then it runs; a plain `git push` in frame is the next line's
   - proof: tests/lints.test.ts::a sha pushed to main in frame is refused with its fix; a ref pushed to refs/heads/main in bytes is refused with its fix; …: the near miss runs
+- ⬜ a plain push from frame's main checkout is flagged `bare-push` with `x lane push`, warn-only (FRM-472 exit 3, dima's o27)
+  - given a Bash `git push` (any remote or refspec) whose git dir is `~/frame` or a dir under it, `cd`, `-C`, `$(( ))` and a nested script included
+  - when no other rule already stops that command, then it warns «would refuse» with the door `x lane push`; at step 11 it refuses
+  - and `x lane push`, a push from another repo, from a frame worktree (`.claude/worktrees/`, where the mirror gate stops it anyway) and `--dry-run` / `-n` run unflagged
+  - measured: the 7-day replay, 13,438 calls, flags 0 — each of the 18 frame pushes in it was already refused by `push-lane` or `git-rewrite`
+  - proof: tests/doors.test.ts::… runs flagged with its rule and door; … runs unflagged
+- ⬜ a `-c core.hooksPath` on any git call is flagged `hooks-bypass`, warn-only (FRM-472 exit 3)
+  - given a Bash `git -c core.hooksPath[=…]` (any case: git reads config keys so), any subcommand, any repo
+  - when no other rule already stops that command, then it warns «would refuse», the door: fix what the hook refused, then run it without the override; at step 11 it refuses
+  - and another `-c` key runs unflagged, and a rule that refuses the command today (a commit that sweeps, `sudo`) still refuses: a flag never hides a refusal
+  - measured: the 7-day replay flags 0
+  - proof: tests/doors.test.ts::a commit with hooksPath emptied runs flagged with its rule and door; a hooksPath commit that sweeps stays refused beside a warn-only flag
 
 - ⬜ a command whose name hides is flagged `opaque-head` with its literal spelling, one class rule, warn-only (dima's o1, o35; 16:57 «i agree with this model»: enforce at step 11 on zero false refusals in the 7-day replay and sixth sense's clean)
   - given a Bash call whose command name is a `$` the line never fills (`${X:-rm}`, `read R; $R`, `$(cat f) args`), a brace list (`r{m,}`), a value a variable takes several of on the line (a loop var, a rebind) or an `$(echo …)` prints, or a command walked out of a script printed into a shell (`printf … | bash`, `echo … | sh`), a `source`/`.` or a git alias (`-c alias.s=status`)
@@ -355,7 +367,7 @@
   - proof: tests/spawn.test.ts::a fork with no why-fork line is refused with a fresh agent and helper; a fork with a why-fork line runs; a fresh agent is left alone; a refused fork is kept as a guard event
 
 - ✅ a linear ticket put into a project with milestones names one (FRM-417, FRM-425)
-  - given a Bash `linear issue create|update|edit --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` (inline, or `$p` with its value in `--vars`) — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId` (or `projectMilestoneId: null`)
+  - given a Bash `linear issue create|update --project <p>` (raw, or through `x as <member> -- linear …`), `x linear set <id> --project <p>`, or an `x linear api` / `linear api` `issueCreate|issueUpdate` with a `projectId` (inline, or `$p` with its value in `--vars`) — with no `--milestone` (or an empty one: `--milestone ""`, `--milestone=`) and no `projectMilestoneId` (or `projectMilestoneId: null`)
   - and `<p>` (its name, slug or id) holds milestones, as one `x linear api` projects read says, kept in x-mod-guard's store for a day
   - when x-mod-guard reads it
   - then it is refused: «pick a milestone, or propose one»

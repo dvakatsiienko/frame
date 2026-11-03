@@ -102,7 +102,7 @@ function projectMove(c: Command): ProjectMove | undefined {
     const isMove = isX
         ? words[head] === 'set'
         : words[head] === 'issue' &&
-          ['create', 'update', 'edit'].includes(words[head + 1] ?? '');
+          ['create', 'update'].includes(words[head + 1] ?? '');
     const project = isMove ? flag(words, '--project') : undefined;
     if (!project) return undefined;
     return { hasMilestone: !!flag(words, '--milestone'), project };

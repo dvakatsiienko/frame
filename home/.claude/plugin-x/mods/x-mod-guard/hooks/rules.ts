@@ -25,7 +25,7 @@ import {
     scriptRun,
     writtenScripts,
 } from './rules/command.ts';
-import { floor, opaque } from './rules/floor.ts';
+import { floor, gitDoor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
@@ -425,6 +425,9 @@ export function refusals(
         }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
+        // a door flag speaks only where no rule already stopped the command, and never hides one
+        const door = found ? undefined : gitDoor(c, ctx);
+        if (door) out.push(door);
         // a nested script is commands too: a shell's, an eval's, env -S's, find -exec's, a function body (command.ts)
         for (const script of nestedScripts(c))
             out.push(

@@ -1271,4 +1271,28 @@ EOF`,
     ['refused', 'wrapper', 'watch', 'watch -n 1 rm -rf x'],
     ['refused', 'wrapper', 'chronic', 'chronic rm -rf x'],
     ['refused', 'wrapper', 'unbuffer', 'unbuffer rm -rf x'],
+    // FRM-472 exit 7: sudo drops CLAUDECODE, so the guard refuses under it what it refuses bare
+    ['refused', 'sudo', 'sudo ahead of an rm', 'sudo rm -rf x'],
+    ['refused', 'sudo', 'sudo ahead of a bash -c', "sudo bash -c 'rm -rf x'"],
+    [
+        'refused',
+        'sudo',
+        'sudo ahead of a push in frame',
+        'sudo git push',
+        { cwd: '/home/frame' },
+    ],
+    // FRM-472 exit 3: warn-only until step 11
+    [
+        'open',
+        'bare-push',
+        'a plain push from frame (warn-only until step 11)',
+        'git push',
+        { cwd: '/home/frame' },
+    ],
+    [
+        'open',
+        'hooks-bypass',
+        'a commit with hooksPath emptied (warn-only until step 11)',
+        'git -c core.hooksPath=/dev/null commit -m x -- a.ts',
+    ],
 ];
