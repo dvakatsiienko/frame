@@ -28,7 +28,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 3.2 **ci reds**: the unseen rows of n8n's 🔴 ci watch, the same read as the boot digest's n8n section; a red gets one card line and a fix or an ask
 3.3 **the groom check**: `node ~/frame/_clio/script/prompt-groom.ts --day`; each red prompt is groomed with helga or gets a `HH:MM — <why>` no-wish line, each homeless W-line gets its home
 3.5 **the helper count**: step 1's helper count section: `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
-4. **check before acting**: every high finding from wishkeeper or crow, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
+4. **check before acting** — wishkeeper owns the files and the tracker, crow owns intent, process and claims; every high finding from either, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
 5. **the card**, one reply when wishkeeper is back, after `node ~/frame/_clio/script/siesta-gate.ts card '<high 1>' …` (one quoted arg each; a high settled later: `… high <n> fixed|parked <why>`):
    - 🐬 **wishkeeper**: its top 5 and the count of the rest, or «no wishkeeper: small batch»; its tokens and findings count go as one `## rounds` row of `docs/test-drive/pre-merge-siesta.md`
    - 🎀 **chores**: the lines of `… card-lines <transcript>`
