@@ -59,7 +59,7 @@ function wishCover(home: string, scripts: string, since: string) {
         const ids = [
             ...readFileSync(file, 'utf8').matchAll(/^wish: .*$/gm),
         ].flatMap((line) => line[0].match(/\b(?:FRM|BYT|PK)-\d+\b/g) ?? []);
-        return ids.map((id) => ({
+        return [...new Set(ids)].map((id) => ({
             ...script(scripts, 'wish-cover', 'wish-cover', [id, file]),
             feature: path.basename(path.dirname(file)),
         }));

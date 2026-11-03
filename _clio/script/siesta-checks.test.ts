@@ -151,6 +151,13 @@ describe('siesta-checks', () => {
         expect(out).toContain('### lane-a');
     });
 
+    test('a ticket named twice in a spec runs once', () => {
+        const home = fixtureHome();
+        spec(home, 'lane-a', ['FRM-1', 'FRM-2', 'FRM-1']);
+        const out = section(run(home).stdout, 'wish-cover');
+        expect(out.match(/wish-cover ran FRM-1 /g)).toHaveLength(1);
+    });
+
     test('a wish-cover that cannot reach the tracker is not checked, never red', () => {
         const home = fixtureHome({ 'wish-cover': 2 });
         spec(home, 'lane-a', ['FRM-1']);
