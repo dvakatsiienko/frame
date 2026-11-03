@@ -148,7 +148,39 @@ describe('siesta-checks', () => {
         const out = section(run(home).stdout, 'wish-cover');
         for (const id of ['PK-219', 'FRM-401', 'FRM-403'])
             expect(out).toContain(`wish-cover ran ${id} ${file}`);
-        expect(out).toContain('### lane-a');
+        expect(out).toContain('### frame/.scratch/lane-a/spec.md');
+    });
+
+    test('the write hook’s files count too: a proposal, a review, clio’s own scratch, a linked or capitalised wish', () => {
+        const home = fixtureHome();
+        const write = (rel: string, text: string) => {
+            const file = join(home, rel);
+            mkdirSync(join(file, '..'), { recursive: true });
+            writeFileSync(file, text);
+            return file;
+        };
+        const proposal = write(
+            'frame/.scratch/lane-a/grill-1-proposal.md',
+            'wish: FRM-11\n',
+        );
+        const review = write(
+            'frame/.scratch/lane-a/round-2-review.md',
+            'Wish: [FRM-12](https://x)\n',
+        );
+        const clio = write('frame/_clio/.scratch/pk1/spec.md', 'wish: PK-13\n');
+        write('frame/.scratch/lane-a/notes.md', 'wish: FRM-14\n');
+        const out = section(run(home).stdout, 'wish-cover');
+        expect(out).toContain(`wish-cover ran FRM-11 ${proposal}`);
+        expect(out).toContain(`wish-cover ran FRM-12 ${review}`);
+        expect(out).toContain(`wish-cover ran PK-13 ${clio}`);
+        expect(out).not.toContain('FRM-14');
+    });
+
+    test('when every run is an outage, the header says not checked, never a bare exit 0', () => {
+        const home = fixtureHome({ 'wish-cover': 2 });
+        spec(home, 'lane-a', ['FRM-1']);
+        const head = run(home).stdout.match(/^## wish-cover.*$/m)?.[0];
+        expect(head).toBe('## wish-cover · 1 not checked');
     });
 
     test('a ticket named twice in a spec runs once', () => {

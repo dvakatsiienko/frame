@@ -9,10 +9,13 @@ const OUTPUT_LINES = 40;
 const RUN_TIMEOUT_MS = 60_000;
 // wish-cover's own exit when the tracker read fails: an outage, never a missed wish
 const NOT_CHECKED = 2;
+// the same drafts and wish line wish-cover-on-write.sh checks at write time
+const DRAFT_NAME = /^(spec\.md|.*proposal.*\.md|.*review.*\.md)$/;
+const WISH_LINE = /^wish: *\[?(?:PK|FRM|BYT)-\d+.*$/gim;
 
 function main(home: string, since: string) {
     const scripts = path.join(home, 'frame/_clio/script');
-    const sections = [
+    const sections: Section[] = [
         script(scripts, 'pocket-check', 'pocket-check', []),
         wishCover(home, scripts, since),
         orbitDrift(home),
@@ -23,7 +26,9 @@ function main(home: string, since: string) {
         script(scripts, 'helper count', 'helper-count', ['--since', since]),
     ];
     for (const s of sections)
-        console.log(`## ${s.name} · exit ${s.exit}\n${s.output.trimEnd()}\n`);
+        console.log(
+            `## ${s.name} · ${s.status ?? `exit ${s.exit}`}\n${s.output.trimEnd()}\n`,
+        );
     return sections.every((s) => s.exit === 0) ? 0 : 1;
 }
 
@@ -46,22 +51,20 @@ function script(dir: string, name: string, file: string, args: string[]) {
     return { exit: out.status ?? 1, name, output };
 }
 
-// every spec changed in the window, read against each ticket its `wish:` lines name
+// every draft changed in the window that wish-cover-on-write.sh reads — a spec, a proposal or a review under frame's or
+// clio's .scratch — against each ticket its wish lines name
 function wishCover(home: string, scripts: string, since: string) {
-    const root = path.join(home, 'frame/.scratch');
     const from = sinceDate(since).getTime();
-    const specs = existsSync(root)
-        ? readdirSync(root)
-              .map((d) => path.join(root, d, 'spec.md'))
-              .filter((f) => existsSync(f) && statSync(f).mtimeMs > from)
-        : [];
-    const runs = specs.flatMap((file) => {
-        const ids = [
-            ...readFileSync(file, 'utf8').matchAll(/^wish: .*$/gm),
-        ].flatMap((line) => line[0].match(/\b(?:FRM|BYT|PK)-\d+\b/g) ?? []);
+    const drafts = ['frame/.scratch', 'frame/_clio/.scratch']
+        .flatMap((root) => drafted(path.join(home, root)))
+        .filter((f) => statSync(f).mtimeMs > from);
+    const runs = drafts.flatMap((file) => {
+        const ids = [...readFileSync(file, 'utf8').matchAll(WISH_LINE)].flatMap(
+            (line) => line[0].match(/\b(?:FRM|BYT|PK)-\d+\b/g) ?? [],
+        );
         return [...new Set(ids)].map((id) => ({
             ...script(scripts, 'wish-cover', 'wish-cover', [id, file]),
-            feature: path.basename(path.dirname(file)),
+            feature: path.relative(home, file),
         }));
     });
     const unchecked = runs.filter((r) => r.exit === NOT_CHECKED).length;
@@ -76,6 +79,10 @@ function wishCover(home: string, scripts: string, since: string) {
                       : []),
               ].join('\n')
             : 'no spec changed in the window',
+        status:
+            unchecked && unchecked === runs.length
+                ? `${unchecked} not checked`
+                : undefined,
     };
 }
 
@@ -107,6 +114,15 @@ function orbitDrift(home: string) {
             ? drifted.join('\n')
             : `${items.length} open ask(s), none on a done pocket item`,
     };
+}
+
+function drafted(dir: string): string[] {
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) return drafted(full);
+        return DRAFT_NAME.test(e.name) ? [full] : [];
+    });
 }
 
 function isDone(pocket: string, n: string) {
@@ -164,3 +180,7 @@ if (import.meta.main) {
     }
     process.exitCode = main(process.env.HOME ?? '', since);
 }
+
+/* Types */
+
+type Section = { exit: number; name: string; output: string; status?: string };
