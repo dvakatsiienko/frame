@@ -25,31 +25,39 @@ const NOT_DIMA = [
     'x-mod-stash waker:',
 ];
 const REMINDER = /<system-reminder>[\s\S]*?<\/system-reminder>/g;
-const MEMBER_DONE = /(^|\n)\s*(\[done\]|final\b)/;
+const MEMBER_DONE = /(^|\n)\s*(\[done\]|final [0-9a-f]{7,40}\b)/;
 
 export function stop(home: string, input: StopInput, isBlocking = IS_BLOCKING) {
     const state = readSiesta(home);
-    if (state.open && isAfk(home) && isSettled(state)) close(state);
+    if (state.open && state.card_printed && isAfk(home) && isSettled(state))
+        close(state);
     const reasons = state.open ? [] : dueReasons(home, state);
     const isDue = reasons.length > 0;
     if (isDue && !state.due) state.epoch++;
     state.due = isDue;
+    // a Stop note wakes a turn of its own: each check speaks once, never inside a turn a hook woke
+    if (input.stop_hook_active) {
+        writeSiesta(home, state);
+        return undefined;
+    }
     const checks: string[] = [];
-    const isSiestaNudged = isDue && !loadedSiesta(input.transcript_path);
-    if (isSiestaNudged)
+    const isSiestaNudged =
+        isDue &&
+        state.nudged_epoch !== state.epoch &&
+        !loadedSiesta(input.transcript_path);
+    if (isSiestaNudged) {
+        state.nudged_epoch = state.epoch;
         checks.push(`🌤️ siesta due: ${reasons.join(', ')} — load clio:siesta`);
+    }
     const ticks = deliveredTicks(home, input.session_id);
-    if (ticks.length)
+    const newTicks = ticks.filter((id) => !state.nudged_ticks.includes(id));
+    state.nudged_ticks = ticks;
+    if (newTicks.length)
         checks.push(
-            `🛎️ delivered tick(s) unresolved: ${ticks.join(' ')} — orbit resolve`,
+            `🛎️ delivered tick(s) unresolved: ${newTicks.join(' ')} — orbit resolve`,
         );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
-    const isBlock =
-        isBlocking &&
-        isSiestaNudged &&
-        !input.stop_hook_active &&
-        state.blocked_epoch !== state.epoch;
-    if (isBlock) state.blocked_epoch = state.epoch;
+    const isBlock = isBlocking && isSiestaNudged;
     writeSiesta(home, state);
     if (!checks.length) return undefined;
     const line = checks.join('; ');
@@ -100,7 +108,7 @@ function dueReasons(home: string, state: Siesta) {
         new Date(at).getTime() > since.getTime();
     const files = clioFiles(home, since);
     const rows = readLines(path.join(stateDir(home), 'phases-done.jsonl'))
-        .map((l) => JSON.parse(l) as { at: string | number })
+        .flatMap((l) => parsed<{ at: string | number }>(l) ?? [])
         .filter((r) => after(r.at));
     const pings = state.pings.filter(after);
     return [
@@ -145,8 +153,8 @@ function clioFiles(home: string, since: Date) {
 
 // this turn: the rows after the last prompt that is neither a tool result nor a skill's own text
 function loadedSiesta(transcriptPath?: string) {
-    const rows = readLines(transcriptPath).map(
-        (l) => JSON.parse(l) as TranscriptRow,
+    const rows = readLines(transcriptPath).flatMap(
+        (l) => parsed<TranscriptRow>(l) ?? [],
     );
     const start = rows.findLastIndex(
         (r) =>
@@ -190,9 +198,14 @@ function isAfk(home: string) {
 function stashStore(home: string): Record<string, unknown> {
     const dir = path.join(home, '.claude/plugins/store');
     const file = existsSync(dir)
-        ? readdirSync(dir).find((f) => f.startsWith('x-mod-stash_'))
+        ? readdirSync(dir).find((f) => /^x-mod-stash_inline-.*\.json$/.test(f))
         : undefined;
-    return file ? JSON.parse(readFileSync(path.join(dir, file), 'utf8')) : {};
+    const kept = file
+        ? parsed<Record<string, unknown>>(
+              readFileSync(path.join(dir, file), 'utf8'),
+          )
+        : undefined;
+    return kept && typeof kept === 'object' ? kept : {};
 }
 
 function isSettled(state: Siesta) {
@@ -213,10 +226,22 @@ function stateDir(home: string) {
 
 function siestaLast(home: string) {
     const file = path.join(stateDir(home), 'siesta-last');
-    if (existsSync(file)) return new Date(readFileSync(file, 'utf8').trim());
+    const kept = existsSync(file)
+        ? new Date(readFileSync(file, 'utf8').trim())
+        : undefined;
+    if (kept && !Number.isNaN(kept.getTime())) return kept;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return today;
+}
+
+// a reader never throws: a half-written line or a store caught mid-write reads as missing, so the gate never fails open
+function parsed<T>(text: string) {
+    try {
+        return JSON.parse(text) as T | null;
+    } catch {
+        return undefined;
+    }
 }
 
 function readLines(file?: string) {
@@ -228,15 +253,16 @@ function readLines(file?: string) {
 function readSiesta(home: string): Siesta {
     const file = path.join(stateDir(home), 'siesta.json');
     const kept = existsSync(file)
-        ? (JSON.parse(readFileSync(file, 'utf8')) as Partial<Siesta>)
+        ? (parsed<Partial<Siesta>>(readFileSync(file, 'utf8')) ?? {})
         : {};
     return {
-        blocked_epoch: 0,
         card_printed: false,
         due: false,
         epoch: 0,
         highs: [],
         last_turn: 'other',
+        nudged_epoch: 0,
+        nudged_ticks: [],
         open: false,
         pings: [],
         ...kept,
@@ -310,12 +336,13 @@ type StopInput = {
 type High = { state: 'fixed' | 'open' | 'parked'; text: string; why?: string };
 
 type Siesta = {
-    blocked_epoch: number;
     card_printed: boolean;
     due: boolean;
     epoch: number;
     highs: High[];
     last_turn: 'dima' | 'other';
+    nudged_epoch: number;
+    nudged_ticks: string[];
     open: boolean;
     pings: string[];
 };
