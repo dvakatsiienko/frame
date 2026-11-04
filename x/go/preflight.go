@@ -497,10 +497,10 @@ func lineOrLast(f finding) int {
 	return f.Line
 }
 
-func ticketLine(id string) string { return `ticket: ` + id + `([^0-9]|$)` }
+func ticketLine(id string) string { return `(ticket: |step [0-9]+ of )` + id + `([^0-9]|$)` }
 
-// ticketCommits lists origin/main's commits for id: a squashed pr's body carries «ticket: <id>», a quick
-// lane's commit names it in its subject's parenthetical, «(FRM-459 step 20)» or «(FRM-459 and FRM-470 review)»
+// ticketCommits lists origin/main's commits for id: a squashed pr's body carries «ticket: <id>», a quick lane's
+// body «step 3 of <id>» (x:cmt § 4), an older one its subject's parenthetical, «(FRM-459 step 20)»
 func ticketCommits(repo, id string) []string {
 	var commits []string
 	if got, _ := gitIn(repo, "log", "origin/main", "-E", "--grep="+ticketLine(id), "--format=%h %s"); got.ok && got.out != "" {

@@ -264,6 +264,23 @@ func TestLandedDecampsAVerifyTreeNamedForTheTicket(t *testing.T) {
 	}
 }
 
+func TestLandedReadsAQuickLaneStepLineAsMerged(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	gitT(t, w.repo, "reset", "-q", "--hard", "HEAD~1")
+	write(t, filepath.Join(w.repo, "q.txt"), "the quick change\n")
+	gitT(t, w.repo, "add", "q.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 x-mod-guard: a rule refuses", "-m", "step 3 of FRM-1: the rule\n\nAgent: codie · Claude Opus 5.5")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
+		t.Errorf("a quick lane's step line must read merged:\n%s", out)
+	}
+}
+
 func TestLandedReadsAQuickLaneMergedAndDecampsItsVerifyTree(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
