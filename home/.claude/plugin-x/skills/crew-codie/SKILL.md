@@ -132,7 +132,7 @@ on diff lines.
 
 ## 5. talking
 
-- **ping on the events `rules/fleet-flow.md` lists**; acks and
+- **ping on the events `rules/fleet-flow.md` lists**, plus one status line per finished step; acks and
   «resumed» stay in your chat. a find dima would want rides the done ping, alone only when it changes the
   plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).
