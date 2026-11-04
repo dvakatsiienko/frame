@@ -26,5 +26,6 @@ Ticket: none
 - 2026-11-04 · FRM-502 (main lane, uncommitted diff, after wisphunter's 7) · wishkeeper 9 min, 177k tokens, 18 findings: 4 high real (a live hold never got crow's note, the claim gate 0 of 4 slips, first-acts off the plan, the measuring read with no caller); none wisphunter had found
 - 2026-11-04 · FRM-500 re-sign, the ladder, crow's gate (main lane) · wishkeeper 7 min, 179k tokens, 19 findings: 2 high real (stale decided lines codie would build from, my note dump broke wish-cover)
 - 2026-11-04 · tails, closes, FRM-505's sign, plus the CST check · wishkeeper 9 min, 243k tokens, 19 findings: 3 high real (a superseded closing word, two false closes)
+- 2026-11-04 · the second wind's batch and its handoff (no lane diff) · wishkeeper 7 min, 168k tokens, 16 findings: 2 high real (his 15:22 misread as parking FRM-499 and FRM-501, a fixed row still carried as open)
 
 ## verdict
