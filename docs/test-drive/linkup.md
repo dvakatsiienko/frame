@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-06
 dies-when: the verdict line below is written
 ---
@@ -43,5 +43,7 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - 2026-10-20 · gemini retry on `gemini-3-flash-preview`, api key · 429 «You exceeded your current quota» ×13 in 300 s, 0 answers · why (google's blog, 2026-06): gemini cli serves only paid api keys and enterprise since 2026-06-18; the free key gets no quota · **gemini dropped from this trial** (free tiers only, his rule); `brew uninstall gemini-cli` and the lane come out
 - 2026-10-20 · first real lane run, the evergreen vet (release-radar + dependency-doctor), same brief as exa, parallel and the researcher · 147 s, $0.25, 13.3k chars · same verdict as all (install neither); unique finds: dependabot alerts assignable to ai agents (2026-04), socket's `optimize` cli; one miss: called release-radar gemini-dependent, while the researcher read that its scheduled path calls no model · grade: useful fourth voice, below the researcher
 - 2026-11-04 · a researcher graded the 4 newest lane runs with a linkup output (`refresh-cc-mods` 11-02, `refresh-blueprint-comms` 10-21, run #6 craft and tools 10-21) · a unique correct find in **4 of 4 runs** (3 of 3 if run #6 counts once) · 74 unique claims: 15 correct, 13 wrong, 46 unchecked · best: Collision Guard in the mods run, the Sonnet 4.5 retirement date · a wrong one: its 10-19 retirements, which the page dates February to August 2026 · each run $0.25 · the free top-up of 11-01 not read: the cli has no balance verb · grade: meets the bar by the letter, and its unique claims are opened before use
+- 2026-11-04 · the same grade over exa and parallel, the same 4 runs, a fixed sample · wrong share of checked unique claims: parallel 5 % (1 of 20, 2 of its 4 runs failed), exa 14 % (3 of 22), linkup 46 % (13 of 28), rough 95 % ranges 1–24, 5–33, 30–64; one grader, linkup's sample taken in an earlier pass
 
 ## verdict
+- 2026-11-04 · **dropped**, dima: «I vote for discarding»: its unique finds cost a check each at 46 % wrong, and exa, parallel and the researcher already give enough · cli uninstalled, its lane and `op.env` line out; the 1Password item `linkup-golden` stays, a delete is his

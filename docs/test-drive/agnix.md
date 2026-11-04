@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-05
 dies-when: the verdict line below is written
 ---
@@ -29,3 +29,4 @@ the run: `npx -y agnix@<version> --target claude-code --format json .` from `~/f
 - 2026-11-04 · round 3, frame and bytes, v0.59.0, each finding opened · frame: 2 errors, 37 warnings, 48 info; bytes: 0 errors, 6 warnings, 76 info · frame's 2 errors are noise, an email in a pocket note read as `@` imports; 31 warnings are the two known noise rows; of the 6 left: 1 small real (`quicksilver` `$0` in a sample output, seen in round 1), 1 known (`fleet-output-format.md` 233 lines), 1 size note, 3 noise · bytes: 4 size notes on vendored skills, 2 path noise · new real defects no check caught: 0 · `.agnix.toml` was never written, so «noise under 50 % once suppressed» was never tested; by hand it reads 3 of 6 · every real catch of the trial sat at error level (round 1, 7 of 7) · grade: the warnings earn nothing, the errors earned one good round
 
 ## verdict
+- 2026-11-04 · **dropped**, dima leaning, the side channel agreeing: 4 runs in 16 days (10-19, 10-22, 11-01, 11-04), 7 real catches on the first and none new since, and those 7 are read fine by cc itself · more runs would find nothing more; its check is out of `clio:system-checkup`

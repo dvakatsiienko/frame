@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-06
+until: 2026-11-18
 dies-when: the verdict line below is written
 fits: codie
 ---
@@ -47,5 +47,7 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 ### round 2 — planned at the sign (2026-10-30)
 
 - dima, 10-30 (o39): left to codie, every lane chose plain — zero stacks in 5 days. so the stack is planned at the sign: FRM-383 → FRM-384 in cli lane 3, `pr mode: stacked`; the verdict, useful or dead weight, lands by 11-05
+
+- 2026-11-04 · extended once to 11-18 on dima's tick: one stack on FRM-383 and FRM-384, then the verdict; a second extension needs a new card
 
 ## verdict
