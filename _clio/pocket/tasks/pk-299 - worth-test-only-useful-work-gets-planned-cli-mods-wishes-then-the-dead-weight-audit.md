@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T15:29:00Z'
-updated_date: '2026-11-04T16:27:00Z'
+updated_date: '2026-11-04T16:51:00Z'
 labels:
   - m
 dependencies: []
@@ -173,4 +173,6 @@ correction 2026-11-04: the kept line above came from a loop and its «before the
 
 ticket: FRM-507
 held: 2026-11-04 — FRM-507 dima's two cut ticks, x fleet audit and /quiet-canary; closes with every W-line read uncut when they land
+
+held: 2026-11-04 — FRM-507 lands; the two cut questions moved to the next boot's habit review
 <!-- SECTION:NOTES:END -->

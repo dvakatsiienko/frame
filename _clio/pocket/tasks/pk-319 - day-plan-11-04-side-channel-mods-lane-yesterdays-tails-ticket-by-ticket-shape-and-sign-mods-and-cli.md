@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T16:49:00Z'
+updated_date: '2026-11-04T16:51:00Z'
 labels:
   - s
 dependencies: []
@@ -366,4 +366,10 @@ W301 (2026-11-04 18:33, dima): sign ✓.
 W302 (2026-11-04 18:48, dima): placed as first chunk in mods lane? did you revisited the execution order with new signed chunks? if no - groom execution order. ❓
 W303 (2026-11-04 18:48, dima): Actually, do you have a habit of grooming the execution order of chunks once you sign new chunks? If not, tweak your habit because each time you sign chunks, you should always place them into a good spot in the execution order based on usefulness. The most useful and most wanted go first. ❓
 W304 (2026-11-04 18:48, dima, o117 steer): Rename now. It should be free.
+
+W305 (2026-11-04 18:40, dima, o116 steer): No, I actually look at change detector, and it's ugly. I don't like it. I want either another tool or for us to build some custom UI for it. Let's have this ticket.
+
+W306 (2026-11-04 18:39, dima): why you stuck waiting on crow for 5min? and i also look crow window - no messages from you received ❓
+
+next boot, the list as of 18:52 (replaces the earlier next-boot lines; done since: the door rename to ⏰ due, FRM-508 filed and signed, the sign round, FRM-441 and FRM-484 stayed unsigned): 1 worktrees auto-clean on merge (W259–W262, W628–W630), FRM-480 the likely home, 29 stale branches and the index-run tree in its review. 2 unused verbs reviewed for missing habits: x fleet audit, /quiet-canary, W1041, W1042. 3 FRM-441 shape-idea, another tool or a custom ui. 4 x-mod-guard spends a tick on a command it refuses, FRM-489 or its own line. 5 F1's 14 gaps, FRM-488 W1483–W1484, PK-305's measure, PK-312's leftovers, crew-pm-flow board redraw. after the 11-06 plan: W246–W251.
 <!-- SECTION:NOTES:END -->
