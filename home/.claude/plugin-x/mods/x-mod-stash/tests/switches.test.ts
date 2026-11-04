@@ -77,7 +77,7 @@ function world(on: On) {
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { clock, lines, store };
+    return { clock, files, lines, store };
 }
 
 type World = ReturnType<typeof world>;
@@ -240,6 +240,23 @@ const SCENARIOS: Record<string, Scenario> = {
             op: 'add',
         },
         trace: /orbit holds|dima marked/,
+    },
+    'stash.pace-watch': {
+        arm: async (_$, w) => {
+            w.files[`/home/.claude/shelf/cc-usage-window.json`] =
+                JSON.stringify({
+                    rate_limits: {
+                        five_hour: {
+                            resets_at: Math.round((NOW + 180 * MIN) / 1000),
+                            used_percentage: 60,
+                        },
+                    },
+                    written_at: Math.round(NOW / 1000),
+                });
+            w.store.set(`pace:${SID}`, { since: NOW });
+        },
+        fire: (_$, w) => w.clock.advance(5_000),
+        trace: /^turn: 🔋 pace watch/,
     },
     'stash.phases': {
         arm: ($) => orbit($, { lines: ['now: a'], op: 'plan' }),

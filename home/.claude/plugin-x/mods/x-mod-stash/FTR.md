@@ -691,6 +691,27 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given it off, then a sent-back assumption joins no prompt and `op assume` is refused in one line naming the switch
   - proof: tests/orbit.test.ts::with assumed switched off, a sent-back assumption joins no prompt; ::with assumed switched off, op assume is refused in one line naming the switch
 
+## 🔋 pace watch — the 5h ladder, told while everyone is parked
+
+[FRM-500](https://linear.app/x-com/issue/FRM-500): the mod reads the meter it already polls and tells the session only when a ladder line is crossed, 0 tokens between; acting on a line is clio's (`clio:shift` § the 5h ladder).
+- makes: `pace:<session>` the switch, `pace-rung:<session>` the stored rung and its window, `pace-waker:<session>` the waker state found, `pace-claim:<session>` the sender of the moment
+
+- ✅ one line per rung change
+  - given `pace:<id>` in the store and idle, when a poll finds the meter on a rung other than the stored one, then one line starts a turn, within one poll: «≤ 1 h left — burn» › «90 % — park» › «+5 over pace — park» › «70–80 % — no new chunk» › «back to ≤ 0 — resume», the highest that holds
+  - and between the rungs (0 to +5 over) the stored one stands; a resume needs something to resume from
+  - and a busy session takes the line at its next step; the rung moves only once the line entered, so a refused one is sent again by the next poll; a claim younger than 30 s keeps a second poller quiet
+  - and a new window clears the rung; a meter from before the reset sends nothing
+  - decision: the sender is the mod, so the quiet gate never reads it
+  - proof: tests/pace.test.ts::a +5 crossing sends one line until the rung changes; ::between the rungs the stored one stands: +6, +3, +6 sends one line; ::a window on pace from the start sends no resume; ::a busy session takes the line at its next step; ::a line the engine refused moves no rung, and the next poll sends it; ::a second poller holding the claim sends nothing until it ages; ::a refused line leaves keep-hot armed; ::+6, then −1, then +6 in one window reads park, resume, park; ::90 % used with more than 1 h left sends one park; ::≤ 1 h left sends one burn; ::92 % used, 50 min left, +8 over pace sends exactly one line, the burn; ::70 % used sends one «no new chunk»; ::a new window clears the stored rung, so its park is told again; ::a pre-reset meter against the fresh clock clears the rung with no line; ::a pace line starts a turn with the quiet gate on: the mod sends it, never a held message
+- ✅ a quiet meter is normal while everyone is parked
+  - given a meter file older than 10 min, or the first 10 % of a window, then no park rung fires and the stored rung stands, no lower rung sent in its place; its used % stands and the rung moves with the clock, so the resume still does
+  - proof: tests/pace.test.ts::a meter 40 min old still fires the resume once the clock carries pace back; ::a meter 40 min old never fires a park; ::the first 10 % of a fresh window sends no park; ::a stale park stays quiet at 78 % used, no flap through a lower rung; ::a meter written before its window opened clears the rung with no line; ::with no pace key no line ever; ::a pace key deleted before the crossing sends no line
+- ✅ a shift switches it with no click, and ⏰ with it
+  - given `pnpm mods:pace-watch on` (`off` ends it, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back
+  - and start, start, end changes nothing more; a change of dima's during the shift is kept; a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
+  - and the 🎛️ `stash · knobs` row `🔋 pace watch` shows and flips this session's key; the `🔋 pace watch` part off draws no row, sends nothing and puts ⏰ back
+  - proof: tests/pace.test.ts::a shift's end restores the waker its start found; ::a waker found on stays on at the end; ::start, start, end leaves a waker found off, off; ::dima's change during the shift is kept at the end; ::a start with no end expires when its window resets; ::at the reset ⏰ stays on past the waker's own resume; ::an old meter at the start never ends the shift it just began; ::a start with no meter takes its expiry from a later poll; ::a shift ending during afk changes what afk off puts back; ::the part switched off mid-shift restores the waker; ::the 🎛️ row flips this session's key; ::the part off draws no row; tests/switches.test.ts — not asserted: a `/clear` changes the session id and leaves the key behind, as keep-hot's does
+
 ## quiet comms — member pings off clio's thread
 
 quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, [FRM-501](https://linear.app/x-com/issue/FRM-501)): a message to clio waits for her next turn instead of starting one, unless it pushes on purpose; one switch reverts it. this section is the contract: the crew skills only point here.

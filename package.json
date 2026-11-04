@@ -63,6 +63,7 @@
         "macos:setup": "node ./script/macos-setup.ts",
         "mcp:build": "pnpm --filter mcp-x-cloud-chat build",
         "mods:live": "node ./home/.claude/plugin-x/mods/live.ts",
+        "mods:pace-watch": "node ./home/.claude/plugin-x/mods/pace-watch.ts",
         "mods:probe": "node ./home/.claude/plugin-x/mods/probe.ts",
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
         "mods:quiet-canary": "node ./home/.claude/plugin-x/mods/quiet-canary.ts",

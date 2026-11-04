@@ -50,6 +50,14 @@ import {
     wrongText,
 } from './orbit.ts';
 import {
+    type PaceRung,
+    isPaceLineDue,
+    isSameWindow,
+    paceLine,
+    paceOf,
+    paceRung,
+} from './pace.ts';
+import {
     type BackgroundTask,
     LEDGER_SENDS,
     TRANSCRIPT_TAIL,
@@ -211,6 +219,7 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.wait', label: '🔭 wait line' },
     { group: 'stash · band', key: 'stash.hot', label: '🔥 keep-hot' },
     { group: 'stash · band', key: 'stash.waker', label: '⏰ waker' },
+    { group: 'stash · band', key: 'stash.pace-watch', label: '🔋 pace watch' },
     { group: 'stash · band', key: 'stash.afk', label: '💨 afk' },
     { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
@@ -3043,6 +3052,193 @@ async function armWake($: EngineInterface) {
     });
 }
 
+// the pace watch (FRM-500): `pace:<id>` switches it on for that session, its own stash reads the meter on the idle poll
+// and tells the session only when the 5h window changes its rung, no model between
+const PACE = 'pace:';
+const PACE_RUNG = 'pace-rung:';
+const PACE_CLAIM = 'pace-claim:';
+const PACE_WAKER = 'pace-waker:';
+const PACE_CLAIM_MS = 30_000;
+const PACE_ME = `${Math.random()}`;
+// past a reset the waker's own resume fires first, so a shift's expiry never turns ⏰ off under it
+const PACE_EXPIRY_MS = WAKE_SLACK_MS + POLL_MS;
+// a line on its way: a submit may resolve only at its turn's end, and its rung moves after that
+let isPaceSending = false;
+
+// the usage file every session shares, undefined until a turn wrote one
+async function usageFile($: EngineInterface) {
+    const raw = await $.fs
+        .read(`${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`)
+        .catch(() => undefined);
+    return raw
+        ? (JSON.parse(raw) as {
+              rate_limits?: {
+                  five_hour?: {
+                      used_percentage?: unknown;
+                      resets_at?: unknown;
+                  } | null;
+              };
+              written_at?: unknown;
+          })
+        : undefined;
+}
+
+async function paceMeterOf($: EngineInterface) {
+    const file = await usageFile($);
+    const five = file?.rate_limits?.five_hour;
+    if (
+        typeof five?.used_percentage !== 'number' ||
+        typeof five.resets_at !== 'number' ||
+        typeof file?.written_at !== 'number'
+    )
+        return undefined;
+    return {
+        now: await $.clock.now(),
+        resetsAt: five.resets_at * 1000,
+        used: five.used_percentage,
+        writtenAt: file.written_at * 1000,
+    };
+}
+
+// the line this poll owes, none when the rung stands; the stored rung of another window counts as none
+async function paceDue($: EngineInterface, sid: string) {
+    if (!(await $.store.get(PACE + sid))) return undefined;
+    if (!(await partsShown($))('stash.pace-watch')) return undefined;
+    const meter = await paceMeterOf($);
+    if (!meter) return undefined;
+    const kept = (await $.store.get(PACE_RUNG + sid)) as
+        | { resetsAt: number; rung: PaceRung }
+        | undefined;
+    const rung = paceRung(meter);
+    const isSame = kept && isSameWindow(kept.resetsAt, meter.resetsAt);
+    if (kept && (!rung || !isSame)) await $.store.delete(PACE_RUNG + sid);
+    if (!rung || rung === 'between') return undefined;
+    if (!isPaceLineDue(rung, isSame ? kept.rung : undefined)) return undefined;
+    return {
+        line: paceLine(rung, meter),
+        stored: { resetsAt: meter.resetsAt, rung },
+    };
+}
+
+// one poller's line: a claim younger than PACE_CLAIM_MS is another process's, and a write it lost reads back as theirs
+async function paceClaim($: EngineInterface, sid: string) {
+    const now = await $.clock.now();
+    const was = (await $.store.get(PACE_CLAIM + sid)) as
+        | { at: number; by: string }
+        | undefined;
+    if (was && was.by !== PACE_ME && now - was.at < PACE_CLAIM_MS) return false;
+    await $.store.set(PACE_CLAIM + sid, { at: now, by: PACE_ME });
+    const held = (await $.store.get(PACE_CLAIM + sid)) as
+        | { by: string }
+        | undefined;
+    return held?.by === PACE_ME;
+}
+
+async function isTurnBusy($: EngineInterface) {
+    return (
+        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
+        isBusy
+    );
+}
+
+// idle: the line is the turn; the rung moves only once it entered, so a refused one is sent again by the next poll
+async function paceTick($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid || isPaceSending || (await isTurnBusy($))) return;
+    const due = await paceDue($, sid);
+    if (!due || !(await paceClaim($, sid))) return;
+    isPaceSending = true;
+    const r = await selfSubmit($, due.line).catch(() => undefined);
+    if (r && !r.drop) await $.store.set(PACE_RUNG + sid, due.stored);
+    else {
+        isBusy = false;
+        await keepTurn($);
+        await armHot($);
+    }
+    await $.store.delete(PACE_CLAIM + sid);
+    isPaceSending = false;
+}
+
+// busy: the line joins the running step
+async function paceStep($: EngineInterface) {
+    const sid = await currentId($);
+    const due = sid && !isPaceSending ? await paceDue($, sid) : undefined;
+    if (!sid || !due || !(await paceClaim($, sid))) return undefined;
+    await $.store.set(PACE_RUNG + sid, due.stored);
+    await $.store.delete(PACE_CLAIM + sid);
+    return due.line;
+}
+
+// the ⏰ waker follows the key: on at the start with what it found kept, put back at the end or when the start's window
+// reset; a state dima changed since is his
+async function paceWaker($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const isWatched =
+        Boolean(await $.store.get(PACE + sid)) &&
+        (await partsShown($))('stash.pace-watch');
+    const note = (await $.store.get(PACE_WAKER + sid)) as
+        | { until?: number; wasOn: boolean }
+        | undefined;
+    const waker = (await $.store.get(WAKER_KEY)) as
+        | { on?: boolean }
+        | undefined;
+    const now = await $.clock.now();
+    if (isWatched) {
+        // the window a start expires with: only one still ahead, so an old file never ends a shift it just began
+        const ahead = (await paceMeterOf($).catch(() => undefined))?.resetsAt;
+        const until = note?.until ?? (ahead && ahead > now ? ahead : undefined);
+        if (!note) {
+            const wasOn = waker?.on === true;
+            await $.store.set(PACE_WAKER + sid, {
+                wasOn,
+                ...(until ? { until } : {}),
+            });
+            if (!wasOn) await $.store.set(WAKER_KEY, { on: true });
+            return;
+        }
+        if (until === undefined) return;
+        if (note.until === undefined)
+            await $.store.set(PACE_WAKER + sid, { ...note, until });
+        if (now <= until + PACE_EXPIRY_MS) return;
+        await $.store.delete(PACE + sid);
+    }
+    if (!note) return;
+    if (!note.wasOn) {
+        // a held afk puts this back at its end, so its copy is the one to change
+        const away = (await $.store.get(AFK_KEY)) as
+            | { on?: boolean }
+            | undefined;
+        if (away?.on)
+            await $.store.set(AFK_KEY, { ...away, wakerBefore: false });
+        else await $.store.set(WAKER_KEY, { on: false });
+    }
+    await $.store.delete(PACE_WAKER + sid);
+}
+
+// every 4 s in every session, so one with no watch stops at two reads
+async function pacePoll($: EngineInterface) {
+    const sid = await currentId($);
+    if (
+        !sid ||
+        !(
+            (await $.store.get(PACE + sid)) ||
+            (await $.store.get(PACE_WAKER + sid))
+        )
+    )
+        return;
+    await paceWaker($);
+    await paceTick($);
+}
+
+async function pressPace($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    if (await $.store.get(PACE + sid)) await $.store.delete(PACE + sid);
+    else await $.store.set(PACE + sid, { since: await $.clock.now() });
+    $.ui.invalidate('ui.render');
+}
+
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds, and
 // `null` for a window the response did not report; this mod is its one writer
 async function saveUsage(
@@ -3076,21 +3272,7 @@ async function saveUsage(
 // latest reading, and the minute moves the time left; written only when one of the two changed
 async function freshMeter($: EngineInterface) {
     const was = (await $.state.get(METER)).value ?? {};
-    const raw = await $.fs
-        .read(`${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`)
-        .catch(() => undefined);
-    const window = raw
-        ? (
-              JSON.parse(raw) as {
-                  rate_limits?: {
-                      five_hour?: {
-                          used_percentage?: unknown;
-                          resets_at?: unknown;
-                      } | null;
-                  };
-              }
-          ).rate_limits?.five_hour
-        : undefined;
+    const window = (await usageFile($))?.rate_limits?.five_hour;
     const fiveHour =
         typeof window?.used_percentage === 'number'
             ? {
@@ -3696,12 +3878,6 @@ export const ctxBar = (percent: number) => {
 };
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
 const METER_TINTS = { calm5h: PALETTE.ok, calmCtx: PALETTE.calm } as const;
-// the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
-const FIVE_HOUR_MS = 5 * 60 * 60_000;
-export const paceOf = (resetsAt: number, now: number) =>
-    Math.round(
-        Math.min(100, Math.max(0, (1 - (resetsAt - now) / FIVE_HOUR_MS) * 100)),
-    );
 // used − pace: spare at 0 or under, a debt up to 10 is amber, past it red
 export const gapTint = (gap: number) =>
     gap <= 0 ? METER_TINTS.calm5h : gap <= 10 ? RAMP[1] : RAMP[2];
@@ -4416,6 +4592,7 @@ export const register: Register = (on) => {
                     await wakeForMarks($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
+                    await pacePoll($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
                     await followCodies($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
@@ -4948,6 +5125,14 @@ export const register: Register = (on) => {
                         // mobile draws no Input
                         const Input = 'Input' in ui ? ui.Input : undefined;
                         // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
+                        const isPaceWatched = Boolean(
+                            await $.store.get(
+                                PACE + ((await currentId($)) ?? ''),
+                            ),
+                        );
+                        const isPaceShown = (await partsShown($))(
+                            'stash.pace-watch',
+                        );
                         const knobs = {
                             always: await readSwitch($, 'always'),
                             breathe: await readSwitch($, 'breathe'),
@@ -5048,6 +5233,24 @@ export const register: Register = (on) => {
                                 paddingY={air ? 0.5 : 0}
                                 rowGap={air ? 0.3 : 0}>
                                 <Text bold>stash · knobs</Text>
+                                {isPaceShown ? (
+                                    <Box
+                                        flexDirection='row'
+                                        key='knob:pace-watch'>
+                                        <Button
+                                            key='knob:pace-watch'
+                                            onPress={() => void pressPace($)}
+                                            {...(isPaceWatched
+                                                ? {
+                                                      variant:
+                                                          'primary' as const,
+                                                  }
+                                                : { dimColor: true })}>
+                                            🔋 pace watch: tell this session
+                                            each 5h ladder line
+                                        </Button>
+                                    </Box>
+                                ) : null}
                                 {switchJSX(
                                     'colour',
                                     '🎨 board colour',
@@ -7086,6 +7289,11 @@ export const register: Register = (on) => {
                     ? `phases not set for ${PLAN_QUIET_TURNS + 1} turns — update them with ${ORBIT_TOOL} plan`
                     : `no phases yet — set them with ${ORBIT_TOOL} plan`,
             );
+        }
+        // last: the rung moves here, and everything above may still throw
+        if (!isPing) {
+            const pace = await paceStep($).catch(() => undefined);
+            if (pace) notes.push(pace);
         }
         if (!notes.length) return answer;
         return { ...answer, context: [...(r.context ?? []), ...notes] };
