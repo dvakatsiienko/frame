@@ -1,5 +1,6 @@
 // the quiet gate's words, one source for the hold, the sender's line and the 11-03 replay: pure, no `$`
-const EMOJI_RUN = String.raw`^[\s\p{Extended_Pictographic}️‍]*`;
+// flags are regional indicators and a keycap is a digit with its mark: neither is Extended_Pictographic
+const EMOJI_RUN = String.raw`^(?:[\s\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3)*`;
 const PUSH_TAG = new RegExp(
     String.raw`${EMOJI_RUN}\[(ask|done|escalate|🪜 ?escalate)\]`,
     'u',
@@ -48,15 +49,21 @@ export const isQuietRefusal = (message: unknown) =>
 const APP_BLOCK =
     /<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[^<]*<\/side-sessions-event>/g;
 const NOTE =
-    /^The session "([^"]*)" you started \(local_[^)]*\) finished a turn\. It reported[^:]*: "([\s\S]*)"(?: \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
+    /^The session "([^"]*)" you started \((local_[^)]*)\) finished a turn\. It reported[^:]*: "([\s\S]*)"( \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
 
-// the desktop's «finished a turn» prompt, its notes as sender and report; undefined for a prompt holding anything else
+// the desktop's «finished a turn» prompt, its notes as sender, report and the held text: the report, whether it is cut
+// and the session holding the rest; undefined for a prompt holding anything else
 // (its origin is `sdk`, the same as dima's typing, so only the whole text's shape tells them apart)
 export function quietNotes(text: string) {
-    const notes: { from: string; body: string }[] = [];
+    const notes: { from: string; body: string; held: string }[] = [];
     for (const [block, reminder] of text.matchAll(APP_BLOCK)) {
         const note = reminder?.match(NOTE);
-        if (note) notes.push({ body: note[2] ?? '', from: note[1] ?? '' });
+        if (note)
+            notes.push({
+                body: note[3] ?? '',
+                from: note[1] ?? '',
+                held: `${note[3]}${note[4] ?? ''} (session ${note[2]})`,
+            });
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             return undefined;
         text = text.replace(block, '');

@@ -1069,6 +1069,25 @@ export function peerPing(text: string) {
     return { body, from, tag, ...(canary ? { canary } : {}) };
 }
 
+// the held list is read, changed and written back across awaits: every change waits its turn, or a message landing
+// between the two is lost
+let quietTail: Promise<unknown> = Promise.resolve();
+function quietLocked<T>(job: () => Promise<T>) {
+    const run = quietTail.then(job);
+    quietTail = run.catch(() => undefined);
+    return run;
+}
+
+// what the next prompt carries, the list emptied
+async function quietTake($: EngineInterface) {
+    const quiet = await quietOf($);
+    if (quiet.held.length) {
+        await saveQuiet($, { ...quiet, held: [] });
+        await quietFlushed($, quiet.held).catch(() => undefined);
+    }
+    return quiet;
+}
+
 async function quietOf($: EngineInterface): Promise<StashQuiet> {
     return (
         (await $.state.get(QUIET).catch(() => undefined))?.value ?? { held: [] }
@@ -1327,13 +1346,11 @@ async function quietHoldNotes($: EngineInterface, prompt: string) {
     if ((await $.state.get(MOBILE)).value === true) return undefined;
     const now = await $.clock.now();
     const whys = [];
-    for (const n of notes)
-        whys.push(
-            quietPush(n.body) ??
-                ((await quietAnswered($, n.from, quietTag(n.body)))
-                    ? 'answer'
-                    : undefined),
-        );
+    for (const n of notes) {
+        // first, a push spends the slot too
+        const isAnswer = await quietAnswered($, n.from, quietTag(n.body));
+        whys.push(quietPush(n.body) ?? (isAnswer ? 'answer' : undefined));
+    }
     const line = { arm: 'on', at: now, tag: QUIET_NOTICE } as const;
     if (whys.some(Boolean)) {
         for (const n of notes)
@@ -1354,7 +1371,7 @@ async function quietHoldNotes($: EngineInterface, prompt: string) {
                 at: now,
                 from: n.from,
                 tag: QUIET_NOTICE,
-                text: n.body,
+                text: n.held,
             })),
         ],
     });
@@ -1415,11 +1432,15 @@ async function quietSendEnd(
     const answer = result as Record<string, unknown> | undefined;
     if (send.isOwner) {
         if (send.isAsking && answer?.success !== false)
-            await quietAsked($, send.to);
+            await quietLocked(() => quietAsked($, send.to));
         return {};
     }
+    const isHeld =
+        isQuietRefusal(answer?.message) && (await isHeldSince($, send.at));
+    // a send that went nowhere joins no turn, so the line would lie
+    if (answer?.success === false && !isHeld) return {};
     const line = send.isPush ? QUIET_PUSHED : QUIET_SLIPSTREAMED;
-    return isQuietRefusal(answer?.message) && (await isHeldSince($, send.at))
+    return isHeld
         ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
         : { line };
 }
@@ -1492,28 +1513,42 @@ async function isHeldSince($: EngineInterface, since: number) {
     return false;
 }
 
+// past the wait, the list is taken under the lock and written outside it: an append never holds up a message, and a
+// refused one puts its lines back
+async function quietDue($: EngineInterface) {
+    const q = await quietOf($);
+    if (!q.held.length) return [];
+    if ((await $.state.get(TURN).catch(() => undefined))?.value?.isBusy)
+        return [];
+    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
+    if ((await $.clock.now()) - Math.min(...q.held.map((p) => p.at)) < waitMs)
+        return [];
+    await saveQuiet($, { ...q, held: [] });
+    return q.held;
+}
+
+async function quietPutBack($: EngineInterface, held: QuietPing[]) {
+    const q = await quietOf($);
+    await saveQuiet($, { ...q, held: [...held, ...q.held] });
+}
+
 // held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
-    const q = await quietOf($);
-    if (!q.held.length) return;
-    if ((await $.state.get(TURN).catch(() => undefined))?.value?.isBusy) return;
-    const now = await $.clock.now();
-    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
-    if (now - Math.min(...q.held.map((p) => p.at)) < waitMs) return;
+    const due = await quietLocked(() => quietDue($));
+    if (!due.length) return;
     const appended = await $.session
         .append({
             message: {
-                content: [{ text: quietNote(q.held), type: 'text' }],
+                content: [{ text: quietNote(due), type: 'text' }],
                 type: 'user',
             },
         })
         .catch(() => undefined);
-    if (!appended || 'deny' in appended) return;
-    const landed = (await quietOf($)).held.filter(
-        (p) => !q.held.some((f) => f.at === p.at && f.from === p.from),
-    );
-    await saveQuiet($, { ...q, held: landed });
-    await quietFlushed($, q.held);
+    if (!appended || 'deny' in appended) {
+        await quietLocked(() => quietPutBack($, due));
+        return;
+    }
+    await quietLocked(() => quietFlushed($, due));
 }
 
 // speak's own answer to `status`: reading and not paused draws ⏸️ on every play button, else ▶️ (dima, 15:51)
@@ -4631,7 +4666,9 @@ export const register: Register = (on) => {
         await flushFields($);
         const heldNotes =
             e.origin?.kind === 'sdk'
-                ? await quietHoldNotes($, e.text).catch(() => undefined)
+                ? await quietLocked(() => quietHoldNotes($, e.text)).catch(
+                      () => undefined,
+                  )
                 : undefined;
         if (heldNotes) return { drop: heldNotes };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
@@ -4703,11 +4740,7 @@ export const register: Register = (on) => {
         if (planMark)
             await saveOrbit($, { ...orbit, plan: planTaken(planMark) });
         // held member pings ride the next prompt of any origin, once (quiet comms)
-        const quiet = await quietOf($);
-        if (quiet.held.length) {
-            await saveQuiet($, { ...quiet, held: [] });
-            await quietFlushed($, quiet.held).catch(() => undefined);
-        }
+        const quiet = await quietLocked(() => quietTake($));
         const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
         // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
         const costHint =
@@ -4979,71 +5012,78 @@ export const register: Register = (on) => {
         let arm: QuietLogLine['arm'] = 'on';
         // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
         try {
-            const now = await $.clock.now();
-            const isOn = await readSwitch($, 'quiet');
-            arm = isOn ? 'on' : 'off';
-            const isMobile = (await $.state.get(MOBILE)).value === true;
-            const isBusyNow =
-                (await $.state.get(TURN).catch(() => undefined))?.value
-                    ?.isBusy ?? isBusy;
-            const sid = memberOf(await registry($), from)?.base.sid;
-            const isAnswer = await quietAnswered($, from, tag);
-            const why = quietPush(body) ?? (isAnswer ? 'answer' : undefined);
-            const line = {
-                arm,
-                at: now,
-                from,
-                tag,
-                ...(sid ? { sid } : {}),
-                ...marks,
-            } as const;
-            if (isOn && !isMobile && !why) {
-                // read at the save: an await above lets another delivery land
-                const q = await quietOf($);
-                // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
-                const isSaved = await saveQuiet($, {
-                    ...q,
-                    held: [
-                        ...q.held,
-                        {
-                            at: now,
-                            from,
-                            tag,
-                            text: quietHeldText(body),
-                            ...marks,
-                        },
-                    ],
-                });
-                if (!isSaved) throw new Error('the held list did not save');
-                const isLogged = await quietLog($, {
-                    ...line,
-                    startedTurn: false,
-                    verdict: 'held',
-                });
-                if (!isLogged) {
-                    await saveQuiet($, q);
-                    throw new Error('the held line did not log');
+            const verdict = await quietLocked(async () => {
+                const now = await $.clock.now();
+                const isOn = await readSwitch($, 'quiet');
+                arm = isOn ? 'on' : 'off';
+                const isMobile = (await $.state.get(MOBILE)).value === true;
+                const isBusyNow =
+                    (await $.state.get(TURN).catch(() => undefined))?.value
+                        ?.isBusy ?? isBusy;
+                const sid = memberOf(await registry($), from)?.base.sid;
+                const isAnswer = await quietAnswered($, from, tag);
+                const why =
+                    quietPush(body) ?? (isAnswer ? 'answer' : undefined);
+                const line = {
+                    arm,
+                    at: now,
+                    from,
+                    tag,
+                    ...(sid ? { sid } : {}),
+                    ...marks,
+                } as const;
+                if (isOn && !isMobile && !why) {
+                    const q = await quietOf($);
+                    // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
+                    const isSaved = await saveQuiet($, {
+                        ...q,
+                        held: [
+                            ...q.held,
+                            {
+                                at: now,
+                                from,
+                                tag,
+                                text: quietHeldText(body),
+                                ...marks,
+                            },
+                        ],
+                    });
+                    if (!isSaved) throw new Error('the held list did not save');
+                    const isLogged = await quietLog($, {
+                        ...line,
+                        startedTurn: false,
+                        verdict: 'held',
+                    });
+                    if (!isLogged) {
+                        await saveQuiet($, q);
+                        throw new Error('the held line did not log');
+                    }
+                    return {
+                        consumed: `quiet comms held ${from}'s message`,
+                    };
                 }
-                return {
-                    consumed: `quiet comms held ${from}'s message`,
-                };
-            }
-            await quietLog($, {
-                ...line,
-                startedTurn: !isBusyNow,
-                verdict: 'passed',
-                ...(why ? { why } : {}),
+                await quietLog($, {
+                    ...line,
+                    startedTurn: !isBusyNow,
+                    verdict: 'passed',
+                    ...(why ? { why } : {}),
+                });
+                return undefined;
             });
+            if (verdict) return verdict;
         } catch (err) {
-            await quietLog($, {
-                arm,
-                at: await $.clock.now().catch(() => Date.now()),
-                from,
-                startedTurn: false,
-                tag,
-                verdict: 'failed-open',
-                ...marks,
-            });
+            const at = await $.clock.now().catch(() => Date.now());
+            await quietLocked(() =>
+                quietLog($, {
+                    arm,
+                    at,
+                    from,
+                    startedTurn: false,
+                    tag,
+                    verdict: 'failed-open',
+                    ...marks,
+                }),
+            );
             $.ui.log(
                 `x-mod-stash: quiet comms failed open on ${from}'s ping: ${errorText(err)}`,
             );

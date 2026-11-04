@@ -37,7 +37,7 @@
 
 ## watching the work
 
-- message the member whenever; it pings on the events `x:crew-dna` names. `git diff` in its cwd beats any message. doneness is a written marker (the final commit and the report), never transcript archaeology. subscribe, never poll. budget three round trips; more means the brief was wrong.
+- message the member whenever; it pings on the events `rules/fleet-flow.md` lists. `git diff` in its cwd beats any message. doneness is a written marker (the final commit and the report), never transcript archaeology. subscribe, never poll. budget three round trips; more means the brief was wrong.
 - **every «please test» carries the exact port link, and a screenshot's url is read before its report is relayed**.
 - **a steer to a running member is a message**; the brief file is frozen at summon, an edit to it reaches nobody. to a lane codie, every steer, ask or wisp also lands under its lane plan's `## not greenlit` the same turn, and the message names that line; a one-chunk lane has no lane plan, so the steer lands in the spec's section instead.
 - **a relay to a member names the source it was read from**; a claim about a repo's behaviour opens that repo's `AGENTS.md` first.
