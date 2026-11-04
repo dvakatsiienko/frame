@@ -4,7 +4,7 @@ title: 'folds 11-03: today''s retros and flawlog, unfold one per batch'
 status: open
 assignee: []
 created_date: '2026-11-02T20:27:00Z'
-updated_date: '2026-11-03T10:05:00Z'
+updated_date: '2026-11-04T15:53:00Z'
 labels:
   - m
 dependencies: []
@@ -64,4 +64,6 @@ W1701 (2026-11-03 11:40, dima): go and tell side channel about your latest findi
 W1702 (2026-11-03 11:41, dima): so, what should we do with this retro? ❓
 W1703 (2026-11-03 11:41, dima): how to utilize it, to get use of it? ❓
 W1704 (2026-11-03 11:41, dima): what are the most useful findings, or are you still waiting for the retro results? ❓
+
+kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
 <!-- SECTION:NOTES:END -->

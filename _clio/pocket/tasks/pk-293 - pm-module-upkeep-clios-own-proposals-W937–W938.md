@@ -4,7 +4,7 @@ title: 'pm module upkeep: clio''s own proposals (W937–W938)'
 status: open
 assignee: []
 created_date: '2026-11-01T15:57:00Z'
-updated_date: '2026-11-04T12:48:00Z'
+updated_date: '2026-11-04T15:53:00Z'
 labels:
   - s
 dependencies: []
@@ -27,4 +27,6 @@ proposed 11-01 18:00: 1. the sign step in one verb (x linear sign) that hashes, 
 flush 11-01: item 2 is the teeth for a second sighting — «nothing left» named no store (10-19, 11-01); the halt's close sweep reads each closed ticket's W-lines against its closing word
 
 kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane this session
+
+kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
 <!-- SECTION:NOTES:END -->

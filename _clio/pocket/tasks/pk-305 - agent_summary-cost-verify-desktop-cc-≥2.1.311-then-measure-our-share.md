@@ -4,7 +4,7 @@ title: 'agent_summary cost: verify desktop cc ≥2.1.311, then measure our share
 status: open
 assignee: []
 created_date: '2026-11-03T08:57:00Z'
-updated_date: '2026-11-04T07:54:00Z'
+updated_date: '2026-11-04T15:53:00Z'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,6 @@ upstream: https://github.com/anthropics/claude-code/issues/105981 (watch: main's
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-11-03 11:00, dima: off-switch idea dropped (fork env var, bun preload); only the desktop update door + the measure stay.
+
+checked 2026-11-04: desktop cc runs 2.1.317 (ps of the running process), past 2.1.311; left: measure our share
 <!-- SECTION:NOTES:END -->
