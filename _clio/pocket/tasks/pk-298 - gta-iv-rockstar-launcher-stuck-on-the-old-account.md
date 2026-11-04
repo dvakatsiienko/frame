@@ -1,10 +1,10 @@
 ---
 id: PK-298
 title: 'gta iv: rockstar launcher stuck on the old account'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-02T12:42:00Z'
-updated_date: '2026-11-03T18:58:00Z'
+updated_date: '2026-11-04T14:41:00Z'
 labels:
   - s
   - side-channel-owned
@@ -174,4 +174,7 @@ side-channel-owned on dima's word (2026-11-03 19:14: «resign rockstar-related t
 state 11-03 19:23 (dima, side channel): GTA IV runs — he signed in to the Rockstar launcher inside the FX Steam vm and played; performance lags a bit («that's for later»). support still locked (cooldown, he thinks), so the old-account unlink waits. «Let's solve PK-298 a little later.»
 
 state 11-03 20:57 (side channel, browser pane): the double-M Gmail shows #38245301 closed 11-02 11:44 EST by Oluwatomisin S., who only pointed back at the linking/unlinking form — the unlink was never filed. tonight's vanishing pending request fits Rockstar's banner: Support and Account Management maintenance 2026-11-03 18:00–21:00 UTC (inference: requests made in the window were not stored). dima's pick: submit the 424-char text after 23:00 local, then watch dashboard → Gmail → dashboard.
+
+ticket: FRM-506
+close: moved to FRM-506, W-lines copied verbatim into its wish block: W1143 W1144 W1145 W1146 W1147 W1148 W1149 W1150 W1151 W1152 W1153 W1154 W1155 W1156 W1157 W1158 W1159 W1160 W1161 W1162 W1163 W1164 W1165 W1166 W1167 W1168 W1169 W1170 W1171 W1172 W1173 W1174 W1175 W1176 W1177 W1178 W1179 W1180 W1181 W1182 W1183 W1184 W1185 W1186 W1315 W1316 W1317 W1318 W1319 W1320 W1321 W1322 W1323 W1324 W1325 W1326 W1327 W1328 W1329 W1330 W1331 W1332 W1333 W1334 W1335 W1336 W1337 W1338 W1339 W1340 W1341 W1345 W1346 W1347 W1348 W1349 W1350 W1351 W1352 W1353 W1354 W1355 W1356 W1357 W1358 W1363 W1364 W1367 W1368 W1369 W1370 W1450 W1451 W1452 W1453 W1455 W1456 W1457 W1458 W1459 W1460
 <!-- SECTION:NOTES:END -->
