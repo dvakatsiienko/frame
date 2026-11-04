@@ -407,6 +407,18 @@ describe('the siesta closes on dima’s word', () => {
         expect(siesta(home).open).toBe(false);
     });
 
+    test('a fix landed before the close is no new batch; the next files are', () => {
+        const home = fixtureHome();
+        writeSiesta(home, { card_printed: true, highs: [], open: true });
+        commit(home, 15, 'clio', '🔧 fix', new Date(Date.now() - 5000));
+        prompt(home, { prompt: 'go on' });
+        expect(stop(home, stopInput(home))).toBeUndefined();
+        commit(home, 15, 'clio', '🔧 next batch', new Date(Date.now() + 5000));
+        expect(siesta(home).due).toBe(false);
+        stop(home, stopInput(home));
+        expect(siesta(home).due).toBe(true);
+    });
+
     test('his prompt before the card leaves it open', () => {
         const home = fixtureHome();
         writeSiesta(home, { card_printed: false, highs: [], open: true });

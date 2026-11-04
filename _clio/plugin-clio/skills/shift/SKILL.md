@@ -23,7 +23,7 @@ one shift, day or night; how it drives follows the band's afk switch (💨, x-mo
 pace = the elapsed share of the 5h window; over = used − pace. read after every step, in every mode, until he says «go» for a burn day; when two rungs hold, the higher wins: 97 % › ≤ 55 min › 90 % › +5 › resume; the first 10 % of a fresh window parks nobody:
 - **+5 over pace** (the band's -5 %) → everyone parks at a pit stop, 🔥 on for all, resumes at −2 (the band's +2 %); +10 is never meant to be reached
 - **90 % used** → everyone parks, 🔥 on for all
-- **97 % used** → everyone pauses, never an abort, each continues from its spot at the new window; the rest is for small asks
+- **97 % used** → everyone pauses now, never an abort, each continues from its spot at the new window; the rest is for small asks
 - **a new window**, the mod's line after a stop or a park → i resume everyone; a park he called by hand stays
 - **≤ 55 min left** → in a shift, every lane starts its next useful chunk and burns to 97 % (no waste burning); with him at the keyboard, ask first
 - **one side lane per 5h window, for now**, unless he asks for more out loud (dima, 2026-11-03: «with two side lanes, everyone will just park and pit-stop and start too frequently»)
@@ -94,6 +94,6 @@ In the plan file, then one chat message:
 - the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
 - then the return sections, one or two plain lines each: how it went (per lane: merged, parked, not run), what waited on dima and how it resolved, second winds (who, when, what survived), failures with their state now, merges and what held one, retros per member, the flow (good and off, a fix per off), ticket readiness (exit lines rewritten mid-lane, and why), anything else or `none`
 
-Retros in, members stopped, 🔥 off, `pnpm -C ~/frame mods:set pace off`, which puts ⏰ back as it found it, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
+Retros in, members stopped, 🔥 off, `pnpm -C ~/frame mods:set pace end`, which puts ⏰ back as it found it, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
 
 **Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.

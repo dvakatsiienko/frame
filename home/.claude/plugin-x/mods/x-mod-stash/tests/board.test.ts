@@ -1509,17 +1509,12 @@ test("a row's 🔥 chip draws as the band's toggle: filled when on, plain when o
     ]);
 });
 
-test("a row's 🔥 chip names itself on hover in the band's words, either way", async ($, on) => {
+test("a row's 🔥 chip carries no hover card: in a pane it wraps over its neighbours", async ($, on) => {
     fleet(on, {}, { bg: [2] });
     const view = await board($);
-    const words = async () =>
-        (await view.find({ key: `tip:hot:${PEER}`, type: 'Box' }))?.text;
-    const off = await words();
-    await view.press({ key: `hot:${PEER}` });
-    expect([off, await words()]).toEqual([
-        "🔥keep this session's cache hot with a ping",
-        "🔥stop keeping this session's cache hot",
-    ]);
+    expect(
+        await view.find({ key: `tip:hot:${PEER}`, type: 'Box' }),
+    ).toBeUndefined();
 });
 
 test("a --bg member's 🔥 chip writes its key and draws on", async ($, on) => {

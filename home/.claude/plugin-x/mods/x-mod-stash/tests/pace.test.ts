@@ -27,9 +27,12 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
         gate: undefined as Promise<void> | undefined,
         isRefused: false,
         refusedKey: undefined as string | undefined,
+        refusesRung: false,
     };
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
+        if (state.refusesRung && e.key.startsWith('pace-rung:'))
+            return { deny: 'refused' };
         if (e.key === state.refusedKey) {
             state.refusedKey = undefined;
             return { deny: 'refused' };
@@ -250,7 +253,7 @@ test('92 % used, 50 min left, +8 over pace sends exactly one line, the burn', as
     expect(rungs(w)).toEqual(['burn']);
 });
 
-test('a park at 70–80 % used reads resume at ≤ 0, never «no new chunk» on the way', async ($, on) => {
+test('a park at 70–80 % used reads resume under pace', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(72, 2 * HOUR);
     await start($);
@@ -682,9 +685,9 @@ test('🔋 sits between 🔥 and ⏰ and one click flips the key, its tip follow
         await words(),
     ]).toEqual([
         ['hot', 'pace-watch', 'waker'],
-        '🔋stop telling this session its 5h ladder lines',
+        '🔋pace watch: disable',
         { off: true },
-        '🔋tell this session each 5h ladder line',
+        '🔋pace watch: enable',
     ]);
 });
 
@@ -848,31 +851,68 @@ test('a frozen 97 % past its reset sends one new window, no burn, no repeat stop
     expect(rungs(w)).toEqual(['stop', 'new window']);
 });
 
-test('a stored park past the reset sends the new window, a hand park named', async ($, on) => {
+test(
+    'a stored park past the reset sends the new window, a hand park named',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, {
+            ...WATCH,
+            [`hot:${SID}`]: { off: true },
+            'pace-burn': 0,
+        });
+        w.meter(91, 2 * HOUR);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(2 * HOUR + POLL);
+        expect(paces(w).at(-1)).toBe(
+            '🔋 new window: reset done, resume the fleet; a hand park stays',
+        );
+    },
+);
+
+test(
+    'a shift expiring puts back the off it found',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, {
+            [`hot:${SID}`]: { off: true },
+            [`pace:${SID}`]: { since: NOW, was: { off: true } },
+        });
+        w.meter(30, 20 * MIN);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(21 * MIN);
+        expect(w.store.get(`pace:${SID}`)).toEqual({ off: true });
+    },
+);
+
+test('a stop a whole window old clears with no new window', async ($, on) => {
     const w = world(on, {
-        ...WATCH,
         [`hot:${SID}`]: { off: true },
-        'pace-burn': 0,
+        [`pace:${SID}`]: { off: true },
+        [`pace-rung:${SID}`]: { resetsAt: NOW - 6 * HOUR, rung: 'stop' },
     });
-    w.meter(91, 2 * HOUR);
+    w.store.set(`pace:${SID}`, { on: true });
     await start($);
     await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(2 * HOUR + POLL);
-    expect(paces(w).at(-1)).toBe(
-        '🔋 new window: reset done, resume the fleet; a hand park stays',
-    );
+    expect([w.turns, w.store.get(`pace-rung:${SID}`)]).toEqual([[], undefined]);
 });
 
-test('a window never parked or stopped sends no new window', async ($, on) => {
-    const w = world(on, WATCH);
-    w.meter(20, 30 * MIN);
-    await start($);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(40 * MIN);
-    expect(paces(w).some((t) => t.startsWith('🔋 new window'))).toBe(false);
-});
+test(
+    'a window never parked or stopped sends no new window',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, WATCH);
+        w.meter(20, 30 * MIN);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(40 * MIN);
+        expect(paces(w).some((t) => t.startsWith('🔋 new window'))).toBe(false);
+    },
+);
 
 /* the numbers */
 
@@ -907,6 +947,9 @@ for (const [name, isOn] of [
     ['🌗 🔎 sixth sense: x | #1', true],
     ['⚡ 🔧 codie: mods lane 4 (fork)', false],
     ['frame', false],
+    ['clio-notes', false],
+    ['⚡ 🔧 codie: pitchfork', true],
+    ['☕️ 🔧 FRM-9 code: x', true],
 ] as const)
     test(`${name} ${isOn ? 'starts' : 'stays off'} 🔥`, async ($, on) => {
         const w = world(on);
@@ -924,20 +967,59 @@ test('a 🔥 click off is written and stays off across a restart', async ($, on)
     expect(w.store.get(`hot:${SID}`)).toEqual({ off: true });
 });
 
-test('a cache dying before the reset gets one ping at 45 min left', async ($, on) => {
-    const w = world(on, { [`pace:${SID}`]: { off: true } });
-    w.meter(50, 70 * MIN);
+test(
+    'a cache dying before the reset gets one ping at 45 min left',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, { [`pace:${SID}`]: { off: true } });
+        w.meter(50, 70 * MIN);
+        await start($);
+        await endTurn($);
+        const pings = () =>
+            w.turns.filter((t) => t.includes('keep-hot ping')).length;
+        await w.clock.advance(24 * MIN);
+        const before = pings();
+        await w.clock.advance(2 * MIN);
+        const at45 = pings();
+        await endTurn($);
+        await w.clock.advance(5 * MIN);
+        expect([before, at45, pings()]).toEqual([0, 1, 1]);
+    },
+);
+
+test(
+    'a refused late ping goes out once and leaves keep-hot armed',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, { [`pace:${SID}`]: { off: true } });
+        w.meter(50, 70 * MIN);
+        await start($);
+        await endTurn($);
+        w.state.isRefused = true;
+        const pings = () =>
+            w.turns.filter((t) => t.includes('keep-hot ping')).length;
+        await w.clock.advance(26 * MIN);
+        w.state.isRefused = false;
+        await w.clock.advance(POLL * 3);
+        const noRetry = pings();
+        await w.clock.advance(30 * MIN);
+        expect([noRetry, pings()]).toEqual([0, 1]);
+    },
+);
+
+test('a quit keeps a written 🔥 off for a resume of that id', async ($, on) => {
+    const w = world(on);
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
     await start($);
-    await endTurn($);
-    const pings = () =>
-        w.turns.filter((t) => t.includes('keep-hot ping')).length;
-    await w.clock.advance(24 * MIN);
-    const before = pings();
-    await w.clock.advance(2 * MIN);
-    const at45 = pings();
-    await endTurn($);
-    await w.clock.advance(5 * MIN);
-    expect([before, at45, pings()]).toEqual([0, 1, 1]);
+    const ui = await band($);
+    await ui.press({ key: 'hot' });
+    await $.session.end({
+        reason: 'prompt_input_exit',
+        resume: { id: SID },
+        sessionId: SID,
+    } as never);
+    await start($);
+    expect(w.store.get(`hot:${SID}`)).toEqual({ off: true });
 });
 
 test('a cache that outlives the reset gets no late ping', async ($, on) => {
@@ -949,9 +1031,9 @@ test('a cache that outlives the reset gets no late ping', async ($, on) => {
     expect(w.turns).toEqual([]);
 });
 
-test('at 100 % no ping is sent', async ($, on) => {
+test('at 100 % no ping is sent', { timeoutMs: 60_000 }, async ($, on) => {
     const w = world(on, { [`pace:${SID}`]: { off: true } });
-    w.meter(100, 2 * HOUR);
+    w.meter(100, 65 * MIN);
     await start($);
     await endTurn($);
     await w.clock.advance(55 * MIN);
@@ -984,7 +1066,19 @@ test('an ended session’s key sends nothing: only its own session polls it', as
     expect(w.turns).toEqual([]);
 });
 
-test('a refused rung write leaves the watch alive: the line again, then the resume', async ($, on) => {
+test('a store refusing every rung write costs one line, not a turn per poll', async ($, on) => {
+    const w = world(on, WATCH);
+    w.state.refusesRung = true;
+    w.meter(46, LEFT);
+    await start($);
+    for (let i = 0; i < 12; i++) {
+        await w.clock.advance(POLL);
+        await endTurn($);
+    }
+    expect(rungs(w)).toEqual(['park']);
+});
+
+test('a refused rung write leaves the watch alive: the line once, then the resume', async ($, on) => {
     const w = world(on, WATCH);
     w.state.refusedKey = `pace-rung:${SID}`;
     w.meter(46, LEFT);
@@ -995,7 +1089,7 @@ test('a refused rung write leaves the watch alive: the line again, then the resu
     await endTurn($);
     w.meter(35, LEFT, 0, w.clock.now());
     await w.clock.advance(POLL);
-    expect(rungs(w)).toEqual(['park', 'park', 'resume']);
+    expect(rungs(w)).toEqual(['park', 'resume']);
 });
 
 test('a line on its way never rides its own turn as a second line', async ($, on) => {

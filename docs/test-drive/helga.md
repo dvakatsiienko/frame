@@ -301,6 +301,8 @@ retro (14:43 on):
 - 2026-11-04 · prompt-groom · 1 · 0 · 1308 raw to W106-W109, not appended to PK-319
 - 2026-11-04 · prompt-groom · 1 · 0 · 1424 groomed W128-W153
 - 2026-11-04 · prompt-groom · 1 · 0 · 1438 + o45 groomed W154-W159, appended PK-319
+- 2026-11-04 · prompt-groom · 1 · 0 · 1449 + o48 + o49 groomed W175-W178, appended PK-319
+- 2026-11-04 · prompt-groom · 1 · 0 · 1514 groomed W179-W183, appended PK-319
 
 ## rounds
 

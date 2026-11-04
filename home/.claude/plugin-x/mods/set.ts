@@ -1,5 +1,5 @@
 // pnpm mods:set <key> <value> [session id] — writes one x-mod-stash setting into its store, no reload: the next poll reads it.
-// `pace on|off` is the pace watch and ⏰ waker for a shift, clio's registry row by default; a number key is a 🎛️ row
+// `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row
 import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -8,36 +8,38 @@ import { PACE_KEYS, PACE_SETTINGS } from './x-mod-stash/hooks/pace.ts';
 
 const PACE = 'pace:';
 
-// a shift keeps the key it found and its end puts that back, so a clio on by default stays on; off with no shift running is a written off
+// on: a shift keeps the key it found; end: it puts that back, so a clio on by default stays on, and past an expiry it finds nothing to do; off: a written off
 export function withPace(
     store: Record<string, unknown>,
     sessionId: string,
-    isOn: boolean,
+    verb: 'end' | 'off' | 'on',
     now: number,
 ) {
     const { [PACE + sessionId]: was, ...rest } = store;
     const shift = was as { since?: number; was?: unknown } | undefined;
-    if (isOn) {
-        const found = shift?.since === undefined ? was : shift.was;
-        return {
-            ...rest,
-            [PACE + sessionId]: {
-                since: now,
-                ...(found === undefined ? {} : { was: found }),
-            },
-        };
+    const isShift = shift?.since !== undefined;
+    if (verb === 'off') return { ...rest, [PACE + sessionId]: { off: true } };
+    if (verb === 'end') {
+        if (!isShift) return store;
+        return shift.was === undefined
+            ? rest
+            : { ...rest, [PACE + sessionId]: shift.was };
     }
-    if (shift?.since === undefined)
-        return { ...rest, [PACE + sessionId]: { off: true } };
-    return shift.was === undefined
-        ? rest
-        : { ...rest, [PACE + sessionId]: shift.was };
+    const found = isShift ? shift.was : was;
+    return {
+        ...rest,
+        [PACE + sessionId]: {
+            since: now,
+            ...(found === undefined ? {} : { was: found }),
+        },
+    };
 }
 
 export function numberSetting(key: string, value: string) {
+    if (!Object.hasOwn(PACE_SETTINGS, key)) return undefined;
     const setting = PACE_SETTINGS[key as keyof typeof PACE_SETTINGS];
     const n = Number(value);
-    if (!setting || !Number.isFinite(n) || n < setting.min || n > setting.max)
+    if (!Number.isFinite(n) || n < setting.min || n > setting.max)
         return undefined;
     return n;
 }
@@ -83,11 +85,13 @@ function newest(pattern: string, cwd: string) {
 }
 
 function main([key, value, id]: string[]) {
-    const isPace = key === 'pace' && (value === 'on' || value === 'off');
+    const isPace =
+        key === 'pace' &&
+        (value === 'on' || value === 'off' || value === 'end');
     const n = key && value ? numberSetting(key, value) : undefined;
     if (!isPace && n === undefined) {
         console.error(
-            `usage: pnpm mods:set pace on|off [session id] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
+            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
         );
         return 2;
     }
@@ -112,7 +116,12 @@ function main([key, value, id]: string[]) {
         path,
         JSON.stringify(
             isPace
-                ? withPace(store, sessionId ?? '', value === 'on', Date.now())
+                ? withPace(
+                      store,
+                      sessionId ?? '',
+                      value as 'end' | 'off' | 'on',
+                      Date.now(),
+                  )
                 : { ...store, [key as string]: n },
         ),
     );

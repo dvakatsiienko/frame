@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T12:47:00Z'
+updated_date: '2026-11-04T14:10:00Z'
 labels:
   - s
 dependencies: []
@@ -149,7 +149,7 @@ W112 (2026-11-04 14:10, dima): can you trace how? ❓
 W113 (2026-11-04 14:10, dima): from my window, i see that keep hot worked but triggered when 100% was burned already.
 W114 (2026-11-04 14:10, dima): my ideas:
 W115 (2026-11-04 14:10, dima): at <1h of 5h left, when aiming to burn all usage, ping a crow with single message.
-W116 (2026-11-04 14:10, dima): because crow will be parked for too long at the point of reaching 100% (like this time), crow can miss its keep hot even and get cold then, like now.
+W116 (2026-11-04 14:10, dima): because crow will be parked for too long at the point of reaching 100% (like this time), crow can miss its keep-hot event and get cold then, like now.
 W117 (2026-11-04 14:10, dima): another idea: instead of burning to 100%, burn until ~97% and leave a few percentage of space in 5h as a safety net, for cases like this.
 W118 (2026-11-04 14:10, dima): to have option to ping someone, or ask for some small stuff that would be good to have right now, before reset.
 W119 (2026-11-04 14:10, dima): by reaching 100% (full stop) there is no option to do anything at all (everyone stopped).
@@ -178,7 +178,7 @@ W140 (2026-11-04 14:24, dima): how do you think? ❓
 W141 (2026-11-04 14:24, dima): or maybe just on by default for everyone always? ❓
 W142 (2026-11-04 14:24, dima): let's have it on +2%.
 W143 (2026-11-04 14:24, dima): otherwise the usage window is only 5% (between 0% and +5%).
-W144 (2026-11-04 14:24, dima): it will case pot stops/resumes too often.
+W144 (2026-11-04 14:24, dima): it will cause pit stops/resumes too often.
 W145 (2026-11-04 14:24, dima): slightly wider window is needed.
 W146 (2026-11-04 14:24, dima): also, can you edit these settings easily? ❓
 W147 (2026-11-04 14:24, dima): or is a full lane needed to tweak settings? ❓
@@ -190,11 +190,11 @@ W152 (2026-11-04 14:24, dima): print all mods settings you would want to tweak e
 W153 (2026-11-04 14:24, dima): whats here? ❓
 
 W154 (2026-11-04 14:38, dima): no need for abort, just tell everyone to pause right now. abort can cause data loss.
-W155 (2026-11-04 14:38, dima): i do not understand what +5/+2 means? it is a confusion. i meant to have a widnow if -5%(park)/+2%(resume) instead of 0%(resume). ❓
-W156 (2026-11-04 14:38, dima): print refreshed pace-watch rules full. and groom they so they easy to read.
+W155 (2026-11-04 14:38, dima): i do not understand what +5/+2 means? it is a confusion. i meant to have a window of -5%(park)/+2%(resume) instead of 0%(resume). ❓
+W156 (2026-11-04 14:38, dima): print refreshed pace-watch rules full. and groom them so they're easy to read.
 W157 (2026-11-04 14:38, dima): side q: what is attention span? and extrapolation. is this confusion of +2%/-5% an extrapolation? ❓
 W158 (2026-11-04 14:38, dima): is this for main lane or mods lane? what critical scope mods lane currently still needs to do? ❓
-W159 (2026-11-04 14:38, dima, o45 steer): it will result in 6% of space? no. park at -5% and resume at +2%. going too far ahead is not good, instead let to cooldown more.
+W159 (2026-11-04 14:38, dima, o45 steer): it will result in 6% of space? no. park at -5% and resume at +2%. going too far ahead is not good, instead let it cool down more.
 
 the source grooms, renumbered W160-W173 on his o50 tick:
 W160 (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go (leaner memory)? ❓
@@ -211,4 +211,31 @@ W170 (2026-11-04 13:12, dima): i think this line should also tell you to keep ho
 W171 (2026-11-04 13:12, dima): the cache of someone can go cold.
 W172 (2026-11-04 13:12, dima): fired because «5h» 1h left reached? ❓
 W173 (2026-11-04 13:12, dima): the percentage is currently -9%.
+
+W175 (2026-11-04 14:49, dima): 55m min left.
+W176 (2026-11-04 14:49, dima): i see but 3min per % is not precise, because we can burn a point in a 1min or even less if 10 threads burn at once.
+W177 (2026-11-04 15:02, dima, o48 steer): how do you decide? ❓
+W178 (2026-11-04 15:02, dima, o49 steer): let mods lane finish 500 then lets see, keep them parked. i'd like to have critical fixes - 499 and 501.
+
+W179 (2026-11-04 15:14, dima): we are changing a lot, and I worry that everything will slightly drift because currently we are not able to complete the full scope of all these quiet mods, tweaks, and everything else to keep everything synced (e.g., your habits and mods that support them). Pay special attention to keeping everything synced.
+W180 (2026-11-04 15:14, dima): Once new mods arrive, I think it will not be today. It may be once I resume the plan, because tomorrow my plan ends, and I'll buy a new plan either tomorrow or the day after. Mods lane will resume slightly later.
+W181 (2026-11-04 15:14, dima): Make sure that once we resume mods lane and have the necessary mods to support your new habits that we plan, that currently doesn't work because we aren't ready yet. Make sure everything will arrive in your habits when mods arrive too, so nothing is forgotten.
+W182 (2026-11-04 15:14, dima): here, (ater 4), implement crow ticket it was folded yesterday and never implemented, not good then proceed with tails i want everything solved. act one listed point per turn. do everything you can yourself, ask me when you need me.
+W183 (2026-11-04 15:14, dima): that's quite alot, let's do everything before moving on.
+
+W184 (2026-11-04 15:08, dima, o48 steer): what does «words only» mean? let's leave the weekly window out of scope for now. too many changes at once.
+
+W185 (2026-11-04 15:25, dima, o56 steer): the plan ends 5 nov ~5pm, and i resume it either right after tomorrow or on 6 nov.
+W186 (2026-11-04 15:22, dima, o55 steer): no, i keep an eye on the weekly myself.
+
+groom 2026-11-04 16:08 (helga W187–W197, W198–W199 by hand: the tool cut only o61's newest steer):
+W190 (2026-11-04 15:43, dima): what's next? tails one by one? go. ❓
+W191 (2026-11-04 15:51, dima): and refresh phases (hold with mods lane retros, i still steer fixes).
+W192 (2026-11-04 15:51, dima): tell what's next left from tails, chores and other stuff that you can solve.
+W193 (2026-11-04 15:51, dima): do a SW.
+W194 (2026-11-04 15:53, dima): how many chunks mods lane finished today? ❓
+W195 (2026-11-04 15:53, dima): are all of them wired? ❓
+W196 (2026-11-04 16:00, dima): let's do everything you printed, then message from side channel, then let's see where we are.
+W197 (2026-11-04 16:03, dima): no, leave all halt activities for real halt, when i tell.
+homes: W187 W189 W198 W199 → FRM-502; W188 → FRM-501, FRM-499
 <!-- SECTION:NOTES:END -->

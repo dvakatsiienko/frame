@@ -158,12 +158,12 @@ test('every control in the row carries a hover card that names it', async ($, on
     expect(cards).toEqual([
         '0 open asks for you',
         '0 phases',
-        'second wind: refresh this session at a good stop',
-        "keep this session's cache hot with a ping",
-        'wake every session stopped on the 5h cap',
-        'afk: tell fleet that dima is away',
-        'settings: show or hide each part',
-        'unfold fleet board',
+        'second wind: start',
+        'keep hot: enable',
+        'fleet wake: enable',
+        'afk: enable',
+        'settings: open',
+        'board: open',
     ]);
 });
 
@@ -184,9 +184,9 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
     expect(cards.slice(-3)).toEqual([
-        'back: tell fleet that dima is here',
-        'settings: show or hide each part',
-        'unfold fleet board',
+        'afk: disable',
+        'settings: open',
+        'board: open',
     ]);
 });
 

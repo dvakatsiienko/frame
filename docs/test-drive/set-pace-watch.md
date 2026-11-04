@@ -15,7 +15,7 @@ Ticket: FRM-500
 - park at +5 — a normal busy window — the line's numbers against the meter
 - park at 90 % with more than 1 h left — a heavy morning — fired or not, minutes to it
 - resume at −2 — a park with more than 1 h left — fired from a stale meter, minutes after crossing
-- burn at ≤ 1 h left — any window that ends parked — fired, and that it outranks park
+- burn at ≤ 55 min left — any window that ends parked — fired, and that it outranks park
 - stop at 97 %, new window after it — a burn day — stop fired, everyone paused with no lost work, new window fired from a frozen meter
 - the ⏰ turn-on — a shift's start and end — ⏰ on with no click, restored after
 - a parked fleet overnight — a shift — resumes after the reset with the waker, no park in the first 10 %

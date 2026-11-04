@@ -550,7 +550,12 @@ describe('prompt-groom oN (FRM-451)', () => {
             const transcript = join(root, 't.jsonl');
             writeFileSync(
                 transcript,
-                `${steer('o68', 'other')}\n${steer('o69', 'ship it')}\n`,
+                [
+                    steer('o68', 'first word'),
+                    steer('o69', 'ship it'),
+                    steer('o68', 'second word'),
+                    steer('o68', 'second word'),
+                ].join('\n'),
             );
             const out = spawnSync(
                 process.execPath,
@@ -586,6 +591,10 @@ describe('prompt-groom oN (FRM-451)', () => {
         expect(out.status).toBe(0);
         expect(raw).toBe('ship it\n');
         expect(out.stdout).toContain(`${day}-o69.groomed.md`);
+    });
+
+    test('an id with two steers cuts both, a redelivered one once', () => {
+        expect(groom('o68').raw).toBe('first word\nsecond word\n');
     });
 
     test('an id the transcript lacks refuses', () => {

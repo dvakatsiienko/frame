@@ -235,7 +235,9 @@ function dueReasons(home: string, state: Siesta) {
     const since = siestaLast(home);
     const after = (at: string | number) =>
         new Date(at).getTime() > since.getTime();
-    const files = clioFiles(home, since);
+    // a card's own fixes land before its close, so they join that card; wishkeeper's next range still reads them
+    const closedAt = new Date(state.closed_at ?? 0);
+    const files = clioFiles(home, closedAt > since ? closedAt : since);
     const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
     const rows = readLines(path.join(stateDir(home), 'phases-done.jsonl'))
         .flatMap((l) => parsed<{ at: string | number }>(l) ?? [])
@@ -384,6 +386,7 @@ function isSettled(state: Siesta) {
 }
 
 function close(state: Siesta) {
+    state.closed_at = new Date().toISOString();
     state.open = false;
     state.card_printed = false;
     state.highs = [];
@@ -426,6 +429,7 @@ function readSiesta(home: string): Siesta {
         : {};
     return {
         card_printed: kept.card_printed ?? false,
+        ...(kept.closed_at ? { closed_at: kept.closed_at } : {}),
         due: kept.due ?? false,
         epoch: kept.epoch ?? 0,
         highs: kept.highs ?? [],
@@ -515,6 +519,7 @@ type High = { state: 'fixed' | 'open' | 'parked'; text: string; why?: string };
 
 type Siesta = {
     card_printed: boolean;
+    closed_at?: string;
     due: boolean;
     epoch: number;
     highs: High[];

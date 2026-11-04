@@ -1,10 +1,10 @@
 ---
 id: PK-307
 title: 'second wind, mechanical: x-mod-stash winds every session at ~55 % ctx'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T12:48:00Z'
-updated_date: '2026-11-03T14:03:00Z'
+updated_date: '2026-11-04T13:44:00Z'
 labels:
   - s
 dependencies: []
@@ -66,4 +66,9 @@ W1905 (2026-11-03 15:42, dima): For example, in mod settings, I'd like to have t
 W1906 (2026-11-03 15:42, dima): It's fine for the first iteration for it to work on everyone.
 W1907 (2026-11-03 15:42, dima): If I edit settings to, let's say, 61%, it would apply to all threads, including yourself, so it's fine like this.
 W1908 (2026-11-03 15:42, dima): No need to granularize it very much.
+
+ticket: FRM-505
+close: 2026-11-04 — folded into FRM-505, signed on his o60
+
+close: 2026-11-04 — all moved to FRM-505: W1855 W1856 W1857 W1858 W1859 W1860 W1861 W1862 W1884 W1885 W1891 W1892 W1893 W1894 W1898 W1899 W1901 W1902 W1903 W1904 W1905 W1906 W1907 W1908
 <!-- SECTION:NOTES:END -->

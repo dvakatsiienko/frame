@@ -509,6 +509,8 @@ let isPolling = false;
 let afk = false;
 let isWaker = false;
 let isPaced = false;
+// the window this process already sent its last ping in: a refused one never retries every poll
+let lateWindow: number | undefined;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
@@ -2716,7 +2718,10 @@ async function forget($: EngineInterface, sid: string) {
 // a session that exited keeps only its last reply, marked ended, dropped a day later
 async function retire($: EngineInterface, sid: string) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    const heat = await $.store.get(HOT + sid);
     await forget($, sid);
+    // a resume of this id keeps dima's off: a seat's default fills only a key never written
+    if (heat && !hotOf(heat)) await $.store.set(HOT + sid, heat);
     if (reply)
         await $.store.set(REPLY + sid, {
             ...reply,
@@ -2993,7 +2998,10 @@ async function windReady(
 async function windOnCompact($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
-    if (!sid || (was?.state !== 'asked' && was?.state !== 'writing')) return;
+    // a refreshing with no slug is this compact's own: its ingest may queue for a long while, and a reload loses runWind's await
+    const isOurs = was?.state === 'refreshing' && !was.slug;
+    if (!sid || (was?.state !== 'asked' && was?.state !== 'writing' && !isOurs))
+        return;
     await $.store.delete(WIND + sid);
 }
 
@@ -3023,7 +3031,13 @@ async function windBlock($: EngineInterface, e: Record<string, unknown>) {
 async function windAfterTurn($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
-    if (!sid || was?.state !== 'refreshing' || !was.slug) return;
+    if (!sid || was?.state !== 'refreshing') return;
+    if (!was.slug) {
+        // a compact that never reported back leaves no row behind
+        if ((await $.clock.now()) - was.at > WIND_STALE_MS)
+            await $.store.delete(WIND + sid);
+        return;
+    }
     if (!(await partsShown($))('stash.second-wind')) return;
     if (was.blocked) {
         await $.store.set(WIND + sid, {
@@ -3126,6 +3140,8 @@ const PACE_RUNG = 'pace-rung:';
 const PACE_CLAIM = 'pace-claim:';
 const PACE_WAKER = 'pace-waker:';
 const PACE_CLAIM_MS = 30_000;
+const WIND_STALE_MS = 30 * MINUTE_MS;
+const PACE_LATE_MS = 5 * 60 * MINUTE_MS;
 const PACE_ME = `${Math.random()}`;
 // off is a written value, so the coordinator's default arms only a key never written; `since` marks a shift's start, the one
 // that also moves ⏰
@@ -3135,6 +3151,8 @@ const isPaceOn = (key: unknown) =>
 const PACE_EXPIRY_MS = WAKE_SLACK_MS + POLL_MS;
 // a line on its way: a submit may resolve only at its turn's end, and its rung moves after that
 let isPaceSending = false;
+type PaceKept = { resetsAt: number; rung: PaceRung };
+let paceUnsaved: { stored: PaceKept | undefined } | undefined;
 
 // the usage file every session shares, undefined until a turn wrote one
 async function usageFile($: EngineInterface) {
@@ -3181,22 +3199,30 @@ async function paceNumbers($: EngineInterface) {
 async function paceSent(
     $: EngineInterface,
     sid: string,
-    stored: { resetsAt: number; rung: PaceRung } | undefined,
+    stored: PaceKept | undefined,
 ) {
-    if (stored) await $.store.set(PACE_RUNG + sid, stored);
-    else await $.store.delete(PACE_RUNG + sid);
+    try {
+        if (stored) await $.store.set(PACE_RUNG + sid, stored);
+        else await $.store.delete(PACE_RUNG + sid);
+        paceUnsaved = undefined;
+    } catch {
+        // the line went out: a store that refuses the rung must not buy a turn per poll
+        paceUnsaved = { stored };
+    }
 }
 
 // the line this poll owes, none when the rung stands; the stored rung of another window counts as none
 async function paceDue($: EngineInterface, sid: string) {
     if (!isPaceOn(await $.store.get(PACE + sid))) return undefined;
     if (!(await partsShown($))('stash.pace-watch')) return undefined;
-    let kept = (await $.store.get(PACE_RUNG + sid)) as
-        | { resetsAt: number; rung: PaceRung }
-        | undefined;
+    let kept = paceUnsaved
+        ? paceUnsaved.stored
+        : ((await $.store.get(PACE_RUNG + sid)) as PaceKept | undefined);
     // the clock says a window ended, never a meter write: a frozen file is what a stopped fleet leaves
-    if (kept && (await $.clock.now()) >= kept.resetsAt) {
-        if (isPaceHeld(kept.rung))
+    const clockNow = await $.clock.now();
+    if (kept && clockNow >= kept.resetsAt) {
+        // a watch off for a whole window has no reset to tell of
+        if (isPaceHeld(kept.rung) && clockNow - kept.resetsAt < PACE_LATE_MS)
             return { line: PACE_NEW_WINDOW, stored: undefined };
         await $.store.delete(PACE_RUNG + sid);
         kept = undefined;
@@ -3279,9 +3305,7 @@ async function paceWaker($: EngineInterface) {
         | { off?: boolean; since?: number; was?: unknown }
         | undefined;
     const isWatched =
-        isPaceOn(key) &&
-        key?.since !== undefined &&
-        (await partsShown($))('stash.pace-watch');
+        key?.since !== undefined && (await partsShown($))('stash.pace-watch');
     const note = (await $.store.get(PACE_WAKER + sid)) as
         | { since?: number; until?: number; wasOn: boolean }
         | undefined;
@@ -3696,8 +3720,14 @@ async function hotLate($: EngineInterface) {
     const lateMs = (await readNumber($, 'hot-late')) * MINUTE_MS;
     if (m.resetsAt - m.now > lateMs) return;
     if (endedAt + CACHE_MS >= m.resetsAt) return;
+    if (lateWindow === m.resetsAt) return;
+    lateWindow = m.resetsAt;
     $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
-    await selfSubmit($, PING);
+    const r = await selfSubmit($, PING).catch(() => undefined);
+    if (r && !r.drop) return;
+    isBusy = false;
+    await keepTurn($);
+    await armHot($);
 }
 
 // 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
@@ -4336,10 +4366,8 @@ export const isCoordinator = (name: string) =>
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 // a member with a chair in the fleet; a fork or a plain session has none
 export const isSeated = (name: string) =>
-    !/fork/iu.test(name) &&
-    /^(?:🦉)?c?clio|(?:^|\P{L})c?crow$|(?:^|\P{L})helga$|^(?:⚡|🌗|🌘)/u.test(
-        bare(name),
-    );
+    !/\(fork\)/u.test(name) &&
+    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name));
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -4456,10 +4484,21 @@ function settingsListJSX(
     ));
 }
 
+// a pane's hover note: in the row's flow, between its label and its input; an absolute card wraps over its neighbours there
+function noteOnHover(
+    ui: ReturnType<EngineInterface['ui']['resolve']>,
+    words: string,
+) {
+    const { Box, Text } = ui;
+    return (
+        <Box display='none' flexShrink={0} hover={{ display: 'flex' }}>
+            <Text dimColor>{words}</Text>
+        </Box>
+    );
+}
+
 const hotTip = (isHot: boolean | undefined) =>
-    isHot
-        ? "stop keeping this session's cache hot"
-        : "keep this session's cache hot with a ping";
+    isHot ? 'keep hot: disable' : 'keep hot: enable';
 
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
@@ -5067,7 +5106,7 @@ export const register: Register = (on) => {
         if (isUnread)
             $.ui.toast('⏰ waker: an unrecognised cap — check FRM-488');
         await armWake($);
-        // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
+        // the store is 🔥's truth: crow writes its key after session.start, and a written off turns it off
         const sid = await currentId($);
         if (sid) hot = hotOf(await $.store.get(HOT + sid).catch(() => hot));
         // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
@@ -5317,6 +5356,7 @@ export const register: Register = (on) => {
                                 PACE + ((await currentId($)) ?? ''),
                             ),
                         );
+                        const isHotShown = (await partsShown($))('stash.hot');
                         const isPaceShown = (await partsShown($))(
                             'stash.pace-watch',
                         );
@@ -5372,6 +5412,11 @@ export const register: Register = (on) => {
                                     gap={1}
                                     key={`knob:${key}`}>
                                     {label ? <Text>{label}</Text> : null}
+                                    <Box flexGrow={1} />
+                                    {noteOnHover(
+                                        ui,
+                                        `${unit} (${range.min}–${range.max})`,
+                                    )}
                                     <Box flexShrink={0} width={8}>
                                         <Input
                                             key={
@@ -5410,8 +5455,6 @@ export const register: Register = (on) => {
                                             }
                                         />
                                     </Box>
-                                    <Text
-                                        dimColor>{`${unit} (${range.min}–${range.max})`}</Text>
                                 </Box>
                             ) : null;
                         };
@@ -5439,8 +5482,7 @@ export const register: Register = (on) => {
                                                           'primary' as const,
                                                   }
                                                 : { dimColor: true })}>
-                                            🔋 pace watch: tell this session
-                                            each 5h ladder line
+                                            🔋 pace watch
                                         </Button>
                                     </Box>
                                 ) : null}
@@ -5535,12 +5577,10 @@ export const register: Register = (on) => {
                                 borderColor={cardBorder(e.surface)}
                                 borderStyle='round'
                                 flexDirection='column'
-                                flexGrow={1}
                                 key='settings:bars'
                                 paddingX={1}
                                 paddingY={air ? 0.5 : 0}
-                                rowGap={air ? 0.3 : 0}
-                                width={0}>
+                                rowGap={air ? 0.3 : 0}>
                                 <Text bold>🔥 bars</Text>
                                 {switchJSX(
                                     'breathe',
@@ -5566,12 +5606,10 @@ export const register: Register = (on) => {
                                 borderColor={cardBorder(e.surface)}
                                 borderStyle='round'
                                 flexDirection='column'
-                                flexGrow={1}
                                 key='settings:quiet'
                                 paddingX={1}
                                 paddingY={air ? 0.5 : 0}
-                                rowGap={air ? 0.3 : 0}
-                                width={0}>
+                                rowGap={air ? 0.3 : 0}>
                                 <Text bold>🤫 quiet comms</Text>
                                 {switchJSX(
                                     'quiet',
@@ -5584,16 +5622,20 @@ export const register: Register = (on) => {
                                     knobs.quietWait,
                                     'min',
                                 )}
-                                {isPaceShown
-                                    ? settingNumbers.map(([name, value]) =>
-                                          numberJSX(
-                                              name,
-                                              PACE_SETTINGS[name].label,
-                                              value,
-                                              '',
-                                          ),
-                                      )
-                                    : null}
+                                {settingNumbers
+                                    .filter(([name]) =>
+                                        name.startsWith('hot-')
+                                            ? isHotShown
+                                            : isPaceShown,
+                                    )
+                                    .map(([name, value]) =>
+                                        numberJSX(
+                                            name,
+                                            PACE_SETTINGS[name].label,
+                                            value,
+                                            '',
+                                        ),
+                                    )}
                             </Box>
                         );
                         // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
@@ -5602,17 +5644,18 @@ export const register: Register = (on) => {
                                 borderColor={cardBorder(e.surface)}
                                 borderStyle='round'
                                 flexDirection='column'
-                                flexGrow={1}
                                 key='settings:compact'
                                 paddingX={1}
-                                paddingY={e.surface === 'desktop' ? 0.5 : 0}
-                                width={0}>
+                                paddingY={e.surface === 'desktop' ? 0.5 : 0}>
                                 <Text bold>context</Text>
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
-                                    gap={1}>
+                                    gap={1}
+                                    key='knob-row:compact'>
                                     <Text>📦 auto-compact at</Text>
+                                    <Box flexGrow={1} />
+                                    {noteOnHover(ui, '% of the context window')}
                                     <Box flexShrink={0} width={8}>
                                         <Input
                                             key={
@@ -5663,15 +5706,11 @@ export const register: Register = (on) => {
                                             }
                                         />
                                     </Box>
-                                    <Text dimColor>
-                                        % of the context window
-                                    </Text>
                                 </Box>
                             </Box>
                         ) : null;
                         return (
-                            // two columns of cards, the switches left and the knobs right (dima, 17:42); the bars and the context sit at the
-                            // pane's bottom, side by side, a gap growing above them as the phases do on the board (dima, 18:06)
+                            // two columns of cards: the switches left, the knobs and the number tiles right
                             <Box
                                 flexDirection='column'
                                 gap={1}
@@ -5704,16 +5743,10 @@ export const register: Register = (on) => {
                                         gap={1}
                                         width={0}>
                                         {knobsJSX}
+                                        {barsJSX}
+                                        {quietJSX}
+                                        {compactJSX}
                                     </Box>
-                                </Box>
-                                <Box flexGrow={1} key='settings:gap' />
-                                <Box
-                                    flexDirection='row'
-                                    gap={1}
-                                    key='settings:bottom'>
-                                    {barsJSX}
-                                    {quietJSX}
-                                    {compactJSX}
                                 </Box>
                             </Box>
                         );
@@ -7043,27 +7076,21 @@ export const register: Register = (on) => {
                                             the store, plain while not — a faint dim read the same both ways (FRM-499, dima's 20:41 shots) */}
                                         {isPartOn('stash.hot') ? (
                                             <Box flexShrink={0}>
-                                                {hoverTip(
-                                                    ui,
-                                                    `hot:${m.sid}`,
-                                                    hotTip(m.isHot),
-                                                    <Button
-                                                        key={`hot:${m.sid}`}
-                                                        onPress={() =>
-                                                            pressHot($, m.sid)
-                                                        }
-                                                        {...(m.isHot
-                                                            ? {
-                                                                  variant:
-                                                                      'secondary' as const,
-                                                              }
-                                                            : {
-                                                                  plain: true as const,
-                                                              })}>
-                                                        🔥
-                                                    </Button>,
-                                                    { right: 3 },
-                                                )}
+                                                <Button
+                                                    key={`hot:${m.sid}`}
+                                                    onPress={() =>
+                                                        pressHot($, m.sid)
+                                                    }
+                                                    {...(m.isHot
+                                                        ? {
+                                                              variant:
+                                                                  'secondary' as const,
+                                                          }
+                                                        : {
+                                                              plain: true as const,
+                                                          })}>
+                                                    🔥
+                                                </Button>
                                             </Box>
                                         ) : null}
                                         {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
@@ -7808,7 +7835,7 @@ export const register: Register = (on) => {
                                       'wind',
                                       view.wind
                                           ? `second wind: ${WIND_SAY[view.wind]}`
-                                          : 'second wind: refresh this session at a good stop',
+                                          : 'second wind: start',
                                       <Button
                                           key='wind'
                                           onPress={() =>
@@ -7853,8 +7880,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'pace-watch',
                                       isPaceWatched
-                                          ? 'stop telling this session its 5h ladder lines'
-                                          : 'tell this session each 5h ladder line',
+                                          ? 'pace watch: disable'
+                                          : 'pace watch: enable',
                                       <Button
                                           key='pace-watch'
                                           onPress={() => void pressPace($)}
@@ -7873,8 +7900,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'waker',
                                       view.isWaker
-                                          ? 'stop waking capped sessions at the 5h reset'
-                                          : 'wake every session stopped on the 5h cap',
+                                          ? 'fleet wake: disable'
+                                          : 'fleet wake: enable',
                                       <Button
                                           key='waker'
                                           onPress={() => void handleWakerFlip()}
@@ -7892,9 +7919,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'afk',
-                                      view.afk
-                                          ? 'back: tell fleet that dima is here'
-                                          : 'afk: tell fleet that dima is away',
+                                      view.afk ? 'afk: disable' : 'afk: enable',
                                       <Button
                                           key='afk'
                                           onPress={() => void handleAfkFlip()}
@@ -7911,8 +7936,8 @@ export const register: Register = (on) => {
                             {tip(
                                 'settings',
                                 view.isSettingsOpen
-                                    ? 'fold the settings'
-                                    : 'settings: show or hide each part',
+                                    ? 'settings: close'
+                                    : 'settings: open',
                                 <Button
                                     key='settings'
                                     onPress={() => void handleSettingsFlip()}
@@ -7928,8 +7953,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'board',
                                       boardOpen
-                                          ? 'fold fleet board'
-                                          : 'unfold fleet board',
+                                          ? 'board: close'
+                                          : 'board: open',
                                       <Button
                                           key='board'
                                           onPress={() => void handleBoardFlip()}
