@@ -5710,8 +5710,7 @@ export const register: Register = (on) => {
                             </Box>
                         ) : null;
                         return (
-                            // two columns of cards, the switches left and the knobs right (dima, 17:42); the bars and the context sit at the
-                            // pane's bottom, side by side, a gap growing above them as the phases do on the board (dima, 18:06)
+                            // two columns of cards: the switches left, the knobs and the number tiles right
                             <Box
                                 flexDirection='column'
                                 gap={1}
