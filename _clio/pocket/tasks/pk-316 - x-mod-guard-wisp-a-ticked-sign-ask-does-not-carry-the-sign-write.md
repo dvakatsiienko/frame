@@ -1,10 +1,10 @@
 ---
 id: PK-316
 title: 'x-mod-guard wisp: a ticked sign ask does not carry the sign write'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T19:20:00Z'
-updated_date: '2026-11-04T13:29:00Z'
+updated_date: '2026-11-04T13:34:00Z'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,6 @@ ordinal: 31000
 10:47 2026-11-04: a tiny ✏️ write on FRM-478 (closing word above ## signed, one appended ✏️ line, hash recomputed) was refused «ask dima to tick an orbit ask ✍️ sign». its sign block has lines after the run stamp, a shape the reader may take as a new sign (inference). the closing word went as a comment.
 
 15:32 2026-11-04: not reproduced today: 10+ signed-body writes passed, re-signs with an open tick, tiny ✏️ lines, and the 4 parked closing words folded (FRM-478's shape included). the 11-03 refusals' common step was resolving the ask in the same step as the write; today's writes ran before the resolve. the verb is proposed dropped.
+
+close: 2026-11-04 — verb dropped on his tick o58; shape-lane says a sign ask resolves after its write lands; a real refusal reopens it. the four closing words are folded.
 <!-- SECTION:NOTES:END -->
