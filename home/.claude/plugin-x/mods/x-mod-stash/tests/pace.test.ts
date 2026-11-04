@@ -682,9 +682,9 @@ test('🔋 sits between 🔥 and ⏰ and one click flips the key, its tip follow
         await words(),
     ]).toEqual([
         ['hot', 'pace-watch', 'waker'],
-        '🔋stop telling this session its 5h ladder lines',
+        '🔋pace watch: stop',
         { off: true },
-        '🔋tell this session each 5h ladder line',
+        '🔋pace watch: tell thread when 5h usage says park, burn or stop',
     ]);
 });
 

@@ -5452,8 +5452,8 @@ export const register: Register = (on) => {
                                                           'primary' as const,
                                                   }
                                                 : { dimColor: true })}>
-                                            🔋 pace watch: tell this session
-                                            each 5h ladder line
+                                            🔋 pace watch: tell thread when 5h
+                                            usage says park, burn or stop
                                         </Button>
                                     </Box>
                                 ) : null}
@@ -7870,8 +7870,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'pace-watch',
                                       isPaceWatched
-                                          ? 'stop telling this session its 5h ladder lines'
-                                          : 'tell this session each 5h ladder line',
+                                          ? 'pace watch: stop'
+                                          : 'pace watch: tell thread when 5h usage says park, burn or stop',
                                       <Button
                                           key='pace-watch'
                                           onPress={() => void pressPace($)}
