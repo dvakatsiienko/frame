@@ -14,7 +14,7 @@ paths:
 
 - **`script/lib/manifest.ts`** decides the link set, `frame-link.ts` acts on it and refuses to clobber a real file; never run the manifest directly. `pnpm frame:link apply` never prunes a dangling old symlink after a rename.
 - **`macos-setup.ts`** runs `brew bundle` against the root `Brewfile`, the macOS defaults this repo owns, `duti` bindings, vim-plug. Packages live in the `Brewfile`, never in the script.
-- **scripts are `.ts`, run by node 24 directly** — no `tsx`, no build; `erasableSyntaxOnly` bans syntax that needs compiling.
+- **scripts are `.ts`, run by node 26 directly** — no `tsx`, no build; `erasableSyntaxOnly` bans syntax that needs compiling.
 - **`biome.jsonc` stops descending at an excluded directory** — re-including anything under `!**/import` names every ancestor; probe the real config, never a minimal repro, because `extends` supplies patterns a repro lacks.
 - **`pnpm toolchain:sync`** after any `fnm install` or pnpm bump: it writes `.node-version` (major), `packageManager` and `engines` in frame + bytes; renovate is told off those pins.
 - a file directly under `script/` is a runnable entrypoint with a matching `pnpm` script; `script/lib/` is library code.
