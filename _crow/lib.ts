@@ -1181,7 +1181,7 @@ export function packWake({
     };
 }
 
-// the cadence's park line, `clio:shift` § the 5h ladder: +5 over pace, or 90 % with more than an hour left
+// the cadence's park line, `clio:shift` § the 5h ladder: with an hour or less left the fleet burns, so nothing parks
 export function isParked(now: Date, usagePath = USAGE_PATH) {
     try {
         const fiveHour = (
@@ -1189,11 +1189,11 @@ export function isParked(now: Date, usagePath = USAGE_PATH) {
         ).rate_limits?.five_hour;
         if (!fiveHour) return false;
         const msLeft = fiveHour.resets_at * 1000 - now.getTime();
-        if (msLeft <= 0) return false;
+        if (msLeft <= 3_600_000) return false;
         const pace = (1 - msLeft / FIVE_HOURS_MS) * 100;
         return (
             fiveHour.used_percentage - pace > 5 ||
-            (fiveHour.used_percentage >= 90 && msLeft > 3_600_000)
+            fiveHour.used_percentage >= 90
         );
     } catch {
         return false;
