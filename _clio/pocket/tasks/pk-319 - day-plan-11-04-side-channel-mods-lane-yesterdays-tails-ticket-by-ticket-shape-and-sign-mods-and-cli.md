@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T09:19:00Z'
+updated_date: '2026-11-04T10:59:00Z'
 labels:
   - s
 dependencies: []
@@ -128,4 +128,8 @@ W96 (2026-11-04 11:17, dima): i didn't really get why 🔌 (FRM-470).
 W97 (2026-11-04 11:17, dima): it doesn't hold.
 W98 (2026-11-04 11:17, dima): if it doesn't hold, why did you close the ticket? ❓
 W99 (2026-11-04 11:17, dima): how to properly wire it? ❓
+
+W100 (2026-11-04 12:58, dima): pace watch: if it proves working, can the load-balancing habits go, for a leaner memory? ❓
+W101 (2026-11-04 12:58, dima): set-pace-watch: is it only for clio? i'd like a button for it in the nudge, between 🔥 and ⏰. (FRM-500, re-sign at resume)
+W102 (2026-11-04 12:58, dima): never skip wishkeeper. he is a prio. even when we go over the pace.
 <!-- SECTION:NOTES:END -->
