@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-02T15:29:00Z'
-updated_date: '2026-11-04T16:15:00Z'
+updated_date: '2026-11-04T16:27:00Z'
 labels:
   - m
 dependencies: []
@@ -170,4 +170,7 @@ kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane 
 kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
 
 correction 2026-11-04: the kept line above came from a loop and its «before the plan reset» is overturned by his o97; he asked at 18:12 to solve the cut list now.
+
+ticket: FRM-507
+held: 2026-11-04 — FRM-507 dima's two cut ticks, x fleet audit and /quiet-canary; closes with every W-line read uncut when they land
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T16:15:00Z'
+updated_date: '2026-11-04T16:27:00Z'
 labels:
   - s
 dependencies: []
@@ -318,4 +318,33 @@ W263 (2026-11-04 17:56, dima, o93 steer): same, why worktrees get piling up? ❓
 next boot, owned here until the handoff: W259–W262 with W628–W630 worktrees auto-clean on merge, FRM-480 the likely home, 29 worktree-* and verify-* branches and the index-run tree named in that review · W1041, W1042 why unused verbs sit unused · W1483–W1484 FRM-488 reliability · login-expiry ticket with ⚖️ (evergreen borrow, his yes) · sign prep of 6 chunks · crew-pm-flow board redraw · PK-305's measure · PK-312's leftovers. W1702–W1704 answered in the 18:14 reply. the memory sweep item is withdrawn: W1016 answered by today's Wednesday pass, the recipe's next run waits for his word.
 
 re-read 2026-11-04: PK-288's W628–W630 (a merged worktree cleaned up automatically, always, on all surfaces) were marked done on 11-02 and never built; they join W259–W262. PK-291 all done in their turns. PK-301's F1 test (14 gaps placed or dropped) did not run, it is open; the FRM-495, 480, 436, 384 riders sit as comments, not body lines.
+
+W264 (2026-11-04 18:04, dima): pk-312 — i though new wish ids are already implemented — you told we have new wish IDS.
+W265 (2026-11-04 18:06, dima): While wishkeeper is running, print what else tails you can solve. Meanwhile, look on all surfaces.
+W266 (2026-11-04 18:06, dima): Your pockets still have tails piled up, and look in Linear as well, everywhere.
+W267 (2026-11-04 18:06, dima): Let's solve as much as possible today, and everything that is not solved travels to next boot.
+W268 (2026-11-04 18:06, dima): freebies/almost-freebies - solve in place
+W269 (2026-11-04 18:12, dima): what we are waiting for? today we had evergreen. its wednesday. ❓
+W270 (2026-11-04 18:12, dima): let's solve tihs one.
+W271 (2026-11-04 18:12, dima): maybe we can solve this? i vote +. ❓
+W272 (2026-11-04 18:12, dima): what it is about? we recently had a memory sweep. ❓
+W273 (2026-11-04 18:13, dima): also, what is it? ❓
+W274 (2026-11-04 18:13, dima): lets see whats there and solve it if possible.
+W275 (2026-11-04 18:14, dima): what are those? solve now? ❓
+W276 (2026-11-04 18:26, dima): what do you mean by door 11-05? i cant understand it. door = deadline? 05 is tmrow. what do you plan tmrow? ❓
+W277 (2026-11-04 18:26, dima): solve now? ❓
+W278 (2026-11-04 18:26, dima): enhancer — It is useless, but I thought it was already deleted. Verify if it is still present, and if it is, then delete.
+W279 (2026-11-04 18:26, dima): x fleet audit — Why do you propose to delete x fleet audit if it is our main door for seeing the CLI usage stats visually? ❓
+W280 (2026-11-04 18:26, dima): handoff request — I think we can keep it for now.
+W281 (2026-11-04 18:26, dima): mods:writes — What does it do? ❓
+W282 (2026-11-04 18:26, dima): probe session — What does it do? ❓
+W283 (2026-11-04 18:26, dima): store keys — What does it do? ❓
+W284 (2026-11-04 18:26, dima): Also, we already passed through this cut list. You forgot to mark this ticket as done, so we are currently mostly either doing it a second time, or we didn't complete it fully the previous time.
+W285 (2026-11-04 18:26, dima): This time, ensure a ticket is fully solved: a ticket about cuts, marked as done when everything is cut.
+W286 (2026-11-04 18:26, dima): All cuts should join the next mods lane as a chunk, as a rider, and the same for the CLI counterpart.
+W287 (2026-11-04 18:26, dima, o102 steer): what is it? ❓
+W288 (2026-11-04 18:26, dima, o104 steer): keep both
+W289 (2026-11-04 18:26, dima, o105 steer): keep
+W290 (2026-11-04 18:26, dima, o108 steer): i use them always, no cut
+W291 (2026-11-04 18:26, dima, o109 steer): what are hover cards? tooltips? if yes - keep. ❓
 <!-- SECTION:NOTES:END -->
