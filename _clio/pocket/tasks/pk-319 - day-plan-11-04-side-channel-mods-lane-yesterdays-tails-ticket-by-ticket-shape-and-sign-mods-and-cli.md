@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T15:56:00Z'
+updated_date: '2026-11-04T16:15:00Z'
 labels:
   - s
 dependencies: []
@@ -314,4 +314,6 @@ W260 (2026-11-04 17:56, dima, o92 steer): The work trees keep piling up.
 W261 (2026-11-04 17:56, dima, o92 steer): It is not good.
 W262 (2026-11-04 17:56, dima, o92 steer): After we start the next session, let's review this issue and find a way to prevent work trees from trashing out.
 W263 (2026-11-04 17:56, dima, o93 steer): same, why worktrees get piling up? ❓
+
+next boot, owned here until the handoff: W259–W262 with W628–W630 worktrees auto-clean on merge, FRM-480 the likely home, 29 worktree-* and verify-* branches and the index-run tree named in that review · W1041, W1042 why unused verbs sit unused · W1483–W1484 FRM-488 reliability · login-expiry ticket with ⚖️ (evergreen borrow, his yes) · sign prep of 6 chunks · crew-pm-flow board redraw · PK-305's measure · PK-312's leftovers. W1702–W1704 answered in the 18:14 reply. the memory sweep item is withdrawn: W1016 answered by today's Wednesday pass, the recipe's next run waits for his word.
 <!-- SECTION:NOTES:END -->

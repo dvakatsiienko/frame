@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-03T17:10:00Z'
-updated_date: '2026-11-04T16:07:00Z'
+updated_date: '2026-11-04T16:15:00Z'
 labels:
   - m
 dependencies: []
@@ -63,4 +63,6 @@ W33 (2026-11-03 19:16, dima): by burning 5h and weekly window i mean that we not
 close: 2026-11-04 — the park and resume strategy landed as clio:shift § the 5h ladder and FRM-500's pace watch; W3's keep-hot gap for --bg members landed as FRM-499; W26–W33 are context for the burn days, which end with this plan.
 
 close: 2026-11-04. W-lines, read whole: W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W28, W29, W30, W31, W32, W33 done or moved as named.
+
+close, corrected 2026-11-04 (replaces the scripted line; read uncut): W5–W25 landed as clio:shift § the 5h ladder and FRM-500; W1, W3 as FRM-499; W26–W33 are this plan's burn days, W28's 60 % is past.
 <!-- SECTION:NOTES:END -->
