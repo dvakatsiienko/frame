@@ -316,4 +316,6 @@ W262 (2026-11-04 17:56, dima, o92 steer): After we start the next session, let's
 W263 (2026-11-04 17:56, dima, o93 steer): same, why worktrees get piling up? ❓
 
 next boot, owned here until the handoff: W259–W262 with W628–W630 worktrees auto-clean on merge, FRM-480 the likely home, 29 worktree-* and verify-* branches and the index-run tree named in that review · W1041, W1042 why unused verbs sit unused · W1483–W1484 FRM-488 reliability · login-expiry ticket with ⚖️ (evergreen borrow, his yes) · sign prep of 6 chunks · crew-pm-flow board redraw · PK-305's measure · PK-312's leftovers. W1702–W1704 answered in the 18:14 reply. the memory sweep item is withdrawn: W1016 answered by today's Wednesday pass, the recipe's next run waits for his word.
+
+re-read 2026-11-04: PK-288's W628–W630 (a merged worktree cleaned up automatically, always, on all surfaces) were marked done on 11-02 and never built; they join W259–W262. PK-291 all done in their turns. PK-301's F1 test (14 gaps placed or dropped) did not run, it is open; the FRM-495, 480, 436, 384 riders sit as comments, not body lines.
 <!-- SECTION:NOTES:END -->
