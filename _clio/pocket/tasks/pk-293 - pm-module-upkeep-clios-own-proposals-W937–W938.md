@@ -33,4 +33,6 @@ kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first 
 done 2026-11-04: item 2, the close sweep in clio:halt; item 3, 9 closed tickets archived at 7 days (a one-off, no weekly job yet). left: 1 the sign verb, 4 the stale In Progress line, 5 the boot next-chunk print, each new surface, each needs its worth it
 
 ⚖️ worth it, 2026-11-04, each new surface: item 1 x linear sign: removes the by-hand hash and the three calls per sign (today 3 signs, 2 refused writes); cheaper door turned down: FRM-384's body guard covers the write only; upkeep one verb; 🔌 fleet wired: clio:shape-lane § 4, keep, as a rider on FRM-384. item 4 stale In Progress line: close-net.ts already reds it at every siesta, no: drop. item 5 boot next-chunk print: dima picks from the mods order in the initiative queue, no pain counted: drop, unless he asks
+
+correction: «2 refused writes» above was not counted; PK-316 names sign guard refusals with no number
 <!-- SECTION:NOTES:END -->
