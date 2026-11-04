@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T12:47:00Z'
+updated_date: '2026-11-04T13:05:00Z'
 labels:
   - s
 dependencies: []
@@ -211,4 +211,9 @@ W170 (2026-11-04 13:12, dima): i think this line should also tell you to keep ho
 W171 (2026-11-04 13:12, dima): the cache of someone can go cold.
 W172 (2026-11-04 13:12, dima): fired because «5h» 1h left reached? ❓
 W173 (2026-11-04 13:12, dima): the percentage is currently -9%.
+
+W175 (2026-11-04 14:49, dima): 55m min left.
+W176 (2026-11-04 14:49, dima): i see but 3min per % is not precise, because we can burn a point in a 1min or even less if 10 threads burn at once.
+W177 (2026-11-04 15:02, dima, o48 steer): how do you decide? ❓
+W178 (2026-11-04 15:02, dima, o49 steer): let mods lane finish 500 then lets see, keep them parked. i'd like to have critical fixes - 499 and 501.
 <!-- SECTION:NOTES:END -->
