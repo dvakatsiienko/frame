@@ -25,3 +25,4 @@ Ticket: FRM-500
 - 2026-11-04 12:58 · first real on, this session, parked by hand 3 min earlier · one line within seconds: «+5 over pace — park», 83 % used, +6, 1h 10m left; matches the meter · the usual door, my own read at the siesta, saw it at 12:55, so a tie this once
 
 ## verdict
+at adopt: propose cutting the window reads from `habit-ctx-load-balancing` (dima's question, 2026-11-04)
