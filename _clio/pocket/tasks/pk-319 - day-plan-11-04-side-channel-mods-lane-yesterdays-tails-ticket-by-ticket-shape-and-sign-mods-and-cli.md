@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T15:51:00Z'
+updated_date: '2026-11-04T15:56:00Z'
 labels:
   - s
 dependencies: []
@@ -308,4 +308,10 @@ W255 (2026-11-04 17:51, dima): 3. Small ticket fixes: the 8 🐬 wishkeeper left
 W256 (2026-11-04 17:51, dima): 4. Revalidate the 5 pocket items that kept rolling over, then the rest of the tails. ← do this if not done yet, yourself if you can or call me
 W257 (2026-11-04 17:51, dima): 5. Prep the owed asks: the 21 worktrees and 3 stashes cleanup, [BYT-130](https://linear.app/x-com/issue/BYT-130). ← this one too.
 W258 (2026-11-04 17:51, dima): 6. Prep the sign of 6 chunks; the signs themselves are yours. ← i assume this one is bigger, so pause here and let's see where we are ctx wise. i guess this one can travel to handoff.
+
+W259 (2026-11-04 17:56, dima, o92 steer): Yes, and mark this as a flaw.
+W260 (2026-11-04 17:56, dima, o92 steer): The work trees keep piling up.
+W261 (2026-11-04 17:56, dima, o92 steer): It is not good.
+W262 (2026-11-04 17:56, dima, o92 steer): After we start the next session, let's review this issue and find a way to prevent work trees from trashing out.
+W263 (2026-11-04 17:56, dima, o93 steer): same, why worktrees get piling up? ❓
 <!-- SECTION:NOTES:END -->
