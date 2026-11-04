@@ -10,7 +10,7 @@ fits: clio
 Ticket: none
 
 **test card:** we believe a wishkeeper read of a finished chunk against dima's W-lines and clio's promises catches what sixth sense's exit-line grade misses, cheaper before the merge than after · we test it by running `clio:siesta` with a wishkeeper over every lane chunk the moment codie's «final» lands, before sixth sense's verdict turns into a merge; its retros fold in the same siesta · we measure per chunk: wishkeeper findings by severity, highs that were real (checked at the cited spot), the extra lane round each high cost in minutes, and highs found after the merge on chunks that skipped it · we're right if over 2 weeks at least 1 in 3 chunks gets a real high fixed before merge, and the extra round averages ≤ 20 min
-**kill rule:** 5 chunks in a row with no real high, or one extra round over 45 min without a real high behind it
+**kill rule:** 5 chunks in a row with no real high, or one extra round over 45 min without a real high behind it; if it fires, FRM-503's tick on wishkeeper before a merge comes back to dima, it does not lapse
 **the rules:** a real high buys the lane one more fix round; the ci code review stays at one round; retros of the chunk fold at this siesta, never piled to the lane's end (dima, 2026-11-03 13:10)
 
 ## stress list

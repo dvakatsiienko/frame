@@ -16,7 +16,7 @@ the machine part of lane init, clio's alone: dima signed the chunks in `clio:sha
 
 read matt's `to-spec` and follow it:
 - the spec sits in `.scratch/<feature>/spec.md`, one section per chunk, each section opening with its own `wish: <ticket>` line; every lane with a member gets one, a quick lane too
-- a `wisphunter` card with no diff reads the spec's paths, premises and «already exists» claims against live code, each finding folded before the seal (FRM-503); a signed `decided` the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
+- a `wisphunter` card reads the spec's paths, premises, «already exists» claims and each chunk's `decided` against live code, its brief naming the spec file and opening «no diff exists», each finding folded before the seal (FRM-503); a signed `decided` the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
 - every rider rides in the spec, named at dispatch or added as a steer; a rider found only in a commit is a sixth sense finding
 - a decided line that names a door by reference («the door `sign-untick` uses», «the same clears») lists that door's cases or says «only these»
@@ -25,7 +25,7 @@ read matt's `to-spec` and follow it:
 
 read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines per chunk into the spec. the last line is the **want line**, seeded from the ticket's 🎯 done test: it replays dima's want or the incident behind the ticket, and sixth sense grades it apart from the rest. dima reads only the want line, printed and counted per the trial in `docs/test-drive/want-line.md`. a line that carries a decision he never made parks the chunk for a re-sign. a chunk that makes or changes an app carries a line for its FTR lines and glossary words. a new-surface chunk carries a 🔌 fleet wired line: its diff holds the caller edit its `🔌 fleet wired:` line names; a caller that fires rarely (a cap, a hazard) gets a staged trigger or a replay, and a staging that is hard or costly goes to dima as one 🧐 line: only his word makes it an exception.
 
-then the **blind critic**, on every lane (why: `docs/research/exit-lines-delegation.md`): write the want plus the lines to a file and run `pnpm -C ~/frame crow:plan-critique <file>`; each finding is folded or answered in one line before the seal. a re-sign after 🚀 runs it first.
+then the **blind critic**, on every lane: write the want plus the lines to a file and run `pnpm -C ~/frame crow:plan-critique <file>`; each finding is folded or answered in one line before the seal. a re-sign after 🚀 runs it first.
 
 an exit line whose check reads shared state (a live session, `~/.local/state`, the tree) says how it stays steady; one that can flake is rewritten before the seal; one widening a rule or naming one example restates the list or names the code reading it
 

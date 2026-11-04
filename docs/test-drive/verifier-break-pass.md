@@ -13,7 +13,7 @@ Ticket: none
 **test card:** we believe a capped break pass makes sixth sense catch real breaks the exit lines miss · we test it by every PR a sixth sense checks until `until:` (the cli lane first), round 1 only · we measure per PR: probes run, breaks found, false alarms (a break dima or codie shows is not one), refutes it caused, extra minutes · we're right if over all trial PRs at least 1 real break the exit lines missed turns up and false alarms stay at or below real breaks
 **kill rule:** false alarms beat real breaks over 3 PRs in a row, or the pass adds more than 20 min to a round twice
 
-**undo:** delete the «break pass» bullet in `x:crew-sixth-sense` step 1.4 and the `break:` line of its verdict object; both name this file.
+**undo:** delete the «break pass» bullet in `x:crew-sixth-sense` step 1.4 and the `break:` line of its verdict object.
 
 ## stress list
 - the contract written from the ticket before the diff (the neuroarxiv open thread: does it drift toward what was built?) — every PR — contract lines that the diff later contradicted

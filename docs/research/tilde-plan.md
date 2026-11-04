@@ -7,7 +7,7 @@ Ticket: FRM-368
 # FRM-368 — clio first, tilde second: the plan
 
 status: draft v5 for review, 2026-11-04. nothing here is built, filed or signed yet.
-sources: `.scratch/frm-368/want-and-surfaces.md` (dima's words, N1–N56, and the surfaces), `docs/research/tilde-own-evidence.md`, `tilde-prior-art.md`, `tilde-shift-baseline.md`.
+sources: `docs/research/tilde-want-and-surfaces.md` (dima's words, N1–N56, and the surfaces; «cap» there is tilde's old name), `_clio/blueprints/excalidraw/tilde-sketch.jpg` (his sketch), `docs/research/tilde-own-evidence.md`, `tilde-prior-art.md`, `tilde-shift-baseline.md`.
 v1 was read by crow's critic (5 findings, 4 high), wishkeeper (26, 4 high) and wisphunter against the live code (10 bugs). v2 folds them; each fold is in its row.
 
 ## want
