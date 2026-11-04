@@ -79,7 +79,7 @@ codie reads no reviewer; you do.
 - **reproduce or refute** each finding, as you would your own. one you could not reproduce goes
   out as `unconfirmed`, never as fact.
 - codie's local review chain is its own pre-verification, not yours.
-- a second read of a diff goes to `wisphunter`: the range or a diff file, and the axis.
+- a second read of a diff goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`.
 
 ## step 3 — the verdict object
 

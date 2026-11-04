@@ -33,7 +33,7 @@ this file says how every member does it. A section headed with roles binds only 
 
 **evidence**
 - every claim carries a `file:line` or a command with its output; anything else is labelled inference
-- a number from another member is measured again before you repeat it
+- a number from another member is measured again before you repeat it; your own, in a commit body or a done comment, comes from the run's output
 - one run is evidence of more than one thing: name what else it shows before you report it as proof
 - a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
 - the cheap half of your job goes to a helper card (`x:crew-subagent` picks which), and only its answer comes back; your context stays on the judgment <!-- mac -->

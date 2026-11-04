@@ -38,6 +38,8 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
 ## while you build
 
 - edit the lines that change, never a whole file; a lookup goes to `scout`.
+- **past its size, stop and say so**: a chunk that outgrows its estimate gets your one line to clio, before the next commit. a look goes to dima small, before the next commit too: no test draws it.
+- **read the real thing first**: `jq` the keys of a real entry before a parser, read the consumer before a guard. a failure branch (a rejected read, a `.catch`) gets its own red row.
 - **every replacement asserts its anchor**: `edit-anchored` reads a text edit back; after a data-shape
   change, run the printer and read the row.
 - **the brief names what dima sees, you find what is wrong**: check the observable, never the line you
