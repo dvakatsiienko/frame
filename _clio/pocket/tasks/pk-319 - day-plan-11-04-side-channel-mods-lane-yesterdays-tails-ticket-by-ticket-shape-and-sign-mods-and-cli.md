@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T11:12:00Z'
+updated_date: '2026-11-04T11:19:00Z'
 labels:
   - s
 dependencies: []
@@ -138,4 +138,9 @@ W103-W105 groomed apart from W102 by helga, 2026-11-04-1258.groomed.md: same 12:
 W106 (2026-11-04 13:08, dima): ok let's have the pace watch button for you only. i am shaping a dedicated --bg coordinator with side channel, so it will apply to it too, later. (FRM-500, re-sign)
 
 W107 (2026-11-04 13:12, dima): the park line at 90 %, with 1h 50m left, should also tell you to keep the hot meter on for everyone: 1h 50m is too large, someone's cache can go cold. (FRM-500, re-sign)
+
+W100 refold (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go, for a leaner memory? ❓
+W108 (2026-11-04 13:08, dima): print the exact lines the mod sends you on all events.
+W109 (2026-11-04 13:12, dima): did it fire because «5h» 1h left was reached? the percentage is currently -9%. ❓
+renumber map: 1308 groom W106–W108 → W106, its W109 → W108; 1312 groom W108–W109 → W107, its W110–W111 → W109
 <!-- SECTION:NOTES:END -->
