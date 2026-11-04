@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T10:59:00Z'
+updated_date: '2026-11-04T11:10:00Z'
 labels:
   - s
 dependencies: []
@@ -132,4 +132,6 @@ W99 (2026-11-04 11:17, dima): how to properly wire it? ❓
 W100 (2026-11-04 12:58, dima): pace watch: if it proves working, can the load-balancing habits go, for a leaner memory? ❓
 W101 (2026-11-04 12:58, dima): set-pace-watch: is it only for clio? i'd like a button for it in the nudge, between 🔥 and ⏰. (FRM-500, re-sign at resume)
 W102 (2026-11-04 12:58, dima): never skip wishkeeper. he is a prio. even when we go over the pace.
+
+W103-W105 groomed apart from W102 by helga, 2026-11-04-1258.groomed.md: same 12:58 lines
 <!-- SECTION:NOTES:END -->
