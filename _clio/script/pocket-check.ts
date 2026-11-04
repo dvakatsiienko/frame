@@ -80,7 +80,7 @@ export function checkPocket(
             : undefined;
         if (planDay && status !== 'done' && `${today.slice(5)}` !== planDay)
             report(
-                `a dated day plan dies at its next boot: home its open lines, close it (day ${planDay})`,
+                `a dated day plan dies at its halt: home its open lines, close it (day ${planDay})`,
             );
         const touched = localDay(
             front.scalars.updated_date || front.scalars.created_date || '',
