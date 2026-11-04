@@ -1,4 +1,4 @@
-// craft-fleet-flow stage 8: an In Progress ticket either closes or has a door: the label `needs human`, an open blocked-by, or an open step on a running glide card; one moved back to Todo keeps a dated door
+// craft-fleet-flow stage 8: an In Progress ticket either closes or has a reason to stay: the label `needs human`, an open blocked-by, or an open step on a running glide card; one moved back to Todo keeps a dated door
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -74,13 +74,14 @@ for (const t of tickets) {
     else {
         reds++;
         console.log(
-            `🔴 ${t.id}: close it, or give it a door (needs human, blocked by, a glide step)`,
+            `🔴 ${t.id}: close it, or give it a reason to stay (needs human, blocked by, a glide step)`,
         );
     }
 }
-if (!reds) console.log(`🟢 ${ids.length} In Progress, each with a door`);
+if (!reds)
+    console.log(`🟢 ${ids.length} In Progress, each with a reason to stay`);
 
-// a move back to Todo is no way out of the net: it holds a dated `🚪 door:` comment until it closes
+// a move back to Todo is no way out of the net: it holds a dated `⏰ due:` comment until it closes
 const todoIds = (read(['list', '--state', 'Todo']) ?? []).map((t) => t.id);
 const todo = todoIds.length
     ? (read(['read', ...todoIds, '--comments']) ?? [])
@@ -92,13 +93,13 @@ for (const t of todo) {
     if (moved === -1) continue;
     const by = bodies
         .slice(moved + 1)
-        .findLast((body) => body.startsWith('🚪'))
+        .findLast((body) => /^(⏰|🚪)/.test(body))
         ?.match(/by (\d{4}-\d{2}-\d{2})/)?.[1];
-    if (by && by >= today) console.log(`🟢 ${t.id}: a door by ${by}`);
+    if (by && by >= today) console.log(`🟢 ${t.id}: due by ${by}`);
     else {
         reds++;
         console.log(
-            `🔴 ${t.id}: moved out of In Progress, ${by ? `its door passed ${by}` : 'no door'}: close it, or comment «🚪 door: <what> by <date>»`,
+            `🔴 ${t.id}: moved out of In Progress, ${by ? `its due date passed ${by}` : 'nothing due'}: close it, or comment «⏰ due: <what> by <date>»`,
         );
     }
 }

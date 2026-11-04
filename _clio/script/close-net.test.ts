@@ -51,24 +51,16 @@ describe('close-net', () => {
         ];
 
         test.each([
-            ['no door reds', ['↩️ back to Todo'], 1],
+            ['nothing due reds', ['↩️ back to Todo'], 1],
             ['a wait line reds too', ['⏳ waits: its sign'], 1],
+            ['a due date later passes', ['↩️ x', '⏰ due: y by 2999-01-01'], 0],
+            ['a due date passed reds', ['↩️ x', '⏰ due: y by 2000-01-01'], 1],
             [
-                'a door by a later date passes',
-                ['↩️ x', '🚪 door: y by 2999-01-01'],
-                0,
-            ],
-            [
-                'a door past its date reds',
-                ['↩️ x', '🚪 door: y by 2000-01-01'],
+                'a due line older than the move reds',
+                ['⏰ due: y by 2999-01-01', '↩️ x'],
                 1,
             ],
-            [
-                'a door older than the move reds',
-                ['🚪 door: y by 2999-01-01', '↩️ x'],
-                1,
-            ],
-            ['a door with no date reds', ['↩️ x', '🚪 door: y'], 1],
+            ['a due line with no date reds', ['↩️ x', '⏰ due: y'], 1],
             ['a ticket never moved passes', ['a plain comment'], 0],
         ])('%s', (_label, bodies, status) => {
             expect(run(moved(...bodies)).status).toBe(status);
@@ -124,14 +116,14 @@ describe('close-net', () => {
         expect(out.status).toBe(0);
     });
 
-    test('a ticket with no door reds and is named', () => {
+    test('a ticket with no reason to stay reds and is named', () => {
         const out = run([
             { id: 'FRM-1', labels: ['agent'] },
             { id: 'FRM-2', labels: ['needs human'] },
         ]);
         expect(out.status).toBe(1);
         expect(out.stdout).toContain(
-            '🔴 FRM-1: close it, or give it a door (needs human, blocked by, a glide step)',
+            '🔴 FRM-1: close it, or give it a reason to stay (needs human, blocked by, a glide step)',
         );
         expect(out.stdout).not.toContain('🔴 FRM-2');
     });

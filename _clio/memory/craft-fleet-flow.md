@@ -1,6 +1,6 @@
 # craft-fleet-flow — the path from dima's idea to the thing in his hands
 
-the coordinator's map; the picture: [Fleet Flow v2](https://claude.ai/artifact/G8Z3kZtebCK8hSYRfsdac3). who talks to whom is `rules/fleet-flow.md`. **this file is lane init's one home** (§ lane init): `clio:shape-idea`, `clio:shape-lane` and `clio:shape-lane-dispatch` hold the steps and point here for the rules; the words live in `rules/fleet-vibe.md`.
+the picture: [Fleet Flow v2](https://claude.ai/artifact/G8Z3kZtebCK8hSYRfsdac3). who talks to whom is `rules/fleet-flow.md`. **this file is lane init's one home** (§ lane init): `clio:shape-idea`, `clio:shape-lane` and `clio:shape-lane-dispatch` hold the steps and point here for the rules; the words live in `rules/fleet-vibe.md`.
 
 <!-- why here: moved out of rules/fleet-flow.md on dima's word (2026-10-06, FRM-309): only clio picks lanes and owns the gates, so no other session pays for it -->
 
@@ -16,13 +16,13 @@ each stage names its gate, its owner, its door and its wait budget.
 6. **build** — gate: the exit lines pass, each test proven by making it fail; owner: codie; door: `x lane commit`, `mods:live`, `run-<app>`; wait: the ticket's estimate, then a ping
 7. **verify** — gate: sixth sense says clean, or its round-3 stop goes to clio; owner: sixth sense; door: `x:crew-sixth-sense`; wait: 3 rounds
 8. **land**
-   - gate: wishkeeper read the chunk's base..head (FRM-503), merge state clean and the deploy Ready, where «no run» is never green
+   - gate: wishkeeper read the chunk's base..head, merge state clean and the deploy Ready, where «no run» is never green
    - owner: clio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); clio pushes (a quick lane's codie its own head, 11-03)
    - door: `x lane merge-auto` (it waits for ci and names why)
    - self-edit path: his sign pre-approved → `x lane merge-auto <pr> --apply`; his typed word → `--dima-ok <pr>` added (x-mod-guard proves the word); a stack layer: `gh stack merge <pr> --squash --yes`, `merged-by-x` by hand
    - the brake is never pre-approved: his word each time, a tick quoting the pr carrying it (FRM-427)
    - archive step: the merge turn ends with `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`): the spec archived once every chunk merged, the clean trees decamped, each chunk proven live is closed and named to dima (closing.md, landed); each 🔴 it prints is a chore left with its fix, the review-rounds line among them
-   - the close (dima, 2026-11-04: «we should close a ticket in place once it's wired and tested»): the close turn is a pr lane's merge turn, and a quick lane's sixth sense clean, or its `[done]` with no sixth sense, since it has no merge; that turn i wire what its 🔌 names, land its `## 🪢 habits` lines, run its done test live, ask dima in orbit at once for what needs his hands, and close it, named. it stays In Progress only on an open 🛼 glide step, `needs human` or a blocked-by, and one moved back to Todo keeps a dated `🚪 door:` comment; `close-net.ts` reds the rest at every siesta
+   - the close (dima, 2026-11-04: «we should close a ticket in place once it's wired and tested»): the close turn is a pr lane's merge turn, and a quick lane's sixth sense clean, or its `[done]` with no sixth sense, since it has no merge; that turn i wire what its 🔌 names, land its `## 🪢 habits` lines, run its done test live, ask dima in orbit at once for what needs his hands, and close it, named. it stays In Progress only on an open 🛼 glide step, `needs human` or a blocked-by, and one moved back to Todo keeps a dated `⏰ due:` comment; `close-net.ts` reds the rest at every siesta
    - wait: the pr median
 9. **look** — gate: one look card (what, where, try, proven, not checked — never empty), with a shot for anything rendered; owner: dima; door: `SendUserFile`; wait: his next time at the keyboard
 10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`, and a changed mapped area gets its blueprint redrawn once the steers land (`_clio/blueprints/AGENTS.md`); owner: clio; door: `clio:halt`, `x fleet flow`; wait: the same day
