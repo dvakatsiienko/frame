@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T15:38:00Z'
+updated_date: '2026-11-04T15:51:00Z'
 labels:
   - s
 dependencies: []
@@ -290,4 +290,22 @@ W241 (2026-11-04 17:28, dima): Don't push on halt. I'll tell you myself.
 W227 (2026-11-04 17:28, dima): tldr: most useful findings goes directly to you first, the --bg tilde idea goes some time after, at some good point. i'll tell.
 
 side channel's mods order draft, from handoff frm-368-takeover (11-04 17:26), for clio to rebalance; dima: «i'd like for new ones to be done asap but we have already other prioritized chunks». 1 FRM-499, 2 FRM-500, 3 FRM-501 (first number, then close), 4 FRM-505 (M; first the --bg wind that never ingests), 5 FRM-504 (S), 6 FRM-471, 7 the warn-only flip that closes FRM-472, 8 FRM-485, 9 FRM-489, 10 FRM-493, 11 FRM-470 (the load flake shows in 7+ retros, maybe earlier), 12 FRM-459, 13 after his word on tilde: the mods split, isCoordinator into three predicates, glide owner per lane, tilde's asks on the card, quiet logs per session, 14 after his word on tilde: a keep-hot ping that checks the crew. its note: 4 and 5 before 6 keep new guard rules warn-only longer. mods-lane-4/lane-plan.md is stale on FRM-487, FRM-482 (done) and FRM-443 (canceled). FRM-505's open holds W1845 (auto-wake of a stale cache), to settle with his keep-hot talk.
+
+W242 (2026-11-04 17:51, dima): approve orbit.
+W243 (2026-11-04 17:51, dima): so your side is fully done (habits)? and only mods side is left? ❓
+W244 (2026-11-04 17:51, dima): what do you think about your own updates after merge? good changes? ❓
+W245 (2026-11-04 17:51, dima): pick top 5 novelties of your merged habit updates you consider most useful.
+W246 (2026-11-04 17:51, dima): mods: until plan reset there will be no activity.
+W247 (2026-11-04 17:51, dima): after i buy new plan, we resume with these prios:
+W248 (2026-11-04 17:51, dima): 1. finish all your debt tails — somehow they keep piling up
+W249 (2026-11-04 17:51, dima): 2. implement most wanted mods that still not implemented (quiet, self running SW) and rest, so tilde is ready to either be implemented or discarded
+W250 (2026-11-04 17:51, dima): 3. sync your habits with fresh mods — so your shift skill (that tied to quiet mod chunk), and your improved coordination (self running SW) are also synced.
+W251 (2026-11-04 17:51, dima): 4. at some point — resume speak app v2.
+W252 (2026-11-04 17:51, dima): now — you previously provided stuff you can do. implement everything from orbit then solve the list.
+W253 (2026-11-04 17:51, dima): 1. Test 🐦‍⬛ crow's held-note bug, ahead of [FRM-485](https://linear.app/x-com/issue/FRM-485)'s door. ← i assume this is done, if yes — move on
+W254 (2026-11-04 17:51, dima): 2. [FRM-502](https://linear.app/x-com/issue/FRM-502)'s cut (🐦‍⬛ crow): remove the claim wake, then close it. ← i assume this is done, if yes — move on
+W255 (2026-11-04 17:51, dima): 3. Small ticket fixes: the 8 🐬 wishkeeper leftovers, the [FRM-472](https://linear.app/x-com/issue/FRM-472) done-test line, and my two owed corrections. ← done? if not yet - complete it and move on
+W256 (2026-11-04 17:51, dima): 4. Revalidate the 5 pocket items that kept rolling over, then the rest of the tails. ← do this if not done yet, yourself if you can or call me
+W257 (2026-11-04 17:51, dima): 5. Prep the owed asks: the 21 worktrees and 3 stashes cleanup, [BYT-130](https://linear.app/x-com/issue/BYT-130). ← this one too.
+W258 (2026-11-04 17:51, dima): 6. Prep the sign of 6 chunks; the signs themselves are yours. ← i assume this one is bigger, so pause here and let's see where we are ctx wise. i guess this one can travel to handoff.
 <!-- SECTION:NOTES:END -->
