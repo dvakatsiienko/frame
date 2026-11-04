@@ -6,6 +6,9 @@ fits: codie
 
 # test drive — mattpocock tdd
 
+**test card:** we believe a codie with `mattpocock-skills:tdd` loaded reaches clean in fewer rounds, with more tests proven red · we test it by the next lanes below, one arm-b ticket with no tdd in each · we measure sixth sense's findings per ticket, rounds to clean, tests proven red and minutes, arm a against arm b · we're right if arm a takes no more rounds than arm b over 3 pairs, with more tests proven red
+**kill rule:** 3 pairs with arm a slower and no fewer findings
+
 window: 2026-10-06 → 2026-10-20. the skill: `mattpocock-skills:tdd` (v1.3.1), red → green → refactor, one behaviour per test, test the contract not the internals.
 why (dima, 2026-10-06): «it changes a coder's approach a lot» — a test drive with numbers, not a habit by default.
 

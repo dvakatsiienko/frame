@@ -9,6 +9,9 @@ blind: true
 
 Ticket: none
 
+**test card:** we believe `dlv` shortens a red test whose cause is not in the diff · we test it blind, by the next cli lanes, whose briefs stay silent on it · we measure `dlv` runs per lane from its transcripts, the retro's answer to «did you reach for it, did it help», and minutes on that red · we're right if one such red is solved faster with `dlv` than by reading the test's output
+**kill rule:** 2 cli lanes with 0 runs: `x:guide-go` and `x/AGENTS.md` stop teaching it
+
 on trial since 2026-10-06 (`brew "delve"`); `x:guide-go` and `x/AGENTS.md` teach it to every Go codie.
 
 ## what counts

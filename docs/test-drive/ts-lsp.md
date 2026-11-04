@@ -6,6 +6,9 @@ fits: codie:ts
 
 # test drive — the TypeScript LSP (native TS 7 server)
 
+**test card:** we believe the `LSP` tool answers «who uses X» and «what type is this» with fewer misses and less context than grep and a file read · we test it by every TS rename and use-site question in a coder's work · we measure `usage.py` calls beside grep calls, per session and per subagent, and one retro case per lane where it won or lost · we're right if it is reached on its own, at least weekly, and a retro names a win
+**kill rule:** 0 calls over a month of TS work: its trigger comes out; the diagnostics bridge, adopted, stays
+
 on trial 2026-09-30 → 2026-10-14. dima: «set it on … watch it yourself, and measure how useful it
 is … pull it into our stack and measure it under a weight for 2 weeks».
 
@@ -59,6 +62,8 @@ beat grep or lost to it.
 - 2026-10-15 20:46 · usage count (siesta freebie, helper-lite over 1,285 transcripts since 10-01) · **0 LSP calls** since 10-01; all-time 6 (hover 2, findReferences 2, documentSymbol 2), the last 2026-09-30 · the diagnostics bridge's value is not in that count (it pushes errors without a call) — the verdict tomorrow weighs the bridge, not the tool
 - 2026-10-15 20:50 · dima's steer (o99): the use-site rule moved from guide-code to guide-typescript, where a TS session loads it · the «only Go lately» reading checked: since 10-01 git touched 1,562 .ts/.tsx paths in frame (+40 bytes) against 207 .go — TS work was plenty, the tool still drew 0 calls; the next round asks why (the trigger sat in guide-code, which fires before the TS guide)
 - 2026-10-16 14:17 · verdict round · **the bridge paid for real**: cclio's Write of a new `schedule/jobs/x-cc-otel/server.ts` came back with 9 diagnostics (no node types, implicit any) one call later — the tell that the dir sat in no tsconfig; `schedule/jobs/*/*.ts` joined frame's include, `--listFilesOnly` proved it (the fleet-hazards «green typecheck, unconfigured files» trap, caught by the bridge, not a planted error) · the `LSP` tool: still 0 calls; the guide-typescript placement is 1 day old and today's renames were strings, not identifiers · ask: adopt the bridge, extend the tool once to 10-30
+
+- 2026-11-04 · the second reading of the `LSP` tool · `usage.py 2026-10-16`: 119 main sessions, **0 LSP calls**, 20,115 grep calls · it counts main threads only, so 916 subagent transcripts were read too: `tool_use` named LSP in 0 (161 mention it only in a tool schema), `wisphunter` and `scout` included, which both carry the tool · the guide-typescript placement had 19 days and changed nothing
 
 ## verdict
 

@@ -9,6 +9,9 @@ Ticket: none
 
 # 🪶 helper-lite — a haiku 5.5 extraction card, on trial
 
+**test card:** we believe a **Haiku 5.5** card reads counts and lines out of big files as exactly as a hand command, for a fraction of a **Sonnet 5.5** `helper` · we test it by every big read below, a member's own included · we measure seconds, cost and a match against the hand command per use, and misses on the failure probes · we're right if 5 of the 7 stress uses are tried with no wrong number, and the failure probes answer «not found» instead of guessing
+**kill rule:** one wrong number that reached a report unflagged, or a member reading a big file itself because the brief costs more than the read
+
 the card: `home/.claude/agents/helper-lite.md` — haiku 5.5 `medium`, `omitClaudeMd`, read-only (Read, Grep, Glob,
 Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else could use it».
 

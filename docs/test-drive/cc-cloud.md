@@ -8,6 +8,9 @@ dies-when: every candidate use below has a verdict, written into `x:crew-cloud` 
 
 Ticket: none
 
+**test card:** we believe a cloud session gives something a local `--bg` coder cannot (isolation across parallel trees, survival across a reboot, pr auto-fix, a start from the phone) · we test it by one real job per candidate use below · we measure the credit, the 5h and the week before and after each job, and the result graded against a local coder on the same brief · we're right if at least one use names such a gain and costs no more of his window than the local coder
+**kill rule:** the credit expires with no use that names a gain: cloud goes on-ask only, and `x:crew-cloud` says so
+
 **what:** Claude Code sessions on Anthropic VMs, launched with `claude --cloud` (through `script` from a tool call). the contract is `x:crew-cloud`; the day-0 research is `docs/research/cc-cloud.md`.
 **window:** 2026-09-28 → 2026-11-04. the $250 cloud credit expires 2026-11-05 09:59 GMT+2; the test drive spends it on purpose.
 **the meter:** dima's usage page, before and after each job (no field reads the credit).

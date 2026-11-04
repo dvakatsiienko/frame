@@ -29,5 +29,6 @@ born 2026-10-16 on dima's tick (o5). the tap: `schedule/jobs/x-cc-otel/` (127.0.
 ## rounds
 
 - 2026-10-16 · day 0: one `claude -p --model haiku` session in a temp dir · 3 exports at session end, 0.1 s apart (2 logs, 1 metrics), 78 KB · metrics: session.count, cost.usage, token.usage, active_time.total — **works on the Max plan** · events: managed_settings_resolved, ~20 hook_registered, hook_execution_complete, mcp_server_connection · 📌 the hook events dominate a tiny session's bytes; a real day's size is the day-7 read · pipe proven
+- 2026-11-04 · first real read, 19 days late · ask: the cost of each session today · 0.9 s over 74 MB, one script · `claude_code.cost.usage` is delta, summed: $304.97 api-equivalent, clio $138.32, the mods codie $75.05, the side channel $49.13, crow $15.85 · coverage: 32 of 33 of today's transcripts; the miss is a probe run with `--setting-sources project,local`, which drops the env by design · **disk: 974 MB in 19 days**, 49 / 103 / 135 / 74 MB on the last four days, so about 700 MB a week against the ~50 MB bar · hook start and complete events are 35 MB of today's 74 · real asks answered so far: 1 of 3 · no prune exists · grade: the query beats a transcript sum by a wide margin, the disk misses its bar 14×
 
 ## verdict
