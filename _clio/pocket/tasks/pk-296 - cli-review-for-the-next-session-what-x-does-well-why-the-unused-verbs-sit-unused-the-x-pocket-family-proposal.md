@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-01T16:36:00Z'
-updated_date: '2026-11-04T16:07:00Z'
+updated_date: '2026-11-04T16:12:00Z'
 labels:
   - s
 dependencies: []
@@ -65,4 +65,6 @@ kept 2026-11-02 — its 33 W-lines get accounted tomorrow, folds 11-03 F8
 close: 2026-11-04 — the verb review is docs/research/cli-worth-pass.md; x pocket was skipped on his yes (W1242, PK-299), which settles W1266–W1275; W1014–W1022's memory review moves to the next memory sweep, named in the next boot's handoff.
 
 close: 2026-11-04. W-lines, read whole: W1014, W1015, W1016, W1017, W1018, W1019, W1020, W1021, W1022, W1033, W1034, W1035, W1036, W1037, W1038, W1039, W1040, W1041, W1042, W1043, W1044, W1045, W1266, W1267, W1268, W1269, W1270, W1271, W1272, W1273, W1274, W1275 done or moved as named.
+
+correction 2026-11-04: W1041 and W1042 (why unused verbs sit unused, missing habits) have no answer in cli-worth-pass.md, my close overstated it; moved to the next boot's list, beside the cut list's per-verb read.
 <!-- SECTION:NOTES:END -->
