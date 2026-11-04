@@ -54,3 +54,6 @@ same 6 slips, same transcript, through the FRM-502 `packWake` and `decisionOf` u
 once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a round here: his grades, the `--changed` share over `verdicts.jsonl`, and the `#dima-caught` lines crow flagged first.
 
 ## verdict
+
+### round, 2026-11-04 halt
+6 `#dima-caught` lines in the day's flawlog; the first-flagged share was not counted against `notes.jsonl`: the halt ran out of window. crow's notes 12:42 and 14:47 were real catches, vetted ok. no verdict from this round.
