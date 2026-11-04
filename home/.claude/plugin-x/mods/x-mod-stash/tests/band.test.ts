@@ -159,7 +159,7 @@ test('every control in the row carries a hover card that names it', async ($, on
         '0 open asks for you',
         '0 phases',
         'second wind: refresh this session at a good stop',
-        "keep this session's cache hot: ping every 50 min",
+        "keep this session's cache hot with a ping",
         'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',
         'settings: show or hide each part',

@@ -1057,6 +1057,7 @@ test(
     { timeoutMs: 120_000 },
     async ($, on) => {
         const w = world(on);
+        w.store.set(`hot:${SID}`, { off: true });
         await start($);
         for (let i = 0; i < 16; i++) {
             await ping($, `step ${i} landed`);
@@ -1072,6 +1073,7 @@ test(
     { timeoutMs: 120_000 },
     async ($, on) => {
         const w = world(on);
+        w.store.set(`hot:${SID}`, { off: true });
         await start($);
         for (let i = 0; i < 4; i++) {
             await ping($, `round ${i} on abc`);

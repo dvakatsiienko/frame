@@ -208,8 +208,7 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /lane l1/,
     },
     'stash.hot': {
-        arm: async ($, _w, ui) => {
-            await ui.band.press({ key: 'hot' });
+        arm: async ($) => {
             await endTurn($);
         },
         fire: (_$, w) => w.clock.advance(50 * MIN),
@@ -256,7 +255,7 @@ const SCENARIOS: Record<string, Scenario> = {
             w.store.set(`pace:${SID}`, { since: NOW });
         },
         fire: (_$, w) => w.clock.advance(5_000),
-        trace: /^turn: 🔋 pace watch/,
+        trace: /^turn: 🔋 park/,
     },
     'stash.phases': {
         arm: ($) => orbit($, { lines: ['now: a'], op: 'plan' }),

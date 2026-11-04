@@ -1517,7 +1517,7 @@ test("a row's 🔥 chip names itself on hover in the band's words, either way", 
     const off = await words();
     await view.press({ key: `hot:${PEER}` });
     expect([off, await words()]).toEqual([
-        "🔥keep this session's cache hot: ping every 50 min",
+        "🔥keep this session's cache hot with a ping",
         "🔥stop keeping this session's cache hot",
     ]);
 });
@@ -1534,13 +1534,13 @@ test("a --bg member's 🔥 chip writes its key and draws on", async ($, on) => {
     ]).toEqual(['off', true, 'on']);
 });
 
-test('a second press on the 🔥 chip deletes the key and draws off', async ($, on) => {
+test('a second press on the 🔥 chip writes off and draws off', async ($, on) => {
     const f = fleet(on, {}, { bg: [2] });
     const view = await board($);
     await view.press({ key: `hot:${PEER}` });
     await view.press({ key: `hot:${PEER}` });
-    expect([f.store.has(`hot:${PEER}`), await hotChip(view, PEER)]).toEqual([
-        false,
+    expect([f.store.get(`hot:${PEER}`), await hotChip(view, PEER)]).toEqual([
+        { off: true },
         'off',
     ]);
 });

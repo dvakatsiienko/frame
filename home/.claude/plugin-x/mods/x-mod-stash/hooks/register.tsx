@@ -50,7 +50,12 @@ import {
     wrongText,
 } from './orbit.ts';
 import {
+    PACE_KEYS,
+    PACE_NEW_WINDOW,
+    PACE_SETTINGS,
+    type PaceNumbers,
     type PaceRung,
+    isPaceHeld,
     isPaceLineDue,
     isSameWindow,
     paceLine,
@@ -188,8 +193,20 @@ const SWITCHES = {
     speak: { key: SPEAK_ASSUMED, of: true },
     undo: { key: UNDO_WINDOW, of: true },
 } as const;
+const settingOf = (key: keyof typeof PACE_SETTINGS) => ({
+    key,
+    of: PACE_SETTINGS[key].of,
+    range: { max: PACE_SETTINGS[key].max, min: PACE_SETTINGS[key].min },
+});
 const NUMBERS = {
+    'hot-late': settingOf('hot-late'),
+    'hot-minutes': settingOf('hot-minutes'),
     lines: { key: PHASE_LINES, of: PLAN_MAX, range: LINES },
+    'pace-burn': settingOf('pace-burn'),
+    'pace-over': settingOf('pace-over'),
+    'pace-park': settingOf('pace-park'),
+    'pace-stop': settingOf('pace-stop'),
+    'pace-under': settingOf('pace-under'),
     quietWait: { key: QUIET_WAIT, of: 10, range: WAIT },
     speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
     undoDelay: {
@@ -288,7 +305,9 @@ const SHORT_MS = 60_000;
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
-const HOT_MS = 50 * 60 * 1000;
+const MINUTE_MS = 60_000;
+// the prompt cache's own lifetime
+const CACHE_MS = 60 * MINUTE_MS;
 const HOT = 'hot:';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
@@ -3152,23 +3171,50 @@ async function paceMeterOf($: EngineInterface) {
     };
 }
 
+async function paceNumbers($: EngineInterface) {
+    const out = {} as PaceNumbers;
+    for (const k of PACE_KEYS) out[k] = await readNumber($, k);
+    return out;
+}
+
+// the line went out: its rung stands, or the reset's line clears it
+async function paceSent(
+    $: EngineInterface,
+    sid: string,
+    stored: { resetsAt: number; rung: PaceRung } | undefined,
+) {
+    if (stored) await $.store.set(PACE_RUNG + sid, stored);
+    else await $.store.delete(PACE_RUNG + sid);
+}
+
 // the line this poll owes, none when the rung stands; the stored rung of another window counts as none
 async function paceDue($: EngineInterface, sid: string) {
     if (!isPaceOn(await $.store.get(PACE + sid))) return undefined;
     if (!(await partsShown($))('stash.pace-watch')) return undefined;
-    const meter = await paceMeterOf($);
-    if (!meter) return undefined;
-    const kept = (await $.store.get(PACE_RUNG + sid)) as
+    let kept = (await $.store.get(PACE_RUNG + sid)) as
         | { resetsAt: number; rung: PaceRung }
         | undefined;
+    // the clock says a window ended, never a meter write: a frozen file is what a stopped fleet leaves
+    if (kept && (await $.clock.now()) >= kept.resetsAt) {
+        if (isPaceHeld(kept.rung))
+            return { line: PACE_NEW_WINDOW, stored: undefined };
+        await $.store.delete(PACE_RUNG + sid);
+        kept = undefined;
+    }
+    const meter = await paceMeterOf($);
+    if (!meter) return undefined;
     const isSame = kept && isSameWindow(kept.resetsAt, meter.resetsAt);
-    const rung = paceRung(meter, isSame ? kept.rung : undefined);
-    if (kept && (!rung || !isSame)) await $.store.delete(PACE_RUNG + sid);
+    const numbers = await paceNumbers($);
+    const rung = paceRung(meter, isSame ? kept?.rung : undefined, numbers);
+    // a held rung waits for the clock's reset, whatever a meter a few seconds off says
+    const isPastReset = meter.resetsAt <= meter.now;
+    if (kept && (!isSame || (!rung && !(isPastReset && isPaceHeld(kept.rung)))))
+        await $.store.delete(PACE_RUNG + sid);
     if (!rung || rung === 'between') return undefined;
-    if (!isPaceLineDue(rung, isSame ? kept.rung : undefined)) return undefined;
+    if (!isPaceLineDue(rung, isSame ? kept?.rung : undefined)) return undefined;
     return {
-        line: paceLine(rung, meter),
-        stored: { resetsAt: meter.resetsAt, rung },
+        line: paceLine(rung, meter, numbers),
+        stored: { resetsAt: meter.resetsAt, rung: rung as PaceRung },
     };
 }
 
@@ -3202,7 +3248,7 @@ async function paceTick($: EngineInterface) {
     isPaceSending = true;
     try {
         const r = await selfSubmit($, due.line).catch(() => undefined);
-        if (r && !r.drop) await $.store.set(PACE_RUNG + sid, due.stored);
+        if (r && !r.drop) await paceSent($, sid, due.stored);
         else {
             isBusy = false;
             await keepTurn($);
@@ -3219,7 +3265,7 @@ async function paceStep($: EngineInterface) {
     const sid = await currentId($);
     const due = sid && !isPaceSending ? await paceDue($, sid) : undefined;
     if (!sid || !due || !(await paceClaim($, sid))) return undefined;
-    await $.store.set(PACE_RUNG + sid, due.stored);
+    await paceSent($, sid, due.stored);
     await $.store.delete(PACE_CLAIM + sid);
     return due.line;
 }
@@ -3230,7 +3276,7 @@ async function paceWaker($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
     const key = (await $.store.get(PACE + sid)) as
-        | { off?: boolean; since?: number }
+        | { off?: boolean; since?: number; was?: unknown }
         | undefined;
     const isWatched =
         isPaceOn(key) &&
@@ -3273,8 +3319,10 @@ async function paceWaker($: EngineInterface) {
         if (note.until === undefined)
             await $.store.set(PACE_WAKER + sid, { ...note, until });
         if (now <= until + PACE_EXPIRY_MS) return;
-        if (await isLaneOwner($)) await $.store.set(PACE + sid, { on: true });
+        // a shift ends where it found the key; a seat's default fills a key it found empty
+        if (key?.was) await $.store.set(PACE + sid, key.was);
         else await $.store.delete(PACE + sid);
+        await seatDefaults($).catch(() => undefined);
     }
     if (!note) return;
     if (!note.wasOn) {
@@ -3316,12 +3364,18 @@ async function pressPace($: EngineInterface) {
     $.ui.invalidate('ui.render');
 }
 
-// the coordinator's seat starts on; a written key, off included, stands
-async function paceDefault($: EngineInterface) {
+// a seat starts on: 🔋 the coordinator's, 🔥 every seated member's; a written key, off included, stands
+async function seatDefaults($: EngineInterface) {
     const sid = await currentId($);
-    if (!sid || !(await isLaneOwner($))) return;
-    if ((await $.store.get(PACE + sid)) === undefined)
+    const name = await sessionName($);
+    if (!sid || !name) return;
+    const now = await $.clock.now();
+    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined)
         await $.store.set(PACE + sid, { on: true });
+    if (isSeated(name) && (await $.store.get(HOT + sid)) === undefined) {
+        await $.store.set(HOT + sid, { since: now });
+        await followHot($);
+    }
 }
 
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds, and
@@ -3585,11 +3639,16 @@ async function currentId($: EngineInterface) {
     return selfId ?? (await $.session.id().catch(() => undefined));
 }
 
+// off is a written value, so a seat's default arms only a key never written
+const hotOf = (key: unknown) =>
+    key && (key as { off?: boolean }).off !== true
+        ? (key as { since: number })
+        : undefined;
+
 async function saveHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    if (hot) await $.store.set(HOT + sid, hot);
-    else await $.store.delete(HOT + sid);
+    await $.store.set(HOT + sid, hot ?? { off: true });
 }
 
 // 💨 afk on keeps every remote-controlled session warm too, as if its 🔥 were on (o161): each session's own stash
@@ -3609,15 +3668,36 @@ async function armHot($: EngineInterface) {
     const since =
         hot?.since ?? ((await isAfkWarm($)) ? (endedAt ?? now) : undefined);
     if (since === undefined) return;
-    $.clock.after(Math.max(0, since + HOT_MS - now), async () => {
+    const everyMs = (await readNumber($, 'hot-minutes')) * MINUTE_MS;
+    $.clock.after(Math.max(0, since + everyMs - now), async () => {
         // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
         await followHot($).catch(() => undefined);
         if (isBusy || mine !== hotGen) return;
         if (!hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
+        if (await isWindowSpent($)) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
         await selfSubmit($, PING);
     });
+}
+
+// a ping at 100 % only comes back as the cap's error
+async function isWindowSpent($: EngineInterface) {
+    const m = await paceMeterOf($).catch(() => undefined);
+    return Boolean(m && m.resetsAt > m.now && m.used >= 100);
+}
+
+// a cache that would die before the reset gets one last ping; that ping's own turn puts it past the reset, so it fires once
+async function hotLate($: EngineInterface) {
+    if (!hot || isBusy || endedAt === undefined) return;
+    if (!(await partsShown($))('stash.hot')) return;
+    const m = await paceMeterOf($);
+    if (!m || m.resetsAt <= m.now || m.used >= 100) return;
+    const lateMs = (await readNumber($, 'hot-late')) * MINUTE_MS;
+    if (m.resetsAt - m.now > lateMs) return;
+    if (endedAt + CACHE_MS >= m.resetsAt) return;
+    $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
+    await selfSubmit($, PING);
 }
 
 // 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
@@ -3626,7 +3706,7 @@ async function armHot($: EngineInterface) {
 async function followHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    const stored = (await $.store.get(HOT + sid)) as typeof hot;
+    const stored = hotOf(await $.store.get(HOT + sid));
     if (Boolean(stored) === Boolean(hot)) return;
     const now = await $.clock.now();
     hot = stored && { since: isBusy ? now : (endedAt ?? now) };
@@ -3636,8 +3716,12 @@ async function followHot($: EngineInterface) {
 
 // a row's 🔥 chip: writes or deletes that session's key; its own stash arms the ping at its next poll
 async function pressHot($: EngineInterface, sid: string) {
-    if (await $.store.get(HOT + sid)) await $.store.delete(HOT + sid);
-    else await $.store.set(HOT + sid, { since: await $.clock.now() });
+    await $.store.set(
+        HOT + sid,
+        hotOf(await $.store.get(HOT + sid))
+            ? { off: true }
+            : { since: await $.clock.now() },
+    );
     if (sid === (await currentId($))) await followHot($);
     await load($);
 }
@@ -4179,7 +4263,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             held,
             isHeldStuck:
                 !!held && now - Math.min(...held.map((p) => p.at)) > stuckMs,
-            isHot: Boolean(await $.store.get(HOT + r.sid)),
+            isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
@@ -4250,6 +4334,12 @@ const COLUMNS = {
 export const isCoordinator = (name: string) =>
     /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
+// a member with a chair in the fleet; a fork or a plain session has none
+export const isSeated = (name: string) =>
+    !/fork/iu.test(name) &&
+    /^(?:🦉)?c?clio|(?:^|\P{L})c?crow$|(?:^|\P{L})helga$|^(?:⚡|🌗|🌘)/u.test(
+        bare(name),
+    );
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -4369,7 +4459,7 @@ function settingsListJSX(
 const hotTip = (isHot: boolean | undefined) =>
     isHot
         ? "stop keeping this session's cache hot"
-        : "keep this session's cache hot: ping every 50 min";
+        : "keep this session's cache hot with a ping";
 
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
@@ -4586,7 +4676,7 @@ export const register: Register = (on) => {
             );
             return undefined;
         });
-        await paceDefault($).catch(() => undefined);
+        await seatDefaults($).catch(() => undefined);
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,
@@ -4632,7 +4722,7 @@ export const register: Register = (on) => {
         cap = kept.cap ?? undefined;
         endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
-        const stored = (await $.store.get(HOT + selfId)) as typeof hot;
+        const stored = hotOf(await $.store.get(HOT + selfId));
         hot = stored && { since: endedAt ?? stored.since };
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
@@ -4684,6 +4774,7 @@ export const register: Register = (on) => {
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await pacePoll($).catch(() => undefined);
+                    await hotLate($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
                     await followCodies($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
@@ -4950,7 +5041,7 @@ export const register: Register = (on) => {
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
-        await paceDefault($).catch(() => undefined);
+        await seatDefaults($).catch(() => undefined);
         // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
         // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
         const read =
@@ -4978,8 +5069,7 @@ export const register: Register = (on) => {
         await armWake($);
         // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
-        if (sid)
-            hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
+        if (sid) hot = hotOf(await $.store.get(HOT + sid).catch(() => hot));
         // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
         // chip's delete landing between this read and the write (FRM-499)
         if (hot) hot = { ...hot, since: endedAt ?? (await $.clock.now()) };
@@ -5229,6 +5319,12 @@ export const register: Register = (on) => {
                         );
                         const isPaceShown = (await partsShown($))(
                             'stash.pace-watch',
+                        );
+                        const settingNumbers = await Promise.all(
+                            PACE_KEYS.map(
+                                async (name) =>
+                                    [name, await readNumber($, name)] as const,
+                            ),
                         );
                         const knobs = {
                             always: await readSwitch($, 'always'),
@@ -5488,6 +5584,16 @@ export const register: Register = (on) => {
                                     knobs.quietWait,
                                     'min',
                                 )}
+                                {isPaceShown
+                                    ? settingNumbers.map(([name, value]) =>
+                                          numberJSX(
+                                              name,
+                                              PACE_SETTINGS[name].label,
+                                              value,
+                                              '',
+                                          ),
+                                      )
+                                    : null}
                             </Box>
                         );
                         // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
@@ -7249,7 +7355,7 @@ export const register: Register = (on) => {
         if (left) await forget($, left).catch(() => undefined);
         await saveOrbit($, EMPTY_ORBIT);
         await load($);
-        await paceDefault($).catch(() => undefined);
+        await seatDefaults($).catch(() => undefined);
         return r;
     });
 
