@@ -8,6 +8,7 @@ type Ticket = {
     id: string;
     labels?: string[];
     relations?: { type: string; state: string }[];
+    comments?: { body: string }[];
 };
 type Lane = {
     endedAt?: number;
@@ -40,6 +41,40 @@ function run(tickets?: Ticket[], lanes: Lane[] = []) {
 }
 
 describe('close-net', () => {
+    describe('a ticket moved back to Todo', () => {
+        const moved = (...bodies: string[]) => [
+            {
+                comments: bodies.map((body) => ({ body })),
+                id: 'FRM-1',
+                labels: ['needs human'],
+            },
+        ];
+
+        test.each([
+            ['no door reds', ['↩️ back to Todo'], 1],
+            ['a wait line reds too', ['⏳ waits: its sign'], 1],
+            [
+                'a door by a later date passes',
+                ['↩️ x', '🚪 door: y by 2999-01-01'],
+                0,
+            ],
+            [
+                'a door past its date reds',
+                ['↩️ x', '🚪 door: y by 2000-01-01'],
+                1,
+            ],
+            [
+                'a door older than the move reds',
+                ['🚪 door: y by 2999-01-01', '↩️ x'],
+                1,
+            ],
+            ['a door with no date reds', ['↩️ x', '🚪 door: y'], 1],
+            ['a ticket never moved passes', ['a plain comment'], 0],
+        ])('%s', (_label, bodies, status) => {
+            expect(run(moved(...bodies)).status).toBe(status);
+        });
+    });
+
     test('the label needs human passes', () => {
         const out = run([{ id: 'FRM-1', labels: ['needs human'] }]);
         expect(out.status).toBe(0);
