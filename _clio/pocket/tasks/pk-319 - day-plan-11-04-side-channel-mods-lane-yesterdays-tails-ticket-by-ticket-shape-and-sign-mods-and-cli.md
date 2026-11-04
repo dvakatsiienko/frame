@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T14:10:00Z'
+updated_date: '2026-11-04T14:27:00Z'
 labels:
   - s
 dependencies: []
@@ -238,4 +238,6 @@ W195 (2026-11-04 15:53, dima): are all of them wired? ❓
 W196 (2026-11-04 16:00, dima): let's do everything you printed, then message from side channel, then let's see where we are.
 W197 (2026-11-04 16:03, dima): no, leave all halt activities for real halt, when i tell.
 homes: W187 W189 W198 W199 → FRM-502; W188 → FRM-501, FRM-499
+
+o68 (2026-11-04 16:26, dima): yes, i told the coder to do without a verifier. df0c6734, bd47db41 and the settings layout stay ungraded; sixth sense's clean on FRM-500 stands at 1f64e232.
 <!-- SECTION:NOTES:END -->

@@ -3,10 +3,10 @@ id: PK-317
 title: >-
   reply-check: a fleet verdict word printed plain (🌼 clean, 🩹 fix, 🪜
   escalate) gets flagged
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T19:22:00Z'
-updated_date: '2026-11-04T14:06:00Z'
+updated_date: '2026-11-04T14:13:00Z'
 labels:
   - xs
 dependencies: []
@@ -29,4 +29,7 @@ close: 2026-11-04 — dropped, no guard: measured over today's 222 replies, 0 re
 correction 2026-11-04 16:02: the drop above is withdrawn: my measure read badge names, never the verdict words (wishkeeper). rerun with fleet-vibe's verdict line before any call.
 
 rerun 2026-11-04 16:20: fleet-vibe's verdict line, clio's replies since it landed (11-03 13:44), 714 deduped replies: 10 badged plain (🌼 clean, unbolded), 10 bare plain in verdict context (sixth sense + clean), 9 bold. every sighting is clean; 🩹 fix and 🪜 escalate never printed as verdicts. the earlier 0 was a measure of badge names. script: scratchpad pk317b; his call in orbit.
+
+ticket: FRM-495
+close: 2026-11-04 — his o65 tick: the warn joins FRM-495's reply-check rules.
 <!-- SECTION:NOTES:END -->
