@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T12:11:00Z'
+updated_date: '2026-11-04T12:26:00Z'
 labels:
   - s
 dependencies: []
@@ -161,4 +161,31 @@ W124 (2026-11-04 14:10, dima): tell how far side lane from finishing? ❓
 W125 (2026-11-04 14:10, dima): weekly is at 84%, and i want to solve more operational stuff with main lane here and with side channel.
 W126 (2026-11-04 14:10, dima): nearest stuff: let's refine pace watch messages.
 W127 (2026-11-04 14:10, dima): i think not all of them are correct.
+
+W128 (2026-11-04 14:24, dima): right.
+W129 (2026-11-04 14:24, dima): currently only waker wakes everyone after 100%.
+W130 (2026-11-04 14:24, dima): maybe then pace watch mod could ping you after 5h reset event (new 5h window)? ❓
+W131 (2026-11-04 14:24, dima): yes, and it should tell to stop in place.
+W132 (2026-11-04 14:24, dima): just freeze everyone, and everyone resumes (continues) from the stopped spot.
+W133 (2026-11-04 14:24, dima): like pause/unpause, nothing else, no data loss.
+W134 (2026-11-04 14:24, dima): in this case, pace watch mod will ping you on 0% 5h pace and you resume everyone? ❓
+W135 (2026-11-04 14:24, dima): this one concerns me the most.
+W136 (2026-11-04 14:24, dima): because in this state everyone who does not have a chunk will stay parked for a while.
+W137 (2026-11-04 14:24, dima): and a lot of free room will be left on those 72%.
+W138 (2026-11-04 14:24, dima): also, for such case 🔥 should be on for them, because they may go cold too.
+W139 (2026-11-04 14:24, dima): after this i think that keep hot should be enabled for any side lane by default.
+W140 (2026-11-04 14:24, dima): how do you think? ❓
+W141 (2026-11-04 14:24, dima): or maybe just on by default for everyone always? ❓
+W142 (2026-11-04 14:24, dima): let's have it on +2%.
+W143 (2026-11-04 14:24, dima): otherwise the usage window is only 5% (between 0% and +5%).
+W144 (2026-11-04 14:24, dima): it will case pot stops/resumes too often.
+W145 (2026-11-04 14:24, dima): slightly wider window is needed.
+W146 (2026-11-04 14:24, dima): also, can you edit these settings easily? ❓
+W147 (2026-11-04 14:24, dima): or is a full lane needed to tweak settings? ❓
+W148 (2026-11-04 14:24, dima): if yes, not good.
+W149 (2026-11-04 14:24, dima): how to make mods settings easy to edit for you? ❓
+W150 (2026-11-04 14:24, dima): the necessity of a full lane just to edit a setting is not a good thing.
+W151 (2026-11-04 14:24, dima): how to have it? ❓
+W152 (2026-11-04 14:24, dima): print all mods settings you would want to tweak easily without a mods lane summon.
+W153 (2026-11-04 14:24, dima): whats here? ❓
 <!-- SECTION:NOTES:END -->
