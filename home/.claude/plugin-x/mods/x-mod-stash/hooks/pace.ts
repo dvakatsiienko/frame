@@ -27,10 +27,13 @@ export const paceOf = (resetsAt: number, now: number) =>
         Math.min(100, Math.max(0, (1 - (resetsAt - now) / FIVE_HOUR_MS) * 100)),
     );
 
-// the rung the meter is on now, highest first; `between` keeps the stored one, undefined means no window to read
+// the rung the meter is on now, highest first, `stored` the one the session last heard; `between` keeps the stored one, undefined means no window to read
 // only a turn writes the meter, and only a turn raises used %: an old file blocks the parks, never the resume, and a park
 // it blocks stays `between`, or a lower rung's turn would refresh the file and send the park again
-export function paceRung({ now, resetsAt, used, writtenAt }: PaceMeter) {
+export function paceRung(
+    { now, resetsAt, used, writtenAt }: PaceMeter,
+    stored?: string,
+) {
     const left = resetsAt - now;
     if (left <= 0 || writtenAt < resetsAt - FIVE_HOUR_MS) return undefined;
     const pace = paceOf(resetsAt, now);
@@ -40,8 +43,13 @@ export function paceRung({ now, resetsAt, used, writtenAt }: PaceMeter) {
         if (now - writtenAt > STALE_MS || pace < FRESH_PACE) return 'between';
         return used >= PARK_USED ? 'park-used' : 'park-over';
     }
-    if (used >= NO_CHUNK_USED) return 'no-chunk';
-    return over <= RESUME_OVER ? 'resume' : 'between';
+    // a parked fleet hears resume, not «no new chunk»: the lower rung waits for a window that was never parked
+    const isParked = stored === 'park-over' || stored === 'park-used';
+    if (over <= RESUME_OVER && (isParked || used < NO_CHUNK_USED))
+        return 'resume';
+    if (used < NO_CHUNK_USED || isParked || stored === 'resume')
+        return 'between';
+    return 'no-chunk';
 }
 
 export const isSameWindow = (a: number, b: number) =>

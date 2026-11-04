@@ -1078,18 +1078,17 @@ function quietLocked<T>(job: () => Promise<T>) {
     return run;
 }
 
-// what the next prompt carries, the list emptied
-async function quietTake($: EngineInterface) {
+// what the next prompt carries, the list emptied; a list that would not empty waits, or it rides every prompt
+async function quietTake($: EngineInterface): Promise<StashQuiet> {
     const quiet = await quietOf($);
-    if (quiet.held.length) {
-        await saveQuiet($, { ...quiet, held: [] });
-        await quietFlushed($, quiet.held).catch(() => undefined);
-    }
+    if (!quiet.held.length) return quiet;
+    if (!(await saveQuiet($, { ...quiet, held: [] }))) return { held: [] };
+    await quietFlushed($, quiet.held).catch(() => undefined);
     return quiet;
 }
 
 // the store is the list's truth: every `$.state.get` of one dispatch reads one moment, so a prompt's own dispatch would
-// read a list older than what landed since, and write it back; state is the mirror a drawing and a resume read
+// read a list older than what landed since, and write it back; state is the mirror a resume reads
 async function quietOf($: EngineInterface): Promise<StashQuiet> {
     const sid = await currentId($);
     const held = sid
@@ -1103,16 +1102,18 @@ async function quietOf($: EngineInterface): Promise<StashQuiet> {
 
 // true once the held list is in the store
 async function saveQuiet($: EngineInterface, q: StashQuiet) {
-    const isMirrored = await $.state
+    const sid = await currentId($);
+    const isStored =
+        !sid ||
+        (await $.store
+            .set(QUIET_HELD + sid, q.held)
+            .then(() => true)
+            .catch(() => false));
+    if (!isStored) return false;
+    return $.state
         .set(QUIET, q)
         .then(() => true)
-        .catch(() => false);
-    const sid = await currentId($);
-    if (!sid) return isMirrored;
-    return $.store
-        .set(QUIET_HELD + sid, q.held)
-        .then(() => true)
-        .catch(() => false);
+        .catch(() => !!sid);
 }
 
 const quietLogKey = (at: number) =>
@@ -1533,8 +1534,7 @@ async function quietDue($: EngineInterface) {
     const waitMs = (await readNumber($, 'quietWait')) * 60_000;
     if ((await $.clock.now()) - Math.min(...q.held.map((p) => p.at)) < waitMs)
         return [];
-    await saveQuiet($, { ...q, held: [] });
-    return q.held;
+    return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
 }
 
 async function quietPutBack($: EngineInterface, held: QuietPing[]) {
@@ -3154,8 +3154,8 @@ async function paceDue($: EngineInterface, sid: string) {
     const kept = (await $.store.get(PACE_RUNG + sid)) as
         | { resetsAt: number; rung: PaceRung }
         | undefined;
-    const rung = paceRung(meter);
     const isSame = kept && isSameWindow(kept.resetsAt, meter.resetsAt);
+    const rung = paceRung(meter, isSame ? kept.rung : undefined);
     if (kept && (!rung || !isSame)) await $.store.delete(PACE_RUNG + sid);
     if (!rung || rung === 'between') return undefined;
     if (!isPaceLineDue(rung, isSame ? kept.rung : undefined)) return undefined;

@@ -259,6 +259,30 @@ test('70 % used sends one «no new chunk»', async ($, on) => {
     expect(rungs(w)).toEqual(['70–80 % — no new chunk']);
 });
 
+test('a park at 70–80 % used reads resume at ≤ 0, never «no new chunk» on the way', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(72, 2 * HOUR);
+    await start($);
+    await w.clock.advance(POLL);
+    await endTurn($);
+    const reset = NOW + 2 * HOUR;
+    const atOver1 = NOW + 32 * MIN;
+    w.meter(72, reset - atOver1, 0, atOver1);
+    await w.clock.set(atOver1);
+    await w.clock.advance(POLL);
+    const between = rungs(w).length;
+    const atUnder = NOW + 45 * MIN;
+    w.meter(72, reset - atUnder, 0, atUnder);
+    await w.clock.set(atUnder);
+    await w.clock.advance(POLL);
+    await endTurn($);
+    await w.clock.advance(POLL);
+    expect([between, rungs(w)]).toEqual([
+        1,
+        ['+5 over pace — park', 'back to ≤ 0 — resume'],
+    ]);
+});
+
 test('a new window clears the stored rung, so its park is told again', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(46, LEFT);
@@ -408,6 +432,18 @@ test("dima's change during the shift is kept at the end", async ($, on) => {
     w.store.set('waker', { on: false });
     await w.clock.advance(POLL);
     w.store.delete(`pace:${SID}`);
+    await w.clock.advance(POLL);
+    expect(wakerOn(w)).toBe(false);
+});
+
+test('a second start leaves ⏰ off once dima switched it off', async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await w.clock.advance(POLL);
+    w.store.set('waker', { on: false });
+    w.store.set(`pace:${SID}`, { since: NOW + 1 });
     await w.clock.advance(POLL);
     expect(wakerOn(w)).toBe(false);
 });

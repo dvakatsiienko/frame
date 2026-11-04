@@ -1153,6 +1153,40 @@ test('a held list that does not save passes the ping, failed-open, nothing held'
     ]);
 });
 
+test('a message whose hold did not save is never delivered again', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+    });
+    await start($);
+    isBroken = true;
+    await ping($, 'once only');
+    isBroken = false;
+    await say($, 'status?');
+    expect(held(w)).toEqual([]);
+});
+
+test('a list that will not empty waits, and reaches the prompt after once', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+    });
+    await start($);
+    await ping($, 'once only');
+    isBroken = true;
+    await say($, 'one');
+    const during = held(w);
+    isBroken = false;
+    await say($, 'two');
+    const reached = held(w).join('\n');
+    await say($, 'three');
+    expect([during, reached.includes('once only'), held(w)]).toEqual([
+        [],
+        true,
+        [],
+    ]);
+});
+
 test('a held line that does not log passes the ping and takes it back out of the held list', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
