@@ -302,8 +302,8 @@ W249 (2026-11-04 17:51, dima): 2. implement most wanted mods that still not impl
 W250 (2026-11-04 17:51, dima): 3. sync your habits with fresh mods — so your shift skill (that tied to quiet mod chunk), and your improved coordination (self running SW) are also synced.
 W251 (2026-11-04 17:51, dima): 4. at some point — resume speak app v2.
 W252 (2026-11-04 17:51, dima): now — you previously provided stuff you can do. implement everything from orbit then solve the list.
-W253 (2026-11-04 17:51, dima): 1. Test 🐦‍⬛ crow's held-note bug, ahead of [FRM-485](https://linear.app/x-com/issue/FRM-485)'s door. ← i assume this is done, if yes — move on
-W254 (2026-11-04 17:51, dima): 2. [FRM-502](https://linear.app/x-com/issue/FRM-502)'s cut (🐦‍⬛ crow): remove the claim wake, then close it. ← i assume this is done, if yes — move on
+W253 (2026-11-04 17:51, dima): 1. Test 🐦⬛ crow's held-note bug, ahead of [FRM-485](https://linear.app/x-com/issue/FRM-485)'s door. ← i assume this is done, if yes — move on
+W254 (2026-11-04 17:51, dima): 2. [FRM-502](https://linear.app/x-com/issue/FRM-502)'s cut (🐦⬛ crow): remove the claim wake, then close it. ← i assume this is done, if yes — move on
 W255 (2026-11-04 17:51, dima): 3. Small ticket fixes: the 8 🐬 wishkeeper leftovers, the [FRM-472](https://linear.app/x-com/issue/FRM-472) done-test line, and my two owed corrections. ← done? if not yet - complete it and move on
 W256 (2026-11-04 17:51, dima): 4. Revalidate the 5 pocket items that kept rolling over, then the rest of the tails. ← do this if not done yet, yourself if you can or call me
 W257 (2026-11-04 17:51, dima): 5. Prep the owed asks: the 21 worktrees and 3 stashes cleanup, [BYT-130](https://linear.app/x-com/issue/BYT-130). ← this one too.
