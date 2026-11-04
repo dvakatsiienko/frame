@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T11:19:00Z'
+updated_date: '2026-11-04T12:11:00Z'
 labels:
   - s
 dependencies: []
@@ -139,8 +139,26 @@ W106 (2026-11-04 13:08, dima): ok let's have the pace watch button for you only.
 
 W107 (2026-11-04 13:12, dima): the park line at 90 %, with 1h 50m left, should also tell you to keep the hot meter on for everyone: 1h 50m is too large, someone's cache can go cold. (FRM-500, re-sign)
 
-W100 refold (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go, for a leaner memory? ❓
+W110 (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go, for a leaner memory? ❓
 W108 (2026-11-04 13:08, dima): print the exact lines the mod sends you on all events.
 W109 (2026-11-04 13:12, dima): did it fire because «5h» 1h left was reached? the percentage is currently -9%. ❓
 renumber map: 1308 groom W106–W108 → W106, its W109 → W108; 1312 groom W108–W109 → W107, its W110–W111 → W109
+
+W111 (2026-11-04 14:10, dima): a gap: crow somehow got cold during all of this.
+W112 (2026-11-04 14:10, dima): can you trace how? ❓
+W113 (2026-11-04 14:10, dima): from my window, i see that keep hot worked but triggered when 100% was burned already.
+W114 (2026-11-04 14:10, dima): my ideas:
+W115 (2026-11-04 14:10, dima): at <1h of 5h left, when aiming to burn all usage, ping a crow with single message.
+W116 (2026-11-04 14:10, dima): because crow will be parked for too long at the point of reaching 100% (like this time), crow can miss its keep hot even and get cold then, like now.
+W117 (2026-11-04 14:10, dima): another idea: instead of burning to 100%, burn until ~97% and leave a few percentage of space in 5h as a safety net, for cases like this.
+W118 (2026-11-04 14:10, dima): to have option to ping someone, or ask for some small stuff that would be good to have right now, before reset.
+W119 (2026-11-04 14:10, dima): by reaching 100% (full stop) there is no option to do anything at all (everyone stopped).
+W120 (2026-11-04 14:10, dima): propose how to avoid crow getting cold too.
+W121 (2026-11-04 14:10, dima): for current crow, since it is cold already, i've archived it.
+W122 (2026-11-04 14:10, dima): learn its issue from transcripts.
+W123 (2026-11-04 14:10, dima): start new crow.
+W124 (2026-11-04 14:10, dima): tell how far side lane from finishing? ❓
+W125 (2026-11-04 14:10, dima): weekly is at 84%, and i want to solve more operational stuff with main lane here and with side channel.
+W126 (2026-11-04 14:10, dima): nearest stuff: let's refine pace watch messages.
+W127 (2026-11-04 14:10, dima): i think not all of them are correct.
 <!-- SECTION:NOTES:END -->
