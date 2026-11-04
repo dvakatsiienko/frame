@@ -3,10 +3,10 @@ id: PK-317
 title: >-
   reply-check: a fleet verdict word printed plain (🌼 clean, 🩹 fix, 🪜
   escalate) gets flagged
-status: done
+status: open
 assignee: []
 created_date: '2026-11-03T19:22:00Z'
-updated_date: '2026-11-04T13:45:00Z'
+updated_date: '2026-11-04T14:02:00Z'
 labels:
   - xs
 dependencies: []
@@ -25,4 +25,6 @@ flawlog 2026-11-03 15:52 #dima-caught: the verdict words printed unbolded though
 
 <!-- SECTION:NOTES:BEGIN -->
 close: 2026-11-04 — dropped, no guard: measured over today's 222 replies, 0 real misses among the fleet's badge names (3 hits, all inside a bold or a link). one catch on 11-03 doesn't pay for a rule; a second sighting brings it back with teeth.
+
+correction 2026-11-04 16:02: the drop above is withdrawn: my measure read badge names, never the verdict words (wishkeeper). rerun with fleet-vibe's verdict line before any call.
 <!-- SECTION:NOTES:END -->
