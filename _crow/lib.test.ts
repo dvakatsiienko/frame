@@ -25,6 +25,7 @@ import {
     cutLine,
     decisionOf,
     dropStaleRelay,
+    heldUnsent,
     isCoordinatorTranscript,
     isLocated,
     isParked,
@@ -1034,6 +1035,66 @@ describe('meterLine', () => {
     });
     test('a missing usage file prints nothing', () => {
         expect(meterLine(NOW, '/nonexistent/u.json')).toBe('');
+    });
+});
+
+describe('heldUnsent', () => {
+    const NOW = new Date(2026, 10, 3, 13, 0);
+    const ago = (min: number) =>
+        new Date(NOW.getTime() - min * 60_000).toISOString();
+    const session = (note: string, min: number) => ({
+        at: ago(min),
+        channel: 'session',
+        id: `n${min}`,
+        note,
+    });
+    function notes(...rows: object[]) {
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-held-')), 'n.jsonl');
+        writeFileSync(path, rows.map((r) => JSON.stringify(r)).join('\n'));
+        return path;
+    }
+    const HELD = '🟡 held: until the break';
+
+    test('a held note with nothing sent after it comes back', () => {
+        expect(
+            heldUnsent(NOW, notes(session(HELD, 10))).map((n) => n.id),
+        ).toEqual(['n10']);
+    });
+    test('a note sent after it settles it, so a sent note is never resent', () => {
+        expect(
+            heldUnsent(NOW, notes(session(HELD, 10), session('🔴 sent: x', 5))),
+        ).toEqual([]);
+    });
+    test('a none after it settles nothing', () => {
+        expect(
+            heldUnsent(NOW, notes(session(HELD, 10), session('none', 5))),
+        ).toHaveLength(1);
+    });
+    test('past 60 min it is gone, and another channel never counts', () => {
+        expect(heldUnsent(NOW, notes(session(HELD, 61)))).toEqual([]);
+        expect(
+            heldUnsent(NOW, notes({ ...session(HELD, 10), channel: 'plan' })),
+        ).toEqual([]);
+    });
+    test('no notes file is none', () => {
+        expect(heldUnsent(NOW, '/nope/n.jsonl')).toEqual([]);
+    });
+    test('the packet carries the section, and a wake with none leaves it out', () => {
+        const dir = join(mkdtempSync(join(tmpdir(), 'crow-')), 'packet');
+        buildPacket({
+            deltaText: 'x',
+            dir,
+            held: [{ at: ago(10), id: 'n10', note: HELD }],
+            leaves: [],
+            missing: [],
+        });
+        const text = readFileSync(join(dir, 'packet.md'), 'utf8');
+        expect(text).toContain('## held by the last crow');
+        expect(text).toContain(HELD);
+        buildPacket({ deltaText: 'x', dir, leaves: [], missing: [] });
+        expect(readFileSync(join(dir, 'packet.md'), 'utf8')).not.toContain(
+            'held by the last crow',
+        );
     });
 });
 

@@ -780,6 +780,7 @@ export function buildPacket({
     cut = '',
     deltaText,
     dir,
+    held = [],
     leaves,
     ledger,
     meter,
@@ -805,6 +806,11 @@ export function buildPacket({
         ...(ledger ? [ledger] : []),
         ...(meter ? [meter] : []),
         ...(charter ? [`## charter changed\n\n${charter}`] : []),
+        ...(held.length
+            ? [
+                  `## held by the last crow · a restart ended it; send each, or drop it with a reason\n\n${held.map((n) => `${n.id}, ${n.at}\n${n.note}`).join('\n\n')}`,
+              ]
+            : []),
         `# clio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
         ...(receipts === undefined
             ? []
@@ -1160,6 +1166,8 @@ export function packWake({
         cut: cutLine(delta.cut, transcriptPath),
         deltaText: delta.text,
         dir: join(STATE_DIR, 'packets', wakeId),
+        // the first wake of a new crow; a claim wake leaves this one to the next cadence wake
+        held: state.leavesFor === crowTranscript ? [] : heldUnsent(now),
         leaves: toSend.changed,
         ledger: ledgerLine(now),
         meter: meterLine(now),
@@ -1281,6 +1289,32 @@ export function meterLine(now: Date, usagePath = USAGE_PATH) {
     }
 }
 
+// a held note opens with «🟡 held:» since 10-12; older ones end on «holdout»
+const isHeld = (n: { note: string }) =>
+    /^🟡 held:/m.test(n.note) || /holdout\s*$/.test(n.note);
+
+// a restart loses what the last crow held: its notes of the last hour with nothing sent after them
+export function heldUnsent(now: Date, notesPath = NOTES_PATH) {
+    const since = now.getTime() - 3_600_000;
+    const rows = jsonlOf<{
+        at?: string;
+        channel?: string;
+        id?: string;
+        note?: string;
+    }>(notesPath)
+        .filter((n) => n.channel === 'session' && typeof n.note === 'string')
+        .map((n) => ({
+            at: n.at ?? '',
+            id: n.id ?? '',
+            note: (n.note ?? '').trim(),
+        }))
+        .filter((n) => new Date(n.at).getTime() > since);
+    const lastSent = rows.findLastIndex(
+        (n) => n.note && n.note !== 'none' && !isHeld(n),
+    );
+    return rows.slice(lastSent + 1).filter(isHeld);
+}
+
 export function ledgerLine(
     now: Date,
     notesPath = NOTES_PATH,
@@ -1293,9 +1327,6 @@ export function ledgerLine(
         .filter((n) => n.channel === 'session' && typeof n.note === 'string')
         .map((n) => ({ at: new Date(n.at ?? 0), note: (n.note ?? '').trim() }));
     const wouldSend = notes.filter((n) => n.note !== 'none' && n.note !== '');
-    // a held note opens with «🟡 held:» since 10-12; older ones end on «holdout»
-    const isHeld = (n: { note: string }) =>
-        /^🟡 held:/m.test(n.note) || /holdout\s*$/.test(n.note);
     const sent = wouldSend.filter((n) => !isHeld(n));
     const sentToday = sent.filter((n) => localDay(n.at) === today).length;
     const last = sent.at(-1)?.at;
@@ -1659,6 +1690,7 @@ interface UsageFile {
 }
 
 interface PacketInput {
+    held?: { at: string; id: string; note: string }[];
     charter?: string;
     receipts?: string;
     cut?: string;
