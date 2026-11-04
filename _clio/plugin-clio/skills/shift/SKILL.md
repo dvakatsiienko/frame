@@ -58,7 +58,7 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
 - write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces (dima, 2026-11-03, PK-308)
-- every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end (dima, 2026-11-03, PK-308); `pnpm -C ~/frame mods:set-pace-watch on`, which also turns the ⏰ waker on and notes what it found
+- every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end (dima, 2026-11-03, PK-308); `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
 - one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
@@ -71,7 +71,7 @@ Every decision is one of three:
 - **a merge lands itself** (dima, 2026-11-03: «the usual pattern for shift is that you merge automatically without my approval»): a clean pr by the gate, a self-edit when its chunk's `## signed` carries `merge: pre-approved`, a quick lane's chunk by its close; each one only after its pre-merge 🌤️ siesta, wishkeeper over the chunk (`docs/test-drive/pre-merge-siesta.md`). a day's exception — «hold this lane at ready for my ok» — is written into the plan file's rules for that lane only, never into this skill
 - **taste** → build one default, flag it for the report
 
-- the ⏰ waker stays on while he is afk (dima, 2026-11-03): i read its key at every step, and off means i switch it on through `pnpm -C ~/frame mods:set-pace-watch on`
+- the ⏰ waker stays on while he is afk (dima, 2026-11-03): i read its key at every step, and off means i switch it on through `pnpm -C ~/frame mods:set pace on`
 - a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
 - codie's premise doubt is built and flagged the same minute, never found at review
 - every «done / fixed / sealed / reset» i log or tell names the command that read it back, with its exit code; a member's relay says `measured:` or `inference:`, and no ticket is born from an `inference:` line mid-shift
@@ -94,6 +94,6 @@ In the plan file, then one chat message:
 - the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
 - then the return sections, one or two plain lines each: how it went (per lane: merged, parked, not run), what waited on dima and how it resolved, second winds (who, when, what survived), failures with their state now, merges and what held one, retros per member, the flow (good and off, a fix per off), ticket readiness (exit lines rewritten mid-lane, and why), anything else or `none`
 
-Retros in, members stopped, 🔥 off, `pnpm -C ~/frame mods:set-pace-watch off`, which puts ⏰ back as it found it, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
+Retros in, members stopped, 🔥 off, `pnpm -C ~/frame mods:set pace off`, which puts ⏰ back as it found it, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
 
 **Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.
