@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T14:36:00Z'
+updated_date: '2026-11-04T15:22:00Z'
 labels:
   - s
 dependencies: []
@@ -267,4 +267,6 @@ W222 (2026-11-04 16:33, dima, o69 steer): For example, after each chunk of side 
 W223 (2026-11-04 16:33, dima, o69 steer): I was more about this.
 W224 (2026-11-04 16:33, dima): mods lane: I'm done with them.
 W225 (2026-11-04 16:33, dima): you can collect the retro whenever you have a moment and stop mods lane.
+
+W212 (2026-11-04 16:26, dima, o73 steer): yes i see them.
 <!-- SECTION:NOTES:END -->
