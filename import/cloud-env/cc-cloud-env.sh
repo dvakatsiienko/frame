@@ -1,6 +1,6 @@
 #!/bin/bash
-# Cloud environment setup: Node 24 for Claude Code sessions.
-# The image ships Node 22; package.json engines wants >=24, and pnpm only warns.
+# Cloud environment setup: Node 26 for Claude Code sessions.
+# The image ships Node 22; package.json engines wants >=26, and pnpm only warns.
 set -uo pipefail
 
 NODE_VERSION=26

@@ -12,6 +12,7 @@ type Ticket = {
 type Lane = {
     endedAt?: number;
     items: { ticket?: string; isDone: boolean }[];
+    members?: Record<string, unknown>;
 };
 
 // a stub `x` on PATH: the list and the read answer from the given tickets; none means linear is down.
@@ -63,6 +64,29 @@ describe('close-net', () => {
         );
         expect(out.status).toBe(0);
         expect(out.stdout).toContain('FRM-1: a glide step');
+    });
+
+    test('with no member on a card, only its current step passes', () => {
+        const items = [
+            { isDone: false, ticket: 'FRM-1' },
+            { isDone: false, ticket: 'FRM-2' },
+        ];
+        const out = run([{ id: 'FRM-1' }, { id: 'FRM-2' }], [{ items }]);
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('🔴 FRM-2');
+        expect(out.stdout).not.toContain('🔴 FRM-1');
+    });
+
+    test('a linked member passes every open step', () => {
+        const items = [
+            { isDone: false, ticket: 'FRM-1' },
+            { isDone: false, ticket: 'FRM-2' },
+        ];
+        const out = run(
+            [{ id: 'FRM-1' }, { id: 'FRM-2' }],
+            [{ items, members: { codie: {} } }],
+        );
+        expect(out.status).toBe(0);
     });
 
     test('a ticket with no door reds and is named', () => {

@@ -26,13 +26,20 @@ function glideTickets(): Set<string> {
             lanes: {
                 endedAt?: number;
                 items: { ticket?: string; isDone: boolean }[];
+                members?: Record<string, unknown>;
             }[];
         };
         return new Set(
             lanes
                 .filter((l) => !l.endedAt)
-                .flatMap((l) => l.items)
-                .filter((i) => i.ticket && !i.isDone)
+                .flatMap((l) => {
+                    const open = l.items.filter((i) => !i.isDone);
+                    // a member builds every open step; with none, only the card's current step is being built
+                    return Object.keys(l.members ?? {}).length
+                        ? open
+                        : open.slice(0, 1);
+                })
+                .filter((i) => i.ticket)
                 .map((i) => i.ticket as string),
         );
     } catch {
