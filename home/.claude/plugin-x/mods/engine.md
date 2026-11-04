@@ -41,6 +41,7 @@ the facts a mod round needs only when a probe or a test bites; the doors and rul
   - state by lifetime:
     - a module variable resets on every reload — live: keep-hot lost 🔥 on reload until it moved to `$.store` (x-mod-stash, 2026-10-04)
     - `$.state` survives a hot reload and resets at `/clear` — live, 2.1.296 (lane l12, 20:01): a `mods:live` probe set a mark, ran `/clear`, read it back empty under the new session id; the interface guide says `/resume` and `/branch` reset it too (unprobed)
+    - every `$.state.get` of one dispatch reads one moment, whatever is written meanwhile (types): a list that other hooks grow lives in `$.store`, or a hook's read-then-write puts an old copy back, through any lock in the mod (FRM-501: a prompt's drain lost held messages; or use `set`'s `ifVersion`)
     - `$.store` persists across sessions on this mac — live: the fleet board reads other sessions' keys; 4 MiB in all — types: `$.store`'s doc; cross-session writes are not atomic: per-item keys, re-read right before a write
   - limits:
     - a hook runs 10 s, then is skipped and the call goes on — live: the probe logged «tool.call hook skipped: ran past its 10s budget»; types: `HookBudget`; a `$` call's own time does not count (`HookBudget`), except `$.clock.sleep`, which spends the hook's budget — to wait without spending it, `$.process.run(['sleep', …])`

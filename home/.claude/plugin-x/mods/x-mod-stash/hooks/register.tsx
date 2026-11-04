@@ -1088,21 +1088,31 @@ async function quietTake($: EngineInterface) {
     return quiet;
 }
 
+// the store is the list's truth: every `$.state.get` of one dispatch reads one moment, so a prompt's own dispatch would
+// read a list older than what landed since, and write it back; state is the mirror a drawing and a resume read
 async function quietOf($: EngineInterface): Promise<StashQuiet> {
+    const sid = await currentId($);
+    const held = sid
+        ? await $.store.get(QUIET_HELD + sid).catch(() => undefined)
+        : undefined;
+    if (Array.isArray(held)) return { held: held as QuietPing[] };
     return (
         (await $.state.get(QUIET).catch(() => undefined))?.value ?? { held: [] }
     );
 }
 
-// true once the held list is in the session's state; the store copy only feeds the board's row
+// true once the held list is in the store
 async function saveQuiet($: EngineInterface, q: StashQuiet) {
-    const isSaved = await $.state
+    const isMirrored = await $.state
         .set(QUIET, q)
         .then(() => true)
         .catch(() => false);
     const sid = await currentId($);
-    if (sid) await $.store.set(QUIET_HELD + sid, q.held).catch(() => undefined);
-    return isSaved;
+    if (!sid) return isMirrored;
+    return $.store
+        .set(QUIET_HELD + sid, q.held)
+        .then(() => true)
+        .catch(() => false);
 }
 
 const quietLogKey = (at: number) =>

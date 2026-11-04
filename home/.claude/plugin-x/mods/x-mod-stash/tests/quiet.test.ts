@@ -450,6 +450,40 @@ test('three messages at once are all held', async ($, on) => {
     ).toHaveLength(3);
 });
 
+for (const order of ['pings first', 'prompt first', 'prompt between'] as const)
+    test(`two messages and a prompt at once both arrive once: ${order}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const jobs = [
+            () => ping($, 'm-a'),
+            () => ping($, 'm-b'),
+            () => say($, 'x'),
+        ];
+        const run =
+            order === 'pings first'
+                ? jobs
+                : order === 'prompt first'
+                  ? [jobs[2], jobs[0], jobs[1]]
+                  : [jobs[0], jobs[2], jobs[1]];
+        await Promise.all(run.map((j) => j?.()));
+        await say($, 'y');
+        await w.clock.advance(11 * MIN);
+        const t = [...w.contexts.flat(), ...w.appended].join('\n');
+        expect(['m-a', 'm-b'].map((m) => t.split(m).length - 1)).toEqual([
+            1, 1,
+        ]);
+    });
+
+test('six messages and a prompt at once all arrive', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const names = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'];
+    await Promise.all([...names.map((m) => ping($, m)), say($, 'x')]);
+    await say($, 'y');
+    const t = w.contexts.flat().join('\n');
+    expect(names.filter((m) => t.includes(m))).toEqual(names);
+});
+
 test('a message landing during a prompt drain is held', async ($, on) => {
     const w = world(on);
     await start($);
@@ -1106,11 +1140,10 @@ test('a throw inside the hold passes the ping and logs failed-open', async ($, o
 });
 
 test('a held list that does not save passes the ping, failed-open, nothing held', async ($, on) => {
-    const w = world(on);
     let isBroken = false;
-    on('state.set', (_$, e, next) =>
-        isBroken && e.key === 'quiet' ? { deny: 'disk full' } : next(e),
-    );
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+    });
     await start($);
     isBroken = true;
     await ping($, '[progress] step 2 landed');
@@ -1273,11 +1306,17 @@ const sendAt = (min: number) =>
 
 function alarmWorld(
     on: On,
-    { notify = 'no-surface', osascript = 0, sends = [] as string[] } = {},
+    {
+        notify = 'no-surface',
+        osascript = 0,
+        refuseAppend = false,
+        sends = [] as string[],
+    } = {},
 ) {
     const scripted: string[] = [];
     const w = world(on, {
         peers: [codiePeer],
+        refuseAppend,
         run: (argv) => {
             if (argv[0] === 'osascript') {
                 scripted.push(String(argv[3]));
@@ -1335,7 +1374,7 @@ test('a gap notify sends itself goes no further', async ($, on) => {
 });
 
 test('a held ping stuck past the idle wait + 2 min raises one alarm', async ($, on) => {
-    const w = alarmWorld(on);
+    const w = alarmWorld(on, { refuseAppend: true });
     w.store.set(`quiet-held:${SID}`, [
         {
             at: EVEN - 13 * MIN,

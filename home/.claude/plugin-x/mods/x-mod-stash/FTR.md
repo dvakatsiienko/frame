@@ -715,7 +715,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 ## quiet comms — member pings off clio's thread
 
 quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, [FRM-501](https://linear.app/x-com/issue/FRM-501)): a message to clio waits for her next turn instead of starting one, unless it pushes on purpose; one switch reverts it. this section is the contract: the crew skills only point here.
-- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm, why it pushed); `quiet-held:<session>` the held messages; `quiet-asked` the members clio asked a question, by name without the mode emoji
+- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm, why it pushed); `quiet-held:<session>` the held messages, the list's truth, since every `$.state.get` of one dispatch reads one moment and a prompt's dispatch would write an old list back; `quiet-asked` the members clio asked a question, by name without the mode emoji
 
 - ✅ a message that does not push is held in clio's thread
   - given clio's session — the registry names it `🦉 clio`, wherever a Bash `cd` left it — and the switch on
@@ -726,7 +726,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and a message carrying «for dima» as words is pushed; a path holding them, a backticked span and «nothing for dima» never count
   - decision: push is the exception on purpose, so spam cannot start: of 91 coordinator turns on 11-03, 65 were member-woken and 42 carried nothing for dima (dima, 2026-11-03)
   - and a held message is kept whole, every line; messages landing together wait their turn, so none is lost
-  - proof: tests/quiet.test.ts::pushes, starts a turn: …; ::held, no turn: …; ::an untagged line from … is held; ::a held message reaches clio whole, every line of it; ::three messages at once are all held; ::a message landing during a prompt drain is held; tests/board.test.ts::a held message of many lines draws its first line in the row — not asserted: a desktop send clio's app queues while her turn runs raises no `session.receive`, so the gate never reads it (probe, 11-03)
+  - proof: tests/quiet.test.ts::pushes, starts a turn: …; ::held, no turn: …; ::an untagged line from … is held; ::a held message reaches clio whole, every line of it; ::three messages at once are all held; ::a message landing during a prompt drain is held; ::two messages and a prompt at once both arrive once: …; ::six messages and a prompt at once all arrive; tests/board.test.ts::a held message of many lines draws its first line in the row — not asserted: a desktop send clio's app queues while her turn runs raises no `session.receive`, so the gate never reads it (probe, 11-03)
 - ✅ a member's answer to clio's question is never held
   - given clio's SendMessage asked a member a question (a `?` outside code and urls) and landed, by its name, session id, host id or socket
   - when that member's first message since then with no `[progress]` opening arrives within 30 min, then it starts a turn
