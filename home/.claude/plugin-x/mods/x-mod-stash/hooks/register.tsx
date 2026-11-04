@@ -1349,7 +1349,7 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
         : undefined;
 
 // the desktop's «finished a turn» prompt in clio's thread: held like a message, unless a report pushes; answers the drop's
-// reason, undefined to let the prompt in
+// reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), undefined to let the prompt in
 async function quietHoldNotes($: EngineInterface, prompt: string) {
     const notes = quietNotes(prompt);
     if (!notes || !(await isQuietHome($))) return undefined;
@@ -1394,7 +1394,7 @@ async function quietHoldNotes($: EngineInterface, prompt: string) {
             startedTurn: false,
             verdict: 'held',
         });
-    return `🤫 held: ${notes.map((n) => n.from).join(', ')} finished a turn`;
+    return '';
 }
 
 type QuietSend =
@@ -3219,11 +3219,12 @@ async function paceStep($: EngineInterface) {
 async function paceWaker($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    const isWatched =
-        Boolean(await $.store.get(PACE + sid)) &&
-        (await partsShown($))('stash.pace-watch');
+    const key = (await $.store.get(PACE + sid)) as
+        | { since?: number }
+        | undefined;
+    const isWatched = Boolean(key) && (await partsShown($))('stash.pace-watch');
     const note = (await $.store.get(PACE_WAKER + sid)) as
-        | { until?: number; wasOn: boolean }
+        | { since?: number; until?: number; wasOn: boolean }
         | undefined;
     const waker = (await $.store.get(WAKER_KEY)) as
         | { on?: boolean }
@@ -3236,10 +3237,17 @@ async function paceWaker($: EngineInterface) {
         if (!note) {
             const wasOn = waker?.on === true;
             await $.store.set(PACE_WAKER + sid, {
+                since: key?.since,
                 wasOn,
                 ...(until ? { until } : {}),
             });
             if (!wasOn) await $.store.set(WAKER_KEY, { on: true });
+            return;
+        }
+        // a second start means ⏰ on, he may have forgotten it (W1958); the end still restores what the first one found
+        if (key?.since !== note.since) {
+            await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
+            if (waker?.on !== true) await $.store.set(WAKER_KEY, { on: true });
             return;
         }
         if (until === undefined) return;
@@ -4680,7 +4688,7 @@ export const register: Register = (on) => {
                       () => undefined,
                   )
                 : undefined;
-        if (heldNotes) return { drop: heldNotes };
+        if (heldNotes !== undefined) return { drop: heldNotes };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);

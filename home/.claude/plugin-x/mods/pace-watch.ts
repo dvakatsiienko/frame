@@ -1,4 +1,4 @@
-// pnpm mods:pace-watch on|off [session id] — x-mod-stash's pace watch and ⏰ waker for a shift, no click: writes the
+// pnpm mods:set-pace-watch on|off [session id] — x-mod-stash's pace watch and ⏰ waker for a shift, no click: writes the
 // session's `pace:<id>` into the mod's store file, crow's door for 🔥; the session's own stash takes it at its next poll
 import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -58,7 +58,7 @@ function newest(pattern: string, cwd: string) {
 
 function main([verb, id]: string[]) {
     if (verb !== 'on' && verb !== 'off') {
-        console.error('usage: pnpm mods:pace-watch on|off [session id]');
+        console.error('usage: pnpm mods:set-pace-watch on|off [session id]');
         return 2;
     }
     const home = homedir();

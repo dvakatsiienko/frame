@@ -399,7 +399,7 @@ for (const [shape, text] of [
         const w = world(on);
         await start($);
         const r = await fromApp($, text);
-        expect([r.drop?.startsWith('🤫 held'), w.contexts]).toEqual([true, []]);
+        expect([r.drop === '', w.contexts]).toEqual([true, []]);
     });
 
 test('a held note reaches clio at her next prompt, its report whole', async ($, on) => {
@@ -544,10 +544,18 @@ test('a note answering clio starts a turn, and spends the slot', async ($, on) =
     await send($, CODIE.name, 'which one?');
     const first = await fromApp($, noteOf(CODIE.name, 'the second one'));
     const second = await fromApp($, noteOf(CODIE.name, 'step 3 landed'));
-    expect([first.drop, second.drop?.startsWith('🤫 held')]).toEqual([
-        undefined,
-        true,
-    ]);
+    expect([first.drop, second.drop === '']).toEqual([undefined, true]);
+});
+
+test('a note waiting on the user keeps its wake', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const waiting = NOTE.replace(
+        'finished a turn. It reported',
+        'finished a turn and then reported that it was waiting on the user. It reported',
+    );
+    const r = await fromApp($, notice(waiting, LINKED, EVENT));
+    expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
 });
 
 for (const [what, text] of [
@@ -574,10 +582,7 @@ test('a [progress] report neither pushes nor spends the slot', async ($, on) => 
     await send($, CODIE.name, 'which one?');
     const first = await fromApp($, noteOf(CODIE.name, '[progress] step 1'));
     const second = await fromApp($, noteOf(CODIE.name, 'the second one'));
-    expect([first.drop?.startsWith('🤫 held'), second.drop]).toEqual([
-        true,
-        undefined,
-    ]);
+    expect([first.drop === '', second.drop]).toEqual([true, undefined]);
     expect(w.contexts).toHaveLength(1);
 });
 

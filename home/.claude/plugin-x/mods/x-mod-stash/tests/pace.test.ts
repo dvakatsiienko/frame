@@ -436,7 +436,21 @@ test("dima's change during the shift is kept at the end", async ($, on) => {
     expect(wakerOn(w)).toBe(false);
 });
 
-test('a second start leaves ⏰ off once dima switched it off', async ($, on) => {
+test('a second start turns ⏰ back on after dima switched it off', async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await w.clock.advance(POLL);
+    w.store.set('waker', { on: false });
+    await w.clock.advance(POLL);
+    const off = wakerOn(w);
+    w.store.set(`pace:${SID}`, { since: NOW + 1 });
+    await w.clock.advance(POLL);
+    expect([off, wakerOn(w)]).toEqual([false, true]);
+});
+
+test('the end restores the state the first start found, past a second start', async ($, on) => {
     const w = world(on);
     w.meter(30, LEFT);
     await start($);
@@ -444,6 +458,8 @@ test('a second start leaves ⏰ off once dima switched it off', async ($, on) =>
     await w.clock.advance(POLL);
     w.store.set('waker', { on: false });
     w.store.set(`pace:${SID}`, { since: NOW + 1 });
+    await w.clock.advance(POLL);
+    w.store.delete(`pace:${SID}`);
     await w.clock.advance(POLL);
     expect(wakerOn(w)).toBe(false);
 });
