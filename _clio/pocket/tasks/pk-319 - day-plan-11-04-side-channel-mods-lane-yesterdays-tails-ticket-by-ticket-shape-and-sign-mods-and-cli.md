@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T11:10:00Z'
+updated_date: '2026-11-04T11:11:00Z'
 labels:
   - s
 dependencies: []
@@ -134,4 +134,6 @@ W101 (2026-11-04 12:58, dima): set-pace-watch: is it only for clio? i'd like a b
 W102 (2026-11-04 12:58, dima): never skip wishkeeper. he is a prio. even when we go over the pace.
 
 W103-W105 groomed apart from W102 by helga, 2026-11-04-1258.groomed.md: same 12:58 lines
+
+W106 (2026-11-04 13:08, dima): ok let's have the pace watch button for you only. i am shaping a dedicated --bg coordinator with side channel, so it will apply to it too, later. (FRM-500, re-sign)
 <!-- SECTION:NOTES:END -->
