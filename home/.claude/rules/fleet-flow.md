@@ -16,7 +16,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from all
   - lands as: the board in dima's tab
 - **codie**
-  - talks to clio on the events the quiet mod pushes; all else slipstreams (`rules/fleet-mods.md`, x-mod-stash)
+  - talks to clio on the events the quiet mod pushes; all else slipstreams (`plugin-x/mods/x-mod-stash/FTR.md`)
   - talks to its sixth sense freely
   - hears from clio, sixth sense, and dima when he drops in
   - lands as: a linear comment + the done ping
