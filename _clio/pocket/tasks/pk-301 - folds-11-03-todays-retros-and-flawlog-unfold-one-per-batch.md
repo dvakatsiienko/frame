@@ -4,7 +4,7 @@ title: 'folds 11-03: today''s retros and flawlog, unfold one per batch'
 status: open
 assignee: []
 created_date: '2026-11-02T20:27:00Z'
-updated_date: '2026-11-04T15:53:00Z'
+updated_date: '2026-11-04T16:01:00Z'
 labels:
   - m
 dependencies: []
@@ -66,4 +66,6 @@ W1703 (2026-11-03 11:41, dima): how to utilize it, to get use of it? ❓
 W1704 (2026-11-03 11:41, dima): what are the most useful findings, or are you still waiting for the retro results? ❓
 
 kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
+
+done 2026-11-04: F6 in cli-drift-check (the census print kept), F7 in clio:system-checkup; F8 FRM-479 is Done. left: F1, F2, F3 against FRM-501, F4, F5, x fleet audit cut, PK-288 and PK-291 re-read, the cut list after his word
 <!-- SECTION:NOTES:END -->
