@@ -22,7 +22,9 @@ Ticket: FRM-500
 - the 🔋 button and the default on for clio — once built — one click flips the key, a new clio session starts on
 
 ## rounds
-- 2026-11-04 12:58 · first real on, this session, parked by hand 3 min earlier · one line within seconds: «+5 over pace — park», 83 % used, +6, 1h 10m left; matches the meter · the usual door, my own read at the siesta, saw it at 12:55, so a tie this once
+- 2026-11-04 13:00 · first real on, this session, the fleet parked by hand at 12:55 at +7 · one line within a minute of the switch: «+5 over pace — park», 83 % used, +6, 1h 10m left; no meter read beside it, so the match is an inference · no crossing measured: it was already over, and it arrived as hook context in a busy turn
+- 2026-11-04 13:09 · burn branch, dima's staged test: everyone parked, the mod left to wake me · one line, unprompted, from idle: «≤ 1 h left — burn», 89 % used, +9, 1h 0m left; it outranked the standing park, rung changed once · the usual door would have been a turn he or a hook started, so a win
+
+at adopt: propose cutting the window reads from `habit-ctx-load-balancing` (dima's question, 2026-11-04)
 
 ## verdict
-at adopt: propose cutting the window reads from `habit-ctx-load-balancing` (dima's question, 2026-11-04)
