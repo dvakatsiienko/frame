@@ -4,7 +4,7 @@ title: 'pm module upkeep: clio''s own proposals (W937–W938)'
 status: open
 assignee: []
 created_date: '2026-11-01T15:57:00Z'
-updated_date: '2026-11-04T16:01:00Z'
+updated_date: '2026-11-04T16:06:00Z'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,6 @@ kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane 
 kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
 
 done 2026-11-04: item 2, the close sweep in clio:halt; item 3, 9 closed tickets archived at 7 days (a one-off, no weekly job yet). left: 1 the sign verb, 4 the stale In Progress line, 5 the boot next-chunk print, each new surface, each needs its worth it
+
+⚖️ worth it, 2026-11-04, each new surface: item 1 x linear sign: removes the by-hand hash and the three calls per sign (today 3 signs, 2 refused writes); cheaper door turned down: FRM-384's body guard covers the write only; upkeep one verb; 🔌 fleet wired: clio:shape-lane § 4, keep, as a rider on FRM-384. item 4 stale In Progress line: close-net.ts already reds it at every siesta, no: drop. item 5 boot next-chunk print: dima picks from the mods order in the initiative queue, no pain counted: drop, unless he asks
 <!-- SECTION:NOTES:END -->
