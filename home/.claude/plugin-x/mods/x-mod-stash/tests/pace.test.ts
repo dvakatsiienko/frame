@@ -26,9 +26,14 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
     const state = {
         gate: undefined as Promise<void> | undefined,
         isRefused: false,
+        refusedKey: undefined as string | undefined,
     };
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
+        if (e.key === state.refusedKey) {
+            state.refusedKey = undefined;
+            return { deny: 'refused' };
+        }
         store.set(e.key, e.value);
         return { value: undefined };
     });
@@ -819,6 +824,78 @@ test('an ended session’s key sends nothing: only its own session polls it', as
     expect(w.turns).toEqual([]);
 });
 
+test('a refused rung write leaves the watch alive: the line again, then the resume', async ($, on) => {
+    const w = world(on, WATCH);
+    w.state.refusedKey = `pace-rung:${SID}`;
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(POLL);
+    await endTurn($);
+    await w.clock.advance(POLL);
+    await endTurn($);
+    w.meter(35, LEFT, 0, w.clock.now());
+    await w.clock.advance(POLL);
+    expect(rungs(w)).toEqual([
+        '+5 over pace — park',
+        '+5 over pace — park',
+        'back to ≤ 0 — resume',
+    ]);
+});
+
+test('a line on its way never rides its own turn as a second line', async ($, on) => {
+    const w = world(on, WATCH);
+    let release = () => {};
+    w.state.gate = new Promise((r) => {
+        release = r;
+    });
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(POLL);
+    const r = (await $.tool.call({ command: 'ls', tool: 'Bash' } as never)) as {
+        context?: string[];
+    };
+    release();
+    expect((r.context ?? []).filter((c) => c.includes('pace watch'))).toEqual(
+        [],
+    );
+});
+
+test('at or under pace past 70 % a fresh window reads no new chunk, never resume', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(72, 80 * MIN);
+    await start($);
+    await w.clock.advance(POLL);
+    expect(rungs(w)).toEqual(['70–80 % — no new chunk']);
+});
+
+test('a door write redraws 🔋: the next press is the opposite of what it shows', async ($, on) => {
+    const w = world(on);
+    w.store.set('waker', { on: true });
+    await start($);
+    const ui = await band($);
+    w.store.set(`pace:${SID}`, { off: true });
+    await w.clock.advance(POLL);
+    const chip = await ui.find({ key: 'pace-watch', type: 'Button' });
+    await ui.press({ key: 'pace-watch' });
+    expect([chip?.props.plain, w.store.get(`pace:${SID}`)]).toEqual([
+        true,
+        { on: true },
+    ]);
+});
+
+test('a registry row named after the start arms at the first turn end', async ($, on) => {
+    const w = world(on);
+    seat(w, MEMBER);
+    await start($);
+    const before = w.store.get(`pace:${SID}`);
+    seat(w, '🦉 clio');
+    await endTurn($);
+    expect([before, w.store.get(`pace:${SID}`)]).toEqual([
+        undefined,
+        { on: true },
+    ]);
+});
+
 test('a dead target revived after 20 polls gets one line', async ($, on) => {
     const w = world(on, WATCH);
     w.state.isRefused = true;
@@ -852,30 +929,26 @@ test('a pace line starts a turn with the quiet gate on: the mod sends it, never 
 // them, since nothing read the meter before 14:59
 const SHIFT = new Date(2026, 10, 3, 14, 0).getTime();
 const READINGS = [
-    [0, 0],
     [59, 33],
     [95, 55],
     [129, 78],
 ] as const;
 const usedAt = (m: number) => {
     const i = READINGS.findIndex(([at]) => at >= m);
-    const [a, ua] = READINGS[Math.max(0, i - 1)] ?? [0, 0];
+    const [a, ua] = READINGS[Math.max(0, i - 1)] ?? [59, 33];
     const [b, ub] = READINGS[i] ?? [m, 0];
     return Math.round(b === a ? ub : ua + ((ub - ua) * (m - a)) / (b - a));
 };
 
 test(
-    'the 11-03 shift replayed: its readings open past +5, one park at the first minute past the fresh 10 %, 214 min ahead of the 18:03 cap, no turn after it',
+    'the 11-03 shift replayed: its readings open at +13, no crossing to name, one park at the first reading, 184 min ahead of the 18:03 cap, no turn after it',
     { timeoutMs: 60_000 },
     async ($, on) => {
         const w = world(on, WATCH, SHIFT);
         await start($);
         const seen: number[] = [];
         const overAt = (m: number) => usedAt(m) - Math.round((m / 300) * 100);
-        const firstPast = Array.from({ length: 129 }, (_, i) => i + 1).find(
-            (m) => overAt(m) >= 5 && Math.round((m / 300) * 100) >= 10,
-        );
-        for (let m = 1; m <= 129; m++) {
+        for (let m = 59; m <= 129; m++) {
             const now = SHIFT + m * MIN;
             w.meter(usedAt(m), 5 * HOUR - m * MIN, 0, now);
             const was = w.turns.length;
@@ -886,12 +959,11 @@ test(
                 await endTurn($);
             }
         }
-        expect([
-            overAt(59),
-            rungs(w),
-            seen,
-            seen[0] === firstPast,
-            243 - (seen[0] ?? 0),
-        ]).toEqual([13, ['+5 over pace — park'], [29], true, 214]);
+        expect([overAt(59), rungs(w), seen, 243 - (seen[0] ?? 0)]).toEqual([
+            13,
+            ['+5 over pace — park'],
+            [59],
+            184,
+        ]);
     },
 );

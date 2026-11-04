@@ -85,6 +85,7 @@ export type StashView = {
     wait?: string;
     afk: boolean;
     isHot: boolean;
+    isPaced: boolean;
     isWaker: boolean;
     isBoardOpen: boolean;
     // this session's own second wind, for the band's button

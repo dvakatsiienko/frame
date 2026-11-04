@@ -489,6 +489,7 @@ let pinged = false;
 let isPolling = false;
 let afk = false;
 let isWaker = false;
+let isPaced = false;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
@@ -2798,6 +2799,7 @@ async function load($: EngineInterface) {
     shown = shownOf(await $.store.get(SHOWN).catch(() => undefined));
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
+    isPaced = isPaceOn(await $.store.get(PACE + (selfId ?? '')));
     selfWind = selfId ? (await windOf($, selfId))?.state : undefined;
     if (clearedFrom && selfId && selfId !== clearedFrom) {
         await $.store
@@ -2821,6 +2823,7 @@ function viewOf(isBoardOpen: boolean): StashView {
         afk,
         isBoardOpen,
         isHot: Boolean(hot),
+        isPaced,
         isSettingsOpen,
         isWaker,
         selfId,
@@ -3097,7 +3100,7 @@ async function armWake($: EngineInterface) {
     });
 }
 
-// the pace watch (FRM-500): `pace:<id>` switches it on for that session, its own stash reads the meter on the idle poll
+// the pace watch (FRM-500): `pace:<id>` not holding `{ off: true }` switches it on for that session, its own stash reads the meter on the idle poll
 // and tells the session only when the 5h window changes its rung, no model between
 const PACE = 'pace:';
 const PACE_RUNG = 'pace-rung:';
@@ -3197,15 +3200,18 @@ async function paceTick($: EngineInterface) {
     const due = await paceDue($, sid);
     if (!due || !(await paceClaim($, sid))) return;
     isPaceSending = true;
-    const r = await selfSubmit($, due.line).catch(() => undefined);
-    if (r && !r.drop) await $.store.set(PACE_RUNG + sid, due.stored);
-    else {
-        isBusy = false;
-        await keepTurn($);
-        await armHot($);
+    try {
+        const r = await selfSubmit($, due.line).catch(() => undefined);
+        if (r && !r.drop) await $.store.set(PACE_RUNG + sid, due.stored);
+        else {
+            isBusy = false;
+            await keepTurn($);
+            await armHot($);
+        }
+        await $.store.delete(PACE_CLAIM + sid);
+    } finally {
+        isPaceSending = false;
     }
-    await $.store.delete(PACE_CLAIM + sid);
-    isPaceSending = false;
 }
 
 // busy: the line joins the running step
@@ -3305,6 +3311,8 @@ async function pressPace($: EngineInterface) {
         PACE + sid,
         isPaceOn(await $.store.get(PACE + sid)) ? { off: true } : { on: true },
     );
+    await load($);
+    await publish($);
     $.ui.invalidate('ui.render');
 }
 
@@ -4942,6 +4950,7 @@ export const register: Register = (on) => {
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
+        await paceDefault($).catch(() => undefined);
         // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
         // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
         const read =
@@ -7475,13 +7484,7 @@ export const register: Register = (on) => {
                         view.shown?.[key] !== false;
                     const isPaceSeat =
                         isShown('stash.pace-watch') && (await isLaneOwner($));
-                    const isPaceWatched =
-                        isPaceSeat &&
-                        isPaceOn(
-                            await $.store.get(
-                                PACE + ((await currentId($)) ?? ''),
-                            ),
-                        );
+                    const isPaceWatched = view.isPaced === true;
                     const handleSettingsFlip = async () => {
                         isSettingsOpen = !view.isSettingsOpen;
                         if (isSettingsOpen)

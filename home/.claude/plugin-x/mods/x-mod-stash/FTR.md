@@ -698,7 +698,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - makes: `pace:<session>` the switch, `pace-rung:<session>` the stored rung and its window, `pace-waker:<session>` the waker state found, `pace-claim:<session>` the sender of the moment
 
 - ✅ one line per rung change
-  - given `pace:<id>` in the store and idle, when a poll finds the meter on a rung other than the stored one, then one line starts a turn, within one poll: «≤ 1 h left — burn» › «90 % — park» › «+5 over pace — park» › «70–80 % — no new chunk» › «back to ≤ 0 — resume», the highest that holds
+  - given `pace:<id>` in the store, not holding `{ off: true }`, and idle, when a poll finds the meter on a rung other than the stored one, then one line starts a turn, within one poll: «≤ 1 h left — burn» › «90 % — park» › «+5 over pace — park» › «70–80 % — no new chunk» › «back to ≤ 0 — resume», the highest that holds
   - and between the rungs (0 to +5 over) the stored one stands; a resume needs something to resume from, and a parked session hears it over «no new chunk», which it then never hears in that window
   - decision: resume beats no-chunk for a parked fleet, a change to the ticket's order (clio's steer, wishkeeper 2026-11-04): «no new chunk» on the way down hid the resume until burn
   - and a busy session takes the line at its next step; the rung moves only once the line entered, so a refused one is sent again by the next poll; a claim younger than 30 s keeps a second poller quiet
@@ -710,18 +710,18 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - proof: tests/pace.test.ts::a meter 40 min old still fires the resume once the clock carries pace back; ::a meter 40 min old never fires a park; ::the first 10 % of a fresh window sends no park; ::a stale park stays quiet at 78 % used, no flap through a lower rung; ::a meter written before its window opened clears the rung with no line; ::with no pace key no line ever; ::a pace key deleted before the crossing sends no line
 - ✅ 🔋 in the coordinator's band, on by default
   - given the coordinator's band (the seat check `isLaneOwner`, so a coming coordinator joins by one edit), then 🔋 sits between 🔥 and ⏰, the `secondary` chip while on, plain while off, and names itself on hover
-  - when dima presses it, then `pace:<id>` flips between `{ on: true }` and `{ off: true }`; a press never moves ⏰, and off during a shift ends the shift
+  - when dima presses it, then `pace:<id>` flips between `{ on: true }` and `{ off: true }`; a press never turns ⏰ on, and off during a shift ends the shift, putting ⏰ back
   - given any other seat's band, then no 🔋 and no key
-  - given a coordinator session whose key was never written, at its start or a `/clear`, then it starts on; a written off stands across a restart, from a press or from `mods:set-pace-watch off`
+  - given a coordinator session whose key was never written, at its start, a `/clear` or its first turn end, then it starts on, and a window already past a rung sends that line at once; a written off stands across a restart, from a press or from `mods:set-pace-watch off`
   - decision: off is a written value, so the default arms only a key never written (blind critic, FRM-500)
   - decision: only a key with `since`, a shift's `on`, moves ⏰ (dima, 13:00)
-  - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following; ::any other seat draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator seat arms a key never written
+  - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following; ::any other seat draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator seat arms a key never written; ::a door write redraws 🔋: the next press is the opposite of what it shows; ::a registry row named after the start arms at the first turn end
 - ✅ a park line asks for 🔥
   - given a +5 or a 90 % park line, then it ends «keep 🔥 on for every parked member»; no other rung says it
   - proof: tests/pace.test.ts::+5 over pace — park says keep 🔥 on (+ a row per rung)
 - ✅ a line reaches a dead target once it is back
   - given a queued send, then it counts as sent, no second line while it waits; given a target refused for 20 polls and revived, then one line; a key whose session ended sends nothing, since only its own session polls it
-  - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::an ended session’s key sends nothing: only its own session polls it
+  - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::a refused rung write leaves the watch alive: the line again, then the resume; ::a line on its way never rides its own turn as a second line; ::an ended session’s key sends nothing: only its own session polls it
 - 🧭 a shift switches it with no click, and ⏰ with it
   - given `pnpm mods:set-pace-watch on` (`off` writes `{ off: true }` and ends it, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back
   - and start, start, end changes nothing more; a change of dima's during the shift is kept; a second start turns ⏰ back on, and the end still restores what the first found (W1958: he may forget); a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
