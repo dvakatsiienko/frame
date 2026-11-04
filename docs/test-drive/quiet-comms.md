@@ -42,4 +42,6 @@ helps, makes comms more efficient, and does not break our comms. make it easy to
 
 ## verdict
 
+- 2026-11-04 · [FRM-501](https://linear.app/x-com/issue/FRM-501) flipped the default: every message is held unless it pushes, the contract moved to x-mod-stash's `FTR.md`; the mvp above is the record
+
 - 2026-10-19 · **adopted** (dima o95: «comms became much better with recent changes»): peer-started turns per 10 of dima's turns 5.03 → 2.76 (366/727 for 10-05 → 10-11, 115/417 for 10-12 → 10-19, `turnOrigin` in cclio's transcripts, resumed copies deduped), a 45 % drop past the one-third bar; harm 0 (two 10-12 flawlog lines were mod defects, fixed). the switch stays on.

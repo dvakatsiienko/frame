@@ -8,6 +8,7 @@ const SID = 's-clio';
 const CHECKS = [
     'pocket-check',
     'wish-cover',
+    'close-net',
     'blueprint-drift',
     'helper-count',
 ];
@@ -92,6 +93,7 @@ describe('siesta-checks', () => {
             '## pocket-check',
             '## wish-cover',
             '## orbit drift',
+            '## close net',
             '## blueprint drift',
             '## helper count',
         ]);
@@ -100,6 +102,7 @@ describe('siesta-checks', () => {
 
     test.each([
         ['pocket-check', 'pocket-check'],
+        ['close-net', 'close net'],
         ['blueprint-drift', 'blueprint drift'],
         ['helper-count', 'helper count'],
     ])('a red %s reds its section and the run', (script, name) => {

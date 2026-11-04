@@ -577,6 +577,21 @@ test('🤫 n opens the held pings: sender, age, first line', async ($, on) => {
     ]);
 });
 
+test('a held message of many lines draws its first line in the row', async ($, on) => {
+    fleet(on, {
+        [`quiet-held:${HERE}`]: [
+            held('🔎 sixth sense', 'round 2 clean\nthe detail', 3),
+        ],
+    });
+    const ui = await board($);
+    await ui.press({ key: `fold:quiet:${HERE}` });
+    expect(
+        (await ui.findAll({ type: 'Text' })).find((t) =>
+            t.text?.includes('round 2 clean'),
+        )?.text,
+    ).toBe('🤫 🔎 sixth sense · 3m ago: round 2 clean');
+});
+
 test('asks over a day old are not counted on the board', async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },
@@ -1306,6 +1321,23 @@ test('a flushed line does not count as a logged delivery', async ($, on) => {
     expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
 });
 
+test('a held app note does not count as a logged delivery', async ($, on) => {
+    const { clock, store } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                logged(PEER_NAME, NOW - 30 * MIN),
+                { ...logged(PEER_NAME, NOW - 25 * MIN, 'held'), tag: 'notice' },
+            ],
+        },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
+});
+
 test("the ledger's gap stays off any board but clio's", async ($, on) => {
     const { clock, store } = fleet(
         on,
@@ -1477,6 +1509,19 @@ test("a row's 🔥 chip draws as the band's toggle: filled when on, plain when o
     ]);
 });
 
+test("a row's 🔥 chip names itself on hover in the band's words, either way", async ($, on) => {
+    fleet(on, {}, { bg: [2] });
+    const view = await board($);
+    const words = async () =>
+        (await view.find({ key: `tip:hot:${PEER}`, type: 'Box' }))?.text;
+    const off = await words();
+    await view.press({ key: `hot:${PEER}` });
+    expect([off, await words()]).toEqual([
+        "🔥keep this session's cache hot with a ping",
+        "🔥stop keeping this session's cache hot",
+    ]);
+});
+
 test("a --bg member's 🔥 chip writes its key and draws on", async ($, on) => {
     const f = fleet(on, {}, { bg: [2] });
     const view = await board($);
@@ -1489,13 +1534,13 @@ test("a --bg member's 🔥 chip writes its key and draws on", async ($, on) => {
     ]).toEqual(['off', true, 'on']);
 });
 
-test('a second press on the 🔥 chip deletes the key and draws off', async ($, on) => {
+test('a second press on the 🔥 chip writes off and draws off', async ($, on) => {
     const f = fleet(on, {}, { bg: [2] });
     const view = await board($);
     await view.press({ key: `hot:${PEER}` });
     await view.press({ key: `hot:${PEER}` });
-    expect([f.store.has(`hot:${PEER}`), await hotChip(view, PEER)]).toEqual([
-        false,
+    expect([f.store.get(`hot:${PEER}`), await hotChip(view, PEER)]).toEqual([
+        { off: true },
         'off',
     ]);
 });

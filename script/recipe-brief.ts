@@ -5,6 +5,14 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+const GLOSSARY = `## the setup, in words a reader needs
+- the fleet: dima's claude code sessions, working as one crew
+- clio: the coordinator, she plans and owns the tracker
+- codie: a session that writes the code
+- sixth sense: a session that verifies codie's work
+- crow: clio's adviser, it reads her thread on a wake and sends one note
+- wishkeeper: clio's auditor, a subagent run at each pause
+- helga: clio's copyist, a cheap session for her mechanical chores`;
 const recipesDir = path.resolve(import.meta.dirname, '../recipes');
 const name = process.argv[2] ?? '';
 const recipe = path.join(recipesDir, name, 'recipe.md');
@@ -28,7 +36,7 @@ const out = path.join(recipesDir, name, 'last', 'brief.md');
 mkdirSync(path.dirname(out), { recursive: true });
 writeFileSync(
     out,
-    `<!-- shared-vectors: ${sha} -->\n# ${name} — research brief\n\n${want}\n\n${vectors}\n\n${shared}\n`,
+    `<!-- shared-vectors: ${sha} -->\n# ${name} — research brief\n\nanswer in english.\n\n${GLOSSARY}\n\n${want}\n\n${vectors}\n\n${shared}\n`,
 );
 console.log(`recipe:brief: ${path.relative(process.cwd(), out)}`);
 

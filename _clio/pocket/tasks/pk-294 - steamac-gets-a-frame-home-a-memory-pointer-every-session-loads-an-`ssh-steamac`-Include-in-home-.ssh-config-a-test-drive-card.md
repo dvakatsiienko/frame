@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T15:58:00Z'
+updated_date: '2026-11-04T12:48:00Z'
 labels:
   - s
 dependencies: []
@@ -19,3 +20,9 @@ ordinal: 14000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 from the side channel's 11-01 closing report: dima asked whether a fresh side channel remembers ~/.local/share/steamac, and today it does not; report: /Users/dima/Library/Application Support/Claude/side-session-notes/local_b728c606-6412-407f-88cb-875d418dffbf/side-channel-report-2026-11-01.md
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane this session
+<!-- SECTION:NOTES:END -->

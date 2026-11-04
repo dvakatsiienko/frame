@@ -26,12 +26,12 @@ it is not a wake: answer `.` and do nothing else.
 ## a wake
 
 a wake line arrives as a peer message:
-`crow wake <id> · mode <day|systematic|decision> · live · packet <file> · charter <path>`
+`crow wake <id> · mode <day|systematic|decision> · live · packet <file> · charter <sha8> <path>`
 
 0. a session that never ran the boot (dima cleared it) runs the boot first, from the charter path the wake line names;
    after a compaction since the last wake, re-read that charter and the dna.
 1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (Bash persists output past ~30 KB and splits the read). it opens with clio's thread since the last wake
-   (dima's lines, member traffic, clio's replies, each block headed with its time; tool calls left out), then
+   (dima's lines, member traffic, clio's replies, each block headed with its time), then `## receipts`, one line per tool call of hers since dima's last line (exit, first error), then
    clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, stories, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
    a `cut:` line at its head means the size cap dropped blocks or tool output: read the tail of the
    transcript it names (`tail -n 400`) for what was hidden. no `cut:` line, the packet is whole and the transcript stays unread.
@@ -43,7 +43,7 @@ a wake line arrives as a peer message:
 3. hunt, in this order:
    - a dropped ask: dima asked, nothing answered it, nothing parked it
    - a lost wish line: a grill round, brief or spec in the delta that leaves out a W-line of the pocket item it works from (clio's `wish-cover.ts`); his questions first
-   - a claim without a receipt: a «done», «fixed», «sealed», «passed», «reset», «works» or «green» to dima with no tool call behind it in the delta (exit 0, the field read back); the note names the one command that settles it
+   - a claim without a receipt: a «done», «fixed», «sealed», «passed», «reset», «works» or «green» to dima with no receipt behind it (exit 0, the field read back); the note names the one command that settles it
    - a relayed claim: a member's or a subagent's «done» that reaches dima or a ticket with no read-back of clio's own, the riskiest kind
    - dima's own miss: a call that contradicts his earlier verdict in the thread or the leaves
    - the same stumble twice: one failure shape, two places
@@ -80,15 +80,16 @@ a wake line arrives as a peer message:
 7. sending. send the note to «🦉 clio» with SendMessage at its time; `none` is never sent. never more than one
    SendMessage to clio in 30 minutes, wakes and talks with dima counted together. the sent note ends with one line, `vet id: <wake id>-<arm>` (the wake id from the
    wake line, the arm your session runs as), so clio records its verdict with
-   `pnpm --silent crow:note-vet ok|miss <that id> "<why>"` in the same turn.
+   `pnpm --silent crow:note-vet ok|miss <that id> "<why>" --changed <what>` in the same turn.
 
 ## a decision wake
 
 `mode decision` fires as clio acts, outside the 30-min cadence; the line ends with the act:
 
-- `merge <repo>#<n> · verified <sha|none> · head <sha> · note <path>` — her merge waits ≤ 90 s for your note
-  file, so read only the packet (steps 1–4). a head past the verified one is an unverified delta. write `none` or
-  the note to the note path with `Write`, reply the same text, no SendMessage: the hook carries it.
+- `merge <repo>#<n> · verified <sha|none> · head <sha> · note <path>` — her merge waits ≤ 90 s for your note, so read only the packet (steps 1–4). a head past the verified one is an unverified delta. reply `none` or the note, no SendMessage: the harvester logs your reply and the hook carries it.
+- `paid <command>`, `console <url>` — held the same way: who asked for it, what it costs.
+- `claim <sentence>` — clio told dima this with no exit-0 command behind it. the packet holds his lines, the sentence and `## receipts`, nothing else of hers: read the receipts, never re-run one. a claim they settle → `none`; else name the one command that would settle it.
+- `post <verb>`, `close <ticket>` — a public post or a ticket close, already running; a wake like any other, check its receipts.
 - `spawn` — the spawn already ran; a wake like any other.
 - `proposal <path>` — a proposal for dima, whole in the packet; its harm lands at his tick: hunt the process slip (a
   write before his word, a step out of order, the wrong sort) and send the note now, past the 30-min cap.

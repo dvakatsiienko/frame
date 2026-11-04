@@ -368,6 +368,16 @@ describe('--day', () => {
         [`${day}-1000.groomed.md`]: `${id} (${day} 10:00, dima): ship it\n`,
     });
 
+    test('a lifted W-line keeps the home it had before the lift', () => {
+        const out = run({
+            grooms: {
+                [`${day}-1000.groomed.md`]: `W1 (${day} 10:00, dima): ship it #lifted\n`,
+            },
+            pocket: { 'pk-1.md': `W1 (${day} 10:00, dima): ship it\n` },
+        });
+        expect(out.status).toBe(0);
+    });
+
     test('an old ungroomed prompt reds with the fix', () => {
         const out = run({});
         expect(out.status).toBe(1);

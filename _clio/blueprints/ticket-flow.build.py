@@ -229,7 +229,7 @@ BANDS = [
         "pm references/closing.md · craft-pm § the ask-guard · clio:halt phases 0, 1.5, 3.5, 4.5 · pocket-check.ts",
         [
             ("sweep", 0, 0, "script", "⚙️ the lingering sweep", "the halt lists In Progress; landed (a merged pr or a quick lane's push) with open asks → Todo, a ↩️ line names why and what is left", "clio:halt phase 0"),
-            ("list", 1, 0, "clio", "🦉 «closable, because …»", "auto-close only stale, dupe, a freebie done in place; the rest wait for his word", "pm references/closing.md"),
+            ("list", 1, 0, "clio", "🦉 «closable, because …»", "auto-close: stale, dupe, a freebie done in place, landed; the rest wait for his word", "pm references/closing.md"),
             ("guard", 2, 0, "dima", "🙋‍♂️ the ask-guard", "each ask of his printed with its destination; no verdict, no close", "closing.md · craft-pm § the ask-guard"),
             ("closed", 3, 0, "clio", "🎫 closed, a closing word", "in the body; the milestone's count read the same turn", "closing.md · craft-pm § milestones first"),
             ("net", 4, 0, "script", "⚙️ pocket-check's net", "an open item behind a ticket reds (a held line holds it 3 days); a closed ticket always reds", "pocket-check.ts · habit-shared-files"),

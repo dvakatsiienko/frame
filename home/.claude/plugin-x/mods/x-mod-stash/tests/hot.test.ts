@@ -289,11 +289,11 @@ test('🔥 stays on through a 5h window reset', async ($, on) => {
     ]);
 });
 
-test('🔥 switched off on the band drops its store key', async ($, on) => {
+test('🔥 switched off on the band writes off', async ($, on) => {
     const store: Record<string, unknown> = { [`hot:${SID}`]: { since: NOW } };
     const s = await started($, on, store);
     await s.ui.press({ key: 'hot' });
-    expect(`hot:${SID}` in store).toBe(false);
+    expect(store[`hot:${SID}`]).toEqual({ off: true });
 });
 
 // the mod's own ping skips the mod's own prompt.submit hook (mods AGENTS, probe (d)), so the ping turn is known only

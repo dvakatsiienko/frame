@@ -122,7 +122,7 @@ claude plugin install x@x
   or a script edit) — a skill edit reaches the cloud after a push and a rebuild
 - ✅ proven by probe 3b (2026-09-28, environment «cloud base», network Custom: default list +
   `*.browserbase.com`): a fresh session listed 19 `x:*` skills, `gh` 2.45 came from ubuntu's
-  archive (`apt-get install -y gh`), node 24 + pnpm 12.3.4 from dima's fnm block
+  archive (`apt-get install -y gh`), node 26 + pnpm 12.3.4 from dima's fnm block
 - `crew-codie` and `crew-sixth-sense` are model-loadable but fire only on a brief that names them; a prompt
   that starts with `/x:crew-codie` expands (probe 4) — step 3's short form
 

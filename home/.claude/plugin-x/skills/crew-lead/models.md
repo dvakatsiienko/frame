@@ -15,7 +15,7 @@
 
 **the spec-run balance** (dima, 2026-10-06: «plain --bg coder is better for granular work, where i'd like to see the results in place. and implement-spec looks very good of under the hood work»):
 - a `--bg` codie for granular work dima watches: UI, side lanes, anything he steers in place
-- `implement-spec` subagents for bulk work under the hood; every code ticket on opus 5.5 until dima reads the sonnet grade (the next mods lane's opener); clio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
+- `implement-spec` subagents for bulk work under the hood; every code ticket on opus 5.5 until dima decides a sonnet pattern (2026-11-04: not yet); clio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
 - a `--bg` codie hands its big reads and mechanical edits to subagents, so its own context stays lean (`x:crew-codie`)
 
 ## picking the model — Dima's contract, never re-derived
@@ -28,7 +28,7 @@
 - **fable-5.1** — spawned only on his word, at `medium`; for design work «not lower than medium, maybe high, not extrahigh, not max» (dima, 2026-10-01 — the 09-06 «always low» rule is retired); Dima spends that budget
   on his own turns. Anything Dima reads → fable flavour: *«opus picks pragmatically, fable =
   flavour»*.
-- **sonnet-5.5** — never a default codie: every codie runs opus 5.5, quick lanes and mods included; no sonnet codie at all until dima reads FRM-478's grade, deliberate picks included (W706); after it, sonnet is a codie only as a deliberate pick, named in the brief, for a lane that needs little reasoning and few decisions (dima, 2026-10-30: «Sonnet 5.5 is a weak model for mods. Only Opus 5.5 is a coder»; a sonnet-built chunk counts as not verified until an opus review reads it). routine, fully specified work and the `helper` card; no `--bg` thread of any role on sonnet until a pattern for it is decided (dima, 2026-11-01: sonnet has to earn its trust first; the subagent cards stay as agreed); never hard multi-step.
+- **sonnet-5.5** — never a default codie: every codie runs opus 5.5, quick lanes and mods included; no sonnet codie at all, deliberate picks included, until dima decides a pattern; FRM-478's grade alone opens nothing (W706, o55; dima, 2026-10-30: «Sonnet 5.5 is a weak model for mods. Only Opus 5.5 is a coder»; a sonnet-built chunk counts as not verified until an opus review reads it). routine, fully specified work and the `helper` card; no `--bg` thread of any role on sonnet until a pattern for it is decided (dima, 2026-11-01: sonnet has to earn its trust first; the subagent cards stay as agreed); never hard multi-step.
 - **haiku-5.5** — the haiku pick since 2026-10-08 (dima): retrieval, extraction, bulk transforms, a sidekick subagent under an opus lead, bare probes. `--model haiku` resolves to `claude-haiku-5-5` on cc 2.1.294 (probed 2026-10-08). 📌 not for complex agentic coding (Terminal-Bench 4.0 39.2 %), not at low effort on long prompts; as a classifier engine it is unmeasured.
 - 🎯 the effort baseline, the cards and every subagent rule (fan-out, the haiku crew, the delegate list): `x:crew-subagent`
 - Full cards, prices and the evidence: [references/model-cards.md](references/model-cards.md), on demand.

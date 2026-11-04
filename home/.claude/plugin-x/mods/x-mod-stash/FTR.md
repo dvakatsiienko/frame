@@ -55,7 +55,7 @@
 - ✅ every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `🔥`, `⏰`, `💨` or `🚦`
-  - then a dim line beside it says what a press does now: «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «wake every session stopped on the 5h cap» or «stop waking …», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge
+  - then a dim line beside it says what a press does now: «keep this session's cache hot with a ping» or «stop keeping this session's cache hot», «wake every session stopped on the 5h cap» or «stop waking …», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
 - ✅ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
@@ -109,7 +109,7 @@
   - when dima flips afk
   - then the session's next tool call carries a one-line note with the new afk state
   - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
-- ✅ keep-hot switch: `🔥 hot` in the row before `⏰` and afk, off by default, the `secondary` chip when on
+- ✅ keep-hot switch: `🔥 hot` in the row before `⏰` and afk, on by default for a seated member, off for the rest, the `secondary` chip when on
   - decision: a keep-alive, not a one-shot — on dima's 2026-10-04 live test the ping fired, then 🔥 went unticked; it stays on until dima switches it off
   - decision: 🔥 lives in the x-mod-stash store under the session's id, not in the mod's memory — a reload or a worker respawn wipes that memory and cancels its timers, and nothing else in the code ever turns 🔥 off
 - ✅ 🔥 stays on across pings and reloads
@@ -386,9 +386,10 @@
   - makes: a `hot:<session id>` key in the store, the one the band's 🔥 reads; its own stash arms the ping
   - given the board is open, then every row draws a 🔥 left of its 🐦‍🔥 as the band's own toggle: the filled `secondary` chip while the session's key is in the store, plain while not, so on and off read at a glance (dima's 20:41 shots: a faint dim read the same both ways)
   - when dima presses a row's 🔥, then the key is written and the chip fills; a second press deletes it and the chip draws plain
+  - when dima hovers a row's 🔥, then it names itself in the band's words, either way
   - given this session's own row, then its chip and the band's 🔥 always show one state, whichever is flipped
   - decision: no new store and no cross-session message; the band's 🔥 stays as it is (dima's o99, re-signed o102)
-  - proof: tests/board.test.ts::a --bg member's 🔥 chip writes its key and draws on (+ a second press deletes, own row chip and band show one state, a row's 🔥 chip draws as the band's toggle)
+  - proof: tests/board.test.ts::a --bg member's 🔥 chip writes its key and draws on (+ a second press deletes, own row chip and band show one state, a row's 🔥 chip draws as the band's toggle, a row's 🔥 chip names itself on hover)
 
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 
@@ -691,28 +692,97 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given it off, then a sent-back assumption joins no prompt and `op assume` is refused in one line naming the switch
   - proof: tests/orbit.test.ts::with assumed switched off, a sent-back assumption joins no prompt; ::with assumed switched off, op assume is refused in one line naming the switch
 
+## 🔋 pace watch — the 5h ladder, told while everyone is parked
+
+[FRM-500](https://linear.app/x-com/issue/FRM-500): the mod reads the meter it already polls and tells the session only when a ladder line is crossed, 0 tokens between; acting on a line is clio's (`clio:shift` § the 5h ladder).
+- makes: `pace:<session>` the switch, `pace-rung:<session>` the stored rung and its window, `pace-waker:<session>` the waker state found, `pace-claim:<session>` the sender of the moment
+
+- ✅ one line per rung change
+  - given `pace:<id>` in the store, not holding `{ off: true }`, and idle, when a poll finds the meter on a rung other than the stored one, then one line starts a turn, within one poll; the highest that holds: stop (97 % used) › burn (≤ 55 min left) › park (90 % used) › park (5 % over pace) › resume (2 % under pace, only after a park)
+  - and between the rungs (2 % under to 5 % over) the stored one stands, so +6, +3, −3, −3, +3, +6, +4, +6 reads park, resume, park
+  - and a line reads its action word first, then «N % over pace» or «N % under pace», never a signed number, no skill tail: `🔋 park: 91 % used, 31 % over pace, 2h 0m left — park at a pit stop, 🔥 on for all`
+  - and a stop only tells: no turn is aborted, each member pauses on clio's word and continues from the same spot
+  - and a busy session takes the line at its next step; the rung moves only once the line entered, so a refused one is sent again by the next poll, a refused rung write included; a claim younger than 30 s keeps a second poller quiet
+  - decision: the sender is the mod, so the quiet gate never reads it
+  - proof: tests/pace.test.ts::a +5 crossing sends one line until the rung changes; ::between the rungs the stored one stands: +6, +3, +6 sends one line; ::+6, +3, −3, −3, +3, +6, +4, +6 reads park, resume, park; ::at over 0 after a park no resume, at −2 one; ::a window never parked hears no resume under pace; ::at or under pace past 70 % nothing is said; ::a busy session takes the line at its next step; ::a line the engine refused moves no rung, and the next poll sends it; ::a refused rung write leaves the watch alive: the line again, then the resume; ::a second poller holding the claim sends nothing until it ages; ::a refused line leaves keep-hot armed; ::the line reads (a row per rung); ::a resume reads under pace, no signed number; ::97 % sends one stop and aborts nothing; ::a pace line starts a turn with the quiet gate on: the mod sends it, never a held message
+- ✅ a new window is read from the clock
+  - given the clock past the stored rung's reset, then one `🔋 new window: reset done, resume the fleet; a hand park stays` if that rung was a stop or a park, and the rung clears; a meter write never decides it, and a past reset never reads as burn or stop
+  - decision: a burn overwrites a park, so with the default numbers a park reaches the reset only with `pace-burn` at 0, and in practice the line follows a stop (the stored-rung rule as signed)
+  - proof: tests/pace.test.ts::a frozen 97 % past its reset sends one new window, no burn, no repeat stop; ::a stored park past the reset sends the new window, a hand park named; ::a window never parked or stopped sends no new window
+- ✅ the numbers are 🎛️ rows, read at each poll
+  - given `pnpm mods:set <pace-stop|pace-burn|pace-park|pace-over|pace-under|hot-minutes|hot-late> <number>`, then the next poll uses it with no reload, and the 🎛️ `stash · knobs` row shows it; a number out of its range or an unknown key is refused with the list
+  - proof: tests/pace.test.ts::a retuned number moves the rung at the next poll, no reload; ::🎛️ shows a pace number; set.test.ts::a number takes only a known key inside its range
+- ✅ 🔥 on by default for a seated member
+  - given clio, a side channel, crow, helga or a lane member with no `hot:` key, then 🔥 starts on; a plain session or a fork stays off; off is a written `{ off: true }`, so a click off stays off
+  - and a 🔥 session idle at 45 min left whose last turn + 60 min falls before the reset gets one ping; a cache that outlives the reset gets none; at 100 % used no ping is sent
+  - proof: tests/pace.test.ts::🦉 clio starts 🔥 (+ a row per seat); ::a 🔥 click off is written and stays off across a restart; ::a cache dying before the reset gets one ping at 45 min left; ::a cache that outlives the reset gets no late ping; ::at 100 % no ping is sent
+- ✅ a quiet meter is normal while everyone is parked
+  - given a meter file older than 10 min, or the first 10 % of a window, then no park rung fires and the stored rung stands, no lower rung sent in its place; its used % stands and the rung moves with the clock, so the resume still does
+  - proof: tests/pace.test.ts::a meter 40 min old still fires the resume once the clock carries pace back; ::a meter 40 min old never fires a park; ::the first 10 % of a fresh window sends no park; ::a stale park stays quiet at 78 % used, no flap through a lower rung; ::a meter written before its window opened clears the rung with no line; ::with no pace key no line ever; ::a pace key deleted before the crossing sends no line
+- ✅ 🔋 in the coordinator's band, on by default
+  - given the coordinator's band (the seat check `isLaneOwner`, so a coming coordinator joins by one edit), then 🔋 sits between 🔥 and ⏰, the `secondary` chip while on, plain while off, and names itself on hover
+  - when dima presses it, then `pace:<id>` flips between `{ on: true }` and `{ off: true }`; a press never turns ⏰ on, and off during a shift ends the shift, putting ⏰ back
+  - given any other seat's band, then no 🔋 and no key
+  - given a coordinator session whose key was never written, at its start, a `/clear` or its first turn end, then it starts on, and a window already past a rung sends that line at once; a written off stands across a restart, from a press or from `mods:set pace off`
+  - decision: off is a written value, so the default arms only a key never written (blind critic, FRM-500)
+  - decision: only a key with `since`, a shift's `on`, moves ⏰ (dima, 13:00)
+  - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following; ::any other seat draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator seat arms a key never written; ::a door write redraws 🔋: the next press is the opposite of what it shows; ::a registry row named after the start arms at the first turn end
+- ✅ a line reaches a dead target once it is back
+  - given a queued send, then it counts as sent, no second line while it waits; given a target refused for 20 polls and revived, then one line; a key whose session ended sends nothing, since only its own session polls it
+  - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::a refused rung write leaves the watch alive: the line again, then the resume; ::a line on its way never rides its own turn as a second line; ::an ended session’s key sends nothing: only its own session polls it
+- 🧭 a shift switches it with no click, and ⏰ with it
+  - given `pnpm mods:set pace on` (`off` ends it and puts back the key it found, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back, so a clio on by default stays on
+  - and start, start, end changes nothing more; a change of dima's during the shift is kept; a second start turns ⏰ back on, and the end still restores what the first found (W1958: he may forget); a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
+  - and the 🎛️ `stash · knobs` row `🔋 pace watch` shows and flips this session's key; the `🔋 pace watch` part off draws no row, sends nothing and puts ⏰ back
+  - proof: tests/pace.test.ts::a shift's end restores the waker its start found; ::a waker found on stays on at the end; ::start, start, end leaves a waker found off, off; ::dima's change during the shift is kept at the end; ::a second start turns ⏰ back on after dima switched it off; ::the end restores the state the first start found, past a second start; ::a start with no end expires when its window resets; ::at the reset ⏰ stays on past the waker's own resume; ::an old meter at the start never ends the shift it just began; ::a start with no meter takes its expiry from a later poll; ::a shift ending during afk changes what afk off puts back; ::the part switched off mid-shift restores the waker; ::the 🎛️ row flips this session's key; ::the part off draws no row; tests/switches.test.ts — not asserted: a `/clear` changes the session id and leaves the key behind, as keep-hot's does
+
 ## quiet comms — member pings off clio's thread
 
-an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, dima's o17): a member's `[progress]` ping waits for clio's next turn instead of starting one; one switch reverts it.
-- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm); `quiet-held:<session>` the held count
+quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, [FRM-501](https://linear.app/x-com/issue/FRM-501)): a message to clio waits for her next turn instead of starting one, unless it pushes on purpose; one switch reverts it. this section is the contract: the crew skills only point here.
+- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm, why it pushed); `quiet-held:<session>` the held messages, the list's truth, since every `$.state.get` of one dispatch reads one moment and a prompt's dispatch would write an old list back; `quiet-asked` the members clio asked a question, by name without the mode emoji
 
-- 🧭 a [progress] ping is held in clio's thread, every other passes
+- ✅ a message that does not push is held in clio's thread
   - given clio's session — the registry names it `🦉 clio`, wherever a Bash `cd` left it — and the switch on
   - decision: the registry name, never the cwd: a `cd` into `~/frame` let every ping through for an hour (clio's wisp, 17:06)
-  - when a member's message opens with `[progress]`
-  - then it is not queued and starts no turn; `[done]`, `[blocked]`, `[ask]` and an untagged ping pass as before; any other session holds nothing
-  - decision: the tag decides, never a guess at the text — an untagged ping always passes (dima, 2026-10-12, the probe's «never hold blind»)
-  - and a `[progress]` ping holding «for dima», «decisions», «pick:» or «your call» (whole words, any case) is pushed, not held, so a question to dima wakes the coordinator's turn; a bare «?» never pushes (dima o26, 2026-10-29: of 81 pings in 14 days, a «?» pushed 4 and all 4 were false; FRM-429)
-  - proven on the desktop 15:48: a held `[progress]` ping started no turn (the probe's open line)
-- 🧭 held pings reach clio without a turn of their own
+  - when any member, crow, helga or a side channel sends a message
+  - then it is not queued and starts no turn, unless it opens with `[ask]` (clio's answer is needed: a dispute, a decision, a plan to greenlight), `[done]` (a lane or chunk is fully ready) or `[escalate]` (a roadblock climbs a rung; `[🪜 escalate]` too), an emoji before the tag included
+  - and a tag mid-line, a tag in another case, `[blocked]`, `final` and `round N` are held; `[progress]` stays a word for «held» and never pushes; any other session holds nothing
+  - and a message carrying «for dima» as words is pushed; a path holding them, a backticked span and «nothing for dima» never count
+  - decision: push is the exception on purpose, so spam cannot start: of 91 coordinator turns on 11-03, 65 were member-woken and 42 carried nothing for dima (dima, 2026-11-03)
+  - and a held message is kept whole, every line; messages landing together wait their turn, so none is lost
+  - proof: tests/quiet.test.ts::pushes, starts a turn: …; ::held, no turn: …; ::an untagged line from … is held; ::a held message reaches clio whole, every line of it; ::three messages at once are all held; ::a message landing during a prompt drain is held; ::two messages and a prompt at once both arrive once: …; ::six messages and a prompt at once all arrive; tests/board.test.ts::a held message of many lines draws its first line in the row — not asserted: a desktop send clio's app queues while her turn runs raises no `session.receive`, so the gate never reads it (probe, 11-03)
+- ✅ a member's answer to clio's question is never held
+  - given clio's SendMessage asked a member a question (a `?` outside code and urls) and landed, by its name, session id, host id or socket
+  - when that member's first message since then with no `[progress]` opening arrives within 30 min, then it starts a turn
+  - and a `[progress]` neither pushes nor uses up the slot; a second untagged message, an untagged message after a greenlight with no question, and an answer past 30 min are held
+  - decision: a status sent first once used up the answer's slot, against «her question's reply is never held» (wishkeeper, 2026-11-04)
+  - proof: tests/quiet.test.ts::a member's first message after clio asked … a question starts a turn; ::a second message after the answer is held; ::a [progress] neither pushes nor spends the slot, so the answer after it wakes her; ::an untagged message after «greenlit» is held; ::a first message past 30 min is held; ::a question that did not land opens no slot; ::a [done] note spends the slot, so the next untagged line is held
+- ✅ the desktop's «finished a turn» prompt is held like a message
+  - given clio's thread and a prompt holding nothing but the app's `The session "…" you started (local_…) finished a turn` notes, its linked-sessions reminder and its side-sessions event
+  - then the prompt is dropped with an empty reason, no turn, and each report joins the held list with whether the app cut it and the session holding the rest; clio's row counts it in `🤫 n`
+  - and the app's «finished a turn and then reported that it was waiting on the user» note keeps its wake
+  - decision: a member waiting on dima is worth a turn (dima's tick, 2026-11-04)
+  - and a report that pushes (its own words, or the member's answer to clio's question) lets the whole prompt in; so do a prompt with any other text, an origin other than `sdk`, a report forging the app's blocks, mobile mode and the switch off
+  - decision: the shape of the whole text decides: this prompt's origin is `sdk`, the same as dima's typing (probe, 2026-11-04 10:47: origin `sdk`, 1,880 chars); 11-03 carried these on top of the members' sends
+  - and a `notice` log line stays out of the ledger and out of a sender's «held»
+  - proof: tests/quiet.test.ts::the note alone starts no turn; ::the note and the app event starts no turn; ::two notes starts no turn; ::a held cut note says it is cut and where the rest is; ::two note prompts at once are both held; ::a note waiting on the user keeps its wake; ::a held note reaches clio at her next prompt, its report whole; ::a held note lands in the idle append, no turn; ::a report opening … starts a turn; ::a note answering clio starts a turn, and spends the slot; ::… passes; ::a held note of the app reads as no hold of a member send — not asserted: how the desktop draws a dropped prompt, its live proof is the done comment's
+- ✅ the sender learns the rule at send time, in its own result
+  - given quiet on and a session's SendMessage to clio, by her name, session id, host id or socket
+  - then the model reads one line after the result, no skill needed: «slipstreamed: joins clio's next turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]», or «pushed: starts clio's turn. …» when it pushes
+  - and a send clio's gate held reads «held, delivered at clio's next turn», never the desktop's «did not accept it», so no sender retries; a refusal with no `held` line in her log stays a refusal, and it or any failed send carries no line
+  - decision: «held» only once her log says so; a real refusal read as held would lose the message
+  - proof: tests/quiet.test.ts::a send to … carries the contract, no skill loaded; ::a send to … carries no contract; ::a push reads as pushed, never as slipstreamed; ::an answer inside the window reads as pushed; ::a held message reads as held to its sender, never as refused; ::a refusal with no held line stays a refusal; ::a refusal carries no contract line; ::a send to no session carries no contract line; ::a delivered send keeps its own words with a held line in the log; ::an answer past 30 min reads as slipstreamed; ::a [progress] in an open slot reads as slipstreamed; ::an older held line of the same member leaves a refusal a refusal — not asserted: in mobile mode nothing is held, and the sender still reads «slipstreamed»
+- ✅ held pings reach clio without a turn of their own
   - given pings are held
-  - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and first line, once
-  - when none comes for the wait while she is idle — 10 min by default, set in the 🎛️ `🤫 quiet comms` card, 1–60 — then one hidden row is appended, no turn
-- 🧭 one switch, on by default
-  - given no switch set, then quiet holds every day; `/quiet off` passes every ping, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' [progress] pings`, is the same store key, `quiet-comms` (dima's o33)
+  - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and whole text, once
+  - proof: tests/quiet.test.ts::held pings ride the next prompt as one hidden block, once; ::held pings older than 10 min while idle become one hidden row, no turn
+  - when none comes for the wait while she is idle — 10 min by default, set in the 🎛️ `🤫 quiet comms` card, 1–60 — then one hidden row is appended, no turn, so no Stop hook and no crow; she reads it at her next prompt, a stuck member pushes with `[escalate]`; a line held later gets its own row, no sooner than the wait
+  - proof: tests/quiet.test.ts::a flush appends once, no turn; ::a refused idle append keeps its lines for the next prompt; ::a line held after a flush gets its own, no sooner than the wait; ::8 idle hours with one held line every 30 min: 16 appends, 0 turns
+- ✅ one switch, on by default
+  - given no switch set, then quiet holds every day; `/quiet off` passes every message, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' messages unless they push`, is the same store key, `quiet-comms` (dima's o33)
   - given mobile mode is on, then nothing is held
   - decision: always on, no day arm — the a/b compares days by the log's `arm`, read from the switch (dima, 16:53, brief 5)
-- 🧭 clio's row counts what waits, and opens it
+- ✅ clio's row counts what waits, and opens it
   - given her stash holds n pings, then her row in the sessions card reads `🤫 n` beside the name; at 0 nothing
   - when dima presses `🤫 n`, then one dim line per held ping opens under her row — `🤫 <sender> · <age> ago: <first line>` — and a second press folds it; folded by default (dima's o34)
   - source: `quiet-held:<session>` in the store, the held pings themselves
@@ -722,6 +792,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - then it passes as if quiet were off, and the log keeps a `failed-open` line for it
   - given the held list does not save, or its `held` log line does not land, then the ping passes the same way, and a held list that saved is taken back, so it is never delivered twice
   - decision: the hold answers «consumed» only once both writes landed; a write that fails silently was a ping nobody holds (brief 9 item 2, 2026-10-12)
+  - proof: tests/quiet.test.ts::a message whose hold did not save is never delivered again; ::a list that will not empty waits, and reaches the prompt after once
   - proof: tests/quiet.test.ts::a throw inside the hold passes the ping and logs failed-open; ::a held list that does not save passes the ping, failed-open, nothing held; ::a held line that does not log passes the ping and takes it back o…
 - ✅ every held ping that reaches clio logs `flushed`
   - when held pings ride her next prompt, or land as the idle row, then each gets a `flushed` line beside its `held` one

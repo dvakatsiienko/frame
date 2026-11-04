@@ -1,8 +1,10 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+    closeSync,
     globSync,
     mkdirSync,
+    openSync,
     readFileSync,
     readdirSync,
     rmSync,
@@ -11,7 +13,7 @@ import {
 } from 'node:fs';
 import { connect } from 'node:net';
 import { homedir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
 export const SESSION_NAME = '🐦‍⬛ crow';
@@ -30,6 +32,7 @@ export const SILENT_DAYS = 0; // dima 2026-10-06: live from day 1 — the silent
 const DELTA_MAX_CHARS = 60_000;
 const SESSIONS_DIR = join(homedir(), '.claude/sessions');
 
+export const changedList = ['file', 'reply', 'ask', 'ticket', 'none'] as const;
 export const armList = ['opus', 'fable'] as const;
 export const modeList = ['day', 'systematic', 'decision'] as const;
 
@@ -113,14 +116,17 @@ const CHARTER_PATH = join(
 );
 
 export function readCharter() {
-    const skill = readFileSync(
-        new URL(
-            '../home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
-            import.meta.url,
-        ),
-        'utf8',
+    return readFileSync(CHARTER_PATH, 'utf8').replace(
+        /^---\n[\s\S]*?\n---\n+/,
+        '',
     );
-    return skill.replace(/^---\n[\s\S]*?\n---\n+/, '');
+}
+
+export function charterHash() {
+    return createHash('sha256')
+        .update(readFileSync(CHARTER_PATH))
+        .digest('hex')
+        .slice(0, 8);
 }
 
 export function isArm(value: string | undefined): value is Arm {
@@ -273,7 +279,13 @@ export async function startCrow(arm: Arm) {
     if (result.status !== 0 || !jobId) {
         fail(`claude --bg failed: ${(result.stderr || result.stdout).trim()}`);
     }
-    writeState({ ...readState(), arm, jobId, startedAt: Date.now() });
+    writeState({
+        ...readState(),
+        arm,
+        charterHash: charterHash(),
+        jobId,
+        startedAt: Date.now(),
+    });
     console.log(
         `crow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
     );
@@ -481,6 +493,7 @@ function headOf(who: string, timestamp?: string) {
 export function transcriptDelta(lines: string[], fromLine: number) {
     const stepIds = new Set<string>();
     const parts: string[] = [];
+    const dimaParts: string[] = [];
     let outputs = 0;
     const seen = new Set(
         lines.slice(0, fromLine).map((line) => parseEntry(line)?.uuid),
@@ -490,6 +503,10 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             if (seen.has(entry.uuid)) continue;
             seen.add(entry.uuid);
         }
+        if (entry && isDimaEntry(entry))
+            dimaParts.push(
+                `${headOf('dima', entry.timestamp)}\n${dimaTextOf(entry)}`,
+            );
         if (entry?.type === 'assistant') {
             if (entry.message?.id) stepIds.add(entry.message.id);
             const text = textOf(entry.message?.content).trim();
@@ -531,8 +548,177 @@ export function transcriptDelta(lines: string[], fromLine: number) {
         }
     }
     const { dropped, text } = lastBlocks(parts);
-    return { cut: { blocks: dropped, outputs }, steps: stepIds.size, text };
+    return {
+        cut: { blocks: dropped, outputs },
+        dimaText: lastBlocks(dimaParts).text,
+        steps: stepIds.size,
+        text,
+    };
 }
+
+// what dima himself said in this entry: a typed or queued line, or an orbit tick; a peer, a subagent's notice, a hook's reminder is not him
+function dimaTextOf(entry: TranscriptEntry) {
+    if (entry.type === 'attachment') {
+        if (entry.attachment?.type === 'queued_command') {
+            const text = withoutHarness(queuedText(entry.attachment.prompt));
+            return text.includes('<cross-session-message') ? '' : text;
+        }
+        if (entry.attachment?.type !== 'hook_additional_context') return '';
+        const content = entry.attachment.content;
+        return (typeof content === 'string' ? [content] : (content ?? []))
+            .filter((line) => line.startsWith('orbit: dima marked'))
+            .join('\n')
+            .trim();
+    }
+    if (entry.type !== 'user' || entry.isMeta || entry.isCompactSummary)
+        return '';
+    const kind = entry.origin?.kind;
+    if (kind && kind !== 'human') return '';
+    return withoutHarness(textOf(entry.message?.content));
+}
+
+// the harness writes its reminders and notices as user entries, and dima's own words may sit beside them
+function withoutHarness(text: string) {
+    return text.replace(HARNESS_TEXT, '').trim();
+}
+
+function isDimaEntry(entry: TranscriptEntry) {
+    return dimaTextOf(entry) !== '';
+}
+
+function toolCallsOf(entries: (TranscriptEntry | undefined)[]) {
+    const calls = new Map<string, ToolCall>();
+    for (const entry of entries) {
+        const content = entry?.message?.content;
+        // cc 2.1.31x also writes `api-request-blob` copies of these blocks
+        if (entry?.type !== 'assistant' && entry?.type !== 'user') continue;
+        if (!Array.isArray(content)) continue;
+        for (const block of content) {
+            if (block.type === 'tool_use' && block.id)
+                calls.set(block.id, {
+                    input: block.input ?? {},
+                    name: block.name ?? '?',
+                });
+            const call = calls.get(block.tool_use_id ?? '');
+            if (block.type === 'tool_result' && call) call.result = block;
+        }
+    }
+    return [...calls.values()];
+}
+
+const oneLine = (text: string, max: number) =>
+    text.replace(/\s+/g, ' ').trim().slice(0, max);
+
+function resultText(result: ContentBlock | undefined) {
+    const content = result?.content;
+    return typeof content === 'string' ? content : textOf(content);
+}
+
+// a long gate ends `> file 2>&1; echo "exit $?"` (method-silent-failures), so a red one comes back with no error flag
+function exitOf({ result }: ToolCall) {
+    const text = resultText(result);
+    if (result?.is_error) return /^Exit code (\d+)/.exec(text)?.[1] ?? '?';
+    return [...text.matchAll(/^exit (\d+)\s*$/gm)].at(-1)?.[1] ?? '0';
+}
+
+// a command opens on its `cd … && S=<long path>` and a heredoc ends on the act, so both ends stay
+function headAndTail(text: string) {
+    return text.length <= COMMAND_MAX_CHARS
+        ? text
+        : `${text.slice(0, COMMAND_MAX_CHARS / 2)} … ${text.slice(-COMMAND_MAX_CHARS / 2)}`;
+}
+
+function receiptLine(call: ToolCall) {
+    const { input, name, result } = call;
+    const content = result?.content;
+    const text = resultText(result);
+    const hasImage =
+        Array.isArray(content) && content.some((b) => b.type === 'image');
+    const exit = result && name === 'Bash' ? exitOf(call) : undefined;
+    const status = !result
+        ? 'pending'
+        : exit
+          ? `exit ${exit}`
+          : result.is_error
+            ? 'error'
+            : 'ok';
+    const firstError =
+        result?.is_error || (exit && exit !== '0')
+            ? text
+                  .split('\n')
+                  .find((l) => l.trim() && !/^(Exit code|exit \d)/.test(l))
+            : undefined;
+    return [
+        `- ${name} ${status}`,
+        input.command
+            ? headAndTail(oneLine(input.command, input.command.length))
+            : oneLine(
+                  input.file_path ??
+                      input.url ??
+                      input.description ??
+                      JSON.stringify(input),
+                  RECEIPT_MAX_CHARS,
+              ),
+        hasImage
+            ? input.file_path
+                ? `[image: ${input.file_path}]`
+                : '[image]'
+            : '',
+        firstError ? oneLine(firstError, RECEIPT_MAX_CHARS) : '',
+    ]
+        .filter(Boolean)
+        .join(' · ');
+}
+
+// the receipts beside clio's claims: one line per tool call since dima last spoke; crow reads them and never re-runs one
+export function receiptsOf(lines: string[]) {
+    const entries = lines.map(parseEntry);
+    const start = entries.findLastIndex(
+        (entry) => entry !== undefined && isDimaEntry(entry),
+    );
+    const digest = toolCallsOf(entries.slice(start + 1)).map(receiptLine);
+    const dropped = digest.length - RECEIPTS_MAX;
+    return [
+        ...(dropped > 0 ? [`(${dropped} older calls dropped)`] : []),
+        ...digest.slice(-RECEIPTS_MAX),
+    ].join('\n');
+}
+
+// a word in the first line or a ✅ line: the bare word list hit 18 of clio's last 50 replies (36 %), this gate 13 (26 %), 2026-11-04
+export function claimOf(lines: string[], reply?: string) {
+    const start = turnStartOf(lines);
+    const entries = lines.slice(start + 1).map(parseEntry);
+    const text =
+        reply ??
+        entries
+            .filter((entry) => entry?.type === 'assistant')
+            .map((entry) => textOf(entry?.message?.content).trim())
+            .findLast(Boolean);
+    if (!text) return;
+    const replyLines = text.split('\n');
+    const claimLine = CLAIM_WORD.test(replyLines[0] ?? '')
+        ? replyLines[0]
+        : replyLines.find((line) => line.trimStart().startsWith('✅'));
+    if (!claimLine) return;
+    const calls = toolCallsOf(entries);
+    const lastEdit = calls.findLastIndex((call) => EDIT_TOOL.has(call.name));
+    const isProven = calls
+        .slice(lastEdit + 1)
+        .some(
+            (call) =>
+                call.name === 'Bash' && call.result && exitOf(call) === '0',
+        );
+    return isProven ? undefined : oneLine(claimLine, RECEIPT_MAX_CHARS);
+}
+
+const HARNESS_TEXT =
+    /<(system-reminder|task-notification|local-command-\w+)>[\s\S]*?<\/\1>|<task-notification>[\s\S]*$/g;
+const CLAIM_WORD =
+    /\b(done|fixed|sealed|passed|closed|reset|landed|green|works)\b/i;
+const EDIT_TOOL = new Set(['Edit', 'MultiEdit', 'NotebookEdit', 'Write']);
+const RECEIPTS_MAX = 100;
+const RECEIPT_MAX_CHARS = 160;
+const COMMAND_MAX_CHARS = 300;
 
 // a packet that lost blocks or tool output names the transcript, so crow reads its tail only then
 export function cutLine(cut: Cut, transcriptPath: string) {
@@ -590,6 +776,7 @@ export function leavesToSend(
 }
 
 export function buildPacket({
+    charter,
     cut = '',
     deltaText,
     dir,
@@ -598,6 +785,7 @@ export function buildPacket({
     meter,
     missing,
     proposal,
+    receipts,
     unchanged = [],
 }: PacketInput) {
     mkdirSync(dir, { recursive: true });
@@ -616,7 +804,13 @@ export function buildPacket({
     const body = [
         ...(ledger ? [ledger] : []),
         ...(meter ? [meter] : []),
+        ...(charter ? [`## charter changed\n\n${charter}`] : []),
         `# clio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
+        ...(receipts === undefined
+            ? []
+            : [
+                  `## receipts · clio's tool calls since dima's last line\n${receipts || '(none)'}`,
+              ]),
         proposalBlock,
         ...leafBlocks,
         unchangedNote,
@@ -668,16 +862,164 @@ function shellCommands(line: string) {
     return commands;
 }
 
-// a merge waits for crow's note; a member spawn wakes it and runs on; anything else is no decision
-export function decisionOf(line: string): Decision | undefined {
-    for (const command of shellCommands(line)) {
-        const words = command.slice(command.findIndex((w) => !/^\w+=/.test(w)));
-        if (words[0] === 'gh' && words[1] === 'pr' && words[2] === 'merge')
-            return { args: words.slice(3), kind: 'merge' };
-        if (words[0] === 'claude' && words.includes('--bg'))
-            return { kind: 'spawn' };
+// a script that sends to a paid api says so in its source, so no list of scripts drifts
+function isPaidSource(path: string, cwd: string) {
+    try {
+        return PAID_SOURCE.test(
+            readFileSync(
+                resolve(cwd, path.replace(/^~(?=\/)/, homedir())),
+                'utf8',
+            ),
+        );
+    } catch {
+        return false;
     }
 }
+
+function isPaidPnpmVerb(words: string[], cwd: string) {
+    let dir = cwd;
+    let verb: string | undefined;
+    for (let i = 1; i < words.length && !verb; i++) {
+        const word = words[i] ?? '';
+        if (word === '-C' || word === '--dir')
+            dir = resolve(
+                cwd,
+                (words[++i] ?? '').replace(/^~(?=\/)/, homedir()),
+            );
+        else if (!word.startsWith('-') && word !== 'run') verb = word;
+    }
+    try {
+        const script: unknown = JSON.parse(
+            readFileSync(join(dir, 'package.json'), 'utf8'),
+        ).scripts?.[verb ?? ''];
+        return typeof script === 'string'
+            ? isPaidCall(script.split(/\s+/), dir, [])
+            : false;
+    } catch {
+        return false;
+    }
+}
+
+function isPaidCall(words: string[], cwd: string, bodies: string[]): boolean {
+    const [head = ''] = words;
+    if (NETWORK_TOOL.test(head)) return words.some((w) => PAID_URL.test(w));
+    if (head === 'pnpm') return isPaidPnpmVerb(words, cwd);
+    if (!SCRIPT_RUNNER.test(head)) return false;
+    const args = words.slice(1);
+    return (
+        args.join(' ').match(PAID_VERB) !== null ||
+        args.some((word) =>
+            word.startsWith('<<')
+                ? bodies.some((body) => PAID_SOURCE.test(body))
+                : PAID_SOURCE.test(word) ||
+                  (SCRIPT_FILE.test(word) && isPaidSource(word, cwd)),
+        )
+    );
+}
+
+// a heredoc's body is data unless its command reads it, so it never splits into commands of its own
+function splitHeredocs(line: string) {
+    const bodies: string[] = [];
+    const kept: string[] = [];
+    const lines = line.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        const row = lines[i] ?? '';
+        kept.push(row);
+        const delimiter = /<<-?\s*['"]?(\w+)['"]?/.exec(row)?.[1];
+        const end = delimiter
+            ? lines.findIndex((l, at) => at > i && l.trim() === delimiter)
+            : -1;
+        if (end === -1) continue;
+        bodies.push(lines.slice(i + 1, end).join('\n'));
+        i = end;
+    }
+    return { bodies, script: kept.join('\n') };
+}
+
+// `op-run.sh`, `env` and `sh -c '…'` run the real command, so the real command is the one judged
+function realCommands(script: string): string[][] {
+    return shellCommands(script).flatMap((command) => {
+        let words = command.slice(command.findIndex((w) => !/^\w+=/.test(w)));
+        while (WRAPPER.test(words[0] ?? '')) {
+            words = words.slice(1);
+            words = words.slice(words.findIndex((w) => !/^\w+=/.test(w)));
+        }
+        return SHELL.test(words[0] ?? '') && words[1] === '-c'
+            ? realCommands(words[2] ?? '')
+            : [words];
+    });
+}
+
+// a merge, a paid call and a console write wait for crow's note; a spawn, a post and a close wake it and run on
+export function decisionOf(
+    line: string,
+    cwd = process.cwd(),
+): Decision | undefined {
+    const what = oneLine(line, RECEIPT_MAX_CHARS);
+    const { bodies, script } = splitHeredocs(line);
+    let dir = cwd;
+    for (const words of realCommands(script)) {
+        if (words[0] === 'cd' && words[1])
+            dir = resolve(dir, words[1].replace(/^~(?=\/)/, homedir()));
+        const [head, verb, act] = words;
+        if (head === 'gh' && verb === 'pr' && act === 'merge')
+            return { args: words.slice(3), kind: 'merge' };
+        if (head === 'claude' && words.includes('--bg'))
+            return { kind: 'spawn' };
+        if (isPaidCall(words, dir, bodies)) return { kind: 'paid', what };
+        if (
+            head === 'gh' &&
+            (verb === 'pr' || verb === 'issue') &&
+            (act === 'create' || act === 'comment')
+        )
+            return { kind: 'post', what: `gh ${verb} ${act}` };
+        if (head === 'slk' && (verb === 'send' || verb === 's'))
+            return { kind: 'post', what: 'slk send' };
+        if (head === 'himalaya' && words.includes('send'))
+            return { kind: 'post', what: 'himalaya send' };
+        if (head === 'x' && verb === 'linear' && act === 'set') {
+            const flag = words.findIndex((w) => /^--state(=|$)/.test(w));
+            const state =
+                words[flag]?.split('=')[1] ??
+                (flag >= 0 ? words[flag + 1] : undefined);
+            if (/^(done|canceled)$/i.test(state ?? ''))
+                return { kind: 'close', what: words[3] ?? '?' };
+        }
+    }
+}
+
+// a click has no url of its own, so it counts on the page clio last navigated to
+export function consoleOf(
+    tool: string | undefined,
+    input: { url?: string; action?: string } | undefined,
+    lines: () => string[],
+): Decision | undefined {
+    if (!tool || !BROWSER_ACT.test(tool)) return;
+    if (input?.action && BROWSER_READ.has(input.action)) return;
+    const url =
+        input?.url ??
+        toolCallsOf(lines().map(parseEntry)).findLast(
+            (call) => call.name.endsWith('__navigate') && call.input.url,
+        )?.input.url;
+    return url && CONSOLE_URL.test(url) ? { kind: 'console', url } : undefined;
+}
+
+const PAID_URL =
+    /api\.(anthropic|openai)\.com|\/messages\/batches|\/v1\/batches/;
+const PAID_SOURCE =
+    /(?:from|import|require\()\s*['"]@anthropic-ai\/sdk|^\s*(?:import|from)\s+anthropic\b|['"`]https:\/\/api\.anthropic\.com\/v1\//m;
+// the $54 batch of 2026-11-03: `script/op-run.sh python3 -I <scratch>/retro/batch.py submit`, its script gone with the scratch
+const PAID_VERB = /\bbatch\.py\s+submit\b/;
+const SCRIPT_RUNNER = /(^|\/)(node|python3?|bun|tsx|deno)$/;
+const SCRIPT_FILE = /\.(c|m)?(js|ts)$|\.py$/;
+const NETWORK_TOOL = /^(curl|wget|xh)$/;
+const WRAPPER = /(^|\/)(op-run\.sh|env|time|exec|nohup)$/;
+const SHELL = /(^|\/)(sh|bash|zsh)$/;
+const BROWSER_ACT =
+    /^mcp__(Claude_Browser|claude-in-chrome)__(navigate|computer|form_input)$/;
+const BROWSER_READ = new Set(['screenshot', 'wait', 'scroll', 'zoom', 'hover']);
+const CONSOLE_URL =
+    /console\.anthropic\.com|platform\.claude\.com|\/billing(\/|\b)/i;
 
 // a proposal clio writes for dima wakes crow before he ticks it; any other write is no decision
 export function proposalOf(
@@ -713,7 +1055,7 @@ export function turnStartOf(lines: string[]) {
         if (
             entry?.type === 'user' &&
             !entry.isMeta &&
-            textOf(entry.message?.content).trim()
+            withoutHarness(textOf(entry.message?.content))
         )
             return i;
     }
@@ -770,6 +1112,7 @@ export function verifiedHead(key: string) {
 
 // one packet for any wake: the delta since the last one, plus the leaves changed since crow last read them
 export function packWake({
+    claim,
     delta,
     lines,
     now,
@@ -788,7 +1131,32 @@ export function packWake({
     const leaves = resolveLeaves(leafPatterns, localDay(now));
     const crowTranscript = newestTranscript();
     const toSend = leavesToSend(leaves.found, state, crowTranscript);
+    const hash = charterHash();
+    const charter =
+        state.charterHash && state.charterHash !== hash
+            ? readCharter()
+            : undefined;
+    const receipts = receiptsOf(lines);
+    // a claim is judged on dima's lines and the receipts alone, and leaves the delta for the next cadence wake
+    if (claim) {
+        const files = buildPacket({
+            charter,
+            deltaText: `${delta.dimaText || '(no line of dima since the last wake)'}\n\n## the claim\n${claim}`,
+            dir: join(STATE_DIR, 'packets', wakeId),
+            leaves: [],
+            ledger: ledgerLine(now),
+            meter: meterLine(now),
+            missing: [],
+            receipts,
+        });
+        return {
+            files,
+            missing: [],
+            state: { ...state, charterHash: hash } satisfies State,
+        };
+    }
     const files = buildPacket({
+        charter,
         cut: cutLine(delta.cut, transcriptPath),
         deltaText: delta.text,
         dir: join(STATE_DIR, 'packets', wakeId),
@@ -797,6 +1165,7 @@ export function packWake({
         meter: meterLine(now),
         missing: leaves.missing,
         proposal,
+        receipts,
         unchanged: toSend.unchanged,
     });
     return {
@@ -804,12 +1173,36 @@ export function packWake({
         missing: leaves.missing,
         state: {
             ...state,
+            charterHash: hash,
             leafHashes: toSend.hashes,
             leavesFor: crowTranscript,
             offsets: { ...state.offsets, [transcriptPath]: lines.length },
         } satisfies State,
     };
 }
+
+// the cadence's park line, `clio:shift` § the 5h ladder: with 55 min or less left the fleet burns, so nothing parks, and 97 % keeps its reserve
+export function isParked(now: Date, usagePath = USAGE_PATH) {
+    try {
+        const fiveHour = (
+            JSON.parse(readFileSync(usagePath, 'utf8')) as UsageFile
+        ).rate_limits?.five_hour;
+        if (!fiveHour) return false;
+        const msLeft = fiveHour.resets_at * 1000 - now.getTime();
+        if (msLeft <= 0) return false;
+        if (fiveHour.used_percentage >= 97) return true;
+        if (msLeft <= 55 * 60_000) return false;
+        const pace = (1 - msLeft / FIVE_HOURS_MS) * 100;
+        return (
+            fiveHour.used_percentage - pace > 5 ||
+            fiveHour.used_percentage >= 90
+        );
+    } catch {
+        return false;
+    }
+}
+
+const FIVE_HOURS_MS = 5 * 3_600_000;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -822,7 +1215,7 @@ export function wakeIdOf(date: Date) {
 }
 
 export function wakeLine(wake: Wake) {
-    return `crow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${CHARTER_PATH}`;
+    return `crow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${charterHash()} ${CHARTER_PATH}`;
 }
 
 export function dayOf(firstWakeAt: number, now: number) {
@@ -855,10 +1248,17 @@ export function appendJsonl(
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
 }
 
-// two harvesters on one wake (a spawn decision) logged the same note twice on 10-21
+// two harvesters on one wake wrote the same note 2 ms apart (11-03, 11-04), past a read of the file, so a claim file decides
 export function appendNoteOnce(path: string, value: Note | ReconcileNote) {
     if (jsonlOf<{ id?: string }>(path).some((row) => row.id === value.id))
         return;
+    const claims = `${path}.ids`;
+    mkdirSync(claims, { recursive: true });
+    try {
+        closeSync(openSync(join(claims, value.id), 'wx'));
+    } catch {
+        return;
+    }
     appendJsonl(path, value);
 }
 
@@ -1115,13 +1515,19 @@ export function planNotes(run: PlanRun, review: PlanReview): PlanNote[] {
     };
     // the schema caps findings, but the model's json is still untrusted input
     const findings = review.findings.slice(0, PLAN_FINDINGS_MAX);
-    if (findings.length === 0)
-        return [{ ...shared, finding: null, id: `plan-${run.runId}-0` }];
-    return findings.map((finding, index) => ({
-        ...shared,
-        finding: { ...finding, located: isLocated(planText, finding.quote) },
-        id: `plan-${run.runId}-${index + 1}`,
-    }));
+    const { costUsd, ...perFinding } = shared;
+    // the -0 row is the run: the cost sits there once, so summing the rows gives the run's cost
+    return [
+        { ...shared, finding: null, id: `plan-${run.runId}-0` },
+        ...findings.map((finding, index) => ({
+            ...perFinding,
+            finding: {
+                ...finding,
+                located: isLocated(planText, finding.quote),
+            },
+            id: `plan-${run.runId}-${index + 1}`,
+        })),
+    ];
 }
 
 /* Types */
@@ -1139,6 +1545,7 @@ export interface Wake {
 
 export interface State {
     arm?: Arm;
+    charterHash?: string;
     jobId?: string;
     startedAt?: number;
     firstWakeAt?: number;
@@ -1164,7 +1571,31 @@ export interface Usage {
     cache_creation_input_tokens?: number;
 }
 
-type TranscriptContent = string | { type: string; text?: string }[];
+type TranscriptContent = string | ContentBlock[];
+
+interface ContentBlock {
+    type: string;
+    text?: string;
+    id?: string;
+    name?: string;
+    input?: ToolInput;
+    tool_use_id?: string;
+    is_error?: boolean;
+    content?: TranscriptContent;
+}
+
+interface ToolInput {
+    command?: string;
+    description?: string;
+    file_path?: string;
+    url?: string;
+}
+
+interface ToolCall {
+    input: ToolInput;
+    name: string;
+    result?: ContentBlock;
+}
 
 export interface Run {
     model: string | null;
@@ -1199,9 +1630,12 @@ export interface TranscriptEntry {
 export type Decision =
     | { kind: 'merge'; args: string[] }
     | { kind: 'spawn' }
-    | { kind: 'proposal'; path: string };
+    | { kind: 'proposal'; path: string }
+    | { kind: 'paid' | 'post' | 'close'; what: string }
+    | { kind: 'console'; url: string };
 
 interface PackInput {
+    claim?: string;
     delta: ReturnType<typeof transcriptDelta>;
     lines: string[];
     now: Date;
@@ -1225,6 +1659,8 @@ interface UsageFile {
 }
 
 interface PacketInput {
+    charter?: string;
+    receipts?: string;
     cut?: string;
     dir: string;
     leaves: string[];
@@ -1266,6 +1702,8 @@ export interface Verdict {
     value: 'ok' | 'miss';
     why: string;
     at: string;
+    changed?: (typeof changedList)[number];
+    ref?: string;
 }
 
 export interface OneShotResult {
@@ -1318,7 +1756,8 @@ export interface PlanRun {
 }
 
 // one line per finding; accepted is a `crow:note-vet` verdict on its id, never a field here
-export interface PlanNote extends Omit<PlanRun, 'planText'> {
+export interface PlanNote extends Omit<PlanRun, 'planText' | 'costUsd'> {
+    costUsd?: number;
     id: string;
     channel: 'plan';
     verdict: PlanReview['verdict'];

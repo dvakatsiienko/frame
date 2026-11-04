@@ -85,6 +85,7 @@ export type StashView = {
     wait?: string;
     afk: boolean;
     isHot: boolean;
+    isPaced: boolean;
     isWaker: boolean;
     isBoardOpen: boolean;
     // this session's own second wind, for the band's button
@@ -183,6 +184,8 @@ export type QuietPing = {
     at: number;
     from: string;
     text: string;
+    // read-both: a ping held before FRM-501 has none
+    tag?: string;
     canary?: string;
 };
 // the pings held for clio's next turn; the on/off switch is a settings knob in the store
@@ -197,6 +200,8 @@ export type QuietLogLine = {
     startedTurn: boolean;
     arm: 'on' | 'off';
     canary?: string;
+    // why a passed line pushed
+    why?: 'tag' | 'for-dima' | 'answer';
     // the sender's session id when the registry names it, so a rename mid-day never loses its lines
     sid?: string;
 };

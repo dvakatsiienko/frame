@@ -63,6 +63,7 @@
         "macos:setup": "node ./script/macos-setup.ts",
         "mcp:build": "pnpm --filter mcp-x-cloud-chat build",
         "mods:live": "node ./home/.claude/plugin-x/mods/live.ts",
+        "mods:set": "node ./home/.claude/plugin-x/mods/set.ts",
         "mods:probe": "node ./home/.claude/plugin-x/mods/probe.ts",
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
         "mods:quiet-canary": "node ./home/.claude/plugin-x/mods/quiet-canary.ts",
@@ -137,15 +138,15 @@
         "vitest": "5.0.5"
     },
     "engines": {
-        "node": ">=24",
-        "pnpm": ">=12.15.0"
+        "node": ">=26",
+        "pnpm": ">=12.16.1"
     },
     "devEngines": {
         "runtime": {
             "name": "node",
-            "version": ">=24.0.2",
+            "version": ">=26.0.0",
             "onFail": "error"
         }
     },
-    "packageManager": "pnpm@12.15.0"
+    "packageManager": "pnpm@12.16.1"
 }

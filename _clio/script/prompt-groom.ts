@@ -3,6 +3,7 @@
 //        node prompt-groom.ts --next <PK-N|FRM-N|BYT-N>      print the home's next wish id, W1 for an empty home (PK-312)
 //        node prompt-groom.ts --move <PK-N> <FRM-N|BYT-N> <W-id…>   print the wishes renumbered into the ticket's series and the pocket's «moved:» line (o98); writes nothing
 //        node prompt-groom.ts --standing [YYYY-MM-DD]       print the day's open ` #standing` W-lines, one a line (FRM-482; a new day starts empty)
+//        node prompt-groom.ts --tag <W-id>                 clio's hand: end today's W-line with ` #standing`
 //        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
 //        node prompt-groom.ts --check <file…>              red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
 //        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose id and text share no line of a pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
@@ -232,6 +233,7 @@ export function homelessWishes(
             .replace(/^\s*(?:[*-]\s+)?W\d+/, '')
             .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
             .replace(/^[\s·:]+/, '')
+            .replace(/ #(standing|lifted)$/, '')
             .trim();
         // linear rewrites a body it stores (\~ for ~, autolinks), so both sides read through wish-cover's normalize
         const wanted = normalize(text);
@@ -286,6 +288,24 @@ export function openStanding(day: string, dir: string) {
                 text: line.trim(),
             })),
     );
+}
+
+export function tagStanding(day: string, dir: string, id: string) {
+    const tagged: string[] = [];
+    for (const file of dayGrooms(day, dir)) {
+        const text = readFileSync(file, 'utf8');
+        const next = text.replace(
+            /^(.*\b(W\d+)\b.*?)(\s*)$/gm,
+            (line, head: string, wid: string, tail: string) => {
+                if (wid !== id || / #(standing|lifted)$/.test(head))
+                    return line;
+                tagged.push(wid);
+                return `${head} #standing${tail}`;
+            },
+        );
+        if (next !== text) writeFileSync(file, next);
+    }
+    return tagged;
 }
 
 export function liftStanding(day: string, dir: string, id: string) {
@@ -479,6 +499,15 @@ if (import.meta.main) {
         for (const line of openStanding(args[1] ?? today, groomDir))
             console.log(line.text);
         process.exit(0);
+    }
+    if (args[0] === '--tag') {
+        const tagged = tagStanding(today, groomDir, args[1] ?? '');
+        console.log(
+            tagged.length
+                ? `tagged: ${tagged.join(', ')}`
+                : `no line to tag: ${args[1] ?? ''}`,
+        );
+        process.exit(tagged.length ? 0 : 1);
     }
     if (args[0] === '--lift') {
         const lifted = liftStanding(today, groomDir, args[1] ?? '');

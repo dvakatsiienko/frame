@@ -50,6 +50,19 @@ import {
     wrongText,
 } from './orbit.ts';
 import {
+    PACE_KEYS,
+    PACE_NEW_WINDOW,
+    PACE_SETTINGS,
+    type PaceNumbers,
+    type PaceRung,
+    isPaceHeld,
+    isPaceLineDue,
+    isSameWindow,
+    paceLine,
+    paceOf,
+    paceRung,
+} from './pace.ts';
+import {
     type BackgroundTask,
     LEDGER_SENDS,
     TRANSCRIPT_TAIL,
@@ -70,6 +83,18 @@ import {
     unbold,
     waitSpans,
 } from './parse.ts';
+import {
+    QUIET_HELD_LINE,
+    QUIET_PUSHED,
+    QUIET_SLIPSTREAMED,
+    isQuietAnswer,
+    isQuietQuestion,
+    isQuietRefusal,
+    quietHeldText,
+    quietNotes,
+    quietPush,
+    quietTag,
+} from './quiet.ts';
 import { cleanTree, drawn } from './tree.ts';
 
 // x-mod-stash: dima's command center above the prompt, one row; FTR.md lists every feature.
@@ -168,8 +193,20 @@ const SWITCHES = {
     speak: { key: SPEAK_ASSUMED, of: true },
     undo: { key: UNDO_WINDOW, of: true },
 } as const;
+const settingOf = (key: keyof typeof PACE_SETTINGS) => ({
+    key,
+    of: PACE_SETTINGS[key].of,
+    range: { max: PACE_SETTINGS[key].max, min: PACE_SETTINGS[key].min },
+});
 const NUMBERS = {
+    'hot-late': settingOf('hot-late'),
+    'hot-minutes': settingOf('hot-minutes'),
     lines: { key: PHASE_LINES, of: PLAN_MAX, range: LINES },
+    'pace-burn': settingOf('pace-burn'),
+    'pace-over': settingOf('pace-over'),
+    'pace-park': settingOf('pace-park'),
+    'pace-stop': settingOf('pace-stop'),
+    'pace-under': settingOf('pace-under'),
     quietWait: { key: QUIET_WAIT, of: 10, range: WAIT },
     speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
     undoDelay: {
@@ -199,6 +236,7 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.wait', label: '🔭 wait line' },
     { group: 'stash · band', key: 'stash.hot', label: '🔥 keep-hot' },
     { group: 'stash · band', key: 'stash.waker', label: '⏰ waker' },
+    { group: 'stash · band', key: 'stash.pace-watch', label: '🔋 pace watch' },
     { group: 'stash · band', key: 'stash.afk', label: '💨 afk' },
     { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
@@ -267,7 +305,9 @@ const SHORT_MS = 60_000;
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
-const HOT_MS = 50 * 60 * 1000;
+const MINUTE_MS = 60_000;
+// the prompt cache's own lifetime
+const CACHE_MS = 60 * MINUTE_MS;
 const HOT = 'hot:';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
@@ -468,6 +508,7 @@ let pinged = false;
 let isPolling = false;
 let afk = false;
 let isWaker = false;
+let isPaced = false;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
@@ -955,9 +996,8 @@ let orbit: StashOrbit = EMPTY_ORBIT;
 let isOrbitLoaded = false;
 
 // one json line to x-speak's control socket; the text rides argv, never the shell's words
-// quiet comms (PK-93, dima's o17: an a/b mvp, one switch to revert): in clio's thread a member's [progress] ping is
-// held, no turn; every other tag, and no tag, passes; held pings ride her next prompt as one hidden block, or an
-// idle append after 10 min. the a/b reads one log line per delivery from the store (docs/test-drive/quiet-comms.md)
+// quiet comms (PK-93, FRM-501): in clio's thread a message is held, no turn, unless it pushes (hooks/quiet.ts) or is a
+// member's first answer to her; held ones ride her next prompt as one hidden block, or an idle append after the wait
 const QUIET = { key: 'quiet', plugin: 'x-mod-stash' } as const;
 const QUIET_HELD = 'quiet-held:';
 // 🐦‍🔥 second wind (todo 16): `wind:<sid>`, written by any board's press and read by that session's own stash at its next
@@ -999,9 +1039,11 @@ const WIND_CANCELLED =
 const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
-const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
-// a [progress] ping that asks dima something is pushed, never held; dima's list (o26), a bare «?» was 4 false of 4
-const QUIET_PUSH = /(?<![\w-])(?:for dima|decisions|pick:|your call)(?![\w-])/i;
+// the members clio asked a question, by session id, and when: the first message back inside QUIET_REPLY_MS pushes
+const QUIET_ASKED = 'quiet-asked';
+const SEND_TOOL = 'SendMessage';
+// a log line of the desktop's own note: no member sent it, so the ledger and the sender's «held» read past it
+const QUIET_NOTICE = 'notice';
 // the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
 const QUIET_GAP = 'quiet-gap';
 const QUIET_CANARY = /^\s*\[progress\]\s*quiet canary ([\w-]+)/i;
@@ -1042,31 +1084,64 @@ export function peerPing(text: string) {
     const body = text
         .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
         .replace(/\n?<\/cross-session-message>\s*$/, '');
-    const tag = body.match(QUIET_TAG)?.[1]?.toLowerCase() ?? 'none';
+    const tag = quietTag(body);
     const canary = body.match(QUIET_CANARY)?.[1];
     return { body, from, tag, ...(canary ? { canary } : {}) };
 }
 
+// the held list is read, changed and written back across awaits: every change waits its turn, or a message landing
+// between the two is lost
+let quietTail: Promise<unknown> = Promise.resolve();
+function quietLocked<T>(job: () => Promise<T>) {
+    const run = quietTail.then(job);
+    quietTail = run.catch(() => undefined);
+    return run;
+}
+
+// what the next prompt carries, the list emptied; a list that would not empty waits, or it rides every prompt
+async function quietTake($: EngineInterface): Promise<StashQuiet> {
+    const quiet = await quietOf($);
+    if (!quiet.held.length) return quiet;
+    if (!(await saveQuiet($, { ...quiet, held: [] }))) return { held: [] };
+    await quietFlushed($, quiet.held).catch(() => undefined);
+    return quiet;
+}
+
+// the store is the list's truth: every `$.state.get` of one dispatch reads one moment, so a prompt's own dispatch would
+// read a list older than what landed since, and write it back; state is the mirror a resume reads
 async function quietOf($: EngineInterface): Promise<StashQuiet> {
+    const sid = await currentId($);
+    const held = sid
+        ? await $.store.get(QUIET_HELD + sid).catch(() => undefined)
+        : undefined;
+    if (Array.isArray(held)) return { held: held as QuietPing[] };
     return (
         (await $.state.get(QUIET).catch(() => undefined))?.value ?? { held: [] }
     );
 }
 
-// true once the held list is in the session's state; the store copy only feeds the board's row
+// true once the held list is in the store
 async function saveQuiet($: EngineInterface, q: StashQuiet) {
-    const isSaved = await $.state
+    const sid = await currentId($);
+    const isStored =
+        !sid ||
+        (await $.store
+            .set(QUIET_HELD + sid, q.held)
+            .then(() => true)
+            .catch(() => false));
+    if (!isStored) return false;
+    return $.state
         .set(QUIET, q)
         .then(() => true)
-        .catch(() => false);
-    const sid = await currentId($);
-    if (sid) await $.store.set(QUIET_HELD + sid, q.held).catch(() => undefined);
-    return isSaved;
+        .catch(() => !!sid);
 }
+
+const quietLogKey = (at: number) =>
+    QUIET_LOG + new Date(at).toISOString().slice(0, 10);
 
 // true once the line is in the day's log
 async function quietLog($: EngineInterface, line: QuietLogLine) {
-    const key = QUIET_LOG + new Date(line.at).toISOString().slice(0, 10);
+    const key = quietLogKey(line.at);
     const was = ((await $.store.get(key).catch(() => undefined)) ??
         []) as QuietLogLine[];
     return $.store
@@ -1084,7 +1159,7 @@ async function quietFlushed($: EngineInterface, held: QuietPing[]) {
             at,
             from: p.from,
             startedTurn: false,
-            tag: 'progress',
+            tag: p.tag ?? 'none',
             verdict: 'flushed',
             ...(p.canary ? { canary: p.canary } : {}),
         });
@@ -1098,7 +1173,7 @@ async function quietLedger($: EngineInterface, now: number) {
     const judged = (
         ((await $.store.get(QUIET_LOG + day).catch(() => undefined)) ??
             []) as QuietLogLine[]
-    ).filter((l) => l.verdict !== 'flushed');
+    ).filter((l) => l.verdict !== 'flushed' && l.tag !== QUIET_NOTICE);
     const opened = judged.length
         ? Math.min(...judged.map((l) => l.at))
         : Date.parse(`${day}T00:00:00Z`);
@@ -1275,7 +1350,7 @@ async function quietBooks($: EngineInterface) {
 
 export const quietNote = (held: QuietPing[]) =>
     [
-        `🤫 quiet comms: ${held.length} held member ping${held.length === 1 ? '' : 's'}, [progress] only; read them, act only if one changes the plan, never relay them to dima.`,
+        `🤫 quiet comms: ${held.length} held member ping${held.length === 1 ? '' : 's'}; read them, act only if one changes the plan, never relay them to dima.`,
         ...held.map(
             (p) =>
                 `- ${new Date(p.at).toTimeString().slice(0, 5)} ${p.from}: ${p.text}`,
@@ -1293,25 +1368,217 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
           )
         : undefined;
 
-// held pings past 10 min while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
-async function quietIdle($: EngineInterface) {
-    const q = await quietOf($);
-    if (!q.held.length) return;
-    if ((await $.state.get(TURN).catch(() => undefined))?.value?.isBusy) return;
+// the desktop's «finished a turn» prompt in clio's thread: held like a message, unless a report pushes; answers the drop's
+// reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), undefined to let the prompt in
+async function quietHoldNotes($: EngineInterface, prompt: string) {
+    const notes = quietNotes(prompt);
+    if (!notes || !(await isQuietHome($))) return undefined;
+    if (!(await readSwitch($, 'quiet'))) return undefined;
+    if ((await $.state.get(MOBILE)).value === true) return undefined;
     const now = await $.clock.now();
+    const whys = [];
+    for (const n of notes) {
+        // first, a push spends the slot too
+        const isAnswer = await quietAnswered($, n.from, quietTag(n.body));
+        whys.push(quietPush(n.body) ?? (isAnswer ? 'answer' : undefined));
+    }
+    const line = { arm: 'on', at: now, tag: QUIET_NOTICE } as const;
+    if (whys.some(Boolean)) {
+        for (const n of notes)
+            await quietLog($, {
+                ...line,
+                from: n.from,
+                startedTurn: true,
+                verdict: 'passed',
+            });
+        return undefined;
+    }
+    const q = await quietOf($);
+    const isSaved = await saveQuiet($, {
+        ...q,
+        held: [
+            ...q.held,
+            ...notes.map((n) => ({
+                at: now,
+                from: n.from,
+                tag: QUIET_NOTICE,
+                text: n.held,
+            })),
+        ],
+    });
+    if (!isSaved) return undefined;
+    for (const n of notes)
+        await quietLog($, {
+            ...line,
+            from: n.from,
+            startedTurn: false,
+            verdict: 'held',
+        });
+    return '';
+}
+
+type QuietSend =
+    | { isOwner: true; isAsking: boolean; to: string }
+    | { at: number; isOwner: false; isPush: boolean };
+
+// read before the send goes out: clio's gate spends the open answer the moment it lands
+async function quietSendStart(
+    $: EngineInterface,
+    e: Record<string, unknown>,
+): Promise<QuietSend | undefined> {
+    const to = text(e.to);
+    const message = text(e.message) ?? '';
+    if (!to || !(await readSwitch($, 'quiet'))) return undefined;
+    if (await isLaneOwner($))
+        return {
+            isAsking: isQuietQuestion(message),
+            isOwner: true,
+            to,
+        };
+    const row = rowOfTo(await registry($), to);
+    const isClio =
+        isCoordinator(bareTo(to)) ||
+        (row !== undefined && isCoordinator(row.base.name));
+    if (!isClio) return undefined;
+    const at = await $.clock.now();
+    const name = await sessionName($);
+    const asked = name ? (await askedOf($))[memberKey(name)] : undefined;
+    const isAnswer =
+        asked !== undefined &&
+        isQuietAnswer(asked, at) &&
+        quietTag(message) !== 'progress';
+    return {
+        at,
+        isOwner: false,
+        isPush: isAnswer || quietPush(message) !== undefined,
+    };
+}
+
+// what a finished send adds: clio's question opens its slot; a member reads the line, and a hold reads as a hold
+async function quietSendEnd(
+    $: EngineInterface,
+    send: QuietSend,
+    result: unknown,
+): Promise<{ line?: string; held?: Record<string, unknown> }> {
+    const answer = result as Record<string, unknown> | undefined;
+    if (send.isOwner) {
+        if (send.isAsking && answer?.success !== false)
+            await quietLocked(() => quietAsked($, send.to));
+        return {};
+    }
+    const isHeld =
+        isQuietRefusal(answer?.message) && (await isHeldSince($, send.at));
+    // a send that went nowhere joins no turn, so the line would lie
+    if (answer?.success === false && !isHeld) return {};
+    const line = send.isPush ? QUIET_PUSHED : QUIET_SLIPSTREAMED;
+    return isHeld
+        ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
+        : { line };
+}
+
+async function askedOf($: EngineInterface) {
+    return ((await $.store.get(QUIET_ASKED).catch(() => undefined)) ??
+        {}) as Record<string, number>;
+}
+
+const bareTo = (to: string) => to.replace(/\s*\[[^\]]*\]$/, '');
+
+// the registry row a SendMessage `to` names: a name with or without its ref, a session id, a host id or a socket
+function rowOfTo(rows: Registered[], to: string) {
+    const socket = to.match(/cc-socks\/(\d+)\.sock$/)?.[1];
+    if (socket) return rows.find((r) => r.isAlive && r.pid === Number(socket));
+    const key = memberKey(bareTo(to));
+    return (
+        rows.find((r) => r.isAlive && memberKey(r.base.name) === key) ??
+        memberOf(rows, bareTo(to))
+    );
+}
+
+// clio's side of a send: her question opens that member's one answer, keyed by its name without the mode emoji, the one
+// form her write and its answer both reach
+async function quietAsked($: EngineInterface, to: string) {
+    const now = await $.clock.now();
+    const row = rowOfTo(await registry($), to);
+    const kept = Object.entries(await askedOf($)).filter(([, at]) =>
+        isQuietAnswer(at, now),
+    );
+    await $.store.set(QUIET_ASKED, {
+        ...Object.fromEntries(kept),
+        [memberKey(row?.base.name ?? bareTo(to))]: now,
+    });
+}
+
+// true when this message answers clio's question, and spends the slot; a [progress] neither pushes nor spends it
+async function quietAnswered($: EngineInterface, from: string, tag: string) {
+    if (tag === 'progress') return false;
+    const asked = await askedOf($);
+    const key = memberKey(from);
+    const at = asked[key];
+    if (at === undefined) return false;
+    const { [key]: _spent, ...rest } = asked;
+    await $.store.set(QUIET_ASKED, rest);
+    return isQuietAnswer(at, await $.clock.now());
+}
+
+// did clio's gate hold what this session just sent: her log line, at or after the send; the send may cross midnight
+async function isHeldSince($: EngineInterface, since: number) {
+    const now = await $.clock.now();
+    const keys = new Set([quietLogKey(since), quietLogKey(now)]);
+    const me = await currentId($);
+    const name = await sessionName($);
+    for (const key of keys) {
+        const lines = ((await $.store.get(key).catch(() => undefined)) ??
+            []) as QuietLogLine[];
+        const isOurs = lines.some(
+            (l) =>
+                l.verdict === 'held' &&
+                l.tag !== QUIET_NOTICE &&
+                l.at >= since &&
+                (l.sid
+                    ? l.sid === me
+                    : name !== undefined &&
+                      memberKey(l.from) === memberKey(name)),
+        );
+        if (isOurs) return true;
+    }
+    return false;
+}
+
+// past the wait, the list is taken under the lock and written outside it: an append never holds up a message, and a
+// refused one puts its lines back
+async function quietDue($: EngineInterface) {
+    const q = await quietOf($);
+    if (!q.held.length) return [];
+    if ((await $.state.get(TURN).catch(() => undefined))?.value?.isBusy)
+        return [];
     const waitMs = (await readNumber($, 'quietWait')) * 60_000;
-    if (now - Math.min(...q.held.map((p) => p.at)) < waitMs) return;
+    if ((await $.clock.now()) - Math.min(...q.held.map((p) => p.at)) < waitMs)
+        return [];
+    return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
+}
+
+async function quietPutBack($: EngineInterface, held: QuietPing[]) {
+    const q = await quietOf($);
+    await saveQuiet($, { ...q, held: [...held, ...q.held] });
+}
+
+// held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
+async function quietIdle($: EngineInterface) {
+    const due = await quietLocked(() => quietDue($));
+    if (!due.length) return;
     const appended = await $.session
         .append({
             message: {
-                content: [{ text: quietNote(q.held), type: 'text' }],
+                content: [{ text: quietNote(due), type: 'text' }],
                 type: 'user',
             },
         })
         .catch(() => undefined);
-    if (!appended || 'deny' in appended) return;
-    await saveQuiet($, { ...q, held: [] });
-    await quietFlushed($, q.held);
+    if (!appended || 'deny' in appended) {
+        await quietLocked(() => quietPutBack($, due));
+        return;
+    }
+    await quietLocked(() => quietFlushed($, due));
 }
 
 // speak's own answer to `status`: reading and not paused draws ⏸️ on every play button, else ▶️ (dima, 15:51)
@@ -2551,6 +2818,7 @@ async function load($: EngineInterface) {
     shown = shownOf(await $.store.get(SHOWN).catch(() => undefined));
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
+    isPaced = isPaceOn(await $.store.get(PACE + (selfId ?? '')));
     selfWind = selfId ? (await windOf($, selfId))?.state : undefined;
     if (clearedFrom && selfId && selfId !== clearedFrom) {
         await $.store
@@ -2574,6 +2842,7 @@ function viewOf(isBoardOpen: boolean): StashView {
         afk,
         isBoardOpen,
         isHot: Boolean(hot),
+        isPaced,
         isSettingsOpen,
         isWaker,
         selfId,
@@ -2850,6 +3119,265 @@ async function armWake($: EngineInterface) {
     });
 }
 
+// the pace watch (FRM-500): `pace:<id>` not holding `{ off: true }` switches it on for that session, its own stash reads the meter on the idle poll
+// and tells the session only when the 5h window changes its rung, no model between
+const PACE = 'pace:';
+const PACE_RUNG = 'pace-rung:';
+const PACE_CLAIM = 'pace-claim:';
+const PACE_WAKER = 'pace-waker:';
+const PACE_CLAIM_MS = 30_000;
+const PACE_ME = `${Math.random()}`;
+// off is a written value, so the coordinator's default arms only a key never written; `since` marks a shift's start, the one
+// that also moves ⏰
+const isPaceOn = (key: unknown) =>
+    Boolean(key) && (key as { off?: boolean }).off !== true;
+// past a reset the waker's own resume fires first, so a shift's expiry never turns ⏰ off under it
+const PACE_EXPIRY_MS = WAKE_SLACK_MS + POLL_MS;
+// a line on its way: a submit may resolve only at its turn's end, and its rung moves after that
+let isPaceSending = false;
+
+// the usage file every session shares, undefined until a turn wrote one
+async function usageFile($: EngineInterface) {
+    const raw = await $.fs
+        .read(`${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`)
+        .catch(() => undefined);
+    return raw
+        ? (JSON.parse(raw) as {
+              rate_limits?: {
+                  five_hour?: {
+                      used_percentage?: unknown;
+                      resets_at?: unknown;
+                  } | null;
+              };
+              written_at?: unknown;
+          })
+        : undefined;
+}
+
+async function paceMeterOf($: EngineInterface) {
+    const file = await usageFile($);
+    const five = file?.rate_limits?.five_hour;
+    if (
+        typeof five?.used_percentage !== 'number' ||
+        typeof five.resets_at !== 'number' ||
+        typeof file?.written_at !== 'number'
+    )
+        return undefined;
+    return {
+        now: await $.clock.now(),
+        resetsAt: five.resets_at * 1000,
+        used: five.used_percentage,
+        writtenAt: file.written_at * 1000,
+    };
+}
+
+async function paceNumbers($: EngineInterface) {
+    const out = {} as PaceNumbers;
+    for (const k of PACE_KEYS) out[k] = await readNumber($, k);
+    return out;
+}
+
+// the line went out: its rung stands, or the reset's line clears it
+async function paceSent(
+    $: EngineInterface,
+    sid: string,
+    stored: { resetsAt: number; rung: PaceRung } | undefined,
+) {
+    if (stored) await $.store.set(PACE_RUNG + sid, stored);
+    else await $.store.delete(PACE_RUNG + sid);
+}
+
+// the line this poll owes, none when the rung stands; the stored rung of another window counts as none
+async function paceDue($: EngineInterface, sid: string) {
+    if (!isPaceOn(await $.store.get(PACE + sid))) return undefined;
+    if (!(await partsShown($))('stash.pace-watch')) return undefined;
+    let kept = (await $.store.get(PACE_RUNG + sid)) as
+        | { resetsAt: number; rung: PaceRung }
+        | undefined;
+    // the clock says a window ended, never a meter write: a frozen file is what a stopped fleet leaves
+    if (kept && (await $.clock.now()) >= kept.resetsAt) {
+        if (isPaceHeld(kept.rung))
+            return { line: PACE_NEW_WINDOW, stored: undefined };
+        await $.store.delete(PACE_RUNG + sid);
+        kept = undefined;
+    }
+    const meter = await paceMeterOf($);
+    if (!meter) return undefined;
+    const isSame = kept && isSameWindow(kept.resetsAt, meter.resetsAt);
+    const numbers = await paceNumbers($);
+    const rung = paceRung(meter, isSame ? kept?.rung : undefined, numbers);
+    // a held rung waits for the clock's reset, whatever a meter a few seconds off says
+    const isPastReset = meter.resetsAt <= meter.now;
+    if (kept && (!isSame || (!rung && !(isPastReset && isPaceHeld(kept.rung)))))
+        await $.store.delete(PACE_RUNG + sid);
+    if (!rung || rung === 'between') return undefined;
+    if (!isPaceLineDue(rung, isSame ? kept?.rung : undefined)) return undefined;
+    return {
+        line: paceLine(rung, meter, numbers),
+        stored: { resetsAt: meter.resetsAt, rung: rung as PaceRung },
+    };
+}
+
+// one poller's line: a claim younger than PACE_CLAIM_MS is another process's, and a write it lost reads back as theirs
+async function paceClaim($: EngineInterface, sid: string) {
+    const now = await $.clock.now();
+    const was = (await $.store.get(PACE_CLAIM + sid)) as
+        | { at: number; by: string }
+        | undefined;
+    if (was && was.by !== PACE_ME && now - was.at < PACE_CLAIM_MS) return false;
+    await $.store.set(PACE_CLAIM + sid, { at: now, by: PACE_ME });
+    const held = (await $.store.get(PACE_CLAIM + sid)) as
+        | { by: string }
+        | undefined;
+    return held?.by === PACE_ME;
+}
+
+async function isTurnBusy($: EngineInterface) {
+    return (
+        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
+        isBusy
+    );
+}
+
+// idle: the line is the turn; the rung moves only once it entered, so a refused one is sent again by the next poll
+async function paceTick($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid || isPaceSending || (await isTurnBusy($))) return;
+    const due = await paceDue($, sid);
+    if (!due || !(await paceClaim($, sid))) return;
+    isPaceSending = true;
+    try {
+        const r = await selfSubmit($, due.line).catch(() => undefined);
+        if (r && !r.drop) await paceSent($, sid, due.stored);
+        else {
+            isBusy = false;
+            await keepTurn($);
+            await armHot($);
+        }
+        await $.store.delete(PACE_CLAIM + sid);
+    } finally {
+        isPaceSending = false;
+    }
+}
+
+// busy: the line joins the running step
+async function paceStep($: EngineInterface) {
+    const sid = await currentId($);
+    const due = sid && !isPaceSending ? await paceDue($, sid) : undefined;
+    if (!sid || !due || !(await paceClaim($, sid))) return undefined;
+    await paceSent($, sid, due.stored);
+    await $.store.delete(PACE_CLAIM + sid);
+    return due.line;
+}
+
+// the ⏰ waker follows the key: on at the start with what it found kept, put back at the end or when the start's window
+// reset; a state dima changed since is his
+async function paceWaker($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const key = (await $.store.get(PACE + sid)) as
+        | { off?: boolean; since?: number; was?: unknown }
+        | undefined;
+    const isWatched =
+        isPaceOn(key) &&
+        key?.since !== undefined &&
+        (await partsShown($))('stash.pace-watch');
+    const note = (await $.store.get(PACE_WAKER + sid)) as
+        | { since?: number; until?: number; wasOn: boolean }
+        | undefined;
+    const waker = (await $.store.get(WAKER_KEY)) as
+        | { on?: boolean }
+        | undefined;
+    const now = await $.clock.now();
+    if (isWatched) {
+        // the window a start expires with: only one still ahead, so an old file never ends a shift it just began
+        const ahead = (await paceMeterOf($).catch(() => undefined))?.resetsAt;
+        const until = note?.until ?? (ahead && ahead > now ? ahead : undefined);
+        if (!note) {
+            const wasOn = waker?.on === true;
+            await $.store.set(PACE_WAKER + sid, {
+                since: key?.since,
+                wasOn,
+                ...(until ? { until } : {}),
+            });
+            if (!wasOn) await $.store.set(WAKER_KEY, { on: true });
+            return;
+        }
+        // a second start means ⏰ on, he may have forgotten it (W1958); the end still restores what the first one found
+        if (key?.since !== note.since) {
+            await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
+            if (waker?.on !== true) await $.store.set(WAKER_KEY, { on: true });
+            // a held afk puts its copy back at its end
+            const away = (await $.store.get(AFK_KEY)) as
+                | { on?: boolean }
+                | undefined;
+            if (away?.on)
+                await $.store.set(AFK_KEY, { ...away, wakerBefore: true });
+            return;
+        }
+        if (until === undefined) return;
+        if (note.until === undefined)
+            await $.store.set(PACE_WAKER + sid, { ...note, until });
+        if (now <= until + PACE_EXPIRY_MS) return;
+        // a shift ends where it found the key; a seat's default fills a key it found empty
+        if (key?.was) await $.store.set(PACE + sid, key.was);
+        else await $.store.delete(PACE + sid);
+        await seatDefaults($).catch(() => undefined);
+    }
+    if (!note) return;
+    if (!note.wasOn) {
+        // a held afk puts this back at its end, so its copy is the one to change
+        const away = (await $.store.get(AFK_KEY)) as
+            | { on?: boolean }
+            | undefined;
+        if (away?.on)
+            await $.store.set(AFK_KEY, { ...away, wakerBefore: false });
+        else await $.store.set(WAKER_KEY, { on: false });
+    }
+    await $.store.delete(PACE_WAKER + sid);
+}
+
+// every 4 s in every session, so one with no watch stops at two reads
+async function pacePoll($: EngineInterface) {
+    const sid = await currentId($);
+    if (
+        !sid ||
+        !(
+            (await $.store.get(PACE + sid)) ||
+            (await $.store.get(PACE_WAKER + sid))
+        )
+    )
+        return;
+    await paceWaker($);
+    await paceTick($);
+}
+
+async function pressPace($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    await $.store.set(
+        PACE + sid,
+        isPaceOn(await $.store.get(PACE + sid)) ? { off: true } : { on: true },
+    );
+    await load($);
+    await publish($);
+    $.ui.invalidate('ui.render');
+}
+
+// a seat starts on: 🔋 the coordinator's, 🔥 every seated member's; a written key, off included, stands
+async function seatDefaults($: EngineInterface) {
+    const sid = await currentId($);
+    const name = await sessionName($);
+    if (!sid || !name) return;
+    const now = await $.clock.now();
+    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined)
+        await $.store.set(PACE + sid, { on: true });
+    if (isSeated(name) && (await $.store.get(HOT + sid)) === undefined) {
+        await $.store.set(HOT + sid, { since: now });
+        await followHot($);
+    }
+}
+
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds, and
 // `null` for a window the response did not report; this mod is its one writer
 async function saveUsage(
@@ -2883,21 +3411,7 @@ async function saveUsage(
 // latest reading, and the minute moves the time left; written only when one of the two changed
 async function freshMeter($: EngineInterface) {
     const was = (await $.state.get(METER)).value ?? {};
-    const raw = await $.fs
-        .read(`${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`)
-        .catch(() => undefined);
-    const window = raw
-        ? (
-              JSON.parse(raw) as {
-                  rate_limits?: {
-                      five_hour?: {
-                          used_percentage?: unknown;
-                          resets_at?: unknown;
-                      } | null;
-                  };
-              }
-          ).rate_limits?.five_hour
-        : undefined;
+    const window = (await usageFile($))?.rate_limits?.five_hour;
     const fiveHour =
         typeof window?.used_percentage === 'number'
             ? {
@@ -3125,11 +3639,16 @@ async function currentId($: EngineInterface) {
     return selfId ?? (await $.session.id().catch(() => undefined));
 }
 
+// off is a written value, so a seat's default arms only a key never written
+const hotOf = (key: unknown) =>
+    key && (key as { off?: boolean }).off !== true
+        ? (key as { since: number })
+        : undefined;
+
 async function saveHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    if (hot) await $.store.set(HOT + sid, hot);
-    else await $.store.delete(HOT + sid);
+    await $.store.set(HOT + sid, hot ?? { off: true });
 }
 
 // 💨 afk on keeps every remote-controlled session warm too, as if its 🔥 were on (o161): each session's own stash
@@ -3149,15 +3668,36 @@ async function armHot($: EngineInterface) {
     const since =
         hot?.since ?? ((await isAfkWarm($)) ? (endedAt ?? now) : undefined);
     if (since === undefined) return;
-    $.clock.after(Math.max(0, since + HOT_MS - now), async () => {
+    const everyMs = (await readNumber($, 'hot-minutes')) * MINUTE_MS;
+    $.clock.after(Math.max(0, since + everyMs - now), async () => {
         // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
         await followHot($).catch(() => undefined);
         if (isBusy || mine !== hotGen) return;
         if (!hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
+        if (await isWindowSpent($)) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
         await selfSubmit($, PING);
     });
+}
+
+// a ping at 100 % only comes back as the cap's error
+async function isWindowSpent($: EngineInterface) {
+    const m = await paceMeterOf($).catch(() => undefined);
+    return Boolean(m && m.resetsAt > m.now && m.used >= 100);
+}
+
+// a cache that would die before the reset gets one last ping; that ping's own turn puts it past the reset, so it fires once
+async function hotLate($: EngineInterface) {
+    if (!hot || isBusy || endedAt === undefined) return;
+    if (!(await partsShown($))('stash.hot')) return;
+    const m = await paceMeterOf($);
+    if (!m || m.resetsAt <= m.now || m.used >= 100) return;
+    const lateMs = (await readNumber($, 'hot-late')) * MINUTE_MS;
+    if (m.resetsAt - m.now > lateMs) return;
+    if (endedAt + CACHE_MS >= m.resetsAt) return;
+    $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
+    await selfSubmit($, PING);
 }
 
 // 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
@@ -3166,7 +3706,7 @@ async function armHot($: EngineInterface) {
 async function followHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    const stored = (await $.store.get(HOT + sid)) as typeof hot;
+    const stored = hotOf(await $.store.get(HOT + sid));
     if (Boolean(stored) === Boolean(hot)) return;
     const now = await $.clock.now();
     hot = stored && { since: isBusy ? now : (endedAt ?? now) };
@@ -3176,8 +3716,12 @@ async function followHot($: EngineInterface) {
 
 // a row's 🔥 chip: writes or deletes that session's key; its own stash arms the ping at its next poll
 async function pressHot($: EngineInterface, sid: string) {
-    if (await $.store.get(HOT + sid)) await $.store.delete(HOT + sid);
-    else await $.store.set(HOT + sid, { since: await $.clock.now() });
+    await $.store.set(
+        HOT + sid,
+        hotOf(await $.store.get(HOT + sid))
+            ? { off: true }
+            : { since: await $.clock.now() },
+    );
     if (sid === (await currentId($))) await followHot($);
     await load($);
 }
@@ -3503,12 +4047,6 @@ export const ctxBar = (percent: number) => {
 };
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
 const METER_TINTS = { calm5h: PALETTE.ok, calmCtx: PALETTE.calm } as const;
-// the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
-const FIVE_HOUR_MS = 5 * 60 * 60_000;
-export const paceOf = (resetsAt: number, now: number) =>
-    Math.round(
-        Math.min(100, Math.max(0, (1 - (resetsAt - now) / FIVE_HOUR_MS) * 100)),
-    );
 // used − pace: spare at 0 or under, a debt up to 10 is amber, past it red
 export const gapTint = (gap: number) =>
     gap <= 0 ? METER_TINTS.calm5h : gap <= 10 ? RAMP[1] : RAMP[2];
@@ -3725,7 +4263,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             held,
             isHeldStuck:
                 !!held && now - Math.min(...held.map((p) => p.at)) > stuckMs,
-            isHot: Boolean(await $.store.get(HOT + r.sid)),
+            isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
@@ -3796,6 +4334,12 @@ const COLUMNS = {
 export const isCoordinator = (name: string) =>
     /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
+// a member with a chair in the fleet; a fork or a plain session has none
+export const isSeated = (name: string) =>
+    !/fork/iu.test(name) &&
+    /^(?:🦉)?c?clio|(?:^|\P{L})c?crow$|(?:^|\P{L})helga$|^(?:⚡|🌗|🌘)/u.test(
+        bare(name),
+    );
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -3911,6 +4455,11 @@ function settingsListJSX(
         </Box>
     ));
 }
+
+const hotTip = (isHot: boolean | undefined) =>
+    isHot
+        ? "stop keeping this session's cache hot"
+        : "keep this session's cache hot with a ping";
 
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
@@ -4127,6 +4676,7 @@ export const register: Register = (on) => {
             );
             return undefined;
         });
+        await seatDefaults($).catch(() => undefined);
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,
@@ -4172,7 +4722,7 @@ export const register: Register = (on) => {
         cap = kept.cap ?? undefined;
         endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
-        const stored = (await $.store.get(HOT + selfId)) as typeof hot;
+        const stored = hotOf(await $.store.get(HOT + selfId));
         hot = stored && { since: endedAt ?? stored.since };
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
@@ -4195,7 +4745,7 @@ export const register: Register = (on) => {
             await $.command
                 .register({
                     description:
-                        "quiet comms: `/quiet on` holds members' [progress] pings off this thread, `off` passes them all; bare shows it",
+                        "quiet comms: `/quiet on` holds members' messages off this thread unless they push, `off` passes them all; bare shows it",
                     name: 'quiet',
                 })
                 .catch(() =>
@@ -4223,6 +4773,8 @@ export const register: Register = (on) => {
                     await wakeForMarks($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
+                    await pacePoll($).catch(() => undefined);
+                    await hotLate($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
                     await followCodies($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
@@ -4259,6 +4811,13 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
+        const heldNotes =
+            e.origin?.kind === 'sdk'
+                ? await quietLocked(() => quietHoldNotes($, e.text)).catch(
+                      () => undefined,
+                  )
+                : undefined;
+        if (heldNotes !== undefined) return { drop: heldNotes };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
@@ -4328,11 +4887,7 @@ export const register: Register = (on) => {
         if (planMark)
             await saveOrbit($, { ...orbit, plan: planTaken(planMark) });
         // held member pings ride the next prompt of any origin, once (quiet comms)
-        const quiet = await quietOf($);
-        if (quiet.held.length) {
-            await saveQuiet($, { ...quiet, held: [] });
-            await quietFlushed($, quiet.held).catch(() => undefined);
-        }
+        const quiet = await quietLocked(() => quietTake($));
         const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
         // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
         const costHint =
@@ -4486,6 +5041,7 @@ export const register: Register = (on) => {
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
+        await seatDefaults($).catch(() => undefined);
         // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
         // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
         const read =
@@ -4513,8 +5069,7 @@ export const register: Register = (on) => {
         await armWake($);
         // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
-        if (sid)
-            hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
+        if (sid) hot = hotOf(await $.store.get(HOT + sid).catch(() => hot));
         // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
         // chip's delete landing between this read and the write (FRM-499)
         if (hot) hot = { ...hot, since: endedAt ?? (await $.clock.now()) };
@@ -4589,7 +5144,7 @@ export const register: Register = (on) => {
     });
 
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
-    // quiet comms: a member's [progress] ping is held in clio's thread, every other delivery passes and is logged
+    // quiet comms: in clio's thread a message that does not push is held; every delivery is logged
     on('session.receive', async ($, e, next) => {
         const kind = e.origin.kind;
         if (kind === 'task-notification' && !e.agentId) {
@@ -4604,68 +5159,78 @@ export const register: Register = (on) => {
         let arm: QuietLogLine['arm'] = 'on';
         // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
         try {
-            const now = await $.clock.now();
-            const q = await quietOf($);
-            const isOn = await readSwitch($, 'quiet');
-            arm = isOn ? 'on' : 'off';
-            const isMobile = (await $.state.get(MOBILE)).value === true;
-            const isBusyNow =
-                (await $.state.get(TURN).catch(() => undefined))?.value
-                    ?.isBusy ?? isBusy;
-            const sid = memberOf(await registry($), from)?.base.sid;
-            const line = {
-                arm,
-                at: now,
-                from,
-                tag,
-                ...(sid ? { sid } : {}),
-                ...marks,
-            } as const;
-            if (
-                isOn &&
-                !isMobile &&
-                tag === 'progress' &&
-                !QUIET_PUSH.test(body)
-            ) {
-                const first =
-                    body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
-                // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
-                const isSaved = await saveQuiet($, {
-                    ...q,
-                    held: [
-                        ...q.held,
-                        { at: now, from, text: first.slice(0, 300), ...marks },
-                    ],
-                });
-                if (!isSaved) throw new Error('the held list did not save');
-                const isLogged = await quietLog($, {
-                    ...line,
-                    startedTurn: false,
-                    verdict: 'held',
-                });
-                if (!isLogged) {
-                    await saveQuiet($, q);
-                    throw new Error('the held line did not log');
+            const verdict = await quietLocked(async () => {
+                const now = await $.clock.now();
+                const isOn = await readSwitch($, 'quiet');
+                arm = isOn ? 'on' : 'off';
+                const isMobile = (await $.state.get(MOBILE)).value === true;
+                const isBusyNow =
+                    (await $.state.get(TURN).catch(() => undefined))?.value
+                        ?.isBusy ?? isBusy;
+                const sid = memberOf(await registry($), from)?.base.sid;
+                const isAnswer = await quietAnswered($, from, tag);
+                const why =
+                    quietPush(body) ?? (isAnswer ? 'answer' : undefined);
+                const line = {
+                    arm,
+                    at: now,
+                    from,
+                    tag,
+                    ...(sid ? { sid } : {}),
+                    ...marks,
+                } as const;
+                if (isOn && !isMobile && !why) {
+                    const q = await quietOf($);
+                    // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
+                    const isSaved = await saveQuiet($, {
+                        ...q,
+                        held: [
+                            ...q.held,
+                            {
+                                at: now,
+                                from,
+                                tag,
+                                text: quietHeldText(body),
+                                ...marks,
+                            },
+                        ],
+                    });
+                    if (!isSaved) throw new Error('the held list did not save');
+                    const isLogged = await quietLog($, {
+                        ...line,
+                        startedTurn: false,
+                        verdict: 'held',
+                    });
+                    if (!isLogged) {
+                        await saveQuiet($, q);
+                        throw new Error('the held line did not log');
+                    }
+                    return {
+                        consumed: `quiet comms held ${from}'s message`,
+                    };
                 }
-                return {
-                    consumed: `quiet comms held ${from}'s [progress] ping`,
-                };
-            }
-            await quietLog($, {
-                ...line,
-                startedTurn: !isBusyNow,
-                verdict: 'passed',
+                await quietLog($, {
+                    ...line,
+                    startedTurn: !isBusyNow,
+                    verdict: 'passed',
+                    ...(why ? { why } : {}),
+                });
+                return undefined;
             });
+            if (verdict) return verdict;
         } catch (err) {
-            await quietLog($, {
-                arm,
-                at: await $.clock.now().catch(() => Date.now()),
-                from,
-                startedTurn: false,
-                tag,
-                verdict: 'failed-open',
-                ...marks,
-            });
+            const at = await $.clock.now().catch(() => Date.now());
+            await quietLocked(() =>
+                quietLog($, {
+                    arm,
+                    at,
+                    from,
+                    startedTurn: false,
+                    tag,
+                    verdict: 'failed-open',
+                    ...marks,
+                }),
+            );
             $.ui.log(
                 `x-mod-stash: quiet comms failed open on ${from}'s ping: ${errorText(err)}`,
             );
@@ -4698,7 +5263,7 @@ export const register: Register = (on) => {
             await $.store.set(QUIET_ON, arg === 'on');
             $.ui.invalidate('ui.render');
             return {
-                text: `quiet comms ${arg}: ${arg === 'on' ? "members' [progress] pings wait for your next turn" : 'every member ping passes'}`,
+                text: `quiet comms ${arg}: ${arg === 'on' ? "members' messages wait for your next turn unless they push" : 'every member ping passes'}`,
             };
         }
         const isOn = await readSwitch($, 'quiet');
@@ -4747,6 +5312,20 @@ export const register: Register = (on) => {
                         // mobile draws no Input
                         const Input = 'Input' in ui ? ui.Input : undefined;
                         // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
+                        const isPaceWatched = isPaceOn(
+                            await $.store.get(
+                                PACE + ((await currentId($)) ?? ''),
+                            ),
+                        );
+                        const isPaceShown = (await partsShown($))(
+                            'stash.pace-watch',
+                        );
+                        const settingNumbers = await Promise.all(
+                            PACE_KEYS.map(
+                                async (name) =>
+                                    [name, await readNumber($, name)] as const,
+                            ),
+                        );
                         const knobs = {
                             always: await readSwitch($, 'always'),
                             breathe: await readSwitch($, 'breathe'),
@@ -4847,6 +5426,24 @@ export const register: Register = (on) => {
                                 paddingY={air ? 0.5 : 0}
                                 rowGap={air ? 0.3 : 0}>
                                 <Text bold>stash · knobs</Text>
+                                {isPaceShown ? (
+                                    <Box
+                                        flexDirection='row'
+                                        key='knob:pace-watch'>
+                                        <Button
+                                            key='knob:pace-watch'
+                                            onPress={() => void pressPace($)}
+                                            {...(isPaceWatched
+                                                ? {
+                                                      variant:
+                                                          'primary' as const,
+                                                  }
+                                                : { dimColor: true })}>
+                                            🔋 pace watch: tell this session
+                                            each 5h ladder line
+                                        </Button>
+                                    </Box>
+                                ) : null}
                                 {switchJSX(
                                     'colour',
                                     '🎨 board colour',
@@ -4978,7 +5575,7 @@ export const register: Register = (on) => {
                                 <Text bold>🤫 quiet comms</Text>
                                 {switchJSX(
                                     'quiet',
-                                    "🤫 hold members' [progress] pings",
+                                    "🤫 hold members' messages unless they push",
                                     knobs.quiet,
                                 )}
                                 {numberJSX(
@@ -4987,6 +5584,16 @@ export const register: Register = (on) => {
                                     knobs.quietWait,
                                     'min',
                                 )}
+                                {isPaceShown
+                                    ? settingNumbers.map(([name, value]) =>
+                                          numberJSX(
+                                              name,
+                                              PACE_SETTINGS[name].label,
+                                              value,
+                                              '',
+                                          ),
+                                      )
+                                    : null}
                             </Box>
                         );
                         // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
@@ -6436,21 +7043,27 @@ export const register: Register = (on) => {
                                             the store, plain while not — a faint dim read the same both ways (FRM-499, dima's 20:41 shots) */}
                                         {isPartOn('stash.hot') ? (
                                             <Box flexShrink={0}>
-                                                <Button
-                                                    key={`hot:${m.sid}`}
-                                                    onPress={() =>
-                                                        pressHot($, m.sid)
-                                                    }
-                                                    {...(m.isHot
-                                                        ? {
-                                                              variant:
-                                                                  'secondary' as const,
-                                                          }
-                                                        : {
-                                                              plain: true as const,
-                                                          })}>
-                                                    🔥
-                                                </Button>
+                                                {hoverTip(
+                                                    ui,
+                                                    `hot:${m.sid}`,
+                                                    hotTip(m.isHot),
+                                                    <Button
+                                                        key={`hot:${m.sid}`}
+                                                        onPress={() =>
+                                                            pressHot($, m.sid)
+                                                        }
+                                                        {...(m.isHot
+                                                            ? {
+                                                                  variant:
+                                                                      'secondary' as const,
+                                                              }
+                                                            : {
+                                                                  plain: true as const,
+                                                              })}>
+                                                        🔥
+                                                    </Button>,
+                                                    { right: 3 },
+                                                )}
                                             </Box>
                                         ) : null}
                                         {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
@@ -6651,7 +7264,7 @@ export const register: Register = (on) => {
                                                     dimColor
                                                     key={`quiet:${m.sid}:${k}`}
                                                     wrap='truncate-end'>
-                                                    {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text}`}
+                                                    {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text.split('\n')[0]}`}
                                                 </Text>
                                             );
                                         })}
@@ -6742,6 +7355,7 @@ export const register: Register = (on) => {
         if (left) await forget($, left).catch(() => undefined);
         await saveOrbit($, EMPTY_ORBIT);
         await load($);
+        await seatDefaults($).catch(() => undefined);
         return r;
     });
 
@@ -6793,6 +7407,12 @@ export const register: Register = (on) => {
             await windBlock($, e as Record<string, unknown>).catch(
                 () => undefined,
             );
+        const send =
+            (e.tool as string) === SEND_TOOL && !e.agentId
+                ? await quietSendStart($, e as Record<string, unknown>).catch(
+                      () => undefined,
+                  )
+                : undefined;
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
         if (
@@ -6808,6 +7428,12 @@ export const register: Register = (on) => {
         )
             isWorkTurn = true;
         const notes: string[] = [];
+        const sent = send
+            ? await quietSendEnd($, send, r.result).catch(() => undefined)
+            : undefined;
+        if (sent?.line) notes.push(sent.line);
+        // a fresh answer: core's `text` and `ref` still name the refusal
+        const answer = sent?.held ? ({ result: sent.held } as never) : r;
         const isOn = await partsShown($);
         if (turnAfk !== undefined && turnAfk !== afk) {
             turnAfk = afk;
@@ -6874,8 +7500,13 @@ export const register: Register = (on) => {
                     : `no phases yet — set them with ${ORBIT_TOOL} plan`,
             );
         }
-        if (!notes.length) return r;
-        return { ...r, context: [...(r.context ?? []), ...notes] };
+        // last: the rung moves here, and everything above may still throw
+        if (!isPing) {
+            const pace = await paceStep($).catch(() => undefined);
+            if (pace) notes.push(pace);
+        }
+        if (!notes.length) return answer;
+        return { ...answer, context: [...(r.context ?? []), ...notes] };
     });
 
     // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars
@@ -6957,6 +7588,9 @@ export const register: Register = (on) => {
                     const boardOpen = view.isBoardOpen;
                     const isShown = (key: string) =>
                         view.shown?.[key] !== false;
+                    const isPaceSeat =
+                        isShown('stash.pace-watch') && (await isLaneOwner($));
+                    const isPaceWatched = view.isPaced === true;
                     const handleSettingsFlip = async () => {
                         isSettingsOpen = !view.isSettingsOpen;
                         if (isSettingsOpen)
@@ -7200,9 +7834,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'hot',
-                                      view.isHot
-                                          ? "stop keeping this session's cache hot"
-                                          : "keep this session's cache hot: ping every 50 min",
+                                      hotTip(view.isHot),
                                       <Button
                                           key='hot'
                                           onPress={() => void handleHotFlip()}
@@ -7215,6 +7847,26 @@ export const register: Register = (on) => {
                                           🔥
                                       </Button>,
                                       leftOf('🔥', !!view.isHot),
+                                  )}
+                            {!isPaceSeat
+                                ? null
+                                : tip(
+                                      'pace-watch',
+                                      isPaceWatched
+                                          ? 'stop telling this session its 5h ladder lines'
+                                          : 'tell this session each 5h ladder line',
+                                      <Button
+                                          key='pace-watch'
+                                          onPress={() => void pressPace($)}
+                                          {...(isPaceWatched
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          🔋
+                                      </Button>,
+                                      leftOf('🔋', isPaceWatched),
                                   )}
                             {!isShown('stash.waker')
                                 ? null

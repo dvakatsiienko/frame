@@ -24,7 +24,7 @@ dima's words:
 - **evaluate** — render every existing svg into contact sheets with `agent-browser` (a page of
   `<img>` tags, one screenshot per sheet, ~3k tokens each) and judge them by eye
 - **bible first** — `story.md`, then `dino.md`, then `palette.ts` as tokens (day, night)
-- **generators** — `.ts` run by node 24, one module per concern: `paper.ts` (filters, smooth
+- **generators** — `.ts` run by node 26, one module per concern: `paper.ts` (filters, smooth
   curves, ridges), `flora.ts`, `props.ts`, `crew.ts`, the dino models, one module per scene;
   `draw.ts` writes `out/<repo>/<piece>-{light,dark}.svg`
 - **the look loop** — `node draw.ts` → a scratch `look.sh` (one svg in an html page,

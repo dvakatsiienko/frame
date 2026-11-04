@@ -59,16 +59,16 @@ stop that chore and ask clio in one line, then go on with the next chore, when:
 - the edit would change what a line means, not only its form
 - the done command fails for a reason the hook did not name
 
-the ask shape: `[ask] consult <chore n>: <the one question>` — an `[ask]` wakes clio, so she never
-reasons from a tree you left half done. a chore that failed sends `[🪜 escalate]` the same way.
+the ask shape: `[ask] consult <chore n>: <the one question>`, so clio never reasons from a tree you
+left half done. a chore that failed sends `[🪜 escalate]` the same way.
 
 ## the receipt — a log line; a message only when clio must act
 
 each chore's receipt is one `node ~/frame/_clio/script/helga-receipt.ts <class> <first pass> <rework> <note>`, written to
-clio's receipts log, which her siesta card reads. an all-green batch sends no message: a message wakes clio.
+clio's receipts log, which her siesta card reads. an all-green batch sends no message.
 
 a `SendMessage` to `🦉 clio` (a deferred tool: `ToolSearch` `select:SendMessage` first) goes only for a consult `[ask]`, a failed
-chore, dima's word, or a brief that marks itself `blocking`, which she waits on: `[done]`, one line per chore with its command's
+chore, dima's word, or a brief that marks itself `blocking`: `[done]`, one line per chore with its command's
 result (an unfinished chore says why), nothing else:
 
 ```

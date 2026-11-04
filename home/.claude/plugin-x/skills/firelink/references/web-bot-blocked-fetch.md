@@ -16,8 +16,7 @@ script `~/frame/script/web-bot-blocked-fetch.ts`, data dir `~/.local/share/web-b
 
 - a long page goes to `--out` and gets `rg`'d, never read whole; `WebFetch` raises an approval card, so pages go through the mac
 - a trophy answer: psnprofiles guide + comments first; powerpyx fills gaps and cross-checks; platget, trueachievements and steam guides as extra checks. name every disagreement, the safe play first. he finds powerpyx ugly and ad-heavy
-- a mediawiki takes an article url; a search url or a missing title fails with «no wiki page», then `--index <wiki host>`. a thin fandom (cloudpunk) has no item pages at all
-- a value, price or stat question reads the infobox (`== Infobox ==`), which the plain extract drops
+- a thin fandom (cloudpunk) has no item pages at all
 - an answer no page states is an inference from absence, said as one
 - what you read lands in the game's folder (SKILL.md § 4), sourced
 
