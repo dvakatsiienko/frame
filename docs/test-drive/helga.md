@@ -287,6 +287,18 @@ retro (14:43 on):
 5. 1916 paraphrase caught on re-read, rewritten before append.
 - 2026-11-03 · groom · 1 · 0 · 20:41 visibility wish groomed to 2026-11-03-2041.groomed.md, W7-W13, lines sent to clio for FRM-499 fold; linear not written (members never write linear)
 - 2026-11-03 · groom · 1 · 0 · 20:57 waker answer groomed to 2026-11-03-2057.groomed.md, W1954-W1958 numbered from --next FRM-500; lines sent to clio to fold; linear not written
+- 2026-11-04 · prompt-groom · 1 · 0 · boot-1104 PK-319 W1-W6; 6 sentences mapped; slash line and slug excluded (not wishes)
+- 2026-11-04 · prompt-groom · 1 · 0 · boot-1014 PK-319 W7-W19; 13 sentences mapped, 6 questions as W-lines with ❓ (W7, W10, W13-W16, W19); map: why-mods-lane→W7; its-important→W8; worth-test→W9; how-to-test→W10; siesta-step-5→W11; make-it-earlier→W12; why-siesta-so-far→W13; how-decide→W14; in-progress-pile→W15; unclosable→W16; proceed→W17; i-vote→W18; tell-if→W19
+- 2026-11-04 · prompt-groom · 1 · 0 · boot-1043 PK-319 W20-W62; 43 lines, 12 questions as ❓ lines (W24 W30 W37 W40 W43 W46 W48 W49 W55 W57 W58 W59); map: FRM block→W20-21; In Progress pile→W22-W34; real causes→W35-W47; pasted block→W48-W54; side lane/node 26/fnm/engines/ci→W55-W62
+- 2026-11-04 · prompt-groom · 1 · 0 · boot-1101 PK-319 W20-W22 (1045) and W23-W38 (1101); pre-← clio lines not mapped; standing-proof file written, 14 #standing lines (W19-W21, W29-W30, W36-W44)
+- 2026-11-04 · prompt-groom · 1 · 0 · boot-1101 standing-proof: 14:19 and 14:38 sections, 44 lines, 14 tagged #standing
+- 2026-11-04 · prompt-groom · 0 · 1 · boot-1106 1043 re-groom W20-W56 no clio lines; 1045 renumbered W57-W59; 1101 renumbered W60-W75; #standing W30 W31 W37 W45 W46 W47 W69; 10:14 W9 W15 left as is
+- 2026-11-04 · pocket-write · 1 · 0 · boot-1106 PK-319 notes +W20-W75 (3 files); --next W76; --day red o12
+- 2026-11-04 · prompt-groom · 1 · 1 · boot-1106 standing-proof rework: #standing moved to line end, 14 lines (W19-W21 W29-W30 W36-W44)
+- 2026-11-04 · prompt-groom · 1 · 0 · boot-1117: 1117 raw to W76-W99, #standing on W88 only
+- 2026-11-04 · pocket-write · 1 · 0 · boot-1117: PK-319 notes appended W76-W99, --next prints W100
+- 2026-11-04 · prompt-groom · 1 · 0 · 1258 raw to W100-W105, not appended to PK-319
+- 2026-11-04 · prompt-groom · 1 · 0 · 1308 raw to W106-W109, not appended to PK-319
 
 ## rounds
 
