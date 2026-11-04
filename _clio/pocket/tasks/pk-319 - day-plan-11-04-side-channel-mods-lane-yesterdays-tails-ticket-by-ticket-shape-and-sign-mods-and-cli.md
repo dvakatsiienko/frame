@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T16:33:00Z'
+updated_date: '2026-11-04T16:41:00Z'
 labels:
   - s
 dependencies: []
@@ -353,4 +353,6 @@ W293 (2026-11-04 18:26, dima, o106 steer): What is it about? Is it the list that
 W294 (2026-11-04 18:26, dima, o107 steer): Yes, delete them, and all cuts should be everywhere, including settings.
 
 next boot, dima 18:33: x fleet audit is not cut. a cli verb with no usage may be unwired to habits, not useless: review the unused verbs for that (W1041, W1042, W1393–W1401) and solve it then.
+
+next boot, dima 18:33: pick the word replacing «door» (ask on the board, my pick ⏰ due), then rename in close-net.ts and test, craft-fleet-flow, closing.md. PK-319 itself dies at that boot, its lines travel in the handoff.
 <!-- SECTION:NOTES:END -->
