@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T16:27:00Z'
+updated_date: '2026-11-04T16:33:00Z'
 labels:
   - s
 dependencies: []
@@ -347,4 +347,10 @@ W288 (2026-11-04 18:26, dima, o104 steer): keep both
 W289 (2026-11-04 18:26, dima, o105 steer): keep
 W290 (2026-11-04 18:26, dima, o108 steer): i use them always, no cut
 W291 (2026-11-04 18:26, dima, o109 steer): what are hover cards? tooltips? if yes - keep. ❓
+
+W292 (2026-11-04 18:26, dima, o103 steer): «undo-tick» mod is redundant, delete it fully (one with 5s undo possibility)
+W293 (2026-11-04 18:26, dima, o106 steer): What is it about? Is it the list that shows when I disabled the AFK button and a lot of stuff happened? If yes, then this list is redundant, and I want it to be deleted. ❓
+W294 (2026-11-04 18:26, dima, o107 steer): Yes, delete them, and all cuts should be everywhere, including settings.
+
+next boot, dima 18:33: x fleet audit is not cut. a cli verb with no usage may be unwired to habits, not useless: review the unused verbs for that (W1041, W1042, W1393–W1401) and solve it then.
 <!-- SECTION:NOTES:END -->
