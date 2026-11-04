@@ -71,6 +71,17 @@ export function checkPocket(
             );
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
+        const planDay = /^day plan (?:.*\D)?(\d{2}-\d{2})(?::|$)/.exec(
+            front.scalars.title ?? '',
+        )?.[1];
+        if (
+            planDay &&
+            status !== 'done' &&
+            `${today.slice(0, 5)}${planDay}` < today
+        )
+            report(
+                `a dated day plan dies at its next boot: home its open lines, close it (day ${planDay})`,
+            );
         const touched = localDay(
             front.scalars.updated_date || front.scalars.created_date || '',
         );

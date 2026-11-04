@@ -233,6 +233,40 @@ describe('checkPocket', () => {
         ).toContain('joined emoji');
     });
 
+    test.each([
+        ['an open plan of an earlier day', 'day plan 01-01: x', 'open', true],
+        [
+            'a rolled plan by its last day',
+            'day plan 01-01, rolled to 01-02: x',
+            'open',
+            true,
+        ],
+        ['a closed plan', 'day plan 01-01: x', 'done', false],
+        [
+            'an item that only mentions a plan',
+            'review day plan 01-01: x',
+            'open',
+            false,
+        ],
+    ])('a day plan past its day: %s', (_, title, status, isRed) => {
+        const problems = checkPocket(
+            config,
+            [task({ status, title })],
+            '2026-06-15',
+        ).join('\n');
+        expect(problems.includes('dated day plan')).toBe(isRed);
+    });
+
+    test('a day plan of today stays', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ title: 'day plan 06-15: x' })],
+                '2026-06-15',
+            ).join('\n'),
+        ).not.toContain('dated day plan');
+    });
+
     test('now holds at most three items', () => {
         const four = [1, 2, 3, 4].map((n) =>
             task({ id: `PK-${n}`, ordinal: `${n}000`, priority: 'now' }),
