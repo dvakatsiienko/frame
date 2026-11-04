@@ -45,7 +45,7 @@ W17 (2026-11-04 10:14, dima): proceed with evergreen and start the mods lane.
 W18 (2026-11-04 10:14, dima): i vote for quiet mod fixes (to finish your new shift fully), and to see regressions and places to fix.
 W19 (2026-11-04 10:14, dima): tell me if it is still better to do your proposal instead. ❓
 
-W8 fold corrected (2026-11-04 10:14, dima): it is important, because the sooner we get it, the sooner the spam stops in your thread.
+W174 (2026-11-04 10:14, dima, W8 fold corrected): it is important, because the sooner we get it, the sooner the spam stops in your thread.
 
 W20 (2026-11-04 10:43, dima): ok then, test it, carefully.
 W21 (2026-11-04 10:43, dima): 499 why i do not know that i had to test the clicks then? ❓
@@ -133,7 +133,7 @@ W100 (2026-11-04 12:58, dima): pace watch: if it proves working, can the load-ba
 W101 (2026-11-04 12:58, dima): set-pace-watch: is it only for clio? i'd like a button for it in the nudge, between 🔥 and ⏰. (FRM-500, re-sign at resume)
 W102 (2026-11-04 12:58, dima): never skip wishkeeper. he is a prio. even when we go over the pace.
 
-W103-W105 groomed apart from W102 by helga, 2026-11-04-1258.groomed.md: same 12:58 lines
+the same 12:58 lines, groomed apart: W163-W165
 
 W106 (2026-11-04 13:08, dima): ok let's have the pace watch button for you only. i am shaping a dedicated --bg coordinator with side channel, so it will apply to it too, later. (FRM-500, re-sign)
 
@@ -196,19 +196,19 @@ W157 (2026-11-04 14:38, dima): side q: what is attention span? and extrapolation
 W158 (2026-11-04 14:38, dima): is this for main lane or mods lane? what critical scope mods lane currently still needs to do? ❓
 W159 (2026-11-04 14:38, dima, o45 steer): it will result in 6% of space? no. park at -5% and resume at +2%. going too far ahead is not good, instead let to cooldown more.
 
-the source grooms, their own numbering (renumber map above):
-W100 (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go (leaner memory)? ❓
-W101 (2026-11-04 12:58, dima): only for you? ❓
-W102 (2026-11-04 12:58, dima): i'd like to have a button for it in the nudge.
-W103 (2026-11-04 12:58, dima): no, never skip wishkeeper.
-W104 (2026-11-04 12:58, dima): he is a prio.
-W105 (2026-11-04 12:58, dima): even when we go over the pace.
-W106 (2026-11-04 13:08, dima): ok, let's have it (the 🔋 button) for you only.
-W107 (2026-11-04 13:08, dima): but i am shaping a dedicated --bg coordinator with side channel.
-W108 (2026-11-04 13:08, dima): so it will apply to it too (later).
-W109 (2026-11-04 13:08, dima): print exact lines that mod sends you on all events.
-W108 (2026-11-04 13:12, dima): i think this line should also tell you to keep hot meter for everyone, because 1 hour 50 minutes is too large.
-W109 (2026-11-04 13:12, dima): the cache of someone can go cold.
-W110 (2026-11-04 13:12, dima): fired because «5h» 1h left reached? ❓
-W111 (2026-11-04 13:12, dima): the percentage is currently -9%.
+the source grooms, renumbered W160-W173 on his o50 tick:
+W160 (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go (leaner memory)? ❓
+W161 (2026-11-04 12:58, dima): only for you? ❓
+W162 (2026-11-04 12:58, dima): i'd like to have a button for it in the nudge.
+W163 (2026-11-04 12:58, dima): no, never skip wishkeeper.
+W164 (2026-11-04 12:58, dima): he is a prio.
+W165 (2026-11-04 12:58, dima): even when we go over the pace.
+W166 (2026-11-04 13:08, dima): ok, let's have it (the 🔋 button) for you only.
+W167 (2026-11-04 13:08, dima): but i am shaping a dedicated --bg coordinator with side channel.
+W168 (2026-11-04 13:08, dima): so it will apply to it too (later).
+W169 (2026-11-04 13:08, dima): print exact lines that mod sends you on all events.
+W170 (2026-11-04 13:12, dima): i think this line should also tell you to keep hot meter for everyone, because 1 hour 50 minutes is too large.
+W171 (2026-11-04 13:12, dima): the cache of someone can go cold.
+W172 (2026-11-04 13:12, dima): fired because «5h» 1h left reached? ❓
+W173 (2026-11-04 13:12, dima): the percentage is currently -9%.
 <!-- SECTION:NOTES:END -->
