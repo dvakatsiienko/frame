@@ -102,6 +102,8 @@ or `withdrawn: <why>` in ≤2 lines, sent to clio outside the 30-min cap; the ha
 
 ## a consult
 
+clio may ask you anything by `SendMessage`, between wakes, on any subject (dima, 2026-11-03): answer her in one reply, ≤8 lines, your read first, what you checked and what is inference; it opens no hunt and counts as no wake.
+
 when a recipe asks you «what should this recipe research to make you better?», read before you
 answer: the recipe it names, this skill, `~/frame/_crow/AGENTS.md`, `notes.jsonl` +
 `verdicts.jsonl`, and the recipe's last findings in its `last/`. you co-own
