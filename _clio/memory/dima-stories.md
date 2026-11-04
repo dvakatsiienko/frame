@@ -62,3 +62,6 @@ at 17:06 I said only the halt fit the last 2 % and named no store I had searched
 
 ## «the only door» twice · 2026-11-02
 at 15:18 I said the gta iv launcher had «only one path left, Rockstar Support»; at 19:35 that «every new-ticket form is down, one door left». both came from one failed try. both times he pushed for another door before any reason, and the door worked: the gmail probe freed the typo address in one page load, the sign-in form took the ticket at 19:40. a firmer intention held four hours; the fix became a check, FRM-487, which flags an absolute «can't» with no probe named.
+
+## the worktree want that was marked done · 2026-11-04
+on 10-30 he said a merged worktree should clean itself up, always, on all surfaces. the day plan closed on 11-02 with that line stamped done, and nothing was built. on 11-04 he ticked a cleanup of 21 trees and asked «why should we clean worktrees in batches?». a re-read of the closed plan found his own words from five days before. a close list from a script reads as an answer, so it hid the ask.

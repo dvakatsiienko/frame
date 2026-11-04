@@ -613,6 +613,12 @@ describe('wish accounting', () => {
         ).toEqual([red]);
     });
 
+    test('a close line may cite its W-ids as a range', () => {
+        expect(
+            checkPocket(wishConfig, [closed('close: W1–W2 done')], wishToday),
+        ).toEqual([]);
+    });
+
     describe('the copy into its ticket', () => {
         const moved = task(
             {

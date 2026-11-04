@@ -108,7 +108,15 @@ export function checkPocket(
             const accounted = citedIds(
                 noteLines(text)
                     .filter((line) => CLOSE_LINE.test(line))
-                    .join('\n'),
+                    .join('\n')
+                    .replace(
+                        /W(\d+)[–-]W(\d+)/g,
+                        (_, from: string, to: string) =>
+                            Array.from(
+                                { length: Number(to) - Number(from) + 1 },
+                                (_unused, i) => `W${Number(from) + i}`,
+                            ).join(' '),
+                    ),
             );
             if (wishIds.some((wishId) => !accounted.has(wishId)))
                 report(
