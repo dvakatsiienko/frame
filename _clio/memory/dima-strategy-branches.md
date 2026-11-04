@@ -45,6 +45,7 @@ conductor, t3 code or pi (a bare terminal harness) — never the build flow, whi
 (FRM-266). The order (dima, 2026-08-30): investigate first, eval the effort, THEN decide
 build-or-not; eval a simplified version to try before any real build. It lives in FRM-43, next to
 the cli project.
+
 ## 👁️ visibility — seeing what the agents do
 
 «upgrade you even more = visibility» — ambient awareness while work happens, and «let's try an mvp

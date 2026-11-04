@@ -22,5 +22,6 @@ Ticket: none
 ## rounds
 - 2026-11-03 · FRM-472 (mods quick lane, 50c3f7db → ff02e946, after sixth sense's clean on round 5) · wishkeeper 13 min, 12 findings: 2 high real (o83 only partly met, 6 unwarned variants with no fixing ticket → pk-309; fork-guard's pocket pass let a tab split a non-pocket path → fixed 052c6e0e, red-proven), 5 medium (the done test says «refused» while the code warns; a stale replay count; an exponential `$((` cost) · hit: both highs were invisible to sixth sense's exit-line grade, one was in clio's own rider
 - 2026-11-03 · FRM-496 (clio-lean quick lane, 1a92c8cd → 3e532a0b, after sixth sense's round 1) · the first siesta behind `siesta-checks.ts` (5 sections pre-run, 4 green, blueprint drift known) · wishkeeper 5 min, 119,951 tokens, 33 tool calls, 13 findings: 1 high real (FRM-499 left an idle member cold) → already fixed by the 19:25 re-sign (o102); 5 medium, 7 low · no earlier round carries a token count, so this is the baseline, not a saving
+- 2026-11-04 · boot batch (evergreen, memory pass, FRM-501's spec section; no diff of a lane) · second siesta behind `siesta-checks.ts` · wishkeeper 3 min, 124k tokens, 8 findings: 1 high real (exit 3 against his signed «her question's reply is never held»), 1 medium rejected (an `apply` borrow), the rest fixed
 
 ## verdict
