@@ -3141,6 +3141,8 @@ const isPaceOn = (key: unknown) =>
 const PACE_EXPIRY_MS = WAKE_SLACK_MS + POLL_MS;
 // a line on its way: a submit may resolve only at its turn's end, and its rung moves after that
 let isPaceSending = false;
+type PaceKept = { resetsAt: number; rung: PaceRung };
+let paceUnsaved: { stored: PaceKept | undefined } | undefined;
 
 // the usage file every session shares, undefined until a turn wrote one
 async function usageFile($: EngineInterface) {
@@ -3187,19 +3189,25 @@ async function paceNumbers($: EngineInterface) {
 async function paceSent(
     $: EngineInterface,
     sid: string,
-    stored: { resetsAt: number; rung: PaceRung } | undefined,
+    stored: PaceKept | undefined,
 ) {
-    if (stored) await $.store.set(PACE_RUNG + sid, stored);
-    else await $.store.delete(PACE_RUNG + sid);
+    try {
+        if (stored) await $.store.set(PACE_RUNG + sid, stored);
+        else await $.store.delete(PACE_RUNG + sid);
+        paceUnsaved = undefined;
+    } catch {
+        // the line went out: a store that refuses the rung must not buy a turn per poll
+        paceUnsaved = { stored };
+    }
 }
 
 // the line this poll owes, none when the rung stands; the stored rung of another window counts as none
 async function paceDue($: EngineInterface, sid: string) {
     if (!isPaceOn(await $.store.get(PACE + sid))) return undefined;
     if (!(await partsShown($))('stash.pace-watch')) return undefined;
-    let kept = (await $.store.get(PACE_RUNG + sid)) as
-        | { resetsAt: number; rung: PaceRung }
-        | undefined;
+    let kept = paceUnsaved
+        ? paceUnsaved.stored
+        : ((await $.store.get(PACE_RUNG + sid)) as PaceKept | undefined);
     // the clock says a window ended, never a meter write: a frozen file is what a stopped fleet leaves
     const clockNow = await $.clock.now();
     if (kept && clockNow >= kept.resetsAt) {
@@ -3287,9 +3295,7 @@ async function paceWaker($: EngineInterface) {
         | { off?: boolean; since?: number; was?: unknown }
         | undefined;
     const isWatched =
-        isPaceOn(key) &&
-        key?.since !== undefined &&
-        (await partsShown($))('stash.pace-watch');
+        key?.since !== undefined && (await partsShown($))('stash.pace-watch');
     const note = (await $.store.get(PACE_WAKER + sid)) as
         | { since?: number; until?: number; wasOn: boolean }
         | undefined;

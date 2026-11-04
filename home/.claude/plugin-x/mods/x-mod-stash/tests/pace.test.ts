@@ -27,9 +27,12 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
         gate: undefined as Promise<void> | undefined,
         isRefused: false,
         refusedKey: undefined as string | undefined,
+        refusesRung: false,
     };
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
+        if (state.refusesRung && e.key.startsWith('pace-rung:'))
+            return { deny: 'refused' };
         if (e.key === state.refusedKey) {
             state.refusedKey = undefined;
             return { deny: 'refused' };
@@ -1063,7 +1066,19 @@ test('an ended session’s key sends nothing: only its own session polls it', as
     expect(w.turns).toEqual([]);
 });
 
-test('a refused rung write leaves the watch alive: the line again, then the resume', async ($, on) => {
+test('a store refusing every rung write costs one line, not a turn per poll', async ($, on) => {
+    const w = world(on, WATCH);
+    w.state.refusesRung = true;
+    w.meter(46, LEFT);
+    await start($);
+    for (let i = 0; i < 12; i++) {
+        await w.clock.advance(POLL);
+        await endTurn($);
+    }
+    expect(rungs(w)).toEqual(['park']);
+});
+
+test('a refused rung write leaves the watch alive: the line once, then the resume', async ($, on) => {
     const w = world(on, WATCH);
     w.state.refusedKey = `pace-rung:${SID}`;
     w.meter(46, LEFT);
@@ -1074,7 +1089,7 @@ test('a refused rung write leaves the watch alive: the line again, then the resu
     await endTurn($);
     w.meter(35, LEFT, 0, w.clock.now());
     await w.clock.advance(POLL);
-    expect(rungs(w)).toEqual(['park', 'park', 'resume']);
+    expect(rungs(w)).toEqual(['park', 'resume']);
 });
 
 test('a line on its way never rides its own turn as a second line', async ($, on) => {

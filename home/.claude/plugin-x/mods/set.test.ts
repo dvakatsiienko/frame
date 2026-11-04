@@ -42,7 +42,9 @@ test('a number takes only a known key inside its range', () => {
         numberSetting('pace-over', '0'),
         numberSetting('pace-over', 'x'),
         numberSetting('nope', '7'),
-    ]).toEqual([7, undefined, undefined, undefined]);
+        numberSetting('constructor', '5'),
+        numberSetting('__proto__', '5'),
+    ]).toEqual([7, undefined, undefined, undefined, undefined, undefined]);
 });
 
 test('the coordinator is the live row named 🦉 clio', () => {

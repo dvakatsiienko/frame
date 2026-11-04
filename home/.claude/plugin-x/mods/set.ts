@@ -36,9 +36,10 @@ export function withPace(
 }
 
 export function numberSetting(key: string, value: string) {
+    if (!Object.hasOwn(PACE_SETTINGS, key)) return undefined;
     const setting = PACE_SETTINGS[key as keyof typeof PACE_SETTINGS];
     const n = Number(value);
-    if (!setting || !Number.isFinite(n) || n < setting.min || n > setting.max)
+    if (!Number.isFinite(n) || n < setting.min || n > setting.max)
         return undefined;
     return n;
 }
