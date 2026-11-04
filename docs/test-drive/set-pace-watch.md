@@ -28,5 +28,6 @@ Ticket: FRM-500
 - 2026-11-04 13:09 · burn branch, dima's staged test: everyone parked, the mod left to wake me · one line, unprompted, from idle: «≤ 1 h left — burn», 89 % used, +9, 1h 0m left; it outranked the standing park, rung changed once · the usual door would have been a turn he or a hook started, so a win
 
 at adopt: propose cutting the window reads from `habit-ctx-load-balancing` (dima's question, 2026-11-04)
+- 2026-11-04 · FRM-500 closed on dima's word · open at close: a real shift with everyone parked (exit 12) rides this trial, and `clio:shift`'s start calling the pace watch makes its first real call there · the split (W150): `_crow/lib.ts` `isParked` hard-codes 55, 97, 90 and 5, so a `mods:set` retune moves the mod and leaves crow's cadence behind until that line moves too; at the adopt it reads one source; the window reads in `habit-ctx-load-balancing` go then too (W110)
 
 ## verdict
