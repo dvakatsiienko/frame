@@ -25,5 +25,6 @@ Ticket: none
 - 2026-11-04 · boot batch (evergreen, memory pass, FRM-501's spec section; no diff of a lane) · second siesta behind `siesta-checks.ts` · wishkeeper 3 min, 124k tokens, 8 findings: 1 high real (exit 3 against his signed «her question's reply is never held»), 1 medium rejected (an `apply` borrow), the rest fixed
 - 2026-11-04 · FRM-502 (main lane, uncommitted diff, after wisphunter's 7) · wishkeeper 9 min, 177k tokens, 18 findings: 4 high real (a live hold never got crow's note, the claim gate 0 of 4 slips, first-acts off the plan, the measuring read with no caller); none wisphunter had found
 - 2026-11-04 · FRM-500 re-sign, the ladder, crow's gate (main lane) · wishkeeper 7 min, 179k tokens, 19 findings: 2 high real (stale decided lines codie would build from, my note dump broke wish-cover)
+- 2026-11-04 · tails, closes, FRM-505's sign, plus the CST check · wishkeeper 9 min, 243k tokens, 19 findings: 3 high real (a superseded closing word, two false closes)
 
 ## verdict

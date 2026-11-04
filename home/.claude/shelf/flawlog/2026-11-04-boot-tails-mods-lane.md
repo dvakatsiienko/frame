@@ -10,3 +10,4 @@ the paid matcher held every call naming the key or the sdk, including my own edi
 a bad spec of a test: sync spawn blocked its own fake server and hung a mutation run for 8 min · async spawn in hook tests
 - told dima «codie stays parked» at 14:12 and 14:26 with no live read; the waker had woken it at the reset · a false state claim for 25 min · read the member before a recap says parked
 - pocket: PK-293 294 295 299 300 got one identical kept: line from a loop, no read per item; revalidated for real in the tails · wishkeeper caught it
+- closed PK-159 on a generated id list and PK-317 on a measure that never read verdict words; both reopened 16:02 · two false closes reported to dima · a close list comes from reading, and a measure must exercise the subject (wishkeeper caught both)
