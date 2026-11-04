@@ -7060,27 +7060,21 @@ export const register: Register = (on) => {
                                             the store, plain while not — a faint dim read the same both ways (FRM-499, dima's 20:41 shots) */}
                                         {isPartOn('stash.hot') ? (
                                             <Box flexShrink={0}>
-                                                {hoverTip(
-                                                    ui,
-                                                    `hot:${m.sid}`,
-                                                    hotTip(m.isHot),
-                                                    <Button
-                                                        key={`hot:${m.sid}`}
-                                                        onPress={() =>
-                                                            pressHot($, m.sid)
-                                                        }
-                                                        {...(m.isHot
-                                                            ? {
-                                                                  variant:
-                                                                      'secondary' as const,
-                                                              }
-                                                            : {
-                                                                  plain: true as const,
-                                                              })}>
-                                                        🔥
-                                                    </Button>,
-                                                    { right: 3 },
-                                                )}
+                                                <Button
+                                                    key={`hot:${m.sid}`}
+                                                    onPress={() =>
+                                                        pressHot($, m.sid)
+                                                    }
+                                                    {...(m.isHot
+                                                        ? {
+                                                              variant:
+                                                                  'secondary' as const,
+                                                          }
+                                                        : {
+                                                              plain: true as const,
+                                                          })}>
+                                                    🔥
+                                                </Button>
                                             </Box>
                                         ) : null}
                                         {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
