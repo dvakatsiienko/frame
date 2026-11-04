@@ -13,9 +13,11 @@ import {
     appendNoteOnce,
     armList,
     claudeArgs,
+    heldForAfterTurn,
     isMode,
     newestTranscript,
     oneShotModel,
+    packetCarriedHeld,
     readCharter,
     readState,
     readTurn,
@@ -85,8 +87,11 @@ async function harvestSession(wake: Wake, arm: Arm) {
         );
     // a relayed wake lands after a /clear in a transcript born after the wake keyed its leaves
     const state = readState();
-    if (state.leavesFor !== turn.path)
-        writeState({ ...state, leavesFor: turn.path });
+    writeState({
+        ...state,
+        heldFor: heldForAfterTurn(state, turn.path, packetCarriedHeld(wake.id)),
+        leavesFor: turn.path,
+    });
     appendNoteOnce(NOTES_PATH, noteOf(wake, arm, 'session', turn.run));
     log(`session: note logged (${turn.run.seconds} s)`);
 }

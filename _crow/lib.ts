@@ -684,38 +684,8 @@ export function receiptsOf(lines: string[]) {
     ].join('\n');
 }
 
-// a word in the first line or a ✅ line: the bare word list hit 18 of clio's last 50 replies (36 %), this gate 13 (26 %), 2026-11-04
-export function claimOf(lines: string[], reply?: string) {
-    const start = turnStartOf(lines);
-    const entries = lines.slice(start + 1).map(parseEntry);
-    const text =
-        reply ??
-        entries
-            .filter((entry) => entry?.type === 'assistant')
-            .map((entry) => textOf(entry?.message?.content).trim())
-            .findLast(Boolean);
-    if (!text) return;
-    const replyLines = text.split('\n');
-    const claimLine = CLAIM_WORD.test(replyLines[0] ?? '')
-        ? replyLines[0]
-        : replyLines.find((line) => line.trimStart().startsWith('✅'));
-    if (!claimLine) return;
-    const calls = toolCallsOf(entries);
-    const lastEdit = calls.findLastIndex((call) => EDIT_TOOL.has(call.name));
-    const isProven = calls
-        .slice(lastEdit + 1)
-        .some(
-            (call) =>
-                call.name === 'Bash' && call.result && exitOf(call) === '0',
-        );
-    return isProven ? undefined : oneLine(claimLine, RECEIPT_MAX_CHARS);
-}
-
 const HARNESS_TEXT =
     /<(system-reminder|task-notification|local-command-\w+)>[\s\S]*?<\/\1>|<task-notification>[\s\S]*$/g;
-const CLAIM_WORD =
-    /\b(done|fixed|sealed|passed|closed|reset|landed|green|works)\b/i;
-const EDIT_TOOL = new Set(['Edit', 'MultiEdit', 'NotebookEdit', 'Write']);
 const RECEIPTS_MAX = 100;
 const RECEIPT_MAX_CHARS = 160;
 const COMMAND_MAX_CHARS = 300;
@@ -808,7 +778,7 @@ export function buildPacket({
         ...(charter ? [`## charter changed\n\n${charter}`] : []),
         ...(held.length
             ? [
-                  `## held by the last crow · a restart ended it; send each, or drop it with a reason\n\n${held.map((n) => `${n.id}, ${n.at}\n${n.note}`).join('\n\n')}`,
+                  `${HELD_HEAD} · a restart ended it; send each, or drop it with a reason\n\n${held.map((n) => `${n.id}, ${n.at}\n${n.note}`).join('\n\n')}`,
               ]
             : []),
         `# clio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
@@ -1118,7 +1088,6 @@ export function verifiedHead(key: string) {
 
 // one packet for any wake: the delta since the last one, plus the leaves changed since crow last read them
 export function packWake({
-    claim,
     delta,
     lines,
     now,
@@ -1143,31 +1112,12 @@ export function packWake({
             ? readCharter()
             : undefined;
     const receipts = receiptsOf(lines);
-    // a claim is judged on dima's lines and the receipts alone, and leaves the delta for the next cadence wake
-    if (claim) {
-        const files = buildPacket({
-            charter,
-            deltaText: `${delta.dimaText || '(no line of dima since the last wake)'}\n\n## the claim\n${claim}`,
-            dir: join(STATE_DIR, 'packets', wakeId),
-            leaves: [],
-            ledger: ledgerLine(now),
-            meter: meterLine(now),
-            missing: [],
-            receipts,
-        });
-        return {
-            files,
-            missing: [],
-            state: { ...state, charterHash: hash } satisfies State,
-        };
-    }
     const files = buildPacket({
         charter,
         cut: cutLine(delta.cut, transcriptPath),
         deltaText: delta.text,
         dir: join(STATE_DIR, 'packets', wakeId),
-        // the first wake of a new crow; a claim wake leaves this one to the next cadence wake
-        held: state.leavesFor === crowTranscript ? [] : heldUnsent(now),
+        held: isHeldDue(state, crowTranscript) ? heldUnsent(now) : [],
         leaves: toSend.changed,
         ledger: ledgerLine(now),
         meter: meterLine(now),
@@ -1294,6 +1244,35 @@ const isHeld = (n: { note: string }) =>
     /^🟡 held:/m.test(n.note) || /holdout\s*$/.test(n.note);
 
 // a restart loses what the last crow held: its notes of the last hour with nothing sent after them
+const HELD_HEAD = '## held by the last crow';
+
+export function packetCarriedHeld(wakeId: string) {
+    try {
+        return readFileSync(
+            join(STATE_DIR, 'packets', wakeId, 'packet.md'),
+            'utf8',
+        ).includes(HELD_HEAD);
+    } catch {
+        return false;
+    }
+}
+
+// no heldFor yet: the crow that read the leaves is the live one, so its own hold stays its own
+export const isHeldDue = (state: State, crowTranscript?: string) =>
+    (state.heldFor ?? state.leavesFor) !== crowTranscript;
+
+// moves only after crow took a turn: a parked or dropped relay keeps the note due, and a /clear
+// relay that carried none leaves it due for the transcript the relay landed in
+export function heldForAfterTurn(
+    state: State,
+    turnPath: string,
+    packetCarriedHeld: boolean,
+) {
+    return state.leavesFor === turnPath || packetCarriedHeld
+        ? turnPath
+        : (state.heldFor ?? state.leavesFor);
+}
+
 export function heldUnsent(now: Date, notesPath = NOTES_PATH) {
     const since = now.getTime() - 3_600_000;
     const rows = jsonlOf<{
@@ -1582,6 +1561,7 @@ export interface State {
     firstWakeAt?: number;
     lastWakeAt?: number;
     offsets: Record<string, number>;
+    heldFor?: string;
     leafHashes?: Record<string, string>;
     leavesFor?: string;
 }
@@ -1666,7 +1646,6 @@ export type Decision =
     | { kind: 'console'; url: string };
 
 interface PackInput {
-    claim?: string;
     delta: ReturnType<typeof transcriptDelta>;
     lines: string[];
     now: Date;

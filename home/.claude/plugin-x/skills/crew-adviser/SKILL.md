@@ -88,7 +88,6 @@ a wake line arrives as a peer message:
 
 - `merge <repo>#<n> · verified <sha|none> · head <sha> · note <path>` — her merge waits ≤ 90 s for your note, so read only the packet (steps 1–4). a head past the verified one is an unverified delta. reply `none` or the note, no SendMessage: the harvester logs your reply and the hook carries it.
 - `paid <command>`, `console <url>` — held the same way: who asked for it, what it costs.
-- `claim <sentence>` — clio told dima this with no exit-0 command behind it. the packet holds his lines, the sentence and `## receipts`, nothing else of hers: read the receipts, never re-run one. a claim they settle → `none`; else name the one command that would settle it.
 - `post <verb>`, `close <ticket>` — a public post or a ticket close, already running; a wake like any other, check its receipts.
 - `spawn` — the spawn already ran; a wake like any other.
 - `proposal <path>` — a proposal for dima, whole in the packet; its harm lands at his tick: hunt the process slip (a

@@ -595,108 +595,30 @@ describe('a post and a close', () => {
     );
 });
 
-describe('a claim at the turn end', () => {
-    const stop = { raw: { hook_event_name: 'Stop' } };
-    const call = (id: string, name: string, input: object) =>
-        `${JSON.stringify({ message: { content: [{ id, input, name, type: 'tool_use' }], id }, type: 'assistant' })}\n${JSON.stringify({ message: { content: [{ content: 'ok', tool_use_id: id, type: 'tool_result' }] }, type: 'user' })}\n`;
-    const reply = (text: string) =>
-        `${JSON.stringify({ message: { content: [{ text, type: 'text' }], id: text }, type: 'assistant' })}\n`;
-
-    test('a «fixed» after an edit wakes crow once, on receipts with no prose of clio', async () => {
-        const fixture = home();
-        const { first, lines } = crow(fixture.socket);
-        appendFileSync(
-            fixture.transcript,
-            reply('a long aside of clio on how she sees it') +
-                call('e', 'Edit', { file_path: '/tmp/a.ts' }) +
-                reply('Fixed the gate.'),
-        );
-        await hook(fixture, stop);
-        const line = await first;
-        const packet = packetOf(fixture, line);
-        expect(lines).toHaveLength(1);
-        expect(line).toContain(' · claim Fixed the gate.');
-        expect(packet).toContain('merge it');
-        expect(packet).toContain('Fixed the gate.');
-        expect(packet).toContain('- Edit ok · /tmp/a.ts');
-        expect(packet).not.toContain('a long aside');
-    });
-
-    test('a claim wake leaves the delta for the next cadence wake', async () => {
-        const fixture = home();
-        const { first } = crow(fixture.socket);
-        appendFileSync(fixture.transcript, reply('Done.'));
-        await hook(fixture, stop);
-        await first;
-        const state = JSON.parse(readFileSync(stateOf(fixture), 'utf8'));
-        expect(state.offsets[fixture.transcript]).toBeUndefined();
-    });
-
-    test('an exit 0 after the edit wakes nothing', async () => {
-        const fixture = home();
-        crow(fixture.socket);
-        appendFileSync(
-            fixture.transcript,
-            call('e', 'Edit', { file_path: '/tmp/a.ts' }) +
-                call('t', 'Bash', { command: 'pnpm test' }) +
-                reply('Fixed the gate.'),
-        );
-        await hook(fixture, stop);
-        expect(existsSync(stateOf(fixture))).toBe(false);
-    });
-
-    test('a Stop already blocked once wakes nothing', async () => {
-        const fixture = home();
-        crow(fixture.socket);
-        appendFileSync(fixture.transcript, reply('Done.'));
-        await hook(fixture, {
-            raw: { hook_event_name: 'Stop', stop_hook_active: true },
-        });
-        expect(existsSync(stateOf(fixture))).toBe(false);
-    });
-
-    test('a claim keeps what the cadence wake wrote meanwhile', async () => {
-        const fixture = home();
-        writeFileSync(
-            stateOf(fixture),
-            JSON.stringify({ lastWakeAt: 5, offsets: { a: 1 } }),
-        );
-        const { first } = crow(fixture.socket);
-        appendFileSync(fixture.transcript, reply('Done.'));
-        await hook(fixture, stop);
-        await first;
-        const state = JSON.parse(readFileSync(stateOf(fixture), 'utf8'));
-        expect([state.lastWakeAt, state.offsets.a]).toEqual([5, 1]);
-    });
-
-    test('a busy relay logs the skipped claim and overwrites nothing', async () => {
-        const fixture = home({ tab: true });
-        const relay = join(fixture.dir, '.local/state/crow/relay.json');
-        writeFileSync(relay, '{"line":"parked"}');
-        appendFileSync(fixture.transcript, reply('Done.'));
-        await hook(fixture, stop);
-        expect(readFileSync(relay, 'utf8')).toBe('{"line":"parked"}');
-        expect(
-            readFileSync(
-                join(fixture.dir, '.local/state/crow/decisions/log.jsonl'),
-                'utf8',
-            ),
-        ).toContain('skipped: relay busy');
-    });
-
-    test('a tab crow gets it through the relay, with nothing printed', async () => {
-        const fixture = home({ tab: true });
-        appendFileSync(fixture.transcript, reply('Done.'));
-        const { out } = await hook(fixture, stop);
-        const relay = JSON.parse(
-            readFileSync(
-                join(fixture.dir, '.local/state/crow/relay.json'),
-                'utf8',
-            ),
-        );
-        expect(out).toBeUndefined();
-        expect(relay.line).toContain(' · claim Done.');
-    });
+test.each([
+    [
+        'a crow that moved on gets the held note',
+        { heldFor: 'the last crow' },
+        true,
+    ],
+    ["the live crow never reads its own hold as a dead one's", {}, false],
+])('%s', async (_name, held, carried) => {
+    const fixture = home();
+    writeFileSync(stateOf(fixture), JSON.stringify({ ...held, offsets: {} }));
+    writeFileSync(
+        join(fixture.dir, '.local/state/crow/notes.jsonl'),
+        `${JSON.stringify({
+            at: new Date(Date.now() - 600_000).toISOString(),
+            channel: 'session',
+            id: 'n1',
+            note: '🟡 held: until the break',
+        })}\n`,
+    );
+    const { first } = crow(fixture.socket);
+    await hook(fixture, 'claude --bg hi');
+    expect(
+        packetOf(fixture, await first).includes('held by the last crow'),
+    ).toBe(carried);
 });
 
 test('a changed charter rides the next packet, once', async () => {

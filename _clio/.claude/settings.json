@@ -186,12 +186,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
-            "async": true,
-            "timeout": 30
-          },
-          {
-            "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {}'",
             "timeout": 30
           },

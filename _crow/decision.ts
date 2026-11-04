@@ -8,11 +8,9 @@ import {
     type Decision,
     type LiveSession,
     NOTES_PATH,
-    RELAY_PATH,
     SESSION_NAME,
     STATE_DIR,
     type Wake,
-    claimOf,
     consoleOf,
     decisionOf,
     findSessions,
@@ -47,12 +45,7 @@ const event = input.hook_event_name;
 const transcript = input.transcript_path;
 if (transcript && isCoordinatorTranscript(transcript)) {
     try {
-        if (event === 'Stop') {
-            const claim = input.stop_hook_active
-                ? undefined
-                : claimOf(readLines(transcript), input.last_assistant_message);
-            if (claim) await claimWake(claim, transcript);
-        } else await act(decisionNow(), transcript);
+        await act(decisionNow(), transcript);
     } catch (error) {
         context(
             `🐦‍⬛ crow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
@@ -182,25 +175,6 @@ async function hold({ about, act, fields, marker, transcriptPath }: Hold) {
     context(`🐦‍⬛ ${about}: ${await noteOf(wake.id, fields)}`);
 }
 
-// the turn already ended and this hook runs async, so a tab's line goes through the relay, never through clio's context
-async function claimWake(claim: string, transcriptPath: string) {
-    const live = liveCrow();
-    if ('skip' in live) return;
-    const isTab = !live.crow.jobId;
-    if (isTab && existsSync(RELAY_PATH)) {
-        logDecision({ claim, value: 'skipped: relay busy' });
-        return;
-    }
-    const wake = await wakeCrow({
-        claim,
-        fields: `claim ${claim}`,
-        socket: live.crow,
-        transcriptPath,
-        withNote: false,
-    });
-    if (isTab) writeFileSync(RELAY_PATH, JSON.stringify(wake));
-}
-
 function logDecision(row: object) {
     mkdirSync(join(STATE_DIR, 'decisions'), { recursive: true });
     writeFileSync(
@@ -269,7 +243,6 @@ function liveCrow(): { crow: LiveSession } | { skip: string } {
 // a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's.
 // the boot board is the one exception: the boot's turn ends on purpose while it waits, and a Stop wake then would read the same half boot twice
 async function wakeCrow({
-    claim,
     fields,
     proposal,
     socket,
@@ -289,7 +262,6 @@ async function wakeCrow({
         phase: 'live',
     };
     const packed = packWake({
-        claim,
         delta,
         lines,
         now,
@@ -301,16 +273,12 @@ async function wakeCrow({
     const note = withNote ? ` · note ${notePath(wake.id)}` : '';
     const line = `${wakeLine(wake)} · ${fields}${note}`;
     if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
-    // a claim shares its Stop with the cadence wake, so it takes the state as it is now and adds only the hash
     writeState(
-        claim
-            ? { ...readState(), charterHash: packed.state.charterHash }
-            : proposal && BOOT_BOARD.test(proposal)
-              ? { ...packed.state, lastWakeAt: now.getTime() }
-              : packed.state,
+        proposal && BOOT_BOARD.test(proposal)
+            ? { ...packed.state, lastWakeAt: now.getTime() }
+            : packed.state,
     );
-    // a tab's claim line waits in the relay, and `relay.ts` starts its harvester once it is sent
-    if (!claim || socket?.jobId) spawnHarvest(wake);
+    spawnHarvest(wake);
     return { ...wake, line };
 }
 
@@ -378,8 +346,6 @@ function deny(reason: string) {
 interface HookInput {
     cwd?: string;
     hook_event_name?: string;
-    last_assistant_message?: string;
-    stop_hook_active?: boolean;
     transcript_path?: string;
     tool_name?: string;
     tool_input?: {
@@ -410,7 +376,6 @@ interface Marker {
 }
 
 interface WakeInput {
-    claim?: string;
     fields: string;
     proposal?: string;
     socket?: LiveSession;

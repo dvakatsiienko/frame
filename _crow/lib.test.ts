@@ -20,13 +20,14 @@ import {
     blindSections,
     buildPacket,
     charterHash,
-    claimOf,
     consoleOf,
     cutLine,
     decisionOf,
     dropStaleRelay,
+    heldForAfterTurn,
     heldUnsent,
     isCoordinatorTranscript,
+    isHeldDue,
     isLocated,
     isParked,
     leavesToSend,
@@ -391,64 +392,6 @@ describe('receiptsOf', () => {
             }),
         ]);
         expect(receipts).toBe('- Bash exit 0 · ls');
-    });
-});
-
-describe('claimOf', () => {
-    const edit = [
-        toolUse('e', 'Edit', { file_path: '/a' }),
-        toolResult('e', 'ok'),
-    ];
-    const test0 = [
-        toolUse('t', 'Bash', { command: 'pnpm test' }),
-        toolResult('t', 'ok'),
-    ];
-
-    test.each([
-        ['a word in the first line, no bash', [...edit], 'Fixed the gate.', 1],
-        ['a ✅ line, no bash', [...edit], 'so\n✅ gate', 1],
-        ['exit 0 after the last edit', [...edit, ...test0], 'Fixed it.', 0],
-        ['exit 0 before the last edit', [...test0, ...edit], 'Fixed it.', 1],
-        [
-            'a red bash proves nothing',
-            [
-                toolUse('t', 'Bash', { command: 'pnpm test' }),
-                toolResult('t', 'Exit code 1', true),
-            ],
-            'Fixed it.',
-            1,
-        ],
-        [
-            'a gate that echoed a red exit proves nothing',
-            [
-                toolUse('t', 'Bash', { command: 'pnpm test; echo "exit $?"' }),
-                toolResult('t', 'exit 1'),
-            ],
-            'Fixed it.',
-            1,
-        ],
-        ['no claim word', [...edit], 'Here is the plan.', 0],
-        ['a word past the first line', [...edit], 'plan\nit is done', 0],
-    ] as const)('%s', (_label, calls, reply, wakes) => {
-        const lines = [prompt('go'), ...calls, say(reply)];
-        expect(claimOf(lines) === undefined ? 0 : 1).toBe(wakes);
-    });
-
-    test('a reminder after the proof keeps the turn, so no false claim', () => {
-        const lines = [
-            prompt('go'),
-            ...edit,
-            ...test0,
-            prompt('<system-reminder>x</system-reminder>'),
-            say('Done.'),
-        ];
-        expect(claimOf(lines)).toBeUndefined();
-    });
-
-    test('the claim sentence is the line that made it, and the hook text wins', () => {
-        expect(claimOf([prompt('go')], 'x\n✅ landed it\ny')).toBe(
-            '✅ landed it',
-        );
     });
 });
 
@@ -1192,4 +1135,29 @@ describe('dropStaleRelay', () => {
             false,
         );
     });
+});
+
+describe('heldForAfterTurn', () => {
+    const state = (heldFor: string, leavesFor: string) => ({
+        heldFor,
+        leavesFor,
+        offsets: {},
+    });
+
+    test('a turn in the packed transcript settles it', () => {
+        expect(heldForAfterTurn(state('t1', 't2'), 't2', false)).toBe('t2');
+    });
+
+    test('a /clear relay with no note leaves it due for the new transcript', () => {
+        expect(heldForAfterTurn(state('t1', 't1'), 't2', false)).toBe('t1');
+    });
+
+    test('a /clear relay that carried the note settles it, no second copy', () => {
+        expect(heldForAfterTurn(state('t0', 't1'), 't2', true)).toBe('t2');
+    });
+});
+
+test('before any heldFor, the crow that read the leaves keeps its own hold', () => {
+    expect(isHeldDue({ leavesFor: 't1', offsets: {} }, 't1')).toBe(false);
+    expect(isHeldDue({ leavesFor: 't1', offsets: {} }, 't2')).toBe(true);
 });
