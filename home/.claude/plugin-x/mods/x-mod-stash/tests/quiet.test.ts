@@ -1066,6 +1066,23 @@ test(
     },
 );
 
+// a shift: nobody prompts, so only a tagged line can move an idle coordinator
+test(
+    'a shift with nobody prompting: 2 h of untagged lines take no turn, the [done] takes one',
+    { timeoutMs: 120_000 },
+    async ($, on) => {
+        const w = world(on);
+        await start($);
+        for (let i = 0; i < 4; i++) {
+            await ping($, `round ${i} on abc`);
+            await w.clock.advance(30 * MIN);
+        }
+        const before = [w.appended.length, w.queued.length];
+        await ping($, '[done] lane landed');
+        expect([before, w.queued.length]).toEqual([[4, 0], 1]);
+    },
+);
+
 test('a wait set to 15 min holds the idle append past 10 and lands it after 15', async ($, on) => {
     const w = world(on);
     w.store.set('quiet-wait', 15);

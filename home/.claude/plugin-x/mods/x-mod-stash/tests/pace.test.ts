@@ -464,6 +464,47 @@ test('the end restores the state the first start found, past a second start', as
     expect(wakerOn(w)).toBe(false);
 });
 
+test('found on, off by dima, a second start: the end leaves ⏰ on', async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    w.store.set('waker', { on: true });
+    await start($);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await w.clock.advance(POLL);
+    w.store.set('waker', { on: false });
+    w.store.set(`pace:${SID}`, { since: NOW + 1 });
+    await w.clock.advance(POLL);
+    w.store.delete(`pace:${SID}`);
+    await w.clock.advance(POLL);
+    expect(wakerOn(w)).toBe(true);
+});
+
+test("dima's off after a second start stays off", async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await w.clock.advance(POLL);
+    w.store.set(`pace:${SID}`, { since: NOW + 1 });
+    await w.clock.advance(POLL);
+    w.store.set('waker', { on: false });
+    await w.clock.advance(POLL);
+    expect(wakerOn(w)).toBe(false);
+});
+
+test("a second start during afk changes afk's kept copy, so afk's end keeps ⏰ on", async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await w.clock.advance(POLL);
+    w.store.set('afk', { on: true, wakerBefore: false });
+    w.store.set('waker', { on: false });
+    w.store.set(`pace:${SID}`, { since: NOW + 1 });
+    await w.clock.advance(POLL);
+    expect(w.store.get('afk')).toEqual({ on: true, wakerBefore: true });
+});
+
 test('a start with no end expires when its window resets', async ($, on) => {
     const w = world(on);
     w.meter(30, 20 * MIN);

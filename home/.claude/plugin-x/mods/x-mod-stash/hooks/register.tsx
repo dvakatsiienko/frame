@@ -3248,6 +3248,12 @@ async function paceWaker($: EngineInterface) {
         if (key?.since !== note.since) {
             await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
             if (waker?.on !== true) await $.store.set(WAKER_KEY, { on: true });
+            // a held afk puts its copy back at its end
+            const away = (await $.store.get(AFK_KEY)) as
+                | { on?: boolean }
+                | undefined;
+            if (away?.on)
+                await $.store.set(AFK_KEY, { ...away, wakerBefore: true });
             return;
         }
         if (until === undefined) return;
@@ -4333,6 +4339,11 @@ function settingsListJSX(
         </Box>
     ));
 }
+
+const hotTip = (isHot: boolean | undefined) =>
+    isHot
+        ? "stop keeping this session's cache hot"
+        : "keep this session's cache hot: ping every 50 min";
 
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
@@ -6898,21 +6909,27 @@ export const register: Register = (on) => {
                                             the store, plain while not — a faint dim read the same both ways (FRM-499, dima's 20:41 shots) */}
                                         {isPartOn('stash.hot') ? (
                                             <Box flexShrink={0}>
-                                                <Button
-                                                    key={`hot:${m.sid}`}
-                                                    onPress={() =>
-                                                        pressHot($, m.sid)
-                                                    }
-                                                    {...(m.isHot
-                                                        ? {
-                                                              variant:
-                                                                  'secondary' as const,
-                                                          }
-                                                        : {
-                                                              plain: true as const,
-                                                          })}>
-                                                    🔥
-                                                </Button>
+                                                {hoverTip(
+                                                    ui,
+                                                    `hot:${m.sid}`,
+                                                    hotTip(m.isHot),
+                                                    <Button
+                                                        key={`hot:${m.sid}`}
+                                                        onPress={() =>
+                                                            pressHot($, m.sid)
+                                                        }
+                                                        {...(m.isHot
+                                                            ? {
+                                                                  variant:
+                                                                      'secondary' as const,
+                                                              }
+                                                            : {
+                                                                  plain: true as const,
+                                                              })}>
+                                                        🔥
+                                                    </Button>,
+                                                    { right: 3 },
+                                                )}
                                             </Box>
                                         ) : null}
                                         {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
@@ -7679,9 +7696,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'hot',
-                                      view.isHot
-                                          ? "stop keeping this session's cache hot"
-                                          : "keep this session's cache hot: ping every 50 min",
+                                      hotTip(view.isHot),
                                       <Button
                                           key='hot'
                                           onPress={() => void handleHotFlip()}
