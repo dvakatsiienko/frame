@@ -4484,6 +4484,19 @@ function settingsListJSX(
     ));
 }
 
+// a pane's hover note: in the row's flow, between its label and its input; an absolute card wraps over its neighbours there
+function noteOnHover(
+    ui: ReturnType<EngineInterface['ui']['resolve']>,
+    words: string,
+) {
+    const { Box, Text } = ui;
+    return (
+        <Box display='none' flexShrink={0} hover={{ display: 'flex' }}>
+            <Text dimColor>{words}</Text>
+        </Box>
+    );
+}
+
 const hotTip = (isHot: boolean | undefined) =>
     isHot ? 'keep hot: disable' : 'keep hot: enable';
 
@@ -5399,6 +5412,11 @@ export const register: Register = (on) => {
                                     gap={1}
                                     key={`knob:${key}`}>
                                     {label ? <Text>{label}</Text> : null}
+                                    <Box flexGrow={1} />
+                                    {noteOnHover(
+                                        ui,
+                                        `${unit} (${range.min}–${range.max})`,
+                                    )}
                                     <Box flexShrink={0} width={8}>
                                         <Input
                                             key={
@@ -5437,8 +5455,6 @@ export const register: Register = (on) => {
                                             }
                                         />
                                     </Box>
-                                    <Text
-                                        dimColor>{`${unit} (${range.min}–${range.max})`}</Text>
                                 </Box>
                             ) : null;
                         };
@@ -5466,8 +5482,7 @@ export const register: Register = (on) => {
                                                           'primary' as const,
                                                   }
                                                 : { dimColor: true })}>
-                                            🔋 pace watch: tell thread when 5h
-                                            usage says park, burn or stop
+                                            🔋 pace watch
                                         </Button>
                                     </Box>
                                 ) : null}
@@ -5562,7 +5577,6 @@ export const register: Register = (on) => {
                                 borderColor={cardBorder(e.surface)}
                                 borderStyle='round'
                                 flexDirection='column'
-                                flexGrow={1}
                                 key='settings:bars'
                                 paddingX={1}
                                 paddingY={air ? 0.5 : 0}
@@ -5592,7 +5606,6 @@ export const register: Register = (on) => {
                                 borderColor={cardBorder(e.surface)}
                                 borderStyle='round'
                                 flexDirection='column'
-                                flexGrow={1}
                                 key='settings:quiet'
                                 paddingX={1}
                                 paddingY={air ? 0.5 : 0}
@@ -5631,7 +5644,6 @@ export const register: Register = (on) => {
                                 borderColor={cardBorder(e.surface)}
                                 borderStyle='round'
                                 flexDirection='column'
-                                flexGrow={1}
                                 key='settings:compact'
                                 paddingX={1}
                                 paddingY={e.surface === 'desktop' ? 0.5 : 0}>
@@ -5639,8 +5651,11 @@ export const register: Register = (on) => {
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
-                                    gap={1}>
+                                    gap={1}
+                                    key='knob-row:compact'>
                                     <Text>📦 auto-compact at</Text>
+                                    <Box flexGrow={1} />
+                                    {noteOnHover(ui, '% of the context window')}
                                     <Box flexShrink={0} width={8}>
                                         <Input
                                             key={
@@ -5691,9 +5706,6 @@ export const register: Register = (on) => {
                                             }
                                         />
                                     </Box>
-                                    <Text dimColor>
-                                        % of the context window
-                                    </Text>
                                 </Box>
                             </Box>
                         ) : null;
@@ -5732,16 +5744,10 @@ export const register: Register = (on) => {
                                         gap={1}
                                         width={0}>
                                         {knobsJSX}
+                                        {barsJSX}
+                                        {quietJSX}
+                                        {compactJSX}
                                     </Box>
-                                </Box>
-                                <Box flexGrow={1} key='settings:gap' />
-                                <Box
-                                    flexDirection='column'
-                                    gap={1}
-                                    key='settings:bottom'>
-                                    {barsJSX}
-                                    {quietJSX}
-                                    {compactJSX}
                                 </Box>
                             </Box>
                         );

@@ -262,7 +262,7 @@ test('the phase lines knob takes 5 to 7 only', async ($, on) => {
     expect(seen).toEqual([undefined, undefined, 6]);
 });
 
-test('🎛️ lays its cards in two columns, the bars, quiet comms and the context one tile per line below', async ($, on) => {
+test('🎛️ lays its cards in two columns, the bars, quiet comms and the context under the knobs', async ($, on) => {
     world(on);
     await band($);
     const view = await pane($);
@@ -271,15 +271,12 @@ test('🎛️ lays its cards in two columns, the bars, quiet comms and the conte
         .map((n) => n.key);
     const row = async (key: string) =>
         (await view.find({ key, type: 'Box' }))?.props.flexDirection;
-    const wide = await view.find({ key: 'settings:quiet', type: 'Box' });
-    expect(wide?.props.width).toBeUndefined();
-    expect([
-        await row('settings:columns'),
-        await row('settings:bottom'),
-        cards,
-    ]).toEqual([
+    const note = (await view.findAll({ type: 'Box' })).find(
+        (n) => n.props.display === 'none' && n.text?.includes('(1–60)'),
+    );
+    expect(note?.text).toBe('min (1–60)');
+    expect([await row('settings:columns'), cards]).toEqual([
         'row',
-        'column',
         [
             'settings:stash · band',
             'settings:stash · board',
