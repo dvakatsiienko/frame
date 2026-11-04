@@ -864,6 +864,19 @@ test('a stored park past the reset sends the new window, a hand park named', asy
     );
 });
 
+test('a shift expiring puts back the off it found', async ($, on) => {
+    const w = world(on, {
+        [`hot:${SID}`]: { off: true },
+        [`pace:${SID}`]: { since: NOW, was: { off: true } },
+    });
+    w.meter(30, 20 * MIN);
+    await start($);
+    await w.clock.advance(POLL);
+    await endTurn($);
+    await w.clock.advance(21 * MIN);
+    expect(w.store.get(`pace:${SID}`)).toEqual({ off: true });
+});
+
 test('a stop a whole window old clears with no new window', async ($, on) => {
     const w = world(on, {
         [`hot:${SID}`]: { off: true },
