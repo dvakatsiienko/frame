@@ -64,6 +64,7 @@ beat grep or lost to it.
 - 2026-10-16 14:17 · verdict round · **the bridge paid for real**: cclio's Write of a new `schedule/jobs/x-cc-otel/server.ts` came back with 9 diagnostics (no node types, implicit any) one call later — the tell that the dir sat in no tsconfig; `schedule/jobs/*/*.ts` joined frame's include, `--listFilesOnly` proved it (the fleet-hazards «green typecheck, unconfigured files» trap, caught by the bridge, not a planted error) · the `LSP` tool: still 0 calls; the guide-typescript placement is 1 day old and today's renames were strings, not identifiers · ask: adopt the bridge, extend the tool once to 10-30
 
 - 2026-11-04 · the second reading of the `LSP` tool · `usage.py 2026-10-16`: 119 main sessions, **0 LSP calls**, 20,115 grep calls · it counts main threads only, so 916 subagent transcripts were read too: `tool_use` named LSP in 0 (161 mention it only in a tool schema), `wisphunter` and `scout` included, which both carry the tool · the guide-typescript placement had 19 days and changed nothing
+- 2026-11-04 · dima's false-negative check: since 10-16 git touched 1,487 ts paths (824 of them mods) against 233 go, so the 0 calls sat on plenty of TS; the bridge's diagnostics reached 80 transcripts in 14 days
 
 ## verdict
 

@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-09
 dies-when: every candidate use below has a verdict, written into `x:crew-cloud` (by 2026-11-04)
 ---
@@ -63,3 +63,6 @@ Ticket: none
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 cc-cloud test drive, to 2026-11-04 (the $250 credit expires 11-05) — cloud sessions are fleet members on a test drive; walk `docs/test-drive/cc-cloud.md`, one real job per candidate use, dima's usage-page screenshot before and after each. on 11-04: which uses stay, written into `x:crew-cloud`. dima 2026-09-28: «announce cloud sessions as official members of our fleet, under vet, and we have to find a good use for cloud agents» — set 2026-09-28
+
+## verdict
+- 2026-11-04 · **dropped**, dima: «drop it, do not run anything»: 2 of 8 candidate uses ran, the $250 credit lapses 11-05; `x:crew-cloud` stays for a cloud job he asks for
