@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-03T19:22:00Z'
-updated_date: '2026-11-04T14:13:00Z'
+updated_date: '2026-11-04T14:46:00Z'
 labels:
   - xs
 dependencies: []
@@ -32,4 +32,6 @@ rerun 2026-11-04 16:20: fleet-vibe's verdict line, clio's replies since it lande
 
 ticket: FRM-495
 close: 2026-11-04 — his o65 tick: the warn joins FRM-495's reply-check rules.
+
+correction: the rerun note above reads 16:20; it was written at 16:06.
 <!-- SECTION:NOTES:END -->
