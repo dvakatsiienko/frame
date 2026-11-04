@@ -19,6 +19,7 @@ function main(home: string, since: string) {
         script(scripts, 'pocket-check', 'pocket-check', []),
         wishCover(home, scripts, since),
         orbitDrift(home),
+        script(scripts, 'close net', 'close-net', []),
         script(scripts, 'blueprint drift', 'blueprint-drift', [
             '--since',
             since,

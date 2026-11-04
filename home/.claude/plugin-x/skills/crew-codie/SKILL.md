@@ -106,7 +106,7 @@ brief says which, and when it does not, ask once, up front.
    with the pr url and head sha (a quick lane: «final», your head pushed, goes to the coordinator as `[done]`, who hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
    was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop
-   runs as the dna's pr pair says. your report on `clean` quotes the verdict object, the round count and
+   runs as the dna's pr pair says. your `[done]` report on `clean` quotes the verdict object, the round count and
    the head sha. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
 5. **the ci reviewer** in `bytes`: `x lane review <pr>` is its door. it requests the one round, and at
