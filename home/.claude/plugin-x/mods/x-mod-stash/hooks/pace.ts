@@ -12,7 +12,7 @@ const SAME_WINDOW_MS = 10 * MIN;
 export const PACE_SETTINGS = {
     'hot-late': {
         label: '🔥 last ping, min before the reset',
-        max: 120,
+        max: 60,
         min: 0,
         of: 45,
     },

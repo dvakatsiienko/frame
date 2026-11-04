@@ -509,6 +509,8 @@ let isPolling = false;
 let afk = false;
 let isWaker = false;
 let isPaced = false;
+// the window this process already sent its last ping in: a refused one never retries every poll
+let lateWindow: number | undefined;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
@@ -2716,7 +2718,10 @@ async function forget($: EngineInterface, sid: string) {
 // a session that exited keeps only its last reply, marked ended, dropped a day later
 async function retire($: EngineInterface, sid: string) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    const heat = await $.store.get(HOT + sid);
     await forget($, sid);
+    // a resume of this id keeps dima's off: a seat's default fills only a key never written
+    if (heat && !hotOf(heat)) await $.store.set(HOT + sid, heat);
     if (reply)
         await $.store.set(REPLY + sid, {
             ...reply,
@@ -3126,6 +3131,7 @@ const PACE_RUNG = 'pace-rung:';
 const PACE_CLAIM = 'pace-claim:';
 const PACE_WAKER = 'pace-waker:';
 const PACE_CLAIM_MS = 30_000;
+const PACE_LATE_MS = 5 * 60 * MINUTE_MS;
 const PACE_ME = `${Math.random()}`;
 // off is a written value, so the coordinator's default arms only a key never written; `since` marks a shift's start, the one
 // that also moves ⏰
@@ -3195,8 +3201,10 @@ async function paceDue($: EngineInterface, sid: string) {
         | { resetsAt: number; rung: PaceRung }
         | undefined;
     // the clock says a window ended, never a meter write: a frozen file is what a stopped fleet leaves
-    if (kept && (await $.clock.now()) >= kept.resetsAt) {
-        if (isPaceHeld(kept.rung))
+    const clockNow = await $.clock.now();
+    if (kept && clockNow >= kept.resetsAt) {
+        // a watch off for a whole window has no reset to tell of
+        if (isPaceHeld(kept.rung) && clockNow - kept.resetsAt < PACE_LATE_MS)
             return { line: PACE_NEW_WINDOW, stored: undefined };
         await $.store.delete(PACE_RUNG + sid);
         kept = undefined;
@@ -3696,8 +3704,14 @@ async function hotLate($: EngineInterface) {
     const lateMs = (await readNumber($, 'hot-late')) * MINUTE_MS;
     if (m.resetsAt - m.now > lateMs) return;
     if (endedAt + CACHE_MS >= m.resetsAt) return;
+    if (lateWindow === m.resetsAt) return;
+    lateWindow = m.resetsAt;
     $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
-    await selfSubmit($, PING);
+    const r = await selfSubmit($, PING).catch(() => undefined);
+    if (r && !r.drop) return;
+    isBusy = false;
+    await keepTurn($);
+    await armHot($);
 }
 
 // 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
@@ -4336,10 +4350,8 @@ export const isCoordinator = (name: string) =>
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 // a member with a chair in the fleet; a fork or a plain session has none
 export const isSeated = (name: string) =>
-    !/fork/iu.test(name) &&
-    /^(?:🦉)?c?clio|(?:^|\P{L})c?crow$|(?:^|\P{L})helga$|^(?:⚡|🌗|🌘)/u.test(
-        bare(name),
-    );
+    !/\(fork\)/u.test(name) &&
+    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name));
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -5067,7 +5079,7 @@ export const register: Register = (on) => {
         if (isUnread)
             $.ui.toast('⏰ waker: an unrecognised cap — check FRM-488');
         await armWake($);
-        // the store is 🔥's truth: crow writes its key after session.start, and a deleted key turns it off
+        // the store is 🔥's truth: crow writes its key after session.start, and a written off turns it off
         const sid = await currentId($);
         if (sid) hot = hotOf(await $.store.get(HOT + sid).catch(() => hot));
         // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
@@ -5317,6 +5329,7 @@ export const register: Register = (on) => {
                                 PACE + ((await currentId($)) ?? ''),
                             ),
                         );
+                        const isHotShown = (await partsShown($))('stash.hot');
                         const isPaceShown = (await partsShown($))(
                             'stash.pace-watch',
                         );
@@ -5584,16 +5597,20 @@ export const register: Register = (on) => {
                                     knobs.quietWait,
                                     'min',
                                 )}
-                                {isPaceShown
-                                    ? settingNumbers.map(([name, value]) =>
-                                          numberJSX(
-                                              name,
-                                              PACE_SETTINGS[name].label,
-                                              value,
-                                              '',
-                                          ),
-                                      )
-                                    : null}
+                                {settingNumbers
+                                    .filter(([name]) =>
+                                        name.startsWith('hot-')
+                                            ? isHotShown
+                                            : isPaceShown,
+                                    )
+                                    .map(([name, value]) =>
+                                        numberJSX(
+                                            name,
+                                            PACE_SETTINGS[name].label,
+                                            value,
+                                            '',
+                                        ),
+                                    )}
                             </Box>
                         );
                         // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)

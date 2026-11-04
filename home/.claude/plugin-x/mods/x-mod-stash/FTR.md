@@ -174,7 +174,7 @@
   - when the 5h window resets
   - then 🔥 stays ticked and the next ping comes 50 minutes after the last turn ended
   - when dima clicks 🔥
-  - then it unticks and its `hot:<session id>` key leaves the store
+  - then it unticks and its `hot:<session id>` key holds a written `{ off: true }`, kept across a quit
   - proven live 2026-10-09 in `pnpm mods:live`: a planted `hot:<id>` whose 5h reset had passed a minute before loaded on a reload, 🔥's card read «stop keeping …» after the polls, and the key stayed; the click is harness-proven, `mods:live` cannot press
   - decision: the 5h auto-off is gone — it cooled crow overnight; hot moves only by dima's click, crow's start script the one exception (dima, 2026-10-08, FRM-357)
   - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
@@ -385,7 +385,7 @@
 - ✅ a 🔥 chip on every 🌌 sessions row keeps that session's cache hot, a `--bg` member's included (FRM-499)
   - makes: a `hot:<session id>` key in the store, the one the band's 🔥 reads; its own stash arms the ping
   - given the board is open, then every row draws a 🔥 left of its 🐦‍🔥 as the band's own toggle: the filled `secondary` chip while the session's key is in the store, plain while not, so on and off read at a glance (dima's 20:41 shots: a faint dim read the same both ways)
-  - when dima presses a row's 🔥, then the key is written and the chip fills; a second press deletes it and the chip draws plain
+  - when dima presses a row's 🔥, then the key is written and the chip fills; a second press writes off and the chip draws plain
   - when dima hovers a row's 🔥, then it names itself in the band's words, either way
   - given this session's own row, then its chip and the band's 🔥 always show one state, whichever is flipped
   - decision: no new store and no cross-session message; the band's 🔥 stays as it is (dima's o99, re-signed o102)
@@ -723,7 +723,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given the coordinator's band (the seat check `isLaneOwner`, so a coming coordinator joins by one edit), then 🔋 sits between 🔥 and ⏰, the `secondary` chip while on, plain while off, and names itself on hover
   - when dima presses it, then `pace:<id>` flips between `{ on: true }` and `{ off: true }`; a press never turns ⏰ on, and off during a shift ends the shift, putting ⏰ back
   - given any other seat's band, then no 🔋 and no key
-  - given a coordinator session whose key was never written, at its start, a `/clear` or its first turn end, then it starts on, and a window already past a rung sends that line at once; a written off stands across a restart, from a press or from `mods:set pace off`
+  - given a coordinator session whose key was never written, at its start, a `/clear` or its first turn end, then it starts on, and a window already past a rung sends that line at once; a written off stands across a restart, from a press or from `mods:set pace off`, a quit included
   - decision: off is a written value, so the default arms only a key never written (blind critic, FRM-500)
   - decision: only a key with `since`, a shift's `on`, moves ⏰ (dima, 13:00)
   - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following; ::any other seat draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator seat arms a key never written; ::a door write redraws 🔋: the next press is the opposite of what it shows; ::a registry row named after the start arms at the first turn end
@@ -731,7 +731,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given a queued send, then it counts as sent, no second line while it waits; given a target refused for 20 polls and revived, then one line; a key whose session ended sends nothing, since only its own session polls it
   - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::a refused rung write leaves the watch alive: the line again, then the resume; ::a line on its way never rides its own turn as a second line; ::an ended session’s key sends nothing: only its own session polls it
 - 🧭 a shift switches it with no click, and ⏰ with it
-  - given `pnpm mods:set pace on` (`off` ends it and puts back the key it found, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back, so a clio on by default stays on
+  - given `pnpm mods:set pace on` (`end` puts back the key it found, `off` writes `{ off: true }`, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back, so a clio on by default stays on
   - and start, start, end changes nothing more; a change of dima's during the shift is kept; a second start turns ⏰ back on, and the end still restores what the first found (W1958: he may forget); a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
   - and the 🎛️ `stash · knobs` row `🔋 pace watch` shows and flips this session's key; the `🔋 pace watch` part off draws no row, sends nothing and puts ⏰ back
   - proof: tests/pace.test.ts::a shift's end restores the waker its start found; ::a waker found on stays on at the end; ::start, start, end leaves a waker found off, off; ::dima's change during the shift is kept at the end; ::a second start turns ⏰ back on after dima switched it off; ::the end restores the state the first start found, past a second start; ::a start with no end expires when its window resets; ::at the reset ⏰ stays on past the waker's own resume; ::an old meter at the start never ends the shift it just began; ::a start with no meter takes its expiry from a later poll; ::a shift ending during afk changes what afk off puts back; ::the part switched off mid-shift restores the waker; ::the 🎛️ row flips this session's key; ::the part off draws no row; tests/switches.test.ts — not asserted: a `/clear` changes the session id and leaves the key behind, as keep-hot's does

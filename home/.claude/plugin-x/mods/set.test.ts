@@ -3,31 +3,37 @@ import { expect, test } from 'vitest';
 import { clioIdOf, numberSetting, withPace } from './set.ts';
 
 test('a shift over a key never written ends with no key, so a seat default fills it', () => {
-    const on = withPace({ waker: { on: false } }, 's1', true, 5);
-    expect([on, withPace(on, 's1', false, 6)]).toEqual([
+    const on = withPace({ waker: { on: false } }, 's1', 'on', 5);
+    expect([on, withPace(on, 's1', 'end', 6)]).toEqual([
         { 'pace:s1': { since: 5 }, waker: { on: false } },
         { waker: { on: false } },
     ]);
 });
 
 test('a shift over a default-on clio ends on', () => {
-    const on = withPace({ 'pace:s1': { on: true } }, 's1', true, 5);
-    expect(withPace(on, 's1', false, 6)).toEqual({ 'pace:s1': { on: true } });
+    const on = withPace({ 'pace:s1': { on: true } }, 's1', 'on', 5);
+    expect(withPace(on, 's1', 'end', 6)).toEqual({ 'pace:s1': { on: true } });
 });
 
 test('a second start keeps what the first found', () => {
-    const one = withPace({ 'pace:s1': { off: true } }, 's1', true, 5);
-    const two = withPace(one, 's1', true, 6);
-    expect([two, withPace(two, 's1', false, 7)]).toEqual([
+    const one = withPace({ 'pace:s1': { off: true } }, 's1', 'on', 5);
+    const two = withPace(one, 's1', 'on', 6);
+    expect([two, withPace(two, 's1', 'end', 7)]).toEqual([
         { 'pace:s1': { since: 6, was: { off: true } } },
         { 'pace:s1': { off: true } },
     ]);
 });
 
-test('off with no shift running is a written off', () => {
-    expect(withPace({ 'pace:s1': { on: true } }, 's1', false, 5)).toEqual({
+test('off is a written off, a running shift or not', () => {
+    const shift = withPace({ 'pace:s1': { on: true } }, 's1', 'on', 5);
+    expect(withPace(shift, 's1', 'off', 6)).toEqual({
         'pace:s1': { off: true },
     });
+});
+
+test('end with no shift running changes nothing, so an expired shift leaves the watch on', () => {
+    const store = { 'pace:s1': { on: true } };
+    expect(withPace(store, 's1', 'end', 5)).toEqual(store);
 });
 
 test('a number takes only a known key inside its range', () => {
