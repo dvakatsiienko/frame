@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T15:30:00Z'
+updated_date: '2026-11-04T15:38:00Z'
 labels:
   - s
 dependencies: []
@@ -288,4 +288,6 @@ W240 (2026-11-04 17:28, dima): And afterwards, let's see where we are in terms o
 W241 (2026-11-04 17:28, dima): Don't push on halt. I'll tell you myself.
 
 W227 (2026-11-04 17:28, dima): tldr: most useful findings goes directly to you first, the --bg tilde idea goes some time after, at some good point. i'll tell.
+
+side channel's mods order draft, from handoff frm-368-takeover (11-04 17:26), for clio to rebalance; dima: «i'd like for new ones to be done asap but we have already other prioritized chunks». 1 FRM-499, 2 FRM-500, 3 FRM-501 (first number, then close), 4 FRM-505 (M; first the --bg wind that never ingests), 5 FRM-504 (S), 6 FRM-471, 7 the warn-only flip that closes FRM-472, 8 FRM-485, 9 FRM-489, 10 FRM-493, 11 FRM-470 (the load flake shows in 7+ retros, maybe earlier), 12 FRM-459, 13 after his word on tilde: the mods split, isCoordinator into three predicates, glide owner per lane, tilde's asks on the card, quiet logs per session, 14 after his word on tilde: a keep-hot ping that checks the crew. its note: 4 and 5 before 6 keep new guard rules warn-only longer. mods-lane-4/lane-plan.md is stale on FRM-487, FRM-482 (done) and FRM-443 (canceled). FRM-505's open holds W1845 (auto-wake of a stale cache), to settle with his keep-hot talk.
 <!-- SECTION:NOTES:END -->
