@@ -3,7 +3,7 @@
 # The image ships Node 22; package.json engines wants >=24, and pnpm only warns.
 set -uo pipefail
 
-NODE_VERSION=24
+NODE_VERSION=26
 FNM_DIR="$HOME/.local/share/fnm"
 BIN="$HOME/.local/bin"
 export FNM_DIR
