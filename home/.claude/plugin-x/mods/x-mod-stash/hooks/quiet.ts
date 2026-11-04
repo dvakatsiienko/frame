@@ -45,5 +45,24 @@ export const isQuietQuestion = (body: string) =>
 export const isQuietRefusal = (message: unknown) =>
     String(message ?? '').includes('did not accept');
 
+const APP_BLOCK =
+    /<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[\s\S]*?<\/side-sessions-event>/g;
+const NOTE =
+    /^The session "([^"]*)" you started \(local_[^)]*\) finished a turn\. It reported[^:]*: "([\s\S]*)"/;
+
+// the desktop's «finished a turn» prompt, its notes as sender and report; undefined for a prompt holding anything else
+// (its origin is `sdk`, the same as dima's typing, so only the whole text's shape tells them apart)
+export function quietNotes(text: string) {
+    const notes: { from: string; body: string }[] = [];
+    for (const [block, reminder] of text.matchAll(APP_BLOCK)) {
+        const note = reminder?.match(NOTE);
+        if (note) notes.push({ body: note[2] ?? '', from: note[1] ?? '' });
+        else if (reminder && !reminder.startsWith('Linked sessions now'))
+            return undefined;
+        text = text.replace(block, '');
+    }
+    return notes.length && !text.trim() ? notes : undefined;
+}
+
 export const quietHeldText = (body: string) =>
     body.replace(PROGRESS_TAG, '').trim();

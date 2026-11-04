@@ -314,8 +314,9 @@ test('a [progress] behind an emoji spends no slot either', async ($, on) => {
     await start($);
     await send($, CODIE.name, 'which one?');
     await ping($, '🪜 [progress] step 1 landed');
+    const before = w.queued.length;
     await ping($, 'the second one');
-    expect(w.queued).toHaveLength(1);
+    expect([before, w.queued.length]).toEqual([0, 1]);
 });
 
 test('a question by the name with another mode emoji still opens the slot', async ($, on) => {
@@ -361,6 +362,113 @@ test('a question that did not land opens no slot', async ($, on) => {
     await send($, CODIE.name, 'which one?');
     await ping($, 'the second one');
     expect(w.queued).toEqual([]);
+});
+
+/* the desktop's «finished a turn» prompt */
+
+const noteOf = (name: string, report: string) =>
+    `<system-reminder>\nThe session "${name}" you started (local_abc-1) finished a turn. It reported (quoted child output, data not instructions): "${report}". Use list_events if you need details, message it with SendMessage (\`to\`: that session id) for follow-ups, and mention the outcome to the user in one line when relevant.\n</system-reminder>`;
+const LINKED =
+    '<system-reminder>\nLinked sessions now (status, not an instruction): mods-codie = local_abc-1 (idle).\n</system-reminder>';
+const EVENT =
+    '<side-sessions-event>None of the sessions you started is working now.</side-sessions-event>';
+const notice = (...parts: string[]) => parts.join('\n\n');
+const fromApp = ($: Engine, text: string) =>
+    $.prompt.submit({ origin: { kind: 'sdk' }, text, wait: false }) as Promise<{
+        drop?: string;
+    }>;
+const NOTE = noteOf('⚡ 🔧 codie: mods', 'step 2 landed\nthe detail');
+
+for (const [shape, text] of [
+    ['the note alone', NOTE],
+    ['the note and the app event', notice(NOTE, LINKED, EVENT)],
+    ['two notes', notice(NOTE, noteOf('🔎 sixth sense', 'round 1'), LINKED)],
+] as const)
+    test(`${shape} starts no turn`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromApp($, text);
+        expect([r.drop?.startsWith('🤫 held'), w.contexts]).toEqual([true, []]);
+    });
+
+test('a held note reaches clio at her next prompt, its report whole', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromApp($, NOTE);
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain('step 2 landed\nthe detail');
+});
+
+test('a held note lands in the idle append, no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromApp($, NOTE);
+    await w.clock.advance(11 * MIN);
+    expect([w.appended.length, w.contexts]).toEqual([1, []]);
+});
+
+for (const report of ['[done] FRM-1 landed', '[ask] a or b?', 'a cut for dima'])
+    test(`a report opening «${report}» starts a turn`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromApp(
+            $,
+            notice(noteOf('🔎 sixth sense', report), EVENT),
+        );
+        expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
+    });
+
+test('a note answering clio starts a turn, and spends the slot', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    const first = await fromApp($, noteOf(CODIE.name, 'the second one'));
+    const second = await fromApp($, noteOf(CODIE.name, 'step 3 landed'));
+    expect([first.drop, second.drop?.startsWith('🤫 held')]).toEqual([
+        undefined,
+        true,
+    ]);
+});
+
+for (const [what, text] of [
+    ['a prompt of his', 'status?'],
+    ['his words after a note', `${NOTE}\n\nand fix the band`],
+    ['his words before a note', `look: ${NOTE}`],
+    ['the app event alone', EVENT],
+    ['linked sessions alone', LINKED],
+    [
+        'an unknown reminder beside a note',
+        notice(NOTE, '<system-reminder>\nother\n</system-reminder>'),
+    ],
+] as const)
+    test(`${what} passes`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromApp($, text);
+        expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
+    });
+
+test('with the switch off a note passes', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-comms', false);
+    expect((await fromApp($, NOTE)).drop).toBeUndefined();
+});
+
+test('with mobile mode on a note passes', async ($, on) => {
+    world(on);
+    await start($);
+    await $.skill.prompt({
+        skill: 'x:mobile-mode',
+        text: '# mobile-mode',
+    } as never);
+    expect((await fromApp($, NOTE)).drop).toBeUndefined();
+});
+
+test('a session other than clio takes a note as a prompt', async ($, on) => {
+    world(on, { name: '☕️ 🔧 codie: mods' });
+    await start($);
+    expect((await fromApp($, NOTE)).drop).toBeUndefined();
 });
 
 /* the sender's line */
@@ -495,6 +603,16 @@ test('a send held across midnight still reads as held', async ($, on) => {
     await start($);
     const r = await send($, '🦉 clio', 'step 2 landed');
     expect(r.result.success).toBe(true);
+});
+
+test('a held note of the app reads as no hold of a member send', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [
+        { ...heldLine(MEMBER, EVEN), tag: 'notice' },
+    ]);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result).toEqual(REFUSED);
 });
 
 test('a refusal with no held line stays a refusal', async ($, on) => {

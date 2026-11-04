@@ -1321,6 +1321,23 @@ test('a flushed line does not count as a logged delivery', async ($, on) => {
     expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
 });
 
+test('a held app note does not count as a logged delivery', async ($, on) => {
+    const { clock, store } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                logged(PEER_NAME, NOW - 30 * MIN),
+                { ...logged(PEER_NAME, NOW - 25 * MIN, 'held'), tag: 'notice' },
+            ],
+        },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
+});
+
 test("the ledger's gap stays off any board but clio's", async ($, on) => {
     const { clock, store } = fleet(
         on,

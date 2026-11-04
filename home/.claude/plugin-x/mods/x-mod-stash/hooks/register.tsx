@@ -78,6 +78,7 @@ import {
     isQuietQuestion,
     isQuietRefusal,
     quietHeldText,
+    quietNotes,
     quietPush,
     quietTag,
 } from './quiet.ts';
@@ -1012,6 +1013,8 @@ const QUIET_LOG_MAX = 500;
 // the members clio asked a question, by session id, and when: the first message back inside QUIET_REPLY_MS pushes
 const QUIET_ASKED = 'quiet-asked';
 const SEND_TOOL = 'SendMessage';
+// a log line of the desktop's own note: no member sent it, so the ledger and the sender's «held» read past it
+const QUIET_NOTICE = 'notice';
 // the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
 const QUIET_GAP = 'quiet-gap';
 const QUIET_CANARY = /^\s*\[progress\]\s*quiet canary ([\w-]+)/i;
@@ -1111,7 +1114,7 @@ async function quietLedger($: EngineInterface, now: number) {
     const judged = (
         ((await $.store.get(QUIET_LOG + day).catch(() => undefined)) ??
             []) as QuietLogLine[]
-    ).filter((l) => l.verdict !== 'flushed');
+    ).filter((l) => l.verdict !== 'flushed' && l.tag !== QUIET_NOTICE);
     const opened = judged.length
         ? Math.min(...judged.map((l) => l.at))
         : Date.parse(`${day}T00:00:00Z`);
@@ -1306,21 +1309,55 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
           )
         : undefined;
 
-async function quietNoticeSeen(
-    $: EngineInterface,
-    origin: string | undefined,
-    text: string,
-) {
-    const was = ((await $.store.get('quiet-notice-probe')) ?? []) as unknown[];
-    await $.store.set('quiet-notice-probe', [
-        ...was.slice(-19),
-        {
-            at: await $.clock.now(),
-            head: text.slice(0, 160),
-            length: text.length,
-            origin,
-        },
-    ]);
+// the desktop's «finished a turn» prompt in clio's thread: held like a message, unless a report pushes; answers the drop's
+// reason, undefined to let the prompt in
+async function quietHoldNotes($: EngineInterface, prompt: string) {
+    const notes = quietNotes(prompt);
+    if (!notes || !(await isQuietHome($))) return undefined;
+    if (!(await readSwitch($, 'quiet'))) return undefined;
+    if ((await $.state.get(MOBILE)).value === true) return undefined;
+    const now = await $.clock.now();
+    const whys = [];
+    for (const n of notes)
+        whys.push(
+            quietPush(n.body) ??
+                ((await quietAnswered($, n.from, 'none'))
+                    ? 'answer'
+                    : undefined),
+        );
+    const line = { arm: 'on', at: now, tag: QUIET_NOTICE } as const;
+    if (whys.some(Boolean)) {
+        for (const n of notes)
+            await quietLog($, {
+                ...line,
+                from: n.from,
+                startedTurn: true,
+                verdict: 'passed',
+            });
+        return undefined;
+    }
+    const q = await quietOf($);
+    const isSaved = await saveQuiet($, {
+        ...q,
+        held: [
+            ...q.held,
+            ...notes.map((n) => ({
+                at: now,
+                from: n.from,
+                tag: QUIET_NOTICE,
+                text: n.body,
+            })),
+        ],
+    });
+    if (!isSaved) return undefined;
+    for (const n of notes)
+        await quietLog($, {
+            ...line,
+            from: n.from,
+            startedTurn: false,
+            verdict: 'held',
+        });
+    return `🤫 held: ${notes.map((n) => n.from).join(', ')} finished a turn`;
 }
 
 type QuietSend =
@@ -1434,6 +1471,7 @@ async function isHeldSince($: EngineInterface, since: number) {
         const isOurs = lines.some(
             (l) =>
                 l.verdict === 'held' &&
+                l.tag !== QUIET_NOTICE &&
                 l.at >= since &&
                 (l.sid
                     ? l.sid === me
@@ -4414,11 +4452,10 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
-        // FRM-501 exit 6, log only: what the desktop's «finished a turn» notice looks like to this hook
-        if (/finished a turn|side-sessions-event/.test(e.text))
-            await quietNoticeSeen($, e.origin?.kind, e.text).catch(
-                () => undefined,
-            );
+        const heldNotes = await quietHoldNotes($, e.text).catch(
+            () => undefined,
+        );
+        if (heldNotes) return { drop: heldNotes };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);

@@ -712,6 +712,13 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and a `[progress]` neither pushes nor uses up the slot; a second untagged message, an untagged message after a greenlight with no question, and an answer past 30 min are held
   - decision: a status sent first once used up the answer's slot, against «her question's reply is never held» (wishkeeper, 2026-11-04)
   - proof: tests/quiet.test.ts::a member's first message after clio asked … a question starts a turn; ::a second message after the answer is held; ::a [progress] neither pushes nor spends the slot, so the answer after it wakes her; ::an untagged message after «greenlit» is held; ::a first message past 30 min is held; ::a question that did not land opens no slot
+- ✅ the desktop's «finished a turn» prompt is held like a message
+  - given clio's thread and a prompt holding nothing but the app's `The session "…" you started (local_…) finished a turn` notes, its linked-sessions reminder and its side-sessions event
+  - then the prompt is dropped, no turn, and each report joins the held list whole; dima sees one `🤫 held: <session> finished a turn` line
+  - and a report that pushes (its own words, or the member's answer to clio's question) lets the whole prompt in; so do a prompt with any other text, mobile mode and the switch off
+  - decision: the shape of the whole text decides: this prompt's origin is `sdk`, the same as dima's typing (probe, 2026-11-04 10:47: origin `sdk`, 1,880 chars); 11-03 carried these on top of the members' sends
+  - and a `notice` log line stays out of the ledger and out of a sender's «held»
+  - proof: tests/quiet.test.ts::the note alone starts no turn; ::the note and the app event starts no turn; ::two notes starts no turn; ::a held note reaches clio at her next prompt, its report whole; ::a held note lands in the idle append, no turn; ::a report opening … starts a turn; ::a note answering clio starts a turn, and spends the slot; ::… passes; ::a held note of the app reads as no hold of a member send — not asserted: how the desktop draws a dropped prompt, its live proof is the done comment's
 - ✅ the sender learns the rule at send time, in its own result
   - given quiet on and a session's SendMessage to clio, by her name, session id, host id or socket
   - then the model reads one line after the result, no skill needed: «slipstreamed: joins clio's next turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]», or «pushed: starts clio's turn. …» when it pushes
