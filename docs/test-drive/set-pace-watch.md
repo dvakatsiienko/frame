@@ -19,6 +19,8 @@ Ticket: FRM-500
 - stop at 97 %, new window after it — a burn day — stop fired, everyone paused with no lost work, new window fired from a frozen meter
 - the ⏰ turn-on — a shift's start and end — ⏰ on with no click, restored after
 - a parked fleet overnight — a shift — resumes after the reset with the waker, no park in the first 10 %
+- the 45-min self-ping and 🔥's seat default — any burn with a parked seat — pinged once, no cold rewrite at the reset
+- `mods:set` on a pace number — my first retune — the next poll used it, no lane
 - the 🔋 button and the default on for clio — once built — one click flips the key, a new clio session starts on
 
 ## rounds

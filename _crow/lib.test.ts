@@ -478,6 +478,7 @@ describe('isParked', () => {
         ['90 % with more than an hour left', 90, 1.5, true],
         ['91 % with half an hour left, under pace', 91, 0.5, false],
         ['a burn: 95 % with 50 min left, 12 over pace', 95, 50 / 60, false],
+        ['the 97 % reserve with 20 min left', 97, 1 / 3, true],
         ['a window past its reset', 99, -1, false],
     ] as const)('%s', (_label, used, left, expected) => {
         expect(isParked(now, meter(used, left))).toBe(expected);

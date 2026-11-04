@@ -24,5 +24,6 @@ Ticket: none
 - 2026-11-03 · FRM-496 (clio-lean quick lane, 1a92c8cd → 3e532a0b, after sixth sense's round 1) · the first siesta behind `siesta-checks.ts` (5 sections pre-run, 4 green, blueprint drift known) · wishkeeper 5 min, 119,951 tokens, 33 tool calls, 13 findings: 1 high real (FRM-499 left an idle member cold) → already fixed by the 19:25 re-sign (o102); 5 medium, 7 low · no earlier round carries a token count, so this is the baseline, not a saving
 - 2026-11-04 · boot batch (evergreen, memory pass, FRM-501's spec section; no diff of a lane) · second siesta behind `siesta-checks.ts` · wishkeeper 3 min, 124k tokens, 8 findings: 1 high real (exit 3 against his signed «her question's reply is never held»), 1 medium rejected (an `apply` borrow), the rest fixed
 - 2026-11-04 · FRM-502 (main lane, uncommitted diff, after wisphunter's 7) · wishkeeper 9 min, 177k tokens, 18 findings: 4 high real (a live hold never got crow's note, the claim gate 0 of 4 slips, first-acts off the plan, the measuring read with no caller); none wisphunter had found
+- 2026-11-04 · FRM-500 re-sign, the ladder, crow's gate (main lane) · wishkeeper 7 min, 179k tokens, 19 findings: 2 high real (stale decided lines codie would build from, my note dump broke wish-cover)
 
 ## verdict
