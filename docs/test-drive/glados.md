@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-04
 dies-when: the verdict line below is written
 ---
@@ -19,5 +19,7 @@ Ticket: none
 
 ## rounds
 
-## verdict
 - 2026-10-27 · no-run round: the desktop ignores `_clio/.claude/settings.json` outputStyle, so cclio ran output-fun from day 0; set per session from today (dima's o13), the trial restarts at day 1, `until` → 2026-11-03
+
+## verdict
+- 2026-11-04 · **adopted**, on dima's word: «Actually, I like it. I don't say anything because you don't ask me, and I actually read your jokes and consider them fun. Let's keep this and adopt it.» no round was logged in 8 days, so his word is the number; `clio:boot` keeps setting the style per session
