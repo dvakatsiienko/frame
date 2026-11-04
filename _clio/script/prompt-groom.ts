@@ -385,9 +385,15 @@ export const ungroomedSteersToday = (
     transcript?: string,
 ) => ungroomedSteers(transcriptSteers(transcript), day, noWishText);
 
-// the newest steer of that id
-const steerText = (id: string, transcript?: string) =>
-    transcriptSteers(transcript).findLast((steer) => steer.id === id)?.text;
+// every steer of that id on that day: one ask can take several, and an id can return on a later day
+const steerText = (id: string, day: string, transcript?: string) =>
+    [
+        ...new Set(
+            transcriptSteers(transcript)
+                .filter((steer) => steer.id === id && steer.day === day)
+                .map((steer) => steer.text),
+        ),
+    ].join('\n') || undefined;
 
 function helgaUp() {
     const agents = JSON.parse(
@@ -624,6 +630,7 @@ if (import.meta.main) {
         const raw = isSteer
             ? steerText(
                   hhmm,
+                  day,
                   transcriptAt >= 0 ? args[transcriptAt + 1] : undefined,
               )
             : existsSync(dayFile)
