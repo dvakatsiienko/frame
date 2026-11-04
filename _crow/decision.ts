@@ -5,10 +5,15 @@ import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import {
+    type Decision,
     type LiveSession,
+    NOTES_PATH,
+    RELAY_PATH,
     SESSION_NAME,
     STATE_DIR,
     type Wake,
+    claimOf,
+    consoleOf,
     decisionOf,
     findSessions,
     isCoordinatorTranscript,
@@ -38,33 +43,86 @@ const sendVia = (name = SESSION_NAME) =>
     `with SendMessage to «${name}», her registry name`;
 
 const input: HookInput = JSON.parse(readFileSync(0, 'utf8'));
-const decision =
-    decisionOf(input.tool_input?.command ?? '') ??
-    proposalOf(
-        input.tool_name,
-        input.tool_input?.file_path,
-        input.tool_input?.command,
-    );
-if (
-    decision &&
-    input.transcript_path &&
-    isCoordinatorTranscript(input.transcript_path)
-) {
+const event = input.hook_event_name;
+const transcript = input.transcript_path;
+if (transcript && isCoordinatorTranscript(transcript)) {
     try {
-        if (decision.kind === 'merge')
-            await merge(decision.args, input.transcript_path, input.cwd);
-        else if (decision.kind === 'spawn')
-            await noWaitWake('spawn', input.transcript_path);
-        else if (isFirstInTurn(decision.path, input.transcript_path))
-            await noWaitWake(
-                `proposal ${decision.path}`,
-                input.transcript_path,
-                decision.path,
-            );
+        if (event === 'Stop') {
+            const claim = input.stop_hook_active
+                ? undefined
+                : claimOf(readLines(transcript), input.last_assistant_message);
+            if (claim) await claimWake(claim, transcript);
+        } else await act(decisionNow(), transcript);
     } catch (error) {
         context(
             `🐦‍⬛ crow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
         );
+    }
+}
+
+// the hook runs before a call and after a write; each act belongs to one side, or a summon wakes crow twice
+function decisionNow() {
+    const { tool_input: tool, tool_name: name } = input;
+    const before =
+        event === 'PostToolUse'
+            ? undefined
+            : (decisionOf(tool?.command ?? '', input.cwd) ??
+              consoleOf(name, tool, () => readLines(transcript ?? '')));
+    return (
+        before ??
+        (event === 'PreToolUse'
+            ? undefined
+            : proposalOf(name, tool?.file_path, tool?.command))
+    );
+}
+
+async function act(decision: Decision | undefined, transcriptPath: string) {
+    switch (decision?.kind) {
+        case undefined:
+            return;
+        case 'merge':
+            return merge(decision.args, transcriptPath, input.cwd);
+        case 'spawn':
+            return noWaitWake('spawn', transcriptPath);
+        case 'post':
+        case 'close':
+            return noWaitWake(
+                `${decision.kind} ${decision.what}`,
+                transcriptPath,
+            );
+        case 'paid':
+            return hold({
+                about: `paid call (${decision.what})`,
+                act: 'paid call',
+                fields: `paid ${decision.what}`,
+                marker: `paid-${hashOf(decision.what)}.json`,
+                transcriptPath,
+            });
+        case 'console': {
+            const marker = `console-${hashOf(decision.url)}.json`;
+            // a tab's rerun carries a marker and is the call the hold promised, so the once-a-turn gate lets it by
+            if (
+                !readMarker(join(STATE_DIR, 'decisions', marker)) &&
+                !isFirstInTurn(`console ${decision.url}`, transcriptPath)
+            )
+                return;
+            return hold({
+                about: `console (${decision.url})`,
+                act: 'console action',
+                fields: `console ${decision.url}`,
+                marker,
+                transcriptPath,
+            });
+        }
+        case 'proposal':
+            if (!isFirstInTurn(decision.path, transcriptPath)) return;
+            return noWaitWake(
+                `proposal ${decision.path}`,
+                transcriptPath,
+                decision.path,
+            );
+        default:
+            return decision satisfies never;
     }
 }
 
@@ -81,19 +139,23 @@ async function merge(
     const head = shortSha(pr.headRefOid);
     const isDelta = verified !== undefined && shortSha(verified) !== head;
     const heads = `verified ${verified ? shortSha(verified) : 'none'}, head ${head}${isDelta ? ': unverified delta' : ''}`;
-    const about = `${repo}#${pr.number} (${heads})`;
-    const fields = `merge ${repo}#${pr.number} · verified ${verified ?? 'none'} · head ${pr.headRefOid}`;
+    await hold({
+        about: `${repo}#${pr.number} (${heads})`,
+        act: `merge (${heads})`,
+        fields: `merge ${repo}#${pr.number} · verified ${verified ?? 'none'} · head ${pr.headRefOid}`,
+        marker: `${repo.replace('/', '-')}-${pr.number}-${head}.json`,
+        transcriptPath,
+    });
+}
 
+// the act waits up to WAIT_MS for crow's note; a tab takes no socket line, so its first call is denied with the line clio sends by hand
+async function hold({ about, act, fields, marker, transcriptPath }: Hold) {
     const live = liveCrow();
     if ('skip' in live) return context(`🐦‍⬛ ${about}: ${live.skip}`);
 
-    const marker = join(
-        STATE_DIR,
-        'decisions',
-        `${repo.replace('/', '-')}-${pr.number}-${head}.json`,
-    );
+    const markerPath = join(STATE_DIR, 'decisions', marker);
     if (!live.crow.jobId) {
-        const asked = readMarker(marker);
+        const asked = readMarker(markerPath);
         if (!asked) {
             const wake = await wakeCrow({
                 fields,
@@ -102,14 +164,14 @@ async function merge(
             });
             mkdirSync(join(STATE_DIR, 'decisions'), { recursive: true });
             writeFileSync(
-                marker,
+                markerPath,
                 JSON.stringify({ at: Date.now(), wakeId: wake.id }),
             );
             return deny(
-                `🐦‍⬛ crow decides on this merge first (${heads}): send the line below, alone, ${sendVia(live.crow.name)}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for crow's note. no need to report it to dima unless he asks.\n${wake.line}`,
+                `🐦‍⬛ crow decides on this ${act} first: send the line below, alone, ${sendVia(live.crow.name)}, then rerun the same command; the rerun waits up to ${WAIT_MS / 1000} s for crow's note. no need to report it to dima unless he asks.\n${wake.line}`,
             );
         }
-        return context(`🐦‍⬛ ${about}: ${await noteOf(asked.wakeId)}`);
+        return context(`🐦‍⬛ ${about}: ${await noteOf(asked.wakeId, fields)}`);
     }
     const wake = await wakeCrow({
         fields,
@@ -117,10 +179,42 @@ async function merge(
         transcriptPath,
         withNote: true,
     });
-    context(`🐦‍⬛ ${about}: ${await noteOf(wake.id)}`);
+    context(`🐦‍⬛ ${about}: ${await noteOf(wake.id, fields)}`);
 }
 
-// a spawn has already run and a proposal is already written: crow is woken, nothing waits on its note
+// the turn already ended and this hook runs async, so a tab's line goes through the relay, never through clio's context
+async function claimWake(claim: string, transcriptPath: string) {
+    const live = liveCrow();
+    if ('skip' in live) return;
+    const isTab = !live.crow.jobId;
+    if (isTab && existsSync(RELAY_PATH)) {
+        logDecision({ claim, value: 'skipped: relay busy' });
+        return;
+    }
+    const wake = await wakeCrow({
+        claim,
+        fields: `claim ${claim}`,
+        socket: live.crow,
+        transcriptPath,
+        withNote: false,
+    });
+    if (isTab) writeFileSync(RELAY_PATH, JSON.stringify(wake));
+}
+
+function logDecision(row: object) {
+    mkdirSync(join(STATE_DIR, 'decisions'), { recursive: true });
+    writeFileSync(
+        join(STATE_DIR, 'decisions', 'log.jsonl'),
+        `${JSON.stringify({ at: new Date().toISOString(), ...row })}\n`,
+        { flag: 'a' },
+    );
+}
+
+function hashOf(text: string) {
+    return createHash('sha1').update(text).digest('hex').slice(0, 12);
+}
+
+// a spawn, a post and a close run on, and a proposal is already written: crow is woken, nothing waits on its note
 async function noWaitWake(
     fields: string,
     transcriptPath: string,
@@ -147,7 +241,7 @@ function isFirstInTurn(path: string, transcriptPath: string) {
     const marker = join(
         STATE_DIR,
         'decisions',
-        `proposal-${createHash('sha1').update(path).digest('hex').slice(0, 12)}.json`,
+        `proposal-${hashOf(path)}.json`,
     );
     try {
         if (JSON.parse(readFileSync(marker, 'utf8')).turn === turn)
@@ -175,6 +269,7 @@ function liveCrow(): { crow: LiveSession } | { skip: string } {
 // a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's.
 // the boot board is the one exception: the boot's turn ends on purpose while it waits, and a Stop wake then would read the same half boot twice
 async function wakeCrow({
+    claim,
     fields,
     proposal,
     socket,
@@ -194,6 +289,7 @@ async function wakeCrow({
         phase: 'live',
     };
     const packed = packWake({
+        claim,
         delta,
         lines,
         now,
@@ -205,12 +301,16 @@ async function wakeCrow({
     const note = withNote ? ` · note ${notePath(wake.id)}` : '';
     const line = `${wakeLine(wake)} · ${fields}${note}`;
     if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
+    // a claim shares its Stop with the cadence wake, so it takes the state as it is now and adds only the hash
     writeState(
-        proposal && BOOT_BOARD.test(proposal)
-            ? { ...packed.state, lastWakeAt: now.getTime() }
-            : packed.state,
+        claim
+            ? { ...readState(), charterHash: packed.state.charterHash }
+            : proposal && BOOT_BOARD.test(proposal)
+              ? { ...packed.state, lastWakeAt: now.getTime() }
+              : packed.state,
     );
-    spawnHarvest(wake);
+    // a tab's claim line waits in the relay, and `relay.ts` starts its harvester once it is sent
+    if (!claim || socket?.jobId) spawnHarvest(wake);
     return { ...wake, line };
 }
 
@@ -218,16 +318,29 @@ function notePath(wakeId: string) {
     return join(STATE_DIR, 'packets', wakeId, 'note.md');
 }
 
-async function noteOf(wakeId: string) {
+async function noteOf(wakeId: string, fields: string) {
     const started = Date.now();
     while (Date.now() - started < WAIT_MS) {
         try {
             const note = readFileSync(notePath(wakeId), 'utf8').trim();
             if (note) return `crow's note: ${note}`;
         } catch {}
+        // a --bg crow's Write can be refused by its worktree guard, and the harvester logs her reply either way
+        const logged = loggedNote(wakeId);
+        if (logged) return `crow's note: ${logged}`;
         await sleep(1000);
     }
+    logDecision({ fields, value: 'timed out', wakeId });
     return `crow silent after ${Math.round(WAIT_MS / 1000)} s`;
+}
+
+function loggedNote(wakeId: string) {
+    try {
+        return readLines(NOTES_PATH)
+            .map((line): { note?: string; wakeId?: string } => JSON.parse(line))
+            .find((row) => row.wakeId === wakeId && row.note)
+            ?.note?.trim();
+    } catch {}
 }
 
 function readMarker(path: string): Marker | undefined {
@@ -265,9 +378,24 @@ function deny(reason: string) {
 interface HookInput {
     cwd?: string;
     hook_event_name?: string;
+    last_assistant_message?: string;
+    stop_hook_active?: boolean;
     transcript_path?: string;
     tool_name?: string;
-    tool_input?: { command?: string; file_path?: string };
+    tool_input?: {
+        action?: string;
+        command?: string;
+        file_path?: string;
+        url?: string;
+    };
+}
+
+interface Hold {
+    about: string;
+    act: string;
+    fields: string;
+    marker: string;
+    transcriptPath: string;
 }
 
 interface Pr {
@@ -282,6 +410,7 @@ interface Marker {
 }
 
 interface WakeInput {
+    claim?: string;
     fields: string;
     proposal?: string;
     socket?: LiveSession;

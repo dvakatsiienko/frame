@@ -1,5 +1,6 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
+    appendFileSync,
     chmodSync,
     existsSync,
     mkdirSync,
@@ -88,10 +89,10 @@ function crow(socket: string, note?: string) {
 const stateOf = (fixture: ReturnType<typeof home>) =>
     join(fixture.dir, '.local/state/crow/state.json');
 
-// a string is a Bash command at PreToolUse; a write lands at PostToolUse
+// a string is a Bash command at PreToolUse; a write lands at PostToolUse; `raw` is any other hook input
 function hook(
     fixture: ReturnType<typeof home>,
-    call: string | { tool: string; path: string },
+    call: string | { tool: string; path: string } | { raw: object },
     waitMs = 5_000,
 ) {
     const child = spawn(process.execPath, [HOOK], {
@@ -112,11 +113,13 @@ function hook(
                       tool_input: { command: call },
                       tool_name: 'Bash',
                   }
-                : {
-                      hook_event_name: 'PostToolUse',
-                      tool_input: { file_path: call.path },
-                      tool_name: call.tool,
-                  }),
+                : 'raw' in call
+                  ? call.raw
+                  : {
+                        hook_event_name: 'PostToolUse',
+                        tool_input: { file_path: call.path },
+                        tool_name: call.tool,
+                    }),
         }),
     );
     let out = '';
@@ -426,6 +429,385 @@ test('a decision wake leaves the Stop wake’s 30-min clock alone', async () => 
     writeFileSync(state, JSON.stringify({ lastWakeAt: 5, offsets: {} }));
     await hook(fixture, 'gh pr merge 82');
     expect(JSON.parse(readFileSync(state, 'utf8')).lastWakeAt).toBe(5);
+});
+
+const packetOf = (fixture: ReturnType<typeof home>, line: string) =>
+    readFileSync(
+        /· packet (\S+)/.exec(line)?.[1] ??
+            join(fixture.dir, 'no-packet-in-the-line'),
+        'utf8',
+    );
+
+describe('a summon', () => {
+    test('wakes crow once across the hook before the call and the hook after it', async () => {
+        const fixture = home();
+        const { lines } = crow(fixture.socket);
+        const command = 'cd ~/frame && claude --bg -n x hi';
+        await hook(fixture, command);
+        await hook(fixture, {
+            raw: {
+                hook_event_name: 'PostToolUse',
+                tool_input: { command },
+                tool_name: 'Bash',
+            },
+        });
+        expect(lines).toHaveLength(1);
+    });
+});
+
+describe('a paid call', () => {
+    test.each([
+        ['the batch', 'script/op-run.sh python3 -I /tmp/retro/batch.py submit'],
+        ['a paid verb', 'pnpm paid:run'],
+        ['an sdk script', 'node paid.ts'],
+    ])('%s waits for the note and carries it', async (_label, command) => {
+        const fixture = home();
+        writeFileSync(
+            join(fixture.dir, 'paid.ts'),
+            "import Anthropic from '@anthropic-ai/sdk';\n",
+        );
+        writeFileSync(
+            join(fixture.dir, 'package.json'),
+            JSON.stringify({ scripts: { 'paid:run': 'node ./paid.ts' } }),
+        );
+        const { lines } = crow(fixture.socket, 'hold: who asked for this?');
+        const { code, out } = await hook(fixture, command);
+        expect(code).toBe(0);
+        expect(lines[0]).toContain(' · paid ');
+        expect(out?.hookSpecificOutput.additionalContext).toContain(
+            'hold: who asked for this?',
+        );
+    });
+
+    test('a note her guard kept from the note path still ends the hold', async () => {
+        const fixture = home();
+        const { first } = crow(fixture.socket);
+        const held = hook(fixture, 'python3 /tmp/batch.py submit', 30_000);
+        const wakeId = /crow wake (\S+)/.exec(await first)?.[1];
+        writeFileSync(
+            join(fixture.dir, '.local/state/crow/notes.jsonl'),
+            `${JSON.stringify({ note: 'hold: who asked?', wakeId })}\n`,
+        );
+        const { ms, out } = await held;
+        expect(ms).toBeLessThan(10_000);
+        expect(out?.hookSpecificOutput.additionalContext).toContain(
+            'hold: who asked?',
+        );
+    });
+
+    test('a crow that never answers lets it through and logs a timed out row', async () => {
+        const fixture = home();
+        crow(fixture.socket);
+        const { code, ms, out } = await hook(
+            fixture,
+            'python3 /tmp/batch.py submit',
+            1_000,
+        );
+        const log = readFileSync(
+            join(fixture.dir, '.local/state/crow/decisions/log.jsonl'),
+            'utf8',
+        );
+        expect(code).toBe(0);
+        expect(ms).toBeLessThan(10_000);
+        expect(out?.hookSpecificOutput.permissionDecision).toBeUndefined();
+        expect(out?.hookSpecificOutput.additionalContext).toContain(
+            'crow silent after 1 s',
+        );
+        expect(JSON.parse(log).value).toBe('timed out');
+    });
+
+    test('a tab crow denies the first call with the line, the rerun waits', async () => {
+        const fixture = home({ tab: true });
+        const command = 'python3 /tmp/batch.py submit';
+        const first = await hook(fixture, command, 1_000);
+        expect(first.out?.hookSpecificOutput.permissionDecision).toBe('deny');
+        const second = await hook(fixture, command, 1_000);
+        expect(
+            second.out?.hookSpecificOutput.permissionDecision,
+        ).toBeUndefined();
+    });
+});
+
+describe('a console page', () => {
+    test('holds once a turn, a read of it never', async () => {
+        const fixture = home();
+        const { lines } = crow(fixture.socket, 'none');
+        const navigate = {
+            raw: {
+                hook_event_name: 'PreToolUse',
+                tool_input: { url: 'https://console.anthropic.com/settings' },
+                tool_name: 'mcp__Claude_Browser__navigate',
+            },
+        };
+        await hook(fixture, navigate);
+        await hook(fixture, navigate);
+        await hook(fixture, {
+            raw: {
+                hook_event_name: 'PreToolUse',
+                tool_input: { action: 'screenshot' },
+                tool_name: 'mcp__Claude_Browser__computer',
+            },
+        });
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toContain(' · console https://console.anthropic.com');
+    });
+});
+
+test('a tab crow denies a console page first, and the rerun waits for the note', async () => {
+    const fixture = home({ tab: true });
+    const navigate = {
+        raw: {
+            hook_event_name: 'PreToolUse',
+            tool_input: { url: 'https://console.anthropic.com/settings' },
+            tool_name: 'mcp__Claude_Browser__navigate',
+        },
+    };
+    const first = await hook(fixture, navigate, 1_000);
+    expect(first.out?.hookSpecificOutput.permissionDecision).toBe('deny');
+    const second = await hook(fixture, navigate, 1_000);
+    expect(second.out?.hookSpecificOutput.additionalContext).toContain(
+        'crow silent after 1 s',
+    );
+});
+
+describe('a post and a close', () => {
+    test.each([
+        ['gh pr comment 5 --body-file f', 'post gh pr comment'],
+        ['slk send general hi', 'post slk send'],
+        ['x linear set FRM-1 --state Done', 'close FRM-1'],
+    ])('%s wakes crow and waits for nothing', async (command, fields) => {
+        const fixture = home();
+        const { first } = crow(fixture.socket);
+        const { ms, out } = await hook(fixture, command, 30_000);
+        expect(await first).toContain(` · ${fields}`);
+        expect(ms).toBeLessThan(10_000);
+        expect(out).toBeUndefined();
+    });
+
+    test.each(['git push', 'x linear set FRM-1 --state Todo'])(
+        '%s wakes nothing',
+        async (command) => {
+            const fixture = home();
+            crow(fixture.socket);
+            await hook(fixture, command);
+            expect(existsSync(stateOf(fixture))).toBe(false);
+        },
+    );
+});
+
+describe('a claim at the turn end', () => {
+    const stop = { raw: { hook_event_name: 'Stop' } };
+    const call = (id: string, name: string, input: object) =>
+        `${JSON.stringify({ message: { content: [{ id, input, name, type: 'tool_use' }], id }, type: 'assistant' })}\n${JSON.stringify({ message: { content: [{ content: 'ok', tool_use_id: id, type: 'tool_result' }] }, type: 'user' })}\n`;
+    const reply = (text: string) =>
+        `${JSON.stringify({ message: { content: [{ text, type: 'text' }], id: text }, type: 'assistant' })}\n`;
+
+    test('a «fixed» after an edit wakes crow once, on receipts with no prose of clio', async () => {
+        const fixture = home();
+        const { first, lines } = crow(fixture.socket);
+        appendFileSync(
+            fixture.transcript,
+            reply('a long aside of clio on how she sees it') +
+                call('e', 'Edit', { file_path: '/tmp/a.ts' }) +
+                reply('Fixed the gate.'),
+        );
+        await hook(fixture, stop);
+        const line = await first;
+        const packet = packetOf(fixture, line);
+        expect(lines).toHaveLength(1);
+        expect(line).toContain(' · claim Fixed the gate.');
+        expect(packet).toContain('merge it');
+        expect(packet).toContain('Fixed the gate.');
+        expect(packet).toContain('- Edit ok · /tmp/a.ts');
+        expect(packet).not.toContain('a long aside');
+    });
+
+    test('a claim wake leaves the delta for the next cadence wake', async () => {
+        const fixture = home();
+        const { first } = crow(fixture.socket);
+        appendFileSync(fixture.transcript, reply('Done.'));
+        await hook(fixture, stop);
+        await first;
+        const state = JSON.parse(readFileSync(stateOf(fixture), 'utf8'));
+        expect(state.offsets[fixture.transcript]).toBeUndefined();
+    });
+
+    test('an exit 0 after the edit wakes nothing', async () => {
+        const fixture = home();
+        crow(fixture.socket);
+        appendFileSync(
+            fixture.transcript,
+            call('e', 'Edit', { file_path: '/tmp/a.ts' }) +
+                call('t', 'Bash', { command: 'pnpm test' }) +
+                reply('Fixed the gate.'),
+        );
+        await hook(fixture, stop);
+        expect(existsSync(stateOf(fixture))).toBe(false);
+    });
+
+    test('a Stop already blocked once wakes nothing', async () => {
+        const fixture = home();
+        crow(fixture.socket);
+        appendFileSync(fixture.transcript, reply('Done.'));
+        await hook(fixture, {
+            raw: { hook_event_name: 'Stop', stop_hook_active: true },
+        });
+        expect(existsSync(stateOf(fixture))).toBe(false);
+    });
+
+    test('a claim keeps what the cadence wake wrote meanwhile', async () => {
+        const fixture = home();
+        writeFileSync(
+            stateOf(fixture),
+            JSON.stringify({ lastWakeAt: 5, offsets: { a: 1 } }),
+        );
+        const { first } = crow(fixture.socket);
+        appendFileSync(fixture.transcript, reply('Done.'));
+        await hook(fixture, stop);
+        await first;
+        const state = JSON.parse(readFileSync(stateOf(fixture), 'utf8'));
+        expect([state.lastWakeAt, state.offsets.a]).toEqual([5, 1]);
+    });
+
+    test('a busy relay logs the skipped claim and overwrites nothing', async () => {
+        const fixture = home({ tab: true });
+        const relay = join(fixture.dir, '.local/state/crow/relay.json');
+        writeFileSync(relay, '{"line":"parked"}');
+        appendFileSync(fixture.transcript, reply('Done.'));
+        await hook(fixture, stop);
+        expect(readFileSync(relay, 'utf8')).toBe('{"line":"parked"}');
+        expect(
+            readFileSync(
+                join(fixture.dir, '.local/state/crow/decisions/log.jsonl'),
+                'utf8',
+            ),
+        ).toContain('skipped: relay busy');
+    });
+
+    test('a tab crow gets it through the relay, with nothing printed', async () => {
+        const fixture = home({ tab: true });
+        appendFileSync(fixture.transcript, reply('Done.'));
+        const { out } = await hook(fixture, stop);
+        const relay = JSON.parse(
+            readFileSync(
+                join(fixture.dir, '.local/state/crow/relay.json'),
+                'utf8',
+            ),
+        );
+        expect(out).toBeUndefined();
+        expect(relay.line).toContain(' · claim Done.');
+    });
+});
+
+test('a changed charter rides the next packet, once', async () => {
+    const fixture = home();
+    writeFileSync(
+        stateOf(fixture),
+        JSON.stringify({ charterHash: 'deadbeef', offsets: {} }),
+    );
+    const { first, lines } = crow(fixture.socket);
+    await hook(fixture, 'claude --bg hi');
+    expect(packetOf(fixture, await first)).toContain('## charter changed');
+    await hook(fixture, 'claude --bg again');
+    expect(packetOf(fixture, lines[1] ?? '')).not.toContain(
+        '## charter changed',
+    );
+});
+
+describe('a cadence wake at park', () => {
+    const WAKE = join(import.meta.dirname, 'wake.ts');
+    const steps = Array.from(
+        { length: 12 },
+        (_, i) =>
+            `${JSON.stringify({ message: { content: [{ text: `s${i}`, type: 'text' }], id: `m${i}` }, type: 'assistant' })}\n`,
+    ).join('');
+    const usage = (fixture: ReturnType<typeof home>, used: number) =>
+        writeFileSync(
+            join(fixture.dir, '.claude/shelf/cc-usage-window.json'),
+            JSON.stringify({
+                rate_limits: {
+                    five_hour: {
+                        resets_at: Date.now() / 1000 + 2.5 * 3600,
+                        used_percentage: used,
+                    },
+                },
+            }),
+        );
+    // async: a sync spawn would block the fake crow's server in this process, and a wake that sends would hang
+    const tick = (fixture: ReturnType<typeof home>) =>
+        new Promise<string>((done) => {
+            const child = spawn(
+                process.execPath,
+                [WAKE, '--transcript', fixture.transcript],
+                { env: { ...process.env, HOME: fixture.dir } },
+            );
+            let out = '';
+            child.stdout.on('data', (chunk) => {
+                out += chunk;
+            });
+            child.on('close', () => done(out));
+        });
+
+    test('logs a skip and builds no packet, while a merge still wakes crow', async () => {
+        const fixture = home();
+        appendFileSync(fixture.transcript, steps);
+        usage(fixture, 60);
+        const { lines } = crow(fixture.socket, 'none');
+        const run = await tick(fixture);
+        const state = join(fixture.dir, '.local/state/crow');
+        expect(run).toContain('skipped: park');
+        expect(readFileSync(join(state, 'harvest.log'), 'utf8')).toContain(
+            'skipped: park',
+        );
+        expect(existsSync(join(state, 'packets'))).toBe(false);
+        await hook(fixture, 'gh pr merge 82');
+        expect(lines[0]).toContain(' · merge ');
+    });
+
+    test('on pace it builds the packet', async () => {
+        const fixture = home();
+        appendFileSync(fixture.transcript, steps);
+        usage(fixture, 50);
+        crow(fixture.socket);
+        const run = await tick(fixture);
+        expect(run).toContain('woke ');
+    });
+});
+
+test('a verdict carries what the note changed', () => {
+    const state = mkdtempSync(join(tmpdir(), 'crow-vet-'));
+    writeFileSync(
+        join(state, 'notes.jsonl'),
+        `${JSON.stringify({ id: 'n1', note: 'head\nbody' })}\n`,
+    );
+    const vet = (...args: string[]) =>
+        spawnSync(
+            process.execPath,
+            [join(import.meta.dirname, 'note-vet.ts'), ...args],
+            {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    CROW_STATE_DIR: state,
+                    CROW_VET_WAIT_MS: '0',
+                },
+            },
+        );
+    expect(
+        vet('ok', 'n1', 'a real', 'catch', '--changed', 'file', '--ref', '/a')
+            .status,
+    ).toBe(0);
+    expect(vet('ok', 'n1', 'why', '--changed', 'nonsense').status).not.toBe(0);
+    expect(vet('ok', 'n1', 'plain why').status).toBe(0);
+    const rows = readFileSync(join(state, 'verdicts.jsonl'), 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+    expect(rows).toMatchObject([
+        { changed: 'file', ref: '/a', why: 'a real catch' },
+        { why: 'plain why' },
+    ]);
+    expect(rows[1].changed).toBeUndefined();
 });
 
 /* Types */

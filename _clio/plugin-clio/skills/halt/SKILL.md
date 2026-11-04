@@ -154,7 +154,7 @@ the CST lists dima's chat lines since the last report, each with its answer or �
 🐦‍⬛ crow lives one clio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/crow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/crow.md`).
 - **stop order: before the CST is written, `pnpm -C ~/frame crow:stop` (a tab: 🔥 off, the tab stays) and helga's stop; the CST roster copies their output, never a guess**
 - **then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time»)
-- note-vet: before the stop, every note id with no verdict is printed and vetted (`pnpm --silent crow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial
+- note-vet: before the stop, every note id with no verdict is printed and vetted (`pnpm --silent crow:note-vet ok|miss <id> "<why>" --changed file|reply|ask|ticket|none --ref <path|id>`) — an unvetted note is a lost data point for the trial
 a first-act that is a memory line is applied now, by this halt — never left for a boot.
 🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
 

@@ -1,15 +1,34 @@
 import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import { NOTES_PATH, VERDICTS_PATH, appendJsonl, fail } from './lib.ts';
+import {
+    NOTES_PATH,
+    VERDICTS_PATH,
+    appendJsonl,
+    changedList,
+    fail,
+} from './lib.ts';
 
-const usage = `crow:note-vet <ok|miss> <note-id> <why…> — log a verdict on one note to ${VERDICTS_PATH}`;
+const usage = `crow:note-vet <ok|miss> <note-id> <why…> [--changed ${changedList.join('|')}] [--ref <path|id>] — log a verdict on one note to ${VERDICTS_PATH}`;
 // a vet can land before harvest.ts logs the note it answers, so the line gets this long to appear
 const WAIT_MS = Number(process.env.CROW_VET_WAIT_MS ?? 60_000);
 
-const [value, id, ...why] = process.argv.slice(2);
+const args = process.argv.slice(2);
+// a why is free text, so only these two flags are lifted out of it
+function takeFlag(name: string) {
+    const at = args.indexOf(name);
+    if (at === -1) return undefined;
+    const [, flagValue] = args.splice(at, 2);
+    if (flagValue === undefined) fail(usage);
+    return flagValue;
+}
+const changed = takeFlag('--changed');
+const ref = takeFlag('--ref');
+const [value, id, ...why] = args;
 if ((value !== 'ok' && value !== 'miss') || !id || why.length === 0)
     fail(usage);
+const changedKind = changedList.find((kind) => kind === changed);
+if (changed !== undefined && !changedKind) fail(usage);
 
 function headlineOf(noteId: string): string | undefined {
     let notes: string;
@@ -43,5 +62,7 @@ appendJsonl(VERDICTS_PATH, {
     id,
     value,
     why: why.join(' '),
+    ...(changedKind ? { changed: changedKind } : {}),
+    ...(ref ? { ref } : {}),
 });
 console.log(`${id}: ${value}${headline ? ` · ${headline}` : ''}`);

@@ -62,20 +62,23 @@
           {
             "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
-            "if": "Bash(gh pr merge*)",
             "timeout": 120
-          },
-          {
-            "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
-            "if": "Bash(claude *)",
-            "timeout": 30
           },
           {
             "type": "command",
             "command": "node /Users/dima/frame/script/test-drive-list.ts --spawn-hook",
             "if": "Bash(claude *)",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__Claude_Browser__(navigate|computer|form_input)|mcp__claude-in-chrome__(navigate|computer|form_input)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
+            "timeout": 120
           }
         ]
       },
@@ -181,6 +184,12 @@
     "Stop": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
+            "async": true,
+            "timeout": 30
+          },
           {
             "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {}'",

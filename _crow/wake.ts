@@ -21,6 +21,7 @@ import {
     fail,
     isCoordinatorTranscript,
     isMode,
+    isParked,
     liveArm,
     modeList,
     oneCrow,
@@ -113,6 +114,15 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         skip(
             `${delta.steps} clio steps since the last wake (min ${MIN_STEPS})`,
         );
+    }
+    // the backstop saves the window while the ladder parks; decision wakes never come through here
+    if (isParked(now)) {
+        writeFileSync(
+            join(STATE_DIR, 'harvest.log'),
+            `${now.toISOString()} skipped: park\n`,
+            { flag: 'a' },
+        );
+        skip('park');
     }
 
     const firstWakeAt = state.firstWakeAt ?? now.getTime();

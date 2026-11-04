@@ -233,6 +233,7 @@ export function homelessWishes(
             .replace(/^\s*(?:[*-]\s+)?W\d+/, '')
             .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
             .replace(/^[\s·:]+/, '')
+            .replace(/ #(standing|lifted)$/, '')
             .trim();
         // linear rewrites a body it stores (\~ for ~, autolinks), so both sides read through wish-cover's normalize
         const wanted = normalize(text);

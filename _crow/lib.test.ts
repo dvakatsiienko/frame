@@ -19,11 +19,15 @@ import {
     blindPrompt,
     blindSections,
     buildPacket,
+    charterHash,
+    claimOf,
+    consoleOf,
     cutLine,
     decisionOf,
     dropStaleRelay,
     isCoordinatorTranscript,
     isLocated,
+    isParked,
     leavesToSend,
     ledgerLine,
     meterLine,
@@ -34,6 +38,7 @@ import {
     readCharter,
     readLines,
     readTurn,
+    receiptsOf,
     resolveLeaves,
     setHot,
     stashModOf,
@@ -93,8 +98,9 @@ test('the boot prompt is the x:crew-adviser skill body, frontmatter cut', () => 
 
 test('a wake line names a charter a cleared session can read', () => {
     const line = wakeLine({ id: '202610100900', mode: 'day', phase: 'live' });
-    const charter = /· charter (\S+)$/.exec(line)?.[1] ?? '';
-    expect(existsSync(charter)).toBe(true);
+    const [, hash, charter] = /· charter (\w{8}) (\S+)$/.exec(line) ?? [];
+    expect(hash).toBe(charterHash());
+    expect(existsSync(charter ?? '')).toBe(true);
 });
 
 test('_crow/AGENTS.md holds the mechanics, never the hunts', () => {
@@ -267,6 +273,217 @@ describe('appendNoteOnce', () => {
         appendNoteOnce(path, note);
         appendNoteOnce(path, note);
         expect(readLines(path)).toHaveLength(1);
+    });
+
+    test('a racer that read the file before the first write still writes nothing', () => {
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-')), 'notes.jsonl');
+        mkdirSync(`${path}.ids`);
+        writeFileSync(join(`${path}.ids`, 'w1-opus'), '');
+        appendNoteOnce(path, { id: 'w1-opus', note: 'x' } as Note);
+        expect(existsSync(path)).toBe(false);
+    });
+});
+
+const toolUse = (id: string, name: string, input: object) =>
+    JSON.stringify({
+        message: {
+            content: [{ id, input, name, type: 'tool_use' }],
+            id: `m-${id}`,
+        },
+        type: 'assistant',
+    });
+const toolResult = (id: string, content: unknown, isError = false) =>
+    JSON.stringify({
+        message: {
+            content: [
+                {
+                    content,
+                    ...(isError ? { is_error: true } : {}),
+                    tool_use_id: id,
+                    type: 'tool_result',
+                },
+            ],
+        },
+        type: 'user',
+    });
+const prompt = (text: string) =>
+    JSON.stringify({ message: { content: text }, type: 'user' });
+const say = (text: string) =>
+    JSON.stringify({
+        message: { content: [{ text, type: 'text' }], id: `m-${text}` },
+        type: 'assistant',
+    });
+
+describe('receiptsOf', () => {
+    test('one line per call since dima last spoke, with its exit, error and image', () => {
+        const receipts = receiptsOf([
+            toolUse('old', 'Bash', { command: 'before his line' }),
+            toolResult('old', 'x'),
+            prompt('fix it'),
+            toolUse('a', 'Bash', { command: 'pnpm test' }),
+            toolResult('a', 'all green'),
+            toolUse('b', 'Bash', { command: 'x lane commit' }),
+            toolResult('b', 'Exit code 1\nbiome refused\nmore', true),
+            toolUse('c', 'Read', { file_path: '/tmp/shot.png' }),
+            toolResult('c', [{ source: {}, type: 'image' }]),
+            toolUse('d', 'Edit', { file_path: '/tmp/a.ts' }),
+        ]);
+        expect(receipts.split('\n')).toEqual([
+            '- Bash exit 0 · pnpm test',
+            '- Bash exit 1 · x lane commit · biome refused',
+            '- Read ok · /tmp/shot.png · [image: /tmp/shot.png]',
+            '- Edit pending · /tmp/a.ts',
+        ]);
+    });
+
+    test('a harness reminder is not dima, and his words beside one are', () => {
+        const reminder = '<system-reminder>session finished</system-reminder>';
+        const lines = [
+            prompt('go'),
+            toolUse('a', 'Bash', { command: 'ls' }),
+            toolResult('a', 'x'),
+            prompt(reminder),
+        ];
+        expect(receiptsOf(lines)).toBe('- Bash exit 0 · ls');
+        expect(receiptsOf([...lines, prompt(`${reminder}\nstop`)])).toBe('');
+    });
+
+    test('a gate that echoes its exit reads red, past a long command prefix', () => {
+        const prefix = `cd ~/frame && S=/tmp/${'x'.repeat(200)}`;
+        const receipts = receiptsOf([
+            prompt('go'),
+            toolUse('a', 'Bash', { command: `${prefix} && x lane commit` }),
+            toolResult('a', 'exit 1\nbiome refused'),
+            toolUse('b', 'Bash', { command: 'pnpm test; echo "exit $?"' }),
+            toolResult('b', 'ok\nexit 0'),
+        ]).split('\n');
+        expect(receipts[0]).toContain('exit 1');
+        expect(receipts[0]).toContain('x lane commit');
+        expect(receipts[0]).toContain('biome refused');
+        expect(receipts[1]).toBe('- Bash exit 0 · pnpm test; echo "exit $?"');
+    });
+
+    test('a tool with no command or path shows its input', () => {
+        expect(
+            receiptsOf([
+                prompt('go'),
+                toolUse('a', 'orbit', { ids: ['o23'], op: 'resolve' }),
+                toolResult('a', 'resolved o23'),
+            ]),
+        ).toBe('- orbit ok · {"ids":["o23"],"op":"resolve"}');
+    });
+
+    test('a peer and a subagent notice are not dima, so they cut nothing', () => {
+        const receipts = receiptsOf([
+            prompt('go'),
+            toolUse('a', 'Bash', { command: 'ls' }),
+            toolResult('a', 'x'),
+            JSON.stringify({
+                message: { content: 'from codie' },
+                origin: { kind: 'peer' },
+                type: 'user',
+            }),
+            JSON.stringify({
+                message: { content: '<task-notification>x' },
+                origin: { kind: 'task-notification' },
+                type: 'user',
+            }),
+        ]);
+        expect(receipts).toBe('- Bash exit 0 · ls');
+    });
+});
+
+describe('claimOf', () => {
+    const edit = [
+        toolUse('e', 'Edit', { file_path: '/a' }),
+        toolResult('e', 'ok'),
+    ];
+    const test0 = [
+        toolUse('t', 'Bash', { command: 'pnpm test' }),
+        toolResult('t', 'ok'),
+    ];
+
+    test.each([
+        ['a word in the first line, no bash', [...edit], 'Fixed the gate.', 1],
+        ['a ✅ line, no bash', [...edit], 'so\n✅ gate', 1],
+        ['exit 0 after the last edit', [...edit, ...test0], 'Fixed it.', 0],
+        ['exit 0 before the last edit', [...test0, ...edit], 'Fixed it.', 1],
+        [
+            'a red bash proves nothing',
+            [
+                toolUse('t', 'Bash', { command: 'pnpm test' }),
+                toolResult('t', 'Exit code 1', true),
+            ],
+            'Fixed it.',
+            1,
+        ],
+        [
+            'a gate that echoed a red exit proves nothing',
+            [
+                toolUse('t', 'Bash', { command: 'pnpm test; echo "exit $?"' }),
+                toolResult('t', 'exit 1'),
+            ],
+            'Fixed it.',
+            1,
+        ],
+        ['no claim word', [...edit], 'Here is the plan.', 0],
+        ['a word past the first line', [...edit], 'plan\nit is done', 0],
+    ] as const)('%s', (_label, calls, reply, wakes) => {
+        const lines = [prompt('go'), ...calls, say(reply)];
+        expect(claimOf(lines) === undefined ? 0 : 1).toBe(wakes);
+    });
+
+    test('a reminder after the proof keeps the turn, so no false claim', () => {
+        const lines = [
+            prompt('go'),
+            ...edit,
+            ...test0,
+            prompt('<system-reminder>x</system-reminder>'),
+            say('Done.'),
+        ];
+        expect(claimOf(lines)).toBeUndefined();
+    });
+
+    test('the claim sentence is the line that made it, and the hook text wins', () => {
+        expect(claimOf([prompt('go')], 'x\n✅ landed it\ny')).toBe(
+            '✅ landed it',
+        );
+    });
+});
+
+describe('isParked', () => {
+    const now = new Date('2026-11-04T12:00:00Z');
+    const reset = (hoursLeft: number) =>
+        now.getTime() / 1000 + hoursLeft * 3600;
+    const meter = (usedPercentage: number, hoursLeft: number) => {
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-')), 'u.json');
+        writeFileSync(
+            path,
+            JSON.stringify({
+                rate_limits: {
+                    five_hour: {
+                        resets_at: reset(hoursLeft),
+                        used_percentage: usedPercentage,
+                    },
+                },
+            }),
+        );
+        return path;
+    };
+
+    test.each([
+        ['6 over pace', 56, 2.5, true],
+        ['exactly 5 over pace', 55, 2.5, false],
+        ['on pace', 50, 2.5, false],
+        ['90 % with more than an hour left', 90, 1.5, true],
+        ['91 % with half an hour left, under pace', 91, 0.5, false],
+        ['a window past its reset', 99, -1, false],
+    ] as const)('%s', (_label, used, left, expected) => {
+        expect(isParked(now, meter(used, left))).toBe(expected);
+    });
+
+    test('no meter file is no park', () => {
+        expect(isParked(now, '/nope/u.json')).toBe(false);
     });
 });
 
@@ -492,7 +709,7 @@ describe('planNotes', () => {
         ]);
     });
 
-    test('logs one line per finding, each with its arm and cost', () => {
+    test('logs the run row plus one line per finding, the cost once', () => {
         const finding = {
             problem: 'p',
             severity: 'high',
@@ -518,16 +735,36 @@ describe('planNotes', () => {
             {
                 arm: 'fable',
                 costUsd: 0.4,
+                id: 'plan-202610062000-0',
+                located: undefined,
+            },
+            {
+                arm: 'fable',
+                costUsd: undefined,
                 id: 'plan-202610062000-1',
                 located: true,
             },
             {
                 arm: 'fable',
-                costUsd: 0.4,
+                costUsd: undefined,
                 id: 'plan-202610062000-2',
                 located: false,
             },
         ]);
+    });
+
+    test('five findings sum to the cost of the run', () => {
+        const finding = {
+            problem: 'p',
+            quote: 'q',
+            severity: 'high',
+            test: 't',
+        } as const;
+        const notes = planNotes(run, {
+            ...review,
+            findings: Array.from({ length: 5 }, () => finding),
+        });
+        expect(notes.reduce((sum, n) => sum + (n.costUsd ?? 0), 0)).toBe(0.4);
     });
 });
 
@@ -626,8 +863,120 @@ describe('decisionOf', () => {
         ['claude -p hi', undefined],
         ['x lane push --apply', undefined],
         ['git log | grep "gh pr merge"', undefined],
+        // the $54 batch's own command, 2026-11-03 l2543
+        [
+            'cd ~/frame && script/op-run.sh python3 -I /tmp/s/retro/batch.py submit 2>&1 | tail -5',
+            'paid',
+        ],
+        [
+            `script/op-run.sh sh -c 'curl -sS https://api.anthropic.com/v1/messages -d "{}"'`,
+            'paid',
+        ],
+        ['curl https://example.com/v1/messages/batches', 'paid'],
+        ["python3 -I - <<'PY'\nimport anthropic\nPY", 'paid'],
+        ['batch.py status', undefined],
+        ['rg -n api.anthropic.com docs', undefined],
+        ['x lane commit -m "curl docs"', undefined],
+        ['curl https://example.com', undefined],
+        ['gh pr create --title x', 'post'],
+        ['gh pr comment 5 --body-file f', 'post'],
+        ['gh issue create --title x', 'post'],
+        ['gh issue comment 9 --body hi', 'post'],
+        ['slk send general hello', 'post'],
+        ['slk s general hello', 'post'],
+        ['himalaya message send < m.eml', 'post'],
+        ['gh pr view 5', undefined],
+        ['gh issue view 99217', undefined],
+        ['slk read general', undefined],
+        ['slk draft general hello', undefined],
+        ['himalaya envelope list', undefined],
+        ['x linear set FRM-1 --state Done', 'close'],
+        ['x linear set FRM-1 --state=Canceled', 'close'],
+        ['x linear set FRM-1 --state done --add-label x', 'close'],
+        ['x linear set FRM-1 --state Todo', undefined],
+        ['x linear set FRM-1 --add-label done', undefined],
+        ['git push', undefined],
+        ['rg -n ANTHROPIC_CREDITS_KEY op.env', undefined],
+        ["python3 - <<'PY'\nedit = 'rg -e @anthropic-ai/sdk'\nPY", undefined],
+        ['rg -l -e @anthropic-ai/sdk -e api.anthropic.com frame', undefined],
+        ['echo "batch.py submit"', undefined],
+        ['git commit -m "node hook: @anthropic-ai/sdk note"', undefined],
+        [
+            'git commit -m "curl https://api.anthropic.com/v1/messages"',
+            undefined,
+        ],
+        [
+            "cat > doc.md <<'EOF'\ngh pr merge 5\nimport anthropic\nEOF",
+            undefined,
+        ],
+        ["x lane commit <<'EOF'\nclaude --bg hi\nEOF\ngh pr view 5", undefined],
+        ["cat > a.md <<'EOF'\nx\nEOF\ngh pr merge 5", 'merge'],
+        ['env A=1 gh pr merge 5', 'merge'],
+        [`bash -c 'x linear set FRM-1 --state Done'`, 'close'],
     ])('%s → %s', (line, kind) => {
         expect(decisionOf(line)?.kind).toBe(kind);
+    });
+
+    test('a script counts as paid by its own source, through a runner or a pnpm verb', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'crow-paid-'));
+        writeFileSync(
+            join(dir, 'paid.ts'),
+            "import Anthropic from '@anthropic-ai/sdk';\n",
+        );
+        writeFileSync(join(dir, 'free.ts'), 'console.log(1);\n');
+        writeFileSync(
+            join(dir, 'package.json'),
+            JSON.stringify({
+                scripts: {
+                    'free:run': 'node ./free.ts',
+                    'paid:run': 'node ./paid.ts',
+                },
+            }),
+        );
+        const kindOf = (line: string) => decisionOf(line, dir)?.kind;
+        expect(kindOf('node paid.ts')).toBe('paid');
+        expect(kindOf('node free.ts')).toBeUndefined();
+        expect(kindOf('cat paid.ts')).toBeUndefined();
+        expect(kindOf('pnpm paid:run')).toBe('paid');
+        expect(kindOf(`pnpm -C ${dir} --silent paid:run`)).toBe('paid');
+        expect(decisionOf('pnpm -C sub paid:run', join(dir, '..'))?.kind).toBe(
+            undefined,
+        );
+        expect(kindOf('pnpm free:run')).toBeUndefined();
+        expect(kindOf('rg x paid.ts')).toBeUndefined();
+        expect(decisionOf(`cd ${dir} && node paid.ts`, '/')?.kind).toBe('paid');
+    });
+
+    test('the close names its ticket, the post its verb', () => {
+        expect(decisionOf('x linear set FRM-1 --state Done')).toEqual({
+            kind: 'close',
+            what: 'FRM-1',
+        });
+        expect(decisionOf('gh pr comment 5')).toEqual({
+            kind: 'post',
+            what: 'gh pr comment',
+        });
+    });
+});
+
+describe('consoleOf', () => {
+    const nav = 'mcp__Claude_Browser__navigate';
+    const click = 'mcp__Claude_Browser__computer';
+    const onConsole = () => [
+        toolUse('n', nav, { url: 'https://console.anthropic.com/settings' }),
+    ];
+
+    test.each([
+        [nav, { url: 'https://console.anthropic.com/x' }, 'console'],
+        [nav, { url: 'https://platform.claude.com/settings/keys' }, 'console'],
+        [nav, { url: 'https://vercel.com/acme/settings/billing' }, 'console'],
+        [nav, { url: 'https://example.com/billingsworth' }, undefined],
+        [nav, { url: 'https://example.com' }, undefined],
+        [click, { action: 'left_click' }, 'console'],
+        [click, { action: 'screenshot' }, undefined],
+        ['Bash', { url: 'https://console.anthropic.com' }, undefined],
+    ])('%s %j → %s', (tool, input, kind) => {
+        expect(consoleOf(tool, input, onConsole)?.kind).toBe(kind);
     });
 });
 

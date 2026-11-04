@@ -10,7 +10,6 @@ import {
     type Run,
     STATE_DIR,
     type Wake,
-    appendJsonl,
     appendNoteOnce,
     armList,
     claudeArgs,
@@ -119,7 +118,7 @@ async function harvestOneShot(wake: Wake, arm: Arm) {
     } catch {
         log(`one-shot ${arm}: transcript unreadable, model left null`);
     }
-    appendJsonl(
+    appendNoteOnce(
         NOTES_PATH,
         noteOf(wake, arm, 'one-shot', {
             model,

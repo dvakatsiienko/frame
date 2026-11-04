@@ -40,7 +40,7 @@ if (open.length > 0) {
     console.log(
         JSON.stringify({
             decision: 'block',
-            reason: `crow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame crow:note-vet ok|miss <id> <why>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
+            reason: `crow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame crow:note-vet ok|miss <id> <why> --changed file|reply|ask|ticket|none --ref <path|id>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
         }),
     );
 }

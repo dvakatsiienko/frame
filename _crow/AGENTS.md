@@ -26,18 +26,18 @@ skill reaches it as text. a contract change goes there, never here.
   `packets/<id>/`, writes one line to crow's inbox socket, and leaves a detached `harvest.ts`
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
   packet as a `claude -p` one-shot.
-- `pnpm crow:decision` — clio's `PreToolUse` hook on Bash, filtered by `if` to `gh pr merge*` and `claude *`
-  (FRM-380). a merge or a `claude --bg` summon gets a `mode decision` wake outside the gates (no 30-min gap, no step
-  count, `lastWakeAt` untouched); a push to main gets none. the merge line carries `merge <repo>#<n> · verified · head ·
-  note <path>`, the verified sha read from `~/.claude/shelf/pr-verified.json` (sixth sense writes it through
-  `pr-watch.sh --verified`). a `--bg` crow gets the line on its socket and the merge waits ≤ 90 s for the note file;
-  a tab gets none, so the first merge is denied with the line for clio to send with SendMessage by crow's registry name, and a rerun within 10 min
-  (`decisions/<repo>-<n>-<head>.json`) waits for the note instead. a summon never waits. every failure exits 0 with
-  a context line: a PreToolUse exit 2 or timeout would block the merge.
-  the same script is clio's `PostToolUse` hook on `Write|Edit` (FRM-396): a write to `.scratch/**/*-proposal.md` gets a
+- every packet carries `## receipts`: one line per clio tool call since dima's last line, with its exit (`echo "exit $?"` read too), first error line and `[image: <path>]`; crow reads them and never re-runs one (FRM-502, `receiptsOf`)
+- `pnpm crow:decision` — clio's `PreToolUse` hook on every Bash and browser act, no `if`, since a wrapper (`op-run.sh`, `sh -c`) slips past a filter (110 ms; FRM-380, FRM-502). these get a `mode decision` wake outside the gates, `lastWakeAt` untouched:
+  - held ≤ 90 s for the note: `merge <repo>#<n> · verified · head · note <path>` (the verified sha: `~/.claude/shelf/pr-verified.json`, sixth sense writes it through `pr-watch.sh --verified`), `paid` (an api url through curl, the batch verb, a script or `pnpm` verb whose source sends to one), `console` (a console or billing page, once a turn); an expired hold lets the call through, with a `timed out` row in `decisions/log.jsonl`
+  - waiting for nothing: `spawn`, `post`, `close`; a push to main wakes nothing
+  - a `--bg` crow gets the line on its socket; a tab gets none, so the first held call is denied with the line for clio to send with SendMessage by crow's registry name, and a rerun within 10 min (a marker in `decisions/`) waits for the note. every failure exits 0 with a context line: a PreToolUse exit 2 or timeout would block the call.
+  the same script is clio's async `Stop` hook (FRM-502): a claim in her reply (a claim word in its first line, or a `✅` line) in a turn with no exit-0 Bash after its last edit gets a `mode decision` wake ending `claim <sentence>`; its packet holds dima's lines, the sentence and the receipts, none of her prose, and leaves the delta for the next cadence wake.
+  the same script is clio's `PostToolUse` hook (FRM-396), where only a proposal counts, so a summon wakes once: a write to `.scratch/**/*-proposal.md` gets a
   `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
   waits, like a summon, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
   turn by clio's last prompt line, so a draft's later Edits stay quiet until her next prompt.
+- every wake line carries `charter <sha8> <path>`; a hash off the one in `state.json` puts the fresh text under `## charter changed` in that packet (`readCharter`)
+- a cadence wake skips while the 5h ladder parks, a `skipped: park` line in `harvest.log` (`isParked`); decision wakes still go
 - every packet opens with crow's ledger line: notes sent today, the last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; crow reads its tail only then.
@@ -47,11 +47,11 @@ skill reaches it as text. a contract change goes there, never here.
   effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading
   says want, constraints, not or done test; pass 2 gets the whole plan plus pass 1's take and a
   `--json-schema` for the template. both run with `--tools ''`: a one-shot that can read reaches
-  clio's transcripts and the earlier verdicts through the `~` extra dir. each finding is one
-  `channel: plan` line in `notes.jsonl` (id `plan-<run>-<n>`, `-0` for a clean run) with the arm,
-  the model, the run's cost, and `located` — whether its quote is really in the plan. accepted is a
+  clio's transcripts and the earlier verdicts through the `~` extra dir. `notes.jsonl` gets one `channel: plan`
+  line for the run (`plan-<run>-0`, the only one with the cost) and one per finding (`plan-<run>-<n>`), with
+  `located` — whether its quote is really in the plan. accepted is a
   `crow:note-vet` on that id; the full review sits in `plans/<run>/review.json`.
-- `pnpm crow:note-vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
+- `pnpm crow:note-vet ok|miss <note-id> <why> --changed file|reply|ask|ticket|none --ref <path|id>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id, waiting ≤60 s for a note harvest.ts has not logged yet; `pnpm crow:unvetted`, clio's Stop hook,
   blocks her turn end once per «🔴 sent» note still without a verdict, naming the command; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
 - `pnpm crow:reconcile <note-id> <evidence>` — clio's answer when her evidence contradicts a note (FRM-396): sends

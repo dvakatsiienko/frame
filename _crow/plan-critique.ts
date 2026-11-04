@@ -127,7 +127,7 @@ for (const note of notes) appendJsonl(NOTES_PATH, note);
 
 const head = notes[0];
 console.log(
-    `plan ${id} on ${arm} (${model ?? armModels[arm]}): ${review.verdict}${review.noMaterialObjection ? ', no material objection' : ''} — ${review.findings.length} findings, $${head?.costUsd.toFixed(2)}, ${head?.seconds} s`,
+    `plan ${id} on ${arm} (${model ?? armModels[arm]}): ${review.verdict}${review.noMaterialObjection ? ', no material objection' : ''} — ${review.findings.length} findings, $${head?.costUsd?.toFixed(2)}, ${head?.seconds} s`,
 );
 for (const note of notes) {
     if (!note.finding) continue;
