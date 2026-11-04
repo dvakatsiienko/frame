@@ -1321,7 +1321,7 @@ async function quietHoldNotes($: EngineInterface, prompt: string) {
     for (const n of notes)
         whys.push(
             quietPush(n.body) ??
-                ((await quietAnswered($, n.from, 'none'))
+                ((await quietAnswered($, n.from, quietTag(n.body)))
                     ? 'answer'
                     : undefined),
         );
@@ -4452,9 +4452,10 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
-        const heldNotes = await quietHoldNotes($, e.text).catch(
-            () => undefined,
-        );
+        const heldNotes =
+            e.origin?.kind === 'sdk'
+                ? await quietHoldNotes($, e.text).catch(() => undefined)
+                : undefined;
         if (heldNotes) return { drop: heldNotes };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')

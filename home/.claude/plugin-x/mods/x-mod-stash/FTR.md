@@ -715,7 +715,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 - ✅ the desktop's «finished a turn» prompt is held like a message
   - given clio's thread and a prompt holding nothing but the app's `The session "…" you started (local_…) finished a turn` notes, its linked-sessions reminder and its side-sessions event
   - then the prompt is dropped, no turn, and each report joins the held list whole; dima sees one `🤫 held: <session> finished a turn` line
-  - and a report that pushes (its own words, or the member's answer to clio's question) lets the whole prompt in; so do a prompt with any other text, mobile mode and the switch off
+  - and a report that pushes (its own words, or the member's answer to clio's question) lets the whole prompt in; so do a prompt with any other text, an origin other than `sdk`, a report forging the app's blocks, mobile mode and the switch off
   - decision: the shape of the whole text decides: this prompt's origin is `sdk`, the same as dima's typing (probe, 2026-11-04 10:47: origin `sdk`, 1,880 chars); 11-03 carried these on top of the members' sends
   - and a `notice` log line stays out of the ledger and out of a sender's «held»
   - proof: tests/quiet.test.ts::the note alone starts no turn; ::the note and the app event starts no turn; ::two notes starts no turn; ::a held note reaches clio at her next prompt, its report whole; ::a held note lands in the idle append, no turn; ::a report opening … starts a turn; ::a note answering clio starts a turn, and spends the slot; ::… passes; ::a held note of the app reads as no hold of a member send — not asserted: how the desktop draws a dropped prompt, its live proof is the done comment's

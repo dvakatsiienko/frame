@@ -46,9 +46,9 @@ export const isQuietRefusal = (message: unknown) =>
     String(message ?? '').includes('did not accept');
 
 const APP_BLOCK =
-    /<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[\s\S]*?<\/side-sessions-event>/g;
+    /<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[^<]*<\/side-sessions-event>/g;
 const NOTE =
-    /^The session "([^"]*)" you started \(local_[^)]*\) finished a turn\. It reported[^:]*: "([\s\S]*)"/;
+    /^The session "([^"]*)" you started \(local_[^)]*\) finished a turn\. It reported[^:]*: "([\s\S]*)"(?: \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
 
 // the desktop's «finished a turn» prompt, its notes as sender and report; undefined for a prompt holding anything else
 // (its origin is `sdk`, the same as dima's typing, so only the whole text's shape tells them apart)
