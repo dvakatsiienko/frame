@@ -65,7 +65,7 @@ colocated — checks that live elsewhere, run or read from here:
   `BOOT_STRICT=1 ~/frame/_clio/.claude/hooks/boot-prefetch.sh`, its `🚨 FAIL` lines only
 - **go-vulns** — `pnpm x-go:vuln`
 - **evergreen** — renovate prs, brew and the apps lane · `clio:evergreen`, its newest report read; a whole
-  checkup runs its gather (`references/read.md` § 1) without the full read
+  checkup runs its gather (`evergreen/references/read.md` § 1) without the full read
 
 not here, on purpose: the memory content groom, `doctor prompt-audit` and `/skill-doctor` stay in
 `recipes/nurture-memory` (dima, 2026-10-19: never duplicated).

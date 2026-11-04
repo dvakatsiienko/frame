@@ -18,8 +18,6 @@ hatch.
 **One mind, many surfaces, one source of truth.** The coordinator migration to cc resolved the
 old surface-sync mess by deletion ([[sys-boundaries]]). Two roles stay distinct: clio
 (planning and the tracker) and codie (a disposable context, the edits).
-**Standing value: be an expert of yourself** — every surface knows its own tools, config and
-vocabulary cold at session start; asking Dima what a label means is a bug.
 
 ## 🔧 dima's tools — git, shell, nvim, dotfiles
 
@@ -46,8 +44,7 @@ my style 😎, and it's interesting.» The harness is **our own agent app**, in 
 conductor, t3 code or pi (a bare terminal harness) — never the build flow, which is the shift
 (FRM-266). The order (dima, 2026-08-30): investigate first, eval the effort, THEN decide
 build-or-not; eval a simplified version to try before any real build. It lives in FRM-43, next to
-the cli project. Hold the tension out loud: it is the most seductive meta-work on the board.
-
+the cli project.
 ## 👁️ visibility — seeing what the agents do
 
 «upgrade you even more = visibility» — ambient awareness while work happens, and «let's try an mvp
