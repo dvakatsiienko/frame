@@ -55,7 +55,7 @@
 - ✅ every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `🔥`, `⏰`, `💨` or `🚦`
-  - then a dim line beside it says what a press does now: «keep this session's cache hot with a ping» or «stop keeping this session's cache hot», «wake every session stopped on the 5h cap» or «stop waking …», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge
+  - then a dim line beside it says what a press does now: `keep hot: enable` or `keep hot: disable`, `pace watch: …`, `afk: …`, the same two words each, `settings: open` or `close`, `board: open` or `close`, `second wind: start`
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
 - ✅ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
@@ -188,7 +188,7 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ✅ 🎛️ opens a settings pane with a show/hide switch per part (FRM-391 slice 05)
   - given the band's 🎛️, right before 🚦
-  - when dima presses it, then a `🎛️ settings` pane opens, which the surface tabs beside the `🚦 board` pane, its cards in two columns — the switch groups left, the knobs right (dima, 17:42) — and two cards along the pane's bottom, `🔥 bars` and `context`, side by side under a growing gap (dima, 18:06); each group a card, a bold heading (`stash · band`) over a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press closes the pane, and neither adds a row to the transcript
+  - when dima presses it, then a `🎛️ settings` pane opens, which the surface tabs beside the `🚦 board` pane, its cards in two columns — the switch groups left, the knobs right, then the bars, quiet comms and the context one tile per line below (dima, 17:42) — and two cards along the pane's bottom, `🔥 bars` and `context`, side by side under a growing gap (dima, 18:06); each group a card, a bold heading (`stash · band`) over a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press closes the pane, and neither adds a row to the transcript
   - and the knobs (slice 06) — in the bottom `🔥 bars` card: `🔥 bars breathe while a turn runs` (on), `🔥 bars breathe all the time` (off; was `/board breathe`, dima's o10), `🔥 breath speed` typed as a number, 0.1–5×, 0.5× by default; in the `stash · knobs` card: `🎨 board colour` (off; `/board colour` writes the same), `🌔 phase lines` 5–7, 7 by default — it caps the plan op and its fill nudge, `🔊 read-aloud on assumptions` (on), `🛡️ guard notes to the model` (on; off writes `guard-silent`, which x-mod-guard reads to drop its rewrite, hint and delegate notes, dima's o11); a switch saves on its press, a number on each keystroke that makes a valid value, and a keystroke that does not (`0.`, `9`, `8` on 5–7) is never applied
   - decision: no frame-rate knob — the desktop bars are SVG animation at the display's own rate, the terminal bars left (dima's o9, 17:27); no take picker — take C left with the A/B, speed is the one animation knob (dima's o10, 17:31)
   - and the bottom row's `context` card holds `📦 auto-compact at` its `Input` `% of the context window`; the band draws no setting of its own

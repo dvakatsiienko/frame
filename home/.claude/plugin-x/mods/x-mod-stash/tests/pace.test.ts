@@ -685,9 +685,9 @@ test('🔋 sits between 🔥 and ⏰ and one click flips the key, its tip follow
         await words(),
     ]).toEqual([
         ['hot', 'pace-watch', 'waker'],
-        '🔋pace watch: stop',
+        '🔋pace watch: disable',
         { off: true },
-        '🔋pace watch: tell thread when 5h usage says park, burn or stop',
+        '🔋pace watch: enable',
     ]);
 });
 

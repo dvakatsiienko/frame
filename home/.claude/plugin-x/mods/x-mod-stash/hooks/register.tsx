@@ -4475,9 +4475,7 @@ function settingsListJSX(
 }
 
 const hotTip = (isHot: boolean | undefined) =>
-    isHot
-        ? "stop keeping this session's cache hot"
-        : "keep this session's cache hot with a ping";
+    isHot ? 'keep hot: disable' : 'keep hot: enable';
 
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
@@ -5731,7 +5729,7 @@ export const register: Register = (on) => {
                                 </Box>
                                 <Box flexGrow={1} key='settings:gap' />
                                 <Box
-                                    flexDirection='row'
+                                    flexDirection='column'
                                     gap={1}
                                     key='settings:bottom'>
                                     {barsJSX}
@@ -7825,7 +7823,7 @@ export const register: Register = (on) => {
                                       'wind',
                                       view.wind
                                           ? `second wind: ${WIND_SAY[view.wind]}`
-                                          : 'second wind: refresh this session at a good stop',
+                                          : 'second wind: start',
                                       <Button
                                           key='wind'
                                           onPress={() =>
@@ -7870,8 +7868,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'pace-watch',
                                       isPaceWatched
-                                          ? 'pace watch: stop'
-                                          : 'pace watch: tell thread when 5h usage says park, burn or stop',
+                                          ? 'pace watch: disable'
+                                          : 'pace watch: enable',
                                       <Button
                                           key='pace-watch'
                                           onPress={() => void pressPace($)}
@@ -7909,9 +7907,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'afk',
-                                      view.afk
-                                          ? 'back: tell fleet that dima is here'
-                                          : 'afk: tell fleet that dima is away',
+                                      view.afk ? 'afk: disable' : 'afk: enable',
                                       <Button
                                           key='afk'
                                           onPress={() => void handleAfkFlip()}
@@ -7928,8 +7924,8 @@ export const register: Register = (on) => {
                             {tip(
                                 'settings',
                                 view.isSettingsOpen
-                                    ? 'fold the settings'
-                                    : 'settings: show or hide each part',
+                                    ? 'settings: close'
+                                    : 'settings: open',
                                 <Button
                                     key='settings'
                                     onPress={() => void handleSettingsFlip()}
@@ -7945,8 +7941,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'board',
                                       boardOpen
-                                          ? 'fold fleet board'
-                                          : 'unfold fleet board',
+                                          ? 'board: close'
+                                          : 'board: open',
                                       <Button
                                           key='board'
                                           onPress={() => void handleBoardFlip()}
