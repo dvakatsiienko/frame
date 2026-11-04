@@ -70,6 +70,17 @@ import {
     unbold,
     waitSpans,
 } from './parse.ts';
+import {
+    QUIET_HELD_LINE,
+    QUIET_PUSHED,
+    QUIET_SLIPSTREAMED,
+    isQuietAnswer,
+    isQuietQuestion,
+    isQuietRefusal,
+    quietHeldText,
+    quietPush,
+    quietTag,
+} from './quiet.ts';
 import { cleanTree, drawn } from './tree.ts';
 
 // x-mod-stash: dima's command center above the prompt, one row; FTR.md lists every feature.
@@ -955,9 +966,8 @@ let orbit: StashOrbit = EMPTY_ORBIT;
 let isOrbitLoaded = false;
 
 // one json line to x-speak's control socket; the text rides argv, never the shell's words
-// quiet comms (PK-93, dima's o17: an a/b mvp, one switch to revert): in clio's thread a member's [progress] ping is
-// held, no turn; every other tag, and no tag, passes; held pings ride her next prompt as one hidden block, or an
-// idle append after 10 min. the a/b reads one log line per delivery from the store (docs/test-drive/quiet-comms.md)
+// quiet comms (PK-93, FRM-501): in clio's thread a message is held, no turn, unless it pushes (hooks/quiet.ts) or is a
+// member's first answer to her; held ones ride her next prompt as one hidden block, or an idle append after the wait
 const QUIET = { key: 'quiet', plugin: 'x-mod-stash' } as const;
 const QUIET_HELD = 'quiet-held:';
 // 🐦‍🔥 second wind (todo 16): `wind:<sid>`, written by any board's press and read by that session's own stash at its next
@@ -999,9 +1009,9 @@ const WIND_CANCELLED =
 const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
-const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
-// a [progress] ping that asks dima something is pushed, never held; dima's list (o26), a bare «?» was 4 false of 4
-const QUIET_PUSH = /(?<![\w-])(?:for dima|decisions|pick:|your call)(?![\w-])/i;
+// the members clio asked a question, by session id, and when: the first message back inside QUIET_REPLY_MS pushes
+const QUIET_ASKED = 'quiet-asked';
+const SEND_TOOL = 'SendMessage';
 // the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
 const QUIET_GAP = 'quiet-gap';
 const QUIET_CANARY = /^\s*\[progress\]\s*quiet canary ([\w-]+)/i;
@@ -1042,7 +1052,7 @@ export function peerPing(text: string) {
     const body = text
         .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
         .replace(/\n?<\/cross-session-message>\s*$/, '');
-    const tag = body.match(QUIET_TAG)?.[1]?.toLowerCase() ?? 'none';
+    const tag = quietTag(body);
     const canary = body.match(QUIET_CANARY)?.[1];
     return { body, from, tag, ...(canary ? { canary } : {}) };
 }
@@ -1064,9 +1074,12 @@ async function saveQuiet($: EngineInterface, q: StashQuiet) {
     return isSaved;
 }
 
+const quietLogKey = (at: number) =>
+    QUIET_LOG + new Date(at).toISOString().slice(0, 10);
+
 // true once the line is in the day's log
 async function quietLog($: EngineInterface, line: QuietLogLine) {
-    const key = QUIET_LOG + new Date(line.at).toISOString().slice(0, 10);
+    const key = quietLogKey(line.at);
     const was = ((await $.store.get(key).catch(() => undefined)) ??
         []) as QuietLogLine[];
     return $.store
@@ -1084,7 +1097,7 @@ async function quietFlushed($: EngineInterface, held: QuietPing[]) {
             at,
             from: p.from,
             startedTurn: false,
-            tag: 'progress',
+            tag: p.tag ?? 'none',
             verdict: 'flushed',
             ...(p.canary ? { canary: p.canary } : {}),
         });
@@ -1275,7 +1288,7 @@ async function quietBooks($: EngineInterface) {
 
 export const quietNote = (held: QuietPing[]) =>
     [
-        `🤫 quiet comms: ${held.length} held member ping${held.length === 1 ? '' : 's'}, [progress] only; read them, act only if one changes the plan, never relay them to dima.`,
+        `🤫 quiet comms: ${held.length} held member ping${held.length === 1 ? '' : 's'}; read them, act only if one changes the plan, never relay them to dima.`,
         ...held.map(
             (p) =>
                 `- ${new Date(p.at).toTimeString().slice(0, 5)} ${p.from}: ${p.text}`,
@@ -1293,7 +1306,146 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
           )
         : undefined;
 
-// held pings past 10 min while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
+async function quietNoticeSeen(
+    $: EngineInterface,
+    origin: string | undefined,
+    text: string,
+) {
+    const was = ((await $.store.get('quiet-notice-probe')) ?? []) as unknown[];
+    await $.store.set('quiet-notice-probe', [
+        ...was.slice(-19),
+        {
+            at: await $.clock.now(),
+            head: text.slice(0, 160),
+            length: text.length,
+            origin,
+        },
+    ]);
+}
+
+type QuietSend =
+    | { isOwner: true; isAsking: boolean; to: string }
+    | { at: number; isOwner: false; isPush: boolean };
+
+// read before the send goes out: clio's gate spends the open answer the moment it lands
+async function quietSendStart(
+    $: EngineInterface,
+    e: Record<string, unknown>,
+): Promise<QuietSend | undefined> {
+    const to = text(e.to);
+    const message = text(e.message) ?? '';
+    if (!to || !(await readSwitch($, 'quiet'))) return undefined;
+    if (await isLaneOwner($))
+        return {
+            isAsking: isQuietQuestion(message),
+            isOwner: true,
+            to,
+        };
+    const row = rowOfTo(await registry($), to);
+    const isClio =
+        isCoordinator(bareTo(to)) ||
+        (row !== undefined && isCoordinator(row.base.name));
+    if (!isClio) return undefined;
+    const at = await $.clock.now();
+    const name = await sessionName($);
+    const asked = name ? (await askedOf($))[memberKey(name)] : undefined;
+    const isAnswer =
+        asked !== undefined &&
+        isQuietAnswer(asked, at) &&
+        quietTag(message) !== 'progress';
+    return {
+        at,
+        isOwner: false,
+        isPush: isAnswer || quietPush(message) !== undefined,
+    };
+}
+
+// what a finished send adds: clio's question opens its slot; a member reads the line, and a hold reads as a hold
+async function quietSendEnd(
+    $: EngineInterface,
+    send: QuietSend,
+    result: unknown,
+): Promise<{ line?: string; held?: Record<string, unknown> }> {
+    const answer = result as Record<string, unknown> | undefined;
+    if (send.isOwner) {
+        if (send.isAsking && answer?.success !== false)
+            await quietAsked($, send.to);
+        return {};
+    }
+    const line = send.isPush ? QUIET_PUSHED : QUIET_SLIPSTREAMED;
+    return isQuietRefusal(answer?.message) && (await isHeldSince($, send.at))
+        ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
+        : { line };
+}
+
+async function askedOf($: EngineInterface) {
+    return ((await $.store.get(QUIET_ASKED).catch(() => undefined)) ??
+        {}) as Record<string, number>;
+}
+
+const bareTo = (to: string) => to.replace(/\s*\[[^\]]*\]$/, '');
+
+// the registry row a SendMessage `to` names: a name with or without its ref, a session id, a host id or a socket
+function rowOfTo(rows: Registered[], to: string) {
+    const socket = to.match(/cc-socks\/(\d+)\.sock$/)?.[1];
+    if (socket) return rows.find((r) => r.isAlive && r.pid === Number(socket));
+    const key = memberKey(bareTo(to));
+    return (
+        rows.find((r) => r.isAlive && memberKey(r.base.name) === key) ??
+        memberOf(rows, bareTo(to))
+    );
+}
+
+// clio's side of a send: her question opens that member's one answer, keyed by its name without the mode emoji, the one
+// form her write and its answer both reach
+async function quietAsked($: EngineInterface, to: string) {
+    const now = await $.clock.now();
+    const row = rowOfTo(await registry($), to);
+    const kept = Object.entries(await askedOf($)).filter(([, at]) =>
+        isQuietAnswer(at, now),
+    );
+    await $.store.set(QUIET_ASKED, {
+        ...Object.fromEntries(kept),
+        [memberKey(row?.base.name ?? bareTo(to))]: now,
+    });
+}
+
+// true when this message answers clio's question, and spends the slot; a [progress] neither pushes nor spends it
+async function quietAnswered($: EngineInterface, from: string, tag: string) {
+    if (tag === 'progress') return false;
+    const asked = await askedOf($);
+    const key = memberKey(from);
+    const at = asked[key];
+    if (at === undefined) return false;
+    const { [key]: _spent, ...rest } = asked;
+    await $.store.set(QUIET_ASKED, rest);
+    return isQuietAnswer(at, await $.clock.now());
+}
+
+// did clio's gate hold what this session just sent: her log line, at or after the send; the send may cross midnight
+async function isHeldSince($: EngineInterface, since: number) {
+    const now = await $.clock.now();
+    const keys = new Set([quietLogKey(since), quietLogKey(now)]);
+    const me = await currentId($);
+    const name = await sessionName($);
+    for (const key of keys) {
+        const lines = ((await $.store.get(key).catch(() => undefined)) ??
+            []) as QuietLogLine[];
+        const isOurs = lines.some(
+            (l) =>
+                l.verdict === 'held' &&
+                l.at >= since &&
+                (l.sid
+                    ? l.sid === me
+                    : name !== undefined &&
+                      memberKey(l.from) === memberKey(name)),
+        );
+        if (isOurs) return true;
+    }
+    return false;
+}
+
+// held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
     const q = await quietOf($);
     if (!q.held.length) return;
@@ -1310,7 +1462,10 @@ async function quietIdle($: EngineInterface) {
         })
         .catch(() => undefined);
     if (!appended || 'deny' in appended) return;
-    await saveQuiet($, { ...q, held: [] });
+    const landed = (await quietOf($)).held.filter(
+        (p) => !q.held.some((f) => f.at === p.at && f.from === p.from),
+    );
+    await saveQuiet($, { ...q, held: landed });
     await quietFlushed($, q.held);
 }
 
@@ -4195,7 +4350,7 @@ export const register: Register = (on) => {
             await $.command
                 .register({
                     description:
-                        "quiet comms: `/quiet on` holds members' [progress] pings off this thread, `off` passes them all; bare shows it",
+                        "quiet comms: `/quiet on` holds members' messages off this thread unless they push, `off` passes them all; bare shows it",
                     name: 'quiet',
                 })
                 .catch(() =>
@@ -4259,6 +4414,11 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
+        // FRM-501 exit 6, log only: what the desktop's «finished a turn» notice looks like to this hook
+        if (/finished a turn|side-sessions-event/.test(e.text))
+            await quietNoticeSeen($, e.origin?.kind, e.text).catch(
+                () => undefined,
+            );
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
@@ -4589,7 +4749,7 @@ export const register: Register = (on) => {
     });
 
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
-    // quiet comms: a member's [progress] ping is held in clio's thread, every other delivery passes and is logged
+    // quiet comms: in clio's thread a message that does not push is held; every delivery is logged
     on('session.receive', async ($, e, next) => {
         const kind = e.origin.kind;
         if (kind === 'task-notification' && !e.agentId) {
@@ -4605,7 +4765,6 @@ export const register: Register = (on) => {
         // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
         try {
             const now = await $.clock.now();
-            const q = await quietOf($);
             const isOn = await readSwitch($, 'quiet');
             arm = isOn ? 'on' : 'off';
             const isMobile = (await $.state.get(MOBILE)).value === true;
@@ -4613,6 +4772,8 @@ export const register: Register = (on) => {
                 (await $.state.get(TURN).catch(() => undefined))?.value
                     ?.isBusy ?? isBusy;
             const sid = memberOf(await registry($), from)?.base.sid;
+            const isAnswer = await quietAnswered($, from, tag);
+            const why = quietPush(body) ?? (isAnswer ? 'answer' : undefined);
             const line = {
                 arm,
                 at: now,
@@ -4621,20 +4782,21 @@ export const register: Register = (on) => {
                 ...(sid ? { sid } : {}),
                 ...marks,
             } as const;
-            if (
-                isOn &&
-                !isMobile &&
-                tag === 'progress' &&
-                !QUIET_PUSH.test(body)
-            ) {
-                const first =
-                    body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
+            if (isOn && !isMobile && !why) {
+                // read at the save: an await above lets another delivery land
+                const q = await quietOf($);
                 // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
                 const isSaved = await saveQuiet($, {
                     ...q,
                     held: [
                         ...q.held,
-                        { at: now, from, text: first.slice(0, 300), ...marks },
+                        {
+                            at: now,
+                            from,
+                            tag,
+                            text: quietHeldText(body),
+                            ...marks,
+                        },
                     ],
                 });
                 if (!isSaved) throw new Error('the held list did not save');
@@ -4648,13 +4810,14 @@ export const register: Register = (on) => {
                     throw new Error('the held line did not log');
                 }
                 return {
-                    consumed: `quiet comms held ${from}'s [progress] ping`,
+                    consumed: `quiet comms held ${from}'s message`,
                 };
             }
             await quietLog($, {
                 ...line,
                 startedTurn: !isBusyNow,
                 verdict: 'passed',
+                ...(why ? { why } : {}),
             });
         } catch (err) {
             await quietLog($, {
@@ -4698,7 +4861,7 @@ export const register: Register = (on) => {
             await $.store.set(QUIET_ON, arg === 'on');
             $.ui.invalidate('ui.render');
             return {
-                text: `quiet comms ${arg}: ${arg === 'on' ? "members' [progress] pings wait for your next turn" : 'every member ping passes'}`,
+                text: `quiet comms ${arg}: ${arg === 'on' ? "members' messages wait for your next turn unless they push" : 'every member ping passes'}`,
             };
         }
         const isOn = await readSwitch($, 'quiet');
@@ -4978,7 +5141,7 @@ export const register: Register = (on) => {
                                 <Text bold>🤫 quiet comms</Text>
                                 {switchJSX(
                                     'quiet',
-                                    "🤫 hold members' [progress] pings",
+                                    "🤫 hold members' messages unless they push",
                                     knobs.quiet,
                                 )}
                                 {numberJSX(
@@ -6651,7 +6814,7 @@ export const register: Register = (on) => {
                                                     dimColor
                                                     key={`quiet:${m.sid}:${k}`}
                                                     wrap='truncate-end'>
-                                                    {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text}`}
+                                                    {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text.split('\n')[0]}`}
                                                 </Text>
                                             );
                                         })}
@@ -6793,6 +6956,12 @@ export const register: Register = (on) => {
             await windBlock($, e as Record<string, unknown>).catch(
                 () => undefined,
             );
+        const send =
+            (e.tool as string) === SEND_TOOL && !e.agentId
+                ? await quietSendStart($, e as Record<string, unknown>).catch(
+                      () => undefined,
+                  )
+                : undefined;
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
         if (
@@ -6808,6 +6977,12 @@ export const register: Register = (on) => {
         )
             isWorkTurn = true;
         const notes: string[] = [];
+        const sent = send
+            ? await quietSendEnd($, send, r.result).catch(() => undefined)
+            : undefined;
+        if (sent?.line) notes.push(sent.line);
+        // a fresh answer: core's `text` and `ref` still name the refusal
+        const answer = sent?.held ? ({ result: sent.held } as never) : r;
         const isOn = await partsShown($);
         if (turnAfk !== undefined && turnAfk !== afk) {
             turnAfk = afk;
@@ -6874,8 +7049,8 @@ export const register: Register = (on) => {
                     : `no phases yet — set them with ${ORBIT_TOOL} plan`,
             );
         }
-        if (!notes.length) return r;
-        return { ...r, context: [...(r.context ?? []), ...notes] };
+        if (!notes.length) return answer;
+        return { ...answer, context: [...(r.context ?? []), ...notes] };
     });
 
     // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars

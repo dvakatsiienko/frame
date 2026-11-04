@@ -28,6 +28,13 @@ function world(
             undefined,
         // a store write the test makes fail
         refuseSet = (_key: string): boolean => false,
+        // what a SendMessage answers
+        sent = { message: 'delivered', success: true } as Record<
+            string,
+            unknown
+        >,
+        // what happens while a send is on its way
+        whileSending = async (): Promise<void> => {},
     } = {},
 ) {
     for (const p of peers)
@@ -125,6 +132,10 @@ function world(
             if (b.type === 'text') appended.push(String(b.text));
         return next(e);
     });
+    on('tool.call', async () => {
+        await whileSending();
+        return { result: sent, text: 'done' };
+    });
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
@@ -143,6 +154,12 @@ const ping = ($: Engine, body: string, from = '☕️ 🔧 codie: mods') =>
 
 const say = ($: Engine, text: string) =>
     $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });
+
+const send = ($: Engine, to: string, message: string) =>
+    $.tool.call({ message, to, tool: 'SendMessage' } as never) as Promise<{
+        context?: string[];
+        result: { message: string; success: boolean };
+    }>;
 
 const quiet = ($: Engine, args: string) =>
     $.command.run({ args, command: 'quiet' } as never);
@@ -163,51 +180,337 @@ test("a [progress] ping in clio's thread is taken: not queued, no turn", async (
     ]);
 });
 
-test('a [done], [blocked] or [ask] ping passes', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await ping($, '[done] FRM-1 landed');
-    await ping($, '[blocked] the gate refuses');
-    await ping($, '[ask] a or b?');
-    expect(w.queued).toHaveLength(3);
-});
-
-// FRM-429 exit 3 (dima o26): a [progress] ping that asks dima something is pushed and reaches the turn
-for (const marker of [
-    'for dima',
-    'decisions',
-    'pick:',
-    'your call',
-    'For Dima',
+// FRM-501: a push tag opens the message, an emoji before it counts; a tag is exact, and nothing else pushes by its look
+for (const body of [
+    '[ask] a or b?',
+    '[done] FRM-1 landed',
+    '[escalate] the gate refuses',
+    '[🪜 escalate] the gate refuses',
+    '🪜 [escalate] the gate refuses',
+    '🚨 [ask] a or b?',
+    '🐦‍🔥 [done] landed',
+    'a cut for dima to pick',
+    'do not merge this for dima to pick',
+    'no tests\nfor dima: the cut',
+    'For Dima: a cut',
+    '[progress] step 2 landed. for dima: the cut',
 ])
-    test(`a [progress] ping holding «${marker}» is pushed, not held`, async ($, on) => {
+    test(`pushes, starts a turn: ${body}`, async ($, on) => {
         const w = world(on);
         await start($);
-        const r = await ping(
-            $,
-            `[progress] step 2 landed. ${marker} on the cut`,
-        );
-        expect(r.consumed).toBeUndefined();
+        const r = await ping($, body);
+        expect([r.consumed, w.queued.length]).toEqual([undefined, 1]);
+    });
+
+for (const body of [
+    'step 2 landed',
+    'landed [done] at last',
+    'see [ask] below',
+    '[Ask] a or b?',
+    '[DONE] landed',
+    'ask: a or b?',
+    '[progress] step 2 landed',
+    "blocked: can't push",
+    '🪜 [progress] step 1 landed',
+    '[blocked] the gate refuses',
+    'final on abc1234',
+    'round 2 on abc1234',
+    'wrote /tmp/for dima/notes.md',
+    'wrote ~/x/for-dima.md',
+    'see `for dima` in the spec',
+    'nothing for dima',
+    'nothing here for dima',
+    'step 2. decisions: none',
+    'pick: a',
+    'your call',
+])
+    test(`held, no turn: ${body}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await ping($, body);
+        expect([r.consumed !== undefined, w.queued, w.contexts]).toEqual([
+            true,
+            [],
+            [],
+        ]);
+    });
+
+for (const member of ['🐦 ⬛ crow', '🎀 helga', '🦉 clio (side)'])
+    test(`an untagged line from ${member} is held`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await ping($, 'a note', member);
+        expect(w.queued).toEqual([]);
+    });
+
+test('a held message reaches clio whole, every line of it', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const long = `the third line ${'x'.repeat(400)}`;
+    await ping($, `a finding\nthe second line\n${long}`);
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain(`the second line\n${long}`);
+});
+
+/* an answer to clio */
+
+const CODIE = {
+    hostSessionId: 'local_codie',
+    name: '☕️ 🔧 codie: mods',
+    pid: 71,
+    sessionId: 'codie-sid',
+};
+const answering = (on: On) => world(on, { peers: [CODIE] });
+
+for (const to of [
+    '☕️ 🔧 codie: mods',
+    '☕️ 🔧 codie: mods [a1b2c3]',
+    'local_codie',
+    'uds:/tmp/cc-socks/71.sock',
+])
+    test(`a member's first message after clio asked ${to} a question starts a turn`, async ($, on) => {
+        const w = answering(on);
+        await start($);
+        await send($, to, 'which one?');
+        await w.clock.advance(5 * MIN);
+        await ping($, 'the second one');
         expect(w.queued).toHaveLength(1);
     });
 
-for (const plain of [
-    '[progress] step 2 landed. is it clean?',
-    '[progress] one decision i made: hidden verbs',
-    '[progress] the sixth sense picked: nothing',
+test('a second message after the answer is held', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, 'the second one');
+    await ping($, 'and step 3 landed');
+    expect(w.queued).toHaveLength(1);
+});
+
+test('a [progress] neither pushes nor spends the slot, so the answer after it wakes her', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, '[progress] step 1 landed');
+    const before = w.queued.length;
+    await ping($, 'the second one');
+    expect([before, w.queued.length]).toEqual([0, 1]);
+});
+
+for (const write of [
+    'greenlit',
+    'greenlit, see `which one?`',
+    'greenlit, see https://x.test/a?b=1',
 ])
-    test(`a [progress] ping with no push marker stays held: ${plain.slice(11, 40)}`, async ($, on) => {
-        const w = world(on);
+    test(`an untagged message after «${write}» is held`, async ($, on) => {
+        const w = answering(on);
         await start($);
-        const r = await ping($, plain);
-        expect([r.consumed !== undefined, w.queued]).toEqual([true, []]);
+        await send($, CODIE.name, write);
+        await ping($, 'step 1 landed');
+        expect(w.queued).toEqual([]);
     });
 
-test('an untagged ping passes, never held blind', async ($, on) => {
-    const w = world(on);
+test('a [progress] behind an emoji spends no slot either', async ($, on) => {
+    const w = answering(on);
     await start($);
-    await ping($, 'step 2 landed');
+    await send($, CODIE.name, 'which one?');
+    await ping($, '🪜 [progress] step 1 landed');
+    await ping($, 'the second one');
     expect(w.queued).toHaveLength(1);
+});
+
+test('a question by the name with another mode emoji still opens the slot', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, '🌗 🔧 codie: mods', 'which one?');
+    await ping($, 'the second one');
+    expect(w.queued).toHaveLength(1);
+});
+
+test('a push spends the slot too', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, '[ask] a or b?');
+    await ping($, 'step 1 landed');
+    expect(w.queued).toHaveLength(1);
+});
+
+test('a first message past 30 min is held', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await w.clock.advance(31 * MIN);
+    await ping($, 'the second one');
+    expect(w.queued).toEqual([]);
+});
+
+test("clio's question to one member opens nothing for another", async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, 'the second one', '🔎 sixth sense');
+    expect(w.queued).toEqual([]);
+});
+
+test('a question that did not land opens no slot', async ($, on) => {
+    const w = world(on, {
+        peers: [CODIE],
+        sent: { message: 'no such session', success: false },
+    });
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, 'the second one');
+    expect(w.queued).toEqual([]);
+});
+
+/* the sender's line */
+
+const CLIO = {
+    hostSessionId: 'local_clio',
+    name: '🦉 clio',
+    pid: 70,
+    sessionId: 'clio-sid',
+};
+const MEMBER = '⚡ 🔧 codie: mods';
+const SLIPSTREAMED =
+    "slipstreamed: joins clio's next turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]";
+const PUSHED =
+    "pushed: starts clio's turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]";
+const REFUSED = {
+    message:
+        'Not delivered to Claude Desktop session local_clio: "that session did not accept it (messages from other sessions can require approval there, or be turned off)". (delivery: undelivered)',
+    success: false,
+};
+const member = (on: On, sent?: Record<string, unknown>) =>
+    world(on, {
+        name: MEMBER,
+        peers: [CLIO],
+        ...(sent ? { sent } : {}),
+    });
+
+for (const to of [
+    '🦉 clio',
+    '🦉 clio [498790]',
+    'clio',
+    'local_clio',
+    'uds:/tmp/cc-socks/70.sock',
+    'clio-sid',
+])
+    test(`a send to ${to} carries the contract, no skill loaded`, async ($, on) => {
+        member(on);
+        await start($);
+        const r = await send($, to, "blocked: can't push");
+        expect(r.context).toContain(SLIPSTREAMED);
+    });
+
+for (const to of ['⚡ 🔧 codie: clio-lean', '🦉 clio (side)', 'local_other'])
+    test(`a send to ${to} carries no contract`, async ($, on) => {
+        member(on);
+        await start($);
+        const r = await send($, to, 'hi');
+        expect(r.context ?? []).not.toContain(SLIPSTREAMED);
+    });
+
+test('a [blocked] opening is told how to push', async ($, on) => {
+    member(on);
+    await start($);
+    const r = await send($, '🦉 clio', '[blocked] the gate refuses');
+    expect(r.context?.join()).toContain('[escalate]');
+    expect(r.context).toContain(SLIPSTREAMED);
+});
+
+test('a push reads as pushed, never as slipstreamed', async ($, on) => {
+    member(on);
+    await start($);
+    const r = await send($, '🦉 clio', '[escalate] the gate refuses');
+    expect(r.context).toContain(PUSHED);
+    expect(r.context).not.toContain(SLIPSTREAMED);
+});
+
+test('an answer inside the window reads as pushed', async ($, on) => {
+    const w = member(on);
+    await start($);
+    w.store.set('quiet-asked', { '🔧codie:mods': EVEN - MIN });
+    const r = await send($, '🦉 clio', 'the second one');
+    expect(r.context).toContain(PUSHED);
+});
+
+test('with the switch off a send carries no contract', async ($, on) => {
+    const w = member(on);
+    await start($);
+    w.store.set('quiet-comms', false);
+    const r = await send($, '🦉 clio', 'step 2');
+    expect(r.context ?? []).not.toContain(SLIPSTREAMED);
+});
+
+const heldLine = (from: string, at: number) => ({
+    arm: 'on',
+    at,
+    from,
+    startedTurn: false,
+    tag: 'none',
+    verdict: 'held',
+});
+const DAY = new Date(EVEN).toISOString().slice(0, 10);
+
+test('a held message reads as held to its sender, never as refused', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result).toEqual({
+        message: "held, delivered at clio's next turn",
+        success: true,
+    });
+});
+
+for (const [who, name, to] of [
+    ['a member', MEMBER, '🦉 clio'],
+    ['clio', '🦉 clio', CODIE.name],
+] as const)
+    test(`${who}'s send keeps the turn's other notes`, async ($, on) => {
+        const w = world(on, { name, peers: [CLIO, CODIE] });
+        await start($);
+        await say($, 'go');
+        w.store.set(`wind:${SID}`, { at: EVEN, state: 'asked' });
+        const r = await send($, to, 'hi');
+        expect(r.context?.some((c) => c.includes('second wind'))).toBe(true);
+    });
+
+test('a send held across midnight still reads as held', async ($, on) => {
+    const late = new Date(EVEN);
+    late.setUTCHours(23, 59, 59, 900);
+    const after = late.getTime() + 200;
+    const nextDay = new Date(after).toISOString().slice(0, 10);
+    const w = world(on, {
+        name: MEMBER,
+        now: late.getTime(),
+        peers: [CLIO],
+        sent: REFUSED,
+        whileSending: async () => {
+            w.store.set(`quiet-log:${nextDay}`, [heldLine(MEMBER, after)]);
+            await w.clock.set(after);
+        },
+    });
+    await start($);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result.success).toBe(true);
+});
+
+test('a refusal with no held line stays a refusal', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [heldLine('🔎 sixth sense', EVEN)]);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result).toEqual(REFUSED);
+});
+
+test('an older held line of the same member leaves a refusal a refusal', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN - MIN)]);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result).toEqual(REFUSED);
 });
 
 test("clio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, on) => {
@@ -404,6 +707,40 @@ test('held pings older than 10 min while idle become one hidden row, no turn', a
         held(w),
     ]).toEqual([true, []]);
 });
+
+test('a flush appends once, no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ping($, 'step 2 landed');
+    await w.clock.advance(40 * MIN);
+    expect([w.appended.length, w.queued, w.contexts]).toEqual([1, [], []]);
+});
+
+test('a line held after a flush gets its own, no sooner than the wait', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ping($, 'step 2 landed');
+    await w.clock.advance(11 * MIN);
+    await ping($, 'step 3 landed');
+    await w.clock.advance(9 * MIN);
+    const before = w.appended.length;
+    await w.clock.advance(2 * MIN);
+    expect([before, w.appended.length]).toEqual([1, 2]);
+});
+
+test(
+    '8 idle hours with one held line every 30 min: 16 appends, 0 turns',
+    { timeoutMs: 120_000 },
+    async ($, on) => {
+        const w = world(on);
+        await start($);
+        for (let i = 0; i < 16; i++) {
+            await ping($, `step ${i} landed`);
+            await w.clock.advance(30 * MIN);
+        }
+        expect([w.appended.length, w.queued, w.contexts]).toEqual([16, [], []]);
+    },
+);
 
 test('a wait set to 15 min holds the idle append past 10 and lands it after 15', async ($, on) => {
     const w = world(on);

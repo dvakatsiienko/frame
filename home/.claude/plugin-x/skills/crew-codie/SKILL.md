@@ -78,7 +78,7 @@ brief says which, and when it does not, ask once, up front.
   the `x:cmt` shape, because the squash commit takes the title and body verbatim. its body follows
   `mattpocock-skills:pr` in ≤ ~25 lines, with `- ticket: <id>` and never a closing keyword (clio closes after the merge, `x:cmt`).
   paste the url in your chat and your ping.
-- **on `main`**: a quick lane commits as it goes, its dispatch pick the word; you push your own head through `x lane push` and send «round N» straight to sixth sense, clio hears it as progress (dima, 2026-11-03, replacing his 10-27 «clio pushes»); dima mode commits only on his word. a push never asks (dima, 2026-10-22; the rule is `_clio/memory/habit-dima-comms.md` § commit and push never ask): bytes `main` only when the brief says so or a live check needs it. `x lane commit <msg-file> <paths…>`
+- **on `main`**: a quick lane commits as it goes, its dispatch pick the word; you push your own head through `x lane push` and send «round N» to sixth sense alone (dima, 2026-11-03); dima mode commits only on his word. a push never asks (dima, 2026-10-22; the rule is `_clio/memory/habit-dima-comms.md` § commit and push never ask): bytes `main` only when the brief says so or a live check needs it. `x lane commit <msg-file> <paths…>`
   takes only your paths in a dirty shared checkout; when your change sits on someone's uncommitted hunks
   you cannot separate, carry them and name them in the body.
 - **the merge is clio's**, on sixth sense's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.
@@ -103,7 +103,7 @@ brief says which, and when it does not, ask once, up front.
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
 4. **with a sixth sense** named in the brief (`🌗 🔎 sixth sense: <scope> | #<pr>`): «final» is a `SendMessage` to it,
-   with the pr url and head sha (a quick lane: «final» goes to the coordinator, who pushes main and hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense and to clio, who pushes it). it reads the ci reviewer for you; every reviewer thread is still yours to
+   with the pr url and head sha (a quick lane: «final», your head pushed, goes to the coordinator as `[done]`, who hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
    was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your report on `clean` quotes the verdict object, the round count and
@@ -113,7 +113,7 @@ brief says which, and when it does not, ask once, up front.
    the 1-round cap names clio's approval as the way past. run it once, at «final», never per push (a round is ~13 min of opus).
    fix what is real; answer «declined: <why>» on the thread.
 6. **hand over**, once both reviews are handled: the «final» line to the coordinator (dima is never added as a
-   reviewer; clio approves and merges): pr url + head sha + «final». leave no untracked file in the worktree,
+   reviewer; clio approves and merges): `[done]` + pr url + head sha + «final». leave no untracked file in the worktree,
    since one blocks the merge cleanup.
 
 the done report names every pass and what it returned; the retro says which layer found what nobody
@@ -132,8 +132,8 @@ on diff lines.
 
 ## 5. talking
 
-- **ping on the events `rules/fleet-flow.md` lists** (the four that push; `[progress]` slipstreams); acks and
-  «resumed» stay in your chat; the tags are `x:crew-dna`'s. a find dima would want rides the done ping, alone only when it changes the
+- **ping on the events `rules/fleet-flow.md` lists**; acks and
+  «resumed» stay in your chat. a find dima would want rides the done ping, alone only when it changes the
   plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).
 - **github is a ledger**: every line written there is read back into your context on every later turn.

@@ -693,23 +693,38 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 ## quiet comms — member pings off clio's thread
 
-an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, dima's o17): a member's `[progress]` ping waits for clio's next turn instead of starting one; one switch reverts it.
-- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm); `quiet-held:<session>` the held count
+quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, [FRM-501](https://linear.app/x-com/issue/FRM-501)): a message to clio waits for her next turn instead of starting one, unless it pushes on purpose; one switch reverts it. this section is the contract: the crew skills only point here.
+- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm, why it pushed); `quiet-held:<session>` the held messages; `quiet-asked` the members clio asked a question, by session id
 
-- 🧭 a [progress] ping is held in clio's thread, every other passes
+- ✅ a message that does not push is held in clio's thread
   - given clio's session — the registry names it `🦉 clio`, wherever a Bash `cd` left it — and the switch on
   - decision: the registry name, never the cwd: a `cd` into `~/frame` let every ping through for an hour (clio's wisp, 17:06)
-  - when a member's message opens with `[progress]`
-  - then it is not queued and starts no turn; `[done]`, `[blocked]`, `[ask]` and an untagged ping pass as before; any other session holds nothing
-  - decision: the tag decides, never a guess at the text — an untagged ping always passes (dima, 2026-10-12, the probe's «never hold blind»)
-  - and a `[progress]` ping holding «for dima», «decisions», «pick:» or «your call» (whole words, any case) is pushed, not held, so a question to dima wakes the coordinator's turn; a bare «?» never pushes (dima o26, 2026-10-29: of 81 pings in 14 days, a «?» pushed 4 and all 4 were false; FRM-429)
-  - proven on the desktop 15:48: a held `[progress]` ping started no turn (the probe's open line)
+  - when any member, crow, helga or a side channel sends a message
+  - then it is not queued and starts no turn, unless it opens with `[ask]` (clio's answer is needed: a dispute, a decision, a plan to greenlight), `[done]` (a lane or chunk is fully ready) or `[escalate]` (a roadblock climbs a rung; `[🪜 escalate]` too), an emoji before the tag included
+  - and a tag mid-line, a tag in another case, `[blocked]`, `final` and `round N` are held; `[progress]` stays a word for «held» and never pushes; any other session holds nothing
+  - and a message carrying «for dima» as words is pushed; a path holding them, a backticked span and «nothing for dima» never count
+  - decision: push is the exception on purpose, so spam cannot start: of 91 coordinator turns on 11-03, 65 were member-woken and 42 carried nothing for dima (dima, 2026-11-03)
+  - and a held message is kept whole, every line
+  - proof: tests/quiet.test.ts::pushes, starts a turn: …; ::held, no turn: …; ::an untagged line from … is held; ::a held message reaches clio whole, every line of it; tests/board.test.ts::a held message of many lines draws its first line in the row — not asserted: a desktop send clio's app queues while her turn runs raises no `session.receive`, so the gate never reads it (probe, 11-03)
+- ✅ a member's answer to clio's question is never held
+  - given clio's SendMessage asked a member a question (a `?` outside code and urls) and landed, by its name, session id, host id or socket
+  - when that member's first message since then with no `[progress]` opening arrives within 30 min, then it starts a turn
+  - and a `[progress]` neither pushes nor uses up the slot; a second untagged message, an untagged message after a greenlight with no question, and an answer past 30 min are held
+  - decision: a status sent first once used up the answer's slot, against «her question's reply is never held» (wishkeeper, 2026-11-04)
+  - proof: tests/quiet.test.ts::a member's first message after clio asked … a question starts a turn; ::a second message after the answer is held; ::a [progress] neither pushes nor spends the slot, so the answer after it wakes her; ::an untagged message after «greenlit» is held; ::a first message past 30 min is held; ::a question that did not land opens no slot
+- ✅ the sender learns the rule at send time, in its own result
+  - given quiet on and a session's SendMessage to clio, by her name, session id, host id or socket
+  - then the model reads one line after the result, no skill needed: «slipstreamed: joins clio's next turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]», or «pushed: starts clio's turn. …» when it pushes
+  - and a send clio's gate held reads «held, delivered at clio's next turn», never the desktop's «did not accept it», so no sender retries; a refusal with no `held` line in her log stays a refusal
+  - decision: «held» only once her log says so; a real refusal read as held would lose the message
+  - proof: tests/quiet.test.ts::a send to … carries the contract, no skill loaded; ::a send to … carries no contract; ::a push reads as pushed, never as slipstreamed; ::an answer inside the window reads as pushed; ::a held message reads as held to its sender, never as refused; ::a refusal with no held line stays a refusal; ::an older held line of the same member leaves a refusal a refusal — not asserted: in mobile mode nothing is held, and the sender still reads «slipstreamed»
 - 🧭 held pings reach clio without a turn of their own
   - given pings are held
-  - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and first line, once
-  - when none comes for the wait while she is idle — 10 min by default, set in the 🎛️ `🤫 quiet comms` card, 1–60 — then one hidden row is appended, no turn
+  - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and whole text, once
+  - when none comes for the wait while she is idle — 10 min by default, set in the 🎛️ `🤫 quiet comms` card, 1–60 — then one hidden row is appended, no turn, so no Stop hook and no crow; she reads it at her next prompt, a stuck member pushes with `[escalate]`; a line held later gets its own row, no sooner than the wait
+  - proof: tests/quiet.test.ts::a flush appends once, no turn; ::a line held after a flush gets its own, no sooner than the wait; ::8 idle hours with one held line every 30 min: 16 appends, 0 turns
 - 🧭 one switch, on by default
-  - given no switch set, then quiet holds every day; `/quiet off` passes every ping, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' [progress] pings`, is the same store key, `quiet-comms` (dima's o33)
+  - given no switch set, then quiet holds every day; `/quiet off` passes every message, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' messages unless they push`, is the same store key, `quiet-comms` (dima's o33)
   - given mobile mode is on, then nothing is held
   - decision: always on, no day arm — the a/b compares days by the log's `arm`, read from the switch (dima, 16:53, brief 5)
 - 🧭 clio's row counts what waits, and opens it

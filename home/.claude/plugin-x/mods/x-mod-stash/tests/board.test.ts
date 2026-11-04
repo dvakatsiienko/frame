@@ -577,6 +577,21 @@ test('🤫 n opens the held pings: sender, age, first line', async ($, on) => {
     ]);
 });
 
+test('a held message of many lines draws its first line in the row', async ($, on) => {
+    fleet(on, {
+        [`quiet-held:${HERE}`]: [
+            held('🔎 sixth sense', 'round 2 clean\nthe detail', 3),
+        ],
+    });
+    const ui = await board($);
+    await ui.press({ key: `fold:quiet:${HERE}` });
+    expect(
+        (await ui.findAll({ type: 'Text' })).find((t) =>
+            t.text?.includes('round 2 clean'),
+        )?.text,
+    ).toBe('🤫 🔎 sixth sense · 3m ago: round 2 clean');
+});
+
 test('asks over a day old are not counted on the board', async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },

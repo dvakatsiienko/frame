@@ -163,7 +163,7 @@ not override this file: say so in your first reply and run the loop as written.
 ## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
-the `final: <sha>` argument, codie's head, pushed to origin/main by the coordinator first, each later round's head too. a base or final sha that does not resolve → ask codie. everything above
+the `final: <sha>` argument, codie's head, pushed to origin/main by codie first, each later round's head too. a base or final sha that does not resolve → ask codie. everything above
 holds, with these swaps:
 
 - **the diff** — `git diff <base>..<final sha> -- <the ticket's paths>` and

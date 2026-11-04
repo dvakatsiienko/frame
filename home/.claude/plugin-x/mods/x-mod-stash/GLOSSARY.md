@@ -98,7 +98,7 @@ A choice the session made without asking that would cost a redo if wrong, shown 
 _Avoid_: guess, assumed ask
 
 **Quiet comms**:
-clio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; on by default, `/quiet off` (or 🎛️) its revert.
+clio's thread holding a member's message until her next turn or the idle flush instead of starting one, unless it pushes: it opens `[ask]`, `[done]` or `[escalate]`, names dima in words, or is the member's first answer to her within 30 min; the sender's own stash adds the rule to its SendMessage result; on by default, `/quiet off` (or 🎛️) its revert.
 _Avoid_: mute, silent mode, filter
 
 _Avoid_: prompt rewriter, polish
