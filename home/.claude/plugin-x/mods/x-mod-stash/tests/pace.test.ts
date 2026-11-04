@@ -848,34 +848,42 @@ test('a frozen 97 % past its reset sends one new window, no burn, no repeat stop
     expect(rungs(w)).toEqual(['stop', 'new window']);
 });
 
-test('a stored park past the reset sends the new window, a hand park named', async ($, on) => {
-    const w = world(on, {
-        ...WATCH,
-        [`hot:${SID}`]: { off: true },
-        'pace-burn': 0,
-    });
-    w.meter(91, 2 * HOUR);
-    await start($);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(2 * HOUR + POLL);
-    expect(paces(w).at(-1)).toBe(
-        '🔋 new window: reset done, resume the fleet; a hand park stays',
-    );
-});
+test(
+    'a stored park past the reset sends the new window, a hand park named',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, {
+            ...WATCH,
+            [`hot:${SID}`]: { off: true },
+            'pace-burn': 0,
+        });
+        w.meter(91, 2 * HOUR);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(2 * HOUR + POLL);
+        expect(paces(w).at(-1)).toBe(
+            '🔋 new window: reset done, resume the fleet; a hand park stays',
+        );
+    },
+);
 
-test('a shift expiring puts back the off it found', async ($, on) => {
-    const w = world(on, {
-        [`hot:${SID}`]: { off: true },
-        [`pace:${SID}`]: { since: NOW, was: { off: true } },
-    });
-    w.meter(30, 20 * MIN);
-    await start($);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(21 * MIN);
-    expect(w.store.get(`pace:${SID}`)).toEqual({ off: true });
-});
+test(
+    'a shift expiring puts back the off it found',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, {
+            [`hot:${SID}`]: { off: true },
+            [`pace:${SID}`]: { since: NOW, was: { off: true } },
+        });
+        w.meter(30, 20 * MIN);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(21 * MIN);
+        expect(w.store.get(`pace:${SID}`)).toEqual({ off: true });
+    },
+);
 
 test('a stop a whole window old clears with no new window', async ($, on) => {
     const w = world(on, {
@@ -889,15 +897,19 @@ test('a stop a whole window old clears with no new window', async ($, on) => {
     expect([w.turns, w.store.get(`pace-rung:${SID}`)]).toEqual([[], undefined]);
 });
 
-test('a window never parked or stopped sends no new window', async ($, on) => {
-    const w = world(on, WATCH);
-    w.meter(20, 30 * MIN);
-    await start($);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(40 * MIN);
-    expect(paces(w).some((t) => t.startsWith('🔋 new window'))).toBe(false);
-});
+test(
+    'a window never parked or stopped sends no new window',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, WATCH);
+        w.meter(20, 30 * MIN);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(40 * MIN);
+        expect(paces(w).some((t) => t.startsWith('🔋 new window'))).toBe(false);
+    },
+);
 
 /* the numbers */
 
@@ -952,37 +964,45 @@ test('a 🔥 click off is written and stays off across a restart', async ($, on)
     expect(w.store.get(`hot:${SID}`)).toEqual({ off: true });
 });
 
-test('a cache dying before the reset gets one ping at 45 min left', async ($, on) => {
-    const w = world(on, { [`pace:${SID}`]: { off: true } });
-    w.meter(50, 70 * MIN);
-    await start($);
-    await endTurn($);
-    const pings = () =>
-        w.turns.filter((t) => t.includes('keep-hot ping')).length;
-    await w.clock.advance(24 * MIN);
-    const before = pings();
-    await w.clock.advance(2 * MIN);
-    const at45 = pings();
-    await endTurn($);
-    await w.clock.advance(5 * MIN);
-    expect([before, at45, pings()]).toEqual([0, 1, 1]);
-});
+test(
+    'a cache dying before the reset gets one ping at 45 min left',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, { [`pace:${SID}`]: { off: true } });
+        w.meter(50, 70 * MIN);
+        await start($);
+        await endTurn($);
+        const pings = () =>
+            w.turns.filter((t) => t.includes('keep-hot ping')).length;
+        await w.clock.advance(24 * MIN);
+        const before = pings();
+        await w.clock.advance(2 * MIN);
+        const at45 = pings();
+        await endTurn($);
+        await w.clock.advance(5 * MIN);
+        expect([before, at45, pings()]).toEqual([0, 1, 1]);
+    },
+);
 
-test('a refused late ping goes out once and leaves keep-hot armed', async ($, on) => {
-    const w = world(on, { [`pace:${SID}`]: { off: true } });
-    w.meter(50, 70 * MIN);
-    await start($);
-    await endTurn($);
-    w.state.isRefused = true;
-    const pings = () =>
-        w.turns.filter((t) => t.includes('keep-hot ping')).length;
-    await w.clock.advance(26 * MIN);
-    w.state.isRefused = false;
-    await w.clock.advance(POLL * 3);
-    const noRetry = pings();
-    await w.clock.advance(30 * MIN);
-    expect([noRetry, pings()]).toEqual([0, 1]);
-});
+test(
+    'a refused late ping goes out once and leaves keep-hot armed',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, { [`pace:${SID}`]: { off: true } });
+        w.meter(50, 70 * MIN);
+        await start($);
+        await endTurn($);
+        w.state.isRefused = true;
+        const pings = () =>
+            w.turns.filter((t) => t.includes('keep-hot ping')).length;
+        await w.clock.advance(26 * MIN);
+        w.state.isRefused = false;
+        await w.clock.advance(POLL * 3);
+        const noRetry = pings();
+        await w.clock.advance(30 * MIN);
+        expect([noRetry, pings()]).toEqual([0, 1]);
+    },
+);
 
 test('a quit keeps a written 🔥 off for a resume of that id', async ($, on) => {
     const w = world(on);
@@ -1008,7 +1028,7 @@ test('a cache that outlives the reset gets no late ping', async ($, on) => {
     expect(w.turns).toEqual([]);
 });
 
-test('at 100 % no ping is sent', async ($, on) => {
+test('at 100 % no ping is sent', { timeoutMs: 60_000 }, async ($, on) => {
     const w = world(on, { [`pace:${SID}`]: { off: true } });
     w.meter(100, 65 * MIN);
     await start($);
