@@ -277,7 +277,8 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /second wind/,
     },
     'stash.waker': {
-        arm: async ($, _w, ui) => {
+        arm: async ($, w, ui) => {
+            w.store.set(`pace:${SID}`, { off: true });
             await ui.band.press({ key: 'waker' });
             await $.session.measure({
                 changed: ['rateLimits'],

@@ -12,8 +12,10 @@ export function withPace(
     isOn: boolean,
     now: number,
 ) {
-    const { [PACE + sessionId]: _was, ...rest } = store;
-    return isOn ? { ...rest, [PACE + sessionId]: { since: now } } : rest;
+    return {
+        ...store,
+        [PACE + sessionId]: isOn ? { since: now } : { off: true },
+    };
 }
 
 const bare = (name: unknown) => String(name).replaceAll(/[\s\u200d]/g, '');

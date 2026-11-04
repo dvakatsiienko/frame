@@ -23,7 +23,10 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
         }),
     };
     const turns: string[] = [];
-    const state = { isRefused: false };
+    const state = {
+        gate: undefined as Promise<void> | undefined,
+        isRefused: false,
+    };
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
         store.set(e.key, e.value);
@@ -40,6 +43,8 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('command.run', () => ({ text: '' }));
+    on('ui.log', () => ({ value: undefined }));
     on('session.receive', (_$, e) => ({ text: e.text }));
     on('env.get', () => ({ value: '/home' }));
     on('fs.read', (_$, e) =>
@@ -71,7 +76,7 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
-            stdout: `${PID}\n`,
+            stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
         },
     }));
     on('tool.register', (_$, e) => ({
@@ -81,10 +86,11 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
-    on('prompt.submit', (_$, e) => {
+    on('prompt.submit', async (_$, e) => {
         if (e.origin?.kind !== 'plugin') return { text: e.text };
         if (state.isRefused) return { drop: 'refused' };
         turns.push(e.text);
+        await state.gate;
         return { text: e.text };
     });
     const meter = (used: number, left: number, age = 0, at?: number) => {
@@ -104,6 +110,15 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
 
 const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
+
+const seat = (w: ReturnType<typeof world>, name: string) => {
+    w.files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
+        name,
+        pid: PID,
+        sessionId: SID,
+    });
+};
+const MEMBER = '⚡ 🔧 codie: mods lane 4';
 
 const endTurn = ($: Engine) =>
     $.turn.complete({
@@ -358,6 +373,7 @@ test('a meter written before its window opened clears the rung with no line', as
 
 test('with no pace key no line ever', async ($, on) => {
     const w = world(on);
+    seat(w, MEMBER);
     w.meter(46, LEFT);
     await start($);
     await w.clock.advance(5 * MIN);
@@ -515,7 +531,7 @@ test('a start with no end expires when its window resets', async ($, on) => {
     await w.clock.advance(21 * MIN);
     expect([during, w.store.get(`pace:${SID}`), wakerOn(w)]).toEqual([
         true,
-        undefined,
+        { on: true },
         false,
     ]);
 });
@@ -546,6 +562,17 @@ test('a start with no meter takes its expiry from a later poll', async ($, on) =
     await w.clock.advance(POLL);
     w.meter(30, 30 * MIN, 0, w.clock.now());
     await w.clock.advance(35 * MIN);
+    expect(w.store.get(`pace:${SID}`)).toEqual({ on: true });
+});
+
+test('a member’s start with no end leaves no key when its window resets', async ($, on) => {
+    const w = world(on);
+    seat(w, MEMBER);
+    w.meter(30, 20 * MIN);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await w.clock.advance(POLL);
+    await w.clock.advance(21 * MIN);
     expect(w.store.get(`pace:${SID}`)).toBeUndefined();
 });
 
@@ -609,9 +636,9 @@ test('the 🎛️ row flips this session’s key', async ($, on) => {
     await start($);
     const ui = await settings($);
     await ui.press({ key: 'knob:pace-watch' });
-    const onAfter = w.store.get(`pace:${SID}`) !== undefined;
+    const onAfter = (w.store.get(`pace:${SID}`) as { off?: boolean }).off;
     await ui.press({ key: 'knob:pace-watch' });
-    expect([onAfter, w.store.get(`pace:${SID}`)]).toEqual([true, undefined]);
+    expect([onAfter, w.store.get(`pace:${SID}`)]).toEqual([true, { on: true }]);
 });
 
 test('the part off draws no row', async ($, on) => {
@@ -622,6 +649,186 @@ test('the part off draws no row', async ($, on) => {
     expect(
         await ui.find({ key: 'knob:pace-watch', type: 'Button' }),
     ).toBeUndefined();
+});
+
+/* 🔋 on the coordinator's seat */
+
+const band = ($: Engine) =>
+    $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 140,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'desktop',
+    } as never);
+
+test('a new 🦉 clio session starts on, with no ⏰, and hears the crossing', async ($, on) => {
+    const w = world(on);
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(POLL);
+    expect([
+        w.store.get(`pace:${SID}`),
+        rungs(w),
+        w.store.get('waker'),
+    ]).toEqual([{ on: true }, ['+5 over pace — park'], undefined]);
+});
+
+test('click off, restart with the same id, cross +5: no line', async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    await start($);
+    const ui = await band($);
+    await ui.press({ key: 'pace-watch' });
+    await start($);
+    w.meter(46, LEFT);
+    await w.clock.advance(5 * MIN);
+    expect([w.store.get(`pace:${SID}`), w.turns]).toEqual([{ off: true }, []]);
+});
+
+test('🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await band($);
+    const words = async () =>
+        (await ui.find({ key: 'tip:pace-watch', type: 'Box' }))?.text;
+    const keys = (await ui.findAll({ type: 'Button' })).map((b) => b.key);
+    const from = keys.indexOf('hot');
+    const before = await words();
+    await ui.press({ key: 'pace-watch' });
+    expect([
+        keys.slice(from, from + 3),
+        before,
+        w.store.get(`pace:${SID}`),
+        await words(),
+    ]).toEqual([
+        ['hot', 'pace-watch', 'waker'],
+        '🔋stop telling this session its 5h ladder lines',
+        { off: true },
+        '🔋tell this session each 5h ladder line',
+    ]);
+});
+
+test('any other seat draws no 🔋 and writes no key', async ($, on) => {
+    const w = world(on);
+    seat(w, MEMBER);
+    await start($);
+    const ui = await band($);
+    expect([
+        await ui.find({ key: 'pace-watch', type: 'Button' }),
+        w.store.get(`pace:${SID}`),
+    ]).toEqual([undefined, undefined]);
+});
+
+test('🔋 off during a shift ends the shift: ⏰ goes back', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(30, LEFT);
+    await start($);
+    await w.clock.advance(POLL);
+    const during = wakerOn(w);
+    const ui = await band($);
+    await ui.press({ key: 'pace-watch' });
+    await w.clock.advance(POLL);
+    expect([during, wakerOn(w)]).toEqual([true, false]);
+});
+
+test('the door’s off holds across a restart like a click', async ($, on) => {
+    const w = world(on, { [`pace:${SID}`]: { off: true } });
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(5 * MIN);
+    expect([w.store.get(`pace:${SID}`), w.turns]).toEqual([{ off: true }, []]);
+});
+
+test('/clear on the coordinator seat arms a key never written', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.delete(`pace:${SID}`);
+    await $.command.run({
+        args: '',
+        command: 'clear',
+        origin: { kind: 'composer' },
+        presentation: { columns: 80, isFullscreen: false },
+    });
+    expect(w.store.get(`pace:${SID}`)).toEqual({ on: true });
+});
+
+/* a park line asks for 🔥 */
+
+const LINES = [
+    ['+5 over pace — park', 46, LEFT, true],
+    ['90 % — park', 91, 2 * HOUR, true],
+    ['≤ 1 h left — burn', 91, 50 * MIN, false],
+    ['70–80 % — no new chunk', 72, 90 * MIN, false],
+] as const;
+for (const [rung, used, left, isAsked] of LINES)
+    test(`${rung} ${isAsked ? 'says' : 'never says'} keep 🔥 on`, async ($, on) => {
+        const w = world(on, WATCH);
+        w.meter(used, left);
+        await start($);
+        await w.clock.advance(POLL);
+        expect([
+            rungs(w),
+            paces(w)[0]?.endsWith('; keep 🔥 on for every parked member'),
+        ]).toEqual([[rung], isAsked]);
+    });
+
+test('a resume never says keep 🔥 on', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(POLL);
+    await endTurn($);
+    w.meter(35, LEFT, 0, w.clock.now());
+    await w.clock.advance(POLL);
+    expect(paces(w)[1]).not.toContain('🔥');
+});
+
+/* the critic's three */
+
+test('a queued send counts as sent: no second line while it waits', async ($, on) => {
+    const w = world(on, WATCH);
+    let release = () => {};
+    w.state.gate = new Promise((r) => {
+        release = r;
+    });
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(5 * MIN);
+    const waiting = rungs(w);
+    release();
+    await w.clock.advance(5 * MIN);
+    expect([waiting, rungs(w)]).toEqual([
+        ['+5 over pace — park'],
+        ['+5 over pace — park'],
+    ]);
+});
+
+test('an ended session’s key sends nothing: only its own session polls it', async ($, on) => {
+    const w = world(on, { 'pace:ended': { since: NOW } });
+    seat(w, MEMBER);
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(5 * MIN);
+    expect(w.turns).toEqual([]);
+});
+
+test('a dead target revived after 20 polls gets one line', async ($, on) => {
+    const w = world(on, WATCH);
+    w.state.isRefused = true;
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(20 * POLL);
+    const dead = w.turns.length;
+    w.state.isRefused = false;
+    await w.clock.advance(5 * POLL);
+    expect([dead, rungs(w)]).toEqual([0, ['+5 over pace — park']]);
 });
 
 /* beside the quiet gate */
@@ -658,12 +865,16 @@ const usedAt = (m: number) => {
 };
 
 test(
-    'the 11-03 shift replayed: one park at 14:29, 214 min ahead of the 18:03 cap, no turn after it',
+    'the 11-03 shift replayed: its readings open past +5, one park at the first minute past the fresh 10 %, 214 min ahead of the 18:03 cap, no turn after it',
     { timeoutMs: 60_000 },
     async ($, on) => {
         const w = world(on, WATCH, SHIFT);
         await start($);
         const seen: number[] = [];
+        const overAt = (m: number) => usedAt(m) - Math.round((m / 300) * 100);
+        const firstPast = Array.from({ length: 129 }, (_, i) => i + 1).find(
+            (m) => overAt(m) >= 5 && Math.round((m / 300) * 100) >= 10,
+        );
         for (let m = 1; m <= 129; m++) {
             const now = SHIFT + m * MIN;
             w.meter(usedAt(m), 5 * HOUR - m * MIN, 0, now);
@@ -675,10 +886,12 @@ test(
                 await endTurn($);
             }
         }
-        expect([rungs(w), seen, 243 - (seen[0] ?? 0)]).toEqual([
-            ['+5 over pace — park'],
-            [29],
-            214,
-        ]);
+        expect([
+            overAt(59),
+            rungs(w),
+            seen,
+            seen[0] === firstPast,
+            243 - (seen[0] ?? 0),
+        ]).toEqual([13, ['+5 over pace — park'], [29], true, 214]);
     },
 );

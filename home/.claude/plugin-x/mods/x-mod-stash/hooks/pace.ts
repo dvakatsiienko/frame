@@ -64,7 +64,7 @@ export const isPaceLineDue = (rung: PaceRung, stored: PaceRung | undefined) =>
 export function paceLine(rung: Exclude<PaceRung, 'between'>, m: PaceMeter) {
     const over = m.used - paceOf(m.resetsAt, m.now);
     const left = Math.max(0, Math.round((m.resetsAt - m.now) / MIN));
-    return `🔋 pace watch: ${RUNG_WORDS[rung]}; ${m.used} % used, ${over > 0 ? '+' : ''}${over} over pace, ${Math.floor(left / 60)}h ${left % 60}m left. acting on it: clio:shift § the 5h ladder`;
+    return `🔋 pace watch: ${RUNG_WORDS[rung]}; ${m.used} % used, ${over > 0 ? '+' : ''}${over} over pace, ${Math.floor(left / 60)}h ${left % 60}m left. acting on it: clio:shift § the 5h ladder${rung === 'park-over' || rung === 'park-used' ? '; keep 🔥 on for every parked member' : ''}`;
 }
 
 /* Types */

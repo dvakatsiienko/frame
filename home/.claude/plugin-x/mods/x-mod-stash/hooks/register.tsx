@@ -3105,6 +3105,10 @@ const PACE_CLAIM = 'pace-claim:';
 const PACE_WAKER = 'pace-waker:';
 const PACE_CLAIM_MS = 30_000;
 const PACE_ME = `${Math.random()}`;
+// off is a written value, so the coordinator's default arms only a key never written; `since` marks a shift's start, the one
+// that also moves ⏰
+const isPaceOn = (key: unknown) =>
+    Boolean(key) && (key as { off?: boolean }).off !== true;
 // past a reset the waker's own resume fires first, so a shift's expiry never turns ⏰ off under it
 const PACE_EXPIRY_MS = WAKE_SLACK_MS + POLL_MS;
 // a line on its way: a submit may resolve only at its turn's end, and its rung moves after that
@@ -3147,7 +3151,7 @@ async function paceMeterOf($: EngineInterface) {
 
 // the line this poll owes, none when the rung stands; the stored rung of another window counts as none
 async function paceDue($: EngineInterface, sid: string) {
-    if (!(await $.store.get(PACE + sid))) return undefined;
+    if (!isPaceOn(await $.store.get(PACE + sid))) return undefined;
     if (!(await partsShown($))('stash.pace-watch')) return undefined;
     const meter = await paceMeterOf($);
     if (!meter) return undefined;
@@ -3220,9 +3224,12 @@ async function paceWaker($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
     const key = (await $.store.get(PACE + sid)) as
-        | { since?: number }
+        | { off?: boolean; since?: number }
         | undefined;
-    const isWatched = Boolean(key) && (await partsShown($))('stash.pace-watch');
+    const isWatched =
+        isPaceOn(key) &&
+        key?.since !== undefined &&
+        (await partsShown($))('stash.pace-watch');
     const note = (await $.store.get(PACE_WAKER + sid)) as
         | { since?: number; until?: number; wasOn: boolean }
         | undefined;
@@ -3260,7 +3267,8 @@ async function paceWaker($: EngineInterface) {
         if (note.until === undefined)
             await $.store.set(PACE_WAKER + sid, { ...note, until });
         if (now <= until + PACE_EXPIRY_MS) return;
-        await $.store.delete(PACE + sid);
+        if (await isLaneOwner($)) await $.store.set(PACE + sid, { on: true });
+        else await $.store.delete(PACE + sid);
     }
     if (!note) return;
     if (!note.wasOn) {
@@ -3293,9 +3301,19 @@ async function pacePoll($: EngineInterface) {
 async function pressPace($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    if (await $.store.get(PACE + sid)) await $.store.delete(PACE + sid);
-    else await $.store.set(PACE + sid, { since: await $.clock.now() });
+    await $.store.set(
+        PACE + sid,
+        isPaceOn(await $.store.get(PACE + sid)) ? { off: true } : { on: true },
+    );
     $.ui.invalidate('ui.render');
+}
+
+// the coordinator's seat starts on; a written key, off included, stands
+async function paceDefault($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid || !(await isLaneOwner($))) return;
+    if ((await $.store.get(PACE + sid)) === undefined)
+        await $.store.set(PACE + sid, { on: true });
 }
 
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds, and
@@ -4560,6 +4578,7 @@ export const register: Register = (on) => {
             );
             return undefined;
         });
+        await paceDefault($).catch(() => undefined);
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,
@@ -5194,7 +5213,7 @@ export const register: Register = (on) => {
                         // mobile draws no Input
                         const Input = 'Input' in ui ? ui.Input : undefined;
                         // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
-                        const isPaceWatched = Boolean(
+                        const isPaceWatched = isPaceOn(
                             await $.store.get(
                                 PACE + ((await currentId($)) ?? ''),
                             ),
@@ -7221,6 +7240,7 @@ export const register: Register = (on) => {
         if (left) await forget($, left).catch(() => undefined);
         await saveOrbit($, EMPTY_ORBIT);
         await load($);
+        await paceDefault($).catch(() => undefined);
         return r;
     });
 
@@ -7453,6 +7473,15 @@ export const register: Register = (on) => {
                     const boardOpen = view.isBoardOpen;
                     const isShown = (key: string) =>
                         view.shown?.[key] !== false;
+                    const isPaceSeat =
+                        isShown('stash.pace-watch') && (await isLaneOwner($));
+                    const isPaceWatched =
+                        isPaceSeat &&
+                        isPaceOn(
+                            await $.store.get(
+                                PACE + ((await currentId($)) ?? ''),
+                            ),
+                        );
                     const handleSettingsFlip = async () => {
                         isSettingsOpen = !view.isSettingsOpen;
                         if (isSettingsOpen)
@@ -7709,6 +7738,26 @@ export const register: Register = (on) => {
                                           🔥
                                       </Button>,
                                       leftOf('🔥', !!view.isHot),
+                                  )}
+                            {!isPaceSeat
+                                ? null
+                                : tip(
+                                      'pace-watch',
+                                      isPaceWatched
+                                          ? 'stop telling this session its 5h ladder lines'
+                                          : 'tell this session each 5h ladder line',
+                                      <Button
+                                          key='pace-watch'
+                                          onPress={() => void pressPace($)}
+                                          {...(isPaceWatched
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          🔋
+                                      </Button>,
+                                      leftOf('🔋', isPaceWatched),
                                   )}
                             {!isShown('stash.waker')
                                 ? null

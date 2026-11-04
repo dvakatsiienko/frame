@@ -708,8 +708,22 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ a quiet meter is normal while everyone is parked
   - given a meter file older than 10 min, or the first 10 % of a window, then no park rung fires and the stored rung stands, no lower rung sent in its place; its used % stands and the rung moves with the clock, so the resume still does
   - proof: tests/pace.test.ts::a meter 40 min old still fires the resume once the clock carries pace back; ::a meter 40 min old never fires a park; ::the first 10 % of a fresh window sends no park; ::a stale park stays quiet at 78 % used, no flap through a lower rung; ::a meter written before its window opened clears the rung with no line; ::with no pace key no line ever; ::a pace key deleted before the crossing sends no line
+- ✅ 🔋 in the coordinator's band, on by default
+  - given the coordinator's band (the seat check `isLaneOwner`, so a coming coordinator joins by one edit), then 🔋 sits between 🔥 and ⏰, the `secondary` chip while on, plain while off, and names itself on hover
+  - when dima presses it, then `pace:<id>` flips between `{ on: true }` and `{ off: true }`; a press never moves ⏰, and off during a shift ends the shift
+  - given any other seat's band, then no 🔋 and no key
+  - given a coordinator session whose key was never written, at its start or a `/clear`, then it starts on; a written off stands across a restart, from a press or from `mods:set-pace-watch off`
+  - decision: off is a written value, so the default arms only a key never written (blind critic, FRM-500)
+  - decision: only a key with `since`, a shift's `on`, moves ⏰ (dima, 13:00)
+  - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following; ::any other seat draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator seat arms a key never written
+- ✅ a park line asks for 🔥
+  - given a +5 or a 90 % park line, then it ends «keep 🔥 on for every parked member»; no other rung says it
+  - proof: tests/pace.test.ts::+5 over pace — park says keep 🔥 on (+ a row per rung)
+- ✅ a line reaches a dead target once it is back
+  - given a queued send, then it counts as sent, no second line while it waits; given a target refused for 20 polls and revived, then one line; a key whose session ended sends nothing, since only its own session polls it
+  - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::an ended session’s key sends nothing: only its own session polls it
 - 🧭 a shift switches it with no click, and ⏰ with it
-  - given `pnpm mods:set-pace-watch on` (`off` ends it, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back
+  - given `pnpm mods:set-pace-watch on` (`off` writes `{ off: true }` and ends it, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back
   - and start, start, end changes nothing more; a change of dima's during the shift is kept; a second start turns ⏰ back on, and the end still restores what the first found (W1958: he may forget); a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
   - and the 🎛️ `stash · knobs` row `🔋 pace watch` shows and flips this session's key; the `🔋 pace watch` part off draws no row, sends nothing and puts ⏰ back
   - proof: tests/pace.test.ts::a shift's end restores the waker its start found; ::a waker found on stays on at the end; ::start, start, end leaves a waker found off, off; ::dima's change during the shift is kept at the end; ::a second start turns ⏰ back on after dima switched it off; ::the end restores the state the first start found, past a second start; ::a start with no end expires when its window resets; ::at the reset ⏰ stays on past the waker's own resume; ::an old meter at the start never ends the shift it just began; ::a start with no meter takes its expiry from a later poll; ::a shift ending during afk changes what afk off puts back; ::the part switched off mid-shift restores the waker; ::the 🎛️ row flips this session's key; ::the part off draws no row; tests/switches.test.ts — not asserted: a `/clear` changes the session id and leaves the key behind, as keep-hot's does

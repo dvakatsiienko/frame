@@ -2,11 +2,11 @@ import { expect, test } from 'vitest';
 
 import { clioIdOf, withPace } from './pace-watch.ts';
 
-test('off takes only the key on wrote', () => {
+test('off writes off on the key on wrote, so the default stays out', () => {
     const on = withPace({ waker: { on: false } }, 's1', true, 5);
     expect([on, withPace(on, 's1', false, 6)]).toEqual([
         { 'pace:s1': { since: 5 }, waker: { on: false } },
-        { waker: { on: false } },
+        { 'pace:s1': { off: true }, waker: { on: false } },
     ]);
 });
 
