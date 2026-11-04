@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T12:26:00Z'
+updated_date: '2026-11-04T12:47:00Z'
 labels:
   - s
 dependencies: []
@@ -188,4 +188,27 @@ W150 (2026-11-04 14:24, dima): the necessity of a full lane just to edit a setti
 W151 (2026-11-04 14:24, dima): how to have it? ❓
 W152 (2026-11-04 14:24, dima): print all mods settings you would want to tweak easily without a mods lane summon.
 W153 (2026-11-04 14:24, dima): whats here? ❓
+
+W154 (2026-11-04 14:38, dima): no need for abort, just tell everyone to pause right now. abort can cause data loss.
+W155 (2026-11-04 14:38, dima): i do not understand what +5/+2 means? it is a confusion. i meant to have a widnow if -5%(park)/+2%(resume) instead of 0%(resume). ❓
+W156 (2026-11-04 14:38, dima): print refreshed pace-watch rules full. and groom they so they easy to read.
+W157 (2026-11-04 14:38, dima): side q: what is attention span? and extrapolation. is this confusion of +2%/-5% an extrapolation? ❓
+W158 (2026-11-04 14:38, dima): is this for main lane or mods lane? what critical scope mods lane currently still needs to do? ❓
+W159 (2026-11-04 14:38, dima, o45 steer): it will result in 6% of space? no. park at -5% and resume at +2%. going too far ahead is not good, instead let to cooldown more.
+
+the source grooms, their own numbering (renumber map above):
+W100 (2026-11-04 12:58, dima): pace watch: so if it proves working, your habits may go (leaner memory)? ❓
+W101 (2026-11-04 12:58, dima): only for you? ❓
+W102 (2026-11-04 12:58, dima): i'd like to have a button for it in the nudge.
+W103 (2026-11-04 12:58, dima): no, never skip wishkeeper.
+W104 (2026-11-04 12:58, dima): he is a prio.
+W105 (2026-11-04 12:58, dima): even when we go over the pace.
+W106 (2026-11-04 13:08, dima): ok, let's have it (the 🔋 button) for you only.
+W107 (2026-11-04 13:08, dima): but i am shaping a dedicated --bg coordinator with side channel.
+W108 (2026-11-04 13:08, dima): so it will apply to it too (later).
+W109 (2026-11-04 13:08, dima): print exact lines that mod sends you on all events.
+W108 (2026-11-04 13:12, dima): i think this line should also tell you to keep hot meter for everyone, because 1 hour 50 minutes is too large.
+W109 (2026-11-04 13:12, dima): the cache of someone can go cold.
+W110 (2026-11-04 13:12, dima): fired because «5h» 1h left reached? ❓
+W111 (2026-11-04 13:12, dima): the percentage is currently -9%.
 <!-- SECTION:NOTES:END -->
