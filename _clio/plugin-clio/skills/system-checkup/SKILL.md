@@ -50,7 +50,7 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
 
 colocated — checks that live elsewhere, run or read from here:
 - **cli-purpose** — are the `x` verbs used, is a hand-typed command worth a verb · `pnpm x:cli-census`,
-  judged through `cli-drift-check`; plus dima's side (FRM-41): his zsh aliases and functions, raycast
+  judged through `cli-drift-check`; a red line writes one pocket item per 0-call verb through `pocket-add`; plus dima's side (FRM-41): his zsh aliases and functions, raycast
   scripts and pnpm scripts, each absorb / leave / delete with its invoker, use read from `~/.zsh_history`
   — his tools are `granular`, so a verdict here is always an ask
 - **memory-lint** — budgets, dead pointers, cut quotes in memory files; warns on quote drift vs `HEAD`, dead

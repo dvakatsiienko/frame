@@ -39,7 +39,8 @@ the door is still in use.
    line has a verdict.
 2. **families.** Give each family in the census one verdict, `keep`, `merge into <family>`
    or `cut`, with its evidence: verb count, runs, and any raw head it could absorb. A raw head
-   with ≥5 runs that matches a family's job is a **gap**: name it under that family. Done
+   with ≥5 runs that matches a family's job, a pain line (a flawlog or retro hit, a catch of
+   dima's) and no script of ours on it is a **gap**: name it under that family. Done
    when every family has a verdict.
 3. **chunks** (only when tickets were named). Per chunk, per verb, family, mode or flag it
    adds to x: does it serve a want line (name it), and does it pass each of the admission
@@ -49,7 +50,7 @@ the door is still in use.
    one line and no rule answers. Then rank the chunks by the cli's evolve contract (dima,
    2026-10-10: the cli grows beside every roadmap step, one chunk at a time): which **solves the
    most fleet issues** (retro and flawlog hits, through one `helper-lite` read), **helps the most**
-   (callers and runs), and **automates the most** (raw heads it absorbs). Done when every
+   (callers and runs), and **removes the most counted pain** (raw heads it absorbs, each with its pain line). Done when every
    addition has a fit verdict and three rule answers, and the chunks carry a rank.
 
 ## the report

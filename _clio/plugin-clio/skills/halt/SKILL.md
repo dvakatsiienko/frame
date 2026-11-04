@@ -23,7 +23,8 @@ one short message, then straight into phase 1:
   get one line each, all at once (dima o11): «closable, because …» (his word closes, a closing word in the body) or «stays, because …». a ticket that landed (a merged pr, or a quick lane's push)
   with asks left open moves to Todo, never closes, and its `## signed` block gets
   `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again; its way back is a re-sign (`shape-lane-dispatch` § 6)
-- **the stop list holds the `--bg` members and the lane codies' desktop threads** (the digest names them); a session it marks 👤 is dima's own and stays as he left it.
+- **the close sweep**: today's closes, W-lines against the closing word; one unanswered reopens or is homed
+- **the stop list holds the `--bg` members and the lane codies' desktop threads**; a 👤 session is dima's and stays.
 - **the codie roster, two questions per codie: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
   `claude agents --json` is the check, never memory. **a codie the CST
   calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎀 helga is on the roster too**: `claude stop <its id>` beside crow's, the boot starts it fresh. **crow is on the roster too** — its stop is phase 5's last line, named in this
