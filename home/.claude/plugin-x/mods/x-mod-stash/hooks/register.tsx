@@ -2998,7 +2998,10 @@ async function windReady(
 async function windOnCompact($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
-    if (!sid || (was?.state !== 'asked' && was?.state !== 'writing')) return;
+    // a refreshing with no slug is this compact's own: its ingest may queue for a long while, and a reload loses runWind's await
+    const isOurs = was?.state === 'refreshing' && !was.slug;
+    if (!sid || (was?.state !== 'asked' && was?.state !== 'writing' && !isOurs))
+        return;
     await $.store.delete(WIND + sid);
 }
 
@@ -3028,7 +3031,13 @@ async function windBlock($: EngineInterface, e: Record<string, unknown>) {
 async function windAfterTurn($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
-    if (!sid || was?.state !== 'refreshing' || !was.slug) return;
+    if (!sid || was?.state !== 'refreshing') return;
+    if (!was.slug) {
+        // a compact that never reported back leaves no row behind
+        if ((await $.clock.now()) - was.at > WIND_STALE_MS)
+            await $.store.delete(WIND + sid);
+        return;
+    }
     if (!(await partsShown($))('stash.second-wind')) return;
     if (was.blocked) {
         await $.store.set(WIND + sid, {
@@ -3131,6 +3140,7 @@ const PACE_RUNG = 'pace-rung:';
 const PACE_CLAIM = 'pace-claim:';
 const PACE_WAKER = 'pace-waker:';
 const PACE_CLAIM_MS = 30_000;
+const WIND_STALE_MS = 30 * MINUTE_MS;
 const PACE_LATE_MS = 5 * 60 * MINUTE_MS;
 const PACE_ME = `${Math.random()}`;
 // off is a written value, so the coordinator's default arms only a key never written; `since` marks a shift's start, the one
@@ -5556,8 +5566,7 @@ export const register: Register = (on) => {
                                 key='settings:bars'
                                 paddingX={1}
                                 paddingY={air ? 0.5 : 0}
-                                rowGap={air ? 0.3 : 0}
-                                width={0}>
+                                rowGap={air ? 0.3 : 0}>
                                 <Text bold>🔥 bars</Text>
                                 {switchJSX(
                                     'breathe',
@@ -5587,8 +5596,7 @@ export const register: Register = (on) => {
                                 key='settings:quiet'
                                 paddingX={1}
                                 paddingY={air ? 0.5 : 0}
-                                rowGap={air ? 0.3 : 0}
-                                width={0}>
+                                rowGap={air ? 0.3 : 0}>
                                 <Text bold>🤫 quiet comms</Text>
                                 {switchJSX(
                                     'quiet',
@@ -5626,8 +5634,7 @@ export const register: Register = (on) => {
                                 flexGrow={1}
                                 key='settings:compact'
                                 paddingX={1}
-                                paddingY={e.surface === 'desktop' ? 0.5 : 0}
-                                width={0}>
+                                paddingY={e.surface === 'desktop' ? 0.5 : 0}>
                                 <Text bold>context</Text>
                                 <Box
                                     alignItems='center'
@@ -7888,8 +7895,8 @@ export const register: Register = (on) => {
                                 : tip(
                                       'waker',
                                       view.isWaker
-                                          ? 'stop waking capped sessions at the 5h reset'
-                                          : 'wake every session stopped on the 5h cap',
+                                          ? 'fleet wake: disable'
+                                          : 'fleet wake: enable',
                                       <Button
                                           key='waker'
                                           onPress={() => void handleWakerFlip()}

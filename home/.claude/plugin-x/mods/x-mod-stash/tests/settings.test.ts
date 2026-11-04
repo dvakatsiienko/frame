@@ -271,6 +271,8 @@ test('🎛️ lays its cards in two columns, the bars, quiet comms and the conte
         .map((n) => n.key);
     const row = async (key: string) =>
         (await view.find({ key, type: 'Box' }))?.props.flexDirection;
+    const wide = await view.find({ key: 'settings:quiet', type: 'Box' });
+    expect(wide?.props.width).toBeUndefined();
     expect([
         await row('settings:columns'),
         await row('settings:bottom'),

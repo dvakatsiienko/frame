@@ -345,6 +345,22 @@ test('a compact another hook skipped keeps the wind', async ($, on) => {
     expect(w.store.has(`wind:${SID}`)).toBe(true);
 });
 
+test('the compact a wind started clears its row, its ingest still queued', async ($, on) => {
+    const w = world(on);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'refreshing' });
+    await start($);
+    await compact($, 'plugin');
+    expect(w.store.has(`wind:${SID}`)).toBe(false);
+});
+
+test('a refreshing row past 30 min clears at the next turn end', async ($, on) => {
+    const w = world(on);
+    w.store.set(`wind:${SID}`, { at: NOW - 31 * 60_000, state: 'refreshing' });
+    await start($);
+    await endTurn($);
+    expect(w.store.has(`wind:${SID}`)).toBe(false);
+});
+
 test('a compact keeps a wind that is refreshing, and a precompute keeps a writing one', async ($, on) => {
     const w = world(on);
     w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });

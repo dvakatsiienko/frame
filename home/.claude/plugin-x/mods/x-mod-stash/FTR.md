@@ -55,7 +55,7 @@
 - ✅ every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `🔥`, `⏰`, `💨` or `🚦`
-  - then a dim line beside it says what a press does now: `keep hot: enable` or `keep hot: disable`, `pace watch: …`, `afk: …`, the same two words each, `settings: open` or `close`, `board: open` or `close`, `second wind: start`
+  - then a dim line beside it says what a press does now: `keep hot: enable` or `keep hot: disable`, `pace watch: …`, `fleet wake: …`, `afk: …`, the same two words each, `settings: open` or `close`, `board: open` or `close`, `second wind: start`
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
 - ✅ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws

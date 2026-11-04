@@ -160,7 +160,7 @@ test('every control in the row carries a hover card that names it', async ($, on
         '0 phases',
         'second wind: start',
         'keep hot: enable',
-        'wake every session stopped on the 5h cap',
+        'fleet wake: enable',
         'afk: enable',
         'settings: open',
         'board: open',
