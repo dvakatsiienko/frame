@@ -4,7 +4,7 @@ description: load on dima's «what can we dispatch?», «dispatch», «start a l
 
 # /clio:shape-lane-dispatch — signed chunks become a running lane
 
-the machine part of lane init, clio's alone: dima signed the chunks in `clio:shape-lane`, his pick starts them, and nothing below waits on him. the contract (the states, where each thing lives, a lane per milestone, shift safety) is `craft-fleet-flow` § lane init; a fix to how a lane starts lands here.
+the machine part of lane init, clio's alone: dima signed the chunks in `clio:shape-lane`, his pick starts them, and nothing below waits on him. the contract is `craft-fleet-flow` § lane init; a fix to how a lane starts lands here.
 
 ## 1 · the offer
 
@@ -14,12 +14,12 @@ the machine part of lane init, clio's alone: dima signed the chunks in `clio:sha
 
 ## 2 · the spec
 
-read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain text):
+read matt's `to-spec` and follow it:
 - the spec sits in `.scratch/<feature>/spec.md`, one section per chunk, each section opening with its own `wish: <ticket>` line; every lane with a member gets one, a quick lane too
-- the code is read against each chunk's `decided`: a signed decision the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
+- a `wisphunter` card with no diff reads the spec's paths, premises and «already exists» claims against live code, each finding folded before the seal (FRM-503); a signed `decided` the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
 - every rider rides in the spec, named at dispatch or added as a steer; a rider found only in a commit is a sixth sense finding
-- a decided line that names a door by reference («the door `sign-untick` uses», «the same clears») lists that door's cases or says «only these» (11 spec holes in mods lane 4's retros, 2026-11-02)
+- a decided line that names a door by reference («the door `sign-untick` uses», «the same clears») lists that door's cases or says «only these»
 
 ## 3 · the exit lines
 
@@ -38,7 +38,7 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 - the summon is `x:crew-lead`'s (load it): the brief's first step has codie run `to-tickets` on the spec after reading the code, so the slices follow real seams; the brief says «skip the quiz step of to-tickets», since the sign settled the want; the slices go into `~/.local/state/x/lanes/<feature>/issues/`, never linear or the worktree
 - **the marks**, right after the summon: `x lane dispatch <ids…> --session <codie sid> --lane <feature>`, then the same with `--apply` (the `signed` label off, In Progress, the codie delegate, `🚀 dispatched <YYYY-MM-DD>`); his sign was its promotion out of Triage
 - a cancelled signed chunk, before or after dispatch: the `signed` label off, Canceled through `clio:pm`'s `references/closing.md`, and `🚫 cancelled <YYYY-MM-DD> — <why>` in its block; after 🚀: stop its members (`x:crew-lead` watching), close its pr and decamp, drop its spec section, end its glide step
-- **the lane plan**, `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside every checkout, so an isolated codie can write it and a decamp keeps it): codie's side (the draft, the ticks, `## not greenlit`) is `x:crew-codie`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to greenlight` i reorder it against what comes after and 🟢 greenlight it — my word is final — and greenlight again on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies its ticket lines at each greenlight and land (by hand, until FRM-410). a lane of one ticket skips the file
+- **the lane plan**, `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside every checkout, so an isolated codie can write it and a decamp keeps it): codie's side (the draft, the ticks, `## not greenlit`) is `x:crew-codie`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to greenlight` an exit line with no plan step gets no 🟢; i reorder it against what comes after and 🟢 greenlight it — my word is final — and greenlight again on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies its ticket lines at each greenlight and land (by hand, until FRM-410). a lane of one ticket skips the file
 
 ## 6 · while it runs
 
