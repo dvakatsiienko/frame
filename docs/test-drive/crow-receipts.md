@@ -17,6 +17,7 @@ crow is adopted (`docs/test-drive/crow.md`); this trial adopts nothing. it is th
 - receipt slice — a claim wake after a «fixed» with no exit-0 call — caught or missed
 - risk wake — a paid submit, a public post, a ticket close — wakes, holds, timed-out rows
 - grading — `--changed` on every verdict — the acted-on share
+- the claim wake — `harvest.log`, `decisions/` — fires and what each changed, counted at every grade; 0 fires or 0 changes by the trial's end: widen it once or cut it (dima, 2026-11-04)
 - baseline — the replay set, before FRM-502 lands — slips caught per packet
 
 ## rounds
