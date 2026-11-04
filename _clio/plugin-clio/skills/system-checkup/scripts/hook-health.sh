@@ -3,13 +3,13 @@
 set -euo pipefail
 days="${1:-7}"
 dir="$HOME/.local/share/x-cc-otel"
-files=$(ls -t "$dir"/*.jsonl 2>/dev/null | head -n "$days")
+files=$(ls -t "$dir"/*.jsonl "$dir"/*.jsonl.gz 2>/dev/null | head -n "$days")
 [ -n "$files" ] || { echo "hook-health: no telemetry in $dir — is the x-cc-otel tap running?"; exit 1; }
 # shellcheck disable=SC2086
-jq -c '.. | objects | select(has("logRecords")) | .logRecords[]
+gzip -cdf $files | jq -c '.. | objects | select(has("logRecords")) | .logRecords[]
   | ([.attributes[] | {(.key): (.value | to_entries[0].value)}] | add)
   | select(."event.name" == "hook_execution_complete")
-  | {name: .hook_name, ms: (.total_duration_ms | tonumber), err: (.num_non_blocking_error | tonumber), cancel: (.num_cancelled | tonumber)}' $files \
+  | {name: .hook_name, ms: (.total_duration_ms | tonumber), err: (.num_non_blocking_error | tonumber), cancel: (.num_cancelled | tonumber)}' \
 | jq -rs --arg days "$days" '
   def pct(p): sort | .[((length - 1) * p | floor)];
   group_by(.name) | map({name: .[0].name, n: length, p50: (map(.ms) | pct(0.5)), p95: (map(.ms) | pct(0.95)), max: (map(.ms) | max),

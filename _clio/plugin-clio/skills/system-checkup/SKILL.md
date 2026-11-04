@@ -37,9 +37,6 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   script, `scripts/hook-health.sh [days]` (🔴 p95 over 1 s or any error, 🟡 over 300 ms)
 - **naming-entity-first** — verb-first names, FRM-219 · script, `node scripts/naming-entity-first.ts`
   (🔴 a breach; a rename is an ask)
-- **agnix** — agent-config lint: frontmatter that strict YAML rejects, settings keys cc ignores, hook
-  schemas · script, `npx -y agnix@<version> --target claude-code --format json .` from `~/frame`,
-  read-only; on a test drive, `docs/test-drive/agnix.md` (its round goes there, and its known noise)
 
 - **install-census** — what is installed and what is used, more often than a memory sweep (dima,
   2026-10-19: the system checkup runs more often than `recipes/nurture-memory`, which runs every 1–3

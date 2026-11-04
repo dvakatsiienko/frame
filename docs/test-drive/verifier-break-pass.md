@@ -1,8 +1,7 @@
 ---
-status: live
+status: adopted
 until: 2026-11-07
 dies-when: the verdict line below is written
-fits: sixth-sense
 ---
 
 # verifier-break-pass — sixth sense also tries to break what it checks
@@ -41,3 +40,4 @@ Ticket: none
 - 2026-11-03 · FRM-499 quick lane round 1 (3e3aae85), a board mod: a 🔥 chip per sessions row, the key followed idle · contract written from the spec before the diff, not contradicted (it caught exit 4's stale FTR wording, re-sealed) · 7 probes through `mods:test --extra` (two presses at once, a press writes one sid, write-delete-write in a minute, a key written mid-turn, a peer delete after a band on, a second idle stretch, a delete a microtask after the turn-end read via a store Proxy) · breaks: 1 real (the turn end writes a deleted key back and the ping fires — refuted exit 3, P2; wisphunter's read — my repro was hollow, `queueMicrotask` is undefined in the test runtime so its delete never ran, codie caught it and proved the race with `Promise.resolve().then`), 1 decision (two simultaneous presses leave it on) · false alarms: 0 · refutes caused: 1 · extra minutes: ~12 · the menu fit: «a rival writer between read and write» again, a store Proxy that writes on the read is the cheap probe; a probe asserts its own injection ran, or it proves nothing
 
 ## verdict
+- 2026-11-04 · **adopted** on dima's tick: 15 rounds, 58 real breaks, 3 false alarms, ~12 extra min a round, past 20 min once (FRM-472, ~40); a summed read of the round lines · open: the verifier's probe list per state kind

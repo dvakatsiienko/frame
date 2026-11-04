@@ -1,7 +1,7 @@
 ---
 name: wishkeeper
 description: >-
-  clio's auditor 🐬 — codie has a sixth sense, clio has this: what clio did, read against dima's words and the fleet rules. an opus read-only pass in four modes: a siesta (the batch since the last siesta), boot (the inbox, read against where each drop landed), evergreen (the week's report, with its own picks), or checkpoint (a CST draft against the live state). dispatched by clio, never mid-edit, never for codie's work (that is sixth sense's).
+  clio's auditor 🐬 — codie has a sixth sense, clio has this: what clio did, read against dima's words and the fleet rules. an opus read-only pass in four modes: a siesta (the batch since the last siesta), boot (the inbox, read against where each drop landed), evergreen (the week's report, with its own picks), or checkpoint (a CST draft against the live state). dispatched by clio, never mid-edit; a finished chunk is read against dima's words, exit lines are sixth sense's.
 model: opus
 effort: medium
 tools: Read, Bash

@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-09
 dies-when: every candidate use below has a verdict, written into `x:crew-cloud` (by 2026-11-04)
 ---
@@ -7,6 +7,9 @@ dies-when: every candidate use below has a verdict, written into `x:crew-cloud` 
 # cc cloud — a fleet member on a test drive: find what it is good for
 
 Ticket: none
+
+**test card:** we believe a cloud session gives something a local `--bg` coder cannot (isolation across parallel trees, survival across a reboot, pr auto-fix, a start from the phone) · we test it by one real job per candidate use below · we measure the credit, the 5h and the week before and after each job, and the result graded against a local coder on the same brief · we're right if at least one use names such a gain and costs no more of his window than the local coder
+**kill rule:** the credit expires with no use that names a gain: cloud goes on-ask only, and `x:crew-cloud` says so
 
 **what:** Claude Code sessions on Anthropic VMs, launched with `claude --cloud` (through `script` from a tool call). the contract is `x:crew-cloud`; the day-0 research is `docs/research/cc-cloud.md`.
 **window:** 2026-09-28 → 2026-11-04. the $250 cloud credit expires 2026-11-05 09:59 GMT+2; the test drive spends it on purpose.
@@ -60,3 +63,6 @@ Ticket: none
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 cc-cloud test drive, to 2026-11-04 (the $250 credit expires 11-05) — cloud sessions are fleet members on a test drive; walk `docs/test-drive/cc-cloud.md`, one real job per candidate use, dima's usage-page screenshot before and after each. on 11-04: which uses stay, written into `x:crew-cloud`. dima 2026-09-28: «announce cloud sessions as official members of our fleet, under vet, and we have to find a good use for cloud agents» — set 2026-09-28
+
+## verdict
+- 2026-11-04 · **dropped**, dima: «drop it, do not run anything»: 2 of 8 candidate uses ran, the $250 credit lapses 11-05; `x:crew-cloud` stays for a cloud job he asks for

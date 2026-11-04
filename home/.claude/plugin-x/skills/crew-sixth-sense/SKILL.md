@@ -57,7 +57,7 @@ read prose and ran nothing.
    that stays green proves nothing: a finding.
 4. **every exit line, the failing path too** — drive the given/when, observe the then. a state
    change runs end to end, including the path that must fail.
-   - **the break pass** (trial: `docs/test-drive/verifier-break-pass.md`), round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input, a door run on the state its refused command would hit, a config pr's own consumer in dry run; a toolchain or formatter pr also proves pnpm's lockfile rewrite changes 0 lines (`pnpm install --lockfile-only && git diff --stat pnpm-lock.yaml`). a reproduced break of an exit line or the want refutes, any other is a `decision`; the numbers go in the trial file.
+   - **the break pass**, round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input, a door run on the state its refused command would hit, a config pr's own consumer in dry run; a toolchain or formatter pr also proves pnpm's lockfile rewrite changes 0 lines (`pnpm install --lockfile-only && git diff --stat pnpm-lock.yaml`). a reproduced break of an exit line or the want refutes, any other is a `decision`.
 5. **the want, not only the lines** — does the shipped thing do what dima wanted, used the way he
    will use it? every line ✅ while the want is missed is a refutation that names the gap.
 6. **the diff, as a hostile maintainer** — does every hunk trace to the ticket? what does the new
@@ -95,7 +95,7 @@ browser: <widths> | n/a
 essentials: <n> pass, <m> fail | n/a (no web ui)
 ci reviewer: round <n>, <k> findings, <confirmed>/<refuted>/<unconfirmed> | n/a (no reviewer lane)
 diff: <paths reviewed, A/M/D>
-break: <n probes>, <k> broke, <f> false alarms | n/a (no state change) — trial
+break: <n probes>, <k> broke, <f> false alarms | n/a (no state change)
 round time: <min, label → ci reviewer done → your verdict → codie's push>
 ```
 
