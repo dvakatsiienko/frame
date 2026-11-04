@@ -3,10 +3,10 @@ id: PK-159
 title: >-
   clio bench — shape-idea: a small mvp that measures clio's performance from her
   threads and logs
-status: open
+status: done
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-04T14:01:00Z'
+updated_date: '2026-11-04T14:46:00Z'
 due_date: '2026-11-05'
 labels:
   - m
@@ -330,4 +330,227 @@ correction 2026-11-04: the close above is withdrawn: F → FRM-503 was wrong, ch
 close: 2026-11-04 — dima's o59. moved: helga's W-lines to FRM-454; chunks to FRM-491, FRM-494, FRM-495, FRM-502, FRM-496, F to FRM-410; shift lines to PK-308. done or moved, each: W1575 W1576 W1577 W1578 W1579 W1580 W1581 W1582 W1583 W1584 W1585 W1586 W1587 W1588 W1589 W1590 W1591 W1592 W1593 W1594 W1595 W1596 W1597 W1598 W1599 W1600 W1601 W1602 W1603 W1604 W1605 W1606 W1607 W1608 W1609 W1610 W1611 W1612 W1613 W1614 W1615 W1616 W1617 W1618 W1619 W1620 W1621 W1622 W1623 W1624 W1625 W1626 W1627 W1628 W1629 W1630 W1631 W1632 W1633 W1634 W1635 W1636 W1637 W1638 W1639 W1640 W1641 W1642 W1643 W1644 W1645 W1646 W1647 W1648 W1649 W1650 W1651 W1652 W1653 W1654 W1655 W1656 W1657 W1658 W1659 W1660 W1661 W1662 W1717 W1718 W1719 W1720 W1721 W1722 W1723 W1724 W1725 W1726 W1727 W1728 W1729 W1730 W1731 W1732 W1733 W1734 W1735 W1736 W1737 W1738 W1739 W1740 W1741 W1742 W1743 W1744 W1745 W1746 W1747 W1748 W1749 W1750 W1751 W1752 W1753 W1754 W1755 W1756 W1757 W1758 W1759 W1760 W1761 W1762 W1763 W1764 W1765 W1766 W1767 W1781 W1782 W1783 W1784 W1785 W1786 W1787 W1788 W1789 W1790 W1791 W1792 W1793 W1794 W1795 W1796 W1797 W1798 W1799 W1800 W1801 W1802 W1803 W1804 W1805 W1806 W1807 W1808 W1809 W1810 W1811 W1812 W1813 W1814 W1815 W1816 W1817 W1818 W1819 W1820 W1821 W1822 W1823 W1824 W1825 W1826 W1827 W1828 W1829 W1830 W1831 W1832 W1833 W1834 W1835 W1836 W1837 W1838 W1839 W1840 W1841 W1842 W1843 W1844 W1845 W1846 W1847 W1848 W1849 W1850 W1851 W1852 W1853 W1854 W633
 
 correction 2026-11-04 16:02: the close above is withdrawn. its id list was generated, not an accounting (wishkeeper): 79 of 214 W-lines have no home found. W1730–W1732 (crow's consult door) are open. a real line per W-line first.
+
+account 2026-11-04 16:15: one line per W-line in _clio/.scratch/pk159/account.md, read from the tickets, the plan and the transcripts. 214 lines, open: W1651, W1730–W1732, both asked in orbit; W1796 was never answered on 11-03, answered 11-04. this item closes on those two ticks.
+
+close: 2026-11-04 — dima's ticks o69, o70. W1651: an observation, no marker built; his o69 words went to PK-319. W1730–W1732 built: crew-adviser § a consult, habit-cto's line, first consult 16:35. every other line: _clio/.scratch/pk159/account.md.
+
+# PK-159 account, 2026-11-04 — one line per W-line
+
+214 lines. all settled 2026-11-04: W1651 by o69, W1730–W1732 by o70. homes checked by script and read by hand for the 82 lines with no hit; «answered: …pk159-plan.md (the plan cites it)» on 62 lines is range-cited, 46 only by a range, its sections read, not each line.
+
+- line W1575: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1576: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1577: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1578: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1579: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1580: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1581: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1582: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1583: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1584: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1585: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1586: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1587: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1588: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1589: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1590: moved: FRM-495, .scratch/pk159/pk159-plan.md
+- line W1591: moved: FRM-495, .scratch/pk159/pk159-plan.md
+- line W1592: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1593: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1594: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1595: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1596: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1597: moved: FRM-454, .scratch/pk159/pk159-plan.md
+- line W1598: moved: FRM-454, .scratch/pk159/pk159-plan.md
+- line W1599: moved: FRM-454, .scratch/pk159/pk159-plan.md
+- line W1600: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1601: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1602: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1603: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1604: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1605: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1606: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1607: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1608: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1609: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1610: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1611: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1612: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1613: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1614: moved: FRM-494, .scratch/pk159/pk159-plan.md
+- line W1615: moved: FRM-494, .scratch/pk159/pk159-plan.md
+- line W1616: moved: FRM-494, .scratch/pk159/pk159-plan.md
+- line W1617: moved: FRM-494, .scratch/pk159/pk159-plan.md
+- line W1618: moved: FRM-494, .scratch/pk159/pk159-plan.md
+- line W1619: moved: FRM-494, .scratch/pk159/pk159-plan.md
+- line W1620: moved: FRM-494, FRM-495, .scratch/pk159/pk159-plan.md
+- line W1621: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1622: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1623: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1624: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1625: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1626: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1627: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1628: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1629: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1630: moved: FRM-496, .scratch/pk159/pk159-plan.md
+- line W1631: moved: FRM-496, .scratch/pk159/pk159-plan.md
+- line W1632: moved: FRM-496, .scratch/pk159/pk159-plan.md
+- line W1633: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1634: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1635: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1636: answered: .scratch/pk159/grill-1-proposal.md (the plan cites it)
+- line W1637: answered: .scratch/pk159/grill-1-proposal.md (the plan cites it)
+- line W1638: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1639: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1640: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1641: moved: FRM-491, .scratch/pk159/grill-1-proposal.md, .scratch/pk159/pk159-plan.md
+- line W1642: answered: .scratch/pk159/grill-1-proposal.md (the plan cites it)
+- line W1643: answered: .scratch/pk159/grill-1-proposal.md (the plan cites it)
+- line W1644: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1645: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1646: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1647: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1648: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1649: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1650: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1651: his o69: not a count he wants; he meant overload and the forgotten siesta over a chunk; his words W213–W223 on FRM-491
+- line W1652: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1653: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1654: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1655: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1656: moved: FRM-496, .scratch/pk159/pk159-plan.md
+- line W1657: moved: FRM-496, .scratch/pk159/pk159-plan.md
+- line W1658: moved: FRM-496, .scratch/pk159/pk159-plan.md
+- line W1659: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1660: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1661: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W1662: answered: .scratch/pk159/pk159-plan.md (the plan cites it)
+- line W633: done: a scheduling line, the bench ran with the side channel on 11-03
+- line W1717: moved: his ok on chunk A, FRM-491
+- line W1718: answered: 83c713a6 12:25, Side channel said clio runs the siesta herself on afk, closing once wishkeeper's report landed and findings fixed, now in chunk A.
+- line W1719: answered: 83c713a6 12:25, «wishkeeper stays the safety net», clio closes the siesta herself.
+- line W1720: answered: 83c713a6 12:25, Folded in: afk siesta closes when wishkeeper's report has landed and highs are fixed or parked with reason (chunk A); main clio repeated it at 12:33 in 668daff8.
+- line W1721: answered: 83c713a6 12:25, «partly a rule and mostly habit (inference, not yet measured)»; chunk B sends fields-known writes to helga and the siesta card counts hand-written ones.
+- line W1722: moved: his ok on chunk B, FRM-494
+- line W1723: answered: 83c713a6 12:25, «It should help the most»: member-woken printing turns are the biggest slice of clio's cost.
+- line W1724: moved: FRM-454
+- line W1725: done: 83c713a6 12:25, SendMessage to main clio (local_0bb292f3) with the deadlock; she replied it was already folded as rider 07c (b) in mods lane 4, FRM-472.
+- line W1726: done: 83c713a6 12:25, Relayed to clio with his note; she confirmed the pk-305 deadlock was already folded in mods lane 4, re-signed 12:16.
+- line W1727: done: the order he asked for, chunks ran one by one, then the two sharpenings below
+- line W1728: done: adviser recipe run 3 on 11-03 (recipes/refresh-crew-coordinator-adviser/log.md), its change plan is FRM-502
+- line W1729: done: adviser recipe run 3 on 11-03 (recipes/refresh-crew-coordinator-adviser/log.md), its change plan is FRM-502
+- line W1730: built on his «solve» 16:34: crew-adviser § a consult, habit-cto
+- line W1731: built on his «solve» 16:34: crew-adviser § a consult, habit-cto
+- line W1732: built on his «solve» 16:34: crew-adviser § a consult, habit-cto
+- line W1733: moved: FRM-454
+- line W1734: moved: FRM-454
+- line W1735: moved: FRM-454
+- line W1736: moved: FRM-454
+- line W1737: moved: FRM-491
+- line W1738: moved: FRM-491
+- line W1739: moved: FRM-491
+- line W1740: moved: FRM-491
+- line W1741: moved: FRM-491
+- line W1742: moved: FRM-491
+- line W1743: moved: FRM-491
+- line W1744: moved: FRM-491
+- line W1745: moved: FRM-491
+- line W1746: moved: FRM-491
+- line W1747: context: clio's own 12:33 lines he quoted with ←, per the 13:09 label fix
+- line W1748: context: clio's own 12:33 lines he quoted with ←, per the 13:09 label fix
+- line W1749: moved: FRM-491
+- line W1750: context: clio's own 12:33 lines he quoted with ←, per the 13:09 label fix
+- line W1751: moved: FRM-491
+- line W1752: moved: FRM-491
+- line W1753: moved: FRM-491
+- line W1754: moved: FRM-491
+- line W1755: moved: FRM-491
+- line W1756: moved: FRM-491
+- line W1757: answered: the o23 wisp, clio's habit, 12:33; the guard is FRM-491's Stop hook refusing an unresolved tick
+- line W1758: answered: the o23 wisp, clio's habit, 12:33; the guard is FRM-491's Stop hook refusing an unresolved tick
+- line W1759: answered: the o23 wisp, clio's habit, 12:33; the guard is FRM-491's Stop hook refusing an unresolved tick
+- line W1760: answered: 668daff8 12:33, «o23 kept coming back because of my habit, not a mod bug»: tick on o24 arrived same turn, o23 never resolved.
+- line W1761: answered: 668daff8 12:33, His line is garbled by dictation; the reply explains the lock means the tick was delivered and o23 was left open until closed (no sale topic); read as the same question.
+- line W1762: answered: the o23 wisp, clio's habit, 12:33; the guard is FRM-491's Stop hook refusing an unresolved tick
+- line W1763: answered: 668daff8 12:33, Same reply: the ask stayed on the board because clio never resolved it, closed now; plus a mod idea, a Stop-hook check refusing turn end with an unresolved delivered tick.
+- line W1764: answered: 668daff8 12:33, «my habit, not a mod bug».
+- line W1765: context: the setup of W1766, W1767
+- line W1766: answered: 668daff8 12:33, «worth it and fleet wired apply only to new surface»; chunk A has both, chores add none, FRM-480 lacks its worth-it section.
+- line W1767: answered: 668daff8 12:33, Only known afterwards: milestone-close cleanup reads usage counts, a part with no counter is marked «unmeasured»; chunk A counted by siesta loads per day vs 5 in 4 days.
+- line W1781: moved: his ok on the phases tweaks, the trial docs/test-drive/pre-merge-siesta.md
+- line W1782: moved: the trial pre-merge-siesta.md test card and rules
+- line W1783: answered: 668daff8 13:03, Listed what guards a landing: sixth sense grades exit lines, merge-auto waits for CI, x lane landed flags leftovers; missing is a read against his W-lines.
+- line W1784: moved: the trial pre-merge-siesta.md test card and rules
+- line W1785: moved: the trial pre-merge-siesta.md test card and rules
+- line W1786: moved: the trial pre-merge-siesta.md test card and rules
+- line W1787: moved: the trial pre-merge-siesta.md test card and rules
+- line W1788: answered: 668daff8 13:03, «Pre-merge siesta: yes», as a rider on FRM-491, put on his board as an ask.
+- line W1789: answered: 668daff8 13:03, «wishkeeper rather than wisphunter»; a second wisphunter would only repeat sixth sense's code read.
+- line W1790: answered: 668daff8 13:03, «Retros: yes, every codie and sixth sense writes one when its chunk ends», saved beside the lane plan.
+- line W1791: answered: 668daff8 13:03, Clio folds them when the whole lane ends, halt gathers leftovers; mods lane 4 holds 12 unfolded; proposed per-chunk folding at the pre-merge siesta (he agreed 13:09).
+- line W1792: moved: the trial pre-merge-siesta.md rules (retros fold per chunk, wishkeeper before the merge)
+- line W1793: moved: the trial pre-merge-siesta.md rules (retros fold per chunk, wishkeeper before the merge)
+- line W1794: moved: the trial pre-merge-siesta.md rules (retros fold per chunk, wishkeeper before the merge)
+- line W1795: moved: the trial pre-merge-siesta.md rules (retros fold per chunk, wishkeeper before the merge)
+- line W1796: answered now: reply of 2026-11-04 16:15, the trial's rounds; was unanswered on 11-03 (helper read)
+- line W1797: moved: his cost weighing, the trial's test card and kill rule
+- line W1798: moved: his cost weighing, the trial's test card and kill rule
+- line W1799: moved: his cost weighing, the trial's test card and kill rule
+- line W1800: moved: his cost weighing, the trial's test card and kill rule
+- line W1801: done: the trial is live, 6 rounds logged
+- line W1802: done: 668daff8 13:11, Wrote docs/test-drive/pre-merge-siesta.md (status live, until 2026-11-17, test card and kill rule) via clio:shape-test-drive; «via SQL» read as «via skill», my reading.
+- line W1803: done: the trial is live, 6 rounds logged
+- line W1804: done: the trial is live, 6 rounds logged
+- line W1805: done: the split is the chunk list in this item's close line
+- line W1806: done: crow run with him → FRM-502; helga's run → FRM-454, still his
+- line W1807: moved: FRM-454
+- line W1808: done: crow run with him → FRM-502; helga's run → FRM-454, still his
+- line W1809: answered: 668daff8 14:16, Printed «Wishkeeper's most interesting finds this round»: signing-hash mistake twice, his 13:03/13:10 wishes had no home, and three more.
+- line W1810: answered: 668daff8 14:16, «PK-159: two things want you, both on the board»: chunk C warn-not-block pick, and who builds it.
+- line W1811: done: 668daff8 14:32, Tickets FRM-494/495/496 made and signed, spec sealed, clio-lean codie summoned (FRM-491 to 496), ran into the evening.
+- line W1812: done: 668daff8 19:36, Wishkeeper siestas ran over chunks (15:33, 19:21) and clio reported «clio-lean lane is finished and stopped», codie and sixth sense stopped.
+- line W1813: done: that day's exception, the mods lane waited for his approval (W1846–W1847 carry it)
+- line W1814: done: that day's exception, the mods lane waited for his approval (W1846–W1847 carry it)
+- line W1815: answered: 668daff8 14:21, «On it. Two things before you go»: chunk A signed and dispatching, B, C, E tickets need his sign ticks; status at 14:26.
+- line W1816: context: a state note, the afk tick
+- line W1817: answered: 668daff8 14:26, «The afk second-wind policy»: codie and sixth sense take their own at 60 %; mine on a shift is my own call, otherwise his press; fuller at 14:31.
+- line W1818: context: a state note, the afk tick
+- line W1819: done: 668daff8 14:25, SendMessage to codie, sixth sense, (helga) with his afk 60 % rule; repeated on resume 14:28; clio-lean codie brief carries it.
+- line W1820: answered 14:24; the double tick fixed in 66070c42 (a tick reaches the model once), sign rider on FRM-489
+- line W1821: done: FRM-489 rider, 66070c42
+- line W1822: answered: 668daff8 14:31, «The shift policy (clio:shift)»: starts from a word or plan, afk handling, threshold, members; today was afk rules, not a shift.
+- line W1823: answered: 668daff8 14:31, «nothing for you to enable»; clio loads the skill, his afk switch only sets ping level.
+- line W1824: answered: 668daff8 14:31, On a shift 600-700k tokens (his 10-07 line); off a shift only his press; no 80 % line exists.
+- line W1825: answered: 668daff8 14:31, «Off a shift: your press only. I don't watch my own context against a rule.»
+- line W1826: answered: 668daff8 14:31, Same reply, then changed to 60 % while afk in clio:shift and clio:checkpoint (commit and plugin bump 14:33).
+- line W1827: answered: 668daff8 14:31, «yes, wishkeeper runs over each chunk before its close»; done in practice, see W1812.
+- line W1828: context: opens W1829–W1832
+- line W1829: answered: 668daff8 14:35, «The shift is ready: all six checkup guards are green», with a shape check (rusty: last real shift 10-08).
+- line W1830: answered: 668daff8 14:35, Implicit only: he needs the afk switch on and «go» ticked on the board; the shift then runs both lanes ~1 h.
+- line W1831: context: opens W1829–W1832
+- line W1832: answered: 668daff8 14:35, «What I need from you»: afk switch, «go» on the board, one pick on starting the next chunk.
+- line W1833: done: bd47db41 clears the row at its compact; the look is his eye
+- line W1834: moved: PK-308
+- line W1835: moved: PK-308
+- line W1836: moved: PK-308
+- line W1837: moved: PK-308
+- line W1838: moved: PK-308
+- line W1839: moved: PK-308
+- line W1840: moved: PK-308
+- line W1841: moved: PK-308
+- line W1842: moved: PK-308
+- line W1843: moved: PK-308
+- line W1844: moved: PK-308
+- line W1845: moved: PK-308
+- line W1846: moved: PK-308
+- line W1847: moved: PK-308
+- line W1848: moved: PK-308
+- line W1849: moved: PK-308
+- line W1850: moved: PK-308
+- line W1851: moved: PK-308
+- line W1852: moved: PK-308
+- line W1853: moved: PK-308
+- line W1854: moved: PK-308
 <!-- SECTION:NOTES:END -->

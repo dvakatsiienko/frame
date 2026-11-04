@@ -7097,7 +7097,6 @@ export const register: Register = (on) => {
                                         {isPartOn('stash.second-wind') ? (
                                             <Box flexShrink={0}>
                                                 <Button
-                                                    dimColor={!m.wind}
                                                     key={`wind:${m.sid}`}
                                                     onPress={() =>
                                                         pressWind($, m.sid)

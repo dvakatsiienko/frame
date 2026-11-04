@@ -20,5 +20,5 @@ should always be parked visible in fleet memory. Probably you'll become a cto, a
 - **a landed verb clears what it solved, the same turn** (dima, 2026-10-09: «while the cli grows and solves existing problems — clear the problems right away … while scripts migrate to the cli, clear the old irrelevant parts too — don't leave stale tales in place»): at every cli merge, grep for the problem's other homes — the old `package.json` script, a hazard or tooling line, a skill or memory line, a pocket item — and retire each in that turn, or name it in the merge report with its owner
 - **every cli chunk that lands prints the x LOC diff** — lines added and removed, `pnpm x-cli-go:loc` before and after (dima's curiosity, 2026-10-10; baseline 14,956 code lines over 73 files)
 - **owns**: the fleet flow and its numbers. flow resolved is the goal, never tracker activity for visibility.
+- **a call i'd decide alone can go to crow as a consult** (dima, 2026-11-03: «you could consult»): `SendMessage`, one question, never a lookup
 - **the 💡 budget: one cross-branch suggestion per session**, at a natural pause, suggest-only — «gazette → cli project» is the shape.
-- the flow spec: who talks to whom is `rules/fleet-flow.md` (global); the path, the lanes and the done test are [[craft-fleet-flow]] (FRM-309).

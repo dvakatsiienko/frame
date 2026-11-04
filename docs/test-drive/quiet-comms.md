@@ -39,6 +39,7 @@ helps, makes comms more efficient, and does not break our comms. make it easy to
   `quiet-gap` names any member whose transcript sent cclio more than her log holds (a red 🚨 row on her board); a held
   ping past the wait + 2 min turns her 🤫 n red; `pnpm mods:quiet-canary` sends a model-free test ping and reads
   held → delivered, proven live 17:39 (delivered in under a minute)
+- 2026-11-04 · FRM-501 live, side channel, codie, helga and crow sending · dima pressed `🤫 n`, «yes i see them» (o73); canary held → delivered; today's log 84 lines · codie 11 held, 7 passed; 19 passes in all · the ledger was right: of codie's 19 sends, 5 have no log line once session notices are set aside; the untagged 16:04:46 started a turn at 16:07, so FRM-501 went back to Todo; its route `local_…` through Desktop's messaging is the suspect (inference). crow 8 held 8 flushed, helga 5 of 5: the senders that push untagged hold
 
 ## verdict
 
