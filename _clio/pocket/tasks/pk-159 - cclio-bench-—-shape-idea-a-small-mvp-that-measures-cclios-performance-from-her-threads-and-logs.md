@@ -3,10 +3,10 @@ id: PK-159
 title: >-
   clio bench — shape-idea: a small mvp that measures clio's performance from her
   threads and logs
-status: open
+status: done
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-04T14:13:00Z'
+updated_date: '2026-11-04T14:36:00Z'
 due_date: '2026-11-05'
 labels:
   - m
@@ -332,4 +332,6 @@ close: 2026-11-04 — dima's o59. moved: helga's W-lines to FRM-454; chunks to F
 correction 2026-11-04 16:02: the close above is withdrawn. its id list was generated, not an accounting (wishkeeper): 79 of 214 W-lines have no home found. W1730–W1732 (crow's consult door) are open. a real line per W-line first.
 
 account 2026-11-04 16:15: one line per W-line in _clio/.scratch/pk159/account.md, read from the tickets, the plan and the transcripts. 214 lines, open: W1651, W1730–W1732, both asked in orbit; W1796 was never answered on 11-03, answered 11-04. this item closes on those two ticks.
+
+close: 2026-11-04 — dima's ticks o69, o70. W1651: an observation, no marker built; his o69 words went to PK-319. W1730–W1732 built: crew-adviser § a consult, habit-cto's line, first consult 16:35. every other line: _clio/.scratch/pk159/account.md.
 <!-- SECTION:NOTES:END -->

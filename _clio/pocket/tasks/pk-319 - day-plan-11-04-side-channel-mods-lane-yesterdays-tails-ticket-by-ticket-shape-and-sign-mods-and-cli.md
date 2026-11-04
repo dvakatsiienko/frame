@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T14:28:00Z'
+updated_date: '2026-11-04T14:36:00Z'
 labels:
   - s
 dependencies: []
@@ -253,4 +253,18 @@ W208 (2026-11-04 16:26, dima, o72 steer): some of them must be synchronous, so t
 W209 (2026-11-04 16:26, dima, o72 steer): anything that can happen in the background has to happen in the background, because otherwise coders waste lots of time.
 W210 (2026-11-04 16:26, dima, o72 steer): from today, I noticed that side lane is kind of slow. I expected a little bit more chunks to be done, at least 2 or 3 more starting.
 W211 (2026-11-04 16:26, dima, o72 steer): rethink if a single line is enough.
+
+W213 (2026-11-04 16:33, dima, o69 steer): i do not understand it.
+W214 (2026-11-04 16:33, dima, o69 steer): I was just about to say that you, EG, main lane, have too many second wins.
+W215 (2026-11-04 16:33, dima, o69 steer): It is not a bad sign.
+W216 (2026-11-04 16:33, dima, o69 steer): It just means that the main thread is overloaded with context feeling, and in my mind, it happens because of two things:
+W217 (2026-11-04 16:33, dima, o69 steer): 1. You just have a lot to do, which is natural.
+W218 (2026-11-04 16:33, dima, o69 steer): 2. The spam, which is a problem we are currently solving.
+W219 (2026-11-04 16:33, dima, o69 steer): When you have lots of stuff to do in main lane and side lane, and it also spams you, it becomes very hard to keep track of things.
+W220 (2026-11-04 16:33, dima, o69 steer): Plus, your side-lane-related chores also require a lot of you: doing certain stuff that you keep missing, and actually a lot of your attention too.
+W221 (2026-11-04 16:33, dima, o69 steer): You miss stuff as a result on both surfaces.
+W222 (2026-11-04 16:33, dima, o69 steer): For example, after each chunk of side lane is completed, you have to siesta and wishkeeper over the chunk, and you keep forgetting it.
+W223 (2026-11-04 16:33, dima, o69 steer): I was more about this.
+W224 (2026-11-04 16:33, dima): mods lane: I'm done with them.
+W225 (2026-11-04 16:33, dima): you can collect the retro whenever you have a moment and stop mods lane.
 <!-- SECTION:NOTES:END -->
