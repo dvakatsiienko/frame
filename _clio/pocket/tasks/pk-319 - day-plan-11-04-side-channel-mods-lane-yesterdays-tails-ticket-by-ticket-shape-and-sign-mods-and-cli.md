@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T14:27:00Z'
+updated_date: '2026-11-04T14:28:00Z'
 labels:
   - s
 dependencies: []
@@ -240,4 +240,17 @@ W197 (2026-11-04 16:03, dima): no, leave all halt activities for real halt, when
 homes: W187 W189 W198 W199 → FRM-502; W188 → FRM-501, FRM-499
 
 o68 (2026-11-04 16:26, dima): yes, i told the coder to do without a verifier. df0c6734, bd47db41 and the settings layout stay ungraded; sixth sense's clean on FRM-500 stands at 1f64e232.
+
+groom 2026-11-04 16:28 (helga W201–W211; W198–W200 sit on FRM-502 and FRM-500):
+W201 (2026-11-04 16:26, dima): send side channel everything you proposed to offload, and tell it to solve sequentially.
+W202 (2026-11-04 16:26, dima): tell side channel to solve everything herself (what she can solve without me) and ask me if I need it.
+W203 (2026-11-04 16:26, dima): I will pick inside of both channels, yours and side.
+W204 (2026-11-04 16:26, dima, o72 steer): I think it's kind of serious: when I went to steer Codie and asked him for changes, he stuck for 6 minutes on commit.
+W205 (2026-11-04 16:26, dima, o72 steer): you can go and ask Codie for the exact situation: how it was, what he was doing, and how much time he lost.
+W206 (2026-11-04 16:26, dima, o72 steer): in my mind, spending 6 minutes just to commit is kind of too much time, because imagine a coder who commits 100 times per day, times 6 minutes of waiting. It's a very large amount of time wasted.
+W207 (2026-11-04 16:26, dima, o72 steer): if the things Codie was doing were holding his operation in a blocked state, they can actually be offloaded, because not all operations can be offloaded.
+W208 (2026-11-04 16:26, dima, o72 steer): some of them must be synchronous, so to say (e.g., wait until done and then proceed).
+W209 (2026-11-04 16:26, dima, o72 steer): anything that can happen in the background has to happen in the background, because otherwise coders waste lots of time.
+W210 (2026-11-04 16:26, dima, o72 steer): from today, I noticed that side lane is kind of slow. I expected a little bit more chunks to be done, at least 2 or 3 more starting.
+W211 (2026-11-04 16:26, dima, o72 steer): rethink if a single line is enough.
 <!-- SECTION:NOTES:END -->
