@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T15:22:00Z'
+updated_date: '2026-11-04T15:30:00Z'
 labels:
   - s
 dependencies: []
@@ -269,4 +269,23 @@ W224 (2026-11-04 16:33, dima): mods lane: I'm done with them.
 W225 (2026-11-04 16:33, dima): you can collect the retro whenever you have a moment and stop mods lane.
 
 W212 (2026-11-04 16:26, dima, o73 steer): yes i see them.
+
+W226 (2026-11-04 17:28, dima): side thread taken over what i researched today with it. your upgrades + --bg coordinator idea.
+W227 (2026-11-04 17:28, dima): tldr: most useful findings goes directly to you first, the --bg tidle idea goes some time after, at some good point. i'll tell.
+W228 (2026-11-04 17:28, dima): 1. Let's take over everything from side channel to your part because there is 6% of weekly window usage left, and they want no data loss.
+W229 (2026-11-04 17:28, dima): Everything that side channel currently has should be taken over by you.
+W230 (2026-11-04 17:28, dima): Ensure that side channel is fully transferred to you, so no data loss has happened.
+W231 (2026-11-04 17:28, dima): 2. Merge its work tree into yourself, into main, because it contains changes to your habits.
+W232 (2026-11-04 17:28, dima): Be careful because you edited your habits today too, and conflicts are possible, so resolve them.
+W233 (2026-11-04 17:28, dima): Properly merge the work.
+W234 (2026-11-04 17:28, dima): 3. Clean it out.
+W235 (2026-11-04 17:28, dima): After everything is passed from side channel to yourself and you take over, stop the side channel.
+W236 (2026-11-04 17:28, dima): Then tell where we are in scope of everything: what's left to do in terms of FRM-368 (e.g., your coordination upgrades), until the idea is that everything is implemented on your side.
+W237 (2026-11-04 17:28, dima): If yes, then propose how to properly close all leftover tails and, more importantly, organize the mods lane, because currently the mods lane has few important chunks.
+W238 (2026-11-04 17:28, dima): The ones that we didn't fit today, but the ones that side channel proposes, are also important.
+W239 (2026-11-04 17:28, dima): Propose a good order of execution for them and optimize it.
+W240 (2026-11-04 17:28, dima): And afterwards, let's see where we are in terms of the weekly usage window to see if we can solve more tails or if we will hold afterwards.
+W241 (2026-11-04 17:28, dima): Don't push on halt. I'll tell you myself.
+
+W227 (2026-11-04 17:28, dima): tldr: most useful findings goes directly to you first, the --bg tilde idea goes some time after, at some good point. i'll tell.
 <!-- SECTION:NOTES:END -->
