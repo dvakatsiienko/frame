@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T16:41:00Z'
+updated_date: '2026-11-04T16:49:00Z'
 labels:
   - s
 dependencies: []
@@ -355,4 +355,15 @@ W294 (2026-11-04 18:26, dima, o107 steer): Yes, delete them, and all cuts should
 next boot, dima 18:33: x fleet audit is not cut. a cli verb with no usage may be unwired to habits, not useless: review the unused verbs for that (W1041, W1042, W1393–W1401) and solve it then.
 
 next boot, dima 18:33: pick the word replacing «door» (ask on the board, my pick ⏰ due), then rename in close-net.ts and test, craft-fleet-flow, closing.md. PK-319 itself dies at that boot, its lines travel in the handoff.
+
+W295 (2026-11-04 18:33, dima): move cut x fleet audit question to next boot. We already discussed that some CLI verbs that we already have cannot show any usage because they are not properly wired to habits.
+W296 (2026-11-04 18:33, dima): The fact that a CLI verb isn't used doesn't mean that it is useless. It can mean that it just isn't wired to habits properly.
+W297 (2026-11-04 18:33, dima): During the next boot, let's find out and solve it. Not now.
+W298 (2026-11-04 18:33, dima): Then "door" is a bad word for it because, in my mind, a door is an entry for something. For example, your door to my onePassword keys is my onePassword vault, and if you don't have access to my onePassword vault, then you have no door to my vault. In your description, you confuse me with your doors. Pick another word to describe stuff that gets parked in your pocket for too long. I vote for something simpler, like, for example, "stale," or propose your own words that would be clear enough.
+W299 (2026-11-04 18:33, dima): Solve everything in these chunks yourself, and ask me around when you need me if my attention is needed.
+W300 (2026-11-04 18:33, dima): This is the last one before halt. When everything is done, print the line that you finished and are ready to halt.
+W301 (2026-11-04 18:33, dima): sign ✓.
+W302 (2026-11-04 18:48, dima): placed as first chunk in mods lane? did you revisited the execution order with new signed chunks? if no - groom execution order. ❓
+W303 (2026-11-04 18:48, dima): Actually, do you have a habit of grooming the execution order of chunks once you sign new chunks? If not, tweak your habit because each time you sign chunks, you should always place them into a good spot in the execution order based on usefulness. The most useful and most wanted go first. ❓
+W304 (2026-11-04 18:48, dima, o117 steer): Rename now. It should be free.
 <!-- SECTION:NOTES:END -->
