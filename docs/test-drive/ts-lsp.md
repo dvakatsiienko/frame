@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-04
+until: 2026-11-11
 fits: codie:ts
 ---
 
@@ -26,11 +26,10 @@ is … pull it into our stack and measure it under a weight for 2 weeks».
 - the trigger: `x:guide-code` «every use site» — a TS rename or «who uses X» starts with
   `findReferences`.
 - the bridge exists because TS 7 answers only pull and claude code listens only for push —
-  microsoft/TypeScript#63921 (the gh watch (boot digest)), anthropics/claude-code#40282; it
+  microsoft/TypeScript#63921, anthropics/claude-code#40282, both on x-changedetector; it
   switches itself off once either lands. diagnostics arrive one tool call late, and only for files
   claude code edited.
-- back to the official plugin (and the vendored copy deleted) when anthropics/claude-plugins-official#4492 lands — parallel
-  the gh watch (daily).
+- back to the official plugin (and the vendored copy deleted) when anthropics/claude-plugins-official#4492 lands, on x-changedetector too.
 
 ## stress list — one real ask each
 
@@ -65,6 +64,7 @@ beat grep or lost to it.
 
 - 2026-11-04 · the second reading of the `LSP` tool · `usage.py 2026-10-16`: 119 main sessions, **0 LSP calls**, 20,115 grep calls · it counts main threads only, so 916 subagent transcripts were read too: `tool_use` named LSP in 0 (161 mention it only in a tool schema), `wisphunter` and `scout` included, which both carry the tool · the guide-typescript placement had 19 days and changed nothing
 - 2026-11-04 · dima's false-negative check: since 10-16 git touched 1,487 ts paths (824 of them mods) against 233 go, so the 0 calls sat on plenty of TS; the bridge's diagnostics reached 80 transcripts in 14 days
+- 2026-11-04 · dima's steer, the second extension, to 11-11 under the test card above: keep both, the marketplace plugin and our patch («Keep the test drive and move it 1 week further»), since he reads recent TS activity as too low to judge and more is coming soon
 
 ## verdict
 
