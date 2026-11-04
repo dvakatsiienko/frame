@@ -4,7 +4,7 @@ title: 'x-mod-guard wisp: a ticked sign ask does not carry the sign write'
 status: open
 assignee: []
 created_date: '2026-11-03T19:20:00Z'
-updated_date: '2026-11-03T19:22:00Z'
+updated_date: '2026-11-04T08:46:00Z'
 labels:
   - s
 dependencies: []
@@ -25,4 +25,6 @@ ordinal: 31000
 21:22 root cause (likely): the 4th sighting today (flawlog 10:27, 10:40, 14:24, and 21:17) — I resolved o137 in the same step as the sign write; tickFor reads only open ticks, so a resolved one carries nothing. fix candidates: the guard keeps a tick valid for its TICK_MS after resolve, and one tick covers a correction write; or a sign verb that waits for the tick, computes the hash from linear (sign-hash.ts) and writes once — the 20:39 jq wipe and the hash drifts are the same door. second sighting = teeth: a guard/verb fix, never a memory line.
 
 21:22 dima asked guard or verb → clio's pick, the verb: x linear sign FRM-N waits for the tick, hashes linear's stored form, writes line + label once; the guard narrows to refusing a hand sign line and naming the verb. new surface → ⚖️ worth it section before the build (mods/cli lane).
+
+10:47 2026-11-04: a tiny ✏️ write on FRM-478 (closing word above ## signed, one appended ✏️ line, hash recomputed) was refused «ask dima to tick an orbit ask ✍️ sign». its sign block has lines after the run stamp, a shape the reader may take as a new sign (inference). the closing word went as a comment.
 <!-- SECTION:NOTES:END -->
