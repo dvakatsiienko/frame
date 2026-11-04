@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T13:17:00Z'
+updated_date: '2026-11-04T13:32:00Z'
 labels:
   - s
 dependencies: []
@@ -224,4 +224,7 @@ W182 (2026-11-04 15:14, dima): here, (ater 4), implement crow ticket it was fold
 W183 (2026-11-04 15:14, dima): that's quite alot, let's do everything before moving on.
 
 W184 (2026-11-04 15:08, dima, o48 steer): what does «words only» mean? let's leave the weekly window out of scope for now. too many changes at once.
+
+W185 (2026-11-04 15:25, dima, o56 steer): the plan ends 5 nov ~5pm, and i resume it either right after tomorrow or on 6 nov.
+W186 (2026-11-04 15:22, dima, o55 steer): no, i keep an eye on the weekly myself.
 <!-- SECTION:NOTES:END -->
