@@ -1,10 +1,10 @@
 ---
 id: PK-293
 title: 'pm module upkeep: clio''s own proposals (W937–W938)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-01T15:57:00Z'
-updated_date: '2026-11-04T16:06:00Z'
+updated_date: '2026-11-04T16:07:00Z'
 labels:
   - s
 dependencies: []
@@ -35,4 +35,8 @@ done 2026-11-04: item 2, the close sweep in clio:halt; item 3, 9 closed tickets 
 ⚖️ worth it, 2026-11-04, each new surface: item 1 x linear sign: removes the by-hand hash and the three calls per sign (today 3 signs, 2 refused writes); cheaper door turned down: FRM-384's body guard covers the write only; upkeep one verb; 🔌 fleet wired: clio:shape-lane § 4, keep, as a rider on FRM-384. item 4 stale In Progress line: close-net.ts already reds it at every siesta, no: drop. item 5 boot next-chunk print: dima picks from the mods order in the initiative queue, no pain counted: drop, unless he asks
 
 correction: «2 refused writes» above was not counted; PK-316 names sign guard refusals with no number
+
+close: 2026-11-04 — item 2 in clio:halt, item 3 ran once, item 1 a rider candidate on FRM-384; items 4 and 5 dropped: close-net already reds a stale In Progress, no pain counted for the boot print; W937–W938 answered by these proposals.
+
+close: 2026-11-04. W-lines, read whole: W937, W938 done or moved as named.
 <!-- SECTION:NOTES:END -->

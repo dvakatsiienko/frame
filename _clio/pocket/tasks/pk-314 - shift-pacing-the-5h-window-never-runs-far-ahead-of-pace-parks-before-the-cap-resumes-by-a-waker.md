@@ -3,10 +3,10 @@ id: PK-314
 title: >-
   shift pacing: the 5h window never runs far ahead of pace, parks before the
   cap, resumes by a waker
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T17:10:00Z'
-updated_date: '2026-11-03T17:18:00Z'
+updated_date: '2026-11-04T16:07:00Z'
 labels:
   - m
 dependencies: []
@@ -59,4 +59,8 @@ W31 (2026-11-03 19:14, dima): We burn 5-hour windows fully, and ideally tomorrow
 W32 (2026-11-03 19:14, dima): Then I will park and wait until I buy the $200 plan as soon as I planned.
 
 W33 (2026-11-03 19:16, dima): by burning 5h and weekly window i mean that we not just burn, we do useful stuff. no waste burning.
+
+close: 2026-11-04 — the park and resume strategy landed as clio:shift § the 5h ladder and FRM-500's pace watch; W3's keep-hot gap for --bg members landed as FRM-499; W26–W33 are context for the burn days, which end with this plan.
+
+close: 2026-11-04. W-lines, read whole: W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W28, W29, W30, W31, W32, W33 done or moved as named.
 <!-- SECTION:NOTES:END -->
