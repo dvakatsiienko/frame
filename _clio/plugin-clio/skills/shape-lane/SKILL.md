@@ -43,6 +43,7 @@ the grill and the groom come first: the chunk is healthy — good content, a goo
 
 - **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask
 - on the sign: `x linear set FRM-N --add-label signed --state Todo` (out of Triage; a re-sign keeps a started state); then `sortOrder` (a move resets it); the sign ask resolves only after this write lands
+- **every sign regroups the execution order, the same turn** (dima, 2026-11-04): the new chunk goes where its usefulness puts it, most useful and most wanted first, never the tail; the `blocks` chain and `sortOrder` are rewritten, and the new order is printed
 - and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `clio:pm` `references/body.md`)
   - the hash: first 8 of sha256 over the raw body above `## signed`, its blank line in; a dry `x lane dispatch FRM-N` proves it
   - a line in the block is never edited: history is how a lane gets debugged
