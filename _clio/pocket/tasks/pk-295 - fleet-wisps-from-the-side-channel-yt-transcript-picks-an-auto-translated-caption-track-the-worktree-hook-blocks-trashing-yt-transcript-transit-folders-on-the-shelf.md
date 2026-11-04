@@ -7,7 +7,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-01T15:59:00Z'
-updated_date: '2026-11-01T16:31:00Z'
+updated_date: '2026-11-04T12:48:00Z'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,6 @@ two transit folders still sit under ~/.claude/shelf; same report path as above
 side channel's FRM-464 verdict 11-01: boot, role and two-way messaging proven; not exercised: the pocket side label and the worktree round-trip (EnterWorktree → x lane commit → clio's merge); prove both with the next side channel's first small repo edit and one pocket item. the worktree hook also blocked a redirect into $TMPDIR
 
 the worktree guard checks the shell's cwd, not the target path: trash ~/Downloads/x.pem was refused with the shell in ~/frame, passed after cd ~
+
+kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane this session
 <!-- SECTION:NOTES:END -->
