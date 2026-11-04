@@ -3,10 +3,10 @@ id: PK-319
 title: >-
   day plan 11-04: side channel, mods lane, yesterday's tails ticket by ticket,
   shape and sign mods and cli
-status: open
+status: done
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T16:51:00Z'
+updated_date: '2026-11-04T16:58:00Z'
 labels:
   - s
 dependencies: []
@@ -372,4 +372,6 @@ W305 (2026-11-04 18:40, dima, o116 steer): No, I actually look at change detecto
 W306 (2026-11-04 18:39, dima): why you stuck waiting on crow for 5min? and i also look crow window - no messages from you received ❓
 
 next boot, the list as of 18:52 (replaces the earlier next-boot lines; done since: the door rename to ⏰ due, FRM-508 filed and signed, the sign round, FRM-441 and FRM-484 stayed unsigned): 1 worktrees auto-clean on merge (W259–W262, W628–W630), FRM-480 the likely home, 29 stale branches and the index-run tree in its review. 2 unused verbs reviewed for missing habits: x fleet audit, /quiet-canary, W1041, W1042. 3 FRM-441 shape-idea, another tool or a custom ui. 4 x-mod-guard spends a tick on a command it refuses, FRM-489 or its own line. 5 F1's 14 gaps, FRM-488 W1483–W1484, PK-305's measure, PK-312's leftovers, crew-pm-flow board redraw. after the 11-06 plan: W246–W251.
+
+close: 2026-11-04 — read whole, uncut. moved to the CST: W179–W181 (habits synced with mods), W204–W211 (a commit stuck 6 min, slow side lane), W246–W251 (post-reset prios), W259–W263 (worktrees), W295–W297 (unused verbs). moved to tickets: W285, W286 FRM-507, W305 FRM-441. done in their turns: W1 W2 W3 W4 W5 W6 W7 W8 W9 W10 W11 W12 W13 W14 W15 W16 W17 W18 W19 W20 W21 W22 W23 W24 W25 W26 W27 W28 W29 W30 W31 W32 W33 W34 W35 W36 W37 W38 W39 W40 W41 W42 W43 W44 W45 W46 W47 W48 W49 W50 W51 W52 W53 W54 W55 W56 W57 W58 W59 W60 W61 W62 W63 W64 W65 W66 W67 W68 W69 W70 W71 W72 W73 W74 W75 W76 W77 W78 W79 W80 W81 W82 W83 W84 W85 W86 W87 W88 W89 W90 W91 W92 W93 W94 W95 W96 W97 W98 W99 W100 W101 W102 W106 W107 W108 W109 W110 W111 W112 W113 W114 W115 W116 W117 W118 W119 W120 W121 W122 W123 W124 W125 W126 W127 W128 W129 W130 W131 W132 W133 W134 W135 W136 W137 W138 W139 W140 W141 W142 W143 W144 W145 W146 W147 W148 W149 W150 W151 W152 W153 W154 W155 W156 W157 W158 W159 W160 W161 W162 W163 W164 W165 W166 W167 W168 W169 W170 W171 W172 W173 W174 W175 W176 W177 W178 W182 W183 W184 W185 W186 W190 W191 W192 W193 W194 W195 W196 W197 W201 W202 W203 W212 W213 W214 W215 W216 W217 W218 W219 W220 W221 W222 W223 W224 W225 W226 W227 W228 W229 W230 W231 W232 W233 W234 W235 W236 W237 W238 W239 W240 W241 W242 W243 W244 W245 W252 W253 W254 W255 W256 W257 W258 W264 W265 W266 W267 W268 W269 W270 W271 W272 W273 W274 W275 W276 W277 W278 W279 W280 W281 W282 W283 W284 W287 W288 W289 W290 W291 W292 W293 W294 W298 W299 W300 W301 W302 W303 W304 W306
 <!-- SECTION:NOTES:END -->
