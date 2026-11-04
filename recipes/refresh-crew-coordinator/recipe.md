@@ -3,7 +3,7 @@ kind: refresh
 owner: coordinator
 artifacts: [home/.claude/plugin-x/skills/crew-lead/, _clio/memory/craft-fleet-flow.md, _clio/memory/craft-pm.md, _clio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/plugin-x/skills/crew-lead/references/card-craft.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md, home/.claude/agents/, _clio/.claude/agents/, x:crew-sixth-sense]
 script: none
-groomed: 2026-10-21 (dima)
+groomed: 2026-11-04 (dima)
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
 ---
 
@@ -63,6 +63,12 @@ haiku 5.5 (dima's, 2026-10-15, folded):
 >
 > «keep haiku as a classifier engine in the search: it can be a powerful classifier, and we never sharpened jev well enough or found a good use case for it yet.»
 
+the pure lane coordinator (dima's, 2026-11-04, folded):
+
+> «this recipe was sharpened against clio as a coordinator, but with tilde we support both until we measure whether tilde works at all. i want this run's research pointed at the tilde model, not the shared clio-as-coordinator one: how do we properly make a pure coordinator work, since tilde is a pure coordinator and is not meant to do anything else?»
+>
+> «how a pure lane coordinator works, one that plans nothing and builds nothing: what it does, what it refuses, how it filters what reaches clio, and what makes it fail.»
+
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
 > «i want you to identify inefficiencies and resolve problems from the root.»
@@ -112,6 +118,14 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 - agentic workflows overall: spec-driven runs, shifts vs lanes, review loops — what is proven
 - operator overload, the coordinator's half: how a coordinator paces one human — batching, collapsing asks, holding member traffic, the siesta — and which remedies measurably shrank his load (dima, 2026-10-08: the thread spam; the adviser recipe researches the detector, this one the remedy)
 
+**craft — the pure lane coordinator:**
+- what stays out of a pure coordinator: what it must never do, and how mature setups keep the planner apart from it
+- two levels against flat: the measured cost in tokens, latency and noise, and when a middle layer loses
+- escalation filters: what makes a supervisor swallow a real ask or forward too much
+- state and recovery: how it survives a compact or a crash with nothing lost
+- the seat: which model tier fits a mechanical coordinator, and which of its rounds a script or a classifier could take
+- watching: how to detect a stalled worker cheaply, without polling
+
 **craft — the classifier seat:** read `refresh-crew-classifier`'s latest verdicts (the engine judged, the jobs found, the budget gate) — its research is that recipe's, never this one's; a seat is a type of operation, never one engine
 
 **tools — spawn mechanics:**
@@ -154,6 +168,7 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 ### analysis
 
 on top of the shared three:
+- clio's turns in a shift, counted by type: how much of her load is mechanical lane work, the before-number for a pure coordinator
 - the flow numbers (`x fleet flow --days 14`): `#dima-caught`, `#brief`, the pr open → merge median — which stage and which member keep failing
 - each member's retros since the last run: what a role keeps missing, and whether a new role would have caught it
 - each card on a test drive (`docs/test-drive/<card>.md`, fresh-eyes from 2026-10-21): its rounds since the last run, read against its test card
