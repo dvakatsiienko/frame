@@ -3,10 +3,10 @@ id: PK-159
 title: >-
   clio bench — shape-idea: a small mvp that measures clio's performance from her
   threads and logs
-status: open
+status: done
 assignee: []
 created_date: 2026-10-16 10:24
-updated_date: '2026-11-04T10:28:00Z'
+updated_date: '2026-11-04T13:39:00Z'
 due_date: '2026-11-05'
 labels:
   - m
@@ -322,4 +322,6 @@ moved: W1834–W1854 → PK-308 (dima o85, 2026-11-03 16:15)
 2026-11-03 21:12 — the crow part is shaped as [FRM-502](https://linear.app/x-com/issue/FRM-502) (dima: «current crow chunk is a part of pk-159, i solved the first part with the side channel»); left here: prompting helga to Sonnet 5.5, dima with the side channel on 11-04
 
 kept: 2026-11-04 — side channel holds its helga model part; re-dated to 11-05 at the siesta
+
+close: 2026-11-04 — dima: move helga's lines, close if nothing is left. helga's W-lines → FRM-454 (ticket: FRM-454). chunks A → FRM-491, B → FRM-494, C → FRM-495, D → FRM-502, E → FRM-496, F → FRM-503; W1834–W1854 → PK-308; pre-merge siesta → its trial. wish-cover: only W1595 and W1611 not verbatim, both answered in .scratch/pk159/pk159-plan.md. otel: its own trial. left: nothing.
 <!-- SECTION:NOTES:END -->
