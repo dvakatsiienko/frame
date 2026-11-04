@@ -1,10 +1,10 @@
 ---
 id: PK-297
 title: 'day plan 11-02, rolled to 11-03: the cli habits, mods lane 4, the chores'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-02T11:31:00Z'
-updated_date: '2026-11-03T10:46:00Z'
+updated_date: '2026-11-04T16:04:00Z'
 labels:
   - m
 dependencies: []
@@ -292,4 +292,6 @@ W1545 (2026-11-03 10:17, dima): solve all possible chores and stray tickets you 
 W1546 (2026-11-03 10:17, dima): solve my side chores (i paste).
 W1547 (2026-11-03 10:17, dima): stay parked and help the lane finish.
 W1548 (2026-11-03 10:17, dima): mods: the next chunks FRM-489 and FRM-485 are unsigned, and FRM-480 drifted and needs a re-sign. ← do now, so we start a lane.
+
+close: 2026-11-04 — a day plan for 11-02 and 11-03, its turns are done; read whole, his open wants live elsewhere: the renewal and the router and jev reminders in _reminders.md, freeze in the Brewfile, the vorssaint watch; W1133–W1136 (linear apps into 1password) not verified, carried to the next boot. his word: clean if not needed
 <!-- SECTION:NOTES:END -->

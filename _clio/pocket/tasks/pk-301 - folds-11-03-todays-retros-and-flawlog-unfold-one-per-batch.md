@@ -1,10 +1,10 @@
 ---
 id: PK-301
 title: 'folds 11-03: today''s retros and flawlog, unfold one per batch'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-02T20:27:00Z'
-updated_date: '2026-11-04T16:01:00Z'
+updated_date: '2026-11-04T16:04:00Z'
 labels:
   - m
 dependencies: []
@@ -68,4 +68,6 @@ W1704 (2026-11-03 11:41, dima): what are the most useful findings, or are you st
 kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
 
 done 2026-11-04: F6 in cli-drift-check (the census print kept), F7 in clio:system-checkup; F8 FRM-479 is Done. left: F1, F2, F3 against FRM-501, F4, F5, x fleet audit cut, PK-288 and PK-291 re-read, the cut list after his word
+
+close: 2026-11-04 — F1 and F2's retros folded with dima today (.scratch/mods-lane-4-retros.md, FRM-470; that they cover all 14 gaps is inferred), F3 in FRM-501's three tags, F4 on FRM-495, F5 on FRM-480, x fleet audit on FRM-436, F6 and F7 landed, FRM-479 Done, the cut list stays in PK-299. carried to the next boot: PK-288 and PK-291 re-read, W1702–W1704 answered from .scratch/retro-batch/themes-2026-11-03.md
 <!-- SECTION:NOTES:END -->
