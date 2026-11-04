@@ -58,7 +58,7 @@ const tickets = ids.length ? (read(['read', ...ids, '--relations']) ?? []) : [];
 const glide = glideTickets();
 let reds = 0;
 for (const t of tickets) {
-    const door = t.labels?.includes('needs human')
+    const stay = t.labels?.includes('needs human')
         ? 'needs human'
         : t.relations?.some(
                 (r) =>
@@ -70,7 +70,7 @@ for (const t of tickets) {
           : glide.has(t.id)
             ? 'a glide step'
             : undefined;
-    if (door) console.log(`🟢 ${t.id}: ${door}`);
+    if (stay) console.log(`🟢 ${t.id}: ${stay}`);
     else {
         reds++;
         console.log(

@@ -71,14 +71,14 @@ export function checkPocket(
             );
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
-        const planDay = /^day plan (?:.*\D)?(\d{2}-\d{2})(?::|$)/.exec(
-            front.scalars.title ?? '',
-        )?.[1];
-        if (
-            planDay &&
-            status !== 'done' &&
-            `${today.slice(0, 5)}${planDay}` < today
-        )
+        const title = front.scalars.title ?? '';
+        const planDay = title.startsWith('day plan ')
+            ? title
+                  .split(':')[0]
+                  ?.match(/\d{2}-\d{2}/g)
+                  ?.at(-1)
+            : undefined;
+        if (planDay && status !== 'done' && `${today.slice(5)}` !== planDay)
             report(
                 `a dated day plan dies at its next boot: home its open lines, close it (day ${planDay})`,
             );
@@ -331,7 +331,13 @@ function frontmatter(text: string) {
     const scalars: Record<string, string> = {};
     const lists: Record<string, string[]> = {};
     let listKey = '';
+    let foldKey = '';
     for (const row of text.split('\n---\n')[0]?.split('\n').slice(1) ?? []) {
+        const fold = foldKey && row.match(/^\s+(\S.*)$/);
+        if (fold && !row.trimStart().startsWith('- ')) {
+            scalars[foldKey] = `${scalars[foldKey] ?? ''} ${fold[1]}`.trim();
+            continue;
+        }
         const item = row.match(/^\s+- (.+)$/);
         if (item?.[1] && listKey) {
             lists[listKey]?.push(unquote(item[1]));
@@ -340,7 +346,11 @@ function frontmatter(text: string) {
         const pair = row.match(/^([a-z_]+):\s*(.*)$/);
         if (!pair?.[1]) continue;
         listKey = '';
-        if (pair[2] === '') {
+        foldKey = '';
+        if (/^[>|]-?$/.test(pair[2] ?? '')) {
+            foldKey = pair[1];
+            scalars[foldKey] = '';
+        } else if (pair[2] === '') {
             listKey = pair[1];
             lists[listKey] = [];
         } else if (pair[2] !== '[]') scalars[pair[1]] = unquote(pair[2] ?? '');

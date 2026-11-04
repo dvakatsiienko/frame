@@ -257,6 +257,30 @@ describe('checkPocket', () => {
         expect(problems.includes('dated day plan')).toBe(isRed);
     });
 
+    test('a folded day plan title reds', () => {
+        const planned = task({});
+        const folded = {
+            ...planned,
+            text: planned.text.replace(
+                "id: 'PK-1'",
+                "id: 'PK-1'\ntitle: >-\n  day plan 01-01: side channel,\n  mods lane",
+            ),
+        };
+        expect(
+            checkPocket(config, [folded], '2026-06-15').join('\n'),
+        ).toContain('dated day plan');
+    });
+
+    test('a plan from last year reds', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ title: 'day plan 12-31: x' })],
+                '2026-01-01',
+            ).join('\n'),
+        ).toContain('dated day plan');
+    });
+
     test('a day plan of today stays', () => {
         expect(
             checkPocket(
