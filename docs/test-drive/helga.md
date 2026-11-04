@@ -299,6 +299,8 @@ retro (14:43 on):
 - 2026-11-04 · pocket-write · 1 · 0 · boot-1117: PK-319 notes appended W76-W99, --next prints W100
 - 2026-11-04 · prompt-groom · 1 · 0 · 1258 raw to W100-W105, not appended to PK-319
 - 2026-11-04 · prompt-groom · 1 · 0 · 1308 raw to W106-W109, not appended to PK-319
+- 2026-11-04 · prompt-groom · 1 · 0 · 1424 groomed W128-W153
+- 2026-11-04 · prompt-groom · 1 · 0 · 1438 + o45 groomed W154-W159, appended PK-319
 
 ## rounds
 
