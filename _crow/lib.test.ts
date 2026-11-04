@@ -473,11 +473,14 @@ describe('isParked', () => {
 
     test.each([
         ['6 over pace', 56, 2.5, true],
-        ['exactly 5 over pace', 55, 2.5, false],
+        ['exactly 5 over pace', 55, 2.5, true],
         ['on pace', 50, 2.5, false],
         ['90 % with more than an hour left', 90, 1.5, true],
         ['91 % with half an hour left, under pace', 91, 0.5, false],
         ['a burn: 95 % with 50 min left, 12 over pace', 95, 50 / 60, false],
+        ['55 min left is a burn', 89, 55 / 60, false],
+        ['56 min left is still a park', 89, 56 / 60, true],
+        ['his 58 min, 89 % is still a park', 89, 58 / 60, true],
         ['the 97 % reserve with 20 min left', 97, 1 / 3, true],
         ['a window past its reset', 99, -1, false],
     ] as const)('%s', (_label, used, left, expected) => {

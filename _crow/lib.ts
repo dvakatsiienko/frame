@@ -1194,7 +1194,7 @@ export function isParked(now: Date, usagePath = USAGE_PATH) {
         if (msLeft <= 55 * 60_000) return false;
         const pace = (1 - msLeft / FIVE_HOURS_MS) * 100;
         return (
-            fiveHour.used_percentage - pace > 5 ||
+            fiveHour.used_percentage - pace >= 5 ||
             fiveHour.used_percentage >= 90
         );
     } catch {

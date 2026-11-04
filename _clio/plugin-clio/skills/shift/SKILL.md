@@ -23,7 +23,7 @@ one shift, day or night; how it drives follows the band's afk switch (💨, x-mo
 pace = the elapsed share of the 5h window; over = used − pace. read after every step, in every mode, until he says «go» for a burn day; when two rungs hold, the higher wins: 97 % › ≤ 55 min › 90 % › +5 › resume; the first 10 % of a fresh window parks nobody:
 - **+5 over pace** (the band's -5 %) → everyone parks at a pit stop, 🔥 on for all, resumes at −2 (the band's +2 %); +10 is never meant to be reached
 - **90 % used** → everyone parks, 🔥 on for all
-- **97 % used** → everyone pauses, never an abort, each continues from its spot at the new window; the rest is for small asks
+- **97 % used** → everyone pauses now, never an abort, each continues from its spot at the new window; the rest is for small asks
 - **a new window**, the mod's line after a stop or a park → i resume everyone; a park he called by hand stays
 - **≤ 55 min left** → in a shift, every lane starts its next useful chunk and burns to 97 % (no waste burning); with him at the keyboard, ask first
 - **one side lane per 5h window, for now**, unless he asks for more out loud (dima, 2026-11-03: «with two side lanes, everyone will just park and pit-stop and start too frequently»)
