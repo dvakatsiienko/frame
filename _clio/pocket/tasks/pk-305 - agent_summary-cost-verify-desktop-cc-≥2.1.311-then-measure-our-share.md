@@ -4,10 +4,9 @@ title: 'agent_summary cost: verify desktop cc ≥2.1.311, then measure our share
 status: open
 assignee: []
 created_date: '2026-11-03T08:57:00Z'
-updated_date: '2026-11-03T09:00:00Z'
+updated_date: '2026-11-04T07:54:00Z'
 labels:
   - s
-  - side
 dependencies: []
 priority: next
 type: task
