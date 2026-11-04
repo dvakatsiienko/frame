@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T13:15:00Z'
+updated_date: '2026-11-04T13:17:00Z'
 labels:
   - s
 dependencies: []
@@ -222,4 +222,6 @@ W180 (2026-11-04 15:14, dima): Once new mods arrive, I think it will not be toda
 W181 (2026-11-04 15:14, dima): Make sure that once we resume mods lane and have the necessary mods to support your new habits that we plan, that currently doesn't work because we aren't ready yet. Make sure everything will arrive in your habits when mods arrive too, so nothing is forgotten.
 W182 (2026-11-04 15:14, dima): here, (ater 4), implement crow ticket it was folded yesterday and never implemented, not good then proceed with tails i want everything solved. act one listed point per turn. do everything you can yourself, ask me when you need me.
 W183 (2026-11-04 15:14, dima): that's quite alot, let's do everything before moving on.
+
+W184 (2026-11-04 15:08, dima, o48 steer): what does «words only» mean? let's leave the weekly window out of scope for now. too many changes at once.
 <!-- SECTION:NOTES:END -->
