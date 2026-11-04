@@ -3,7 +3,7 @@
 ## 2026-11-04-the-takeover-and-the-piles
 - shipped: FRM-499, FRM-500, FRM-502, node 26, the side channel merged, close and sign and day-plan habits
 - open: FRM-509 retros and worktrees first, then the mods order, habits sync, speak v2
-- state: parked until the 11-06 plan; 5 chunks signed today, tilde gated
+- state: mods lane idle until the new plan; 5 chunks signed today, tilde gated
 
 ## 2026-11-03-the-afk-hour-shift-and-its-ladder
 - shipped: the shift's 5h ladder, the siesta gate, clio-lean (FRM-494, FRM-496), steer-safe redraws (FRM-492), 🔥 chips (FRM-499), crow run 3

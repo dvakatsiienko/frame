@@ -50,7 +50,7 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 
 
-⏰ 🦉💸 2026-11-06 (no activity before it; then W246–W251 in PK-319: debt tails, mods order, habits sync, speak v2): dima buys ultra ($200, the renamed max 20×, ~$240 with VAT) fresh, after max ends 11-05 and a day of rest (his lapse plan, o4 2026-11-03); then Settings → Usage: no «Current session» bar = verified, else the temporary 5h limit holds until the email; auto-renew off again; the month measures the real weekly cap (10× pro) — set 2026-10-13, reshaped 2026-11-03 · due: 2026-11-06
+⏰ 🦉💸 2026-11-06 (mods lane idle before it; then the CST's W247–W251: debt tails, mods order, habits sync, speak v2): dima buys ultra ($200, the renamed max 20×, ~$240 with VAT) fresh, after max ends 11-05 and a day of rest (his lapse plan, o4 2026-11-03); then Settings → Usage: no «Current session» bar = verified, else the temporary 5h limit holds until the email; auto-renew off again; the month measures the real weekly cap (10× pro) — set 2026-10-13, reshaped 2026-11-03 · due: 2026-11-06
 
 ⏰ 🦉🧬 stryker resumes when [stryker-js#6210](https://github.com/stryker-mutator/stryker-js/issues/6210) closes fixed (watched in x-changedetector): then `pnpm up @stryker-mutator/core @stryker-mutator/vitest-runner`, rerun the day-0 round, unfreeze `docs/test-drive/stryker.md` and tell dima (his ask, 2026-10-15) — set 2026-10-15
 

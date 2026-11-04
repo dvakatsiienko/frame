@@ -30,10 +30,10 @@ posted: {health: yes}
 - mods order: [FRM-507](https://linear.app/x-com/issue/FRM-507), [FRM-501](https://linear.app/x-com/issue/FRM-501), [FRM-505](https://linear.app/x-com/issue/FRM-505), FRM-470, FRM-491, [FRM-504](https://linear.app/x-com/issue/FRM-504), FRM-410, then the guard chain; FRM-501 and FRM-459 still need signs
 - [FRM-509](https://linear.app/x-com/issue/FRM-509): piling-up retros and worktrees, one flow, first at the next boot; 30 retros kept on disk for it
 - [FRM-368](https://linear.app/x-com/issue/FRM-368): tilde stays gated on his word
-- no activity until the plan renews on 2026-11-06
+- mods lane idle until the plan renews, 2026-11-05 or 06
 
 ## trail
 
 - shipped: FRM-499, FRM-500, FRM-502, node 26, the side channel merged, close and sign and day-plan habits
 - open: FRM-509 retros and worktrees first, then the mods order, habits sync, speak v2
-- state: parked until the 11-06 plan; 5 chunks signed today, tilde gated
+- state: mods lane idle until the new plan; 5 chunks signed today, tilde gated
