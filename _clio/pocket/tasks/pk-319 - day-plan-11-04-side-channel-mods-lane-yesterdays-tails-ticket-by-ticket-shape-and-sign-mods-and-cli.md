@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-04T07:53:00Z'
-updated_date: '2026-11-04T13:32:00Z'
+updated_date: '2026-11-04T14:10:00Z'
 labels:
   - s
 dependencies: []
@@ -227,4 +227,15 @@ W184 (2026-11-04 15:08, dima, o48 steer): what does «words only» mean? let's l
 
 W185 (2026-11-04 15:25, dima, o56 steer): the plan ends 5 nov ~5pm, and i resume it either right after tomorrow or on 6 nov.
 W186 (2026-11-04 15:22, dima, o55 steer): no, i keep an eye on the weekly myself.
+
+groom 2026-11-04 16:08 (helga W187–W197, W198–W199 by hand: the tool cut only o61's newest steer):
+W190 (2026-11-04 15:43, dima): what's next? tails one by one? go. ❓
+W191 (2026-11-04 15:51, dima): and refresh phases (hold with mods lane retros, i still steer fixes).
+W192 (2026-11-04 15:51, dima): tell what's next left from tails, chores and other stuff that you can solve.
+W193 (2026-11-04 15:51, dima): do a SW.
+W194 (2026-11-04 15:53, dima): how many chunks mods lane finished today? ❓
+W195 (2026-11-04 15:53, dima): are all of them wired? ❓
+W196 (2026-11-04 16:00, dima): let's do everything you printed, then message from side channel, then let's see where we are.
+W197 (2026-11-04 16:03, dima): no, leave all halt activities for real halt, when i tell.
+homes: W187 W189 W198 W199 → FRM-502; W188 → FRM-501, FRM-499
 <!-- SECTION:NOTES:END -->
