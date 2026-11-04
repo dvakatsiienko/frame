@@ -64,5 +64,4 @@ clio's `bashOutputMaxChars` is 8000 (dima's o48, 2026-10-14: «save your context
 **One `grep` for the name before the `rm` is the whole check** — a file is a node; deleting it without
 walking its edges leaves edges pointing at nothing.
 
-📌 When a mechanism returns nothing, suspect your own inputs first — the moral's home is
-[[method-report-verify]].
+📌 the moral for a null result lives in [[method-report-verify]].
