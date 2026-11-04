@@ -3,7 +3,7 @@ id: PK-159
 title: >-
   clio bench — shape-idea: a small mvp that measures clio's performance from her
   threads and logs
-status: done
+status: open
 assignee: []
 created_date: 2026-10-16 10:24
 updated_date: '2026-11-04T13:39:00Z'
@@ -324,4 +324,6 @@ moved: W1834–W1854 → PK-308 (dima o85, 2026-11-03 16:15)
 kept: 2026-11-04 — side channel holds its helga model part; re-dated to 11-05 at the siesta
 
 close: 2026-11-04 — dima: move helga's lines, close if nothing is left. helga's W-lines → FRM-454 (ticket: FRM-454). chunks A → FRM-491, B → FRM-494, C → FRM-495, D → FRM-502, E → FRM-496, F → FRM-503; W1834–W1854 → PK-308; pre-merge siesta → its trial. wish-cover: only W1595 and W1611 not verbatim, both answered in .scratch/pk159/pk159-plan.md. otel: its own trial. left: nothing.
+
+correction 2026-11-04: the close above is withdrawn: F → FRM-503 was wrong, chunk F «status on screen» has no ticket found yet. helga's lines did move to FRM-454.
 <!-- SECTION:NOTES:END -->
