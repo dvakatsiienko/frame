@@ -63,6 +63,7 @@ pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out ~/.local/share/web-
 - `scripts/steamac-askpass.sh` — the SteamOS password from the keychain (`es.fxgam.steamac.guest-password`), for `--install-key` only; never echo it
 - `scripts/steamac-update.sh` — swaps in the latest github release (sha256, gatekeeper, team-id `V25VKGTW55`), quits the vm first; settings and the disk stay
 - `scripts/swap-watch.sh` — read-only mac swap / memory pressure every 5 s, for a stutter
+- `scripts/steamac-trace.sh [seconds] [--perf]`, `scripts/steamac-stall.py` — a perf run's tracer and stall catcher: `references/steamac.md` § a perf run
 - `~/Library/Application Support/es.fxgam.steamac/game-stats.json` — per-session fps (avg, p50, 1 % low), hitches/min, per appid: read it before calling a game «runs well»
 
 ### before any vm work — read [references/steamac.md](references/steamac.md)
@@ -73,6 +74,7 @@ it holds the probed vm (proton versions, paths, steamac's own config), what i ca
 - a launch stuck on «Running install script» = a vcredist waiting on an invisible dialog: end its two installer pids, named to dima first
 - a remote path with spaces goes in as a script: `steamac-ssh.sh 'bash -s' < script.sh`
 - a rockstar game signs in to whatever rockstar account steam is linked to, server-side; never «Resend code» in a loop
+- a freeze is a first-time Metal shader compile until `MESA_KK_DEBUG=compiles` says otherwise
 
 ## 4. where every game piece lives
 
@@ -83,6 +85,7 @@ facts about a game go to its home below, never into this skill. until every game
 - 📄 claude docs `dima-<game>` — his pinned per-game doc, url in that game's `index.md`; `dima-games-inbox`
 - 📓 notion `games` root (`31a63143-8240-808b-9a6f-e8d7e099ca48`, `ntn` through `~/frame/script/op-run.sh`, `x:notes`) — every game page sits under it, sub-pages included (builds, quests); list them: `ntn api v1/blocks/<root id>/children`
 - 🪨 obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/`, `x:notes`; icloud last-writer-wins, writes on his ask) — `games/play next.md` (the owned-games pick list, the folder everything moves into), `sv/` stardew valley, `z_cotl/` cult of the lamb, `z_rim/` rimworld, `gear/console.md` (ps5 pro + dualsense edge); the `z_` prefix marks a finished game
+- 🔥 `~/frame/firelink/` — what a side chore found: `runs/<game>.md` (vm tuning, numbers, open tries), routes and the rig in its `AGENTS.md`
 - 🏆 trophy-sys code — `~/projects/bytes/apps/trophy-sys` (its `AGENTS.md` before any edit); research `~/frame/docs/research/npsso-renewal.md`, `trophy-sys-notes-store.md`
 - 🌐 game pages — § 2; the cache `~/.local/share/web-bot-blocked-fetch/<game>/`
 - 💾 local saves — `~/Library/Application Support/HelloGames` (nms mac), `~/Library/Application Support/Steam` (mac steam), `~/.local/share/Hinterland` (the long dark), `~/.local/share/StardewValley`
