@@ -132,8 +132,8 @@ on partly done, flatten an exact string into prose casing.
 <!-- sync: cloud-chat -->
 
 - **seven names before the build.** a new name for anything lasting — a skill, a job, an app, a memory leaf, a verb, a file family — goes to dima as seven candidates first through `x:top-seven`, a pick marked; the build starts with his pick (dima, 2026-10-16: «I very often ask you to rename things you created. instead, let's think of a name first, and then implement with the correct name»).
-- **family-first.** a name opens with the word its siblings share in the list it sorts in, each next word narrowing: `crew-codie`, `handoff-delete`, `audit-codie`. part of speech never decides.
-  - the test: write three likely siblings; the word that repeats leads. both repeat (`speak:test`, `mods:test`) → the one you work on at a time
+- **family-first.** a name opens with the word its siblings share, each next word narrowing, so a sorted list keeps a family side by side: `crew-codie`, never `codie-crew`; `handoff-delete`; `audit-codie`. part of speech never decides.
+  - the test: write three likely siblings; the word that repeats leads. both repeat (`speak:test`, `mods:test`) → the family that will grow
   - no sibling in sight → its natural reading; a family's bare head stays free for its root
   - the edge shapes (a date, a number, a sidecar, code): `x:guide-conventions` `conventions/naming-family-first.md` <!-- cc -->
 - `family-first <scope>` is the keyword. do the rename, report what changed, skip the explanation.

@@ -1,5 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, utimesSync, writeFileSync } from 'node:fs';
+import {
+    chmodSync,
+    mkdirSync,
+    mkdtempSync,
+    utimesSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
@@ -101,7 +107,19 @@ describe('siesta-checks', () => {
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
     });
 
-    test('a pending retro reds its section and the run, naming every file', () => {
+    test('an unreadable lane dir reds the section and keeps every other section', () => {
+        const home = fixtureHome();
+        const lane = join(home, '.local/state/x/lanes/locked');
+        mkdirSync(lane, { recursive: true });
+        chmodSync(lane, 0o000);
+        const out = run(home);
+        chmodSync(lane, 0o700);
+        expect(out.status).toBe(1);
+        expect(section(out.stdout, 'retros')).toContain('unreadable: locked');
+        expect(out.stdout).toContain('## helper count');
+    });
+
+    test('a pending retro names every file in the header count, and never reds the run', () => {
         const home = fixtureHome();
         const lanes = join(home, '.local/state/x/lanes');
         mkdirSync(join(lanes, 'lane-a'), { recursive: true });
@@ -113,9 +131,9 @@ describe('siesta-checks', () => {
         );
         writeFileSync(join(lanes, 'lane-b/lane-plan.md'), 'not a retro\n');
         const out = run(home);
-        expect(out.status).toBe(1);
+        expect(out.status).toBe(0);
         const retros = section(out.stdout, 'retros');
-        expect(retros).toMatch(/· exit 1\n/);
+        expect(retros).toMatch(/· 2 pending\n/);
         expect(retros).toContain('lane-a/lane-a-codie-retro.md');
         expect(retros).toContain('lane-b/lane-b-sixth-sense-retro.md');
         expect(retros).not.toContain('lane-plan');

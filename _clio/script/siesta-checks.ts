@@ -118,22 +118,30 @@ function orbitDrift(home: string) {
     };
 }
 
-// every retro on disk is pending: a fold trashes its files, so what is left waits for this siesta (step 2.7)
+// every retro on disk is pending: a fold trashes its files, so what is left waits for this siesta (step 2.7). pending is a
+// job, never a red: while dima is afk they wait, and a red would become a high that holds the afk close
 function retros(home: string) {
     const lanes = path.join(home, '.local/state/x/lanes');
+    const unreadable: string[] = [];
     const pending = (
         existsSync(lanes) ? readdirSync(lanes, { withFileTypes: true }) : []
     )
         .filter((lane) => lane.isDirectory())
-        .flatMap((lane) =>
-            readdirSync(path.join(lanes, lane.name))
-                .filter((f) => f.endsWith('-retro.md'))
-                .map((f) => path.join(lane.name, f)),
-        );
+        .flatMap((lane) => {
+            try {
+                return readdirSync(path.join(lanes, lane.name))
+                    .filter((f) => f.endsWith('-retro.md'))
+                    .map((f) => path.join(lane.name, f));
+            } catch {
+                unreadable.push(`unreadable: ${lane.name}`);
+                return [];
+            }
+        });
     return {
-        exit: pending.length ? 1 : 0,
+        exit: unreadable.length ? 1 : 0,
         name: 'retros',
-        output: pending.length ? pending.join('\n') : 'none pending',
+        output: [...pending, ...unreadable].join('\n') || 'none pending',
+        status: pending.length ? `${pending.length} pending` : undefined,
     };
 }
 

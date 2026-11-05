@@ -20,8 +20,8 @@ a family is measured in the list it sorts in, so `x lane` holds both `merge-main
 ## the edge shapes
 
 - nested families read general to specific: `refresh-crew-coordinator-helga`, `x fleet audit-codie`
-- both words repeat, a grid: the one you work on one at a time leads, usually the area (`speak:test`, not `test:speak`). a repo-wide loop verb keeps its `:` variants, `test:watch`, `dev:cv`; `package-json.md` holds that shape
-- a set read in time order leads with its date: `2026-11-04-the-takeover.md`; a fixed order with its number: `01-a-live-proof.md`, `0001-sline.md`
+- both words repeat, a grid: the family that will grow leads, usually the area (`speak:test`, not `test:speak`), and `audit-codie` over `codie-audit`, since audit grows and codie has no such family in `x fleet`. a repo-wide loop verb keeps its `:` variants, `test:watch`, `dev:cv`; `package-json.md` holds that shape
+- a set read in time order leads with its date: `2026-11-04-the-takeover-and-the-piles.md`; a fixed order with its number: `01-a-live-proof-runs-on-its-own-store.md`, `0001-sline-server-provided-numbers-only.md`
 - a sidecar or a kind tail stays with its subject: `siesta-gate.test.ts`, `crew-codie/SKILL.md`, `<feature>-codie-retro.md`
 - a machine-read grammar orders its fields by who filters first: `<audience>--<lane>--<slug>--by-<author>--<stamp>.md`
 - the family's separator follows the surface: `-` in files and skills, `:` in scripts, a space in `x` verbs, camelCase and PascalCase in code
@@ -44,5 +44,7 @@ a family is measured in the list it sorts in, so `x lane` holds both `merge-main
 Dima reads the tree by families; a name that buries the shared word scatters one feature across the alphabet
 («the grouping of stuff like files, folders becomes scattered … entity-first makes things more
 organized, auto-relates related stuff by its name», 2026-09-27). «entity» was an early example of the shared
-word, and on 2026-11-05 it picked `codie-audit` over his `audit-codie`, so the rule now names the goal.
+word, and on 2026-11-05 it picked `codie-audit` over his `audit-codie`, so the rule now names the goal (dima, that day:
+«certain naming pattern allows for stuff colocation and reads much more easily. imagine all crew-* would be *-crew
+instead — then everything would be scattered»).
 The crew skills were renamed on that first day: 80 references in 34 files, one commit. The frame + bytes sweep is FRM-219.
