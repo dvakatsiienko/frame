@@ -112,6 +112,10 @@ describe('wish-cover', () => {
         expect(missingText(tagged, ['- W5 keep my voice'])).toEqual([]);
     });
 
+    test("another item's id is not cited as this item's", () => {
+        expect([...citedIds('from PK-159:W3, and W4 here')]).toEqual(['W4']);
+    });
+
     test('a range cites nothing', () => {
         expect([...citedIds('settles W1–W3, W2-W4')]).toEqual([]);
     });
