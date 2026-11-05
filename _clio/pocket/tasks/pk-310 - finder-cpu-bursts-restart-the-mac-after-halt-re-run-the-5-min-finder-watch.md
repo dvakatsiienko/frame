@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-05T15:07:00Z'
+updated_date: '2026-11-05T15:27:00Z'
 labels:
   - xs
   - side-channel-owned
@@ -29,4 +29,11 @@ ordinal: 21000
 close: done, bursts gone after the restart (0/75, max 4.4 %, 125 MB); one fresh-boot watch, no long-uptime read
 
 2026-11-05 17:07 side channel, reopened on dima's tick: the 16:57 close covered only a fresh idle Finder; a re-probe under the mods side lane runs now, with footprint, daemons and disk rate. pre-reboot evidence: macOS report 11-04 15:39, 97 % for 93 s, 2,376 MB footprint, stack HandleVolumeDeleted → SynchronizeChildren → FindRenamedChild, a disk mount and eject at 15:36; mounts too rare to explain every burst (inference).
+
+2026-11-05 17:13 side channel, re-probe during the mods side lane, same boot (Finder up 3.3 h): 5 of 75 polls at or over 15 %, max 115 %, footprint 138 MB (94 MB at 17:00), disk p50 0.66 MB/s, max 183, 0 disk mounts in the window: bursts NOT gone, the 16:57 close was an idle window. 3 samples: TFSInfoSizer::SizeFolder, TOperationSizer, TDeepCFURLIterator, getattrlistbulk: Finder walks folder trees to add up sizes; a new lead beside TNode::SynchronizeChildren. com.apple.finder StandardViewSettings calculateAllSizes = 1 in list settings. Finder reports 0 windows, so who asks for the sizing is unproven; the setting as a cause is an inference. no burst lines up with disk rate at 17:08 (0.82 MB/s). daemon column read 0.0 throughout, not proven working. next: dima's call on turning calculate-all-sizes off, then one more watch under a lane.
+
+2026-11-05 17:14 side channel, correction: «Finder reports 0 windows» was a bad instrument (Finder's own AppleScript count). System Events names one open window: /Users/dima/frame, the repo the lane edits. strongest lead (inference, not tested): that window plus calculateAllSizes = 1 makes every repo change re-size the tree. not known: whether it was open during the idle 16:52 watch, and that window's view mode. cheapest test: close it, one watch under the lane.
+
+W1 do everything and measure, hunt a reason.
+W2 spawn a research: maybe it is a well known issue, or someone else had something similar? maybe there is a known workaround or a fix?
 <!-- SECTION:NOTES:END -->
