@@ -19,6 +19,17 @@ case $branch in
     fi
     ;;
 esac
+# wishkeeper is clio's card: a side channel's tree sees it through an untracked link, no other frame session does
+case $branch in
+  worktree-fork-*)
+    if [ -f "$wt/_clio/.claude/agents/wishkeeper.md" ] && [ ! -e "$wt/.claude/agents/wishkeeper.md" ]; then
+      mkdir -p "$wt/.claude/agents"
+      ln -s ../../_clio/.claude/agents/wishkeeper.md "$wt/.claude/agents/wishkeeper.md"
+      exclude=$(git -C "$wt" rev-parse --path-format=absolute --git-path info/exclude)
+      grep -qx '.claude/agents/wishkeeper.md' "$exclude" 2>/dev/null || echo '.claude/agents/wishkeeper.md' >>"$exclude"
+    fi
+    ;;
+esac
 # A git-crypt repo keeps its key in the main .git, not the worktree's gitdir, so a
 # fresh tree holds ciphertext and every add/commit dies on the clean filter.
 # Unlocking with the main key file decrypts the tree in place (measured 2026-09-24).
