@@ -22,19 +22,22 @@ for path in glob.glob(os.path.expanduser('~/.claude/projects/**/*.jsonl'), recur
     if '/subagents/' in path or os.path.getmtime(path) < since_epoch:
         continue
     for line in open(path, errors='ignore'):
-        if '"type":"user"' not in line:
+        if '"type":"user"' not in line and '"queued_command"' not in line:
             continue
         try:
             entry = json.loads(line)
         except ValueError:
             continue
         stamp = entry.get('timestamp', '')
-        if entry.get('type') != 'user' or entry.get('isSidechain') or entry.get('isMeta') or not stamp:
+        # a prompt typed mid-turn lands as a queued_command attachment, not a user entry
+        queued = entry.get('attachment', {}) if entry.get('type') == 'attachment' else {}
+        is_queued = queued.get('type') == 'queued_command' and queued.get('commandMode') == 'prompt'
+        if not (is_queued or entry.get('type') == 'user') or entry.get('isSidechain') or entry.get('isMeta') or not stamp:
             continue
         when = local(stamp)
         if when[:10] < since:
             continue
-        content = entry.get('message', {}).get('content')
+        content = queued.get('prompt') if is_queued else entry.get('message', {}).get('content')
         if isinstance(content, list):
             if any(isinstance(b, dict) and b.get('type') == 'tool_result' for b in content):
                 continue
