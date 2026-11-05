@@ -5,7 +5,7 @@ description: load when dima asks for a side channel — «side channel», «fres
 
 # side-channel — a second clio beside the main thread
 
-a side channel takes dima's side questions, research and fixes, so the main thread stays on the mainline. the fork-guard banner gives it its role at start, whichever door it came through; this skill only opens the door.
+a side channel takes dima's side questions, research and fixes, so the main stays on its line. the fork-guard banner gives it its role and closing rules; this skill only opens the door.
 
 ## the doors
 
@@ -20,4 +20,4 @@ a side channel takes dima's side questions, research and fixes, so the main thre
    - forked: context `fork`, prompt «you are the side channel; greet dima in one line, then wait»
 3. done: the result names a started session; the reply links it, `[🦉 clio (side)](#local_<id>)`, in one line
 
-its pocket items carry `side` and come back at the next boot (`clio:boot` § 3); an item dima wants solved here carries `side-channel-owned` (`pocket-add --side-channel-owned`, on his word only): a side channel lists them at its start (`backlog task list --labels side-channel-owned --plain`) and closes them on its fork branch; with none open they wait; its closing report reaches the main by SendMessage. a file it hands over sits in its worktree's `.scratch/`. a fork's `worktree-fork-*` branch is merged by clio the turn its report lands, never dropped (dima, 2026-10-29).
+its pocket items carry `side` and come back at the next boot (`clio:boot` § 3); an item dima wants solved here carries `side-channel-owned` (`pocket-add --side-channel-owned`, on his word only): a side channel lists them at its start (`backlog task list --labels side-channel-owned --plain`) and closes them on its fork branch; with none open they wait. a fork's `worktree-fork-*` branch is merged by clio the turn its report lands, never dropped (dima, 2026-10-29). every merge runs both ways (dima, 2026-11-05): clio's merge turn tells a live channel «merged: run `x lane merge-main`», and it runs it that turn.
