@@ -53,5 +53,6 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 - 2026-11-05 · 📌 the live stacks are mods lane 5 and cli lane 4, the 11-18 verdict reads them; the plan's FRM-383 and FRM-384 ran plain
 
 - 2026-11-05 · mods lane 5 and cli lane 4, retros read at the siesta · frame#123, frame#125 and frame#124 landed or sat as one layer each, since each layer below merged first: 0 restacks, 0 retargets, 0 stack-only hand steps · no verdict: the trial's cost starts at a real layer 3
+- 2026-11-05 · frame#126 (FRM-480, cli lane 4 layer 2) · 21 files, +1265 −112, 8 commits, on main since frame#125 merged before it opened: 0 restacks, 1 merge-main, 1 pre-push clone race retried, no stack hand step · codie: neither helped nor hurt; sixth sense: it read as several concerns, the decamp alone would have read faster
 
 ## verdict

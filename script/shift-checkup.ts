@@ -124,14 +124,14 @@ const checks: Check[] = [
         why: 'a day-old pre-warmed spare booted codie without the repo root AGENTS.md (#95589)',
     },
     {
-        name: '📡 pr-watch live',
+        name: '📡 watch-pr live',
         run: () => {
             const ps = execFileSync('ps', ['-axo', 'command='], {
                 encoding: 'utf8',
             });
             return (
-                ps.split('\n').some((l) => l.includes('pr-watch.sh --watch')) ||
-                'no pr-watch.sh --watch process — start it from the clio plugin monitor'
+                ps.split('\n').some((l) => l.includes('watch-pr.sh --watch')) ||
+                'no watch-pr.sh --watch process — start it from the clio plugin monitor'
             );
         },
         why: 'a member pings only when done or blocked — the watch is what wakes clio on a new commit or a green pr',

@@ -1085,7 +1085,7 @@ export function prViewArgs(mergeArgs: string[]) {
 
 const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
 
-// written by sixth sense on clean (`pr-watch.sh --verified`), keyed `owner/repo#n`
+// written by sixth sense on clean (`watch-pr.sh --verified`), keyed `owner/repo#n`
 export function verifiedHead(key: string) {
     try {
         const sha: unknown = JSON.parse(readFileSync(VERIFIED_PATH, 'utf8'))[

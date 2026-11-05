@@ -1,5 +1,5 @@
 #!/bin/bash
-# pr-watch — every open non-renovate pr in frame + bytes, and every cloud/* report branch, as lines.
+# watch-pr — every open non-renovate pr in frame + bytes, and every cloud/* report branch, as lines.
 # a pr prints when it first appears, when its head moves (a new commit), once per head when github calls it mergeable
 # (mergeStateStatus CLEAN — «ready to merge»), and once per head when its checks are green but a
 # required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run; loud only on a stamped head), and once per head when
@@ -12,7 +12,7 @@
 # two commits past its clean, FRM-380); a pr with no sixth sense record prints «ready» as before.
 
 REPOS="dvakatsiienko/frame dvakatsiienko/bytes"
-SEEN="$HOME/.claude/shelf/pr-watch-seen.json"
+SEEN="$HOME/.claude/shelf/watch-pr-seen.json"
 VERIFIED="$HOME/.claude/shelf/pr-verified.json"
 [ -s "$SEEN" ] || echo '{}' > "$SEEN"
 [ -s "$VERIFIED" ] || echo '{}' > "$VERIFIED"
@@ -80,7 +80,7 @@ pass() {
 case "${1:---watch}" in
   --verified)
     [[ "$2" == */* && "$3" =~ ^[0-9]+$ && "$4" =~ ^[0-9a-f]{8,40}$ && ( $# -eq 4 || ( $# -eq 6 && "$5" == --by && "$6" == clio ) ) ]] ||
-      { echo "usage: pr-watch.sh --verified <owner/repo> <pr> <head sha> [--by clio]" >&2; exit 2; }
+      { echo "usage: watch-pr.sh --verified <owner/repo> <pr> <head sha> [--by clio]" >&2; exit 2; }
     # no :by key means sixth sense; a later sixth sense clean drops clio's name
     jq --arg k "$2#$3" --arg v "$4" --arg by "${6:-}" \
       '.[$k] = $v | if $by == "" then del(.[$k + ":by"]) else .[$k + ":by"] = $by end' \

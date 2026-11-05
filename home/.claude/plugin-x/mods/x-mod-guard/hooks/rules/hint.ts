@@ -212,12 +212,12 @@ function isPullsRead(args: Command['args']) {
         operands(args).some((o) => PULLS.test(o))
     );
 }
-// a hint, never a rewrite: the raw command runs as typed, one context line names the x verb that covers it
 // `# fg-ok: <why>` keeps a slow call in the foreground for a real need
 export function isForegroundOk(command: string) {
     return parse(command).comments.some((c) => /^\s*fg-ok:\s*\S/.test(c));
 }
 
+// a hint, never a rewrite: the raw command runs as typed, one context line names the x verb that covers it
 export function hints(command: string, cwd: string, ctx: Context) {
     const found = new Set<string>();
     const all = commands(parse(command), cwd);

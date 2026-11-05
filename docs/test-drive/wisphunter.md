@@ -54,5 +54,6 @@ group by 1 order by 2 desc;
 
 ### round 4 — frame#125, 2026-11-05 (sixth sense's second read, Opus 5.5)
 - 4 findings, 2 reproduced real (a load false green, merged errors), 1 already fixed, 1 nit; it labelled two as inferred, so a brief names which claims it can run
+- 2026-11-05 · FRM-480, codie's two axes and sixth sense's read, 8, 6 and 7 findings, all useful, sixth sense still found 6 at round 1; two spec reads against tickets and live code on dima's word, mods 16 findings, cli 20, 4 and 3 high, each opened and held, `mods:replay`'s reach among them; frame#124's read, 5, the silent-end gap among them · ahead of the usual door, keep
 
 ## verdict

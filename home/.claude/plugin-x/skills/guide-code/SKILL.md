@@ -51,7 +51,7 @@ their head.
 - **A red-proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
   key — biome sorts keys on save and the original silently wins, so the test reads «hollow» when it is not.
   `red-proof <file> <anchor> <replacement> <test>` (plugin bin) does the swap, runs the vitest file, and
-  restores byte-for-byte; exit 0 only on red-then-green. `red-proof --help` for many lines or another runner.
+  restores byte-for-byte; exit 0 only on green, then red, then the bytes back. `red-proof --help` for many lines or another runner.
 - **A red-proof covers each allow, exemption and parse branch**, not only the refusal branch — a parser or
   lint gets ten hostile inputs (`--flag=true`, a spread, a quote, a variable path) before its first green.
 - **A test reads fixtures, never live state** — no real `origin/main`, no real registry; a fixture plants

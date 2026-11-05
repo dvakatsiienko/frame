@@ -234,6 +234,31 @@ func TestCommitFormatsTheNamedPathsWithTheRepoBiome(t *testing.T) {
 	}
 }
 
+// the hook lints what the format step used to leave: a sorted import cost a whole red chain each time
+func TestCommitSortsAnImportBeforeTheHookReadsIt(t *testing.T) {
+	t.Parallel()
+	biome, _ := filepath.Abs("../../node_modules/.bin/biome")
+	if _, err := os.Stat(biome); err != nil {
+		t.Skip("no biome in this tree: pnpm install")
+	}
+	dir := repo(t)
+	write(t, filepath.Join(dir, "biome.json"), "{}\n")
+	if err := os.MkdirAll(filepath.Join(dir, "node_modules/.bin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(biome, filepath.Join(dir, "node_modules/.bin/biome")); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(dir, "a.ts"), "import { z } from './z';\nimport { a } from './a';\n\nexport { a, z };\n")
+
+	got := xIn(t, dir, nil, "lane", "commit", message(t), "--", "a.ts")
+
+	body := gitT(t, dir, "show", "HEAD:a.ts")
+	if got.code != 0 || strings.Index(body, "./a") > strings.Index(body, "./z") {
+		t.Fatalf("exit %d, committed %q", got.code, body)
+	}
+}
+
 // a `claude` on PATH that logs its arguments and passes or fails its validate as told
 func fakeClaude(t *testing.T, valid bool) (env []string, log string) {
 	bin := t.TempDir()

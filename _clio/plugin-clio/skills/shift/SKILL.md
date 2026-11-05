@@ -55,7 +55,7 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 
 ## 1 · start — the last chat message
 
-- `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift
+- `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 watch-pr`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
 - write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces (dima, 2026-11-03, PK-308)
 - every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end (dima, 2026-11-03, PK-308); `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found

@@ -215,15 +215,24 @@
                     "type": "string",
                     "value": "name"
                 },
+                "quick": {
+                    "description": "a quick lane: no sign to check, no label, and the 🚀 line records main's base for x lane landed",
+                    "type": "boolean"
+                },
                 "session": {
                     "description": "the summoned codie's session id the 🚀 line records",
+                    "type": "string",
+                    "value": "sid"
+                },
+                "sixth-sense": {
+                    "description": "the sixth sense's session id the 🚀 line records, so x lane landed waits for its verdict",
                     "type": "string",
                     "value": "sid"
                 }
             },
             "name": "lane dispatch",
             "needsApply": true,
-            "purpose": "write a summoned lane's dispatch marks on its signed tickets in one update each; a re-run reports them set",
+            "purpose": "write a summoned lane's dispatch marks on its signed or quick tickets; a re-run writes only what it names new",
             "steps": ["read", "write"],
             "touches": [
                 "linear — each ticket's signed label, state, delegate and sign block, written",
@@ -252,14 +261,15 @@
             "name": "lane landed",
             "needsApply": true,
             "purpose": "print a merged lane's after-merge chores, met or red with a fix; --apply archives the spec, decamps clean trees",
-            "steps": ["read", "archive", "decamp"],
+            "steps": ["ticket", "read", "archive", "decamp"],
             "touches": [
+                "~/.claude/sessions/ — who sits in a tree, read",
+                "~/.local/state/x/traces/ — a new verb's calls at its milestone's close, read",
                 "github — the pr's merged state, head and body, read",
                 "linear — the ticket's W-lines and comments (the look card), read",
                 "<frame main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/ once every chunk merged",
                 "<frame main checkout>/docs/test-drive/review-rounds.md — read",
-                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped",
-                "~/.local/state/x/lanes/<feature>/ — the retros, read"
+                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped"
             ]
         },
         {
@@ -339,11 +349,14 @@
                 "risky",
                 "brake",
                 "approve",
-                "merge"
+                "merge",
+                "decamp"
             ],
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
                 "~/.claude/shelf/pr-verified.json — the verified clean per pr and who read it (`:by`, none is sixth sense), read",
+                "<clone>/.claude/worktrees/<tree> — a merged lane's clean tree at the landed head, decamped",
+                "~/.claude/sessions/ — who sits in a tree, read",
                 "linear — a self-edit's chunk ticket, its ## signed block read",
                 "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
@@ -1066,6 +1079,11 @@
                     "description": "with --outside, how many heads to keep (default 25)",
                     "type": "string",
                     "value": "n"
+                },
+                "verb": {
+                    "description": "print only that verb's call count in the window",
+                    "type": "string",
+                    "value": "name"
                 }
             },
             "name": "stats",

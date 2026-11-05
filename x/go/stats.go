@@ -82,6 +82,17 @@ func byCalls[T any](calls func(T) int, name func(T) string) func(a, b T) int {
 	return func(a, b T) int { return cmp.Or(calls(b)-calls(a), strings.Compare(name(a), name(b))) }
 }
 
+// one verb's calls in the trace files, the count x lane landed's wired line reads at a milestone's close
+func verbCalls(name string, days int) int {
+	calls := 0
+	for _, line := range readTraces(days, false).lines {
+		if line.Name == name {
+			calls++
+		}
+	}
+	return calls
+}
+
 func stats(r *Run, _ []string, flags Flags) (any, error) {
 	days, err := daysFlag(flags, "stats", 30)
 	if err != nil {
@@ -89,6 +100,9 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	}
 	if days > keepDays {
 		return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, days), fmt.Sprintf("x stats --days %d", keepDays))
+	}
+	if name := flagString(flags, "verb"); name != "" && (flags["outside"] == true || flags["dev"] == true) {
+		return nil, usageFail("--verb counts x's own calls, without --outside or --dev", "x stats --verb "+name)
 	}
 	topValue, _ := flags["top"].(string)
 	if topValue != "" && flags["outside"] != true {
@@ -105,6 +119,15 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 			}
 		}
 		return statsOutside(r, days, top)
+	}
+	if name := flagString(flags, "verb"); name != "" {
+		verb, _, found := findVerb(strings.Fields(name))
+		if !found || verb.Name != name {
+			return nil, usageFail("x has no verb "+name, "x schema")
+		}
+		calls := verbCalls(name, days)
+		r.Done(fmt.Sprintf("%s in %d days", plural(calls, "call"), days), "")
+		return ordered{{"verb", name}, {"calls", calls}, {"days", days}}, nil
 	}
 	trashed := trashOld()
 	dev := flags["dev"] == true
