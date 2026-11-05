@@ -275,12 +275,16 @@ func overlayGates(repo, scratch string, changed []string) ([]gateVerdict, error)
 	if err != nil {
 		return nil, err
 	}
-	return runPreCommit(repo, gates, staged, env, func(g hookGate) string {
+	verdicts := runPreCommit(repo, gates, staged, env, func(g hookGate) string {
 		if g.commitOnly {
 			return gateCommits
 		}
 		return ""
-	}), nil
+	})
+	if gatesFail(verdicts, "", "") == nil {
+		recordTestedMods(repo, env, changed)
+	}
+	return verdicts, nil
 }
 
 // every byte an overlay test would read: the touched mods' files with the edited copies laid over

@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	yaml "go.yaml.in/yaml/v3"
 )
@@ -28,6 +29,9 @@ const (
 	gateCopyRun = "script/index-run.sh"
 	// the suite a green overlay leaves to the commit, tagged in lefthook.yaml
 	commitOnlyTag = "commit-only"
+	// what a green overlay already proved: a lost line costs one rerun, so it needs no lock
+	gatesGreenFile = "gates-green.tsv"
+	gatesGreenKept = 200
 )
 
 type hookGate struct {
@@ -223,6 +227,30 @@ func indexPaths(repo string, env []string) ([]string, error) {
 	return slices.DeleteFunc(strings.Split(got.out, "\x00"), func(path string) bool { return path == "" }), nil
 }
 
+// one line per thing a green overlay proved, read back by `mods:test --skip-tested`; a failed write costs one rerun
+func recordGreen(subject, sha string, gates []string) {
+	path := filepath.Join(stateDir(), gatesGreenFile)
+	old, _ := os.ReadFile(path)
+	lines := append(nonBlank(string(old)), fmt.Sprintf("%d\t%s\t%s\t%s", time.Now().Unix(), subject, sha, strings.Join(gates, ",")))
+	lines = lines[max(0, len(lines)-gatesGreenKept):]
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return
+	}
+	temp := fmt.Sprintf("%s.%d", path, os.Getpid())
+	if os.WriteFile(temp, []byte(strings.Join(lines, "\n")+"\n"), 0o644) == nil {
+		_ = os.Rename(temp, path)
+	}
+}
+
+// each touched mod's subtree on the temp index: the bytes its overlay tests just read
+func recordTestedMods(repo string, env, changed []string) {
+	for _, mod := range touchedMods(changed) {
+		if got, _ := run(repo, env, "", "git", "write-tree", "--prefix="+modsDir+mod+"/"); got.ok {
+			recordGreen("mod "+mod, got.out, []string{"mods-test"})
+		}
+	}
+}
+
 // HEAD, then the touched mods as the tree holds them, then the scratch copies: what the overlay's test reads
 func overlayIndex(repo, scratch string, changed []string, env []string) error {
 	var mods []string
@@ -238,9 +266,10 @@ func overlayIndex(repo, scratch string, changed []string, env []string) error {
 		if !blob.ok {
 			return &Fail{Msg: "git hash-object " + path + " failed: " + blob.log, Next: "x mods edit status"}
 		}
+		// a push keeps the target's mode and a scratch copy never holds one, so the index's mode is the commit's
 		mode := "100644"
-		if info, err := os.Stat(copied); err == nil && info.Mode()&0o111 != 0 {
-			mode = "100755"
+		if listed, _ := run(repo, env, "", "git", "ls-files", "-s", "--", path); listed.ok && listed.out != "" {
+			mode, _, _ = strings.Cut(listed.out, " ")
 		}
 		if got, _ := run(repo, env, "", "git", "update-index", "--add", "--cacheinfo", mode+","+blob.out+","+path); !got.ok {
 			return &Fail{Msg: "git update-index " + path + " failed: " + got.log, Next: "x mods edit status"}
