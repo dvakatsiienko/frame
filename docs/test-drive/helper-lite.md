@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-08
 dies-when: the verdict line below is written (2026-11-05)
 fits: codie
@@ -45,3 +45,8 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
   - `sips -c … --cropOffset 0 0` returned the full image; offset 1 cropped (the arm-B helper-lite found it)
 - 2026-10-22 · extended once to 2026-11-05 on dima's tick (o33): 3 rounds, 5 of 7 stress uses untried (log windows, an idle coder's last words, bash census, flow numbers, a coder's big reads, failure probes); its first use today: dima's raw prompts out of a 2 MB transcript, 10 prompts + 12 steers in 68 s, but it missed every mid-turn message (they sit inside tool results) — a miss caught by a word check
 - 2026-10-25 · FRM-411 coder: barely used — every reviewer output and release note was under 3 KB, cheaper to read than to brief; the coder asks for a size line («> 10 KB») in the reach rule
+- 2026-11-05 · five probes with held-back answers, one 5.4 MB transcript and two local files · 26 s, 35.7k tokens, 7 tool calls · log window exact; bash census 164, exact; not found answered «not found»; the ambiguous duration named all 3 readings; an idle coder's last words had the right text with one word off («the fixes» for «these fixes»)
+
+## verdict
+
+2026-11-05 adopted on dima's tick: 6 of 7 stress uses tried, no wrong number found, kill rule not hit. 103 runs since 10-08, median 13 s, 3 tool calls. 21 days of otel: 511 requests, 0.78 usd, 0.0015 usd a request at list price, against **Sonnet 5.5** agents' 0.0252. untried: flow numbers, a file over 100K tokens. the one rule it adds: a quote it returns is checked against its source (`x:crew-subagent`).

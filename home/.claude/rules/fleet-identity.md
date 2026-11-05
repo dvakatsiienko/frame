@@ -32,7 +32,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - any member spawns one; any `Agent` call loads `x:crew-subagent` first (which card, what effort, how wide to fan out). every card runs without fleet memory (`omitClaudeMd`) and lives in `home/.claude/agents/` (wishkeeper: `_clio/.claude/agents/`)
 - 🐝 **`researcher`** — opus 5.5: a bounded research question answered from sources into one file.
 - 🐜 **`helper`** — sonnet 5.5 medium, `x:guide-code` preloaded: mechanical, fully specified jobs; several may run at once; loads the code guides its job's files need.
-- 🪶 **`helper-lite`** — haiku 5.5 medium: the cheap half of a job — reads (counts and lines out of big logs, transcripts and json; 5+ screenshots) and spelled-out edits, read-only unless the brief names files; `helper` is its sonnet tier. on a test drive (`docs/test-drive/helper-lite.md`).
+- 🪶 **`helper-lite`** — haiku 5.5 medium: the cheap half of a job — reads (counts and lines out of big logs, transcripts and json; 5+ screenshots) and spelled-out edits, read-only unless the brief names files; `helper` is its sonnet tier.
 - 🦡 **`retro`** — opus 5.5, read-only: matt's retro over finished transcripts, fixes to the agents' environment ranked by severity.
 - 🐣 **`fresh-eyes`** — sonnet 5.5, blind by design: runs an app in a headless browser, never reads its code, and returns where a first-time user gets lost; sixth sense spawns it on screen-changing PRs. built, on trial (`docs/test-drive/fresh-eyes.md`).
 - 🦅 **`scout`** — sonnet 5.5 low, read-only: finds where code lives; the built-in Explore, Plan, claude and statusline-setup are off (dima, 2026-10-18).

@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-08
 dies-when: the verdict line below is written
 ---
@@ -23,5 +23,8 @@ born 2026-10-22 on dima's word (PK-103 W72): «once the pm revamp settles, revie
 ## rounds
 
 - 2026-10-22 · day 0: 15 milestones, 7 without a done test, 11 without a kind emoji (milestone review, `.scratch/dima-intervenes/runs/milestone-review.md`); pocket 70 items, 51 waiting
+- 2026-11-05 · pocket 9 open, 0 waiting; the boot's milestone health names no ticket without a milestone; 1 what's-next-shaped prompt in 19 clio transcripts since 10-22
 
 ## verdict
+
+2026-11-05 adopted on dima's tick: all three lines of the test card hold today. 0 waiting comes partly from the 10-25 rule that moved waits to linear. this file holds no series between day 0 and today, and the kill rule's queue drift was never logged.
