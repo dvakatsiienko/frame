@@ -4,7 +4,7 @@ title: 'tails for the next boot: every chore not done with dima today'
 status: open
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T17:24:00Z'
+updated_date: '2026-11-05T17:28:00Z'
 labels:
   - m
 dependencies: []
@@ -57,4 +57,12 @@ W12 (2026-11-05 18:35, dima): side channel: 1. the flow board redraw, better aft
 19:02: lockJoined, the ✅ all-asks button and isPaceSeatHeld → FRM-510. the groom check keys a no-wish line by minute, so 18:35's event line could hide his own 18:35 prompt: unfixed, a one-minute collision. done since these lines were written: the cli stack summon, FRM-480's worktree scope (spec exits 1, 2, 7, unbuilt), the isolated store rider (FRM-470 exit 1), _MEMORY.md's pause pointer, the fork branch's 18:32 merge, PK-305 and PK-312 done, helper-lite and milestone-first drives off the due list. FRM-410's wish-cover red not reproduced: against its own body it exits 0, red only against mods-lane-3's spec for other tickets' W-ids.
 
 W13 (2026-11-05 19:11, dima): * `mods-verify`’s 8 lines hit the known 5 s timeouts at load 25, so the commit retries under load 12 ← how to fix? ❓
+
+from PK-299's close, open or half answered:
+W1308 (2026-11-02 17:37, dima): it actually would be a good idea to review what we planned because we could plan the redundant stuff, but let's do it a little bit later.
+W1312 (2026-11-02 17:37, dima): then proceed with what we planned and planned scope verification against needed or not.
+W1396 (2026-11-02 18:45, dima): stuff that we build in cli in mods should actually be used, but how to make it work and how to prevent it from being abandoned in the future? ❓
+W1411 (2026-11-02 18:59, dima): why don't coders use it, and how to make coders use them? ❓
+W1434 (2026-11-02 18:59, dima, o59 steer): let's try to revive? ❓
+the first two: a review of the planned queue, only its dispatch read and the cli worth pass ran. the last three: the unused verbs review. spotted by the placement: guard rule worth still warn-only at register.ts:395, FRM-486 Done.
 <!-- SECTION:NOTES:END -->
