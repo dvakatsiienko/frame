@@ -323,7 +323,7 @@ func TestMergeAutoNamesNoVerifierWithNoClean(t *testing.T) {
 
 	got := w.run(t, "7", "--apply")
 
-	if e := envelopeOf(got).Error; got.code != 1 || !strings.Contains(e, "no sixth sense clean recorded for o/r#7") || strings.Contains(e, "by clio") {
+	if e := envelopeOf(got).Error; got.code != 1 || !strings.Contains(e, "no clean recorded for o/r#7") || strings.Contains(e, "clio") || strings.Contains(e, "sixth sense") {
 		t.Fatalf("exit %d, error %q", got.code, e)
 	}
 }
@@ -840,13 +840,13 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 				{"isResolved":true,"path":"a.go","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}},
 				{"isResolved":false,"path":"script/foo.ts","line":3,"comments":{"nodes":[{"url":"https://t/2"}]}}]}}}}}`
 		}, "1 open review thread: script/foo.ts:3 https://t/2"},
-		{"no sixth sense clean recorded", func(w *mergeWorld) {
+		{"no clean recorded", func(w *mergeWorld) {
 			write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
-		}, "no sixth sense clean recorded for o/r#7"},
+		}, "no clean recorded for o/r#7"},
 		{"a clean only as a plain pr comment", func(w *mergeWorld) {
 			write(t, w.store, `{}`)
 			w.hub.pages[repoPath+"/issues/7/comments"] = `[{"user":{"login":"dvakatsiienko"},"body":"verdict: clean\nverified: ` + w.head + `"}]`
-		}, "no sixth sense clean recorded for o/r#7"},
+		}, "no clean recorded for o/r#7"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

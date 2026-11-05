@@ -108,7 +108,7 @@ describe('behindFalse', () => {
 });
 
 describe('parseRows', () => {
-    it('reads names and lines, skips comments, unfolds a newline', () => {
+    it('reads each row, a comment skipped, a newline unfolded', () => {
         expect(parseRows('# head\n\none\ttrue; ls\ntwo\ttrue\\nls\n')).toEqual([
             { line: 'true; ls', name: 'one' },
             { line: 'true\nls', name: 'two' },
@@ -162,24 +162,24 @@ describe('rowVerdicts', () => {
         hint,
     ].join('\n');
 
-    it('reads a hook refusal, the short circuit and a row never called', () => {
+    it('tells a hook refusal from the short circuit', () => {
         expect(rowVerdicts(transcript, rows)).toEqual([
             {
                 context: [],
+                hasRun: true,
                 name: 'floor',
-                ran: true,
                 verdict: 'refused: nothing in this command ran — x-mod-guard',
             },
             {
                 context: ['x-mod-guard hint: a hint'],
+                hasRun: true,
                 name: 'plain',
-                ran: true,
                 verdict: 'ran, no refusal',
             },
             {
                 context: [],
+                hasRun: false,
                 name: 'skipped',
-                ran: false,
                 verdict: 'never called',
             },
         ]);

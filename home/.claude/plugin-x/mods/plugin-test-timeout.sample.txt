@@ -1,0 +1,8 @@
+tests/a.test.ts:
+(pass) a row under its bound [6002.59ms]
+(fail) a row past 5 s [5002.31ms]
+  Error: timed out after 5000 ms
+
+ 1 pass
+ 1 fail
+Ran 2 tests across 1 file. [11.16s]

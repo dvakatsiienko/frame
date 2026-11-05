@@ -4,6 +4,7 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -36,7 +37,7 @@ const run = (pass: number, fail: number) =>
 
 describe('a whole run of the script, a fake claude listing what it was handed', () => {
     const script = join(import.meta.dirname, 'test.ts');
-    const holds = join(import.meta.dirname, 'x-mod-holds/tests');
+    const tests = join(import.meta.dirname, 'x-mod-guard/tests');
     const runScript = (args: string[], env: Record<string, string>) => {
         const bin = mkdtempSync(join(tmpdir(), 'mods-test-bin-'));
         const claude = join(bin, 'claude');
@@ -50,18 +51,25 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
             env: { ...process.env, ...env, PATH: `${bin}:${process.env.PATH}` },
         });
     };
-    const file = readdirSync(holds).find((f) => f.endsWith('.test.ts')) ?? '';
+    const file = 'hint.test.ts';
+
+    it('takes --only through a symlink to a mod', () => {
+        const link = join(mkdtempSync(join(tmpdir(), 'mods-test-link-')), 'l');
+        symlinkSync(tests, link);
+        const r = runScript(['--only', join(link, file)], { X_TEST: '1' });
+        expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
+    });
 
     it('runs only the file --only names', () => {
         const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
-        const r = runScript(['--only', join(holds, file)], { X_STATE: state });
+        const r = runScript(['--only', join(tests, file)], { X_STATE: state });
         expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
     });
 
     it.each([
         ['a file outside any mod', ['--only', script]],
-        ['a file that is not there', ['--only', join(holds, 'no.test.ts')]],
-        ['a mod beside it', ['--only', join(holds, file), 'x-mod-holds']],
+        ['a file that is not there', ['--only', join(tests, 'no.test.ts')]],
+        ['a mod beside it', ['--only', join(tests, file), 'x-mod-holds']],
     ])('refuses %s with its usage', (_, args) => {
         const r = runScript(args, { X_TEST: '1' });
         expect([r.status, r.stderr]).toEqual([
@@ -79,16 +87,16 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         ]);
     });
 
-    it('runs a timed-out file again, and a green second run is green', () => {
+    it('runs only the timed-out file a second time', () => {
         const bin = mkdtempSync(join(tmpdir(), 'mods-test-bin-'));
-        const once = join(bin, 'once');
+        const seen = join(bin, 'seen');
         const claude = join(bin, 'claude');
         writeFileSync(
             claude,
-            `#!/bin/sh\nls "$3"/tests/*.test.ts* | wc -l | tr -d ' ' >> ${once}.files\necho "tests/a.test.ts:"\nif [ -e ${once} ]; then echo "(pass) one"; exit 0; fi\ntouch ${once}\necho "(fail) one [5001ms]"\necho "  Error: timed out after 5000 ms"\nexit 1\n`,
+            `#!/bin/sh\necho "tests/${file}:"\nif [ -e ${seen} ]; then ls "$3"/tests/*.test.ts* | wc -l | tr -d ' ' >> ${seen}; echo "(pass) one"; exit 0; fi\ntouch ${seen}\necho "(fail) one [5001ms]"\necho "  Error: timed out after 5000 ms"\nexit 1\n`,
         );
         chmodSync(claude, 0o755);
-        const r = spawnSync('node', [script, 'x-mod-holds'], {
+        const r = spawnSync('node', [script, 'x-mod-guard'], {
             encoding: 'utf8',
             env: {
                 ...process.env,
@@ -96,12 +104,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
                 X_TEST: '1',
             },
         });
-        expect([r.status, r.stdout]).toEqual([
-            0,
-            expect.stringContaining(
-                'only timeouts, ran again: tests/a.test.ts',
-            ),
-        ]);
+        expect([r.status, readFileSync(seen, 'utf8').trim()]).toEqual([0, '1']);
         expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
     });
 
@@ -113,6 +116,17 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
 });
 
 describe('a timeout-only red', () => {
+    it('reads the kit words the x verbs read too', () => {
+        expect(
+            timedOutFiles(
+                readFileSync(
+                    join(import.meta.dirname, 'plugin-test-timeout.sample.txt'),
+                    'utf8',
+                ),
+            ),
+        ).toEqual(['tests/a.test.ts']);
+    });
+
     const timedOut = (name: string) =>
         `(fail) ${name} [5002.31ms]\n  Error: timed out after 5000 ms\n`;
 
@@ -138,7 +152,7 @@ describe('a timeout-only red', () => {
         expect(timedOutFiles(output)).toBeUndefined();
     });
 
-    it('replaces each file the second run read, and keeps the rest', () => {
+    it('takes the second reading of each file it ran again', () => {
         const merged = withRerun(
             `tests/a.test.ts:\n${timedOut('one')}(pass) two\ntests/c.test.ts:\n(pass) four\n 3 pass\n 1 fail\n`,
             'tests/a.test.ts:\n(pass) one\n(pass) two\n 2 pass\n 0 fail\n',

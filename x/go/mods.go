@@ -109,6 +109,8 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	if against, _ := flags["against"].(string); against != "" {
 		return againstRef(r, repo, scratch, changed, against)
 	}
+	// read before the run: a save while the tests run must not stamp bytes they never read
+	stamp := overlayStamp(repo, scratch, changed)
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
 		reports, err = overlayTest(repo, scratch, changed)
@@ -120,7 +122,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 		return nil, &Fail{Msg: "red on the overlay: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
 	}
 	// a lost stamp costs one test run at the push, nothing more
-	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(overlayStamp(repo, scratch, changed)), 0o644)
+	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
 	r.Done(reportLine(reports), "x mods edit push")
 	return ordered{{"mods", reports}}, nil
 }
@@ -173,7 +175,11 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(strings.TrimSuffix(fmt.Sprintf("%d written, %s", len(changed), reportLine(reports)), ", "), "x lane commit <msg> -- <paths>")
+	said := fmt.Sprintf("%d written", len(changed))
+	if len(reports) > 0 {
+		said += ", " + reportLine(reports)
+	}
+	r.Done(said, "x lane commit <msg> -- <paths>")
 	return ordered{{"written", changed}, {"mods", reports}}, nil
 }
 

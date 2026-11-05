@@ -10,6 +10,7 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    realpathSync,
     rmSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -217,6 +218,17 @@ function hookClockReads(dir: string) {
         );
 }
 
+// claude plugin test takes only a folder, so a subset of a mod's test files runs in a copy holding no other
+function copyKeepingTests(from: string, mod: string, keep: string[]) {
+    const copy = join(mkdtempSync(join(tmpdir(), 'mods-subset-')), mod);
+    cpSync(from, copy, {
+        filter: (path) =>
+            !/\.test\.tsx?$/.test(path) || keep.includes(relative(from, path)),
+        recursive: true,
+    });
+    return copy;
+}
+
 // one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
 function logRun(args: string, line: string) {
     if (process.env.X_TEST) return;
@@ -241,16 +253,19 @@ if (import.meta.main) {
         .sort()
         .filter((mod) => existsSync(join(root, mod, '.claude-plugin')));
     const unknown = positionals.filter((mod) => !all.includes(mod));
-    const only = values.only && resolve(values.only);
-    const onlyMod = only && relative(root, only).split(sep)[0];
+    // real paths, since a mod is also reached through the ~/.claude symlink
+    const only =
+        values.only && existsSync(values.only)
+            ? realpathSync(values.only)
+            : undefined;
+    const onlyMod = only && relative(realpathSync(root), only).split(sep)[0];
     if (
         unknown.length ||
         (values.extra && positionals.length !== 1) ||
-        (only &&
+        (values.only &&
             (values.extra ||
                 positionals.length ||
-                !all.includes(onlyMod as string) ||
-                !existsSync(only)))
+                !all.includes(onlyMod as string)))
     ) {
         console.error(
             `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] — mods: ${all.join(', ')}`,
@@ -258,6 +273,7 @@ if (import.meta.main) {
         process.exit(2);
     }
     const runs: (Run & { status: number | null })[] = [];
+    let reran = false;
     const named = onlyMod ? [onlyMod] : positionals;
     for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
@@ -269,14 +285,10 @@ if (import.meta.main) {
                 join(dir, 'tests', basename(values.extra)),
             );
         }
-        // claude plugin test takes only a folder, so the one file runs in a copy holding no other test file
-        if (only) {
-            dir = join(mkdtempSync(join(tmpdir(), 'mods-only-')), mod);
-            cpSync(join(root, mod), dir, {
-                filter: (from) => from === only || !/\.test\.tsx?$/.test(from),
-                recursive: true,
-            });
-        }
+        if (only)
+            dir = copyKeepingTests(realpathSync(join(root, mod)), mod, [
+                relative(realpathSync(join(root, mod)), only),
+            ]);
         const r = spawnSync('claude', ['plugin', 'test', dir], {
             encoding: 'utf8',
         });
@@ -284,14 +296,8 @@ if (import.meta.main) {
         let { status } = r;
         const late = timedOutFiles(output);
         if (late) {
-            const from = dir;
-            const copy = join(mkdtempSync(join(tmpdir(), 'mods-late-')), mod);
-            cpSync(from, copy, {
-                filter: (path) =>
-                    !/\.test\.tsx?$/.test(path) ||
-                    late.includes(relative(from, path)),
-                recursive: true,
-            });
+            reran = true;
+            const copy = copyKeepingTests(dir, mod, late);
             const again = spawnSync('claude', ['plugin', 'test', copy], {
                 encoding: 'utf8',
             });
@@ -315,7 +321,10 @@ if (import.meta.main) {
     }
     const line = summary(runs);
     console.log(`\n${line}`);
-    logRun(process.argv.slice(2).join(' '), line);
+    logRun(
+        process.argv.slice(2).join(' '),
+        reran ? `${line} (timed-out files ran again)` : line,
+    );
     process.exit(
         runs.some((r) => r.status !== 0) || line.includes('red in') ? 1 : 0,
     );

@@ -71,8 +71,6 @@ export function childEnv(
     };
 }
 
-export type Row = { line: string; name: string };
-
 // one `name<TAB>bash line` per line; `#` and blank lines skipped, a literal \n in the line is a newline
 export function parseRows(tsv: string) {
     const rows: Row[] = [];
@@ -106,16 +104,6 @@ export function rowPrompt(rows: Row[]) {
     );
     return `run each command below with the Bash tool, byte for byte, one call per command, in order, whatever each one answers. no other tool, no comment.\n\n${blocks.join('\n\n')}`;
 }
-
-type Block = {
-    content?: string | { text?: string }[];
-    id?: string;
-    input?: { command?: string };
-    is_error?: boolean;
-    name?: string;
-    tool_use_id?: string;
-    type?: string;
-};
 
 // each row's verdict out of the session's transcript: the short circuit's own exit 1 reads «ran», any other error is the
 // hook's refusal, and a hint or a warn-only «would refuse» lands only there, as an attachment on the call
@@ -159,11 +147,11 @@ export function rowVerdicts(transcript: string, rows: Row[]) {
         const result = resultOf.get(id);
         const context = contextOf.get(id) ?? [];
         if (!result)
-            return { context, name, ran: false, verdict: 'never called' };
+            return { context, hasRun: false, name, verdict: 'never called' };
         const first = result.text.split('\n')[0]?.trim() ?? '';
         return result.isError && !/^Exit code \d+$/.test(first)
-            ? { context, name, ran: true, verdict: `refused: ${first}` }
-            : { context, name, ran: true, verdict: 'ran, no refusal' };
+            ? { context, hasRun: true, name, verdict: `refused: ${first}` }
+            : { context, hasRun: true, name, verdict: 'ran, no refusal' };
     });
 }
 
@@ -184,18 +172,20 @@ if (import.meta.main) {
         console.error(`mods:probe: ${line}`);
         process.exit(2);
     };
-    const dash = rest.indexOf('--');
-    const given = dash < 0 ? rest : rest.slice(0, dash);
-    const extra = dash < 0 ? [] : rest.slice(dash + 1);
-    const [mode, value] = given;
+    const [mode, value] = rest;
+    const hasRows = mode === '--bash' || mode === '--rows';
     if (
         !modArg ||
         !mode ||
-        ((mode === '--bash' || mode === '--rows') && !value)
+        (hasRows && !value) ||
+        (!hasRows && mode.startsWith('--'))
     )
         fail(
-            `usage: pnpm mods:probe <mod> <"<prompt>" | --bash '<line>' | --rows <tsv>> [-- <claude args…>]`,
+            `usage: pnpm mods:probe <mod> <"<prompt>" | --bash '<line>' | --rows <tsv>> [<claude args…>]`,
         );
+    const extra = rest
+        .slice(hasRows ? 2 : 1)
+        .filter((w, i) => i > 0 || w !== '--');
     const dev = realpathSync(
         existsSync(modArg as string)
             ? resolve(modArg as string)
@@ -265,8 +255,8 @@ if (import.meta.main) {
             ? rowVerdicts(readFileSync(transcript, 'utf8'), rows)
             : (rows ?? []).map(({ name }) => ({
                   context: [],
+                  hasRun: false,
                   name,
-                  ran: false,
                   verdict: `no transcript at ${transcript}`,
               }));
     for (const v of verdicts) {
@@ -297,9 +287,22 @@ if (import.meta.main) {
     process.exit(
         isDev &&
             !escaped.length &&
-            verdicts.every((v) => v.ran) &&
+            verdicts.every((v) => v.hasRun) &&
             (rows || run.status === 0)
             ? 0
             : 1,
     );
 }
+
+/* Types */
+
+export type Row = { line: string; name: string };
+type Block = {
+    content?: string | { text?: string }[];
+    id?: string;
+    input?: { command?: string };
+    is_error?: boolean;
+    name?: string;
+    tool_use_id?: string;
+    type?: string;
+};

@@ -21,16 +21,16 @@ test('reads every Bash call with the cwd it ran in', () => {
         row('pwd', '/b'),
     ].join('\n');
     expect(bashCalls(jsonl)).toEqual([
-        { command: 'ls', cwd: '/a', foreground: true },
-        { command: 'pwd', cwd: '/b', foreground: true },
+        { command: 'ls', cwd: '/a', isForeground: true },
+        { command: 'pwd', cwd: '/b', isForeground: true },
     ]);
 });
 
 test('counts the chain hint only for a foreground chain', () => {
     const fired = tally(
         [
-            { command: 'x lane commit m -- a', cwd: '/a', foreground: true },
-            { command: 'x lane commit m -- b', cwd: '/a', foreground: false },
+            { command: 'x lane commit m -- a', cwd: '/a', isForeground: true },
+            { command: 'x lane commit m -- b', cwd: '/a', isForeground: false },
         ],
         '/home',
     );
@@ -40,8 +40,12 @@ test('counts the chain hint only for a foreground chain', () => {
 test('counts a hint once per command that fires it, and leaves quiet commands out', () => {
     const fired = tally(
         [
-            { command: "rg -n 'x'", cwd: '/home/frame', foreground: true },
-            { command: "rg -n 'x' src", cwd: '/home/frame', foreground: true },
+            { command: "rg -n 'x'", cwd: '/home/frame', isForeground: true },
+            {
+                command: "rg -n 'x' src",
+                cwd: '/home/frame',
+                isForeground: true,
+            },
         ],
         '/home',
     );

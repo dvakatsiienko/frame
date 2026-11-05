@@ -23,6 +23,7 @@ func modsFixture(t *testing.T) (dir string, env []string) {
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
 d="$3"
 [ -n "$CLAUDE_CALLS" ] && echo "$2" >> "$CLAUDE_CALLS"
+[ "$2" = test ] && [ -n "$CLAUDE_MID_TEST" ] && sh -c "$CLAUDE_MID_TEST"
 if [ "$2" = validate ]; then
   if grep -q PARSE-ERROR "$d"/hooks/* 2>/dev/null; then echo "  ❯ modules../register.ts: m: does not parse: PARSE-ERROR (line 1)"; echo "✘ Validation failed"; exit 1; fi
   echo "✔ Validation passed"; exit 0
@@ -150,6 +151,25 @@ func TestModsEditTestRunsATimeoutOnlyRedOnceMore(t *testing.T) {
 
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+// the second run lands in the push: a save while `test` ran is bytes that run never read
+func TestModsEditPushRunsItsTestAfterASaveDuringTheTest(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	calls := filepath.Join(t.TempDir(), "calls")
+	copyA := pullCopy(t, dir, env, modTestA)
+	write(t, copyA, "green, edited\n")
+	mid := append(env[:len(env):len(env)], "CLAUDE_MID_TEST=echo 'green, saved mid-test' > "+copyA)
+	if got := xIn(t, dir, mid, "mods", "edit", "test"); got.code != 0 {
+		t.Fatalf("test: exit %d\n%s", got.code, got.stdout)
+	}
+
+	got := xIn(t, dir, append(env[:len(env):len(env)], "CLAUDE_CALLS="+calls), "mods", "edit", "push")
+
+	if n := strings.Count(readFile(t, calls), "test\n"); got.code != 0 || n != 1 {
+		t.Fatalf("exit %d, %d test runs in the push, want 1\n%s", got.code, n, got.stdout)
 	}
 }
 
@@ -337,6 +357,18 @@ func anyStrings(v any) []string {
 }
 
 // the sample the stash's pnpm mods:test parser (mods/test.ts outcome) is held to as well: both read it the same way
+// the kit's own words, caught from a real run; mods/test.ts timedOutFiles reads the same file
+func TestTimeoutOnlyReadsTheSharedSample(t *testing.T) {
+	t.Parallel()
+	raw, err := os.ReadFile("../../home/.claude/plugin-x/mods/plugin-test-timeout.sample.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !timeoutOnly(string(raw)) {
+		t.Fatalf("a timed-out row read as a real red:\n%s", raw)
+	}
+}
+
 func TestTestOutcomeReadsTheSharedSample(t *testing.T) {
 	t.Parallel()
 	raw, err := os.ReadFile("../../home/.claude/plugin-x/mods/plugin-test.sample.txt")

@@ -1254,7 +1254,7 @@ export const register: Register = (on) => {
                     : hints(command, cwd, {
                           ...ctx,
                           ...facts,
-                          foreground:
+                          isForeground:
                               e.tool === 'Bash' && e.run_in_background !== true,
                       })),
             ];

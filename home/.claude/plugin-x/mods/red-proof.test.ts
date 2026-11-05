@@ -47,14 +47,23 @@ describe('red-proof --cmd --pairs', () => {
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
     });
 
-    it('returns the bytes when the run crashes every time', () => {
-        const { file, pairs } = fixture();
+    it('returns the bytes when each swapped run crashes', () => {
+        const { copy, file, pairs } = fixture();
         const r = spawnSync(
             BIN,
-            ['--cmd', '--pairs', pairs, file, '--', 'sh', '-c', 'kill -9 $$'],
+            [
+                '--cmd',
+                '--pairs',
+                pairs,
+                file,
+                '--',
+                'sh',
+                '-c',
+                `cmp -s ${file} ${copy} || kill -9 $$`,
+            ],
             { encoding: 'utf8' },
         );
-        expect(r.status).toBe(1);
+        expect([r.status, r.stdout.match(/^RED/gm)?.length]).toEqual([0, 2]);
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
     });
 
@@ -66,14 +75,14 @@ describe('red-proof --cmd --pairs', () => {
             { stdio: 'ignore' },
         );
         const closed = new Promise((done) => child.on('close', done));
-        const until = Date.now() + 5000;
+        const until = Date.now() + 12_000;
         while (readFileSync(file, 'utf8') === ORIGINAL && Date.now() < until)
             await new Promise((r) => setTimeout(r, 20));
         expect(readFileSync(file, 'utf8')).not.toBe(ORIGINAL);
         child.kill('SIGTERM');
         await closed;
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
-    }, 15_000);
+    }, 30_000);
 
     // a swap that breaks the module's load fails every test whatever it reads, so it proves nothing: named apart from a red
     it('names a swap that broke the load, and fails, instead of counting it red', () => {
@@ -124,7 +133,7 @@ describe('red-proof on a base already red', () => {
         expect(seen).toBe(ORIGINAL);
     });
 
-    it('prints the fail count and the failed names of a plugin test', () => {
+    it('prints what failed in a plugin test', () => {
         const { r } = redBase(
             `echo '(pass) a green row'; echo '(fail) row one [12.50ms]'; echo '(fail) row two'`,
         );

@@ -455,16 +455,18 @@
   - makes: the scratch copies under the job tmp (`$CLAUDE_JOB_DIR/tmp/x-mods-edit/<repo>`, else the os tmp), and on a push the edited files in `home/.claude/plugin-x/mods/<mod>/`
   - given a path outside `home/.claude/plugin-x/mods/<mod>/`, then pull exits 2 naming the shape
   - given an edit that turns a mod test red, when push runs, then nothing reaches the mod and the refusal names the red test; `test` shows the same red on the overlay copy
-- ⬜ `x mods edit push <paths…>` lands only the named paths (FRM-470)
-  - given two edits in scratch, when push names one, then only it lands and the other stays in scratch, listed by `status`
-  - given a named path with no edit, then nothing lands and the refusal names it
-- ⬜ `x mods edit push` runs no second test on bytes `test` passed (FRM-470)
-  - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since runs the test again
   - given a hooks file that does not parse, when push runs, then the validator refuses it before any test or write, naming the parse error (PK-64)
   - given a scratch file never pulled, or one the repo changed since its pull, then push writes nothing and names it; `--add <paths>` lets a new file land
   - given a write that fails midway, then every file already written is put back from the backup push took first
   - given `test --against HEAD`, then only the edited tests run on HEAD's mod, each named «failed» or, when its file cannot load, «errored»; nothing is written
   - decision: `scratch-edit` (plugin bin) retired into these verbs; a three-word verb sits under a group per middle word
+- ⬜ `x mods edit push <paths…>` lands only the named paths (FRM-470)
+  - given two edits in scratch, when push names one, then only it lands and the other stays in scratch, listed by `status`
+  - given a named path with no edit, then nothing lands and the refusal names it
+- ⬜ `x mods edit push` runs no second test on bytes `test` passed (FRM-470)
+  - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
+- ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
+  - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
 - ✅ `x schema mods` lists the verbs
 
 ## fleet — the fleet measuring itself

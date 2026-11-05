@@ -48,11 +48,14 @@ function fixture(text: string) {
 
 // 5 s timed out at load 16–26 on a run that was fine (FRM-470)
 const loadBound = (load: number) => 5000 * Math.max(1, Math.ceil(load / 5));
-vi.setConfig({ testTimeout: loadBound(loadavg()[0] ?? 0) });
+const applied = loadBound(loadavg()[0] ?? 0);
+vi.setConfig({ testTimeout: applied });
 
-it('gives this file more time as the load climbs', () => {
-    expect([loadBound(0), loadBound(5), loadBound(26)]).toEqual([
-        5000, 5000, 30_000,
+it('runs under its load bound', ({ task }) => {
+    expect([task.timeout, loadBound(0), loadBound(26)]).toEqual([
+        applied,
+        5000,
+        30_000,
     ]);
 });
 

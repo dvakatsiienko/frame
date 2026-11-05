@@ -659,7 +659,7 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	}
 	switch {
 	case verified == "":
-		c.Detail = "no sixth sense clean recorded for " + repo + "#" + n
+		c.Detail = "no clean recorded for " + repo + "#" + n
 	case verified == head:
 		c.OK, c.Detail = true, "clean on "+short(head)+" by "+by
 	default:
