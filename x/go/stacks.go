@@ -414,7 +414,7 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 			case !local.ok || local.out == t.Leases[layer]:
 			case i == 0:
 				// only lagging is harmless: the merges read origin's sha, and a local-only commit there would stay behind
-				if ahead, _ := git("log", "-1", "--format=%h", local.out, "--not", t.Leases[layer]); ahead.out != "" {
+				if ahead, _ := git("log", "-1", "--format=%h", local.out, "--not", t.Leases[layer]); !ahead.ok || ahead.out != "" {
 					return "", &Fail{Refused: true, Msg: fmt.Sprintf("%s is %s here and %s on origin: push it, or take origin's, before a restack", layer, short(local.out), short(t.Leases[layer])),
 						Next: "git switch " + layer + " && x lane push --apply"}
 				}

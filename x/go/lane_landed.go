@@ -325,8 +325,8 @@ func newVerbsOf(body string) []string {
 	}
 	var verbs []string
 	for _, m := range newVerbLine.FindAllStringSubmatch(section[1], -1) {
-		if name := cmp.Or(m[1], m[2]); name != "none" && !slices.Contains(verbs, name) {
-			verbs = append(verbs, name)
+		if verb, _, found := findVerb(strings.Fields(cmp.Or(m[1], m[2]))); found && !slices.Contains(verbs, verb.Name) {
+			verbs = append(verbs, verb.Name)
 		}
 	}
 	return verbs
