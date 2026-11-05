@@ -48,6 +48,8 @@ type mergeDecision struct {
 	signs    map[string]chunkSign
 	dimaOK   bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
 	landed   string
+	headRef  string
+	Trees    []string `json:"trees,omitempty"`
 }
 
 type pullHead struct {
@@ -118,7 +120,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, signs: map[string]chunkSign{}, dimaOK: word != ""}
+	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, headRef: pr.Head.Ref, signs: map[string]chunkSign{}, dimaOK: word != ""}
 	trunk := pr.Base.Ref
 	if layers == nil {
 		r.skip("layers")
@@ -369,12 +371,87 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	_ = r.Step("decamp", "the merged lane's clean trees", func() (string, error) {
+		d.Trees = decampMerged(d)
+		return strings.Join(d.Trees, "; "), nil
+	})
 	result := "merged #" + d.PR + " at " + short(d.Merged)
 	if d.layered {
 		result = d.landed
 	}
+	if len(d.Trees) > 0 {
+		result += "\n" + strings.Join(d.Trees, "\n")
+	}
 	r.Done(result+"\n"+d.summary(), "")
 	return d, nil
+}
+
+// a merged lane's worktrees go with it, or stay with a named reason; nothing here can fail a done merge. a tree that
+// stays is x lane landed's. only a tree at a head the merge landed is judged: any other holds what the merge did not carry
+func decampMerged(d *mergeDecision) []string {
+	repo, err := top()
+	if err != nil {
+		return []string{"⚠ no tree decamped: " + err.Error()}
+	}
+	main := mainCheckout(repo)
+	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
+	if err != nil {
+		return []string{"⚠ no tree decamped: " + err.Error()}
+	}
+	landed := []string{d.Head}
+	for _, sha := range d.heads {
+		landed = append(landed, sha)
+	}
+	under := resolved(filepath.Join(main, ".claude", "worktrees")) + string(filepath.Separator)
+	selves := []string{resolved(repo), resolved(frameRoot())}
+	var notes []string
+	for _, e := range worktreesOf(listed) {
+		if !strings.HasPrefix(resolved(e.path), under) {
+			continue
+		}
+		atLanded := slices.Contains(landed, e.sha)
+		reason := ""
+		switch {
+		case e.branch != "" && e.branch != d.headRef && !atLanded:
+			if !gitAncestorOfAny(e.path, landed) {
+				continue
+			}
+			reason = "it sits on an upper layer of the stack"
+		case e.branch != d.headRef && !atLanded:
+			continue
+		case d.Merged == "":
+			reason = "the merge is still enqueued"
+		default:
+			merged := ""
+			if atLanded {
+				merged = e.sha
+			}
+			reason = treeStay(e, main, selves, merged)
+			if !atLanded {
+				reason = strings.TrimSuffix("it is not at the landed head, "+reason, ", ")
+			}
+		}
+		if reason != "" {
+			notes = append(notes, home(e.path)+" stays: "+reason+"; x lane landed --apply takes it once clean")
+			continue
+		}
+		if err := removeTree(main, e.path); err != nil {
+			notes = append(notes, "⚠ "+home(e.path)+" stays: "+err.Error())
+			continue
+		}
+		if _, err := hooksHome(main, e.path); err != nil {
+			notes = append(notes, "⚠ "+home(e.path)+" decamped, then "+err.Error())
+			continue
+		}
+		notes = append(notes, home(e.path)+" decamped")
+	}
+	return notes
+}
+
+func gitAncestorOfAny(tree string, shas []string) bool {
+	return slices.ContainsFunc(shas, func(sha string) bool {
+		return ok(gitIn(tree, "merge-base", "--is-ancestor", sha, "HEAD"))
+	})
 }
 
 func (c mergeCheck) shown() (string, error) {

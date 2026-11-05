@@ -60,6 +60,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	session, lane := flagString(flags, "session"), flagString(flags, "lane")
+	mark := dispatchNote{quick: flags["quick"] == true, sixthSense: flagString(flags, "sixth-sense")}
 	r.Open("as " + actor)
 	plan := dispatchPlan{Tickets: []dispatchTicket{}}
 	for _, id := range args {
@@ -77,7 +78,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
-		ticket, err := dispatchMarks(id, found, session, lane)
+		ticket, err := dispatchMarks(id, found, session, lane, mark)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +105,13 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	return plan, nil
 }
 
-func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispatchTicket, error) {
+// what the 🚀 line records past its lane and session, x lane landed reads them back
+type dispatchNote struct {
+	quick      bool
+	sixthSense string
+}
+
+func dispatchMarks(id string, found dispatchLookup, session, lane string, note dispatchNote) (dispatchTicket, error) {
 	issue := found.Issue
 	if issue.ID == "" {
 		return dispatchTicket{}, &Fail{Msg: id + ": not found", Next: "x linear list --search " + id}
@@ -114,11 +121,16 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 		body = *issue.Description
 	}
 	_, block, signed := signedBlock(body)
+	if note.quick {
+		block = body
+	}
 	labelAt := slices.IndexFunc(issue.Labels.Nodes, func(l idName) bool { return strings.EqualFold(l.Name, "signed") })
 	// a ↩️ line takes a dispatch back, so only a 🚀 after the last one counts
 	dispatched := strings.LastIndex(block, dispatchedLine) > strings.LastIndex(block, "↩️")
 	sign, _, _ := bodySign(body)
 	switch {
+	// a quick lane has no sign to check
+	case note.quick:
 	case !signed:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries no ## signed block: a chunk is signed before its dispatch", Next: "x linear read " + id}
 	// a 🚀 already written stands: the drift came after the dispatch, and a re-run writes no new mark on it
@@ -136,8 +148,10 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 		}
 		ticket.Marks = append(ticket.Marks, dispatchMark{name, status, detail})
 	}
-	mark("label", labelAt >= 0, "signed off")
-	if labelAt >= 0 {
+	if !note.quick {
+		mark("label", labelAt >= 0, "signed off")
+	}
+	if labelAt >= 0 && !note.quick {
 		ticket.input["removedLabelIds"] = []string{issue.Labels.Nodes[labelAt].ID}
 	}
 	// only a ticket not yet started moves; In Review or Done is past the dispatch, never moved back
@@ -159,6 +173,16 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 		ticket.input["delegateId"] = found.Users.Nodes[0].ID
 	}
 	line := dispatchedLine + time.Now().Format("2006-01-02") + " — " + lane + ", codie " + session
+	if note.quick && !dispatched {
+		base, err := mustGitIn(cmp.Or(ticketRepo(body), mainCheckout(frameRoot())), "rev-parse", "rev-parse", "--short=7", "origin/main")
+		if err != nil {
+			return dispatchTicket{}, err
+		}
+		line += ", main:" + base
+	}
+	if note.sixthSense != "" {
+		line += sixthSenseMark + note.sixthSense
+	}
 	if dispatched {
 		from := strings.LastIndex(block, dispatchedLine)
 		line, _, _ = strings.Cut(block[from:], "\n")
@@ -170,6 +194,9 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string) (dispa
 			return dispatchTicket{}, usageFail("the 🚀 line names the lane and the session: pass --lane <name> --session <sid>", "x lane dispatch "+id+" --session <sid> --lane <name>")
 		}
 		ticket.input["description"] = withSignLine(body, line)
+		if note.quick {
+			ticket.input["description"] = aboveStamp(body, line)
+		}
 	}
 	return ticket, nil
 }
@@ -194,6 +221,15 @@ func withSignLine(body, line string) string {
 		}
 	}
 	return strings.Join(slices.Insert(lines, last+1, line), "\n")
+}
+
+// a quick ticket has no sign block: the line closes the body, above a trailing run stamp
+func aboveStamp(body, line string) string {
+	at := strings.LastIndex(body, "⸻")
+	if at < 0 {
+		return strings.TrimRight(body, "\n") + "\n\n" + line + "\n"
+	}
+	return strings.TrimRight(body[:at], "\n") + "\n\n" + line + "\n\n" + body[at:]
 }
 
 // the 5h line the summon reads, from the window file the statusline writes

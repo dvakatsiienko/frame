@@ -93,7 +93,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         const claude = join(bin, 'claude');
         writeFileSync(
             claude,
-            `#!/bin/sh\necho "tests/${file}:"\nif [ -e ${seen} ]; then ls "$3"/tests/*.test.ts* | wc -l | tr -d ' ' >> ${seen}; echo "(pass) one"; exit 0; fi\ntouch ${seen}\necho "(fail) one [5001ms]"\necho "  Error: timed out after 5000 ms"\nexit 1\n`,
+            `#!/bin/sh\necho "tests/${file}:"\nif [ -e ${seen} ]; then ls "$3"/tests/*.test.ts* | wc -l | tr -d ' ' >> ${seen}; echo "(pass) one"; exit 0; fi\ntouch ${seen}\necho "(fail) one [5001ms]"\necho "  Error: timed out after 5000 ms"\necho "Ran 1 test across 1 file."\nexit 1\n`,
         );
         chmodSync(claude, 0o755);
         const r = spawnSync('node', [script, 'x-mod-guard'], {
@@ -127,13 +127,14 @@ describe('a timeout-only red', () => {
         ).toEqual(['tests/a.test.ts']);
     });
 
+    const tally = 'Ran 2 tests across 1 file. [11.16s]\n';
     const timedOut = (name: string) =>
         `(fail) ${name} [5002.31ms]\n  Error: timed out after 5000 ms\n`;
 
     it('names the files whose every failed row timed out', () => {
         expect(
             timedOutFiles(
-                `tests/a.test.ts:\n${timedOut('one')}(pass) two\ntests/b.test.tsx:\n${timedOut('three')}tests/c.test.ts:\n(pass) four\n 2 pass\n 2 fail\n`,
+                `tests/a.test.ts:\n${timedOut('one')}(pass) two\ntests/b.test.tsx:\n${timedOut('three')}tests/c.test.ts:\n(pass) four\n 2 pass\n 2 fail\n${tally}`,
             ),
         ).toEqual(['tests/a.test.ts', 'tests/b.test.tsx']);
     });
@@ -141,13 +142,17 @@ describe('a timeout-only red', () => {
     it.each([
         [
             'a real red beside it',
-            `tests/a.test.ts:\n${timedOut('one')}(fail) two [1ms]\n  AssertionError: no\n`,
+            `tests/a.test.ts:\n${timedOut('one')}(fail) two [1ms]\n  AssertionError: no\n${tally}`,
         ],
         [
             'a file that did not load',
-            'tests/a.test.ts:\n(fail) the file did not load\n',
+            `tests/a.test.ts:\n(fail) the file did not load\n${tally}`,
         ],
-        ['nothing failed', 'tests/a.test.ts:\n(pass) one\n'],
+        ['nothing failed', `tests/a.test.ts:\n(pass) one\n${tally}`],
+        [
+            'a run that died after the row',
+            `tests/a.test.ts:\n${timedOut('one')}`,
+        ],
     ])('reads no timeout-only red with %s', (_, output) => {
         expect(timedOutFiles(output)).toBeUndefined();
     });

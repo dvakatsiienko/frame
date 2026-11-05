@@ -67,6 +67,8 @@ export function summary(runs: Run[]) {
 // the files of a run whose every failed row hit the kit's 5 s bound: a loaded machine, so they run once more; undefined
 // when a row failed for real or nothing failed. the kit refuses node:os, so a row cannot size its bound (FRM-470)
 export function timedOutFiles(output: string) {
+    // no tally: the run died partway, so files it never reached would read green on a rerun of the rest
+    if (!/^Ran \d+ tests? across/m.test(output)) return undefined;
     const lines = output.split('\n').map((l) => l.trim());
     const files = new Set<string>();
     let file = '';

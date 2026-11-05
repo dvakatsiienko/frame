@@ -215,8 +215,17 @@
                     "type": "string",
                     "value": "name"
                 },
+                "quick": {
+                    "description": "a quick lane: no sign to check, no label, and the 🚀 line records main's base for x lane landed",
+                    "type": "boolean"
+                },
                 "session": {
                     "description": "the summoned codie's session id the 🚀 line records",
+                    "type": "string",
+                    "value": "sid"
+                },
+                "sixth-sense": {
+                    "description": "the sixth sense's session id the 🚀 line records, so x lane landed waits for its verdict and retro",
                     "type": "string",
                     "value": "sid"
                 }
@@ -339,7 +348,8 @@
                 "risky",
                 "brake",
                 "approve",
-                "merge"
+                "merge",
+                "decamp"
             ],
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
@@ -1066,6 +1076,11 @@
                     "description": "with --outside, how many heads to keep (default 25)",
                     "type": "string",
                     "value": "n"
+                },
+                "verb": {
+                    "description": "print only that verb's call count in the window",
+                    "type": "string",
+                    "value": "name"
                 }
             },
             "name": "stats",

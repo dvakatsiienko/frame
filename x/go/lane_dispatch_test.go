@@ -99,6 +99,84 @@ func TestDispatchDryRunPrintsTheFourMarksAndWritesNothing(t *testing.T) {
 	}
 }
 
+const quickTicket = "lane: quick\nrepo: frame\n\n## 🎯 done test\n\ngiven it, then it holds\n\n⸻ 🪪 stamp — please keep 🙏"
+
+func frameAtBase(t *testing.T) (frame, base string) {
+	t.Helper()
+	frame = repo(t)
+	gitT(t, frame, "update-ref", "refs/remotes/origin/main", "HEAD")
+	return frame, gitT(t, frame, "rev-parse", "--short=7", "HEAD")
+}
+
+func TestDispatchQuickWritesItsThreeMarksWithNoSign(t *testing.T) {
+	t.Parallel()
+	frame, base := frameAtBase(t)
+	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo", labels: []string{"agent"}})
+
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--sixth-sense", "s2", "--apply")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	input := updateInput(t, server)
+	body, _ := input["description"].(string)
+	line := " — q, codie s1, main:" + base + ", sixth sense s2\n"
+	if input["stateId"] != "s-ip" || input["delegateId"] != "u-codie" || input["removedLabelIds"] != nil {
+		t.Errorf("input %v, want In Progress, the delegate, no label touched", input)
+	}
+	if !strings.Contains(body, "\n🚀 dispatched ") || !strings.Contains(body, line) || !strings.HasSuffix(body, "\n\n⸻ 🪪 stamp — please keep 🙏") {
+		t.Errorf("the 🚀 line %q is not above the stamp:\n%s", line, body)
+	}
+}
+
+func TestDispatchQuickDryRunPlansThreeMarks(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo"})
+
+	envelope, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q")
+
+	if plan := jsonOf(envelope["plan"]); got.code != 4 || strings.Count(plan, `"write"`) != 3 {
+		t.Fatalf("exit %d, want 4 with three marks:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchQuickReRunWritesNoSecondLine(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	body := "lane: quick\n\n🚀 dispatched 2026-11-05 — q, codie s1, main:abc1234\n"
+	server := dispatchServer(t, dispatchState{body: body, state: "In Progress", delegate: "codie"})
+
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+
+	if n := len(mutations(server)); got.code != 0 || n != 0 {
+		t.Fatalf("exit %d, %d mutations on a re-run:\n%s", got.code, n, got.stdout)
+	}
+}
+
+func TestDispatchWithoutQuickStillRefusesNoSign(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo"})
+
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stderr+got.stdout, "no ## signed block") {
+		t.Fatalf("exit %d, want the sign refusal:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchNamesASixthSenseOnASignedTicket(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, undispatched)
+
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--sixth-sense", "s2", "--apply")
+
+	body, _ := updateInput(t, server)["description"].(string)
+	if got.code != 0 || !strings.Contains(body, " — cli-3, codie s1, sixth sense s2\n") {
+		t.Fatalf("exit %d, body:\n%s", got.code, body)
+	}
+}
+
 func TestDispatchApplySetsEveryMarkInOneUpdate(t *testing.T) {
 	t.Parallel()
 	server := dispatchServer(t, undispatched)

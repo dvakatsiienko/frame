@@ -167,6 +167,28 @@ func TestATraceLineSaysADevBuildWroteIt(t *testing.T) {
 	}
 }
 
+func TestStatsVerbPrintsOneVerbsCount(t *testing.T) {
+	t.Parallel()
+	state := t.TempDir()
+	plant(t, state, 0, planted{name: "lane landed", ms: 1, caller: "cc"}, planted{name: "lane landed", ms: 1, caller: "cc"}, planted{name: "lane push", ms: 1, caller: "cc"})
+
+	got := xIn(t, t.TempDir(), []string{"X_STATE=" + state}, "stats", "--verb", "lane landed")
+
+	if got.code != 0 || fmt.Sprint(got.data["calls"]) != "2" {
+		t.Fatalf("exit %d, data %v\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+func TestStatsVerbRefusesAVerbXDoesNotHave(t *testing.T) {
+	t.Parallel()
+
+	got := xIn(t, t.TempDir(), []string{"X_STATE=" + t.TempDir()}, "stats", "--verb", "lane nothing")
+
+	if got.code != 2 {
+		t.Fatalf("exit %d, want a usage refusal\n%s", got.code, got.stdout)
+	}
+}
+
 func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
 	t.Parallel()
 	state := t.TempDir()

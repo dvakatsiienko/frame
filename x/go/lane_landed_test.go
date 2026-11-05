@@ -14,6 +14,8 @@ type landedWorld struct {
 	repo, state string
 	server      *fakeLinear
 	comments    *string // the ticket's comments as linear's json nodes
+	body        *string // the ticket's body
+	milestone   *string // the ticket's projectMilestone as linear's json
 }
 
 // the head of a done report, as crew-codie's how-you-work.md shapes it
@@ -21,19 +23,26 @@ const lookCardComment = `[{"body":"- **what**: the verb\n- **proven**: go test o
 
 func newLandedWorld(t *testing.T) landedWorld {
 	t.Helper()
-	w := landedWorld{repo: repo(t), state: t.TempDir(), comments: new(string)}
+	w := landedWorld{repo: repo(t), state: t.TempDir(), comments: new(string), body: new(string), milestone: new(string)}
 	*w.comments = "[]"
+	*w.milestone = "null"
+	*w.body = landedBody
 	write(t, filepath.Join(w.repo, "x.txt"), "the change\n")
 	gitT(t, w.repo, "add", "x.txt")
 	gitT(t, w.repo, "commit", "-q", "-m", "the change", "-m", "- ticket: FRM-1")
 	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
 	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — the chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
-	body, _ := json.Marshal("## wish\n\n* W1 (2026-10-30, dima): a thing\n* W2 (2026-10-30, dima): another\n\n## signed\n")
 	w.server = newFakeLinear(t, func(gqlCall) string {
-		return `{"data":{"issue":{"id":"uuid-1","description":` + string(body) + `,"updatedAt":"2026-10-30T00:00:00.000Z","comments":{"nodes":` + *w.comments + `}}}}`
+		body, _ := json.Marshal(*w.body)
+		return `{"data":{"issue":{"id":"uuid-1","projectMilestone":` + *w.milestone + `,"description":` + string(body) + `,"updatedAt":"2026-10-30T00:00:00.000Z","comments":{"nodes":` + *w.comments + `}}}}`
 	})
 	return w
 }
+
+const (
+	landedBody = "## wish\n\n* W1 (2026-10-30, dima): a thing\n* W2 (2026-10-30, dima): another\n\n## signed\n\n🚀 dispatched 2026-10-30 — lane-1, codie s1, sixth sense s2\n"
+	lookSent   = "👀 look sent 2026-10-30\n"
+)
 
 // done fills every line but the ones a case leaves out
 func (w landedWorld) done(t *testing.T) {
@@ -43,6 +52,7 @@ func (w landedWorld) done(t *testing.T) {
 	// a two-ticket retro, as a sixth sense on a joined lane names it
 	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-FRM-2-sixth-sense-retro.md"), "retro\n")
 	*w.comments = lookCardComment
+	*w.body += lookSent
 }
 
 func (w landedWorld) landed(t *testing.T, args ...string) (map[string]any, asRun) {
@@ -143,6 +153,212 @@ func (w landedWorld) laneTree(t *testing.T, name string) string {
 	tree := filepath.Join(w.repo, ".claude/worktrees", name)
 	gitT(t, w.repo, "worktree", "add", "-q", tree, "-b", "codie/FRM-1-"+name)
 	return tree
+}
+
+// a tree the merge left for its live session goes at a later landed, once that session ended
+func TestLandedApplyTakesATreeOnceItsSessionEnded(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	w.done(t)
+	tree := w.laneTree(t, "stayed")
+	home := t.TempDir()
+	session := filepath.Join(home, ".claude/sessions/1.json")
+	body, _ := json.Marshal(map[string]any{"cwd": tree, "pid": os.Getpid()})
+	write(t, session, string(body))
+	env := []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "HOME=" + home, stubPnpm(t)}
+
+	envelope, _ := runLinear(t, w.server, env, "lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
+	if !exists(tree) || !strings.Contains(linesOf(envelope), "a live session sits in it") {
+		t.Fatalf("a live session's tree was taken:\n%s", linesOf(envelope))
+	}
+
+	body, _ = json.Marshal(map[string]any{"cwd": tree, "pid": 99999999})
+	write(t, session, string(body))
+	envelope, _ = runLinear(t, w.server, env, "lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
+	if exists(tree) {
+		t.Fatalf("the clean tree stayed:\n%s", linesOf(envelope))
+	}
+}
+
+func TestLandedWantsACodieRetroOnlyOnTheLastChunk(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — first\n\n## FRM-2 — second\n")
+	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-sixth-sense-retro.md"), "retro\n")
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") {
+		t.Errorf("the first chunk wants no codie retro yet:\n%s", out)
+	}
+}
+
+func TestLandedWantsASixthSenseRetroOnlyWhenTheDispatchNamedOne(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	*w.body = strings.ReplaceAll(landedBody, ", sixth sense s2", "")
+	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-codie-retro.md"), "retro\n")
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") {
+		t.Errorf("no sixth sense was named, so none is owed:\n%s", out)
+	}
+}
+
+func TestLandedLookIsGreenOnlyOnTheLookSentLine(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	*w.comments = lookCardComment
+
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 look") || !strings.Contains(out, "👀 look sent") {
+		t.Errorf("the look card alone must read red and name the line:\n%s", out)
+	}
+
+	*w.body += lookSent
+	envelope, _ = w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "✅ look") {
+		t.Errorf("the look sent line must read green:\n%s", out)
+	}
+}
+
+func TestLandedWishLineClosesInThisTurnOnceTheDoneTestRan(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); strings.Contains(out, "close in this turn") || strings.Contains(out, "close proposal") {
+		t.Errorf("no look card, so no done test read:\n%s", out)
+	}
+
+	*w.comments = lookCardComment
+	envelope, _ = w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "close in this turn") {
+		t.Errorf("want «close in this turn»:\n%s", out)
+	}
+}
+
+// a quick lane's commits carry no id: its merged reads the range from the dispatch's base to the verified sha
+func quickWorld(t *testing.T) (landedWorld, string) {
+	t.Helper()
+	w := newLandedWorld(t)
+	base := gitT(t, w.repo, "rev-parse", "HEAD")
+	write(t, filepath.Join(w.repo, "q.txt"), "the quick change\n")
+	gitT(t, w.repo, "add", "q.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 x: no id anywhere")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	*w.body = "lane: quick\n\n🚀 dispatched 2026-10-30 — q, codie s1, main:" + short(base) + ", sixth sense s2\n"
+	return w, gitT(t, w.repo, "rev-parse", "HEAD")
+}
+
+func TestLandedRefusesAQuickLaneMidVerify(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	envelope, got := w.landed(t, "--apply")
+
+	if out := linesOf(envelope); got.code != 1 || !strings.Contains(out, "mid-verify") {
+		t.Fatalf("exit %d, want a refusal naming the verify:\n%s", got.code, out)
+	}
+	if !exists(filepath.Join(w.repo, ".scratch/lane-1/spec.md")) {
+		t.Error("the spec was archived mid-verify")
+	}
+}
+
+func TestLandedReadsAQuickLaneRangeUpToTheVerifiedSha(t *testing.T) {
+	t.Parallel()
+	w, head := quickWorld(t)
+	body, _ := json.Marshal("verdict: clean · verified: " + short(head))
+	*w.comments = `[{"body":` + string(body) + `}]`
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged — 1 commit from main:") {
+		t.Errorf("the range holds the quick commit:\n%s", out)
+	}
+}
+
+func TestLandedRedsAVerifiedShaNotOnMain(t *testing.T) {
+	t.Parallel()
+	w, head := quickWorld(t)
+	body, _ := json.Marshal("verified: " + short(head))
+	*w.comments = `[{"body":` + string(body) + `}]`
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 merged") {
+		t.Errorf("a verified sha off main has not landed:\n%s", out)
+	}
+}
+
+func TestLandedReadsTheRepoOfTheTicket(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	*w.body = "lane: side\nrepo: bytes\n\n" + landedBody
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	home := t.TempDir()
+	bytesRepo := filepath.Join(home, "projects/bytes")
+	gitT(t, filepath.Dir(w.repo), "init", "-q", "-b", "main", bytesRepo)
+	write(t, filepath.Join(bytesRepo, "b.txt"), "bytes\n")
+	gitT(t, bytesRepo, "add", "b.txt")
+	gitT(t, bytesRepo, "commit", "-q", "-m", "the change", "-m", "- ticket: FRM-1")
+	gitT(t, bytesRepo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	envelope, _ := runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "HOME=" + home, stubPnpm(t)}, "lane", "landed", "FRM-1")
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
+		t.Errorf("a bytes ticket must read the bytes repo:\n%s", out)
+	}
+}
+
+func TestLandedWiredLine(t *testing.T) {
+	t.Parallel()
+	const openMate = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}},{"identifier":"FRM-2","state":{"type":"started"}}]}}`
+	const allDone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}},{"identifier":"FRM-2","state":{"type":"canceled"}}]}}`
+	cases := []struct {
+		name, milestone string
+		calls           int
+		want            string
+	}{
+		{"at the merge", openMate, 0, "✅ wired — wired: unmeasured yet"},
+		{"no milestone", "null", 0, "✅ wired — wired: unmeasured yet"},
+		{"at the close with no call", allDone, 0, "🔴 wired"},
+		{"at the close with a call", allDone, 2, "✅ wired — 2 calls"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			*w.milestone = c.milestone
+			*w.body = "## ⚖️ worth it\n\n* new surface: one verb, `x lane landed --apply`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
+			lines := make([]planted, c.calls)
+			for i := range lines {
+				lines[i] = planted{name: "lane landed", ms: 1, caller: "cc"}
+			}
+			plant(t, w.state, 0, lines...)
+
+			envelope, _ := w.landed(t)
+
+			if out := linesOf(envelope); !strings.Contains(out, c.want) {
+				t.Errorf("want %q in:\n%s", c.want, out)
+			}
+		})
+	}
+}
+
+func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	*w.body = "## ⚖️ worth it\n\n* new surface: none — a fix\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); strings.Contains(out, "wired") {
+		t.Errorf("no new verb, no wired line:\n%s", out)
+	}
 }
 
 func stubPnpm(t *testing.T) string {
