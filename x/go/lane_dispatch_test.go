@@ -78,7 +78,7 @@ func TestDispatchNamesTheSlicesDirAfterTheSpecsFeature(t *testing.T) {
 	envelope, _ := runDispatchIn(t, server, frame, "FRM-1", "--session", "s1", "--lane", "cli-9")
 
 	if out := jsonOf(envelope["plan"]); !strings.Contains(out, "lanes/feat-a/issues/") {
-		t.Errorf("the slices dir must follow the spec's feature, as the lane plan and the retros do:\n%s", out)
+		t.Errorf("the slices dir must follow the spec's feature, as the lane plan does:\n%s", out)
 	}
 }
 

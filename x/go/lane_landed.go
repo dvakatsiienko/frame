@@ -70,7 +70,7 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	}
 	plan := landedPlan{id: id, pr: flagString(flags, "pr")}
 	var lines []landedLine
-	if err := r.Step("read", "the pr, the spec, the review line, the retros, the trees, the wish", func() (string, error) {
+	if err := r.Step("read", "the pr, the spec, the review line, the trees, the wish", func() (string, error) {
 		lines, err = landedLines(repo, &plan, issue, issueErr)
 		return plural(len(lines), "line"), err
 	}); err != nil {
@@ -131,20 +131,17 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	lines = append(lines, merged)
 
 	spec := landedLine{name: "spec", fix: "x lane landed " + id + " --apply"}
-	feature, specPath := "", ""
 	// the main checkout's spec: a lane tree's own .scratch copy would archive inside a tree about to go
 	if paths, _ := laneSpecSection(frame, id); len(paths) > 0 {
 		dir := filepath.Dir(paths[0])
-		feature, specPath = filepath.Base(dir), paths[0]
 		if waiting := unmergedChunks(main, paths[0], id); len(waiting) > 0 {
 			spec.detail = home(dir) + " waits on " + strings.Join(waiting, ", ") + ", no commit on " + home(main) + "'s origin/main: a spec moves when its every chunk merged"
 			spec.fix = "git -C " + home(main) + " fetch origin main, or land " + strings.Join(waiting, ", ") + "; then x lane landed " + id + " --apply"
 		} else {
-			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, feature)
+			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, filepath.Base(dir))
 			spec.detail = home(dir) + " is not archived"
 		}
 	} else if found := archivedSpec(frame, id); found != "" {
-		feature, specPath = filepath.Base(filepath.Dir(found)), found
 		spec.ok, spec.detail = true, home(filepath.Dir(found))
 	} else {
 		spec.detail, spec.fix = "no lane spec holds § "+id, "find the lane's .scratch/<feature>/spec.md"
@@ -157,31 +154,6 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		rounds.ok, rounds.detail = true, "a line names "+id
 	}
 	lines = append(lines, rounds)
-
-	retros := landedLine{name: "retros"}
-	if feature == "" {
-		retros.detail, retros.fix = "no feature to look under", "find the lane's spec first"
-	} else {
-		dir := filepath.Join(stateDir(), "lanes", feature)
-		var owed []string
-		// one file a lane and role: codie's is due at the lane's last chunk, a sixth sense's only when the dispatch named one
-		chunks := specChunks(specPath)
-		if len(chunks) == 0 || chunks[len(chunks)-1] == id {
-			owed = append(owed, "codie")
-		}
-		if dispatchOf(issue.Description).hasSixthSense {
-			owed = append(owed, "sixth-sense")
-		}
-		missing := slices.DeleteFunc(owed, func(role string) bool {
-			return exists(filepath.Join(dir, feature+"-"+role+"-retro.md"))
-		})
-		// clio folds a retro and clears the file, so a missing one is named, never a red
-		retros.ok, retros.detail = true, "every retro due under "+home(dir)
-		if len(missing) > 0 {
-			retros.detail = "no " + strings.Join(missing, ", ") + " retro under " + home(dir) + ": owed, or a fold took it"
-		}
-	}
-	lines = append(lines, retros)
 
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean = nil

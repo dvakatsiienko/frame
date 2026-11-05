@@ -269,8 +269,7 @@
                 "linear — the ticket's W-lines and comments (the look card), read",
                 "<frame main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/ once every chunk merged",
                 "<frame main checkout>/docs/test-drive/review-rounds.md — read",
-                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped",
-                "~/.local/state/x/lanes/<feature>/ — the retros, read"
+                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped"
             ]
         },
         {

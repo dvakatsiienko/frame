@@ -158,7 +158,7 @@
   - given a ticket with no `## signed` block, then In Progress, the codie delegate and a 🚀 line with `main:<base>` land; `--sixth-sense <sid>` names one on the line; without `--quick` the sign refusal stands
   - given a ticket already dispatched, when a re-run names a new lane, session or sixth sense, then it writes its own 🚀 line below the old one, the same lane keeping its base and sixth sense; a bare re-run reports the marks set; a held line no field reads refuses a flag
 - ⬜ `x lane landed` reads a lane's close true (FRM-480)
-  - given the first chunk of two merged, then the retros line wants no codie retro yet; a sixth-sense retro is wanted only when the 🚀 line named one
+  - given any chunk, then it prints no retros line: a siesta and the halt own retros
   - given only codie's look card, then 🔴 look until a `👀 look sent` line sits in the body; the wish line reads «close in this turn» once the look card's proof exists on a merged chunk
   - given a quick lane mid-verify, then `--apply` refuses; `merged` reads the commits from the 🚀 line's base to the verified sha; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back

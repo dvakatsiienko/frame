@@ -9,7 +9,7 @@ import (
 )
 
 // landedWorld is a merged lane: a repo whose origin/main carries FRM-1's commit, the lane spec under
-// .scratch/lane-1/, and a state dir for the lane's retros
+// .scratch/lane-1/, and a state dir for the traces
 type landedWorld struct {
 	repo, state string
 	server      *fakeLinear
@@ -48,8 +48,6 @@ const (
 func (w landedWorld) done(t *testing.T) {
 	t.Helper()
 	write(t, filepath.Join(w.repo, "docs/test-drive/review-rounds.md"), "- FRM-1 · codie · 2 rounds\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-codie-retro.md"), "retro\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-sixth-sense-retro.md"), "retro\n")
 	*w.comments = lookCardComment
 	*w.body += lookSent
 }
@@ -72,7 +70,7 @@ func TestLandedRedsEveryGapAndWritesNothing(t *testing.T) {
 	envelope, got := w.landed(t)
 
 	out := linesOf(envelope)
-	for _, want := range []string{"🔴 spec", "🔴 review-rounds", "✅ retros", "🔴 look", "✅ merged", "✅ wish"} {
+	for _, want := range []string{"🔴 spec", "🔴 review-rounds", "🔴 look", "✅ merged", "✅ wish"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("want %q in:\n%s", want, out)
 		}
@@ -176,41 +174,15 @@ func TestLandedApplyTakesATreeOnceItsSessionEnded(t *testing.T) {
 	}
 }
 
-func TestLandedWantsACodieRetroOnlyOnTheLastChunk(t *testing.T) {
-	t.Parallel()
-	w := newLandedWorld(t)
-	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — first\n\n## FRM-2 — second\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-sixth-sense-retro.md"), "retro\n")
-
-	envelope, _ := w.landed(t)
-
-	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") || strings.Contains(out, "owed") {
-		t.Errorf("the first chunk wants no codie retro yet:\n%s", out)
-	}
-}
-
-// a fold clears the file, so a missing one is named and never reds the close
-func TestLandedNamesAMissingRetroWithoutARed(t *testing.T) {
+// a siesta and the halt own retros: the close reads none, with a file there or not
+func TestLandedNamesNoRetros(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 
-	envelope, _ := w.landed(t)
+	envelope, got := w.landed(t)
 
-	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") || !strings.Contains(out, "no codie, sixth-sense retro") || !strings.Contains(out, "a fold took it") {
-		t.Errorf("want the missing retros named, no red:\n%s", out)
-	}
-}
-
-func TestLandedWantsASixthSenseRetroOnlyWhenTheDispatchNamedOne(t *testing.T) {
-	t.Parallel()
-	w := newLandedWorld(t)
-	*w.body = strings.ReplaceAll(landedBody, ", sixth sense s2", "")
-	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-codie-retro.md"), "retro\n")
-
-	envelope, _ := w.landed(t)
-
-	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") || strings.Contains(out, "owed") {
-		t.Errorf("no sixth sense was named, so none is owed:\n%s", out)
+	if out := linesOf(envelope) + got.stdout + got.stderr; strings.Contains(out, "retro") {
+		t.Errorf("want no retros line and no retros in the read step:\n%s", out)
 	}
 }
 

@@ -89,7 +89,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		plan.Tickets = append(plan.Tickets, ticket)
 	}
 	// outside every checkout: a .scratch/ in the worktree would keep the tree from its decamp at land
-	// one dir name with codie's lane plan and x lane landed's retros: the spec's feature, else the lane
+	// one dir name with codie's lane plan: the spec's feature, else the lane
 	feature := ""
 	for _, id := range args {
 		of := lane
