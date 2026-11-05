@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-05T21:58:00Z'
+updated_date: '2026-11-05T22:03:00Z'
 labels:
   - m
 dependencies: []
@@ -42,4 +42,12 @@ from PK-321's close, 23:58, no other home:
 - PK-321 W5, bytes pr median: read 19:05, 16 min over the 3 codie prs, renovate made the 1196; left: flow's baseline 25 against review-rounds' 36, two numbers for one thing
 - PK-321 W8, the blind read: crow's read on each worth-it trim, `.scratch/worth-it-pass.md`; his o8 gave it
 - PK-321 W9, upstream borrows: cc v2.1.318 `$.model.fork` takes an effort, a mod's side job at low; check every card sets effort, a subagent with no effort follows the session only on the same model; the loaded-file check is `/context all`, method-silent-failures' probe could name it; gh-stack#587's root cause is on a contributor's fork. the five no-fix issues stay on watch
+
+restored 00:03, wishkeeper's catch: my 23:48 description rewrite cut these with a pointer that claimed the notes held them:
+- FRM-387 parked behind FRM-383; o89 `x linear sign`: seven names, crow's read, a chunk, `## ⚖️ worth it` with its 🔌 caller `clio:shape-lane`
+- o91's `x lane commit --dry` rider is FRM-473's exit 7; FRM-435's `x verify base` goes into FRM-474; each trimmed chunk gets its `## ⚖️ worth it`, a re-sign batched through his one word; crow's blind read on every survivor, about $1 a ticket, his o83
+- o80: real `to-spec` on FRM-501, FRM-491, FRM-480 by reading matt's skill, before FRM-491 starts
+- FRM-509's listing: 84 heads, 30 `worktree-*`/`verify-*`, 43 `coder/*`, 32 merged: a file he reads, then a ⚠️ ask; its refs may point at `side-channel-prep/` in the notes folder
+- `ticket-flow.build.py:186,195` «one glide step each»
+- wishkeeper's small ones: FRM-501's pr `## 🪢 habits` adds `crew-lead/watching.md`; `body.md` names `new verb:`; `shape-lane-dispatch/SKILL.md:41` says how a planless card moves; `review-rounds.md` appends frame#126's live-session miss; FRM-434, FRM-473 re-signs say «worth unchanged» with no section; W847 and W2000 same words, keep one; `wish-cover --all` in `craft-pm`
 <!-- SECTION:NOTES:END -->
