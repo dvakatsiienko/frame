@@ -1,10 +1,10 @@
 ---
 id: PK-320
 title: 'day plan 11-05: mods lane 5 stacked to tilde, tails with dima on his return'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T14:57:00Z'
-updated_date: '2026-11-05T21:48:00Z'
+updated_date: '2026-11-05T22:00:00Z'
 labels:
   - m
 dependencies: []
@@ -42,4 +42,6 @@ W1935 (2026-11-05 20:47, dima, o51 steer, home PK-320): I vote for a good, relia
 22:50: FRM-507 landed; FRM-501 frame#124 in its last read; the mods lane moves to main at its merge, his word; cli frame#127 FRM-434 with sixth sense
 
 frame#124 landed 23:40 at b7a2e8af on his tick o101, no warn-only stage; the mods lane on main from f12f12ce, FRM-513 next.
+
+close: 2026-11-06 00:01, the day ran past midnight with the fleet still going. W63 done, the reminder's pairing removed at 17:34. W1922 answered, W1923 done. W1931 answered, W1932 answered, W1933 answered, W1934 answered, W1935 answered 20:48 and on the board. the plan's open lines live on: mods lane and cli lane in their specs; FRM-503 in the queue; PK-324 and PK-325 for the tails; the shift log shifts/2026-11-05-afk-tails.md
 <!-- SECTION:NOTES:END -->

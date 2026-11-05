@@ -1,10 +1,10 @@
 ---
 id: PK-321
 title: 'tails for the next boot: every chore not done with dima today'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T18:11:00Z'
+updated_date: '2026-11-05T21:58:00Z'
 labels:
   - m
 dependencies: []
@@ -75,4 +75,10 @@ W1412 (2026-11-02 18:59, dima): maybe let's mark it as a candidate for deletion 
 W1413 (2026-11-02 18:59, dima): let's try it on today's hold, and if we won't find a way to make it work, then cut.
 W1435 (2026-11-02 18:59, dima, o59 steer): if not works cut.
 worth rule: enforced at c5a4e82a; the note above is stale. the crew board redraw is owed: sources moved after v14.
+
+23:51: W1308, W1312 moved to PK-325 on dima's word; crew board redraw done by the side channel on his word, PK-324 item 8; FRM-410 groomed by clio tomorrow after boot. his word: close PK-321 after this.
+
+close: 2026-11-05 23:55, his word «321 — close after this.», read at the source in the side's thread; W1308, W1312 live in PK-325, the board is v15, FRM-410 on tomorrow's reminder, FRM-501's exit 4 in its spec
+
+close: 23:58, per the side's read at 23:56, its «by the note» items not re-proven. W1 done, branch merged, board now v15. W2 done FRM-510. W3 done, comments on FRM-495, FRM-480, FRM-384, FRM-489. W4 moved FRM-465, FRM-459, FRM-503, FRM-410's reminder, FRM-488 Done. W5 moved PK-324, crow-receipts to _reminders. W6 moved _reminders, FRM-509, FRM-480, done per FRM-507's ledger. W7 done pointers, FRM-501 and FRM-491 in their tickets. W8 moved PK-324, solo comparison in its test drive, store cleanup read null at 19:05, the run itself unprovable. W9 moved PK-324, PK-310 its own item. W10 done, W11 done: his afk hour ran and ended. W12 done board v15, FRM-509 retros, unused verbs. W13 done frame#125. W1308 moved PK-325, W1312 moved PK-325. W1396 done half, milestone-close read in FRM-480 exit 6. W1410 moved FRM-434, W1412 moved FRM-434, W1413 moved FRM-434, W1434 moved FRM-434, W1435 moved FRM-434. W1411 moved PK-325.
 <!-- SECTION:NOTES:END -->
