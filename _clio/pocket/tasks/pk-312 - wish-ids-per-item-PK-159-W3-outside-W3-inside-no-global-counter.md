@@ -1,10 +1,10 @@
 ---
 id: PK-312
 title: 'wish ids per item: PK-159:W3 outside, W3 inside, no global counter'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T14:29:00Z'
-updated_date: '2026-11-05T16:26:00Z'
+updated_date: '2026-11-05T16:32:00Z'
 labels:
   - m
 dependencies: []
@@ -46,4 +46,7 @@ W1925 (2026-11-03 16:39, dima, re-fold of W1923): Maybe it's better to make it s
 built 2026-11-03 20:48: `prompt-groom.ts --move <PK-N> <FRM-N> <W-id…>` prints the renumbered lines and the «moved:» line (o98); left: wish-cover following a cross-item cite, a pocket-add.test.ts row for --side-channel-owned, and today's hand-carried ids in FRM-499/500/501 left as they are
 
 2026-11-05 18:40 side channel: a cite of another item (PK-159:W3) was counted as this item's own W3 in wish-cover; fixed test-first on branch worktree-fork-38d42581 (red, then 32 of 32), so such a cite is now skipped. what remains: following the cite into the other item, and a pocket-add test row for --side-channel-owned. recommendation: drop both: all 5 PK-n:Wn cites found live inside this item, so following has no caller; pocket-add's test file has no argument tests at all, so the row would be new surface. blocks the close: the halt's merge of that branch, then clio's verdict on the two drops.
+
+2026-11-05 18:33 side channel, on clio's word: following a cross-item cite and the pocket-add test row are dropped, no caller; the hand-carried ids in FRM-499, FRM-500 and FRM-501 stay as written.
+close: W1919 W1920 W1921 done, per-item ids and prompt-groom --next built (o19, o94, o96); W1922 W1923 W1924 W1925 done, renumbering at the move built as prompt-groom --move (o98); the wish-cover cite fix merges from the fork branch
 <!-- SECTION:NOTES:END -->
