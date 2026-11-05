@@ -76,6 +76,8 @@ export type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
 export const VAULT = 'iCloud~md~obsidian';
 // the linear teams whose ticket ids the rules read: `x schema linear` lists the workspace's, and a new team joins here
 export const TICKET_KEY = ['FRM', 'BYT'].join('|');
+// a line that reads its pipe's real exit: a pipe into jq hides nothing there
+export const PIPE_READ = /\bpipefail\b|\bpipestatus\b/;
 // each wrapper, and its options that take the next word as their value
 const WRAPPERS = new Map<string, string[]>([
     ['builtin', []],

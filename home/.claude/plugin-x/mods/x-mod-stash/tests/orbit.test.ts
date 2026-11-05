@@ -3818,3 +3818,106 @@ test('a save kept with no base, by a module before the base was kept, lands as i
         (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
     ).toBe('cards first');
 });
+
+/* a sign ask's shape, refused at the press */
+
+const SIGN_DENY = 'the shape x-mod-guard reads';
+const denied = (r: unknown) => String((r as { deny?: string }).deny ?? '');
+
+for (const pick of ['signed', 're-signed', 'signed as drafted'])
+    test(`add refuses the pick «${pick}» on a text without the sign shape`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(denied(await add($, ['sign FRM-1 please', pick]))).toContain(
+            SIGN_DENY,
+        );
+    });
+
+for (const [what, text, pick] of [
+    ['one id', '✍️ sign FRM-1: the title', 'signed'],
+    ['a batch', '✍️ sign FRM-1, BYT-2: the titles', 're-signed'],
+    ['no sign word in the pick', 'push FRM-1', 'yes'],
+    ['a word holding it', 'design FRM-1', 'designed as drawn'],
+] as const)
+    test(`add passes ${what}`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(denied(await add($, [text, pick]))).toBe('');
+    });
+
+test('follow refuses a sign pick on a text without the shape', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const r = await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'signed',
+        text: 'sign it',
+    });
+    expect(denied(r)).toContain(SIGN_DENY);
+});
+
+test('follow refuses a text losing the shape under a kept sign pick', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['✍️ sign FRM-1: the title', 'signed']);
+    const r = await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        text: 'sign it after all',
+    });
+    expect(denied(r)).toContain(SIGN_DENY);
+});
+
+test('follow passes the sign shape', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const r = await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'signed',
+        text: '✍️ sign FRM-1: the title',
+    });
+    expect(denied(r)).toBe('');
+});
+
+/* a merge ask's shape, refused at the press */
+
+const MERGE_DENY = 'the shape x-mod-guard reads for --dima-ok';
+const URL = 'https://github.com/o/n/pull/7';
+
+for (const pick of ['merge', 'merge it', 'Merge when green'])
+    test(`add refuses the pick «${pick}» on a text naming no pr`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(denied(await add($, ['merge frame#7 please', pick]))).toContain(
+            MERGE_DENY,
+        );
+    });
+
+for (const [what, text, pick] of [
+    ['a url', `⚠️ merge ${URL}`, 'merge'],
+    ['the ⚠️ shape', '⚠️ merge frame#7: the title', 'merge'],
+    ['a word holding it', 'push FRM-1', 'submerge it'],
+    ['no merge word in the pick', 'merge frame#7 please', 'yes'],
+] as const)
+    test(`add passes ${what}`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(denied(await add($, [text, pick]))).toBe('');
+    });
+
+test('follow refuses a merge pick on a text naming no pr', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const r = await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'merge',
+        text: 'merge it',
+    });
+    expect(denied(r)).toContain(MERGE_DENY);
+});

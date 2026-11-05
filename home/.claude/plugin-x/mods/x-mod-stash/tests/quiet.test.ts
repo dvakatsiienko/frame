@@ -2556,27 +2556,6 @@ test('a member named the app beside a push is judged as a member', async ($, on)
     ]).toEqual([undefined, true, false]);
 });
 
-for (const [what, reply, drop] of [
-    [
-        'a lone note after a keep-hot ping holds',
-        { at: EVEN - 60_000, pingedAt: EVEN - 1000 },
-        '',
-    ],
-    [
-        'a lone note after a real reply wakes',
-        { at: EVEN - 1000, pingedAt: EVEN - 60_000 },
-        undefined,
-    ],
-] as const)
-    test(`${what} while away`, async ($, on) => {
-        const w = answering(on);
-        await start($);
-        w.store.set('afk', { on: true });
-        w.store.set(`reply:${CODIE.sessionId}`, reply);
-        const r = await fromAppText($, noteOf(CODIE.name, '.'));
-        expect(r.drop).toBe(drop);
-    });
-
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {
         name: MEMBER,

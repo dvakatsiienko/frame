@@ -763,10 +763,10 @@ export function signWords(
 const TICKET = new RegExp(`^(${TICKET_KEY})-\\d+$`);
 // a sign ask, `✍️ sign <id>: <title>` or `✍️ sign <id>, <id>: <title>` for a batch (FRM-459 o49): each id named is matched whole,
 // and an id the ask does not list is not signed by it
-const SIGN_ASK = new RegExp(
-    `(?:^|\\s)✍️ sign ((?:${TICKET_KEY})-\\d+(?:(?:,\\s*|\\s+and\\s+|\\s+)(?:${TICKET_KEY})-\\d+)*):`,
-    'u',
-);
+// twin sign-ask — a copy lives in x-mod-stash, whose orbit refuses a sign pick without this shape; twins.test.ts holds them equal
+export const SIGN_ASK =
+    /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
+// twin end
 export const isSignAsk = (text: string, id: string) =>
     SIGN_ASK.exec(text)?.[1]
         ?.split(/[,\s]+(?:and\s+)?/)

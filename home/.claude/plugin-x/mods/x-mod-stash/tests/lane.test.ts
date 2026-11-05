@@ -1481,6 +1481,71 @@ test('an all-ticked plan file shows the lane done', async ($, on) => {
     expect(kept(w)[0]?.current).toBe(3);
 });
 
+const lineStep = async (w: ReturnType<typeof world>, line: string) => {
+    w.files[PLAN] = `- [ ] 01 · ${line}\n`;
+    await poll(w);
+    return kept(w)[0]?.items[0];
+};
+
+test('a plan line leading with its ticket keeps it once, as the link', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    expect(await lineStep(w, 'FRM-501 quiet reads the prompt')).toMatchObject({
+        text: 'quiet reads the prompt',
+        ticket: 'FRM-501',
+    });
+});
+
+test('the card draws a leading ticket once', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await linkedPlan($, w);
+    await lineStep(w, 'FRM-501 quiet reads the prompt');
+    expect([
+        (await ui.find({ text: 'FRM-501', type: 'Link' }))?.props.href,
+        await ui.find({ text: 'FRM-501 quiet reads the prompt', type: 'Text' }),
+    ]).toEqual(['https://linear.app/x-com/issue/FRM-501', undefined]);
+});
+
+test('the 60-char cap counts what is left after the ticket', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w);
+    const step = await lineStep(w, `FRM-501 ${'a'.repeat(60)}`);
+    expect(step?.text).toBe('a'.repeat(60));
+});
+
+for (const [what, line, ticket] of [
+    ['an id elsewhere in the text', 'quiet reads FRM-501 whole', 'FRM-501'],
+    ['a step with no ticket', 'quiet reads the prompt', undefined],
+    ['a lone ticket', 'FRM-501', 'FRM-501'],
+] as const)
+    test(`${what} stays as written`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await linkedPlan($, w);
+        const step = await lineStep(w, line);
+        expect([step?.text, step?.ticket]).toEqual([line, ticket]);
+    });
+
+test('a card created from a plan carries the ticket from its first draw', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-501 quiet reads the prompt\n';
+    await create($, {
+        act: 'create',
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        title: 'plan lane',
+    });
+    expect(kept(w)[0]?.items[0]).toMatchObject({
+        text: 'quiet reads the prompt',
+        ticket: 'FRM-501',
+    });
+});
+
 test('a nested or unnumbered checklist line moves nothing', async ($, on) => {
     const w = world(on);
     await start($);

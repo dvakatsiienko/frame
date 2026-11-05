@@ -3,10 +3,12 @@ import {
     type Command,
     type Context,
     NEVER,
+    PIPE_READ,
     type Refusal,
     STASH,
     TRASH,
     VAULT,
+    asMember,
     commandsDeep,
     gitDir,
     gitParts,
@@ -370,6 +372,53 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
     return undefined;
 }
 // a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
+const LINEAR_READS = ['list', 'read'];
+const LINEAR_MEMBER_WRITES = ['comment', 'create', 'delete', 'update'];
+
+// any `x linear` verb but a known read writes, so a new verb warns by default
+function isLinearWrite(c: Command) {
+    const words = c.args.map((w) => w.text);
+    // `x as <member> --` is a wrapper: the command the walker reads is the raw `linear` under it
+    if (asMember(c) !== undefined && c.name === 'linear')
+        return (
+            words[0] === 'issue' &&
+            LINEAR_MEMBER_WRITES.includes(words[1] ?? '')
+        );
+    if (c.name !== 'x' || words[0] !== 'linear') return false;
+    const verb = words[1] ?? '';
+    // no verb, or only a flag: it prints its help
+    if (!verb || verb.startsWith('-') || words.includes('--help')) return false;
+    if (LINEAR_READS.includes(verb)) return false;
+    if (verb === 'body') return words.includes('--set');
+    if (verb === 'archive') return words.includes('--apply');
+    if (verb !== 'api') return true;
+    // a query counts as a read only when its text is on the line to read
+    const queries = c.args
+        .slice(2)
+        .filter((w) => /^\s*(?:query\b|mutation\b|\{)/.test(w.text));
+    return (
+        !queries.length ||
+        queries.some((w) => w.isExpanding || /\bmutation\b/.test(w.text))
+    );
+}
+
+// the pipe's exit is the reader's, so a failed write reads as a success; the call has already run by the time this speaks
+export function linearPiped(command: string, cwd: string): Refusal | undefined {
+    if (PIPE_READ.test(command)) return undefined;
+    if (
+        !commandsDeep(command, cwd).some(
+            (c) => c.sep === '|' && isLinearWrite(c),
+        )
+    )
+        return undefined;
+    return {
+        door: 'the call already ran: read the ticket back with x linear read before repeating it, a comment is not idempotent; run the next write unpiped, its exit is the receipt',
+        rule: 'linear-write-piped',
+        targets: ['x linear'],
+        why: "a pipe after an x linear write reports the reader's exit, so a failed write reads as a success",
+    };
+}
+
 export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
     // the environment git reads its config from: a prefix, or an export that lasts for the calls after it
     const env = [
