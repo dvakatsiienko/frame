@@ -10,15 +10,18 @@ A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits
 `_clio/shifts/` that ran (`status: done`) is the template. A shift over ✍️ signed chunks names them in its plan and runs each through
 `clio:shape-lane-dispatch` in their order (lane init's contract: `craft-fleet-flow` § lane init) — nothing in it waits on dima.
 
-## presence — his afk switch drives it (dima, 2026-10-22, PK-103 W107, W108)
+## presence — his afk switch drives it
 
 one shift, day or night; how it drives follows the band's afk switch (💨, x-mod-stash), which puts an away note on every prompt while on:
 - **afk on** — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
   step that blocks everything else.
 - **afk off** — he is near for now: a y/n ping only for a real decision, batched at a siesta.
 - a shift started with afk off gets one line: «afk is off — near for now, or a slip?»
+- an approve sent from his phone covers only the act it names, never whatever else is ready
 
-## the 5h ladder — no lane runs far ahead of pace (dima, 2026-11-03, PK-314, PK-308)
+## the 5h ladder — no lane runs far ahead of pace
+
+⏸️ paused while he is on the $200 plan, which has no 5h window (`habit-ctx-load-balancing`): this section and the `mods:set pace` calls below do not run, and i read `stash.waker` on instead.
 
 pace = the elapsed share of the 5h window; over = used − pace. read after every step, in every mode, until he says «go» for a burn day; when two rungs hold, the higher wins: 97 % › ≤ 55 min › 90 % › +5 › resume; the first 10 % of a fresh window parks nobody:
 - **+5 over pace** (the band's -5 %) → everyone parks at a pit stop, 🔥 on for all, resumes at −2 (the band's +2 %); +10 is never meant to be reached
@@ -44,12 +47,12 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 
 - **second winds are mine to plan, for everyone** (dima, 2026-11-03: «since you observe and you can plan, pick good times for everyone … and you should second wind everyone»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»):
   - the line: about 55 % context, never past 60 %, at a step's end, never mid-chunk — mine through `clio:checkpoint`, a shift or his «afk» without one (o73); `get_usage` reads my context and the 5h window after every step
-  - context grows slowly on a shift, so each wind is planned a step ahead, never rushed: after every step i read my own % and each member's (every brief asks a member to name its % in each ping), and a member near the line gets «second wind after this step» from me
+  - context grows slowly on a shift, so each wind is planned a step ahead, never rushed: after every step i read my own % through `get_usage` and each member's on the band, and a member near the line gets «second wind after this step» from me
   - everyone means everyone live: codie, sixth sense, crow, helga, and a parked side channel
 
 ## hot caches — no member goes cold
 
-dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any thread inactive for 50 minutes is auto-woken by keep-hot». cold ~$0.80 vs warm ~$0.02 per 100k Opus 5.5 member (`crew-lead` model-cards).
+dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any thread inactive for 50 minutes is auto-woken by keep-hot».
 
 - keep-hot (🔥, `x-mod-stash`) pings a session 50 min after its last turn; every member's 🔥 is on from the shift's start, mine included: his click on its 🌌 sessions row, or crow's `armHot` door; no hand beat
 
@@ -57,8 +60,8 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 watch-pr`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
-- write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces (dima, 2026-11-03, PK-308)
-- every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end (dima, 2026-11-03, PK-308); `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
+- write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces
+- every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
 - one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
@@ -71,20 +74,20 @@ Every decision is one of three:
 - **a merge lands itself** (dima, 2026-11-03: «the usual pattern for shift is that you merge automatically without my approval»): a clean pr by the gate, a self-edit when its chunk's `## signed` carries `merge: pre-approved`, a quick lane's chunk by its close; each one only after its pre-merge 🌤️ siesta, wishkeeper over the chunk (`docs/test-drive/pre-merge-siesta.md`). a day's exception — «hold this lane at ready for my ok» — is written into the plan file's rules for that lane only, never into this skill
 - **taste** → build one default, flag it for the report
 
-- the ⏰ waker stays on while he is afk (dima, 2026-11-03): i read its key at every step, and off means i switch it on through `pnpm -C ~/frame mods:set pace on`
+- the ⏰ waker stays on while he is afk: i read its key at every step, and off means i switch it on through `pnpm -C ~/frame mods:set pace on`
 - a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
 - codie's premise doubt is built and flagged the same minute, never found at review
 - every «done / fixed / sealed / reset» i log or tell names the command that read it back, with its exit code; a member's relay says `measured:` or `inference:`, and no ticket is born from an `inference:` line mid-shift
 - a joiner chunk gets its spec section, `x brief preflight` and `x lane dispatch --apply` before its steer; its reviewers match its `## signed` line
-- in a quick lane codie pushes its own head through `x lane push` and sends «round N» straight to sixth sense (dima, 2026-11-03, replacing his 10-27 rule)
-- events go to the plan file's `## log` (time · who · what · evidence), never to chat. while afk is off,
+- in a quick lane codie pushes its own head through `x lane push` and sends «round N» straight to sixth sense
+- events go to the plan file's `## log`, append-only, oldest first (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
-- **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
+- **while he is afk, an ask that wants his attention parks in orbit, and nothing wakes him**: everything else i decide and log, and the report carries the decisions (dima, 2026-11-05: «only hold ones that wants my attention i'll see when i return»)
 - watch per `x:crew-lead`
 
 ## 3 · end — the report
 
-In the plan file, then one chat message:
+A shift ends when its plan is done or on his word. In the plan file, then one chat message:
 
 - **≤ 3 decisions that matter**, one line each, with a ➡️
 - `kept as built: …` — everything else in one line, details in the file
