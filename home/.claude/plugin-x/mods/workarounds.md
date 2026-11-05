@@ -59,3 +59,10 @@ the workaround in place, the undo. checked against the changelog through 2.1.314
 - issue: none filed — `$.clock.now()` is async only, so a sync path cannot use it
 - workaround: a sync read carries `// clock-ok: <why>` on the line above, and `mods:test` lets it pass
 - undo when fixed: swap each `clock-ok` read for the sync api, drop the exemption in `test.ts` `clockReads`
+
+## a held idle notice: part of a batch
+
+- want: of a prompt batching several `[Cross-session idle notice]`s, hold the ones with nothing to say and let the one that pushes start clio's turn (FRM-501)
+- issue: an `isMeta` prompt starting a turn takes no rewrite (`PromptSubmitInput.isMeta`'s doc in the engine's types), so its text cannot lose a notice
+- workaround: `canCut` in `quietHoldPrompt`: the batch holds whole or comes in whole
+- undo when fixed: drop `canCut`, so each notice goes by its own words
