@@ -81,6 +81,7 @@ import {
     waitSpans,
 } from './parse.ts';
 import {
+    QUIET_EVENT_FROM,
     QUIET_HELD_LINE,
     QUIET_PUSHED,
     QUIET_SLIPSTREAMED,
@@ -1500,6 +1501,8 @@ async function quietHoldPrompt(
             (await isAwayNow($));
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
         const canCut = !isEngineNotice || judged.every((j) => !j.why);
+        // a turn is starting anyway, and the event's words are written to that turn
+        const isTurnStarting = judged.some((j) => j.why);
         for (const { from, head, marks, tag, text, why } of judged) {
             const isWoken = tag === QUIET_NOTICE && isAway;
             const reason = why ?? (isWoken ? 'away' : undefined);
@@ -1512,7 +1515,8 @@ async function quietHoldPrompt(
                 ...(sid ? { sid } : {}),
                 ...marks,
             };
-            if (isHolding && canCut && !reason) {
+            const isEventKept = from === QUIET_EVENT_FROM && isTurnStarting;
+            if (isHolding && canCut && !reason && !isEventKept) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
@@ -1618,7 +1622,8 @@ async function quietSendEnd(
         isQuietRefusal(answer?.message) && (await isHeldSince($, send.at));
     // a send that went nowhere joins no turn, so the line would lie
     if (answer?.success === false && !isHeld) return {};
-    // the kinds as they stand now, since a flip before the gate is what it judged by
+    // the kinds as they stand now, what a gate that ran during the send judged by; one that judges later, a send queued
+    // behind her turn, can still read otherwise after a flip
     const kindsOff = await quietKindsOff($);
     const tag = quietTag(send.message);
     const isPush =
@@ -5052,6 +5057,7 @@ export const register: Register = (on) => {
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
         const isUser =
+            !e.isMeta &&
             !(isAppShaped && isAppPrompt(e.text)) &&
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');

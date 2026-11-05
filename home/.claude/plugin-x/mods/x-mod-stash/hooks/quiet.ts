@@ -52,6 +52,8 @@ export const isQuietQuestion = (body: string) =>
 export const isQuietRefusal = (message: unknown) =>
     String(message ?? '').includes('did not accept');
 
+export const QUIET_EVENT_FROM = 'the app';
+
 // one block off the prompt's head; a message may quote a tag mid-line, never at a line's start
 const APP_HEAD =
     /^\s*(?:<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>([^<]*)<\/side-sessions-event>|(<cross-session-message[^>]*>(?:(?!\n<\/?cross-session-message)[\s\S])*\n<\/cross-session-message>))/;
@@ -103,7 +105,7 @@ export function quietGlued(text: string) {
     if (lone !== undefined && !notes.length && !hasOther)
         notes.push({
             body: '',
-            from: 'the app',
+            from: QUIET_EVENT_FROM,
             head: lone,
             held: 'a side-sessions notice',
         });

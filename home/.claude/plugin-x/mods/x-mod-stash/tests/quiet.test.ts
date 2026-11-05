@@ -2509,6 +2509,31 @@ test('a send the gate held reads held, its kind back on by the end', async ($, o
     expect(r.context).toEqual([SLIPSTREAMED]);
 });
 
+test('a side-sessions notice beside a pushing message stays whole in that turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const push = GLUED_LINE.replace('sw done', '[done] step 2');
+    const r = await fromAppText($, notice(push, EVENT));
+    expect([
+        r.drop,
+        r.text?.includes(EVENT),
+        held(w).join('\n').includes('a side-sessions notice'),
+    ]).toEqual([undefined, true, false]);
+});
+
+test('a meta idle notice let in never counts as his turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-comms', false);
+    await $.prompt.submit({
+        isMeta: true,
+        origin: { kind: 'sdk' },
+        text: IDLE,
+        wait: false,
+    } as never);
+    expect(w.store.get('dima-at')).toBeUndefined();
+});
+
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {
         name: MEMBER,
