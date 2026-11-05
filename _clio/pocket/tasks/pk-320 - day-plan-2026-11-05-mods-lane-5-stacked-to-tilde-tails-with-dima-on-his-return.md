@@ -4,7 +4,7 @@ title: 'day plan 11-05: mods lane 5 stacked to tilde, tails with dima on his ret
 status: open
 assignee: []
 created_date: '2026-11-05T14:57:00Z'
-updated_date: '2026-11-05T17:04:00Z'
+updated_date: '2026-11-05T18:36:00Z'
 labels:
   - m
 dependencies: []
@@ -27,4 +27,6 @@ main lane, final plan (W8): mods lane 5 summoned, order FRM-507 → FRM-501 → 
 W63 (2026-11-05 17:34, dima): the reminder pairing a re-ask catcher (FRM-443, https://linear.app/x-com/issue/FRM-443) with mods lanes is stale, that ticket is canceled.
 
 19:05: the plan as it stands: mods stack 5 layers, FRM-507 merged, FRM-501 at frame#124 in its reviews; FRM-470 on its own cli stack; refresh-cc-mods dropped. afk from 18:55, run by shifts/2026-11-05-afk-tails.md.
+
+20:36: FRM-507 Done, frame#125 merged, FRM-470 Done; FRM-501 at frame#124, third round done, rider R2 (settings) re-signed and with codie; FRM-480 next on the cli stack; the running log is shifts/2026-11-05-afk-tails.md.
 <!-- SECTION:NOTES:END -->
