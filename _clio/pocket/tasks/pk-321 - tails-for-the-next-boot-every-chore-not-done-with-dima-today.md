@@ -4,7 +4,7 @@ title: 'tails for the next boot: every chore not done with dima today'
 status: open
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T16:29:00Z'
+updated_date: '2026-11-05T16:47:00Z'
 labels:
   - m
 dependencies: []
@@ -35,4 +35,6 @@ upstream watches, read 2026-11-05 18:05 by the side channel, the 8 that touch us
 - anthropics/claude-code#101089, ours, mod Input width: no fix, a related ask for no focus ring.
 
 18:29: lockJoined saves outside marking (register.tsx, 3 sites), a press during a tool can be overwritten, its record alive 2 h; codie's pick ifVersion on the orbit: its own ticket. the double press unprobed. the side channel's branch worktree-fork-38d42581 (999a8306, 5ba68f00) waits for clio's merge at the halt, then a plugin bump; PK-312's two drops need clio's word.
+
+18:47: the ✅ all-asks button marks with no tick record, so the guard refuses those ticks (register.tsx:6094, older than FRM-507); isPaceSeatHeld is module-wide, after a /clear it arms the new session id (register.tsx:3392): both join the lockJoined ticket.
 <!-- SECTION:NOTES:END -->

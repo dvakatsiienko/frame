@@ -656,6 +656,36 @@ test('a new 🦉 clio session starts on, with no ⏰, and hears the crossing', a
     ]).toEqual([{ on: true }, ['park'], undefined]);
 });
 
+test('with the part off a new 🦉 clio session writes no pace key', async ($, on) => {
+    const w = world(on, { shown: { 'stash.pace-watch': false } });
+    await start($);
+    expect(w.store.get(`pace:${SID}`)).toBeUndefined();
+});
+
+test('a seat skipped with the part off arms itself once the part is back', async ($, on) => {
+    const w = world(on, { shown: { 'stash.pace-watch': false } });
+    w.meter(46, LEFT);
+    await start($);
+    w.store.set('shown', {});
+    await w.clock.advance(POLL);
+    await w.clock.advance(POLL);
+    expect([w.store.get(`pace:${SID}`), rungs(w)]).toEqual([
+        { on: true },
+        ['park'],
+    ]);
+});
+
+test('the two 🔋 rows in the pane say which scope each flips', async ($, on) => {
+    const w = world(on);
+    w.meter(30, LEFT);
+    await start($);
+    const ui = await settings($);
+    expect([
+        (await ui.find({ key: 'part:stash.pace-watch', type: 'Button' }))?.text,
+        (await ui.find({ key: 'knob:pace-watch', type: 'Button' }))?.text,
+    ]).toEqual(['🔋 pace watch: all sessions', '🔋 pace watch: this session']);
+});
+
 test('click off, restart with the same id, cross +5: no line', async ($, on) => {
     const w = world(on);
     w.meter(30, LEFT);
@@ -668,7 +698,7 @@ test('click off, restart with the same id, cross +5: no line', async ($, on) => 
     expect([w.store.get(`pace:${SID}`), w.turns]).toEqual([{ off: true }, []]);
 });
 
-test('🔋 sits between 🔥 and ⏰ and one click flips the key, its tip following', async ($, on) => {
+test('🔋 sits between 🔥 and ⏰ and one click flips the key', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await band($);
@@ -685,9 +715,9 @@ test('🔋 sits between 🔥 and ⏰ and one click flips the key, its tip follow
         await words(),
     ]).toEqual([
         ['hot', 'pace-watch', 'waker'],
-        '🔋pace watch: disable',
+        '🔋pace watch: this session',
         { off: true },
-        '🔋pace watch: enable',
+        '🔋pace watch: this session',
     ]);
 });
 

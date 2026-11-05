@@ -22,7 +22,12 @@ import { dirname, join, resolve } from 'node:path';
 import xterm from '@xterm/headless';
 import pty from 'node-pty';
 
-import { type LiveVerb, parseLive, requestOf } from './live-args.ts';
+import {
+    type LiveVerb,
+    parseLive,
+    requestOf,
+    skipPromptArgs,
+} from './live-args.ts';
 import { plantedCopy } from './live-plant.ts';
 import {
     type ServedMod,
@@ -194,6 +199,7 @@ async function serve() {
             '--debug-file',
             debugLog,
             ...SWAP_SOURCES,
+            ...skipPromptArgs(userSettings()),
             // the user's default mode came with the user settings: a frame session must not stop at a permission dialog
             '--permission-mode',
             'bypassPermissions',
@@ -408,6 +414,14 @@ function cellOf(term: xterm.Terminal, label: string) {
         if (hit) return { x: hit.x, y };
     }
     return undefined;
+}
+
+function userSettings() {
+    try {
+        return readFileSync(join(homedir(), '.claude/settings.json'), 'utf8');
+    } catch {
+        return '';
+    }
 }
 
 function sleep(ms: number) {

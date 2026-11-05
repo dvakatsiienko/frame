@@ -12,10 +12,6 @@ _Avoid_: deck, band, dock
 An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
 _Avoid_: question, todo, pending
 
-**Sending** 📨:
-The 5 s after dima ticks or replays an ask: the mark shows, no turn takes it yet, and a second press unsends it.
-_Avoid_: pending, queued
-
 **Closing word**:
 The word a resolve gives an ask («landed», «dropped: superseded by o58»): the ask stays dim with it for one more turn, then leaves.
 _Avoid_: reason, status
@@ -123,5 +119,5 @@ A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨
 _Avoid_: keyword, vibe word
 
 **Second wind**:
-A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 📨, writing ✍️, refreshing 🌀, cancelled.
+A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 🥚, writing ✍️, refreshing 🌀, cancelled.
 _Avoid_: refresh, graceful refresh, checkpoint request, molt

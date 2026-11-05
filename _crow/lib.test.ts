@@ -1161,3 +1161,14 @@ test('before any heldFor, the crow that read the leaves keeps its own hold', () 
     expect(isHeldDue({ leavesFor: 't1', offsets: {} }, 't1')).toBe(false);
     expect(isHeldDue({ leavesFor: 't1', offsets: {} }, 't2')).toBe(true);
 });
+
+test('x lane merge-auto is a merge decision, behind a timeout too', () => {
+    expect(decisionOf('x lane merge-auto 82 --apply')).toMatchObject({
+        args: ['82', '--apply'],
+        kind: 'merge',
+    });
+    expect(decisionOf('timeout 280 x lane merge-auto 82 --apply')?.kind).toBe(
+        'merge',
+    );
+    expect(decisionOf('x lane merge-main')?.kind).not.toBe('merge');
+});

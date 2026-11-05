@@ -723,14 +723,14 @@ test("the board's top strip counts the asks waiting on dima, per member, a marke
     ]).toEqual(['🙋 3 asks wait for you· 🔧 codie 3', true]);
 });
 
-test('a tick on the card reads 📨 tick while it is sending', async ($, on) => {
+test('a tick on the card reads ✅ tick at once', async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODIE, [ASK]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
     await ui.press({ key: 'lane:l1:codie:accepted:o3' });
-    expect(await subText(ui, 'codie')).toContain('📨 tick');
+    expect(await subText(ui, 'codie')).toContain('✅ tick');
 });
 
 test('🛼 glide switched off draws no strip', async ($, on) => {
@@ -814,9 +814,8 @@ test('a member publishes its open asks whole, with ids, for the glide card', asy
 test("a mark from a glide card joins the member's running turn", async ($, on) => {
     const w = await memberWithAsk($, on);
     await say($, 'go on');
-    // marked on another board past its 5 s sending window
     w.store.set(`marks:${SID}:o1`, {
-        at: w.clock.now() - 5_000,
+        at: w.clock.now(),
         mark: 'accepted',
     });
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);

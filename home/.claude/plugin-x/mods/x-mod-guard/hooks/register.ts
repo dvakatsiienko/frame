@@ -653,10 +653,10 @@ const IMAGE_LIMIT = 3;
 const IMAGE_NOTE = `x-mod-guard: ${IMAGE_LIMIT} image Reads this turn — screenshots read for their data go to \`helper-lite\` cards, ≤20 a batch, transcribed to text (\`rules/fleet-tooling.md\`)`;
 // dima's ticks: x-mod-stash writes them into its own $.state from his 🛎️ press alone, and any plugin reads another's
 // value while only its owner writes it — so no Bash, Edit, Write or orbit op can forge one, and it is this session's
-// own (FRM-427); a tick still in its sending window is not his word yet
+// own (FRM-427)
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
-// a tick counts for 2 h after its sending window: a yes for this afternoon's push never unlocks tonight's (dima's o2)
+// a tick counts for 2 h: a yes for this afternoon's push never unlocks tonight's (dima's o2)
 const TICK_MS = 2 * 60 * 60 * 1000;
 // a tick is spent per use: `scope` names what it authorized (a command, a pr, a sign), so one ask quoting a guarded
 // command and a pr carries both once
@@ -682,7 +682,6 @@ async function tickFor(
         .reverse()
         .find(
             (t) =>
-                t.at <= now &&
                 now - t.at <= TICK_MS &&
                 !spent.includes(`${t.id}@${t.at}:${scope}`) &&
                 covers(t),

@@ -940,6 +940,14 @@ export function decisionOf(
         const [head, verb, act] = words;
         if (head === 'gh' && verb === 'pr' && act === 'merge')
             return { args: words.slice(3), kind: 'merge' };
+        // a merge goes through x since FRM-427, often behind a `timeout N`
+        const at = words[0] === 'timeout' ? 2 : 0;
+        if (
+            words[at] === 'x' &&
+            words[at + 1] === 'lane' &&
+            words[at + 2] === 'merge-auto'
+        )
+            return { args: words.slice(at + 3), kind: 'merge' };
         if (head === 'claude' && words.includes('--bg'))
             return { kind: 'spawn' };
         if (isPaidCall(words, dir, bodies)) return { kind: 'paid', what };
