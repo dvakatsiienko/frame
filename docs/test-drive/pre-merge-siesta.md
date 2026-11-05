@@ -34,5 +34,7 @@ Ticket: none
 - 2026-11-05 · the 18:28 batch, FRM-507 merged in it, a siesta read · wishkeeper 8 min, 193k tokens, 20 findings: 3 high real (his 18:35 order no-wished, a promised ticket unborn, the ✅ all-asks bug untold) · each opened at its spot, fixed or parked; the row above ended as a door limit, `pr-watch.sh --verified`, now `--by clio`
 - 2026-11-05 · the 20:21 batch, frame#125 merged in it, a siesta read · wishkeeper 8 min, 178k tokens, 15 findings: 4 high real (a double run with no home, two of o42's three parts unbuilt, a crew line past his tick, a close ask overclaiming); after the merge, so it changed the close, not the merge
 - 2026-11-05 · the 20:34 batch, the side channel's merge in it, a siesta read · wishkeeper 9 min, 267k tokens, 19 findings: 1 high real (a failed Linear write i never read, carried as fixed), 4 medium real
+- 2026-11-05 · the 21:30 batch, frame#126 read in it, a siesta read · wishkeeper 11 min, 277k tokens, 21 findings: 3 high real (a `to-spec` i told him ran and hadn't, a hash off, a rename grep that could not fail), 5 medium, 13 low · caught all three before the merge
+- 2026-11-05 · frame#124's layer, R2 and R3, a chunk read · wishkeeper 7 min, 103k tokens, 10 findings: 1 high real (a third lone-note shape), and wisphunter's 5 found the silent-end gap · both held the merge he had approved, he re-signed on o70
 
 ## verdict

@@ -64,5 +64,9 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-05 · frame#125 · built-in /code-review · 10 findings · useful
 - 2026-11-05 · frame#125 · coderabbit · 0 findings · noise
 - 2026-11-05 · frame#125 · ci review · clean, 4 notes, 1 useful · useful
+- 2026-11-05 · frame#126 (FRM-480, cli lane 4 layer 2) · 4 sixth sense rounds, about 40 min final to clean, one round caused by a re-sign mid-verify, o62 · 15 of 15 exit lines · merged at 2cf38e8c
+- 2026-11-05 · frame#126 · matt's standards and spec axes, wisphunter · 8 and 6 findings · useful
+- 2026-11-05 · frame#126 · built-in /code-review · 9 findings · useful
+- 2026-11-05 · frame#126 · sixth sense's wisphunter · 7 claims, 2 reproduced as real, 2 set aside · useful
 
 ## verdict
