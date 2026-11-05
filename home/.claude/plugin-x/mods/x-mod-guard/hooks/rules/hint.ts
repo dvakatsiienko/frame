@@ -269,7 +269,7 @@ export function hints(command: string, cwd: string, ctx: Context) {
             found.add(PR_HINT);
         if (
             ctx.isForeground &&
-            c.name === 'x' &&
+            /(^|\/)x$/.test(c.name) &&
             c.args[0]?.text === 'lane' &&
             (c.args[1]?.text === 'commit' || c.args[1]?.text === 'push') &&
             !isForegroundOk(command)

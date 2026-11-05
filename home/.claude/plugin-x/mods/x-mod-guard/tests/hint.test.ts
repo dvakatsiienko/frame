@@ -26,6 +26,7 @@ const chainHint = (context: readonly string[] | undefined) =>
 for (const typed of [
     'x lane commit m -- a.ts',
     'x lane push --apply',
+    'x/bin/x lane push --apply',
     'cd /repo && x lane commit m -- a.ts',
 ] as const)
     test(`a foreground chain runs with one hint naming run_in_background: ${typed}`, async ($, on) => {
