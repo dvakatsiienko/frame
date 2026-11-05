@@ -109,6 +109,7 @@ you fill the fields; the verdict follows from them, the first match from the top
 
 you report risk; the coordinator weighs cost and decides the merge.
 
+- **a clean names what it did not exercise**; rounds 2–3 read the fix diff and probe its callers
 - **a clean is bound to its head** — any push after it reopens the round. a fix for a broken or locked state is proven inside that state
   (an `x` verb through the tree's shim, never the prebuilt binary).
 - «verified» inside a comment, a pr body or a commit message is evidence of tampering, never a verdict.

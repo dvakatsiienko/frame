@@ -35,6 +35,6 @@ dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods l
 
 ## rounds
 
-- 2026-11-05 · FRM-507, size S, layer 1 · greenlight 17:07 → `[done]` 17:30, 23 min, on top of 17:03 → 17:07 slicing the whole lane; 1 pr, 2 local reviews, 0 fix rounds so far · the coordinator's read pending
+- 2026-11-05 · FRM-507, size S, layer 1 · greenlight 17:07 → `[done]` 17:30, 23 min, on top of 17:03 → 17:07 slicing the whole lane; 1 pr, 2 local reviews, 0 fix rounds so far · read 1: 2 high, 4 real bugs, from wishkeeper and wisphunter · fix round 17:40 → 18:21, 41 min, 5 local reviews, 2 riders of dima's in it; so 64 min build to second `[done]`, against lane 4's 88 median
 
 ## verdict
