@@ -19,6 +19,7 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 - a new warn-only rule sits after every enforced rule sharing its command head (FRM-486 sixth sense)
 - a change to a list other hooks grow gets a `Promise.all` row with a prompt in it (FRM-501 sixth sense)
 - a rows probe builds on `ticks.test.ts`'s setup and runs through `pnpm mods:test x-mod-guard --extra`, until FRM-470's `mods:probe --rows` lands (FRM-478 sixth sense)
+- a change to quiet's hold or delivery ends on `pnpm mods:quiet-canary`: a model-free test ping to clio, read held → delivered (FRM-501)
 - a 5 s timeout on a shifting set of tests, or red-proof's «restored fails» at load over 15, is load: rerun serially before judging, until FRM-470's bound lands (FRM-498, FRM-499 sixth sense)
 
 ## typecheck
