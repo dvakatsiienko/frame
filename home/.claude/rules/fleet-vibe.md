@@ -35,7 +35,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   written plan while his AFK tick is on, `clio:shift` its contract. a thread name reads `<mode> <role emoji> <member name>: <scope> |
   <ticket or what>`, the scope optional, mode `🌗` side, `⚡` quick, `🌘` shift: `⚡ 🔧 codie: mods lane 3 | FRM-467`.
 - lane init (dima, 2026-10-23, PK-263; the contract: `craft-fleet-flow`):
-  - **🍫 chunk** — one ticket a lane takes; a lane runs one or more in order, one glide step each
+  - **🍫 chunk** — one ticket a lane takes; a lane runs one or more in order, its lane plan's slices the steps of its glide card
   - **✍️ signed** — dima's yes on a chunk in `clio:shape-lane`: a `signed` label, a dated `## signed` line; a change after it asks a re-sign
   - **dispatch** — dima's pick of signed chunks, which starts their lane; «what can we dispatch?»
   - **🦭 sealed** — a chunk whose spec and exit lines are written, at dispatch, before codie starts
