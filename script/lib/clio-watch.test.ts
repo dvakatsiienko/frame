@@ -136,7 +136,7 @@ describe('pr-watch', () => {
         );
     });
 
-    it('wakes clio only on a stamped green, a red check or a conflict', () => {
+    it('wakes clio only on a stamped head that is green or blocked, a red check or a conflict', () => {
         const pr = {
             ...conflicted[0],
             mergeStateStatus: 'BLOCKED',
@@ -156,6 +156,7 @@ describe('pr-watch', () => {
         };
         expect({
             blocked: loud([pr]),
+            blockedStamped: loud([pr], 'abcdef1234567890'),
             conflict: loud(conflicted),
             delta: loud(clean, 'aaaaaaaa'),
             red: loud([
@@ -165,6 +166,7 @@ describe('pr-watch', () => {
             unstamped: loud(clean),
         }).toEqual({
             blocked: 0,
+            blockedStamped: 1,
             conflict: 1,
             delta: 0,
             red: 1,

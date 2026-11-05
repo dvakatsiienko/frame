@@ -2,10 +2,10 @@
 # pr-watch — every open non-renovate pr in frame + bytes, and every cloud/* report branch, as lines.
 # a pr prints when it first appears, when its head moves (a new commit), once per head when github calls it mergeable
 # (mergeStateStatus CLEAN — «ready to merge»), and once per head when its checks are green but a
-# required one never ran (BLOCKED, quiet: a stamped blocked head wakes nobody), and once per head when
+# required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run; loud only on a stamped head), and once per head when
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
 # notice, so its brief ends by pushing its report there (x:crew-cloud). silence is the normal state.
-# a line starting «~ » is quiet: watch-once logs it and never wakes on it. clio wakes only on a green her merge can act on, a stamped head, a red check or a conflict (dima's o42: 14 bare replies in one afternoon); the rest reaches her through the member's own [done].
+# a line starting «~ » is quiet: watch-once logs it and never wakes on it. clio wakes only on a stamped head that is green or blocked, a red check or a conflict (dima's o42: 14 bare replies in one afternoon); the rest reaches her through the member's own [done].
 # the watch belongs to the pr, never to the codie that opened it (2026-09-28: #112 sat green 30 min
 # after its codie's watch was stopped). a «ready» needs sixth sense's clean on that very head: a pr whose
 # verified sha (written by sixth sense, or clio on a solo lane: `--verified`) differs prints «unverified delta» instead (#82 merged
@@ -59,9 +59,10 @@ pass() {
           echo "🔴 ${r#*/}#$n conflict on $sha — it cannot merge until it is rebased onto its base · $title · $url"
           mark "$key:conflict" "$sha"
         fi
-        if [ "$state" = blocked ] && [ "$(seen "$key:blocked")" != "$sha" ]; then
-          echo "~ 🟠 ${r#*/}#$n checks green on $sha but merge BLOCKED — a required check never ran on this head (review:clean?) · $title · $url"
-          mark "$key:blocked" "$sha"
+        if [ "$state" = blocked ] && [ "$(seen "$key:blocked")" != "$sha@$v" ]; then
+          quiet="~ "; [ "${v:0:8}" = "$sha" ] && quiet=
+          echo "${quiet}🟠 ${r#*/}#$n checks green on $sha but merge BLOCKED — a required check never ran on this head (review:clean?) · $title · $url"
+          mark "$key:blocked" "$sha@$v"
         fi
       done
     gh api "repos/$r/branches?per_page=100" \
