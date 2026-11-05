@@ -36,5 +36,7 @@ Ticket: none
 - 2026-11-05 · the 20:34 batch, the side channel's merge in it, a siesta read · wishkeeper 9 min, 267k tokens, 19 findings: 1 high real (a failed Linear write i never read, carried as fixed), 4 medium real
 - 2026-11-05 · the 21:30 batch, frame#126 read in it, a siesta read · wishkeeper 11 min, 277k tokens, 21 findings: 3 high real (a `to-spec` i told him ran and hadn't, a hash off, a rename grep that could not fail), 5 medium, 13 low · caught all three before the merge
 - 2026-11-05 · frame#124's layer, R2 and R3, a chunk read · wishkeeper 7 min, 103k tokens, 10 findings: 1 high real (a third lone-note shape), and wisphunter's 5 found the silent-end gap · both held the merge he had approved, he re-signed on o70
+- 2026-11-05 · the batch since 21:30, a siesta read · wishkeeper 8 min, 217k tokens, 18 findings: 1 high real (a scope widened past his sign as «tiny»), to-spec's string swaps among the mediums
+- 2026-11-05 · frame#124 at f1060d7d, a chunk read beside wisphunter · wishkeeper 10 min, 172k tokens, 11 findings: 2 high real (the read didn't cover the merge head, its ship mode had no word of his), wisphunter's 2 fixes in the same round
 
 ## verdict
