@@ -38,5 +38,7 @@ Ticket: none
 - 2026-11-05 · frame#124's layer, R2 and R3, a chunk read · wishkeeper 7 min, 103k tokens, 10 findings: 1 high real (a third lone-note shape), and wisphunter's 5 found the silent-end gap · both held the merge he had approved, he re-signed on o70
 - 2026-11-05 · the batch since 21:30, a siesta read · wishkeeper 8 min, 217k tokens, 18 findings: 1 high real (a scope widened past his sign as «tiny»), to-spec's string swaps among the mediums
 - 2026-11-05 · frame#124 at f1060d7d, a chunk read beside wisphunter · wishkeeper 10 min, 172k tokens, 11 findings: 2 high real (the read didn't cover the merge head, its ship mode had no word of his), wisphunter's 2 fixes in the same round
+- 2026-11-05 · the batch since 22:42, right after a second wind, a siesta read · wishkeeper 6 min, 190k tokens, 21 findings: 4 high real (a quote trailer with the line shown only mid-turn, a cancel on a false line, the ask-guard skipped, a habit bent in its regroom) · each opened, fixed or asked
+- 2026-11-05 · frame#124 at ef4a3eb1, a chunk read beside wisphunter · wishkeeper 6 min, 164k tokens, 12 findings: 2 high real (a no-warn-only ship credited to a tick that never named it, an exit notice held at his keyboard), wisphunter 3 · both held the merge ask for a round
 
 ## verdict
