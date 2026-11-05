@@ -27,7 +27,7 @@ function gh(args: string[]): unknown {
 
 // a content line is anything that is not blank, not the template's own text, and not under a ✅ line;
 // a ✅ line covers itself and the indented lines right under it, never an unindented one (a drop typed after the parse);
-// a line whose text sits in a pocket item's «raw drop (<day> inbox, dima): <text>» note is handled too;
+// a line equal to a pocket item's whole «raw drop (<day> inbox, dima): <text>» note is handled too;
 // being in helga's prepped copy is not enough, prepped is not landed
 export function unhandledLines(
     inbox: string,
@@ -48,7 +48,9 @@ export function unhandledLines(
         }
         if (own.has(text)) isHandled = false;
         else if (/^\s*(?:\d+\.|[-*])?\s*✅/.test(text)) isHandled = true;
-        else if (rawDrops.some((drop) => drop.includes(bareLine(text))))
+        else if (
+            rawDrops.some((drop) => bareLine(drop.trim()) === bareLine(text))
+        )
             continue;
         else if (!isHandled || !/^\s/.test(line)) {
             isHandled = false;
