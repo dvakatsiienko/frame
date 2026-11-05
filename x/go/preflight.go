@@ -102,6 +102,11 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		if exits == 0 {
 			found = append(found, finding{1, "lint", "## exit", "the ticket has no exit lines"})
 		}
+		if len(paths) == 1 {
+			if spec, err := os.ReadFile(paths[0]); err == nil && !strings.Contains(string(spec), "## Problem Statement") {
+				found = append(found, finding{1, "lint", "## Problem Statement", "the spec never ran matt's to-spec: read its SKILL.md and add its sections"})
+			}
+		}
 		return plural(exits, "exit line"), nil
 	}); err != nil {
 		return nil, err
