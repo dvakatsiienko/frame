@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
     behindFalse,
     childEnv,
+    failedToLoad,
     holdsInGroup,
     loadedFrom,
     parseRows,
@@ -65,6 +66,21 @@ describe('loadedFrom', () => {
 
     it('is undefined when the mod never loaded', () => {
         expect(loadedFrom([], 'x-mod-guard')).toBeUndefined();
+    });
+});
+
+describe('failedToLoad', () => {
+    const failed =
+        '2026-11-05T16:00:00.000Z [DEBUG] hooks module x-mod-guard@inline failed to load: Error: broken at load';
+    const loaded =
+        '2026-11-05T16:00:00.000Z [DEBUG] hooks module x-mod-guard@inline loaded (worker, environment 1, tier user)';
+
+    it('reads a module that threw at load', () => {
+        expect(failedToLoad([loaded, failed], 'x-mod-guard')).toBe(true);
+    });
+
+    it('reads a loaded module as loaded', () => {
+        expect(failedToLoad([loaded], 'x-mod-guard')).toBe(false);
     });
 });
 

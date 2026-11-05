@@ -1041,8 +1041,21 @@ func timeoutOnly(log string) bool {
 			return false
 		}
 	}
-	rows := len(hookRedRow.FindAllString(log, -1))
-	return rows > 0 && rows == len(hookTimedOut.FindAllString(log, -1))
+	// vitest groups rows with one error under several FAIL lines, so a group is read, never a count
+	rows, open := 0, false
+	for line := range strings.SplitSeq(log, "\n") {
+		switch {
+		case hookRedRow.MatchString(line):
+			rows++
+			open = true
+		case open && strings.TrimSpace(line) != "":
+			if !hookTimedOut.MatchString(line) {
+				return false
+			}
+			open = false
+		}
+	}
+	return rows > 0 && !open
 }
 
 func hookFail(log, next string) *Fail {

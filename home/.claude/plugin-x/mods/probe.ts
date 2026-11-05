@@ -155,6 +155,13 @@ export function rowVerdicts(transcript: string, rows: Row[]) {
     });
 }
 
+// the engine reads hooks.json from a dev copy whose module then throws, so «loaded from» alone reads a broken mod green
+export function failedToLoad(lines: string[], name: string) {
+    return lines.some((l) =>
+        l.includes(`hooks module ${name}@inline failed to load`),
+    );
+}
+
 export function loadedFrom(lines: string[], name: string) {
     const read = new RegExp(
         `Read hooks\\.json for plugin ${name} \\([^)]*\\): (.+)/hooks/hooks\\.json$`,
@@ -275,7 +282,10 @@ if (import.meta.main) {
     }
     // the verdict reads the folder the engine took, never assumes it: a «loaded» once hid that main's copy ran (FRM-392)
     const from = loadedFrom(lines, name);
-    const isDev = from !== undefined && realpathSync(from) === dev;
+    const isBroken = failedToLoad(lines, name);
+    if (isBroken)
+        console.log(`mods:probe: ${name} failed to load, see ${debugFile}`);
+    const isDev = !isBroken && from !== undefined && realpathSync(from) === dev;
     console.log(
         isDev
             ? `mods:probe: ${name} loaded from ${dev}`

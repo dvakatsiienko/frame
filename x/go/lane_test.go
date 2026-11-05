@@ -125,6 +125,8 @@ func TestCommitRetriesATimeoutOnlyRedOnce(t *testing.T) {
 		{"a mods row timed out", pluginTimeout + "🥊 mods (40.1 seconds)\n", 1, 2, true},
 		{"a vitest row timed out", vitestTimeout + "\x1b[31m🥊 test (9.2 seconds)\x1b[m\n", 1, 2, true},
 		{"both gates timed out", pluginTimeout + vitestTimeout + "🥊 mods (1 seconds)\n🥊 test (1 seconds)\n", 1, 2, true},
+		{"vitest grouped two timed-out rows", " FAIL  a.test.ts > one\n FAIL  a.test.ts > two\nError: Test timed out in 5000ms.\n🥊 test (1 seconds)\n", 1, 2, true},
+		{"vitest grouped two real reds", " FAIL  a.test.ts > one\n FAIL  a.test.ts > two\nAssertionError: no\n🥊 test (1 seconds)\n", 1, 1, false},
 		{"a second timeout stays red", pluginTimeout + "🥊 mods (1 seconds)\n", 2, 2, false},
 		{"a real red beside a timeout", pluginTimeout + realRed + "🥊 mods (1 seconds)\n", 1, 1, false},
 		{"another gate red beside a timeout", pluginTimeout + "🥊 mods (1 seconds)\n🥊 typecheck (1 seconds)\n", 1, 1, false},

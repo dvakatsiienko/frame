@@ -760,7 +760,7 @@ const reviewClean = "review:clean"
 
 func approveAndAwait(api string, d *mergeDecision) (string, error) {
 	if _, _, err := ghSend(asDima, http.MethodPost, api+"/pulls/"+d.PR+"/reviews", map[string]string{
-		"commit_id": d.Head, "event": "APPROVE", "body": "sixth sense clean on " + short(d.Head) + " — x lane merge-auto",
+		"commit_id": d.Head, "event": "APPROVE", "body": short(d.Head) + ": " + d.Checks[0].Detail + " — x lane merge-auto",
 	}, nil); err != nil {
 		return "", err
 	}
