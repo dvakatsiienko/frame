@@ -4,7 +4,7 @@ title: 'naming: a name says what the thing does'
 status: done
 assignee: []
 created_date: '2026-11-05T20:19:00Z'
-updated_date: '2026-11-05T20:20:00Z'
+updated_date: '2026-11-05T20:29:00Z'
 labels:
   - s
 dependencies: []
@@ -49,4 +49,6 @@ if yes — shape the rename and relay to clio as a rider for mods codie
 - naming habit: build as proposed, 22:10
 - quiet-canary → quiet-delivery-test, 22:10
 - /quiet-canary: keep it, one line in mods-verify, 22:06
+
+close: W1 through the last W-line done: the rule landed in root CLAUDE.md on main, his ticks 22:06 and 22:10, the 12-05 recount in _reminders.md
 <!-- SECTION:NOTES:END -->
