@@ -6,6 +6,7 @@ stacked prs are on trial (`docs/test-drive/stacked-prs.md`): the lane exists to 
 
 - one layer per dependent part, each its own branch and pr: `x lane pr-open --base <the layer below>`; the bottom layer goes onto main; each layer stays one concern, reviewable alone
 - once the layers are open, `x lane stack link --apply` links them and `x lane stack view` reads them back
+- a layer sitting local: `x lane gate --held` before any rebase, so a purpose lint red never waits for one
 - main moved or a lower layer changed: restack, never merge main into an upper layer — `x lane restack`, until it lands `x lane rebase-main` per layer bottom-up; here § 4's «never a rebase of a pushed branch» is lifted for your own layers only (dima, 2026-10-23)
 - a fix that belongs to a lower layer lands there, then the stack restacks; a scope add on a lower layer's code that arrives once sixth sense has cleaned that layer lands on the top layer instead (FRM-423)
 - clio merges the stack in one call; you never merge a layer

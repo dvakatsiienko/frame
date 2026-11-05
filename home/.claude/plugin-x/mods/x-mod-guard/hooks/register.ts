@@ -3,7 +3,7 @@ import type { EngineInterface, Register } from 'claude-code';
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal, Written } from './rules/command.ts';
 import { TICKET_KEY, UNREAD, laidOver, resolve } from './rules/command.ts';
-import { stashSweep, stashSweeps } from './rules/floor.ts';
+import { linearPiped, stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
@@ -396,6 +396,7 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'bare-push',
     'frozen-lockfile',
     'hooks-bypass',
+    'linear-write-piped',
     'opaque-head',
     'raw-plugin-update',
     'write-then-run',
@@ -1352,6 +1353,13 @@ export const register: Register = (on) => {
                 );
                 if (stop) return stop;
             }
+        }
+        // after the check above, so a call it stopped never reads «already ran»
+        const piped = linearPiped(typed, cwd);
+        if (piped) {
+            const said = `x-mod-guard: instead: ${piped.door}. why: ${piped.why}.`;
+            const stop = await enforce(piped, said);
+            if (stop) return stop;
         }
         // a raw plugin update names x plugin bump, every session's door (FRM-389 exit 7); warn-only until its sixth sense
         const bump = rawPluginUpdate(typed, cwd);

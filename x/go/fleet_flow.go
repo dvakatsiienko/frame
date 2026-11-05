@@ -232,6 +232,7 @@ type flowBlock struct {
 		Command  string `json:"command"`
 		FilePath string `json:"file_path"`
 		Skill    string `json:"skill"`
+		Args     string `json:"args"`
 	} `json:"input"`
 }
 

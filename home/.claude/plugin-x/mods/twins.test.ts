@@ -35,6 +35,7 @@ describe('twin blocks across mods', () => {
             'holder-gone',
             'proc-of',
             'real-path',
+            'sign-ask',
         ]);
     });
     for (const [name, copies] of twins)

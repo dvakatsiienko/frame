@@ -326,7 +326,18 @@ export function noticeOf(
 export function planSteps(text: string) {
     return text.split('\n').flatMap((line) => {
         const m = line.match(/^- \[( |x|X)\] \d+ · (.+?)\s*$/);
-        return m ? [{ isDone: m[1] !== ' ', text: m[2] ?? '' }] : [];
+        if (!m) return [];
+        const step = m[2] ?? '';
+        const led = step.match(/^((?:FRM|BYT)-\d+)\s+(?=\S)/);
+        const ticket = led?.[1] ?? ticketOf(step);
+        return [
+            {
+                isDone: m[1] !== ' ',
+                // the card draws a leading id as its link, so the text is what is left
+                text: led ? step.slice(led[0].length) : step,
+                ...(ticket ? { ticket } : {}),
+            },
+        ];
     });
 }
 

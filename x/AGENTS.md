@@ -8,7 +8,7 @@ source file is newer.
 ## a verb is one registry entry
 
 - an entry in `go/registry.json` drives dispatch, `--help`, `x schema <verb>`, completion and the
-  purpose lint — never a second list. a family is the first word of the name (`lane commit` → `lane`);
+  purpose lint — never a second list, bar the add-on's `go/stacks.json`, so it deletes clean. a family is the first word of the name (`lane commit` → `lane`);
   the families sit in the same file, their order is their colour.
 - the entry holds only what a human writes: name, purpose, args, the verb's own flags, its steps. the
   global flags, the exit codes and the usage line are derived (`go/registry.go`).
@@ -84,7 +84,6 @@ the checks sixth sense or codie on `x` starts from.
 - **two pr modes**: plain prs in core; stacked prs in the add-on (`go/stacks*`, on trial, easy to delete) behind `//go:build !nostacks`, reaching core only via `laneAddOn` (`lane.go`); `go/nostacks-pass.sh` reruns lane tests built out; deleting it is those files and that pass
 - `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries; a 4xx or a hook refusal fails on the first
 
-<!-- moved from frame AGENTS.md in the 2026-10-11 sweep -->
 - **the by-hand worktree unlock**: a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter), plus the remove + checkout per still-locked file from the `lane commit` line above. a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe only after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
 
 `PRODUCT.md` (the want, what x is not) · `FTR.md` + `GLOSSARY.md` — read your section before changing what x does.

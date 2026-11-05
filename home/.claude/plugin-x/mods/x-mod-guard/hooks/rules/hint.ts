@@ -2,6 +2,7 @@ import { parse } from '../shell.ts';
 import {
     type Command,
     type Context,
+    PIPE_READ,
     asMember,
     commands,
     commandsDeep,
@@ -240,7 +241,7 @@ export function hints(command: string, cwd: string, ctx: Context) {
         !/<\s*\/dev\/null/.test(command)
     )
         found.add(LOOP_HINT);
-    const isPipefail = /\bpipefail\b|\bpipestatus\b/.test(command);
+    const isPipefail = PIPE_READ.test(command);
     for (const [i, c] of all.entries()) {
         if (
             !isPipefail &&

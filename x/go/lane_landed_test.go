@@ -157,7 +157,7 @@ func TestLandedApplyTakesATreeOnceItsSessionEnded(t *testing.T) {
 	tree := w.laneTree(t, "stayed")
 	sessions := t.TempDir()
 	session := filepath.Join(sessions, "1.json")
-	body, _ := json.Marshal(map[string]any{"cwd": tree, "pid": os.Getpid()})
+	body, _ := json.Marshal(map[string]any{"cwd": tree, "pid": processIn(t, tree)})
 	write(t, session, string(body))
 	env := []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "X_SESSIONS=" + sessions, stubPnpm(t)}
 
@@ -279,8 +279,34 @@ func TestLandedWaitsForTheDoneCommentWithNoSixthSense(t *testing.T) {
 
 	*w.comments = lookCardComment
 	envelope, _ = w.landed(t)
-	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
-		t.Errorf("codie's done comment closes the range:\n%s", out)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 merged") || !strings.Contains(out, "verified:") {
+		t.Errorf("a done comment with no verified: line bounds nothing:\n%s", out)
+	}
+}
+
+// with no sixth sense a done comment's verified: line bounds the range; with none, main past the lane is nobody's count
+func TestLandedNeverCountsAnotherLanesCommitsOnAQuickLaneWithNoSixthSense(t *testing.T) {
+	t.Parallel()
+	w, head := quickWorld(t)
+	*w.body = strings.ReplaceAll(*w.body, ", sixth sense s2", "")
+	write(t, filepath.Join(w.repo, "other.txt"), "another lane\n")
+	gitT(t, w.repo, "add", "other.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 another lane's commit")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	*w.comments = lookCardComment
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 merged") || strings.Contains(out, "2 commits") {
+		t.Errorf("another lane's commits never turn it green:\n%s", out)
+	}
+
+	for _, line := range []string{"verified: ", "- **verified**: "} {
+		body, _ := json.Marshal("- **proven**: go test ok\n- **not checked**: his eyes\n" + line + short(head))
+		*w.comments = `[{"body":` + string(body) + `}]`
+		envelope, _ = w.landed(t)
+		if out := linesOf(envelope); !strings.Contains(out, "✅ merged — 1 commit from main:") {
+			t.Errorf("%q: the done comment's verified sha stops the range:\n%s", line, out)
+		}
 	}
 }
 
@@ -319,8 +345,8 @@ func TestLandedLeavesAnotherLanesVerifyTreeOnAQuickLaneWithNoSixthSense(t *testi
 
 	envelope, _ := w.landed(t, "--apply")
 
-	if out := linesOf(envelope); !exists(verify) || !strings.Contains(out, "✅ merged") {
-		t.Errorf("tree there: %v, want it kept and merged green:\n%s", exists(verify), out)
+	if out := linesOf(envelope); !exists(verify) || !strings.Contains(out, "names no verified: sha") {
+		t.Errorf("tree there: %v, want it kept and the refusal naming the missing verified sha:\n%s", exists(verify), out)
 	}
 }
 
@@ -397,7 +423,7 @@ func TestLandedWiredLine(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
 			*w.milestone = c.milestone
-			*w.body = "## ⚖️ worth it\n\n* new surface: one verb, `x lane landed`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
+			*w.body = "## ⚖️ worth it\n\n* new verb: `x lane landed`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
 			lines := make([]planted, c.calls)
 			for i := range lines {
 				lines[i] = planted{name: "lane landed", ms: 1, caller: "cc"}
@@ -413,9 +439,103 @@ func TestLandedWiredLine(t *testing.T) {
 	}
 }
 
+func TestLandedReadsEveryShapeOfANewVerbLine(t *testing.T) {
+	t.Parallel()
+	const stats, landed, nameless = "0 calls of x stats", "0 calls of x lane landed", "names no x verb"
+	cases := []struct {
+		line string
+		want []string
+		not  []string
+	}{
+		{"**new verb:** `x stats`", []string{stats}, []string{nameless}},
+		{"**new verb**: `x stats`", []string{stats}, []string{nameless}},
+		{"new verb: `x stats`, `x lane landed`", []string{stats, landed}, []string{nameless}},
+		{"new verb: x stats, x lane landed", []string{stats, landed}, []string{nameless}},
+		{"new verb: x lane landed, the door", []string{landed}, []string{nameless}},
+		{"new verb: `x stats` — not `x lane landed`", []string{stats}, []string{landed, nameless}},
+		{"new verb: nosuch thing", []string{"🔴 wired", "nosuch thing " + nameless}, nil},
+		{"new verb: `x stats`, `x nosuch`", []string{stats, "x nosuch " + nameless}, nil},
+		{"**new verb: x stats**", []string{stats}, []string{nameless}},
+		{"new verb: **x stats**", []string{stats}, []string{nameless}},
+		{"new verb: `x stats`, with `--days`", []string{stats}, []string{nameless}},
+		{"new verb: `x stats --days 30`", []string{stats}, []string{nameless}},
+		{"new verb: x stats, x lane landd", []string{stats, "x lane landd " + nameless}, nil},
+		{"new verb: `x stats dayly`", []string{"x stats dayly " + nameless}, []string{stats}},
+		{"new verb: x lane landed now wired", []string{landed}, []string{nameless}},
+		{"new verb: x stats, with `--days`", []string{stats}, []string{nameless}},
+		{"new verb: x stats (`--verb` flag)", []string{stats}, []string{nameless}},
+		{"new verb: x stats and x lane landed", []string{stats, landed}, []string{nameless}},
+		{"new verbs: x stats, x lane landed", []string{stats, landed}, []string{nameless}},
+		{"New verb: x stats", []string{stats}, []string{nameless}},
+		{"1. new verb: x stats", []string{stats}, []string{nameless}},
+		{"new verb: none (a fix)", nil, []string{"wired"}},
+		{"new verb: **none**", nil, []string{"wired"}},
+		{"new verb:", nil, []string{"wired"}},
+	}
+	for _, c := range cases {
+		t.Run(c.line, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
+			*w.body = "## ⚖️ worth it\n\n* " + c.line + "\n\n" + landedBody
+
+			envelope, _ := w.landed(t)
+
+			out := linesOf(envelope)
+			for _, want := range c.want {
+				if !strings.Contains(out, want) {
+					t.Errorf("want %q in:\n%s", want, out)
+				}
+			}
+			for _, not := range c.not {
+				if strings.Contains(out, not) {
+					t.Errorf("want no %q in:\n%s", not, out)
+				}
+			}
+		})
+	}
+}
+
+// main interleaves lanes, so past the verified tip only a commit's own step line says whose it is
+func TestLandedCountsOnlyTheLanesCommitsInsideTheRange(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	commit := func(file string, message ...string) string {
+		write(t, filepath.Join(w.repo, file), file+"\n")
+		gitT(t, w.repo, "add", file)
+		args := []string{"commit", "-q"}
+		for _, m := range message {
+			args = append(args, "-m", m)
+		}
+		gitT(t, w.repo, args...)
+		return short(gitT(t, w.repo, "rev-parse", "HEAD"))
+	}
+	foreign := commit("foreign.txt", "🔧 another lane's commit", "step 1 of FRM-12: theirs")
+	step := commit("step.txt", "🔧 this lane's step", "step 2 of FRM-1: ours")
+	tip := commit("tip.txt", "🐞 the last fix")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	body, _ := json.Marshal("verdict: clean · verified: " + tip)
+	*w.comments = `[{"body":` + string(body) + `}]`
+
+	envelope, _ := w.landed(t)
+
+	out := linesOf(envelope)
+	if !strings.Contains(out, "✅ merged — 2 commits from main:") || !strings.Contains(out, "2 name no step of FRM-1") {
+		t.Errorf("want the tip and the step counted, the rest named:\n%s", out)
+	}
+	// these shas feed the verify trees' match, so another lane's never joins them
+	var issue landedRead
+	issue.Comments.Nodes = append(issue.Comments.Nodes, struct{ Body string }{"verified: " + tip})
+	commits, _ := quickMerged(w.repo, "FRM-1", dispatchOf(*w.body).base, issue)
+	joined := strings.Join(commits, "\n")
+	if len(commits) != 2 || !strings.Contains(joined, tip) || !strings.Contains(joined, step) || strings.Contains(joined, foreign) {
+		t.Errorf("want %s and %s, never %s:\n%s", tip, step, foreign, joined)
+	}
+}
+
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
-	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one flag, `x stats --verb <name>`", "new surface: a flag on `x stats`", "new surface: two flags on `x stats`", "new surface: it extends `x stats`", "no new surface, `x stats` stays"} {
+	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one verb, `x lane landed`", "the prose names `x lane landed` as new", "a new verb: `x lane landed`, in a sentence", "new verb: none", "new verb: none — a fix"} {
 		t.Run(line, func(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
@@ -434,12 +554,12 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
-	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`, none of them hidden, a flag on `x stats`\n\n" + landedBody
+	*w.body = "## ⚖️ worth it\n\n* new verb: `x lane landed` — the close\n* new verb: lane push (the door)\n\n" + landedBody
 	plant(t, w.state, 0, planted{name: "lane landed", ms: 1, caller: "cc"})
 
 	envelope, _ := w.landed(t)
 
-	if out := linesOf(envelope); !strings.Contains(out, "✅ wired — 1 call of x lane landed") || !strings.Contains(out, "🔴 wired — 0 calls of x lane push") {
+	if out := linesOf(envelope); !strings.Contains(out, "✅ wired — 1 call of x lane landed") || !strings.Contains(out, "🔴 wired — 0 calls of x lane push in 30 days") {
 		t.Errorf("want a line per verb:\n%s", out)
 	}
 }

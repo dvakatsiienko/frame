@@ -1429,12 +1429,6 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
     );
 }
 
-// a keep-hot ping's reply is no turn of its own, so its end is nothing to wake for
-async function isLastReplyPing($: EngineInterface, sid: string) {
-    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    return !!reply?.pingedAt && reply.pingedAt > reply.at;
-}
-
 // afk on or a shift running: nobody is at the keyboard to notice a member ending silently
 async function isAwayNow($: EngineInterface) {
     const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
@@ -1519,10 +1513,7 @@ async function quietHoldPrompt(
         const isTurnStarting = judged.some((j) => j.why);
         for (const { from, head, isEvent, marks, tag, text, why } of judged) {
             const sid = memberOf(members, from)?.base.sid;
-            const isWoken =
-                tag === QUIET_NOTICE &&
-                isAway &&
-                !(sid && (await isLastReplyPing($, sid)));
+            const isWoken = tag === QUIET_NOTICE && isAway;
             const reason = why ?? (isWoken ? 'away' : undefined);
             const line = {
                 arm,
@@ -2474,7 +2465,7 @@ async function followPlans($: EngineInterface) {
         const steps = planSteps(text).map((s) => ({
             isDone: s.isDone,
             text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
-            ...(ticketOf(s.text) ? { ticket: ticketOf(s.text) } : {}),
+            ...(s.ticket ? { ticket: s.ticket } : {}),
         }));
         const items: LaneItem[] = steps.length ? steps : lane.items;
         const current = items.findIndex((x) => !x.isDone);
@@ -4838,6 +4829,7 @@ async function orbitCall(
             const steps = planSteps(text).map((s) => ({
                 done: s.isDone,
                 text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
+                ...(s.ticket ? { ticket: s.ticket } : {}),
             }));
             if (!steps.length)
                 return {
