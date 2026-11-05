@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-05T21:28:00Z'
+updated_date: '2026-11-05T21:32:00Z'
 labels:
   - m
 dependencies: []
@@ -33,4 +33,6 @@ W2 (2026-11-05 22:55, dima, home PK-324): when something is brought up as a canc
 W3 (2026-11-05 22:55, dima, home PK-324): let's start with o85: why is the x lane camp not useful? ❓
 
 the side's full audit, 23:27, mine: FRM-304 lists PK-79 unmarked, W1 said pull it out; FRM-441 ## open says «next boot» against his «someday»; PK-321 wish-cover red against the tails plan: W13 (answered by frame#125), W1308, W1312; PK-322 W9, W11 are clio's proposal lines filed as his, W9 against W10; memory-budgets.tsv steamac.md 8500 credited to his tick, which named no bump. parked on his word: PK-300, PK-304, tomorrow or later, he wants no grooming now.
+
+FRM-514, before its dispatch tomorrow, a re-sign ask: the side's audit stands. the cloud gap under ## out against his W4 (full coverage for anyone, everywhere) was stamped tiny after his o37; his ticked primer wants have no row and no out line: Q14 and Q15 at .scratch/primer/spec.md:62-63, o45 x:guide-code on any source touch, o181 a cost question loads the model file, the other 8 shelf files. FRM-304's PK-79 line closes only after that.
 <!-- SECTION:NOTES:END -->
