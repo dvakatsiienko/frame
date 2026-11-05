@@ -92,6 +92,7 @@ const section = (out: string, name: string) =>
 describe('siesta-checks', () => {
     test('prints one section per check, in order, each with its exit, and exits 0 when all pass', () => {
         const home = fixtureHome();
+        auditVerb(home, 0, []);
         const out = run(home);
         expect(out.status).toBe(0);
         const heads = out.stdout.match(/^## .+$/gm) ?? [];
@@ -102,6 +103,7 @@ describe('siesta-checks', () => {
             '## close net',
             '## blueprint drift',
             '## helper count',
+            '## audit-codie',
             '## retros',
         ]);
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
@@ -289,5 +291,37 @@ describe('siesta-checks', () => {
         pocket(home, 'PK-2', 'open');
         asks(home, ['PK-2 next?']);
         expect(section(run(home).stdout, 'orbit drift')).toMatch(/· exit 0\n/);
+    });
+
+    const auditVerb = (home: string, exit: number, misses: unknown[]) => {
+        const bin = join(home, '.local/bin');
+        mkdirSync(bin, { recursive: true });
+        const data = { data: { misses, summary: 'how-you-work.md 1 of 2' } };
+        writeFileSync(
+            join(bin, 'x'),
+            `#!/bin/sh\necho '${JSON.stringify(data)}'\nexit ${exit}\n`,
+        );
+        chmodSync(join(bin, 'x'), 0o755);
+    };
+
+    test('a codie audit miss reds its section and names the session', () => {
+        const home = fixtureHome();
+        auditVerb(home, 1, [
+            { file: 'how-you-work.md', session: 'abc', why: 'no read' },
+        ]);
+        const out = section(run(home).stdout, 'audit-codie');
+        expect(out).toMatch(/· exit 1\n/);
+        expect(out).toContain('abc how-you-work.md: no read');
+    });
+
+    test('a clean codie audit stays green', () => {
+        const home = fixtureHome();
+        auditVerb(home, 0, []);
+        expect(section(run(home).stdout, 'audit-codie')).toMatch(/· exit 0\n/);
+    });
+
+    test('a missing audit verb reads not checked, never red', () => {
+        const out = section(run(fixtureHome()).stdout, 'audit-codie');
+        expect(out).toMatch(/· not checked\n/);
     });
 });
