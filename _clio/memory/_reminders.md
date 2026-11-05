@@ -69,4 +69,4 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ when the automated second wind lands (pk-307's chunk): tell dima it is done — every session winds itself at the 🎛️ thresholds (55 % notice, 65 % a must, global values) — set 2026-11-03
 ⏰ 🦉🐦‍⬛ crow's weekly grade, 2026-11-11, again 11-17 — draw 5 notes from `~/.local/state/crow/notes.jsonl` for dima to grade, log the round in `docs/test-drive/crow-receipts.md` (FRM-502) — due: 2026-11-11
 ⏰ 🦉 optional, on his word, back on the $100 plan (he said about a month): pace watch on: `pnpm -C ~/frame mods:set part stash.pace-watch on`, lift the ⏸️ line in `habit-ctx-load-balancing` — set 2026-11-05 · due: 2026-12-05
-⏰ 🦉 the empty-wakes read: count my bare replies woken by app notes and watches over a day since 83fe5188, against 14 between 18:49 and 20:20 on 11-05, and the member messages against 54; one line to dima — due: 2026-11-06
+⏰ 🦉 the empty-wakes read: count my bare replies woken by app notes and watches over a day since 83fe5188, against 14 between 18:49 and 20:20 on 11-05, and the member messages against 54; one line to dima, and FRM-512's doubt reads it — due: 2026-11-06

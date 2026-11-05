@@ -1210,8 +1210,13 @@ export const register: Register = (on) => {
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
-            if (result.deny !== undefined && spends.length)
-                await $.state.set(SPENT, spent);
+            if (result.deny !== undefined && spends.length) {
+                const { value: held = [] } = await $.state.get(SPENT);
+                await $.state.set(
+                    SPENT,
+                    held.filter((k) => !spends.includes(k)),
+                );
+            }
             if (result.deny !== undefined)
                 return deny(
                     ISOLATED.test(result.deny)

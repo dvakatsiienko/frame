@@ -49,11 +49,14 @@ function world(on: On, ticks: Tick[] = [], body?: string, cat?: string) {
                         : '',
         },
     }));
+    const refuse: string[] = [];
     on('tool.call', (_$, e) => {
+        const no = refuse.shift();
+        if (no) return { deny: no };
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    return { ran, store };
+    return { ran, refuse, store };
 }
 
 const tick = (text: string, at = NOW - 1): Tick => ({
@@ -80,6 +83,18 @@ test('a tick is spent by its first use: the second run is refused', async ($, on
     const r = await bash($, MIRROR);
     expect([r.deny, ran]).toEqual([
         expect.stringContaining('mirror'),
+        [MIRROR],
+    ]);
+});
+
+test('a tick survives a refusal from the tool itself', async ($, on) => {
+    const { ran, refuse } = world(on, [tick(`⚠️ mirror: \`${MIRROR}\``)]);
+    refuse.push('core said no');
+    const first = await bash($, MIRROR);
+    const retry = await bash($, MIRROR);
+    expect([first.deny, retry.deny, ran]).toEqual([
+        expect.stringContaining('core said no'),
+        undefined,
         [MIRROR],
     ]);
 });
