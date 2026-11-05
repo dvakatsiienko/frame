@@ -960,6 +960,45 @@ func TestRestackNamesTheNewestResolutionAcrossLayers(t *testing.T) {
 	}
 }
 
+// the same rule the other way round: the lower ref reaches the newer merge, the upper one only the older
+func TestRestackNamesTheNewestResolutionWhenTheLowerRefHoldsIt(t *testing.T) {
+	t.Parallel()
+	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	clone := layers(t, low, mid, top)
+	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
+	older := editedMerge(t, clone, low, mid, "older.txt")
+	gitT(t, clone, "switch", "-q", top)
+	gitT(t, clone, "merge", "-q", "--no-ff", "-m", "restack: merge 7654321 into "+top, mid)
+	newer := editedMerge(t, clone, low, mid, "newer.txt")
+	gitT(t, clone, "switch", "-q", top)
+
+	got := xIn(t, clone, nil, "lane", "restack")
+
+	if !strings.Contains(got.stdout, `"lost_resolutions":{"`+mid+`":"`+short(newer)+`"}`) {
+		t.Errorf("want the newer merge %s, not %s:\n%s", short(newer), short(older), got.stdout)
+	}
+}
+
+// merged up, a hand commit shows on both refs: the refusal sends the coder to the layer that holds it
+func TestRestackNamesTheLayerAHandCommitSitsOn(t *testing.T) {
+	t.Parallel()
+	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	clone := layers(t, low, mid, top)
+	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
+	gitT(t, clone, "switch", "-q", mid)
+	write(t, filepath.Join(clone, "hand.txt"), "by hand\n")
+	gitT(t, clone, "add", "hand.txt")
+	gitT(t, clone, "commit", "-q", "-m", "a hand commit")
+	gitT(t, clone, "switch", "-q", top)
+	gitT(t, clone, "merge", "-q", "--no-ff", "-m", "restack: merge 7654321 into "+top, mid)
+
+	got := xIn(t, clone, nil, "lane", "restack")
+
+	if got.code == 0 || !strings.Contains(got.stdout, mid+" holds what origin does not") || !strings.Contains(got.stdout, "git switch "+mid+" ") {
+		t.Errorf("exit %d, want the refusal on %s:\n%s", got.code, mid, got.stdout)
+	}
+}
+
 func TestRestackRefusesACommitNoRestackMade(t *testing.T) {
 	t.Parallel()
 	const layer = "coder/FRM-1-a-2"

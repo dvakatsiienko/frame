@@ -408,8 +408,8 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 				return "", err
 			}
 		}
-		// top down: an upper layer reaches a lower one's merges too, and the newest is the resolution to name
-		for i, layer := range slices.Backward(t.Layers) {
+		// bottom up: an upper layer reaches a lower one's commits too, and a refusal names the layer that holds them
+		for i, layer := range t.Layers {
 			local, _ := git("rev-parse", "-q", "--verify", "refs/heads/"+layer)
 			switch {
 			case !local.ok || local.out == t.Leases[layer]:
@@ -469,9 +469,13 @@ func (t *restackTarget) readLocalOnly(layer, local string) error {
 			t.Dropped, t.Lost = map[string][]string{}, map[string]string{}
 		}
 		t.Dropped[owner] = append(t.Dropped[owner], short(sha))
-		// newest first, so the first resolution met is the one to take back
-		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); (!clean.ok || clean.out != tree) && t.Lost[owner] == "" {
-			t.Lost[owner] = short(sha)
+		// the newest resolution is the one to take back, whichever ref reached it first
+		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); !clean.ok || clean.out != tree {
+			if t.Lost[owner] == "" {
+				t.Lost[owner] = short(sha)
+			} else if newer, _ := git("merge-base", "--is-ancestor", t.Lost[owner], sha); newer.ok {
+				t.Lost[owner] = short(sha)
+			}
 		}
 	}
 	if len(hand) > 0 {

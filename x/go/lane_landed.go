@@ -257,8 +257,9 @@ var (
 	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
 	verifiedOf     = regexp.MustCompile(`\bverified\b[*:\s]+([0-9a-f]{7,40})\b`)
 	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
-	newVerbLine    = regexp.MustCompile(`(?m)^[\s*-]*new verb\**:\**[ \t]*(.*)$`)
+	newVerbLine    = regexp.MustCompile(`(?mi)^[\s*\d.-]*new verbs?\**:\**[ \t]*(.*)$`)
 	newVerbQuoted  = regexp.MustCompile("`([^`]+)`")
+	newVerbSplit   = regexp.MustCompile(`,| and `)
 	ticketRepoLine = regexp.MustCompile(`(?m)^repo:\s*(\S+)\s*$`)
 )
 
@@ -366,14 +367,20 @@ func newVerbsOf(body string) (verbs, nameless []string) {
 		if len(opening) == 0 || strings.Trim(strings.ToLower(opening[0]), ".,:;()`") == "none" {
 			continue
 		}
-		if quoted := newVerbQuoted.FindAllStringSubmatch(named, -1); quoted != nil {
-			for i, q := range quoted {
-				read(q[1], i == 0, true)
+		for i, piece := range newVerbSplit.Split(named, -1) {
+			// a backticked flag is prose about the verb, never a name
+			var quoted []string
+			for _, q := range newVerbQuoted.FindAllStringSubmatch(piece, -1) {
+				if !strings.HasPrefix(q[1], "-") {
+					quoted = append(quoted, q[1])
+				}
 			}
-			continue
-		}
-		for i, name := range strings.Split(named, ",") {
-			read(name, i == 0, false)
+			if len(quoted) == 0 {
+				read(strings.ReplaceAll(piece, "`", ""), i == 0, false)
+			}
+			for j, name := range quoted {
+				read(name, i == 0 && j == 0, true)
+			}
 		}
 	}
 	return verbs, nameless
