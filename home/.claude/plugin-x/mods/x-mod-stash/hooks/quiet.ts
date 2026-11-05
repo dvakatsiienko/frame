@@ -13,12 +13,13 @@ const FOR_DIMA =
 const RULE =
     'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held';
 
-export const QUIET_SLIPSTREAMED = `slipstreamed: joins clio's next turn. ${RULE}`;
+const SLIPSTREAMED = "slipstreamed: joins clio's next turn.";
+export const QUIET_SLIPSTREAMED = `${SLIPSTREAMED} ${RULE}`;
 export const QUIET_PUSHED = `pushed: starts clio's turn. ${RULE}`;
 export const QUIET_HELD_LINE = "held, delivered at clio's next turn";
 // advising the tag that just held would send them round again
 export const quietKindHeld = (kind: string) =>
-    `slipstreamed: joins clio's next turn. [${kind}] is switched off, so resending changes nothing`;
+    `${SLIPSTREAMED} [${kind}] is switched off, so resending changes nothing`;
 const REPLY_MS = 30 * 60_000;
 
 export function quietTag(body: string) {
@@ -75,8 +76,7 @@ const isUnreadBlock = (block: string) =>
 // (the origin is the same as dima's typing, so only the blocks' shape tells them apart)
 export function quietGlued(text: string) {
     const heads: string[] = [];
-    const notes: { from: string; body: string; head: number; held: string }[] =
-        [];
+    const notes: QuietNote[] = [];
     const messages: { block: string; head: number }[] = [];
     let rest = text;
     let hasOther = false;
@@ -119,8 +119,7 @@ const IDLE_HEAD =
 // the engine's own meta prompt, plain text with no block to read: only notices, each whole, or undefined
 export function quietIdleNotices(text: string): ReturnType<typeof quietGlued> {
     const heads: string[] = [];
-    const notes: { from: string; body: string; head: number; held: string }[] =
-        [];
+    const notes: QuietNote[] = [];
     let rest = text;
     for (let m = rest.match(IDLE_HEAD); m; m = rest.match(IDLE_HEAD)) {
         const [taken, from, status, report] = m;
@@ -129,7 +128,7 @@ export function quietIdleNotices(text: string): ReturnType<typeof quietGlued> {
             body: report ?? '',
             from: from ?? '',
             head: heads.push(taken) - 1,
-            held: report ?? status ?? '',
+            held: report || status || '',
         });
     }
     if (rest.trim() || !notes.length) return undefined;
@@ -144,3 +143,7 @@ export const isAppPrompt = (text: string) => {
 
 export const quietHeldText = (body: string) =>
     body.replace(PROGRESS_TAG, '').trim();
+
+/* Types */
+
+type QuietNote = { from: string; body: string; head: number; held: string };

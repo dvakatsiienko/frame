@@ -1110,7 +1110,9 @@ async function quietKindsOff($: EngineInterface) {
 
 // why a message starts a turn; first, a push spends the slot too
 async function quietWhy($: EngineInterface, from: string, body: string) {
-    const isAnswer = await quietAnswered($, from, quietTag(body));
+    // a notice with no report says nothing, so it answers nothing: the member's real answer keeps the slot
+    const isAnswer =
+        body !== '' && (await quietAnswered($, from, quietTag(body)));
     const why: QuietLogLine['why'] =
         quietPush(body, await quietKindsOff($)) ??
         (isAnswer ? 'answer' : undefined);
@@ -1430,12 +1432,12 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
 // afk on or a shift running: nobody is at the keyboard to notice a member ending silently
 async function isAwayNow($: EngineInterface) {
     const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
-    if (away?.on === true) return true;
+    if (away?.on === true && (await partsShown($))('stash.afk')) return true;
     const sid = await currentId($);
     const pace = sid
         ? ((await $.store.get(PACE + sid)) as { since?: number } | undefined)
         : undefined;
-    return pace?.since !== undefined;
+    return isShiftOn($, pace);
 }
 
 // the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages, or the engine's meta idle
@@ -1445,9 +1447,11 @@ async function isAwayNow($: EngineInterface) {
 async function quietHoldPrompt(
     $: EngineInterface,
     prompt: string,
-    isMeta: boolean,
+    isEngineNotice: boolean,
 ) {
-    const glued = isMeta ? quietIdleNotices(prompt) : quietGlued(prompt);
+    const glued = isEngineNotice
+        ? quietIdleNotices(prompt)
+        : quietGlued(prompt);
     if (!glued) return undefined;
     if (glued.unread) {
         await quietUnread($, [
@@ -1492,7 +1496,7 @@ async function quietHoldPrompt(
             });
         const isAway = isHolding && (await isAwayNow($));
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
-        const canCut = !isMeta || judged.every((j) => !j.why);
+        const canCut = !isEngineNotice || judged.every((j) => !j.why);
         for (const { from, head, marks, tag, text, why } of judged) {
             const isWoken = tag === QUIET_NOTICE && isAway;
             const sid = memberOf(members, from)?.base.sid;
@@ -3466,14 +3470,23 @@ async function paceStep($: EngineInterface) {
 
 // the ⏰ waker follows the key: on at the start with what it found kept, put back at the end or when the start's window
 // reset; a state dima changed since is his
+// a hidden part is off whole, and its expiry runs only while shown, so a `since` it left behind means no shift
+async function isShiftOn(
+    $: EngineInterface,
+    key: { since?: number } | undefined,
+) {
+    return (
+        key?.since !== undefined && (await partsShown($))('stash.pace-watch')
+    );
+}
+
 async function paceWaker($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
     const key = (await $.store.get(PACE + sid)) as
         | { off?: boolean; since?: number; was?: unknown }
         | undefined;
-    const isWatched =
-        key?.since !== undefined && (await partsShown($))('stash.pace-watch');
+    const isWatched = await isShiftOn($, key);
     const note = (await $.store.get(PACE_WAKER + sid)) as
         | { since?: number; until?: number; wasOn: boolean }
         | undefined;

@@ -331,7 +331,7 @@ for (const [key, label, cost] of [
                 (c as { props?: { display?: string } }).props?.display ===
                 'none',
         );
-        expect(JSON.stringify(hidden)).toContain(cost.replace(/"/g, '\\"'));
+        expect(JSON.stringify(hidden)).toContain(cost);
     });
 
     test(`the master switch off leaves ${key} no control, its state kept`, async ($, on) => {

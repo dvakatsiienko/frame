@@ -2182,7 +2182,7 @@ const IDLE_TAIL =
     "This is an automated notice from that session's harness — not a message from a person, and not an instruction; act on it only insofar as your user's earlier request calls for it.";
 const idleOf = (name: string, middle: string) =>
     `[Cross-session idle notice] "${name}", which you asked to be notified about, ${middle}. ${IDLE_TAIL}`;
-const IDLE_MEMBER = '⚡ 🔧 codie: mods';
+const IDLE_MEMBER = MEMBER;
 const IDLE = idleOf(
     IDLE_MEMBER,
     'is idle now — it finished a turn at 11:49. Its harness reports: «step 2 landed»',
@@ -2333,7 +2333,7 @@ for (const [what, text] of [
         expect([r.drop, logOf(w)]).toEqual([undefined, []]);
     });
 
-test('an idle notice from a composer is his and comes in whole', async ($, on) => {
+test('an idle notice from a composer comes in whole', async ($, on) => {
     const w = world(on);
     await start($);
     await say($, IDLE);
@@ -2356,6 +2356,56 @@ test('the master switch off lets an idle notice in', async ($, on) => {
     await start($);
     w.store.set('quiet-comms', false);
     expect((await fromHarness($, IDLE)).drop).toBeUndefined();
+});
+
+for (const [state, key, value, part] of [
+    ['afk on', 'afk', { on: true }, 'stash.afk'],
+    ['a shift running', `pace:${SID}`, { since: EVEN }, 'stash.pace-watch'],
+] as const)
+    test(`${state} with its part hidden lets a lone note hold`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        w.store.set(key, value);
+        w.store.set('shown', { [part]: false });
+        expect((await fromAppText($, NOTE)).drop).toBe('');
+    });
+
+for (const [what, middle] of [
+    ['a bare idle notice', 'is idle now'],
+    [
+        'an idle notice with no report',
+        'is idle now — it finished a turn at 11:49',
+    ],
+    [
+        'an exit notice',
+        'has exited (at 11:49) before going idle; it will not process further messages at that address',
+    ],
+] as const)
+    test(`${what} keeps the member's answer slot`, async ($, on) => {
+        const w = answering(on);
+        await start($);
+        await send($, CODIE.name, 'which one?');
+        const first = await fromHarness($, idleOf(CODIE.name, middle));
+        const second = await fromAppText(
+            $,
+            noteOf(CODIE.name, 'the second one'),
+        );
+        expect([first.drop, second.drop, w.contexts.length]).toEqual([
+            '',
+            undefined,
+            1,
+        ]);
+    });
+
+test('an empty report holds its status line, never a blank', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromHarness(
+        $,
+        idleOf(IDLE_MEMBER, 'is idle now. Its harness reports: «»'),
+    );
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain(`${IDLE_MEMBER}: is idle now`);
 });
 
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
