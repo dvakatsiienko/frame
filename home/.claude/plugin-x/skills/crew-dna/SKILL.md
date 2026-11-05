@@ -82,6 +82,6 @@ this file says how every member does it. A section headed with roles binds only 
 - reviewer output is read through `helper-lite`, which returns only the findings <!-- mac -->
 - probe hygiene:
   - a write-path probe uses a fixture key
-  - a rate-limited review tool is skipped and named
+  - a rate-limited review tool is skipped silently (dima, 2026-11-05)
   - a served tree starts with `timeout: 7200000`
   - head is read with `git rev-parse` in the tree the probes ran in

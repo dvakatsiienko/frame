@@ -91,14 +91,14 @@ brief says which, and when it does not, ask once, up front.
 
 1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. a live proof that writes
    shared pr state (the body, labels) is sixth sense's; you prove locally.
-2. **the local reviews, one of each per chunk, in parallel** (dima, 2026-11-05): `mattpocock-skills:code-review` over the branch (against his wishes and the spec, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`); the built-in `/code-review` (against the code itself); `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`) while its free quota lasts (`coderabbit review --usage`; none left → a silent skip); a big change adds one plain `wisphunter` card. fix what they find, push.
+2. **the local reviews, one of each per chunk, in parallel** (dima, 2026-11-05): `mattpocock-skills:code-review` over the branch (against his wishes and the spec, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`); the built-in `/code-review` (against the code itself); `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`) while its free quota lasts (`coderabbit review --usage`; none left → a silent skip); a big change adds one plain `wisphunter` card; no sixth sense on the lane adds a second built-in. fix what they find, push.
 3. each review gets one graded line (reviewer, findings, useful or noise) in your done report,
    which names `local reviews: <n>`; your worktree cannot write the shared log, so clio copies the lines into
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
 4. **with a sixth sense** named in the brief (`🌗 🔎 sixth sense: <scope> | #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: «final», your head pushed, goes to the coordinator as `[done]`, who hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense). it reads the ci reviewer for you; every reviewer thread is still yours to
-   answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
+   answer on github. fix what each round lists, push (the ci reviewer's one round
    was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your `[done]` report on `clean` quotes the verdict object, the round count, the
    head sha and the test command with its exit. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
