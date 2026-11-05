@@ -690,6 +690,9 @@ func TestMergeAutoMergesABytesHeadAfterItsApprove(t *testing.T) {
 	if got.code != 0 || len(approves) != 1 || len(merges) != 1 {
 		t.Fatalf("exit %d, %d approves, %d merges, want one each:\n%s", got.code, len(approves), len(merges), got.stdout)
 	}
+	if !strings.Contains(approves[0], "by sixth sense") {
+		t.Errorf("the approve %q does not name whose clean it took", approves[0])
+	}
 	if !strings.Contains(approves[0], `"event":"APPROVE"`) || !strings.Contains(approves[0], `"commit_id":"`+w.head+`"`) {
 		t.Errorf("the approve %q is not an APPROVE of the head %s", approves[0], w.head)
 	}

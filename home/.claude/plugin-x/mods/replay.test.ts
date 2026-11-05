@@ -26,6 +26,24 @@ test('reads every Bash call with the cwd it ran in', () => {
     ]);
 });
 
+test('reads a background call as background', () => {
+    const jsonl = JSON.stringify({
+        cwd: '/a',
+        message: {
+            content: [
+                {
+                    input: { command: 'ls', run_in_background: true },
+                    name: 'Bash',
+                    type: 'tool_use',
+                },
+            ],
+        },
+    });
+    expect(bashCalls(jsonl)).toEqual([
+        { command: 'ls', cwd: '/a', isForeground: false },
+    ]);
+});
+
 test('counts the chain hint only for a foreground chain', () => {
     const fired = tally(
         [

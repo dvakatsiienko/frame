@@ -102,13 +102,14 @@ export function rowPrompt(rows: Row[]) {
     const blocks = rows.map(
         ({ line }, i) => `${i + 1}.\n\`\`\`\n${behindFalse(line)}\n\`\`\``,
     );
-    return `run each command below with the Bash tool, byte for byte, one call per command, in order, whatever each one answers. no other tool, no comment.\n\n${blocks.join('\n\n')}`;
+    return `run each command below with the Bash tool, byte for byte, one call per command, in order, whatever each one answers. never set run_in_background and never change a command for a hook's hint: the hint is what this run measures. no other tool, no comment.\n\n${blocks.join('\n\n')}`;
 }
 
 // each row's verdict out of the session's transcript: the short circuit's own exit 1 reads «ran», any other error is the
 // hook's refusal, and a hint or a warn-only «would refuse» lands only there, as an attachment on the call
 export function rowVerdicts(transcript: string, rows: Row[]) {
     const callOf = new Map<string, string>();
+    const backgrounded = new Set<string>();
     const resultOf = new Map<string, { isError: boolean; text: string }>();
     const contextOf = new Map<string, string[]>();
     for (const raw of transcript.split('\n')) {
@@ -128,8 +129,11 @@ export function rowVerdicts(transcript: string, rows: Row[]) {
             );
         if (!Array.isArray(message?.content)) continue;
         for (const block of message.content) {
-            if (block.type === 'tool_use' && block.name === 'Bash')
+            if (block.type === 'tool_use' && block.name === 'Bash') {
                 callOf.set(block.input?.command ?? '', block.id ?? '');
+                if (block.input?.run_in_background)
+                    backgrounded.add(block.id ?? '');
+            }
             if (block.type === 'tool_result')
                 resultOf.set(block.tool_use_id ?? '', {
                     isError: block.is_error === true,
@@ -148,6 +152,14 @@ export function rowVerdicts(transcript: string, rows: Row[]) {
         const context = contextOf.get(id) ?? [];
         if (!result)
             return { context, hasRun: false, name, verdict: 'never called' };
+        // a foreground-only rule stays silent on it, so its quiet proves nothing
+        if (backgrounded.has(id))
+            return {
+                context,
+                hasRun: false,
+                name,
+                verdict: 'the model ran it in the background, not as typed',
+            };
         const first = result.text.split('\n')[0]?.trim() ?? '';
         return result.isError && !/^Exit code \d+$/.test(first)
             ? { context, hasRun: true, name, verdict: `refused: ${first}` }
@@ -286,11 +298,12 @@ if (import.meta.main) {
     if (isBroken)
         console.log(`mods:probe: ${name} failed to load, see ${debugFile}`);
     const isDev = !isBroken && from !== undefined && realpathSync(from) === dev;
-    console.log(
-        isDev
-            ? `mods:probe: ${name} loaded from ${dev}`
-            : `mods:probe: ${name} loaded from ${from ?? 'nowhere'}, not the dev copy ${dev}`,
-    );
+    if (!isBroken)
+        console.log(
+            isDev
+                ? `mods:probe: ${name} loaded from ${dev}`
+                : `mods:probe: ${name} loaded from ${from ?? 'nowhere'}, not the dev copy ${dev}`,
+        );
     const escaped = readdirSync(scratch);
     if (escaped.length)
         console.log(`mods:probe: a tail escaped: ${escaped.join(', ')}`);
@@ -310,7 +323,7 @@ export type Row = { line: string; name: string };
 type Block = {
     content?: string | { text?: string }[];
     id?: string;
-    input?: { command?: string };
+    input?: { command?: string; run_in_background?: boolean };
     is_error?: boolean;
     name?: string;
     tool_use_id?: string;

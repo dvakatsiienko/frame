@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+    type Row,
     behindFalse,
     childEnv,
     failedToLoad,
@@ -177,6 +178,36 @@ describe('rowVerdicts', () => {
         result('b', 'Exit code 1', true),
         hint,
     ].join('\n');
+
+    it('fails a row the model moved to the background', () => {
+        const moved = JSON.stringify({
+            message: {
+                content: [
+                    {
+                        id: 'b',
+                        input: {
+                            command: behindFalse('ls'),
+                            run_in_background: true,
+                        },
+                        name: 'Bash',
+                        type: 'tool_use',
+                    },
+                ],
+            },
+        });
+        const read = rowVerdicts(
+            [moved, result('b', 'Exit code 1', true)].join('\n'),
+            [rows[1] as Row],
+        );
+        expect(read).toEqual([
+            {
+                context: [],
+                hasRun: false,
+                name: 'plain',
+                verdict: 'the model ran it in the background, not as typed',
+            },
+        ]);
+    });
 
     it('tells a hook refusal from the short circuit', () => {
         expect(rowVerdicts(transcript, rows)).toEqual([
