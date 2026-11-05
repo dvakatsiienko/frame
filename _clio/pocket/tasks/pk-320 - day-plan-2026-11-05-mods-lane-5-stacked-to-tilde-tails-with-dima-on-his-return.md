@@ -4,7 +4,7 @@ title: 'day plan 11-05: mods lane 5 stacked to tilde, tails with dima on his ret
 status: open
 assignee: []
 created_date: '2026-11-05T14:57:00Z'
-updated_date: '2026-11-05T20:51:00Z'
+updated_date: '2026-11-05T21:48:00Z'
 labels:
   - m
 dependencies: []
@@ -40,4 +40,6 @@ W1935 (2026-11-05 20:47, dima, o51 steer, home PK-320): I vote for a good, relia
 — answered 20:48: Monitor caps at 30 min, PK-36; asked again on the board.
 
 22:50: FRM-507 landed; FRM-501 frame#124 in its last read; the mods lane moves to main at its merge, his word; cli frame#127 FRM-434 with sixth sense
+
+frame#124 landed 23:40 at b7a2e8af on his tick o101, no warn-only stage; the mods lane on main from f12f12ce, FRM-513 next.
 <!-- SECTION:NOTES:END -->

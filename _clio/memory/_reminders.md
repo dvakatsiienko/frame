@@ -75,4 +75,4 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 ⏰ 🦉 the empty-wakes read: count my bare replies woken by app notes and watches over a day since 83fe5188, against 14 between 18:49 and 20:20 on 11-05, and the member messages against 54; one line to dima; a high count opens `clio:shape-idea` on FRM-512, a low one asks to drop it (his o58: «ok but do not forget!») — due: 2026-11-06
 
-⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514), the lazy-rule hook: dispatch after the boot, its own quick lane («let's have it tmrw after boot», o93); first its re-sign ask, gaps in PK-324's notes — due: 2026-11-06
+⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514), the lazy-rule hook: dispatch after the boot, its own quick lane («let's have it tmrw after boot», o93), re-signed by the side — due: 2026-11-06
