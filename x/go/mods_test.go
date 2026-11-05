@@ -34,6 +34,7 @@ for f in "$d"/tests/*.test.ts; do
   echo "tests/$n:"
   if grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q HOOK-THROWS "$f"; then echo "(pass) $n [1.0ms]"; echo "    m's session.start hook was skipped: m: boom"
   elif grep -q RED "$f"; then echo "(fail) $n is red [1.0ms]"; red=1
   else echo "(pass) $n [1.0ms]"; fi
 done

@@ -33,7 +33,14 @@ pre-commit:
       glob: "home/.claude/plugin-x/mods/**"
       exclude:
         - "**/*.md"
-      run: script/index-run.sh sh -c 'pnpm mods:typecheck && pnpm mods:test && pnpm mods:skew'
+      run: script/index-run.sh sh -c 'pnpm mods:typecheck && pnpm mods:skew'
+    mods-test:
+      # commit-only: `x mods edit test` runs a touched mod's tests itself and names this gate as the commit's
+      tags: [commit-only]
+      glob: "home/.claude/plugin-x/mods/**"
+      exclude:
+        - "**/*.md"
+      run: script/index-run.sh pnpm mods:test
     fleet-hazards:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards*.md"

@@ -484,6 +484,12 @@
   - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
 - ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
   - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
+- ⬜ `x mods edit test` runs the commit hook's pre-commit gates on the overlay's bytes (FRM-473)
+  - given `lefthook.yaml`, then each gate's name, glob and run come from it, on a temp index of HEAD plus the overlay, the tree and the real index untouched
+  - given an unused variable, a dropped import, a retired name or a budget overrun, then the verb exits 1 naming the gate the commit would red; every gate's verdict prints in the hook's order
+  - given a gate tagged `commit-only`, then its verdict reads «the commit's», and a glob no overlay path matches reads «no path»
+  - given a gate x cannot run (an unknown placeholder or key, no run line, a `[` in a glob), then the verb names it and exits 1
+  - given a test output holding «hook was skipped», then the mod reads errored, whatever its rows say
 - ✅ `x schema mods` lists the verbs
 
 ## fleet — the fleet measuring itself
