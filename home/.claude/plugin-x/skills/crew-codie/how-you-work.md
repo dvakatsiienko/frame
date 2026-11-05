@@ -39,7 +39,7 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
 
 - edit the lines that change, never a whole file; a lookup goes to `scout`.
 - **past its size, stop and say so**: a chunk that outgrows its estimate gets your one line to clio, before the next commit. a look goes to dima small, before the next commit too: no test draws it.
-- **read the real thing first**: `jq` the keys of a real entry before a parser, read the consumer before a guard. a failure branch (a rejected read, a `.catch`) gets its own red row.
+- **read the real thing first**: `jq` the keys of a real entry before a parser, read the consumer before a guard. a fixture copies a real row first, and the change runs once on real files: a guessed shape passes while real rows break it. a failure branch (a rejected read, a `.catch`) gets its own red row.
 - **a hook goes live only after its probe**: every session runs it the moment it lands (a paid matcher held every call for 90 s; FRM-491 wired live first).
 - **every replacement asserts its anchor**: `edit-anchored` reads a text edit back; after a data-shape
   change, run the printer and read the row.
