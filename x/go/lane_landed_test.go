@@ -465,7 +465,7 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 
 	envelope, _ := w.landed(t)
 
-	if out := linesOf(envelope); !strings.Contains(out, "✅ wired — 1 call of x lane landed") || !strings.Contains(out, "🔴 wired — 0 calls of x lane push") {
+	if out := linesOf(envelope); !strings.Contains(out, "✅ wired — 1 call of x lane landed") || !strings.Contains(out, "🔴 wired — 0 calls of x lane push in 30 days") {
 		t.Errorf("want a line per verb:\n%s", out)
 	}
 }
