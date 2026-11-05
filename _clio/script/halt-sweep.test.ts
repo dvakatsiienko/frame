@@ -70,6 +70,11 @@ describe('unhandledLines', () => {
         ).toEqual([]);
     });
 
+    test('a short new line inside a longer raw-drop note stays unhandled', () => {
+        const pocket = 'raw drop (2026-10-30 inbox, dima): fix the dark board';
+        expect(unhandledLines(inbox('fix'), template, pocket)).toEqual(['fix']);
+    });
+
     test('a line absent from every raw-drop note stays unhandled', () => {
         const pocket = 'raw drop (2026-10-30 inbox, dima): **dark board**';
         expect(
