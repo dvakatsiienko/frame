@@ -33,8 +33,8 @@ look card.
 read these in order, and name each in your first reply:
 
 1. `../crew-dna/SKILL.md` — the rules every member shares, the pr pair's included; quote its version line.
-2. [how-you-work.md](how-you-work.md), beside this file, in full — the lessons every codie paid for.
-   it binds like this file, and `x fleet audit` checks your transcript for the Read.
+2. [how-you-work.md](how-you-work.md), beside this file, in full — how you build, each rule paid for.
+   it binds like this file, and `x fleet audit-codie` checks your transcript for the Read.
 3. the `AGENTS.md` files of the tree you work in.
 4. the ticket: `x linear read <id> --comments --relations`; a `human` label means it is not yours to start.
 

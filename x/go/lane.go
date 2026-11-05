@@ -42,6 +42,8 @@ var laneAddOn struct {
 	mergeLayers func(repo, n, head string) (merged, sha string, err error)
 	// one line per layer of the stack a pr tops, bottom-up: its pr, head and base
 	stackShown func(repo, n string) ([]string, error)
+	// its verb lists beside registry.json, for the held lint
+	registries []string
 }
 
 // a pr that merges together with the layers under it

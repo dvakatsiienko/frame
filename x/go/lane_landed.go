@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var wishItem = regexp.MustCompile(`(?m)^\s*[*-]\s+W\d+\b`)
@@ -205,8 +207,12 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	}
 	lines = append(lines, look, wish)
-	for _, verb := range newVerbsOf(issue.Description) {
+	verbs, nameless := newVerbsOf(issue.Description)
+	for _, verb := range verbs {
 		lines = append(lines, wiredLine(verb, issue))
+	}
+	for _, name := range nameless {
+		lines = append(lines, landedLine{name: "wired", detail: name + " names no x verb", fix: "fix that new verb: line in " + id + "'s ⚖️ worth it"})
 	}
 	return lines, nil
 }
@@ -248,17 +254,18 @@ func (r landedRead) hasLookCard() bool {
 var (
 	dispatchBaseOf = regexp.MustCompile(`, main:([0-9a-f]{7,40})\b`)
 	takenBackOf    = regexp.MustCompile(`(?m)^[\s>*-]*↩️`)
-	newSurfaceNone = regexp.MustCompile(`new surface:?\s*none\b|\bno new surface\b`)
-	flagOnVerb     = regexp.MustCompile(`\b(flags?|extends)\b[^` + "`" + `]*$`)
 	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
-	verifiedOf     = regexp.MustCompile(`\bverified:\s*([0-9a-f]{7,40})\b`)
+	verifiedOf     = regexp.MustCompile(`\bverified\b[*:\s]+([0-9a-f]{7,40})\b`)
 	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
-	backticked     = regexp.MustCompile("`x ([^`]+)`")
+	newVerbLine    = regexp.MustCompile(`(?mi)^[\s*\d.-]*new verbs?\**:\**[ \t]*(.*)$`)
+	newVerbQuoted  = regexp.MustCompile("`([^`]+)`")
+	newVerbSplit   = regexp.MustCompile(`,| and `)
 	ticketRepoLine = regexp.MustCompile(`(?m)^repo:\s*(\S+)\s*$`)
 )
 
-// a quick lane's commits carry no id (x:cmt), so merged reads the range from the dispatch's base; while a named sixth
-// sense has not said verified the lane is mid-verify, and --apply refuses on this line
+// a quick lane's commits carry no ticket line (x:cmt), and main interleaves lanes: merged counts the verified tip and
+// the commits under it whose step line names this ticket; while a named sixth sense has not said verified the lane is
+// mid-verify, and --apply refuses on this line
 func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine) {
 	merged := landedLine{name: "merged", fix: "wait for sixth sense's clean, its verified: <sha> comment on " + id}
 	verified := ""
@@ -271,26 +278,38 @@ func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine)
 		merged.detail = id + " is mid-verify: the dispatch named a sixth sense and no comment says verified"
 		return nil, merged
 	}
-	// with no sixth sense nothing bounds the range: another lane's commit would read this one's, so codie's done comment closes it
-	if verified == "" && !issue.hasLookCard() {
+	// with no sixth sense only codie's done comment bounds the range: past it, another lane's commit would read this one's
+	if verified == "" {
 		merged.detail, merged.fix = "no verified sha and no look card on "+id+": the lane may still be working", "wait for codie's done comment on "+id
+		if issue.hasLookCard() {
+			merged.detail, merged.fix = "the done comment on "+id+" names no verified: sha, so the range past main:"+short(base)+" is open", "add verified: <head sha> to the done comment on "+id
+		}
 		return nil, merged
 	}
-	tip := cmp.Or(verified, "origin/main")
+	tip := verified
 	merged.fix = "land " + id + "'s commits on main"
 	if !ok(gitIn(repo, "merge-base", "--is-ancestor", tip, "origin/main")) {
 		merged.detail = short(tip) + " is not on origin/main"
 		return nil, merged
 	}
 	got, _ := gitIn(repo, "log", base+".."+tip, "--format=%h %s")
+	named, _ := gitIn(repo, "log", base+".."+tip, "-E", "--grep=^step [0-9]+ of "+id+"([^0-9]|$)", "--format=%h %s")
 	var commits []string
+	others := 0
 	if got.ok && got.out != "" {
-		commits = strings.Split(got.out, "\n")
+		stepped := strings.Split(named.out, "\n")
+		for i, row := range strings.Split(got.out, "\n") {
+			// the log opens on the verified tip, which the comment itself names as the lane's
+			if i == 0 || slices.Contains(stepped, row) {
+				commits = append(commits, row)
+			} else {
+				others++
+			}
+		}
 	}
 	merged.ok, merged.detail = len(commits) > 0, plural(len(commits), "commit")+" from main:"+short(base)+" to "+short(tip)
-	// no sixth sense, no verify tree of this lane: the open range would hand it another lane's
-	if verified == "" {
-		return nil, merged
+	if others > 0 {
+		merged.detail += fmt.Sprintf(", not counted: %d name no step of %s", others, id)
 	}
 	return commits, merged
 }
@@ -318,28 +337,53 @@ func ticketRepo(id, body string) (string, error) {
 	return path, nil
 }
 
-// the x verbs a ticket's «new surface» lines name, by the registry: a flag on a verb, or a line saying none, adds none
-func newVerbsOf(body string) []string {
+// the x verbs a ticket's `new verb: <name>` lines name, and the names no verb answers to; prose guesses nothing.
+// a line's first name and any spelled `x <verb>` must answer; past those a comma may open prose. a backticked name is
+// the verb and its flags whole, a bare one may run on into a sentence, so `x stats dayly` reds and x stats dayly reads stats
+func newVerbsOf(body string) (verbs, nameless []string) {
 	section := worthSection.FindStringSubmatch(body)
 	if section == nil {
-		return nil
+		return nil, nil
 	}
-	var verbs []string
-	for line := range strings.SplitSeq(section[1], "\n") {
-		if !strings.Contains(line, "new surface") || newSurfaceNone.MatchString(line) {
-			continue
+	read := func(name string, first, whole bool) {
+		name = strings.TrimSpace(name)
+		words := strings.Fields(strings.TrimPrefix(name, "x "))
+		verb, depth, found := findVerb(words)
+		if flag := slices.IndexFunc(words, func(w string) bool { return strings.HasPrefix(w, "-") }); whole && flag >= 0 {
+			words = words[:flag]
 		}
-		for _, at := range backticked.FindAllStringSubmatchIndex(line, -1) {
-			named := line[at[2]:at[3]]
-			if strings.Contains(named, "--") || flagOnVerb.MatchString(line[:at[0]]) {
-				continue
-			}
-			if verb, _, found := findVerb(strings.Fields(named)); found && !slices.Contains(verbs, verb.Name) {
+		switch {
+		case found && (!whole || depth == len(words)):
+			if !slices.Contains(verbs, verb.Name) {
 				verbs = append(verbs, verb.Name)
 			}
+		case first || strings.HasPrefix(name, "x "):
+			nameless = append(nameless, name)
 		}
 	}
-	return verbs
+	for _, m := range newVerbLine.FindAllStringSubmatch(section[1], -1) {
+		named, _, _ := strings.Cut(strings.ReplaceAll(m[1], "*", ""), "—")
+		opening := strings.Fields(named)
+		if len(opening) == 0 || strings.Trim(strings.ToLower(opening[0]), ".,:;()`") == "none" {
+			continue
+		}
+		for i, piece := range newVerbSplit.Split(named, -1) {
+			// a backticked flag is prose about the verb, never a name
+			var quoted []string
+			for _, q := range newVerbQuoted.FindAllStringSubmatch(piece, -1) {
+				if !strings.HasPrefix(q[1], "-") {
+					quoted = append(quoted, q[1])
+				}
+			}
+			if len(quoted) == 0 {
+				read(strings.ReplaceAll(piece, "`", ""), i == 0, false)
+			}
+			for j, name := range quoted {
+				read(name, i == 0 && j == 0, true)
+			}
+		}
+	}
+	return verbs, nameless
 }
 
 // a new verb is measured at its milestone's close, the merge is too early to say: no ticket left open, this one included, is the close
@@ -513,34 +557,107 @@ func treeStay(e worktreeEntry, main string, selves []string, mergedHead string) 
 		// git worktree lock: a session working in it, decamp refuses it anyway
 		reason = strings.TrimPrefix(reason+", a live session holds it", ", ")
 	}
-	if liveSessionIn(e.path) {
-		reason = strings.TrimPrefix(reason+", a live session sits in it", ", ")
+	if session := liveSessionIn(e.path); session != "" {
+		reason = strings.TrimPrefix(reason+", a live session sits in it: "+session, ", ")
 	}
 	return reason
 }
 
-// the session registry names each session's cwd and pid; a file left by a dead pid says nothing
-func liveSessionIn(tree string) bool {
+// the session registry names each session's pid; a file left by a dead pid says nothing, and the registry's cwd may be
+// where the session started, so the process's own cwd says where it sits. the session sitting in tree, named, or ""
+func liveSessionIn(tree string) string {
 	files, _ := filepath.Glob(filepath.Join(sessionsDir(), "*.json"))
 	root := resolved(tree)
 	for _, file := range files {
 		var session struct {
-			Cwd string `json:"cwd"`
-			Pid int    `json:"pid"`
+			Cwd  string `json:"cwd"`
+			Pid  int    `json:"pid"`
+			Name string `json:"name"`
+			ID   string `json:"sessionId"`
 		}
 		raw, err := os.ReadFile(file)
 		if err != nil || json.Unmarshal(raw, &session) != nil || session.Pid <= 0 {
 			continue
 		}
-		cwd := resolved(session.Cwd)
-		if cwd != root && !strings.HasPrefix(cwd, root+string(filepath.Separator)) {
+		if err := syscall.Kill(session.Pid, 0); err != nil && !errors.Is(err, syscall.EPERM) {
 			continue
 		}
-		if err := syscall.Kill(session.Pid, 0); err == nil || errors.Is(err, syscall.EPERM) {
-			return true
+		for _, at := range []string{cmp.Or(processCwd(session.Pid), session.Cwd), transcriptCwd(session.ID)} {
+			if cwd := resolved(at); at != "" && (cwd == root || strings.HasPrefix(cwd, root+string(filepath.Separator))) {
+				return fmt.Sprintf("%s (pid %d)", cmp.Or(session.Name, session.ID, "unnamed"), session.Pid)
+			}
 		}
 	}
-	return false
+	return ""
+}
+
+// a Bash cd moves no process (probed on a bare cc, 2026-11-05); cc stamps the cwd it carried on every transcript row, so the last row says where the session went
+func transcriptCwd(id string) string {
+	if id == "" {
+		return ""
+	}
+	files, _ := filepath.Glob(filepath.Join(projectsDir(), "*", id+".jsonl"))
+	// a session moved between trees can leave a transcript under two project dirs
+	newest, at := "", time.Time{}
+	for _, file := range files {
+		if info, err := os.Stat(file); err == nil && info.ModTime().After(at) {
+			newest, at = file, info.ModTime()
+		}
+	}
+	if newest == "" {
+		return ""
+	}
+	return lastCwdIn(newest)
+}
+
+const transcriptTail = 256 * 1024
+
+// the end of the file first: transcripts run to tens of MB, and this runs per session per tree. a cut first line fails
+// its parse and is skipped; a tail with no cwd widens, since a last row past its size would read as no session in the tree
+func lastCwdIn(path string) string {
+	file, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+	info, err := file.Stat()
+	if err != nil {
+		return ""
+	}
+	for size := min(info.Size(), transcriptTail); ; size = min(info.Size(), size*4) {
+		tail := make([]byte, size)
+		if _, err := file.ReadAt(tail, info.Size()-size); err != nil {
+			return ""
+		}
+		for _, raw := range slices.Backward(bytes.Split(tail, []byte("\n"))) {
+			var row struct {
+				Cwd string `json:"cwd"`
+			}
+			if json.Unmarshal(raw, &row) == nil && row.Cwd != "" {
+				return row.Cwd
+			}
+		}
+		if size == info.Size() {
+			return ""
+		}
+	}
+}
+
+// "" when the process can't be read, and the caller falls back on the registry: a wrong spare costs a later landed, a wrong decamp a live tree
+func processCwd(pid int) string {
+	if link, err := os.Readlink(fmt.Sprintf("/proc/%d/cwd", pid)); err == nil {
+		return link
+	}
+	got, err := run("", nil, "", "lsof", "-a", "-p", strconv.Itoa(pid), "-d", "cwd", "-Fn")
+	if err != nil || !got.ok {
+		return ""
+	}
+	for line := range strings.SplitSeq(got.out, "\n") {
+		if name, ok := strings.CutPrefix(line, "n"); ok {
+			return name
+		}
+	}
+	return ""
 }
 
 // the ignored paths an install, a build or a seed makes again, from frame's and bytes' .gitignore build lines;

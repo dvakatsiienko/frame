@@ -47,13 +47,13 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 ## lanes and reviews
 
 - **lane** (the family) — the git door for one session's branch: commit, push, pr, merge main, unlock, seed, decamp, gate. 📌 not the fleet's lane, a working day with dima present (`fleet-vibe`)
-- **gate** — the commit-msg check `x lane gate`: a contract change carries its glossary or adr, a growing skill was groomed, app code carries its ftr line
+- **gate** — the commit-msg check `x lane gate`: a contract change carries its glossary or adr, a growing skill was groomed, app code carries its ftr line; `--held` is its other mode, the purpose lint over a local layer's own registry files
 - **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; x's is its registry
 - **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it
 - **held files** — the unstaged and untracked work outside a commit's paths, set aside while the hooks run and put back byte for byte. avoid: stash
 - **review round** — one successful ci review run on a pr in bytes, started by the review label; two per pr, a third only past dima's approval
 - **🚀 line** — the dispatch's line on a ticket: its lane, its codie's session, on a quick lane `main:<base>`, and `sixth sense <sid>` when one was named; `x lane landed` reads the range and whether to wait for a verdict from the last one; a re-dispatch naming a new lane, session or sixth sense writes its own; a line a ↩️ leads below it takes it back, a ↩️ inside a sentence does not
-- **wired line** — `x lane landed`'s line for a ticket whose «new surface» names an x verb: «wired: unmeasured yet» until its milestone's last open ticket closes, then 🔴 at 0 calls in 30 days
+- **wired line** — `x lane landed`'s line for a ticket whose `## ⚖️ worth it` carries a `new verb: <name>` line: «wired: unmeasured yet» until its milestone's last open ticket closes, then 🔴 at 0 calls in 30 days
 - **sixth sense clean** — the pr head sixth sense said clean on, one per pr in `~/.claude/shelf/pr-verified.json`; a sibling `<repo>#<n>:by` key marks a solo stamp, another verifier's read (`clio`), which the gate takes alike and its detail names; it carries to a new head whose whole branch change keeps its patch-id (a rebase, a plain merge of main). a «clean» in a comment is never one
 - **risky path** — a changed path that can turn the checks themselves green (workflows, settings, memory files, secrets, deploy), listed in `x/go/risky.json`; `lane merge-auto` merges it and names it on its `risky:` line
 - **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word, unless its chunk's sign pre-approved it; his word reaches merge-auto as `--dima-ok <pr>`, which x-mod-guard lets through only when his last typed prompt names the pr

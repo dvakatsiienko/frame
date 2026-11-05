@@ -149,6 +149,8 @@
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
   - then a map row names its context as `**name**` with its glossary in backticks (frame) or as a link to the glossary (bytes)
   - decision: each half has a message line that passes it on purpose, so the gate refuses a forgotten step, never a decision; the root repo context carries no `contract:` line, since every commit touches it (FRM-367)
+- ✅ `x lane gate --held` lints a layer before any rebase
+  - given a local layer, when `x lane gate --held` runs in its tree, then the purpose lint reads that tree's `x/go/registry.json` and `x/go/stacks.json`, never the binary's; a red names the file, the verb and the problem and exits 1; a tree with no `x/go/registry.json` exits 2
 - ✅ `x lane pr-body <pr> <file>` writes a pr body by number and reads it back
   - given no pr number, or a file where the number goes
   - when `x lane pr-body` runs
@@ -160,13 +162,13 @@
 - ⬜ `x lane landed` reads a lane's close true (FRM-480)
   - given any chunk, then it prints no retros line: a siesta and the halt own retros
   - given only codie's look card, then 🔴 look until a `👀 look sent` line sits in the body; the wish line reads «close in this turn» once the look card's proof exists on a merged chunk
-  - given a quick lane mid-verify, then `--apply` refuses; `merged` reads the commits from the 🚀 line's base to the verified sha; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
+  - given a quick lane mid-verify, then `--apply` refuses; `merged` counts, from the 🚀 line's base to the verified sha, that sha and the commits whose `step N of <ticket>` line names this ticket, and says how many it left out; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
-  - given a `## ⚖️ worth it` whose «new surface» line names an x verb, not a flag on one, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days
+  - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so
-  - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session in `~/.claude/sessions/`, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
+  - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
   - given a decamp that fails, then it warns and the exit stays 0
 - ⬜ `x lane merge-auto` names whose clean it reads (W210)
   - given a store holding the pr's head and `<repo>#<n>:by` = `clio`, then the check passes with `clean on <sha> by clio's read`; with no `:by` key, `clean on <sha> by sixth sense`; a carried clean and a moved head name the same verifier, a no-clean detail names none
@@ -231,10 +233,11 @@
   - given dima looked, when `x lane merge-auto <pr> --release-brake --dima-ok <pr>` runs, then the label and this mac's record for that pr come off and nothing merges; without `--dima-ok` it exits 2, and x-mod-guard lets the flag through only on his typed prompt naming the pr (FRM-423 grill, o142)
   - given the add-on's files deleted, or `-tags nostacks`, then `go build`, `go vet` and every lane-verb test pass, which `pnpm x-go:test` proves on every run (FRM-422)
   - decision: an add-on behind `//go:build !nostacks`, reaching core only through `laneAddOn`, its verbs hidden from the overview while stacks are on trial (FRM-404; dima, 2026-10-20: «easy to delete»)
-  - given a stack whose lower layer moved, when `x lane restack --apply` runs on any layer, then each lower layer is merged up into the next, bottom-up, and every moved layer is pushed as a fast-forward of the sha read, never forced; a conflict pushes the layers under it, then stops on that layer mid-merge naming the files and the rerun; a dirty tree, a stopped rebase or merge, a layer whose local copy differs from origin, or an upper layer another worktree holds refuses before any merge
+  - given a stack whose lower layer moved, when `x lane restack --apply` runs on any layer, then each lower layer is merged up into the next, bottom-up, and every moved layer is pushed as a fast-forward of the sha read, never forced; a conflict pushes the layers under it, then stops on that layer mid-merge naming the files and the rerun; a dirty tree, a stopped rebase or merge, a bottom layer whose local copy differs from origin, or an upper layer another worktree holds refuses before any merge
+  - given a rival push mid-restack, when `x lane restack --apply` reruns, then an upper layer whose only local commits are a restack's own merges takes origin's copy, naming what it dropped, and the push lands with the rival's commits under it; a commit no restack made refuses naming it; a hand resolution the reset loses is named with its sha
   - decision: restack never force-pushes — each merge descends from the sha it read, so the one force-push door stays `rebase-main` (o87)
   - given a stack's top pr, when `x lane verify-tree --stack <top pr url>` runs, then the top layer's tree is seeded and every open layer under it prints bottom-up with its pr, head, base and the commits it adds; a pr in no stack refuses before any tree is cut; a `main:<sha>` head exits 2
-  - given the lane pr verbs pr-open, merge-auto, push and restack, then a contract test reds any verb with no test case in plain mode (a file that builds without the add-on) or in stacked mode (a file behind the build tag); built out, only the plain half is held
+  - given the lane pr verbs pr-open, merge-auto, push and restack, then a contract test, reading go tokens so a comment naming a verb never counts, reds any verb with no test case in plain mode (a file that builds without the add-on) or in stacked mode (a file behind the build tag); built out, only the plain half is held
   - decision: two pr modes, plain in core and stacked in the add-on; stacked support never breaks a plain pr, and the «easy to delete» clauses stay until the stacked-prs trial's verdict (dima, o127, o128; `PRODUCT.md` § two pr modes)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
@@ -490,10 +493,12 @@
   - when `x fleet flow --days 14` runs
   - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
   - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
-- ✅ `x fleet audit` checks each codie read its lessons first
-  - given the session transcripts of the last `--days` (default 1)
-  - when `x fleet audit` runs
-  - then each session opened with `/x:crew-codie` gets a line: whether it read `crew-codie/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
+- ✅ `x fleet audit-codie` checks each codie read its contract before its first edit
+  - given the session transcripts opened in the last `--days` (default 1), or first edited past `--since <local stamp>`
+  - when `x fleet audit-codie` runs
+  - then the board's last line counts `how-you-work.md` reads (`57 of 58 read before first edit`), `crew-dna` and the ticket read above it, every miss row above those names the file and the session, and a miss exits 1
+  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read` or a Bash `cat`-like line, the ticket read names a ticket of the brief
+  - decision: a retro is a count, never a miss or an edit, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
   - when `x fleet ops` runs

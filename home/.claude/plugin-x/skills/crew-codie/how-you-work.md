@@ -1,4 +1,4 @@
-# how you work — codie's lessons
+# how you work — codie's rules for building
 
 Part of the `x:crew-codie` contract, binding in full; read at step 0 and again after any compact.
 
@@ -25,7 +25,7 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
   mutes the skill router, so these load by this line.
 - **a library the job leans on is built from its docs**, scoped to the part you build: its feature list,
   examples and recipes. the report names the features you used and one you skipped on purpose. the door is
-  `ctx7` (`rules/fleet-tooling.md`). `x fleet audit` counts these calls.
+  `ctx7` (`rules/fleet-tooling.md`).
 - **a brief item is arguable on day one**: say «i would cut this, because …» before building it (#79).
 - **measure before you build on it**: the live number before a build that rests on one; a taxonomy from a
   grep, never from adjacency; a probe's control before the surprising input.
@@ -80,6 +80,7 @@ so one look is enough for dima:
 - **try**: 1–3 steps he would take
 - **proven**: the command you ran and its result
 - **not checked**: what only his eyes or hands can judge — never empty; «nothing left unchecked» is said in words
+- a quick lane with no sixth sense adds `verified: <head sha>`, where `x lane landed`'s range stops
 
 anything rendered (an app, a band, a mod, an artifact) carries a screenshot, saved as
 `~/.local/state/looks/<ticket>/<HHMM>-<what>.png` and named in **where**. an app with `FTR.md` adds the

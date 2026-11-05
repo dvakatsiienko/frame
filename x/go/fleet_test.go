@@ -399,53 +399,266 @@ func TestFleetOpsPrintsNoSizeSectionWithoutAClosedTicket(t *testing.T) {
 	}
 }
 
-func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
+func auditOpening(at, brief string) map[string]any {
+	line := said("<command-name>/x:crew-codie</command-name> " + brief)
+	line["timestamp"] = at
+	return line
+}
+
+func auditWithCwd(line map[string]any, cwd string) map[string]any {
+	line["cwd"] = cwd
+	return line
+}
+
+func auditStateOf(s codieSession, file string) string {
+	for _, c := range s.Checks {
+		if c.Name == file {
+			return c.State
+		}
+	}
+	return "unchecked"
+}
+
+func auditOf(t *testing.T, lines ...any) codieSession {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "session.jsonl")
+	write(t, path, jsonLines(t, lines...))
+	s, ok := auditSession(path)
+	if !ok {
+		t.Fatal("the session did not read as codie")
+	}
+	return s
+}
+
+func TestAuditCodieChecksEachFileBeforeTheFirstEdit(t *testing.T) {
 	t.Parallel()
-	opening := said("<command-name>/x:crew-codie</command-name> FRM-1")
-	read := called("Read", map[string]any{"file_path": "/x/crew-codie/how-you-work.md"}, "2026-10-05T10:01:00.000Z")
-	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-05T10:02:00.000Z")
-	compact := map[string]any{"type": "system", "subtype": "compact_boundary", "timestamp": "2026-10-05T10:03:00.000Z"}
+	const day = "2026-10-20T"
+	read := func(path, at string) map[string]any {
+		return called("Read", map[string]any{"file_path": path}, day+at+":00.000Z")
+	}
+	edit := func(at string) map[string]any {
+		return called("Edit", map[string]any{"file_path": "/x/a.go"}, day+at+":00.000Z")
+	}
+	const lessons, dna = "/p/skills/crew-codie/how-you-work.md", "/p/skills/crew-dna/SKILL.md"
+	opening := auditOpening(day+"09:00:00.000Z", "a brief")
 	cases := []struct {
-		name      string
-		lines     []any
-		inOrder   bool
-		compacted string
+		name, file, want string
+		lines            []any
 	}{
-		{"read, then edit", []any{opening, read, edit}, true, ""},
-		{"edit before any read", []any{opening,
-			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-05T10:01:00.000Z"),
-			called("Read", map[string]any{"file_path": "/x/crew-codie/how-you-work.md"}, "2026-10-05T10:02:00.000Z")}, false, ""},
-		{"a compaction with no re-read", []any{opening, read, edit, compact}, true, "🚫 compact 10:03:00"},
-		{"a compaction re-read", []any{opening, read, compact, read}, true, "✅ compact 10:03:00"},
+		{"read, then edit", lessonsName, checkRead, []any{opening, read(lessons, "10:01"), edit("10:02")}},
+		{"edit before any read", lessonsName, checkMissed, []any{opening, edit("10:01"), read(lessons, "10:02")}},
+		{"under a skill dir of another name", lessonsName, checkRead, []any{opening, read("/p/skills/crew-renamed/how-you-work.md", "10:01"), edit("10:02")}},
+		{"never read", lessonsName, checkMissed, []any{opening, edit("10:02")}},
+		{"a session with no edit", lessonsName, checkNoEdit, []any{opening, read(dna, "10:01")}},
+		{"crew-dna read", "crew-dna", checkRead, []any{opening, read(dna, "10:01"), edit("10:02")}},
+		{"crew-dna missed", "crew-dna", checkMissed, []any{opening, read(lessons, "10:01"), edit("10:02")}},
+		{"a read a day later reads late, whatever its clock", lessonsName, checkMissed, []any{opening,
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-20T23:00:00.000Z"),
+			called("Read", map[string]any{"file_path": lessons}, "2026-10-21T01:00:00.000Z")}},
+		{"opened before how-you-work.md was born", lessonsName, checkOlder, []any{auditOpening("2026-09-20T09:00:00.000Z", "a brief"),
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-09-20T10:00:00.000Z")}},
+		{"opened before crew-dna was born", "crew-dna", checkOlder, []any{auditOpening("2026-10-01T09:00:00.000Z", "a brief"),
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-01T10:00:00.000Z")}},
+		{"no ticket in the brief", ticketCheck, "unchecked", []any{opening, edit("10:02")}},
+		{"a ticket in the brief, read first", ticketCheck, checkRead, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"),
+			called("Bash", map[string]any{"command": "x linear read FRM-1 --comments"}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"a ticket in the brief, never read", ticketCheck, checkMissed, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"), edit("10:02")}},
+		{"another ticket read", ticketCheck, checkMissed, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"),
+			called("Bash", map[string]any{"command": "x linear read FRM-2"}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"a ticket only in the row's cwd", ticketCheck, "unchecked", []any{auditWithCwd(auditOpening(day+"09:00:00.000Z", "a brief"), "/w/FRM-434-x"), edit("10:02")}},
+		{"an Edit of the file is no read", lessonsName, checkMissed, []any{opening, called("Edit", map[string]any{"file_path": lessons}, day+"10:01:00.000Z"), read(lessons, "10:02")}},
+		{"a Bash line only naming the file is no read", lessonsName, checkMissed, []any{opening,
+			called("Bash", map[string]any{"command": "rg foo " + lessons}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"a cat of the file reads it", lessonsName, checkRead, []any{opening, called("Bash", map[string]any{"command": "cat " + lessons}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"edit-anchored is a first edit", lessonsName, checkMissed, []any{opening,
+			called("Bash", map[string]any{"command": "edit-anchored a.go anchor repl"}, day+"10:01:00.000Z"), read(lessons, "10:02")}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			path := filepath.Join(t.TempDir(), "session.jsonl")
-			write(t, path, jsonLines(t, c.lines...))
-			s, ok := auditSession(path)
-			row := auditRow(s)
-			if !ok || s.InOrder != c.inOrder || c.compacted != "" && !strings.Contains(row, c.compacted) {
-				t.Errorf("coder %v, in order %v, row %q", ok, s.InOrder, row)
+			t.Parallel()
+			if got := auditStateOf(auditOf(t, c.lines...), c.file); got != c.want {
+				t.Errorf("%s reads %q, want %q", c.file, got, c.want)
 			}
 		})
 	}
 }
 
-func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
+func TestAuditCodieReadsACompactionByTheEditAfterIt(t *testing.T) {
 	t.Parallel()
-	opening := said("<command-name>/x:crew-codie</command-name> FRM-1")
-	at := "2026-10-05T10:02:00.000Z"
-	path := filepath.Join(t.TempDir(), "session.jsonl")
-	write(t, path, jsonLines(t, opening,
-		bashCalled("ctx7 docs /charm/bubbletea 'viewport'"),
-		called("mcp__plugin_context7_context7__query-docs", map[string]any{}, flowAt),
-		called("WebSearch", map[string]any{}, flowAt), called("WebFetch", map[string]any{}, flowAt),
-		called("Bash", map[string]any{"command": "edit-anchored a.go anchor repl"}, at)))
+	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
+	read := called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
+	dna := called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, "2026-10-20T10:01:00.000Z")
+	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-20T10:02:00.000Z")
+	compact := map[string]any{"type": "system", "subtype": "compact_boundary", "uuid": "c1", "timestamp": "2026-10-20T10:03:00.000Z"}
+	cases := []struct {
+		name   string
+		lines  []any
+		misses int
+	}{
+		{"an edit after with no re-read", []any{opening, dna, read, edit, compact, edit}, 1},
+		{"a re-read, then an edit", []any{opening, dna, read, edit, compact, read, edit}, 0},
+		{"an edit, then the re-read", []any{opening, dna, read, edit, compact, edit, read}, 1},
+		{"no edit after it, it may be live", []any{opening, dna, read, edit, compact}, 0},
+		{"opened before how-you-work.md was born", []any{auditOpening("2026-09-20T09:00:00.000Z", "a brief"),
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-09-20T10:00:00.000Z"),
+			map[string]any{"type": "system", "subtype": "compact_boundary", "uuid": "c2", "timestamp": "2026-09-20T10:03:00.000Z"},
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-09-20T10:04:00.000Z")}, 0},
+		{"a row seen twice counts once", []any{opening, dna, read, edit, compact, read, edit, compact, edit}, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			if got := auditOf(t, c.lines...).misses(); len(got) != c.misses {
+				t.Errorf("misses %v, want %d", got, c.misses)
+			}
+		})
+	}
+}
 
-	s, _ := auditSession(path)
+func TestAuditCodieCountsARetroAsNoMiss(t *testing.T) {
+	t.Parallel()
+	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
+	read := called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
+	dna := called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, "2026-10-20T10:01:00.000Z")
+	retro := called("Write", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-20T10:02:00.000Z")
+	if s := auditOf(t, opening, read, dna, retro); !s.Retro || len(s.misses()) != 0 {
+		t.Errorf("retro %v, misses %v", s.Retro, s.misses())
+	}
+	if s := auditOf(t, opening, read, dna, edit); s.Retro || len(s.misses()) != 0 {
+		t.Errorf("no retro written: retro %v, misses %v", s.Retro, s.misses())
+	}
+	appended := called("Edit", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	if s := auditOf(t, opening, read, dna, appended); s.Retro {
+		t.Error("the rider counts a Write, an Edit of a retro is no retro")
+	}
+}
 
-	if want := `{"ctx7":1,"mcp":1,"web":2}`; marshal(s.Docs) != want || s.FirstEdit != "10:02:00" {
-		t.Errorf("docs %s, first edit %q", marshal(s.Docs), s.FirstEdit)
+func TestAuditCodieReadsARetroAsNoEdit(t *testing.T) {
+	t.Parallel()
+	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
+	written := called("Write", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	appended := called("Edit", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	scripted := called("Bash", map[string]any{"command": "edit-anchored /l/lane-1-codie-retro.md a.txt b.txt"}, "2026-10-20T10:02:00.000Z")
+	for name, retro := range map[string]any{"written": written, "appended": appended, "scripted": scripted} {
+		if s := auditOf(t, opening, retro); s.FirstEdit != "" || len(s.misses()) != 0 {
+			t.Errorf("a retro %s alone: first edit %q, misses %v", name, s.FirstEdit, s.misses())
+		}
+	}
+	const later = "2026-10-20T10:03:00.000Z"
+	if s := auditOf(t, opening, written, called("Edit", map[string]any{"file_path": "/x/a.go"}, later)); s.FirstEdit != later || !s.Retro {
+		t.Errorf("the code edit is the first edit: %q, retro %v", s.FirstEdit, s.Retro)
+	}
+}
+
+// a codie transcript under a planted HOME, stamped at its offsets from now
+func auditHome(t *testing.T, sessions map[string][]any) string {
+	t.Helper()
+	home := t.TempDir()
+	for id, lines := range sessions {
+		write(t, filepath.Join(home, ".claude/projects/p", id+"-rest.jsonl"), jsonLines(t, lines...))
+	}
+	return home
+}
+
+func auditAt(ago time.Duration) string { return time.Now().Add(-ago).UTC().Format(time.RFC3339) }
+
+func auditClean(opened, edited time.Duration) []any {
+	return []any{auditOpening(auditAt(opened), "a brief"),
+		called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, auditAt(opened)),
+		called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, auditAt(opened)),
+		called("Edit", map[string]any{"file_path": "/x/a.go"}, auditAt(edited))}
+}
+
+func auditMissing(opened, edited time.Duration) []any {
+	return []any{auditOpening(auditAt(opened), "a brief"),
+		called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, auditAt(opened)),
+		called("Edit", map[string]any{"file_path": "/x/a.go"}, auditAt(edited))}
+}
+
+func TestAuditCodieBoardEndsOnTheLessonsCount(t *testing.T) {
+	t.Parallel()
+	home := auditHome(t, map[string][]any{"aaaaaaaa": auditClean(time.Hour, time.Hour), "bbbbbbbb": auditMissing(time.Hour, time.Hour)})
+
+	got := xIn(t, home, []string{"HOME=" + home}, "fleet", "audit-codie", "--days", "30", "--board")
+
+	var last string
+	for line := range strings.SplitSeq(got.stdout, "\n") {
+		if strings.Contains(line, " of ") || strings.Contains(line, "🚫") || strings.Contains(line, "retros") {
+			last = line
+		}
+	}
+	if got.code != 1 || !strings.Contains(last, "how-you-work.md 1 of 2 read before first edit") {
+		t.Errorf("exit %d, last counted line %q:\n%s", got.code, last, got.stdout)
+	}
+	if !strings.Contains(got.stdout, "🚫 bbbbbbbb") || !strings.Contains(got.stdout, "how-you-work.md: first edit") {
+		t.Errorf("want a miss row naming the session and the file:\n%s", got.stdout)
+	}
+}
+
+func TestAuditCodieJsonNamesEveryMiss(t *testing.T) {
+	t.Parallel()
+	home := auditHome(t, map[string][]any{"bbbbbbbb": auditMissing(time.Hour, time.Hour)})
+	got := xIn(t, home, []string{"HOME=" + home}, "fleet", "audit-codie", "--days", "30", "--json")
+	if got.code != 1 || !strings.Contains(got.stdout, `"session":"bbbbbbbb"`) || !strings.Contains(got.stdout, `"file":"how-you-work.md"`) {
+		t.Errorf("exit %d:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestAuditCodieCleanExitsZero(t *testing.T) {
+	t.Parallel()
+	home := auditHome(t, map[string][]any{"aaaaaaaa": auditClean(time.Hour, time.Hour)})
+	if got := xIn(t, home, []string{"HOME=" + home}, "fleet", "audit-codie", "--days", "30", "--json"); got.code != 0 {
+		t.Errorf("a clean run exits %d:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestAuditCodieWindow(t *testing.T) {
+	t.Parallel()
+	stamp := time.Now().Add(-time.Hour).Format(sinceLayout)
+	const day = 24 * time.Hour
+	cases := []struct {
+		name    string
+		session []any
+		args    []string
+		counted bool
+	}{
+		{"--days keeps one opened inside", auditClean(day, day), []string{"--days", "3"}, true},
+		{"--days drops a touched old one", auditClean(9*day, 9*day), []string{"--days", "3"}, false},
+		{"--since keeps one opened before it and edited past it", auditClean(3*time.Hour, 10*time.Minute), []string{"--since", stamp}, true},
+		{"--since drops one edited before it", auditClean(3*time.Hour, 2*time.Hour), []string{"--since", stamp}, false},
+		{"--since drops one with no edit", auditClean(3*time.Hour, time.Hour)[:3], []string{"--since", stamp}, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			home := auditHome(t, map[string][]any{"aaaaaaaa": c.session})
+			got := xIn(t, home, []string{"HOME=" + home}, append([]string{"fleet", "audit-codie", "--json"}, c.args...)...)
+			if counted := strings.Contains(got.stdout, `"codies":1`); got.code != 0 || counted != c.counted {
+				t.Errorf("exit %d, counted %v, want %v:\n%s", got.code, counted, c.counted, got.stdout)
+			}
+		})
+	}
+}
+
+func TestAuditCodieRefusesAWindowItCannotRead(t *testing.T) {
+	t.Parallel()
+	home := t.TempDir()
+	for _, args := range [][]string{{"--since", "yesterday"}, {"--since", "2026-11-05T21:04:00", "--days", "3"}, {"--days", "0"}} {
+		got := xIn(t, home, []string{"HOME=" + home}, append([]string{"fleet", "audit-codie", "--json"}, args...)...)
+		if got.code != 2 {
+			t.Errorf("%v: exit %d, want a usage refusal:\n%s", args, got.code, got.stdout)
+		}
+	}
+}
+
+func TestAuditCodieHelpNamesTheFilesItChecks(t *testing.T) {
+	t.Parallel()
+	got := xIn(t, t.TempDir(), nil, "fleet", "audit-codie", "--help")
+	for _, want := range []string{"crew-dna", "how-you-work.md", "ticket read"} {
+		if !strings.Contains(got.stdout, want) {
+			t.Errorf("--help lacks %q:\n%s", want, got.stdout)
+		}
 	}
 }
 
@@ -455,6 +668,93 @@ func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
 	write(t, path, jsonLines(t, said("spawn codie with /x:crew-codie")))
 	if _, ok := auditSession(path); ok {
 		t.Error("a session that names codie in prose counted as codie")
+	}
+}
+
+func TestAuditCodieReadsABashLineWhateverDirItSitsIn(t *testing.T) {
+	t.Parallel()
+	const day = "2026-10-20T"
+	cases := []struct{ name, command, file, want string }{
+		{"cd, then crew-dna by a relative path", "cd /p/skills; cat crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"cd into crew-dna", "cd /p/skills/crew-dna && cat SKILL.md", "crew-dna", checkRead},
+		{"cd into crew-dna with a slash", "cd crew-dna/; sed -n 1,20p SKILL.md", "crew-dna", checkRead},
+		{"cd into crew-codie", "cd crew-codie && cat how-you-work.md", lessonsName, checkRead},
+		{"cd and the read on two lines", "cd /p/skills/crew-dna\ncat SKILL.md", "crew-dna", checkRead},
+		{"a read, a mention on the next line", "cat a.txt\necho how-you-work.md", lessonsName, checkMissed},
+		{"cd into crew-dna, another skill's contract read", "cd crew-dna && cat ../crew-lead/SKILL.md", "crew-dna", checkMissed},
+		{"cd into a longer dir", "cd /p/skills/crew-dna-old && cat SKILL.md", "crew-dna", checkMissed},
+		{"an absolute path", "head -50 /p/skills/crew-codie/how-you-work.md", lessonsName, checkRead},
+		{"after another file", "cat a.txt how-you-work.md", lessonsName, checkRead},
+		{"quoted", `cat "/p/skills/crew-dna/SKILL.md"`, "crew-dna", checkRead},
+		{"another skill's contract", "cd /p/skills/crew-lead && cat SKILL.md", "crew-dna", checkMissed},
+		{"a longer name in front", "cat old-how-you-work.md", lessonsName, checkMissed},
+		{"a longer name behind", "cat how-you-work.md.bak", lessonsName, checkMissed},
+		{"a name only mentioned beside a read", "cat a.txt; echo how-you-work.md", lessonsName, checkMissed},
+		{"a search of the file", "rg rule how-you-work.md", lessonsName, checkMissed},
+		{"a write to the file", "echo x > how-you-work.md", lessonsName, checkMissed},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			s := auditOf(t, auditOpening(day+"09:00:00.000Z", "a brief"),
+				called("Bash", map[string]any{"command": c.command}, day+"10:01:00.000Z"),
+				called("Edit", map[string]any{"file_path": "/x/a.go"}, day+"10:02:00.000Z"))
+			if got := auditStateOf(s, c.file); got != c.want {
+				t.Errorf("%s reads %q, want %q", c.file, got, c.want)
+			}
+		})
+	}
+}
+
+func TestAuditCodieReadsTheTicketFromTheSkillCallsArgs(t *testing.T) {
+	t.Parallel()
+	const at = "2026-11-05T10:00:00.000Z"
+	s := auditOf(t, said("carry on"),
+		called("Skill", map[string]any{"skill": "x:crew-codie", "args": "FRM-1 the job"}, at),
+		called("Bash", map[string]any{"command": "x linear read FRM-1 --comments"}, at),
+		called("Edit", map[string]any{"file_path": "/x/a.go"}, at))
+	if got := auditStateOf(s, ticketCheck); got != checkRead {
+		t.Errorf("the ticket check reads %q, want %q", got, checkRead)
+	}
+}
+
+func TestAuditCountsASkillCallInTheOpeningRows(t *testing.T) {
+	t.Parallel()
+	const at = "2026-11-05T10:00:00.000Z"
+	skill := func(id string) map[string]any { return called("Skill", map[string]any{"skill": id}, at) }
+	hookRows := func(n int) []any {
+		rows := make([]any, n)
+		for i := range rows {
+			rows[i] = map[string]any{"type": "attachment", "timestamp": at}
+		}
+		return rows
+	}
+	cases := []struct {
+		name  string
+		rows  []any
+		codie bool
+	}{
+		{"the call right after the brief", []any{skill("x:crew-codie")}, true},
+		{"the call at row 41, where hook rows pushed a real one", append(hookRows(39), skill("x:crew-codie")), true},
+		{"the id before 10-29", []any{skill("x:crew-coder")}, true}, // read-both
+		{"another member's contract", []any{skill("x:crew-sixth-sense")}, false},
+		{"a Bash line naming the skill", []any{called("Bash", map[string]any{"command": "echo x:crew-codie"}, at)}, false},
+		{"a read of the contract", []any{called("Read", map[string]any{"file_path": "/p/skills/crew-codie/SKILL.md"}, at)}, false},
+		{"the call deep in a coordinator's session", append(hookRows(codieOpeningRows), skill("x:crew-codie")), false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "session.jsonl")
+			write(t, path, jsonLines(t, append([]any{said("a brief for FRM-1")}, c.rows...)...))
+			s, ok := auditSession(path)
+			if ok != c.codie {
+				t.Fatalf("read as codie: %v, want %v", ok, c.codie)
+			}
+			if ok && auditStateOf(s, ticketCheck) == "unchecked" {
+				t.Error("the brief's ticket went unread: its check is missing")
+			}
+		})
 	}
 }
 

@@ -288,14 +288,21 @@
         {
             "args": [
                 {
-                    "description": "the commit message file, git's commit-msg argv",
+                    "description": "the commit message file, git's commit-msg argv; --held takes none",
+                    "isOptional": true,
                     "name": "msg-file"
                 }
             ],
+            "flags": {
+                "held": {
+                    "description": "lint the purposes in this tree's registry.json and stacks.json, for a layer before any rebase",
+                    "type": "boolean"
+                }
+            },
             "hidden": true,
             "name": "lane gate",
             "needsApply": false,
-            "purpose": "commit-msg door: contract changes carry their glossary, skills never only grow, app code carries its FTR.md",
+            "purpose": "commit-msg door: contract, skill growth and FTR.md checks; --held lints a local layer's verb purposes",
             "replaces": [
                 "home/.claude/plugin-x/bin/ftr-gate",
                 "script/lib/ftr-gate.test.ts",
@@ -915,14 +922,19 @@
         {
             "flags": {
                 "days": {
-                    "description": "transcripts touched in this many days (default 1)",
+                    "description": "sessions opened in this many days (default 1)",
                     "type": "string",
                     "value": "n"
+                },
+                "since": {
+                    "description": "sessions whose first edit is past this local stamp, like siesta-last; replaces --days",
+                    "type": "string",
+                    "value": "stamp"
                 }
             },
-            "name": "fleet audit",
+            "name": "fleet audit-codie",
             "needsApply": false,
-            "purpose": "per codie session: lessons read before the first edit and after each compaction, and its library-docs lookups",
+            "purpose": "codie sessions: crew-dna, how-you-work.md, ticket read before first edit and after compaction",
             "replaces": ["script/crew-audit.ts"],
             "touches": [
                 "~/.claude/projects/ — the session transcripts, one level deep"
