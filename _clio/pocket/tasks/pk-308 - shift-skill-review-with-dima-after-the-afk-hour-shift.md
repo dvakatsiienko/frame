@@ -191,4 +191,6 @@ W1992 (2026-11-03 20:30, dima) [re: Q8]: Maybe it's not a bad idea.
 W1993 (2026-11-03 20:30, dima) [re: Q8]: Propose: if you think that CrewDNA lines are redundant and Mod can fully solve this, then drop.
 
 close: 2026-11-06 00:14, his o110 and o50. W1979, W1980 moved FRM-501's wish block. the rest archive with this item, its asks settled in clio:shift and FRM-495; the bump's old-code note and its unrun probe moved FRM-495; the stop past the round cap is FRM-504 exit 2; `x lane join` a named no
+
+close: W7–W1993 done, folded into `clio:shift` and its tickets on his o50, the side's read at 23:39 and his o110; W1979, W1980 moved FRM-501's wish block
 <!-- SECTION:NOTES:END -->
