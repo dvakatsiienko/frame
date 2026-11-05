@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
 )
 
 const dispatchedLine = "🚀 dispatched "
+
+// a 🚀 line's fields: lane, session, base, sixth sense; a line a hand wrote in another shape reads as none
+var dispatchLineOf = regexp.MustCompile(`^🚀 dispatched \S+ — (.+?), codie (\S+?)(?:, main:([0-9a-f]+))?(?:, sixth sense (\S+))?$`)
 
 // one mark a dispatch writes: write when it is missing, set when the ticket already carries it
 type dispatchMark struct {
@@ -125,8 +129,8 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 		block = body
 	}
 	labelAt := slices.IndexFunc(issue.Labels.Nodes, func(l idName) bool { return strings.EqualFold(l.Name, "signed") })
-	// a ↩️ line takes a dispatch back, so only a 🚀 after the last one counts
-	dispatched := strings.LastIndex(block, dispatchedLine) > strings.LastIndex(block, "↩️")
+	held := heldDispatch(block)
+	dispatched := held != ""
 	sign, _, _ := bodySign(body)
 	switch {
 	// a quick lane has no sign to check
@@ -172,34 +176,46 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 		}
 		ticket.input["delegateId"] = found.Users.Nodes[0].ID
 	}
-	line := dispatchedLine + time.Now().Format("2006-01-02") + " — " + lane + ", codie " + session
-	if !dispatched && (session == "" || lane == "") {
+	was := dispatchLineOf.FindStringSubmatch(held)
+	if was == nil {
+		was = make([]string, 5)
+	}
+	newLane, newSession := cmp.Or(lane, was[1]), cmp.Or(session, was[2])
+	base, sixthSense := "", note.sixthSense
+	// the same lane under a new session keeps the range and the verifier its line names; another lane starts fresh
+	if newLane == was[1] {
+		base, sixthSense = was[3], cmp.Or(sixthSense, was[4])
+	}
+	named := lane != "" || session != "" || note.sixthSense != ""
+	if (!dispatched || named) && (newSession == "" || newLane == "") {
 		return dispatchTicket{}, usageFail("the 🚀 line names the lane and the session: pass --lane <name> --session <sid>", "x lane dispatch "+id+" --session <sid> --lane <name>")
 	}
-	if note.quick && !dispatched {
-		repo, err := ticketRepo(body)
-		if err != nil {
-			return dispatchTicket{}, err
+	write := !dispatched || (named && (newLane != was[1] || newSession != was[2] || sixthSense != was[4]))
+	line := held
+	if write {
+		if note.quick && base == "" {
+			repo, err := ticketRepo(id, body)
+			if err != nil {
+				return dispatchTicket{}, err
+			}
+			repo = cmp.Or(repo, mainCheckout(frameRoot()))
+			// a stale ref lowers the base, and the range then holds other lanes' commits
+			_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
+			base, err = mustGitIn(repo, "rev-parse", "rev-parse", "--short=7", "origin/main")
+			if err != nil {
+				return dispatchTicket{}, err
+			}
 		}
-		repo = cmp.Or(repo, mainCheckout(frameRoot()))
-		// a stale ref lowers the base, and the range then holds other lanes' commits
-		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
-		base, err := mustGitIn(repo, "rev-parse", "rev-parse", "--short=7", "origin/main")
-		if err != nil {
-			return dispatchTicket{}, err
+		line = dispatchedLine + time.Now().Format("2006-01-02") + " — " + newLane + ", codie " + newSession
+		if base != "" {
+			line += ", main:" + base
 		}
-		line += ", main:" + base
+		if sixthSense != "" {
+			line += sixthSenseMark + sixthSense
+		}
 	}
-	if note.sixthSense != "" {
-		line += sixthSenseMark + note.sixthSense
-	}
-	if dispatched {
-		from := strings.LastIndex(block, dispatchedLine)
-		line, _, _ = strings.Cut(block[from:], "\n")
-		line = strings.TrimSpace(line)
-	}
-	mark("🚀 line", !dispatched, line)
-	if !dispatched {
+	mark("🚀 line", write, line)
+	if write {
 		ticket.input["description"] = withSignLine(body, line)
 		if note.quick {
 			ticket.input["description"] = aboveStamp(body, line)

@@ -348,6 +348,19 @@ func TestMergeAutoNamesWhyATreeStays(t *testing.T) {
 	}
 }
 
+func TestMergeAutoKeepsTheTreeItRunsFrom(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+
+	got := xIn(t, tree, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, "x runs from it") {
+		t.Fatalf("exit %d, tree there: %v:\n%s", got.code, exists(tree), got.stdout)
+	}
+}
+
 func TestMergeAutoDecampsATreeWhoseSessionDied(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")

@@ -232,7 +232,7 @@
             },
             "name": "lane dispatch",
             "needsApply": true,
-            "purpose": "write a summoned lane's dispatch marks on its signed or quick tickets, one update each; a re-run reports them set",
+            "purpose": "write a summoned lane's dispatch marks on its signed or quick tickets; a re-run writes only what it names new",
             "steps": ["read", "write"],
             "touches": [
                 "linear — each ticket's signed label, state, delegate and sign block, written",

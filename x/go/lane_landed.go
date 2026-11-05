@@ -56,7 +56,7 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		if flagString(flags, "repo") != "" || issueErr != nil {
 			return "", nil
 		}
-		path, err := ticketRepo(issue.Description)
+		path, err := ticketRepo(id, issue.Description)
 		if path != "" {
 			flags["repo"] = path
 		}
@@ -244,18 +244,24 @@ const (
 	sixthSenseMark = ", sixth sense "
 )
 
-// what the last 🚀 line of a ticket's body recorded; a ↩️ below it took the dispatch back
+// what the last 🚀 line of a ticket's body recorded; a line a ↩️ leads below it took the dispatch back
 type dispatchRead struct {
 	base          string
 	hasSixthSense bool
 }
 
-func dispatchOf(body string) dispatchRead {
-	at := strings.LastIndex(body, dispatchedLine)
-	if at < 0 || strings.LastIndex(body, "↩️") > at {
-		return dispatchRead{}
+// the 🚀 line in force, "" when none is or one was taken back; a ↩️ inside a sentence only names one
+func heldDispatch(text string) string {
+	at := strings.LastIndex(text, dispatchedLine)
+	if at < 0 || takenBackOf.MatchString(text[at:]) {
+		return ""
 	}
-	line, _, _ := strings.Cut(body[at:], "\n")
+	line, _, _ := strings.Cut(text[at:], "\n")
+	return strings.TrimSpace(line)
+}
+
+func dispatchOf(body string) dispatchRead {
+	line := heldDispatch(body)
 	read := dispatchRead{hasSixthSense: strings.Contains(line, sixthSenseMark)}
 	if m := dispatchBaseOf.FindStringSubmatch(line); m != nil {
 		read.base = m[1]
@@ -269,7 +275,9 @@ func (r landedRead) hasLookCard() bool {
 
 var (
 	dispatchBaseOf = regexp.MustCompile(`, main:([0-9a-f]{7,40})\b`)
-	newSurfaceNone = regexp.MustCompile(`new surface:?\s*none\b`)
+	takenBackOf    = regexp.MustCompile(`(?m)^[\s>*-]*↩️`)
+	newSurfaceNone = regexp.MustCompile(`new surface:?\s*none\b|\bno new surface\b`)
+	flagOnVerb     = regexp.MustCompile(`\b(flag|extends)\b[^` + "`" + `]*$`)
 	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
 	verifiedOf     = regexp.MustCompile(`\bverified:\s*([0-9a-f]{7,40})\b`)
 	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
@@ -308,22 +316,32 @@ func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine)
 		commits = strings.Split(got.out, "\n")
 	}
 	merged.ok, merged.detail = len(commits) > 0, plural(len(commits), "commit")+" from main:"+short(base)+" to "+short(tip)
+	// no sixth sense, no verify tree of this lane: the open range would hand it another lane's
+	if verified == "" {
+		return nil, merged
+	}
 	return commits, merged
 }
 
-// where a ticket's repo: line points; "" with no line, a refusal when its checkout is not on this mac
-func ticketRepo(body string) (string, error) {
-	m := ticketRepoLine.FindStringSubmatch(body)
-	if m == nil {
-		return "", nil
+// where a ticket's repo: line points, else its team's repo; "" for a frame ticket with no line, a refusal when the
+// checkout is not on this mac
+func ticketRepo(id, body string) (string, error) {
+	name := ""
+	if m := ticketRepoLine.FindStringSubmatch(body); m != nil {
+		name = m[1]
+	} else if strings.HasPrefix(id, "BYT-") {
+		name = "bytes"
 	}
-	if m[1] == "frame" {
+	switch name {
+	case "":
+		return "", nil
+	case "frame":
 		return mainCheckout(frameRoot()), nil
 	}
 	userHome, _ := os.UserHomeDir()
-	path := filepath.Join(userHome, "projects", m[1])
+	path := filepath.Join(userHome, "projects", name)
 	if !exists(path) {
-		return "", usageFail("the ticket's repo: "+m[1]+" has no checkout at "+home(path), "x lane landed <ticket> --repo <path>")
+		return "", usageFail("the ticket's repo: "+name+" has no checkout at "+home(path), "x lane landed <ticket> --repo <path>")
 	}
 	return path, nil
 }
@@ -339,11 +357,12 @@ func newVerbsOf(body string) []string {
 		if !strings.Contains(line, "new surface") || newSurfaceNone.MatchString(line) {
 			continue
 		}
-		for _, m := range backticked.FindAllStringSubmatch(line, -1) {
-			if strings.Contains(m[1], "--") {
+		for _, at := range backticked.FindAllStringSubmatchIndex(line, -1) {
+			named := line[at[2]:at[3]]
+			if strings.Contains(named, "--") || flagOnVerb.MatchString(line[:at[0]]) {
 				continue
 			}
-			if verb, _, found := findVerb(strings.Fields(m[1])); found && !slices.Contains(verbs, verb.Name) {
+			if verb, _, found := findVerb(strings.Fields(named)); found && !slices.Contains(verbs, verb.Name) {
 				verbs = append(verbs, verb.Name)
 			}
 		}

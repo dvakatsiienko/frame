@@ -324,6 +324,53 @@ func TestLandedReadsADispatchTakenBackAsNone(t *testing.T) {
 	}
 }
 
+func TestLandedReadsAProseArrowAsNoTakeBack(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	*w.body += "✏️ changed: the ↩️ line reworded\n"
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "mid-verify") {
+		t.Errorf("a ↩️ inside a sentence takes nothing back, the lane is still mid-verify:\n%s", out)
+	}
+}
+
+// a lane with no sixth sense has no verify tree: a clean one at a commit in its open range is another lane's
+func TestLandedLeavesAnotherLanesVerifyTreeOnAQuickLaneWithNoSixthSense(t *testing.T) {
+	t.Parallel()
+	w, head := quickWorld(t)
+	*w.body = strings.ReplaceAll(*w.body, ", sixth sense s2", "")
+	*w.comments = lookCardComment
+	verify := filepath.Join(w.repo, ".claude/worktrees/verify-"+short(head))
+	gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, head)
+
+	envelope, _ := w.landed(t, "--apply")
+
+	if out := linesOf(envelope); !exists(verify) || !strings.Contains(out, "✅ merged") {
+		t.Errorf("tree there: %v, want it kept and merged green:\n%s", exists(verify), out)
+	}
+}
+
+func TestLandedReadsABytesTicketFromBytesWithNoRepoLine(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	home := t.TempDir()
+	bytesRepo := filepath.Join(home, "projects/bytes")
+	gitT(t, filepath.Dir(w.repo), "init", "-q", "-b", "main", bytesRepo)
+	write(t, filepath.Join(bytesRepo, "b.txt"), "bytes\n")
+	gitT(t, bytesRepo, "add", "b.txt")
+	gitT(t, bytesRepo, "commit", "-q", "-m", "the change", "-m", "- ticket: BYT-1")
+	gitT(t, bytesRepo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	envelope, _ := runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "HOME=" + home, stubPnpm(t)}, "lane", "landed", "BYT-1")
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
+		t.Errorf("a BYT ticket must read the bytes repo:\n%s", out)
+	}
+}
+
 func TestLandedRedsAVerifiedShaNotOnMain(t *testing.T) {
 	t.Parallel()
 	w, head := quickWorld(t)
@@ -396,11 +443,11 @@ func TestLandedWiredLine(t *testing.T) {
 
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
-	for _, line := range []string{"none — a fix, `x stats`", "one flag, `x stats --verb <name>`"} {
+	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one flag, `x stats --verb <name>`", "new surface: a flag on `x stats`", "no new surface, extends `x stats`"} {
 		t.Run(line, func(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
-			*w.body = "## ⚖️ worth it\n\n* new surface: " + line + "\n* cheaper door turned down: `x lane push`\n\n" + landedBody
+			*w.body = "## ⚖️ worth it\n\n* " + line + "\n* cheaper door turned down: `x lane push`\n\n" + landedBody
 
 			envelope, _ := w.landed(t)
 
@@ -415,7 +462,7 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
-	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`, none of them hidden\n\n" + landedBody
+	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`, none of them hidden, a flag on `x stats`\n\n" + landedBody
 	plant(t, w.state, 0, planted{name: "lane landed", ms: 1, caller: "cc"})
 
 	envelope, _ := w.landed(t)
