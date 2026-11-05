@@ -143,12 +143,12 @@ test('every control in the row carries a hover card that names it', async ($, on
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
     expect(cards).toEqual([
-        'second wind: start',
-        'keep hot: enable',
-        'fleet wake: enable',
-        'afk: enable',
-        'settings: open',
-        'board: open',
+        'second wind',
+        'keep cache hot',
+        'fleet wake',
+        'afk',
+        'settings',
+        'board',
     ]);
 });
 
@@ -161,18 +161,14 @@ test('the keys ride the hover cards, never the icons', async ($, on) => {
     expect(keyed).toEqual(['board b']);
 });
 
-test("a toggle's hover card names what the next press does", async ($, on) => {
+test("a toggle's hover card reads the same after a press", async ($, on) => {
     world(on);
     const ui = await band($);
     await ui.press({ key: 'afk' });
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-3)).toEqual([
-        'afk: disable',
-        'settings: open',
-        'board: open',
-    ]);
+    expect(cards.slice(-3)).toEqual(['afk', 'settings', 'board']);
 });
 
 test('a reply with no 🔭 line names its background work in the row', async ($, on) => {
@@ -284,7 +280,7 @@ test("the band's 🐦‍🔥 asks this session, and reads its state", async ($, 
     expect([
         before,
         (await ui.find({ key: 'wind', type: 'Button' }))?.text,
-        cards.includes('second wind: asked, waits for its next turn'),
+        cards.includes('second wind'),
     ]).toEqual(['🐦‍🔥', '🥚', true]);
 });
 

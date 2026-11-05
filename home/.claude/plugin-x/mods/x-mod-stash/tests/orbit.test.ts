@@ -1607,6 +1607,28 @@ test('a tick record that cannot be written still marks the ask', async ($, on) =
     expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
+test('an untick whose record cannot be dropped says so', async ($, on) => {
+    world(on);
+    let isBroken = false;
+    const toasts: string[] = [];
+    on('ui.toast', (_$, e) => {
+        toasts.push(e.text);
+        return { value: undefined };
+    });
+    on('state.get', (_$, e, next) =>
+        isBroken && e.key === 'ticks'
+            ? { value: { value: 5, version: 1 } }
+            : next(e as never),
+    );
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    isBroken = true;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(toasts).toEqual([expect.stringMatching(/^🛎️ untick not recorded/)]);
+});
+
 test('a second 🛎️ press takes the tick back', async ($, on) => {
     world(on);
     const writes = tickLog(on);
@@ -2286,25 +2308,21 @@ test('orbit registers loaded up front, never behind ToolSearch', async ($, on) =
 
 /* a tick lands at once: no sending state, no delay field */
 
-test('the load retires the cut keys and keeps every other shown switch', async ($, on) => {
+test('a store written by the old build loads untouched, its stale keys ignored', async ($, on) => {
     const w = world(on);
-    w.store.set('undo-window', false);
+    const shown = { 'stash.chips': false };
+    w.store.set('undo-window', true);
     w.store.set('undo-delay', 30);
-    w.store.set('shown', { 'stash.chips': false, 'stash.pace': false });
-    await start($);
-    expect([
-        w.store.get('undo-window'),
-        w.store.get('undo-delay'),
-        w.store.get('shown'),
-    ]).toEqual([undefined, undefined, { 'stash.pace': false }]);
-});
-
-test('a store with no cut key takes no shown write at the load', async ($, on) => {
-    const w = world(on);
-    const shown = { 'stash.pace': false };
     w.store.set('shown', shown);
     await start($);
-    expect(w.store.get('shown')).toBe(shown);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect([
+        (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
+        w.store.get('undo-window'),
+        w.store.get('shown'),
+    ]).toEqual(['✅ tick', true, shown]);
 });
 
 test('an ask the old build kept with a future sendAt lands at once', async ($, on) => {

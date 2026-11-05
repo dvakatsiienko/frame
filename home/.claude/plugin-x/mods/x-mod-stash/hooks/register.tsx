@@ -217,7 +217,11 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.wait', label: '🔭 wait line' },
     { group: 'stash · band', key: 'stash.hot', label: '🔥 keep-hot' },
     { group: 'stash · band', key: 'stash.waker', label: '⏰ waker' },
-    { group: 'stash · band', key: 'stash.pace-watch', label: '🔋 pace watch' },
+    {
+        group: 'stash · band',
+        key: 'stash.pace-watch',
+        label: '🔋 pace watch: all sessions',
+    },
     { group: 'stash · band', key: 'stash.afk', label: '💨 afk' },
     { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
@@ -1918,7 +1922,8 @@ async function recordTick(
     ask: OrbitAsk,
     isTicked: boolean,
 ) {
-    // the press still marks: with no record the guard refuses, so a failure here fails closed
+    // the press still marks: a tick with no record fails closed at the guard; a drop that fails leaves his taken-back
+    // tick honoured for its 2 h, so that one tells him
     try {
         const { value: kept = [] } = await $.state.get(TICKS);
         const rest = kept.filter((t) => t.id !== ask.id);
@@ -1938,6 +1943,10 @@ async function recordTick(
         );
     } catch (err) {
         $.ui.log(`x-mod-stash: tick record not written: ${errorText(err)}`);
+        if (!isTicked)
+            $.ui.toast(
+                '🛎️ untick not recorded: the guard may still honour this tick for 2 h',
+            );
     }
 }
 async function pressMarkNow(
@@ -1945,6 +1954,7 @@ async function pressMarkNow(
     id: string,
     mark: 'accepted' | 'rejected',
 ) {
+    await $.state.set(MOBILE, false).catch(() => undefined);
     const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
     // a press on a frame drawn before his prompt locked the ask changes nothing, so it keeps the record (S1)
     if (!ask || ask.isLocked || ask.isResolved) return;
@@ -1955,7 +1965,7 @@ async function pressMarkNow(
     await markAsksNow(
         $,
         (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
-        true,
+        false,
         undefined,
     );
     if (!isTicked) await recordTick($, ask, false);
@@ -3381,25 +3391,16 @@ async function pressPace($: EngineInterface) {
 }
 
 // a seat starts on: 🔋 the coordinator's, 🔥 every seated member's; a written key, off included, stands
-// a store the old build wrote still holds the undo window's keys and the row chips' switch (FRM-507)
-async function retireCutKeys($: EngineInterface) {
-    for (const key of ['undo-window', 'undo-delay'])
-        if ((await $.store.get(key)) !== undefined) await $.store.delete(key);
-    const shown = (await $.store.get(SHOWN)) as
-        | Record<string, boolean>
-        | undefined;
-    if (shown && 'stash.chips' in shown) {
-        const { 'stash.chips': _, ...rest } = shown;
-        await $.store.set(SHOWN, rest);
-    }
-}
-
 async function seatDefaults($: EngineInterface) {
     const sid = await currentId($);
     const name = await sessionName($);
     if (!sid || !name) return;
     const now = await $.clock.now();
-    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined)
+    if (
+        isCoordinator(name) &&
+        (await partsShown($))('stash.pace-watch') &&
+        (await $.store.get(PACE + sid)) === undefined
+    )
         await $.store.set(PACE + sid, { on: true });
     if (isSeated(name) && (await $.store.get(HOT + sid)) === undefined) {
         await $.store.set(HOT + sid, { since: now });
@@ -4495,9 +4496,6 @@ function noteOnHover(
     );
 }
 
-const hotTip = (isHot: boolean | undefined) =>
-    isHot ? 'keep hot: disable' : 'keep hot: enable';
-
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
     key: string,
@@ -4714,7 +4712,6 @@ export const register: Register = (on) => {
             return undefined;
         });
         await seatDefaults($).catch(() => undefined);
-        await retireCutKeys($).catch(() => undefined);
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,
@@ -5475,7 +5472,7 @@ export const register: Register = (on) => {
                                                           'primary' as const,
                                                   }
                                                 : { dimColor: true })}>
-                                            🔋 pace watch
+                                            🔋 pace watch: this session
                                         </Button>
                                     </Box>
                                 ) : null}
@@ -7725,9 +7722,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'wind',
-                                      view.wind
-                                          ? `second wind: ${WIND_SAY[view.wind]}`
-                                          : 'second wind: start',
+                                      'second wind',
                                       <Button
                                           key='wind'
                                           onPress={() =>
@@ -7753,7 +7748,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'hot',
-                                      hotTip(view.isHot),
+                                      'keep cache hot',
                                       <Button
                                           key='hot'
                                           onPress={() => void handleHotFlip()}
@@ -7771,9 +7766,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'pace-watch',
-                                      isPaceWatched
-                                          ? 'pace watch: disable'
-                                          : 'pace watch: enable',
+                                      'pace watch: this session',
                                       <Button
                                           key='pace-watch'
                                           onPress={() => void pressPace($)}
@@ -7791,9 +7784,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'waker',
-                                      view.isWaker
-                                          ? 'fleet wake: disable'
-                                          : 'fleet wake: enable',
+                                      'fleet wake',
                                       <Button
                                           key='waker'
                                           onPress={() => void handleWakerFlip()}
@@ -7811,7 +7802,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'afk',
-                                      view.afk ? 'afk: disable' : 'afk: enable',
+                                      'afk',
                                       <Button
                                           key='afk'
                                           onPress={() => void handleAfkFlip()}
@@ -7827,9 +7818,7 @@ export const register: Register = (on) => {
                                   )}
                             {tip(
                                 'settings',
-                                view.isSettingsOpen
-                                    ? 'settings: close'
-                                    : 'settings: open',
+                                'settings',
                                 <Button
                                     key='settings'
                                     onPress={() => void handleSettingsFlip()}
@@ -7844,9 +7833,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'board',
-                                      boardOpen
-                                          ? 'board: close'
-                                          : 'board: open',
+                                      'board',
                                       <Button
                                           key='board'
                                           onPress={() => void handleBoardFlip()}
