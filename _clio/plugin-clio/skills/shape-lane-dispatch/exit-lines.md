@@ -22,6 +22,7 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 - a **count names its unit and the command that counts it**: «185 tests» was a count of names while 160 ran (FRM-422); «top-level passes in `go test -json`» leaves no room
 - a line for a **guard lift** names the shape it lifts as an allowlist of the whole command, never the escapes it refuses: FRM-467's round 1 passed its five named forms and fell to 27 others
 - a line that **proves a fix** says it goes red with the fix reverted: FRM-422's race line passed without proving the lock alone
+- a line **proves what its run can show**: a done test that needs five runs goes to the test drive, never one exit line that reads green at the first (FRM-496's exit 4)
 - a **baseline names its repo pairing and its filter**; a time window says today-inclusive and local
 - a line **built on a data field carries its one-command live count** in the ticket, and a parser line is tried against shapes counted from real data: «-dirty build» held literally while 665 of 665 trace lines were dirty
 
