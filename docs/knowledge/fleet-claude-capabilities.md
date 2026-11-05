@@ -174,6 +174,12 @@ since.
   `.message.usage` — sum usage once per id, never per line (a per-line sum read ~4× too high,
   2026-10-08). `x fleet ops` and `_crow/harvest.ts` dedupe this way; `x/go/probe.go` reads
   one answer.
+- **cc re-appends old rows to a transcript**, the same `.uuid` twice: 3,980 of 12,823 uuids in clio's
+  11-03 file. a whole-day count dedupes by uuid (FRM-494).
+- **a transcript is not a hook's stdin**: a cross-session message reads «Another Claude session sent a
+  message:» in the jsonl, while the hook's `prompt` field opens with the bare tag (FRM-491).
+- **a Stop hook's `additionalContext` wakes a turn**: a warn there is a soft block, and a warn on every
+  stop loops the session (FRM-491, once per due epoch fixed it).
 - `~/.claude.json` is **state, not config** — rewritten whole from memory; hand edits mid-session get
   clobbered.
 - cc **refuses to write through a symlink** — resolve with `readlink -f`, edit the real file under
