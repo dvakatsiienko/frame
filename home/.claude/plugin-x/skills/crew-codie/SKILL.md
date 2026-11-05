@@ -70,6 +70,7 @@ brief says which, and when it does not, ask once, up front.
 - **git goes through `x lane`**: `commit`, `push`, `pr-open`, `merge-main` (bare `x` lists them; the
   publishing ones want `--apply`). a frame worktree pushes through the main checkout; a cross-repo half
   commits with `--repo <path>`, on its main.
+- **a refused commit**: fix it, then `x lane commit --dry <msg-file> <paths…>` reads its gates again with nothing committed; never before every commit.
 - **«pushed»** means what `x lane push` read back from the remote, never `@{u}`.
 - **commit as you go**, and push the first real commit the same turn, then every step (`/cmt y+`
   stands): sixth sense reads only the pushed head.
