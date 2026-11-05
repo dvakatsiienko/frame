@@ -87,8 +87,8 @@ import {
     isQuietAnswer,
     isQuietQuestion,
     isQuietRefusal,
+    quietGlued,
     quietHeldText,
-    quietNotes,
     quietPush,
     quietTag,
 } from './quiet.ts';
@@ -1355,53 +1355,110 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
           )
         : undefined;
 
-// the desktop's «finished a turn» prompt in clio's thread: held like a message, unless a report pushes; answers the drop's
-// reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), undefined to let the prompt in
-async function quietHoldNotes($: EngineInterface, prompt: string) {
-    const notes = quietNotes(prompt);
-    if (!notes || !(await isQuietHome($))) return undefined;
-    if (!(await readSwitch($, 'quiet'))) return undefined;
-    if ((await $.state.get(MOBILE)).value === true) return undefined;
-    const now = await $.clock.now();
-    const whys = [];
-    for (const n of notes) {
-        // first, a push spends the slot too
-        const isAnswer = await quietAnswered($, n.from, quietTag(n.body));
-        whys.push(quietPush(n.body) ?? (isAnswer ? 'answer' : undefined));
-    }
-    const line = { arm: 'on', at: now, tag: QUIET_NOTICE } as const;
-    if (whys.some(Boolean)) {
-        for (const n of notes)
+// the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages: each held or pushed by
+// its own words. answers the drop's reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text
+// left once the held blocks are out; undefined lets the prompt in as it came
+async function quietHoldPrompt($: EngineInterface, prompt: string) {
+    const { hasOther, messages, notes } = quietGlued(prompt);
+    const items = [
+        ...notes.map((n) => ({ ...n, tag: QUIET_NOTICE, text: n.held })),
+        ...messages.map((block) => {
+            const { body, canary, from, tag } = peerPing(block);
+            const marks = canary ? { canary } : {};
+            return {
+                block,
+                body,
+                from,
+                tag,
+                text: quietHeldText(body),
+                ...marks,
+            };
+        }),
+    ];
+    if (!items.length || !(await isQuietHome($))) return undefined;
+    const at = await $.clock.now();
+    let arm: QuietLogLine['arm'] = 'on';
+    const lineOf = (item: (typeof items)[number], sid?: string) => ({
+        arm,
+        at,
+        from: item.from,
+        tag: item.tag,
+        ...(sid ? { sid } : {}),
+        ...('canary' in item ? { canary: item.canary } : {}),
+    });
+    try {
+        const isOn = await readSwitch($, 'quiet');
+        arm = isOn ? 'on' : 'off';
+        const isHolding = isOn && (await $.state.get(MOBILE)).value !== true;
+        const members = await registry($);
+        const judged = [];
+        for (const item of items) {
+            // first, a push spends the slot too
+            const isAnswer = await quietAnswered(
+                $,
+                item.from,
+                quietTag(item.body),
+            );
+            const why: QuietLogLine['why'] =
+                quietPush(item.body) ?? (isAnswer ? 'answer' : undefined);
+            const sid = memberOf(members, item.from)?.base.sid;
+            judged.push({ item, line: lineOf(item, sid), why });
+        }
+        const toHold = isHolding ? judged.filter((j) => !j.why) : [];
+        if (toHold.length) {
+            const q = await quietOf($);
+            const isSaved = await saveQuiet($, {
+                ...q,
+                held: [
+                    ...q.held,
+                    ...toHold.map(({ item, line }) => ({
+                        at,
+                        from: item.from,
+                        tag: item.tag,
+                        text: item.text,
+                        ...('canary' in line ? { canary: line.canary } : {}),
+                    })),
+                ],
+            });
+            if (!isSaved) throw new Error('the held list did not save');
+            for (const { line } of toHold) {
+                const isLogged = await quietLog($, {
+                    ...line,
+                    startedTurn: false,
+                    verdict: 'held',
+                });
+                if (!isLogged) {
+                    await saveQuiet($, q);
+                    throw new Error('the held line did not log');
+                }
+            }
+        }
+        const passed = judged.filter((j) => !toHold.includes(j));
+        for (const { line, why } of passed)
             await quietLog($, {
                 ...line,
-                from: n.from,
                 startedTurn: true,
                 verdict: 'passed',
+                ...(why ? { why } : {}),
             });
+        if (!hasOther && !passed.length) return { drop: '' };
+        return {
+            text: toHold
+                .reduce((t, j) => t.replace(j.item.block, () => ''), prompt)
+                .trimStart(),
+        };
+    } catch (err) {
+        for (const item of items)
+            await quietLog($, {
+                ...lineOf(item),
+                startedTurn: false,
+                verdict: 'failed-open',
+            });
+        $.ui.log(
+            `x-mod-stash: quiet comms failed open on a glued prompt: ${errorText(err)}`,
+        );
         return undefined;
     }
-    const q = await quietOf($);
-    const isSaved = await saveQuiet($, {
-        ...q,
-        held: [
-            ...q.held,
-            ...notes.map((n) => ({
-                at: now,
-                from: n.from,
-                tag: QUIET_NOTICE,
-                text: n.held,
-            })),
-        ],
-    });
-    if (!isSaved) return undefined;
-    for (const n of notes)
-        await quietLog($, {
-            ...line,
-            from: n.from,
-            startedTurn: false,
-            verdict: 'held',
-        });
-    return '';
 }
 
 type QuietSend =
@@ -4857,13 +4914,13 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
-        const heldNotes =
+        const glued =
             e.origin?.kind === 'sdk'
-                ? await quietLocked(() => quietHoldNotes($, e.text)).catch(
+                ? await quietLocked(() => quietHoldPrompt($, e.text)).catch(
                       () => undefined,
                   )
                 : undefined;
-        if (heldNotes !== undefined) return { drop: heldNotes };
+        if (glued?.drop !== undefined) return { drop: glued.drop };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
@@ -4959,6 +5016,7 @@ export const register: Register = (on) => {
                 ...(wind ? [wind] : []),
                 ...(costHint ? [costHint] : []),
             ],
+            text: glued?.text ?? e.text,
         });
     });
 

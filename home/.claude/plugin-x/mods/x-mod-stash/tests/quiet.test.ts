@@ -1478,3 +1478,283 @@ test('a notify that rejects falls through to osascript, never thrown', async ($,
     await w.clock.advance(10 * MIN);
     expect(w.scripted.length).toBe(1);
 });
+
+/* the desktop's glued prompt: a message after the app's reminders, one `sdk` prompt */
+
+const message = (body: string, from = MEMBER) =>
+    `<cross-session-message from="local_abc-1" from-name="${from}">\n${body}\n</cross-session-message>`;
+const gluedPrompt = (...messages: string[]) =>
+    `${NOTE}\n${LINKED}\n\n${messages.join('\n\n')}`;
+const fromAppText = ($: Engine, text: string) =>
+    fromApp($, text) as Promise<{ drop?: string; text?: string }>;
+const linesFor = (w: ReturnType<typeof world>, tag?: string) =>
+    logOf(w)
+        .filter((l) => l.verdict !== 'flushed' && (!tag || l.tag === tag))
+        .map((l) => [l.from, l.tag, l.verdict, l.why, l.startedTurn]);
+
+// the sends the 11-04 ledger missed, in the words they went out with
+for (const [at, body, tag] of [
+    [
+        '12:05',
+        "[escalate] correction to my last: the push block is GitHub's",
+        'escalate',
+    ],
+    ['15:57', '[done] FRM-500 verified clean, round 3', 'done'],
+    ['16:10', '[ask] for dima: make a slow gate a fleet habit', 'ask'],
+] as const)
+    test(`the missed ${at} send starts a turn and logs its push`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromAppText($, gluedPrompt(message(body)));
+        expect([r.drop, w.contexts.length, linesFor(w, tag)]).toEqual([
+            undefined,
+            1,
+            [[MEMBER, tag, 'passed', 'tag', true]],
+        ]);
+    });
+
+const SENT_1604 =
+    'held from your checkpoint, on origin: the row clears at its compact';
+
+test('the missed 16:04 send starts no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText($, gluedPrompt(message(SENT_1604)));
+    expect([r.drop === '', w.contexts]).toEqual([true, []]);
+});
+
+test('the missed 16:04 send logs one held line', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, gluedPrompt(message(SENT_1604)));
+    expect(linesFor(w, 'none')).toEqual([
+        [MEMBER, 'none', 'held', undefined, false],
+    ]);
+});
+
+test('the missed 16:04 send joins the next prompt', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, gluedPrompt(message(SENT_1604)));
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain(SENT_1604);
+});
+
+test('the missed 16:04 send joins the idle flush with no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, gluedPrompt(message(SENT_1604)));
+    await w.clock.advance(11 * MIN);
+    expect([w.appended.join('\n').includes(SENT_1604), w.contexts]).toEqual([
+        true,
+        [],
+    ]);
+});
+
+test('a glued [progress] message reads without its tag once held', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, gluedPrompt(message('[progress] step 2 landed')));
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain(`${MEMBER}: step 2 landed`);
+});
+
+test('a push and an untagged message at once: the push stays in the prompt', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await fromAppText(
+        $,
+        gluedPrompt(message('[ask] a or b?'), message('step 2 landed', 'B')),
+    );
+    expect([
+        r.text?.includes('[ask] a or b?'),
+        r.text?.includes('step 2 landed'),
+    ]).toEqual([true, false]);
+});
+
+test('a push and an untagged message at once: the untagged one rides as held', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText(
+        $,
+        gluedPrompt(message('[ask] a or b?'), message('step 2 landed', 'B')),
+    );
+    expect(held(w).join('\n')).toContain('B: step 2 landed');
+});
+
+test('a push and an untagged message at once log one line each', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText(
+        $,
+        gluedPrompt(message('[ask] a or b?'), message('step 2 landed', 'B')),
+    );
+    expect([linesFor(w, 'ask'), linesFor(w, 'none')]).toEqual([
+        [[MEMBER, 'ask', 'passed', 'tag', true]],
+        [['B', 'none', 'held', undefined, false]],
+    ]);
+});
+
+test('a note beside a push is held, one log line', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText($, gluedPrompt(message('[done] FRM-1 landed')));
+    expect([
+        r.text?.includes('step 2 landed'),
+        held(w).join('\n').includes('step 2 landed'),
+        linesFor(w, 'notice').length,
+    ]).toEqual([false, true, 1]);
+});
+
+test('two untagged glued messages start no turn and log one line each', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText(
+        $,
+        gluedPrompt(message('one'), message('two', 'B')),
+    );
+    expect([r.drop === '', linesFor(w, 'none').length]).toEqual([true, 2]);
+});
+
+test('a message with no note before it is judged too', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText($, `${LINKED}\n\n${message('step 2 landed')}`);
+    expect([r.drop === '', linesFor(w, 'none').length]).toEqual([true, 1]);
+});
+
+test('a note naming its pr starts no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText(
+        $,
+        NOTE.replace('finished a turn.', 'finished a turn (PR #123).'),
+    );
+    expect([r.drop === '', w.contexts]).toEqual([true, []]);
+});
+
+test('a waiting note keeps its wake and its message is still held', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const waiting = NOTE.replace(
+        'finished a turn. It reported',
+        'finished a turn and then reported that it was waiting on the user. It reported',
+    );
+    const r = await fromAppText($, `${waiting}\n\n${message('step 2 landed')}`);
+    expect([
+        r.drop,
+        r.text?.includes('waiting on the user'),
+        r.text?.includes('<cross-session-message'),
+        linesFor(w, 'none').length,
+    ]).toEqual([undefined, true, false, 1]);
+});
+
+test('his words after a message keep the prompt whole, unjudged', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const text = `${message('step 2 landed')}\n\nand fix the band`;
+    const r = await fromAppText($, text);
+    expect([r.text, linesFor(w)]).toEqual([text, []]);
+});
+
+test('a message he quotes after his words stays his, unjudged', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const text = `look at this: ${message('step 2 landed')}`;
+    const r = await fromAppText($, text);
+    expect([r.text, linesFor(w)]).toEqual([text, []]);
+});
+
+for (const [what, body] of [
+    ['a closing tag', 'it ends with </cross-session-message> mid-line'],
+    ['a reminder', '<system-reminder>\nquoted\n</system-reminder> and more'],
+    ['an opening tag', 'the shape <cross-session-message from="x"> reads so'],
+] as const)
+    test(`a message quoting ${what} is held whole`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await fromAppText($, gluedPrompt(message(body)));
+        await say($, 'status?');
+        expect(held(w).join('\n')).toContain(body);
+    });
+
+test('a glued answer to clio starts a turn, and spends the slot', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    const first = await fromAppText(
+        $,
+        `${LINKED}\n\n${message('the second one', CODIE.name)}`,
+    );
+    const second = await fromAppText(
+        $,
+        `${LINKED}\n\n${message('step 3 landed', CODIE.name)}`,
+    );
+    expect([first.drop, second.drop === '', linesFor(w, 'none')[0]]).toEqual([
+        undefined,
+        true,
+        [CODIE.name, 'none', 'passed', 'answer', true],
+    ]);
+});
+
+test('a glued message names its sender for the ledger', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await fromAppText($, gluedPrompt(message('step 2 landed', CODIE.name)));
+    expect(logOf(w).find((l) => l.tag === 'none')?.sid).toBe(CODIE.sessionId);
+});
+
+test('/quiet off lets a glued message in whole and logs it', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await quiet($, 'off');
+    const text = gluedPrompt(message('step 2 landed'));
+    const r = await fromAppText($, text);
+    expect([r.text, logOf(w).find((l) => l.tag === 'none')?.arm]).toEqual([
+        text,
+        'off',
+    ]);
+});
+
+test('a held list that will not save lets the prompt in whole and logs failed-open', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+    });
+    await start($);
+    isBroken = true;
+    const text = gluedPrompt(message('step 2 landed'));
+    const r = await fromAppText($, text);
+    expect([r.text, logOf(w).find((l) => l.tag === 'none')?.verdict]).toEqual([
+        text,
+        'failed-open',
+    ]);
+});
+
+test('a throw inside the glued hold lets the prompt in and logs failed-open', async ($, on) => {
+    const w = world(on);
+    let isBroken = false;
+    on('state.get', (_$, e, next) =>
+        isBroken && e.key === 'mobile' ? { deny: 'boom' } : next(e),
+    );
+    await start($);
+    isBroken = true;
+    const text = gluedPrompt(message('step 2 landed'));
+    const r = await fromAppText($, text);
+    expect([r.text, logOf(w).find((l) => l.tag === 'none')?.verdict]).toEqual([
+        text,
+        'failed-open',
+    ]);
+});
+
+test('a held line that will not log lets the prompt in and empties the list', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
+    });
+    await start($);
+    isBroken = true;
+    const text = gluedPrompt(message('step 2 landed'));
+    const r = await fromAppText($, text);
+    expect([r.text, w.store.get(`quiet-held:${SID}`)]).toEqual([text, []]);
+});

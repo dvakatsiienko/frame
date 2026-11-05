@@ -46,29 +46,37 @@ export const isQuietQuestion = (body: string) =>
 export const isQuietRefusal = (message: unknown) =>
     String(message ?? '').includes('did not accept');
 
-const APP_BLOCK =
-    /<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[^<]*<\/side-sessions-event>/g;
+// one block off the prompt's head; a message ends only where the next block or the prompt does, so a body may quote a tag
+const APP_HEAD =
+    /^\s*(?:<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[^<]*<\/side-sessions-event>|(<cross-session-message[^>]*>\n[\s\S]*?\n<\/cross-session-message>)(?=\s*(?:<(?:system-reminder|side-sessions-event|cross-session-message)\b|$)))/;
 const NOTE =
-    /^The session "([^"]*)" you started \((local_[^)]*)\) finished a turn\. It reported[^:]*: "([\s\S]*)"( \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
+    /^The session "([^"]*)" you started \((local_[^)]*)\) finished a turn(?: \([^)]*\))?\. It reported[^:]*: "([\s\S]*)"( \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
 
-// the desktop's «finished a turn» prompt, its notes as sender, report and the held text: the report, whether it is cut
-// and the session holding the rest; undefined for a prompt holding anything else
-// (its origin is `sdk`, the same as dima's typing, so only the whole text's shape tells them apart)
-export function quietNotes(text: string) {
-    const notes: { from: string; body: string; held: string }[] = [];
-    for (const [block, reminder] of text.matchAll(APP_BLOCK)) {
+// the desktop's one `sdk` prompt: its notes as sender, report and the held text (the report, whether it is cut, the session
+// holding the rest), its member messages as their blocks, and whether it holds anything else, which starts a turn by itself
+// (the origin is the same as dima's typing, so only the leading blocks' shape tells them apart)
+export function quietGlued(text: string) {
+    const notes: { block: string; from: string; body: string; held: string }[] =
+        [];
+    const messages: string[] = [];
+    let rest = text;
+    let hasOther = false;
+    for (let head = rest.match(APP_HEAD); head; head = rest.match(APP_HEAD)) {
+        const [taken, reminder, message] = head;
+        rest = rest.slice(taken.length);
         const note = reminder?.match(NOTE);
         if (note)
             notes.push({
+                block: taken.trimStart(),
                 body: note[3] ?? '',
                 from: note[1] ?? '',
                 held: `${note[3]}${note[4] ?? ''} (session ${note[2]})`,
             });
+        else if (message) messages.push(message);
         else if (reminder && !reminder.startsWith('Linked sessions now'))
-            return undefined;
-        text = text.replace(block, '');
+            hasOther = true;
     }
-    return notes.length && !text.trim() ? notes : undefined;
+    return { hasOther: hasOther || !!rest.trim(), messages, notes };
 }
 
 export const quietHeldText = (body: string) =>
