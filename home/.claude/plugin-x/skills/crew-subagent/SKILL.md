@@ -28,4 +28,5 @@ a subagent is disposable: it runs inside your session, dies with it, and dima ca
 
 the job is done when the card's answer is read, checked against its source or diff (a summary says what it meant to do), and folded into your own work — never relayed as-is.
 
+- **a quote from `helper-lite` is checked against its source**: its numbers held in the trial, one quote came back with a word changed
 - **a check that fails takes the ladder**: 🩹 fix — the card redoes the missed check — then 🪜 escalate — nothing to redo, so it climbs one rung, to you, then to dima
