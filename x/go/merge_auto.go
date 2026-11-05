@@ -412,15 +412,16 @@ func decampMerged(d *mergeDecision) []string {
 		atLanded := slices.Contains(landed, e.sha)
 		reason := ""
 		switch {
-		case e.branch != "" && e.branch != d.headRef && !atLanded:
+		case d.Merged == "" && (atLanded || e.branch == d.headRef):
+			reason = "the merge is still enqueued"
+		// a branch still at the head that lands is a layer just cut above it, never the merged one
+		case e.branch != "" && e.branch != d.headRef && (!atLanded || e.sha == d.Head):
 			if !gitAncestorOfAny(e.path, landed) {
 				continue
 			}
 			reason = "it sits on an upper layer of the stack"
 		case e.branch != d.headRef && !atLanded:
 			continue
-		case d.Merged == "":
-			reason = "the merge is still enqueued"
 		default:
 			merged := ""
 			if atLanded {
@@ -432,7 +433,7 @@ func decampMerged(d *mergeDecision) []string {
 			}
 		}
 		if reason != "" {
-			notes = append(notes, home(e.path)+" stays: "+reason+"; x lane landed --apply takes it once clean")
+			notes = append(notes, home(e.path)+" stays: "+reason+"; x lane landed <ticket> --pr "+d.PR+" --apply takes it once clean")
 			continue
 		}
 		if err := removeTree(main, e.path); err != nil {

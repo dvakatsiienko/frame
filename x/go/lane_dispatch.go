@@ -174,7 +174,14 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 	line := dispatchedLine + time.Now().Format("2006-01-02") + " — " + lane + ", codie " + session
 	if note.quick && !dispatched {
-		base, err := mustGitIn(cmp.Or(ticketRepo(body), mainCheckout(frameRoot())), "rev-parse", "rev-parse", "--short=7", "origin/main")
+		repo, err := ticketRepo(body)
+		if err != nil {
+			return dispatchTicket{}, err
+		}
+		repo = cmp.Or(repo, mainCheckout(frameRoot()))
+		// a stale ref lowers the base, and the range then holds other lanes' commits
+		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
+		base, err := mustGitIn(repo, "rev-parse", "rev-parse", "--short=7", "origin/main")
 		if err != nil {
 			return dispatchTicket{}, err
 		}

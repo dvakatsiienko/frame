@@ -179,6 +179,16 @@ func TestStatsVerbPrintsOneVerbsCount(t *testing.T) {
 	}
 }
 
+func TestStatsVerbRefusesAFlagItDoesNotRead(t *testing.T) {
+	t.Parallel()
+	for _, flag := range []string{"--outside", "--dev"} {
+		got := xIn(t, t.TempDir(), []string{"X_STATE=" + t.TempDir()}, "stats", "--verb", "lane landed", flag)
+		if got.code != 2 {
+			t.Errorf("%s: exit %d, want a usage refusal\n%s", flag, got.code, got.stdout)
+		}
+	}
+}
+
 func TestStatsVerbRefusesAVerbXDoesNotHave(t *testing.T) {
 	t.Parallel()
 

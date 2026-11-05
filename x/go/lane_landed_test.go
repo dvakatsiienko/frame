@@ -48,9 +48,8 @@ const (
 func (w landedWorld) done(t *testing.T) {
 	t.Helper()
 	write(t, filepath.Join(w.repo, "docs/test-drive/review-rounds.md"), "- FRM-1 · codie · 2 rounds\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-codie-retro.md"), "retro\n")
-	// a two-ticket retro, as a sixth sense on a joined lane names it
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-FRM-2-sixth-sense-retro.md"), "retro\n")
+	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-codie-retro.md"), "retro\n")
+	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-sixth-sense-retro.md"), "retro\n")
 	*w.comments = lookCardComment
 	*w.body += lookSent
 }
@@ -67,16 +66,13 @@ func linesOf(envelope map[string]any) string {
 func TestLandedRedsEveryGapAndWritesNothing(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
-	// another ticket's retros say nothing about this one's
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-codie-retro.md"), "retro\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-9-sixth-sense-retro.md"), "retro\n")
 	// a comment naming both words is no look card, and neither is a card missing its «not checked:» field
 	*w.comments = `[{"body":"not proven, not checked yet: the card comes with the done report"},{"body":"- **what**: the verb\n- **proven**: go test ok"}]`
 
 	envelope, got := w.landed(t)
 
 	out := linesOf(envelope)
-	for _, want := range []string{"🔴 spec", "🔴 review-rounds", "🔴 retros", "🔴 look", "✅ merged", "✅ wish"} {
+	for _, want := range []string{"🔴 spec", "🔴 review-rounds", "✅ retros", "🔴 look", "✅ merged", "✅ wish"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("want %q in:\n%s", want, out)
 		}
@@ -161,11 +157,11 @@ func TestLandedApplyTakesATreeOnceItsSessionEnded(t *testing.T) {
 	w := newLandedWorld(t)
 	w.done(t)
 	tree := w.laneTree(t, "stayed")
-	home := t.TempDir()
-	session := filepath.Join(home, ".claude/sessions/1.json")
+	sessions := t.TempDir()
+	session := filepath.Join(sessions, "1.json")
 	body, _ := json.Marshal(map[string]any{"cwd": tree, "pid": os.Getpid()})
 	write(t, session, string(body))
-	env := []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "HOME=" + home, stubPnpm(t)}
+	env := []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "X_SESSIONS=" + sessions, stubPnpm(t)}
 
 	envelope, _ := runLinear(t, w.server, env, "lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
 	if !exists(tree) || !strings.Contains(linesOf(envelope), "a live session sits in it") {
@@ -184,12 +180,24 @@ func TestLandedWantsACodieRetroOnlyOnTheLastChunk(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — first\n\n## FRM-2 — second\n")
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-sixth-sense-retro.md"), "retro\n")
+	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-sixth-sense-retro.md"), "retro\n")
 
 	envelope, _ := w.landed(t)
 
-	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") {
+	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") || strings.Contains(out, "owed") {
 		t.Errorf("the first chunk wants no codie retro yet:\n%s", out)
+	}
+}
+
+// a fold clears the file, so a missing one is named and never reds the close
+func TestLandedNamesAMissingRetroWithoutARed(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") || !strings.Contains(out, "no codie, sixth-sense retro") || !strings.Contains(out, "a fold took it") {
+		t.Errorf("want the missing retros named, no red:\n%s", out)
 	}
 }
 
@@ -197,11 +205,11 @@ func TestLandedWantsASixthSenseRetroOnlyWhenTheDispatchNamedOne(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	*w.body = strings.ReplaceAll(landedBody, ", sixth sense s2", "")
-	write(t, filepath.Join(w.state, "lanes/lane-1/2026-10-30-FRM-1-codie-retro.md"), "retro\n")
+	write(t, filepath.Join(w.state, "lanes/lane-1/lane-1-codie-retro.md"), "retro\n")
 
 	envelope, _ := w.landed(t)
 
-	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") {
+	if out := linesOf(envelope); !strings.Contains(out, "✅ retros") || strings.Contains(out, "owed") {
 		t.Errorf("no sixth sense was named, so none is owed:\n%s", out)
 	}
 }
@@ -214,6 +222,13 @@ func TestLandedLookIsGreenOnlyOnTheLookSentLine(t *testing.T) {
 	envelope, _ := w.landed(t)
 	if out := linesOf(envelope); !strings.Contains(out, "🔴 look") || !strings.Contains(out, "👀 look sent") {
 		t.Errorf("the look card alone must read red and name the line:\n%s", out)
+	}
+
+	// a ticket quoting the line is no line
+	*w.body += "* the proposal: a `👀 look sent <date>` line\n"
+	envelope, _ = w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 look") {
+		t.Errorf("a quoted line must stay red:\n%s", out)
 	}
 
 	*w.body += lookSent
@@ -280,6 +295,35 @@ func TestLandedReadsAQuickLaneRangeUpToTheVerifiedSha(t *testing.T) {
 	}
 }
 
+func TestLandedWaitsForTheDoneCommentWithNoSixthSense(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	*w.body = strings.ReplaceAll(*w.body, ", sixth sense s2", "")
+
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 merged") {
+		t.Errorf("a rival's commit on main must not read merged:\n%s", out)
+	}
+
+	*w.comments = lookCardComment
+	envelope, _ = w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
+		t.Errorf("codie's done comment closes the range:\n%s", out)
+	}
+}
+
+func TestLandedReadsADispatchTakenBackAsNone(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	*w.body += "↩️ taken back 2026-10-30\n"
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); strings.Contains(out, "mid-verify") {
+		t.Errorf("a dispatch taken back is not mid-verify:\n%s", out)
+	}
+}
+
 func TestLandedRedsAVerifiedShaNotOnMain(t *testing.T) {
 	t.Parallel()
 	w, head := quickWorld(t)
@@ -325,6 +369,7 @@ func TestLandedWiredLine(t *testing.T) {
 	}{
 		{"at the merge", openMate, 0, "✅ wired — wired: unmeasured yet"},
 		{"no milestone", "null", 0, "✅ wired — wired: unmeasured yet"},
+		{"this ticket the last one open", `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"started"}},{"identifier":"FRM-2","state":{"type":"completed"}}]}}`, 0, "✅ wired — wired: unmeasured yet"},
 		{"at the close with no call", allDone, 0, "🔴 wired"},
 		{"at the close with a call", allDone, 2, "✅ wired — 2 calls"},
 	}
@@ -333,7 +378,7 @@ func TestLandedWiredLine(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
 			*w.milestone = c.milestone
-			*w.body = "## ⚖️ worth it\n\n* new surface: one verb, `x lane landed --apply`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
+			*w.body = "## ⚖️ worth it\n\n* new surface: one verb, `x lane landed`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
 			lines := make([]planted, c.calls)
 			for i := range lines {
 				lines[i] = planted{name: "lane landed", ms: 1, caller: "cc"}
@@ -351,13 +396,32 @@ func TestLandedWiredLine(t *testing.T) {
 
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
+	for _, line := range []string{"none — a fix, `x stats`", "one flag, `x stats --verb <name>`"} {
+		t.Run(line, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			*w.body = "## ⚖️ worth it\n\n* new surface: " + line + "\n* cheaper door turned down: `x lane push`\n\n" + landedBody
+
+			envelope, _ := w.landed(t)
+
+			if out := linesOf(envelope); strings.Contains(out, "wired") {
+				t.Errorf("no new verb, no wired line:\n%s", out)
+			}
+		})
+	}
+}
+
+func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
+	t.Parallel()
 	w := newLandedWorld(t)
-	*w.body = "## ⚖️ worth it\n\n* new surface: none — a fix\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
+	*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
+	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`\n\n" + landedBody
+	plant(t, w.state, 0, planted{name: "lane landed", ms: 1, caller: "cc"})
 
 	envelope, _ := w.landed(t)
 
-	if out := linesOf(envelope); strings.Contains(out, "wired") {
-		t.Errorf("no new verb, no wired line:\n%s", out)
+	if out := linesOf(envelope); !strings.Contains(out, "✅ wired — 1 call of x lane landed") || !strings.Contains(out, "🔴 wired — 0 calls of x lane push") {
+		t.Errorf("want a line per verb:\n%s", out)
 	}
 }
 

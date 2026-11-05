@@ -270,23 +270,23 @@ func (w *mergeWorld) laneTree(t *testing.T) string {
 	return tree
 }
 
-func (w *mergeWorld) withPnpm(t *testing.T, body string) (home string) {
+func (w *mergeWorld) withPnpm(t *testing.T, body string) (sessions string) {
 	t.Helper()
 	bin, _, _ := strings.Cut(strings.TrimPrefix(w.env[0], "PATH="), ":")
 	write(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\n"+body+"\n")
 	if err := os.Chmod(filepath.Join(bin, "pnpm"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	home = t.TempDir()
-	w.env = append(w.env, "HOME="+home)
-	return home
+	sessions = t.TempDir()
+	w.env = append(w.env, "X_SESSIONS="+sessions)
+	return sessions
 }
 
 // the session registry's shape, ~/.claude/sessions/<pid>.json: the tree a live session sits in stays
-func plantSession(t *testing.T, home, cwd string, pid int) {
+func plantSession(t *testing.T, sessions, cwd string, pid int) {
 	t.Helper()
 	body, _ := json.Marshal(map[string]any{"cwd": cwd, "pid": pid})
-	write(t, filepath.Join(home, ".claude/sessions", strconv.Itoa(pid)+".json"), string(body))
+	write(t, filepath.Join(sessions, strconv.Itoa(pid)+".json"), string(body))
 }
 
 func TestMergeAutoDecampsACleanTreeAtTheLandedHead(t *testing.T) {
@@ -305,7 +305,7 @@ func TestMergeAutoDecampsACleanTreeAtTheLandedHead(t *testing.T) {
 	}
 }
 
-func TestMergeAutoLeavesATreeThatMustStayAndNamesWhy(t *testing.T) {
+func TestMergeAutoNamesWhyATreeStays(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		name  string
@@ -377,6 +377,35 @@ func TestMergeAutoLeavesAnUpperLayerTree(t *testing.T) {
 
 	if got.code != 0 || !exists(upper) || !strings.Contains(got.stdout, "an upper layer") {
 		t.Fatalf("exit %d, upper there: %v:\n%s", got.code, exists(upper), got.stdout)
+	}
+}
+
+// a layer just cut sits at the head that lands, with no commit yet: it is the layer above, never the merged one
+func TestMergeAutoLeavesAFreshUpperLayerTree(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+	upper := filepath.Join(w.clone, ".claude/worktrees/upper")
+	gitT(t, w.clone, "worktree", "add", "-q", "-b", "coder/x-2", upper, "coder/x")
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !exists(upper) || !strings.Contains(got.stdout, "an upper layer") {
+		t.Fatalf("exit %d, upper there: %v:\n%s", got.code, exists(upper), got.stdout)
+	}
+}
+
+func TestMergeAutoNamesTheDoorForATreeThatStayed(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	write(t, filepath.Join(w.laneTree(t), "loose.txt"), "not committed\n")
+
+	got := w.run(t, "7", "--apply")
+
+	if !strings.Contains(got.stdout, "--pr 7 --apply") {
+		t.Fatalf("a later landed needs the pr, or a squash reads its commits on no remote:\n%s", got.stdout)
 	}
 }
 

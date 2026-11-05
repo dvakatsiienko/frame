@@ -101,6 +101,9 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	if days > keepDays {
 		return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, days), fmt.Sprintf("x stats --days %d", keepDays))
 	}
+	if name := flagString(flags, "verb"); name != "" && (flags["outside"] == true || flags["dev"] == true) {
+		return nil, usageFail("--verb counts x's own calls, without --outside or --dev", "x stats --verb "+name)
+	}
 	topValue, _ := flags["top"].(string)
 	if topValue != "" && flags["outside"] != true {
 		return nil, usageFail("--top ranks the --outside heads; x's own verbs are all listed", "x stats --outside --top 25")

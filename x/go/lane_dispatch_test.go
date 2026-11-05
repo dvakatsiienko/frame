@@ -129,6 +129,19 @@ func TestDispatchQuickWritesItsThreeMarksWithNoSign(t *testing.T) {
 	}
 }
 
+func TestDispatchQuickRefusesARepoNotOnThisMac(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	body := strings.ReplaceAll(quickTicket, "repo: frame", "repo: nowhere-here")
+	server := dispatchServer(t, dispatchState{body: body, state: "Todo"})
+
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "nowhere-here") || len(mutations(server)) != 0 {
+		t.Fatalf("exit %d, want a refusal naming the repo, no write:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestDispatchQuickDryRunPlansThreeMarks(t *testing.T) {
 	t.Parallel()
 	frame, _ := frameAtBase(t)
