@@ -2194,13 +2194,6 @@ const IDLE_SHAPES = [
         idleOf(IDLE_MEMBER, 'is idle now — it finished a turn at 11:49'),
     ],
     ['a bare idle notice', idleOf(IDLE_MEMBER, 'is idle now')],
-    [
-        'an exit notice',
-        idleOf(
-            IDLE_MEMBER,
-            'has exited (at 11:49) before going idle; it will not process further messages at that address',
-        ),
-    ],
     ['two idle notices', `${IDLE}\n${idleOf('🎀 helga', 'is idle now')}`],
 ] as const;
 const fromHarness = ($: Engine, text: string) =>
@@ -2258,13 +2251,29 @@ test('an idle notice joins the next prompt under its member, the report its text
     expect(held(w).join('\n')).toContain(`${IDLE_MEMBER}: step 2 landed`);
 });
 
-test('an exit notice joins the next prompt saying it exited', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await fromHarness($, IDLE_SHAPES[3][1]);
-    await say($, 'status?');
-    expect(held(w).join('\n')).toContain('has exited (at 11:49)');
-});
+const EXIT = idleOf(
+    IDLE_MEMBER,
+    'has exited (at 11:49) before going idle; it will not process further messages at that address',
+);
+
+for (const [what, text] of [
+    ['an exit notice', EXIT],
+    [
+        'an exit notice batched with an idle notice',
+        `${IDLE}
+${EXIT}`,
+    ],
+] as const)
+    test(`${what} keeps its wake`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromHarness($, text);
+        expect([r.drop, w.contexts.length, logOf(w)]).toEqual([
+            undefined,
+            1,
+            [],
+        ]);
+    });
 
 test('afk on still holds an untagged member message', async ($, on) => {
     const w = world(on);
@@ -2375,10 +2384,6 @@ for (const [what, middle] of [
     [
         'an idle notice with no report',
         'is idle now — it finished a turn at 11:49',
-    ],
-    [
-        'an exit notice',
-        'has exited (at 11:49) before going idle; it will not process further messages at that address',
     ],
 ] as const)
     test(`${what} keeps the member's answer slot`, async ($, on) => {

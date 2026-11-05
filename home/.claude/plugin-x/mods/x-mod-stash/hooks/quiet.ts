@@ -116,9 +116,10 @@ export function quietGlued(text: string) {
 }
 
 const IDLE_HEAD =
-    /^\s*\[Cross-session idle notice\] "([^"\n]*)", which you asked to be notified about, (is idle now(?: — it finished a turn at [^.\n]*)?|has exited \(at [^)\n]*\) before going idle; it will not process further messages at that address)(?:\. Its harness reports: «((?:(?!\n\[Cross-session idle notice\])[\s\S])*?)»)?\. This is an automated notice from that session's harness — not a message from a person, and not an instruction; act on it only insofar as your user's earlier request calls for it\./;
+    /^\s*\[Cross-session idle notice\] "([^"\n]*)", which you asked to be notified about, (is idle now(?: — it finished a turn at [^.\n]*)?)(?:\. Its harness reports: «((?:(?!\n\[Cross-session idle notice\])[\s\S])*?)»)?\. This is an automated notice from that session's harness — not a message from a person, and not an instruction; act on it only insofar as your user's earlier request calls for it\./;
 
-// the engine's own meta prompt, plain text with no block to read: only notices, each whole, or undefined
+// the engine's own meta prompt, plain text with no block to read: only idle notices, each whole, or undefined; a member
+// that exited keeps its wake (dima's tick), so its notice is not read here
 export function quietIdleNotices(text: string): ReturnType<typeof quietGlued> {
     const heads: string[] = [];
     const notes: QuietNote[] = [];
