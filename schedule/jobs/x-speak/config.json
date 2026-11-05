@@ -6,7 +6,11 @@
     },
     "engines": {
         "elevenlabs": {
-            "favourites": ["cgSgspJ2msm6clMCkdW9", "EXAVITQu4vr4xnSDxMaL"],
+            "favourites": [
+                "cgSgspJ2msm6clMCkdW9",
+                "EXAVITQu4vr4xnSDxMaL",
+                "FGY2WhTYpPnrIDTdsKH5"
+            ],
             "gain": 1.2,
             "model": "eleven_v4_turbo",
             "speed": 1,
