@@ -43,7 +43,7 @@ floods; no other member prints one.
 
 **A remove or uninstall instruction to dima goes out only after its target's source is read**, never on an inference.
 
-**An ask that needs his hand names the exact place** — the built-in pane or his Chrome, the app, the screen — so his first try lands (11-01: an n8n sign-in went to Chrome, not the pane).
+**An ask that needs his hand names the exact place** — the built-in pane or his Chrome, the app, the screen — so his first try lands.
 
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 
@@ -51,7 +51,7 @@ floods; no other member prints one.
 <!-- 2026-10-14: the reply held 5 questions, orbit Q1–Q6 -->
 
 
-**What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him (10-16: the step-10 list and the top-seven names were both lost that way), so the closing message carries it whole.
+**What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him, so the closing message carries it whole.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents (researchers, codies, probes),
 their results land at different times — hold them and print ONE unified reply when the picture
@@ -67,13 +67,15 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
-**A running trial lives as a phases line with its count** («assumed rows: turn 4/10») — phases re-inject every prompt, so a compact can't drop it (three slips after the 10-10 21:42 compact: the trial, the flawlog, a done ask).
+**A running trial lives as a phases line with its count** («assumed rows: turn 4/10») — phases re-inject every prompt, so a compact can't drop it.
 
 **A fact too important for him that won't fit an ask** is printed in the reply while the ask steers.
 
 **Commit and push never ask** (dima, 2026-10-20): commit at every verified boundary, `x:cmt` running as `y+ push+`; hold only when he says so upfront (he wants to read a diff first). push never asks, never as an orbit line (dima, 2026-10-22: «remove all constraints for pushing»): frame whenever it fits; bytes `main` only when needed — at the halt, on his ask, or to check something live — since each push redeploys vercel; a bytes pr branch, and its merge, whenever convenient.
 
 **Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged). a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
+
+**A cancel candidate gets its reason in the thread, the turn its ask goes up** (dima, 2026-11-05: «i want the reason why, slightly expanded, printed in the main thread»; cancelling is welcome, since unused stuff gets planned even past ⚖️ worth it): what it would have done, what was measured, the door that stays, what he loses.
 
 **A spotted fix becomes an orbit ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
 
@@ -89,7 +91,7 @@ dima, 2026-09-03, after an alias prune ran on one word and its review drowned in
 *«you should repeat things you want to do and ask me infinitely until i approve/disapprove/
 steer.»* orbit carries the ask (`rules/fleet-mods.md`); on top of it:
 
-- **an ask about outside state is re-read before it is added or followed in orbit** — a pr, ci, a session, a worktree: one `gh pr view`, list or `git log` call the same turn, and never «possibly yours» before that read. #84 sat merged under five reprints of «merge it», and an agent's worktree went to dima as «possibly yours» (2026-10-10).
+- **an ask about outside state is re-read before it is added or followed in orbit** — a pr, ci, a session, a worktree: one `gh pr view`, list or `git log` call the same turn, and never «possibly yours» before that read.
 - **the sweep class is propose-only** — the fleet word is **`granular`** (`fleet-vibe.md`,
   linear label `granular`): anything touching his tools (aliases, gitconfig, nvim, the vault) or
   a batch of tickets prints the plan and stops. one word per item, or «all».
