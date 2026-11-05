@@ -1039,7 +1039,7 @@ var (
 func timeoutOnly(log string) bool {
 	log = ansiColor.ReplaceAllString(log, "")
 	for _, gate := range hookRedGate.FindAllStringSubmatch(log, -1) {
-		if gate[1] != "test" && gate[1] != "mods" {
+		if gate[1] != "test" && gate[1] != "mods-test" {
 			return false
 		}
 	}

@@ -1184,8 +1184,8 @@
             },
             "name": "mods edit test",
             "needsApply": false,
-            "purpose": "validate and test each touched mod on an overlay copy with the scratch edits laid over",
-            "steps": ["test"],
+            "purpose": "validate and test each touched mod on an overlay copy, then run the commit hook's gates on those bytes",
+            "steps": ["test", "gates"],
             "touches": [
                 "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
             ]
