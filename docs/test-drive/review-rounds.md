@@ -16,7 +16,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 
 ## the setup
 
-- `crew-codie` § 3: the local pair (matt's code-review ‖ coderabbit) runs before the first sixth sense round and on each fix diff after, 3 in all
+- `crew-codie`: one of each local review per chunk, started together in the background, coderabbit a free extra nothing waits on; no review rerun after a sixth sense round (the arm moved 2026-11-05)
 - bytes `review.yml`: the ci reviewer caps at 1 round; a later head gets `review:clean` through clio's approval on dima's gh account (`review-approved.yml`), given only when sixth sense is clean on that head and checks are green
 - the source of every number: sixth sense's verdict object (`round <n>`, `round time:`, `ci reviewer:`), codie's done report (`local reviews: <n>` and each review's graded line in this file), and the pr's «final» → merge times from `gh pr view`; clio appends the line at land (`craft-fleet-flow` stage 8)
 

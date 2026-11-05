@@ -53,9 +53,8 @@ per pass:
 - the loop and its cap are `x:crew-dna`'s pr pair; a round that closes one scoped line is free; a finding that is a decision goes to dima as a look call
 - harness affordances on day one: a port override and a `--data-dir` so a round never writes to
   dima's real data; a write-path probe uses a key nothing is filed under
-- the adversarial review lane (coderabbit) runs before sixth sense's first
-  round, not when someone remembers (`x:crew-codie` § 3); a long-lived PR is a reason for MORE
-  review, never less
+- the local reviews, coderabbit a free extra beside them, start before sixth sense's first
+  round (`x:crew-codie` § 3); a long-lived PR is a reason for MORE review, never less
 
 ## what the tool fights, and who wins
 
