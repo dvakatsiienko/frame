@@ -443,7 +443,7 @@ func TestLandedWiredLine(t *testing.T) {
 
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
-	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one flag, `x stats --verb <name>`", "new surface: a flag on `x stats`", "no new surface, extends `x stats`"} {
+	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one flag, `x stats --verb <name>`", "new surface: a flag on `x stats`", "new surface: two flags on `x stats`", "new surface: it extends `x stats`", "no new surface, `x stats` stays"} {
 		t.Run(line, func(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
