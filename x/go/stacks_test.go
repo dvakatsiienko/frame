@@ -906,6 +906,35 @@ func TestRestackBooksEachMergeOnItsOwnLayer(t *testing.T) {
 	}
 }
 
+// the upper layer alone still holds the lower one's edited merge, and the reset takes it
+func TestRestackNamesALostResolutionOnceTheLowerLayersRefMoved(t *testing.T) {
+	t.Parallel()
+	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	clone := layers(t, low, mid, top)
+	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
+	before := gitT(t, clone, "rev-parse", mid)
+	gitT(t, clone, "switch", "-q", low)
+	write(t, filepath.Join(clone, "lower.txt"), "the fix\n")
+	gitT(t, clone, "add", "lower.txt")
+	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
+	gitT(t, clone, "push", "-q", "origin", low)
+	gitT(t, clone, "switch", "-q", mid)
+	gitT(t, clone, "merge", "-q", "--no-ff", "--no-commit", low)
+	write(t, filepath.Join(clone, "lower.txt"), "the fix, by hand\n")
+	gitT(t, clone, "add", "lower.txt")
+	gitT(t, clone, "commit", "-q", "-m", "restack: merge 1234567 into "+mid)
+	edited := gitT(t, clone, "rev-parse", "HEAD")
+	gitT(t, clone, "switch", "-q", top)
+	gitT(t, clone, "merge", "-q", "--no-ff", "-m", "restack: merge 7654321 into "+top, mid)
+	gitT(t, clone, "branch", "-f", mid, before)
+
+	got := xIn(t, clone, nil, "lane", "restack")
+
+	if !strings.Contains(got.stdout, `"lost_resolutions":{"`+mid+`":"`+short(edited)+`"}`) {
+		t.Errorf("want the edited merge %s named under its own layer:\n%s", short(edited), got.stdout)
+	}
+}
+
 func TestRestackRefusesACommitNoRestackMade(t *testing.T) {
 	t.Parallel()
 	const layer = "coder/FRM-1-a-2"

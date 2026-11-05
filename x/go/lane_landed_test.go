@@ -439,6 +439,84 @@ func TestLandedWiredLine(t *testing.T) {
 	}
 }
 
+func TestLandedReadsEveryShapeOfANewVerbLine(t *testing.T) {
+	t.Parallel()
+	const stats, landed, nameless = "0 calls of x stats", "0 calls of x lane landed", "names no x verb"
+	cases := []struct {
+		line string
+		want []string
+		not  []string
+	}{
+		{"**new verb:** `x stats`", []string{stats}, []string{nameless}},
+		{"**new verb**: `x stats`", []string{stats}, []string{nameless}},
+		{"new verb: `x stats`, `x lane landed`", []string{stats, landed}, []string{nameless}},
+		{"new verb: x stats, x lane landed", []string{stats, landed}, []string{nameless}},
+		{"new verb: x lane landed, the door", []string{landed}, []string{nameless}},
+		{"new verb: `x stats` — not `x lane landed`", []string{stats}, []string{landed, nameless}},
+		{"new verb: nosuch thing", []string{"🔴 wired", "nosuch thing " + nameless}, nil},
+		{"new verb: `x stats`, `x nosuch`", []string{stats, "x nosuch " + nameless}, nil},
+	}
+	for _, c := range cases {
+		t.Run(c.line, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
+			*w.body = "## ⚖️ worth it\n\n* " + c.line + "\n\n" + landedBody
+
+			envelope, _ := w.landed(t)
+
+			out := linesOf(envelope)
+			for _, want := range c.want {
+				if !strings.Contains(out, want) {
+					t.Errorf("want %q in:\n%s", want, out)
+				}
+			}
+			for _, not := range c.not {
+				if strings.Contains(out, not) {
+					t.Errorf("want no %q in:\n%s", not, out)
+				}
+			}
+		})
+	}
+}
+
+// main interleaves lanes, so past the verified tip only a commit's own step line says whose it is
+func TestLandedCountsOnlyTheLanesCommitsInsideTheRange(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	commit := func(file string, message ...string) string {
+		write(t, filepath.Join(w.repo, file), file+"\n")
+		gitT(t, w.repo, "add", file)
+		args := []string{"commit", "-q"}
+		for _, m := range message {
+			args = append(args, "-m", m)
+		}
+		gitT(t, w.repo, args...)
+		return short(gitT(t, w.repo, "rev-parse", "HEAD"))
+	}
+	foreign := commit("foreign.txt", "🔧 another lane's commit", "step 1 of FRM-12: theirs")
+	step := commit("step.txt", "🔧 this lane's step", "step 2 of FRM-1: ours")
+	tip := commit("tip.txt", "🐞 the last fix")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	body, _ := json.Marshal("verdict: clean · verified: " + tip)
+	*w.comments = `[{"body":` + string(body) + `}]`
+
+	envelope, _ := w.landed(t)
+
+	out := linesOf(envelope)
+	if !strings.Contains(out, "✅ merged — 2 commits from main:") || !strings.Contains(out, "2 name no step of FRM-1") {
+		t.Errorf("want the tip and the step counted, the rest named:\n%s", out)
+	}
+	// these shas feed the verify trees' match, so another lane's never joins them
+	var issue landedRead
+	issue.Comments.Nodes = append(issue.Comments.Nodes, struct{ Body string }{"verified: " + tip})
+	commits, _ := quickMerged(w.repo, "FRM-1", dispatchOf(*w.body).base, issue)
+	joined := strings.Join(commits, "\n")
+	if len(commits) != 2 || !strings.Contains(joined, tip) || !strings.Contains(joined, step) || strings.Contains(joined, foreign) {
+		t.Errorf("want %s and %s, never %s:\n%s", tip, step, foreign, joined)
+	}
+}
+
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
 	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one verb, `x lane landed`", "the prose names `x lane landed` as new", "a new verb: `x lane landed`, in a sentence", "new verb: none", "new verb: none — a fix"} {

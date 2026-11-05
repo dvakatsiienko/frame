@@ -313,14 +313,16 @@ func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string
 	if b.Name == "Bash" && ticketReadCmd.MatchString(b.Input.Command) && slices.ContainsFunc(s.tickets, func(id string) bool { return strings.Contains(b.Input.Command, id) }) {
 		reads[ticketCheck] = cmp.Or(reads[ticketCheck], at)
 	}
-	if !auditEditTools[b.Name] && (b.Name != "Bash" || !auditEditBins.MatchString(target)) {
+	// a retro is a count, never an edit: alone it would read as misses
+	retro := strings.HasSuffix(b.Input.FilePath, "-retro.md")
+	s.Retro = s.Retro || b.Name == "Write" && retro
+	if retro || !auditEditTools[b.Name] && (b.Name != "Bash" || !auditEditBins.MatchString(target)) {
 		return
 	}
 	s.FirstEdit = cmp.Or(s.FirstEdit, at)
 	if n := len(s.Compacts); n > 0 {
 		s.Compacts[n-1].Edited = true
 	}
-	s.Retro = s.Retro || b.Name == "Write" && strings.HasSuffix(b.Input.FilePath, "-retro.md")
 }
 
 // a session with no edit may be live, or edited nothing: no miss either way

@@ -459,17 +459,18 @@ func (t *restackTarget) readLocalOnly(layer, local string) error {
 			hand = append(hand, short(sha)+" "+subject)
 			continue
 		}
-		// a lower layer's merge reached through a second parent is booked when its own layer is read
-		if m[1] != layer {
+		// a merge is booked on the layer it names: an upper layer may be the only ref still reaching a lower layer's
+		owner := m[1]
+		if slices.Contains(t.Dropped[owner], short(sha)) {
 			continue
 		}
 		if t.Dropped == nil {
 			t.Dropped, t.Lost = map[string][]string{}, map[string]string{}
 		}
-		t.Dropped[layer] = append(t.Dropped[layer], short(sha))
+		t.Dropped[owner] = append(t.Dropped[owner], short(sha))
 		// newest first, so the first resolution met is the one to take back
-		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); (!clean.ok || clean.out != tree) && t.Lost[layer] == "" {
-			t.Lost[layer] = short(sha)
+		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); (!clean.ok || clean.out != tree) && t.Lost[owner] == "" {
+			t.Lost[owner] = short(sha)
 		}
 	}
 	if len(hand) > 0 {

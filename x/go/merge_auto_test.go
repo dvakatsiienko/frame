@@ -401,6 +401,17 @@ func TestMergeAutoReadsASessionsNewestTranscript(t *testing.T) {
 	}
 }
 
+// a last row past the tail's size holds no cwd the tail can parse, and a wrong decamp takes a live tree
+func TestLastCwdReadsPastARowLongerThanTheTail(t *testing.T) {
+	t.Parallel()
+	path := filepath.Join(t.TempDir(), "s.jsonl")
+	write(t, path, jsonLines(t, map[string]any{"type": "user", "cwd": "/the/tree"}, map[string]any{"type": "user", "text": strings.Repeat("x", transcriptTail+1)}))
+
+	if got := lastCwdIn(path); got != "/the/tree" {
+		t.Errorf("got %q", got)
+	}
+}
+
 func TestMergeAutoDecampsACleanTreeAtTheLandedHead(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")

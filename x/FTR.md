@@ -162,9 +162,9 @@
 - ⬜ `x lane landed` reads a lane's close true (FRM-480)
   - given any chunk, then it prints no retros line: a siesta and the halt own retros
   - given only codie's look card, then 🔴 look until a `👀 look sent` line sits in the body; the wish line reads «close in this turn» once the look card's proof exists on a merged chunk
-  - given a quick lane mid-verify, then `--apply` refuses; `merged` reads the commits from the 🚀 line's base to the verified sha; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
+  - given a quick lane mid-verify, then `--apply` refuses; `merged` counts, from the 🚀 line's base to the verified sha, that sha and the commits whose `step N of <ticket>` line names this ticket, and says how many it left out; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
-  - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days
+  - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so
@@ -498,7 +498,7 @@
   - when `x fleet audit-codie` runs
   - then the board's last line counts `how-you-work.md` reads (`57 of 58 read before first edit`), `crew-dna` and the ticket read above it, every miss row above those names the file and the session, and a miss exits 1
   - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read` or a Bash `cat`-like line, the ticket read names a ticket of the brief
-  - decision: a retro is a count, never a miss, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
+  - decision: a retro is a count, never a miss or an edit, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
   - when `x fleet ops` runs

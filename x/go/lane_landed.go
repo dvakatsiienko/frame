@@ -207,8 +207,12 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	}
 	lines = append(lines, look, wish)
-	for _, verb := range newVerbsOf(issue.Description) {
+	verbs, nameless := newVerbsOf(issue.Description)
+	for _, verb := range verbs {
 		lines = append(lines, wiredLine(verb, issue))
+	}
+	for _, name := range nameless {
+		lines = append(lines, landedLine{name: "wired", detail: name + " names no x verb", fix: "fix that new verb: line in " + id + "'s ⚖️ worth it"})
 	}
 	return lines, nil
 }
@@ -253,12 +257,14 @@ var (
 	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
 	verifiedOf     = regexp.MustCompile(`\bverified\b[*:\s]+([0-9a-f]{7,40})\b`)
 	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
-	newVerbLine    = regexp.MustCompile("(?m)^[\\s*-]*new verb:\\s*(?:`(?:x )?([^`\\n]+)`|(?:x )?([^\\s,—]+(?: [^\\s,—]+)*)).*$")
+	newVerbLine    = regexp.MustCompile(`(?m)^[\s*-]*new verb\**:\**[ \t]*(.*)$`)
+	newVerbQuoted  = regexp.MustCompile("`([^`]+)`")
 	ticketRepoLine = regexp.MustCompile(`(?m)^repo:\s*(\S+)\s*$`)
 )
 
-// a quick lane's commits carry no id (x:cmt), so merged reads the range from the dispatch's base; while a named sixth
-// sense has not said verified the lane is mid-verify, and --apply refuses on this line
+// a quick lane's commits carry no ticket line (x:cmt), and main interleaves lanes: merged counts the verified tip and
+// the commits under it whose step line names this ticket; while a named sixth sense has not said verified the lane is
+// mid-verify, and --apply refuses on this line
 func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine) {
 	merged := landedLine{name: "merged", fix: "wait for sixth sense's clean, its verified: <sha> comment on " + id}
 	verified := ""
@@ -286,11 +292,24 @@ func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine)
 		return nil, merged
 	}
 	got, _ := gitIn(repo, "log", base+".."+tip, "--format=%h %s")
+	named, _ := gitIn(repo, "log", base+".."+tip, "-E", "--grep=^step [0-9]+ of "+id+"([^0-9]|$)", "--format=%h %s")
 	var commits []string
+	others := 0
 	if got.ok && got.out != "" {
-		commits = strings.Split(got.out, "\n")
+		stepped := strings.Split(named.out, "\n")
+		for i, row := range strings.Split(got.out, "\n") {
+			// the log opens on the verified tip, which the comment itself names as the lane's
+			if i == 0 || slices.Contains(stepped, row) {
+				commits = append(commits, row)
+			} else {
+				others++
+			}
+		}
 	}
 	merged.ok, merged.detail = len(commits) > 0, plural(len(commits), "commit")+" from main:"+short(base)+" to "+short(tip)
+	if others > 0 {
+		merged.detail += fmt.Sprintf(", not counted: %d name no step of %s", others, id)
+	}
 	return commits, merged
 }
 
@@ -317,19 +336,41 @@ func ticketRepo(id, body string) (string, error) {
 	return path, nil
 }
 
-// the x verbs a ticket's `new verb: <name>` lines name; prose guesses nothing
-func newVerbsOf(body string) []string {
+// the x verbs a ticket's `new verb: <name>` lines name, and the names no verb answers to; prose guesses nothing.
+// past a line's first bare name a comma may open prose, so only a backticked name or the first one is held to it
+func newVerbsOf(body string) (verbs, nameless []string) {
 	section := worthSection.FindStringSubmatch(body)
 	if section == nil {
-		return nil
+		return nil, nil
 	}
-	var verbs []string
 	for _, m := range newVerbLine.FindAllStringSubmatch(section[1], -1) {
-		if verb, _, found := findVerb(strings.Fields(cmp.Or(m[1], m[2]))); found && !slices.Contains(verbs, verb.Name) {
-			verbs = append(verbs, verb.Name)
+		named, _, _ := strings.Cut(m[1], "—")
+		held := map[string]bool{}
+		names := strings.Split(named, ",")
+		if quoted := newVerbQuoted.FindAllStringSubmatch(named, -1); quoted != nil {
+			names = nil
+			for _, q := range quoted {
+				names = append(names, q[1])
+				held[strings.TrimSpace(q[1])] = true
+			}
+		} else {
+			held[strings.TrimSpace(names[0])] = true
+		}
+		for _, raw := range names {
+			name := strings.TrimSpace(raw)
+			if name == "none" {
+				continue
+			}
+			verb, _, found := findVerb(strings.Fields(strings.TrimPrefix(name, "x ")))
+			switch {
+			case found && !slices.Contains(verbs, verb.Name):
+				verbs = append(verbs, verb.Name)
+			case !found && held[name]:
+				nameless = append(nameless, name)
+			}
 		}
 	}
-	return verbs
+	return verbs, nameless
 }
 
 // a new verb is measured at its milestone's close, the merge is too early to say: no ticket left open, this one included, is the close
@@ -558,7 +599,8 @@ func transcriptCwd(id string) string {
 
 const transcriptTail = 256 * 1024
 
-// the end of the file only: transcripts run to tens of MB, and this runs per session per tree. a cut first line fails its parse and is skipped
+// the end of the file first: transcripts run to tens of MB, and this runs per session per tree. a cut first line fails
+// its parse and is skipped; a tail with no cwd widens, since a last row past its size would read as no session in the tree
 func lastCwdIn(path string) string {
 	file, err := os.Open(path)
 	if err != nil {
@@ -569,20 +611,23 @@ func lastCwdIn(path string) string {
 	if err != nil {
 		return ""
 	}
-	tail := make([]byte, min(info.Size(), transcriptTail))
-	if _, err := file.ReadAt(tail, info.Size()-int64(len(tail))); err != nil {
-		return ""
-	}
-	lines := bytes.Split(tail, []byte("\n"))
-	for _, raw := range slices.Backward(lines) {
-		var row struct {
-			Cwd string `json:"cwd"`
+	for size := min(info.Size(), transcriptTail); ; size = min(info.Size(), size*4) {
+		tail := make([]byte, size)
+		if _, err := file.ReadAt(tail, info.Size()-size); err != nil {
+			return ""
 		}
-		if json.Unmarshal(raw, &row) == nil && row.Cwd != "" {
-			return row.Cwd
+		for _, raw := range slices.Backward(bytes.Split(tail, []byte("\n"))) {
+			var row struct {
+				Cwd string `json:"cwd"`
+			}
+			if json.Unmarshal(raw, &row) == nil && row.Cwd != "" {
+				return row.Cwd
+			}
+		}
+		if size == info.Size() {
+			return ""
 		}
 	}
-	return ""
 }
 
 // "" when the process can't be read, and the caller falls back on the registry: a wrong spare costs a later landed, a wrong decamp a live tree

@@ -534,6 +534,22 @@ func TestAuditCodieCountsARetroAsNoMiss(t *testing.T) {
 	}
 }
 
+func TestAuditCodieReadsARetroAsNoEdit(t *testing.T) {
+	t.Parallel()
+	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
+	written := called("Write", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	appended := called("Edit", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	for name, retro := range map[string]any{"written": written, "appended": appended} {
+		if s := auditOf(t, opening, retro); s.FirstEdit != "" || len(s.misses()) != 0 {
+			t.Errorf("a retro %s alone: first edit %q, misses %v", name, s.FirstEdit, s.misses())
+		}
+	}
+	const later = "2026-10-20T10:03:00.000Z"
+	if s := auditOf(t, opening, written, called("Edit", map[string]any{"file_path": "/x/a.go"}, later)); s.FirstEdit != later || !s.Retro {
+		t.Errorf("the code edit is the first edit: %q, retro %v", s.FirstEdit, s.Retro)
+	}
+}
+
 // a codie transcript under a planted HOME, stamped at its offsets from now
 func auditHome(t *testing.T, sessions map[string][]any) string {
 	t.Helper()
