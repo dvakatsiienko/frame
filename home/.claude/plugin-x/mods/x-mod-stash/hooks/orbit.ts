@@ -145,7 +145,7 @@ export const SIGN_ASK =
     /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
 // twin end
 const SIGN_PICK =
-    /(?<!\b(?:not|never|no|don['’]t)\s(?:re-)?)\b(?:re-)?sign(?:ed)?\b(?!-)/i;
+    /(?<!\b(?:not|never|no|don['’]t)\s(?:re-)?)\b(?:re-)?signed\b/i;
 const MERGE_PICK = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr
 export const MERGE_ASK =

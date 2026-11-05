@@ -84,6 +84,14 @@ for (const [what, command] of [
     ],
     ['a continued line', 'x linear \\\n  comment FRM-1 --body-file f | jq .ok'],
     ['--set=', 'x linear body FRM-1 --set=f | jq .ok'],
+    [
+        'an unknown verb with a read as a value',
+        'x linear move FRM-1 --to list | jq .',
+    ],
+    [
+        'a line another warn-only rule flags',
+        'git -c core.hooksPath=x status; x linear comment FRM-1 --body-file f | jq .ok',
+    ],
     ['--apply=', 'x linear archive FRM-1 --apply=true | jq .ok'],
     ['a mutation with vars', `x linear api "$Q" --vars '{"id":"x"}' | jq .`],
 ] as const) {
@@ -137,6 +145,7 @@ for (const [what, command] of [
     ['a verb help', 'x linear comment --help | head'],
     ['a verb -h', 'x linear comment -h | head'],
     ['help', 'x linear help | head'],
+    ['help on a verb', 'x linear help comment | head'],
     [
         'a member read of comments',
         'x as clio -- linear issue comment list FRM-1 | head',

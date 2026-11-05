@@ -624,9 +624,9 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
 
 - ⬜ a mis-shaped sign or merge ask fails at its press
-  - given orbit's `add` or `follow`, a pick saying `sign`, `signed`, `re-sign` or `re-signed`, not behind a `not`, `never`, `no` or `don't`, and a text without `✍️ sign <id>:`, then it is refused naming the shape; x-mod-guard's copy of that shape is a twin, and `mods/sign-ask.test.ts` runs both over one table
-  - and a pick saying `merge` on a text with neither the pr's url nor `⚠️ merge <repo>#<n>`, the two shapes `--dima-ok` reads
-  - proof: tests/orbit.test.ts::add refuses the pick …; ::add passes …; ::follow refuses a sign pick on a text without the shape; ::follow refuses a text losing the shape under a kept sign pick; ::follow passes the sign shape; ::follow refuses a merge pick on a text naming no pr; sign-ask.test.ts::both copies read …
+  - given orbit's `add` or `follow`, a pick saying `signed` or `re-signed`, not behind a `not`, `never`, `no` or `don't`, and a text without `✍️ sign <id>:`, then it is refused naming the shape; x-mod-guard's copy of that shape is a twin, and `mods/sign-ask.test.ts` runs both over one table
+  - and a pick saying `merge` or `merged`, not behind those words, on a text with neither the pr's url nor `⚠️ merge <repo>#<n>`, the two shapes `--dima-ok` reads
+  - proof: tests/orbit.test.ts::add refuses the pick …; ::add passes …; ::follow refuses a sign pick on a text without the shape; ::follow refuses a text losing the shape under a kept sign pick; ::follow passes the sign shape; ::follow refuses a merge pick on a text naming no pr; sign-ask.test.ts::both copies read …; ::orbit and the guard read …
 
 ## the prompt — the tickets it names
 
@@ -918,7 +918,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - decision: take only, no replay — a steer has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
-  - and a plan line leading with its ticket, `FRM-501 quiet reads …`, or behind a `:`, `·` or `—`, draws the ticket once, as its link, and the text without the plain id, the 60-char cap counting what is left; an id elsewhere in a step's text and a step with no ticket stay as written; a card in the store reads right at its next poll
+  - and a plan line leading with its ticket, `FRM-501 quiet reads …`, or behind a `:`, `·`, `—`, `–` or `-`, draws the ticket once, as its link, and the text without the plain id, the 60-char cap counting what is left; an id elsewhere in a step's text and a step with no ticket stay as written; a card in the store reads right at its next poll
   - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
   - given `🛼 glide` switched off, then no stale lane and no taken steer reach clio's prompt or tool result, and `op glide` is refused in one line naming the switch
   - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)

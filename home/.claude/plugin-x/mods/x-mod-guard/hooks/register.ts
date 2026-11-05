@@ -1205,6 +1205,16 @@ export const register: Register = (on) => {
         // the model typed the old command: it is told what changed, or it reads a surprise
         const spends: string[] = [];
         const go = async (run = command) => {
+            // every run leaves through here, so a call any rule stopped never reads «already ran» or counts as warned
+            const piped = linearWritePiped(typed, cwd);
+            if (piped) {
+                const stop = await enforce(
+                    piped,
+                    `nothing in this command ran — x-mod-guard stopped this one command. instead: run the write unpiped, its exit is the receipt. why: ${piped.why}.`,
+                    `x-mod-guard: instead: ${piped.door}. why: ${piped.why}.`,
+                );
+                if (stop) return stop;
+            }
             const { value: spent = [] } = await $.state.get(SPENT);
             if (spends.length)
                 await $.state.set(SPENT, [...spent, ...spends].slice(-50));
@@ -1509,19 +1519,7 @@ export const register: Register = (on) => {
             );
             return go(withDimaOk(command, pr));
         }
-        if (verdict.kind === 'run') {
-            // last, so a call any rule stopped never reads «already ran» or counts as warned
-            const piped = linearWritePiped(typed, cwd);
-            if (piped) {
-                const stop = await enforce(
-                    piped,
-                    `nothing in this command ran — x-mod-guard stopped this one command. instead: run the write unpiped, its exit is the receipt. why: ${piped.why}.`,
-                    `x-mod-guard: instead: ${piped.door}. why: ${piped.why}.`,
-                );
-                if (stop) return stop;
-            }
-            return go();
-        }
+        if (verdict.kind === 'run') return go();
         // the marker is only a claim: dima's own last prompt, or his tick, must name every target the marked refusals named
         const runMarked = async (marked: Refusal[]) => {
             const { value: said = '' } = await $.state.get(PROMPT);

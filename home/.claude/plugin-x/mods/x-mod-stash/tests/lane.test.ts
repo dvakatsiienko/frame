@@ -1521,6 +1521,8 @@ for (const [what, line] of [
     ['a colon', 'FRM-501: quiet reads'],
     ['a dot', 'FRM-501 · quiet reads'],
     ['a dash', 'FRM-501 — quiet reads'],
+    ['an en dash', 'FRM-501 – quiet reads'],
+    ['a hyphen', 'FRM-501 - quiet reads'],
 ] as const)
     test(`a leading ticket behind ${what} reads once`, async ($, on) => {
         const w = world(on);

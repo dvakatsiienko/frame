@@ -3824,13 +3824,7 @@ test('a save kept with no base, by a module before the base was kept, lands as i
 const SIGN_DENY = 'the shape x-mod-guard reads';
 const denied = (r: unknown) => String((r as { deny?: string }).deny ?? '');
 
-for (const pick of [
-    'signed',
-    're-signed',
-    'signed as drafted',
-    'sign: as drafted',
-    're-sign it',
-])
+for (const pick of ['signed', 're-signed', 'signed as drafted'])
     test(`add refuses the pick «${pick}» on a text without the sign shape`, async ($, on) => {
         world(on);
         await start($);
@@ -3844,7 +3838,8 @@ for (const [what, text, pick] of [
     ['a batch', '✍️ sign FRM-1, BYT-2: the titles', 're-signed'],
     ['no sign word in the pick', 'push FRM-1', 'yes'],
     ['a word holding it', 'design FRM-1', 'designed as drawn'],
-    ['a sign-in', 'push FRM-1', 'sign-in flow first'],
+    ['a sign word that signs nothing', 'push FRM-1', 'sign in first'],
+    ['a pick that never signs', 'push FRM-1', 'never signed'],
     ['a pick that does not sign', 'push FRM-1', 'not signed yet'],
     ['a pick that does not re-sign', 'push FRM-1', 'not re-signed yet'],
 ] as const)
@@ -3917,6 +3912,9 @@ for (const [what, text, pick] of [
     ['a word holding it', 'push FRM-1', 'submerge it'],
     ['a pick that does not merge', 'push FRM-1', 'do not merge yet'],
     ['a pick that holds the merge', 'push FRM-1', "don't merge yet"],
+    ['a pick that holds it, typed curly', 'push FRM-1', 'don’t merge yet'],
+    ['a pick that never merges', 'push FRM-1', 'never merge it'],
+    ['a pick of no merge', 'push FRM-1', 'no merge tonight'],
     ['no merge word in the pick', 'merge frame#7 please', 'yes'],
 ] as const)
     test(`add passes ${what}`, async ($, on) => {

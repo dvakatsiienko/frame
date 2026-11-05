@@ -19,7 +19,7 @@ import {
     resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
-import { linearWords, xLinearVerbAt } from './milestone.ts';
+import { linearWords } from './milestone.ts';
 
 // a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 sixth sense, the
 // 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds
@@ -373,6 +373,8 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
     return undefined;
 }
 const LINEAR_READS = ['help', 'list', 'read'];
+// x linear's root flags that take the next word as their value, so it is never the verb
+const LINEAR_ROOT_VALUES = ['--as', '--team', '--vars'];
 const LINEAR_MEMBER_WRITES = ['comment', 'create', 'delete', 'update'];
 
 // any `x linear` verb but a known read writes, so a new verb warns by default
@@ -390,13 +392,12 @@ function isLinearWrite(c: Command) {
             LINEAR_MEMBER_WRITES.includes(words[1] ?? '') &&
             words[2] !== 'list'
         );
-    const at = xLinearVerbAt(words);
-    const verb =
-        at >= 0
-            ? words[at]
-            : words.find(
-                  (w, i) => w && !w.startsWith('-') && words[i - 1] !== '--as',
-              );
+    const verb = words.find(
+        (w, i) =>
+            w &&
+            !w.startsWith('-') &&
+            !LINEAR_ROOT_VALUES.includes(words[i - 1] ?? ''),
+    );
     // no verb, or only a flag: it prints its help
     if (!verb || hasFlag('--help') || words.includes('-h')) return false;
     if (LINEAR_READS.includes(verb)) return false;
@@ -407,7 +408,6 @@ function isLinearWrite(c: Command) {
     const queries = c.args.filter(
         (w, i) =>
             c.args[i - 1]?.text !== '--vars' &&
-            !w.text.startsWith('--vars=') &&
             /^\s*(?:query\b|mutation\b|\{)/.test(w.text),
     );
     return (
