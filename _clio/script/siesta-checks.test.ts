@@ -96,8 +96,34 @@ describe('siesta-checks', () => {
             '## close net',
             '## blueprint drift',
             '## helper count',
+            '## retros',
         ]);
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
+    });
+
+    test('a pending retro reds its section and the run, naming every file', () => {
+        const home = fixtureHome();
+        const lanes = join(home, '.local/state/x/lanes');
+        mkdirSync(join(lanes, 'lane-a'), { recursive: true });
+        mkdirSync(join(lanes, 'lane-b'), { recursive: true });
+        writeFileSync(join(lanes, 'lane-a/lane-a-codie-retro.md'), 'one\n');
+        writeFileSync(
+            join(lanes, 'lane-b/lane-b-sixth-sense-retro.md'),
+            'two\n',
+        );
+        writeFileSync(join(lanes, 'lane-b/lane-plan.md'), 'not a retro\n');
+        const out = run(home);
+        expect(out.status).toBe(1);
+        const retros = section(out.stdout, 'retros');
+        expect(retros).toMatch(/· exit 1\n/);
+        expect(retros).toContain('lane-a/lane-a-codie-retro.md');
+        expect(retros).toContain('lane-b/lane-b-sixth-sense-retro.md');
+        expect(retros).not.toContain('lane-plan');
+    });
+
+    test('no pending retro passes, with no lanes dir at all', () => {
+        const out = run(fixtureHome());
+        expect(section(out.stdout, 'retros')).toContain('none pending');
     });
 
     test.each([

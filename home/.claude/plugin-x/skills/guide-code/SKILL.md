@@ -42,6 +42,8 @@ their head.
   unsnooze, close needs reopen. A one-way door is a bug.
 - **Every entry point.** Before calling a change done, name the other paths reaching the same
   behavior — the most common defect is a fix that works only where you tested it.
+- **One rule, one reader.** A rule read in two places goes through one function; two lists of the same
+  thing drift, and the next fix lands in only one.
 - **Every use site.** Before a rename or a change to a shared name, find every caller — in TypeScript
   through the `LSP` tool (`guide-typescript`), elsewhere through grep.
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full

@@ -46,6 +46,7 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 - **a wish of dima's mid-lane** goes into the ticket's wish block as W-lines, with a proposed re-sign of its chunk, and the spec cites them; never a bare message; every steer to a lane's codie also lands in its lane plan's `## not greenlit` that turn (`x:crew-lead` briefing); one changing the how, the spec too; a one-chunk lane has no lane plan: its steer goes into the spec section
 - **a ↩️ back-to-Todo ticket** returns by a re-sign naming its left asks, which puts `signed` back so the offer carries it
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running), unless a ↩️ follows the 🚀 (the line above): it re-runs § 3–4 for that chunk (the spec section and its preflight copy) and steers codie to the changed lines
+- **a re-seal** lands on disk before its ping and re-reads its sibling lines
 - **a park** — his weekly window out, the 5h pace, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it; the next siesta back on pace resumes a pace park
 
 **done** = each picked chunk, a joiner included, has its spec section with sealed exit lines, its `🚀 dispatched` line, a summoned codie (a sixth sense unless his pick said no), and a greenlit lane plan.

@@ -18,5 +18,5 @@ Adopted from Dima's inbox ask, option b of two he approved: **announce-always, g
 
 - **add → read the whole file → groom** (`x:author-memory` § how it is written); the report names what got cut, or why nothing could be
 - **a line enters a skill only** when it holds for every lane, no guard or test can enforce it, and it has no home yet; a one-lane stumble stays in its retro, an enforceable one becomes a guard or a test
-- **retros fold when their lane ends**, in that turn; what is left at the halt goes through one gatherer subagent (issue type · count · paths · one quoted line per type), never 15 raw retros
+- **every pending retro is solved in place at a siesta or the halt** (dima, 2026-11-05; `clio:siesta` step 2.7), never left partly folded; while he is afk they wait for his return
 - **at most 5 memory proposals per flush** reach dima; the rest print as counts
