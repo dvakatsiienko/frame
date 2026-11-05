@@ -5576,9 +5576,11 @@ export const register: Register = (on) => {
                             name: SwitchName,
                             label: string,
                             isOn: boolean,
+                            note?: string,
                         ) => (
                             <Box
-                                flexDirection='row'
+                                alignItems='flex-start'
+                                flexDirection={note ? 'column' : 'row'}
                                 key={`knob:${SWITCHES[name].key}`}>
                                 <Button
                                     key={`knob:${SWITCHES[name].key}`}
@@ -5588,6 +5590,8 @@ export const register: Register = (on) => {
                                         : { dimColor: true })}>
                                     {label}
                                 </Button>
+                                {/* a keyed Box is its own hover scope (engine.md), so the note lives inside this one */}
+                                {note ? noteOnHover(ui, note) : null}
                             </Box>
                         );
                         const numberJSX = (
@@ -5789,24 +5793,23 @@ export const register: Register = (on) => {
                                     knobs.quiet,
                                 )}
                                 {knobs.quietKinds.map(
-                                    ({ cost, isOn, kind, name }) => (
-                                        <Box
-                                            flexDirection='column'
-                                            key={`quiet-kind:${kind}`}>
-                                            {knobs.quiet ? (
-                                                switchJSX(
-                                                    name,
-                                                    `🤫 [${kind}] starts clio's turn`,
-                                                    isOn,
-                                                )
-                                            ) : (
-                                                <Text dimColor>
-                                                    {`🤫 [${kind}] starts clio's turn`}
-                                                </Text>
-                                            )}
-                                            {noteOnHover(ui, cost)}
-                                        </Box>
-                                    ),
+                                    ({ cost, isOn, kind, name }) =>
+                                        knobs.quiet ? (
+                                            switchJSX(
+                                                name,
+                                                `🤫 [${kind}] starts clio's turn`,
+                                                isOn,
+                                                cost,
+                                            )
+                                        ) : (
+                                            <Box
+                                                flexDirection='column'
+                                                key={`quiet-kind:${kind}`}>
+                                                <Text
+                                                    dimColor>{`🤫 [${kind}] starts clio's turn`}</Text>
+                                                {noteOnHover(ui, cost)}
+                                            </Box>
+                                        ),
                                 )}
                                 {numberJSX(
                                     'quietWait',

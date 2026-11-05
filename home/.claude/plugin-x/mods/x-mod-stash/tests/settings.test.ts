@@ -322,6 +322,20 @@ for (const [key, label, cost] of [
         world(on);
         await band($);
         const view = await pane($);
+        const row = await view.find({ key: `knob:${key}`, type: 'Box' });
+        const hidden = (row?.children ?? []).filter(
+            (c) =>
+                (c as { props?: { display?: string } }).props?.display ===
+                'none',
+        );
+        expect(JSON.stringify(hidden)).toContain(cost);
+    });
+
+    test(`the ${key} row keeps its hover with the master switch off`, async ($, on) => {
+        const { store } = world(on);
+        store.set('quiet-comms', false);
+        await band($);
+        const view = await pane($);
         const row = await view.find({
             key: `quiet-kind:${key.replace('quiet-', '')}`,
             type: 'Box',

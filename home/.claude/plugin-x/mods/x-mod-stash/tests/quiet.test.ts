@@ -2493,6 +2493,22 @@ test('a meta idle notice with an image comes in whole', async ($, on) => {
     expect([r.drop, logOf(w)]).toEqual([undefined, []]);
 });
 
+test('a send the gate held reads held, its kind back on by the end', async ($, on) => {
+    const w = world(on, {
+        name: MEMBER,
+        peers: [CLIO],
+        sent: REFUSED,
+        whileSending: async () => {
+            w.store.set('quiet-ask', true);
+        },
+    });
+    await start($);
+    w.store.set('quiet-ask', false);
+    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    const r = await send($, '🦉 clio', '[ask] a or b?');
+    expect(r.context).toEqual([SLIPSTREAMED]);
+});
+
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {
         name: MEMBER,
