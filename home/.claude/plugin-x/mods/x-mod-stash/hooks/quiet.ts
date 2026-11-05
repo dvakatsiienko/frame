@@ -50,7 +50,7 @@ export const isQuietRefusal = (message: unknown) =>
 
 // one block off the prompt's head; a message may quote a tag mid-line, never at a line's start
 const APP_HEAD =
-    /^\s*(?:<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>[^<]*<\/side-sessions-event>|(<cross-session-message[^>]*>(?:(?!\n<\/?cross-session-message)[\s\S])*\n<\/cross-session-message>))/;
+    /^\s*(?:<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>([^<]*)<\/side-sessions-event>|(<cross-session-message[^>]*>(?:(?!\n<\/?cross-session-message)[\s\S])*\n<\/cross-session-message>))/;
 const NOTE =
     /^The session "([^"]*)" you started \((local_[^)]*)\) finished a turn(?: \([^)]*\))?\. It reported[^:]*: "([\s\S]*)"( \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
 
@@ -77,8 +77,9 @@ export function quietGlued(text: string) {
     const messages: { block: string; head: number }[] = [];
     let rest = text;
     let hasOther = false;
+    let lone: { head: number; text: string } | undefined;
     for (let m = rest.match(APP_HEAD); m; m = rest.match(APP_HEAD)) {
-        const [taken, reminder, block] = m;
+        const [taken, reminder, event, block] = m;
         rest = rest.slice(taken.length);
         const head = heads.push(taken) - 1;
         const note = reminder?.match(NOTE);
@@ -89,10 +90,19 @@ export function quietGlued(text: string) {
                 head,
                 held: `${note[3]}${note[4] ?? ''} (session ${note[2]})`,
             });
+        else if (event !== undefined) lone = { head, text: event };
         else if (block) messages.push({ block, head });
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             hasOther = true;
     }
+    // the app's notice alone holds like a note; beside a note it only says what the note says
+    if (lone && !notes.length && !messages.length && !hasOther)
+        notes.push({
+            body: '',
+            from: 'the app',
+            head: lone.head,
+            held: lone.text,
+        });
     const tail = rest.trim();
     const unread = tail ? tail.split(UNREAD_SPLIT) : undefined;
     if (unread && !unread.every(isUnreadBlock)) return undefined;

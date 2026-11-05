@@ -562,7 +562,6 @@ for (const [what, text] of [
     ['a prompt of his', 'status?'],
     ['his words after a note', `${NOTE}\n\nand fix the band`],
     ['his words before a note', `look: ${NOTE}`],
-    ['the app event alone', EVENT],
     ['linked sessions alone', LINKED],
     [
         'an unknown reminder beside a note',
@@ -2127,4 +2126,58 @@ test('a sender of a held kind reads the held line', async ($, on) => {
         "held, delivered at clio's next turn",
         [SLIPSTREAMED],
     ]);
+});
+
+/* lone app notes: the shapes that reached clio's transcript since 11-04 */
+
+const PR_NOTE = NOTE.replace('finished a turn.', 'finished a turn (PR #123).');
+
+for (const [what, text] of [
+    ['a pr note, linked and the event', notice(PR_NOTE, LINKED, EVENT)],
+    ['a pr note beside a plain note', notice(NOTE, PR_NOTE, LINKED, EVENT)],
+    ['the event alone', EVENT],
+    ['linked and the event', notice(LINKED, EVENT)],
+] as const) {
+    test(`${what} starts no turn`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromAppText($, text);
+        expect([r.drop === '', w.contexts]).toEqual([true, []]);
+    });
+
+    test(`${what} logs only as a notice`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await fromAppText($, text);
+        expect(logOf(w).every((l) => l.tag === 'notice')).toBe(true);
+    });
+}
+
+test('the event alone joins the next prompt', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, EVENT);
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain(
+        'the app: None of the sessions you started is working now.',
+    );
+});
+
+test('the event beside a note adds no held line of its own', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, notice(NOTE, EVENT));
+    await say($, 'status?');
+    expect(held(w).join('\n')).not.toContain('None of the sessions');
+});
+
+test('a waiting note with the event keeps its wake', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const waiting = NOTE.replace(
+        'finished a turn. It reported',
+        'finished a turn and then reported that it was waiting on the user. It reported',
+    );
+    const r = await fromAppText($, notice(waiting, LINKED, EVENT));
+    expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
 });
