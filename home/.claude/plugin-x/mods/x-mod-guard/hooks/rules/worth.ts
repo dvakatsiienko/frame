@@ -36,6 +36,8 @@ function flag(words: string[], name: string) {
 
 // the body a command hands linear: a file (resolved against its cwd), stdin's heredoc, an inline text, or one the line hides
 function bodyOf(c: Command, words: string[], ctx: Context): Body {
+    // a `cd ~/frame` leaves c.dir as typed, `~` unexpanded: resolve it once, as gitDir does
+    const dir = resolve(c.dir, '/', ctx);
     const file = flag(words, '--description-file');
     if (file === '-' || file === '/dev/stdin') {
         const heredoc = c.bodies[0];
@@ -44,13 +46,13 @@ function bodyOf(c: Command, words: string[], ctx: Context): Body {
         const piped = c.feeders.find((f) => f.name === 'cat');
         const path = piped && operands(piped.args).at(-1);
         return path && !/[$`]/.test(path)
-            ? { file: resolve(path, c.dir, ctx) }
+            ? { file: resolve(path, dir, ctx) }
             : { hidden: true };
     }
     if (file !== undefined)
         return /[$`]/.test(file)
             ? { hidden: true }
-            : { file: resolve(file, c.dir, ctx) };
+            : { file: resolve(file, dir, ctx) };
     const at = c.args.findIndex(
         (w) =>
             w.text === '--description' ||

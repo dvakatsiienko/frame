@@ -257,6 +257,16 @@ const CLEAN = [
         {},
     ],
     [
+        'a body file behind a cd ~ && (the home dir expanded)',
+        `cd ~/frame && ${CREATE('--project cli --milestone v --priority 3 --description-file _clio/.scratch/t/f.md')}`,
+        { '/home/frame/_clio/.scratch/t/f.md': WORTH },
+    ],
+    [
+        'a body file behind a cd ~; (the home dir expanded)',
+        `cd ~/frame; ${CREATE('--project cli --milestone v --priority 3 --description-file _clio/.scratch/t/f.md')}`,
+        { '/home/frame/_clio/.scratch/t/f.md': WORTH },
+    ],
+    [
         'a fleet create in another milestone',
         CREATE(
             "--project fleet --milestone 'make fleet good' --description-file b.md",
