@@ -1,6 +1,7 @@
 // pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
 // the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
-// mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files
+// mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files; --skip-tested, the
+// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` already read
 import { spawnSync } from 'node:child_process';
 import {
     appendFileSync,
@@ -231,6 +232,52 @@ function copyKeepingTests(from: string, mod: string, keep: string[]) {
     return copy;
 }
 
+// the mod's subtree as this index holds it; the hook's own git env points at a path outside the private copy
+function indexedTree(root: string, mod: string) {
+    const env = { ...process.env };
+    for (const key of [
+        'GIT_DIR',
+        'GIT_INDEX_FILE',
+        'GIT_PREFIX',
+        'GIT_WORK_TREE',
+    ])
+        delete env[key];
+    const git = (...args: string[]) =>
+        spawnSync('git', ['-C', root, ...args], {
+            encoding: 'utf8',
+            env,
+        }).stdout?.trim();
+    return git(
+        'write-tree',
+        `--prefix=${git('rev-parse', '--show-prefix')}${mod}/`,
+    );
+}
+
+const TESTED_FOR_MS = 60 * 60 * 1000;
+
+// the mods `x mods edit test` recorded within the hour; a lost or stale line costs one rerun
+function testedTrees(record: string, now: number) {
+    const trees = new Set<string>();
+    for (const line of record.split('\n')) {
+        const [at, subject, sha] = line.split('\t');
+        if (
+            subject?.startsWith('mod ') &&
+            now - Number(at) * 1000 < TESTED_FOR_MS
+        )
+            trees.add(`${subject.slice(4)} ${sha}`);
+    }
+    return trees;
+}
+
+function readTested() {
+    const state = process.env.X_STATE ?? join(homedir(), '.local/state/x');
+    const path = join(state, 'gates-green.tsv');
+    return testedTrees(
+        existsSync(path) ? readFileSync(path, 'utf8') : '',
+        Date.now(),
+    );
+}
+
 // one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
 function logRun(args: string, line: string) {
     if (process.env.X_TEST) return;
@@ -249,7 +296,11 @@ if (import.meta.main) {
     const root = import.meta.dirname;
     const { positionals, values } = parseArgs({
         allowPositionals: true,
-        options: { extra: { type: 'string' }, only: { type: 'string' } },
+        options: {
+            extra: { type: 'string' },
+            only: { type: 'string' },
+            'skip-tested': { type: 'boolean' },
+        },
     });
     const all = readdirSync(root)
         .sort()
@@ -270,15 +321,26 @@ if (import.meta.main) {
                 !all.includes(onlyMod as string)))
     ) {
         console.error(
-            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] — mods: ${all.join(', ')}`,
+            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] [--skip-tested] — mods: ${all.join(', ')}`,
         );
         process.exit(2);
     }
     const runs: (Run & { status: number | null })[] = [];
     let reran = false;
     const named = onlyMod ? [onlyMod] : positionals;
+    const tested = values['skip-tested'] ? readTested() : new Set<string>();
     for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
+        // a clock read reds whatever was tested, so that mod runs and reads red as it always did
+        if (
+            tested.has(`${mod} ${indexedTree(root, mod)}`) &&
+            !hookClockReads(dir).length
+        ) {
+            process.stdout.write(
+                `${mod}: tests skipped, x mods edit test passed these bytes\n`,
+            );
+            continue;
+        }
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
             cpSync(join(root, mod), dir, { recursive: true });

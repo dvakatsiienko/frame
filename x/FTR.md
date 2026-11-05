@@ -484,6 +484,9 @@
   - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
 - ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
   - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
+- ⬜ a mod's tests run once across `x mods edit test`, `push` and `x lane commit` (FRM-473)
+  - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again
+  - given a hand `pnpm mods:test`, then nothing is skipped; given a clock read in a mod's hooks, then the commit reds it whatever was tested
 - ⬜ `x mods edit test` runs the commit hook's pre-commit gates on the overlay's bytes (FRM-473)
   - given `lefthook.yaml`, then each gate's name, glob and run come from it, on a temp index of HEAD plus the overlay, the tree and the real index untouched
   - given an unused variable, a dropped import, a retired name or a budget overrun, then the verb exits 1 naming the gate the commit would red; every gate's verdict prints in the hook's order
