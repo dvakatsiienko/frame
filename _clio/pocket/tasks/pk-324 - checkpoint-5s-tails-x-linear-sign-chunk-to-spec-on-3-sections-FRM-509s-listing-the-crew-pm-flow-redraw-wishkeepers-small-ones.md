@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-05T21:48:00Z'
+updated_date: '2026-11-05T21:56:00Z'
 labels:
   - m
 dependencies: []
@@ -33,4 +33,6 @@ the side's full audit, 23:27, mine: FRM-304 lists PK-79 unmarked, W1 said pull i
 FRM-514, before its dispatch tomorrow, a re-sign ask: the side's audit stands. the cloud gap under ## out against his W4 (full coverage for anyone, everywhere) was stamped tiny after his o37; his ticked primer wants have no row and no out line: Q14 and Q15 at .scratch/primer/spec.md:62-63, o45 x:guide-code on any source touch, o181 a cost question loads the model file, the other 8 shelf files. FRM-304's PK-79 line closes only after that.
 
 FRM-495, reply-check warns before a reply leaves: tomorrow, with the side channel, never alone; his word in the side: «tell main clio to solve this tomorrow with you (side channel)». the side brings the PK-308 tail: the 🔭 last-line rule, retro source 3, crow's line 54 in _clio/shifts/2026-11-03-afk-hour.md. FRM-410, the side's reread: the conflict is real: decided moves a glide step on a [done]'s ticket id, fleet-vibe says slices are steps; smallest fix, a [done] moves only the step of a chunk's last slice, or steps stay per chunk, a re-sign; W8's store cleanup: closes as unprovable, 3 cut keys null.
+
+23:56: item 8, the crew board: v15 merged from the side channel on his word; his ⌘O still owed; tiles.json's pr-watch left, draw.io no longer follows the board
 <!-- SECTION:NOTES:END -->
