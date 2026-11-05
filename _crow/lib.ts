@@ -940,12 +940,13 @@ export function decisionOf(
         const [head, verb, act] = words;
         if (head === 'gh' && verb === 'pr' && act === 'merge')
             return { args: words.slice(3), kind: 'merge' };
-        // a merge goes through x since FRM-427, often behind a `timeout N`
+        // a merge goes through x since FRM-427, often behind a `timeout N`; with no --apply it only plans
         const at = words[0] === 'timeout' ? 2 : 0;
         if (
             words[at] === 'x' &&
             words[at + 1] === 'lane' &&
-            words[at + 2] === 'merge-auto'
+            words[at + 2] === 'merge-auto' &&
+            words.includes('--apply')
         )
             return { args: words.slice(at + 3), kind: 'merge' };
         if (head === 'claude' && words.includes('--bg'))

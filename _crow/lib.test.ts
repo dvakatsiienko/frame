@@ -1172,3 +1172,7 @@ test('x lane merge-auto is a merge decision, behind a timeout too', () => {
     );
     expect(decisionOf('x lane merge-main')?.kind).not.toBe('merge');
 });
+
+test('a plan-only x lane merge-auto spends no merge check', () => {
+    expect(decisionOf('x lane merge-auto 82')?.kind).not.toBe('merge');
+});
