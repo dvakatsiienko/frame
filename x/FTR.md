@@ -146,11 +146,11 @@
   - given a `crew-*` or `guide-*` skill file whose non-blank additions exceed its non-blank removals by 3 or more, or a new file under such a skill dir, then it exits 1; «groom: read whole — <what was cut>» passes it; a file renamed inside its own skill counts only its line change, a move in from anywhere else is a new file
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
   - given a merge in progress, then it passes untouched
-- ✅ `x lane gate --held` lints a layer before any rebase
-  - given a local layer, when `x lane gate --held` runs in its tree, then the purpose lint reads that tree's `x/go/registry.json` and `x/go/stacks.json`, never the binary's; a red names the file, the verb and the problem and exits 1; a tree with no `x/go/registry.json` exits 2
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
   - then a map row names its context as `**name**` with its glossary in backticks (frame) or as a link to the glossary (bytes)
   - decision: each half has a message line that passes it on purpose, so the gate refuses a forgotten step, never a decision; the root repo context carries no `contract:` line, since every commit touches it (FRM-367)
+- ✅ `x lane gate --held` lints a layer before any rebase
+  - given a local layer, when `x lane gate --held` runs in its tree, then the purpose lint reads that tree's `x/go/registry.json` and `x/go/stacks.json`, never the binary's; a red names the file, the verb and the problem and exits 1; a tree with no `x/go/registry.json` exits 2
 - ✅ `x lane pr-body <pr> <file>` writes a pr body by number and reads it back
   - given no pr number, or a file where the number goes
   - when `x lane pr-body` runs
@@ -168,7 +168,7 @@
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so
-  - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session whose process cwd is inside it (the pids in `~/.claude/sessions/`), named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
+  - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
   - given a decamp that fails, then it warns and the exit stays 0
 - ⬜ `x lane merge-auto` names whose clean it reads (W210)
   - given a store holding the pr's head and `<repo>#<n>:by` = `clio`, then the check passes with `clean on <sha> by clio's read`; with no `:by` key, `clean on <sha> by sixth sense`; a carried clean and a moved head name the same verifier, a no-clean detail names none
@@ -497,7 +497,7 @@
   - given the session transcripts opened in the last `--days` (default 1), or first edited past `--since <local stamp>`
   - when `x fleet audit-codie` runs
   - then the board's last line counts `how-you-work.md` reads (`57 of 58 read before first edit`), `crew-dna` and the ticket read above it, every miss row above those names the file and the session, and a miss exits 1
-  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`
+  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read` or a Bash `cat`-like line, the ticket read names a ticket of the brief
   - decision: a retro is a count, never a miss, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)

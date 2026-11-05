@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var wishItem = regexp.MustCompile(`(?m)^\s*[*-]\s+W\d+\b`)
@@ -249,9 +251,9 @@ var (
 	dispatchBaseOf = regexp.MustCompile(`, main:([0-9a-f]{7,40})\b`)
 	takenBackOf    = regexp.MustCompile(`(?m)^[\s>*-]*↩️`)
 	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
-	verifiedOf     = regexp.MustCompile(`\bverified:\s*([0-9a-f]{7,40})\b`)
+	verifiedOf     = regexp.MustCompile(`\bverified\b[*:\s]+([0-9a-f]{7,40})\b`)
 	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
-	newVerbLine    = regexp.MustCompile("(?m)^[\\s*-]*new verb:\\s*`?(?:x )?([^`\\n]+?)`?\\s*$")
+	newVerbLine    = regexp.MustCompile("(?m)^[\\s*-]*new verb:\\s*(?:`(?:x )?([^`\\n]+)`|(?:x )?([^\\s,—]+(?: [^\\s,—]+)*)).*$")
 	ticketRepoLine = regexp.MustCompile(`(?m)^repo:\s*(\S+)\s*$`)
 )
 
@@ -269,12 +271,15 @@ func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine)
 		merged.detail = id + " is mid-verify: the dispatch named a sixth sense and no comment says verified"
 		return nil, merged
 	}
-	// with no sixth sense nothing bounds the range: another lane's commit would read this one's, so codie's done comment closes it
-	if verified == "" && !issue.hasLookCard() {
+	// with no sixth sense only codie's done comment bounds the range: past it, another lane's commit would read this one's
+	if verified == "" {
 		merged.detail, merged.fix = "no verified sha and no look card on "+id+": the lane may still be working", "wait for codie's done comment on "+id
+		if issue.hasLookCard() {
+			merged.detail, merged.fix = "the done comment on "+id+" names no verified: sha, so the range past main:"+short(base)+" is open", "add verified: <head sha> to the done comment on "+id
+		}
 		return nil, merged
 	}
-	tip := cmp.Or(verified, "origin/main")
+	tip := verified
 	merged.fix = "land " + id + "'s commits on main"
 	if !ok(gitIn(repo, "merge-base", "--is-ancestor", tip, "origin/main")) {
 		merged.detail = short(tip) + " is not on origin/main"
@@ -285,13 +290,7 @@ func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine)
 	if got.ok && got.out != "" {
 		commits = strings.Split(got.out, "\n")
 	}
-	merged.ok = len(commits) > 0
-	// no sixth sense and no verified: line, so nothing bounds the range: another lane's commits are never counted, nor its verify tree handed over
-	if verified == "" {
-		merged.detail = "codie's done comment closes it; no verified: line, so the range past main:" + short(base) + " is not counted"
-		return nil, merged
-	}
-	merged.detail = plural(len(commits), "commit") + " from main:" + short(base) + " to " + short(tip)
+	merged.ok, merged.detail = len(commits) > 0, plural(len(commits), "commit")+" from main:"+short(base)+" to "+short(tip)
 	return commits, merged
 }
 
@@ -326,8 +325,8 @@ func newVerbsOf(body string) []string {
 	}
 	var verbs []string
 	for _, m := range newVerbLine.FindAllStringSubmatch(section[1], -1) {
-		if !slices.Contains(verbs, m[1]) {
-			verbs = append(verbs, m[1])
+		if name := cmp.Or(m[1], m[2]); name != "none" && !slices.Contains(verbs, name) {
+			verbs = append(verbs, name)
 		}
 	}
 	return verbs
@@ -544,10 +543,37 @@ func transcriptCwd(id string) string {
 		return ""
 	}
 	files, _ := filepath.Glob(filepath.Join(projectsDir(), "*", id+".jsonl"))
-	if len(files) == 0 {
+	// a session moved between trees can leave a transcript under two project dirs
+	newest, at := "", time.Time{}
+	for _, file := range files {
+		if info, err := os.Stat(file); err == nil && info.ModTime().After(at) {
+			newest, at = file, info.ModTime()
+		}
+	}
+	if newest == "" {
 		return ""
 	}
-	lines := transcriptLines(files[0])
+	return lastCwdIn(newest)
+}
+
+const transcriptTail = 256 * 1024
+
+// the end of the file only: transcripts run to tens of MB, and this runs per session per tree. a cut first line fails its parse and is skipped
+func lastCwdIn(path string) string {
+	file, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+	info, err := file.Stat()
+	if err != nil {
+		return ""
+	}
+	tail := make([]byte, min(info.Size(), transcriptTail))
+	if _, err := file.ReadAt(tail, info.Size()-int64(len(tail))); err != nil {
+		return ""
+	}
+	lines := bytes.Split(tail, []byte("\n"))
 	for _, raw := range slices.Backward(lines) {
 		var row struct {
 			Cwd string `json:"cwd"`

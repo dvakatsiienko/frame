@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 // a github for merge-auto: GETs answer from pages (a key with "?page=2" beside it splits the list), the
@@ -371,6 +372,32 @@ func TestMergeAutoSparesATreeASessionEnteredByCd(t *testing.T) {
 				t.Fatalf("exit %d, tree there %v, want %v, the session named:\n%s", got.code, exists(tree), c.stays, got.stdout)
 			}
 		})
+	}
+}
+
+// a session moved between trees can leave a transcript under two project dirs: the one written last says where it sits
+func TestMergeAutoReadsASessionsNewestTranscript(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	sessions := w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+	home := t.TempDir()
+	w.env = append(w.env, "HOME="+home)
+	const id = "s-twin"
+	stale := filepath.Join(home, ".claude/projects/a", id+".jsonl")
+	write(t, stale, jsonLines(t, map[string]any{"type": "user", "cwd": "/elsewhere"}))
+	long := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(stale, long, long); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(home, ".claude/projects/b", id+".jsonl"), jsonLines(t, map[string]any{"type": "user", "cwd": tree}))
+	body, _ := json.Marshal(map[string]any{"cwd": t.TempDir(), "pid": processIn(t, t.TempDir()), "sessionId": id, "name": "the codie"})
+	write(t, filepath.Join(sessions, "1.json"), string(body))
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !exists(tree) {
+		t.Fatalf("exit %d, tree there %v, want it spared:\n%s", got.code, exists(tree), got.stdout)
 	}
 }
 

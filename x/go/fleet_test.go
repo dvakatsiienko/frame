@@ -405,9 +405,14 @@ func auditOpening(at, brief string) map[string]any {
 	return line
 }
 
+func auditWithCwd(line map[string]any, cwd string) map[string]any {
+	line["cwd"] = cwd
+	return line
+}
+
 func auditStateOf(s codieSession, file string) string {
 	for _, c := range s.Checks {
-		if c.File == file {
+		if c.Name == file {
 			return c.State
 		}
 	}
@@ -454,10 +459,19 @@ func TestAuditCodieChecksEachFileBeforeTheFirstEdit(t *testing.T) {
 			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-09-20T10:00:00.000Z")}},
 		{"opened before crew-dna was born", "crew-dna", checkOlder, []any{auditOpening("2026-10-01T09:00:00.000Z", "a brief"),
 			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-01T10:00:00.000Z")}},
-		{"no ticket in the brief", ticketChecks, "unchecked", []any{opening, edit("10:02")}},
-		{"a ticket in the brief, read first", ticketChecks, checkRead, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"),
+		{"no ticket in the brief", ticketCheck, "unchecked", []any{opening, edit("10:02")}},
+		{"a ticket in the brief, read first", ticketCheck, checkRead, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"),
 			called("Bash", map[string]any{"command": "x linear read FRM-1 --comments"}, day+"10:01:00.000Z"), edit("10:02")}},
-		{"a ticket in the brief, never read", ticketChecks, checkMissed, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"), edit("10:02")}},
+		{"a ticket in the brief, never read", ticketCheck, checkMissed, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"), edit("10:02")}},
+		{"another ticket read", ticketCheck, checkMissed, []any{auditOpening(day+"09:00:00.000Z", "FRM-1 the job"),
+			called("Bash", map[string]any{"command": "x linear read FRM-2"}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"a ticket only in the row's cwd", ticketCheck, "unchecked", []any{auditWithCwd(auditOpening(day+"09:00:00.000Z", "a brief"), "/w/FRM-434-x"), edit("10:02")}},
+		{"an Edit of the file is no read", lessonsName, checkMissed, []any{opening, called("Edit", map[string]any{"file_path": lessons}, day+"10:01:00.000Z"), read(lessons, "10:02")}},
+		{"a Bash line only naming the file is no read", lessonsName, checkMissed, []any{opening,
+			called("Bash", map[string]any{"command": "rg foo " + lessons}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"a cat of the file reads it", lessonsName, checkRead, []any{opening, called("Bash", map[string]any{"command": "cat " + lessons}, day+"10:01:00.000Z"), edit("10:02")}},
+		{"edit-anchored is a first edit", lessonsName, checkMissed, []any{opening,
+			called("Bash", map[string]any{"command": "edit-anchored a.go anchor repl"}, day+"10:01:00.000Z"), read(lessons, "10:02")}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -485,7 +499,11 @@ func TestAuditCodieReadsACompactionByTheEditAfterIt(t *testing.T) {
 		{"a re-read, then an edit", []any{opening, dna, read, edit, compact, read, edit}, 0},
 		{"an edit, then the re-read", []any{opening, dna, read, edit, compact, edit, read}, 1},
 		{"no edit after it, it may be live", []any{opening, dna, read, edit, compact}, 0},
-		{"a row seen twice counts once", []any{opening, dna, read, edit, compact, read, edit, compact}, 0},
+		{"opened before how-you-work.md was born", []any{auditOpening("2026-09-20T09:00:00.000Z", "a brief"),
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-09-20T10:00:00.000Z"),
+			map[string]any{"type": "system", "subtype": "compact_boundary", "uuid": "c2", "timestamp": "2026-09-20T10:03:00.000Z"},
+			called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-09-20T10:04:00.000Z")}, 0},
+		{"a row seen twice counts once", []any{opening, dna, read, edit, compact, read, edit, compact, edit}, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -497,7 +515,7 @@ func TestAuditCodieReadsACompactionByTheEditAfterIt(t *testing.T) {
 	}
 }
 
-func TestAuditCodieCountsARetroAndNeverMissesOne(t *testing.T) {
+func TestAuditCodieCountsARetroAsNoMiss(t *testing.T) {
 	t.Parallel()
 	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
 	read := called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
@@ -509,6 +527,10 @@ func TestAuditCodieCountsARetroAndNeverMissesOne(t *testing.T) {
 	}
 	if s := auditOf(t, opening, read, dna, edit); s.Retro || len(s.misses()) != 0 {
 		t.Errorf("no retro written: retro %v, misses %v", s.Retro, s.misses())
+	}
+	appended := called("Edit", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
+	if s := auditOf(t, opening, read, dna, appended); s.Retro {
+		t.Error("the rider counts a Write, an Edit of a retro is no retro")
 	}
 }
 
@@ -537,7 +559,7 @@ func auditMissing(opened, edited time.Duration) []any {
 		called("Edit", map[string]any{"file_path": "/x/a.go"}, auditAt(edited))}
 }
 
-func TestAuditCodieBoardEndsOnTheCountAndAMissExitsOne(t *testing.T) {
+func TestAuditCodieBoardEndsOnTheLessonsCount(t *testing.T) {
 	t.Parallel()
 	home := auditHome(t, map[string][]any{"aaaaaaaa": auditClean(time.Hour, time.Hour), "bbbbbbbb": auditMissing(time.Hour, time.Hour)})
 
@@ -557,14 +579,18 @@ func TestAuditCodieBoardEndsOnTheCountAndAMissExitsOne(t *testing.T) {
 	}
 }
 
-func TestAuditCodieJsonNamesEveryMissAndCleanExitsZero(t *testing.T) {
+func TestAuditCodieJsonNamesEveryMiss(t *testing.T) {
 	t.Parallel()
 	home := auditHome(t, map[string][]any{"bbbbbbbb": auditMissing(time.Hour, time.Hour)})
 	got := xIn(t, home, []string{"HOME=" + home}, "fleet", "audit-codie", "--days", "30", "--json")
 	if got.code != 1 || !strings.Contains(got.stdout, `"session":"bbbbbbbb"`) || !strings.Contains(got.stdout, `"file":"how-you-work.md"`) {
 		t.Errorf("exit %d:\n%s", got.code, got.stdout)
 	}
-	home = auditHome(t, map[string][]any{"aaaaaaaa": auditClean(time.Hour, time.Hour)})
+}
+
+func TestAuditCodieCleanExitsZero(t *testing.T) {
+	t.Parallel()
+	home := auditHome(t, map[string][]any{"aaaaaaaa": auditClean(time.Hour, time.Hour)})
 	if got := xIn(t, home, []string{"HOME=" + home}, "fleet", "audit-codie", "--days", "30", "--json"); got.code != 0 {
 		t.Errorf("a clean run exits %d:\n%s", got.code, got.stdout)
 	}

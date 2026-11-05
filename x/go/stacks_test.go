@@ -846,6 +846,66 @@ func TestRestackTakesOriginsLayerWhenTheLocalOneOnlyLagsIt(t *testing.T) {
 	}
 }
 
+// a rival push on the bottom layer: nothing local to lose, and the merges read origin's sha
+func TestRestackTakesARivalPushOnTheBottomLayer(t *testing.T) {
+	t.Parallel()
+	const bottom = "coder/FRM-1-a"
+	clone := layers(t, bottom, "coder/FRM-1-a-2")
+	gitT(t, clone, "fetch", "-q", "origin", bottom+":"+bottom)
+	dir, rival := rivalClone(t, clone, bottom)
+	gitT(t, dir, "push", "-q", "origin", bottom)
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code != 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", rival, originHead(t, clone, "coder/FRM-1-a-2"))) {
+		t.Fatalf("exit %d, want the rival's %s under the top layer\n%s", got.code, short(rival), got.stdout)
+	}
+}
+
+// a commit on the bottom layer that origin lacks still refuses, a restack never merges into that layer
+func TestRestackRefusesABottomLayerAheadOfOrigin(t *testing.T) {
+	t.Parallel()
+	const bottom = "coder/FRM-1-a"
+	clone := layers(t, bottom, "coder/FRM-1-a-2")
+	gitT(t, clone, "fetch", "-q", "origin", bottom+":"+bottom)
+	gitT(t, clone, "switch", "-q", bottom)
+	write(t, filepath.Join(clone, "hand.txt"), "by hand\n")
+	gitT(t, clone, "add", "hand.txt")
+	gitT(t, clone, "commit", "-q", "-m", "a hand fix")
+
+	got := xIn(t, clone, nil, "lane", "restack", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, bottom) {
+		t.Fatalf("exit %d, want a refusal naming the bottom layer\n%s", got.code, got.stdout)
+	}
+}
+
+// a top layer's merge reaches the middle layer's through its second parent: each is booked on its own layer
+func TestRestackBooksEachMergeOnItsOwnLayer(t *testing.T) {
+	t.Parallel()
+	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	clone := layers(t, low, mid, top)
+	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
+	gitT(t, clone, "switch", "-q", low)
+	write(t, filepath.Join(clone, "lower.txt"), "the fix\n")
+	gitT(t, clone, "add", "lower.txt")
+	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
+	gitT(t, clone, "push", "-q", "origin", low)
+	gitT(t, clone, "switch", "-q", mid)
+	gitT(t, clone, "merge", "-q", "--no-ff", "-m", "restack: merge 1234567 into "+mid, low)
+	midMerge := gitT(t, clone, "rev-parse", "HEAD")
+	gitT(t, clone, "switch", "-q", top)
+	gitT(t, clone, "merge", "-q", "--no-ff", "-m", "restack: merge 7654321 into "+top, mid)
+	topMerge := gitT(t, clone, "rev-parse", "HEAD")
+
+	got := xIn(t, clone, nil, "lane", "restack")
+
+	plan := got.stdout
+	if !strings.Contains(plan, `"`+mid+`":["`+short(midMerge)+`"]`) || !strings.Contains(plan, `"`+top+`":["`+short(topMerge)+`"]`) {
+		t.Errorf("want each merge under its own layer:\n%s", plan)
+	}
+}
+
 func TestRestackRefusesACommitNoRestackMade(t *testing.T) {
 	t.Parallel()
 	const layer = "coder/FRM-1-a-2"
@@ -896,18 +956,25 @@ func TestRestackRefusesACommitNoRestackMade(t *testing.T) {
 	}
 }
 
-// the hand resolution goes with the reset, so the stop names the commit it can be taken back from
-func TestRestackNamesAResolutionTheResetLoses(t *testing.T) {
-	t.Parallel()
-	const layer, file = "coder/FRM-1-a-2", "coder-FRM-1-a-2.txt"
-	clone := movedStack(t, file, "the lower layer's version\n")
+// a restack stopped on the top layer, its conflict resolved by hand and left unpushed; the clone and the resolution's sha
+func resolvedRestack(t *testing.T) (clone, resolved string) {
+	t.Helper()
+	const file = "coder-FRM-1-a-2.txt"
+	clone = movedStack(t, file, "the lower layer's version\n")
 	if stopped := xIn(t, clone, nil, "lane", "restack", "--apply"); stopped.code == 0 {
 		t.Fatalf("want a conflict stop\n%s", stopped.stdout)
 	}
 	write(t, filepath.Join(clone, file), "both versions\n")
 	gitT(t, clone, "add", file)
 	gitT(t, clone, "commit", "-q", "--no-edit")
-	resolved := gitT(t, clone, "rev-parse", "HEAD")
+	return clone, gitT(t, clone, "rev-parse", "HEAD")
+}
+
+// the hand resolution goes with the reset, so the stop names the commit it can be taken back from
+func TestRestackNamesAResolutionTheResetLoses(t *testing.T) {
+	t.Parallel()
+	const layer = "coder/FRM-1-a-2"
+	clone, resolved := resolvedRestack(t)
 	dir, _ := rivalClone(t, clone, layer)
 	gitT(t, dir, "push", "-q", "origin", layer)
 
@@ -921,15 +988,8 @@ func TestRestackNamesAResolutionTheResetLoses(t *testing.T) {
 // the resolution goes even when the new merge is clean, so the verb's data names it
 func TestRestackNamesALostResolutionOnACleanRerun(t *testing.T) {
 	t.Parallel()
-	const layer, file = "coder/FRM-1-a-2", "coder-FRM-1-a-2.txt"
-	clone := movedStack(t, file, "the lower layer's version\n")
-	if stopped := xIn(t, clone, nil, "lane", "restack", "--apply"); stopped.code == 0 {
-		t.Fatalf("want a conflict stop\n%s", stopped.stdout)
-	}
-	write(t, filepath.Join(clone, file), "both versions\n")
-	gitT(t, clone, "add", file)
-	gitT(t, clone, "commit", "-q", "--no-edit")
-	resolved := gitT(t, clone, "rev-parse", "HEAD")
+	const layer = "coder/FRM-1-a-2"
+	clone, resolved := resolvedRestack(t)
 	// the rival settles the conflict its own way, so the rerun's merge meets none
 	dir, _ := rivalClone(t, clone, layer)
 	gitT(t, dir, "fetch", "-q", "origin", "coder/FRM-1-a")
@@ -940,6 +1000,19 @@ func TestRestackNamesALostResolutionOnACleanRerun(t *testing.T) {
 
 	if got.code != 0 || !strings.Contains(got.stdout, short(resolved)) {
 		t.Fatalf("exit %d, want a clean rerun naming the lost resolution %s\n%s", got.code, short(resolved), got.stdout)
+	}
+}
+
+func TestGateHeldLintsTheAddOnsPurposes(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "x/go/registry.json"), `{"verbs":[]}`)
+	write(t, filepath.Join(dir, "x/go/stacks.json"), `{"verbs":[{"name":"lane tidy","purpose":"handles stuff"}]}`)
+
+	got := xIn(t, dir, nil, "lane", "gate", "--held")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "stacks.json: lane tidy") {
+		t.Errorf("exit %d, want the add-on's red named:\n%s", got.code, got.stdout)
 	}
 }
 

@@ -46,6 +46,7 @@ func init() {
 	laneAddOn.layersOf = stackLayersOf
 	laneAddOn.mergeLayers = stackMerge
 	laneAddOn.stackShown = stackShown
+	laneAddOn.registries = []string{"stacks.json"}
 }
 
 // the stack a pr tops, read from github's stacks api, one line per open layer up to it, bottom-up
@@ -378,7 +379,7 @@ type restackTarget struct {
 }
 
 // an upper layer's local copy is taken from origin only when all it would lose is a restack's own merges; a bottom
-// layer is never merged into, so a difference there still refuses
+// layer is never merged into, so a commit origin lacks there still refuses
 func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 	if name, paused := pausedRebase(); paused {
 		return nil, &Fail{Refused: true, Msg: "a rebase of " + name + " is stopped here; finish it with git rebase --continue, or git rebase --abort", Next: "git rebase --continue"}
@@ -412,8 +413,11 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 			switch {
 			case !local.ok || local.out == t.Leases[layer]:
 			case i == 0:
-				return "", &Fail{Refused: true, Msg: fmt.Sprintf("%s is %s here and %s on origin: push it, or take origin's, before a restack", layer, short(local.out), short(t.Leases[layer])),
-					Next: "git switch " + layer + " && x lane push --apply"}
+				// only lagging is harmless: the merges read origin's sha, and a local-only commit there would stay behind
+				if ahead, _ := git("log", "-1", "--format=%h", local.out, "--not", t.Leases[layer]); ahead.out != "" {
+					return "", &Fail{Refused: true, Msg: fmt.Sprintf("%s is %s here and %s on origin: push it, or take origin's, before a restack", layer, short(local.out), short(t.Leases[layer])),
+						Next: "git switch " + layer + " && x lane push --apply"}
+				}
 			default:
 				if err := t.readLocalOnly(layer, local.out); err != nil {
 					return "", err
@@ -455,11 +459,16 @@ func (t *restackTarget) readLocalOnly(layer, local string) error {
 			hand = append(hand, short(sha)+" "+subject)
 			continue
 		}
+		// a lower layer's merge reached through a second parent is booked when its own layer is read
+		if m[1] != layer {
+			continue
+		}
 		if t.Dropped == nil {
 			t.Dropped, t.Lost = map[string][]string{}, map[string]string{}
 		}
 		t.Dropped[layer] = append(t.Dropped[layer], short(sha))
-		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); !clean.ok || clean.out != tree {
+		// newest first, so the first resolution met is the one to take back
+		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); (!clean.ok || clean.out != tree) && t.Lost[layer] == "" {
 			t.Lost[layer] = short(sha)
 		}
 	}

@@ -14,25 +14,26 @@ import (
 // the lane verbs a pr travels through, each proven in both pr modes (FRM-423, dima o129: «a good mvp»)
 var prVerbs = []string{"pr-open", "merge-auto", "push", "restack"}
 
-// a test file is stacked mode when it builds only with the add-on, plain mode otherwise; a verb has a case in a
-// mode when one of that mode's files runs it as `"lane", "<verb>"`
 // a comment names a verb and runs nothing, so the scanner's tokens are read, never the raw text
 func lanePrCases(src []byte) []string {
 	fset := token.NewFileSet()
 	var sc scanner.Scanner
 	sc.Init(fset.AddFile("", fset.Base(), len(src)), src, nil, 0)
 	var cases []string
-	var before []string
+	var twoBack, oneBack string
 	for {
 		_, tok, lit := sc.Scan()
 		if tok == token.EOF {
 			return cases
 		}
-		before = append(before, tok.String()+lit)
-		if n := len(before); n >= 3 && tok == token.STRING && before[n-2] == token.COMMA.String() && before[n-3] == token.STRING.String()+`"lane"` {
+		if tok == token.STRING && oneBack == token.COMMA.String() && twoBack == `"lane"` {
 			if verb, err := strconv.Unquote(lit); err == nil && slices.Contains(prVerbs, verb) {
 				cases = append(cases, verb)
 			}
+		}
+		twoBack, oneBack = oneBack, lit
+		if lit == "" {
+			oneBack = tok.String()
 		}
 	}
 }
@@ -59,6 +60,8 @@ func TestLanePrCasesCountsOnlyARunningCase(t *testing.T) {
 	}
 }
 
+// a test file is stacked mode when it builds only with the add-on, plain mode otherwise; a verb has a case in a
+// mode when one of that mode's files runs it as `"lane", "<verb>"`
 func TestEveryLanePrVerbHasACaseInBothPrModes(t *testing.T) {
 	t.Parallel()
 	files, err := filepath.Glob("*_test.go")

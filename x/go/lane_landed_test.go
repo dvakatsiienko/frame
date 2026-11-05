@@ -279,8 +279,8 @@ func TestLandedWaitsForTheDoneCommentWithNoSixthSense(t *testing.T) {
 
 	*w.comments = lookCardComment
 	envelope, _ = w.landed(t)
-	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") {
-		t.Errorf("codie's done comment closes the range:\n%s", out)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 merged") || !strings.Contains(out, "verified:") {
+		t.Errorf("a done comment with no verified: line bounds nothing:\n%s", out)
 	}
 }
 
@@ -296,15 +296,17 @@ func TestLandedNeverCountsAnotherLanesCommitsOnAQuickLaneWithNoSixthSense(t *tes
 
 	*w.comments = lookCardComment
 	envelope, _ := w.landed(t)
-	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") || strings.Contains(out, "2 commits") {
-		t.Errorf("an open range counts nothing:\n%s", out)
+	if out := linesOf(envelope); !strings.Contains(out, "🔴 merged") || strings.Contains(out, "2 commits") {
+		t.Errorf("another lane's commits never turn it green:\n%s", out)
 	}
 
-	body, _ := json.Marshal("- **proven**: go test ok\n- **not checked**: his eyes\nverified: " + short(head))
-	*w.comments = `[{"body":` + string(body) + `}]`
-	envelope, _ = w.landed(t)
-	if out := linesOf(envelope); !strings.Contains(out, "✅ merged — 1 commit from main:") {
-		t.Errorf("the done comment's verified sha stops the range:\n%s", out)
+	for _, line := range []string{"verified: ", "- **verified**: "} {
+		body, _ := json.Marshal("- **proven**: go test ok\n- **not checked**: his eyes\n" + line + short(head))
+		*w.comments = `[{"body":` + string(body) + `}]`
+		envelope, _ = w.landed(t)
+		if out := linesOf(envelope); !strings.Contains(out, "✅ merged — 1 commit from main:") {
+			t.Errorf("%q: the done comment's verified sha stops the range:\n%s", line, out)
+		}
 	}
 }
 
@@ -343,8 +345,8 @@ func TestLandedLeavesAnotherLanesVerifyTreeOnAQuickLaneWithNoSixthSense(t *testi
 
 	envelope, _ := w.landed(t, "--apply")
 
-	if out := linesOf(envelope); !exists(verify) || !strings.Contains(out, "✅ merged") {
-		t.Errorf("tree there: %v, want it kept and merged green:\n%s", exists(verify), out)
+	if out := linesOf(envelope); !exists(verify) || !strings.Contains(out, "names no verified: sha") {
+		t.Errorf("tree there: %v, want it kept and the refusal naming the missing verified sha:\n%s", exists(verify), out)
 	}
 }
 
@@ -439,7 +441,7 @@ func TestLandedWiredLine(t *testing.T) {
 
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
-	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one verb, `x lane landed`", "the prose names `x lane landed` as new", "a new verb: `x lane landed`, in a sentence"} {
+	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one verb, `x lane landed`", "the prose names `x lane landed` as new", "a new verb: `x lane landed`, in a sentence", "new verb: none", "new verb: none — a fix"} {
 		t.Run(line, func(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
@@ -458,7 +460,7 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
-	*w.body = "## ⚖️ worth it\n\n* new verb: `x lane landed`\n* new verb: lane push\n\n" + landedBody
+	*w.body = "## ⚖️ worth it\n\n* new verb: `x lane landed` — the close\n* new verb: lane push\n\n" + landedBody
 	plant(t, w.state, 0, planted{name: "lane landed", ms: 1, caller: "cc"})
 
 	envelope, _ := w.landed(t)

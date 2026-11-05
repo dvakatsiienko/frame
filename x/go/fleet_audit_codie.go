@@ -8,24 +8,25 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
 
 const (
-	checkRead    = "read"
-	checkMissed  = "missed"
-	checkOlder   = "n/a"
-	checkNoEdit  = "no edit"
-	lessonsName  = "how-you-work.md"
-	ticketChecks = "ticket read"
+	checkRead   = "read"
+	checkMissed = "missed"
+	checkOlder  = "n/a"
+	checkNoEdit = "no edit"
+	lessonsName = "how-you-work.md"
+	ticketCheck = "ticket read"
 )
 
 // a read matches under any skill dir, so a rename of the skill cannot break it; a session opened before a file's
 // birth reads n/a for it, never a miss
 var auditFiles = []struct{ name, match, born string }{
-	{lessonsName, "/how-you-work.md", "2026-09-30"},
 	{"crew-dna", "/crew-dna/SKILL.md", "2026-10-09"},
+	{lessonsName, "/how-you-work.md", "2026-09-30"},
 }
 
 var (
@@ -33,6 +34,7 @@ var (
 	auditEditBins  = regexp.MustCompile(`\b(edit-anchored|edit-batch)\b`)
 	briefTicket    = regexp.MustCompile(`\b(FRM|BYT)-\d+\b`)
 	ticketReadCmd  = regexp.MustCompile(`\blinear[ :-](read|issue)\b`)
+	fileReadCmd    = regexp.MustCompile(`(^|[\s;&|(])(cat|head|tail|sed|bat|less)\s`)
 )
 
 type compactRead struct {
@@ -42,7 +44,7 @@ type compactRead struct {
 }
 
 type auditCheck struct {
-	File  string `json:"file"`
+	Name  string `json:"name"`
 	State string `json:"state"`
 	Read  string `json:"read"`
 }
@@ -55,6 +57,7 @@ type codieSession struct {
 	Checks    []auditCheck  `json:"checks"`
 	Compacts  []compactRead `json:"compacts"`
 	Retro     bool          `json:"retro"`
+	tickets   []string
 }
 
 type auditMiss struct {
@@ -115,7 +118,7 @@ func fleetAuditCodie(r *Run, _ []string, flags Flags) (any, error) {
 	data.Summary = counts[len(counts)-1]
 	var fail error
 	if len(data.Misses) > 0 {
-		fail = &Fail{Msg: fmt.Sprintf("%d missed; %s", len(data.Misses), data.Summary), Next: "read data.misses: each names the file and the session", Data: data}
+		fail = &Fail{Refused: true, Msg: fmt.Sprintf("%d missed; %s", len(data.Misses), data.Summary), Next: "x fleet audit-codie " + auditWindowArgs(data) + " --board", Data: data}
 	}
 	if !r.human {
 		return data, fail
@@ -132,9 +135,16 @@ func fleetAuditCodie(r *Run, _ []string, flags Flags) (any, error) {
 	if fail != nil {
 		fmt.Println(r.output)
 		r.passthrough, r.code = true, 1
-		traced.Kind = (&Fail{}).kind()
+		traced.Kind = "refused"
 	}
 	return data, nil
+}
+
+func auditWindowArgs(data auditData) string {
+	if data.Since != "" {
+		return "--since " + data.Since
+	}
+	return fmt.Sprintf("--days %d", data.Days)
 }
 
 // siesta-last's stamp: local time, no zone
@@ -170,26 +180,38 @@ func (s codieSession) misses() []auditMiss {
 	var misses []auditMiss
 	for _, c := range s.Checks {
 		if c.State == checkMissed {
-			misses = append(misses, auditMiss{s.ID, s.Cwd, c.File, fmt.Sprintf("first edit %s, read %s", clockOf(s.FirstEdit), cmp.Or(clockOf(c.Read), "never"))})
+			misses = append(misses, auditMiss{s.ID, s.Cwd, c.Name, fmt.Sprintf("first edit %s, read %s", clockOf(s.FirstEdit), cmp.Or(clockOf(c.Read), "never"))})
 		}
 	}
 	for _, c := range s.Compacts {
-		if c.Edited && !c.Reread {
+		if c.Edited && !c.Reread && s.stateFor(lessonsName) != checkOlder {
 			misses = append(misses, auditMiss{s.ID, s.Cwd, lessonsName, "edited after the compaction at " + clockOf(c.At) + " with no re-read"})
 		}
 	}
 	return misses
 }
 
+func (s codieSession) stateFor(name string) string {
+	for _, c := range s.Checks {
+		if c.Name == name {
+			return c.State
+		}
+	}
+	return ""
+}
+
 // one line per check, how-you-work.md last: the board's last line and the summary
 func auditCounts(sessions []codieSession) []string {
-	names := []string{ticketChecks, auditFiles[1].name, lessonsName}
+	names := []string{ticketCheck}
+	for _, file := range auditFiles {
+		names = append(names, file.name)
+	}
 	lines := make([]string, 0, len(names))
 	for _, name := range names {
 		read, asked, older := 0, 0, 0
 		for _, s := range sessions {
 			for _, c := range s.Checks {
-				if c.File != name {
+				if c.Name != name {
 					continue
 				}
 				switch c.State {
@@ -231,6 +253,10 @@ func auditSession(path string) (codieSession, bool) {
 		return codieSession{}, false
 	}
 	s := codieSession{ID: filepath.Base(path)[:min(8, len(filepath.Base(path)))], Compacts: []compactRead{}}
+	var first auditLine
+	if json.Unmarshal(opening, &first) == nil {
+		s.tickets = briefTicket.FindAllString(string(first.Message.Content), -1)
+	}
 	reads := map[string]string{}
 	seen := map[string]bool{}
 	for _, raw := range lines {
@@ -266,16 +292,17 @@ func auditSession(path string) (codieSession, bool) {
 		s.Checks = append(s.Checks, auditCheck{file.name, state, reads[file.name]})
 	}
 	// the ticket check runs only when the brief names one
-	if briefTicket.Match(opening) {
-		s.Checks = append(s.Checks, auditCheck{ticketChecks, s.stateOf(reads[ticketChecks]), reads[ticketChecks]})
+	if len(s.tickets) > 0 {
+		s.Checks = append(s.Checks, auditCheck{ticketCheck, s.stateOf(reads[ticketCheck]), reads[ticketCheck]})
 	}
 	return s, true
 }
 
 func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string) {
 	target := b.Input.FilePath + " " + b.Input.Command
+	isRead := b.Name == "Read" || b.Name == "Bash" && fileReadCmd.MatchString(b.Input.Command)
 	for _, file := range auditFiles {
-		if !strings.Contains(target, file.match) {
+		if !isRead || !strings.Contains(target, file.match) {
 			continue
 		}
 		reads[file.name] = cmp.Or(reads[file.name], at)
@@ -283,8 +310,8 @@ func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string
 			s.Compacts[n-1].Reread = true
 		}
 	}
-	if b.Name == "Bash" && ticketReadCmd.MatchString(b.Input.Command) {
-		reads[ticketChecks] = cmp.Or(reads[ticketChecks], at)
+	if b.Name == "Bash" && ticketReadCmd.MatchString(b.Input.Command) && slices.ContainsFunc(s.tickets, func(id string) bool { return strings.Contains(b.Input.Command, id) }) {
+		reads[ticketCheck] = cmp.Or(reads[ticketCheck], at)
 	}
 	if !auditEditTools[b.Name] && (b.Name != "Bash" || !auditEditBins.MatchString(target)) {
 		return
@@ -293,7 +320,7 @@ func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string
 	if n := len(s.Compacts); n > 0 {
 		s.Compacts[n-1].Edited = true
 	}
-	s.Retro = s.Retro || strings.HasSuffix(b.Input.FilePath, "-retro.md")
+	s.Retro = s.Retro || b.Name == "Write" && strings.HasSuffix(b.Input.FilePath, "-retro.md")
 }
 
 // a session with no edit may be live, or edited nothing: no miss either way

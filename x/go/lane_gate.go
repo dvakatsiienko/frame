@@ -40,7 +40,7 @@ func (c glossaryContext) dir() string { return path.Dir(c.glossary) }
 
 func laneGate(r *Run, args []string, flags Flags) (any, error) {
 	if held, _ := flags["held"].(bool); held {
-		return heldLint()
+		return heldLint(r)
 	}
 	if len(args) == 0 {
 		return nil, usageFail("the commit-msg door takes a message file, a held layer takes --held", "x lane gate --held")
@@ -256,19 +256,19 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 	return refusals
 }
 
-// the binary bakes the purposes it was built from; a layer sitting local reads its own tree's, stacks.json included
-func heldLint() (any, error) {
+// the binary bakes the purposes it was built from; a layer sitting local reads its own tree's
+func heldLint(r *Run) (any, error) {
 	root, err := top()
 	if err != nil {
 		return nil, err
 	}
 	dir := filepath.Join(root, "x", "go")
 	if !exists(filepath.Join(dir, "registry.json")) {
-		return nil, usageFail("no x/go/registry.json under "+root+": --held lints x's own tree", "run it inside a frame worktree")
+		return nil, usageFail("no x/go/registry.json under "+root+": --held lints x's own tree", "cd ~/frame && x lane gate --held")
 	}
 	var problems []string
 	checked := 0
-	for _, name := range []string{"registry.json", "stacks.json"} {
+	for _, name := range append([]string{"registry.json"}, laneAddOn.registries...) {
 		raw, err := os.ReadFile(filepath.Join(dir, name))
 		if errors.Is(err, fs.ErrNotExist) {
 			continue
@@ -292,5 +292,6 @@ func heldLint() (any, error) {
 	if len(problems) > 0 {
 		return nil, &Fail{Refused: true, Msg: strings.Join(problems, "\n"), Next: "reword the purpose, then x lane gate --held"}
 	}
+	r.Board(fmt.Sprintf("x lane gate --held: %s clean", plural(checked, "purpose")))
 	return ordered{{"verbs", checked}}, nil
 }

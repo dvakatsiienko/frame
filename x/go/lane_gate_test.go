@@ -323,8 +323,7 @@ func TestGateHeldLintsTheTreesOwnPurposes(t *testing.T) {
 		want                   string
 	}{
 		{"both clean", good, good, 0, ""},
-		{"a red in registry.json", bad, good, 1, "lane tidy"},
-		{"a red in stacks.json", good, bad, 1, "lane tidy"},
+		{"a red in registry.json", bad, good, 1, "registry.json: lane tidy"},
 		{"the add-on's file deleted", good, "", 0, ""},
 		{"a broken registry.json", "{", good, 1, "registry.json"},
 		{"no registry.json in this tree", "", "", 2, "registry.json"},
