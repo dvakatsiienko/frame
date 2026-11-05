@@ -728,7 +728,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ a line reaches a dead target once it is back
   - given a queued send, then it counts as sent, no second line while it waits; given a target refused for 20 polls and revived, then one line; a key whose session ended sends nothing, since only its own session polls it
   - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::a refused rung write leaves the watch alive: the line once, then the resume; ::a store refusing every rung write costs one line, not a turn per poll; ::a line on its way never rides its own turn as a second line; ::an ended session’s key sends nothing: only its own session polls it
-- 🧭 a shift switches it with no click, and ⏰ with it
+- ✅ a shift switches it with no click, and ⏰ with it
   - given `pnpm mods:set pace on` (`end` puts back the key it found, `off` writes `{ off: true }`, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back, so a clio on by default stays on
   - and start, start, end changes nothing more; a change of dima's during the shift is kept; a second start turns ⏰ back on, and the end still restores what the first found (W1958: he may forget); a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
   - and the 🎛️ `stash · knobs` row `🔋 pace watch: this session` shows and flips this session's key; the part `🔋 pace watch: all sessions` off draws no row, sends nothing, writes no seat key and puts ⏰ back

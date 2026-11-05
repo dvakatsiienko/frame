@@ -31,7 +31,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **lane** — any flow of work (dima, 2026-10-22, groomed 10-23 and 10-29); four kinds, and a `lane:` line holds
   only the kind word: the **main lane** is ours, this thread, where the operational work is solved; a **side lane** is
   any lane not ours, summoned while we work the main lane: codie with a pr always, sixth sense on by default; a **quick
-  lane** is a side lane with no pr, on main, sixth sense off by default; a **shift** (dormant) is a lane run from a
+  lane** is a side lane with no pr, on main, sixth sense off by default; a **shift** is a lane run from a
   written plan while his AFK tick is on, `clio:shift` its contract. a thread name reads `<mode> <role emoji> <member name>: <scope> |
   <ticket or what>`, the scope optional, mode `🌗` side, `⚡` quick, `🌘` shift: `⚡ 🔧 codie: mods lane 3 | FRM-467`.
 - lane init (dima, 2026-10-23, PK-263; the contract: `craft-fleet-flow`):
