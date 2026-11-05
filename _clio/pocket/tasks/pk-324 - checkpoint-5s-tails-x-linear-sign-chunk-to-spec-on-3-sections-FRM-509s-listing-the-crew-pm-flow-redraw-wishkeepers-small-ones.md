@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-05T21:07:00Z'
+updated_date: '2026-11-05T21:08:00Z'
 labels:
   - m
 dependencies: []
@@ -24,3 +24,11 @@ ordinal: 27000
 8. board: `crew-pm-flow` redraw, `clio:author-blueprint`, sources moved past v14, tiles still say `pr-watch`: `_clio/blueprints/crew-pm-flow.tiles.json`, `excalidraw/crew-pm-flow/board.excalidraw`; ticket-flow.build.py:186,195 «one glide step each»; a redraw needs his ⌘O.
 9. wishkeeper's small ones, unfixed: FRM-501 `## closing word` is stale, rewrite at close; its pr's `## 🪢 habits` adds `crew-lead/watching.md`; `body.md` names `new verb:`; `shape-lane-dispatch/SKILL.md:41` says how a planless card moves; `review-rounds.md` appends frame#126's live-session miss; FRM-410 decided vs one step per slice: reread; FRM-434, FRM-473 re-signs say «worth unchanged» with no section: the pass writes it; W847 and W2000 same words, keep one; `wish-cover --all` in `craft-pm`. tomorrow's boot: the empty-wakes line in `_reminders.md`.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+W1 (2026-11-05 22:55, dima, home PK-324): habit: canceling planned stuff is useful, because we often don't know ourselves if a piece to build is worth it; the worth-it check is the first gate, but some unused, not useful stuff still gets planned, so canceling it is useful.
+W2 (2026-11-05 22:55, dima, home PK-324): when something is brought up as a cancel candidate, give me the reason in the main thread, slightly more expanded than a few words; currently four asks in Orbit carry cancel proposals with only a few words of reason.
+W3 (2026-11-05 22:55, dima, home PK-324): let's start with o85: why is the x lane camp not useful? ❓
+<!-- SECTION:NOTES:END -->
