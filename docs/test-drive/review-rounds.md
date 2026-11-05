@@ -68,6 +68,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-05 · frame#126 · matt's standards and spec axes, wisphunter · 8 and 6 findings · useful
 - 2026-11-05 · frame#126 · built-in /code-review · 9 findings · useful
 - 2026-11-05 · frame#126 · sixth sense's wisphunter · 7 claims, 2 reproduced as real, 2 set aside · useful
+- 2026-11-05 · frame#124 (FRM-501, mods lane 5 layer 2, no sixth sense) · clio's 3 read rounds, wishkeeper and wisphunter over each head, each found real items: f1060d7d, ef4a3eb1 (2 highs that changed what he was told), 4b699bd2 nits only · his exit-notice tick came from a read, merged at b7a2e8af
 - 2026-11-05 · frame#127 (FRM-434, cli lane 4 layer 3) · 3 sixth sense rounds, 9 and 7 min after round 1, 14 of 14 exit lines · its second read found all 4 of round 1's breaks, each invisible to green rows; a scoped reviewer's one-line fix caused round 2's two regressions, which codie's own scoped read missed
 - 2026-11-05 · frame#126 · a miss of every round above: its merge removed a clean tree with cli codie live inside, whose session started elsewhere and entered by `cd`; nothing lost, read from the merge's own log · the fix is FRM-434's exit 11, on frame#127
 
