@@ -1907,35 +1907,67 @@ async function unmountSteers($: EngineInterface) {
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
-// a press that unticks drops the ask's record; it lands before the mark, so a tool call that takes the mark finds it
+// one press is one marking step, deciding from one read: a tick's record lands before its mark, so a tool call that
+// takes the mark finds it; an untick clears the mark first, so no tick is ever marked without its record
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const TICKS_KEPT = 20;
 const quotedOf = (text: string) =>
     [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
-async function tickAsk(
+async function recordTick(
+    $: EngineInterface,
+    ask: OrbitAsk,
+    isTicked: boolean,
+) {
+    // the press still marks: with no record the guard refuses, so a failure here fails closed
+    try {
+        const { value: kept = [] } = await $.state.get(TICKS);
+        const rest = kept.filter((t) => t.id !== ask.id);
+        await $.state.set(
+            TICKS,
+            isTicked
+                ? [
+                      ...rest,
+                      {
+                          at: await $.clock.now(),
+                          id: ask.id,
+                          targets: quotedOf(ask.text),
+                          text: ask.text,
+                      } satisfies StashTick,
+                  ].slice(-TICKS_KEPT)
+                : rest,
+        );
+    } catch (err) {
+        $.ui.log(`x-mod-stash: tick record not written: ${errorText(err)}`);
+    }
+}
+async function pressMarkNow(
     $: EngineInterface,
     id: string,
     mark: 'accepted' | 'rejected',
 ) {
     const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
-    // a press on a frame drawn before his prompt locked the ask changed nothing, so it keeps the record (S1)
-    if (ask?.isLocked || ask?.isResolved) return;
-    const { value: kept = [] } = await $.state.get(TICKS);
-    const rest = kept.filter((t) => t.id !== id);
-    await $.state.set(
-        TICKS,
-        ask && mark === 'accepted' && ask.mark !== mark
-            ? [
-                  ...rest,
-                  {
-                      at: await $.clock.now(),
-                      id,
-                      targets: quotedOf(ask.text),
-                      text: ask.text,
-                  } satisfies StashTick,
-              ].slice(-TICKS_KEPT)
-            : rest,
+    // a press on a frame drawn before his prompt locked the ask changes nothing, so it keeps the record (S1)
+    if (!ask || ask.isLocked || ask.isResolved) return;
+    const next = ask.mark === mark ? undefined : mark;
+    const isTicked = next === 'accepted';
+    if (isTicked) await recordTick($, ask, true);
+    // the save reads the orbit again: a tool call may have locked other asks while the record was written
+    await markAsksNow(
+        $,
+        (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
+        true,
+        undefined,
     );
+    if (!isTicked) await recordTick($, ask, false);
+}
+async function pressMark(
+    $: EngineInterface,
+    id: string,
+    mark: 'accepted' | 'rejected',
+) {
+    const run = marking.then(() => pressMarkNow($, id, mark));
+    marking = run.catch(() => undefined);
+    await run;
 }
 
 async function dropTicks($: EngineInterface, id: string) {
@@ -3349,6 +3381,19 @@ async function pressPace($: EngineInterface) {
 }
 
 // a seat starts on: 🔋 the coordinator's, 🔥 every seated member's; a written key, off included, stands
+// a store the old build wrote still holds the undo window's keys and the row chips' switch (FRM-507)
+async function retireCutKeys($: EngineInterface) {
+    for (const key of ['undo-window', 'undo-delay'])
+        if ((await $.store.get(key)) !== undefined) await $.store.delete(key);
+    const shown = (await $.store.get(SHOWN)) as
+        | Record<string, boolean>
+        | undefined;
+    if (shown && 'stash.chips' in shown) {
+        const { 'stash.chips': _, ...rest } = shown;
+        await $.store.set(SHOWN, rest);
+    }
+}
+
 async function seatDefaults($: EngineInterface) {
     const sid = await currentId($);
     const name = await sessionName($);
@@ -4669,6 +4714,7 @@ export const register: Register = (on) => {
             return undefined;
         });
         await seatDefaults($).catch(() => undefined);
+        await retireCutKeys($).catch(() => undefined);
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,
@@ -5738,23 +5784,7 @@ export const register: Register = (on) => {
                     // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
                     // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
                     const ownDoor: AskDoor = {
-                        mark: (a, mark) =>
-                            void (async () => {
-                                await tickAsk($, a.id, mark);
-                                await markAsks(
-                                    $,
-                                    (x) => {
-                                        if (x.id !== a.id) return x;
-                                        const isOff = x.mark === mark;
-                                        return {
-                                            ...x,
-                                            isChanged: false,
-                                            mark: isOff ? undefined : mark,
-                                        };
-                                    },
-                                    true,
-                                );
-                            })(),
+                        mark: (a, mark) => void pressMark($, a.id, mark),
                         prefix: 'orbit',
                         steer: (a, value) => handleSteer(a.id, value),
                     };

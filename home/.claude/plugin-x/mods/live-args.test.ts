@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseLive, requestOf } from './live-args.ts';
+import { parseLive, requestOf, skipPromptArgs } from './live-args.ts';
 
 describe('parseLive', () => {
     it('reads a bare mod dir as serve', () => {
@@ -56,6 +56,23 @@ describe('parseLive', () => {
             ].map((argv) => parseLive(argv).kind),
         ).toEqual(['usage', 'usage', 'usage', 'usage']);
     });
+});
+
+describe('skipPromptArgs', () => {
+    const on = '{"skipDangerousModePermissionPrompt":true}';
+    it("carries the user's own yes to the child", () => {
+        expect(skipPromptArgs(on)).toEqual(['--settings', on]);
+    });
+    for (const [name, text] of [
+        ['set off', '{"skipDangerousModePermissionPrompt":false}'],
+        ['absent', '{"model":"opus"}'],
+        ['a truthy string', '{"skipDangerousModePermissionPrompt":"true"}'],
+        ['unreadable json', '{nope'],
+        ['a bare null', 'null'],
+    ] as const)
+        it(`adds nothing when the value is ${name}`, () => {
+            expect(skipPromptArgs(text)).toEqual([]);
+        });
 });
 
 describe('requestOf', () => {

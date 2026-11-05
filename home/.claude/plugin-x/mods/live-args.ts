@@ -10,6 +10,21 @@ export type LiveArgs =
     | { kind: 'plant'; file: string; anchor: string; replacement: string }
     | { kind: 'usage' };
 
+// the child reads no user settings, so the user's own yes to the bypass dialog rides in as flag settings; off or absent,
+// the dialog still stands
+export function skipPromptArgs(userSettings: string): string[] {
+    try {
+        const { skipDangerousModePermissionPrompt: isSkipped } = (JSON.parse(
+            userSettings,
+        ) ?? {}) as { skipDangerousModePermissionPrompt?: unknown };
+        return isSkipped === true
+            ? ['--settings', '{"skipDangerousModePermissionPrompt":true}']
+            : [];
+    } catch {
+        return [];
+    }
+}
+
 const isVerb = (v: string): v is LiveVerb =>
     (LIVE_VERBS as readonly string[]).includes(v);
 

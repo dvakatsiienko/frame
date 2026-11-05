@@ -58,7 +58,7 @@
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
 - ✅ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
-  - when dima hovers `🪐 n`, `🌔 n`, the pace, `⏳`, `🔥 5h` or `🧠`
+  - when dima hovers the pace, `⏳`, `🔥 5h` or `🧠`
   - then a dim card reads «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «5h window used», «context window used» (dima, 20:13)
   - 📌 harness-proven words; the reveal on the desktop is dima's eye
   - proof: tests/band.test.ts::every control in the row carries a hover card that names it; tests/meters.test.ts::every chip and reading in the row names itself on hover
@@ -575,12 +575,14 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
 - ✅ a tick lands at once (FRM-507)
+  - given a store from the old build, then the load deletes `undo-window`, `undo-delay` and `shown["stash.chips"]`, every other `shown` key kept
   - given dima presses 🛎️ tick or 🔁 replay on an ask, on its own board or a glide card
   - then the button reads `✅ tick` (or `✅ replay`) at once, and the next turn, or the running turn at its next tool call, takes it
   - decision: a state changes only the button's icon, never its text (dima, 21:01)
   - proof: tests/orbit.test.ts::a tick reads ✅ tick at once / 🔁 replay reads ✅ replay at once / a running turn takes a tick at its next tool call / a tick from another board's glide card joins the running turn at once; tests/lane.test.ts::a tick on the card reads ✅ tick at once
 - ✅ a 🛎️ tick on this board is written as dima's word (FRM-427)
   - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time of the press; x-mod-guard reads it
+  - decision: a press is one step: a tick's record lands before its mark, an untick clears the mark first, and a record that cannot be written still marks, the guard then refusing (FRM-507)
   - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
   - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it on this board, then the record holds the new text and its quoted command; a press on a glide card writes none (below, dima's pick a, 2026-10-30)

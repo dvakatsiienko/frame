@@ -1548,6 +1548,65 @@ test('the tick record lands before the mark a running turn can take', async ($, 
     expect(order.slice(0, 2)).toEqual(['ticks', 'orbit']);
 });
 
+test('two presses at once leave no mark and no tick record', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    // the first press waits inside its record read, so the second lands while it is in flight
+    let open = () => {};
+    const gate = new Promise<void>((resolve) => {
+        open = resolve;
+    });
+    on('state.get', async (_$, e, next) => {
+        if (e.key === 'ticks') await gate;
+        return next(e as never);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    open();
+    await w.clock.advance(1);
+    expect([
+        writes.at(-1),
+        (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
+    ]).toEqual([[], '🛎️ tick']);
+});
+
+test('an untick clears the mark before it drops the record', async ($, on) => {
+    world(on);
+    const order: string[] = [];
+    let isUnticking = false;
+    on('state.set', (_$, e, next) => {
+        if (isUnticking && (e.key === 'ticks' || e.key === 'orbit'))
+            order.push(e.key);
+        return next(e);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    isUnticking = true;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(order.slice(0, 2)).toEqual(['orbit', 'ticks']);
+});
+
+// a throwing state mock is skipped by the harness (engine.md), so a kept value nothing can filter forces the failure
+test('a tick record that cannot be written still marks the ask', async ($, on) => {
+    const w = world(on);
+    on('state.get', (_$, e, next) =>
+        e.key === 'ticks'
+            ? { value: { value: 5, version: 1 } }
+            : next(e as never),
+    );
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'go');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
 test('a second 🛎️ press takes the tick back', async ($, on) => {
     world(on);
     const writes = tickLog(on);
@@ -2227,16 +2286,25 @@ test('orbit registers loaded up front, never behind ToolSearch', async ($, on) =
 
 /* a tick lands at once: no sending state, no delay field */
 
-test('a store written by the old build loads with its stale keys ignored', async ($, on) => {
+test('the load retires the cut keys and keeps every other shown switch', async ($, on) => {
     const w = world(on);
-    w.store.set('undo-window', true);
+    w.store.set('undo-window', false);
     w.store.set('undo-delay', 30);
-    w.store.set('shown', { 'stash.chips': false });
+    w.store.set('shown', { 'stash.chips': false, 'stash.pace': false });
     await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
+    expect([
+        w.store.get('undo-window'),
+        w.store.get('undo-delay'),
+        w.store.get('shown'),
+    ]).toEqual([undefined, undefined, { 'stash.pace': false }]);
+});
+
+test('a store with no cut key takes no shown write at the load', async ($, on) => {
+    const w = world(on);
+    const shown = { 'stash.pace': false };
+    w.store.set('shown', shown);
+    await start($);
+    expect(w.store.get('shown')).toBe(shown);
 });
 
 test('an ask the old build kept with a future sendAt lands at once', async ($, on) => {

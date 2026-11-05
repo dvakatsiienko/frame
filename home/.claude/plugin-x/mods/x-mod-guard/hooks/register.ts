@@ -682,7 +682,6 @@ async function tickFor(
         .reverse()
         .find(
             (t) =>
-                t.at <= now &&
                 now - t.at <= TICK_MS &&
                 !spent.includes(`${t.id}@${t.at}:${scope}`) &&
                 covers(t),
