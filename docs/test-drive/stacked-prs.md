@@ -52,4 +52,6 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 - 2026-11-05 · mods lane 5 layer 1, FRM-507, frame#123 · merged alone at b8dbd3ec, no layer above it · stack-only hand steps 0, 0 min · untested as a stack, a plain pr in practice; layer 2 bases on main, frame#124 · reads came from the bar, not the stack (codie's retro)
 - 2026-11-05 · 📌 the live stacks are mods lane 5 and cli lane 4, the 11-18 verdict reads them; the plan's FRM-383 and FRM-384 ran plain
 
+- 2026-11-05 · mods lane 5 and cli lane 4, retros read at the siesta · frame#123, frame#125 and frame#124 landed or sat as one layer each, since each layer below merged first: 0 restacks, 0 retargets, 0 stack-only hand steps · no verdict: the trial's cost starts at a real layer 3
+
 ## verdict
