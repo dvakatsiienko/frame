@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -16,10 +18,12 @@ import (
 // scratch copy and lands only when its overlay validates and tests green, all files or none (FRM-388)
 const modsDir = "home/.claude/plugin-x/mods/"
 
-// the scratch root holds each copy at its repo path, `.base/` the bytes it was pulled at, `.pulled` the pulled paths
+// the scratch root holds each copy at its repo path, `.base/` the bytes it was pulled at, `.pulled` the pulled paths,
+// `.tested` the stamp of the overlay `x mods edit test` last passed
 const (
 	scratchBase   = ".base"
 	scratchPulled = ".pulled"
+	scratchTested = ".tested"
 )
 
 func scratchRoot(repo string) string {
@@ -115,11 +119,13 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	if red := redReports(reports); len(red) > 0 {
 		return nil, &Fail{Msg: "red on the overlay: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
 	}
+	// a lost stamp costs one test run at the push, nothing more
+	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(overlayStamp(repo, scratch, changed)), 0o644)
 	r.Done(reportLine(reports), "x mods edit push")
 	return ordered{{"mods", reports}}, nil
 }
 
-func modsEditPush(r *Run, _ []string, flags Flags) (any, error) {
+func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 	repo, scratch, err := modsRepo()
 	if err != nil {
 		return nil, err
@@ -131,12 +137,29 @@ func modsEditPush(r *Run, _ []string, flags Flags) (any, error) {
 		if len(changed) == 0 {
 			return "", &Fail{Refused: true, Msg: "nothing edited in " + scratch, Next: "x mods edit status"}
 		}
+		if len(args) > 0 {
+			var named []string
+			for _, arg := range args {
+				path, err := modsRepoPath(repo, arg)
+				if err != nil {
+					return "", err
+				}
+				if !slices.Contains(changed, path) {
+					return "", &Fail{Refused: true, Msg: path + " holds no edit in scratch; nothing written", Next: "x mods edit status"}
+				}
+				named = append(named, path)
+			}
+			changed = named
+		}
 		return fmt.Sprintf("%d to write", len(changed)), modsPushPlan(repo, scratch, changed, added)
 	}); err != nil {
 		return nil, err
 	}
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
+		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == overlayStamp(repo, scratch, changed) {
+			return "x mods edit test passed these bytes", nil
+		}
 		reports, err = overlayTest(repo, scratch, changed)
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
@@ -150,7 +173,7 @@ func modsEditPush(r *Run, _ []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(fmt.Sprintf("%d written, %s", len(changed), reportLine(reports)), "x lane commit <msg> -- <paths>")
+	r.Done(strings.TrimSuffix(fmt.Sprintf("%d written, %s", len(changed), reportLine(reports)), ", "), "x lane commit <msg> -- <paths>")
 	return ordered{{"written", changed}, {"mods", reports}}, nil
 }
 
@@ -217,6 +240,31 @@ func writeAll(repo, scratch string, changed []string) error {
 
 /* the overlay */
 
+// every byte an overlay test would read: the touched mods' files with the edited copies laid over
+func overlayStamp(repo, scratch string, changed []string) string {
+	sources := map[string]string{}
+	for _, mod := range touchedMods(changed) {
+		root := filepath.Join(repo, modsDir, mod)
+		_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err == nil && !d.IsDir() {
+				rel, _ := filepath.Rel(repo, path)
+				sources[filepath.ToSlash(rel)] = path
+			}
+			return nil
+		})
+	}
+	for _, path := range changed {
+		sources[path] = filepath.Join(scratch, path)
+	}
+	hash := sha256.New()
+	for _, path := range slices.Sorted(maps.Keys(sources)) {
+		body, _ := os.ReadFile(sources[path])
+		fmt.Fprintf(hash, "%s %d\n", path, len(body))
+		hash.Write(body)
+	}
+	return fmt.Sprintf("%x", hash.Sum(nil))
+}
+
 type modReport struct {
 	Mod      string   `json:"mod"`
 	Validate string   `json:"validate"`
@@ -258,6 +306,9 @@ func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
 			continue
 		}
 		got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
+		if !got.ok && timeoutOnly(got.log) {
+			got, _ = run("", nil, "", "claude", "plugin", "test", overlay)
+		}
 		report.Passed, report.Failed, report.Errored = testOutcome(got.log)
 		if !got.ok && len(report.Failed)+len(report.Errored) == 0 {
 			report.Errored = []string{"claude plugin test exited red with no failing test named"}
@@ -417,7 +468,7 @@ func changedScratch(scratch string) []string {
 			}
 			return nil
 		}
-		if rel == scratchPulled {
+		if rel == scratchPulled || rel == scratchTested {
 			return nil
 		}
 		base, err := os.ReadFile(filepath.Join(scratch, scratchBase, rel))

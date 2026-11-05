@@ -22,6 +22,7 @@ func modsFixture(t *testing.T) (dir string, env []string) {
 	bin := t.TempDir()
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
 d="$3"
+[ -n "$CLAUDE_CALLS" ] && echo "$2" >> "$CLAUDE_CALLS"
 if [ "$2" = validate ]; then
   if grep -q PARSE-ERROR "$d"/hooks/* 2>/dev/null; then echo "  ❯ modules../register.ts: m: does not parse: PARSE-ERROR (line 1)"; echo "✘ Validation failed"; exit 1; fi
   echo "✔ Validation passed"; exit 0
@@ -31,6 +32,7 @@ for f in "$d"/tests/*.test.ts; do
   n=$(basename "$f")
   echo "tests/$n:"
   if grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
+  elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q RED "$f"; then echo "(fail) $n is red [1.0ms]"; red=1
   else echo "(pass) $n [1.0ms]"; fi
 done
@@ -69,6 +71,99 @@ func TestModsEditPushLandsAGreenEdit(t *testing.T) {
 
 	if got.code != 0 || readFile(t, filepath.Join(dir, modTestA)) != "green, edited\n" {
 		t.Fatalf("exit %d, file %q\n%s", got.code, readFile(t, filepath.Join(dir, modTestA)), got.stdout)
+	}
+}
+
+// another writer's half-done edit of the shared overlay stays in scratch, unwritten and still listed
+func TestModsEditPushWithPathsLandsOnlyThosePaths(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copyA, copyB := pullCopy(t, dir, env, modTestA), pullCopy(t, dir, env, modTestB)
+	write(t, copyA, "green, edited\n")
+	write(t, copyB, "RED half done\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "push", modTestA)
+
+	if got.code != 0 || readFile(t, filepath.Join(dir, modTestA)) != "green, edited\n" || readFile(t, filepath.Join(dir, modTestB)) != "green\n" {
+		t.Fatalf("exit %d, a %q, b %q\n%s", got.code, readFile(t, filepath.Join(dir, modTestA)), readFile(t, filepath.Join(dir, modTestB)), got.stdout)
+	}
+	status := xIn(t, dir, env, "mods", "edit", "status")
+	if edited, _ := status.data["edited"].([]any); len(edited) != 1 || edited[0] != modTestB {
+		t.Fatalf("status after the push: %v", status.data["edited"])
+	}
+}
+
+func TestModsEditPushRefusesANamedPathWithNoEdit(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copyA := pullCopy(t, dir, env, modTestA)
+	pullCopy(t, dir, env, modTestB)
+	write(t, copyA, "green, edited\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "push", modTestB)
+
+	if got.code == 0 || readFile(t, filepath.Join(dir, modTestA)) != "green\n" {
+		t.Fatalf("exit %d, a %q\n%s", got.code, readFile(t, filepath.Join(dir, modTestA)), got.stdout)
+	}
+}
+
+// a chain runs a test once: push trusts a green `test` only while every byte of the overlay is the one it tested
+func TestModsEditPushRunsItsTestOnlyWhenTheBytesMoved(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name  string
+		after func(t *testing.T, dir, copyA string)
+		tests int
+	}{
+		{"the same bytes run no second test", func(*testing.T, string, string) {}, 1},
+		{"an edit since runs it", func(t *testing.T, _, copyA string) { write(t, copyA, "green, edited again\n") }, 2},
+		{"a repo file moved since runs it", func(t *testing.T, dir, _ string) { write(t, filepath.Join(dir, modTestB), "green, a peer's\n") }, 2},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			calls := filepath.Join(t.TempDir(), "calls")
+			env = append(env, "CLAUDE_CALLS="+calls)
+			copyA := pullCopy(t, dir, env, modTestA)
+			write(t, copyA, "green, edited\n")
+			if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+				t.Fatalf("test: exit %d\n%s", got.code, got.stdout)
+			}
+			c.after(t, dir, copyA)
+
+			got := xIn(t, dir, env, "mods", "edit", "push")
+
+			if n := strings.Count(readFile(t, calls), "test\n"); got.code != 0 || n != c.tests {
+				t.Fatalf("exit %d, %d test runs, want %d\n%s", got.code, n, c.tests, got.stdout)
+			}
+		})
+	}
+}
+
+func TestModsEditTestRunsATimeoutOnlyRedOnceMore(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "SLOW-ONCE\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestModsEditPushAfterARedTestStillRunsItsTest(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copyA := pullCopy(t, dir, env, modTestA)
+	write(t, copyA, "RED\n")
+	xIn(t, dir, env, "mods", "edit", "test")
+
+	got := xIn(t, dir, env, "mods", "edit", "push")
+
+	if got.code == 0 || readFile(t, filepath.Join(dir, modTestA)) != "green\n" {
+		t.Fatalf("exit %d, a %q\n%s", got.code, readFile(t, filepath.Join(dir, modTestA)), got.stdout)
 	}
 }
 

@@ -218,11 +218,22 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			if err != nil {
 				return "", err
 			}
+			said := ""
+			if !committed.ok && timeoutOnly(committed.log) {
+				said = ", retried a timeout-only red"
+				var again time.Duration
+				committed, again, err = lockedGit(commitArgs...)
+				took += again
+				waited += again
+				if err != nil {
+					return "", err
+				}
+			}
 			if !committed.ok {
 				return "", hookFail(committed.log, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
 			}
 			sha, err = head()
-			return withWait(took, short(sha)+"  "+firstLine(message)), err
+			return withWait(took, short(sha)+"  "+firstLine(message)+said), err
 		})
 	}
 	// the held files come back whether the hooks passed or refused
@@ -1013,6 +1024,26 @@ func gitReason(log string) string {
 // a refused commit: the whole hook log goes to a file, the reply carries only the lines that say why — the caller
 // never pipes the commit into `tail` (8 guard refusals on 10-14)
 var hookRed = regexp.MustCompile(`(?i)error|fail|refus|✖|×|lane gate|exit status|did not match|not found`)
+
+var (
+	ansiColor    = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+	hookRedGate  = regexp.MustCompile(`(?m)^\s*🥊 (\S+) \(`)
+	hookRedRow   = regexp.MustCompile(`(?m)^\s*(\(fail\) |FAIL )`)
+	hookTimedOut = regexp.MustCompile(`(?m)^\s*Error: (timed out after \d+ ms|Test timed out in \d+ms)`)
+)
+
+// a load flake, never a real red: only the test gates failed, and every row they failed carries the runner's timeout
+// line. 5 s bounds red the gate at load 10–22 on a commit that is fine (FRM-470)
+func timeoutOnly(log string) bool {
+	log = ansiColor.ReplaceAllString(log, "")
+	for _, gate := range hookRedGate.FindAllStringSubmatch(log, -1) {
+		if gate[1] != "test" && gate[1] != "mods" {
+			return false
+		}
+	}
+	rows := len(hookRedRow.FindAllString(log, -1))
+	return rows > 0 && rows == len(hookTimedOut.FindAllString(log, -1))
+}
 
 func hookFail(log, next string) *Fail {
 	full := filepath.Join(os.TempDir(), fmt.Sprintf("x-commit-%d.log", os.Getpid()))
