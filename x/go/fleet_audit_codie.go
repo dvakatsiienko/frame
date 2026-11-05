@@ -87,7 +87,7 @@ type auditLine struct {
 	} `json:"message"`
 }
 
-// fleetAuditCodie asks of every codie session (opened with /x:crew-codie) whether it read its contract before its
+// fleetAuditCodie asks of every codie session (opened with /x:crew-codie or a Skill call of it) whether it read its contract before its
 // first edit and how-you-work.md again after each compaction; the transcript is the proof, codie's own «i read it» is not
 func fleetAuditCodie(r *Run, _ []string, flags Flags) (any, error) {
 	days, since, err := auditWindow(flags)
@@ -234,22 +234,43 @@ func auditCounts(sessions []codieSession) []string {
 	return lines
 }
 
-// one codie session's reads and edits; a session that does not open with the command is no codie
+// hook rows pushed a real codie's contract load to row 41 of its transcript (2026-11-05)
+const codieOpeningRows = 100
+
+// its opening prompt is the command, or its opening rows call the skill; a later load is a coordinator reading the contract
+func opensAsCodie(lines [][]byte, opening []byte) bool {
+	for id, now := range skillNow {
+		if now == "x:crew-codie" && bytes.Contains(opening, []byte("<command-name>/"+id+"</command-name>")) {
+			return true
+		}
+	}
+	for _, raw := range lines[:min(codieOpeningRows, len(lines))] {
+		var line auditLine
+		var blocks []flowBlock
+		if !bytes.Contains(raw, []byte(`"name":"Skill"`)) || json.Unmarshal(raw, &line) != nil || json.Unmarshal(line.Message.Content, &blocks) != nil {
+			continue
+		}
+		for _, b := range blocks {
+			if b.Type == "tool_use" && b.Name == "Skill" && skillNow[b.Input.Skill] == "x:crew-codie" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// one codie session's reads and edits; a session that does not open as codie is none
 func auditSession(path string) (codieSession, bool) {
 	lines := transcriptLines(path)
-	// codie's opening prompt is the command; a later mention (clio talking about it) is not codie
+	// the brief; a later mention (clio talking about it) is not codie
 	opening := []byte{}
-	for _, raw := range lines[:min(40, len(lines))] {
+	for _, raw := range lines[:min(codieOpeningRows, len(lines))] {
 		if bytes.Contains(raw, []byte(`"type":"user"`)) {
 			opening = raw
 			break
 		}
 	}
-	isCodie := false
-	for id, now := range skillNow {
-		isCodie = isCodie || now == "x:crew-codie" && bytes.Contains(opening, []byte("<command-name>/"+id+"</command-name>"))
-	}
-	if !isCodie {
+	if !opensAsCodie(lines, opening) {
 		return codieSession{}, false
 	}
 	s := codieSession{ID: filepath.Base(path)[:min(8, len(filepath.Base(path)))], Compacts: []compactRead{}}

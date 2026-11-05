@@ -671,6 +671,46 @@ func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
 	}
 }
 
+func TestAuditCountsASkillCallInTheOpeningRows(t *testing.T) {
+	t.Parallel()
+	const at = "2026-11-05T10:00:00.000Z"
+	skill := func(id string) map[string]any { return called("Skill", map[string]any{"skill": id}, at) }
+	hookRows := func(n int) []any {
+		rows := make([]any, n)
+		for i := range rows {
+			rows[i] = map[string]any{"type": "attachment", "timestamp": at}
+		}
+		return rows
+	}
+	cases := []struct {
+		name  string
+		rows  []any
+		codie bool
+	}{
+		{"the call right after the brief", []any{skill("x:crew-codie")}, true},
+		{"the call at row 41, where hook rows pushed a real one", append(hookRows(39), skill("x:crew-codie")), true},
+		{"the id before 10-29", []any{skill("x:crew-coder")}, true}, // read-both
+		{"another member's contract", []any{skill("x:crew-sixth-sense")}, false},
+		{"a Bash line naming the skill", []any{called("Bash", map[string]any{"command": "echo x:crew-codie"}, at)}, false},
+		{"a read of the contract", []any{called("Read", map[string]any{"file_path": "/p/skills/crew-codie/SKILL.md"}, at)}, false},
+		{"the call deep in a coordinator's session", append(hookRows(codieOpeningRows), skill("x:crew-codie")), false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "session.jsonl")
+			write(t, path, jsonLines(t, append([]any{said("a brief for FRM-1")}, c.rows...)...))
+			s, ok := auditSession(path)
+			if ok != c.codie {
+				t.Fatalf("read as codie: %v, want %v", ok, c.codie)
+			}
+			if ok && auditStateOf(s, ticketCheck) == "unchecked" {
+				t.Error("the brief's ticket went unread: its check is missing")
+			}
+		})
+	}
+}
+
 func TestOpsRoleReadsOldSkillIDs(t *testing.T) {
 	t.Parallel()
 	for id, want := range map[string]string{
