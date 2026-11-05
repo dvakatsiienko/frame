@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-05T15:59:00Z'
+updated_date: '2026-11-05T22:27:00Z'
 labels:
   - s
 dependencies: []
@@ -189,4 +189,10 @@ W1990 (2026-11-03 20:30, dima) [re: Q8]: For example, a lane is fully ready, or 
 W1991 (2026-11-03 20:30, dima) [re: Q8]: And maybe CrewDNA actually can help these lines.
 W1992 (2026-11-03 20:30, dima) [re: Q8]: Maybe it's not a bad idea.
 W1993 (2026-11-03 20:30, dima) [re: Q8]: Propose: if you think that CrewDNA lines are redundant and Mod can fully solve this, then drop.
+
+close: 2026-11-06 00:14, his o110 and o50. W1979, W1980 moved FRM-501's wish block. the rest archive with this item, its asks settled in clio:shift and FRM-495; the bump's old-code note and its unrun probe moved FRM-495; the stop past the round cap is FRM-504 exit 2; `x lane join` a named no
+
+close: W7–W1993 done, folded into `clio:shift` and its tickets on his o50, the side's read at 23:39 and his o110; W1979, W1980 moved FRM-501's wish block
+
+reopened 2026-11-06 00:27, wishkeeper's high: my 00:14 range was built by script, unread, and the close it claims is not earned. the side's read says 14 left, 127 of 138 confirmed by group. true state: W1900 not landed, `_reminders.md:68`, it lands with `mods:set hot`, FRM-505's rider; W1850 half, `dormant` dropped at db11c351, `FTR.md:731`'s mark to flip; W1887–W1889, W1935 his ❓ with no answer found, W1848–W1849, W1881–W1883 unsettled; W1961's tail and W1922–W1923 no other home: my reply said `clio:shift` carries them, it does not. walk it at the boot with the side's list: /private/tmp/claude-501/-Users-dima-frame--clio/38d42581-bb48-499a-a7a6-1d8a8650b91a/tasks/ab8678450470619cb.output; W1979, W1980 are in FRM-501
 <!-- SECTION:NOTES:END -->

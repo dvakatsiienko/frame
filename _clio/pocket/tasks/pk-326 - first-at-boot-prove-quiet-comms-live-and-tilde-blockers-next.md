@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-05T22:01:00Z'
+updated_date: '2026-11-05T22:27:00Z'
 labels:
   - s
 dependencies: []
@@ -26,4 +26,13 @@ W1 (2026-11-05 23:58, dima): let's measure everything tomorrow. i will try to ke
 W2 (2026-11-05 23:58, dima): tomorrow we will have quite a lot of activity, so many chances to do that. it is important, don't forget it. maybe even create a small pocket item about this and pick it up first thing when you boot tomorrow.
 W3 (2026-11-05 23:58, dima): since FRM-513 will be solved today, we will have chances to test automatic second winds tomorrow, so this part can be unblocked too.
 W4 (2026-11-05 23:58, dima): can we prio these ones (FRM-504, FRM-503)? i'd like to unblock tilde. ❓ — answered 00:01: yes, FRM-504 next after FRM-513, ahead of FRM-505; FRM-503 first on my main lane tomorrow
+
+his 00:13, the order this shift runs: W1 (2026-11-06 00:13, dima, home the new shift plan): it seems most of the tails are solved. only the ones that require some grilling are left, but i'm not in the mood to grill, so they are postponed to tomorrow or the day after.
+W2 (2026-11-06 00:13, dima, home the new shift plan): consult the side channel if all tails are solved: the mechanical one or the ones that don't want a lot of my attention, like grilling. if it is, then i go partially AFK without the shift.
+W3 (2026-11-06 00:13, dima, home the new shift plan): cli lane: let it finish its current chunk fully, merge it, and stop it.
+W4 (2026-11-06 00:13, dima, home the new shift plan): mods lane: let it finish its current chunk and stop too.
+W5 (2026-11-06 00:13, dima, home the new shift plan): you: park and maintain both lanes until merge.
+W6 (2026-11-06 00:13, dima, home the new shift plan): side channel: let it stay parked.
+W7 (2026-11-06 00:13, dima, home the new shift plan): ping me when needed; i'll peek in from time to time.
+the split for the boot plan, his tick in the side channel: grills and shaping run in the side channel, lanes stay with main clio until tilde; a grill on a running lane's ticket stays main's.
 <!-- SECTION:NOTES:END -->

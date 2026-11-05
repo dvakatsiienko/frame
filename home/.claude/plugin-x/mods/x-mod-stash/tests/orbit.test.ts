@@ -3838,6 +3838,10 @@ for (const [what, text, pick] of [
     ['a batch', '✍️ sign FRM-1, BYT-2: the titles', 're-signed'],
     ['no sign word in the pick', 'push FRM-1', 'yes'],
     ['a word holding it', 'design FRM-1', 'designed as drawn'],
+    ['a sign word that signs nothing', 'push FRM-1', 'sign in first'],
+    ['a pick that never signs', 'push FRM-1', 'never signed'],
+    ['a pick that does not sign', 'push FRM-1', 'not signed yet'],
+    ['a pick that does not re-sign', 'push FRM-1', 'not re-signed yet'],
 ] as const)
     test(`add passes ${what}`, async ($, on) => {
         world(on);
@@ -3888,7 +3892,12 @@ test('follow passes the sign shape', async ($, on) => {
 const MERGE_DENY = 'the shape x-mod-guard reads for --dima-ok';
 const URL = 'https://github.com/o/n/pull/7';
 
-for (const pick of ['merge', 'merge it', 'Merge when green'])
+for (const pick of [
+    'merge',
+    'merge it',
+    'Merge when green',
+    'merged, as ticked',
+])
     test(`add refuses the pick «${pick}» on a text naming no pr`, async ($, on) => {
         world(on);
         await start($);
@@ -3901,6 +3910,11 @@ for (const [what, text, pick] of [
     ['a url', `⚠️ merge ${URL}`, 'merge'],
     ['the ⚠️ shape', '⚠️ merge frame#7: the title', 'merge'],
     ['a word holding it', 'push FRM-1', 'submerge it'],
+    ['a pick that does not merge', 'push FRM-1', 'do not merge yet'],
+    ['a pick that holds the merge', 'push FRM-1', "don't merge yet"],
+    ['a pick that holds it, typed curly', 'push FRM-1', 'don’t merge yet'],
+    ['a pick that never merges', 'push FRM-1', 'never merge it'],
+    ['a pick of no merge', 'push FRM-1', 'no merge tonight'],
     ['no merge word in the pick', 'merge frame#7 please', 'yes'],
 ] as const)
     test(`add passes ${what}`, async ($, on) => {

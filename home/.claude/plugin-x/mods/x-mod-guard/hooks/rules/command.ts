@@ -74,10 +74,10 @@ type Peeled = {
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
 export type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
 export const VAULT = 'iCloud~md~obsidian';
-// the linear teams whose ticket ids the rules read: `x schema linear` lists the workspace's, and a new team joins here
+// the linear teams whose ticket ids the rules read: `x schema linear` lists the workspace's, and a new team joins here, in the `sign-ask` twin and in x-mod-stash's `ticketOf`
 export const TICKET_KEY = ['FRM', 'BYT'].join('|');
 // a line that reads its pipe's real exit: a pipe into jq hides nothing there
-export const PIPE_READ = /\bpipefail\b|\bpipestatus\b/;
+export const PIPE_READ = /\bpipefail\b|\bpipestatus\b/i;
 // each wrapper, and its options that take the next word as their value
 const WRAPPERS = new Map<string, string[]>([
     ['builtin', []],

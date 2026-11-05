@@ -43,5 +43,6 @@ Ticket: none
 - 2026-11-05 · frame#127 at 81904683, after sixth sense's clean · wishkeeper 8 min, 174k tokens, 12 findings: 3 high real (the audit verb missed codies opened by a Skill call, a limit his tick never covered, a new refusal named only in a comment) · it held the merge ask; sixth sense's next round then refuted its own clean
 - 2026-11-05 · frame#124 at 4b699bd2, its last delta · wishkeeper 4 min, 69k tokens, 6 findings: 0 high, what the ask must say; wisphunter nits · merged on his tick at b7a2e8af
 - 2026-11-06 · frame#127 at 9a6a1cf9, the last delta after sixth sense's clean, and the batch since the second wind · wishkeeper 11 min, 202k tokens, 17 findings: 3 high real (a pocket list i cut under a false pointer, `--since` blind to compaction re-reads, a behaviour change living only in a spec), wisphunter 9 on the audit's parser · each opened; it shaped the merge ask's limits and a rider
+- 2026-11-06 · the batch since 00:02, frame#127's land and two closes, a siesta read · wishkeeper 7 min, 216k tokens, 15 findings: 3 high real (a scripted close line, a false pointer on a ticked home, a row told as in while out) · each opened, PK-308 reopened
 
 ## verdict

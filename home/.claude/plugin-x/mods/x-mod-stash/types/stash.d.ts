@@ -173,14 +173,14 @@ export type OrbitAssumption = {
 };
 
 // quiet comms (PK-93): a [progress] ping from a member, held off clio's thread until her next turn
-// `canary`: the nonce of a `/quiet-canary` test ping, so its run finds its own log lines
+// `deliveryTest`: the nonce of a `/quiet-delivery-test` test ping, so its run finds its own log lines
 export type QuietPing = {
     at: number;
     from: string;
     text: string;
     // read-both: a ping held before FRM-501 has none
     tag?: string;
-    canary?: string;
+    deliveryTest?: string;
 };
 // the pings held for clio's next turn; the on/off switch is a settings knob in the store
 export type StashQuiet = { held: QuietPing[] };
@@ -193,7 +193,7 @@ export type QuietLogLine = {
     verdict: 'held' | 'passed' | 'flushed' | 'failed-open';
     startedTurn: boolean;
     arm: 'on' | 'off';
-    canary?: string;
+    deliveryTest?: string;
     // why a passed line pushed
     why?: 'tag' | 'for-dima' | 'answer' | 'away';
     // the sender's session id when the registry names it, so a rename mid-day never loses its lines

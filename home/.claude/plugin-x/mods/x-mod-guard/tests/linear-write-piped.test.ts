@@ -74,6 +74,26 @@ for (const [what, command] of [
     ],
     ['a tee', 'x linear comment FRM-1 --body-file f | tee out.json'],
     ['a member write', 'x as clio -- linear issue create --title t | jq .'],
+    [
+        'a root flag before the family',
+        'x --json linear comment FRM-1 --body-file f | jq .ok',
+    ],
+    [
+        'a flag before the verb',
+        'x linear --as clio comment FRM-1 --body-file f | jq .ok',
+    ],
+    ['a continued line', 'x linear \\\n  comment FRM-1 --body-file f | jq .ok'],
+    ['--set=', 'x linear body FRM-1 --set=f | jq .ok'],
+    [
+        'an unknown verb with a read as a value',
+        'x linear move FRM-1 --to list | jq .',
+    ],
+    [
+        'a line another warn-only rule flags',
+        'git -c core.hooksPath=x status; x linear comment FRM-1 --body-file f | jq .ok',
+    ],
+    ['--apply=', 'x linear archive FRM-1 --apply=true | jq .ok'],
+    ['a mutation with vars', `x linear api "$Q" --vars '{"id":"x"}' | jq .`],
 ] as const) {
     test(`${what} piped runs as typed`, async ($, on) => {
         const w = world(on);
@@ -123,6 +143,21 @@ for (const [what, command] of [
     ['a bare x linear', 'x linear 2>&1 | head -5'],
     ['its help', 'x linear --help | head'],
     ['a verb help', 'x linear comment --help | head'],
+    ['a verb -h', 'x linear comment -h | head'],
+    ['help', 'x linear help | head'],
+    ['help on a verb', 'x linear help comment | head'],
+    [
+        'a member read of comments',
+        'x as clio -- linear issue comment list FRM-1 | head',
+    ],
+    [
+        'an api query with vars',
+        `x linear api 'query { a }' --vars '{"id":"x"}' | jq .`,
+    ],
+    [
+        'PIPESTATUS',
+        `bash -c 'x linear comment FRM-1 --body-file f | jq .ok; echo \${PIPESTATUS[0]}'`,
+    ],
 ] as const)
     test(`${what} draws no warning`, async ($, on) => {
         world(on);
@@ -155,27 +190,44 @@ test('the warning names the unpiped form', async ($, on) => {
     expect(r).toContain('run the next write unpiped');
 });
 
-test('a failed write hidden by jq reads the warning on that call', async ($, on) => {
-    const w = world(on);
-    const command = 'x linear comment FRM-1 --body-file missing.md | jq .ok';
-    const r = await bash($, command);
-    expect([w.ran, warned(r)]).toEqual([[command], true]);
-});
+for (const command of [
+    'x as codie -- linear issue update FRM-1 --description x | jq .',
+    'x as codie -- linear issue create --title t --description x | jq .',
+    `x linear api 'mutation { issueUpdate(id: "a", input: { description: "x" }) { success } }' | jq .`,
+])
+    test(`a member call linear-body stops reads that refusal alone: ${command}`, async ($, on) => {
+        const w = world(on, true);
+        const r = JSON.stringify(await bash($, command));
+        expect([
+            r.includes('nothing in this command ran'),
+            r.includes('already ran'),
+            kinds(w.store),
+            w.ran,
+        ]).toEqual([true, false, [], []]);
+    });
 
-test('a member call linear-body stops reads that refusal alone', async ($, on) => {
-    const w = world(on, true);
+test('enforced, the refusal says nothing ran', async ($, on) => {
+    const w = world(on);
+    w.store.set('rule-mode:linear-write-piped', 'enforce');
     const r = JSON.stringify(
-        await bash(
-            $,
-            'x as codie -- linear issue update FRM-1 --description x | jq .',
-        ),
+        await bash($, 'x linear comment FRM-1 --body-file f | jq .ok'),
     );
     expect([
-        r.includes('x linear body <id> --set <file>'),
+        r.includes('nothing in this command ran'),
         r.includes('already ran'),
-        kinds(w.store),
         w.ran,
-    ]).toEqual([true, false, [], []]);
+    ]).toEqual([true, false, []]);
+});
+
+test('a call a later rule stops leaves no warned event', async ($, on) => {
+    const w = world(on);
+    w.store.set('rule-mode:sign-untick', 'enforce');
+    await bash($, 'x linear set FRM-1 --add-label signed | jq .ok');
+    // the clock stands still here, so its event key is reused: the day's tally is what still counts a warning
+    expect([
+        JSON.stringify([...w.store.values()]).includes('warned'),
+        w.ran,
+    ]).toEqual([false, []]);
 });
 
 test('a failed write piped into jq, whose line exits 0, reads the warning on that call', async ($, on) => {

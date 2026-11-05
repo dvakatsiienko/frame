@@ -43,7 +43,7 @@ Each line pairs a check with the local file that runs it. All files were read 20
 - 5 trigger accuracy → `~/frame/script/skill-route.ts` plus `script/jev-test.ts` fixtures; `~/frame/script/memory-load-replay.py` measures the lazy-rule hit rate. `claude plugin eval` is not run anywhere; pk-10 and pk-119 are open.
 - 6 unused skills → the census in `recipe.md:143` (sweep step 9; `/skill-doctor` or duckdb over transcripts, `docs/test-drive/memory-sweep.md:104`). This is also sweep-only.
 - 8 config validity → `~/frame/home/.claude/plugin-x/mods/skew.ts` checks mod events against each live engine; the mods typecheck runs at commit (`lefthook.yaml` `mods`). `~/frame/script/shift-checkup.ts` proves every guard red and green before a shift.
-- 9 hooks (one path only) → `~/frame/home/.claude/plugin-x/mods/quiet-canary.ts` (stash delivery). `~/frame/script/reply-check-report.ts` counts Stop-hook rule hits.
+- 9 hooks (one path only) → `~/frame/home/.claude/plugin-x/mods/quiet-delivery-test.ts` (stash delivery). `~/frame/script/reply-check-report.ts` counts Stop-hook rule hits.
 - 11 usage → `boot-prefetch.sh:127-138` (weekly and 5 h window, pace). `~/frame/recipes/refresh-fleet-ops/recipe.md` (`x fleet ops`, 7-day measures, `docs/knowledge/fleet-ops.md`).
 - 12 secrets (one path only) → `~/frame/script/git-crypt-rename-check.ts`, at commit.
 - 13 eval regressions → `jev-test.ts`; `boot-prefetch.sh:320` `test-drive:check`; `shift-checkup.ts`.

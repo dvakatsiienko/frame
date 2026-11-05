@@ -1517,7 +1517,23 @@ test('the 60-char cap counts what is left after the ticket', async ($, on) => {
     expect(step?.text).toBe('a'.repeat(60));
 });
 
+for (const [what, line] of [
+    ['a colon', 'FRM-501: quiet reads'],
+    ['a dot', 'FRM-501 · quiet reads'],
+    ['a dash', 'FRM-501 — quiet reads'],
+    ['an en dash', 'FRM-501 – quiet reads'],
+    ['a hyphen', 'FRM-501 - quiet reads'],
+] as const)
+    test(`a leading ticket behind ${what} reads once`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await linkedPlan($, w);
+        const step = await lineStep(w, line);
+        expect([step?.text, step?.ticket]).toEqual(['quiet reads', 'FRM-501']);
+    });
+
 for (const [what, line, ticket] of [
+    ['a ticket glued to a word', 'FRM-501-b quiet reads', 'FRM-501'],
     ['an id elsewhere in the text', 'quiet reads FRM-501 whole', 'FRM-501'],
     ['a step with no ticket', 'quiet reads the prompt', undefined],
     ['a lone ticket', 'FRM-501', 'FRM-501'],
