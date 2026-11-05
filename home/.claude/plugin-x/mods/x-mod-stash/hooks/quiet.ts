@@ -11,7 +11,7 @@ const CODE_SPAN = /`[^`]*`/g;
 const FOR_DIMA =
     /(?<![\w/.-])(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w)/i;
 const RULE =
-    'push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]';
+    'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan';
 
 export const QUIET_SLIPSTREAMED = `slipstreamed: joins clio's next turn. ${RULE}`;
 export const QUIET_PUSHED = `pushed: starts clio's turn. ${RULE}`;

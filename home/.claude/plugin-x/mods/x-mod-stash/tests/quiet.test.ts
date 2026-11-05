@@ -652,9 +652,9 @@ const CLIO = {
 };
 const MEMBER = '⚡ 🔧 codie: mods';
 const SLIPSTREAMED =
-    "slipstreamed: joins clio's next turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]";
+    "slipstreamed: joins clio's next turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan";
 const PUSHED =
-    "pushed: starts clio's turn. push only for a lane fully ready, a dispute, an escalation or a roadblock: lead with [ask], [done] or [escalate]";
+    "pushed: starts clio's turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan";
 const REFUSED = {
     message:
         'Not delivered to Claude Desktop session local_clio: "that session did not accept it (messages from other sessions can require approval there, or be turned off)". (delivery: undelivered)',
