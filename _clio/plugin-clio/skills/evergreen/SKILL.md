@@ -37,6 +37,11 @@ the boot digest seeds «🧬 evergreen turn» on top of the pocket (`boot-prefet
 
 weekly with brew, the skills lane and the plugins lane join the digest: read [references/weekly-lanes.md](references/weekly-lanes.md).
 
+## a green run with no prs
+
+- first count prs by title (`gh pr list --search 'evergreen in:title'`): the bot is `app/x-renovate`, so an author filter misses them; none opened past a due window → `gh workflow run renovate.yml -f logLevel=debug`, then read `RENOVATE_FORCE` and the branch summary in `gh run view <id> --log`
+- a preset in doubt: a renovate dry run on a committed scratch repo extending that ref
+
 ## completion criterion
 
 every open renovate PR is a card or silent with a green ci; every card carries brings, breaks and, on a major, since;

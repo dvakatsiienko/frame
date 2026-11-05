@@ -68,5 +68,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-05 · frame#126 · matt's standards and spec axes, wisphunter · 8 and 6 findings · useful
 - 2026-11-05 · frame#126 · built-in /code-review · 9 findings · useful
 - 2026-11-05 · frame#126 · sixth sense's wisphunter · 7 claims, 2 reproduced as real, 2 set aside · useful
+- 2026-11-05 · frame#126 · a miss of every round above: its merge removed a clean tree with cli codie live inside, whose session started elsewhere and entered by `cd`; nothing lost, read from the merge's own log · the fix is FRM-434's exit 11, on frame#127
 
 ## verdict
