@@ -145,7 +145,7 @@ are the dna's pr pair.
 ## exit
 
 - **record the clean** before it reaches codie (a quick lane: § the quick lane):
-  `~/frame/_clio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>`. clio's pr
+  `~/frame/_clio/.claude/hooks/watch-pr.sh --verified <owner/repo> <pr> <head sha>`. clio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
 - **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
   plans without a word); the coordinator decamps it when the lane lands, and a quick lane's
@@ -174,7 +174,7 @@ holds, with these swaps:
 - **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to codie's own
   pre-verification.
 - **the clean** is a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict
-  object with `verified: <sha>`), not `pr-watch.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
+  object with `verified: <sha>`), not `watch-pr.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
 
 ## the next chunk
 

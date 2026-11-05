@@ -64,7 +64,7 @@ cloud mode — you run on an anthropic vm, not the mac:
 - nobody answers questions: an open decision goes in the pr body as `? <question>`, and you take the safer option.
 - no worktree: you are already on a fresh clone; branch `codie/<BYT-N>-<slug>`, `CI=1 pnpm install`, push, open ONE pr with gh.
 - run everything in the foreground; the vm is reclaimed when idle.
-- your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — clio's pr-watch sees that branch; nothing else tells it you finished.
+- your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — clio's watch-pr sees that branch; nothing else tells it you finished.
 ```
 
 **Without plugin `x` in the environment** (no setup script), the self-contained brief is
@@ -89,7 +89,7 @@ coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
   something useful? … take care of them in place») — never parked for a halt or a boot. read
   `REPORT.md`, act on what it says (a finding → a ticket line or a fix, a `?` → a question to dima),
   then delete the `cloud/<slug>` branch (`git push origin --delete cloud/<slug>`) and archive the
-  card. the branch is the done signal: while it lives, every fresh session's pr-watch announces it
+  card. the branch is the done signal: while it lives, every fresh session's watch-pr announces it
   again.
 - archive and delete are web-ui only (claude.ai/code sidebar or the session menu; docs
   `claude-code-on-the-web#archive-sessions`, read 2026-09-28) — no cli verb, no api. an idle

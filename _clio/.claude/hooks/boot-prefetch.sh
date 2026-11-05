@@ -19,7 +19,7 @@ in=$([ -t 0 ] || timeout 1 cat)
 { [ "$(printf %s "$in" | jq -r '.source // empty' 2>/dev/null)" = compact ] || [ "${1:-}" = --compact ]; } && COMPACT=1 && echo "(compact mode — the full digest: boot-prefetch.sh)"
 # PK-152's done test needs a real /clear: until it closes, a cleared session says so on its first line
 if [ "$(printf %s "$in" | jq -r '.source // empty' 2>/dev/null)" = clear ] && grep -qs '^status: waiting' "$HOME"/frame/_clio/pocket/tasks/pk-152\ *; then
-  echo "🧪 PK-152 test is live: this session began with a /clear — a pr-watch or ci-watch notice that wakes this context in the next 6 h is the bug; silence until then closes PK-152. tell dima, and log the outcome in PK-152."
+  echo "🧪 PK-152 test is live: this session began with a /clear — a watch-pr or watch-ci notice that wakes this context in the next 6 h is the bug; silence until then closes PK-152. tell dima, and log the outcome in PK-152."
 fi
 
 echo "-- pending handoffs (list-only; ingest via /x:handoff-ingest) --"
@@ -211,10 +211,10 @@ for repo in "$HOME/frame" "$HOME/projects/bytes"; do
   done
 done
 
-echo "-- ci + vercel reds, 48 h (ci-watch.sh --boot; --watch is the in-session monitor) --"
+echo "-- ci + vercel reds, 48 h (watch-ci.sh --boot; --watch is the in-session monitor) --"
 # the FAIL names the call that failed — a bare «could not query» sat next to a working gh twice (FRM-261)
 cw_err=$(mktemp)
-"$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
+"$(dirname "$0")/watch-ci.sh" --boot 2>"$cw_err" || fail "watch-ci --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
 rm -f "$cw_err"
 
 echo "-- n8n tables (blueprints trial: 🔴 ci watch rows unseen, 🎀📬 helga receipts of the last day) --"
@@ -230,7 +230,7 @@ else
   fail "n8n tables unreadable (x-n8n down? pm2 ls): $(printf '%s' "$n8n_out" | tail -1)"
 fi
 
-# a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; n8n's ci rows above are the record, ci-watch is the wake, until an n8n → mod bridge lands
+# a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; n8n's ci rows above are the record, watch-ci is the wake, until an n8n → mod bridge lands
 watches=$(ps -ax -o command | grep -c '[p]r-watch.sh --watch\|[c]i-watch.sh --watch' || true)
 echo "watches: $watches of 2 running — the boot arms the missing ones (watch-once.sh), as every boot does"
 

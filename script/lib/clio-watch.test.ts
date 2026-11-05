@@ -52,7 +52,7 @@ const run = (script: string, args: string[], dir: string, cwd = dir) =>
         env: { ...process.env, HOME: dir, PATH: `${dir}:${process.env.PATH}` },
     });
 
-describe('pr-watch', () => {
+describe('watch-pr', () => {
     const conflicted = [
         {
             author: { login: 'dvakatsiienko' },
@@ -68,8 +68,8 @@ describe('pr-watch', () => {
 
     it('names a conflicted pr once per head', () => {
         const dir = bin({ 'prs.json': conflicted });
-        const first = run('pr-watch.sh', ['--once'], dir);
-        const second = run('pr-watch.sh', ['--once'], dir);
+        const first = run('watch-pr.sh', ['--once'], dir);
+        const second = run('watch-pr.sh', ['--once'], dir);
         expect([
             first.includes('frame#7 conflict on abcdef12'),
             second.includes('conflict'),
@@ -91,11 +91,11 @@ describe('pr-watch', () => {
     it('names a head past the verified one as an unverified delta, never ready', () => {
         const dir = bin({ 'prs.json': clean });
         run(
-            'pr-watch.sh',
+            'watch-pr.sh',
             ['--verified', 'dvakatsiienko/frame', '7', 'aaaaaaaa'],
             dir,
         );
-        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        const lines = frameLines(run('watch-pr.sh', ['--once'], dir));
         expect([
             lines.filter((l) =>
                 l.includes(
@@ -109,11 +109,11 @@ describe('pr-watch', () => {
     it('calls a pr ready when the verified head is the current one', () => {
         const dir = bin({ 'prs.json': clean });
         run(
-            'pr-watch.sh',
+            'watch-pr.sh',
             ['--verified', 'dvakatsiienko/frame', '7', 'bbbbbbbb1234567890'],
             dir,
         );
-        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        const lines = frameLines(run('watch-pr.sh', ['--once'], dir));
         expect(lines.filter((l) => l.includes('ready to merge')).length).toBe(
             1,
         );
@@ -123,14 +123,14 @@ describe('pr-watch', () => {
         const dir = bin({ 'prs.json': clean });
         const verify = (sha: string) =>
             run(
-                'pr-watch.sh',
+                'watch-pr.sh',
                 ['--verified', 'dvakatsiienko/frame', '7', sha],
                 dir,
             );
         verify('aaaaaaaa');
-        run('pr-watch.sh', ['--once'], dir);
+        run('watch-pr.sh', ['--once'], dir);
         verify('bbbbbbbb1234567890');
-        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        const lines = frameLines(run('watch-pr.sh', ['--once'], dir));
         expect(lines.filter((l) => l.includes('ready to merge')).length).toBe(
             1,
         );
@@ -146,11 +146,11 @@ describe('pr-watch', () => {
             const dir = bin({ 'prs.json': prs });
             if (stamp.length)
                 run(
-                    'pr-watch.sh',
+                    'watch-pr.sh',
                     ['--verified', 'dvakatsiienko/frame', '7', ...stamp],
                     dir,
                 );
-            return frameLines(run('pr-watch.sh', ['--once'], dir)).filter(
+            return frameLines(run('watch-pr.sh', ['--once'], dir)).filter(
                 (l) => !l.startsWith('~ '),
             ).length;
         };
@@ -179,7 +179,7 @@ describe('pr-watch', () => {
         const dir = bin({});
         const verify = (...by: string[]) =>
             run(
-                'pr-watch.sh',
+                'watch-pr.sh',
                 ['--verified', 'dvakatsiienko/frame', '7', 'aaaaaaaa', ...by],
                 dir,
             );
@@ -200,7 +200,7 @@ describe('pr-watch', () => {
         const dir = bin({});
         expect(() =>
             run(
-                'pr-watch.sh',
+                'watch-pr.sh',
                 [
                     '--verified',
                     'dvakatsiienko/frame',
@@ -217,12 +217,12 @@ describe('pr-watch', () => {
     it('refuses a verified record without a sha', () => {
         const dir = bin({});
         expect(() =>
-            run('pr-watch.sh', ['--verified', 'dvakatsiienko/frame', '7'], dir),
+            run('watch-pr.sh', ['--verified', 'dvakatsiienko/frame', '7'], dir),
         ).toThrow(/usage/);
     });
 });
 
-describe('deploy-watch', () => {
+describe('watch-deploy', () => {
     function repo(dir: string) {
         const git = (...args: string[]) =>
             execFileSync('git', args, {
@@ -272,7 +272,7 @@ describe('deploy-watch', () => {
                 },
             ]),
         );
-        expect(run('deploy-watch.sh', [sha, dir], dir)).toContain(
+        expect(run('watch-deploy.sh', [sha, dir], dir)).toContain(
             'deploy shop → Ready',
         );
     });
@@ -293,7 +293,7 @@ describe('deploy-watch', () => {
                 },
             ]),
         );
-        const out = run('deploy-watch.sh', [sha, dir], dir);
+        const out = run('watch-deploy.sh', [sha, dir], dir);
         expect([out.includes('Ready'), out.includes('no Deploy run')]).toEqual([
             false,
             true,

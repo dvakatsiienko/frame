@@ -23,7 +23,7 @@ home/.claude/shelf/handoffs/
 home/.claude/shelf/boot-digest.stamp
 # sline rewrites it on every render
 home/.claude/shelf/cc-usage-window.json
-# runtime state the mods and hooks rewrite (x-mod-stash's glide lanes, pr-watch's sixth sense verdicts, the retired queue's file), untracked on purpose since 10-12
+# runtime state the mods and hooks rewrite (x-mod-stash's glide lanes, watch-pr's sixth sense verdicts, the retired queue's file), untracked on purpose since 10-12
 home/.claude/shelf/lanes.json
 home/.claude/shelf/lanes/
 home/.claude/shelf/pr-verified.json
@@ -52,7 +52,7 @@ home/.claude/shelf/clio-mode-snapshot.md
 home/.claude/shelf/memory-sync-mirror/
 __pycache__/
 home/.claude/shelf/ci-seen.json
-home/.claude/shelf/pr-watch-seen.json
+home/.claude/shelf/watch-pr-seen.json
 home/.claude/shelf/jev/route.log
 home/.claude/shelf/jev/runs.log
 home/.claude/shelf/jev/router.off

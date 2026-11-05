@@ -1,5 +1,5 @@
 #!/bin/bash
-# ci-watch — failed github actions runs + failed vercel deploys, as lines.
+# watch-ci — failed github actions runs + failed vercel deploys, as lines.
 # --boot   one pass over the last 48 h, prints every red (the boot digest calls it)
 # --watch  loops every 5 min, prints only reds not seen before; silence is the normal state,
 #          so a Monitor on it costs the session nothing until something is actually red.

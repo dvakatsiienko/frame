@@ -640,7 +640,7 @@ func clock() time.Time {
 
 /* Checks */
 
-// a «clean» in a pr comment or body is never read: only sixth sense and a stamp through pr-watch.sh write this store; a
+// a «clean» in a pr comment or body is never read: only sixth sense and a stamp through watch-pr.sh write this store; a
 // sibling `<repo>#<n>:by` key names a verifier other than sixth sense, and the gate treats both alike, only the detail differs
 func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	c := mergeCheck{Name: "sixth-sense"}

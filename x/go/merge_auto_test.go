@@ -483,7 +483,7 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 	t.Parallel()
 	for _, path := range []string{
 		"home/.claude/plugin-x/mods/x-mod-guard/guard.ts",
-		"_clio/.claude/hooks/pr-watch.sh",
+		"_clio/.claude/hooks/watch-pr.sh",
 		"home/.claude/shelf/hooks/worktree-seed.sh",
 		"lefthook.yaml",
 		".github/workflows/review.yml",

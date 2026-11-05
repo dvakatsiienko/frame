@@ -1,8 +1,8 @@
 #!/bin/bash
-# deploy-watch — after a push: the ci runs for one head, then the newest prod deploy of every
+# watch-deploy — after a push: the ci runs for one head, then the newest prod deploy of every
 # app its Deploy run fired, as lines. emits only terminal states plus a heartbeat every 2 min, so a
 # Monitor on it is quiet until something has actually finished — and a quiet wait is visible.
-#   deploy-watch.sh [sha] [repo dir]   sha defaults to HEAD, repo dir to the cwd
+#   watch-deploy.sh [sha] [repo dir]   sha defaults to HEAD, repo dir to the cwd
 # a vercel project is named after its app dir (apps/<name>); a Deploy that fired no hook ends
 # after the ci runs. vercel webhooks are pro-only, so polling is the only door on this plan.
 set -u
