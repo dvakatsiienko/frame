@@ -13,13 +13,13 @@ the render chain: game dx9–11 → DXVK (Proton, x86 via FEX) → Venus → Kos
 - steamac's own layer: `~/.config/steamac/title-defaults.json` holds the launch options it pre-sets per title (dx12 games get `VKD3D_FEATURE_LEVEL=12_1 VKD3D_SHADER_MODEL=6_6`), `game-profiles.json` the per-game profiles, `config/steamac-shader-defaults` and `steamac-idle-screensaver` its toggles
 - the session is gamescope gaming mode: a window steam did not start stays invisible (`xprop -display :0 -root GAMESCOPE_FOCUSABLE_APPS` lists what shows); desktop mode is Steam → Power → Switch to Desktop, which restarts the session and pauses downloads
 
-## what i can do from here (Bash through `steamac-ssh.sh`)
+## what i can do from here (Bash through `scripts/steamac-ssh.sh`, from the skill's base dir)
 
 - read: the installed games and their sizes, a game's prefix and config, steam's and proton's logs, which proton ran, `game-stats.json`, mac swap
 - end a hung process: name its pid and command to dima first; a pid matched by name is never ended unasked
 - stop one game's wine world: `WINEPREFIX=<prefix> "<proton>/files/bin-arm64/wineserver" -k` ends everything in that prefix only
 - run an exe under proton outside steam: `proton run <exe>` with `STEAM_COMPAT_DATA_PATH` and `STEAM_COMPAT_CLIENT_INSTALL_PATH` set, `DISPLAY=:0` — it runs, but stays hidden in gaming mode
-- a command whose path has spaces goes in as a script on stdin: `steamac-ssh.sh 'bash -s' < script.sh`; inline quoting breaks
+- a command whose path has spaces goes in as a script on stdin: `scripts/steamac-ssh.sh 'bash -s' < script.sh`; inline quoting breaks
 - dima's hands: anything clicked in the steam ui (a launch, a proton pick, a launch option typed in Properties), a sign-in, a code. a vdf edit by me only with steam exited, since steam rewrites its config on exit (inference)
 
 ## a game that won't run or runs badly — the ladder, cheapest first
@@ -43,7 +43,7 @@ a freeze is a first-time Metal shader compile until proven otherwise: they fade 
 1. quit the vm, then launch traced: `open -n -a "FX Steam Launcher" --env MESA_KK_COMPILE_THREADS=4 --env MESA_KK_DEBUG=compiles --args --cmdline "console=hvc0 loglevel=4 rootwait steamac.gpu_mib=10240" --control-fifo ~/.local/share/steamac/control.fifo --perf-stats`
 2. after a launcher update, wait ~3 min: steam replays the game's pipelines first
 3. `scripts/steamac-trace.sh [seconds] [--perf]`, in the background; it writes `~/.local/share/steamac/trace-*`; `--perf` costs one vCPU and names `GTAIV.exe`: edit the name for another game; ? `perf` in the vm is unchecked
-4. a stall catch, optional, a dxvk game only (`GAME` in the script names it): `scripts/steamac-ssh.sh 'cat > /tmp/stall.py' < scripts/steamac-stall.py`, then in the background `scripts/steamac-ssh.sh python3 /tmp/stall.py <seconds> /tmp/stall.log`; it waits for the game, so it starts before step 5
+4. a stall catch, optional, a dxvk game only (`GAME` in the script names it): `scripts/steamac-ssh.sh 'cat > /tmp/stall.py' < scripts/steamac-stall.py`, then in the background `scripts/steamac-ssh.sh python3 /tmp/stall.py <seconds> /tmp/stall.log`; it waits up to `<seconds>` for the game, then captures `<seconds>`, so it starts before step 5
 5. dima's hands: load a save, skip the intro, drive ~5 min, fullscreen `Ctrl+Cmd+F`, no alt-tab, a stopwatch lap on each freeze
 6. read his laps against the compile lines in `~/Library/Logs/es.fxgam.steamac/steamac-vm.log` and `game-stats.json`; one change per run; the result lands in `~/frame/firelink/runs/<game>.md`
 
@@ -63,6 +63,6 @@ the vm's doors:
 - the steam link is not on rockstargames.com's Connections page: it forms only in the launcher, and unlinks only through rockstar support, asked from the linked account
 - «Verify your email» codes count against a quota: never press «Resend code» in a loop; «too many emails» locks the address for hours
 - a code going to an address he can't reach: first try to register that address (a gmail typo may never have existed) — on 11-02 `imagnumm.satellite` was free, and owning it turned the dead account recoverable
-- the launcher hung once more on 11-05, on steamac 1.9.12
+- the launcher hung once more on 11-05
 - bully, max payne 1–2 and the old gta trilogy run without the launcher
 - the live case (gta iv on a typo email, 2026-11): pocket PK-298

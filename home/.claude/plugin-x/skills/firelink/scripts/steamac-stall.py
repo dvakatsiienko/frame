@@ -24,14 +24,14 @@ def snap():
             r[t]=(c,f[0],int(f[11])+int(f[12]),w,sc)
         except (OSError,ValueError,IndexError): pass
     return r
-last=time.monotonic(); ft=None; lastadv=last; prev=snap() or {}; inside=False
+last=time.monotonic(); end=last+dur; ft=None; lastadv=last; prev=snap() or {}; inside=False
 while time.monotonic()<end:
     time.sleep(0.05)
     now=time.monotonic(); over=now-last-0.05; last=now
     cur=snap()
     if cur is None: print('game gone',file=out); break
     fr=[v for v in cur.values() if v[0]=='dxvk-frame']
-    if fr and fr[0][2]!=ft: ft=fr[0][2]; lastadv=now
+    if not fr or fr[0][2]!=ft: ft=fr[0][2] if fr else ft; lastadv=now
     stamp=time.strftime('%H:%M:%S')+f'.{int(time.time()*1000)%1000:03d}'
     if over>0.08: print(f'{stamp} OVERSLEPT {over*1000:.0f}ms',file=out)
     if now-lastadv>0.2 and not inside:
