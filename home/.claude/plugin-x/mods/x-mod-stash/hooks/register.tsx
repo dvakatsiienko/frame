@@ -31,11 +31,8 @@ import {
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
-    SEND_MS,
     hasPlanMark,
-    isDue,
     isFresh,
-    isSending,
     joinText,
     linkLabel,
     lockJoined,
@@ -171,15 +168,10 @@ const SPEAK_ASSUMED = 'speak-assumed';
 const GUARD_SILENT = 'guard-silent';
 // quiet comms on or off, one switch for 🎛️ and `/quiet` alike; on by default, `off` is the revert (dima, 16:53)
 const QUIET_ON = 'quiet-comms';
-// a tick, a replay or a phases change waits SEND_MS in «sending», undoable; off, it is ready for the next turn at once
-// (dima, 10-13 17:49)
-const UNDO_WINDOW = 'undo-window';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { isWhole: true, max: 7, min: 5 } as const;
 // how long held member pings wait before the hidden idle append, in minutes (dima, 16:53: 10 by default, maybe 15)
 const QUIET_WAIT = 'quiet-wait';
-// the undo window's length in seconds, set beside its switch (dima, 10-13 18:01)
-const UNDO_DELAY = 'undo-delay';
 const WAIT = { max: 60, min: 1 } as const;
 // every 🎛️ knob in one table: its store key and its default; a number knob its range too. a missing or broken value reads
 // as the default, and every read and write goes through readSwitch, readNumber, flipKnob and setKnobNumber
@@ -191,7 +183,6 @@ const SWITCHES = {
     ring: { key: CTX_RING_KEY, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
-    undo: { key: UNDO_WINDOW, of: true },
 } as const;
 const settingOf = (key: keyof typeof PACE_SETTINGS) => ({
     key,
@@ -209,11 +200,6 @@ const NUMBERS = {
     'pace-under': settingOf('pace-under'),
     quietWait: { key: QUIET_WAIT, of: 10, range: WAIT },
     speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
-    undoDelay: {
-        key: UNDO_DELAY,
-        of: SEND_MS / 1000,
-        range: { max: 30, min: 1 },
-    },
 } as const;
 type SwitchName = keyof typeof SWITCHES;
 type NumberName = keyof typeof NUMBERS;
@@ -222,11 +208,6 @@ type NumberName = keyof typeof NUMBERS;
 const SHOWN = 'shown';
 // the parts dima approved (o2, 2026-10-11 13:15), grouped by where they draw; a mod's own parts, so a new one joins here
 export const PARTS = [
-    {
-        group: 'stash · band',
-        key: 'stash.chips',
-        label: '🪐 🌔 asks and phases chips',
-    },
     { group: 'stash · band', key: 'stash.pace', label: '🔋 🪫 pace gap' },
     {
         group: 'stash · band',
@@ -236,7 +217,11 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.wait', label: '🔭 wait line' },
     { group: 'stash · band', key: 'stash.hot', label: '🔥 keep-hot' },
     { group: 'stash · band', key: 'stash.waker', label: '⏰ waker' },
-    { group: 'stash · band', key: 'stash.pace-watch', label: '🔋 pace watch' },
+    {
+        group: 'stash · band',
+        key: 'stash.pace-watch',
+        label: '🔋 pace watch: all sessions',
+    },
     { group: 'stash · band', key: 'stash.afk', label: '💨 afk' },
     { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
@@ -1677,7 +1662,6 @@ async function saveOrbit(
                     text: a.text,
                     ...(a.link ? { link: a.link } : {}),
                     ...(a.mark ? { mark: a.mark } : {}),
-                    ...(a.sendAt ? { sendAt: a.sendAt } : {}),
                     ...(a.steer ? { steer: a.steer } : {}),
                     ...(a.isLocked ? { isLocked: true } : {}),
                 })),
@@ -1734,7 +1718,6 @@ async function absorbMarks($: EngineInterface) {
     const marks = await marksOf($, sid);
     if (!Object.keys(marks).length) return;
     const o = await currentOrbit($);
-    const win = await sendWindow($);
     await saveOrbit($, {
         ...o,
         asks: o.asks.map((a) => {
@@ -1745,7 +1728,6 @@ async function absorbMarks($: EngineInterface) {
                 isChanged: false,
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
-                sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
                 steer: isTypedHere(a.id)
                     ? a.steer
                     : m.isSteerEdit
@@ -1775,9 +1757,7 @@ async function wakeForMarks($: EngineInterface) {
         return;
     if (!(await partsShown($))('stash.orbit')) return;
     const o = await currentOrbit($);
-    const due = o.asks
-        .filter(isDue(await $.clock.now()))
-        .filter((a) => a.markedAt !== undefined);
+    const due = o.asks.filter(isFresh).filter((a) => a.markedAt !== undefined);
     if (!due.length) return;
     const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
     if (dimaAt <= Math.min(...due.map((a) => a.markedAt ?? 0))) return;
@@ -1931,32 +1911,78 @@ async function unmountSteers($: EngineInterface) {
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
-// a press that unticks, or a mark that never took, drops the ask's record
+// one press is one marking step, deciding from one read: a tick's record lands before its mark, so a tool call that
+// takes the mark finds it; an untick clears the mark first, so no tick is ever marked without its record
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const TICKS_KEPT = 20;
 const quotedOf = (text: string) =>
     [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
-async function tickAsk($: EngineInterface, id: string) {
+async function recordTick(
+    $: EngineInterface,
+    ask: OrbitAsk,
+    isTicked: boolean,
+) {
+    // the press still marks: a tick with no record fails closed at the guard; a drop that fails leaves his taken-back
+    // tick honoured for its 2 h, so that one tells him
+    try {
+        const { value: kept = [] } = await $.state.get(TICKS);
+        const rest = kept.filter((t) => t.id !== ask.id);
+        await $.state.set(
+            TICKS,
+            isTicked
+                ? [
+                      ...rest,
+                      {
+                          at: await $.clock.now(),
+                          id: ask.id,
+                          targets: quotedOf(ask.text),
+                          text: ask.text,
+                      } satisfies StashTick,
+                  ].slice(-TICKS_KEPT)
+                : rest,
+        );
+    } catch (err) {
+        $.ui.log(`x-mod-stash: tick record not written: ${errorText(err)}`);
+        if (!isTicked)
+            $.ui.toast(
+                '🛎️ untick not recorded: the guard may still honour this tick for 2 h',
+            );
+    }
+}
+async function pressMarkNow(
+    $: EngineInterface,
+    id: string,
+    mark: 'accepted' | 'rejected',
+) {
+    await $.state.set(MOBILE, false).catch(() => undefined);
     const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
-    // a press on a frame drawn before his prompt locked the ask changed nothing, so it keeps the record (S1)
-    if (ask?.isLocked || ask?.isResolved) return;
-    const { value: kept = [] } = await $.state.get(TICKS);
-    const rest = kept.filter((t) => t.id !== id);
-    const isTicked = ask?.mark === 'accepted' && !ask.isLocked;
-    await $.state.set(
-        TICKS,
-        isTicked
-            ? [
-                  ...rest,
-                  {
-                      at: ask.sendAt ?? (await $.clock.now()),
-                      id,
-                      targets: quotedOf(ask.text),
-                      text: ask.text,
-                  } satisfies StashTick,
-              ].slice(-TICKS_KEPT)
-            : rest,
+    // a press on a frame drawn before his prompt locked the ask changes nothing, so it keeps the record (S1)
+    if (!ask || ask.isLocked || ask.isResolved) return;
+    const next = ask.mark === mark ? undefined : mark;
+    const isTicked = next === 'accepted';
+    if (isTicked) await recordTick($, ask, true);
+    // a tool call may lock this ask while the record is written: then the mark never lands and the record goes too
+    let isMarked = false;
+    await markAsksNow(
+        $,
+        (a) => {
+            if (a.id !== id) return a;
+            isMarked = true;
+            return { ...a, isChanged: false, mark: next };
+        },
+        false,
+        undefined,
     );
+    if (!isTicked || !isMarked) await recordTick($, ask, false);
+}
+async function pressMark(
+    $: EngineInterface,
+    id: string,
+    mark: 'accepted' | 'rejected',
+) {
+    const run = marking.then(() => pressMarkNow($, id, mark));
+    marking = run.catch(() => undefined);
+    await run;
 }
 
 async function dropTicks($: EngineInterface, id: string) {
@@ -1966,19 +1992,6 @@ async function dropTicks($: EngineInterface, id: string) {
             TICKS,
             kept.filter((t) => t.id !== id),
         );
-}
-
-// his prompt sends a tick still sending: its record holds from now, never from the window's end (S2)
-async function sendTicks($: EngineInterface, ids: string[]) {
-    if (!ids.length) return;
-    const now = await $.clock.now();
-    const { value: kept = [] } = await $.state.get(TICKS);
-    await $.state.set(
-        TICKS,
-        kept.map((t) =>
-            ids.includes(t.id) && t.at > now ? { ...t, at: now } : t,
-        ),
-    );
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
@@ -2491,7 +2504,6 @@ async function dropLaneOrders($: EngineInterface) {
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
-    const win = await sendWindow($);
     const live = lanes
         .filter((l) => !l.endedAt)
         .map((l) => ({
@@ -2531,7 +2543,6 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
                 ? {
                       ...a,
                       mark: m.mark,
-                      sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
                       steer: m.steer,
                   }
                 : a;
@@ -2558,16 +2569,12 @@ async function markRemote(
             | RemoteMark
             | undefined) ?? { mark: ask.mark, steer: ask.steer },
     );
-    const now = await $.clock.now();
     await $.store.set(key, {
         ...prior,
         ...change,
-        at: now,
-        ...('mark' in change ? { markAt: now } : {}),
+        at: await $.clock.now(),
     });
     await showLanes($, await readLanes($));
-    if ('mark' in change)
-        $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
 }
 
 // the lane steers dima took with 🛎️, as clio reads them; each leaves the lane once read
@@ -3361,9 +3368,16 @@ async function paceWaker($: EngineInterface) {
     await $.store.delete(PACE_WAKER + sid);
 }
 
+// a coordinator seat that wrote no pace key while the all-sessions part was off: the poll arms it once the part is back
+let isPaceSeatHeld = false;
 // every 4 s in every session, so one with no watch stops at two reads
 async function pacePoll($: EngineInterface) {
     const sid = await currentId($);
+    if (sid && isPaceSeatHeld && (await partsShown($))('stash.pace-watch')) {
+        isPaceSeatHeld = false;
+        if ((await $.store.get(PACE + sid)) === undefined)
+            await $.store.set(PACE + sid, { on: true });
+    }
     if (
         !sid ||
         !(
@@ -3394,8 +3408,11 @@ async function seatDefaults($: EngineInterface) {
     const name = await sessionName($);
     if (!sid || !name) return;
     const now = await $.clock.now();
-    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined)
-        await $.store.set(PACE + sid, { on: true });
+    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined) {
+        if ((await partsShown($))('stash.pace-watch'))
+            await $.store.set(PACE + sid, { on: true });
+        else isPaceSeatHeld = true;
+    }
     if (isSeated(name) && (await $.store.get(HOT + sid)) === undefined) {
         await $.store.set(HOT + sid, { since: now });
         await followHot($);
@@ -4413,13 +4430,6 @@ async function readSwitch($: EngineInterface, name: SwitchName) {
     return typeof v === 'boolean' ? v : SWITCHES[name].of;
 }
 
-// how long a mark waits in «sending» before a turn may take it: SEND_MS, or nothing with the undo window off
-async function sendWindow($: EngineInterface) {
-    return (await readSwitch($, 'undo'))
-        ? (await readNumber($, 'undoDelay')) * 1000
-        : 0;
-}
-
 async function readNumber($: EngineInterface, name: NumberName) {
     const { key, of, range } = NUMBERS[name];
     return numberOf(await $.store.get(key).catch(() => undefined), range) ?? of;
@@ -4496,9 +4506,6 @@ function noteOnHover(
         </Box>
     );
 }
-
-const hotTip = (isHot: boolean | undefined) =>
-    isHot ? 'keep hot: disable' : 'keep hot: enable';
 
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
@@ -4892,10 +4899,6 @@ export const register: Register = (on) => {
                     (x) => !wrong.includes(x),
                 ),
             });
-        await sendTicks(
-            $,
-            marked.filter((a) => a.mark === 'accepted').map((a) => a.id),
-        ).catch(() => undefined);
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder =
             (await $.state.get(MOBILE)).value || !isOn('stash.orbit')
@@ -4918,7 +4921,7 @@ export const register: Register = (on) => {
             );
         const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
         if (isOwner) await dropLaneOrders($);
-        // dima's own prompt sends his phases mark at once, as it sends a tick still sending
+        // dima's own prompt carries his phases mark
         const planMark =
             isUserTurn && isOn('stash.phases') && hasPlanMark(orbit.plan)
                 ? orbit.plan
@@ -5377,8 +5380,6 @@ export const register: Register = (on) => {
                             ring: await readSwitch($, 'ring'),
                             speak: await readSwitch($, 'speak'),
                             speed: await readNumber($, 'speed'),
-                            undo: await readSwitch($, 'undo'),
-                            undoDelay: await readNumber($, 'undoDelay'),
                         };
                         const switchJSX = (
                             name: SwitchName,
@@ -5411,7 +5412,7 @@ export const register: Register = (on) => {
                                     flexDirection='row'
                                     gap={1}
                                     key={`knob:${key}`}>
-                                    {label ? <Text>{label}</Text> : null}
+                                    <Text>{label}</Text>
                                     <Box flexGrow={1} />
                                     {noteOnHover(
                                         ui,
@@ -5482,7 +5483,7 @@ export const register: Register = (on) => {
                                                           'primary' as const,
                                                   }
                                                 : { dimColor: true })}>
-                                            🔋 pace watch
+                                            🔋 pace watch: this session
                                         </Button>
                                     </Box>
                                 ) : null}
@@ -5529,26 +5530,6 @@ export const register: Register = (on) => {
                                     knobs.lines,
                                     'lines',
                                 )}
-                                {/* the toggle and its seconds on one line, as phase lines reads (dima, 10-13 18:14) */}
-                                <Box
-                                    alignItems='center'
-                                    flexDirection='row'
-                                    gap={1}
-                                    key='knob:undo-row'>
-                                    {switchJSX(
-                                        'undo',
-                                        '📨 undo tick',
-                                        knobs.undo,
-                                    )}
-                                    {knobs.undo
-                                        ? numberJSX(
-                                              'undoDelay',
-                                              '',
-                                              knobs.undoDelay,
-                                              's',
-                                          )
-                                        : null}
-                                </Box>
                                 {switchJSX(
                                     'speak',
                                     '🔊 read-aloud on assumptions',
@@ -5810,36 +5791,8 @@ export const register: Register = (on) => {
                     const age = planAge(o);
                     // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
                     // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
-                    const drawnAt = await $.clock.now();
-                    // a press starts the 5 s «sending» window (PK-88); a second press inside it unsends, and one redraw shows it sent
                     const ownDoor: AskDoor = {
-                        mark: (a, mark) =>
-                            void (async () => {
-                                const now = await $.clock.now();
-                                const win = await sendWindow($);
-                                await markAsks(
-                                    $,
-                                    (x) => {
-                                        if (x.id !== a.id) return x;
-                                        const isOff = x.mark === mark;
-                                        return {
-                                            ...x,
-                                            isChanged: false,
-                                            mark: isOff ? undefined : mark,
-                                            sendAt:
-                                                isOff || !win
-                                                    ? undefined
-                                                    : now + win,
-                                        };
-                                    },
-                                    true,
-                                );
-                                await tickAsk($, a.id);
-                                if (win)
-                                    $.clock.after(win, () =>
-                                        $.ui.invalidate('ui.render'),
-                                    );
-                            })(),
+                        mark: (a, mark) => void pressMark($, a.id, mark),
                         prefix: 'orbit',
                         steer: (a, value) => handleSteer(a.id, value),
                     };
@@ -5856,7 +5809,7 @@ export const register: Register = (on) => {
                             {...(mark === 'accepted'
                                 ? { variant: 'primary' as const }
                                 : {})}>
-                            {`${a.mark === mark ? (a.isLocked ? '🔓' : isSending(a, drawnAt) ? '📨' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
+                            {`${a.mark === mark ? (a.isLocked ? '🔓' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
                         </Button>
                     );
                     const handleAssumedSteer = (id: string, value: string) =>
@@ -6414,25 +6367,16 @@ export const register: Register = (on) => {
                             </Box>
                         ) : null,
                     );
-                    // o84: dima's hand on this session's phases — a move, a tick, a steer — waits SEND_MS like an orbit tick
+                    // o84: dima's hand on this session's phases — a move, a tick, a steer
                     const changePlan = async (
                         change: (p: StashPlan) => StashPlan,
-                        isSend = true,
                     ) => {
                         const was = await currentOrbit($);
                         if (!was.plan) return;
-                        const win = await sendWindow($);
-                        const sendAt = isSend
-                            ? (await $.clock.now()) + win
-                            : was.plan.sendAt;
                         await saveOrbit($, {
                             ...was,
-                            plan: { ...change(was.plan), sendAt },
+                            plan: change(was.plan),
                         });
-                        if (isSend && win)
-                            $.clock.after(win, () =>
-                                $.ui.invalidate('ui.render'),
-                            );
                     };
                     const handlePlanMove = (i: number, by: -1 | 1) =>
                         void changePlan((p) => ({
@@ -6446,10 +6390,7 @@ export const register: Register = (on) => {
                             mark: p.mark ? undefined : 'accepted',
                         }));
                     const handlePlanSteer = (value: string) =>
-                        changePlan(
-                            (p) => ({ ...p, steer: steerOf(value) }),
-                            false,
-                        );
+                        changePlan((p) => ({ ...p, steer: steerOf(value) }));
                     const arrowsJSX = (
                         key: string,
                         canUp: boolean,
@@ -6688,7 +6629,7 @@ export const register: Register = (on) => {
                                                       key='plan:tick'
                                                       onPress={handlePlanTick}
                                                       variant='primary'>
-                                                      {`${o.plan.mark ? (isSending(o.plan, drawnAt) ? '📨' : '✅') : '🛎️'} tick`}
+                                                      {`${o.plan.mark ? '✅' : '🛎️'} tick`}
                                                   </Button>
                                                   {Input ? (
                                                       <Box
@@ -7478,9 +7419,7 @@ export const register: Register = (on) => {
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
         const fresh =
-            isPing || !isOn('stash.orbit')
-                ? []
-                : o.asks.filter(isDue(await $.clock.now()));
+            isPing || !isOn('stash.orbit') ? [] : o.asks.filter(isFresh);
         if (fresh.length) {
             await saveOrbit($, lockJoined(o, fresh));
             notes.push(joinText(fresh));
@@ -7498,14 +7437,9 @@ export const register: Register = (on) => {
             );
             if (wind) notes.push(wind);
         }
-        // dima's phases mark joins the running turn once its sending window passed
+        // dima's phases mark joins the running turn at its next tool call
         const p = (await currentOrbit($)).plan;
-        if (
-            !isPing &&
-            isOn('stash.phases') &&
-            hasPlanMark(p) &&
-            (p.sendAt ?? 0) <= (await $.clock.now())
-        ) {
+        if (!isPing && isOn('stash.phases') && hasPlanMark(p)) {
             await saveOrbit($, {
                 ...(await currentOrbit($)),
                 plan: planTaken(p),
@@ -7535,7 +7469,7 @@ export const register: Register = (on) => {
         return { ...answer, context: [...(r.context ?? []), ...notes] };
     });
 
-    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars
+    // the band: one row — the meters' readings, the 🔭 mark, the switches — then the bars
     // and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         try {
@@ -7543,10 +7477,9 @@ export const register: Register = (on) => {
                 await (async () => {
                     if (e.surface !== 'terminal' && e.surface !== 'desktop')
                         return next(e);
-                    // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
+                    // the published view, never the module's value: reading it subscribes this band, and a write redraws it
                     const view =
                         (await $.state.get(VIEW)).value ?? viewOf(false);
-                    const o = (await $.state.get(ORBIT)).value ?? orbit;
                     const ui = $.ui.resolve(e);
                     const { Box, Text, Button } = ui;
                     const handleAfkFlip = async () => {
@@ -7636,38 +7569,6 @@ export const register: Register = (on) => {
                     const leftOf = (label: string, chrome: boolean) => ({
                         right: [...label].length + (chrome ? 4 : 0) + 1,
                     });
-
-                    // the chips: text, never a control — 🚦 already opens the board, where orbit and the plan live (dima, 2026-10-10)
-                    const openAsks = o.asks.filter((a) => !a.isResolved).length;
-                    // every chip names itself on hover in five words or fewer (dima, 20:13)
-                    const planned = o.plan?.lines.length ?? 0;
-                    const asksChip = `🪐 ${openAsks}`;
-                    const planChip = `🌔 ${planned}`;
-                    const chips = (
-                        <Box
-                            flexDirection='row'
-                            flexShrink={0}
-                            gap={1}
-                            key='chips'>
-                            {tip(
-                                'chip:asks',
-                                `${openAsks} open ask${openAsks === 1 ? '' : 's'} for you`,
-                                <Text
-                                    bold={openAsks > 0}
-                                    color={openAsks ? ACCENT : undefined}
-                                    dimColor={!openAsks}>
-                                    {asksChip}
-                                </Text>,
-                                { left: [...asksChip].length + 1 },
-                            )}
-                            {tip(
-                                'chip:plan',
-                                `${planned} phase${planned === 1 ? '' : 's'}`,
-                                <Text dimColor={!planned}>{planChip}</Text>,
-                                { left: [...planChip].length + 1 },
-                            )}
-                        </Box>
-                    );
 
                     // the meters: two short bars in the row, each ending in its %; the readings sit beside them
                     const meter = (await $.state.get(METER)).value;
@@ -7832,9 +7733,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'wind',
-                                      view.wind
-                                          ? `second wind: ${WIND_SAY[view.wind]}`
-                                          : 'second wind: start',
+                                      'second wind',
                                       <Button
                                           key='wind'
                                           onPress={() =>
@@ -7860,7 +7759,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'hot',
-                                      hotTip(view.isHot),
+                                      'keep cache hot',
                                       <Button
                                           key='hot'
                                           onPress={() => void handleHotFlip()}
@@ -7878,9 +7777,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'pace-watch',
-                                      isPaceWatched
-                                          ? 'pace watch: disable'
-                                          : 'pace watch: enable',
+                                      'pace watch: this session',
                                       <Button
                                           key='pace-watch'
                                           onPress={() => void pressPace($)}
@@ -7898,9 +7795,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'waker',
-                                      view.isWaker
-                                          ? 'fleet wake: disable'
-                                          : 'fleet wake: enable',
+                                      'fleet wake',
                                       <Button
                                           key='waker'
                                           onPress={() => void handleWakerFlip()}
@@ -7918,7 +7813,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'afk',
-                                      view.afk ? 'afk: disable' : 'afk: enable',
+                                      'afk',
                                       <Button
                                           key='afk'
                                           onPress={() => void handleAfkFlip()}
@@ -7934,9 +7829,7 @@ export const register: Register = (on) => {
                                   )}
                             {tip(
                                 'settings',
-                                view.isSettingsOpen
-                                    ? 'settings: close'
-                                    : 'settings: open',
+                                'settings',
                                 <Button
                                     key='settings'
                                     onPress={() => void handleSettingsFlip()}
@@ -7951,9 +7844,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'board',
-                                      boardOpen
-                                          ? 'board: close'
-                                          : 'board: open',
+                                      'board',
                                       <Button
                                           key='board'
                                           onPress={() => void handleBoardFlip()}
@@ -7973,7 +7864,7 @@ export const register: Register = (on) => {
                                   )}
                         </Box>
                     );
-                    // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
+                    // the readings pack left, then this session's 🔭 mark, always drawn; the switches hold the right
                     // edge (dima's o6 and o7, 22:03)
                     // each «waiting on <who>» part of a 🔭 wait prints <who> bold, its «— how» tail plain (dima, 2026-10-10 23:54)
                     const waitJSX = (wait: string) =>
@@ -8008,7 +7899,6 @@ export const register: Register = (on) => {
                                 gap={1}
                                 key='row:readings'
                                 minWidth={0}>
-                                {isShown('stash.chips') ? chips : null}
                                 {meterInfoJSX}
                                 {isShown('stash.wait') ? (
                                     <Box flexShrink={1} key='wait' minWidth={0}>

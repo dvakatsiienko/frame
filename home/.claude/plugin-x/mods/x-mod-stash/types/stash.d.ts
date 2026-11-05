@@ -16,8 +16,6 @@ export type PublishedAsk = {
     mark?: 'accepted' | 'rejected';
     steer?: string;
     isLocked?: boolean;
-    // a mark still inside its 5 s sending window ends here (ms)
-    sendAt?: number;
 };
 
 // a mark or steer dima made on another board's glide card, waiting in the store for the member to take it in
@@ -27,8 +25,6 @@ export type RemoteMark = {
     // the steer was typed on that board, so it replaces the member's own instead of yielding to it
     isSteerEdit?: boolean;
     at: number;
-    // when the mark itself last changed, so a steer edit never restarts its sending window
-    markAt?: number;
 };
 
 // the session's last main turn stopped on the 5h cap: the reset it waits for, and the reset a resume already went for
@@ -139,8 +135,6 @@ export type OrbitAsk = {
     isResolved?: boolean;
     // when a mark came in from another board: an idle session wakes once dima prompts anywhere after it
     markedAt?: number;
-    // a fresh mark is «sending» until this time (ms): a second press before it unsends it, and no turn takes it yet
-    sendAt?: number;
     // the closing word a resolve gave it («landed», «dropped: superseded by o58»)
     word?: string;
     // resolved with a word in a turn that has ended: drawn dim for one more turn, then it leaves
@@ -208,8 +202,8 @@ export type QuietLogLine = {
 // the ledger: a member whose transcript sent clio more pings than her quiet log holds since the window opened
 export type QuietGap = { from: string; sent: number; logged: number };
 
-// dima's tick on an ask, written only by his press: the ask's text, its backtick-quoted targets, and when it counts (once
-// its sending window passed); x-mod-guard reads it as his word for a guarded command (FRM-427)
+// dima's tick on an ask, written only by his press: the ask's text, its backtick-quoted targets, and when he pressed;
+// x-mod-guard reads it as his word for a guarded command (FRM-427)
 export type StashTick = {
     id: string;
     text: string;
@@ -228,14 +222,13 @@ export type StashOrbit = {
 };
 
 // the session's phases: its next moves, the turn count they were set at, and what dima did to them on the board — a
-// reorder, a tick on the order, his steer — waiting, like an orbit tick, until `sendAt` before a turn takes it (o84)
+// reorder, a tick on the order, his steer — for the next turn or tool call to take (o84)
 export type StashPlan = {
     lines: string[];
     at: number;
     isMoved?: boolean;
     mark?: 'accepted';
     steer?: string;
-    sendAt?: number;
 };
 
 // 🛼 glide (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only clio writes;

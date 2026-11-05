@@ -24,11 +24,11 @@ the workaround in place, the undo. checked against the changelog through 2.1.314
 
 ## hover cards in the board
 
-- want: a board row's count names itself on hover, «1 open ask for you», as the band's chips do (dima, 2026-10-10)
+- want: a board row's count names itself on hover, «1 open ask for you» (dima, 2026-10-10)
 - issue: no upstream issue — a hover card in a `Pane` is an absolute box that wraps in a narrow row and draws over
   its neighbours (two rounds, FRM-306); the recipe holds on the one-row band only
-- workaround: none; the band's `🪐 n` chip carries the card
-- undo when fixed: give the row's `🪐 n` the band's hover card
+- workaround: none
+- undo when fixed: give the row's `🪐 n` a hover card
 
 ## mods on mobile and in remote control
 

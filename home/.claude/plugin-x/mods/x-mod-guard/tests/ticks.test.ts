@@ -92,14 +92,6 @@ test('a tick quoting only part of the target leaves it refused', async ($, on) =
     expect([r.deny, ran]).toEqual([expect.stringContaining('origin'), []]);
 });
 
-test('a tick still in its sending window is not his word yet', async ($, on) => {
-    const { ran } = world(on, [tick(`⚠️ mirror: \`${MIRROR}\``, NOW + 4_000)]);
-    expect([(await bash($, MIRROR)).deny !== undefined, ran]).toEqual([
-        true,
-        [],
-    ]);
-});
-
 test('a tick planted in the shared store, as Bash or another session could, is ignored', async ($, on) => {
     const { ran, store } = world(on);
     store.set('ticks', [tick(`⚠️ mirror: \`${MIRROR}\``)]);
@@ -588,7 +580,7 @@ test('a target named in prose but never quoted proves nothing', async ($, on) =>
     ]);
 });
 
-// dima's o2 (2026-10-28 14:57): a tick counts for 2 h after its sending window, so a yes for this afternoon's push never
+// dima's o2 (2026-10-28 14:57): a tick counts for 2 h, so a yes for this afternoon's push never
 // quietly unlocks tonight's
 for (const [age, isRun] of [
     [2 * 3_600_000 - 1_000, true],

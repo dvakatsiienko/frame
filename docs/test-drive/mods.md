@@ -30,7 +30,7 @@ codie cannot see a surface; dima walks each, ticks what holds, notes what does n
 
 - **terminal (iTerm2 or Ghostty, pointer reporting on)**
   - [x] the band draws one row: `⏳ n open`, `📋` `🔥` `💨` `🚦` and the folder
-  - [x] hovering each control shows its card on the row, the toggles naming their next press
+  - [x] hovering each control shows its card on the row, each naming its control, no state words
   - [x] a click on the band, then `c` copies the asks, `b` folds the board, `f` folds the asks
   - [x] the board pane: clio pinned and bold, aligned columns, `⏳ 0` dimmed, a 🔭 line under a waiting thread
   - [x] breather's band shows during a long turn and leaves when it ends
