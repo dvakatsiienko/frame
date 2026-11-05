@@ -81,7 +81,6 @@ import {
     waitSpans,
 } from './parse.ts';
 import {
-    QUIET_EVENT_FROM,
     QUIET_HELD_LINE,
     QUIET_PUSHED,
     QUIET_SLIPSTREAMED,
@@ -1430,6 +1429,12 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
     );
 }
 
+// a keep-hot ping's reply is no turn of its own, so its end is nothing to wake for
+async function isLastReplyPing($: EngineInterface, sid: string) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    return !!reply?.pingedAt && reply.pingedAt > reply.at;
+}
+
 // afk on or a shift running: nobody is at the keyboard to notice a member ending silently
 async function isAwayNow($: EngineInterface) {
     const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
@@ -1466,12 +1471,21 @@ async function quietHoldPrompt(
         ...glued.messages.map(({ block, head }) => {
             const { body, canary, from, tag } = peerPing(block);
             const marks = canary ? { canary } : {};
-            return { body, from, head, marks, tag, text: quietHeldText(body) };
+            return {
+                body,
+                from,
+                head,
+                isEvent: false,
+                marks,
+                tag,
+                text: quietHeldText(body),
+            };
         }),
-        ...glued.notes.map(({ body, from, head, held }) => ({
+        ...glued.notes.map(({ body, from, head, held, isEvent }) => ({
             body,
             from,
             head,
+            isEvent,
             marks: {},
             tag: QUIET_NOTICE,
             text: held,
@@ -1503,10 +1517,13 @@ async function quietHoldPrompt(
         const canCut = !isEngineNotice || judged.every((j) => !j.why);
         // a turn is starting anyway, and the event's words are written to that turn
         const isTurnStarting = judged.some((j) => j.why);
-        for (const { from, head, marks, tag, text, why } of judged) {
-            const isWoken = tag === QUIET_NOTICE && isAway;
-            const reason = why ?? (isWoken ? 'away' : undefined);
+        for (const { from, head, isEvent, marks, tag, text, why } of judged) {
             const sid = memberOf(members, from)?.base.sid;
+            const isWoken =
+                tag === QUIET_NOTICE &&
+                isAway &&
+                !(sid && (await isLastReplyPing($, sid)));
+            const reason = why ?? (isWoken ? 'away' : undefined);
             const line = {
                 arm,
                 at,
@@ -1515,7 +1532,7 @@ async function quietHoldPrompt(
                 ...(sid ? { sid } : {}),
                 ...marks,
             };
-            const isEventKept = from === QUIET_EVENT_FROM && isTurnStarting;
+            const isEventKept = isEvent && isTurnStarting;
             if (isHolding && canCut && !reason && !isEventKept) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);

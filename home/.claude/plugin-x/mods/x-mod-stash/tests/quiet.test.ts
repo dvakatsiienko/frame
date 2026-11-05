@@ -2539,6 +2539,44 @@ test('a meta idle notice let in never counts as his turn', async ($, on) => {
     expect(w.store.get('dima-at')).toBeUndefined();
 });
 
+test('a member named the app beside a push is judged as a member', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText(
+        $,
+        notice(
+            GLUED_LINE.replace('sw done', '[done] step 2'),
+            noteOf('the app', 'step 2 landed'),
+        ),
+    );
+    expect([
+        r.drop,
+        held(w).join('\n').length > 0,
+        r.text?.includes('step 2 landed'),
+    ]).toEqual([undefined, true, false]);
+});
+
+for (const [what, reply, drop] of [
+    [
+        'a lone note after a keep-hot ping holds',
+        { at: EVEN - 60_000, pingedAt: EVEN - 1000 },
+        '',
+    ],
+    [
+        'a lone note after a real reply wakes',
+        { at: EVEN - 1000, pingedAt: EVEN - 60_000 },
+        undefined,
+    ],
+] as const)
+    test(`${what} while away`, async ($, on) => {
+        const w = answering(on);
+        await start($);
+        w.store.set('afk', { on: true });
+        w.store.set(`reply:${CODIE.sessionId}`, reply);
+        const r = await fromAppText($, noteOf(CODIE.name, '.'));
+        expect(r.drop).toBe(drop);
+    });
+
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {
         name: MEMBER,
