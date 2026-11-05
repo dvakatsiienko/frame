@@ -78,7 +78,7 @@ func TestDispatchNamesTheSlicesDirAfterTheSpecsFeature(t *testing.T) {
 	envelope, _ := runDispatchIn(t, server, frame, "FRM-1", "--session", "s1", "--lane", "cli-9")
 
 	if out := jsonOf(envelope["plan"]); !strings.Contains(out, "lanes/feat-a/issues/") {
-		t.Errorf("the slices dir must follow the spec's feature, as the lane plan and the retros do:\n%s", out)
+		t.Errorf("the slices dir must follow the spec's feature, as the lane plan does:\n%s", out)
 	}
 }
 
@@ -96,6 +96,97 @@ func TestDispatchDryRunPrintsTheFourMarksAndWritesNothing(t *testing.T) {
 	}
 	if n := len(mutations(server)); n != 0 {
 		t.Errorf("%d mutations on a dry run", n)
+	}
+}
+
+const quickTicket = "lane: quick\nrepo: frame\n\n## 🎯 done test\n\ngiven it, then it holds\n\n⸻ 🪪 stamp — please keep 🙏"
+
+func frameAtBase(t *testing.T) (frame, base string) {
+	t.Helper()
+	frame = repo(t)
+	gitT(t, frame, "update-ref", "refs/remotes/origin/main", "HEAD")
+	return frame, gitT(t, frame, "rev-parse", "--short=7", "HEAD")
+}
+
+func TestDispatchQuickWritesItsThreeMarksWithNoSign(t *testing.T) {
+	t.Parallel()
+	frame, base := frameAtBase(t)
+	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo", labels: []string{"agent"}})
+
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--sixth-sense", "s2", "--apply")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	input := updateInput(t, server)
+	body, _ := input["description"].(string)
+	line := " — q, codie s1, main:" + base + ", sixth sense s2\n"
+	if input["stateId"] != "s-ip" || input["delegateId"] != "u-codie" || input["removedLabelIds"] != nil {
+		t.Errorf("input %v, want In Progress, the delegate, no label touched", input)
+	}
+	if !strings.Contains(body, "\n🚀 dispatched ") || !strings.Contains(body, line) || !strings.HasSuffix(body, "\n\n⸻ 🪪 stamp — please keep 🙏") {
+		t.Errorf("the 🚀 line %q is not above the stamp:\n%s", line, body)
+	}
+}
+
+func TestDispatchQuickRefusesARepoNotOnThisMac(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	body := strings.ReplaceAll(quickTicket, "repo: frame", "repo: nowhere-here")
+	server := dispatchServer(t, dispatchState{body: body, state: "Todo"})
+
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "nowhere-here") || len(mutations(server)) != 0 {
+		t.Fatalf("exit %d, want a refusal naming the repo, no write:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchQuickDryRunPlansThreeMarks(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo"})
+
+	envelope, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q")
+
+	if plan := jsonOf(envelope["plan"]); got.code != 4 || strings.Count(plan, `"write"`) != 3 {
+		t.Fatalf("exit %d, want 4 with three marks:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchQuickReRunWritesNoSecondLine(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	body := "lane: quick\n\n🚀 dispatched 2026-11-05 — q, codie s1, main:abc1234\n"
+	server := dispatchServer(t, dispatchState{body: body, state: "In Progress", delegate: "codie"})
+
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+
+	if n := len(mutations(server)); got.code != 0 || n != 0 {
+		t.Fatalf("exit %d, %d mutations on a re-run:\n%s", got.code, n, got.stdout)
+	}
+}
+
+func TestDispatchWithoutQuickStillRefusesNoSign(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo"})
+
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stderr+got.stdout, "no ## signed block") {
+		t.Fatalf("exit %d, want the sign refusal:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchNamesASixthSenseOnASignedTicket(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, undispatched)
+
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--sixth-sense", "s2", "--apply")
+
+	body, _ := updateInput(t, server)["description"].(string)
+	if got.code != 0 || !strings.Contains(body, " — cli-3, codie s1, sixth sense s2\n") {
+		t.Fatalf("exit %d, body:\n%s", got.code, body)
 	}
 }
 
@@ -176,6 +267,88 @@ func TestDispatchWritesAgainAfterADispatchWasTakenBack(t *testing.T) {
 	}
 	if out := jsonOf(envelope["plan"]); !strings.Contains(out, "lanes/cli-3/issues/") {
 		t.Errorf("the plan does not name the lane's slices dir outside the worktree:\n%s", out)
+	}
+}
+
+func TestDispatchAgainWritesItsOwnLineWhenItNamesSomethingNew(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, held string
+		args       []string
+		want       string
+	}{
+		{"a sixth sense added", "cli-3, codie s1", []string{"--lane", "cli-3", "--session", "s1", "--sixth-sense", "s2"}, " — cli-3, codie s1, sixth sense s2\n"},
+		{"a sixth sense alone", "cli-3, codie s1", []string{"--sixth-sense", "s2"}, " — cli-3, codie s1, sixth sense s2\n"},
+		{"another lane starts fresh", "mods-3, codie s0, sixth sense s9", []string{"--lane", "cli-3", "--session", "s1"}, " — cli-3, codie s1\n"},
+		{"the same lane's successor keeps its sixth sense and base", "cli-3, codie s1, main:abc1234, sixth sense s2", []string{"--lane", "cli-3", "--session", "s5"}, " — cli-3, codie s5, main:abc1234, sixth sense s2\n"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			done := signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — "+c.held+"\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+			server := dispatchServer(t, dispatchState{body: done, state: "In Progress", delegate: "codie", labels: []string{"agent"}})
+
+			_, got := runDispatch(t, server, append([]string{"FRM-1", "--apply"}, c.args...)...)
+
+			body, _ := updateInput(t, server)["description"].(string)
+			if got.code != 0 || !strings.Contains(body, c.want) {
+				t.Fatalf("exit %d, want %q in:\n%s\n%s", got.code, c.want, body, got.stdout)
+			}
+			if !strings.Contains(body, "🚀 dispatched 2026-10-30 — "+c.held+"\n") {
+				t.Errorf("the held line went, a dispatch's history stays:\n%s", body)
+			}
+			if last := body[strings.LastIndex(body, "🚀"):]; !strings.Contains(last, c.want) {
+				t.Errorf("the new line must be the last 🚀, landed reads that one:\n%s", body)
+			}
+		})
+	}
+}
+
+func TestDispatchAgainRefusesToDropAFlagOnALineItCannotRead(t *testing.T) {
+	t.Parallel()
+	done := signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — by hand, see the thread\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+	server := dispatchServer(t, dispatchState{body: done, state: "In Progress", delegate: "codie", labels: []string{"agent"}})
+
+	_, got := runDispatch(t, server, "FRM-1", "--sixth-sense", "s2", "--apply")
+
+	if got.code != 2 || len(mutations(server)) != 0 {
+		t.Fatalf("exit %d, want a usage refusal and no write:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchQuickReadsABytesTicketsBaseFromBytes(t *testing.T) {
+	t.Parallel()
+	frame, frameBase := frameAtBase(t)
+	home := t.TempDir()
+	bytesRepo := filepath.Join(home, "projects/bytes")
+	gitT(t, home, "init", "-q", "-b", "main", bytesRepo)
+	write(t, filepath.Join(bytesRepo, "b.txt"), "bytes\n")
+	gitT(t, bytesRepo, "add", "b.txt")
+	gitT(t, bytesRepo, "commit", "-q", "-m", "bytes", "--date", "2020-01-01T00:00:00")
+	gitT(t, bytesRepo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	base := gitT(t, bytesRepo, "rev-parse", "--short=7", "HEAD")
+	if base == frameBase {
+		t.Fatal("the two repos share a head, the row reads nothing")
+	}
+	server := dispatchServer(t, dispatchState{body: "lane: quick\n\n## 🎯 done test\n\ngiven it, then it holds\n", state: "Todo"})
+
+	_, got := runLinear(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, "lane", "dispatch", "--quick", "BYT-1", "--session", "s1", "--lane", "q", "--apply")
+
+	body, _ := updateInput(t, server)["description"].(string)
+	if got.code != 0 || !strings.Contains(body, "main:"+base) {
+		t.Fatalf("exit %d, want bytes' base %s in:\n%s\n%s", got.code, base, body, got.stdout)
+	}
+}
+
+func TestDispatchReadsAProseArrowAsNoTakeBack(t *testing.T) {
+	t.Parallel()
+	held := signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — cli-3, codie s1\n✏️ changed: the ↩️ line reworded\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+	server := dispatchServer(t, dispatchState{body: held, state: "In Progress", delegate: "codie", labels: []string{"agent"}})
+
+	_, got := runDispatch(t, server, "FRM-1", "--apply")
+
+	if n := len(mutations(server)); got.code != 0 || n != 0 {
+		t.Fatalf("exit %d, %d mutations: a ↩️ inside a sentence takes nothing back:\n%s", got.code, n, got.stdout)
 	}
 }
 

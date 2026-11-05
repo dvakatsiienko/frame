@@ -1,13 +1,17 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
+	"syscall"
 )
 
 var wishItem = regexp.MustCompile(`(?m)^\s*[*-]\s+W\d+\b`)
@@ -43,15 +47,31 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	if !ticketShape.MatchString(id) {
 		return nil, usageFail(id+" is not a ticket id", "x lane landed <FRM-N|BYT-N> [--pr <n>]")
 	}
+	r.Open(id)
+	var issue landedRead
+	var issueErr error
+	if err := r.Step("ticket", "its body and comments, and the repo its repo: line names", func() (string, error) {
+		issue, issueErr = landedIssue(flags, id)
+		// --repo wins, then the ticket's repo: line, then the cwd: a bytes lane landed from frame reads bytes
+		if flagString(flags, "repo") != "" || issueErr != nil {
+			return "", nil
+		}
+		path, err := ticketRepo(id, issue.Description)
+		if path != "" {
+			flags["repo"] = path
+		}
+		return home(path), err
+	}); err != nil {
+		return nil, err
+	}
 	repo, err := repoRoot(flags, "x lane landed "+id+" --repo <path>")
 	if err != nil {
 		return nil, err
 	}
-	r.Open(id)
 	plan := landedPlan{id: id, pr: flagString(flags, "pr")}
 	var lines []landedLine
-	if err := r.Step("read", "the pr, the spec, the review line, the retros, the trees, the wish", func() (string, error) {
-		lines, err = landedLines(repo, &plan, flags)
+	if err := r.Step("read", "the pr, the spec, the review line, the trees, the wish", func() (string, error) {
+		lines, err = landedLines(repo, &plan, issue, issueErr)
 		return plural(len(lines), "line"), err
 	}); err != nil {
 		return nil, err
@@ -63,7 +83,7 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	return plan, nil
 }
 
-func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine, err error) {
+func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error) (lines []landedLine, err error) {
 	id, pr := plan.id, plan.pr
 	main := mainCheckout(repo)
 	plan.main = main
@@ -102,6 +122,8 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		if !read.Merged {
 			merged.detail = "#" + pr + " is not merged"
 		}
+	} else if base := dispatchOf(issue.Description).base; base != "" {
+		commits, merged = quickMerged(repo, id, base, issue)
 	} else {
 		commits = ticketCommits(repo, id)
 		merged.ok, merged.detail, merged.fix = len(commits) > 0, plural(len(commits), "commit")+" for "+id+" on origin/main", "land "+id+"'s commits on main, or pass --pr <n>"
@@ -109,20 +131,17 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 	lines = append(lines, merged)
 
 	spec := landedLine{name: "spec", fix: "x lane landed " + id + " --apply"}
-	feature := ""
 	// the main checkout's spec: a lane tree's own .scratch copy would archive inside a tree about to go
 	if paths, _ := laneSpecSection(frame, id); len(paths) > 0 {
 		dir := filepath.Dir(paths[0])
-		feature = filepath.Base(dir)
 		if waiting := unmergedChunks(main, paths[0], id); len(waiting) > 0 {
 			spec.detail = home(dir) + " waits on " + strings.Join(waiting, ", ") + ", no commit on " + home(main) + "'s origin/main: a spec moves when its every chunk merged"
 			spec.fix = "git -C " + home(main) + " fetch origin main, or land " + strings.Join(waiting, ", ") + "; then x lane landed " + id + " --apply"
 		} else {
-			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, feature)
+			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, filepath.Base(dir))
 			spec.detail = home(dir) + " is not archived"
 		}
 	} else if found := archivedSpec(frame, id); found != "" {
-		feature = filepath.Base(filepath.Dir(found))
 		spec.ok, spec.detail = true, home(filepath.Dir(found))
 	} else {
 		spec.detail, spec.fix = "no lane spec holds § "+id, "find the lane's .scratch/<feature>/spec.md"
@@ -135,24 +154,6 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 		rounds.ok, rounds.detail = true, "a line names "+id
 	}
 	lines = append(lines, rounds)
-
-	retros := landedLine{name: "retros"}
-	if feature == "" {
-		retros.detail, retros.fix = "no feature to look under", "find the lane's spec first"
-	} else {
-		dir := filepath.Join(stateDir(), "lanes", feature)
-		var missing []string
-		for _, role := range []string{"codie", "sixth-sense"} {
-			if found, _ := filepath.Glob(filepath.Join(dir, "*-"+id+"-*"+role+"-retro.md")); len(found) == 0 {
-				missing = append(missing, role)
-			}
-		}
-		retros.ok, retros.detail = len(missing) == 0, "both under "+home(dir)
-		if !retros.ok {
-			retros.detail, retros.fix = "no "+strings.Join(missing, ", ")+" retro under "+home(dir), "ask the member for its retro at "+home(dir)+"/<date>-<ticket>-<role>-retro.md"
-		}
-	}
-	lines = append(lines, retros)
 
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean = nil
@@ -181,22 +182,180 @@ func landedLines(repo string, plan *landedPlan, flags Flags) (lines []landedLine
 
 	look := landedLine{name: "look", detail: "no comment on " + id + " carries a look card", fix: "post the done report, its look card first: x linear comment " + id + " --body-file <file>"}
 	wish := landedLine{name: "wish", ok: true, detail: "no W-lines in the body"}
-	issue, berr := landedIssue(flags, id)
 	switch {
-	case berr != nil:
-		look.detail, look.fix = "linear did not read: "+berr.Error(), "x linear read "+id
+	case issueErr != nil:
+		look.detail, look.fix = "linear did not read: "+issueErr.Error(), "x linear read "+id
 		wish.ok, wish.detail, wish.fix = false, look.detail, look.fix
 	default:
-		look.ok = slices.ContainsFunc(issue.Comments.Nodes, func(c struct{ Body string }) bool { return isLookCard(c.Body) })
-		if look.ok {
-			look.detail = "a comment on " + id + " carries the look card"
+		hasCard := issue.hasLookCard()
+		look.ok = lookSentOf.MatchString(issue.Description)
+		switch {
+		case look.ok:
+			look.detail = "the body holds a " + lookSentLine + "line"
+		case hasCard:
+			look.detail = "a comment carries the look card, dima has not had it"
+			look.fix = "send the card with SendUserFile, then append «" + lookSentLine + "<date>» to " + id + "'s body"
 		}
 		if n := len(wishItem.FindAllString(issue.Description, -1)); n > 0 {
-			wish.detail = fmt.Sprintf("%s for the close proposal: x linear read %s", plural(n, "W-line"), id)
+			wish.detail = fmt.Sprintf("%s, its done test not read yet: x linear read %s", plural(n, "W-line"), id)
+			// a look card's «proven» line is the done test's run; a chunk with it merged closes now
+			if hasCard && merged.ok {
+				wish.detail = fmt.Sprintf("%s, close in this turn: x linear read %s", plural(n, "W-line"), id)
+			}
 		}
 	}
 	lines = append(lines, look, wish)
+	for _, verb := range newVerbsOf(issue.Description) {
+		lines = append(lines, wiredLine(verb, issue))
+	}
 	return lines, nil
+}
+
+const (
+	lookSentLine   = "👀 look sent "
+	sixthSenseMark = ", sixth sense "
+)
+
+// what the last 🚀 line of a ticket's body recorded; a line a ↩️ leads below it took the dispatch back
+type dispatchRead struct {
+	base          string
+	hasSixthSense bool
+}
+
+// the 🚀 line in force, "" when none is or one was taken back; a ↩️ inside a sentence only names one
+func heldDispatch(text string) string {
+	at := strings.LastIndex(text, dispatchedLine)
+	if at < 0 || takenBackOf.MatchString(text[at:]) {
+		return ""
+	}
+	line, _, _ := strings.Cut(text[at:], "\n")
+	return strings.TrimSpace(line)
+}
+
+func dispatchOf(body string) dispatchRead {
+	line := heldDispatch(body)
+	read := dispatchRead{hasSixthSense: strings.Contains(line, sixthSenseMark)}
+	if m := dispatchBaseOf.FindStringSubmatch(line); m != nil {
+		read.base = m[1]
+	}
+	return read
+}
+
+func (r landedRead) hasLookCard() bool {
+	return slices.ContainsFunc(r.Comments.Nodes, func(c struct{ Body string }) bool { return isLookCard(c.Body) })
+}
+
+var (
+	dispatchBaseOf = regexp.MustCompile(`, main:([0-9a-f]{7,40})\b`)
+	takenBackOf    = regexp.MustCompile(`(?m)^[\s>*-]*↩️`)
+	newSurfaceNone = regexp.MustCompile(`new surface:?\s*none\b|\bno new surface\b`)
+	flagOnVerb     = regexp.MustCompile(`\b(flags?|extends)\b[^` + "`" + `]*$`)
+	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
+	verifiedOf     = regexp.MustCompile(`\bverified:\s*([0-9a-f]{7,40})\b`)
+	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
+	backticked     = regexp.MustCompile("`x ([^`]+)`")
+	ticketRepoLine = regexp.MustCompile(`(?m)^repo:\s*(\S+)\s*$`)
+)
+
+// a quick lane's commits carry no id (x:cmt), so merged reads the range from the dispatch's base; while a named sixth
+// sense has not said verified the lane is mid-verify, and --apply refuses on this line
+func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine) {
+	merged := landedLine{name: "merged", fix: "wait for sixth sense's clean, its verified: <sha> comment on " + id}
+	verified := ""
+	for _, c := range issue.Comments.Nodes {
+		if m := verifiedOf.FindStringSubmatch(c.Body); m != nil {
+			verified = m[1]
+		}
+	}
+	if verified == "" && dispatchOf(issue.Description).hasSixthSense {
+		merged.detail = id + " is mid-verify: the dispatch named a sixth sense and no comment says verified"
+		return nil, merged
+	}
+	// with no sixth sense nothing bounds the range: another lane's commit would read this one's, so codie's done comment closes it
+	if verified == "" && !issue.hasLookCard() {
+		merged.detail, merged.fix = "no verified sha and no look card on "+id+": the lane may still be working", "wait for codie's done comment on "+id
+		return nil, merged
+	}
+	tip := cmp.Or(verified, "origin/main")
+	merged.fix = "land " + id + "'s commits on main"
+	if !ok(gitIn(repo, "merge-base", "--is-ancestor", tip, "origin/main")) {
+		merged.detail = short(tip) + " is not on origin/main"
+		return nil, merged
+	}
+	got, _ := gitIn(repo, "log", base+".."+tip, "--format=%h %s")
+	var commits []string
+	if got.ok && got.out != "" {
+		commits = strings.Split(got.out, "\n")
+	}
+	merged.ok, merged.detail = len(commits) > 0, plural(len(commits), "commit")+" from main:"+short(base)+" to "+short(tip)
+	// no sixth sense, no verify tree of this lane: the open range would hand it another lane's
+	if verified == "" {
+		return nil, merged
+	}
+	return commits, merged
+}
+
+// where a ticket's repo: line points, else its team's repo; "" for a frame ticket with no line, a refusal when the
+// checkout is not on this mac
+func ticketRepo(id, body string) (string, error) {
+	name := ""
+	if m := ticketRepoLine.FindStringSubmatch(body); m != nil {
+		name = m[1]
+	} else if strings.HasPrefix(id, "BYT-") {
+		name = "bytes"
+	}
+	switch name {
+	case "":
+		return "", nil
+	case "frame":
+		return mainCheckout(frameRoot()), nil
+	}
+	userHome, _ := os.UserHomeDir()
+	path := filepath.Join(userHome, "projects", name)
+	if !exists(path) {
+		return "", usageFail("the ticket's repo: "+name+" has no checkout at "+home(path), "x lane landed <ticket> --repo <path>")
+	}
+	return path, nil
+}
+
+// the x verbs a ticket's «new surface» lines name, by the registry: a flag on a verb, or a line saying none, adds none
+func newVerbsOf(body string) []string {
+	section := worthSection.FindStringSubmatch(body)
+	if section == nil {
+		return nil
+	}
+	var verbs []string
+	for line := range strings.SplitSeq(section[1], "\n") {
+		if !strings.Contains(line, "new surface") || newSurfaceNone.MatchString(line) {
+			continue
+		}
+		for _, at := range backticked.FindAllStringSubmatchIndex(line, -1) {
+			named := line[at[2]:at[3]]
+			if strings.Contains(named, "--") || flagOnVerb.MatchString(line[:at[0]]) {
+				continue
+			}
+			if verb, _, found := findVerb(strings.Fields(named)); found && !slices.Contains(verbs, verb.Name) {
+				verbs = append(verbs, verb.Name)
+			}
+		}
+	}
+	return verbs
+}
+
+// a new verb is measured at its milestone's close, the merge is too early to say: no ticket left open, this one included, is the close
+func wiredLine(verb string, issue landedRead) landedLine {
+	line := landedLine{name: "wired", ok: true, detail: "wired: unmeasured yet"}
+	milestone := issue.ProjectMilestone
+	if milestone == nil || slices.ContainsFunc(milestone.Issues.Nodes, func(n milestoneIssue) bool {
+		return n.State.Type != "completed" && n.State.Type != "canceled"
+	}) {
+		return line
+	}
+	calls := verbCalls(verb, wiredDays)
+	line.ok = calls > 0
+	line.detail = plural(calls, "call") + " of x " + verb + " in " + strconv.Itoa(wiredDays) + " days"
+	line.fix = "back to Todo with the ↩️ awaited call of x " + verb
+	return line
 }
 
 var fenced = regexp.MustCompile("(?s)```.*?```")
@@ -213,9 +372,18 @@ func isLookCard(body string) bool {
 	return !slices.ContainsFunc(lookFields, func(field *regexp.Regexp) bool { return !field.MatchString(body) })
 }
 
+const wiredDays = 30
+
+type milestoneIssue struct {
+	State struct{ Type string }
+}
+
 type landedRead struct {
-	Description string
-	Comments    connection[struct{ Body string }]
+	Description      string
+	Comments         connection[struct{ Body string }]
+	ProjectMilestone *struct {
+		Issues connection[milestoneIssue]
+	}
 }
 
 func landedIssue(flags Flags, id string) (landedRead, error) {
@@ -223,7 +391,8 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 	if err != nil {
 		return landedRead{}, err
 	}
-	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { description comments(first: 100) { nodes { body } } } }`, map[string]any{"id": id})
+	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { description comments(first: 100) { nodes { body } }
+		projectMilestone { issues(first: 100) { nodes { state { type } } } } } }`, map[string]any{"id": id})
 	if err != nil {
 		return landedRead{}, err
 	}
@@ -242,6 +411,18 @@ type laneRefs struct {
 	commits                          []string // a quick lane's commits on origin/main, «<short sha> <subject>»
 }
 
+// the ticket ids a lane spec names as its chunks, in order, each once
+func specChunks(spec string) []string {
+	raw, _ := os.ReadFile(spec)
+	var chunks []string
+	for _, m := range chunkHeading.FindAllStringSubmatch(string(raw), -1) {
+		if !slices.Contains(chunks, m[1]) {
+			chunks = append(chunks, m[1])
+		}
+	}
+	return chunks
+}
+
 func mainCheckout(dir string) string {
 	if common, linked, err := worktreeOf(dir); err == nil && linked {
 		return filepath.Dir(common)
@@ -254,11 +435,10 @@ var chunkHeading = regexp.MustCompile(`(?m)^## ((?:FRM|BYT|PK)-\d+)\b`)
 // unmergedChunks names the spec's other chunks with no commit on origin/main; a squash merge carries the pr
 // body's «- ticket:» lines, so a chunk merged in the same pr reads merged
 func unmergedChunks(repo, spec, id string) []string {
-	raw, _ := os.ReadFile(spec)
 	var waiting []string
-	for _, m := range chunkHeading.FindAllStringSubmatch(string(raw), -1) {
-		if m[1] != id && !slices.Contains(waiting, m[1]) && len(ticketCommits(repo, m[1])) == 0 {
-			waiting = append(waiting, m[1])
+	for _, chunk := range specChunks(spec) {
+		if chunk != id && len(ticketCommits(repo, chunk)) == 0 {
+			waiting = append(waiting, chunk)
 		}
 	}
 	return waiting
@@ -281,22 +461,8 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		selves = append(selves, resolved(cwd))
 	}
 	var trees []laneTree
-	for block := range strings.SplitSeq(listed, "\n\n") {
-		var path, branch, sha string
-		detached, locked := false, false
-		for line := range strings.SplitSeq(block, "\n") {
-			locked = locked || line == "locked" || strings.HasPrefix(line, "locked ")
-			if v, ok := strings.CutPrefix(line, "worktree "); ok {
-				path = v
-			}
-			if v, ok := strings.CutPrefix(line, "HEAD "); ok {
-				sha = v
-			}
-			if v, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
-				branch = v
-			}
-			detached = detached || line == "detached"
-		}
+	for _, entry := range worktreesOf(listed) {
+		path, branch, sha, detached := entry.path, entry.branch, entry.sha, entry.detached
 		ours := branch != "" && (strings.HasPrefix(branch, "codie/"+id+"-") || branch == refs.headRef)
 		name := filepath.Base(path)
 		// a quick lane's verify tree is verify-<short sha> at one of the ticket's commits on main
@@ -308,14 +474,73 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
-		reason := treeDirt(path, main, selves, mergedHead)
-		if locked {
-			// git worktree lock: a session working in it, decamp refuses it anyway
-			reason = strings.TrimPrefix(reason+", a live session holds it", ", ")
-		}
-		trees = append(trees, laneTree{path, reason})
+		trees = append(trees, laneTree{path, treeStay(entry, main, selves, mergedHead)})
 	}
 	return trees, nil
+}
+
+type worktreeEntry struct {
+	path, branch, sha string
+	detached, locked  bool
+}
+
+func worktreesOf(listed string) []worktreeEntry {
+	var entries []worktreeEntry
+	for block := range strings.SplitSeq(listed, "\n\n") {
+		var e worktreeEntry
+		for line := range strings.SplitSeq(block, "\n") {
+			e.locked = e.locked || line == "locked" || strings.HasPrefix(line, "locked ")
+			if v, ok := strings.CutPrefix(line, "worktree "); ok {
+				e.path = v
+			}
+			if v, ok := strings.CutPrefix(line, "HEAD "); ok {
+				e.sha = v
+			}
+			if v, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
+				e.branch = v
+			}
+			e.detached = e.detached || line == "detached"
+		}
+		entries = append(entries, e)
+	}
+	return entries
+}
+
+// why a tree must stay, or "" when it may go: its own dirt, a git lock, a live session in it
+func treeStay(e worktreeEntry, main string, selves []string, mergedHead string) string {
+	reason := treeDirt(e.path, main, selves, mergedHead)
+	if e.locked {
+		// git worktree lock: a session working in it, decamp refuses it anyway
+		reason = strings.TrimPrefix(reason+", a live session holds it", ", ")
+	}
+	if liveSessionIn(e.path) {
+		reason = strings.TrimPrefix(reason+", a live session sits in it", ", ")
+	}
+	return reason
+}
+
+// the session registry names each session's cwd and pid; a file left by a dead pid says nothing
+func liveSessionIn(tree string) bool {
+	files, _ := filepath.Glob(filepath.Join(sessionsDir(), "*.json"))
+	root := resolved(tree)
+	for _, file := range files {
+		var session struct {
+			Cwd string `json:"cwd"`
+			Pid int    `json:"pid"`
+		}
+		raw, err := os.ReadFile(file)
+		if err != nil || json.Unmarshal(raw, &session) != nil || session.Pid <= 0 {
+			continue
+		}
+		cwd := resolved(session.Cwd)
+		if cwd != root && !strings.HasPrefix(cwd, root+string(filepath.Separator)) {
+			continue
+		}
+		if err := syscall.Kill(session.Pid, 0); err == nil || errors.Is(err, syscall.EPERM) {
+			return true
+		}
+	}
+	return false
 }
 
 // the ignored paths an install, a build or a seed makes again, from frame's and bytes' .gitignore build lines;

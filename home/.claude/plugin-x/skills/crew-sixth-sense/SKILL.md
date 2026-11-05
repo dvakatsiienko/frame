@@ -148,7 +148,7 @@ are the dna's pr pair.
   `~/frame/_clio/.claude/hooks/watch-pr.sh --verified <owner/repo> <pr> <head sha>`. clio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
 - **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
-  plans without a word); the coordinator decamps it when the lane lands, and a quick lane's
+  plans without a word); the merge or clio decamps it when the lane lands, and a quick lane's
   `verify-<sha>` tree at each clean, once that sha is on origin/main (FRM-476). a probe
   you want kept is copied out first and named in your `[done]`. codie's tree is codie's.
 - **the retro**, its standing focus: the exit lines' sharpness (which were unverifiable, which

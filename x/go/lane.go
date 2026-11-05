@@ -629,7 +629,7 @@ func format(tree string, paths []string) string {
 	if len(paths) == 0 || !hasConfig || !exists(biome) {
 		return "no biome here, skipped"
 	}
-	_, _ = run(tree, nil, "", biome, append([]string{"format", "--write", "--no-errors-on-unmatched", "--files-ignore-unknown=true"}, paths...)...)
+	_, _ = run(tree, nil, "", biome, append([]string{"check", "--write", "--no-errors-on-unmatched", "--files-ignore-unknown=true"}, paths...)...)
 	return "biome on " + plural(len(paths), "path")
 }
 

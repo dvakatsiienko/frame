@@ -261,6 +261,180 @@ func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) 
 	}
 }
 
+// laneTree puts a worktree on the pr's branch at its head; sessions and hook shims read a fixture home
+func (w *mergeWorld) laneTree(t *testing.T) string {
+	t.Helper()
+	tree := filepath.Join(w.clone, ".claude/worktrees/lane")
+	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+	gitT(t, w.clone, "worktree", "add", "-q", tree, "coder/x")
+	return tree
+}
+
+func (w *mergeWorld) withPnpm(t *testing.T, body string) (sessions string) {
+	t.Helper()
+	bin, _, _ := strings.Cut(strings.TrimPrefix(w.env[0], "PATH="), ":")
+	write(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\n"+body+"\n")
+	if err := os.Chmod(filepath.Join(bin, "pnpm"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	sessions = t.TempDir()
+	w.env = append(w.env, "X_SESSIONS="+sessions)
+	return sessions
+}
+
+// the session registry's shape, ~/.claude/sessions/<pid>.json: the tree a live session sits in stays
+func plantSession(t *testing.T, sessions, cwd string, pid int) {
+	t.Helper()
+	body, _ := json.Marshal(map[string]any{"cwd": cwd, "pid": pid})
+	write(t, filepath.Join(sessions, strconv.Itoa(pid)+".json"), string(body))
+}
+
+func TestMergeAutoDecampsACleanTreeAtTheLandedHead(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || exists(tree) {
+		t.Fatalf("exit %d, tree still there: %v\n%s", got.code, exists(tree), got.stdout)
+	}
+	if !strings.Contains(got.stdout, "decamped") {
+		t.Errorf("the verb does not say the tree went:\n%s", got.stdout)
+	}
+}
+
+func TestMergeAutoNamesWhyATreeStays(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name  string
+		plant func(t *testing.T, w *mergeWorld, tree, home string)
+		why   string
+	}{
+		{"an untracked file", func(t *testing.T, _ *mergeWorld, tree, _ string) {
+			write(t, filepath.Join(tree, "loose.txt"), "not committed\n")
+		}, "loose.txt"},
+		{"a gitignored file", func(t *testing.T, w *mergeWorld, tree, _ string) {
+			write(t, filepath.Join(w.clone, ".git/info/exclude"), "notes.local\n")
+			write(t, filepath.Join(tree, "notes.local"), "mine\n")
+		}, "notes.local"},
+		{"an unpushed commit", func(t *testing.T, _ *mergeWorld, tree, _ string) {
+			write(t, filepath.Join(tree, "y.txt"), "local only\n")
+			gitT(t, tree, "add", "y.txt")
+			gitT(t, tree, "commit", "-q", "-m", "local only")
+		}, "on no remote"},
+		{"a tree behind the landed head", func(t *testing.T, _ *mergeWorld, tree, _ string) {
+			gitT(t, tree, "reset", "-q", "--hard", "HEAD~1")
+		}, "not at the landed head"},
+		{"a live session", func(t *testing.T, _ *mergeWorld, tree, home string) {
+			plantSession(t, home, filepath.Join(tree, "script"), os.Getpid())
+		}, "a live session sits in it"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			home := w.withPnpm(t, "exit 0")
+			tree := w.laneTree(t)
+			c.plant(t, w, tree, home)
+
+			got := w.run(t, "7", "--apply")
+
+			if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, c.why) {
+				t.Fatalf("exit %d, tree there: %v, want %q in:\n%s", got.code, exists(tree), c.why, got.stdout)
+			}
+		})
+	}
+}
+
+func TestMergeAutoKeepsTheTreeItRunsFrom(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+
+	got := xIn(t, tree, w.env, "lane", "merge-auto", "7", "--apply")
+
+	if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, "x runs from it") {
+		t.Fatalf("exit %d, tree there: %v:\n%s", got.code, exists(tree), got.stdout)
+	}
+}
+
+func TestMergeAutoDecampsATreeWhoseSessionDied(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	home := w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+	plantSession(t, home, tree, 99999999)
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || exists(tree) {
+		t.Fatalf("exit %d, a dead session kept the tree:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestMergeAutoLeavesAnUpperLayerTree(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+	upper := filepath.Join(w.clone, ".claude/worktrees/upper")
+	gitT(t, w.clone, "worktree", "add", "-q", "-b", "coder/x-2", upper, "coder/x")
+	write(t, filepath.Join(upper, "z.txt"), "the layer above\n")
+	gitT(t, upper, "add", "z.txt")
+	gitT(t, upper, "commit", "-q", "-m", "layer 2")
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !exists(upper) || !strings.Contains(got.stdout, "an upper layer") {
+		t.Fatalf("exit %d, upper there: %v:\n%s", got.code, exists(upper), got.stdout)
+	}
+}
+
+// a layer just cut sits at the head that lands, with no commit yet: it is the layer above, never the merged one
+func TestMergeAutoLeavesAFreshUpperLayerTree(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+	upper := filepath.Join(w.clone, ".claude/worktrees/upper")
+	gitT(t, w.clone, "worktree", "add", "-q", "-b", "coder/x-2", upper, "coder/x")
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !exists(upper) || !strings.Contains(got.stdout, "an upper layer") {
+		t.Fatalf("exit %d, upper there: %v:\n%s", got.code, exists(upper), got.stdout)
+	}
+}
+
+func TestMergeAutoNamesTheDoorForATreeThatStayed(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	write(t, filepath.Join(w.laneTree(t), "loose.txt"), "not committed\n")
+
+	got := w.run(t, "7", "--apply")
+
+	if !strings.Contains(got.stdout, "--pr 7 --apply") {
+		t.Fatalf("a later landed needs the pr, or a squash reads its commits on no remote:\n%s", got.stdout)
+	}
+}
+
+func TestMergeAutoWarnsWhenItsDecampFails(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 1")
+	w.laneTree(t)
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !strings.Contains(got.stdout, "lefthook install failed") {
+		t.Fatalf("exit %d, want a done merge and the failure named:\n%s", got.code, got.stdout)
+	}
+}
+
 // a solo stamp merges like sixth sense's clean, and every detail says whose it is
 func TestMergeAutoNamesWhoseCleanItReads(t *testing.T) {
 	t.Parallel()

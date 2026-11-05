@@ -48,16 +48,22 @@ func actorOf(flags Flags) (string, error) {
 	return "clio", nil
 }
 
-// the calling session's registry name, by CLAUDE_CODE_SESSION_ID; X_SESSIONS points a test at a fixture registry, and
-// under X_TEST without it nothing is read, so no test meets a live session
-func sessionName() (string, bool) {
-	sid := os.Getenv("CLAUDE_CODE_SESSION_ID")
+// the session registry's dir; X_SESSIONS points a test at a fixture registry, and under X_TEST without it nothing is
+// read, so no test meets a live session
+func sessionsDir() string {
 	dir := os.Getenv("X_SESSIONS")
 	if dir == "" && os.Getenv("X_TEST") == "" {
 		if home, err := os.UserHomeDir(); err == nil {
 			dir = filepath.Join(home, ".claude/sessions")
 		}
 	}
+	return dir
+}
+
+// the calling session's registry name, by CLAUDE_CODE_SESSION_ID
+func sessionName() (string, bool) {
+	sid := os.Getenv("CLAUDE_CODE_SESSION_ID")
+	dir := sessionsDir()
 	if sid == "" || dir == "" {
 		return "", false
 	}

@@ -679,6 +679,22 @@ func originHead(t *testing.T, clone, branch string) string {
 	return sha
 }
 
+func TestStackMergeStillEnqueuedLeavesTheTrees(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"enqueued","details":{"expected_head_sha":"` + w.head + `"}}`
+	w.hub.mu.Unlock()
+	w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+
+	got := w.run(t, "8", "--apply")
+
+	if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, "still enqueued") {
+		t.Fatalf("exit %d, tree there: %v:\n%s", got.code, exists(tree), got.stdout)
+	}
+}
+
 func TestRestackMergesEachLowerLayerUpAndPushes(t *testing.T) {
 	t.Parallel()
 	clone := movedStack(t, "lower.txt", "the fix\n")
