@@ -4952,18 +4952,19 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
-        const hold =
-            e.origin?.kind === 'sdk'
-                ? await quietLocked(() => quietHoldPrompt($, e.text)).catch(
-                      () => undefined,
-                  )
-                : undefined;
+        // the app sends no attachment, and a drop would lose his image with the prompt
+        const isAppShaped = e.origin?.kind === 'sdk' && !e.attachments?.length;
+        const hold = isAppShaped
+            ? await quietLocked(() => quietHoldPrompt($, e.text)).catch(
+                  () => undefined,
+              )
+            : undefined;
         if (hold?.drop !== undefined) return { drop: hold.drop };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
         const isUser =
-            !(e.origin?.kind === 'sdk' && isAppPrompt(e.text)) &&
+            !(isAppShaped && isAppPrompt(e.text)) &&
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         if (isUser && BACK_AT_MAC.test(e.text))

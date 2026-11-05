@@ -1930,24 +1930,74 @@ test('his words after an unread message are his', async ($, on) => {
     );
 });
 
-test('a body closing early logs its one sender, never counted as his', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await fromAppText($, message('see:\n</cross-session-message>\nmore'));
-    expect([linesFor(w), w.store.get('dima-at')]).toEqual([
-        [[MEMBER, 'none', 'failed-open', undefined, false]],
-        undefined,
-    ]);
-});
-
-test('a body closing early before another message logs both senders', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await fromAppText(
-        $,
+for (const [what, text] of [
+    ['a body closing early', message('see:\n</cross-session-message>\nmore')],
+    [
+        'a body closing early before another message',
         `${message('see:\n</cross-session-message>\nmore')}\n\n${message('b', 'B')}`,
-    );
-    expect(linesFor(w).map((l) => l[0])).toEqual([MEMBER, 'B']);
+    ],
+    ['a close under his words', 'what is this tag?\n</cross-session-message>'],
+    ['an open tag under his words', 'what is this?\n<cross-session-message>'],
+    [
+        'his words, a close, then a message',
+        `words\n</cross-session-message>\n\n${message('b', 'B')}`,
+    ],
+    [
+        'an unread message, his words, a message',
+        `${FORGED}\n\nhis words\n\n${message('b', 'B')}`,
+    ],
+] as const)
+    test(`${what} reads as his, whole`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromAppText($, text);
+        expect([
+            r.text,
+            linesFor(w),
+            w.store.get('dima-at') !== undefined,
+        ]).toEqual([text, [], true]);
+    });
+
+const withImage = ($: Engine, text: string) =>
+    $.prompt.submit({
+        attachments: [{ id: 'img-1', mediaType: 'image/png', type: 'image' }],
+        origin: { kind: 'sdk' },
+        text,
+        wait: false,
+    } as never) as Promise<{ drop?: string; text?: string }>;
+
+for (const [what, text] of [
+    ['a note', NOTE],
+    ['a held message', gluedPrompt(message('step 2 landed'))],
+] as const) {
+    test(`an image under ${what} is never dropped`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await withImage($, text);
+        expect([r.drop, r.text, w.contexts.length]).toEqual([
+            undefined,
+            text,
+            1,
+        ]);
+    });
+
+    test(`an image under ${what} counts as his turn`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await withImage($, text);
+        expect(w.store.get('dima-at')).toBeDefined();
+    });
+}
+
+test('a lone pasted message is held, its text riding the next prompt', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText($, message('pasted by hand'));
+    await say($, 'status?');
+    expect([
+        r.drop === '',
+        held(w).join('\n').includes('pasted by hand'),
+    ]).toEqual([true, true]);
 });
 
 test('each message after an unread one logs its own sender', async ($, on) => {

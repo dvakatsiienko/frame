@@ -57,12 +57,11 @@ const CLOSE = '</cross-session-message>';
 const UNREAD_SPLIT =
     /(?<=\n<\/cross-session-message>)\s*(?=<cross-session-message)/;
 
-// what the parser left is a message it could not read: it ends in a close, and opens with a tag or closes before any tag opens
-const isUnreadTail = (tail: string) =>
-    tail.endsWith(CLOSE) &&
-    (tail.startsWith(OPEN) ||
-        !tail.includes(OPEN) ||
-        tail.indexOf(CLOSE) < tail.indexOf(OPEN));
+// what the parser left is messages it could not read only with no text outside them, each with one close, its last;
+// any doubt reads as his words
+const isUnreadBlock = (block: string) =>
+    block.startsWith(OPEN) &&
+    block.indexOf(CLOSE) === block.length - CLOSE.length;
 
 // the desktop's one `sdk` prompt, block by block: its notes as sender, report and the held text (the report, whether it is
 // cut, the session holding the rest), its member messages, each with its place among the blocks, whether another reminder
@@ -93,10 +92,8 @@ export function quietGlued(text: string) {
             hasOther = true;
     }
     const tail = rest.trim();
-    if (tail && !isUnreadTail(tail)) return undefined;
-    const unread = tail
-        ? tail.split(UNREAD_SPLIT).filter((b) => b.startsWith(OPEN))
-        : undefined;
+    const unread = tail ? tail.split(UNREAD_SPLIT) : undefined;
+    if (unread && !unread.every(isUnreadBlock)) return undefined;
     return { hasOther, heads, messages, notes, unread };
 }
 
