@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-05T23:21:00Z'
+updated_date: '2026-11-05T23:24:00Z'
 labels:
   - s
 dependencies: []
@@ -37,4 +37,6 @@ W7 (2026-11-06 00:13, dima, home the new shift plan): ping me when needed; i'll 
 the split for the boot plan, his tick in the side channel: grills and shaping run in the side channel, lanes stay with main clio until tilde; a grill on a running lane's ticket stays main's.
 
 🧐 for his proof (wishkeeper and crow, 11-06 01:20): under afk, 25 of 27 turn-starting quiet lines 00:22–01:14 are lone notices, crow counts 7 of 9 wakes answered with a bare 🔭. the build matches his o70; one option to bring him: a lone note wakes only after a member sits silent N minutes. also to prove with his eye: the 🎛️ pane, a band hover's reveal and a row's tooltip naming what off costs; three FRM-501 done comments say not checked.
+
+hover, his eye 11-06 01:24: «They show», tooltips reveal on the desktop. the rest of that line stays: a row's tooltip naming what off costs was not asked apart.
 <!-- SECTION:NOTES:END -->
