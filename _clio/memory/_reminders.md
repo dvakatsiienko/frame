@@ -50,7 +50,7 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 
 
-⏰ 🦉💸 2026-11-06 (mods lane idle before it; then the CST's W247–W251: debt tails, mods order, habits sync, speak v2): dima buys ultra ($200, the renamed max 20×, ~$240 with VAT) fresh, after max ends 11-05 and a day of rest (his lapse plan, o4 2026-11-03); then Settings → Usage: no «Current session» bar = verified, else the temporary 5h limit holds until the email; auto-renew off again; the month measures the real weekly cap (10× pro) — set 2026-10-13, reshaped 2026-11-03 · due: 2026-11-06
+⏰ 🦉💸 ultra ($200) bought 2026-11-05, ahead of the plan: `get_usage` shows no 5h window, `five_hour` null; Settings → Usage: no «Current session» bar = verified, not looked at; left: auto-renew off again (his), the month measures the real weekly cap (10× pro) — set 2026-10-13, reshaped 2026-11-05 · due: 2026-11-06
 
 ⏰ 🦉🧬 stryker resumes when [stryker-js#6210](https://github.com/stryker-mutator/stryker-js/issues/6210) closes fixed (watched in x-changedetector): then `pnpm up @stryker-mutator/core @stryker-mutator/vitest-runner`, rerun the day-0 round, unfreeze `docs/test-drive/stryker.md` and tell dima (his ask, 2026-10-15) — set 2026-10-15
 
@@ -65,8 +65,9 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 after the pm module (dima W803: not urgent, or while waiting for reviews): finish FRM-457 (terminal clio: the -n alias, the Chrome stand-in probe, the Artifact and background-fork checks) right away, then resume the pm module revamp (FRM-419, PK-103) — dima 2026-10-29 17:49 — set 2026-10-29
 ⏰ 🦉 when the fresh-eyes test drive closes adopted (docs/test-drive/fresh-eyes.md verdict): rethink the code-review card's name — 🐆 wisphunter (pairs with wishkeeper) vs sharp-eyes (pairs with fresh-eyes); dima 2026-10-29 18:03 likes both — set 2026-10-29
 ⏰ 🦉👁️ retired-names guard: 14 green days → remove — the `retired-names` pre-commit job in frame and bytes (`script/retired-names-check.ts`); green is no new line in `~/.local/state/x/retired-names.log` for 14 days in a row; then a ticket removes both jobs, the script, its lib and test (spec o66) — set 2026-10-29 · due: 2026-11-12
-⏰ 🦉🐦‍⬛ the next crow start runs on fable: `pnpm -C ~/frame crow:start fable` (claude-fable-5-1, effort medium), a trial against today's opus arm (dima 2026-11-03 11:45: «let's try crow as fable next time you spawn it», «fable 5.5 medium» → fable 5.1, the only fable we have) — set 2026-11-03
+⏰ 🦉🐦‍⬛ the next crow start runs on fable: `pnpm -C ~/frame crow:start fable` (claude-fable-5-1, effort medium), a trial against today's opus arm (dima 2026-11-03 11:45: «let's try crow as fable next time you spawn it», «fable 5.5 medium» → fable 5.1, the only fable we have) — set 2026-11-03; run 2026-11-05 on his word, «only this time, to see», the next start is opus again
   (dima, 2026-11-04, o85: «keep opus for now»; ask again before a real start)
 ⏰ when clio can flip keep-hot herself (the orbit op lands): remind dima to update her habits — the shift turns keep-hot on for every member itself and drops the hand keep-warm ping and its Monitor beat (`clio:shift` § hot caches) — set 2026-11-03
 ⏰ when the automated second wind lands (pk-307's chunk): tell dima it is done — every session winds itself at the 🎛️ threshold (default 60 %, one global value) — set 2026-11-03
 ⏰ 🦉🐦‍⬛ crow's weekly grade, 2026-11-11, again 11-17 — draw 5 notes from `~/.local/state/crow/notes.jsonl` for dima to grade, log the round in `docs/test-drive/crow-receipts.md` (FRM-502) — due: 2026-11-11
+⏰ 🦉 back on the $100 plan (he said about a month): turn the pace watch on (`pnpm -C ~/frame mods:set pace on`), lift the ⏸️ line in `habit-ctx-load-balancing` — set 2026-11-05 · due: 2026-12-05
