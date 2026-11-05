@@ -10,14 +10,50 @@ import (
 // a ticket whose exit lines live only in the lane's spec, the section a seal writes under .scratch/<feature>/
 func preflightSpec(t *testing.T, section string) asRun {
 	t.Helper()
+	return preflightSpecOf(t, section, "## want\n\na thing\n\n## signed\n\n✍️ signed\n")
+}
+
+func preflightSpecOf(t *testing.T, section, ticket string) asRun {
+	t.Helper()
 	dir := preflightRepo(t)
 	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-8 — another chunk\n\n### exit lines\n\n1. `x lane gate --dry` is not this ticket's\n\n"+section+"\n## Problem Statement\n")
-	raw, _ := json.Marshal("## want\n\na thing\n\n## signed\n\n✍️ signed\n")
+	raw, _ := json.Marshal(ticket)
 	server := newFakeLinear(t, func(gqlCall) string {
 		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
 	})
 	_, got := runLinear(t, server, nil, "brief", "preflight", "FRM-1", "--repo", dir)
 	return got
+}
+
+func TestPreflightReadsASpecSectionsRecordedSignHash(t *testing.T) {
+	t.Parallel()
+	const exits = "\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n"
+	section := func(wish string) string { return "## FRM-1 — this chunk\n\n" + wish + "\n" + exits }
+	signed := func(lines ...string) string {
+		return "## want\n\na thing\n\n## signed\n\n" + strings.Join(lines, "\n\n") + "\n"
+	}
+	cases := []struct {
+		name, wish, ticket string
+		red                bool
+	}{
+		{"a matching hash", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345"), false},
+		{"a stale hash", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345", "✍️ re-signed · body def67890"), true},
+		{"a newer tiny line", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345", "✏️ changed · body def67890"), false},
+		{"no recorded hash", "wish: FRM-1 · the contract", signed("✍️ signed · body def67890"), false},
+		{"no hash on the ticket", "wish: FRM-1 · body abc12345", signed("✍️ signed"), false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			got := preflightSpecOf(t, section(c.wish), c.ticket)
+			if red := got.code != 0; red != c.red {
+				t.Fatalf("exit %d, want red %v\n%s%s", got.code, c.red, got.stdout, got.stderr)
+			}
+			if c.red && !(strings.Contains(got.stdout, "abc12345") && strings.Contains(got.stdout, "def67890")) {
+				t.Errorf("the red names not both hashes:\n%s", got.stdout)
+			}
+		})
+	}
 }
 
 func TestPreflightReadsTheExitLinesFromTheLaneSpec(t *testing.T) {

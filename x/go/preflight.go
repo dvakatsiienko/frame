@@ -27,6 +27,8 @@ var (
 	shellSep = regexp.MustCompile(`\|\||&&|[|;&]`)
 )
 
+var signHash = regexp.MustCompile(`\bbody ([0-9a-f]{6,})\b`)
+
 func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	id := args[0]
 	if !ticketShape.MatchString(id) {
@@ -101,6 +103,9 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		}
 		if exits == 0 {
 			found = append(found, finding{1, "lint", "## exit", "the ticket has no exit lines"})
+		}
+		if line, recorded, signed := staleSignHash(section, body); recorded != "" {
+			found = append(found, finding{line, "lint", "wish: line", "records body " + recorded + ", the ticket's newest ✍️ line holds body " + signed + ": sync the section to the re-sign"})
 		}
 		if len(paths) == 1 {
 			if spec, err := os.ReadFile(paths[0]); err == nil && !strings.Contains(string(spec), "## Problem Statement") {
@@ -180,6 +185,26 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 
 // the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id, blank lines standing in
 // for the file above it so a finding's line is the spec's own; paths names every spec holding one
+func staleSignHash(section, ticket string) (line int, recorded, signed string) {
+	for i, text := range strings.Split(section, "\n") {
+		if strings.HasPrefix(text, "wish:") {
+			if found := signHash.FindStringSubmatch(text); found != nil {
+				line, recorded = i+1, found[1]
+			}
+			break
+		}
+	}
+	for text := range strings.SplitSeq(ticket, "\n") {
+		if found := signHash.FindStringSubmatch(text); found != nil && strings.HasPrefix(text, "✍️") {
+			signed = found[1]
+		}
+	}
+	if recorded == "" || signed == "" || recorded == signed {
+		return 0, "", ""
+	}
+	return line, recorded, signed
+}
+
 func laneSpecSection(repo, id string) (paths []string, section string) {
 	specs, _ := filepath.Glob(filepath.Join(repo, ".scratch", "*", "spec.md"))
 	// .scratch/ is gitignored, so a linked worktree's own holds no seal: the main checkout's specs are read beside
