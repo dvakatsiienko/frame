@@ -3,6 +3,15 @@
 the rule, its test and the rename-on-every-layer done line live in root `CLAUDE.md` § naming; this file holds
 what the head can be, the edge shapes and where the rule stops.
 
+## after the head, say what it does
+
+the words past the head tell a newcomer what the thing does (root `CLAUDE.md`). dima's own before → after:
+
+- `refresh-jev.md` → `refresh-classification-branch`
+- `x-otel` → `x-cc-otel`
+- `habit-pacing` → `habit-dima-comms-pacing`
+- `quiet-canary` → `quiet-delivery-test`: «canary» says nothing to a newcomer
+
 ## what the head can be
 
 - an area: `crew-codie`, `mods:test`, `speak:build`, `fleet-vibe`
@@ -47,4 +56,3 @@ organized, auto-relates related stuff by its name», 2026-09-27). «entity» was
 word, and on 2026-11-05 it picked `codie-audit` over his `audit-codie`, so the rule now names the goal (dima, that day:
 «certain naming pattern allows for stuff colocation and reads much more easily. imagine all crew-* would be *-crew
 instead — then everything would be scattered»).
-The crew skills were renamed on that first day: 80 references in 34 files, one commit. The frame + bytes sweep is FRM-219.

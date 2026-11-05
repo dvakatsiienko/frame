@@ -12,7 +12,8 @@ he answers with a number. the kind follows his words: «emoji» → emojis; «na
 
 - **first call the thing's kind** (dima, 2026-10-16: «I accept the drawback that a name will then be a little bit more verbose, but clarity wins here»); the test: will the name alone have to tell it apart from look-alike siblings?
   - **⚙️ a cog** — a script, a verb, a hook, a job, a file family, read in a list of siblings: family-first, each word narrowing, verbose is fine — `memory-trace-append`, never `trace-append`
-  - **a character** — a member, a mod, an app, a skill called by name: short and evocative, no area prefix — `helga`, never `clio-helga`
+  - **a character** — a member, a mod, an app, a skill called by name, when dima asks for a character name: short and evocative, no area prefix — `helga`, never `clio-helga`; he did not ask → a cog
+- **a cog's `<why>` reads «reads as: <what a newcomer says it does>»**, judged from the name alone; a candidate that reads wrong is dropped, a metaphor included (root `CLAUDE.md`: a name says what the thing does)
 - seven distinct names; `rg --hidden -n '<name>'` over `~/frame` and `~/projects/bytes` before printing, so none clashes with a live name
 - naming rules: root `CLAUDE.md` § global naming conventions (family-first, one name on every layer)
 - his own words lead: a verb or noun he used for the thing is candidate 1
