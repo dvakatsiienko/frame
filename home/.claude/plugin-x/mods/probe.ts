@@ -68,6 +68,7 @@ export function childEnv(
         ...env,
         CLAUDE_CODE_PLUGIN_CACHE_DIR: join(scratch, 'plugin-cache'),
         CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':'),
+        X_MODS_TEST_CHILD: '1',
     };
 }
 

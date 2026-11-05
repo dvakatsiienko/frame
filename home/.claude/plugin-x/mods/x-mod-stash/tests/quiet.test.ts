@@ -35,6 +35,8 @@ function world(
         >,
         // an append the engine refuses
         refuseAppend = false,
+        // a child of mods:live or mods:probe
+        isTestChild = false,
         // what happens while a send is on its way
         whileSending = async (): Promise<void> => {},
     } = {},
@@ -96,7 +98,9 @@ function world(
               ? { value: files[e.path] ?? '' }
               : { deny: 'no such file' },
     );
-    on('env.get', () => ({ value: '/home' }));
+    on('env.get', (_$, e) => ({
+        value: isTestChild && e.name === 'X_MODS_TEST_CHILD' ? '1' : '/home',
+    }));
     on('ui.log', (_$, e) => {
         logged.push(String(e.text));
         return { value: undefined };
@@ -1242,18 +1246,18 @@ test('a held ping that lands as the idle row logs flushed', async ($, on) => {
     expect(logOf(w).map((l) => l.verdict)).toEqual(['held', 'flushed']);
 });
 
-test("a canary ping's held and flushed lines carry its nonce", async ($, on) => {
+test("a delivery test ping's held and flushed lines carry its nonce", async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] quiet canary c42: a test ping');
+    await ping($, '[progress] quiet delivery test c42: a test ping');
     await say($, 'status?');
-    expect(logOf(w).map((l) => [l.verdict, l.canary])).toEqual([
+    expect(logOf(w).map((l) => [l.verdict, l.deliveryTest])).toEqual([
         ['held', 'c42'],
         ['flushed', 'c42'],
     ]);
 });
 
-test('/quiet-canary sends clio a [progress] ping with its nonce', async ($, on) => {
+test('/quiet-delivery-test sends clio a [progress] ping with its nonce', async ($, on) => {
     world(on, { name: '☕️ 🔧 codie: mods' });
     const sent: { to: string; text: string }[] = [];
     on('session.send', (_$, e) => {
@@ -1263,28 +1267,28 @@ test('/quiet-canary sends clio a [progress] ping with its nonce', async ($, on) 
     await start($);
     const r = await $.command.run({
         args: 'c7',
-        command: 'quiet-canary',
+        command: 'quiet-delivery-test',
     } as never);
     expect([r.text, sent]).toEqual([
-        'quiet canary c7: sent',
+        'quiet delivery test c7: sent',
         [
             {
-                text: '[progress] quiet canary c7: a test ping from /quiet-canary, nothing to do',
+                text: '[progress] quiet delivery test c7: a test ping from /quiet-delivery-test, nothing to do',
                 to: '🦉 clio',
             },
         ],
     ]);
 });
 
-test('/quiet-canary says FAIL with the reason when the send bounces', async ($, on) => {
+test('/quiet-delivery-test says FAIL with the reason when the send bounces', async ($, on) => {
     world(on, { name: '☕️ 🔧 codie: mods' });
     on('session.send', () => ({ isDelivered: false, reason: 'not reachable' }));
     await start($);
     const r = await $.command.run({
         args: 'c7',
-        command: 'quiet-canary',
+        command: 'quiet-delivery-test',
     } as never);
-    expect(r.text).toBe('quiet canary c7: FAIL, not reachable');
+    expect(r.text).toBe('quiet delivery test c7: FAIL, not reachable');
 });
 
 test('the ledger counts a send to clio by her name, her socket or her session id, wherever `to` sits', () => {
@@ -1366,6 +1370,7 @@ const sendAt = (min: number) =>
 function alarmWorld(
     on: On,
     {
+        isTestChild = false,
         notify = 'no-surface',
         osascript = 0,
         refuseAppend = false,
@@ -1374,6 +1379,7 @@ function alarmWorld(
 ) {
     const scripted: string[] = [];
     const w = world(on, {
+        isTestChild,
         peers: [codiePeer],
         refuseAppend,
         run: (argv) => {
@@ -1411,6 +1417,20 @@ test('a ledger gap raises one native alarm, through osascript when notify finds 
         ['☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0'],
         ['☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0'],
     ]);
+});
+
+test('a test child raises no alarm on the mac, its log says what it would', async ($, on) => {
+    const w = alarmWorld(on, {
+        isTestChild: true,
+        sends: [sendAt(2), sendAt(3)],
+    });
+    await start($);
+    await w.clock.advance(10 * MIN);
+    expect([
+        w.notified,
+        w.scripted,
+        w.logged.some((l) => l.includes('quiet alarm in a test child')),
+    ]).toEqual([[], [], true]);
 });
 
 test('a gap that closes and opens again alarms again', async ($, on) => {
@@ -2555,6 +2575,27 @@ test('a member named the app beside a push is judged as a member', async ($, on)
         r.text?.includes('step 2 landed'),
     ]).toEqual([undefined, true, false]);
 });
+
+for (const [what, reply, drop] of [
+    [
+        'a lone note after a keep-hot ping holds',
+        { at: EVEN - 60_000, pingedAt: EVEN - 1000 },
+        '',
+    ],
+    [
+        'a lone note after a real reply wakes',
+        { at: EVEN - 1000, pingedAt: EVEN - 60_000 },
+        undefined,
+    ],
+] as const)
+    test(`${what} while away`, async ($, on) => {
+        const w = answering(on);
+        await start($);
+        w.store.set('afk', { on: true });
+        w.store.set(`reply:${CODIE.sessionId}`, reply);
+        const r = await fromAppText($, noteOf(CODIE.name, '.'));
+        expect(r.drop).toBe(drop);
+    });
 
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {

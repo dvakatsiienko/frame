@@ -1055,9 +1055,9 @@ const QUIET_ASKED = 'quiet-asked';
 const SEND_TOOL = 'SendMessage';
 // a log line of the desktop's own note: no member sent it, so the ledger and the sender's «held» read past it
 const QUIET_NOTICE = 'notice';
-// the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
+// the safety net (brief 6): the ledger's gaps, the delivery test's test ping, how long a held ping may wait past the idle wait
 const QUIET_GAP = 'quiet-gap';
-const QUIET_CANARY = /^\s*\[progress\]\s*quiet canary ([\w-]+)/i;
+const QUIET_DELIVERY_TEST = /^\s*\[progress\]\s*quiet delivery test ([\w-]+)/i;
 const QUIET_STUCK_MS = 2 * 60_000;
 // a send younger than the grace may still be on its way, so the ledger counts it next minute
 const LEDGER_GRACE_MS = 2 * 60_000;
@@ -1097,8 +1097,8 @@ export function peerPing(text: string) {
         .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
         .replace(/\n?<\/cross-session-message>\s*$/, '');
     const tag = quietTag(body);
-    const canary = body.match(QUIET_CANARY)?.[1];
-    return { body, from, tag, ...(canary ? { canary } : {}) };
+    const deliveryTest = body.match(QUIET_DELIVERY_TEST)?.[1];
+    return { body, from, tag, ...(deliveryTest ? { deliveryTest } : {}) };
 }
 
 async function quietKindsOff($: EngineInterface) {
@@ -1186,7 +1186,7 @@ async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
 const quietLog = ($: EngineInterface, line: QuietLogLine) =>
     quietLogAll($, [line]);
 
-// each held ping that reached clio's thread gets a `flushed` line, so a canary sees held → delivered
+// each held ping that reached clio's thread gets a `flushed` line, so a deliveryTest sees held → delivered
 async function quietFlushed($: EngineInterface, held: QuietPing[]) {
     const at = await $.clock.now();
     for (const p of held)
@@ -1197,7 +1197,7 @@ async function quietFlushed($: EngineInterface, held: QuietPing[]) {
             startedTurn: false,
             tag: p.tag ?? 'none',
             verdict: 'flushed',
-            ...(p.canary ? { canary: p.canary } : {}),
+            ...(p.deliveryTest ? { deliveryTest: p.deliveryTest } : {}),
         });
 }
 
@@ -1297,6 +1297,11 @@ async function relayCrowWake($: EngineInterface) {
 // one native notification per alarm key: `$.ui.notify` writes only through a terminal (the desktop answers no-surface),
 // so a not-sent one goes out through osascript; both failing leaves a log line, never a throw
 async function quietAlarm($: EngineInterface, key: string, text: string) {
+    // a test child's store is its own and its log empty, so its alarms are false; its mac is still dima's
+    if ((await $.env.get('X_MODS_TEST_CHILD')) === '1') {
+        await $.ui.log(`x-mod-stash: quiet alarm in a test child: ${text}`);
+        return;
+    }
     const raised =
         ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ?? [];
     if (raised.includes(key)) return;
@@ -1413,7 +1418,7 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
     await quietLogAll(
         $,
         blocks.map((block) => {
-            const { canary, from, tag } = peerPing(block);
+            const { deliveryTest, from, tag } = peerPing(block);
             const sid = memberOf(members, from)?.base.sid;
             return {
                 arm: isOn ? ('on' as const) : ('off' as const),
@@ -1423,10 +1428,16 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
                 startedTurn: false,
                 tag,
                 verdict: 'failed-open' as const,
-                ...(canary ? { canary } : {}),
+                ...(deliveryTest ? { deliveryTest } : {}),
             };
         }),
     );
+}
+
+// a keep-hot ping's reply is no turn of its own, so its end is nothing to wake for
+async function isLastReplyPing($: EngineInterface, sid: string) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    return !!reply?.pingedAt && reply.pingedAt > reply.at;
 }
 
 // afk on or a shift running: nobody is at the keyboard to notice a member ending silently
@@ -1463,8 +1474,8 @@ async function quietHoldPrompt(
     // messages first: an answer takes the slot before its sender's note can
     const items = [
         ...glued.messages.map(({ block, head }) => {
-            const { body, canary, from, tag } = peerPing(block);
-            const marks = canary ? { canary } : {};
+            const { body, deliveryTest, from, tag } = peerPing(block);
+            const marks = deliveryTest ? { deliveryTest } : {};
             return {
                 body,
                 from,
@@ -1513,7 +1524,10 @@ async function quietHoldPrompt(
         const isTurnStarting = judged.some((j) => j.why);
         for (const { from, head, isEvent, marks, tag, text, why } of judged) {
             const sid = memberOf(members, from)?.base.sid;
-            const isWoken = tag === QUIET_NOTICE && isAway;
+            const isWoken =
+                tag === QUIET_NOTICE &&
+                isAway &&
+                !(sid && (await isLastReplyPing($, sid)));
             const reason = why ?? (isWoken ? 'away' : undefined);
             const line = {
                 arm,
@@ -4995,11 +5009,13 @@ export const register: Register = (on) => {
             await $.command
                 .register({
                     description:
-                        'quiet comms canary: send clio a test [progress] ping, no model; `pnpm mods:quiet-canary` reads held → delivered',
-                    name: 'quiet-canary',
+                        'quiet comms delivery test: send clio a test [progress] ping, no model; `pnpm mods:quiet-delivery-test` reads held → delivered',
+                    name: 'quiet-delivery-test',
                 })
                 .catch(() =>
-                    $.ui.log('x-mod-stash: /quiet-canary was not registered'),
+                    $.ui.log(
+                        'x-mod-stash: /quiet-delivery-test was not registered',
+                    ),
                 );
         if (!isPolling) {
             isPolling = true;
@@ -5397,8 +5413,8 @@ export const register: Register = (on) => {
         if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
             return next(e);
         if (!(await isQuietHome($).catch(() => false))) return next(e);
-        const { body, canary, from, tag } = peerPing(e.text);
-        const marks = canary ? { canary } : {};
+        const { body, deliveryTest, from, tag } = peerPing(e.text);
+        const marks = deliveryTest ? { deliveryTest } : {};
         let arm: QuietLogLine['arm'] = 'on';
         // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
         try {
@@ -5477,12 +5493,12 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    // the canary: a model-free test [progress] ping to clio through the real peer path; its run reads the log by nonce
-    on('command.run', { command: 'quiet-canary' }, async ($, e) => {
+    // the delivery test: a model-free test [progress] ping to clio through the real peer path; its run reads the log by nonce
+    on('command.run', { command: 'quiet-delivery-test' }, async ($, e) => {
         const nonce = e.args.trim() || `c${(await $.clock.now()).toString(36)}`;
         const r = await $.session
             .send({
-                text: `[progress] quiet canary ${nonce}: a test ping from /quiet-canary, nothing to do`,
+                text: `[progress] quiet delivery test ${nonce}: a test ping from /quiet-delivery-test, nothing to do`,
                 to: LANE_OWNER,
             })
             .catch((err) => ({
@@ -5491,8 +5507,8 @@ export const register: Register = (on) => {
             }));
         return {
             text: r.isDelivered
-                ? `quiet canary ${nonce}: sent`
-                : `quiet canary ${nonce}: FAIL, ${r.reason}`,
+                ? `quiet delivery test ${nonce}: sent`
+                : `quiet delivery test ${nonce}: FAIL, ${r.reason}`,
         };
     });
 

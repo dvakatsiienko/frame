@@ -1,4 +1,4 @@
-// pnpm mods:quiet-canary [--deadline <min>] — sends clio a test [progress] ping through x-mod-stash's /quiet-canary in
+// pnpm mods:quiet-delivery-test [--deadline <min>] — sends clio a test [progress] ping through x-mod-stash's /quiet-delivery-test in
 // a headless session (no model call), then reads her quiet log by the ping's nonce: held → delivered, or FAIL. exit 0
 // delivered, 1 FAIL, 2 bad input
 import { spawnSync } from 'node:child_process';
@@ -10,17 +10,19 @@ import { setTimeout as sleep } from 'node:timers/promises';
 // the verdicts a nonce's lines can carry, furthest along first
 const ORDER = ['flushed', 'failed-open', 'passed', 'held'] as const;
 
-export type CanaryState = 'none' | QuietVerdict;
+export type DeliveryTestState = 'none' | QuietVerdict;
 
 // the furthest a nonce's log lines got: a flushed line beats held, held beats none
-export function canaryState(
+export function deliveryTestState(
     store: Record<string, unknown>,
     nonce: string,
-): CanaryState {
+): DeliveryTestState {
     const lines = Object.entries(store)
         .filter(([k, v]) => k.startsWith('quiet-log:') && Array.isArray(v))
-        .flatMap(([, v]) => v as { canary?: unknown; verdict?: unknown }[])
-        .filter((l) => l?.canary === nonce);
+        .flatMap(
+            ([, v]) => v as { deliveryTest?: unknown; verdict?: unknown }[],
+        )
+        .filter((l) => l?.deliveryTest === nonce);
     const verdicts = new Set(lines.map((l) => l.verdict));
     for (const v of ORDER) if (verdicts.has(v)) return v;
     return 'none';
@@ -57,14 +59,14 @@ function readStores() {
 
 async function waitFor(
     nonce: string,
-    isDone: (s: CanaryState) => boolean,
+    isDone: (s: DeliveryTestState) => boolean,
     ms: number,
 ) {
     const end = Date.now() + ms;
-    let state = canaryState(readStores(), nonce);
+    let state = deliveryTestState(readStores(), nonce);
     while (!isDone(state) && Date.now() < end) {
         await sleep(2000);
-        state = canaryState(readStores(), nonce);
+        state = deliveryTestState(readStores(), nonce);
     }
     return state;
 }
@@ -72,20 +74,22 @@ async function waitFor(
 async function main(argv: string[]) {
     const deadline = deadlineOf(argv, readStores()['quiet-wait']);
     if (deadline === undefined) {
-        console.error('usage: pnpm mods:quiet-canary [--deadline <minutes>]');
+        console.error(
+            'usage: pnpm mods:quiet-delivery-test [--deadline <minutes>]',
+        );
         return 2;
     }
     const nonce = `c${Date.now().toString(36)}`;
     const run = spawnSync(
         'claude',
-        ['-p', `/quiet-canary ${nonce}`, '--output-format', 'json'],
+        ['-p', `/quiet-delivery-test ${nonce}`, '--output-format', 'json'],
         { encoding: 'utf8', timeout: 90_000 },
     );
     let result = run.stderr || 'no output';
     try {
         result = JSON.parse(run.stdout).result ?? result;
     } catch {}
-    if (!result.endsWith(`quiet canary ${nonce}: sent`)) {
+    if (!result.endsWith(`quiet delivery test ${nonce}: sent`)) {
         console.log(`FAIL: the send did not go out: ${result.trim()}`);
         return 1;
     }

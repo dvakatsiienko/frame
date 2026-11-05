@@ -93,6 +93,7 @@ describe('childEnv', () => {
             CLAUDE_CODE_PLUGIN_CACHE_DIR: '/run/plugin-cache',
             CLAUDE_CODE_PLUGIN_DIRS: '/a:/b',
             PATH: '/bin',
+            X_MODS_TEST_CHILD: '1',
         });
     });
 });
