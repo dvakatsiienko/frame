@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:51:00Z'
-updated_date: '2026-11-05T21:52:00Z'
+updated_date: '2026-11-05T21:58:00Z'
 labels:
   - s
   - side
@@ -27,4 +27,6 @@ extracted from PK-321 on dima's word 11-05 23:51: tomorrow, main clio with the s
 <!-- SECTION:NOTES:BEGIN -->
 W1308 (2026-11-02 17:37, dima): it actually would be a good idea to review what we planned because we could plan the redundant stuff, but let's do it a little bit later.
 W1312 (2026-11-02 17:37, dima): then proceed with what we planned and planned scope verification against needed or not.
+
+from PK-321's close, 23:58, unanswered, joins this review: W1411 (2026-11-02 18:59, dima): why don't coders use it, and how to make coders use them? ❓
 <!-- SECTION:NOTES:END -->
