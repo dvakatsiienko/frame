@@ -167,7 +167,7 @@
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
-  - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so
+  - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
   - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
   - given a decamp that fails, then it warns and the exit stays 0
 - ⬜ `x lane merge-auto` names whose clean it reads (W210)
@@ -507,10 +507,10 @@
   - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
   - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
 - ✅ `x fleet audit-codie` checks each codie read its contract before its first edit
-  - given the session transcripts opened in the last `--days` (default 1), or first edited past `--since <local stamp>`
+  - given the session transcripts opened in the last `--days` (default 1), or edited past `--since <local stamp>`, so a compaction's re-read owed after it shows
   - when `x fleet audit-codie` runs
   - then the board's last line counts `how-you-work.md` reads (`57 of 58 read before first edit`), `crew-dna` and the ticket read above it, every miss row above those names the file and the session, and a miss exits 1
-  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read` or a Bash `cat`-like line, the ticket read names a ticket of the brief
+  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read`, a Bash statement opening on a `cat`-like verb, each path read through the `cd`s before it, no heredoc line counting, or a `Skill` load of `x:crew-dna`; a file of that name outside a skills dir credits nothing; the ticket read names a ticket of the brief
   - decision: a retro is a count, never a miss or an edit, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
