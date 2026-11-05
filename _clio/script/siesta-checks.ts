@@ -25,6 +25,7 @@ function main(home: string, since: string) {
             since,
         ]),
         script(scripts, 'helper count', 'helper-count', ['--since', since]),
+        auditCodie(home, since),
         retros(home),
     ];
     for (const s of sections)
@@ -51,6 +52,32 @@ function script(dir: string, name: string, file: string, args: string[]) {
         ...lines.slice(-OUTPUT_LINES),
     ].join('\n');
     return { exit: out.status ?? 1, name, output };
+}
+
+// a codie that skipped its contract before an edit; a verb that cannot answer reads «not checked», never red
+function auditCodie(home: string, since: string) {
+    const name = 'audit-codie';
+    const day = new Date().toLocaleDateString('sv');
+    const stamp = since.includes('T') ? since : `${day}T${since}:00`;
+    const out = spawnSync(
+        path.join(home, '.local/bin/x'),
+        ['fleet', 'audit-codie', '--since', stamp, '--json'],
+        { encoding: 'utf8', timeout: RUN_TIMEOUT_MS },
+    );
+    try {
+        const { misses, summary } = JSON.parse(out.stdout).data;
+        const lines = misses.map(
+            (m: { file: string; session: string; why: string }) =>
+                `🔴 ${m.session} ${m.file}: ${m.why}`,
+        );
+        return {
+            exit: out.status === 1 ? 1 : 0,
+            name,
+            output: [...lines, summary].join('\n'),
+        };
+    } catch {
+        return { exit: 0, name, output: '', status: 'not checked' };
+    }
 }
 
 // every draft changed in the window that wish-cover-on-write.sh reads — a spec, a proposal or a review under frame's or
