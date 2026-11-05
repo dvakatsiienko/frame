@@ -4,7 +4,7 @@ title: 'tails for the next boot: every chore not done with dima today'
 status: open
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T16:47:00Z'
+updated_date: '2026-11-05T16:58:00Z'
 labels:
   - m
 dependencies: []
@@ -37,4 +37,16 @@ upstream watches, read 2026-11-05 18:05 by the side channel, the 8 that touch us
 18:29: lockJoined saves outside marking (register.tsx, 3 sites), a press during a tool can be overwritten, its record alive 2 h; codie's pick ifVersion on the orbit: its own ticket. the double press unprobed. the side channel's branch worktree-fork-38d42581 (999a8306, 5ba68f00) waits for clio's merge at the halt, then a plugin bump; PK-312's two drops need clio's word.
 
 18:47: the ✅ all-asks button marks with no tick record, so the guard refuses those ticks (register.tsx:6094, older than FRM-507); isPaceSeatHeld is module-wide, after a /clear it arms the new session id (register.tsx:3392): both join the lockJoined ticket.
+
+(no-wish: header «🧹 Mine, no word needed»)
+W1 (2026-11-05 18:55, dima): merge the side channel’s branch, then a plugin bump; you press ⌘O for board v12
+W2 (2026-11-05 18:55, dima): a new ticket: lockJoined, the ✅ all-asks button, `isPaceSeatHeld`
+W3 (2026-11-05 18:55, dima): riders as comments: [FRM-495](https://linear.app/x-com/issue/FRM-495), [FRM-480](https://linear.app/x-com/issue/FRM-480), [FRM-384](https://linear.app/x-com/issue/FRM-384), [FRM-489](https://linear.app/x-com/issue/FRM-489)’s tick
+W4 (2026-11-05 18:55, dima): [FRM-465](https://linear.app/x-com/issue/FRM-465) (due 11-11), [FRM-459](https://linear.app/x-com/issue/FRM-459), [FRM-488](https://linear.app/x-com/issue/FRM-488), [FRM-503](https://linear.app/x-com/issue/FRM-503), [FRM-410](https://linear.app/x-com/issue/FRM-410) wish-cover red
+W5 (2026-11-05 18:55, dima): F1’s 14 verify gaps, bytes pr median, checkup slice, crow-receipts share
+W6 (2026-11-05 18:55, dima): W179–W181, W259–W263, W1393–W1401 (PK-321 holds only the range for this last one)
+W7 (2026-11-05 18:55, dima): `_MEMORY.md` and 🌤️ siesta pause pointers, [FRM-501](https://linear.app/x-com/issue/FRM-501) and [FRM-491](https://linear.app/x-com/issue/FRM-491) after their land
+W8 (2026-11-05 18:55, dima): the blind read, stacked-prs round, solo comparison, store cleanup
+W9 (2026-11-05 18:55, dima): upstream borrows, PK-310 Finder re-check
+W10 (2026-11-05 18:55, dima): im going afk. my part is to do when i return. ↑ do your part yourself, only hold ones that wants my attention i'll see when i return. be careful, do not miss anything and verify your own changes.
 <!-- SECTION:NOTES:END -->
