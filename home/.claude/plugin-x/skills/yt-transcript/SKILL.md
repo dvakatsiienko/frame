@@ -27,7 +27,7 @@ Needs `yt-dlp`, `jq`, `python3`.
 quote a transcript back with the title and url from that file.
 
 Naming: lowercase kebab, nothing needing shell quotes. **Channel first** (the store sorts
-alphabetically, one creator = one block — entity-first as everywhere) · **`-{video_id}` last**
+alphabetically, one creator = one block — family-first as everywhere) · **`-{video_id}` last**
 (the dedupe and recall key; id keeps its case, YouTube ids are case-sensitive). Channel capped
 at 24 chars, title at 50, cut at word boundaries. No channel → `{title}-{video_id}`, never pad
 with `unknown`.

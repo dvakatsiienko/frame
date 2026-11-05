@@ -25,7 +25,7 @@ a mapped area's board is our main reference for its flow: a change may land in t
 
 ## the files
 
-- one blueprint per subject, its name self-descriptive for dima, entity-first: `<subject>-<kind>` (`pm-module-flow`)
+- one blueprint per subject, its name self-descriptive for dima, family-first: `<subject>-<kind>` (`pm-module-flow`)
 - a board's version sits in `versions.json` and its `bv-label` element, bumped with each redraw; the reply after a board edit quotes it, `🗺️ <board> v<N>` (dima, W282)
 - a board is committed after every redraw and after every read of dima's edit, so git keeps its history; an n8n automation saves its export here as `<name>.n8n.json` the same way
 - dima's edit is read back as a semantic diff (tiles, arrows, renames, moves), never as the raw json diff: n8n and Excalidraw both rewrite the whole file on save; a board's door is `pnpm read-back`

@@ -151,7 +151,7 @@ dima, 2026-08-27, the purpose:
       - steps tagged by freedom, a fragile one becomes a script
       - contents past 100 lines; tables become bullets
       - a heavy human-only skill gets `disable-model-invocation: true`
-      - entity-first names carry a scope (`x:*`, `clio:*`)
+      - family-first names carry a scope (`x:*`, `clio:*`)
       - the info load rebalanced: what every branch needs stays inline, the rest behind a pointer
       - **the cold test**: a fresh session runs one real ask per changed skill; an unopened file or a skipped step sends it back
       - done: every skill verdicted, each changed one past the cold test

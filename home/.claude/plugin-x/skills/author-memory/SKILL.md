@@ -44,7 +44,7 @@ before the write: who needs it · what it costs resident · does it already exis
 
 ## a skill
 
-- the description says WHEN only, front-loads the literal words dima types; the name is read first, entity-first
+- the description says WHEN only, front-loads the literal words dima types; the name is read first, family-first
 - name + description are resident (~80–100 tokens); the body loads on invoke; bulk goes into references, each linked straight from `SKILL.md`, under 500 lines; a reference over 100 lines opens with a contents list
 - a gotcha stays in `SKILL.md`: the agent cannot know to open a reference for a trap it does not see coming
 - `disable-model-invocation: true` takes it out of the listing; never on a skill that must self-trigger

@@ -43,7 +43,7 @@ the single most expensive line, and the only one that decides whether the skill 
 - **a «Not for …» clause** is added only when a misfire is on record, naming the lookalike in the words that misfired («Not for a 1password vault or item.»)
 - **seed it with the literal words dima types** («commit this», a pasted url, «walk me through»): a description can only match words that appear in a prompt
 
-🚨 **the name is read before the description, sometimes instead of it. [measured]** four mcp tools shipped as `transcript_*`; a `cloud-chat` thread listed them and refused them as «your session/handoff transcript store … not YouTube captions». renamed `yt_transcript_*`, they worked first try. a wrong entity name is not recoverable by a good description, and the entity is as specific as the namespace it claims (dima: *«we may have more things for transcripting»*). the entity-first rule lives in root `CLAUDE.md`.
+🚨 **the name is read before the description, sometimes instead of it. [measured]** four mcp tools shipped as `transcript_*`; a `cloud-chat` thread listed them and refused them as «your session/handoff transcript store … not YouTube captions». renamed `yt_transcript_*`, they worked first try. a wrong entity name is not recoverable by a good description, and the entity is as specific as the namespace it claims (dima: *«we may have more things for transcripting»*). the family-first rule lives in root `CLAUDE.md`.
 
 ## the skill listing budget
 
@@ -91,7 +91,7 @@ skills are **half-lazy**: `name` + `description` are resident from boot (~80–1
 - **a default, not a menu**: one tool named, the alternative after it
 - **`/doctor prompt-audit <dir>` is a groom's first pass** (2.1.283): it flags lines written for older models, stale paths and contradictions; it runs through the bundled `claude-api` skill, so it dies when that skill is off
 - **never ask the model to reproduce its reasoning** — on Fable 5 it can trigger the `reasoning_extraction` refusal
-- ⚠️ **two rules we do not adopt** (local wins, root CLAUDE.md invariant #9): third-person what-descriptions (ours say only when) and gerund names (ours are entity-first). 📌 on descriptions every source read on 2026-10-13 says «what it does and when» (cc docs, anthropic, skill-creator, agentskills.io, some «pushy»); our when-only rule rests on theo's one report, never measured on our skills — the next eval round tests it
+- ⚠️ **two rules we do not adopt** (local wins, root CLAUDE.md invariant #9): third-person what-descriptions (ours say only when) and gerund names (ours are family-first). 📌 on descriptions every source read on 2026-10-13 says «what it does and when» (cc docs, anthropic, skill-creator, agentskills.io, some «pushy»); our when-only rule rests on theo's one report, never measured on our skills — the next eval round tests it
 
 ## argument placeholders
 
