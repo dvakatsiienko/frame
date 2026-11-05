@@ -272,6 +272,20 @@ test('a batch tick is spent per id: a second sign of the same id is refused', as
     expect(signFlagged(again)).toBe(true);
 });
 
+test('a sign tick survives a refusal later on the line, and the retry spends it', async ($, on) => {
+    const { ran } = world(on, [tick('✍️ sign FRM-1: a small ticket')]);
+    const SIGN = 'x linear set FRM-1 --add-label signed';
+    const refused = await bash($, `${SIGN}; rm -rf /tmp/never`);
+    const retry = await bash($, SIGN);
+    const third = await bash($, SIGN);
+    expect([
+        refused.deny !== undefined,
+        retry.deny,
+        signFlagged(third),
+        ran,
+    ]).toEqual([true, undefined, true, [SIGN]]);
+});
+
 test('another label runs with no tick', async ($, on) => {
     world(on);
     const r = await bash($, 'x linear set FRM-1 --add-label agent');

@@ -46,7 +46,7 @@ execution first, reading second: every false green this fleet shipped came from 
 read prose and ran nothing.
 
 1. **the tree** — in frame, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
-   printed; a later round moves the same tree to the new head. `main:<sha>` must be on origin/main (the verb refuses any other). elsewhere,
+   printed; a later round moves the same tree to the new head. elsewhere,
    `git worktree add --detach .claude/worktrees/verify-<ticket> <head sha>`, then seed it as the dna says.
 2. **the sanity pass** — `/run` (launch, drive, stop), or the app's `/<app>-run` skill on the
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
@@ -63,7 +63,7 @@ read prose and ran nothing.
 6. **the diff, as a hostile maintainer** — does every hunk trace to the ticket? what does the new
    code trust, and who controls it? which caller breaks? which doc did it make false (grep the old
    names and behaviours)? which behaviour did nobody ask for — sound, autoplay, decorative motion,
-   an extra control? the model adds what it is used to adding: name it, and codie removes it
+   an extra control? name it, and codie removes it
    or the ticket gains it.
 7. **the symmetry guard** — every defense you credit is one the code has, every attack you name
    is one the code allows.
@@ -77,6 +77,7 @@ codie reads no reviewer; you do.
 - **gate before triage** — the ci reviewer's P0/P1 first, the rest only when that set is empty;
   from round 2 on, P0 only.
 - **reproduce or refute** each finding. one you could not reproduce goes out as `unconfirmed`.
+- **a finding names the class**; from round 2, earlier probes rerun on head and base.
 - codie's local review chain is its own pre-verification, not yours.
 - a second read goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`; a guard rule's live exit: `pnpm mods:probe`.
 
@@ -177,6 +178,6 @@ holds, with these swaps:
 
 ## the next chunk
 
-summoned once a lane; a later chunk comes by message, `next: <ticket> <pr url | main:<base>> final: <sha> spec: <path>`, re-arming step 0: its exit lines, rounds from 1, one retro per chunk.
+summoned once a lane; a later chunk comes by message, `next: <ticket> <pr url | main:<base>> final: <sha> spec: <path>`, re-arming step 0: its exit lines, rounds from 1; your one retro file gains what is new.
 
 why each rule holds: [sources.md](sources.md), for a groom, never at run time.

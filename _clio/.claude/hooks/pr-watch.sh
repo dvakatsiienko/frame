@@ -1,11 +1,11 @@
 #!/bin/bash
 # pr-watch — every open non-renovate pr in frame + bytes, and every cloud/* report branch, as lines.
-# a pr prints when it first appears (so sixth sense is summoned off this watch, no per-summon Monitor), when its head moves (a new commit), once per head when github calls it mergeable
+# a pr prints when it first appears, when its head moves (a new commit), once per head when github calls it mergeable
 # (mergeStateStatus CLEAN — «ready to merge»), and once per head when its checks are green but a
-# required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run), and once per head when
+# required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run; loud only on a stamped head), and once per head when
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
 # notice, so its brief ends by pushing its report there (x:crew-cloud). silence is the normal state.
-# a line starting «~ » is quiet: watch-once logs it and never wakes on it (the new-commit line: sixth sense handles the head).
+# a line starting «~ » is quiet: watch-once logs it and never wakes on it. clio wakes only on a stamped head that is green or blocked, a red check or a conflict (dima's o42: 14 bare replies in one afternoon); the rest reaches her through the member's own [done].
 # the watch belongs to the pr, never to the codie that opened it (2026-09-28: #112 sat green 30 min
 # after its codie's watch was stopped). a «ready» needs sixth sense's clean on that very head: a pr whose
 # verified sha (written by sixth sense, or clio on a solo lane: `--verified`) differs prints «unverified delta» instead (#82 merged
@@ -36,26 +36,33 @@ pass() {
         key="$r#$n"
         if [ "$(seen "$key:head")" != "$sha" ]; then
           if [ -n "$(seen "$key:head")" ]; then echo "~ 🟡 ${r#*/}#$n new commit $sha · $title · $url"
-          else echo "🔵 ${r#*/}#$n opened on $sha — hand it to its lane's sixth sense (summon one only if the lane has none) ·$title · $url"; fi
+          else echo "~ 🔵 ${r#*/}#$n opened on $sha · $title · $url"; fi
           mark "$key:head" "$sha"
         fi
         # keyed on head and verified sha both: a clean that lands after a delta line still prints «ready»
         v=$(verified "$key")
         if [ "$state" = green ] && [ "$(seen "$key:green")" != "$sha@$v" ]; then
-          if [ -n "$v" ] && [ "${v:0:8}" != "$sha" ]; then
-            echo "🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — sixth sense never saw this head · $title · $url"
+          if [ -z "$v" ]; then
+            echo "~ 🟢 ${r#*/}#$n green on $sha, no stamp yet · $title · $url"
+          elif [ "${v:0:8}" != "$sha" ]; then
+            echo "~ 🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — sixth sense never saw this head · $title · $url"
           else
             echo "🟢 ${r#*/}#$n green on $sha, ready to merge · $title · $url"
           fi
           mark "$key:green" "$sha@$v"
         fi
+        if [ "$state" = red ] && [ "$(seen "$key:red")" != "$sha" ]; then
+          echo "🔴 ${r#*/}#$n red check on $sha · $title · $url"
+          mark "$key:red" "$sha"
+        fi
         if [ "$conflict" = conflict ] && [ "$(seen "$key:conflict")" != "$sha" ]; then
           echo "🔴 ${r#*/}#$n conflict on $sha — it cannot merge until it is rebased onto its base · $title · $url"
           mark "$key:conflict" "$sha"
         fi
-        if [ "$state" = blocked ] && [ "$(seen "$key:blocked")" != "$sha" ]; then
-          echo "🟠 ${r#*/}#$n checks green on $sha but merge BLOCKED — a required check never ran on this head (review:clean?) · $title · $url"
-          mark "$key:blocked" "$sha"
+        if [ "$state" = blocked ] && [ "$(seen "$key:blocked")" != "$sha@$v" ]; then
+          quiet="~ "; [ "${v:0:8}" = "$sha" ] && quiet=
+          echo "${quiet}🟠 ${r#*/}#$n checks green on $sha but merge BLOCKED — a required check never ran on this head (review:clean?) · $title · $url"
+          mark "$key:blocked" "$sha@$v"
         fi
       done
     gh api "repos/$r/branches?per_page=100" \

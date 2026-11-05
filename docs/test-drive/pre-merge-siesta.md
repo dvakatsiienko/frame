@@ -32,5 +32,6 @@ Ticket: none
 - 2026-11-05 · planning batch, no diff of a lane · wishkeeper 5 min, 131k tokens, 12 findings: 4 high real (two of them false claims of mine to dima)
 - 2026-11-05 · FRM-507 second read, on the fix round · wishkeeper 7 min, 123k tokens, 5 findings: 1 high real (no live frame at head), 2 medium · blocked a pre-approved merge
 - 2026-11-05 · the 18:28 batch, FRM-507 merged in it, a siesta read · wishkeeper 8 min, 193k tokens, 20 findings: 3 high real (his 18:35 order no-wished, a promised ticket unborn, the ✅ all-asks bug untold) · each opened at its spot, fixed or parked; the row above ended as a door limit, `pr-watch.sh --verified`, now `--by clio`
+- 2026-11-05 · the 20:21 batch, frame#125 merged in it, a siesta read · wishkeeper 8 min, 178k tokens, 15 findings: 4 high real (a double run with no home, two of o42's three parts unbuilt, a crew line past his tick, a close ask overclaiming); after the merge, so it changed the close, not the merge
 
 ## verdict

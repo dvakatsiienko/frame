@@ -136,6 +136,45 @@ describe('pr-watch', () => {
         );
     });
 
+    it('wakes clio only on a stamped head that is green or blocked, a red check or a conflict', () => {
+        const pr = {
+            ...conflicted[0],
+            mergeStateStatus: 'BLOCKED',
+            mergeable: 'MERGEABLE',
+        };
+        const loud = (prs: unknown[], ...stamp: string[]) => {
+            const dir = bin({ 'prs.json': prs });
+            if (stamp.length)
+                run(
+                    'pr-watch.sh',
+                    ['--verified', 'dvakatsiienko/frame', '7', ...stamp],
+                    dir,
+                );
+            return frameLines(run('pr-watch.sh', ['--once'], dir)).filter(
+                (l) => !l.startsWith('~ '),
+            ).length;
+        };
+        expect({
+            blocked: loud([pr]),
+            blockedStamped: loud([pr], 'abcdef1234567890'),
+            conflict: loud(conflicted),
+            delta: loud(clean, 'aaaaaaaa'),
+            red: loud([
+                { ...pr, statusCheckRollup: [{ conclusion: 'FAILURE' }] },
+            ]),
+            stamped: loud(clean, 'bbbbbbbb1234567890'),
+            unstamped: loud(clean),
+        }).toEqual({
+            blocked: 0,
+            blockedStamped: 1,
+            conflict: 1,
+            delta: 0,
+            red: 1,
+            stamped: 1,
+            unstamped: 0,
+        });
+    });
+
     it('names clio as the verifier until a sixth sense clean replaces her', () => {
         const dir = bin({});
         const verify = (...by: string[]) =>
