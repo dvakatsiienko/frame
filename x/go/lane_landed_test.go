@@ -415,7 +415,7 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
-	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`\n\n" + landedBody
+	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`, none of them hidden\n\n" + landedBody
 	plant(t, w.state, 0, planted{name: "lane landed", ms: 1, caller: "cc"})
 
 	envelope, _ := w.landed(t)

@@ -173,6 +173,9 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 		ticket.input["delegateId"] = found.Users.Nodes[0].ID
 	}
 	line := dispatchedLine + time.Now().Format("2006-01-02") + " — " + lane + ", codie " + session
+	if !dispatched && (session == "" || lane == "") {
+		return dispatchTicket{}, usageFail("the 🚀 line names the lane and the session: pass --lane <name> --session <sid>", "x lane dispatch "+id+" --session <sid> --lane <name>")
+	}
 	if note.quick && !dispatched {
 		repo, err := ticketRepo(body)
 		if err != nil {
@@ -197,9 +200,6 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 	mark("🚀 line", !dispatched, line)
 	if !dispatched {
-		if session == "" || lane == "" {
-			return dispatchTicket{}, usageFail("the 🚀 line names the lane and the session: pass --lane <name> --session <sid>", "x lane dispatch "+id+" --session <sid> --lane <name>")
-		}
 		ticket.input["description"] = withSignLine(body, line)
 		if note.quick {
 			ticket.input["description"] = aboveStamp(body, line)

@@ -269,6 +269,7 @@ func (r landedRead) hasLookCard() bool {
 
 var (
 	dispatchBaseOf = regexp.MustCompile(`, main:([0-9a-f]{7,40})\b`)
+	newSurfaceNone = regexp.MustCompile(`new surface:?\s*none\b`)
 	lookSentOf     = regexp.MustCompile(`(?m)^` + lookSentLine + `\d{4}-\d{2}-\d{2}`)
 	verifiedOf     = regexp.MustCompile(`\bverified:\s*([0-9a-f]{7,40})\b`)
 	worthSection   = regexp.MustCompile(`(?s)## ⚖️ worth it\n(.*?)(\n## |\z)`)
@@ -335,7 +336,7 @@ func newVerbsOf(body string) []string {
 	}
 	var verbs []string
 	for line := range strings.SplitSeq(section[1], "\n") {
-		if !strings.Contains(line, "new surface") || strings.Contains(line, "none") {
+		if !strings.Contains(line, "new surface") || newSurfaceNone.MatchString(line) {
 			continue
 		}
 		for _, m := range backticked.FindAllStringSubmatch(line, -1) {
