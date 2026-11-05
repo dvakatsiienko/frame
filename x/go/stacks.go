@@ -371,10 +371,14 @@ type restackTarget struct {
 	Branch string            `json:"branch"`
 	Layers []string          `json:"layers"`
 	Leases map[string]string `json:"leases"`
-	from   string
+	// the unpushed restack merges a rerun drops, and of those the ones holding a hand resolution
+	Dropped map[string][]string `json:"dropped,omitempty"`
+	Lost    map[string]string   `json:"lost_resolutions,omitempty"`
+	from    string
 }
 
-// a layer on origin whose local copy differs would lose a commit to the merge or push a stale one, so it refuses
+// an upper layer's local copy is taken from origin only when all it would lose is a restack's own merges; a bottom
+// layer is never merged into, so a difference there still refuses
 func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 	if name, paused := pausedRebase(); paused {
 		return nil, &Fail{Refused: true, Msg: "a rebase of " + name + " is stopped here; finish it with git rebase --continue, or git rebase --abort", Next: "git rebase --continue"}
@@ -402,9 +406,18 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 			if t.Leases[layer], err = remoteSha(layer); err != nil {
 				return "", err
 			}
-			if local, _ := git("rev-parse", "-q", "--verify", "refs/heads/"+layer); local.ok && local.out != t.Leases[layer] {
+		}
+		for i, layer := range t.Layers {
+			local, _ := git("rev-parse", "-q", "--verify", "refs/heads/"+layer)
+			switch {
+			case !local.ok || local.out == t.Leases[layer]:
+			case i == 0:
 				return "", &Fail{Refused: true, Msg: fmt.Sprintf("%s is %s here and %s on origin: push it, or take origin's, before a restack", layer, short(local.out), short(t.Leases[layer])),
 					Next: "git switch " + layer + " && x lane push --apply"}
+			default:
+				if err := t.readLocalOnly(layer, local.out); err != nil {
+					return "", err
+				}
 			}
 		}
 		if held := heldElsewhere(t.Layers[1:]); held != "" {
@@ -414,11 +427,63 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 		if t.from, _, err = pushHome(); err != nil {
 			return "", err
 		}
-		return strings.Join(t.Layers, " → "), nil
+		return strings.Join(t.Layers, " → ") + t.droppedNote(), nil
 	}); err != nil {
 		return nil, err
 	}
 	return t, nil
+}
+
+var restackSubject = regexp.MustCompile(`^restack: merge [0-9a-f]+ into (\S+)$`)
+
+// what the layer holds that no layer on origin does: a restack's merge may go, a resolution inside one is named, any other commit refuses
+func (t *restackTarget) readLocalOnly(layer, local string) error {
+	args := []string{"log", "--format=%H%x00%T%x00%P%x00%s", local, "--not"}
+	for _, lease := range t.Leases {
+		args = append(args, lease)
+	}
+	out, err := mustGit("log", args...)
+	if err != nil || out == "" {
+		return err
+	}
+	var hand []string
+	for row := range strings.SplitSeq(out, "\n") {
+		cols := strings.SplitN(row, "\x00", 4)
+		sha, tree, parents, subject := cols[0], cols[1], strings.Fields(cols[2]), cols[3]
+		m := restackSubject.FindStringSubmatch(subject)
+		if m == nil || len(parents) != 2 || !slices.Contains(t.Layers, m[1]) {
+			hand = append(hand, short(sha)+" "+subject)
+			continue
+		}
+		if t.Dropped == nil {
+			t.Dropped, t.Lost = map[string][]string{}, map[string]string{}
+		}
+		t.Dropped[layer] = append(t.Dropped[layer], short(sha))
+		if clean, _ := git("merge-tree", "--write-tree", "--no-messages", parents[0], parents[1]); !clean.ok || clean.out != tree {
+			t.Lost[layer] = short(sha)
+		}
+	}
+	if len(hand) > 0 {
+		return &Fail{Refused: true, Msg: layer + " holds what origin does not and no restack made: " + strings.Join(hand, ", ") + "; a restack would lose it",
+			Next: "git switch " + layer + " && git rebase origin/" + layer + " && x lane push --apply"}
+	}
+	return nil
+}
+
+func (t *restackTarget) droppedNote() string {
+	var notes []string
+	for _, layer := range t.Layers {
+		if dropped := t.Dropped[layer]; len(dropped) > 0 {
+			notes = append(notes, fmt.Sprintf("%s takes origin's copy, dropping %s", layer, strings.Join(dropped, ", ")))
+		}
+		if lost := t.Lost[layer]; lost != "" {
+			notes = append(notes, fmt.Sprintf("the hand resolution in %s is lost, take it back with git checkout %s -- <file>", lost, lost))
+		}
+	}
+	if len(notes) == 0 {
+		return ""
+	}
+	return "; " + strings.Join(notes, "; ")
 }
 
 func askRestack(plan any) string {
@@ -439,8 +504,12 @@ func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			merged, _ := git("merge", "-q", "--no-edit", "-m", "restack: merge "+short(below)+" into "+layer, below)
 			if !merged.ok {
 				conflicts, _ := git("diff", "--name-only", "--diff-filter=U")
+				earlier := ""
+				if lost := t.Lost[layer]; lost != "" {
+					earlier = " Your earlier resolution sits in " + lost + ": git checkout " + lost + " -- <file>."
+				}
 				stop := &Fail{Msg: layer + " conflicts with the layer below in " + strings.ReplaceAll(or(conflicts.out, "no file"), "\n", ", ") +
-					" — the tree is on " + layer + " mid-merge: resolve, git add, git merge --continue, x lane push --apply, then x lane restack --apply again; or git merge --abort",
+					" — the tree is on " + layer + " mid-merge: resolve, git add, git merge --continue, x lane push --apply, then x lane restack --apply again; or git merge --abort." + earlier,
 					Next: "git merge --continue", Log: nonBlank(merged.log)}
 				// the layers under it merged clean: pushed now, a rerun reads them equal to origin
 				return "", errors.Join(t.push(moved), stop)
@@ -482,8 +551,8 @@ func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(plural(len(moved), "layer")+" restacked: "+strings.Join(t.Layers, " → "), "")
-	return ordered{{"layers", t.Layers}, {"moved", moved}}, nil
+	r.Done(plural(len(moved), "layer")+" restacked: "+strings.Join(t.Layers, " → ")+t.droppedNote(), "")
+	return ordered{{"layers", t.Layers}, {"moved", moved}, {"dropped", t.Dropped}, {"lost_resolutions", t.Lost}}, nil
 }
 
 // a plain push: each merge descends from the sha read, so origin moving since is a non-fast-forward git refuses

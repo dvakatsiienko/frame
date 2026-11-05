@@ -313,3 +313,45 @@ func TestGateSkipsAMergeCommit(t *testing.T) {
 		t.Errorf("exit %d, output %q; want 0 mid-merge", got.code, got.stdout)
 	}
 }
+
+func TestGateHeldLintsTheTreesOwnPurposes(t *testing.T) {
+	t.Parallel()
+	const good, bad = `{"verbs":[{"name":"lane tidy","purpose":"sorts the worktree's files before a push"}]}`, `{"verbs":[{"name":"lane tidy","purpose":"handles stuff"}]}`
+	cases := []struct {
+		name, registry, stacks string
+		code                   int
+		want                   string
+	}{
+		{"both clean", good, good, 0, ""},
+		{"a red in registry.json", bad, good, 1, "lane tidy"},
+		{"a red in stacks.json", good, bad, 1, "lane tidy"},
+		{"the add-on's file deleted", good, "", 0, ""},
+		{"a broken registry.json", "{", good, 1, "registry.json"},
+		{"no registry.json in this tree", "", "", 2, "registry.json"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := repo(t)
+			if c.registry != "" {
+				write(t, filepath.Join(dir, "x/go/registry.json"), c.registry)
+			}
+			if c.stacks != "" {
+				write(t, filepath.Join(dir, "x/go/stacks.json"), c.stacks)
+			}
+
+			got := xIn(t, dir, nil, "lane", "gate", "--held")
+
+			if got.code != c.code || !strings.Contains(got.stdout, c.want) {
+				t.Errorf("exit %d, want %d naming %q:\n%s", got.code, c.code, c.want, got.stdout)
+			}
+		})
+	}
+}
+
+func TestGateWantsAMessageFileWithoutHeld(t *testing.T) {
+	t.Parallel()
+	if got := xIn(t, repo(t), nil, "lane", "gate"); got.code != 2 {
+		t.Errorf("exit %d, want a usage refusal:\n%s", got.code, got.stdout)
+	}
+}

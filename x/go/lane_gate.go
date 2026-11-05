@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -34,7 +38,13 @@ type glossaryContext struct {
 
 func (c glossaryContext) dir() string { return path.Dir(c.glossary) }
 
-func laneGate(r *Run, args []string, _ Flags) (any, error) {
+func laneGate(r *Run, args []string, flags Flags) (any, error) {
+	if held, _ := flags["held"].(bool); held {
+		return heldLint()
+	}
+	if len(args) == 0 {
+		return nil, usageFail("the commit-msg door takes a message file, a held layer takes --held", "x lane gate --held")
+	}
 	r.passthrough = true
 	msg, err := os.ReadFile(args[0])
 	if err != nil {
@@ -244,4 +254,43 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 		}
 	}
 	return refusals
+}
+
+// the binary bakes the purposes it was built from; a layer sitting local reads its own tree's, stacks.json included
+func heldLint() (any, error) {
+	root, err := top()
+	if err != nil {
+		return nil, err
+	}
+	dir := filepath.Join(root, "x", "go")
+	if !exists(filepath.Join(dir, "registry.json")) {
+		return nil, usageFail("no x/go/registry.json under "+root+": --held lints x's own tree", "run it inside a frame worktree")
+	}
+	var problems []string
+	checked := 0
+	for _, name := range []string{"registry.json", "stacks.json"} {
+		raw, err := os.ReadFile(filepath.Join(dir, name))
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		var source struct {
+			Verbs []Verb `json:"verbs"`
+		}
+		if err := json.Unmarshal(raw, &source); err != nil {
+			return nil, &Fail{Msg: name + " does not parse: " + err.Error(), Next: "fix " + filepath.Join(dir, name)}
+		}
+		for _, verb := range source.Verbs {
+			checked++
+			for _, problem := range lintPurpose(verb) {
+				problems = append(problems, name+": "+verb.Name+": "+problem)
+			}
+		}
+	}
+	if len(problems) > 0 {
+		return nil, &Fail{Refused: true, Msg: strings.Join(problems, "\n"), Next: "reword the purpose, then x lane gate --held"}
+	}
+	return ordered{{"verbs", checked}}, nil
 }

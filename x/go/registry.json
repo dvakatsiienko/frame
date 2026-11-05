@@ -288,10 +288,17 @@
         {
             "args": [
                 {
-                    "description": "the commit message file, git's commit-msg argv",
+                    "description": "the commit message file, git's commit-msg argv; --held takes none",
+                    "isOptional": true,
                     "name": "msg-file"
                 }
             ],
+            "flags": {
+                "held": {
+                    "description": "lint the purposes in this tree's registry.json and stacks.json, for a layer before any rebase",
+                    "type": "boolean"
+                }
+            },
             "hidden": true,
             "name": "lane gate",
             "needsApply": false,
