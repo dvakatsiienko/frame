@@ -131,12 +131,14 @@ on partly done, flatten an exact string into prose casing.
 ## global naming conventions
 <!-- sync: cloud-chat -->
 
+- **a name says what the thing does**: from the name alone, a newcomer can say it. plain words, up to 4; a metaphor lands only by dima's weighing.
+  - anything named: a script, a verb, a skill, a flag, a field, a function; length is the accepted cost. a metaphor or a coined word (our fleet names, the vibe words) is his own idea or his pick from `x:top-seven` when he asks for one (dima, 2026-11-05: «only weighted names are accepted. everything else: clear and clearly understandable, reads well by me (a newcomer), and lets me understand what it does just from reading its name») <!-- cc -->
 - **seven names before the build.** a new name for anything lasting — a skill, a job, an app, a memory leaf, a verb, a file family — goes to dima as seven candidates first through `x:top-seven`, a pick marked; the build starts with his pick (dima, 2026-10-16: «I very often ask you to rename things you created. instead, let's think of a name first, and then implement with the correct name»).
 - **family-first.** a name opens with the word its siblings share, each next word narrowing, so a sorted list keeps a family side by side: `crew-codie`, never `codie-crew`; `handoff-delete`; `audit-codie`. part of speech never decides.
   - the test: write three likely siblings; the word that repeats leads. both repeat (`speak:test`, `mods:test`) → the family that will grow
   - no sibling in sight → its natural reading; a family's bare head stays free for its root
   - the edge shapes (a date, a number, a sidecar, code): `x:guide-conventions` `conventions/naming-family-first.md` <!-- cc -->
-- `family-first <scope>` is the keyword. do the rename, report what changed, skip the explanation.
+- `family-first <scope>` is the keyword. do the rename, report what changed, skip the explanation. <!-- cc -->
 - **one name on every layer.** a feature's name is the same string in its dir, binary, launchd label, codesign id, script names, log strings, data dir and docs. a rename moves all of them in one change; done = `grep -rn '<old name>'` prints nothing, and the report says so. a pnpm script family may carry a short alias of the name when the full one is hostile to type (`monitor-hotkey:top` for `x-monitor-hotkey-stats`).
 
 ## the handoff (CST) and token thrift
