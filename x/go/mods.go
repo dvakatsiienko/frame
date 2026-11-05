@@ -286,7 +286,7 @@ func overlayGates(repo, scratch string, changed []string, stamp string, testsGre
 		return nil, err
 	}
 	defer done()
-	if err := layScratch(repo, scratch, changed, env); err != nil {
+	if err := layFormatted(repo, scratch, changed, env); err != nil {
 		return nil, err
 	}
 	staged, err := indexPaths(repo, env)
@@ -299,6 +299,7 @@ func overlayGates(repo, scratch string, changed []string, stamp string, testsGre
 		}
 		return ""
 	})
+	redClockReads(repo, gates, verdicts, changed, env)
 	if gatesFail(verdicts, "", "") == nil && testsGreen && overlayStamp(repo, scratch, changed) == stamp {
 		recordTree(repo, treeOf, gates, verdicts)
 		recordTestedMods(repo, scratch, changed)

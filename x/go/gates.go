@@ -242,6 +242,23 @@ func indexPaths(repo string, env []string) ([]string, error) {
 	return slices.DeleteFunc(strings.Split(got.out, "\x00"), func(path string) bool { return path == "" }), nil
 }
 
+// the commit's suite stays the commit's, but its clock-read rule reds a mod whatever was tested, so the overlay reads it now
+func redClockReads(repo string, gates []hookGate, verdicts []gateVerdict, changed, env []string) {
+	suite := modsDir + "test.ts"
+	if !exists(filepath.Join(repo, suite)) {
+		return
+	}
+	for i := range gates {
+		if verdicts[i].Verdict != gateCommits {
+			continue
+		}
+		args := append([]string{gateCopyRun, "node", suite, "--clock-only"}, touchedMods(changed)...)
+		if got, _ := run(repo, env, "", args[0], args[1:]...); !got.ok {
+			verdicts[i].Verdict, verdicts[i].log = gateRed, got.log
+		}
+	}
+}
+
 // a dry run's gates on the temp index the run's git already reads; a green records its tree for the real commit
 func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string, error), again, next string) (any, error) {
 	r.skip("hold", "ci", "commit", "restore")
@@ -406,8 +423,36 @@ func recordTestedMods(repo, scratch string, changed []string) {
 
 // the scratch copies over the index env names: HEAD plus these paths is what a commit of them would hold
 func layScratch(repo, scratch string, changed []string, env []string) error {
-	for _, path := range changed {
+	return layCopies(repo, changed, env, func(path string) string { return filepath.Join(scratch, path) })
+}
+
+// the commit's format step run on stdin, since biome panics on a path outside the repo, each result in a temp dir: the
+// overlay's format gate reads what a commit would hold, and a file biome cannot fix stays as it is, for the gate to red
+func layFormatted(repo, scratch string, changed []string, env []string) error {
+	biome := filepath.Join(repo, "node_modules/.bin/biome")
+	dir, err := os.MkdirTemp("", "x-gates-format-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dir)
+	return layCopies(repo, changed, env, func(path string) string {
 		copied := filepath.Join(scratch, path)
+		body, err := os.ReadFile(copied)
+		if err != nil || !exists(biome) {
+			return copied
+		}
+		fixed, _ := run(repo, nil, string(body), biome, "check", "--write", "--stdin-file-path="+path)
+		out := filepath.Join(dir, path)
+		if !fixed.ok || fixed.out == "" || os.MkdirAll(filepath.Dir(out), 0o755) != nil || os.WriteFile(out, []byte(fixed.out+"\n"), 0o644) != nil {
+			return copied
+		}
+		return out
+	})
+}
+
+func layCopies(repo string, changed []string, env []string, copyOf func(string) string) error {
+	for _, path := range changed {
+		copied := copyOf(path)
 		blob, _ := run(repo, nil, "", "git", "hash-object", "-w", "--path="+path, copied)
 		if !blob.ok {
 			return &Fail{Msg: "git hash-object " + path + " failed: " + blob.log, Next: "x mods edit status"}

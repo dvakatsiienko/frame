@@ -351,11 +351,23 @@ func TestHandModsTestSkipsNothing(t *testing.T) {
 	}
 }
 
-func TestModsChainRedsAClockReadThoughItsBytesPassed(t *testing.T) {
+func TestModsEditTestRedsTheClockReadTheCommitWouldRed(t *testing.T) {
 	t.Parallel()
 	dir, env, _ := modsChain(t)
 	edited(t, dir, env, modHooks, "export const register = () => Date.now();\n")
-	testOverlay(t, dir, env)
+	got := xIn(t, dir, env, "mods", "edit", "test")
+	if got.code != 1 || verdictsOf(got)["mods-test"] == gateCommits {
+		t.Errorf("exit %d, mods-test %q: a clock read the commit reds passed the overlay\n%s", got.code, verdictsOf(got)["mods-test"], got.stdout)
+	}
+	if !strings.Contains(got.stdout, "mods-test") {
+		t.Errorf("the red names no gate:\n%s", got.stdout)
+	}
+}
+
+func TestCommitRedsAClockReadThoughItsBytesPassed(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChain(t)
+	edited(t, dir, env, modHooks, "export const register = () => Date.now();\n")
 	pushOverlay(t, dir, env)
 	got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks)
 	if got.code != 1 {
@@ -400,6 +412,26 @@ func TestModsEditTestRunsTheGatesBesideARedTest(t *testing.T) {
 		if got.code != 1 || !strings.Contains(got.stdout, want) {
 			t.Errorf("exit %d, want 1 naming %s:\n%s", got.code, want, got.stdout)
 		}
+	}
+}
+
+// a commit's own format step fixes an import order, so the overlay's format gate reads what that step would leave
+func TestModsEditTestFormatGateReadsWhatTheCommitsFormatLeaves(t *testing.T) {
+	t.Parallel()
+	biome, err := filepath.Abs("../../node_modules/.bin/biome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, env := gateFixture(t, "pre-commit:\n  commands:\n    format:\n      glob: \"*.ts\"\n      run: "+biome+" check --no-errors-on-unmatched {staged_files}\n")
+	write(t, filepath.Join(dir, "biome.json"), "{}\n")
+	write(t, filepath.Join(dir, ".gitignore"), "node_modules\n")
+	write(t, filepath.Join(dir, "node_modules/.bin/biome"), "#!/bin/sh\nexec "+biome+" \"$@\"\n")
+	gitT(t, dir, "add", "biome.json", ".gitignore")
+	gitT(t, dir, "commit", "-q", "-m", "biome")
+	edited(t, dir, env, modHooks, "import { b } from './b.ts';\nimport { a } from './a.ts';\n\nexport const register = () => [a, b];\n")
+	got := xIn(t, dir, env, "mods", "edit", "test")
+	if got.code != 0 || verdictsOf(got)["format"] != gateGreen {
+		t.Errorf("exit %d, format %q: an import order the commit fixes itself reds the overlay\n%s", got.code, verdictsOf(got)["format"], got.stdout)
 	}
 }
 

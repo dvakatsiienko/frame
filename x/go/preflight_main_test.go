@@ -41,6 +41,8 @@ func TestPreflightReadsASpecSectionsRecordedSignHash(t *testing.T) {
 		{"a newer tiny line", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345", "✏️ changed · body def67890"), false},
 		{"no recorded hash", "wish: FRM-1 · the contract", signed("✍️ signed · body def67890"), false},
 		{"no hash on the ticket", "wish: FRM-1 · body abc12345", signed("✍️ signed"), false},
+		{"a newest sign line with no hash", "wish: FRM-1 · body def67890", signed("✍️ signed · body def67890", "✍️ re-signed"), false},
+		{"an older sign line's hash, stale, under a newest with none", "wish: FRM-1 · body abc12345", signed("✍️ signed · body def67890", "✍️ re-signed"), false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

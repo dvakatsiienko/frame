@@ -96,13 +96,18 @@ commit-msg:
 // the real lefthook behind real hook shims, counting a gate that reads the index copy and one that does not
 func dryOnRealLefthook(t *testing.T) (string, []string, string, func(string) int) {
 	t.Helper()
+	return realLefthookWith(t, "")
+}
+
+func realLefthookWith(t *testing.T, gate string) (string, []string, string, func(string) int) {
+	t.Helper()
 	dir, env, msg := dryFixture(t, `pre-commit:
   commands:
     suite:
       run: script/index-run.sh sh -c 'echo suite >> "$X_SUITE_RAN"'
     reads-the-tree:
       run: echo tree >> "$X_SUITE_RAN"
-commit-msg:
+`+gate+`commit-msg:
   commands:
     msg:
       run: echo msg >> "$X_SUITE_RAN"
@@ -219,6 +224,57 @@ func TestCommitAfterAPeerMovedHeadRunsItsTests(t *testing.T) {
 	}
 	if ran("suite") != 2 {
 		t.Errorf("the suite ran %d times, want 2: HEAD moved under the proof", ran("suite"))
+	}
+}
+
+// a timeout-only red retries the commit; a peer's commit landed meanwhile, so the retry's tree carries no proof
+func TestCommitRetryAfterAPeerMovedHeadRunsItsTests(t *testing.T) {
+	t.Parallel()
+	dir, env, msg, ran := realLefthookWith(t, `    test:
+      run: |
+        if [ -e "$X_ARM" ]; then
+          git update-ref HEAD "$(cat "$X_ARM")"
+          rm "$X_ARM"
+          printf '(fail) a row [5002.31ms]\n  Error: timed out after 5000 ms\n'
+          exit 1
+        fi
+`)
+	arm := filepath.Join(t.TempDir(), "arm")
+	env = append(env, "X_ARM="+arm)
+	if got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("dry: exit %d\n%s", got.code, got.stdout)
+	}
+	if ran("suite") != 1 {
+		t.Fatalf("the dry run ran the suite %d times", ran("suite"))
+	}
+	write(t, arm, gitT(t, dir, "commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "a peer's")+"\n")
+	if got := xIn(t, dir, env, "lane", "commit", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if ran("suite") != 2 {
+		t.Errorf("the suite ran %d times, want 2: the retry sits on a HEAD no gate read", ran("suite"))
+	}
+}
+
+func TestCommitDryRedsAPathARealCommitRefuses(t *testing.T) {
+	t.Parallel()
+	dir, env, msg := dryFixture(t, "pre-commit:\n  commands:\n    g:\n      run: exit 0\n")
+	got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed, "no-such-path")
+	if got.code != 1 || !strings.Contains(got.stdout, "no-such-path") {
+		t.Errorf("exit %d, want 1 naming the path:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitDryRefusesAHookItCannotMirror(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "lefthook.yaml"), "pre-commit:\n  jobs:\n    - name: a\n      run: exit 0\n")
+	gitT(t, dir, "add", "lefthook.yaml")
+	gitT(t, dir, "commit", "-q", "-m", "hook")
+	write(t, filepath.Join(dir, "readme.txt"), "edited\n")
+	got := xIn(t, dir, nil, "lane", "commit", "--dry", message(t), "--", "readme.txt")
+	if got.code != 2 || !strings.Contains(got.stdout, "frame-shaped") {
+		t.Errorf("exit %d, want 2 naming a frame-shaped hook:\n%s", got.code, got.stdout)
 	}
 }
 

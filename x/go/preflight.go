@@ -194,7 +194,11 @@ func staleSignHash(section, ticket string) (line int, recorded, signed string) {
 		}
 	}
 	for text := range strings.SplitSeq(ticket, "\n") {
-		if found := signHash.FindStringSubmatch(text); found != nil && strings.HasPrefix(text, "✍️") {
+		if !strings.HasPrefix(text, "✍️") {
+			continue
+		}
+		signed = ""
+		if found := signHash.FindStringSubmatch(text); found != nil {
 			signed = found[1]
 		}
 	}

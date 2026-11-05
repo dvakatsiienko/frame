@@ -67,7 +67,7 @@ func shellReadPaths(command string) []string {
 			}
 			continue
 		}
-		words := shellCommandWords(strings.Fields(statement))
+		words := shellCommandWords(statementWords(statement))
 		if len(words) == 0 {
 			continue
 		}
@@ -75,7 +75,7 @@ func shellReadPaths(command string) []string {
 			dir = pathUnderShellDir(dir, words[1])
 			continue
 		}
-		if !shellReadVerbs[words[0]] {
+		if !shellReadVerbs[words[0]] || throwsAwayItsRead(words) {
 			continue
 		}
 		for _, word := range words[1:] {
@@ -88,6 +88,53 @@ func shellReadPaths(command string) []string {
 		}
 	}
 	return paths
+}
+
+// `sed -i` writes its file, and a read sent to /dev/null reaches nobody; errors sent there leave the read standing
+func throwsAwayItsRead(words []string) bool {
+	if words[0] == "sed" && slices.ContainsFunc(words, func(word string) bool { return strings.HasPrefix(word, "-i") }) {
+		return true
+	}
+	for i, word := range words {
+		target, isOut := strings.CutPrefix(strings.TrimPrefix(word, "1"), ">")
+		if isOut && (target == "/dev/null" || target == "" && i+1 < len(words) && words[i+1] == "/dev/null") {
+			return true
+		}
+	}
+	return false
+}
+
+// a statement's words, a quoted one kept whole and its quotes dropped
+func statementWords(statement string) []string {
+	var words []string
+	var now strings.Builder
+	open, inWord := byte(0), false
+	for i := range len(statement) {
+		c := statement[i]
+		switch {
+		case open != 0:
+			if c == open {
+				open = 0
+			} else {
+				now.WriteByte(c)
+			}
+		case c == '"' || c == '\'':
+			open, inWord = c, true
+		case c == ' ' || c == '\t':
+			if inWord {
+				words = append(words, now.String())
+				now.Reset()
+				inWord = false
+			}
+		default:
+			now.WriteByte(c)
+			inWord = true
+		}
+	}
+	if inWord {
+		words = append(words, now.String())
+	}
+	return words
 }
 
 // the words from the command on, past a keyword, an env word or a timeout in front of it
@@ -106,7 +153,6 @@ func shellCommandWords(words []string) []string {
 }
 
 func pathUnderShellDir(dir, word string) string {
-	word = strings.Trim(word, `"'`)
 	if dir == "" || filepath.IsAbs(word) || strings.HasPrefix(word, "~") {
 		return word
 	}

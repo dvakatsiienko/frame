@@ -489,7 +489,9 @@
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
   - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run
   - given `--repo`, or a merge, cherry-pick, revert or rebase in progress, then it refuses, exit 2
-  - given a gate whose run line changed since its green, then a real commit runs it again
+  - given a gate whose run line changed since its green, or a HEAD that moved, then a real commit runs it again
+  - given a path that matches nothing, then it reds naming it, as a real commit would; the ci jobs a real commit on main runs are not its gates and it skips them
+  - given a tree with no `script/index-run.sh`, then it refuses, exit 2: it reads a frame-shaped hook
 - ⬜ a mod's tests run once across `x mods edit test`, `push` and `x lane commit` (FRM-473)
   - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again
   - given a hand `pnpm mods:test`, then nothing is skipped; given a clock read in a mod's hooks, then the commit reds it whatever was tested
@@ -501,6 +503,8 @@
   - given a test output holding «hook was skipped», then the mod reads errored, whatever its rows say, and `pnpm mods:test` reds it too
   - given a red test, then the gates still run, so one run names every red a commit would meet
   - given a peer's edit elsewhere in the mod, then no gate reads it: the gates read HEAD plus the overlay's own paths
+  - given a clock read in a mod's hooks, then `mods-test` reads red here, not only at the commit
+  - given an import order biome fixes, then the format gate reads the bytes `x lane commit`'s format would leave, and stays green
 - ✅ `x schema mods` lists the verbs
 
 ## fleet — the fleet measuring itself

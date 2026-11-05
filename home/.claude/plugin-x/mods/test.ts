@@ -1,7 +1,8 @@
 // pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
 // the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
 // mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files; --skip-tested, the
-// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` already read
+// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` already read; --clock-only, that
+// verb's flag, reads only the clock rule of the named mods and runs no test
 import { spawnSync } from 'node:child_process';
 import {
     appendFileSync,
@@ -296,6 +297,7 @@ if (import.meta.main) {
     const { positionals, values } = parseArgs({
         allowPositionals: true,
         options: {
+            'clock-only': { type: 'boolean' },
             extra: { type: 'string' },
             only: { type: 'string' },
             'skip-tested': { type: 'boolean' },
@@ -326,6 +328,14 @@ if (import.meta.main) {
     }
     const runs: (Run & { status: number | null })[] = [];
     let reran = false;
+    if (values['clock-only']) {
+        const reads = positionals.flatMap((mod) =>
+            hookClockReads(join(root, mod)).map((at) => `${mod}/${at}`),
+        );
+        for (const at of reads)
+            console.log(`a clock read outside $.clock: ${at}`);
+        process.exit(reads.length ? 1 : 0);
+    }
     const named = onlyMod ? [onlyMod] : positionals;
     const tested = values['skip-tested'] ? readTested() : undefined;
     let skipped = 0;

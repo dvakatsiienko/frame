@@ -93,6 +93,9 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 	name, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Open(name.out)
+	if dry && !exists(filepath.Join(tree, gateCopyRun)) {
+		return nil, usageFail("--dry reads a frame-shaped hook: this tree has no "+gateCopyRun, "x lane commit "+msgFile+" -- <paths…>")
+	}
 	if dry && midOperation() {
 		return nil, usageFail("--dry cannot mirror a commit mid-merge, mid-cherry-pick, mid-revert or mid-rebase", "x lane commit "+msgFile+" -- <paths…>")
 	}
@@ -138,6 +141,9 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			// zsh hands a quoted "$paths" over as one argument; «nothing staged» hid that (2026-10-18)
 			return nil, usageFail(fmt.Sprintf("%q names no file: the path list arrived as one word", path),
 				"x lane commit "+msgFile+" -- "+strings.Join(words, " "))
+		} else if dry {
+			// a dry run's index holds HEAD, so a path it cannot find matches nothing a real commit could take
+			return nil, &Fail{Refused: true, Msg: "pathspec " + path + " matches no file: a real commit refuses it", Next: "x lane commit --dry " + msgFile + " -- <paths that exist>"}
 		}
 	}
 	if err := r.Step("format", "biome on the named paths", func() (string, error) {
