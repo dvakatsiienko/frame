@@ -49,4 +49,6 @@ W7 (2026-11-05 18:55, dima): `_MEMORY.md` and 🌤️ siesta pause pointers, [FR
 W8 (2026-11-05 18:55, dima): the blind read, stacked-prs round, solo comparison, store cleanup
 W9 (2026-11-05 18:55, dima): upstream borrows, PK-310 Finder re-check
 W10 (2026-11-05 18:55, dima): im going afk. my part is to do when i return. ↑ do your part yourself, only hold ones that wants my attention i'll see when i return. be careful, do not miss anything and verify your own changes.
+
+W11 (2026-11-05 18:56, dima): also, while i am AFK — keep an eye on both lanes! and maintain them properly, do not miss habits.
 <!-- SECTION:NOTES:END -->
