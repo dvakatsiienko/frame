@@ -657,7 +657,8 @@ const SPENT = { key: 'spent', plugin: 'x-mod-guard' } as const;
 // a tick counts for 2 h: a yes for this afternoon's push never unlocks tonight's (dima's o2)
 const TICK_MS = 2 * 60 * 60 * 1000;
 // a tick is spent per use: `scope` names what it authorized (a command, a pr, a sign), so one ask quoting a guarded
-// command and a pr carries both once
+// command and a pr carries both once. a use counts only when its command runs: `spends` holds it until `go`, so a later
+// rule's refusal leaves dima's word for the retry (three re-ticks on 2026-11-05)
 // the ask quotes the whole guarded command in one backtick span, spacing aside, never only a target its refusal names
 // (dima's tick on the sixth sense's ask, 2026-10-28: `git push origin main` never unlocks `git push --mirror origin`)
 const spaced = (text: string) => text.trim().replace(/\s+/g, ' ');
@@ -670,6 +671,7 @@ async function tickFor(
     $: EngineInterface,
     scope: string,
     covers: (tick: Tick) => boolean,
+    spends: string[],
 ) {
     const { value: ticks = [] } = await $.state
         .get(TICKS)
@@ -682,13 +684,10 @@ async function tickFor(
             (t) =>
                 now - t.at <= TICK_MS &&
                 !spent.includes(`${t.id}@${t.at}:${scope}`) &&
+                !spends.includes(`${t.id}@${t.at}:${scope}`) &&
                 covers(t),
         );
-    if (tick)
-        await $.state.set(
-            SPENT,
-            [...spent, `${tick.id}@${tick.at}:${scope}`].slice(-50),
-        );
+    if (tick) spends.push(`${tick.id}@${tick.at}:${scope}`);
     return tick;
 }
 // the github slug merge-auto reads when no --repo names one: the dir's origin, as x/go/gh.go repoOf does
@@ -1203,10 +1202,16 @@ export const register: Register = (on) => {
             deny: drift ? `${text} — ${drift}` : text,
         });
         // the model typed the old command: it is told what changed, or it reads a surprise
+        const spends: string[] = [];
         const go = async (run = command) => {
+            const { value: spent = [] } = await $.state.get(SPENT);
+            if (spends.length)
+                await $.state.set(SPENT, [...spent, ...spends].slice(-50));
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
+            if (result.deny !== undefined && spends.length)
+                await $.state.set(SPENT, spent);
             if (result.deny !== undefined)
                 return deny(
                     ISOLATED.test(result.deny)
@@ -1376,6 +1381,7 @@ export const register: Register = (on) => {
                       $,
                       `pr:${repo}#${pr}`,
                       (t) => t.at === newest && quotesPr(t.text, repo, pr),
+                      spends,
                   )
                 : undefined;
         };
@@ -1402,6 +1408,7 @@ export const register: Register = (on) => {
                     $,
                     `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
                     (t) => isSignAsk(t.text, sign.id),
+                    spends,
                 ))
             ) {
                 const r = {
@@ -1505,7 +1512,12 @@ export const register: Register = (on) => {
             );
             const unproven =
                 named.length &&
-                (await tickFor($, guardedOf(command), quotesCommand(command)))
+                (await tickFor(
+                    $,
+                    guardedOf(command),
+                    quotesCommand(command),
+                    spends,
+                ))
                     ? []
                     : named;
             if (unproven.length) {
@@ -1556,6 +1568,7 @@ export const register: Register = (on) => {
                 $,
                 guardedOf(command),
                 quotesCommand(command),
+                spends,
             );
             // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it, and
             // one the marker names waits for the marker's own proof, so a warn-only flag never turns a proven marker into a deny
