@@ -40,7 +40,7 @@ before the write: who needs it · what it costs resident · does it already exis
 - `globs:` is not a key: the rule loads unconditionally **[measured]**; `paths:` fires on a Read, `cat` or Edit of a match
 - `MEMORY.md` is cut at 200 lines or 25 KB; a `CLAUDE.md` stays under 200 lines
 - every resident edit invalidates the prompt cache: batch them
-- `/context` is the probe of record for what loaded
+- `/context all` is the probe of record for what loaded
 
 ## a skill
 

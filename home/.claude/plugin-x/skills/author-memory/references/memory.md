@@ -63,7 +63,7 @@ see `writing-for-agents` for the craft (pointers, the ladder, pruning, no-ops, l
 - **size** — a `CLAUDE.md` over 4 MiB is skipped (the 200-line and `MEMORY.md` cuts are in `SKILL.md`) **[read]**
 - **delivery** — `CLAUDE.md` arrives as a user message after the system prompt: context, never enforcement **[read]**
 - **compaction** — the project-root `CLAUDE.md` is re-read from disk after `/compact`; nested files and `paths:` rules reload only when re-matched; conversation-only instructions are gone **[read]**
-- **did it load?** — `/context` (and `/memory`) list every loaded memory file, AGENTS.md included: the probe of record. the `InstructionsLoaded` hook never reports an AGENTS.md loaded as project instructions, how frame and clio load **[read, 2026-10-11]**; a one-line `CLAUDE.md` holding `@AGENTS.md` makes it fire
+- **did it load?** — `/context all` (and `/memory`) list every loaded memory file, AGENTS.md included: the probe of record. the `InstructionsLoaded` hook never reports an AGENTS.md loaded as project instructions, how frame and clio load **[read, 2026-10-11]**; a one-line `CLAUDE.md` holding `@AGENTS.md` makes it fire
 - **`/doctor prompt-audit`** (2.1.283) audits instructions; plain `/doctor` proposes trims of derivable content and offers moves into skills **[read]**
 
 the probes — rerun them, never trust the list above:
