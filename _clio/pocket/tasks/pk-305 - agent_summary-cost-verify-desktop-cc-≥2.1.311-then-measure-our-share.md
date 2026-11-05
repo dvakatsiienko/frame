@@ -1,10 +1,10 @@
 ---
 id: PK-305
 title: 'agent_summary cost: verify desktop cc ≥2.1.311, then measure our share'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T08:57:00Z'
-updated_date: '2026-11-04T15:53:00Z'
+updated_date: '2026-11-05T16:23:00Z'
 labels:
   - s
 dependencies: []
@@ -30,4 +30,7 @@ upstream: https://github.com/anthropics/claude-code/issues/105981 (watch: main's
 2026-11-03 11:00, dima: off-switch idea dropped (fork env var, bun preload); only the desktop update door + the measure stay.
 
 checked 2026-11-04: desktop cc runs 2.1.317 (ps of the running process), past 2.1.311; left: measure our share
+
+2026-11-05 18:27 side channel, measured from the OTel store (x-cc-otel, query_source agent_summary, 10-16 to 11-05, 21 days): 169 calls, about 1.39 usd of 4,458 usd, 0.03 %; worst day 10-22, 0.19 %. it fires only on days with cli agent requests, 7 of 7 days and none on desktop-only days; desktop sessions run as sdk (CLAUDE_CODE_ENTRYPOINT=claude-desktop), and upstream's table shows 0 calls for -p and the sdk. positive control: the tag is logged, 169 records. the running desktop cc is 2.1.317, past 2.1.311. cost_usd is otel's list-price figure, not plan usage. nothing to optimize; forks stay on.
+close: W1 done, the claim is not present on this surface at any size worth a change (0.03 %, under the item's 5 % line), dropped; W2 done, forks untouched
 <!-- SECTION:NOTES:END -->

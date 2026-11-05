@@ -4,7 +4,7 @@ title: 'day plan 11-05: mods lane 5 stacked to tilde, tails with dima on his ret
 status: open
 assignee: []
 created_date: '2026-11-05T14:57:00Z'
-updated_date: '2026-11-05T16:12:00Z'
+updated_date: '2026-11-05T16:13:00Z'
 labels:
   - m
 dependencies: []
@@ -23,4 +23,6 @@ main lane, final plan (W8): mods lane 5 summoned, order FRM-507 → FRM-501 → 
 
 <!-- SECTION:NOTES:BEGIN -->
 18:12: refresh-cc-mods dropped on his word; FRM-470 left the stack for a cli stack, sixth sense on; mods stack is 5 layers: 507, 501, 505, 504, 491.
+
+W63 (2026-11-05 17:34, dima): the reminder pairing a re-ask catcher (FRM-443, https://linear.app/x-com/issue/FRM-443) with mods lanes is stale, that ticket is canceled.
 <!-- SECTION:NOTES:END -->
