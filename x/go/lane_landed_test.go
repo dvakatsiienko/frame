@@ -455,6 +455,16 @@ func TestLandedReadsEveryShapeOfANewVerbLine(t *testing.T) {
 		{"new verb: `x stats` — not `x lane landed`", []string{stats}, []string{landed, nameless}},
 		{"new verb: nosuch thing", []string{"🔴 wired", "nosuch thing " + nameless}, nil},
 		{"new verb: `x stats`, `x nosuch`", []string{stats, "x nosuch " + nameless}, nil},
+		{"**new verb: x stats**", []string{stats}, []string{nameless}},
+		{"new verb: **x stats**", []string{stats}, []string{nameless}},
+		{"new verb: `x stats`, with `--days`", []string{stats}, []string{nameless}},
+		{"new verb: `x stats --days 30`", []string{stats}, []string{nameless}},
+		{"new verb: x stats, x lane landd", []string{stats, "x lane landd " + nameless}, nil},
+		{"new verb: `x stats dayly`", []string{"x stats dayly " + nameless}, []string{stats}},
+		{"new verb: x lane landed now wired", []string{landed}, []string{nameless}},
+		{"new verb: none (a fix)", nil, []string{"wired"}},
+		{"new verb: **none**", nil, []string{"wired"}},
+		{"new verb:", nil, []string{"wired"}},
 	}
 	for _, c := range cases {
 		t.Run(c.line, func(t *testing.T) {

@@ -539,7 +539,8 @@ func TestAuditCodieReadsARetroAsNoEdit(t *testing.T) {
 	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
 	written := called("Write", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
 	appended := called("Edit", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
-	for name, retro := range map[string]any{"written": written, "appended": appended} {
+	scripted := called("Bash", map[string]any{"command": "edit-anchored /l/lane-1-codie-retro.md a.txt b.txt"}, "2026-10-20T10:02:00.000Z")
+	for name, retro := range map[string]any{"written": written, "appended": appended, "scripted": scripted} {
 		if s := auditOf(t, opening, retro); s.FirstEdit != "" || len(s.misses()) != 0 {
 			t.Errorf("a retro %s alone: first edit %q, misses %v", name, s.FirstEdit, s.misses())
 		}

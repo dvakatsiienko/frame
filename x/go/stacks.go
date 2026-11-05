@@ -408,7 +408,8 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 				return "", err
 			}
 		}
-		for i, layer := range t.Layers {
+		// top down: an upper layer reaches a lower one's merges too, and the newest is the resolution to name
+		for i, layer := range slices.Backward(t.Layers) {
 			local, _ := git("rev-parse", "-q", "--verify", "refs/heads/"+layer)
 			switch {
 			case !local.ok || local.out == t.Leases[layer]:

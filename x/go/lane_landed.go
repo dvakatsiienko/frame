@@ -337,37 +337,43 @@ func ticketRepo(id, body string) (string, error) {
 }
 
 // the x verbs a ticket's `new verb: <name>` lines name, and the names no verb answers to; prose guesses nothing.
-// past a line's first bare name a comma may open prose, so only a backticked name or the first one is held to it
+// a line's first name and any spelled `x <verb>` must answer; past those a comma may open prose. a backticked name is
+// the verb and its flags whole, a bare one may run on into a sentence, so `x stats dayly` reds and x stats dayly reads stats
 func newVerbsOf(body string) (verbs, nameless []string) {
 	section := worthSection.FindStringSubmatch(body)
 	if section == nil {
 		return nil, nil
 	}
-	for _, m := range newVerbLine.FindAllStringSubmatch(section[1], -1) {
-		named, _, _ := strings.Cut(m[1], "—")
-		held := map[string]bool{}
-		names := strings.Split(named, ",")
-		if quoted := newVerbQuoted.FindAllStringSubmatch(named, -1); quoted != nil {
-			names = nil
-			for _, q := range quoted {
-				names = append(names, q[1])
-				held[strings.TrimSpace(q[1])] = true
-			}
-		} else {
-			held[strings.TrimSpace(names[0])] = true
+	read := func(name string, first, whole bool) {
+		name = strings.TrimSpace(name)
+		words := strings.Fields(strings.TrimPrefix(name, "x "))
+		verb, depth, found := findVerb(words)
+		if flag := slices.IndexFunc(words, func(w string) bool { return strings.HasPrefix(w, "-") }); whole && flag >= 0 {
+			words = words[:flag]
 		}
-		for _, raw := range names {
-			name := strings.TrimSpace(raw)
-			if name == "none" {
-				continue
-			}
-			verb, _, found := findVerb(strings.Fields(strings.TrimPrefix(name, "x ")))
-			switch {
-			case found && !slices.Contains(verbs, verb.Name):
+		switch {
+		case found && (!whole || depth == len(words)):
+			if !slices.Contains(verbs, verb.Name) {
 				verbs = append(verbs, verb.Name)
-			case !found && held[name]:
-				nameless = append(nameless, name)
 			}
+		case first || strings.HasPrefix(name, "x "):
+			nameless = append(nameless, name)
+		}
+	}
+	for _, m := range newVerbLine.FindAllStringSubmatch(section[1], -1) {
+		named, _, _ := strings.Cut(strings.ReplaceAll(m[1], "*", ""), "—")
+		opening := strings.Fields(named)
+		if len(opening) == 0 || strings.Trim(strings.ToLower(opening[0]), ".,:;()`") == "none" {
+			continue
+		}
+		if quoted := newVerbQuoted.FindAllStringSubmatch(named, -1); quoted != nil {
+			for i, q := range quoted {
+				read(q[1], i == 0, true)
+			}
+			continue
+		}
+		for i, name := range strings.Split(named, ",") {
+			read(name, i == 0, false)
 		}
 	}
 	return verbs, nameless

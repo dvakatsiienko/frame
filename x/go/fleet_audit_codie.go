@@ -314,7 +314,7 @@ func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string
 		reads[ticketCheck] = cmp.Or(reads[ticketCheck], at)
 	}
 	// a retro is a count, never an edit: alone it would read as misses
-	retro := strings.HasSuffix(b.Input.FilePath, "-retro.md")
+	retro := strings.HasSuffix(b.Input.FilePath, "-retro.md") || b.Name == "Bash" && strings.Contains(b.Input.Command, "-retro.md")
 	s.Retro = s.Retro || b.Name == "Write" && retro
 	if retro || !auditEditTools[b.Name] && (b.Name != "Bash" || !auditEditBins.MatchString(target)) {
 		return
