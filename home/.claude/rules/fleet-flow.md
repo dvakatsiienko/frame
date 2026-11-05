@@ -25,7 +25,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from codie
   - lands as: codie carries `clean`; a dispute or a stop goes to clio
 - **retros** — every member writes its retro beside its lane plan (path: `crew-dna` skill § the retro), never as a message;
-  clio folds each when its lane ends, and the halt gathers what is left
+  clio solves every pending one in place at a siesta or the halt, and trashes it once processed
 - **designer**
   - talks to clio (one ping per spread) and to dima when he drops in
   - hears from clio (the brief) and dima
