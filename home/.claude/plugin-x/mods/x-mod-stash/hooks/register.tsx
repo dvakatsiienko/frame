@@ -1907,21 +1907,24 @@ async function unmountSteers($: EngineInterface) {
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
-// a press that unticks, or a mark that never took, drops the ask's record
+// a press that unticks drops the ask's record; it lands before the mark, so a tool call that takes the mark finds it
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const TICKS_KEPT = 20;
 const quotedOf = (text: string) =>
     [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
-async function tickAsk($: EngineInterface, id: string) {
+async function tickAsk(
+    $: EngineInterface,
+    id: string,
+    mark: 'accepted' | 'rejected',
+) {
     const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
     // a press on a frame drawn before his prompt locked the ask changed nothing, so it keeps the record (S1)
     if (ask?.isLocked || ask?.isResolved) return;
     const { value: kept = [] } = await $.state.get(TICKS);
     const rest = kept.filter((t) => t.id !== id);
-    const isTicked = ask?.mark === 'accepted' && !ask.isLocked;
     await $.state.set(
         TICKS,
-        isTicked
+        ask && mark === 'accepted' && ask.mark !== mark
             ? [
                   ...rest,
                   {
@@ -4864,7 +4867,7 @@ export const register: Register = (on) => {
             );
         const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
         if (isOwner) await dropLaneOrders($);
-        // dima's own prompt sends his phases mark at once, as it sends a tick still sending
+        // dima's own prompt carries his phases mark
         const planMark =
             isUserTurn && isOn('stash.phases') && hasPlanMark(orbit.plan)
                 ? orbit.plan
@@ -5355,7 +5358,7 @@ export const register: Register = (on) => {
                                     flexDirection='row'
                                     gap={1}
                                     key={`knob:${key}`}>
-                                    {label ? <Text>{label}</Text> : null}
+                                    <Text>{label}</Text>
                                     <Box flexGrow={1} />
                                     {noteOnHover(
                                         ui,
@@ -5737,6 +5740,7 @@ export const register: Register = (on) => {
                     const ownDoor: AskDoor = {
                         mark: (a, mark) =>
                             void (async () => {
+                                await tickAsk($, a.id, mark);
                                 await markAsks(
                                     $,
                                     (x) => {
@@ -5750,7 +5754,6 @@ export const register: Register = (on) => {
                                     },
                                     true,
                                 );
-                                await tickAsk($, a.id);
                             })(),
                         prefix: 'orbit',
                         steer: (a, value) => handleSteer(a.id, value),
@@ -7428,7 +7431,7 @@ export const register: Register = (on) => {
         return { ...answer, context: [...(r.context ?? []), ...notes] };
     });
 
-    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars
+    // the band: one row — the meters' readings, the 🔭 mark, the switches — then the bars
     // and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         try {
@@ -7436,10 +7439,9 @@ export const register: Register = (on) => {
                 await (async () => {
                     if (e.surface !== 'terminal' && e.surface !== 'desktop')
                         return next(e);
-                    // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
+                    // the published view, never the module's value: reading it subscribes this band, and a write redraws it
                     const view =
                         (await $.state.get(VIEW)).value ?? viewOf(false);
-                    const o = (await $.state.get(ORBIT)).value ?? orbit;
                     const ui = $.ui.resolve(e);
                     const { Box, Text, Button } = ui;
                     const handleAfkFlip = async () => {

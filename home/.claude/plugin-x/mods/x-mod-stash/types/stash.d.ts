@@ -202,8 +202,8 @@ export type QuietLogLine = {
 // the ledger: a member whose transcript sent clio more pings than her quiet log holds since the window opened
 export type QuietGap = { from: string; sent: number; logged: number };
 
-// dima's tick on an ask, written only by his press: the ask's text, its backtick-quoted targets, and when it counts (once
-// its sending window passed); x-mod-guard reads it as his word for a guarded command (FRM-427)
+// dima's tick on an ask, written only by his press: the ask's text, its backtick-quoted targets, and when he pressed;
+// x-mod-guard reads it as his word for a guarded command (FRM-427)
 export type StashTick = {
     id: string;
     text: string;

@@ -59,7 +59,7 @@
 - ✅ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
   - when dima hovers `🪐 n`, `🌔 n`, the pace, `⏳`, `🔥 5h` or `🧠`
-  - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «5h window used», «context window used» (dima, 20:13)
+  - then a dim card reads «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «5h window used», «context window used» (dima, 20:13)
   - 📌 harness-proven words; the reveal on the desktop is dima's eye
   - proof: tests/band.test.ts::every control in the row carries a hover card that names it; tests/meters.test.ts::every chip and reading in the row names itself on hover
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
@@ -314,7 +314,7 @@
   - and a 🔭 line with several waits is one plain dim run cut at the row's end, never wrapped; one wait keeps its who bold (dima's shot, 19:36)
   - decision: `🪐 n` closes the row and is always drawn, `🪐 0` dimmed — dima reads it first, at the far right (2026-10-05)
   - and while it holds asks it reads bold amber, the palette's `warn` (todo 28, dima's o170)
-  - decision: the count reads 🪐 like the band's chip, never ⏳, which is the 5h reset timer (dima, 21:20)
+  - decision: the count reads 🪐, never ⏳, which is the 5h reset timer (dima, 21:20)
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
   - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
   - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)

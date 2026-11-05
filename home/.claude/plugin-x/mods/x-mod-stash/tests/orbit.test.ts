@@ -1520,16 +1520,32 @@ test("a 🛎️ press writes the tick record: the ask's id, text, quoted targets
 });
 
 test('a press that lands on an ask his prompt already locked keeps the tick record (S1)', async ($, on) => {
-    const w = world(on);
+    world(on);
     const writes = tickLog(on);
     await start($);
     const ui = await board($);
     await add($, ['push `origin`', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
-    await w.clock.advance(5_000);
     await say($, 'go');
     await ui.press({ key: 'orbit:accepted:o1' }).catch(() => undefined);
     expect(writes.at(-1)).toEqual([expect.objectContaining({ id: 'o1' })]);
+});
+
+test('the tick record lands before the mark a running turn can take', async ($, on) => {
+    world(on);
+    const order: string[] = [];
+    on('state.set', (_$, e, next) => {
+        const isMarked =
+            e.key === 'orbit' &&
+            (e.value as { asks: { mark?: string }[] }).asks.some((a) => a.mark);
+        if (e.key === 'ticks' || isMarked) order.push(e.key);
+        return next(e);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(order.slice(0, 2)).toEqual(['ticks', 'orbit']);
 });
 
 test('a second 🛎️ press takes the tick back', async ($, on) => {
@@ -2341,7 +2357,7 @@ test('a ↑ on a phase moves it up on the board at once', async ($, on) => {
 });
 
 test('a reorder joins the running turn at once, the new order listed', async ($, on) => {
-    const w = world(on);
+    world(on);
     await start($);
     const ui = await board($);
     await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
@@ -2373,7 +2389,6 @@ test("a phases tick and its steer ride dima's next prompt", async ($, on) => {
         kind: 'submit',
         text: 'a first, it unblocks b',
     });
-    await w.clock.advance(5_000);
     await say($, 'go');
     expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
         /🛎️ ticked their order[\s\S]*his steer: «a first, it unblocks b»/,

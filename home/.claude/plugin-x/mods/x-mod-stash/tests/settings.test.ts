@@ -220,7 +220,7 @@ test("a flip keeps another session's switch it has not polled yet", async ($, on
     });
 });
 
-test('the pane names no undo window and no row chips', async ($, on) => {
+test('the pane holds no cut row', async ($, on) => {
     world(on);
     await band($);
     const view = await pane($);
