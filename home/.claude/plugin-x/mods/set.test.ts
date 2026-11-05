@@ -1,6 +1,33 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 
-import { clioIdOf, numberSetting, withPace } from './set.ts';
+import {
+    clioIdOf,
+    numberSetting,
+    partKeysOf,
+    withPace,
+    withPart,
+} from './set.ts';
+
+test('a switch flips one key and keeps the rest of the store', () => {
+    expect(
+        withPart({ other: 1, shown: { 'stash.a': true } }, 'stash.b', false),
+    ).toEqual({ other: 1, shown: { 'stash.a': true, 'stash.b': false } });
+});
+
+test('a switch writes into a store with no shown yet', () => {
+    expect(withPart({}, 'stash.a', true)).toEqual({
+        shown: { 'stash.a': true },
+    });
+});
+
+test('the switch list reads the keys of the real parts list', () => {
+    const source = readFileSync(
+        new URL('./x-mod-stash/hooks/register.tsx', import.meta.url),
+        'utf8',
+    );
+    expect(partKeysOf(source)).toContain('stash.pace-watch');
+});
 
 test('a shift over a key never written ends with no key, so a seat default fills it', () => {
     const on = withPace({ waker: { on: false } }, 's1', 'on', 5);

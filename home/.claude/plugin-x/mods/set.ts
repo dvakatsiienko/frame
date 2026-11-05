@@ -1,5 +1,5 @@
 // pnpm mods:set <key> <value> [session id] — writes one x-mod-stash setting into its store, no reload: the next poll reads it.
-// `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row
+// `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row; `part <key> on|off` a 🎛️ switch, global, bare `part` lists them
 import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -60,6 +60,19 @@ export function clioIdOf(
     return typeof id === 'string' ? id : undefined;
 }
 
+// the 🎛️ switches, read from the mod's own list so a new part needs no second list here
+export const partKeysOf = (source: string) =>
+    [...source.matchAll(/key: '(stash\.[\w-]+)'/g)].flatMap((m) => m[1] ?? []);
+
+export function withPart(
+    store: Record<string, unknown>,
+    key: string,
+    isOn: boolean,
+) {
+    const shown = store.shown as Record<string, boolean> | undefined;
+    return { ...store, shown: { ...shown, [key]: isOn } };
+}
+
 function isPidAlive(pid: number) {
     try {
         process.kill(pid, 0);
@@ -85,21 +98,53 @@ function newest(pattern: string, cwd: string) {
 }
 
 function main([key, value, id]: string[]) {
+    const home = homedir();
+    const path = newest(
+        'x-mod-stash_inline-*.json',
+        join(home, '.claude/plugins/store'),
+    )[0];
+    if (key === 'part') {
+        const parts = partKeysOf(
+            readFileSync(
+                new URL('./x-mod-stash/hooks/register.tsx', import.meta.url),
+                'utf8',
+            ),
+        );
+        if (!path) {
+            console.error('no x-mod-stash store');
+            return 1;
+        }
+        const store = JSON.parse(readFileSync(path, 'utf8'));
+        if (value === undefined) {
+            for (const part of parts)
+                console.log(
+                    `${part} ${store.shown?.[part] === false ? 'off' : 'on'}`,
+                );
+            return 0;
+        }
+        if (!parts.includes(value) || (id !== 'on' && id !== 'off')) {
+            console.error(
+                `usage: pnpm mods:set part [<key> on|off], keys: ${parts.join(' ')}`,
+            );
+            return 2;
+        }
+        writeFileSync(
+            path,
+            JSON.stringify(withPart(store, value, id === 'on')),
+        );
+        console.log(`${value} ${id}, every session's next poll takes it`);
+        return 0;
+    }
     const isPace =
         key === 'pace' &&
         (value === 'on' || value === 'off' || value === 'end');
     const n = key && value ? numberSetting(key, value) : undefined;
     if (!isPace && n === undefined) {
         console.error(
-            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
+            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
         );
         return 2;
     }
-    const home = homedir();
-    const path = newest(
-        'x-mod-stash_inline-*.json',
-        join(home, '.claude/plugins/store'),
-    )[0];
     const sessionId = !isPace
         ? undefined
         : (id ??
