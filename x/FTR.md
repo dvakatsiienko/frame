@@ -488,7 +488,8 @@
 - ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
   - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run
-  - given `--repo` or a merge in progress, then it refuses, exit 2
+  - given `--repo`, or a merge, cherry-pick, revert or rebase in progress, then it refuses, exit 2
+  - given a gate whose run line changed since its green, then a real commit runs it again
 - ⬜ a mod's tests run once across `x mods edit test`, `push` and `x lane commit` (FRM-473)
   - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again
   - given a hand `pnpm mods:test`, then nothing is skipped; given a clock read in a mod's hooks, then the commit reds it whatever was tested
@@ -497,7 +498,9 @@
   - given an unused variable, a dropped import, a retired name or a budget overrun, then the verb exits 1 naming the gate the commit would red; every gate's verdict prints in the hook's order
   - given a gate tagged `commit-only`, then its verdict reads «the commit's», and a glob no overlay path matches reads «no path»
   - given a gate x cannot run (an unknown placeholder or key, no run line, a `[` in a glob), then the verb names it and exits 1
-  - given a test output holding «hook was skipped», then the mod reads errored, whatever its rows say
+  - given a test output holding «hook was skipped», then the mod reads errored, whatever its rows say, and `pnpm mods:test` reds it too
+  - given a red test, then the gates still run, so one run names every red a commit would meet
+  - given a peer's edit elsewhere in the mod, then no gate reads it: the gates read HEAD plus the overlay's own paths
 - ✅ `x schema mods` lists the verbs
 
 ## fleet — the fleet measuring itself

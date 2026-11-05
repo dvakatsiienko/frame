@@ -33,7 +33,7 @@ type auditFile struct {
 
 var auditFiles = []auditFile{
 	{name: "crew-dna", born: "2026-10-09", paths: []string{"crew-dna/SKILL.md"}, skill: "x:crew-dna"},
-	{name: lessonsName, born: "2026-09-30", paths: []string{"crew-codie/" + lessonsName, "crew-" + "coder/" + lessonsName}, bareName: lessonsName},
+	{name: lessonsName, born: "2026-09-30", paths: []string{"crew-codie/" + lessonsName, "crew-coder/" + lessonsName}, bareName: lessonsName}, // read-both
 }
 
 func (f auditFile) namedBy(path string) bool {
@@ -47,20 +47,32 @@ func (f auditFile) namedBy(path string) bool {
 var (
 	shellReadVerbs = map[string]bool{"cat": true, "head": true, "tail": true, "sed": true, "bat": true, "less": true}
 	shellRedirect  = regexp.MustCompile(`^\d*[<>]`)
-	shellHeredoc   = regexp.MustCompile(`<<-?\s*['"]?(\w+)['"]?`)
+	shellHeredoc   = regexp.MustCompile(`(?:^|[^<])<<-?\s*['"]?([A-Za-z_]\w*)['"]?`)
+	shellEnvWord   = regexp.MustCompile(`^\w+=`)
+	shellOpeners   = map[string]bool{"then": true, "do": true, "else": true, "if": true, "elif": true, "while": true, "until": true, "!": true, "{": true, "time": true}
 )
 
 // the paths a shell line reads, each through the `cd`s before it; a verb counts only as its statement's first word
 func shellReadPaths(command string) []string {
-	var paths []string
+	var paths, outer []string
 	dir := ""
 	for _, statement := range shellStatements(dropHeredocs(command)) {
-		words := strings.Fields(statement)
+		switch statement {
+		case "(":
+			outer = append(outer, dir)
+			continue
+		case ")":
+			if len(outer) > 0 {
+				dir, outer = outer[len(outer)-1], outer[:len(outer)-1]
+			}
+			continue
+		}
+		words := shellCommandWords(strings.Fields(statement))
 		if len(words) == 0 {
 			continue
 		}
 		if words[0] == "cd" && len(words) > 1 {
-			dir = shellJoin2(dir, words[1])
+			dir = pathUnderShellDir(dir, words[1])
 			continue
 		}
 		if !shellReadVerbs[words[0]] {
@@ -71,14 +83,29 @@ func shellReadPaths(command string) []string {
 				break
 			}
 			if !strings.HasPrefix(word, "-") {
-				paths = append(paths, shellJoin2(dir, word))
+				paths = append(paths, pathUnderShellDir(dir, word))
 			}
 		}
 	}
 	return paths
 }
 
-func shellJoin2(dir, word string) string {
+// the words from the command on, past a keyword, an env word or a timeout in front of it
+func shellCommandWords(words []string) []string {
+	for len(words) > 0 {
+		switch {
+		case shellOpeners[words[0]] || shellEnvWord.MatchString(words[0]):
+			words = words[1:]
+		case words[0] == "timeout" && len(words) > 1:
+			words = words[2:]
+		default:
+			return words
+		}
+	}
+	return nil
+}
+
+func pathUnderShellDir(dir, word string) string {
 	word = strings.Trim(word, `"'`)
 	if dir == "" || filepath.IsAbs(word) || strings.HasPrefix(word, "~") {
 		return word
@@ -106,21 +133,35 @@ func dropHeredocs(command string) string {
 	return strings.Join(kept, "\n")
 }
 
-// split on the shell's separators, a quoted one staying inside its word
+// split on the shell's separators, a quoted or escaped one staying inside its word; a comment is no statement, and each
+// parenthesis stands as its own item, so a subshell's `cd` can end with it
 func shellStatements(command string) []string {
 	var statements []string
 	var now strings.Builder
-	quote := byte(0)
-	for i := range len(command) {
+	open := byte(0)
+	for i := 0; i < len(command); i++ {
 		c := command[i]
 		switch {
-		case quote != 0:
-			if c == quote {
-				quote = 0
+		case c == '\\' && open != '\'' && i+1 < len(command):
+			now.WriteByte(c)
+			i++
+			c = command[i]
+		case open != 0:
+			if c == open {
+				open = 0
 			}
 		case c == '"' || c == '\'':
-			quote = c
-		case strings.IndexByte(";&|()\n", c) >= 0:
+			open = c
+		case c == '#' && (now.Len() == 0 || strings.HasSuffix(now.String(), " ")):
+			for i+1 < len(command) && command[i+1] != '\n' {
+				i++
+			}
+			continue
+		case c == '(' || c == ')':
+			statements = append(statements, now.String(), string(c))
+			now.Reset()
+			continue
+		case strings.IndexByte(";&|\n", c) >= 0:
 			statements = append(statements, now.String())
 			now.Reset()
 			continue

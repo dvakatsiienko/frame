@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmp"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -68,7 +69,7 @@ func readHookGates(tree, hook string) ([]hookGate, error) {
 	}
 	var doc yaml.Node
 	if err := yaml.Unmarshal(raw, &doc); err != nil {
-		return nil, fmt.Errorf("lefthook.yaml: %w", err)
+		return nil, &Fail{Msg: "lefthook.yaml does not parse: " + err.Error(), Next: "lefthook validate"}
 	}
 	if len(doc.Content) == 0 {
 		return nil, nil
@@ -188,6 +189,17 @@ func gateGlob(pattern string) (*regexp.Regexp, error) {
 	return regexp.Compile(re.String())
 }
 
+// why a gate does not run on these paths, or "": lefthook skips a gate with no file only when a glob or {staged_files} asks for one
+func (g hookGate) notRunning(staged []string) string {
+	switch {
+	case g.cannot != "":
+		return cannotRun + g.cannot
+	case len(g.paths(staged)) == 0 && (len(g.glob) > 0 || strings.Contains(g.run, "{staged_files}")):
+		return gateNoPath
+	}
+	return ""
+}
+
 func (g hookGate) paths(staged []string) []string {
 	var kept []string
 	for _, path := range staged {
@@ -231,7 +243,7 @@ func indexPaths(repo string, env []string) ([]string, error) {
 }
 
 // a dry run's gates on the temp index the run's git already reads; a green records its tree for the real commit
-func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string, error), next string) (any, error) {
+func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string, error), again, next string) (any, error) {
 	r.skip("hold", "ci", "commit", "restore")
 	var verdicts []gateVerdict
 	var pre []hookGate
@@ -253,7 +265,7 @@ func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string
 			return "", err
 		}
 		verdicts = append(verdicts, onMessage...)
-		return verdictLine(verdicts), gatesFail(verdicts, "red on the dry run", next)
+		return verdictLine(verdicts), gatesFail(verdicts, "red on the dry run", again)
 	}); err != nil {
 		return nil, err
 	}
@@ -276,18 +288,14 @@ func runCommitMsg(tree string, gates []hookGate, staged, env []string, message s
 	verdicts := make([]gateVerdict, len(gates))
 	for i, g := range gates {
 		verdicts[i].Gate = g.name
-		switch {
-		case g.cannot != "":
-			verdicts[i].Verdict = cannotRun + g.cannot
-		case len(g.paths(staged)) == 0:
-			verdicts[i].Verdict = gateNoPath
-		default:
-			got, _ := run(tree, env, "", "sh", "-c", strings.ReplaceAll(g.run, "{1}", shellQuote(copied)))
-			verdicts[i].log = got.log
-			verdicts[i].Verdict = gateRed
-			if got.ok {
-				verdicts[i].Verdict = gateGreen
-			}
+		if verdicts[i].Verdict = g.notRunning(staged); verdicts[i].Verdict != "" {
+			continue
+		}
+		got, _ := run(tree, env, "", "sh", "-c", strings.ReplaceAll(g.run, "{1}", quote(copied)))
+		verdicts[i].log = got.log
+		verdicts[i].Verdict = gateRed
+		if got.ok {
+			verdicts[i].Verdict = gateGreen
 		}
 	}
 	return verdicts, nil
@@ -298,12 +306,18 @@ func recordTree(treeOf func() (string, error), gates []hookGate, verdicts []gate
 	var proven []string
 	for i, g := range gates {
 		if verdicts[i].Verdict == gateGreen && strings.HasPrefix(g.run, gateCopyRun+" ") {
-			proven = append(proven, g.name)
+			proven = append(proven, g.name+"="+runHash(g))
 		}
 	}
 	if sha, err := treeOf(); err == nil && len(proven) > 0 {
 		recordGreen(treeSubject, sha, proven)
 	}
+}
+
+// a gate's run line in a record, so a gate edited since its green proves nothing
+func runHash(g hookGate) string {
+	sum := sha256.Sum256([]byte(g.run))
+	return fmt.Sprintf("%x", sum[:4])
 }
 
 // what the tree a pathspec commit of these paths would hold already proved; any failed read proves nothing
@@ -314,7 +328,10 @@ func provenOnThisTree(tree string, paths []string) []string {
 	}
 	defer done()
 	for _, path := range paths {
-		_, _ = run(tree, env, "", "git", "add", "-A", "--", path)
+		// a path gone from the tree and from HEAD fails the add and changes nothing, as the commit's own stage skips it
+		if got, _ := run(tree, env, "", "git", "add", "-A", "--", path); !got.ok && exists(filepath.Join(tree, path)) {
+			return nil
+		}
 	}
 	sha, err := treeOf()
 	if err != nil {
@@ -328,19 +345,30 @@ func provenOnThisTree(tree string, paths []string) []string {
 		if len(fields) != 4 || fields[1] != treeSubject || fields[2] != sha {
 			continue
 		}
-		if at, err := strconv.ParseInt(fields[0], 10, 64); err != nil || time.Since(time.Unix(at, 0)) > gatesGreenFor {
+		if until, err := strconv.ParseInt(fields[0], 10, 64); err != nil || time.Now().Unix() >= until {
 			return nil
 		}
-		return strings.Split(fields[3], ",")
+		gates, err := readHookGates(tree, "pre-commit")
+		if err != nil {
+			return nil
+		}
+		var proven []string
+		for _, g := range gates {
+			if slices.Contains(strings.Split(fields[3], ","), g.name+"="+runHash(g)) {
+				proven = append(proven, g.name)
+			}
+		}
+		return proven
 	}
 	return nil
 }
 
-// one line per thing a green overlay proved, read back by `mods:test --skip-tested`; a failed write costs one rerun
+// one line per thing a green proved, `<valid until>\t<subject>\t<sha>\t<gates>`, read back by `mods:test --skip-tested` and a
+// real commit; a failed write costs one rerun
 func recordGreen(subject, sha string, gates []string) {
 	path := filepath.Join(stateDir(), gatesGreenFile)
 	old, _ := os.ReadFile(path)
-	lines := append(nonBlank(string(old)), fmt.Sprintf("%d\t%s\t%s\t%s", time.Now().Unix(), subject, sha, strings.Join(gates, ",")))
+	lines := append(nonBlank(string(old)), fmt.Sprintf("%d\t%s\t%s\t%s", time.Now().Add(gatesGreenFor).Unix(), subject, sha, strings.Join(gates, ",")))
 	lines = lines[max(0, len(lines)-gatesGreenKept):]
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return
@@ -351,24 +379,31 @@ func recordGreen(subject, sha string, gates []string) {
 	}
 }
 
-// each touched mod's subtree on the temp index: the bytes its overlay tests just read
-func recordTestedMods(repo string, env, changed []string) {
-	for _, mod := range touchedMods(changed) {
+// each touched mod's subtree as the overlay's tests read it: the tree's mod, then the scratch copies
+func recordTestedMods(repo, scratch string, changed []string) {
+	env, _, done, err := headIndex(repo)
+	if err != nil {
+		return
+	}
+	defer done()
+	mods := touchedMods(changed)
+	for _, mod := range mods {
+		if got, _ := run(repo, env, "", "git", "add", "-A", "--", modsDir+mod); !got.ok {
+			return
+		}
+	}
+	if layScratch(repo, scratch, changed, env) != nil {
+		return
+	}
+	for _, mod := range mods {
 		if got, _ := run(repo, env, "", "git", "write-tree", "--prefix="+modsDir+mod+"/"); got.ok {
-			recordGreen("mod "+mod, got.out, []string{"mods-test"})
+			recordGreen("mod "+mod, got.out, nil)
 		}
 	}
 }
 
-// HEAD, then the touched mods as the tree holds them, then the scratch copies: what the overlay's test reads
-func overlayIndex(repo, scratch string, changed []string, env []string) error {
-	var mods []string
-	for _, mod := range touchedMods(changed) {
-		mods = append(mods, modsDir+mod)
-	}
-	if got, _ := run(repo, env, "", "git", append([]string{"add", "-A", "--"}, mods...)...); !got.ok {
-		return &Fail{Msg: "git add of the touched mods failed: " + got.log, Next: "x mods edit status"}
-	}
+// the scratch copies over the index env names: HEAD plus these paths is what a commit of them would hold
+func layScratch(repo, scratch string, changed []string, env []string) error {
 	for _, path := range changed {
 		copied := filepath.Join(scratch, path)
 		blob, _ := run(repo, nil, "", "git", "hash-object", "-w", "--path="+path, copied)
@@ -394,13 +429,8 @@ func runPreCommit(repo string, gates []hookGate, staged, env []string, skip func
 	for i, g := range gates {
 		verdicts[i].Gate = g.name
 		paths := g.paths(staged)
-		said := ""
-		switch {
-		case g.cannot != "":
-			said = cannotRun + g.cannot
-		case len(paths) == 0:
-			said = gateNoPath
-		case skip != nil:
+		said := g.notRunning(staged)
+		if said == "" && skip != nil {
 			said = skip(g)
 		}
 		if said != "" {
@@ -410,7 +440,7 @@ func runPreCommit(repo string, gates []hookGate, staged, env []string, skip func
 		wait.Go(func() {
 			command := strings.ReplaceAll(g.run, "{staged_files}", shellJoin(paths))
 			if !strings.HasPrefix(command, gateCopyRun+" ") {
-				command = gateCopyRun + " sh -c " + shellQuote(command)
+				command = gateCopyRun + " sh -c " + quote(command)
 			}
 			got, _ := run(repo, env, "", "sh", "-c", command)
 			if !got.ok && timeoutOnly(got.log) {
@@ -430,16 +460,9 @@ func runPreCommit(repo string, gates []hookGate, staged, env []string, skip func
 func shellJoin(paths []string) string {
 	quoted := make([]string, len(paths))
 	for i, path := range paths {
-		quoted[i] = shellQuote(path)
+		quoted[i] = quote(path)
 	}
 	return strings.Join(quoted, " ")
-}
-
-func shellQuote(text string) string {
-	if regexp.MustCompile(`^[\w@%+=:,./-]+$`).MatchString(text) {
-		return text
-	}
-	return "'" + strings.ReplaceAll(text, "'", `'\''`) + "'"
 }
 
 func verdictLine(verdicts []gateVerdict) string {
@@ -467,5 +490,5 @@ func gatesFail(verdicts []gateVerdict, where, next string) error {
 	if len(stopped) == 0 {
 		return nil
 	}
-	return &Fail{Msg: where + ": " + strings.Join(stopped, ", "), Next: next, Log: log}
+	return &Fail{Refused: true, Msg: where + ": " + strings.Join(stopped, ", "), Next: next, Log: log}
 }

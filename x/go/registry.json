@@ -124,6 +124,9 @@
                 "ci",
                 "commit",
                 "restore"
+            ],
+            "touches": [
+                "$X_STATE/gates-green.tsv: a green --dry's tree, read by a real commit of the same bytes"
             ]
         },
         {

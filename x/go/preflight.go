@@ -183,8 +183,7 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	return ordered{{"ticket", id}, {"exits", exits}, {"from", from}, {"repo", repo}}, nil
 }
 
-// the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id, blank lines standing in
-// for the file above it so a finding's line is the spec's own; paths names every spec holding one
+// the spec section's recorded sign hash when the ticket's newest ✍️ line holds another
 func staleSignHash(section, ticket string) (line int, recorded, signed string) {
 	for i, text := range strings.Split(section, "\n") {
 		if strings.HasPrefix(text, "wish:") {
@@ -205,6 +204,8 @@ func staleSignHash(section, ticket string) (line int, recorded, signed string) {
 	return line, recorded, signed
 }
 
+// the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id, blank lines standing in
+// for the file above it so a finding's line is the spec's own; paths names every spec holding one
 func laneSpecSection(repo, id string) (paths []string, section string) {
 	specs, _ := filepath.Glob(filepath.Join(repo, ".scratch", "*", "spec.md"))
 	// .scratch/ is gitignored, so a linked worktree's own holds no seal: the main checkout's specs are read beside

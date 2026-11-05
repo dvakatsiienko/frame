@@ -26,15 +26,10 @@ export function skipPromptArgs(userSettings: string): string[] {
 }
 
 // the words of cc's bypass dialog, read off a real frame: a child parked there runs no hook and takes no keystroke as text
-export const parkedOnDialog = (frame: string) =>
-    frame.includes('Bypass Permissions mode') &&
-    frame.includes('Yes, I accept');
-
-const PARKED_WORDS =
-    "on cc's Bypass Permissions dialog: set skipDangerousModePermissionPrompt in user settings";
-
-export const parkedLine = (name: string) =>
-    `mods:live parked: ${name} ${PARKED_WORDS}`;
+export const parkedLine = (name: string, frame: string) =>
+    frame.includes('Bypass Permissions mode') && frame.includes('Yes, I accept')
+        ? `mods:live parked: ${name} on cc's Bypass Permissions dialog: set skipDangerousModePermissionPrompt in user settings`
+        : undefined;
 
 const isVerb = (v: string): v is LiveVerb =>
     (LIVE_VERBS as readonly string[]).includes(v);

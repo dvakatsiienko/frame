@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-    parkedOnDialog,
+    parkedLine,
     parseLive,
     requestOf,
     skipPromptArgs,
@@ -63,7 +63,7 @@ describe('parseLive', () => {
     });
 });
 
-describe('parkedOnDialog', () => {
+describe('parkedLine', () => {
     // a real child's frame with no --settings: the control of the 2026-11-05 probe
     const parked = [
         ' WARNING: Claude Code running in Bypass Permissions mode',
@@ -74,24 +74,28 @@ describe('parkedOnDialog', () => {
         ' Enter to confirm · Esc to cancel',
     ].join('\n');
 
-    it('reads the bypass dialog on a frame', () => {
-        expect(parkedOnDialog(parked)).toBe(true);
+    it('names the mod and the setting on the bypass dialog', () => {
+        expect(parkedLine('m', parked)).toBe(
+            "mods:live parked: m on cc's Bypass Permissions dialog: set skipDangerousModePermissionPrompt in user settings",
+        );
     });
 
     it('reads a session past the dialog as not parked', () => {
         expect(
-            parkedOnDialog(
+            parkedLine(
+                'm',
                 '> \n  ⏵⏵ bypass permissions on (shift+tab to cycle)',
             ),
-        ).toBe(false);
+        ).toBeUndefined();
     });
 
     it('reads a transcript that only quotes the warning as not parked', () => {
         expect(
-            parkedOnDialog(
+            parkedLine(
+                'm',
                 '> why does it say WARNING: Claude Code running in Bypass Permissions mode?',
             ),
-        ).toBe(false);
+        ).toBeUndefined();
     });
 });
 

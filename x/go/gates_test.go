@@ -181,7 +181,7 @@ func TestModsEditTestRunsADocOnlyEditPastAnExcludedGate(t *testing.T) {
 	}
 }
 
-func TestModsEditTestNamesAGateItCannotRunAndExitsNonZero(t *testing.T) {
+func TestModsEditTestExitsNonZeroNamingAGateItCannotRun(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, gate, why string }{
 		{"a placeholder x cannot fill", "      run: echo {push_files}\n", "{push_files}"},
@@ -288,8 +288,31 @@ func TestModsChainRerunsBytesTheOverlayNeverTested(t *testing.T) {
 	edited(t, dir, env, modHooks, "export const register = () => 2;\n")
 	pushOverlay(t, dir, env)
 	commitHooks(t, dir, env)
-	if n := tests(); n != 3 {
-		t.Errorf("the mod's tests ran %d times, want 3: test, push on new bytes, commit", n)
+	if n := tests(); n != 2 {
+		t.Errorf("the mod's tests ran %d times, want 2: test, push on new bytes", n)
+	}
+}
+
+func TestModsChainCountsAPushsTestRun(t *testing.T) {
+	t.Parallel()
+	dir, env, tests := modsChain(t)
+	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	pushOverlay(t, dir, env)
+	commitHooks(t, dir, env)
+	if n := tests(); n != 1 {
+		t.Errorf("the mod's tests ran %d times across push and commit, want 1", n)
+	}
+}
+
+func TestGreenOverlayRecordsNoBytesItsTestsNeverRead(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChain(t)
+	copied := pullCopy(t, dir, env, modHooks)
+	write(t, copied, "export const register = () => 1;\n")
+	env = append(env, "CLAUDE_MID_TEST=echo '// saved mid-test' >> "+copied)
+	testOverlay(t, dir, env)
+	if record, _ := os.ReadFile(filepath.Join(envValue(env, "X_STATE"), gatesGreenFile)); strings.Contains(string(record), "mod m") {
+		t.Errorf("a save during the tests was recorded as tested:\n%s", record)
 	}
 }
 
@@ -350,6 +373,33 @@ func TestGreenOverlayKeepsTheRecordsLast200Lines(t *testing.T) {
 	lines := nonBlank(readFile(t, record))
 	if len(lines) != 200 || !strings.Contains(lines[199], "mod m") {
 		t.Errorf("%d lines, last %q; want 200 ending on the new record", len(lines), lines[len(lines)-1])
+	}
+}
+
+func TestModsEditTestGateSeesOnlyTheOverlaysPaths(t *testing.T) {
+	t.Parallel()
+	dir, env := gateFixture(t, `pre-commit:
+  commands:
+    the-paths:
+      run: test "{staged_files}" = "`+modHooks+`"
+`)
+	write(t, filepath.Join(dir, modAgents), "# a peer's half-done edit\n")
+	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+		t.Errorf("a gate read a peer's dirt in the mod: exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestModsEditTestRunsTheGatesBesideARedTest(t *testing.T) {
+	t.Parallel()
+	dir, env := gateFixture(t, realGatesHook)
+	edited(t, dir, env, modTestA, "HOOK-THROWS\n")
+	edited(t, dir, env, modHooks, "// the c"+"clio seat\nexport const register = () => {};\n")
+	got := xIn(t, dir, env, "mods", "edit", "test")
+	for _, want := range []string{"hook was skipped", "retired-names"} {
+		if got.code != 1 || !strings.Contains(got.stdout, want) {
+			t.Errorf("exit %d, want 1 naming %s:\n%s", got.code, want, got.stdout)
+		}
 	}
 }
 

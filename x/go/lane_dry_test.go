@@ -37,6 +37,9 @@ func TestCommitDryRedsTheGateACommitWould(t *testing.T) {
 			if got.code != 1 || !strings.Contains(got.stdout, c.gate) {
 				t.Errorf("exit %d, want 1 naming %s:\n%s", got.code, c.gate, got.stdout)
 			}
+			if !strings.Contains(got.next, "--dry") {
+				t.Errorf("a red's next move, %q, skips the dry run", got.next)
+			}
 			if gitT(t, dir, "rev-parse", "HEAD") != head {
 				t.Error("a dry run moved HEAD")
 			}
@@ -44,7 +47,7 @@ func TestCommitDryRedsTheGateACommitWould(t *testing.T) {
 	}
 }
 
-func TestCommitDryPrintsEachVerdictAndCommitsNothing(t *testing.T) {
+func TestCommitDryLeavesHeadAndTheIndexAsTheyWere(t *testing.T) {
 	t.Parallel()
 	dir, env, msg := dryFixture(t, `pre-commit:
   commands:
@@ -152,8 +155,69 @@ func TestCommitAfterADryOnOtherBytesRunsItsTests(t *testing.T) {
 	}
 }
 
+func TestCommitDryRunsAGlobLessGateOnADeleteOnlyCommit(t *testing.T) {
+	t.Parallel()
+	dir, env, msg := dryFixture(t, "pre-commit:\n  commands:\n    the-gate:\n      run: exit 1\n    a-glob:\n      glob: \"*.txt\"\n      run: exit 1\n    a-template:\n      run: echo {staged_files}\n")
+	if err := os.Remove(filepath.Join(dir, dryNamed)); err != nil {
+		t.Fatal(err)
+	}
+	got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed)
+	if got.code != 1 || !strings.Contains(got.stdout, "the-gate") || strings.Contains(got.stdout, "a-glob (") {
+		t.Errorf("exit %d, want 1 naming the-gate alone:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitDryReadsTheIndexItOwnsPastAPeersLock(t *testing.T) {
+	t.Parallel()
+	dir, env, msg := dryFixture(t, "pre-commit:\n  commands:\n    g:\n      run: exit 0\n")
+	write(t, filepath.Join(dir, ".git/index.lock"), "")
+	if got := xIn(t, dir, append(env, "X_LOCK_WAIT=10ms"), "lane", "commit", "--dry", msg, "--", dryNamed); got.code != 0 {
+		t.Errorf("exit %d, a peer's lock on the real index stopped a dry run:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestCommitAfterAGateChangedRunsItAgain(t *testing.T) {
+	t.Parallel()
+	dir, env, msg, ran := dryOnRealLefthook(t)
+	if got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("dry: exit %d\n%s", got.code, got.stdout)
+	}
+	hook := readFile(t, filepath.Join(dir, "lefthook.yaml"))
+	write(t, filepath.Join(dir, "lefthook.yaml"), strings.Replace(hook, "echo suite >>", "echo suite  >>", 1))
+	if got := xIn(t, dir, env, "lane", "commit", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if ran("suite") != 2 {
+		t.Errorf("the suite ran %d times, want 2: its run line changed since the green", ran("suite"))
+	}
+}
+
+func TestCommitAfterAGreenOverlayRunsItsTestsNoSecondTime(t *testing.T) {
+	t.Parallel()
+	dir, env, msg, ran := dryOnRealLefthook(t)
+	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	testOverlay(t, dir, env)
+	pushOverlay(t, dir, env)
+	if got := xIn(t, dir, env, "lane", "commit", msg, "--", modHooks); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if ran("suite") != 1 {
+		t.Errorf("the suite ran %d times, want 1", ran("suite"))
+	}
+}
+
 func TestCommitDryRefusesWhatItCannotMirror(t *testing.T) {
 	t.Parallel()
+	for _, state := range []string{"CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge/head-name", "rebase-apply/next"} {
+		t.Run(state, func(t *testing.T) {
+			t.Parallel()
+			dir, env, msg := dryFixture(t, "pre-commit:\n  commands:\n    g:\n      run: exit 0\n")
+			write(t, filepath.Join(dir, ".git", state), "x\n")
+			if got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed); got.code != 2 {
+				t.Errorf("exit %d, want 2:\n%s", got.code, got.stdout)
+			}
+		})
+	}
 	t.Run("--repo", func(t *testing.T) {
 		t.Parallel()
 		dir, env, msg := dryFixture(t, "pre-commit:\n  commands:\n    g:\n      run: exit 0\n")

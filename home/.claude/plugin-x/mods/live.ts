@@ -25,7 +25,6 @@ import pty from 'node-pty';
 import {
     type LiveVerb,
     parkedLine,
-    parkedOnDialog,
     parseLive,
     requestOf,
     skipPromptArgs,
@@ -125,8 +124,10 @@ function status() {
         `mods:live: ${name} is held by pid ${readFileSync(pidFile, 'utf8')}, session «${slot.session ?? '?'}» (cc pid ${slot.ccPid ?? '?'}) since ${slot.since ?? '?'}`,
     );
     const latest = join(dir, 'latest.txt');
-    if (existsSync(latest) && parkedOnDialog(readFileSync(latest, 'utf8')))
-        console.log(parkedLine(name));
+    const parked = existsSync(latest)
+        ? parkedLine(name, readFileSync(latest, 'utf8'))
+        : undefined;
+    if (parked) console.log(parked);
     process.exit(0);
 }
 
@@ -304,11 +305,19 @@ async function serve() {
     console.log(`mods:live: ${name} runs in a pty, frames in ${dir}`);
     console.log(`frame: ${frame('start')}`);
     // the one line a caller waits on before its first keystroke (FRM-389: a 90 s blind wait, an early key at 21:29)
-    console.log(
-        parkedOnDialog(lines(false).join('\n'))
-            ? parkedLine(name)
-            : `mods:live ready: ${name}`,
-    );
+    const parked = parkedLine(name, lines(false).join('\n'));
+    console.log(parked ?? `mods:live ready: ${name}`);
+    // at load the dialog can draw after the first frame: the line above is corrected, and status reads the new frame
+    if (!parked) {
+        const watch = setInterval(() => {
+            const late = parkedLine(name, lines(false).join('\n'));
+            if (!late) return;
+            clearInterval(watch);
+            console.log(`frame: ${frame('parked')}`);
+            console.log(late);
+        }, 2000);
+        setTimeout(() => clearInterval(watch), 30_000);
+    }
 
     const timers = new Map<string, NodeJS.Timeout>();
     let busy = false;

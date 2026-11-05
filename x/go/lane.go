@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -92,8 +93,8 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 	name, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Open(name.out)
-	if dry && isMerging() {
-		return nil, usageFail("--dry cannot mirror a merge's commit", "x lane commit "+msgFile+" -- <paths…>")
+	if dry && midOperation() {
+		return nil, usageFail("--dry cannot mirror a commit mid-merge, mid-cherry-pick, mid-revert or mid-rebase", "x lane commit "+msgFile+" -- <paths…>")
 	}
 
 	if err := r.Step("tree", "checking the tree", func() (string, error) {
@@ -203,7 +204,8 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 
 	if dry {
-		return dryCommit(r, tree, message, dryIndex, dryTree, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
+		named := msgFile + " -- " + strings.Join(paths, " ")
+		return dryCommit(r, tree, message, dryIndex, dryTree, "x lane commit --dry "+named, "x lane commit "+named)
 	}
 
 	hold := flags["hold-unstaged"] == true
@@ -243,6 +245,10 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			proven := ""
 			if !isMerging() {
 				commitArgs = append(append(commitArgs, "--"), paths...)
+				// a peer's commit in the lock's wait would change what the tree holds, so the proof reads after it
+				if _, err := waitIndexLock(); err != nil {
+					return "", err
+				}
 				if gates := provenOnThisTree(tree, paths); len(gates) > 0 {
 					if err := os.Setenv("LEFTHOOK_EXCLUDE", strings.Join(gates, ",")); err != nil {
 						return "", err
@@ -332,6 +338,10 @@ func durationEnv(name string, fallback time.Duration) time.Duration {
 
 // waitIndexLock waits while the repo's index lock exists, up to lockWait; it never removes a lock itself
 func waitIndexLock() (time.Duration, error) {
+	// a dry run's git reads its own temp index, and --git-path index.lock names the real one all the same
+	if os.Getenv("GIT_INDEX_FILE") != "" {
+		return 0, nil
+	}
 	lock, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-path", "index.lock")
 	if err != nil {
 		return 0, err
@@ -879,6 +889,13 @@ func enterMain(repo string) error {
 			Next: "finish the merge in " + root.out + ", then rerun"}
 	}
 	return os.Chdir(root.out)
+}
+
+func midOperation() bool {
+	return slices.ContainsFunc([]string{"MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"}, func(name string) bool {
+		path, _ := git("rev-parse", "--path-format=absolute", "--git-path", name)
+		return path.ok && exists(path.out)
+	})
 }
 
 func isMerging() bool {

@@ -22,6 +22,8 @@ type Run = { clockReads?: string[]; mod: string; output: string };
 
 // claude plugin test's words, read the same way by `x mods edit test` (x/go/mods.go testOutcome); both parsers are
 // held to plugin-test.sample.txt: a test file that cannot load is «errored», a test that runs and fails is «failed»
+const HOOK_SKIPPED = /hook was skipped: /;
+
 export function outcome(output: string) {
     let file = '';
     let passed = 0;
@@ -33,6 +35,7 @@ export function outcome(output: string) {
         if (head) file = head[1] ?? '';
         else if (line.startsWith('(pass) ')) passed++;
         else if (line === '(fail) the file did not load') errored.push(file);
+        else if (HOOK_SKIPPED.test(line)) failed.push(line);
         else {
             const fail = line.match(/^\(fail\) (.+?)(?: \[[\d.]+ms\])?$/);
             if (fail) failed.push(fail[1] ?? '');
@@ -117,7 +120,8 @@ export function failures(output: string) {
             /^\s*\d+ (pass|fail)$/.test(line)
         ) {
             isFailing = false;
-        } else if (isFailing && line.trim()) kept.push(line);
+        } else if ((isFailing || HOOK_SKIPPED.test(line)) && line.trim())
+            kept.push(line);
     }
     return kept.filter(Boolean).join('\n');
 }
@@ -253,17 +257,12 @@ function indexedTree(root: string, mod: string) {
     );
 }
 
-const TESTED_FOR_MS = 60 * 60 * 1000;
-
-// the mods `x mods edit test` recorded within the hour; a lost or stale line costs one rerun
+// the mods a green overlay recorded, each line valid until its first field; a lost or stale line costs one rerun
 function testedTrees(record: string, now: number) {
     const trees = new Set<string>();
     for (const line of record.split('\n')) {
-        const [at, subject, sha] = line.split('\t');
-        if (
-            subject?.startsWith('mod ') &&
-            now - Number(at) * 1000 < TESTED_FOR_MS
-        )
+        const [until, subject, sha] = line.split('\t');
+        if (subject?.startsWith('mod ') && now < Number(until) * 1000)
             trees.add(`${subject.slice(4)} ${sha}`);
     }
     return trees;
@@ -328,14 +327,16 @@ if (import.meta.main) {
     const runs: (Run & { status: number | null })[] = [];
     let reran = false;
     const named = onlyMod ? [onlyMod] : positionals;
-    const tested = values['skip-tested'] ? readTested() : new Set<string>();
+    const tested = values['skip-tested'] ? readTested() : undefined;
+    let skipped = 0;
     for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
         // a clock read reds whatever was tested, so that mod runs and reads red as it always did
         if (
-            tested.has(`${mod} ${indexedTree(root, mod)}`) &&
+            tested?.has(`${mod} ${indexedTree(root, mod)}`) &&
             !hookClockReads(dir).length
         ) {
+            skipped++;
             process.stdout.write(
                 `${mod}: tests skipped, x mods edit test passed these bytes\n`,
             );
@@ -383,7 +384,8 @@ if (import.meta.main) {
         if (values.extra || only)
             rmSync(dirname(dir), { force: true, recursive: true });
     }
-    const line = summary(runs);
+    const line =
+        summary(runs) + (skipped ? `, ${skipped} skipped on tested bytes` : '');
     console.log(`\n${line}`);
     logRun(
         process.argv.slice(2).join(' '),

@@ -119,18 +119,27 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	if red := redReports(reports); len(red) > 0 {
-		return nil, &Fail{Msg: "red on the overlay: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
-	}
+	red := redReports(reports)
 	var verdicts []gateVerdict
-	if err := r.Step("gates", "the commit hook's gates on the overlay", func() (string, error) {
-		verdicts, err = overlayGates(repo, scratch, changed)
+	// a red test does not stop the gates: one run names every red a commit would meet
+	gatesErr := r.Step("gates", "the commit hook's gates on the overlay", func() (string, error) {
+		verdicts, err = overlayGates(repo, scratch, changed, stamp, len(red) == 0)
 		if err != nil {
 			return "", err
 		}
 		return verdictLine(verdicts), gatesFail(verdicts, "red on the overlay", "x mods edit test")
-	}); err != nil {
-		return nil, err
+	})
+	if len(red) > 0 {
+		msg, log := "red on the overlay: "+reportLine(red), nonBlank(redLog(red))
+		if stopped, ok := errors.AsType[*Fail](gatesErr); ok {
+			msg, log = msg+"; "+stopped.Msg, append(log, stopped.Log...)
+		} else {
+			log = append(log, verdictLine(verdicts))
+		}
+		return nil, &Fail{Msg: msg, Next: "x mods edit test", Log: log}
+	}
+	if gatesErr != nil {
+		return nil, gatesErr
 	}
 	// a lost stamp costs one test run at the push, nothing more
 	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
@@ -170,12 +179,16 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 	}
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
-		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == overlayStamp(repo, scratch, changed) {
+		stamp := overlayStamp(repo, scratch, changed)
+		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == stamp {
 			return "x mods edit test passed these bytes", nil
 		}
 		reports, err = overlayTest(repo, scratch, changed)
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
+		}
+		if err == nil && overlayStamp(repo, scratch, changed) == stamp {
+			recordTestedMods(repo, scratch, changed)
 		}
 		return reportLine(reports), err
 	}); err != nil {
@@ -257,8 +270,9 @@ func writeAll(repo, scratch string, changed []string) error {
 
 /* the overlay */
 
-// every pre-commit gate the overlay's paths match, on a temp index of HEAD and the overlay
-func overlayGates(repo, scratch string, changed []string) ([]gateVerdict, error) {
+// every pre-commit gate the overlay's paths match, on a temp index of HEAD and the overlay; a green records only bytes the
+// tests read, so a save after the stamp and a red test record nothing
+func overlayGates(repo, scratch string, changed []string, stamp string, testsGreen bool) ([]gateVerdict, error) {
 	gates, err := readHookGates(repo, "pre-commit")
 	if err != nil || len(gates) == 0 || len(changed) == 0 {
 		return nil, err
@@ -268,7 +282,7 @@ func overlayGates(repo, scratch string, changed []string) ([]gateVerdict, error)
 		return nil, err
 	}
 	defer done()
-	if err := overlayIndex(repo, scratch, changed, env); err != nil {
+	if err := layScratch(repo, scratch, changed, env); err != nil {
 		return nil, err
 	}
 	staged, err := indexPaths(repo, env)
@@ -281,9 +295,9 @@ func overlayGates(repo, scratch string, changed []string) ([]gateVerdict, error)
 		}
 		return ""
 	})
-	if gatesFail(verdicts, "", "") == nil {
-		recordTestedMods(repo, env, changed)
+	if gatesFail(verdicts, "", "") == nil && testsGreen && overlayStamp(repo, scratch, changed) == stamp {
 		recordTree(treeOf, gates, verdicts)
+		recordTestedMods(repo, scratch, changed)
 	}
 	return verdicts, nil
 }
