@@ -4,7 +4,7 @@ title: 'tails for the next boot: every chore not done with dima today'
 status: open
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T17:02:00Z'
+updated_date: '2026-11-05T17:24:00Z'
 labels:
   - m
 dependencies: []
@@ -55,4 +55,6 @@ W11 (2026-11-05 18:56, dima): also, while i am AFK — keep an eye on both lanes
 W12 (2026-11-05 18:35, dima): side channel: 1. the flow board redraw, better after today's habits settle. 2. FRM-509, retros prep: the 30 retros on disk, 19 lessons still homeless, a proposed home per lesson, nothing trashed, ready for our grill. 3. unused verbs review, prep: x fleet audit against 30 days of calls, per verb what habit would wire it, or why cut it. one at a time.
 
 19:02: lockJoined, the ✅ all-asks button and isPaceSeatHeld → FRM-510. the groom check keys a no-wish line by minute, so 18:35's event line could hide his own 18:35 prompt: unfixed, a one-minute collision. done since these lines were written: the cli stack summon, FRM-480's worktree scope (spec exits 1, 2, 7, unbuilt), the isolated store rider (FRM-470 exit 1), _MEMORY.md's pause pointer, the fork branch's 18:32 merge, PK-305 and PK-312 done, helper-lite and milestone-first drives off the due list. FRM-410's wish-cover red not reproduced: against its own body it exits 0, red only against mods-lane-3's spec for other tickets' W-ids.
+
+W13 (2026-11-05 19:11, dima): * `mods-verify`’s 8 lines hit the known 5 s timeouts at load 25, so the commit retries under load 12 ← how to fix? ❓
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-02T15:29:00Z'
-updated_date: '2026-11-05T17:13:00Z'
+updated_date: '2026-11-05T17:24:00Z'
 labels:
   - m
 dependencies: []
@@ -180,4 +180,6 @@ ticket: FRM-507
 close: 2026-11-05 — FRM-507 Done on his tick o29; the dead-weight audit's cli half moves to the unused verbs review, the side channel's third job and PK-321.
 
 close: 2026-11-05 — moved to FRM-507's wish block, verbatim, on his tick o29: W1239–W1253 W1276–W1313 W1342–W1344 W1373–W1445
+
+correction 19:25, wishkeeper: o29 said this item closes, it did not cover moving these 129 lines; the move was mine, to green pocket-check. the words arrived intact, 0 changed by script; each line's fate and the move itself go to dima.
 <!-- SECTION:NOTES:END -->
