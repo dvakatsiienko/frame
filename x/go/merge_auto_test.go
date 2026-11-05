@@ -289,6 +289,91 @@ func plantSession(t *testing.T, sessions, cwd string, pid int) {
 	write(t, filepath.Join(sessions, strconv.Itoa(pid)+".json"), string(body))
 }
 
+// a live process whose own cwd is dir, reaped with the test: what a session sitting in a tree is
+func processIn(t *testing.T, dir string) int {
+	t.Helper()
+	cmd := exec.Command("sh", "-c", "exec sleep 120")
+	cmd.Dir = dir
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+	})
+	return cmd.Process.Pid
+}
+
+func TestMergeAutoReadsASessionsProcessCwdNeverItsRegistryDir(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name  string
+		stays bool
+		pid   func(t *testing.T, tree string) (registry string, pid int)
+	}{
+		{"the registry says elsewhere, the process sits inside", true, func(t *testing.T, tree string) (string, int) {
+			return t.TempDir(), processIn(t, filepath.Join(tree, "script"))
+		}},
+		{"it left: the registry says the tree, the process sits elsewhere", false, func(t *testing.T, tree string) (string, int) {
+			return tree, processIn(t, t.TempDir())
+		}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			sessions := w.withPnpm(t, "exit 0")
+			tree := w.laneTree(t)
+			registry, pid := c.pid(t, tree)
+			plantSession(t, sessions, registry, pid)
+
+			got := w.run(t, "7", "--apply")
+
+			if got.code != 0 || exists(tree) != c.stays {
+				t.Fatalf("exit %d, tree there %v, want %v:\n%s", got.code, exists(tree), c.stays, got.stdout)
+			}
+			if c.stays && !strings.Contains(got.stdout, strconv.Itoa(pid)) {
+				t.Errorf("the verb must name the session, pid %d:\n%s", pid, got.stdout)
+			}
+		})
+	}
+}
+
+// a Bash cd moves no process: only the transcript's last row knows
+func TestMergeAutoSparesATreeASessionEnteredByCd(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name  string
+		last  func(tree string) string
+		stays bool
+	}{
+		{"its last row sits in the tree", func(tree string) string { return filepath.Join(tree, "script") }, true},
+		{"it cd'd out again", func(string) string { return "/elsewhere" }, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			sessions := w.withPnpm(t, "exit 0")
+			tree := w.laneTree(t)
+			home := t.TempDir()
+			w.env = append(w.env, "HOME="+home)
+			const id = "s-cd"
+			write(t, filepath.Join(home, ".claude/projects/p", id+".jsonl"), jsonLines(t,
+				map[string]any{"type": "user", "cwd": tree}, map[string]any{"type": "user", "cwd": c.last(tree)}, map[string]any{"type": "system"}))
+			pid := processIn(t, t.TempDir())
+			body, _ := json.Marshal(map[string]any{"cwd": t.TempDir(), "pid": pid, "sessionId": id, "name": "the codie"})
+			write(t, filepath.Join(sessions, "1.json"), string(body))
+
+			got := w.run(t, "7", "--apply")
+
+			if got.code != 0 || exists(tree) != c.stays || c.stays && !strings.Contains(got.stdout, "the codie") {
+				t.Fatalf("exit %d, tree there %v, want %v, the session named:\n%s", got.code, exists(tree), c.stays, got.stdout)
+			}
+		})
+	}
+}
+
 func TestMergeAutoDecampsACleanTreeAtTheLandedHead(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
@@ -328,7 +413,7 @@ func TestMergeAutoNamesWhyATreeStays(t *testing.T) {
 			gitT(t, tree, "reset", "-q", "--hard", "HEAD~1")
 		}, "not at the landed head"},
 		{"a live session", func(t *testing.T, _ *mergeWorld, tree, home string) {
-			plantSession(t, home, filepath.Join(tree, "script"), os.Getpid())
+			plantSession(t, home, filepath.Join(tree, "script"), processIn(t, filepath.Join(tree, "script")))
 		}, "a live session sits in it"},
 	}
 	for _, c := range cases {

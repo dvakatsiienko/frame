@@ -164,11 +164,11 @@
   - given only codie's look card, then 🔴 look until a `👀 look sent` line sits in the body; the wish line reads «close in this turn» once the look card's proof exists on a merged chunk
   - given a quick lane mid-verify, then `--apply` refuses; `merged` reads the commits from the 🚀 line's base to the verified sha; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
-  - given a `## ⚖️ worth it` whose «new surface» line names an x verb, not a flag on one, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days
+  - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so
-  - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session in `~/.claude/sessions/`, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
+  - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session whose process cwd is inside it (the pids in `~/.claude/sessions/`), named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
   - given a decamp that fails, then it warns and the exit stays 0
 - ⬜ `x lane merge-auto` names whose clean it reads (W210)
   - given a store holding the pr's head and `<repo>#<n>:by` = `clio`, then the check passes with `clean on <sha> by clio's read`; with no `:by` key, `clean on <sha> by sixth sense`; a carried clean and a moved head name the same verifier, a no-clean detail names none
@@ -493,10 +493,12 @@
   - when `x fleet flow --days 14` runs
   - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
   - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
-- ✅ `x fleet audit` checks each codie read its lessons first
-  - given the session transcripts of the last `--days` (default 1)
-  - when `x fleet audit` runs
-  - then each session opened with `/x:crew-codie` gets a line: whether it read `crew-codie/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
+- ✅ `x fleet audit-codie` checks each codie read its contract before its first edit
+  - given the session transcripts opened in the last `--days` (default 1), or first edited past `--since <local stamp>`
+  - when `x fleet audit-codie` runs
+  - then the board's last line counts `how-you-work.md` reads (`57 of 58 read before first edit`), `crew-dna` and the ticket read above it, every miss row above those names the file and the session, and a miss exits 1
+  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`
+  - decision: a retro is a count, never a miss, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
   - when `x fleet ops` runs

@@ -922,14 +922,19 @@
         {
             "flags": {
                 "days": {
-                    "description": "transcripts touched in this many days (default 1)",
+                    "description": "sessions opened in this many days (default 1)",
                     "type": "string",
                     "value": "n"
+                },
+                "since": {
+                    "description": "sessions whose first edit is past this local stamp, like siesta-last; replaces --days",
+                    "type": "string",
+                    "value": "stamp"
                 }
             },
-            "name": "fleet audit",
+            "name": "fleet audit-codie",
             "needsApply": false,
-            "purpose": "per codie session: lessons read before the first edit and after each compaction, and its library-docs lookups",
+            "purpose": "codie sessions: crew-dna, how-you-work.md, ticket read before first edit and after compaction",
             "replaces": ["script/crew-audit.ts"],
             "touches": [
                 "~/.claude/projects/ — the session transcripts, one level deep"

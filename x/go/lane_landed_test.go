@@ -157,7 +157,7 @@ func TestLandedApplyTakesATreeOnceItsSessionEnded(t *testing.T) {
 	tree := w.laneTree(t, "stayed")
 	sessions := t.TempDir()
 	session := filepath.Join(sessions, "1.json")
-	body, _ := json.Marshal(map[string]any{"cwd": tree, "pid": os.Getpid()})
+	body, _ := json.Marshal(map[string]any{"cwd": tree, "pid": processIn(t, tree)})
 	write(t, session, string(body))
 	env := []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, "X_SESSIONS=" + sessions, stubPnpm(t)}
 
@@ -284,6 +284,30 @@ func TestLandedWaitsForTheDoneCommentWithNoSixthSense(t *testing.T) {
 	}
 }
 
+// with no sixth sense a done comment's verified: line bounds the range; with none, main past the lane is nobody's count
+func TestLandedNeverCountsAnotherLanesCommitsOnAQuickLaneWithNoSixthSense(t *testing.T) {
+	t.Parallel()
+	w, head := quickWorld(t)
+	*w.body = strings.ReplaceAll(*w.body, ", sixth sense s2", "")
+	write(t, filepath.Join(w.repo, "other.txt"), "another lane\n")
+	gitT(t, w.repo, "add", "other.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 another lane's commit")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+
+	*w.comments = lookCardComment
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged") || strings.Contains(out, "2 commits") {
+		t.Errorf("an open range counts nothing:\n%s", out)
+	}
+
+	body, _ := json.Marshal("- **proven**: go test ok\n- **not checked**: his eyes\nverified: " + short(head))
+	*w.comments = `[{"body":` + string(body) + `}]`
+	envelope, _ = w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "✅ merged — 1 commit from main:") {
+		t.Errorf("the done comment's verified sha stops the range:\n%s", out)
+	}
+}
+
 func TestLandedReadsADispatchTakenBackAsNone(t *testing.T) {
 	t.Parallel()
 	w, _ := quickWorld(t)
@@ -397,7 +421,7 @@ func TestLandedWiredLine(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
 			*w.milestone = c.milestone
-			*w.body = "## ⚖️ worth it\n\n* new surface: one verb, `x lane landed`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
+			*w.body = "## ⚖️ worth it\n\n* new verb: `x lane landed`\n* cheaper door turned down: `x stats --days 30`\n\n" + landedBody
 			lines := make([]planted, c.calls)
 			for i := range lines {
 				lines[i] = planted{name: "lane landed", ms: 1, caller: "cc"}
@@ -415,7 +439,7 @@ func TestLandedWiredLine(t *testing.T) {
 
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
-	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one flag, `x stats --verb <name>`", "new surface: a flag on `x stats`", "new surface: two flags on `x stats`", "new surface: it extends `x stats`", "no new surface, `x stats` stays"} {
+	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one verb, `x lane landed`", "the prose names `x lane landed` as new", "a new verb: `x lane landed`, in a sentence"} {
 		t.Run(line, func(t *testing.T) {
 			t.Parallel()
 			w := newLandedWorld(t)
@@ -434,7 +458,7 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	*w.milestone = `{"issues":{"nodes":[{"identifier":"FRM-1","state":{"type":"completed"}}]}}`
-	*w.body = "## ⚖️ worth it\n\n* new surface: `x lane landed` and `x lane push`, none of them hidden, a flag on `x stats`\n\n" + landedBody
+	*w.body = "## ⚖️ worth it\n\n* new verb: `x lane landed`\n* new verb: lane push\n\n" + landedBody
 	plant(t, w.state, 0, planted{name: "lane landed", ms: 1, caller: "cc"})
 
 	envelope, _ := w.landed(t)
