@@ -4080,7 +4080,6 @@ const BREATH_MS = 16000;
 // the spark's shape over its period: dark, a flash, a slow cool-down
 const EMBER_KEYS = [0, 0.5, 0.56, 0.66, 0.8, 1] as const;
 const EMBER_GLOW = [0, 0, 1, 0.6, 0.25, 0] as const;
-const EMBER_COLOR = '#ffe08a';
 // a seeded hash, so a cell sparks the same way on every redraw and both surfaces agree
 function seeded(n: number) {
     let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b);

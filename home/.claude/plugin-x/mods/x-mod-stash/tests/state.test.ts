@@ -1,14 +1,6 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-const props = {
-    bodyColumns: 100,
-    hasSurvey: false,
-    isWorking: false,
-    maxRows: 12,
-    scroll: { bodyRows: 40, offset: 0 },
-    view: {},
-};
 const MIN = 60 * 1000;
 const NOW = 10_000_000;
 const SID = 's7a7e000-aaaa';
@@ -95,14 +87,6 @@ async function reloaded(
     });
     return { calls, clock, pings };
 }
-
-const band = ($: Engine) =>
-    $.ui.mount({
-        component: 'AbovePrompt',
-        plugin: 'x-mod-stash',
-        props,
-        surface: 'desktop',
-    });
 
 // the kit refuses node:os, so no bound here can read the load: this one holds at load 26, where 5 s timed out (FRM-470)
 test(

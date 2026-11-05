@@ -3,14 +3,6 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 type GitState = 'modified' | 'untracked';
 
-const PROPS = {
-    bodyColumns: 100,
-    hasSurvey: false,
-    isWorking: false,
-    maxRows: 12,
-    scroll: { bodyRows: 40, offset: 0 },
-    view: {},
-};
 const START = 'Sun Oct  4 21:00:00 2026';
 const MIN = 60 * 1000;
 // B sorts before A, so a tie broken by session id alone would hand B the file

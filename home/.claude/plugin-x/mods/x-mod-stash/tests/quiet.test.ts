@@ -543,7 +543,7 @@ for (const report of ['[done] FRM-1 landed', '[ask] a or b?', 'a cut for dima'])
     });
 
 test('a note answering clio starts a turn, and spends the slot', async ($, on) => {
-    const w = answering(on);
+    answering(on);
     await start($);
     await send($, CODIE.name, 'which one?');
     const first = await fromApp($, noteOf(CODIE.name, 'the second one'));

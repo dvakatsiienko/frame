@@ -470,15 +470,6 @@ async function bandOn(
         surface,
     });
 }
-const frameOf = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
-    JSON.stringify(
-        (await ui.findAll({ type: 'Text' })).map((t) => [
-            t.text,
-            Boolean(t.props.bold),
-            t.props.color,
-        ]),
-    );
-
 test('mid-turn the desktop bars carry their breathing, idle ones none', async ($, on) => {
     meters(on);
     await measure($, 39, 35);
