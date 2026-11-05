@@ -3,10 +3,10 @@ id: PK-299
 title: >-
   worth test: only useful work gets planned (cli, mods, wishes), then the
   dead-weight audit
-status: open
+status: done
 assignee: []
 created_date: '2026-11-02T15:29:00Z'
-updated_date: '2026-11-04T16:51:00Z'
+updated_date: '2026-11-05T17:12:00Z'
 labels:
   - m
 dependencies: []
@@ -175,4 +175,7 @@ ticket: FRM-507
 held: 2026-11-04 — FRM-507 dima's two cut ticks, x fleet audit and /quiet-canary; closes with every W-line read uncut when they land
 
 held: 2026-11-04 — FRM-507 lands; the two cut questions moved to the next boot's habit review
+
+ticket: FRM-507
+close: 2026-11-05 — FRM-507 Done on his tick o29; the dead-weight audit's cli half moves to the unused verbs review, the side channel's third job and PK-321.
 <!-- SECTION:NOTES:END -->
