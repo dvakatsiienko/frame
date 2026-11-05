@@ -304,7 +304,6 @@ const NO_MODEL: Record<string, string> = {
     'stash.boldwords':
         'its rewrite of the stored reply already reads its switch',
     'stash.bullets': 'its rewrite of the stored reply already reads its switch',
-    'stash.chips': 'band chips, drawn only',
     'stash.circled': 'a redraw of the reply on screen, drawn only',
     'stash.ctx': 'a band bar, drawn only',
     'stash.pace': 'a band number, drawn only',

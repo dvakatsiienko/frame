@@ -1690,35 +1690,6 @@ test('the ctx meter type is two buttons, one lit; pressing the lit one changes n
     ]);
 });
 
-const undoInputs = async (settings: Awaited<ReturnType<typeof settingsPane>>) =>
-    (await settings.findAll({ type: 'Input' }))
-        .filter((n) => n.key?.includes('undo'))
-        .map((n) => n.props.value);
-
-test('the undo delay field holds 5 by default', async ($, on) => {
-    fleet(on);
-    await board($);
-    expect(await undoInputs(await settingsPane($))).toEqual(['5']);
-});
-
-test('with the undo switch off the delay field is not drawn', async ($, on) => {
-    fleet(on, { 'undo-window': false });
-    await board($);
-    expect(await undoInputs(await settingsPane($))).toEqual([]);
-});
-
-test('the undo delay field sits on the 📨 undo tick line, no label of its own', async ($, on) => {
-    fleet(on);
-    await board($);
-    const settings = await settingsPane($);
-    const line = await settings.find({ key: 'knob:undo-row', type: 'Box' });
-    expect([
-        line?.text?.includes('📨 undo tick'),
-        line?.text?.includes('s (1–30)'),
-        (await settings.find({ text: /undo delay/, type: 'Text' }))?.text,
-    ]).toEqual([true, true, undefined]);
-});
-
 test('the state column keeps a cell of air after the ctx meter on the desktop', async ($, on) => {
     fleet(on);
     const view = await board($);

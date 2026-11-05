@@ -12,6 +12,14 @@ async function session($: Engine, on: On) {
     const store = new Map<string, unknown>([
         [`asks:${PEER}`, { asks: ['a peer ask'], at: 0, label: 'frame' }],
     ]);
+    const state = new Map<string, unknown>();
+    on('state.get', (_$, e) => ({
+        value: { value: state.get(e.key), version: state.has(e.key) ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state.set(e.key, e.value);
+        return { value: { isSet: true, version: 2 } };
+    });
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
         store.set(e.key, e.value);
@@ -46,21 +54,8 @@ async function session($: Engine, on: On) {
         op: 'add',
         tool: TOOL,
     } as never);
-    const ui = await $.ui.mount({
-        component: 'AbovePrompt',
-        plugin: 'x-mod-stash',
-        props: {
-            bodyColumns: 140,
-            hasSurvey: false,
-            isWorking: false,
-            maxRows: 12,
-            scroll: { bodyRows: 40, offset: 0 },
-            view: {},
-        },
-        surface: 'terminal',
-    });
     return {
-        chips: async () => (await ui.find({ text: /^🪐/, type: 'Text' }))?.text,
+        asks: () => (state.get('orbit') as { asks: unknown[] }).asks.length,
         // the engine moves to a new conversation id, as a /clear does before its session.end
         setSid: (next: string) => {
             sid = next;
@@ -81,7 +76,7 @@ for (const command of ['clear', 'resume'] as const)
     test(`/${command} empties orbit in the same turn`, async ($, on) => {
         const s = await session($, on);
         await run($, command);
-        expect(await s.chips()).toBe('🪐 0');
+        expect(s.asks()).toBe(0);
     });
 
 test('/clear drops every key the old conversation kept, its pending lane marks included', async ($, on) => {

@@ -15,13 +15,12 @@
   - given a node's child is no node (a function, a bare object, a non-finite number), then a «⚠ a node could not draw» line takes its place and its siblings draw
   - proof: tests/band.test.ts::a control character in a reply never reaches the drawn band; tests/tree.test.ts; tests/lane.test.ts::a lane whose data breaks its draw blanks alone — not asserted: a throw in the band, board or settings pane's own try/catch (the harness routes none)
 
-- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace and the time left, then the 🔭 mark; `🔥`, `⏰`, `💨`, `🎛️` and `🚦` hold the right edge, 🎛️ right before 🚦 (dima's o1, 15:38); the two meters run full width under it
-  - decision: the readings pack left after the chips, the switches stay right (dima's o6, 22:03)
+- ✅ one row of the pace and the time left, packed left, then the 🔭 mark; `🔥`, `⏰`, `💨`, `🎛️` and `🚦` hold the right edge, 🎛️ right before 🚦 (dima's o1, 15:38); the two meters run full width under it
+  - decision: the readings pack left, the switches stay right (dima's o6, 22:03)
   - given the band draws
   - when dima looks above the prompt
-  - then it is that row plus the two meter rows, and the chips do nothing on a press
+  - then it is that row plus the two meter rows
   - decision: the meters went back to full width, one a row — the short bars in the row read too small (dima, 20:45: «bring back old wide meters as they were before you started»)
-  - decision: chips stay text — the traffic-light icon already opens the board (dima, 2026-10-10)
   - decision: the reply-parsed asks list, its per-thread names and counts, `📋 copy all` and the fold folder left with it — orbit, in the board, holds the asks now (FRM-381)
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: an «on» toggle (`🔥`, `⏰`, `💨`, `🚦`) draws as the light `secondary` chip, an «off» one plain — the desktop drew `primary` black, which read badly (dima, 2026-10-05)
@@ -195,7 +194,7 @@
   - decision: a pane of its own, dima's pick a of four homes tried side by side (16:20); the band is capped by cc's `maxRows` and the fold-out scrolled the list out of sight, the grid in the band would still shift the layout as parts grow, a dialog-mannered pane looked the same as a plain one, and a tab row inside 🚦 is kept as an idea (`../api-map.md`)
   - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the pane, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
-  - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
+  - given any band part's switch off (`🔋 🪫` pace, `⏳` reset, `🔭` wait line, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; clio's «build the rest of slice 05 meanwhile»)
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given any part switched off, then the whole feature is off, for every model too: nothing drawn, no line of it in a prompt or a tool result, no turn it would start, and its orbit op refused in one line naming the switch; switched back on, all of it returns
@@ -418,7 +417,7 @@
   - given it reads ✍️, when dima presses it, then it reads ↩️ (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
   - given it reads 🌀, then a press changes nothing
   - decision: no timer ever cancels or compacts: an idle session waits on 🥚 until its next turn (dima, o2; clio 17:32)
-  - decision: asked reads 🥚, the phoenix before it hatches: 📨 is the undo tick's (dima's emoji battle, o13, 19:14); the cancel reads ↩️ for the same reason (o13's follow, 19:26)
+  - decision: asked reads 🥚, the phoenix before it hatches (dima's emoji battle, o13, 19:14); the cancel reads ↩️ (o13's follow, 19:26)
   - proof: tests/board.test.ts::a second press before the note went out takes the ask back, unseen / a press after the note went out cancels, and a third asks again / a press while the session compacts changes nothing
 - ✅ a second wind compacts only when the session says nothing is pending
   - given a session asked for a second wind, wrote its handoff and calls the orbit op `second-wind`
@@ -575,26 +574,20 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and the running turn lets go of it: a tick dima gives the new question lands at once, never waits for the turn to end (o88 wisp, dima 20:39)
   - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
-- ✅ a tick waits 5 s in a reversible «sending» state (PK-88)
+- ✅ a tick lands at once (FRM-507)
   - given dima presses 🛎️ tick or 🔁 replay on an ask, on its own board or a glide card
-  - then the button reads `📨 tick` (or `📨 replay`) for 5 s, then `✅ tick` (or `✅ replay`)
+  - then the button reads `✅ tick` (or `✅ replay`) at once, and the next turn, or the running turn at its next tool call, takes it
   - decision: a state changes only the button's icon, never its text (dima, 21:01)
-  - proof: tests/orbit.test.ts::a tick reads 📨 tick for 5 s, then ✅ tick / 🔁 replay reads 📨 replay for 5 s, then ✅ replay; tests/lane.test.ts::a tick on the card reads 📨 tick while it is sending
+  - proof: tests/orbit.test.ts::a tick reads ✅ tick at once / 🔁 replay reads ✅ replay at once / a running turn takes a tick at its next tool call / a tick from another board's glide card joins the running turn at once; tests/lane.test.ts::a tick on the card reads ✅ tick at once
 - ✅ a 🛎️ tick on this board is written as dima's word (FRM-427)
-  - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time its sending window ends; x-mod-guard reads it
-  - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press inside the window takes it back; a 🔁 replay writes none
+  - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time of the press; x-mod-guard reads it
+  - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
   - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it on this board, then the record holds the new text and its quoted command; a press on a glide card writes none (below, dima's pick a, 2026-10-30)
   - decision: a tick on a glide card, made in clio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write; pinned by tests/orbit.test.ts::a mark from another board's glide card writes no tick record (FRM-467, kept after a try that wrote one)
-  - and a second press inside the 5 s unsends it: no turn ever takes it
-  - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
-  - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12); its record holds from that prompt, so x-mod-guard reads it as his word at once
+  - and a second press before a turn takes it unsends it: no turn ever takes it
   - and a press that lands after his prompt locked the ask (a frame drawn before the lock) changes nothing and keeps the record
-  - proof: tests/orbit.test.ts::a 🛎️ press writes the tick record: the ask's id, text, quoted targets and time; ::a second 🛎️ press inside the sending window takes the tick back; ::a 🔁 replay press writes no tick; ::an agent's own orbit o…; ::a mark from another board's glide card writes no tick record; ::a press that lands on an ask his prompt already locked keeps the tick record (S1); ::his prompt inside the sending window sends the tick now (S2)
-- ✅ the 🎛️ `📨 undo tick` switch and its `📨 undo delay` field set the «sending» wait
-  - given the switch is on (the default), then a seconds field on its own line, right of it, holds the wait, 5 by default, 1–30, and every tick, replay and phases change waits that long (dima, 10-13 18:01)
-  - given it is off, when dima ticks or replays an ask on any board, a glide card included, or ticks his phases, then the button reads `✅` at once and the next turn, or the running turn at its next tool call, takes it, and the field is hidden (dima, 10-13 17:49)
-  - proof: tests/orbit.test.ts::the undo delay field sets how long a tick reads 📨 / with the undo window off, a tick reads ✅ tick at once; tests/board.test.ts::the undo delay field holds 5 by default / with the undo switch off the delay field is not drawn
+  - proof: tests/orbit.test.ts::a 🛎️ press writes the tick record: the ask's id, text, quoted targets and time; ::a second 🛎️ press takes the tick back; ::a 🔁 replay press writes no tick; ::an agent's own orbit o…; ::a mark from another board's glide card writes no tick record; ::a press that lands on an ask his prompt already locked keeps the tick record (S1)
 - ✅ a resolve can carry a closing word
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
   - then the ask collapses to two dim lines, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else) with its id and text, cut short, then `➡️ <word>` in bold under it, never cut — `✅ o1: <ask>` / `➡️ **landed**` (dima's shots, 20:37, 10-13 18:20)
@@ -863,8 +856,8 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 - ✅ dima reorders, ticks and steers the phases on the board (o84)
   - given the session's 🌔 phases card shows its plan
   - then each line ends in `↑` `↓` at its right edge, the same two buttons on every line, so the column never drifts; the first line's ↑ and the last's ↓ do nothing on a press (dima, 21:20–21:24: missing arrows read as confusing, dim text drifted and looked ugly, a disabled button would change size), and one `🛎️ tick` with a `steer` field sits in the card's head row, right of the title and left of 📂, every part centered on that row (dima, 21:26: a row of its own looked off and took a line)
-  - when dima presses an arrow, then the line moves at once on the board; when he ticks, the button reads `📨 tick` for 5 s, then `✅ tick`
-  - then the move or the tick, his steer riding with them, joins the session's running turn at its next tool call once 5 s pass, or his next prompt at once: one model-only note with the new order and his steer, once
+  - when dima presses an arrow, then the line moves at once on the board; when he ticks, the button reads `✅ tick` at once
+  - then the move or the tick, his steer riding with them, joins the session's running turn at its next tool call, or his next prompt: one model-only note with the new order and his steer, once
   - and a steer alone joins nothing; a new plan from the session clears his marks but keeps his steer, so the `steer` field keeps what he typed (PK-149: the cleared steer remounted the field mid-typing, the caret jumped and his text was lost)
   - proof: tests/orbit.test.ts::every phase line keeps the same two arrow buttons; an end's dead one does nothing; ::a ↑ on a phase moves it up on the board at once; ::the phases tick and steer sit in the card's head row, centered, before…
 - ✅ stale phases are named

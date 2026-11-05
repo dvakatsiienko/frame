@@ -59,28 +59,15 @@ for (const surface of ['terminal', 'desktop'] as const)
         expect(texts.filter((t) => t && !shown.includes(t))).toEqual([]);
     });
 
-test("the chips count orbit's open asks and the plan's lines", async ($, on) => {
+test('the band draws no asks or phases count', async ($, on) => {
     world(on);
     const ui = await band($);
-    await orbit($, {
-        asks: [
-            { pick: 'yes', text: 'ship it' },
-            { pick: 'no', text: 'rename it' },
-        ],
-        op: 'add',
-    });
-    await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
+    await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
+    await orbit($, { lines: ['now: a'], op: 'plan' });
     expect([
-        (await ui.find({ text: /^🪐/, type: 'Text' }))?.text,
-        (await ui.find({ text: /^🌔/, type: 'Text' }))?.text,
-    ]).toEqual(['🪐 2', '🌔 3']);
-});
-
-test('the chips are text, never a control', async ($, on) => {
-    world(on);
-    const ui = await band($);
-    const buttons = (await ui.findAll({ type: 'Button' })).map((b) => b.text);
-    expect(buttons.some((t) => t?.includes('🪐'))).toBe(false);
+        await ui.find({ text: /^🪐/, type: 'Text' }),
+        await ui.find({ text: /^🌔/, type: 'Text' }),
+    ]).toEqual([undefined, undefined]);
 });
 
 test('a reply that waits on something draws its 🔭 line under the row', async ($, on) => {
@@ -156,8 +143,6 @@ test('every control in the row carries a hover card that names it', async ($, on
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
     expect(cards).toEqual([
-        '0 open asks for you',
-        '0 phases',
         'second wind: start',
         'keep hot: enable',
         'fleet wake: enable',

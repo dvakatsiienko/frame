@@ -816,18 +816,15 @@ test('the orbit card is bordered a soft grey on the desktop', async ($, on) => {
     ).toBe('#8080804d');
 });
 
-test('🔁 replay reads 📨 replay for 5 s, then ✅ replay', async ($, on) => {
-    const w = world(on);
+test('🔁 replay reads ✅ replay at once', async ($, on) => {
+    world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:rejected:o1' });
-    const sending = (await ui.find({ key: 'orbit:rejected:o1' }))?.text;
-    await w.clock.advance(5_000);
-    expect([
-        sending,
-        (await ui.find({ key: 'orbit:rejected:o1' }))?.text,
-    ]).toEqual(['📨 replay', '✅ replay']);
+    expect((await ui.find({ key: 'orbit:rejected:o1' }))?.text).toBe(
+        '✅ replay',
+    );
 });
 
 test('the Stop passes with 🪐 orbit switched off, an ask open and a wrap_up ask', async ($, on) => {
@@ -1514,7 +1511,7 @@ test("a 🛎️ press writes the tick record: the ask's id, text, quoted targets
     await ui.press({ key: 'orbit:accepted:o1' });
     expect(writes.at(-1)).toEqual([
         {
-            at: at + 5_000,
+            at,
             id: 'o1',
             targets: ['git push --mirror origin'],
             text: '⚠️ push `git push --mirror origin` to the backup',
@@ -1535,22 +1532,7 @@ test('a press that lands on an ask his prompt already locked keeps the tick reco
     expect(writes.at(-1)).toEqual([expect.objectContaining({ id: 'o1' })]);
 });
 
-test("his prompt inside the sending window sends the tick now: the record's time is the prompt's (S2)", async ($, on) => {
-    const w = world(on);
-    const writes = tickLog(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push `origin`', 'yes']);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await w.clock.advance(1_000);
-    const sent = await w.clock.now();
-    await say($, 'go');
-    expect(writes.at(-1)).toEqual([
-        expect.objectContaining({ at: sent, id: 'o1' }),
-    ]);
-});
-
-test('a second 🛎️ press inside the sending window takes the tick back', async ($, on) => {
+test('a second 🛎️ press takes the tick back', async ($, on) => {
     world(on);
     const writes = tickLog(on);
     await start($);
@@ -1629,7 +1611,7 @@ test('a 🛎️ press on a followed-up ask writes the tick record with the new t
     await ui.press({ key: 'orbit:accepted:o1' });
     expect(writes.at(-1)).toEqual([
         {
-            at: at + 5_000,
+            at,
             id: 'o1',
             targets: ['git push origin --delete cloud/x-help-drift'],
             text: '⚠️ delete `git push origin --delete cloud/x-help-drift`',
@@ -2227,51 +2209,13 @@ test('orbit registers loaded up front, never behind ToolSearch', async ($, on) =
     expect(isDeferred).toBe(false);
 });
 
-/* PK-88: a tick waits 5 s in a reversible «sending» state */
+/* a tick lands at once: no sending state, no delay field */
 
-test('a tick reads 📨 tick for 5 s, then ✅ tick: only the icon changes', async ($, on) => {
+test('a store written by the old build loads with its stale keys ignored', async ($, on) => {
     const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    const sending = (await ui.find({ key: 'orbit:accepted:o1' }))?.text;
-    await w.clock.advance(5_000);
-    expect([
-        sending,
-        (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
-    ]).toEqual(['📨 tick', '✅ tick']);
-});
-
-test('a tick unticked inside its 5 s never reaches the turn', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await say($, 'run the long job');
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await w.clock.advance(2_000);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await w.clock.advance(5_000);
-    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
-    expect((r.context ?? []).join('\n')).not.toMatch(/o1 🛎️ accepted/);
-});
-
-test('a running turn takes no tick still sending', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await say($, 'run the long job');
-    await ui.press({ key: 'orbit:accepted:o1' });
-    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
-    expect((r.context ?? []).join('\n')).not.toMatch(/o1 🛎️ accepted/);
-});
-
-// the 🎛️ `↩️ undo window on ticks` knob off: no «sending», a tick is ready for the next turn at once (dima, 10-13 17:49)
-test('with the undo window off, a tick reads ✅ tick at once', async ($, on) => {
-    const w = world(on);
-    w.store.set('undo-window', false);
+    w.store.set('undo-window', true);
+    w.store.set('undo-delay', 30);
+    w.store.set('shown', { 'stash.chips': false });
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
@@ -2279,9 +2223,49 @@ test('with the undo window off, a tick reads ✅ tick at once', async ($, on) =>
     expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
 });
 
-test('with the undo window off, a running turn takes a tick at its next tool call', async ($, on) => {
+test('an ask the old build kept with a future sendAt lands at once', async ($, on) => {
     const w = world(on);
-    w.store.set('undo-window', false);
+    const state = stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const ui = await board($);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const kept = state.get('orbit') as { asks: Record<string, unknown>[] };
+    state.set('orbit', {
+        ...kept,
+        asks: kept.asks.map((a) => ({
+            ...a,
+            sendAt: w.clock.now() + 60_000,
+        })),
+    });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
+test('a tick reads ✅ tick at once', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
+});
+
+test('a tick taken back by a second press never reaches the turn', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).not.toMatch(/o1 🛎️ accepted/);
+});
+
+test('a running turn takes a tick at its next tool call', async ($, on) => {
+    world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
@@ -2291,9 +2275,8 @@ test('with the undo window off, a running turn takes a tick at its next tool cal
     expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
-test("with the undo window off, a tick from another board's glide card joins the running turn at once", async ($, on) => {
+test("a tick from another board's glide card joins the running turn at once", async ($, on) => {
     const w = world(on);
-    w.store.set('undo-window', false);
     await start($);
     await add($, ['push FRM-1', 'yes']);
     await say($, 'run the long job');
@@ -2302,20 +2285,8 @@ test("with the undo window off, a tick from another board's glide card joins the
     expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
-test('the undo delay field sets how long a tick reads 📨', async ($, on) => {
-    const w = world(on);
-    w.store.set('undo-delay', 2);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await w.clock.advance(2_000);
-    expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
-});
-
-test('with the undo window off, a phases tick is ready at once', async ($, on) => {
-    const w = world(on);
-    w.store.set('undo-window', false);
+test('a phases tick is ready at once', async ($, on) => {
+    world(on);
     await start($);
     const ui = await board($);
     await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
@@ -2323,7 +2294,7 @@ test('with the undo window off, a phases tick is ready at once', async ($, on) =
     expect((await ui.find({ key: 'plan:tick' }))?.text).toBe('✅ tick');
 });
 
-test("dima's own prompt sends a tick still sending, at once", async ($, on) => {
+test("dima's own prompt carries a fresh tick", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -2369,26 +2340,21 @@ test('a ↑ on a phase moves it up on the board at once', async ($, on) => {
     ]);
 });
 
-test('a reorder joins the running turn once its 5 s pass, the new order listed', async ($, on) => {
+test('a reorder joins the running turn at once, the new order listed', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
     await say($, 'go');
     await ui.press({ key: 'plan:0:down' });
-    const early =
-        (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? [];
-    await w.clock.advance(5_000);
-    const late =
+    const first =
         (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? [];
     const again =
         (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? [];
     expect([
-        early.some((c) => /reordered your phases/.test(c)),
-        late.join('\n'),
+        first.join('\n'),
         again.some((c) => /reordered your phases/.test(c)),
     ]).toEqual([
-        false,
         expect.stringMatching(
             /reordered your phases[\s\S]*1\. next: b\n2\. now: a/,
         ),

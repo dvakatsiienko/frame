@@ -180,7 +180,6 @@ test('one flip back brings the ⏰ button again', async ($, on) => {
 
 // each band part: drawn by default, gone one poll after another session hides it
 const BAND_PARTS: [string, { key?: string; text?: RegExp }][] = [
-    ['stash.chips', { text: /^🪐 \d+$/ }],
     ['stash.wait', { text: /^🔭 / }],
     ['stash.hot', { key: 'hot' }],
     ['stash.waker', { key: 'waker' }],
@@ -213,12 +212,22 @@ test("a flip keeps another session's switch it has not polled yet", async ($, on
     const { store } = world(on);
     await band($);
     const view = await pane($);
-    store.set('shown', { 'stash.chips': false });
+    store.set('shown', { 'stash.pace': false });
     await view.press({ key: 'part:stash.waker' });
     expect(store.get('shown')).toEqual({
-        'stash.chips': false,
+        'stash.pace': false,
         'stash.waker': false,
     });
+});
+
+test('the pane names no undo window and no row chips', async ($, on) => {
+    world(on);
+    await band($);
+    const view = await pane($);
+    expect([
+        await view.find({ key: 'part:stash.chips' }),
+        await view.find({ text: /undo/ }),
+    ]).toEqual([undefined, undefined]);
 });
 
 // the 🎛️ knobs (FRM-391 slice 06): a switch saves on its press, a number on each keystroke that makes a valid value
