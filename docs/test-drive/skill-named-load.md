@@ -22,3 +22,4 @@ one line per spawn: date, member, named skills, loaded skills, misses
 **kill rule:** a summon whose first reply lists nothing twice in a row
 
 - 2026-11-02 · ⚡ 🔧 codie mods lane 4 · named: crew-codie, plugin-authoring, guide-code, guide-typescript, crew-subagent · loaded: crew-codie, crew-dna, plugin-authoring, crew-subagent · missed: guide-code, guide-typescript (no .ts edit yet at the first reply) · extended once to 11-09 (dima's o17 tick)
+- 2026-11-05 · 🌗 🔎 sixth sense cli lane 4 · `mods-verify` and `x-verify` loaded late, on the path hook, after it had started; the hook caught both · got in the way a little, keep; a stacked lane's brief names both

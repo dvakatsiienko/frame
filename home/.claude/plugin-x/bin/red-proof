@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# red-proof <file> <anchor> <replacement> <test> — proves a test reads <file>: swap the anchor, the test
-# must go red; restore byte-for-byte, it must go green again. exit 0 only on red-then-green.
+# red-proof <file> <anchor> <replacement> <test> — proves a test reads <file>: green on the file as it is, red with
+# the anchor swapped, then the file restored byte for byte. exit 0 only on green-then-red.
 # red-proof --pairs <pairs> <file> <test> — the same for many anchors, each swapped alone; exit 0 only
-# when every pair went red and the restored file went green.
+# when every pair went red.
 # --cmd first, then `-- <command…>` in place of <test>: runs any command (`claude plugin test <mod>`) instead of vitest.
 set -u
 usage() {
@@ -57,6 +57,20 @@ for anchor in "${anchors[@]}"; do
   [ "$count" = 1 ] || { echo "red-proof: anchor «${anchor}» found $count times in $file, needs exactly 1" >&2; exit 2; }
 done
 
+# on a red base every swap reads RED whatever it does (FRM-478: the mod never loaded), so it refuses before the first swap
+if ! run; then
+  names=$(sed -nE -e 's/ \[[0-9.]+ms\]$//' -e 's/^ *\(fail\) //p' -e 's/^ *FAIL +//p' -e 's/^ *--- FAIL: ([^ ]+).*/\1/p' "$out" | sort -u)
+  if [ -n "$names" ]; then
+    echo "red-proof: the base is already red, nothing swapped: $(printf '%s\n' "$names" | wc -l | tr -d ' ') failed" >&2
+    printf '%s\n' "$names" | sed 's/^/  /' >&2
+  else
+    echo "red-proof: the base is already red, nothing swapped: no failed name read, its output ends:" >&2
+    tail -5 "$out" | sed 's/^/  /' >&2
+  fi
+  rm -f "$out"
+  exit 1
+fi
+
 backup=$(mktemp)
 cp -p "$file" "$backup"
 # touch: a build cache keyed on mtime (the x shim) must not keep the mutated build
@@ -83,6 +97,5 @@ for i in "${!anchors[@]}"; do
   fi
 done
 cmp -s "$backup" "$file" || { echo "✗     restore: $file differs from its original" >&2; exit 1; }
-if run; then green=1; else green=0; fi
-[ $green = 1 ] && echo "GREEN restored: the test passes again" || echo "✗     restored: the test fails on the original too"
-[ $all_red = 1 ] && [ $green = 1 ]
+echo "GREEN restored: the base passed, and the file is back byte for byte"
+[ $all_red = 1 ]

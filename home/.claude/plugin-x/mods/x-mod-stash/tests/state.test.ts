@@ -104,16 +104,21 @@ const band = ($: Engine) =>
         surface: 'desktop',
     });
 
-test('a reload in a running turn never pings it with keep-hot', async ($, on) => {
-    const s = await reloaded(
-        $,
-        on,
-        { turn: { isBusy: true, isPinged: false, isUserTurn: true } },
-        { [`hot:${SID}`]: { since: NOW - 60 * MIN } },
-    );
-    await s.clock.advance(60 * MIN);
-    expect(s.pings).toEqual([]);
-});
+// the kit refuses node:os, so no bound here can read the load: this one holds at load 26, where 5 s timed out (FRM-470)
+test(
+    'a reload in a running turn never pings it with keep-hot',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const s = await reloaded(
+            $,
+            on,
+            { turn: { isBusy: true, isPinged: false, isUserTurn: true } },
+            { [`hot:${SID}`]: { since: NOW - 60 * MIN } },
+        );
+        await s.clock.advance(60 * MIN);
+        expect(s.pings).toEqual([]);
+    },
+);
 
 test('the board draws with no file or process read', async ($, on) => {
     const s = await reloaded($, on, {}, {}, true);

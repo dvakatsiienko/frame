@@ -51,6 +51,6 @@ every model bump — the curve is per-release.
 **Cost of a reading agent = bodies × size, never agents × a flat number** — the board-sweep
 workflow was guessed at ~150k and spent 1.27M for 82 ticket bodies + comments.
 
-**codie's last act is a retro**, its shape in `x:crew-dna`; clio's ask states the why (the fleet improves only from what its members saw) and names the angles: the brief, the steers, the lane, the reporting, what nobody asked; blunt, name-the-moment specifics.
+**codie's last act at each chunk's end is its retro**, its shape in `x:crew-dna`; clio's ask states the why (the fleet improves only from what its members saw) and names the angles: the brief, the steers, the lane, the reporting, what nobody asked; blunt, name-the-moment specifics.
 
 Full evidence base: [references/spawn-mechanics.md](references/spawn-mechanics.md), on demand.

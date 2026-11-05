@@ -35,6 +35,10 @@
   - ✅ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
   - proof: tests/rewrite.test.ts::a raw linear api / a raw linear api after a cd / a linear api rewrite is named in one line; tests/linear.test.ts::clio's raw linear api still takes the x linear rewrite
   - decision: x-mod-guard alone covers `=word`: its `tool.call` rewrite runs before any classic PreToolUse hook, so the classic `zsh-equals-guard.py` backstop was dropped (dima's o286, 2026-10-11); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
+- ⬜ a foreground `x lane commit` or `x lane push` gets one hint naming `run_in_background` (FRM-470)
+  - given the same call in the background, or ending in `# fg-ok: <why>`, then no hint
+  - decision: a hint, never a refusal — a one-file doc commit may well stay foreground
+  - proof: tests/hint.test.ts::a foreground chain runs with one hint naming run_in_background (x3 forms); no chain hint: …; a chain already in the background gets no hint
 - ✅ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
   - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
   - then it runs as typed, and the model gets one context line naming `x gh pr <n>`
@@ -150,7 +154,7 @@
 - ✅ dima's tick on an orbit ask is his word (FRM-427, FRM-409)
   - given dima ticked an open ask that quotes the whole guarded command in one backtick span, spacing aside (`` ⚠️ mirror: `git push --mirror origin` ``); a span quoting another command that names the same target (`` `git push origin main` ``), or the target unquoted in prose, proves nothing (dima's tick on sixth sense's ask, 2026-10-28)
   - then the guarded command runs with no `# dima-ok` typed, and a marker his prompt never named runs too; the escape is kept with the ask's id
-  - then the tick is spent by its first use for what it authorized (a target set, a pr, a sign): a second run is refused, while one ask quoting a guarded target and a pr carries each once (the 10-22 o4/o9 replay); a tick quoting only part of the command (`git push --mirror`) proves nothing
+  - then the tick is spent by the first use that runs, for what it authorized (a target set, a pr, a sign), and a refusal later on the line leaves it for the retry: a second run is refused, while one ask quoting a guarded target and a pr carries each once (the 10-22 o4/o9 replay); a tick quoting only part of the command (`git push --mirror`) proves nothing
   - given his newest tick quoting the pr's url in this repo (`github.com/<owner>/<name>/pull/<n>`, the repo the call's `--repo` names or the cwd's origin, as merge-auto reads it) or reading `⚠️ merge <name>#<n>` (FRM-478; «do not merge …» proves nothing), then `x lane merge-auto <pr> --apply --dima-ok <pr>` runs, and a bare `x lane merge-auto <pr> --apply` runs with `--dima-ok <pr>` added right after the call's own words, so a following `&& echo merged` or `# ship it` keeps it (a call in a nested shell gets none); another repo's pr of the same number, or a bare `#<n>`, proves nothing; `--release-brake` still needs his typed word
   - given a tick more than 2 h old, then it proves nothing: a yes for this afternoon's push never unlocks tonight's (dima's o2, 2026-10-28)
   - decision: a tick pressed on a glide card in clio's tab never counts as dima's word in the member's guard: its mark reaches the member through the shared store, which any session writes (dima's o1, 2026-10-28)

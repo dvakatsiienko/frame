@@ -49,11 +49,14 @@ function world(on: On, ticks: Tick[] = [], body?: string, cat?: string) {
                         : '',
         },
     }));
+    const refuse: string[] = [];
     on('tool.call', (_$, e) => {
+        const no = refuse.shift();
+        if (no) return { deny: no };
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    return { ran, store };
+    return { ran, refuse, store };
 }
 
 const tick = (text: string, at = NOW - 1): Tick => ({
@@ -80,6 +83,18 @@ test('a tick is spent by its first use: the second run is refused', async ($, on
     const r = await bash($, MIRROR);
     expect([r.deny, ran]).toEqual([
         expect.stringContaining('mirror'),
+        [MIRROR],
+    ]);
+});
+
+test('a tick survives a refusal from the tool itself', async ($, on) => {
+    const { ran, refuse } = world(on, [tick(`⚠️ mirror: \`${MIRROR}\``)]);
+    refuse.push('core said no');
+    const first = await bash($, MIRROR);
+    const retry = await bash($, MIRROR);
+    expect([first.deny, retry.deny, ran]).toEqual([
+        expect.stringContaining('core said no'),
+        undefined,
         [MIRROR],
     ]);
 });
@@ -270,6 +285,20 @@ test('a batch tick is spent per id: a second sign of the same id is refused', as
     await bash($, 'x linear set FRM-1 --add-label signed');
     const again = await bash($, 'x linear set FRM-1 --add-label signed');
     expect(signFlagged(again)).toBe(true);
+});
+
+test('a sign tick survives a refusal later on the line, and the retry spends it', async ($, on) => {
+    const { ran } = world(on, [tick('✍️ sign FRM-1: a small ticket')]);
+    const SIGN = 'x linear set FRM-1 --add-label signed';
+    const refused = await bash($, `${SIGN}; rm -rf /tmp/never`);
+    const retry = await bash($, SIGN);
+    const third = await bash($, SIGN);
+    expect([
+        refused.deny !== undefined,
+        retry.deny,
+        signFlagged(third),
+        ran,
+    ]).toEqual([true, undefined, true, [SIGN]]);
 });
 
 test('another label runs with no tick', async ($, on) => {

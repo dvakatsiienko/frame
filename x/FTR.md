@@ -99,6 +99,9 @@
   - given the repo's pre-commit hook is installed, executable, calls lefthook, and its `pre-commit:` block runs `pnpm typecheck` or `pnpm test` (frame both; bytes neither, its turbo typecheck sits under `pre-push:`), then that job is left to the hook and runs once; any other hook runs both here; `go test` runs either way
   - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
   - decision: a check runs once, at commit (dima, 2026-10-15: «checks belong at commit, never per edit, and pre-commit stays short»)
+- ⬜ `x lane commit` retries a timeout-only red once (FRM-470)
+  - given the hook reds only `test` or `mods`, every failed row a timeout, when `x lane commit` runs, then the commit runs once more and the step says so
+  - given a real red, another gate red, or a file that did not load, then no retry
 - ✅ `x lane commit` waits out a peer's index lock
   - given another git holds the repo's `index.lock`
   - when `x lane commit` reaches its `add` or its `commit`
@@ -151,6 +154,8 @@
   - when `x lane pr-body` runs
   - then it refuses with exit 2 and calls nothing
   - given a number and a file, when it runs with `--apply`, then the body is written as the codie app and the read-back matches the file, or it fails naming the difference
+- ⬜ `x lane merge-auto` names whose clean it reads (W210)
+  - given a store holding the pr's head and `<repo>#<n>:by` = `clio`, then the check passes with `clean on <sha> by clio's read`; with no `:by` key, `clean on <sha> by sixth sense`; a carried clean and a moved head name the same verifier, a no-clean detail names none
 - ✅ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
   - given sixth sense clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
   - when `x lane merge-auto <pr> --apply` runs
@@ -455,6 +460,13 @@
   - given a write that fails midway, then every file already written is put back from the backup push took first
   - given `test --against HEAD`, then only the edited tests run on HEAD's mod, each named «failed» or, when its file cannot load, «errored»; nothing is written
   - decision: `scratch-edit` (plugin bin) retired into these verbs; a three-word verb sits under a group per middle word
+- ⬜ `x mods edit push <paths…>` lands only the named paths (FRM-470)
+  - given two edits in scratch, when push names one, then only it lands and the other stays in scratch, listed by `status`
+  - given a named path with no edit, then nothing lands and the refusal names it
+- ⬜ `x mods edit push` runs no second test on bytes `test` passed (FRM-470)
+  - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
+- ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
+  - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
 - ✅ `x schema mods` lists the verbs
 
 ## fleet — the fleet measuring itself

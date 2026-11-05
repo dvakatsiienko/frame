@@ -33,6 +33,7 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 - a **rename of stored data** says «migrate» or «read both», or two lines pull against each other
 - a live line names the input it trusts; a line naming store keys says «and every prefixed or dated key of that family»; a removal ships its grep as the file list and its skip list
 - a line that writes under `_clio/` is clio's own, never codie's: frame `AGENTS.md` bars codie from that dir
+- a line graded from a done comment reads «before final», since sixth sense's clean lands first
 - **one owner and one gradeable surface per line**: a hand-off to clio or dima goes to `out` or a pocket item, never an exit line — sixth sense cannot read the other half (FRM-355, 359, 372). a half only dima can grade (his eye, his evening) is split off at seal as its own line marked `pending: dima`, so sixth sense can still reach «clean» on the rest (FRM-382 exit 5)
 
 ## once sealed, it changes in the open

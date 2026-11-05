@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/cgi"
 	"net/http/httptest"
@@ -103,6 +104,58 @@ func TestCommitReadsPathsFromTheRootInASubdir(t *testing.T) {
 
 	if got.code != 0 || gitT(t, dir, "status", "--porcelain") != "" {
 		t.Fatalf("exit %d, status %q", got.code, gitT(t, dir, "status", "--porcelain"))
+	}
+}
+
+// lefthook's summary and each runner's own words, from real hook logs and a real timed-out row
+func TestCommitRetriesATimeoutOnlyRedOnce(t *testing.T) {
+	t.Parallel()
+	const (
+		pluginTimeout = "(fail) a row [5002.31ms]\n  Error: timed out after 5000 ms\n"
+		vitestTimeout = " FAIL  a.test.ts > a row\nError: Test timed out in 5000ms.\n"
+		realRed       = "(fail) a real red [0.35ms]\n  AssertionError: expect(received).toBe()\n"
+	)
+	cases := []struct {
+		name       string
+		log        string
+		redRuns    int
+		wantRuns   int
+		wantCommit bool
+	}{
+		{"a mods row timed out", pluginTimeout + "🥊 mods (40.1 seconds)\n", 1, 2, true},
+		{"a vitest row timed out", vitestTimeout + "\x1b[31m🥊 test (9.2 seconds)\x1b[m\n", 1, 2, true},
+		{"both gates timed out", pluginTimeout + vitestTimeout + "🥊 mods (1 seconds)\n🥊 test (1 seconds)\n", 1, 2, true},
+		{"vitest grouped two timed-out rows", " FAIL  a.test.ts > one\n FAIL  a.test.ts > two\nError: Test timed out in 5000ms.\n🥊 test (1 seconds)\n", 1, 2, true},
+		{"a log that ends on a failed row", pluginTimeout + "(fail) a row with no error line\n", 1, 1, false},
+		{"vitest grouped two real reds", " FAIL  a.test.ts > one\n FAIL  a.test.ts > two\nAssertionError: no\n🥊 test (1 seconds)\n", 1, 1, false},
+		{"a second timeout stays red", pluginTimeout + "🥊 mods (1 seconds)\n", 2, 2, false},
+		{"a real red beside a timeout", pluginTimeout + realRed + "🥊 mods (1 seconds)\n", 1, 1, false},
+		{"another gate red beside a timeout", pluginTimeout + "🥊 mods (1 seconds)\n🥊 typecheck (1 seconds)\n", 1, 1, false},
+		{"a file that did not load", "(fail) the file did not load\n🥊 mods (1 seconds)\n", 1, 1, false},
+		{"a red with no test row", "🥊 format (1 seconds)\n", 1, 1, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := repo(t)
+			scratch := t.TempDir()
+			runs := filepath.Join(scratch, "runs")
+			write(t, filepath.Join(scratch, "log"), c.log)
+			write(t, filepath.Join(dir, ".git/hooks/pre-commit"), fmt.Sprintf(`#!/bin/sh
+echo run >> %s
+[ "$(wc -l < %s)" -gt %d ] && exit 0
+cat %s
+exit 1
+`, runs, runs, c.redRuns, filepath.Join(scratch, "log")))
+			write(t, filepath.Join(dir, "readme.txt"), "retried\n")
+
+			got := xIn(t, dir, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, "lane", "commit", message(t), "--", "readme.txt")
+
+			n := strings.Count(readFile(t, runs), "run\n")
+			if n != c.wantRuns || (got.code == 0) != c.wantCommit {
+				t.Fatalf("%d hook runs, want %d; exit %d\n%s", n, c.wantRuns, got.code, got.stdout)
+			}
+		})
 	}
 }
 

@@ -28,6 +28,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 
 - 2026-10-22 · frame#95 · side lane (cli lane 1, FRM-401) · 2 verifier rounds · 1 local review (matt's code-review ×2 cards ‖ coderabbit) · 0 ci rounds (frame has none, FRM-411) · round 1 ~11 min, round 2 ~19 min with its fixes · clean 20:37 → merge 20:44 (7 min, his tick on a self-edit) · verifier 3 real / local 15 useful of 20 / ci — · the coder's red-proof run caught 18 of 19 mutations itself; the graded lines sit in its retro (`shelf/retros/2026-10-22-FRM-401-coder.md`)
 - 2026-10-28 · frame#114 (FRM-465) · crew verifier (Opus 5.5) · 2 rounds before the ci reviewer's final: round 1 refuted (unasked digest-pin preset, found by a renovate dry run), round 2 clean so far ~8 min after the ping; the coder's coderabbit asked to re-add the pin, declined · useful
+- 2026-11-05 · frame#125 (FRM-470) · side lane (cli lane 4) · 3 sixth sense rounds, clean on c1d930a5 · 3 local reviews · 1 ci review · merge 20:26 on his tick, the guard's newest-tick gap cost a second ask · sixth sense found what no local review did: a broken dev copy read green, a hint obeyed by the probe's model
 
 ## graded lines — one per local review, from codie's done report, copied by clio at land
 
@@ -58,5 +59,10 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-05 · frame#123 · built-in /code-review on the fix diff · 4, 1 fixed · useful
 - 2026-11-05 · frame#123 · plain wisphunter, whole layer · 4, 2 bugs fixed, both rows red on a mutation · useful
 - 2026-11-05 · frame#123 · coderabbit, whole layer · 1 minor, already fixed · noise
+- 2026-11-05 · frame#125 · matt's standards axis, wisphunter · 11 findings · useful
+- 2026-11-05 · frame#125 · matt's spec axis, wisphunter · 8 findings · useful
+- 2026-11-05 · frame#125 · built-in /code-review · 10 findings · useful
+- 2026-11-05 · frame#125 · coderabbit · 0 findings · noise
+- 2026-11-05 · frame#125 · ci review · clean, 4 notes, 1 useful · useful
 
 ## verdict

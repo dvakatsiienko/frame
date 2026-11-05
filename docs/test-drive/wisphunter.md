@@ -49,4 +49,10 @@ group by 1 order by 2 desc;
 - matt's two axes as cards, background, ~5 min (standards, 184k tokens, 48 calls) and ~8 min (spec, 129k, 66 calls)
 - 16 findings, 8 per axis, all real on read; the spec card checked live state outside git with the brief's `rg`, which is where the sweep's last misses sat
 
+### round 3 — mods lane 4, 2026-11-04 (its codies and sixth senses, Opus 5.5)
+- 3 reads, 13 real bugs, from the lane's final retro, line 7; tokens not recorded, so this round holds the count alone
+
+### round 4 — frame#125, 2026-11-05 (sixth sense's second read, Opus 5.5)
+- 4 findings, 2 reproduced real (a load false green, merged errors), 1 already fixed, 1 nit; it labelled two as inferred, so a brief names which claims it can run
+
 ## verdict
