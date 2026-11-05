@@ -83,4 +83,3 @@ export function mapStrings<T>(value: T, fn: (text: string) => string): T {
     }
     return value;
 }
-// the d1 proof line
