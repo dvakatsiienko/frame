@@ -4,12 +4,12 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 
 ## the layout
 - one idea per tile: a bold title line, a short detail line under it, never a sentence wrapped over three lines
-- keywords print bold in the detail (dima, 2026-10-23: «use bold to highlight keywords»); the list is the builder's `KEYWORDS`
-- his ⌘M notes are listed in a «📝 dima's notes» tile above the title
+- keywords print bold in the detail (dima, 2026-10-23: «use bold to highlight keywords»); draw.io only, Excalidraw has no bold
+- his 💬 notes are listed in a «📝 dima's notes» tile above the title
 - big tiles and big text: a tile ~520×160, a 26 px title, a 20 px detail, a 40 px section header; a section re-hugs its tiles + 48 px each edit
 - a long flow snakes, each row running the opposite way, so an arrow stays short and never crosses a tile; bands join by one arrow, section to section
 - a big flow is split into bands read one at a time, each titled with what it answers
-- arrows ELBOWED with fixed magnets (RIGHT → LEFT in a row, BOTTOM at a turn); no waypoints, a crossing moves a tile
+- arrows straight between tiles (right edge → left edge in a row, bottom → top at a turn); a crossing moves a tile
 
 ## the names
 - every tile title opens with an emoji from the set below that names what it is about; the same thing gets the same emoji on every board

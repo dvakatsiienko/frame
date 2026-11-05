@@ -163,7 +163,7 @@ BANDS = [
             ("card", 2, 1, "file", "📄 the chunk card", "an h2 + two lines: why we have it, what we want out of it", "shape-lane § 1"),
             ("mode", 3, 1, "clio", "❓ single or fast?", "single: one chunk per grill, the default; fast on his word: a triage first, only chunks needing no call of his", "shape-lane § 2"),
             ("grill", 4, 1, "dima", "🙋‍♂️ the grill", "matt's ❓ rounds, the frontier only; a fast chunk is self-grilled by clio, fully groomed", "shape-lane § 2"),
-            ("fields", 5, 1, "file", "📄 what the sign carries", "done test · milestone · lane kind · repo · blocks order · merge: pre-approved for guards or merge-auto", "shape-lane § 3"),
+            ("fields", 5, 1, "file", "📄 what the sign carries", "done test · milestone · lane kind · repo · blocks order · merge: pre-approved for guards or merge-auto · ⚖️ worth it on new surface", "shape-lane § 3"),
             ("sign", 5, 2, "dima", "✍️ his whole answer is the sign", "a grill answered whole signs it; a fast chunk gets one ✍️ ask; a steer takes it back", "shape-lane § 4"),
             ("block", 4, 2, "file", "📄 the ## signed block", "«✍️ signed <date> · body <hash>», appended, never edited; every later body write adds a line", "shape-lane § 4 · body.md"),
             ("resign", 3, 2, "clio", "🔁 a re-sign", "a changed signed ticket goes through shape-lane again; a tiny change skips the grill, never the line", "shape-lane § 4 · fleet-flow § lane init"),
@@ -183,16 +183,16 @@ BANDS = [
         "clio:shape-lane-dispatch (+ exit-lines.md) · x:crew-lead · craft-fleet-flow § lane init, stage 5",
         [
             ("offer", 0, 0, "dima", "🙋‍♂️ «what can we dispatch?»", "signed, unblocked chunks by milestone; a hash off its last sign line → a re-sign", "shape-lane-dispatch § 1"),
-            ("lane", 1, 0, "file", "🛼 a lane = one milestone", "its signed chunks in blocks order, one glide step each; a shift walks milestones in queue order", "fleet-flow § lane init"),
+            ("lane", 1, 0, "file", "🛼 a lane walks milestones", "its area's signed chunks in blocks order, one glide step each, one milestone after another; a shift walks its queue", "fleet-flow § lane init"),
             ("spec", 2, 0, "file", "📐 the spec", ".scratch/<feature>/spec.md, wish: FRM-N, a section per chunk; PRODUCT.md for an app, skill or tool", "shape-lane-dispatch § 2 · to-spec"),
             ("exit", 3, 0, "clio", "🦉 the exit lines", "3–6 given/when/then per chunk, the want line last, seeded from the 🎯 done test", "dispatch § 3 · exit-lines.md"),
             ("critic", 4, 0, "member", "🐦‍⬛ the blind critic", "crow:plan-critique sees only the want + the lines; each finding folded; a re-sign after 🚀 runs it first", "shape-lane-dispatch § 3"),
-            ("seal", 5, 0, "script", "🦭 the seal", "x brief preflight passes; the print collapses to «🦭 sealed, N exit lines»", "shape-lane-dispatch § 4"),
+            ("seal", 5, 0, "script", "🦭 the seal", "a wisphunter card reads the spec against live code; x brief preflight passes; the print collapses to «🦭 sealed, N exit lines»", "shape-lane-dispatch § 4"),
             ("spawn", 4, 1, "clio", "📋 the summon", "x:crew-lead: a fresh codie, a sixth sense by default; the brief runs to-tickets first, its quiz skipped", "shape-lane-dispatch § 5"),
             ("dispatched", 3, 1, "file", "🚀 dispatched", "the signed label off, In Progress, «🚀 dispatched <date>» appended; a cancel: Canceled + «🚫 cancelled»", "shape-lane-dispatch § 5"),
             ("plan", 2, 1, "file", "📄 the lane plan", "~/.local/state/x/lanes/<feature>/lane-plan.md: codie's ticket order", "dispatch § 5 · how-you-work.md"),
-            ("green", 1, 1, "clio", "🟢 the greenlight", "clio reorders it against what comes next, final word; again after a [progress] ping", "shape-lane-dispatch § 5"),
-            ("joiner", 0, 1, "clio", "➕ a joiner", "a signed chunk of the same milestone: a new spec section, a glide step, a steer", "shape-lane-dispatch § 6"),
+            ("green", 1, 1, "clio", "🟢 the greenlight", "clio reorders it against what comes next, final word; an exit line with no plan step gets no 🟢; again after a [progress] ping", "shape-lane-dispatch § 5"),
+            ("joiner", 0, 1, "clio", "➕ a joiner", "a signed chunk from a milestone the lane walks: a new spec section, a glide step, a steer", "shape-lane-dispatch § 6"),
             ("park", 0, 2, "clio", "🅿️ a park", "a call only dima can make parks the chunk, its reason in the spec; a shift takes the next", "dispatch § 6 · fleet-flow § lane init"),
             ("w-glide", 1, 2, "weak", "⚠️ the glide card copies it", "its ticket lines copied by hand at each greenlight and land, until FRM-410", "my reading · dispatch § 5"),
         ],
@@ -210,13 +210,13 @@ BANDS = [
         [
             ("kinds", 0, 0, "file", "🛼 three kinds of work", "freebie: in place · quick: on main, no pr, signed · side and shift: worktree, pr, sixth sense", "craft-fleet-flow"),
             ("cut", 1, 0, "member", "🔧 codie cuts the spec", "matt's to-tickets after reading the code, so the slices follow real seams", "how-you-work.md · dispatch § 5"),
-            ("slices", 2, 0, "file", "📄 the slices", ".scratch/<feature>/issues/, never linear; each exit line in one checklist", "how-you-work.md · body.md"),
+            ("slices", 2, 0, "file", "📄 the slices", "~/.local/state/x/lanes/<feature>/issues/, never linear; each exit line in one checklist", "how-you-work.md · body.md"),
             ("build", 3, 0, "member", "🔧 build, test-first", "tdd per ticket, [x] at its commit; his steers land under ## not greenlit", "how-you-work.md"),
             ("verify", 4, 0, "member", "🔎 the pr and sixth sense", "one of each review per chunk, the ci review last; sixth sense seals the head, or its round-3 stop goes to clio", "fleet-flow stages 6–7"),
             ("land", 5, 0, "clio", "🔀 land", "clio merges by the pr-flow gate, after wishkeeper's read; a self-edit waits for dima unless his sign pre-approved it", "fleet-flow stage 8"),
             ("w-merge", 5, 1, "clio", "🔀 a self-edit's door", "his sign pre-approved → x lane merge-auto --apply; his typed word → --dima-ok added; the brake is his word each time", "fleet-flow stage 8"),
             ("look", 4, 1, "dima", "🙋‍♂️ the look card", "what, where, try, proven, not checked; a shot for anything rendered", "how-you-work.md · fleet-flow stage 9"),
-            ("modes", 3, 1, "file", "🔀 plain or stacked prs", "plain is the default; a stack is on trial, for 2+ dependent parts; a held stack merges whole, on dima's word", "pr-flow.md · x/AGENTS.md · BYT-98"),
+            ("modes", 3, 1, "file", "🔀 plain or stacked prs", "plain is the default; a stack is on trial, for 2+ dependent parts, one ci review per layer; a layer merges on his pre-approval, else it is held", "pr-flow.md · x/AGENTS.md · BYT-98"),
         ],
         [
             ("kinds", "cut", "R", "L", ""), ("cut", "slices", "R", "L", ""), ("slices", "build", "R", "L", ""),
@@ -370,7 +370,7 @@ def build(root):
     add(root, "tf-title", "1", "🗺️ tickets flow — how a ticket lives today, across the pocket and linear",
         text_style(48, True), ORIGIN_X + PAD, ORIGIN_Y, 1900, 58, vertex="1")
     add(root, "tf-subtitle", "1",
-        "the files as they read on 2026-10-25, the pocket ↔ linear contract landed · ⚠️ red tiles are my reading, every other tile names its file",
+        "the files as they read on 2026-11-05, the pocket ↔ linear contract landed · ⚠️ red tiles are my reading, every other tile names its file",
         text_style(24, False), ORIGIN_X + PAD, ORIGIN_Y + 74, 1500, 30, vertex="1")
     y = ORIGIN_Y + 160
     previous = None
