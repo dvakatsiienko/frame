@@ -5,7 +5,7 @@ import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
 // FRM-486: a cli or mods ticket is planned only with a `## ⚖️ worth it` section; a re-sign carries a changed one or says why not.
-// warn-only until its sixth sense says clean. files: body files on disk; tickets: what `x linear read <id>` answers
+// enforced (its sixth sense said clean 2026-11-02). files: body files on disk; tickets: what `x linear read <id>` answers
 const NOW = 1_000_000;
 type Ticket = { description: string; milestone?: string; project?: string };
 type Tick = { at: number; id: string; targets: string[]; text: string };
@@ -74,8 +74,7 @@ function world(
 
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, tool: 'Bash' });
-const warned = (r: { context?: readonly string[] }) =>
-    (r.context ?? []).join('\n').includes('would refuse this (rule worth');
+const refused = (r: { deny?: string }) => r.deny !== undefined;
 
 const NO_WORTH = '## wish\n\nW1\n\n## why\n\na reason\n';
 const WORTH =
@@ -83,13 +82,13 @@ const WORTH =
 const CREATE = (flags: string) =>
     `x as clio -- linear issue create --title t ${flags}`;
 
-test('a cli create with no worth section runs warn-only', async ($, on) => {
+test('a cli create with no worth section is refused', async ($, on) => {
     const w = world(on, { '/repo/b.md': NO_WORTH });
     const command = CREATE(
         '--project cli --milestone v --description-file b.md',
     );
     const r = await bash($, command);
-    expect([w.ran, warned(r)]).toEqual([[command], true]);
+    expect([w.ran, refused(r)]).toEqual([[], true]);
 });
 
 test('the worth note names the section and the plain-work words', async ($, on) => {
@@ -98,7 +97,7 @@ test('the worth note names the section and the plain-work words', async ($, on) 
         $,
         CREATE('--project cli --milestone v --description-file b.md'),
     );
-    expect(r.context?.join('\n')).toMatch(/## ⚖️ worth it.*none — fix/s);
+    expect(r.deny).toMatch(/## ⚖️ worth it.*none — fix/s);
 });
 
 test('a section with no fleet wired line is named as such', async ($, on) => {
@@ -107,7 +106,7 @@ test('a section with no fleet wired line is named as such', async ($, on) => {
         $,
         CREATE('--project cli --milestone v --description-file b.md'),
     );
-    expect(r.context?.join('\n')).toContain('names no `🔌 fleet wired:');
+    expect(r.deny).toContain('names no `🔌 fleet wired:');
 });
 
 test('a body behind a variable is named as unreadable, not as empty', async ($, on) => {
@@ -116,10 +115,10 @@ test('a body behind a variable is named as unreadable, not as empty', async ($, 
         $,
         CREATE('--project cli --milestone v --description "$B"'),
     );
-    expect(r.context?.join('\n')).toContain('cannot be read before the call');
+    expect(r.deny).toContain('cannot be read before the call');
 });
 
-test('the warned create leaves a warned event under the worth rule', async ($, on) => {
+test('the refused create leaves a refused event under the worth rule', async ($, on) => {
     const { store } = world(on, { '/repo/b.md': NO_WORTH });
     await bash(
         $,
@@ -129,7 +128,7 @@ test('the warned create leaves a warned event under the worth rule', async ($, o
         [...store.entries()]
             .filter(([k]) => k.startsWith('event:'))
             .map(([, v]) => v),
-    ).toMatchObject([{ kind: 'warned', rule: 'worth' }]);
+    ).toMatchObject([{ kind: 'refused', rule: 'worth' }]);
 });
 
 const FLAGGED = [
@@ -188,18 +187,18 @@ const FLAGGED = [
 ] as const;
 
 for (const [shape, command, files] of FLAGGED)
-    test(`${shape} is warned`, async ($, on) => {
+    test(`${shape} is refused`, async ($, on) => {
         world(on, { ...files });
-        expect(warned(await bash($, command))).toBe(true);
+        expect(refused(await bash($, command))).toBe(true);
     });
 
-test('a fleet create whose milestone id resolves to a mods milestone is warned', async ($, on) => {
+test('a fleet create whose milestone id resolves to a mods milestone is refused', async ($, on) => {
     const id = '3f2a9c10-0000-4000-8000-000000000001';
     world(on, { '/repo/b.md': NO_WORTH }, {}, [], {
         [id]: '🐋 safer, quieter mods',
     });
     expect(
-        warned(
+        refused(
             await bash(
                 $,
                 CREATE(
@@ -284,7 +283,7 @@ for (const [shape, command, files] of CLEAN)
     test(`${shape} runs with no worth note`, async ($, on) => {
         const w = world(on, { ...files });
         const r = await bash($, command);
-        expect(warned(r)).toBe(false);
+        expect(refused(r)).toBe(false);
         expect(w.ran).toEqual([command]);
     });
 
@@ -300,7 +299,7 @@ const SIGN_TICK: Tick = {
 };
 const SET = 'x linear body FRM-1 --set /repo/b.md';
 
-for (const [shape, next, ticket, isWarned] of [
+for (const [shape, next, ticket, isRefused] of [
     [
         'a re-sign whose worth is unchanged',
         RESIGN('none — fix'),
@@ -363,41 +362,51 @@ for (const [shape, next, ticket, isWarned] of [
         true,
     ],
 ] as const)
-    test(`${shape} is ${isWarned ? 'warned' : 'run'}`, async ($, on) => {
+    test(`${shape} is ${isRefused ? 'refused' : 'run'}`, async ($, on) => {
         world(on, { '/repo/b.md': next }, { 'FRM-1': ticket }, [SIGN_TICK]);
-        expect(warned(await bash($, SET))).toBe(isWarned);
+        expect(refused(await bash($, SET))).toBe(isRefused);
     });
 
-test('a raw linear update re-signing with an unchanged worth is warned', async ($, on) => {
+test('a re-sign behind a cd ~ reads its body file from the home dir', async ($, on) => {
+    world(
+        on,
+        { '/home/frame/b.md': RESIGN('none — fix') },
+        { 'FRM-1': { description: SIGNED, project: 'cli' } },
+        [SIGN_TICK],
+    );
+    expect(
+        refused(await bash($, 'cd ~/frame && x linear body FRM-1 --set b.md')),
+    ).toBe(true);
+});
+
+test('a raw linear update re-signing with an unchanged worth is refused', async ($, on) => {
     world(
         on,
         { '/repo/b.md': RESIGN('none — fix') },
         { 'FRM-1': { description: SIGNED, project: 'cli' } },
     );
     expect(
-        warned(
+        refused(
             await bash($, 'linear issue update FRM-1 --description-file b.md'),
         ),
     ).toBe(true);
 });
 
-test('a re-sign whose ticket linear cannot read is warned', async ($, on) => {
+test('a re-sign whose ticket linear cannot read is refused', async ($, on) => {
     world(on, { '/repo/b.md': RESIGN('removes the hand ping') }, {}, [
         SIGN_TICK,
     ]);
-    expect(warned(await bash($, SET))).toBe(true);
+    expect(refused(await bash($, SET))).toBe(true);
 });
 
 test('the note on an unread ticket names the failed read', async ($, on) => {
     world(on, { '/repo/b.md': RESIGN('removes the hand ping') }, {}, [
         SIGN_TICK,
     ]);
-    expect((await bash($, SET)).context?.join('\n')).toContain(
-        'could not read FRM-1',
-    );
+    expect((await bash($, SET)).deny).toContain('could not read FRM-1');
 });
 
-test('a re-sign body this command writes is warned as unread', async ($, on) => {
+test('a re-sign body this command writes is refused as unread', async ($, on) => {
     world(on, {}, { 'FRM-1': { description: SIGNED, project: 'cli' } }, [
         SIGN_TICK,
     ]);
@@ -405,7 +414,7 @@ test('a re-sign body this command writes is warned as unread', async ($, on) => 
         $,
         `cat > /repo/b.md <<'EOF'\n${RESIGN('removes the hand ping')}EOF\n${SET}`,
     );
-    expect(r.context?.join('\n')).toContain('this command writes');
+    expect(r.deny).toContain('this command writes');
 });
 
 test('the x pocket pitch shape is answered with the plain-work door', async ($, on) => {
@@ -416,7 +425,5 @@ test('the x pocket pitch shape is answered with the plain-work door', async ($, 
         $,
         "x as clio -- linear issue create --project cli --milestone 'x verbs' --title 'x: a new verb' --description-file .scratch/pitch.md",
     );
-    expect(r.context?.join('\n')).toMatch(
-        /would refuse this \(rule worth.*none — chore/s,
-    );
+    expect(r.deny).toMatch(/## ⚖️ worth it.*none — chore/s);
 });

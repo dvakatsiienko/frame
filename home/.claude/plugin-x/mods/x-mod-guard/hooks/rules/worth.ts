@@ -178,7 +178,7 @@ export function worthRewrites(command: string, cwd: string, ctx: Context = {}) {
               ? flag(words, '--description-file')
               : undefined;
         return id && file && !/[$`]/.test(file)
-            ? [{ file: resolve(file, c.dir, ctx), id }]
+            ? [{ file: resolve(file, resolve(c.dir, '/', ctx), ctx), id }]
             : [];
     });
 }

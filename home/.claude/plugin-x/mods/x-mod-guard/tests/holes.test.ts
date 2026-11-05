@@ -244,8 +244,10 @@ for (const command of [
         ]);
     });
 
+// the worth rule reads a cli create's body: these creates carry a filled section
+const WORTH_BODY = "-d '## ⚖️ worth it\n\nnone — fix\n'";
 for (const command of [
-    'x as codie -- linear issue create --project cli --milestone "🐉 review loop gets verbs" -t x',
+    `x as codie -- linear issue create --project cli --milestone "🐉 review loop gets verbs" -t x ${WORTH_BODY}`,
     `x linear api 'mutation { issueCreate(input: { teamId: "t", title: "x", projectId: "${CLI_ID}", projectMilestoneId: "m1" }) { success } }'`,
     'x as codie -- linear issue create -t x',
     'x as codie -- linear issue create --project lab -t x',
@@ -297,7 +299,7 @@ test('with linear unreachable the create runs, warned that the milestone check w
     const w = world(on, { cwd: '/repo', isLinearUp: false });
     const r = await bash(
         $,
-        'x as codie -- linear issue create --project cli -t x',
+        `x as codie -- linear issue create --project cli -t x ${WORTH_BODY}`,
     );
     expect([
         w.ran.length,

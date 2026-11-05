@@ -399,7 +399,6 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'opaque-head',
     'raw-plugin-update',
     'spawn-trial',
-    'worth',
     'write-then-run',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
