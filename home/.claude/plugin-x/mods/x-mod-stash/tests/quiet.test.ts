@@ -1429,8 +1429,9 @@ test('a test child raises no alarm on the mac, its log says what it would', asyn
     expect([
         w.notified,
         w.scripted,
-        w.logged.some((l) => l.includes('quiet alarm in a test child')),
-    ]).toEqual([[], [], true]);
+        w.logged.filter((l) => l.includes('quiet alarm in a test child'))
+            .length,
+    ]).toEqual([[], [], 1]);
 });
 
 test('a gap that closes and opens again alarms again', async ($, on) => {
@@ -2596,6 +2597,25 @@ for (const [what, reply, drop] of [
         const r = await fromAppText($, noteOf(CODIE.name, '.'));
         expect(r.drop).toBe(drop);
     });
+
+test('a keep-hot notice batched beside a real one stays whole while away', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    w.store.set(`reply:${CODIE.sessionId}`, {
+        at: EVEN - 60_000,
+        pingedAt: EVEN - 1000,
+    });
+    const end =
+        'is idle now — it finished a turn at 11:49. Its harness reports: «.»';
+    const text = `${idleOf(CODIE.name, end)}\n${idleOf('🎀 helga', end)}`;
+    const r = await fromHarness($, text);
+    expect([r.drop, r.text, linesFor(w).map((l) => l[2])]).toEqual([
+        undefined,
+        text,
+        ['passed', 'passed'],
+    ]);
+});
 
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {

@@ -1297,11 +1297,6 @@ async function relayCrowWake($: EngineInterface) {
 // one native notification per alarm key: `$.ui.notify` writes only through a terminal (the desktop answers no-surface),
 // so a not-sent one goes out through osascript; both failing leaves a log line, never a throw
 async function quietAlarm($: EngineInterface, key: string, text: string) {
-    // a test child's store is its own and its log empty, so its alarms are false; its mac is still dima's
-    if ((await $.env.get('X_MODS_TEST_CHILD')) === '1') {
-        await $.ui.log(`x-mod-stash: quiet alarm in a test child: ${text}`);
-        return;
-    }
     const raised =
         ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ?? [];
     if (raised.includes(key)) return;
@@ -1309,6 +1304,11 @@ async function quietAlarm($: EngineInterface, key: string, text: string) {
         QUIET_ALARMED,
         [...raised, key].slice(-QUIET_ALARMED_MAX),
     );
+    // a test child's store is its own and its log empty, so its alarms are false; its mac is still dima's
+    if ((await $.env.get('X_MODS_TEST_CHILD')) === '1') {
+        await $.ui.log(`x-mod-stash: quiet alarm in a test child: ${text}`);
+        return;
+    }
     const sent = await $.ui
         .notify(text, { title: QUIET_ALARM_TITLE })
         .catch((err: unknown) => ({
@@ -1508,26 +1508,39 @@ async function quietHoldPrompt(
         const held: QuietPing[] = [];
         const lines: QuietLogLine[] = [];
         const cut = new Set<number>();
-        const judged = [];
-        for (const item of items)
-            judged.push({
-                ...item,
-                why: await quietWhy($, item.from, item.body),
-            });
         const isAway =
             isHolding &&
-            judged.some((j) => j.tag === QUIET_NOTICE) &&
+            items.some((i) => i.tag === QUIET_NOTICE) &&
             (await isAwayNow($));
+        const judged = [];
+        for (const item of items) {
+            const sid = memberOf(members, item.from)?.base.sid;
+            judged.push({
+                ...item,
+                isWoken:
+                    item.tag === QUIET_NOTICE &&
+                    isAway &&
+                    !(sid && (await isLastReplyPing($, sid))),
+                sid,
+                why: await quietWhy($, item.from, item.body),
+            });
+        }
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
-        const canCut = !isEngineNotice || judged.every((j) => !j.why);
+        const canCut =
+            !isEngineNotice || judged.every((j) => !j.why && !j.isWoken);
         // a turn is starting anyway, and the event's words are written to that turn
         const isTurnStarting = judged.some((j) => j.why);
-        for (const { from, head, isEvent, marks, tag, text, why } of judged) {
-            const sid = memberOf(members, from)?.base.sid;
-            const isWoken =
-                tag === QUIET_NOTICE &&
-                isAway &&
-                !(sid && (await isLastReplyPing($, sid)));
+        for (const {
+            from,
+            head,
+            isEvent,
+            isWoken,
+            marks,
+            sid,
+            tag,
+            text,
+            why,
+        } of judged) {
             const reason = why ?? (isWoken ? 'away' : undefined);
             const line = {
                 arm,

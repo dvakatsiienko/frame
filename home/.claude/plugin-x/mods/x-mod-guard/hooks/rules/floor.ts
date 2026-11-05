@@ -19,6 +19,7 @@ import {
     resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
+import { linearWords, xLinearVerbAt } from './milestone.ts';
 
 // a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 sixth sense, the
 // 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds
@@ -371,31 +372,44 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         };
     return undefined;
 }
-// a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
-const LINEAR_READS = ['list', 'read'];
+const LINEAR_READS = ['help', 'list', 'read'];
 const LINEAR_MEMBER_WRITES = ['comment', 'create', 'delete', 'update'];
 
 // any `x linear` verb but a known read writes, so a new verb warns by default
 function isLinearWrite(c: Command) {
-    const words = c.args.map((w) => w.text);
+    const linear = linearWords(c);
+    if (!linear) return false;
+    const { isX, words } = linear;
+    const hasFlag = (flag: string) =>
+        words.some((w) => w === flag || w.startsWith(`${flag}=`));
     // `x as <member> --` is a wrapper: the command the walker reads is the raw `linear` under it
-    if (asMember(c) !== undefined && c.name === 'linear')
+    if (!isX)
         return (
+            asMember(c) !== undefined &&
             words[0] === 'issue' &&
-            LINEAR_MEMBER_WRITES.includes(words[1] ?? '')
+            LINEAR_MEMBER_WRITES.includes(words[1] ?? '') &&
+            words[2] !== 'list'
         );
-    if (c.name !== 'x' || words[0] !== 'linear') return false;
-    const verb = words[1] ?? '';
+    const at = xLinearVerbAt(words);
+    const verb =
+        at >= 0
+            ? words[at]
+            : words.find(
+                  (w, i) => w && !w.startsWith('-') && words[i - 1] !== '--as',
+              );
     // no verb, or only a flag: it prints its help
-    if (!verb || verb.startsWith('-') || words.includes('--help')) return false;
+    if (!verb || hasFlag('--help') || words.includes('-h')) return false;
     if (LINEAR_READS.includes(verb)) return false;
-    if (verb === 'body') return words.includes('--set');
-    if (verb === 'archive') return words.includes('--apply');
+    if (verb === 'body') return hasFlag('--set');
+    if (verb === 'archive') return hasFlag('--apply');
     if (verb !== 'api') return true;
-    // a query counts as a read only when its text is on the line to read
-    const queries = c.args
-        .slice(2)
-        .filter((w) => /^\s*(?:query\b|mutation\b|\{)/.test(w.text));
+    // a query counts as a read only when its text is on the line to read; --vars holds its values, never the query
+    const queries = c.args.filter(
+        (w, i) =>
+            c.args[i - 1]?.text !== '--vars' &&
+            !w.text.startsWith('--vars=') &&
+            /^\s*(?:query\b|mutation\b|\{)/.test(w.text),
+    );
     return (
         !queries.length ||
         queries.some((w) => w.isExpanding || /\bmutation\b/.test(w.text))
@@ -403,7 +417,10 @@ function isLinearWrite(c: Command) {
 }
 
 // the pipe's exit is the reader's, so a failed write reads as a success; the call has already run by the time this speaks
-export function linearPiped(command: string, cwd: string): Refusal | undefined {
+export function linearWritePiped(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
     if (PIPE_READ.test(command)) return undefined;
     if (
         !commandsDeep(command, cwd).some(
@@ -419,6 +436,7 @@ export function linearPiped(command: string, cwd: string): Refusal | undefined {
     };
 }
 
+// a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
 export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
     // the environment git reads its config from: a prefix, or an export that lasts for the calls after it
     const env = [

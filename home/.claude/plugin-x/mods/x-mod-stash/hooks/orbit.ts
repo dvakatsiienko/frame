@@ -140,19 +140,19 @@ export function joinText(asks: OrbitAsk[]) {
     ].join('\n');
 }
 
-// the first text over the cap, named with its length, so the session can shorten that one
 // twin sign-ask — a copy lives in x-mod-guard, which reads this shape when it signs; twins.test.ts holds them equal
 export const SIGN_ASK =
     /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
 // twin end
-const SIGN_PICK = /\b(?:re-)?signed\b/i;
-const MERGE_PICK = /\bmerge\b/i;
+const SIGN_PICK =
+    /(?<!\b(?:not|never|no|don['’]t)\s(?:re-)?)\b(?:re-)?sign(?:ed)?\b(?!-)/i;
+const MERGE_PICK = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr
-const MERGE_ASK =
+export const MERGE_ASK =
     /github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|(?:^|\s)⚠️ merge [\w.-]+#\d+/u;
 
 // a press whose text the guard cannot read fails here, before his tick spends itself on it
-function misShapedPress(op: string, text: string, pick: string) {
+function misShapedAsk(op: string, text: string, pick: string) {
     if (SIGN_PICK.test(pick) && !SIGN_ASK.test(text))
         return {
             deny: `orbit ${op}: a pick that signs needs the text to read «✍️ sign <id>: <title>», the shape x-mod-guard reads when it signs`,
@@ -164,6 +164,7 @@ function misShapedPress(op: string, text: string, pick: string) {
         : undefined;
 }
 
+// the first text over the cap, named with its length, so the session can shorten that one
 function overCap(op: string, texts: string[]) {
     const long = texts.find((x) => [...x].length > ORBIT_TEXT_MAX);
     return long === undefined
@@ -207,7 +208,7 @@ export function orbitOp(
                 const v = (item ?? {}) as Record<string, unknown>;
                 const text = oneLine(v.text);
                 if (!text) continue;
-                const refused = misShapedPress('add', text, oneLine(v.pick));
+                const refused = misShapedAsk('add', text, oneLine(v.pick));
                 if (refused) return refused;
                 const hiddenNote = oneLine(v.hiddenNote);
                 const link = oneLine(v.link);
@@ -312,7 +313,7 @@ export function orbitOp(
                 };
             const tooLong = overCap('follow', [text]);
             if (tooLong) return tooLong;
-            const refused = misShapedPress(
+            const refused = misShapedAsk(
                 'follow',
                 text,
                 oneLine(input.pick) ||
