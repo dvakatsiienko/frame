@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-05T22:03:00Z'
+updated_date: '2026-11-05T22:27:00Z'
 labels:
   - m
 dependencies: []
@@ -50,4 +50,6 @@ restored 00:03, wishkeeper's catch: my 23:48 description rewrite cut these with 
 - FRM-509's listing: 84 heads, 30 `worktree-*`/`verify-*`, 43 `coder/*`, 32 merged: a file he reads, then a ⚠️ ask; its refs may point at `side-channel-prep/` in the notes folder
 - `ticket-flow.build.py:186,195` «one glide step each»
 - wishkeeper's small ones: FRM-501's pr `## 🪢 habits` adds `crew-lead/watching.md`; `body.md` names `new verb:`; `shape-lane-dispatch/SKILL.md:41` says how a planless card moves; `review-rounds.md` appends frame#126's live-session miss; FRM-434, FRM-473 re-signs say «worth unchanged» with no section; W847 and W2000 same words, keep one; `wish-cover --all` in `craft-pm`
+
+from wishkeeper, 00:27. open: PK-321's 19:02 groom collision, a no-wish line keyed by minute can hide his prompt of that minute; W247–W251 prios; `siesta/SKILL.md:22` lost `x fleet` and «a miss red» to its budget, regroom; a zero-session audit with live codies should read not checked; FRM-501 W1979's «harder framework» reads like wispr for «harness», ask; `crew-pm-flow` board drift since v15. done: `body.md` names `new verb:`, his ⌘O
 <!-- SECTION:NOTES:END -->
