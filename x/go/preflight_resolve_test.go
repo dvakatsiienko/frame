@@ -15,7 +15,7 @@ func preflightResolve(t *testing.T, exits string, env ...string) (asRun, string)
 	dir := preflightRepo(t)
 	write(t, filepath.Join(dir, "package.json"), `{"scripts":{"retired-names:check":"node check.ts","plant":"touch planted-by-pnpm"}}`)
 	write(t, filepath.Join(dir, "script/real.sh"), "#!/bin/sh\n")
-	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — this chunk\n\n### exit lines\n\n"+exits)
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — this chunk\n\n### exit lines\n\n"+exits+"\n## Problem Statement\n")
 	raw, _ := json.Marshal("## want\n\na thing\n")
 	server := newFakeLinear(t, func(gqlCall) string {
 		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`

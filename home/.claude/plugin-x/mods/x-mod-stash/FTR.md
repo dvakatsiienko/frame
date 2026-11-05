@@ -709,6 +709,9 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given the clock past the stored rung's reset, then one `🔋 new window: reset done, resume the fleet; a hand park stays` if that rung was a stop or a park, and the rung clears; a meter write never decides it, and a past reset never reads as burn or stop
   - decision: a burn overwrites a park, so with the default numbers a park reaches the reset only with `pace-burn` at 0, and in practice the line follows a stop (the stored-rung rule as signed)
   - proof: tests/pace.test.ts::a frozen 97 % past its reset sends one new window, no burn, no repeat stop; ::a stored park past the reset sends the new window, a hand park named; ::a window never parked or stopped sends no new window
+- ✅ a session flips any 🎛️ switch through `pnpm mods:set part <key> on|off`, bare `part` lists them with their state; it holds for every session, an unknown key is refused with the list
+  - decision: clio tweaks the settings herself (dima, 2026-11-05, his tick on the settings door)
+  - proof: set.test.ts::a switch flips one key and keeps the rest of the store; ::the switch list reads the keys of the real parts list
 - ✅ the numbers are 🎛️ rows, read at each poll
   - given `pnpm mods:set <pace-stop|pace-burn|pace-park|pace-over|pace-under|hot-minutes|hot-late> <number>`, then the next poll uses it with no reload, and the 🎛️ `stash · knobs` row shows it; a number out of its range or an unknown key is refused with the list
   - proof: tests/pace.test.ts::a retuned number moves the rung at the next poll, no reload; ::🎛️ shows a pace number; set.test.ts::a number takes only a known key inside its range

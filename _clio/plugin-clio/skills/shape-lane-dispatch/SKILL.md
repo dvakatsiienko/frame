@@ -14,7 +14,7 @@ the machine part of lane init, clio's alone: dima signed the chunks in `clio:sha
 
 ## 2 · the spec
 
-read matt's `to-spec` and follow it:
+read matt's `to-spec` and follow it whole; the spec is wholly mine (dima, 2026-11-05): its «check with the user» is my seam check, never a wait on him:
 - the spec sits in `.scratch/<feature>/spec.md`, one section per chunk, each section opening with its own `wish: <ticket>` line; every lane with a member gets one, a quick lane too
 - a `wisphunter` card reads the spec's paths, premises, «already exists» claims and each chunk's `decided` against live code, its brief naming the spec file and opening «no diff exists», each finding folded before the seal (FRM-503); a signed `decided` the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine

@@ -11,7 +11,7 @@ import (
 func preflightSpec(t *testing.T, section string) asRun {
 	t.Helper()
 	dir := preflightRepo(t)
-	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-8 — another chunk\n\n### exit lines\n\n1. `x lane gate --dry` is not this ticket's\n\n"+section)
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-8 — another chunk\n\n### exit lines\n\n1. `x lane gate --dry` is not this ticket's\n\n"+section+"\n## Problem Statement\n")
 	raw, _ := json.Marshal("## want\n\na thing\n\n## signed\n\n✍️ signed\n")
 	server := newFakeLinear(t, func(gqlCall) string {
 		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
@@ -45,7 +45,7 @@ func TestPreflightLintsTheLaneSpecsExitLines(t *testing.T) {
 func TestPreflightReadsTheLaneSpecFromAWorktree(t *testing.T) {
 	t.Parallel()
 	dir := preflightRepo(t)
-	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n")
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n"+"\n## Problem Statement\n")
 	tree := filepath.Join(t.TempDir(), "tree")
 	gitT(t, dir, "worktree", "add", "-q", "--detach", tree)
 	raw, _ := json.Marshal("## want\n\na thing\n")
@@ -64,10 +64,10 @@ func TestPreflightReadsTheLaneSpecFromAWorktree(t *testing.T) {
 func TestPreflightReadsTheMainCheckoutsSpecBesideAWorktreesOwn(t *testing.T) {
 	t.Parallel()
 	dir := preflightRepo(t)
-	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n")
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n"+"\n## Problem Statement\n")
 	tree := filepath.Join(t.TempDir(), "tree")
 	gitT(t, dir, "worktree", "add", "-q", "--detach", tree)
-	write(t, filepath.Join(tree, ".scratch/lane-9/spec.md"), "## FRM-9 — another chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
+	write(t, filepath.Join(tree, ".scratch/lane-9/spec.md"), "## FRM-9 — another chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n"+"\n## Problem Statement\n")
 	raw, _ := json.Marshal("## want\n\na thing\n")
 	server := newFakeLinear(t, func(gqlCall) string {
 		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
@@ -84,7 +84,7 @@ func TestPreflightRefusesATicketTwoLaneSpecsHold(t *testing.T) {
 	t.Parallel()
 	dir := preflightRepo(t)
 	for _, lane := range []string{"lane-1", "lane-2"} {
-		write(t, filepath.Join(dir, ".scratch", lane, "spec.md"), "## FRM-1 — a chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
+		write(t, filepath.Join(dir, ".scratch", lane, "spec.md"), "## Problem Statement\n\n## FRM-1 — a chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n"+"\n## Problem Statement\n")
 	}
 	raw, _ := json.Marshal("## want\n\na thing\n")
 	server := newFakeLinear(t, func(gqlCall) string {
@@ -120,5 +120,22 @@ func TestPreflightFlagsAVerbOnMainOnlyWhereTheLineClaimsToAddIt(t *testing.T) {
 				t.Errorf("flagged = %v, exit %d\n%s", flagged, got.code, got.stdout)
 			}
 		})
+	}
+}
+
+// a spec with exit lines and no to-spec section: the seal skipped matt's step
+func TestPreflightRefusesASpecThatNeverRanToSpec(t *testing.T) {
+	t.Parallel()
+	dir := preflightRepo(t)
+	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n")
+	raw, _ := json.Marshal("## want\n\na thing\n")
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issue":{"id":"uuid-9","description":` + string(raw) + `,"updatedAt":"2026-10-09T00:00:00.000Z"}}}`
+	})
+
+	_, got := runLinear(t, server, nil, "brief", "preflight", "FRM-1", "--repo", dir)
+
+	if got.code == 0 || !strings.Contains(got.stdout, "never ran matt's to-spec") {
+		t.Fatalf("exit %d, want the missing to-spec named\n%s%s", got.code, got.stdout, got.stderr)
 	}
 }

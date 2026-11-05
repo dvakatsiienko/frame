@@ -91,25 +91,19 @@ brief says which, and when it does not, ask once, up front.
 
 1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. a live proof that writes
    shared pr state (the body, labels) is sixth sense's; you prove locally.
-2. **the local review pair, in parallel**: `mattpocock-skills:code-review` over the branch (matt's standards and
-   spec review, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
-   while its free quota lasts (`coderabbit review --usage`; none left → matt's code-review alone). fix what
-   both find, push.
-   - the built-in `/code-review` hunts bugs; matt's grades against the house rules and the spec's exit lines. every lane runs matt's; a big change adds the built-in beside a paired `wisphunter` card (dima, 2026-10-30)
-3. **one local review per sixth sense round** (dima, 2026-10-22): before each sixth sense round after the first, the pair
-   reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching sixth sense's
-   3 rounds; each review gets one graded line (reviewer, findings, useful or noise) in your done report,
+2. **the local reviews, one of each per chunk** (dima, 2026-11-05): `mattpocock-skills:code-review` over the branch (against his wishes and the spec, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`); the built-in `/code-review` (against the code itself); a big change adds one plain `wisphunter` card; no sixth sense on the lane adds a second built-in. `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`), a silent skip with no quota (`coderabbit review --usage`). fix what they find, push. the ci review (step 5) is the last review, always one run. after a sixth sense round: fix, rerun the covering tests, no review rerun; one scoped `wisphunter` read once a chunk only on a fix past 50 lines or 20 % of the chunk, a new file, concurrency, stored state or a fail-open path (the model: `docs/research/review-model.md`).
+3. each review gets one graded line (reviewer, findings, useful or noise) in your done report,
    which names `local reviews: <n>`; your worktree cannot write the shared log, so clio copies the lines into
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
 4. **with a sixth sense** named in the brief (`🌗 🔎 sixth sense: <scope> | #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: «final», your head pushed, goes to the coordinator as `[done]`, who hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense). it reads the ci reviewer for you; every reviewer thread is still yours to
-   answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
+   answer on github. fix what each round lists, push (the ci reviewer's one round
    was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your `[done]` report on `clean` quotes the verdict object, the round count, the
    head sha and the test command with its exit. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
-5. **the ci reviewer** in `bytes`: `x lane review <pr>` is its door. it requests the one round, and at
+5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, and at
    the 1-round cap names clio's approval as the way past. run it once, at «final», never per push (a round is ~13 min of opus).
    fix what is real; answer «declined: <why>» on the thread.
 6. **hand over**, once both reviews are handled: the «final» line to the coordinator (dima is never added as a

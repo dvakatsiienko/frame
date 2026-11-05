@@ -32,7 +32,7 @@ work; `recipes/refresh-system-checkup/` sharpens it.
 own — the checks this plate runs itself (scripts sit in `scripts/` beside this file):
 - **skill-shape** — skills that would gain from a split into a reference file, a step a script should do,
   logic duplicated across skills · judgment, a `helper` card with the method and last run of
-  `docs/research/skill-split-scriptify-scan.md`; strength-3 items only, the rest stay in that doc
+  `docs/research/skill-split-scriptify-scan.md` (deleted 2026-11-04, `git log` holds it); strength-3 items only, the rest stay in that doc
 - **hook-health** — hook latency and errors per hook over the last days of the local OTel tap ·
   script, `scripts/hook-health.sh [days]` (🔴 p95 over 1 s or any error, 🟡 over 300 ms)
 - **naming-entity-first** — verb-first names, FRM-219 · script, `node scripts/naming-entity-first.ts`

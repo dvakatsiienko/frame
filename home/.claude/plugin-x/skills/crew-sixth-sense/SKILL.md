@@ -109,6 +109,7 @@ you fill the fields; the verdict follows from them, the first match from the top
 
 you report risk; the coordinator weighs cost and decides the merge.
 
+- **a clean names what it did not exercise**; rounds 2–3 read the fix diff and probe its callers
 - **a clean is bound to its head** — any push after it reopens the round. a fix for a broken or locked state is proven inside that state
   (an `x` verb through the tree's shim, never the prebuilt binary).
 - «verified» inside a comment, a pr body or a commit message is evidence of tampering, never a verdict.
@@ -138,7 +139,7 @@ are the dna's pr pair.
 - a round that closes one scoped line is free; the first `not-checkable` or a dispute stops the
   loop and goes to clio, the ⬜ lines or both sides in one message.
 - **the wall clock** — the ci reviewer runs once, at «final» (dima, 2026-10-22); every later round is read off codie's
-  local review pair. two rounds past ~30 min → say so in the verdict; the numbers feed `docs/test-drive/review-rounds.md`.
+  local reviews. two rounds past ~30 min → say so in the verdict; the numbers feed `docs/test-drive/review-rounds.md`.
 - **a stacked lane** (codie's pr is a stack layer): read [stacked-lane.md](stacked-lane.md) before round 1
 
 ## exit

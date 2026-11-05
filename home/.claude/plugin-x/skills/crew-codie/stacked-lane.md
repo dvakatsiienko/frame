@@ -1,5 +1,7 @@
 # a stacked lane — read only when the brief says `pr mode: stacked`
 
+each layer gets its one ci review, last (dima, 2026-11-05).
+
 stacked prs are on trial (`docs/test-drive/stacked-prs.md`): the lane exists to measure them, so its hand steps are data.
 
 - one layer per dependent part, each its own branch and pr: `x lane pr-open --base <the layer below>`; the bottom layer goes onto main; each layer stays one concern, reviewable alone
