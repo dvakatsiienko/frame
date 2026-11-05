@@ -22,11 +22,22 @@ const (
 	ticketCheck = "ticket read"
 )
 
-// a read matches under any skill dir, so a rename of the skill cannot break it; a session opened before a file's
-// birth reads n/a for it, never a miss
-var auditFiles = []struct{ name, match, born string }{
-	{"crew-dna", "/crew-dna/SKILL.md", "2026-10-09"},
-	{lessonsName, "/how-you-work.md", "2026-09-30"},
+// a shell read: the verb, then its args up to the file, the file's name standing alone
+const (
+	shellRead = `(?:(?m:^)|[\s;&|(])(?:cat|head|tail|sed|bat|less)\s`
+	readArgs  = `(?:[^;&|<>\n]*[^\w.\-;&|<>\n])?`
+	nameEnd   = `(?:$|[^\w.\-])`
+)
+
+// a read matches under any skill dir and from any dir the shell sits in, so neither a rename nor a `cd` can break it;
+// a session opened before a file's birth reads n/a for it, never a miss
+var auditFiles = []struct {
+	name, match, born string
+	shell             *regexp.Regexp
+}{
+	{"crew-dna", "/crew-dna/SKILL.md", "2026-10-09", regexp.MustCompile(shellRead + readArgs + `crew-dna/SKILL\.md` + nameEnd +
+		`|\bcd\s+(?:[^;&|\n]*[^\w.\-;&|\n])?crew-dna/?\s*(?:&&|;|\n)[\s\S]*?` + shellRead + `(?:[^;&|<>\n]*\s)?["']?(?:\./)?SKILL\.md` + nameEnd)},
+	{lessonsName, "/how-you-work.md", "2026-09-30", regexp.MustCompile(shellRead + readArgs + `how-you-work\.md` + nameEnd)},
 }
 
 var (
@@ -34,7 +45,6 @@ var (
 	auditEditBins  = regexp.MustCompile(`\b(edit-anchored|edit-batch)\b`)
 	briefTicket    = regexp.MustCompile(`\b(FRM|BYT)-\d+\b`)
 	ticketReadCmd  = regexp.MustCompile(`\blinear[ :-](read|issue)\b`)
-	fileReadCmd    = regexp.MustCompile(`(^|[\s;&|(])(cat|head|tail|sed|bat|less)\s`)
 )
 
 type compactRead struct {
@@ -238,10 +248,10 @@ func auditCounts(sessions []codieSession) []string {
 const codieOpeningRows = 100
 
 // its opening prompt is the command, or its opening rows call the skill; a later load is a coordinator reading the contract
-func opensAsCodie(lines [][]byte, opening []byte) bool {
+func opensAsCodie(lines [][]byte, opening []byte) (isCodie bool, args string) {
 	for id, now := range skillNow {
 		if now == "x:crew-codie" && bytes.Contains(opening, []byte("<command-name>/"+id+"</command-name>")) {
-			return true
+			return true, ""
 		}
 	}
 	for _, raw := range lines[:min(codieOpeningRows, len(lines))] {
@@ -252,11 +262,11 @@ func opensAsCodie(lines [][]byte, opening []byte) bool {
 		}
 		for _, b := range blocks {
 			if b.Type == "tool_use" && b.Name == "Skill" && skillNow[b.Input.Skill] == "x:crew-codie" {
-				return true
+				return true, b.Input.Args
 			}
 		}
 	}
-	return false
+	return false, ""
 }
 
 // one codie session's reads and edits; a session that does not open as codie is none
@@ -270,13 +280,16 @@ func auditSession(path string) (codieSession, bool) {
 			break
 		}
 	}
-	if !opensAsCodie(lines, opening) {
+	isCodie, args := opensAsCodie(lines, opening)
+	if !isCodie {
 		return codieSession{}, false
 	}
 	s := codieSession{ID: filepath.Base(path)[:min(8, len(filepath.Base(path)))], Compacts: []compactRead{}}
+	// the brief sits in the opening prompt or the Skill call's args
+	s.tickets = briefTicket.FindAllString(args, -1)
 	var first auditLine
 	if json.Unmarshal(opening, &first) == nil {
-		s.tickets = briefTicket.FindAllString(string(first.Message.Content), -1)
+		s.tickets = append(s.tickets, briefTicket.FindAllString(string(first.Message.Content), -1)...)
 	}
 	reads := map[string]string{}
 	seen := map[string]bool{}
@@ -321,9 +334,8 @@ func auditSession(path string) (codieSession, bool) {
 
 func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string) {
 	target := b.Input.FilePath + " " + b.Input.Command
-	isRead := b.Name == "Read" || b.Name == "Bash" && fileReadCmd.MatchString(b.Input.Command)
 	for _, file := range auditFiles {
-		if !isRead || !strings.Contains(target, file.match) {
+		if !(b.Name == "Read" && strings.HasSuffix(b.Input.FilePath, file.match) || b.Name == "Bash" && file.shell.MatchString(b.Input.Command)) {
 			continue
 		}
 		reads[file.name] = cmp.Or(reads[file.name], at)

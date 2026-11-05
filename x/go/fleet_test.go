@@ -671,6 +671,53 @@ func TestAuditSkipsASessionThatOnlyMentionsTheCoder(t *testing.T) {
 	}
 }
 
+func TestAuditCodieReadsABashLineWhateverDirItSitsIn(t *testing.T) {
+	t.Parallel()
+	const day = "2026-10-20T"
+	cases := []struct{ name, command, file, want string }{
+		{"cd, then crew-dna by a relative path", "cd /p/skills; cat crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"cd into crew-dna", "cd /p/skills/crew-dna && cat SKILL.md", "crew-dna", checkRead},
+		{"cd into crew-dna with a slash", "cd crew-dna/; sed -n 1,20p SKILL.md", "crew-dna", checkRead},
+		{"cd into crew-codie", "cd crew-codie && cat how-you-work.md", lessonsName, checkRead},
+		{"cd and the read on two lines", "cd /p/skills/crew-dna\ncat SKILL.md", "crew-dna", checkRead},
+		{"a read, a mention on the next line", "cat a.txt\necho how-you-work.md", lessonsName, checkMissed},
+		{"cd into crew-dna, another skill's contract read", "cd crew-dna && cat ../crew-lead/SKILL.md", "crew-dna", checkMissed},
+		{"cd into a longer dir", "cd /p/skills/crew-dna-old && cat SKILL.md", "crew-dna", checkMissed},
+		{"an absolute path", "head -50 /p/skills/crew-codie/how-you-work.md", lessonsName, checkRead},
+		{"after another file", "cat a.txt how-you-work.md", lessonsName, checkRead},
+		{"quoted", `cat "/p/skills/crew-dna/SKILL.md"`, "crew-dna", checkRead},
+		{"another skill's contract", "cd /p/skills/crew-lead && cat SKILL.md", "crew-dna", checkMissed},
+		{"a longer name in front", "cat old-how-you-work.md", lessonsName, checkMissed},
+		{"a longer name behind", "cat how-you-work.md.bak", lessonsName, checkMissed},
+		{"a name only mentioned beside a read", "cat a.txt; echo how-you-work.md", lessonsName, checkMissed},
+		{"a search of the file", "rg rule how-you-work.md", lessonsName, checkMissed},
+		{"a write to the file", "echo x > how-you-work.md", lessonsName, checkMissed},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			s := auditOf(t, auditOpening(day+"09:00:00.000Z", "a brief"),
+				called("Bash", map[string]any{"command": c.command}, day+"10:01:00.000Z"),
+				called("Edit", map[string]any{"file_path": "/x/a.go"}, day+"10:02:00.000Z"))
+			if got := auditStateOf(s, c.file); got != c.want {
+				t.Errorf("%s reads %q, want %q", c.file, got, c.want)
+			}
+		})
+	}
+}
+
+func TestAuditCodieReadsTheTicketFromTheSkillCallsArgs(t *testing.T) {
+	t.Parallel()
+	const at = "2026-11-05T10:00:00.000Z"
+	s := auditOf(t, said("carry on"),
+		called("Skill", map[string]any{"skill": "x:crew-codie", "args": "FRM-1 the job"}, at),
+		called("Bash", map[string]any{"command": "x linear read FRM-1 --comments"}, at),
+		called("Edit", map[string]any{"file_path": "/x/a.go"}, at))
+	if got := auditStateOf(s, ticketCheck); got != checkRead {
+		t.Errorf("the ticket check reads %q, want %q", got, checkRead)
+	}
+}
+
 func TestAuditCountsASkillCallInTheOpeningRows(t *testing.T) {
 	t.Parallel()
 	const at = "2026-11-05T10:00:00.000Z"
