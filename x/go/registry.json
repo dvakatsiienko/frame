@@ -343,7 +343,7 @@
             ],
             "touches": [
                 "github — the pr's merge and a bytes approve, as dima's gh login",
-                "~/.claude/shelf/pr-verified.json — sixth sense's clean per pr, read",
+                "~/.claude/shelf/pr-verified.json — the verified clean per pr and who read it (`:by`, none is sixth sense), read",
                 "linear — a self-edit's chunk ticket, its ## signed block read",
                 "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
@@ -1161,7 +1161,14 @@
             ]
         },
         {
-            "args": [],
+            "args": [
+                {
+                    "description": "only these edited files land; none means every edited file",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "paths"
+                }
+            ],
             "flags": {
                 "add": {
                     "description": "comma-separated scratch files never pulled that may land as new files",
@@ -1171,7 +1178,7 @@
             },
             "name": "mods edit push",
             "needsApply": false,
-            "purpose": "write the scratch edits into the live mod only when its overlay validates green, all files or none",
+            "purpose": "write the scratch edits, or only the named ones, into the live mod when its overlay validates green, all or none",
             "steps": ["plan", "test", "write"],
             "touches": [
                 "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"

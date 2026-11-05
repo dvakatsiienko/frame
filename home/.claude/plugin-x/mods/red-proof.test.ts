@@ -47,14 +47,23 @@ describe('red-proof --cmd --pairs', () => {
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
     });
 
-    it('returns the bytes when the run crashes every time', () => {
-        const { file, pairs } = fixture();
+    it('returns the bytes when each swapped run crashes', () => {
+        const { copy, file, pairs } = fixture();
         const r = spawnSync(
             BIN,
-            ['--cmd', '--pairs', pairs, file, '--', 'sh', '-c', 'kill -9 $$'],
+            [
+                '--cmd',
+                '--pairs',
+                pairs,
+                file,
+                '--',
+                'sh',
+                '-c',
+                `cmp -s ${file} ${copy} || kill -9 $$`,
+            ],
             { encoding: 'utf8' },
         );
-        expect(r.status).toBe(1);
+        expect([r.status, r.stdout.match(/^RED/gm)?.length]).toEqual([0, 2]);
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
     });
 
@@ -66,14 +75,14 @@ describe('red-proof --cmd --pairs', () => {
             { stdio: 'ignore' },
         );
         const closed = new Promise((done) => child.on('close', done));
-        const until = Date.now() + 5000;
+        const until = Date.now() + 12_000;
         while (readFileSync(file, 'utf8') === ORIGINAL && Date.now() < until)
             await new Promise((r) => setTimeout(r, 20));
         expect(readFileSync(file, 'utf8')).not.toBe(ORIGINAL);
         child.kill('SIGTERM');
         await closed;
         expect(readFileSync(file, 'utf8')).toBe(ORIGINAL);
-    }, 15_000);
+    }, 30_000);
 
     // a swap that breaks the module's load fails every test whatever it reads, so it proves nothing: named apart from a red
     it('names a swap that broke the load, and fails, instead of counting it red', () => {
@@ -95,5 +104,60 @@ describe('red-proof --cmd --pairs', () => {
         expect([r.status, r.stdout.match(/did not load/g)?.length]).toEqual([
             1, 1,
         ]);
+    });
+});
+
+describe('red-proof on a base already red', () => {
+    const redBase = (say: string) => {
+        const { file, pairs } = fixture();
+        const seen = `${file}.seen`;
+        const r = spawnSync(
+            BIN,
+            [
+                '--cmd',
+                '--pairs',
+                pairs,
+                file,
+                '--',
+                'sh',
+                '-c',
+                `cat ${file} >> ${seen}; ${say}; exit 1`,
+            ],
+            { encoding: 'utf8' },
+        );
+        return { r, seen: readFileSync(seen, 'utf8') };
+    };
+
+    it('runs the command once, on the unmutated file', () => {
+        const { seen } = redBase('true');
+        expect(seen).toBe(ORIGINAL);
+    });
+
+    it('prints what failed in a plugin test', () => {
+        const { r } = redBase(
+            `echo '(pass) a green row'; echo '(fail) row one [12.50ms]'; echo '(fail) row two'`,
+        );
+        expect([r.status, r.stderr]).toEqual([
+            1,
+            'red-proof: the base is already red, nothing swapped: 2 failed\n  row one\n  row two\n',
+        ]);
+    });
+
+    it('prints the failed names of a go test', () => {
+        const { r } = redBase(`echo '--- FAIL: TestOne (0.00s)'`);
+        expect(r.stderr).toContain('1 failed\n  TestOne\n');
+    });
+
+    it('prints the failed names of a vitest run once each', () => {
+        const { r } = redBase(
+            `echo ' × a.test.ts > one 5ms'; echo ' FAIL  a.test.ts > one'`,
+        );
+        expect(r.stderr).toContain('1 failed\n  a.test.ts > one\n');
+    });
+
+    it('prints the end of a red run that names no test', () => {
+        const { r } = redBase(`echo 'SyntaxError: nope'`);
+        expect(r.stderr).toContain('no failed name read');
+        expect(r.stderr).toContain('SyntaxError: nope');
     });
 });

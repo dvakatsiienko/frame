@@ -1,8 +1,24 @@
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+    chmodSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { clockReads, failures, outcome, summary } from './test.ts';
+import {
+    clockReads,
+    failures,
+    outcome,
+    summary,
+    timedOutFiles,
+    withRerun,
+} from './test.ts';
 
 // the one sample both parsers of claude plugin test's output are held to (x/go/mods_test.go reads it too)
 const SAMPLE = readFileSync(
@@ -18,6 +34,136 @@ const run = (pass: number, fail: number) =>
         ` ${pass} pass`,
         ` ${fail} fail`,
     ].join('\n');
+
+describe('a whole run of the script, a fake claude listing what it was handed', () => {
+    const script = join(import.meta.dirname, 'test.ts');
+    const tests = join(import.meta.dirname, 'x-mod-guard/tests');
+    const runScript = (args: string[], env: Record<string, string>) => {
+        const bin = mkdtempSync(join(tmpdir(), 'mods-test-bin-'));
+        const claude = join(bin, 'claude');
+        writeFileSync(
+            claude,
+            '#!/bin/sh\nfor f in "$3"/tests/*.test.ts*; do echo "tests/$(basename "$f"):"; echo "(pass) ran $(basename "$f")"; done\n',
+        );
+        chmodSync(claude, 0o755);
+        return spawnSync('node', [script, ...args], {
+            encoding: 'utf8',
+            env: { ...process.env, ...env, PATH: `${bin}:${process.env.PATH}` },
+        });
+    };
+    const file = 'hint.test.ts';
+
+    it('takes --only through a symlink to a mod', () => {
+        const link = join(mkdtempSync(join(tmpdir(), 'mods-test-link-')), 'l');
+        symlinkSync(tests, link);
+        const r = runScript(['--only', join(link, file)], { X_TEST: '1' });
+        expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
+    });
+
+    it('runs only the file --only names', () => {
+        const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
+        const r = runScript(['--only', join(tests, file)], { X_STATE: state });
+        expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
+    });
+
+    it.each([
+        ['a file outside any mod', ['--only', script]],
+        ['a file that is not there', ['--only', join(tests, 'no.test.ts')]],
+        ['a mod beside it', ['--only', join(tests, file), 'x-mod-holds']],
+    ])('refuses %s with its usage', (_, args) => {
+        const r = runScript(args, { X_TEST: '1' });
+        expect([r.status, r.stderr]).toEqual([
+            2,
+            expect.stringContaining('usage: pnpm mods:test'),
+        ]);
+    });
+
+    it('logs one line per run under X_STATE', () => {
+        const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
+        runScript(['x-mod-holds'], { X_STATE: state, X_TEST: '' });
+        const log = readFileSync(join(state, 'mods-test.log'), 'utf8');
+        expect(log.trim().split('\n')).toEqual([
+            expect.stringMatching(/\tx-mod-holds\tmods:test: 1 mods green/),
+        ]);
+    });
+
+    it('runs only the timed-out file a second time', () => {
+        const bin = mkdtempSync(join(tmpdir(), 'mods-test-bin-'));
+        const seen = join(bin, 'seen');
+        const claude = join(bin, 'claude');
+        writeFileSync(
+            claude,
+            `#!/bin/sh\necho "tests/${file}:"\nif [ -e ${seen} ]; then ls "$3"/tests/*.test.ts* | wc -l | tr -d ' ' >> ${seen}; echo "(pass) one"; exit 0; fi\ntouch ${seen}\necho "(fail) one [5001ms]"\necho "  Error: timed out after 5000 ms"\nexit 1\n`,
+        );
+        chmodSync(claude, 0o755);
+        const r = spawnSync('node', [script, 'x-mod-guard'], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                PATH: `${bin}:${process.env.PATH}`,
+                X_TEST: '1',
+            },
+        });
+        expect([r.status, readFileSync(seen, 'utf8').trim()]).toEqual([0, '1']);
+        expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
+    });
+
+    it('logs nothing under X_TEST', () => {
+        const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
+        runScript(['x-mod-holds'], { X_STATE: state, X_TEST: '1' });
+        expect(readdirSync(state)).toEqual([]);
+    });
+});
+
+describe('a timeout-only red', () => {
+    it('reads the kit words the x verbs read too', () => {
+        expect(
+            timedOutFiles(
+                readFileSync(
+                    join(import.meta.dirname, 'plugin-test-timeout.sample.txt'),
+                    'utf8',
+                ),
+            ),
+        ).toEqual(['tests/a.test.ts']);
+    });
+
+    const timedOut = (name: string) =>
+        `(fail) ${name} [5002.31ms]\n  Error: timed out after 5000 ms\n`;
+
+    it('names the files whose every failed row timed out', () => {
+        expect(
+            timedOutFiles(
+                `tests/a.test.ts:\n${timedOut('one')}(pass) two\ntests/b.test.tsx:\n${timedOut('three')}tests/c.test.ts:\n(pass) four\n 2 pass\n 2 fail\n`,
+            ),
+        ).toEqual(['tests/a.test.ts', 'tests/b.test.tsx']);
+    });
+
+    it.each([
+        [
+            'a real red beside it',
+            `tests/a.test.ts:\n${timedOut('one')}(fail) two [1ms]\n  AssertionError: no\n`,
+        ],
+        [
+            'a file that did not load',
+            'tests/a.test.ts:\n(fail) the file did not load\n',
+        ],
+        ['nothing failed', 'tests/a.test.ts:\n(pass) one\n'],
+    ])('reads no timeout-only red with %s', (_, output) => {
+        expect(timedOutFiles(output)).toBeUndefined();
+    });
+
+    it('takes the second reading of each file it ran again', () => {
+        const merged = withRerun(
+            `tests/a.test.ts:\n${timedOut('one')}(pass) two\ntests/c.test.ts:\n(pass) four\n 3 pass\n 1 fail\n`,
+            'tests/a.test.ts:\n(pass) one\n(pass) two\n 2 pass\n 0 fail\n',
+        );
+        expect(outcome(merged)).toEqual({
+            errored: [],
+            failed: [],
+            passed: 3,
+        });
+    });
+});
 
 describe('outcome', () => {
     it('tells a test that failed from a file that did not load', () => {

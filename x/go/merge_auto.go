@@ -640,7 +640,8 @@ func clock() time.Time {
 
 /* Checks */
 
-// a «clean» in a pr comment or body is never read: only sixth sense writes this store
+// a «clean» in a pr comment or body is never read: only sixth sense and a stamp through pr-watch.sh write this store; a
+// sibling `<repo>#<n>:by` key names a verifier other than sixth sense, and the gate treats both alike, only the detail differs
 func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	c := mergeCheck{Name: "sixth-sense"}
 	home, _ := os.UserHomeDir()
@@ -652,21 +653,25 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 		return c
 	}
 	verified := store[repo+"#"+n]
+	by := "sixth sense"
+	if who := store[repo+"#"+n+":by"]; who != "" {
+		by = who + "'s read"
+	}
 	switch {
 	case verified == "":
-		c.Detail = "no sixth sense clean recorded for " + repo + "#" + n
+		c.Detail = "no clean recorded for " + repo + "#" + n
 	case verified == head:
-		c.OK, c.Detail = true, "clean on "+short(head)
+		c.OK, c.Detail = true, "clean on "+short(head)+" by "+by
 	default:
-		c.OK, c.Detail = carried(verified, head, base, ref)
+		c.OK, c.Detail = carried(verified, by, head, base, ref)
 	}
 	return c
 }
 
 // the whole branch change is compared, merges included: per-commit patch-ids let an edit inside a merge slip
 // (sixth sense round 1); they only name the commit to blame
-func carried(verified, head, base, ref string) (bool, string) {
-	moved := "sixth sense's clean is on " + short(verified) + ", the head is " + short(head)
+func carried(verified, by, head, base, ref string) (bool, string) {
+	moved := "the clean by " + by + " is on " + short(verified) + ", the head is " + short(head)
 	if got, _ := gitIn("", "fetch", "-q", "origin", base, ref); !got.ok {
 		return false, moved + "; git could not fetch them to compare: " + logLine(got.log)
 	}
@@ -684,14 +689,14 @@ func carried(verified, head, base, ref string) (bool, string) {
 		return false, moved + "; " + err.Error()
 	}
 	if wasChange == nowChange {
-		return true, "clean on " + short(verified) + ", carried to " + short(head) + ": the branch's patch-id is unchanged"
+		return true, "clean on " + short(verified) + " by " + by + ", carried to " + short(head) + ": the branch's patch-id is unchanged"
 	}
 	was, errWas := patchIDs(verified, base)
 	now, errNow := patchIDs(head, base)
 	if errWas == nil && errNow == nil {
 		for _, c := range now {
 			if !slices.ContainsFunc(was, func(v patchCommit) bool { return v.id == c.id }) {
-				return false, short(c.sha) + " " + c.subject + " is past sixth sense's clean on " + short(verified)
+				return false, short(c.sha) + " " + c.subject + " is past the clean by " + by + " on " + short(verified)
 			}
 		}
 	}
@@ -755,7 +760,7 @@ const reviewClean = "review:clean"
 
 func approveAndAwait(api string, d *mergeDecision) (string, error) {
 	if _, _, err := ghSend(asDima, http.MethodPost, api+"/pulls/"+d.PR+"/reviews", map[string]string{
-		"commit_id": d.Head, "event": "APPROVE", "body": "sixth sense clean on " + short(d.Head) + " — x lane merge-auto",
+		"commit_id": d.Head, "event": "APPROVE", "body": short(d.Head) + ": " + d.Checks[0].Detail + " — x lane merge-auto",
 	}, nil); err != nil {
 		return "", err
 	}

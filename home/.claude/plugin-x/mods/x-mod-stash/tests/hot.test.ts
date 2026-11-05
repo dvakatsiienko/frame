@@ -55,19 +55,24 @@ test('a hot session is pinged 50 minutes after its last turn ended', async ($, o
     ]);
 });
 
-test('🔥 switched on while idle counts its 50 minutes from the last turn end', async ($, on) => {
-    const s = await started($, on);
-    await endTurn($);
-    await s.clock.advance(17 * MIN);
-    await s.ui.press({ key: 'hot' });
-    await s.clock.advance(32 * MIN);
-    const before = s.pings.length;
-    await s.clock.advance(MIN);
-    expect([before, s.pings]).toEqual([
-        0,
-        [expect.stringContaining('keep-hot ping')],
-    ]);
-});
+// the kit refuses node:os, so no bound here can read the load: this one holds at load 26, where 5 s timed out (FRM-470)
+test(
+    '🔥 switched on while idle counts its 50 minutes from the last turn end',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const s = await started($, on);
+        await endTurn($);
+        await s.clock.advance(17 * MIN);
+        await s.ui.press({ key: 'hot' });
+        await s.clock.advance(32 * MIN);
+        const before = s.pings.length;
+        await s.clock.advance(MIN);
+        expect([before, s.pings]).toEqual([
+            0,
+            [expect.stringContaining('keep-hot ping')],
+        ]);
+    },
+);
 
 test('a busy session is never pinged', async ($, on) => {
     const s = await hotSession($, on);

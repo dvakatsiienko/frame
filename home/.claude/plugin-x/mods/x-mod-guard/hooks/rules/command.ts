@@ -20,6 +20,8 @@ export type Context = {
     written?: ReadonlyMap<string, string>;
     // the session is clio's: it cleans its fleet's scratch trees and branches on its own
     isClio?: boolean;
+    // the call holds this session until it ends: no run_in_background
+    isForeground?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches
     cleanTrees?: Set<string>;
     // the job-tmp dirs where a symlink or a repo whose git dir sits outside the job tmp (a worktree of frame) reaches out

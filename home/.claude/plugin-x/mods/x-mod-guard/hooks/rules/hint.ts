@@ -31,6 +31,9 @@ const ECHO_JSON_HINT =
     "x-mod-guard hint: zsh's `echo` reads `\\n` and other escapes inside json — print it with `printf '%s\\n'` or build it with `jq -n`";
 const LOOP_HINT =
     "x-mod-guard hint: `claude -p` inside `while read` eats the loop's stdin — end it with `</dev/null`";
+// a commit or push chain held a coder 71 of 371 minutes on mods lane 4, a steer waiting behind it (FRM-470, dima's o72)
+const CHAIN_HINT =
+    'x-mod-guard hint: `x lane commit` and `x lane push` run hooks for minutes — run them with run_in_background: true, alone in their message, and wait on the notification';
 // rg skips dot dirs: a «0 left» proof over frame missed 4 live pointers under home/.claude (PK-139, 2026-10-14)
 const RG_HINT =
     'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
@@ -210,6 +213,11 @@ function isPullsRead(args: Command['args']) {
     );
 }
 // a hint, never a rewrite: the raw command runs as typed, one context line names the x verb that covers it
+// `# fg-ok: <why>` keeps a slow call in the foreground for a real need
+export function isForegroundOk(command: string) {
+    return parse(command).comments.some((c) => /^\s*fg-ok:\s*\S/.test(c));
+}
+
 export function hints(command: string, cwd: string, ctx: Context) {
     const found = new Set<string>();
     const all = commands(parse(command), cwd);
@@ -259,6 +267,14 @@ export function hints(command: string, cwd: string, ctx: Context) {
                 (sub === 'api' && isPullsRead(c.args.slice(1))))
         )
             found.add(PR_HINT);
+        if (
+            ctx.isForeground &&
+            /(^|\/)x$/.test(c.name) &&
+            c.args[0]?.text === 'lane' &&
+            (c.args[1]?.text === 'commit' || c.args[1]?.text === 'push') &&
+            !isForegroundOk(command)
+        )
+            found.add(CHAIN_HINT);
         if (c.name === 'gh' && isGhJq(c.args)) found.add(JQ_HINT);
         if (c.name === 'rg' && ctx.home && rgMissesDots(c, ctx))
             found.add(RG_HINT);

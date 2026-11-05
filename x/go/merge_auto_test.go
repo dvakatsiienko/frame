@@ -261,6 +261,73 @@ func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) 
 	}
 }
 
+// a solo stamp merges like sixth sense's clean, and every detail says whose it is
+func TestMergeAutoNamesWhoseCleanItReads(t *testing.T) {
+	t.Parallel()
+	const byClio, bySixthSense = "by clio's read", "by sixth sense"
+	cases := []struct {
+		name string
+		by   string
+		move func(t *testing.T, w *mergeWorld)
+		ok   bool
+		want string
+	}{
+		{"clio's read on the head", "clio", nil, true, "clean on %s " + byClio},
+		{"no by key on the head", "", nil, true, "clean on %s " + bySixthSense},
+		{"clio's read carried", "clio", func(t *testing.T, w *mergeWorld) { w.mainMoves(t, "one.txt"); w.moveHead(t) }, true, byClio + ", carried"},
+		{"sixth sense carried", "", func(t *testing.T, w *mergeWorld) { w.mainMoves(t, "one.txt"); w.moveHead(t) }, true, bySixthSense + ", carried"},
+		{"clio's read past a moved head", "clio", func(t *testing.T, w *mergeWorld) {
+			write(t, filepath.Join(w.seed, "script/foo.ts"), "export const moved = 2;\n")
+			gitT(t, w.seed, "add", ".")
+			gitT(t, w.seed, "commit", "-q", "-m", "unreviewed fix")
+			w.moveHead(t)
+		}, false, "past the clean " + byClio},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			if c.by != "" {
+				write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:by":"`+c.by+`"}`)
+			}
+			if c.move != nil {
+				c.move(t, w)
+			}
+			want := c.want
+			if strings.Contains(want, "%s") {
+				want = fmt.Sprintf(want, short(w.head))
+			}
+
+			got := w.run(t, "7", "--apply")
+
+			envelope := envelopeOf(got)
+			if envelope.Error != "" && !c.ok {
+				if !strings.Contains(envelope.Error, want) {
+					t.Fatalf("error %q, want %q", envelope.Error, want)
+				}
+				return
+			}
+			rows := envelope.Data.Checks
+			if len(rows) == 0 || rows[0].OK != c.ok || !strings.Contains(rows[0].Detail, want) {
+				t.Fatalf("sixth sense row %+v, want ok %v and %q\n%s", rows, c.ok, want, got.stdout)
+			}
+		})
+	}
+}
+
+// a no-clean detail names no verifier: nobody read it
+func TestMergeAutoNamesNoVerifierWithNoClean(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	write(t, w.store, `{"o/r#7:by":"clio"}`)
+
+	got := w.run(t, "7", "--apply")
+
+	if e := envelopeOf(got).Error; got.code != 1 || !strings.Contains(e, "no clean recorded for o/r#7") || strings.Contains(e, "clio") || strings.Contains(e, "sixth sense") {
+		t.Fatalf("exit %d, error %q", got.code, e)
+	}
+}
+
 // lane merge-main's flow: main merged into the branch, nothing else touched — the clean carries
 func TestMergeAutoCarriesACleanAcrossAPlainMergeOfMain(t *testing.T) {
 	t.Parallel()
@@ -328,7 +395,7 @@ func TestMergeAutoWaitsWhenAPushChangedThePatchAfterTheClean(t *testing.T) {
 
 	got := w.run(t, "7", "--apply")
 
-	want := "wait: " + short(w.head) + " unreviewed fix is past sixth sense's clean"
+	want := "wait: " + short(w.head) + " unreviewed fix is past the clean by sixth sense"
 	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
 		t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 	}
@@ -623,6 +690,9 @@ func TestMergeAutoMergesABytesHeadAfterItsApprove(t *testing.T) {
 	if got.code != 0 || len(approves) != 1 || len(merges) != 1 {
 		t.Fatalf("exit %d, %d approves, %d merges, want one each:\n%s", got.code, len(approves), len(merges), got.stdout)
 	}
+	if !strings.Contains(approves[0], "by sixth sense") {
+		t.Errorf("the approve %q does not name whose clean it took", approves[0])
+	}
 	if !strings.Contains(approves[0], `"event":"APPROVE"`) || !strings.Contains(approves[0], `"commit_id":"`+w.head+`"`) {
 		t.Errorf("the approve %q is not an APPROVE of the head %s", approves[0], w.head)
 	}
@@ -773,13 +843,13 @@ func TestMergeAutoWaitNamesWhy(t *testing.T) {
 				{"isResolved":true,"path":"a.go","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}},
 				{"isResolved":false,"path":"script/foo.ts","line":3,"comments":{"nodes":[{"url":"https://t/2"}]}}]}}}}}`
 		}, "1 open review thread: script/foo.ts:3 https://t/2"},
-		{"no sixth sense clean recorded", func(w *mergeWorld) {
+		{"no clean recorded", func(w *mergeWorld) {
 			write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
-		}, "no sixth sense clean recorded for o/r#7"},
+		}, "no clean recorded for o/r#7"},
 		{"a clean only as a plain pr comment", func(w *mergeWorld) {
 			write(t, w.store, `{}`)
 			w.hub.pages[repoPath+"/issues/7/comments"] = `[{"user":{"login":"dvakatsiienko"},"body":"verdict: clean\nverified: ` + w.head + `"}]`
-		}, "no sixth sense clean recorded for o/r#7"},
+		}, "no clean recorded for o/r#7"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

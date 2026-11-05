@@ -33,6 +33,7 @@ import {
 } from './rules/command.ts';
 import { floor, gitDoor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
+import { isForegroundOk } from './rules/hint.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
@@ -627,9 +628,7 @@ export function foregroundClaude(
     command: string,
     cwd: string,
 ): Refusal | undefined {
-    const parsed = parse(command);
-    if (parsed.comments.some((c) => /^\s*fg-ok:\s*\S/.test(c)))
-        return undefined;
+    if (isForegroundOk(command)) return undefined;
     const isClaudeP = commandsDeep(command, cwd).some(
         (c) =>
             c.name === 'claude' &&

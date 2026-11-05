@@ -99,12 +99,17 @@ function endTurn($: Engine, answer: string, reason: 'answer' | 'error') {
     });
 }
 
-test('with the waker off, a 5h reset sends nothing', async ($, on) => {
-    const s = await session($, on);
-    await endTurn($, CAPPED, 'error');
-    await s.clock.advance(40 * MIN);
-    expect(s.resumes).toEqual([]);
-});
+// the kit refuses node:os, so no bound here can read the load: this one timed out at 5 s at load 24 (FRM-470)
+test(
+    'with the waker off, a 5h reset sends nothing',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const s = await session($, on);
+        await endTurn($, CAPPED, 'error');
+        await s.clock.advance(40 * MIN);
+        expect(s.resumes).toEqual([]);
+    },
+);
 
 test('with the waker on, a session stopped on the cap gets one resume at the reset', async ($, on) => {
     const s = await session($, on, { waker: { on: true } });

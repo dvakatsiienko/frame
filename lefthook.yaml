@@ -29,7 +29,10 @@ pre-commit:
     mods:
       # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
       # a cc bump made fields required and 11 test fixtures went untyped for days before this ran (2026-10-08)
+      # no mods test, typecheck or skew reads an .md: a doc-only commit runs no suite (W211)
       glob: "home/.claude/plugin-x/mods/**"
+      exclude:
+        - "**/*.md"
       run: script/index-run.sh sh -c 'pnpm mods:typecheck && pnpm mods:test && pnpm mods:skew'
     fleet-hazards:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
