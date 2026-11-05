@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-04T16:15:00Z'
+updated_date: '2026-11-05T23:56:00Z'
 labels:
   - m
 dependencies: []
@@ -29,4 +29,6 @@ kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane 
 kept: 2026-11-04 — revalidated: nothing moves it before the plan reset; first in the queue after it, dima's prio 1 (W248)
 
 correction 2026-11-04: the kept line above came from a loop; this item waits on a shape, next boot.
+
+the side channel's tree is archived: its round 1 lives at _clio/.scratch/side-channel-38d42581/pk-300/grill-1-proposal.md
 <!-- SECTION:NOTES:END -->
