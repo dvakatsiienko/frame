@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 const dryNamed = "named.txt"
@@ -189,6 +191,34 @@ func TestCommitAfterAGateChangedRunsItAgain(t *testing.T) {
 	}
 	if ran("suite") != 2 {
 		t.Errorf("the suite ran %d times, want 2: its run line changed since the green", ran("suite"))
+	}
+}
+
+// a peer's commit lands while this commit waits out its lock: the same tree on another HEAD proves nothing
+func TestCommitAfterAPeerMovedHeadRunsItsTests(t *testing.T) {
+	t.Parallel()
+	dir, env, msg, ran := dryOnRealLefthook(t)
+	if got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("dry: exit %d\n%s", got.code, got.stdout)
+	}
+	peer := gitT(t, dir, "commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "a peer's")
+	lock := filepath.Join(dir, ".git/index.lock")
+	write(t, lock, "")
+	landed := make(chan error, 1)
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		err := os.WriteFile(filepath.Join(dir, ".git/refs/heads/codie/dry"), []byte(peer+"\n"), 0o644)
+		landed <- errors.Join(err, os.Remove(lock))
+	}()
+	got := xIn(t, dir, env, "lane", "commit", msg, "--", dryNamed)
+	if err := <-landed; err != nil {
+		t.Fatal(err)
+	}
+	if got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if ran("suite") != 2 {
+		t.Errorf("the suite ran %d times, want 2: HEAD moved under the proof", ran("suite"))
 	}
 }
 

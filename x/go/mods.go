@@ -129,17 +129,21 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 		}
 		return verdictLine(verdicts), gatesFail(verdicts, "red on the overlay", "x mods edit test")
 	})
+	stopped, isRed := errors.AsType[*Fail](gatesErr)
+	if gatesErr != nil && !isRed {
+		return nil, gatesErr
+	}
 	if len(red) > 0 {
 		msg, log := "red on the overlay: "+reportLine(red), nonBlank(redLog(red))
-		if stopped, ok := errors.AsType[*Fail](gatesErr); ok {
+		if isRed {
 			msg, log = msg+"; "+stopped.Msg, append(log, stopped.Log...)
 		} else {
 			log = append(log, verdictLine(verdicts))
 		}
 		return nil, &Fail{Msg: msg, Next: "x mods edit test", Log: log}
 	}
-	if gatesErr != nil {
-		return nil, gatesErr
+	if isRed {
+		return nil, stopped
 	}
 	// a lost stamp costs one test run at the push, nothing more
 	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
@@ -296,7 +300,7 @@ func overlayGates(repo, scratch string, changed []string, stamp string, testsGre
 		return ""
 	})
 	if gatesFail(verdicts, "", "") == nil && testsGreen && overlayStamp(repo, scratch, changed) == stamp {
-		recordTree(treeOf, gates, verdicts)
+		recordTree(repo, treeOf, gates, verdicts)
 		recordTestedMods(repo, scratch, changed)
 	}
 	return verdicts, nil

@@ -269,7 +269,7 @@ func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string
 	}); err != nil {
 		return nil, err
 	}
-	recordTree(treeOf, pre, verdicts)
+	recordTree(tree, treeOf, pre, verdicts)
 	r.Done(verdictLine(verdicts), next)
 	return ordered{{"gates", verdicts}}, nil
 }
@@ -301,16 +301,17 @@ func runCommitMsg(tree string, gates []hookGate, staged, env []string, message s
 	return verdicts, nil
 }
 
-// a gate that reads only the index copy and went green on a tree: those bytes need it no second time
-func recordTree(treeOf func() (string, error), gates []hookGate, verdicts []gateVerdict) {
+// a gate that reads only the index copy and went green on a tree over a HEAD: a gate may diff against HEAD, so both key it
+func recordTree(repo string, treeOf func() (string, error), gates []hookGate, verdicts []gateVerdict) {
 	var proven []string
 	for i, g := range gates {
 		if verdicts[i].Verdict == gateGreen && strings.HasPrefix(g.run, gateCopyRun+" ") {
 			proven = append(proven, g.name+"="+runHash(g))
 		}
 	}
-	if sha, err := treeOf(); err == nil && len(proven) > 0 {
-		recordGreen(treeSubject, sha, proven)
+	at, _ := run(repo, nil, "", "git", "rev-parse", "HEAD")
+	if sha, err := treeOf(); err == nil && at.ok && len(proven) > 0 {
+		recordGreen(treeSubject+" "+at.out, sha, proven)
 	}
 }
 
@@ -334,7 +335,8 @@ func provenOnThisTree(tree string, paths []string) []string {
 		}
 	}
 	sha, err := treeOf()
-	if err != nil {
+	at, _ := run(tree, nil, "", "git", "rev-parse", "HEAD")
+	if err != nil || !at.ok {
 		return nil
 	}
 	record, _ := os.ReadFile(filepath.Join(stateDir(), gatesGreenFile))
@@ -342,7 +344,7 @@ func provenOnThisTree(tree string, paths []string) []string {
 	slices.Reverse(lines)
 	for _, line := range lines {
 		fields := strings.Split(line, "\t")
-		if len(fields) != 4 || fields[1] != treeSubject || fields[2] != sha {
+		if len(fields) != 4 || fields[1] != treeSubject+" "+at.out || fields[2] != sha {
 			continue
 		}
 		if until, err := strconv.ParseInt(fields[0], 10, 64); err != nil || time.Now().Unix() >= until {

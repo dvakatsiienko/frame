@@ -242,30 +242,30 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	if stopped == nil {
 		stopped = r.Step("commit", "hooks, then the commit", func() (string, error) {
 			commitArgs := []string{"commit", "-F", message}
-			proven := ""
-			if !isMerging() {
+			merging := isMerging()
+			if !merging {
 				commitArgs = append(append(commitArgs, "--"), paths...)
-				// a peer's commit in the lock's wait would change what the tree holds, so the proof reads after it
-				if _, err := waitIndexLock(); err != nil {
-					return "", err
-				}
-				if gates := provenOnThisTree(tree, paths); len(gates) > 0 {
-					if err := os.Setenv("LEFTHOOK_EXCLUDE", strings.Join(gates, ",")); err != nil {
-						return "", err
-					}
+			}
+			proven := ""
+			// read after each lock wait, right before its commit: a peer's commit in the wait moves HEAD, and the proof goes with it
+			readProof := func() {
+				proven = ""
+				_ = os.Unsetenv("LEFTHOOK_EXCLUDE")
+				if gates := provenOnThisTree(tree, paths); !merging && len(gates) > 0 {
+					_ = os.Setenv("LEFTHOOK_EXCLUDE", strings.Join(gates, ","))
 					proven = ", " + strings.Join(gates, ", ") + " already green on these bytes"
 				}
 			}
-			committed, took, err := lockedGit(commitArgs...)
+			committed, took, err := lockedGitAfter(readProof, commitArgs...)
 			waited += took
 			if err != nil {
 				return "", err
 			}
-			said := proven
+			retried := ""
 			if !committed.ok && timeoutOnly(committed.log) {
-				said += ", retried a timeout-only red"
+				retried = ", retried a timeout-only red"
 				var again time.Duration
-				committed, again, err = lockedGit(commitArgs...)
+				committed, again, err = lockedGitAfter(readProof, commitArgs...)
 				took += again
 				waited += again
 				if err != nil {
@@ -276,7 +276,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 				return "", hookFail(committed.log, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
 			}
 			sha, err = head()
-			return withWait(took, short(sha)+"  "+firstLine(message)+said), err
+			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
 		})
 	}
 	// the held files come back whether the hooks passed or refused
@@ -310,10 +310,16 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 // lockedGit runs a git that takes the index lock: it waits out a lock a peer holds, and once more when the lock
 // was taken again in the gap between the wait and the run
 func lockedGit(args ...string) (result, time.Duration, error) {
+	return lockedGitAfter(func() {}, args...)
+}
+
+// lockedGit with a step that runs after each wait, right before its git
+func lockedGitAfter(ready func(), args ...string) (result, time.Duration, error) {
 	took, err := waitIndexLock()
 	if err != nil {
 		return result{}, took, err
 	}
+	ready()
 	got, _ := git(args...)
 	if got.ok || !strings.Contains(got.log, "index.lock': File exists") {
 		return got, took, nil
@@ -322,6 +328,7 @@ func lockedGit(args ...string) (result, time.Duration, error) {
 	if err != nil {
 		return result{}, took + again, err
 	}
+	ready()
 	got, _ = git(args...)
 	return got, took + again, nil
 }
