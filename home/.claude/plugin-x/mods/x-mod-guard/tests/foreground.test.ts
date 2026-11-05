@@ -33,10 +33,11 @@ for (const typed of [
     test(`a foreground claude -p is refused with run_in_background named: ${typed}`, async ($, on) => {
         const w = world(on);
         const r = await bash($, typed);
-        expect([w.ran, r.deny?.includes('run_in_background')]).toEqual([
-            [],
-            true,
-        ]);
+        expect([
+            w.ran,
+            r.deny?.includes('run_in_background'),
+            r.deny?.includes('x probe bare'),
+        ]).toEqual([[], true, true]);
     });
 
 for (const [typed, isBackground] of [

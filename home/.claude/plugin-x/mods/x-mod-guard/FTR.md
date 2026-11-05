@@ -342,7 +342,7 @@
   - known gap: a deliberate evasion every guard rule shares slips it — a script piped into `sh` from a file, a script run by path (FRM-423 sixth sense, round 1); a pipe of an `echo` into a shell and a literal variable are read since FRM-478
   - proof: tests/merge-word.test.ts::merge-auto's --dima-ok runs when dima's last prompt says; stays refused when; a peer naming the pr never proves --dima-ok; an unproven --dima-ok is refused however x is reached
 - ✅ a foreground `claude -p` is refused (FRM-395)
-  - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
+  - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `x probe bare` and `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
   - proven live 2026-10-13 19:50: clio's foreground `claude -p` was refused, its `foreground-claude` event in x-mod-guard's store names the `run_in_background` door
   - decision: a refusal, never warn-only — a warning fires after the block it means to prevent (dima's o102; clio, 18:16)

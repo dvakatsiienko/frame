@@ -636,7 +636,7 @@ export function foregroundClaude(
     );
     if (!isClaudeP) return undefined;
     return {
-        door: 'run the same command with run_in_background: true, or end it with # fg-ok: <why> for a real need',
+        door: "x probe bare '<prompt>' for a clean run of plain cc, else the same command with run_in_background: true, or end it with # fg-ok: <why> for a real need",
         rule: 'foreground-claude',
         targets: ['claude -p'],
         why: 'a foreground claude -p holds this session until it ends',
