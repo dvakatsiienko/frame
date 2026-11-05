@@ -179,6 +179,6 @@ holds, with these swaps:
 
 ## the next chunk
 
-summoned once a lane; a later chunk comes by message, `next: <ticket> <pr url | main:<base>> final: <sha> spec: <path>`, re-arming step 0: its exit lines, rounds from 1, one retro per chunk.
+summoned once a lane; a later chunk comes by message, `next: <ticket> <pr url | main:<base>> final: <sha> spec: <path>`, re-arming step 0: its exit lines, rounds from 1; your one retro file gains what is new.
 
 why each rule holds: [sources.md](sources.md), for a groom, never at run time.

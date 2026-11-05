@@ -25,6 +25,7 @@ function main(home: string, since: string) {
             since,
         ]),
         script(scripts, 'helper count', 'helper-count', ['--since', since]),
+        retros(home),
     ];
     for (const s of sections)
         console.log(
@@ -114,6 +115,25 @@ function orbitDrift(home: string) {
         output: drifted.length
             ? drifted.join('\n')
             : `${items.length} open ask(s), none on a done pocket item`,
+    };
+}
+
+// every retro on disk is pending: a fold trashes its files, so what is left waits for this siesta (step 2.7)
+function retros(home: string) {
+    const lanes = path.join(home, '.local/state/x/lanes');
+    const pending = (
+        existsSync(lanes) ? readdirSync(lanes, { withFileTypes: true }) : []
+    )
+        .filter((lane) => lane.isDirectory())
+        .flatMap((lane) =>
+            readdirSync(path.join(lanes, lane.name))
+                .filter((f) => f.endsWith('-retro.md'))
+                .map((f) => path.join(lane.name, f)),
+        );
+    return {
+        exit: pending.length ? 1 : 0,
+        name: 'retros',
+        output: pending.length ? pending.join('\n') : 'none pending',
     };
 }
 
