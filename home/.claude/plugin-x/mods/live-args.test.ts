@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseLive, requestOf, skipPromptArgs } from './live-args.ts';
+import {
+    parkedOnDialog,
+    parseLive,
+    requestOf,
+    skipPromptArgs,
+} from './live-args.ts';
 
 describe('parseLive', () => {
     it('reads a bare mod dir as serve', () => {
@@ -55,6 +60,38 @@ describe('parseLive', () => {
                 [],
             ].map((argv) => parseLive(argv).kind),
         ).toEqual(['usage', 'usage', 'usage', 'usage']);
+    });
+});
+
+describe('parkedOnDialog', () => {
+    // a real child's frame with no --settings: the control of the 2026-11-05 probe
+    const parked = [
+        ' WARNING: Claude Code running in Bypass Permissions mode',
+        '',
+        ' ❯ 1. No, exit',
+        '   2. Yes, I accept',
+        '',
+        ' Enter to confirm · Esc to cancel',
+    ].join('\n');
+
+    it('reads the bypass dialog on a frame', () => {
+        expect(parkedOnDialog(parked)).toBe(true);
+    });
+
+    it('reads a session past the dialog as not parked', () => {
+        expect(
+            parkedOnDialog(
+                '> \n  ⏵⏵ bypass permissions on (shift+tab to cycle)',
+            ),
+        ).toBe(false);
+    });
+
+    it('reads a transcript that only quotes the warning as not parked', () => {
+        expect(
+            parkedOnDialog(
+                '> why does it say WARNING: Claude Code running in Bypass Permissions mode?',
+            ),
+        ).toBe(false);
     });
 });
 

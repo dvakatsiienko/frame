@@ -24,6 +24,8 @@ import pty from 'node-pty';
 
 import {
     type LiveVerb,
+    parkedLine,
+    parkedOnDialog,
     parseLive,
     requestOf,
     skipPromptArgs,
@@ -122,6 +124,9 @@ function status() {
     console.log(
         `mods:live: ${name} is held by pid ${readFileSync(pidFile, 'utf8')}, session «${slot.session ?? '?'}» (cc pid ${slot.ccPid ?? '?'}) since ${slot.since ?? '?'}`,
     );
+    const latest = join(dir, 'latest.txt');
+    if (existsSync(latest) && parkedOnDialog(readFileSync(latest, 'utf8')))
+        console.log(parkedLine(name));
     process.exit(0);
 }
 
@@ -299,7 +304,11 @@ async function serve() {
     console.log(`mods:live: ${name} runs in a pty, frames in ${dir}`);
     console.log(`frame: ${frame('start')}`);
     // the one line a caller waits on before its first keystroke (FRM-389: a 90 s blind wait, an early key at 21:29)
-    console.log(`mods:live ready: ${name}`);
+    console.log(
+        parkedOnDialog(lines(false).join('\n'))
+            ? parkedLine(name)
+            : `mods:live ready: ${name}`,
+    );
 
     const timers = new Map<string, NodeJS.Timeout>();
     let busy = false;
