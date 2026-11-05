@@ -22,3 +22,4 @@ prove an `x` verb by running it, not reading it. the checks `x/AGENTS.md` § ver
 
 - every path-taking verb is probed with a file, a dir, `.` and a case variant (FRM-359 sixth sense)
 - a cursor handed between polls gets a same-second case (FRM-364 codie)
+- a fix that reorders a read reruns each probe on head and base, in both directions: a top-down fix passed its own rows and broke the reverse case (FRM-434 sixth sense)
