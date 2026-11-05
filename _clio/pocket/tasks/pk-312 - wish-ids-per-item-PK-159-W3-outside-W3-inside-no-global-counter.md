@@ -4,7 +4,7 @@ title: 'wish ids per item: PK-159:W3 outside, W3 inside, no global counter'
 status: done
 assignee: []
 created_date: '2026-11-03T14:29:00Z'
-updated_date: '2026-11-05T16:32:00Z'
+updated_date: '2026-11-05T17:04:00Z'
 labels:
   - m
 dependencies: []
@@ -49,4 +49,6 @@ built 2026-11-03 20:48: `prompt-groom.ts --move <PK-N> <FRM-N> <W-id…>` prints
 
 2026-11-05 18:33 side channel, on clio's word: following a cross-item cite and the pocket-add test row are dropped, no caller; the hand-carried ids in FRM-499, FRM-500 and FRM-501 stay as written.
 close: W1919 W1920 W1921 done, per-item ids and prompt-groom --next built (o19, o94, o96); W1922 W1923 W1924 W1925 done, renumbering at the move built as prompt-groom --move (o98); the wish-cover cite fix merges from the fork branch
+
+correction 19:05, wishkeeper: the «18:40» line above was written by 18:26 at the latest, and the close's «merges» means the 18:32 merge.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-05T16:05:00Z'
+updated_date: '2026-11-05T17:04:00Z'
 labels:
   - xs
   - side-channel-owned
@@ -40,4 +40,6 @@ W2 spawn a research: maybe it is a well known issue, or someone else had somethi
 2026-11-05 17:59 side channel, W1 W2 answer. controlled runs, 5 min, same churn (50 files every 5 s under ~/frame): A window on ~/frame open, sizes on: 4/75, max 160 %, mean 4.4; B closed, sizes on: 1/75, max 19 %, mean 0.5; C open, sizes on (my off failed, read back true, under lane tests): 11/75, max 99 %, mean 8.9; D open, that window off, global on: 6/75, max 45 %, mean 3.7, sizing in 4 of 5 samples; E open, global off: 0/75, max 9.2 %, mean 1.3, busiest disk, 19.8 MB/s. also 17:27 closed under the lane: 0/75. reason: Finder's list-view Calculate all sizes re-walking the 8.3 GB, 252k-file repo while a window sits on it. applied on his tick: StandardViewSettings ListViewSettings and ExtendedListViewSettingsV2 calculateAllSizes false (read back 0; 0), Finder relaunched 17:54. confound: E is one run on a freshly relaunched Finder; the 11-03 relaunch still burst 8/75 in its first 5 min, so a relaunch alone does not explain it. not solved: the 11-04 burst, all node sync after a volume went away, no sizing; the 2.4-3 GB growth; brand and hotkeys keep per-folder overrides on (source lane read, opening them may still size). research: no 27.x report matching, no Apple fix; dev forum 705896 (2022, user report, no Apple reply) says Finder caches sizes in .DS_Store and updates on FSEvents. undo: Finder View Options, tick Calculate all sizes, Use as Defaults.
 
 2026-11-05 18:04 side channel: dima ticked a re-check tomorrow: 5-min watch with a day of uptime, footprint read, under a lane; main's next boot runs it, then closes or reopens this item.
+
+19:05, uptime 5 h 12: Finder 1.4 % cpu, 169 MB rss, etime 1 h 03, so it restarted about 18:00. the re-check past a day of uptime stays owed; next boot.
 <!-- SECTION:NOTES:END -->
