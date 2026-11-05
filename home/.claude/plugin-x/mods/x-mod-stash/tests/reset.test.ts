@@ -75,8 +75,9 @@ const run = ($: Engine, command: 'clear' | 'resume') =>
 for (const command of ['clear', 'resume'] as const)
     test(`/${command} empties orbit in the same turn`, async ($, on) => {
         const s = await session($, on);
+        const before = s.asks();
         await run($, command);
-        expect(s.asks()).toBe(0);
+        expect([before, s.asks()]).toEqual([1, 0]);
     });
 
 test('/clear drops every key the old conversation kept, its pending lane marks included', async ($, on) => {

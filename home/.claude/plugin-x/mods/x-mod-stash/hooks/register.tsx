@@ -1961,14 +1961,19 @@ async function pressMarkNow(
     const next = ask.mark === mark ? undefined : mark;
     const isTicked = next === 'accepted';
     if (isTicked) await recordTick($, ask, true);
-    // the save reads the orbit again: a tool call may have locked other asks while the record was written
+    // a tool call may lock this ask while the record is written: then the mark never lands and the record goes too
+    let isMarked = false;
     await markAsksNow(
         $,
-        (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
+        (a) => {
+            if (a.id !== id) return a;
+            isMarked = true;
+            return { ...a, isChanged: false, mark: next };
+        },
         false,
         undefined,
     );
-    if (!isTicked) await recordTick($, ask, false);
+    if (!isTicked || !isMarked) await recordTick($, ask, false);
 }
 async function pressMark(
     $: EngineInterface,
@@ -3363,9 +3368,16 @@ async function paceWaker($: EngineInterface) {
     await $.store.delete(PACE_WAKER + sid);
 }
 
+// a coordinator seat that wrote no pace key while the all-sessions part was off: the poll arms it once the part is back
+let isPaceSeatHeld = false;
 // every 4 s in every session, so one with no watch stops at two reads
 async function pacePoll($: EngineInterface) {
     const sid = await currentId($);
+    if (sid && isPaceSeatHeld && (await partsShown($))('stash.pace-watch')) {
+        isPaceSeatHeld = false;
+        if ((await $.store.get(PACE + sid)) === undefined)
+            await $.store.set(PACE + sid, { on: true });
+    }
     if (
         !sid ||
         !(
@@ -3396,12 +3408,11 @@ async function seatDefaults($: EngineInterface) {
     const name = await sessionName($);
     if (!sid || !name) return;
     const now = await $.clock.now();
-    if (
-        isCoordinator(name) &&
-        (await partsShown($))('stash.pace-watch') &&
-        (await $.store.get(PACE + sid)) === undefined
-    )
-        await $.store.set(PACE + sid, { on: true });
+    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined) {
+        if ((await partsShown($))('stash.pace-watch'))
+            await $.store.set(PACE + sid, { on: true });
+        else isPaceSeatHeld = true;
+    }
     if (isSeated(name) && (await $.store.get(HOT + sid)) === undefined) {
         await $.store.set(HOT + sid, { since: now });
         await followHot($);

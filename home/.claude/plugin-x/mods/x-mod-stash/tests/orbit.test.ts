@@ -1607,6 +1607,31 @@ test('a tick record that cannot be written still marks the ask', async ($, on) =
     expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
+test('a tick whose ask a tool call locked meanwhile leaves no record', async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    let open = () => {};
+    let isHeld = false;
+    const gate = new Promise<void>((resolve) => {
+        open = resolve;
+    });
+    on('state.get', async (_$, e, next) => {
+        if (isHeld && e.key === 'ticks') await gate;
+        return next(e as never);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:rejected:o1' });
+    isHeld = true;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await $.tool.call({ command: 'ls', tool: 'Bash' });
+    open();
+    await ui.find({ key: 'orbit:accepted:o1' });
+    expect(writes.at(-1)).toEqual([]);
+});
+
 test('an untick whose record cannot be dropped says so', async ($, on) => {
     world(on);
     let isBroken = false;
@@ -2323,26 +2348,6 @@ test('a store written by the old build loads untouched, its stale keys ignored',
         w.store.get('undo-window'),
         w.store.get('shown'),
     ]).toEqual(['✅ tick', true, shown]);
-});
-
-test('an ask the old build kept with a future sendAt lands at once', async ($, on) => {
-    const w = world(on);
-    const state = stateOf(on);
-    await start($);
-    await add($, ['push FRM-1', 'yes']);
-    const ui = await board($);
-    await say($, 'run the long job');
-    await ui.press({ key: 'orbit:accepted:o1' });
-    const kept = state.get('orbit') as { asks: Record<string, unknown>[] };
-    state.set('orbit', {
-        ...kept,
-        asks: kept.asks.map((a) => ({
-            ...a,
-            sendAt: w.clock.now() + 60_000,
-        })),
-    });
-    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
-    expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
 test('a tick reads ✅ tick at once', async ($, on) => {

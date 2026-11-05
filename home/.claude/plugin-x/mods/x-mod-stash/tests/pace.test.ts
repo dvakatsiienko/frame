@@ -662,6 +662,19 @@ test('with the part off a new 🦉 clio session writes no pace key', async ($, o
     expect(w.store.get(`pace:${SID}`)).toBeUndefined();
 });
 
+test('a seat skipped with the part off arms itself once the part is back', async ($, on) => {
+    const w = world(on, { shown: { 'stash.pace-watch': false } });
+    w.meter(46, LEFT);
+    await start($);
+    w.store.set('shown', {});
+    await w.clock.advance(POLL);
+    await w.clock.advance(POLL);
+    expect([w.store.get(`pace:${SID}`), rungs(w)]).toEqual([
+        { on: true },
+        ['park'],
+    ]);
+});
+
 test('the two 🔋 rows in the pane say which scope each flips', async ($, on) => {
     const w = world(on);
     w.meter(30, LEFT);
