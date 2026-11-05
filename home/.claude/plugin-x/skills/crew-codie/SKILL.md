@@ -91,7 +91,7 @@ brief says which, and when it does not, ask once, up front.
 
 1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. a live proof that writes
    shared pr state (the body, labels) is sixth sense's; you prove locally.
-2. **the local reviews, one of each per chunk, started together** (dima, 2026-11-05): `mattpocock-skills:code-review` over the branch (against his wishes and the spec, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`); the built-in `/code-review` (against the code itself); a big change adds one plain `wisphunter` card; no sixth sense on the lane adds a second built-in. `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`) beside them, free, nothing waits on it, a silent skip with no quota (`coderabbit review --usage`). fix what they find, push. the ci review (step 5) is the last review, always one run. after a sixth sense round: fix, rerun the covering tests, no review rerun; one scoped `wisphunter` read once a chunk only on a fix past 50 lines or 20 % of the chunk, a new file, concurrency, stored state or a fail-open path (the model: `docs/research/review-model.md`).
+2. **the local reviews, one of each per chunk, started together in the background** (dima, 2026-11-05): `mattpocock-skills:code-review` over the branch (against his wishes and the spec, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`); the built-in `/code-review` (against the code itself); a big change adds one plain `wisphunter` card; no sixth sense on the lane adds a second built-in. `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`) beside them, free, nothing waits on it, a silent skip with no quota (`coderabbit review --usage`). fix what they find, push. the ci review (step 5) is the last review, always one run. after a sixth sense round: fix, rerun the covering tests, no review rerun; one scoped `wisphunter` read once a chunk only on a fix past 50 lines or 20 % of the chunk, a new file, concurrency, stored state or a fail-open path (the model: `docs/research/review-model.md`).
 3. each review gets one graded line (reviewer, findings, useful or noise) in your done report,
    which names `local reviews: <n>`; your worktree cannot write the shared log, so clio copies the lines into
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
@@ -104,7 +104,7 @@ brief says which, and when it does not, ask once, up front.
    head sha and the test command with its exit. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
 5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, and at
-   the 1-round cap names clio's approval as the way past. run it once, at «final», never per push (1 m 43 s on FRM-507, was ~13 min).
+   the 1-round cap names clio's approval as the way past. run it once, at «final», never per push.
    fix what is real; answer «declined: <why>» on the thread.
 6. **hand over**, once both reviews are handled: the «final» line to the coordinator (dima is never added as a
    reviewer; clio approves and merges): `[done]` + pr url + head sha + «final». leave no untracked file in the worktree,
