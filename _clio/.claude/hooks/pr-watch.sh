@@ -8,7 +8,7 @@
 # a line starting «~ » is quiet: watch-once logs it and never wakes on it (the new-commit line: sixth sense handles the head).
 # the watch belongs to the pr, never to the codie that opened it (2026-09-28: #112 sat green 30 min
 # after its codie's watch was stopped). a «ready» needs sixth sense's clean on that very head: a pr whose
-# verified sha (written by sixth sense, `--verified`) differs prints «unverified delta» instead (#82 merged
+# verified sha (written by sixth sense, or clio on a solo lane: `--verified`) differs prints «unverified delta» instead (#82 merged
 # two commits past its clean, FRM-380); a pr with no sixth sense record prints «ready» as before.
 
 REPOS="dvakatsiienko/frame dvakatsiienko/bytes"
@@ -72,10 +72,13 @@ pass() {
 
 case "${1:---watch}" in
   --verified)
-    [[ "$2" == */* && "$3" =~ ^[0-9]+$ && "$4" =~ ^[0-9a-f]{8,40}$ ]] ||
-      { echo "usage: pr-watch.sh --verified <owner/repo> <pr> <head sha>" >&2; exit 2; }
-    jq --arg k "$2#$3" --arg v "$4" '.[$k] = $v' "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED"
-    echo "verified: $4 on $2#$3" ;;
+    [[ "$2" == */* && "$3" =~ ^[0-9]+$ && "$4" =~ ^[0-9a-f]{8,40}$ && ( $# -eq 4 || ( $# -eq 6 && "$5" == --by && "$6" == clio ) ) ]] ||
+      { echo "usage: pr-watch.sh --verified <owner/repo> <pr> <head sha> [--by clio]" >&2; exit 2; }
+    # no :by key means sixth sense; a later sixth sense clean drops clio's name
+    jq --arg k "$2#$3" --arg v "$4" --arg by "${6:-}" \
+      '.[$k] = $v | if $by == "" then del(.[$k + ":by"]) else .[$k + ":by"] = $by end' \
+      "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED"
+    echo "verified: $4 on $2#$3${6:+ by $6}" ;;
   --once) pass ;;
   --watch) while true; do pass; sleep 60; done ;;
 esac

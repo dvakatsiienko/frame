@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import {
+    chmodSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -128,6 +134,45 @@ describe('pr-watch', () => {
         expect(lines.filter((l) => l.includes('ready to merge')).length).toBe(
             1,
         );
+    });
+
+    it('names clio as the verifier until a sixth sense clean replaces her', () => {
+        const dir = bin({});
+        const verify = (...by: string[]) =>
+            run(
+                'pr-watch.sh',
+                ['--verified', 'dvakatsiienko/frame', '7', 'aaaaaaaa', ...by],
+                dir,
+            );
+        const verifier = () =>
+            JSON.parse(
+                readFileSync(
+                    join(dir, '.claude/shelf/pr-verified.json'),
+                    'utf8',
+                ),
+            )['dvakatsiienko/frame#7:by'];
+        verify('--by', 'clio');
+        const named = verifier();
+        verify();
+        expect([named, verifier()]).toEqual(['clio', undefined]);
+    });
+
+    it('refuses a verifier other than clio', () => {
+        const dir = bin({});
+        expect(() =>
+            run(
+                'pr-watch.sh',
+                [
+                    '--verified',
+                    'dvakatsiienko/frame',
+                    '7',
+                    'aaaaaaaa',
+                    '--by',
+                    'codie',
+                ],
+                dir,
+            ),
+        ).toThrow(/usage/);
     });
 
     it('refuses a verified record without a sha', () => {
