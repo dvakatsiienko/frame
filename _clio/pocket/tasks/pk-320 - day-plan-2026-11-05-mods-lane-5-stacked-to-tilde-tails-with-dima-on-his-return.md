@@ -4,7 +4,7 @@ title: 'day plan 11-05: mods lane 5 stacked to tilde, tails with dima on his ret
 status: open
 assignee: []
 created_date: '2026-11-05T14:57:00Z'
-updated_date: '2026-11-05T18:36:00Z'
+updated_date: '2026-11-05T18:50:00Z'
 labels:
   - m
 dependencies: []
@@ -29,4 +29,13 @@ W63 (2026-11-05 17:34, dima): the reminder pairing a re-ask catcher (FRM-443, ht
 19:05: the plan as it stands: mods stack 5 layers, FRM-507 merged, FRM-501 at frame#124 in its reviews; FRM-470 on its own cli stack; refresh-cc-mods dropped. afk from 18:55, run by shifts/2026-11-05-afk-tails.md.
 
 20:36: FRM-507 Done, frame#125 merged, FRM-470 Done; FRM-501 at frame#124, third round done, rider R2 (settings) re-signed and with codie; FRM-480 next on the cli stack; the running log is shifts/2026-11-05-afk-tails.md.
+
+W1922 (2026-11-05 20:35, dima): side q: you have a pk-320 with your plan. do you keep it updated while you progress? ❓ — answered: no, it had drifted 90 min; a note at each chunk's land from now. W1923 (2026-11-05 20:35, dima): cancel SW. — done, not run.
+
+W1931 (2026-11-05 20:47, dima, o51 steer, home PK-320): Let's try, but why didn't you use monitor previously? ❓
+W1932 (2026-11-05 20:47, dima, o51 steer, home PK-320): Actually, it's one of your built-in tools? ❓
+W1933 (2026-11-05 20:47, dima, o51 steer, home PK-320): In my memory, you already tried monitors, and I may be mistaken, but probably you moved to self-baked arm watchers out of monitor because of some issues.
+W1934 (2026-11-05 20:47, dima, o51 steer, home PK-320): Can you remember what the issue was, or did I mix it up with something else? ❓
+W1935 (2026-11-05 20:47, dima, o51 steer, home PK-320): I vote for a good, reliable, and efficient monitoring tool, either self-baked by you or a built-in monitor.
+— answered 20:48: Monitor caps at 30 min, PK-36; asked again on the board.
 <!-- SECTION:NOTES:END -->
