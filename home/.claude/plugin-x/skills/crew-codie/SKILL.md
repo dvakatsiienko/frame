@@ -91,14 +91,8 @@ brief says which, and when it does not, ask once, up front.
 
 1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. a live proof that writes
    shared pr state (the body, labels) is sixth sense's; you prove locally.
-2. **the local review pair, in parallel**: `mattpocock-skills:code-review` over the branch (matt's standards and
-   spec review, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`) beside `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`)
-   while its free quota lasts (`coderabbit review --usage`; none left → matt's code-review alone). fix what
-   both find, push.
-   - the built-in `/code-review` hunts bugs; matt's grades against the house rules and the spec's exit lines. every lane runs matt's; a big change adds the built-in beside a paired `wisphunter` card (dima, 2026-10-30); a lane with no sixth sense: every chunk (dima, 2026-11-05)
-3. **one local review per sixth sense round** (dima, 2026-10-22): before each sixth sense round after the first, the pair
-   reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching sixth sense's
-   3 rounds; each review gets one graded line (reviewer, findings, useful or noise) in your done report,
+2. **the local reviews, one of each per chunk, in parallel** (dima, 2026-11-05): `mattpocock-skills:code-review` over the branch (against his wishes and the spec, each axis on the `wisphunter` card; git refused → a diff file from a scratch script, `git diff <base>...HEAD > .scratch/review.diff`); the built-in `/code-review` (against the code itself); `coderabbit review --agent --base main` (a quick lane: `--committed --base-commit <base>^`) while its free quota lasts (`coderabbit review --usage`; none left → a silent skip); a big change adds one plain `wisphunter` card. fix what they find, push.
+3. each review gets one graded line (reviewer, findings, useful or noise) in your done report,
    which names `local reviews: <n>`; your worktree cannot write the shared log, so clio copies the lines into
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.

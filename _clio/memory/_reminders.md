@@ -68,4 +68,4 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ when clio can flip keep-hot herself (`mods:set hot` lands, FRM-505): remind dima to update her habits — the shift turns keep-hot on for every member itself and drops the hand keep-warm ping and its Monitor beat (`clio:shift` § hot caches) — set 2026-11-03
 ⏰ when the automated second wind lands (pk-307's chunk): tell dima it is done — every session winds itself at the 🎛️ thresholds (55 % notice, 65 % a must, global values) — set 2026-11-03
 ⏰ 🦉🐦‍⬛ crow's weekly grade, 2026-11-11, again 11-17 — draw 5 notes from `~/.local/state/crow/notes.jsonl` for dima to grade, log the round in `docs/test-drive/crow-receipts.md` (FRM-502) — due: 2026-11-11
-⏰ 🦉 optional, on his word, back on the $100 plan (he said about a month): pace watch on: 🎛️ «🔋 pace watch» and «🔋 🪫 pace gap» on, lift the ⏸️ line in `habit-ctx-load-balancing` — set 2026-11-05 · due: 2026-12-05
+⏰ 🦉 optional, on his word, back on the $100 plan (he said about a month): pace watch on: `pnpm -C ~/frame mods:set part stash.pace-watch on`, lift the ⏸️ line in `habit-ctx-load-balancing` — set 2026-11-05 · due: 2026-12-05

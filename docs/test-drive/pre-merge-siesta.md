@@ -28,5 +28,6 @@ Ticket: none
 - 2026-11-04 · tails, closes, FRM-505's sign, plus the CST check · wishkeeper 9 min, 243k tokens, 19 findings: 3 high real (a superseded closing word, two false closes)
 - 2026-11-04 · the second wind's batch and its handoff (no lane diff) · wishkeeper 7 min, 168k tokens, 16 findings: 2 high real (his 15:22 misread as parking FRM-499 and FRM-501, a fixed row still carried as open)
 - 2026-11-04 · FRM-500, FRM-501 closes, after the close, not before: the miss he named (W222) · wishkeeper 8 min, 222k tokens, 21 findings: 3 high real and 2 partly (closes before the read, a report's double count, ticked habit lines; one high missed his 16:34 «solve», one is a plan item, not his word) · FRM-501 reopened by the read
+- 2026-11-05 · FRM-507, mods lane 5 layer 1, no sixth sense · wishkeeper 8 min, 192k tokens, 17 findings: 2 high real (live store keys, `mods:live` never run), wisphunter beside it 4, real, one shared · both opened at their spots before the fix batch
 
 ## verdict

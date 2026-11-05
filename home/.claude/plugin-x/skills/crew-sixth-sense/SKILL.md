@@ -138,7 +138,7 @@ are the dna's pr pair.
 - a round that closes one scoped line is free; the first `not-checkable` or a dispute stops the
   loop and goes to clio, the ⬜ lines or both sides in one message.
 - **the wall clock** — the ci reviewer runs once, at «final» (dima, 2026-10-22); every later round is read off codie's
-  local review pair. two rounds past ~30 min → say so in the verdict; the numbers feed `docs/test-drive/review-rounds.md`.
+  local reviews. two rounds past ~30 min → say so in the verdict; the numbers feed `docs/test-drive/review-rounds.md`.
 - **a stacked lane** (codie's pr is a stack layer): read [stacked-lane.md](stacked-lane.md) before round 1
 
 ## exit
