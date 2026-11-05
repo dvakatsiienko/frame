@@ -385,7 +385,7 @@
   - and its body — `--description-file` resolved against the command's cwd, `--description` or `-d`, or `--description-file -` fed by a heredoc or by `cat <file> |` — has no `## ⚖️ worth it` heading (any case, outside a code fence) followed by a non-blank line before the next heading, or its section holds neither a `🔌 fleet wired: <caller>` line nor `none — fix` / `none — chore`; the old `## worth` heading counts as none
   - when x-mod-guard reads it
   - then it is refused naming the door (`## ⚖️ worth it` with its `🔌 fleet wired:` line, `none — fix` or `none — chore` for plain work) and which of the two the body lacks, with a `refused` event under `worth`; a body file the hook cannot read, or one behind a variable, counts as having none
-  - given `x linear body <id> --set <file>` or a raw `linear issue update <id> --description-file` that adds a `✍️ re-signed` line the ticket lacks, on a ticket in scope (its project, milestone and body read through `x linear read`, 3 s), whose `## ⚖️ worth it` section is the same after whitespace collapses and whose new line holds no `worth unchanged —`, then it is warned the same way; a changed section or the phrase runs; a read that fails counts as unchanged and the note names it, and so does a body file the same command writes
+  - given `x linear body <id> --set <file>` or a raw `linear issue update <id> --description-file` that adds a `✍️ re-signed` line the ticket lacks, on a ticket in scope (its project, milestone and body read through `x linear read`, 3 s), whose `## ⚖️ worth it` section is the same after whitespace collapses and whose new line holds no `worth unchanged —`, then it is refused the same way; a changed section or the phrase runs; a read that fails counts as unchanged and the refusal names it, and so does a body file the same command writes
   - decision: both bodies are read the way linear stores markdown — `*` and `+` list markers as `-`, punctuation escapes dropped — so a stored body linear rewrote compares with the file it came from
   - given a create into any other project, a `fleet` create in another milestone, or a body with a filled section, then it runs untouched
   - decision: «⚖️ worth it» and «🔌 fleet wired» are dima's names (2026-11-02, 19:11); plain work needs no wired line
@@ -394,7 +394,7 @@
 
 - ✅ a start_session spawn is read by the live-trial gate (FRM-467)
   - given a `start_session` call whose prompt leaves a live trial unnamed, as a `claude --bg` spawn would (frame's `script/test-drive-list.ts --spawn-hook`)
-  - then it runs with a would-refuse note and a `warned` event under `spawn-trial`, until its sixth sense says clean; with `rule-mode:spawn-trial` = enforce it is refused with the gate's own reason
+  - then it is refused with the gate's own reason and a `refused` event under `spawn-trial`
   - given a prompt naming every live trial, or a gate that breaks, then it runs
   - proof: tests/spawn-trial.test.ts
 - ✅ a second sixth sense for a lane with a live one is refused at the summon (FRM-479)

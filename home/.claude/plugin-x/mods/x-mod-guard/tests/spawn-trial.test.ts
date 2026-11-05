@@ -9,11 +9,7 @@ const REASON =
     'the brief misses live trials that fit a codie lane: fixture-trial';
 const TOOL = 'mcp__ccd_session__start_session';
 
-function world(
-    on: On,
-    gate: 'answers' | 'breaks' = 'answers',
-    tool: 'runs' | 'denies' = 'runs',
-) {
+function world(on: On, gate: 'answers' | 'breaks' = 'answers') {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const asked: string[] = [];
@@ -49,11 +45,7 @@ function world(
             },
         };
     });
-    on('tool.call', () =>
-        tool === 'denies'
-            ? { deny: 'not now' }
-            : { result: {}, text: 'started' },
-    );
+    on('tool.call', () => ({ result: {}, text: 'started' }));
     return { asked, store };
 }
 
@@ -62,36 +54,20 @@ const start = ($: Engine, prompt: string) =>
 
 const UNNAMED = '/x:crew-codie FRM-1 do the job';
 
-test('a spawn leaving a live trial unnamed runs warn-only, naming what it would refuse', async ($, on) => {
+test("a spawn leaving a live trial unnamed is refused with the gate's own reason", async ($, on) => {
     world(on);
     const r = await start($, UNNAMED);
-    expect([r.deny, r.context?.join('\n')]).toEqual([
-        undefined,
-        expect.stringContaining(`would refuse this (rule spawn-trial`),
-    ]);
+    expect(r.deny).toContain(REASON);
 });
 
-test('a warned spawn the tool itself denies comes back as its denial, no note added', async ($, on) => {
-    world(on, 'answers', 'denies');
-    const r = await start($, UNNAMED);
-    expect([r.deny, r.context]).toEqual(['not now', undefined]);
-});
-
-test('the warned spawn leaves a warned event under the spawn-trial rule', async ($, on) => {
+test('the refused spawn leaves a refused event under the spawn-trial rule', async ($, on) => {
     const { store } = world(on);
     await start($, UNNAMED);
     expect(
         [...store.entries()]
             .filter(([k]) => k.startsWith('event:'))
             .map(([, v]) => v),
-    ).toMatchObject([{ kind: 'warned', rule: 'spawn-trial' }]);
-});
-
-test("with the rule enforced, the spawn is refused with the gate's own reason", async ($, on) => {
-    const { store } = world(on);
-    store.set('rule-mode:spawn-trial', 'enforce');
-    const r = await start($, UNNAMED);
-    expect(r.deny).toContain(REASON);
+    ).toMatchObject([{ kind: 'refused', rule: 'spawn-trial' }]);
 });
 
 test('a spawn naming the trial runs with no note', async ($, on) => {
@@ -113,8 +89,7 @@ test('a single quote in the prompt reaches the gate quoted whole', async ($, on)
 });
 
 test('a gate that breaks lets the spawn go', async ($, on) => {
-    const { store } = world(on, 'breaks');
-    store.set('rule-mode:spawn-trial', 'enforce');
+    world(on, 'breaks');
     const r = await start($, UNNAMED);
     expect(r.deny).toBeUndefined();
 });
