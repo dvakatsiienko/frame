@@ -56,6 +56,7 @@ _clio/plugin-clio/skills/system-checkup/SKILL.md	7600	2026-10-20: the recipe-can
 _crow/AGENTS.md	12500	seed 2026-10-16, today's size + 15 %; +600 2026-11-04: FRM-502's receipts, claim and risk wakes
 AGENTS.md	10900	seed 2026-10-16, today's size + 15 %
 docs/knowledge/AGENTS.md	1900	seed 2026-10-16, today's size + 15 %
+firelink/AGENTS.md	3100	seed 2026-11-05, its size + 15 %
 gifs/AGENTS.md	1200	seed 2026-10-16, today's size + 15 %
 gmail/AGENTS.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/agents/fresh-eyes.md	2600	seed 2026-10-21, its size + 15 %
@@ -91,7 +92,7 @@ home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md	37100	seed 
 home/.claude/plugin-x/skills/crew-lead/SKILL.md	12000	+200 2026-11-03: a resume reads the 5h window first, FRM-494; seed 2026-10-16 at size + 15 %; +300 on 2026-10-27 for the desktop-tab limit line (dima); +200 on 2026-10-30 for the no-mid-flight model switch ban (dima); +200 on 2026-10-30 for opus on the desktop door and the first-chunk-only sixth sense summon (dima, pm review round 4)
 home/.claude/plugin-x/skills/crew-sixth-sense/SKILL.md	12600	seed 2026-10-16, today's size + 15 %; +700 on 2026-10-30 for § the next chunk and the verify-tree decamp (dima's one-sixth-sense and worktree words)
 home/.claude/plugin-x/skills/crew-subagent/SKILL.md	4900	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/firelink/references/steamac.md	5900	seed 2026-11-02, its size + 15 %
+home/.claude/plugin-x/skills/firelink/references/steamac.md	8500	seed 2026-11-02; bumped 2026-11-05: a perf run, dima's tick on the firelink home
 home/.claude/plugin-x/skills/firelink/references/web-bot-blocked-fetch.md	2800	seed 2026-11-02, its size + 15 %
 home/.claude/plugin-x/skills/firelink/SKILL.md	9500	bumped 2026-11-02: game pages became the fourth door, gotchas kept resident (dima picked the bump)
 home/.claude/plugin-x/skills/github-contrib/SKILL.md	9000	seed 2026-10-16, today's size + 15 %

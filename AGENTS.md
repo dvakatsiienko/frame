@@ -107,6 +107,7 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 
 ## the other homes at root
 
+- `firelink/` — what game side chores found (vm tuning, runs, routes); its doors are the `x:firelink` skill.
 - `gifs/` — dima's gif storage, one dir per gif, `gifs/AGENTS.md` is the contract.
 - `brand/` — avatars and marks (`brand/avatars/fleet/` is the crew); `assets/` — the readme's own
   art, badges and clips, drawn by scripts.
