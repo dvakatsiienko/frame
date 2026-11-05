@@ -51,4 +51,6 @@ if yes — shape the rename and relay to clio as a rider for mods codie
 - /quiet-canary: keep it, one line in mods-verify, 22:06
 
 close: W1 through the last W-line done: the rule landed in root CLAUDE.md on main, his ticks 22:06 and 22:10, the 12-05 recount in _reminders.md
+
+close: W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11 done: the rule landed in root CLAUDE.md, the recount in _reminders.md
 <!-- SECTION:NOTES:END -->
