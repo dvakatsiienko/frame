@@ -1,10 +1,10 @@
 ---
 id: PK-321
 title: 'tails for the next boot: every chore not done with dima today'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T18:11:00Z'
+updated_date: '2026-11-05T21:55:00Z'
 labels:
   - m
 dependencies: []
@@ -75,4 +75,8 @@ W1412 (2026-11-02 18:59, dima): maybe let's mark it as a candidate for deletion 
 W1413 (2026-11-02 18:59, dima): let's try it on today's hold, and if we won't find a way to make it work, then cut.
 W1435 (2026-11-02 18:59, dima, o59 steer): if not works cut.
 worth rule: enforced at c5a4e82a; the note above is stale. the crew board redraw is owed: sources moved after v14.
+
+23:51: W1308, W1312 moved to PK-325 on dima's word; crew board redraw done by the side channel on his word, PK-324 item 8; FRM-410 groomed by clio tomorrow after boot. his word: close PK-321 after this.
+
+close: 2026-11-05 23:55, his word «321 — close after this.», read at the source in the side's thread; W1308, W1312 live in PK-325, the board is v15, FRM-410 on tomorrow's reminder, FRM-501's exit 4 in its spec
 <!-- SECTION:NOTES:END -->
