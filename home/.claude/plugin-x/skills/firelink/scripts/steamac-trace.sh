@@ -1,8 +1,15 @@
 #!/bin/zsh
 # traces a steamac game session, read-only: steamac-trace.sh [seconds=900] [--perf]; --perf costs one vCPU
 set -uo pipefail
-seconds=${1:-900}
-perf=${2:-}
+seconds=900
+perf=
+for arg in "$@"; do
+  case $arg in
+    --perf) perf=--perf ;;
+    <->) seconds=$arg ;;
+    *) print -u2 "usage: steamac-trace.sh [seconds=900] [--perf]"; exit 2 ;;
+  esac
+done
 out=~/.local/share/steamac/trace-$(date +%m%d-%H%M)
 mkdir -p "$out"
 ssh_vm=${0:A:h}/steamac-ssh.sh

@@ -4,9 +4,9 @@ last run 2026-11-05, steamac 1.9.12. raw: `~/.local/share/steamac/traces-keep/`,
 
 ## what he wants
 
-- «solve freezes pls. i am ok with 52fps lowest if it not lags. i even dont feel that 52 fps. but freezes are not good»
-- «60hz is not better i want 120. at least. (i use 120 usually)», though the 60 Hz run «feels smoother»
-- «i wont play without these never»: Warp, Claude Desktop, Chrome
+- «solve the freezes. i'm ok with 52 fps lowest if it doesn't lag, i don't even feel that 52 fps. but freezes are not good»
+- «60 hz is not better, i want 120 at least (i usually use 120)», though the 60 Hz run «feels smoother»
+- «i won't play without these, never»: Warp, Claude Desktop, Chrome
 - the picture matters, he maxed everything himself
 
 ## where it stands
@@ -14,7 +14,7 @@ last run 2026-11-05, steamac 1.9.12. raw: `~/.local/share/steamac/traces-keep/`,
 - steamac stays for gta iv; Highball lost its A/B: hard lag at first, black vertical lines and blur stay
 - launch through `~/Desktop/steam-fx-safe.app`
 - in game: 1920x1080, all max, sliders 100/100/100, x16. keep them: each change feeds new shaders
-- the freeze cause, proven: first-time Metal shader compiles, fading as the cache fills. new areas freeze again
+- the freeze cause, leading read, not closed: first-time Metal shader compiles, fading as the cache fills; 2 long frames beside compiles and a stall capture that fits. new areas should freeze again: the open try below settles it
 - left on: `metalHUD` saved ON in steamac (`Ctrl+Cmd+P`); Metal HUD and DXVK async on in Highball's bottle
 
 ## the numbers, old vm

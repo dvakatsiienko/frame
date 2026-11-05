@@ -36,14 +36,14 @@ results so far: against the storm, manor lords, system shock, noita, dwarf fortr
 
 ## a perf run — dima drives, you trace
 
-a freeze is a first-time Metal shader compile until proven otherwise: they fade as the cache fills, and a new area or a changed setting feeds new shaders (proven on gta iv, 2026-11-05).
+a freeze is a first-time Metal shader compile until proven otherwise: they fade as the cache fills, and a new area or a changed setting feeds new shaders (the leading read on gta iv, 2026-11-05: `firelink/runs/gta4.md`).
 
 📌 unproven as written: these steps were folded from the 11-05 run's notes and never re-run in this order, the stall catch's `scripts/` copy included. the first perf run proves them and drops this line.
 
 1. quit the vm, then launch traced: `open -n -a "FX Steam Launcher" --env MESA_KK_COMPILE_THREADS=4 --env MESA_KK_DEBUG=compiles --args --cmdline "console=hvc0 loglevel=4 rootwait steamac.gpu_mib=10240" --control-fifo ~/.local/share/steamac/control.fifo --perf-stats`
 2. after a launcher update, wait ~3 min: steam replays the game's pipelines first
-3. `scripts/steamac-trace.sh [seconds] [--perf]`, in the background; it writes `~/.local/share/steamac/trace-*`; `--perf` costs one vCPU and names `GTAIV.exe`, like `steamac-stall.py`: edit the name for another game
-4. a stall catch, optional, inside the vm: `steamac-ssh.sh 'cat > /tmp/stall.py' < scripts/steamac-stall.py`, then `python3 /tmp/stall.py <seconds> /tmp/stall.log`
+3. `scripts/steamac-trace.sh [seconds] [--perf]`, in the background; it writes `~/.local/share/steamac/trace-*`; `--perf` costs one vCPU and names `GTAIV.exe`: edit the name for another game; ? `perf` in the vm is unchecked
+4. a stall catch, optional, a dxvk game only (`GAME` in the script names it): `scripts/steamac-ssh.sh 'cat > /tmp/stall.py' < scripts/steamac-stall.py`, then in the background `scripts/steamac-ssh.sh python3 /tmp/stall.py <seconds> /tmp/stall.log`; it waits for the game, so it starts before step 5
 5. dima's hands: load a save, skip the intro, drive ~5 min, fullscreen `Ctrl+Cmd+F`, no alt-tab, a stopwatch lap on each freeze
 6. read his laps against the compile lines in `~/Library/Logs/es.fxgam.steamac/steamac-vm.log` and `game-stats.json`; one change per run; the result lands in `~/frame/firelink/runs/<game>.md`
 
@@ -54,7 +54,7 @@ reading the logs:
 - `memory_pressure`'s «% free» misleads: read `vm_stat` free pages and compressed
 
 the vm's doors:
-- `scp` to the vm fails: `steamac-ssh.sh 'cat > /tmp/x' < file`
+- `scp` to the vm fails: `scripts/steamac-ssh.sh 'cat > /tmp/x' < file`
 - `osascript` quit prints «User canceled» yet the vm quits: wait with `ps -p`
 
 ## rockstar games in the vm
