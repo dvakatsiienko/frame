@@ -484,6 +484,10 @@
   - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
 - ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
   - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
+- ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
+  - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
+  - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run
+  - given `--repo` or a merge in progress, then it refuses, exit 2
 - ⬜ a mod's tests run once across `x mods edit test`, `push` and `x lane commit` (FRM-473)
   - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again
   - given a hand `pnpm mods:test`, then nothing is skipped; given a clock read in a mod's hooks, then the commit reds it whatever was tested

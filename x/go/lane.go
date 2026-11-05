@@ -72,7 +72,11 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		return nil, usageFail("no paths — name what goes into the commit", "x lane commit "+msgFile+" -- <paths…>")
 	}
 	message, _ := filepath.Abs(msgFile)
+	dry := flags["dry"] == true
 	if repo, _ := flags["repo"].(string); repo != "" {
+		if dry {
+			return nil, usageFail("--dry reads this tree's hook, never another repo's", "x lane commit --dry "+msgFile+" -- <paths…>")
+		}
 		if err := enterMain(repo); err != nil {
 			return nil, err
 		}
@@ -88,11 +92,31 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 	name, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Open(name.out)
+	if dry && isMerging() {
+		return nil, usageFail("--dry cannot mirror a merge's commit", "x lane commit "+msgFile+" -- <paths…>")
+	}
 
 	if err := r.Step("tree", "checking the tree", func() (string, error) {
 		return home(tree), assertUnlocked(tree)
 	}); err != nil {
 		return nil, err
+	}
+	var dryIndex []string
+	var dryTree func() (string, error)
+	if dry {
+		env, treeOf, done, err := headIndex(tree)
+		if err != nil {
+			return nil, err
+		}
+		defer done()
+		// from here on every git of this run stages and reads the temp index, as a pathspec commit's hooks do
+		_, path, _ := strings.Cut(env[0], "=")
+		if err := os.Setenv("GIT_INDEX_FILE", path); err != nil {
+			return nil, err
+		}
+		dryIndex, dryTree = env, treeOf
+	} else {
+		r.skip("gates")
 	}
 	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
 		if held := heldByOthers(tree, paths); len(held) > 0 {
@@ -178,6 +202,10 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		defer os.Remove(copied)
 	}
 
+	if dry {
+		return dryCommit(r, tree, message, dryIndex, dryTree, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
+	}
+
 	hold := flags["hold-unstaged"] == true
 	if !hold {
 		r.skip("hold", "restore")
@@ -212,17 +240,24 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	if stopped == nil {
 		stopped = r.Step("commit", "hooks, then the commit", func() (string, error) {
 			commitArgs := []string{"commit", "-F", message}
+			proven := ""
 			if !isMerging() {
 				commitArgs = append(append(commitArgs, "--"), paths...)
+				if gates := provenOnThisTree(tree, paths); len(gates) > 0 {
+					if err := os.Setenv("LEFTHOOK_EXCLUDE", strings.Join(gates, ",")); err != nil {
+						return "", err
+					}
+					proven = ", " + strings.Join(gates, ", ") + " already green on these bytes"
+				}
 			}
 			committed, took, err := lockedGit(commitArgs...)
 			waited += took
 			if err != nil {
 				return "", err
 			}
-			said := ""
+			said := proven
 			if !committed.ok && timeoutOnly(committed.log) {
-				said = ", retried a timeout-only red"
+				said += ", retried a timeout-only red"
 				var again time.Duration
 				committed, again, err = lockedGit(commitArgs...)
 				took += again

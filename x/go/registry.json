@@ -93,6 +93,10 @@
                 }
             ],
             "flags": {
+                "dry": {
+                    "description": "format, then run the commit's pre-commit and commit-msg gates on a temp index of HEAD plus the paths; HEAD and the index stay; a real commit on those bytes runs its index-copy gates no second time",
+                    "type": "boolean"
+                },
                 "hold-unstaged": {
                     "description": "hold the unstaged and untracked files outside the named paths aside while the hooks run, then put them back byte for byte",
                     "type": "boolean"
@@ -115,6 +119,7 @@
                 "stage",
                 "quotes",
                 "ftr",
+                "gates",
                 "hold",
                 "ci",
                 "commit",

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -32,6 +33,8 @@ const (
 	// what a green overlay already proved: a lost line costs one rerun, so it needs no lock
 	gatesGreenFile = "gates-green.tsv"
 	gatesGreenKept = 200
+	gatesGreenFor  = time.Hour
+	treeSubject    = "tree"
 )
 
 type hookGate struct {
@@ -225,6 +228,112 @@ func indexPaths(repo string, env []string) ([]string, error) {
 		return nil, &Fail{Msg: "git diff --cached failed: " + got.log, Next: "git status"}
 	}
 	return slices.DeleteFunc(strings.Split(got.out, "\x00"), func(path string) bool { return path == "" }), nil
+}
+
+// a dry run's gates on the temp index the run's git already reads; a green records its tree for the real commit
+func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string, error), next string) (any, error) {
+	r.skip("hold", "ci", "commit", "restore")
+	var verdicts []gateVerdict
+	var pre []hookGate
+	if err := r.Step("gates", "the commit hook's gates on a temp index", func() (string, error) {
+		staged, err := indexPaths(tree, env)
+		if err != nil {
+			return "", err
+		}
+		if pre, err = readHookGates(tree, "pre-commit"); err != nil {
+			return "", err
+		}
+		msg, err := readHookGates(tree, "commit-msg")
+		if err != nil {
+			return "", err
+		}
+		verdicts = runPreCommit(tree, pre, staged, env, nil)
+		onMessage, err := runCommitMsg(tree, msg, staged, env, message)
+		if err != nil {
+			return "", err
+		}
+		verdicts = append(verdicts, onMessage...)
+		return verdictLine(verdicts), gatesFail(verdicts, "red on the dry run", next)
+	}); err != nil {
+		return nil, err
+	}
+	recordTree(treeOf, pre, verdicts)
+	r.Done(verdictLine(verdicts), next)
+	return ordered{{"gates", verdicts}}, nil
+}
+
+// commit-msg gates run in sequence on one copy of the message, since two of them edit it; a hook reads the tree's scripts
+func runCommitMsg(tree string, gates []hookGate, staged, env []string, message string) ([]gateVerdict, error) {
+	dir, err := os.MkdirTemp("", "x-gates-msg-")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(dir)
+	copied := filepath.Join(dir, "COMMIT_EDITMSG")
+	if err := copyFile(message, copied); err != nil {
+		return nil, err
+	}
+	verdicts := make([]gateVerdict, len(gates))
+	for i, g := range gates {
+		verdicts[i].Gate = g.name
+		switch {
+		case g.cannot != "":
+			verdicts[i].Verdict = cannotRun + g.cannot
+		case len(g.paths(staged)) == 0:
+			verdicts[i].Verdict = gateNoPath
+		default:
+			got, _ := run(tree, env, "", "sh", "-c", strings.ReplaceAll(g.run, "{1}", shellQuote(copied)))
+			verdicts[i].log = got.log
+			verdicts[i].Verdict = gateRed
+			if got.ok {
+				verdicts[i].Verdict = gateGreen
+			}
+		}
+	}
+	return verdicts, nil
+}
+
+// a gate that reads only the index copy and went green on a tree: those bytes need it no second time
+func recordTree(treeOf func() (string, error), gates []hookGate, verdicts []gateVerdict) {
+	var proven []string
+	for i, g := range gates {
+		if verdicts[i].Verdict == gateGreen && strings.HasPrefix(g.run, gateCopyRun+" ") {
+			proven = append(proven, g.name)
+		}
+	}
+	if sha, err := treeOf(); err == nil && len(proven) > 0 {
+		recordGreen(treeSubject, sha, proven)
+	}
+}
+
+// what the tree a pathspec commit of these paths would hold already proved; any failed read proves nothing
+func provenOnThisTree(tree string, paths []string) []string {
+	env, treeOf, done, err := headIndex(tree)
+	if err != nil {
+		return nil
+	}
+	defer done()
+	for _, path := range paths {
+		_, _ = run(tree, env, "", "git", "add", "-A", "--", path)
+	}
+	sha, err := treeOf()
+	if err != nil {
+		return nil
+	}
+	record, _ := os.ReadFile(filepath.Join(stateDir(), gatesGreenFile))
+	lines := nonBlank(string(record))
+	slices.Reverse(lines)
+	for _, line := range lines {
+		fields := strings.Split(line, "\t")
+		if len(fields) != 4 || fields[1] != treeSubject || fields[2] != sha {
+			continue
+		}
+		if at, err := strconv.ParseInt(fields[0], 10, 64); err != nil || time.Since(time.Unix(at, 0)) > gatesGreenFor {
+			return nil
+		}
+		return strings.Split(fields[3], ",")
+	}
+	return nil
 }
 
 // one line per thing a green overlay proved, read back by `mods:test --skip-tested`; a failed write costs one rerun

@@ -263,7 +263,7 @@ func overlayGates(repo, scratch string, changed []string) ([]gateVerdict, error)
 	if err != nil || len(gates) == 0 || len(changed) == 0 {
 		return nil, err
 	}
-	env, _, done, err := headIndex(repo)
+	env, treeOf, done, err := headIndex(repo)
 	if err != nil {
 		return nil, err
 	}
@@ -283,6 +283,7 @@ func overlayGates(repo, scratch string, changed []string) ([]gateVerdict, error)
 	})
 	if gatesFail(verdicts, "", "") == nil {
 		recordTestedMods(repo, env, changed)
+		recordTree(treeOf, gates, verdicts)
 	}
 	return verdicts, nil
 }
