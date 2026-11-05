@@ -1,85 +1,43 @@
-// checkup naming-entity-first: names that lead with a verb where the entity should lead (root CLAUDE.md
-// § naming, FRM-219). prints `<kind> · <name>` per breach, exit 1 on any; the allow lists are dima's calls.
-// the verb families shape-* and author-* stay on purpose (FRM-219, o105): neither verb is in the list
+// checkup naming-family-first: a family's shared word gone last (root CLAUDE.md § naming): a name whose last word heads a
+// family while its own head has none, or 3+ `-` names sharing a last word over lone heads. prints `<kind> · <name>`, exit 1 on any
+// a `:` list is exempt from the second: its tail is a member, `speak:build`, and two names are no family yet
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, extname, join } from 'node:path';
 
-const verbs = new Set([
-    'add',
-    'apply',
-    'build',
-    'check',
-    'clean',
-    'create',
-    'delete',
-
-    'draw',
-    'fetch',
-    'find',
-    'fold',
-    'gather',
-    'get',
-    'ingest',
-    'install',
-    'list',
-    'make',
-    'move',
-    'open',
-    'prune',
-    'publish',
-    'read',
-    'remove',
-    'rename',
-    'render',
-    'run',
-    'scan',
-    'seed',
-    'send',
-    'set',
-    'show',
-    'start',
-    'stop',
-    'sync',
-    'update',
-    'verify',
-
-    'write',
-]);
-
-// package.json loop and service verbs take `:` variants by convention (x:guide-conventions package-json.md)
-const scriptFamilyAllow = new Set([
-    'build',
-    'check',
-    'dev',
-    'format',
-    'lint',
-    'preview',
-    'serve',
-    'start',
-    'test',
-    'typecheck',
-]);
-// singles that never grow siblings (FRM-219 pass 1, the SINGLE-OK list)
-const singleAllow = new Set([
-    'bulk-replace',
-    'remind',
-    'seed',
-    'step-by-step',
-    'watch-once',
-]);
-
-export function isVerbFirst(name: string, separator: '-' | ':'): boolean {
-    const head = name.split(separator)[0] ?? '';
-    if (singleAllow.has(name)) return false;
-    if (separator === ':' && scriptFamilyAllow.has(head)) return false;
-    return verbs.has(head);
-}
+const TAIL_FAMILY = 3;
 
 export function breaches(names: Name[]): string[] {
-    return names
-        .filter(({ name, separator }) => isVerbFirst(name, separator))
-        .map(({ kind, name }) => `${kind} · ${name}`);
+    return Object.values(Object.groupBy(names, (n) => n.kind)).flatMap(
+        (list = []) => {
+            const heads = Object.groupBy(list, headOf);
+            const isFamily = (word: string) => (heads[word]?.length ?? 0) > 1;
+            const lone = list.filter(
+                (n) => !isFamily(headOf(n)) && lastOf(n) !== headOf(n),
+            );
+            const tails = Object.groupBy(
+                lone.filter((n) => n.separator === '-'),
+                lastOf,
+            );
+            return lone
+                .filter(
+                    (n) =>
+                        isFamily(lastOf(n)) ||
+                        (tails[lastOf(n)]?.length ?? 0) >= TAIL_FAMILY,
+                )
+                .map(({ kind, name }) => `${kind} · ${name}`);
+        },
+    );
+}
+
+function headOf({ name, separator }: Name) {
+    return (
+        (separator === ':' ? name.split(':')[0] : name.split(/[-_ ]/)[0]) ?? ''
+    );
+}
+
+function lastOf({ name }: Name) {
+    return name.split(/[-:]/).at(-1) ?? '';
 }
 
 function main() {
@@ -93,7 +51,6 @@ function main() {
             skill('skill clio'),
         ),
         ...dirs(join(frame, 'recipes')).map(skill('recipe')),
-        ...entries(join(frame, 'script')).map(file('script')),
         ...entries(join(frame, '_clio/script')).map(file('clio script')),
         ...entries(join(frame, 'home/.claude/shelf/hooks')).map(file('hook')),
         ...entries(join(frame, '_clio/.claude/hooks')).map(file('clio hook')),
@@ -102,11 +59,12 @@ function main() {
             join(home, 'projects/bytes/package.json'),
             'bytes script',
         ),
+        ...verbNames(join(frame, 'x/go/registry.json')),
     ];
     const found = breaches(names);
     for (const line of found) console.log(line);
     console.log(
-        `naming-entity-first: ${names.length} names, ${found.length} lead with a verb`,
+        `naming-family-first: ${names.length} names, ${found.length} scatter a family`,
     );
     process.exit(found.length ? 1 : 0);
 }
@@ -142,6 +100,17 @@ function file(kind: string) {
 function scriptKeys(path: string, kind: string): Name[] {
     const scripts = JSON.parse(readFileSync(path, 'utf8')).scripts ?? {};
     return Object.keys(scripts).map((name) => ({ kind, name, separator: ':' }));
+}
+
+// each x family is its own list: `lane merge-main` sorts among lane's verbs
+function verbNames(path: string): Name[] {
+    return [
+        ...readFileSync(path, 'utf8').matchAll(/"name": "([a-z]+) ([a-z-]+)"/g),
+    ].map(([, family, name]) => ({
+        kind: `x ${family}`,
+        name: name ?? '',
+        separator: '-',
+    }));
 }
 
 if (import.meta.main) main();

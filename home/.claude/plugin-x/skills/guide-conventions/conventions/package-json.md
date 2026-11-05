@@ -43,7 +43,7 @@ Dima re-sorted trophy-sys by hand after an alphabetical print.
 A prisma project carries at least a studio shortcut in section 3; a manifest without one is
 incomplete, not minimal.
 
-## the names — `<family>:<name>`, the family is the entity
+## the names — `<family>:<name>`, the family-first rule on a script list
 
 `:` separates a family from its member. Two shapes, both legal:
 

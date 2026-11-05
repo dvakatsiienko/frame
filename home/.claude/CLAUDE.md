@@ -132,12 +132,11 @@ on partly done, flatten an exact string into prose casing.
 <!-- sync: cloud-chat -->
 
 - **seven names before the build.** a new name for anything lasting — a skill, a job, an app, a memory leaf, a verb, a file family — goes to dima as seven candidates first through `x:top-seven`, a pick marked; the build starts with his pick (dima, 2026-10-16: «I very often ask you to rename things you created. instead, let's think of a name first, and then implement with the correct name»).
-- **entity-first.** the entity leads, the verb or qualifier follows: `<entity>-<qualifier>`
-  - ✅ `handoff-delete`, `handoff-create`, `plugin-x`, `plugin-x-cloud-chat`
-  - ❌ `delete-handoff`, `create-handoff`, `x-plugin`, `desktop-plugin-x`
-- applies to anything that can grow into a family: variables, folders, skills, commands, tools. siblings then sort and group by subject.
-- a single that will never grow siblings takes its most natural reading instead — `shape-idea`, not `idea-shape`. the test is one question: will siblings come?
-- `entity-first <scope>` is the keyword. do the rename, report what changed, skip the explanation.
+- **family-first.** a name opens with the word its siblings share, each next word narrowing, so a sorted list keeps a family side by side: `crew-codie`, never `codie-crew`; `handoff-delete`; `audit-codie`. part of speech never decides.
+  - the test: write three likely siblings; the word that repeats leads. both repeat (`speak:test`, `mods:test`) → the family that will grow
+  - no sibling in sight → its natural reading; a family's bare head stays free for its root
+  - the edge shapes (a date, a number, a sidecar, code): `x:guide-conventions` `conventions/naming-family-first.md` <!-- cc -->
+- `family-first <scope>` is the keyword. do the rename, report what changed, skip the explanation.
 - **one name on every layer.** a feature's name is the same string in its dir, binary, launchd label, codesign id, script names, log strings, data dir and docs. a rename moves all of them in one change; done = `grep -rn '<old name>'` prints nothing, and the report says so. a pnpm script family may carry a short alias of the name when the full one is hostile to type (`monitor-hotkey:top` for `x-monitor-hotkey-stats`).
 
 ## the handoff (CST) and token thrift

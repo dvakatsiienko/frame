@@ -76,7 +76,7 @@ the done test is `FTR.md`; the words are `GLOSSARY.md`. prior art: `docs/researc
 the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name prefixes; the top three by calls are the linear read script 148 (now `x linear read`), the handoff store 145, the linear token script 125 (now `x as`) (agent calls only — dima's own terminal is invisible to transcripts).
 
 - **what x owns:** every fleet op. app dev (`dev`, `build`, `test` per app) stays with `pnpm` / `turbo`, one door per app.
-- **the shape:** entity-first families (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 families, each verb declared once in the registry. not a port: each script is re-thought into its family or dropped.
+- **the shape:** families (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 families, each verb declared once in the registry. not a port: each script is re-thought into its family or dropped.
 - **go native or adapter:** the hot paths go native first (linear, the handoff store, lanes); a cold verb may call its TS script through an adapter until telemetry says it lives.
 - **telemetry from day one:** one json line per call in `~/.local/state/x/trace/<date>.jsonl`, written at exit, no network — when, verb, flag names (never values), caller (a terminal, or an agent session + member), repo, duration, exit and error kind, each step's time, x version. OpenTelemetry-shaped names. `X_TRACE=0` turns it off. `x stats` reads it (most used, dead for 30 days, slowest p95, failure rate, agents vs dima); `x fleet flow`, the halt board and the hq app read the same files. each `pnpm` shim left during the move writes a trace line too.
 - **where x runs:** the mac (cc, cloud chat through Desktop Commander). a cloud session gets the repo, not x.

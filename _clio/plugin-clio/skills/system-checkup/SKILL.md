@@ -35,7 +35,7 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   `docs/research/skill-split-scriptify-scan.md` (deleted 2026-11-04, `git log` holds it); strength-3 items only, the rest stay in that doc
 - **hook-health** — hook latency and errors per hook over the last days of the local OTel tap ·
   script, `scripts/hook-health.sh [days]` (🔴 p95 over 1 s or any error, 🟡 over 300 ms)
-- **naming-entity-first** — verb-first names, FRM-219 · script, `node scripts/naming-entity-first.ts`
+- **naming-family-first** — a family's shared word gone last · script, `node scripts/naming-family-first.ts`
   (🔴 a breach; a rename is an ask)
 
 - **install-census** — what is installed and what is used, more often than a memory sweep (dima,
