@@ -6,7 +6,7 @@ Ticket: none
 
 # how many reviews an agent coder runs, and what runs last
 
-📌 adopted 2026-11-05 (dima's tick): CodeRabbit runs once and last, the rest as below. Headline: one pass per angle before the first verifier round, no full reruns, the verifier last and bound to a sha, a test-only gate at merge. No study compares seal orders or measures reruns on agent fix diffs, so this rests on adjacent evidence.
+📌 adopted 2026-11-05 (dima's tick): the ci review runs once and last of the reviews, the rest as below. Headline: one pass per angle before the first verifier round, no full reruns, the verifier last and bound to a sha, a test-only gate at merge. No study compares seal orders or measures reruns on agent fix diffs, so this rests on adjacent evidence.
 
 Keys, read 2026-11-05: `rr` = docs/test-drive/review-rounds.md, `wh` = docs/test-drive/wisphunter.md, `brief` = .scratch/review-model/brief.md. Undated docs carry that date.
 

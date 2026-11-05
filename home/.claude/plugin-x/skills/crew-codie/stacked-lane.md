@@ -1,6 +1,6 @@
 # a stacked lane — read only when the brief says `pr mode: stacked`
 
-a stacked lane adds one CodeRabbit run per layer, while its quota lasts (dima, 2026-11-05).
+each layer gets its one ci review, last (dima, 2026-11-05).
 
 stacked prs are on trial (`docs/test-drive/stacked-prs.md`): the lane exists to measure them, so its hand steps are data.
 
