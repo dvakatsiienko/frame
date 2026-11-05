@@ -52,9 +52,22 @@ const APP_HEAD =
 const NOTE =
     /^The session "([^"]*)" you started \((local_[^)]*)\) finished a turn(?: \([^)]*\))?\. It reported[^:]*: "([\s\S]*)"( \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
 
+const OPEN = '<cross-session-message';
+const CLOSE = '</cross-session-message>';
+const UNREAD_SPLIT =
+    /(?<=\n<\/cross-session-message>)\s*(?=<cross-session-message)/;
+
+// what the parser left is a message it could not read: it ends in a close, and opens with a tag or closes before any tag opens
+const isUnreadTail = (tail: string) =>
+    tail.endsWith(CLOSE) &&
+    (tail.startsWith(OPEN) ||
+        !tail.includes(OPEN) ||
+        tail.indexOf(CLOSE) < tail.indexOf(OPEN));
+
 // the desktop's one `sdk` prompt, block by block: its notes as sender, report and the held text (the report, whether it is
-// cut, the session holding the rest), its member messages, each with its place among the blocks, and whether another reminder
-// starts a turn by itself; undefined once typed words remain, since those may be dima quoting a block
+// cut, the session holding the rest), its member messages, each with its place among the blocks, whether another reminder
+// starts a turn by itself, and a message it could not read, its body holding a tag at a line's start; undefined once typed
+// words remain, since those may be dima quoting a block
 // (the origin is the same as dima's typing, so only the blocks' shape tells them apart)
 export function quietGlued(text: string) {
     const heads: string[] = [];
@@ -79,8 +92,19 @@ export function quietGlued(text: string) {
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             hasOther = true;
     }
-    return rest.trim() ? undefined : { hasOther, heads, messages, notes };
+    const tail = rest.trim();
+    if (tail && !isUnreadTail(tail)) return undefined;
+    const unread = tail
+        ? tail.split(UNREAD_SPLIT).filter((b) => b.startsWith(OPEN))
+        : undefined;
+    return { hasOther, heads, messages, notes, unread };
 }
+
+// the app's own prompt, no word of his in it, so it never counts as his turn whatever becomes of its hold
+export const isAppPrompt = (text: string) => {
+    const glued = quietGlued(text);
+    return !!glued && (glued.heads.length > 0 || !!glued.unread);
+};
 
 export const quietHeldText = (body: string) =>
     body.replace(PROGRESS_TAG, '').trim();

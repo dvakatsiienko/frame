@@ -84,6 +84,7 @@ import {
     QUIET_HELD_LINE,
     QUIET_PUSHED,
     QUIET_SLIPSTREAMED,
+    isAppPrompt,
     isQuietAnswer,
     isQuietQuestion,
     isQuietRefusal,
@@ -1370,12 +1371,44 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
           )
         : undefined;
 
+// a glued message the parser could not read lets its prompt in whole: the ledger still hears of it
+async function quietUnread($: EngineInterface, blocks: string[]) {
+    if (!(await isQuietHome($))) return;
+    const isOn = await readSwitch($, 'quiet').catch(() => true);
+    const at = await $.clock.now();
+    const members = await registry($);
+    await quietLogAll(
+        $,
+        blocks.map((block) => {
+            const { canary, from, tag } = peerPing(block);
+            const sid = memberOf(members, from)?.base.sid;
+            return {
+                arm: isOn ? ('on' as const) : ('off' as const),
+                ...(sid ? { sid } : {}),
+                at,
+                from,
+                startedTurn: false,
+                tag,
+                verdict: 'failed-open' as const,
+                ...(canary ? { canary } : {}),
+            };
+        }),
+    );
+}
+
 // the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages: each held or pushed by
 // its own words. answers the drop's reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text
 // left once the held blocks are out; undefined lets the prompt in as it came
 async function quietHoldPrompt($: EngineInterface, prompt: string) {
     const glued = quietGlued(prompt);
     if (!glued) return undefined;
+    if (glued.unread) {
+        await quietUnread($, [
+            ...glued.messages.map((m) => m.block),
+            ...glued.unread,
+        ]);
+        return undefined;
+    }
     // messages first: an answer takes the slot before its sender's note can
     const items = [
         ...glued.messages.map(({ block, head }) => {
@@ -4929,9 +4962,8 @@ export const register: Register = (on) => {
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
-        // a judged prompt is the app's and its members', never his own
         const isUser =
-            !hold &&
+            !(e.origin?.kind === 'sdk' && isAppPrompt(e.text)) &&
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         if (isUser && BACK_AT_MAC.test(e.text))
