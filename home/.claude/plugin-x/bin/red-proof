@@ -57,6 +57,20 @@ for anchor in "${anchors[@]}"; do
   [ "$count" = 1 ] || { echo "red-proof: anchor «${anchor}» found $count times in $file, needs exactly 1" >&2; exit 2; }
 done
 
+# on a red base every swap reads RED whatever it does (FRM-478: the mod never loaded), so it refuses before the first swap
+if ! run; then
+  names=$(sed -nE -e 's/ \[[0-9.]+ms\]$//' -e 's/^ *\(fail\) //p' -e 's/^ *FAIL +//p' -e 's/^ *--- FAIL: ([^ ]+).*/\1/p' "$out" | sort -u)
+  if [ -n "$names" ]; then
+    echo "red-proof: the base is already red, nothing swapped: $(printf '%s\n' "$names" | wc -l | tr -d ' ') failed" >&2
+    printf '%s\n' "$names" | sed 's/^/  /' >&2
+  else
+    echo "red-proof: the base is already red, nothing swapped: no failed name read, its output ends:" >&2
+    tail -5 "$out" | sed 's/^/  /' >&2
+  fi
+  rm -f "$out"
+  exit 1
+fi
+
 backup=$(mktemp)
 cp -p "$file" "$backup"
 # touch: a build cache keyed on mtime (the x shim) must not keep the mutated build

@@ -32,6 +32,9 @@ const ECHO_JSON_HINT =
 const LOOP_HINT =
     "x-mod-guard hint: `claude -p` inside `while read` eats the loop's stdin — end it with `</dev/null`";
 // rg skips dot dirs: a «0 left» proof over frame missed 4 live pointers under home/.claude (PK-139, 2026-10-14)
+// a commit or push chain held a coder 71 of 371 minutes on mods lane 4, a steer waiting behind it (FRM-470, dima's o72)
+const CHAIN_HINT =
+    'x-mod-guard hint: `x lane commit` and `x lane push` run hooks for minutes — run them with run_in_background: true, alone in their message, and wait on the notification';
 const RG_HINT =
     'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
 // a pipe's exit is its last stage's: `gh api … | jq … && next` runs `next` after a failed gh api (PK-188)
@@ -259,6 +262,14 @@ export function hints(command: string, cwd: string, ctx: Context) {
                 (sub === 'api' && isPullsRead(c.args.slice(1))))
         )
             found.add(PR_HINT);
+        if (
+            ctx.foreground &&
+            c.name === 'x' &&
+            c.args[0]?.text === 'lane' &&
+            (c.args[1]?.text === 'commit' || c.args[1]?.text === 'push') &&
+            !parse(command).comments.some((m) => /^\s*fg-ok:\s*\S/.test(m))
+        )
+            found.add(CHAIN_HINT);
         if (c.name === 'gh' && isGhJq(c.args)) found.add(JQ_HINT);
         if (c.name === 'rg' && ctx.home && rgMissesDots(c, ctx))
             found.add(RG_HINT);

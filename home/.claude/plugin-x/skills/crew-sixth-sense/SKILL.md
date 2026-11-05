@@ -76,10 +76,9 @@ codie reads no reviewer; you do.
   comment as author, `path:line` and body.
 - **gate before triage** — the ci reviewer's P0/P1 first, the rest only when that set is empty;
   from round 2 on, P0 only.
-- **reproduce or refute** each finding, as you would your own. one you could not reproduce goes
-  out as `unconfirmed`, never as fact.
+- **reproduce or refute** each finding. one you could not reproduce goes out as `unconfirmed`.
 - codie's local review chain is its own pre-verification, not yours.
-- a second read of a diff goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`.
+- a second read goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`; a guard rule's live exit: `pnpm mods:probe`.
 
 ## step 3 — the verdict object
 

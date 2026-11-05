@@ -35,6 +35,10 @@
   - ✅ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
   - proof: tests/rewrite.test.ts::a raw linear api / a raw linear api after a cd / a linear api rewrite is named in one line; tests/linear.test.ts::clio's raw linear api still takes the x linear rewrite
   - decision: x-mod-guard alone covers `=word`: its `tool.call` rewrite runs before any classic PreToolUse hook, so the classic `zsh-equals-guard.py` backstop was dropped (dima's o286, 2026-10-11); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
+- ⬜ a foreground `x lane commit` or `x lane push` gets one hint naming `run_in_background` (FRM-470)
+  - given the same call in the background, or ending in `# fg-ok: <why>`, then no hint
+  - decision: a hint, never a refusal — a one-file doc commit may well stay foreground
+  - proof: tests/hint.test.ts::a foreground chain runs with one hint naming run_in_background (x3 forms); no chain hint: …; a chain already in the background gets no hint
 - ✅ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
   - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
   - then it runs as typed, and the model gets one context line naming `x gh pr <n>`

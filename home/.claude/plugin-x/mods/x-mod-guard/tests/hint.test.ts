@@ -21,6 +21,39 @@ const bash = ($: Engine, command: string) =>
 const hinted = (context: readonly string[] | undefined, verb: string) =>
     (context ?? []).filter((l) => l.includes(`hint: \`${verb}`));
 
+const chainHint = (context: readonly string[] | undefined) =>
+    (context ?? []).filter((l) => l.includes('run_in_background: true'));
+for (const typed of [
+    'x lane commit m -- a.ts',
+    'x lane push --apply',
+    'cd /repo && x lane commit m -- a.ts',
+] as const)
+    test(`a foreground chain runs with one hint naming run_in_background: ${typed}`, async ($, on) => {
+        const w = world(on);
+        const r = await bash($, typed);
+        expect(w.ran).toEqual([typed]);
+        expect(chainHint(r.context)).toHaveLength(1);
+    });
+for (const typed of [
+    'x lane gate m',
+    'echo x lane commit',
+    'x lane commit m -- a.ts # fg-ok: a one-file doc',
+] as const)
+    test(`no chain hint: ${typed}`, async ($, on) => {
+        world(on);
+        const r = await bash($, typed);
+        expect(chainHint(r.context)).toHaveLength(0);
+    });
+test('a chain already in the background gets no hint', async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        command: 'x lane commit m -- a.ts',
+        run_in_background: true,
+        tool: 'Bash',
+    });
+    expect(chainHint(r.context)).toHaveLength(0);
+});
+
 const PR_READS = [
     'gh pr view 12',
     'gh pr checks 12',
@@ -54,7 +87,7 @@ const QUIET = [
     ['/repo', 'git add a.ts'],
     ['/repo', 'git commit -m m -- a.ts'],
     ['/home/frame', 'git status'],
-    ['/home/frame', 'x lane commit m.txt -- a.ts'],
+    ['/home/frame', 'x lane commit m.txt -- a.ts # fg-ok: a quiet row'],
     ['/home/frame', "echo 'git add a.ts and gh pr view 1'"],
     ['/home/frame', "cat <<'EOF'\ngit add a.ts\ngh pr view 1\nEOF"],
     ['/repo', 'x gh pr 12'],

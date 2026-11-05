@@ -1,17 +1,19 @@
-// pnpm mods:test [<mod>…] [--extra <file>] — each mod's tests through `claude plugin test`, printing only the failing
-// tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the mod's
-// harness on a copy of the one mod named (FRM-388)
+// pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
+// the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
+// mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files
 import { spawnSync } from 'node:child_process';
 import {
+    appendFileSync,
     cpSync,
     existsSync,
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
     rmSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { basename, dirname, join, resolve } from 'node:path';
+import { homedir, tmpdir } from 'node:os';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 
 type Run = { clockReads?: string[]; mod: string; output: string };
@@ -59,6 +61,35 @@ export function summary(runs: Run[]) {
         ? `red in ${red.join(', ')}`
         : `${runs.length} mods green`;
     return `mods:test: ${head}, ${pass} pass, ${fail} fail`;
+}
+
+// the files of a run whose every failed row hit the kit's 5 s bound: a loaded machine, so they run once more; undefined
+// when a row failed for real or nothing failed. the kit refuses node:os, so a row cannot size its bound (FRM-470)
+export function timedOutFiles(output: string) {
+    const lines = output.split('\n').map((l) => l.trim());
+    const files = new Set<string>();
+    let file = '';
+    for (const [i, line] of lines.entries()) {
+        const head = line.match(/^(tests\/\S+\.test\.tsx?):$/);
+        if (head) file = head[1] ?? '';
+        if (!line.startsWith('(fail) ')) continue;
+        if (!lines[i + 1]?.startsWith('Error: timed out after ')) return;
+        files.add(file);
+    }
+    return files.size ? [...files] : undefined;
+}
+
+// the run with each file the second run read replaced by that second reading
+export function withRerun(output: string, rerun: string) {
+    const sections = (text: string) =>
+        text
+            .split(/^(?=\s*tests\/\S+\.test\.tsx?:$)/m)
+            .filter((s) => /^\s*tests\//.test(s))
+            .map((s) => [s.trim().split('\n')[0] ?? '', s] as const);
+    const again = new Map(sections(rerun));
+    return sections(output)
+        .map(([head, s]) => again.get(head) ?? s)
+        .join('\n');
 }
 
 // the failing tests of one run, each under its file's header with the lines it printed; passes and tallies dropped
@@ -186,24 +217,49 @@ function hookClockReads(dir: string) {
         );
 }
 
+// one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
+function logRun(args: string, line: string) {
+    if (process.env.X_TEST) return;
+    const state = process.env.X_STATE ?? join(homedir(), '.local/state/x');
+    const head = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
+        encoding: 'utf8',
+    }).stdout?.trim();
+    mkdirSync(state, { recursive: true });
+    appendFileSync(
+        join(state, 'mods-test.log'),
+        `${new Date().toISOString()}\t${head || '-'}\t${args || 'all'}\t${line}\n`,
+    );
+}
+
 if (import.meta.main) {
     const root = import.meta.dirname;
     const { positionals, values } = parseArgs({
         allowPositionals: true,
-        options: { extra: { type: 'string' } },
+        options: { extra: { type: 'string' }, only: { type: 'string' } },
     });
     const all = readdirSync(root)
         .sort()
         .filter((mod) => existsSync(join(root, mod, '.claude-plugin')));
     const unknown = positionals.filter((mod) => !all.includes(mod));
-    if (unknown.length || (values.extra && positionals.length !== 1)) {
+    const only = values.only && resolve(values.only);
+    const onlyMod = only && relative(root, only).split(sep)[0];
+    if (
+        unknown.length ||
+        (values.extra && positionals.length !== 1) ||
+        (only &&
+            (values.extra ||
+                positionals.length ||
+                !all.includes(onlyMod as string) ||
+                !existsSync(only)))
+    ) {
         console.error(
-            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] — mods: ${all.join(', ')}`,
+            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] — mods: ${all.join(', ')}`,
         );
         process.exit(2);
     }
     const runs: (Run & { status: number | null })[] = [];
-    for (const mod of positionals.length ? positionals : all) {
+    const named = onlyMod ? [onlyMod] : positionals;
+    for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
@@ -213,10 +269,39 @@ if (import.meta.main) {
                 join(dir, 'tests', basename(values.extra)),
             );
         }
+        // claude plugin test takes only a folder, so the one file runs in a copy holding no other test file
+        if (only) {
+            dir = join(mkdtempSync(join(tmpdir(), 'mods-only-')), mod);
+            cpSync(join(root, mod), dir, {
+                filter: (from) => from === only || !/\.test\.tsx?$/.test(from),
+                recursive: true,
+            });
+        }
         const r = spawnSync('claude', ['plugin', 'test', dir], {
             encoding: 'utf8',
         });
-        const output = `${r.stdout}${r.stderr}`;
+        let output = `${r.stdout}${r.stderr}`;
+        let { status } = r;
+        const late = timedOutFiles(output);
+        if (late) {
+            const from = dir;
+            const copy = join(mkdtempSync(join(tmpdir(), 'mods-late-')), mod);
+            cpSync(from, copy, {
+                filter: (path) =>
+                    !/\.test\.tsx?$/.test(path) ||
+                    late.includes(relative(from, path)),
+                recursive: true,
+            });
+            const again = spawnSync('claude', ['plugin', 'test', copy], {
+                encoding: 'utf8',
+            });
+            output = withRerun(output, `${again.stdout}${again.stderr}`);
+            status = again.status;
+            rmSync(dirname(copy), { force: true, recursive: true });
+            process.stdout.write(
+                `${mod}: only timeouts, ran again: ${late.join(', ')}\n`,
+            );
+        }
         const failed = failures(output);
         if (failed) process.stdout.write(`${mod}:\n${failed}\n`);
         const clock = hookClockReads(dir);
@@ -224,12 +309,13 @@ if (import.meta.main) {
             process.stdout.write(
                 `${mod}: a clock read outside $.clock (date bomb), give it the $.clock fallback or a clock-ok line above:\n${clock.map((c) => `  ${c}`).join('\n')}\n`,
             );
-        runs.push({ clockReads: clock, mod, output, status: r.status });
-        if (values.extra)
+        runs.push({ clockReads: clock, mod, output, status });
+        if (values.extra || only)
             rmSync(dirname(dir), { force: true, recursive: true });
     }
     const line = summary(runs);
     console.log(`\n${line}`);
+    logRun(process.argv.slice(2).join(' '), line);
     process.exit(
         runs.some((r) => r.status !== 0) || line.includes('red in') ? 1 : 0,
     );

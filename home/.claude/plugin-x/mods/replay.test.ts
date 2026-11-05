@@ -21,16 +21,27 @@ test('reads every Bash call with the cwd it ran in', () => {
         row('pwd', '/b'),
     ].join('\n');
     expect(bashCalls(jsonl)).toEqual([
-        { command: 'ls', cwd: '/a' },
-        { command: 'pwd', cwd: '/b' },
+        { command: 'ls', cwd: '/a', foreground: true },
+        { command: 'pwd', cwd: '/b', foreground: true },
     ]);
+});
+
+test('counts the chain hint only for a foreground chain', () => {
+    const fired = tally(
+        [
+            { command: 'x lane commit m -- a', cwd: '/a', foreground: true },
+            { command: 'x lane commit m -- b', cwd: '/a', foreground: false },
+        ],
+        '/home',
+    );
+    expect([...fired.values()].map((c) => c.length)).toEqual([1]);
 });
 
 test('counts a hint once per command that fires it, and leaves quiet commands out', () => {
     const fired = tally(
         [
-            { command: "rg -n 'x'", cwd: '/home/frame' },
-            { command: "rg -n 'x' src", cwd: '/home/frame' },
+            { command: "rg -n 'x'", cwd: '/home/frame', foreground: true },
+            { command: "rg -n 'x' src", cwd: '/home/frame', foreground: true },
         ],
         '/home',
     );

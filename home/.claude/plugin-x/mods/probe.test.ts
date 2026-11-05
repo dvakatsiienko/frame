@@ -1,6 +1,19 @@
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { loadedFrom, probeArgv, swapDir } from './probe.ts';
+import {
+    behindFalse,
+    childEnv,
+    holdsInGroup,
+    loadedFrom,
+    parseRows,
+    probeArgv,
+    rowVerdicts,
+    swapDir,
+} from './probe.ts';
 
 const names: Record<string, string> = {
     '~/m/x-mod-guard': 'x-mod-guard',
@@ -52,6 +65,124 @@ describe('loadedFrom', () => {
 
     it('is undefined when the mod never loaded', () => {
         expect(loadedFrom([], 'x-mod-guard')).toBeUndefined();
+    });
+});
+
+describe('childEnv', () => {
+    it('moves the plugin cache, which holds the store, under the run dir', () => {
+        expect(childEnv({ PATH: '/bin' }, ['/a', '/b'], '/run')).toEqual({
+            CLAUDE_CODE_PLUGIN_CACHE_DIR: '/run/plugin-cache',
+            CLAUDE_CODE_PLUGIN_DIRS: '/a:/b',
+            PATH: '/bin',
+        });
+    });
+});
+
+describe('behindFalse', () => {
+    const tails = [
+        ['a semicolon', 'true; touch escaped'],
+        ['a newline', 'true\ntouch escaped'],
+        ['an or', 'false || touch escaped'],
+        ['an and', 'true && touch escaped'],
+        ['a pipe', 'true | touch escaped'],
+        ['a background', 'true & touch escaped'],
+        ['a trailing comment', 'touch escaped # }'],
+        ['a substitution', 'echo $(touch escaped)'],
+    ] as const;
+    it.each(tails)('never runs the tail after %s', (_, line) => {
+        const dir = mkdtempSync(join(tmpdir(), 'behind-false-'));
+        spawnSync('bash', ['-c', behindFalse(line)], { cwd: dir });
+        expect(readdirSync(dir)).toEqual([]);
+    });
+
+    it.each([
+        ['a closing brace', 'true; }; touch escaped; {'],
+        ['an open quote', "echo '"],
+    ])('refuses a line with %s, which could leave the group', (_, line) => {
+        expect(holdsInGroup(line)).toBe(false);
+    });
+
+    it('takes a plain compound line', () => {
+        expect(holdsInGroup('true; touch escaped')).toBe(true);
+    });
+});
+
+describe('parseRows', () => {
+    it('reads names and lines, skips comments, unfolds a newline', () => {
+        expect(parseRows('# head\n\none\ttrue; ls\ntwo\ttrue\\nls\n')).toEqual([
+            { line: 'true; ls', name: 'one' },
+            { line: 'true\nls', name: 'two' },
+        ]);
+    });
+
+    it('refuses a row with no tab', () => {
+        expect(() => parseRows('no tab here')).toThrow('no tab');
+    });
+});
+
+describe('rowVerdicts', () => {
+    const rows = [
+        { line: 'rm -rf /x', name: 'floor' },
+        { line: 'ls', name: 'plain' },
+        { line: 'pwd', name: 'skipped' },
+    ];
+    const call = (id: string, command: string) =>
+        JSON.stringify({
+            message: {
+                content: [
+                    { id, input: { command }, name: 'Bash', type: 'tool_use' },
+                ],
+            },
+        });
+    const result = (id: string, content: string, isError: boolean) =>
+        JSON.stringify({
+            message: {
+                content: [
+                    {
+                        content,
+                        is_error: isError,
+                        tool_use_id: id,
+                        type: 'tool_result',
+                    },
+                ],
+            },
+        });
+    const hint = JSON.stringify({
+        attachment: {
+            content: ['x-mod-guard hint: a hint'],
+            toolUseID: 'b-context',
+            type: 'hook_additional_context',
+        },
+    });
+    const transcript = [
+        call('a', behindFalse('rm -rf /x')),
+        result('a', 'nothing in this command ran — x-mod-guard', true),
+        call('b', behindFalse('ls')),
+        result('b', 'Exit code 1', true),
+        hint,
+    ].join('\n');
+
+    it('reads a hook refusal, the short circuit and a row never called', () => {
+        expect(rowVerdicts(transcript, rows)).toEqual([
+            {
+                context: [],
+                name: 'floor',
+                ran: true,
+                verdict: 'refused: nothing in this command ran — x-mod-guard',
+            },
+            {
+                context: ['x-mod-guard hint: a hint'],
+                name: 'plain',
+                ran: true,
+                verdict: 'ran, no refusal',
+            },
+            {
+                context: [],
+                name: 'skipped',
+                ran: false,
+                verdict: 'never called',
+            },
+        ]);
     });
 });
 

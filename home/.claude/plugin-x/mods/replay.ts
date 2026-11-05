@@ -25,6 +25,7 @@ export function bashCalls(jsonl: string) {
                 calls.push({
                     command: item.input.command,
                     cwd: record.cwd ?? '/',
+                    foreground: item.input.run_in_background !== true,
                 });
     }
     return calls;
@@ -32,8 +33,8 @@ export function bashCalls(jsonl: string) {
 
 export function tally(calls: Call[], home: string) {
     const fired = new Map<string, string[]>();
-    for (const { command, cwd } of calls)
-        for (const hint of hints(command, cwd, { home })) {
+    for (const { command, cwd, foreground } of calls)
+        for (const hint of hints(command, cwd, { foreground, home })) {
             const seen = fired.get(hint) ?? [];
             seen.push(command.split('\n')[0]?.slice(0, 120) ?? '');
             fired.set(hint, seen);
@@ -75,14 +76,14 @@ if (import.meta.main) {
 
 /* Types */
 
-type Call = { command: string; cwd: string };
+type Call = { command: string; cwd: string; foreground: boolean };
 type Row = {
     cwd?: string;
     message?: {
         content?: {
             type: string;
             name?: string;
-            input?: { command?: string };
+            input?: { command?: string; run_in_background?: boolean };
         }[];
     };
 };

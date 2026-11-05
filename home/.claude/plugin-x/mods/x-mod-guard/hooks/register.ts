@@ -1249,7 +1249,14 @@ export const register: Register = (on) => {
                 ...(facts.milestoneUnread?.length
                     ? [milestoneSkipped(facts.milestoneUnread)]
                     : []),
-                ...(isQuiet ? [] : hints(command, cwd, { ...ctx, ...facts })),
+                ...(isQuiet
+                    ? []
+                    : hints(command, cwd, {
+                          ...ctx,
+                          ...facts,
+                          foreground:
+                              e.tool === 'Bash' && e.run_in_background !== true,
+                      })),
             ];
             if (!context.length) return result;
             return {

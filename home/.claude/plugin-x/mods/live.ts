@@ -37,7 +37,7 @@ import {
     slotsOf,
 } from './live-root.ts';
 import { RELOAD_MS, reloadVerdict, sourceHash } from './live-verdict.ts';
-import { SWAP_SOURCES, liveDirs, manifestName } from './probe.ts';
+import { SWAP_SOURCES, childEnv, liveDirs, manifestName } from './probe.ts';
 
 const COLS = 140;
 const ROWS = 40;
@@ -173,6 +173,8 @@ async function serve() {
     // the engine logs each module load here; the screen cannot count them, the session draws on the alternate screen with no scrollback
     const debugLog = join(dir, 'debug.log');
     writeFileSync(debugLog, '');
+    // a run starts on an empty store, never the last run's
+    rmSync(join(dir, 'plugin-cache'), { force: true, recursive: true });
     // the tarball drops the prebuilt helper's exec bit, and node-pty cannot spawn without it
     const helper = join(
         dirname(createRequire(import.meta.url).resolve('node-pty')),
@@ -209,8 +211,7 @@ async function serve() {
             cwd: process.cwd(),
             // the watch var also came from the user settings' env
             env: {
-                ...process.env,
-                CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':'),
+                ...childEnv(process.env, dirs, dir),
                 CLAUDE_CODE_PLUGIN_DIR_WATCH: '1',
             },
             name: 'xterm-256color',

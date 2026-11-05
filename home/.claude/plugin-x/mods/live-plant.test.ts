@@ -7,9 +7,9 @@ import {
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { loadavg, tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { plantedCopy as plantedCopyOf } from './live-plant.ts';
 
@@ -45,6 +45,16 @@ function fixture(text: string) {
     writeFileSync(file, text);
     return { file, mod };
 }
+
+// 5 s timed out at load 16–26 on a run that was fine (FRM-470)
+const loadBound = (load: number) => 5000 * Math.max(1, Math.ceil(load / 5));
+vi.setConfig({ testTimeout: loadBound(loadavg()[0] ?? 0) });
+
+it('gives this file more time as the load climbs', () => {
+    expect([loadBound(0), loadBound(5), loadBound(26)]).toEqual([
+        5000, 5000, 30_000,
+    ]);
+});
 
 describe('plantedCopy', () => {
     it('plants one change in a copy of the whole mod', () => {

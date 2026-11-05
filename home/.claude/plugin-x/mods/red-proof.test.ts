@@ -97,3 +97,58 @@ describe('red-proof --cmd --pairs', () => {
         ]);
     });
 });
+
+describe('red-proof on a base already red', () => {
+    const redBase = (say: string) => {
+        const { file, pairs } = fixture();
+        const seen = `${file}.seen`;
+        const r = spawnSync(
+            BIN,
+            [
+                '--cmd',
+                '--pairs',
+                pairs,
+                file,
+                '--',
+                'sh',
+                '-c',
+                `cat ${file} >> ${seen}; ${say}; exit 1`,
+            ],
+            { encoding: 'utf8' },
+        );
+        return { r, seen: readFileSync(seen, 'utf8') };
+    };
+
+    it('runs the command once, on the unmutated file', () => {
+        const { seen } = redBase('true');
+        expect(seen).toBe(ORIGINAL);
+    });
+
+    it('prints the fail count and the failed names of a plugin test', () => {
+        const { r } = redBase(
+            `echo '(pass) a green row'; echo '(fail) row one [12.50ms]'; echo '(fail) row two'`,
+        );
+        expect([r.status, r.stderr]).toEqual([
+            1,
+            'red-proof: the base is already red, nothing swapped: 2 failed\n  row one\n  row two\n',
+        ]);
+    });
+
+    it('prints the failed names of a go test', () => {
+        const { r } = redBase(`echo '--- FAIL: TestOne (0.00s)'`);
+        expect(r.stderr).toContain('1 failed\n  TestOne\n');
+    });
+
+    it('prints the failed names of a vitest run once each', () => {
+        const { r } = redBase(
+            `echo ' × a.test.ts > one 5ms'; echo ' FAIL  a.test.ts > one'`,
+        );
+        expect(r.stderr).toContain('1 failed\n  a.test.ts > one\n');
+    });
+
+    it('prints the end of a red run that names no test', () => {
+        const { r } = redBase(`echo 'SyntaxError: nope'`);
+        expect(r.stderr).toContain('no failed name read');
+        expect(r.stderr).toContain('SyntaxError: nope');
+    });
+});
