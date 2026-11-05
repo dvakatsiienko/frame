@@ -90,6 +90,8 @@ import {
     isQuietRefusal,
     quietGlued,
     quietHeldText,
+    quietIdleNotices,
+    quietKindHeld,
     quietPush,
     quietTag,
 } from './quiet.ts';
@@ -177,7 +179,7 @@ const QUIET_KINDS = [
         name: 'quietAsk',
     },
     {
-        cost: "off: a finished chunk waits for clio's next turn",
+        cost: "off: a finished chunk waits for clio's next turn, and a held [done] is not counted toward her due siesta",
         kind: 'done',
         name: 'quietDone',
     },
@@ -1425,11 +1427,27 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
     );
 }
 
-// the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages: each held or pushed by
-// its own words. answers the drop's reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text
-// left once the held blocks are out; undefined lets the prompt in as it came
-async function quietHoldPrompt($: EngineInterface, prompt: string) {
-    const glued = quietGlued(prompt);
+// afk on or a shift running: nobody is at the keyboard to notice a member ending silently
+async function isAwayNow($: EngineInterface) {
+    const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
+    if (away?.on === true) return true;
+    const sid = await currentId($);
+    const pace = sid
+        ? ((await $.store.get(PACE + sid)) as { since?: number } | undefined)
+        : undefined;
+    return pace?.since !== undefined;
+}
+
+// the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages, or the engine's meta idle
+// notices: each held or pushed by its own words, a lone notice woken instead while he is away. answers the drop's reason,
+// empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text left once the held blocks are out;
+// undefined lets the prompt in as it came
+async function quietHoldPrompt(
+    $: EngineInterface,
+    prompt: string,
+    isMeta: boolean,
+) {
+    const glued = isMeta ? quietIdleNotices(prompt) : quietGlued(prompt);
     if (!glued) return undefined;
     if (glued.unread) {
         await quietUnread($, [
@@ -1466,8 +1484,17 @@ async function quietHoldPrompt($: EngineInterface, prompt: string) {
         const held: QuietPing[] = [];
         const lines: QuietLogLine[] = [];
         const cut = new Set<number>();
-        for (const { body, from, head, marks, tag, text } of items) {
-            const why = await quietWhy($, from, body);
+        const judged = [];
+        for (const item of items)
+            judged.push({
+                ...item,
+                why: await quietWhy($, item.from, item.body),
+            });
+        const isAway = isHolding && (await isAwayNow($));
+        // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
+        const canCut = !isMeta || judged.every((j) => !j.why);
+        for (const { from, head, marks, tag, text, why } of judged) {
+            const isWoken = tag === QUIET_NOTICE && isAway;
             const sid = memberOf(members, from)?.base.sid;
             const line = {
                 arm,
@@ -1477,7 +1504,7 @@ async function quietHoldPrompt($: EngineInterface, prompt: string) {
                 ...(sid ? { sid } : {}),
                 ...marks,
             };
-            if (isHolding && !why) {
+            if (isHolding && canCut && !why && !isWoken) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
@@ -1486,7 +1513,7 @@ async function quietHoldPrompt($: EngineInterface, prompt: string) {
                     ...line,
                     startedTurn: !isBusyNow,
                     verdict: 'passed',
-                    ...(why ? { why } : {}),
+                    ...(why || isWoken ? { why: why ?? 'away' } : {}),
                 });
         }
         const q = await quietOf($);
@@ -1501,6 +1528,7 @@ async function quietHoldPrompt($: EngineInterface, prompt: string) {
             if (held.length) await saveQuiet($, q);
             throw new Error('the log lines did not save');
         }
+        if (!cut.size) return undefined;
         if (cut.size === items.length && !glued.hasOther) return { drop: '' };
         return {
             text: glued.heads
@@ -1530,7 +1558,7 @@ async function quietHoldPrompt($: EngineInterface, prompt: string) {
 
 type QuietSend =
     | { isOwner: true; isAsking: boolean; to: string }
-    | { at: number; isOwner: false; isPush: boolean };
+    | { at: number; isOwner: false; isPush: boolean; tag: string };
 
 // read before the send goes out: clio's gate spends the open answer the moment it lands
 async function quietSendStart(
@@ -1564,6 +1592,7 @@ async function quietSendStart(
         isPush:
             isAnswer ||
             quietPush(message, await quietKindsOff($)) !== undefined,
+        tag: quietTag(message),
     };
 }
 
@@ -1583,7 +1612,13 @@ async function quietSendEnd(
         isQuietRefusal(answer?.message) && (await isHeldSince($, send.at));
     // a send that went nowhere joins no turn, so the line would lie
     if (answer?.success === false && !isHeld) return {};
-    const line = send.isPush ? QUIET_PUSHED : QUIET_SLIPSTREAMED;
+    const isKindOff = (await quietKindsOff($)).includes(send.tag);
+    const line =
+        send.isPush && !isHeld
+            ? QUIET_PUSHED
+            : isKindOff
+              ? quietKindHeld(send.tag)
+              : QUIET_SLIPSTREAMED;
     return isHeld
         ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
         : { line };
@@ -4985,11 +5020,17 @@ export const register: Register = (on) => {
         await flushFields($);
         // the app sends no attachment, and a drop would lose his image with the prompt
         const isAppShaped = e.origin?.kind === 'sdk' && !e.attachments?.length;
-        const hold = isAppShaped
-            ? await quietLocked(() => quietHoldPrompt($, e.text)).catch(
-                  () => undefined,
-              )
-            : undefined;
+        // the engine's own idle notice: meta, no stamp (`unclassified`'s docs)
+        const isEngineNotice =
+            e.isMeta === true &&
+            e.origin?.kind === 'unclassified' &&
+            !e.attachments?.length;
+        const hold =
+            isAppShaped || isEngineNotice
+                ? await quietLocked(() =>
+                      quietHoldPrompt($, e.text, isEngineNotice),
+                  ).catch(() => undefined)
+                : undefined;
         if (hold?.drop !== undefined) return { drop: hold.drop };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
@@ -5434,7 +5475,9 @@ export const register: Register = (on) => {
             };
         }
         const isOn = await readSwitch($, 'quiet');
-        const kindsOff = (await quietKindsOff($)).map((k) => `[${k}]`);
+        const kindsOff = isOn
+            ? (await quietKindsOff($)).map((k) => `[${k}]`)
+            : [];
         return {
             text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held${kindsOff.length ? `; ${kindsOff.join(', ')} switched off, held like an untagged line` : ''}; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
         };
@@ -5731,7 +5774,6 @@ export const register: Register = (on) => {
                                 )}
                                 {knobs.quietKinds.map(
                                     ({ cost, isOn, kind, name }) => (
-                                        // no hover card in a pane (engine.md), so what off costs is its own dim line
                                         <Box
                                             flexDirection='column'
                                             key={`quiet-kind:${kind}`}>
@@ -5746,7 +5788,7 @@ export const register: Register = (on) => {
                                                     {`🤫 [${kind}] starts clio's turn`}
                                                 </Text>
                                             )}
-                                            <Text dimColor>{cost}</Text>
+                                            {noteOnHover(ui, cost)}
                                         </Box>
                                     ),
                                 )}

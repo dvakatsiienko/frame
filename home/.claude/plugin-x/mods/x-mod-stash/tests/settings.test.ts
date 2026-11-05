@@ -310,7 +310,7 @@ for (const [key, label, cost] of [
     [
         'quiet-done',
         "🤫 [done] starts clio's turn",
-        "off: a finished chunk waits for clio's next turn",
+        "off: a finished chunk waits for clio's next turn, and a held [done] is not counted toward her due siesta",
     ],
     [
         'quiet-escalate',
@@ -318,13 +318,20 @@ for (const [key, label, cost] of [
         "off: an [escalate] waits for clio's next turn, a stuck member's too",
     ],
 ] as const) {
-    test(`the ${key} row names what off costs`, async ($, on) => {
+    test(`the ${key} row shows what off costs on hover alone`, async ($, on) => {
         world(on);
         await band($);
         const view = await pane($);
-        expect((await view.find({ text: cost, type: 'Text' }))?.text).toBe(
-            cost,
+        const row = await view.find({
+            key: `quiet-kind:${key.replace('quiet-', '')}`,
+            type: 'Box',
+        });
+        const hidden = (row?.children ?? []).filter(
+            (c) =>
+                (c as { props?: { display?: string } }).props?.display ===
+                'none',
         );
+        expect(JSON.stringify(hidden)).toContain(cost.replace(/"/g, '\\"'));
     });
 
     test(`the master switch off leaves ${key} no control, its state kept`, async ($, on) => {

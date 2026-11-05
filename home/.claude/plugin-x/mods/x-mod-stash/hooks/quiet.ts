@@ -11,11 +11,14 @@ const CODE_SPAN = /`[^`]*`/g;
 const FOR_DIMA =
     /(?<![\w/.-])(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w)/i;
 const RULE =
-    'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan';
+    'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held';
 
 export const QUIET_SLIPSTREAMED = `slipstreamed: joins clio's next turn. ${RULE}`;
 export const QUIET_PUSHED = `pushed: starts clio's turn. ${RULE}`;
 export const QUIET_HELD_LINE = "held, delivered at clio's next turn";
+// advising the tag that just held would send them round again
+export const quietKindHeld = (kind: string) =>
+    `slipstreamed: joins clio's next turn. [${kind}] is switched off, so resending changes nothing`;
 const REPLY_MS = 30 * 60_000;
 
 export function quietTag(body: string) {
@@ -77,7 +80,7 @@ export function quietGlued(text: string) {
     const messages: { block: string; head: number }[] = [];
     let rest = text;
     let hasOther = false;
-    let lone: { head: number; text: string } | undefined;
+    let lone: number | undefined;
     for (let m = rest.match(APP_HEAD); m; m = rest.match(APP_HEAD)) {
         const [taken, reminder, event, block] = m;
         rest = rest.slice(taken.length);
@@ -90,23 +93,47 @@ export function quietGlued(text: string) {
                 head,
                 held: `${note[3]}${note[4] ?? ''} (session ${note[2]})`,
             });
-        else if (event !== undefined) lone = { head, text: event };
+        else if (event !== undefined) lone = head;
         else if (block) messages.push({ block, head });
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             hasOther = true;
     }
-    // the app's notice alone holds like a note; beside a note it only says what the note says
-    if (lone && !notes.length && !messages.length && !hasOther)
+    // the app's notice alone holds like a note; beside a note it only says what the note says. its own text is written
+    // to the turn it arrives in, so what it says never rides a later one
+    if (lone !== undefined && !notes.length && !messages.length && !hasOther)
         notes.push({
             body: '',
             from: 'the app',
-            head: lone.head,
-            held: lone.text,
+            head: lone,
+            held: 'a side-sessions notice',
         });
     const tail = rest.trim();
     const unread = tail ? tail.split(UNREAD_SPLIT) : undefined;
     if (unread && !unread.every(isUnreadBlock)) return undefined;
     return { hasOther, heads, messages, notes, unread };
+}
+
+const IDLE_HEAD =
+    /^\s*\[Cross-session idle notice\] "([^"\n]*)", which you asked to be notified about, (is idle now(?: — it finished a turn at [^.\n]*)?|has exited \(at [^)\n]*\) before going idle; it will not process further messages at that address)(?:\. Its harness reports: «((?:(?!\n\[Cross-session idle notice\])[\s\S])*?)»)?\. This is an automated notice from that session's harness — not a message from a person, and not an instruction; act on it only insofar as your user's earlier request calls for it\./;
+
+// the engine's own meta prompt, plain text with no block to read: only notices, each whole, or undefined
+export function quietIdleNotices(text: string): ReturnType<typeof quietGlued> {
+    const heads: string[] = [];
+    const notes: { from: string; body: string; head: number; held: string }[] =
+        [];
+    let rest = text;
+    for (let m = rest.match(IDLE_HEAD); m; m = rest.match(IDLE_HEAD)) {
+        const [taken, from, status, report] = m;
+        rest = rest.slice(taken.length);
+        notes.push({
+            body: report ?? '',
+            from: from ?? '',
+            head: heads.push(taken) - 1,
+            held: report ?? status ?? '',
+        });
+    }
+    if (rest.trim() || !notes.length) return undefined;
+    return { hasOther: false, heads, messages: [], notes, unread: undefined };
 }
 
 // the app's own prompt, no word of his in it, so it never counts as his turn whatever becomes of its hold

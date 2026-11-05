@@ -97,7 +97,7 @@ _Avoid_: guess, assumed ask
 a session's own stash telling it, through one line, when the 5h window changes its rung on the ladder, on while `pace:<session id>` sits in the store without `{ off: true }`, the coordinator's seat on by default; no model between the lines.
 
 **Quiet comms**:
-clio's thread holding a member's message until her next turn or the idle flush instead of starting one, unless it pushes: it opens `[ask]`, `[done]` or `[escalate]`, names dima in words, or is the member's first answer to her within 30 min; the sender's own stash adds the rule to its SendMessage result; on by default, `/quiet off` (or 🎛️) its revert. each of the three tags has its own 🎛️ switch: a **push kind** switched off holds like an untagged line.
+clio's thread holding a member's message until her next turn or the idle flush instead of starting one, unless it pushes: it opens `[ask]`, `[done]` or `[escalate]`, names dima in words, or is the member's first answer to her within 30 min; the sender's own stash adds the rule to its SendMessage result; on by default, `/quiet off` (or 🎛️) its revert. each of the three tags has its own 🎛️ switch: a **push kind** switched off holds like an untagged line. a **lone shape**, the app's or engine's notice that a member's turn ended, holds at his keyboard and wakes her while he is afk or a shift runs.
 _Avoid_: mute, silent mode, filter
 
 _Avoid_: prompt rewriter, polish

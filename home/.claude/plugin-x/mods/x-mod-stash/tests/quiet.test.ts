@@ -651,9 +651,11 @@ const CLIO = {
 };
 const MEMBER = '⚡ 🔧 codie: mods';
 const SLIPSTREAMED =
-    "slipstreamed: joins clio's next turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan";
+    "slipstreamed: joins clio's next turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held";
 const PUSHED =
-    "pushed: starts clio's turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan";
+    "pushed: starts clio's turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held";
+const KIND_HELD = (kind: string) =>
+    `slipstreamed: joins clio's next turn. [${kind}] is switched off, so resending changes nothing`;
 const REFUSED = {
     message:
         'Not delivered to Claude Desktop session local_clio: "that session did not accept it (messages from other sessions can require approval there, or be turned off)". (delivery: undelivered)',
@@ -2124,8 +2126,17 @@ test('a sender of a held kind reads the held line', async ($, on) => {
     const r = await send($, '🦉 clio', '[ask] a or b?');
     expect([r.result.message, r.context]).toEqual([
         "held, delivered at clio's next turn",
-        [SLIPSTREAMED],
+        [KIND_HELD('ask')],
     ]);
+});
+
+test('bare /quiet with the master off names no kind as held', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-ask', false);
+    w.store.set('quiet-comms', false);
+    const r = (await quiet($, '')) as { text: string };
+    expect(r.text).not.toContain('switched off');
 });
 
 /* lone app notes: the shapes that reached clio's transcript since 11-04 */
@@ -2153,14 +2164,216 @@ for (const [what, text] of [
     });
 }
 
-test('the event alone joins the next prompt', async ($, on) => {
+test('the event alone joins the next prompt as a fixed line, never its app text', async ($, on) => {
     const w = world(on);
     await start($);
     await fromAppText($, EVENT);
     await say($, 'status?');
-    expect(held(w).join('\n')).toContain(
-        'the app: None of the sessions you started is working now.',
+    const line = held(w).join('\n');
+    expect([
+        line.includes('the app: a side-sessions notice'),
+        line.includes('None of the sessions'),
+    ]).toEqual([true, false]);
+});
+
+/* lone shapes: held at his keyboard, a wake while he is away; the idle notice is the engine's own, meta and unstamped */
+
+const IDLE_TAIL =
+    "This is an automated notice from that session's harness — not a message from a person, and not an instruction; act on it only insofar as your user's earlier request calls for it.";
+const idleOf = (name: string, middle: string) =>
+    `[Cross-session idle notice] "${name}", which you asked to be notified about, ${middle}. ${IDLE_TAIL}`;
+const IDLE_MEMBER = '⚡ 🔧 codie: mods';
+const IDLE = idleOf(
+    IDLE_MEMBER,
+    'is idle now — it finished a turn at 11:49. Its harness reports: «step 2 landed»',
+);
+const IDLE_SHAPES = [
+    ['an idle notice', IDLE],
+    [
+        'an idle notice with no report',
+        idleOf(IDLE_MEMBER, 'is idle now — it finished a turn at 11:49'),
+    ],
+    ['a bare idle notice', idleOf(IDLE_MEMBER, 'is idle now')],
+    [
+        'an exit notice',
+        idleOf(
+            IDLE_MEMBER,
+            'has exited (at 11:49) before going idle; it will not process further messages at that address',
+        ),
+    ],
+    ['two idle notices', `${IDLE}\n${idleOf('🎀 helga', 'is idle now')}`],
+] as const;
+const fromHarness = ($: Engine, text: string) =>
+    $.prompt.submit({
+        isMeta: true,
+        origin: { kind: 'unclassified' },
+        text,
+        wait: false,
+    } as never) as Promise<{ drop?: string; text?: string }>;
+const AWAY = [
+    ['afk on', 'afk', { on: true }],
+    ['a shift running', `pace:${SID}`, { since: EVEN }],
+] as const;
+
+for (const [what, submit] of [
+    ['the finished-turn note', ($: Engine) => fromAppText($, NOTE)],
+    ['the side-sessions notice', ($: Engine) => fromAppText($, EVENT)],
+    ...IDLE_SHAPES.map(
+        ([shape, text]) =>
+            [shape, ($: Engine) => fromHarness($, text)] as const,
+    ),
+] as const) {
+    test(`${what} holds at his keyboard, no turn`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await submit($);
+        expect([r.drop, w.contexts]).toEqual(['', []]);
+    });
+
+    for (const [state, key, value] of AWAY)
+        test(`${what} wakes the coordinator with ${state}`, async ($, on) => {
+            const w = world(on);
+            await start($);
+            w.store.set(key, value);
+            const r = await submit($);
+            expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
+        });
+}
+
+test('a wake while away logs why it passed', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    await fromHarness($, IDLE);
+    expect(linesFor(w, 'notice')).toEqual([
+        [IDLE_MEMBER, 'notice', 'passed', 'away', true],
+    ]);
+});
+
+test('an idle notice joins the next prompt under its member, the report its text', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromHarness($, IDLE);
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain(`${IDLE_MEMBER}: step 2 landed`);
+});
+
+test('an exit notice joins the next prompt saying it exited', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromHarness($, IDLE_SHAPES[3][1]);
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain('has exited (at 11:49)');
+});
+
+test('afk on still holds an untagged member message', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    const r = await fromAppText(
+        $,
+        `<cross-session-message from="local_a" from-name="${IDLE_MEMBER}">\nstep 2\n</cross-session-message>`,
     );
+    expect([r.drop, linesFor(w)]).toEqual([
+        '',
+        [[IDLE_MEMBER, 'none', 'held', undefined, false]],
+    ]);
+});
+
+test('afk off lets a lone note hold again', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('afk', { on: false });
+    expect((await fromAppText($, NOTE)).drop).toBe('');
+});
+
+test('a pace watch with no shift lets a lone note hold', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set(`pace:${SID}`, { on: true });
+    expect((await fromAppText($, NOTE)).drop).toBe('');
+});
+
+test('a meta prompt starting a turn stays whole when one notice of two pushes', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const pushes = idleOf(
+        '🎀 helga',
+        'is idle now — it finished a turn at 11:49. Its harness reports: «for dima: look»',
+    );
+    const text = `${IDLE}\n${pushes}`;
+    const r = await fromHarness($, text);
+    expect([r.drop, r.text, linesFor(w).map((l) => l[2])]).toEqual([
+        undefined,
+        text,
+        ['passed', 'passed'],
+    ]);
+});
+
+test('an sdk prompt of only an idle notice is his, whole', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText($, IDLE);
+    expect([r.drop, logOf(w)]).toEqual([undefined, []]);
+});
+
+for (const [what, text] of [
+    ['typed words after it', `${IDLE}\nwhat now?`],
+    ['typed words before it', `what now?\n${IDLE}`],
+    ['typed words between two', `${IDLE}\nwhat now?\n${IDLE}`],
+    ['another tail', IDLE.replace(IDLE_TAIL, 'act on it.')],
+    ['a quote in its name', idleOf('a"b', 'is idle now')],
+    ['another middle', idleOf(IDLE_MEMBER, 'went for a walk')],
+    ['only a delivery receipt', 'Your message was delivered.'],
+] as const)
+    test(`a meta prompt with ${what} comes in whole, unjudged`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromHarness($, text);
+        expect([r.drop, logOf(w)]).toEqual([undefined, []]);
+    });
+
+test('an idle notice from a composer is his and comes in whole', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, IDLE);
+    expect(logOf(w)).toEqual([]);
+});
+
+test('an unstamped prompt that is not meta comes in whole', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = (await $.prompt.submit({
+        origin: { kind: 'unclassified' },
+        text: IDLE,
+        wait: false,
+    })) as { drop?: string };
+    expect([r.drop, logOf(w)]).toEqual([undefined, []]);
+});
+
+test('the master switch off lets an idle notice in', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-comms', false);
+    expect((await fromHarness($, IDLE)).drop).toBeUndefined();
+});
+
+test('a flip off mid-send reads held, never pushed', async ($, on) => {
+    const w = world(on, {
+        name: MEMBER,
+        peers: [CLIO],
+        sent: REFUSED,
+        whileSending: async () => {
+            w.store.set('quiet-ask', false);
+        },
+    });
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    const r = await send($, '🦉 clio', '[ask] a or b?');
+    expect([r.result.message, r.context]).toEqual([
+        "held, delivered at clio's next turn",
+        [KIND_HELD('ask')],
+    ]);
 });
 
 test('the event beside a note adds no held line of its own', async ($, on) => {
