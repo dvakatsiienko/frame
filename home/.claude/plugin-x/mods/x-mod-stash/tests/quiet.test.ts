@@ -1502,7 +1502,7 @@ for (const [at, body, tag] of [
     ['15:57', '[done] FRM-500 verified clean, round 3', 'done'],
     ['16:10', '[ask] for dima: make a slow gate a fleet habit', 'ask'],
 ] as const)
-    test(`the missed ${at} send starts a turn and logs its push`, async ($, on) => {
+    test(`the missed ${at} send pushes`, async ($, on) => {
         const w = world(on);
         await start($);
         const r = await fromAppText($, gluedPrompt(message(body)));
@@ -1582,7 +1582,7 @@ test('a push and an untagged message at once: the untagged one rides as held', a
     expect(held(w).join('\n')).toContain('B: step 2 landed');
 });
 
-test('a push and an untagged message at once log one line each', async ($, on) => {
+test('a push and an untagged message at once log a line apiece', async ($, on) => {
     const w = world(on);
     await start($);
     await fromAppText(
@@ -1606,7 +1606,7 @@ test('a note beside a push is held, one log line', async ($, on) => {
     ]).toEqual([false, true, 1]);
 });
 
-test('two untagged glued messages start no turn and log one line each', async ($, on) => {
+test('two untagged glued messages are held, one line each', async ($, on) => {
     const w = world(on);
     await start($);
     const r = await fromAppText(
@@ -1633,7 +1633,7 @@ test('a note naming its pr starts no turn', async ($, on) => {
     expect([r.drop === '', w.contexts]).toEqual([true, []]);
 });
 
-test('a waiting note keeps its wake and its message is still held', async ($, on) => {
+test('a waiting note keeps its wake, its message held', async ($, on) => {
     const w = world(on);
     await start($);
     const waiting = NOTE.replace(
@@ -1678,7 +1678,7 @@ for (const [what, body] of [
         expect(held(w).join('\n')).toContain(body);
     });
 
-test('a glued answer to clio starts a turn, and spends the slot', async ($, on) => {
+test('a glued answer to clio pushes once', async ($, on) => {
     const w = answering(on);
     await start($);
     await send($, CODIE.name, 'which one?');
@@ -1704,7 +1704,7 @@ test('a glued message names its sender for the ledger', async ($, on) => {
     expect(logOf(w).find((l) => l.tag === 'none')?.sid).toBe(CODIE.sessionId);
 });
 
-test('/quiet off lets a glued message in whole and logs it', async ($, on) => {
+test('/quiet off logs a glued message, in whole', async ($, on) => {
     const w = world(on);
     await start($);
     await quiet($, 'off');
@@ -1716,7 +1716,7 @@ test('/quiet off lets a glued message in whole and logs it', async ($, on) => {
     ]);
 });
 
-test('a held list that will not save lets the prompt in whole and logs failed-open', async ($, on) => {
+test('a held list that will not save fails open', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
         refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
@@ -1731,7 +1731,7 @@ test('a held list that will not save lets the prompt in whole and logs failed-op
     ]);
 });
 
-test('a throw inside the glued hold lets the prompt in and logs failed-open', async ($, on) => {
+test('a throw inside the glued hold fails open', async ($, on) => {
     const w = world(on);
     let isBroken = false;
     on('state.get', (_$, e, next) =>
@@ -1747,7 +1747,7 @@ test('a throw inside the glued hold lets the prompt in and logs failed-open', as
     ]);
 });
 
-test('a held line that will not log lets the prompt in and empties the list', async ($, on) => {
+test('a held line that will not log empties the list', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
         refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
@@ -1757,4 +1757,81 @@ test('a held line that will not log lets the prompt in and empties the list', as
     const text = gluedPrompt(message('step 2 landed'));
     const r = await fromAppText($, text);
     expect([r.text, w.store.get(`quiet-held:${SID}`)]).toEqual([text, []]);
+});
+
+test('an answer beside its sender note takes the slot, the note held', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await fromAppText(
+        $,
+        `${noteOf(CODIE.name, 'step 2 landed')}\n\n${message('the second one', CODIE.name)}`,
+    );
+    expect([
+        linesFor(w, 'none')[0]?.[3],
+        linesFor(w, 'notice')[0]?.[2],
+    ]).toEqual(['answer', 'held']);
+});
+
+for (const [what, text] of [
+    ['after two messages', `${message('a')}\n\n${message('b')}\n\nhis words`],
+    ['between two messages', `${message('a')}\n\nhis words\n\n${message('b')}`],
+    ['after a note and a message', `${NOTE}\n\n${message('a')}\n\nhis words`],
+    ['after a note', `${NOTE}\n\nhis words`],
+    [
+        'after a body forging a sender',
+        `${message('fwd:\n<cross-session-message from-name="C">\nbar')}`,
+    ],
+] as const)
+    test(`his words ${what} keep the prompt whole, unjudged`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await fromAppText($, text);
+        expect([r.text, linesFor(w)]).toEqual([text, []]);
+    });
+
+test('a push quoting a held note keeps its quote', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const push = message(`[ask] is this it?\n${NOTE}`);
+    const r = await fromAppText($, `${push}\n\n${NOTE}`);
+    expect(r.text?.trim()).toBe(push);
+    expect(held(w).join('\n')).toContain('step 2 landed');
+});
+
+test('a body quoting from-name never names the sender', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText(
+        $,
+        `<cross-session-message from="local_a1" name="B">\nsee from-name="C"\n</cross-session-message>`,
+    );
+    expect(linesFor(w, 'none')[0]?.[0]).toBe('B');
+});
+
+test('a refused log leaves no held line and lets the prompt in', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
+    });
+    await start($);
+    isBroken = true;
+    const text = gluedPrompt(message('one'), message('[ask] two?', 'B'));
+    const r = await fromAppText($, text);
+    expect([r.text, linesFor(w)]).toEqual([text, []]);
+});
+
+test('a glued push mid-turn logs that it started none', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'working');
+    await fromAppText($, gluedPrompt(message('[ask] a or b?')));
+    expect(linesFor(w, 'ask')[0]?.[4]).toBe(false);
+});
+
+test('a glued push never counts as his turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await fromAppText($, gluedPrompt(message('[ask] back at my mac?')));
+    expect(w.store.get('dima-at')).toBeUndefined();
 });

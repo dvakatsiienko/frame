@@ -1064,9 +1064,10 @@ const isQuietHome = ($: EngineInterface) => isLaneOwner($);
 
 // a peer delivery's body and sender: a cli peer's envelope names it `from-name`, a desktop one `name` (probe, 14:49)
 export function peerPing(text: string) {
+    const open = text.match(/<cross-session-message[^>]*>/)?.[0] ?? '';
     const from =
-        text.match(/\bfrom-name="([^"]*)"/)?.[1] ??
-        text.match(/\bname="([^"]*)"/)?.[1] ??
+        open.match(/\bfrom-name="([^"]*)"/)?.[1] ??
+        open.match(/\bname="([^"]*)"/)?.[1] ??
         'a member';
     const body = text
         .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
@@ -1075,6 +1076,17 @@ export function peerPing(text: string) {
     const canary = body.match(QUIET_CANARY)?.[1];
     return { body, from, tag, ...(canary ? { canary } : {}) };
 }
+
+// why a message starts a turn; first, a push spends the slot too
+async function quietWhy($: EngineInterface, from: string, body: string) {
+    const isAnswer = await quietAnswered($, from, quietTag(body));
+    const why: QuietLogLine['why'] =
+        quietPush(body) ?? (isAnswer ? 'answer' : undefined);
+    return why;
+}
+
+const quietIsBusy = async ($: EngineInterface) =>
+    (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ?? isBusy;
 
 // the held list is read, changed and written back across awaits: every change waits its turn, or a message landing
 // between the two is lost
@@ -1126,16 +1138,19 @@ async function saveQuiet($: EngineInterface, q: StashQuiet) {
 const quietLogKey = (at: number) =>
     QUIET_LOG + new Date(at).toISOString().slice(0, 10);
 
-// true once the line is in the day's log
-async function quietLog($: EngineInterface, line: QuietLogLine) {
-    const key = quietLogKey(line.at);
+// true once the lines, all of one moment, are in the day's log
+async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
+    const key = quietLogKey(lines[0]?.at ?? 0);
     const was = ((await $.store.get(key).catch(() => undefined)) ??
         []) as QuietLogLine[];
     return $.store
-        .set(key, [...was, line].slice(-QUIET_LOG_MAX))
+        .set(key, [...was, ...lines].slice(-QUIET_LOG_MAX))
         .then(() => true)
         .catch(() => false);
 }
+
+const quietLog = ($: EngineInterface, line: QuietLogLine) =>
+    quietLogAll($, [line]);
 
 // each held ping that reached clio's thread gets a `flushed` line, so a canary sees held → delivered
 async function quietFlushed($: EngineInterface, held: QuietPing[]) {
@@ -1359,101 +1374,91 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
 // its own words. answers the drop's reason, empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text
 // left once the held blocks are out; undefined lets the prompt in as it came
 async function quietHoldPrompt($: EngineInterface, prompt: string) {
-    const { hasOther, messages, notes } = quietGlued(prompt);
+    const glued = quietGlued(prompt);
+    if (!glued) return undefined;
+    // messages first: an answer takes the slot before its sender's note can
     const items = [
-        ...notes.map((n) => ({ ...n, tag: QUIET_NOTICE, text: n.held })),
-        ...messages.map((block) => {
+        ...glued.messages.map(({ block, head }) => {
             const { body, canary, from, tag } = peerPing(block);
             const marks = canary ? { canary } : {};
-            return {
-                block,
-                body,
-                from,
-                tag,
-                text: quietHeldText(body),
-                ...marks,
-            };
+            return { body, from, head, marks, tag, text: quietHeldText(body) };
         }),
+        ...glued.notes.map(({ body, from, head, held }) => ({
+            body,
+            from,
+            head,
+            marks: {},
+            tag: QUIET_NOTICE,
+            text: held,
+        })),
     ];
     if (!items.length || !(await isQuietHome($))) return undefined;
     const at = await $.clock.now();
     let arm: QuietLogLine['arm'] = 'on';
-    const lineOf = (item: (typeof items)[number], sid?: string) => ({
-        arm,
-        at,
-        from: item.from,
-        tag: item.tag,
-        ...(sid ? { sid } : {}),
-        ...('canary' in item ? { canary: item.canary } : {}),
-    });
     try {
         const isOn = await readSwitch($, 'quiet');
         arm = isOn ? 'on' : 'off';
         const isHolding = isOn && (await $.state.get(MOBILE)).value !== true;
+        const isBusyNow = await quietIsBusy($);
         const members = await registry($);
-        const judged = [];
-        for (const item of items) {
-            // first, a push spends the slot too
-            const isAnswer = await quietAnswered(
-                $,
-                item.from,
-                quietTag(item.body),
-            );
-            const why: QuietLogLine['why'] =
-                quietPush(item.body) ?? (isAnswer ? 'answer' : undefined);
-            const sid = memberOf(members, item.from)?.base.sid;
-            judged.push({ item, line: lineOf(item, sid), why });
+        const held: QuietPing[] = [];
+        const lines: QuietLogLine[] = [];
+        const cut = new Set<number>();
+        for (const { body, from, head, marks, tag, text } of items) {
+            const why = await quietWhy($, from, body);
+            const sid = memberOf(members, from)?.base.sid;
+            const line = {
+                arm,
+                at,
+                from,
+                tag,
+                ...(sid ? { sid } : {}),
+                ...marks,
+            };
+            if (isHolding && !why) {
+                held.push({ at, from, tag, text, ...marks });
+                cut.add(head);
+                lines.push({ ...line, startedTurn: false, verdict: 'held' });
+            } else
+                lines.push({
+                    ...line,
+                    startedTurn: !isBusyNow,
+                    verdict: 'passed',
+                    ...(why ? { why } : {}),
+                });
         }
-        const toHold = isHolding ? judged.filter((j) => !j.why) : [];
-        if (toHold.length) {
-            const q = await quietOf($);
+        const q = await quietOf($);
+        if (held.length) {
             const isSaved = await saveQuiet($, {
                 ...q,
-                held: [
-                    ...q.held,
-                    ...toHold.map(({ item, line }) => ({
-                        at,
-                        from: item.from,
-                        tag: item.tag,
-                        text: item.text,
-                        ...('canary' in line ? { canary: line.canary } : {}),
-                    })),
-                ],
+                held: [...q.held, ...held],
             });
             if (!isSaved) throw new Error('the held list did not save');
-            for (const { line } of toHold) {
-                const isLogged = await quietLog($, {
-                    ...line,
-                    startedTurn: false,
-                    verdict: 'held',
-                });
-                if (!isLogged) {
-                    await saveQuiet($, q);
-                    throw new Error('the held line did not log');
-                }
-            }
         }
-        const passed = judged.filter((j) => !toHold.includes(j));
-        for (const { line, why } of passed)
-            await quietLog($, {
-                ...line,
-                startedTurn: true,
-                verdict: 'passed',
-                ...(why ? { why } : {}),
-            });
-        if (!hasOther && !passed.length) return { drop: '' };
+        if (!(await quietLogAll($, lines))) {
+            if (held.length) await saveQuiet($, q);
+            throw new Error('the log lines did not save');
+        }
+        if (cut.size === items.length && !glued.hasOther) return { drop: '' };
         return {
-            text: toHold
-                .reduce((t, j) => t.replace(j.item.block, () => ''), prompt)
+            text: glued.heads
+                .filter((_, i) => !cut.has(i))
+                .join('')
                 .trimStart(),
         };
     } catch (err) {
-        for (const item of items)
-            await quietLog($, {
-                ...lineOf(item),
+        await quietLogAll(
+            $,
+            items.map(({ from, marks, tag }) => ({
+                arm,
+                at,
+                from,
                 startedTurn: false,
-                verdict: 'failed-open',
-            });
+                tag,
+                verdict: 'failed-open' as const,
+                ...marks,
+            })),
+        );
         $.ui.log(
             `x-mod-stash: quiet comms failed open on a glued prompt: ${errorText(err)}`,
         );
@@ -4914,17 +4919,19 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await flushFields($);
-        const glued =
+        const hold =
             e.origin?.kind === 'sdk'
                 ? await quietLocked(() => quietHoldPrompt($, e.text)).catch(
                       () => undefined,
                   )
                 : undefined;
-        if (glued?.drop !== undefined) return { drop: glued.drop };
+        if (hold?.drop !== undefined) return { drop: hold.drop };
         // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
         if (e.origin?.kind === 'task-notification')
             await settleTask($, e.text).catch(() => undefined);
+        // a judged prompt is the app's and its members', never his own
         const isUser =
+            !hold &&
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         if (isUser && BACK_AT_MAC.test(e.text))
@@ -5016,7 +5023,7 @@ export const register: Register = (on) => {
                 ...(wind ? [wind] : []),
                 ...(costHint ? [costHint] : []),
             ],
-            text: glued?.text ?? e.text,
+            text: hold?.text ?? e.text,
         });
     });
 
@@ -5264,13 +5271,9 @@ export const register: Register = (on) => {
                 const isOn = await readSwitch($, 'quiet');
                 arm = isOn ? 'on' : 'off';
                 const isMobile = (await $.state.get(MOBILE)).value === true;
-                const isBusyNow =
-                    (await $.state.get(TURN).catch(() => undefined))?.value
-                        ?.isBusy ?? isBusy;
+                const isBusyNow = await quietIsBusy($);
                 const sid = memberOf(await registry($), from)?.base.sid;
-                const isAnswer = await quietAnswered($, from, tag);
-                const why =
-                    quietPush(body) ?? (isAnswer ? 'answer' : undefined);
+                const why = await quietWhy($, from, body);
                 const line = {
                     arm,
                     at: now,

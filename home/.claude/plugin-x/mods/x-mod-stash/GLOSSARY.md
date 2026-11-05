@@ -102,6 +102,10 @@ _Avoid_: mute, silent mode, filter
 
 _Avoid_: prompt rewriter, polish
 
+**Glued prompt**:
+the desktop's one `sdk` prompt holding the app's reminders and a member's message together, which reaches clio past `session.receive`; each of its blocks is held or pushed alone, and any typed words keep it whole.
+_Avoid_: merged prompt, combined notice
+
 **Mobile mode**:
 Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac» or «mobile mode off» typed, `/mobile-mode off` or a 🛎️, 🔁 or ↩️ press in orbit turns it off.
 _Avoid_: phone mode, away mode
