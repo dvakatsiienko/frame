@@ -7,7 +7,7 @@ the home of game side chores: what vm tuning, traces and route tests found. ever
 - a door any session runs, or how to do something → the skill
 - what a chore found → here: a game's run in `runs/<game>.md`, what holds across games in this file
 - raw logs → `~/.local/share/steamac/`, outside git; a run file points at them
-- a research run → its lines worth keeping land here, then its files go to `trash`
+- a research run → its lines worth keeping land here; its files go to `trash` on dima's word, `docs/research/` stays
 - notes about playing a game (quests, builds, what next) → the homes in the skill's § 4
 
 ## the rig, 2026-11-05

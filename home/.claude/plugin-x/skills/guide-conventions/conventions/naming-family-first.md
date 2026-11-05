@@ -10,7 +10,7 @@ the words past the head tell a newcomer what the thing does (root `CLAUDE.md`). 
 - `refresh-jev.md` → `refresh-classification-branch`
 - `x-otel` → `x-cc-otel`
 - `habit-pacing` → `habit-dima-comms-pacing`
-- `quiet-canary` → `quiet-delivery-test`: «canary» says nothing to a newcomer
+- `quiet-canary` → `quiet-delivery-test`, rename pending on [FRM-513](https://linear.app/x-com/issue/FRM-513): «i do not understand what does it do from its name»
 
 ## what the head can be
 
