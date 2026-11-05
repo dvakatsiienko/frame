@@ -14,6 +14,12 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 - a model-backed part gets one live run beside its mocked tests — `claude -p --model claude-haiku-5-5` with the real prompt files; the mocks hid the snippet expansion the live run found (FRM-382 sixth sense)
 - `claude -p` inside a `while read` loop eats the loop's stdin; pass `</dev/null` (FRM-382 sixth sense)
 - `mods:live` cannot show bold, the desktop layout or a real 5h reset; those stay dima's eye each round, said in the report (FRM-382 codie)
+- `grep -i skipped` over every `--extra` probe log: a skipped hook reads green (FRM-499 sixth sense)
+- a probe needing a quiet window past `FIELD_QUIET_MS` sleeps real time, `test(name, { timeout }, body)` (FRM-492 sixth sense)
+- a new warn-only rule sits after every enforced rule sharing its command head (FRM-486 sixth sense)
+- a change to a list other hooks grow gets a `Promise.all` row with a prompt in it (FRM-501 sixth sense)
+- a rows probe builds on `ticks.test.ts`'s setup and runs through `pnpm mods:test x-mod-guard --extra`, until FRM-470's `mods:probe --rows` lands (FRM-478 sixth sense)
+- a 5 s timeout on a shifting set of tests, or red-proof's «restored fails» at load over 15, is load: rerun serially before judging, until FRM-470's bound lands (FRM-498, FRM-499 sixth sense)
 
 ## typecheck
 
@@ -24,5 +30,7 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 - a pane that renders several board nodes needs a test seam that plants a throw in one node, so one bad node is proven not to blank the board (FRM-431 codie)
 - a plant run from a `--bg` (cli-entrypoint) session is proven with `mods:live --plant` under that entrypoint: user settings' env beats the swapped plugin dirs there (FRM-470 sixth sense)
 - most real findings come from mutations: swap one anchor, watch the test go red, restore it, through `red-proof` (FRM-382 sixth sense: 6 of 8 findings)
+- a revert proof mutates behaviour and keeps every module: a deleted file reds on its import, which proves nothing (FRM-477 sixth sense)
+- run the head's tests against the base source in a scratch copy, then list the new tests still green: those tests do not bite (FRM-472 sixth sense)
 - a mutation anchor matches a whole line, never a substring: `) : null}` matched a deeper-indented twin and broke the module load (FRM-382 codie)
 - every tick or marker door gets a mutation proving its refusal test bites, and every rewrite door a probe inside a compound line (`&&`, `|`, `#`, a newline) (FRM-427 sixth sense retro)
