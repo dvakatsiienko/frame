@@ -4,7 +4,7 @@ title: 'tails for the next boot: every chore not done with dima today'
 status: open
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T17:28:00Z'
+updated_date: '2026-11-05T17:36:00Z'
 labels:
   - m
 dependencies: []
@@ -65,4 +65,7 @@ W1396 (2026-11-02 18:45, dima): stuff that we build in cli in mods should actual
 W1411 (2026-11-02 18:59, dima): why don't coders use it, and how to make coders use them? ❓
 W1434 (2026-11-02 18:59, dima, o59 steer): let's try to revive? ❓
 the first two: a review of the planned queue, only its dispatch read and the cli worth pass ran. the last three: the unused verbs review. spotted by the placement: guard rule worth still warn-only at register.ts:395, FRM-486 Done.
+
+refold, W13 above: W13 (2026-11-05 19:11, dima): how to fix? his ← on clio's line that mods-verify's commit hit the 5 s timeouts at load 25.
+FRM-501's want line, exit 4, is mine post-merge: after the first real member send to clio's desktop prompt, read the quiet log for an untagged send held, none starting a turn; FRM-501 stays In Progress until then.
 <!-- SECTION:NOTES:END -->
