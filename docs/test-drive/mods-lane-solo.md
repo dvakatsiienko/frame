@@ -22,7 +22,7 @@ dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods l
 - speed — each layer's `[done]` and green timestamps — minutes per chunk, chunks per hour, against mods lane 4's median
 - rounds — fixes sent back per chunk — count, against sixth sense's rounds
 - quality, found — every wishkeeper and wisphunter finding — severity, real or noise, fixed or not
-- quality, missed — one blind read over the whole stack before the merge, its brief knowing no finding (pending dima's word) — highs the reads missed
+- quality, missed — one blind read over the whole stack before the merge, its brief knowing no finding (his tick o8) — highs the reads missed
 - quality, after — reds and wisps on these chunks for 14 days after the land — count
 - cost — tokens per seat for the lane, clio's reads included — against lane 4's codie plus sixth sense
 

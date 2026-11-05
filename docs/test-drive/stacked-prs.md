@@ -49,5 +49,7 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 - dima, 10-30 (o39): left to codie, every lane chose plain — zero stacks in 5 days. so the stack is planned at the sign: FRM-383 → FRM-384 in cli lane 3, `pr mode: stacked`; the verdict, useful or dead weight, lands by 11-05
 
 - 2026-11-04 · extended once to 11-18 on dima's tick: one stack on FRM-383 and FRM-384, then the verdict; a second extension needs a new card
+- 2026-11-05 · mods lane 5 layer 1, FRM-507, frame#123 · merged alone at b8dbd3ec, no layer above it · stack-only hand steps 0, 0 min · untested as a stack, a plain pr in practice; layer 2 bases on main, frame#124 · reads came from the bar, not the stack (codie's retro)
+- 2026-11-05 · 📌 the live stacks are mods lane 5 and cli lane 4, the 11-18 verdict reads them; the plan's FRM-383 and FRM-384 ran plain
 
 ## verdict

@@ -50,5 +50,12 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-02 · mods quick lane 4 (one Opus 5.5 codie + one sixth sense, main:<base> + final: <sha> per chunk) · FRM-478 clean at R3 (the Opus grade of lane 3's Sonnet chunks; its 60 leftover rows went to FRM-472 and FRM-489) · FRM-479 clean · FRM-486 clean · riders 11-02 + FRM-477: round 1 refuted on riders exit 5 (two store keys left), round 2 clean on 68aeae19; riders exit 2 failed live at the 21:30 cap and moved to FRM-488 · FRM-487: round 1 refuted on exit 3b (a bare backticked name cleared a claim), round 2 clean on aab77705 · FRM-488: round 1 clean on e338dc27, exit 3 waits on the next real cap · crow caught two spec holes before the build (FRM-487's clears, FRM-488's unread row came from codie)
 
 - 2026-11-05 · 📌 the arm moved: dima's new base is one of each review per chunk, no rerun per sixth sense round; rounds from today read against that
+- 2026-11-05 · frame#123 (FRM-507, mods lane 5 layer 1, no sixth sense) · 0 sixth sense rounds · 5 local reviews, 6 graded · 1 ci round, 1 m 43 s against ~13 min before, clean, its one note the ✅ all-asks tick (FRM-510) · fix round 41 min · «final» 18:21 → merge 18:39, 18 min · my two reads: 2 high, 1 high; local 28 findings, 1 noise; ci 1 note
+- 2026-11-05 · frame#123 · matt's standards axis, wisphunter · 8, 6 fixed · useful
+- 2026-11-05 · frame#123 · matt's spec axis, wisphunter · 5 · useful
+- 2026-11-05 · frame#123 · matt's both axes on the fix diff, wisphunter · 6, the lockJoined race and a failed untick · useful
+- 2026-11-05 · frame#123 · built-in /code-review on the fix diff · 4, 1 fixed · useful
+- 2026-11-05 · frame#123 · plain wisphunter, whole layer · 4, 2 bugs fixed, both rows red on a mutation · useful
+- 2026-11-05 · frame#123 · coderabbit, whole layer · 1 minor, already fixed · noise
 
 ## verdict

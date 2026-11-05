@@ -49,6 +49,7 @@ same 6 slips, same transcript, through the FRM-502 `packWake` and `decisionOf` u
 6 of 6 carry a receipt or a risk wake (0 of 6 in round 0). this counts what crow is given, never what it would say: its notes on them are unmeasured (no live wakes spent). two of the six (12:16, 20:38) are exit-0 slips, where the receipt shows the act and not that it did nothing.
 
 📌 **claim wake: 0 of the 4 claims.** the gate (a claim word in the first line, or a `✅` line) fired on none of the four «done» replies, each read as the last text before dima's next prompt: the 19:34 opens «finished and stopped», off the word list. so on those four the receipts reach crow only at the next cadence wake, up to 30 min later; only the batch got a wake at the act. a bare word anywhere hit 36 % of replies, over the 30 % bar.
+- 2026-11-05 · the 11-04 share, owed from that halt · 6 tagged lines · crow first on 1, the PK-296 close, 18:12 vs 18:13; 0 of the 5 dima caught · keyword match over `notes.jsonl`, each line not read by hand · inference
 
 ## the weekly grade (standing)
 once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a round here: his grades, the `--changed` share over `verdicts.jsonl`, and the `#dima-caught` lines crow flagged first.
