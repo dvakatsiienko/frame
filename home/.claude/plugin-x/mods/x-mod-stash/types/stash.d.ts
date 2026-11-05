@@ -195,7 +195,7 @@ export type QuietLogLine = {
     arm: 'on' | 'off';
     canary?: string;
     // why a passed line pushed
-    why?: 'tag' | 'for-dima' | 'answer';
+    why?: 'tag' | 'for-dima' | 'answer' | 'away';
     // the sender's session id when the registry names it, so a rename mid-day never loses its lines
     sid?: string;
 };
