@@ -98,9 +98,9 @@ export function quietGlued(text: string) {
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             hasOther = true;
     }
-    // the app's notice alone holds like a note; beside a note it only says what the note says. its own text is written
+    // the app's notice holds like a note, beside a message too, so a silent end is seen; beside a note it only says what the note says. its own text is written
     // to the turn it arrives in, so what it says never rides a later one
-    if (lone !== undefined && !notes.length && !messages.length && !hasOther)
+    if (lone !== undefined && !notes.length && !hasOther)
         notes.push({
             body: '',
             from: 'the app',

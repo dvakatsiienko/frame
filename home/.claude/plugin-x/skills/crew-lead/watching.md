@@ -18,6 +18,7 @@
 - ⚠️ **`notify_when_idle` subscriptions die on a coordinator restart or compaction, silently** — re-subscribe
   after every restart or compaction; an empty `SendMessage` costs nothing.
 - ⏱️ **codie idle on its own timer needs no re-arm** — its report message is the signal; three re-arms fired at once on 10-05
+- ⏱️ **quiet comms holds an idle notice while dima is at his keyboard** — it starts no turn then, only with afk on or a shift running: it reaches you as a held line at your next prompt, so a wait on `notify_when_idle` needs its own deadline (`plugin-x/mods/x-mod-stash/FTR.md` § quiet comms)
 - ⏱️ **the idle notice is QUEUED, not immediate** — it drains at your next tool round, so it can
   land after the session it reports was stopped. read the timestamp it carries, never its arrival
   time (2.1.251).

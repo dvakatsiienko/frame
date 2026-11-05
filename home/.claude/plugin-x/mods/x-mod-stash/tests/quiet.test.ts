@@ -2408,6 +2408,91 @@ test('an empty report holds its status line, never a blank', async ($, on) => {
     expect(held(w).join('\n')).toContain(`${IDLE_MEMBER}: is idle now`);
 });
 
+for (const origin of ['peer', 'sdk'] as const)
+    test(`a meta idle notice holds whatever its origin: ${origin}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = (await $.prompt.submit({
+            isMeta: true,
+            origin: { kind: origin },
+            text: IDLE,
+            wait: false,
+        } as never)) as { drop?: string };
+        expect([r.drop, w.contexts]).toEqual(['', []]);
+    });
+
+for (const [what, startsOff, endsOff, line] of [
+    [
+        'a flip off mid-send reads held on a delivered send too',
+        false,
+        true,
+        KIND_HELD('ask'),
+    ],
+    ['a flip on mid-send reads pushed', true, false, PUSHED],
+] as const)
+    test(what, async ($, on) => {
+        const w = world(on, {
+            name: MEMBER,
+            peers: [CLIO],
+            whileSending: async () => {
+                w.store.set('quiet-ask', !endsOff);
+            },
+        });
+        await start($);
+        w.store.set('quiet-ask', !startsOff);
+        const r = await send($, '🦉 clio', '[ask] a or b?');
+        expect(r.context).toEqual([line]);
+    });
+
+const GLUED_LINE = `<cross-session-message from="local_a" from-name="${IDLE_MEMBER}">\nsw done\n</cross-session-message>`;
+
+test('a side-sessions notice beside a held message logs and holds both', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await fromAppText($, notice(GLUED_LINE, EVENT));
+    expect([r.drop, linesFor(w).map((l) => [l[1], l[2]])]).toEqual([
+        '',
+        [
+            ['none', 'held'],
+            ['notice', 'held'],
+        ],
+    ]);
+});
+
+test('a side-sessions notice beside a held message wakes clio while away', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    const r = await fromAppText($, notice(GLUED_LINE, EVENT));
+    expect([
+        r.drop,
+        r.text,
+        linesFor(w).map((l) => [l[1], l[2], l[3]]),
+        w.contexts.length,
+    ]).toEqual([
+        undefined,
+        EVENT,
+        [
+            ['none', 'held', undefined],
+            ['notice', 'passed', 'away'],
+        ],
+        1,
+    ]);
+});
+
+test('a meta idle notice with an image comes in whole', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = (await $.prompt.submit({
+        attachments: [{ type: 'image' }],
+        isMeta: true,
+        origin: { kind: 'unclassified' },
+        text: IDLE,
+        wait: false,
+    } as never)) as { drop?: string };
+    expect([r.drop, logOf(w)]).toEqual([undefined, []]);
+});
+
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {
         name: MEMBER,

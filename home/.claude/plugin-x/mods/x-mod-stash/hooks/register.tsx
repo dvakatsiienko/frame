@@ -1494,11 +1494,15 @@ async function quietHoldPrompt(
                 ...item,
                 why: await quietWhy($, item.from, item.body),
             });
-        const isAway = isHolding && (await isAwayNow($));
+        const isAway =
+            isHolding &&
+            judged.some((j) => j.tag === QUIET_NOTICE) &&
+            (await isAwayNow($));
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
         const canCut = !isEngineNotice || judged.every((j) => !j.why);
         for (const { from, head, marks, tag, text, why } of judged) {
             const isWoken = tag === QUIET_NOTICE && isAway;
+            const reason = why ?? (isWoken ? 'away' : undefined);
             const sid = memberOf(members, from)?.base.sid;
             const line = {
                 arm,
@@ -1508,7 +1512,7 @@ async function quietHoldPrompt(
                 ...(sid ? { sid } : {}),
                 ...marks,
             };
-            if (isHolding && canCut && !why && !isWoken) {
+            if (isHolding && canCut && !reason) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
@@ -1517,7 +1521,7 @@ async function quietHoldPrompt(
                     ...line,
                     startedTurn: !isBusyNow,
                     verdict: 'passed',
-                    ...(why || isWoken ? { why: why ?? 'away' } : {}),
+                    ...(reason ? { why: reason } : {}),
                 });
         }
         const q = await quietOf($);
@@ -1562,7 +1566,7 @@ async function quietHoldPrompt(
 
 type QuietSend =
     | { isOwner: true; isAsking: boolean; to: string }
-    | { at: number; isOwner: false; isPush: boolean; tag: string };
+    | { at: number; isAnswer: boolean; isOwner: false; message: string };
 
 // read before the send goes out: clio's gate spends the open answer the moment it lands
 async function quietSendStart(
@@ -1592,11 +1596,9 @@ async function quietSendStart(
         quietTag(message) !== 'progress';
     return {
         at,
+        isAnswer,
         isOwner: false,
-        isPush:
-            isAnswer ||
-            quietPush(message, await quietKindsOff($)) !== undefined,
-        tag: quietTag(message),
+        message,
     };
 }
 
@@ -1616,12 +1618,16 @@ async function quietSendEnd(
         isQuietRefusal(answer?.message) && (await isHeldSince($, send.at));
     // a send that went nowhere joins no turn, so the line would lie
     if (answer?.success === false && !isHeld) return {};
-    const isKindOff = (await quietKindsOff($)).includes(send.tag);
+    // the kinds as they stand now, since a flip before the gate is what it judged by
+    const kindsOff = await quietKindsOff($);
+    const tag = quietTag(send.message);
+    const isPush =
+        send.isAnswer || quietPush(send.message, kindsOff) !== undefined;
     const line =
-        send.isPush && !isHeld
+        isPush && !isHeld
             ? QUIET_PUSHED
-            : isKindOff
-              ? quietKindHeld(send.tag)
+            : kindsOff.includes(tag)
+              ? quietKindHeld(tag)
               : QUIET_SLIPSTREAMED;
     return isHeld
         ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
@@ -3468,8 +3474,6 @@ async function paceStep($: EngineInterface) {
     return due.line;
 }
 
-// the ⏰ waker follows the key: on at the start with what it found kept, put back at the end or when the start's window
-// reset; a state dima changed since is his
 // a hidden part is off whole, and its expiry runs only while shown, so a `since` it left behind means no shift
 async function isShiftOn(
     $: EngineInterface,
@@ -3480,6 +3484,8 @@ async function isShiftOn(
     );
 }
 
+// the ⏰ waker follows the key: on at the start with what it found kept, put back at the end or when the start's window
+// reset; a state dima changed since is his
 async function paceWaker($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
@@ -5033,11 +5039,8 @@ export const register: Register = (on) => {
         await flushFields($);
         // the app sends no attachment, and a drop would lose his image with the prompt
         const isAppShaped = e.origin?.kind === 'sdk' && !e.attachments?.length;
-        // the engine's own idle notice: meta, no stamp (`unclassified`'s docs)
-        const isEngineNotice =
-            e.isMeta === true &&
-            e.origin?.kind === 'unclassified' &&
-            !e.attachments?.length;
+        // the engine's own idle notice is meta; its parser takes nothing but that notice's whole shape
+        const isEngineNotice = e.isMeta === true && !e.attachments?.length;
         const hold =
             isAppShaped || isEngineNotice
                 ? await quietLocked(() =>
