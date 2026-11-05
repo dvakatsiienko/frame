@@ -169,6 +169,24 @@ const SPEAK_ASSUMED = 'speak-assumed';
 const GUARD_SILENT = 'guard-silent';
 // quiet comms on or off, one switch for 🎛️ and `/quiet` alike; on by default, `off` is the revert (dima, 16:53)
 const QUIET_ON = 'quiet-comms';
+// one switch per push kind, in 🎛️'s quiet card: a kind off holds like an untagged line
+const QUIET_KINDS = [
+    {
+        cost: "off: a member's question waits for clio's next turn",
+        kind: 'ask',
+        name: 'quietAsk',
+    },
+    {
+        cost: "off: a finished chunk waits for clio's next turn",
+        kind: 'done',
+        name: 'quietDone',
+    },
+    {
+        cost: "off: an [escalate] waits for clio's next turn, a stuck member's too",
+        kind: 'escalate',
+        name: 'quietEscalate',
+    },
+] as const;
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { isWhole: true, max: 7, min: 5 } as const;
 // how long held member pings wait before the hidden idle append, in minutes (dima, 16:53: 10 by default, maybe 15)
@@ -181,6 +199,9 @@ const SWITCHES = {
     breathe: { key: BREATHE, of: true },
     colour: { key: COLOUR, of: false },
     quiet: { key: QUIET_ON, of: true },
+    quietAsk: { key: 'quiet-ask', of: true },
+    quietDone: { key: 'quiet-done', of: true },
+    quietEscalate: { key: 'quiet-escalate', of: true },
     ring: { key: CTX_RING_KEY, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
@@ -1078,11 +1099,19 @@ export function peerPing(text: string) {
     return { body, from, tag, ...(canary ? { canary } : {}) };
 }
 
+async function quietKindsOff($: EngineInterface) {
+    const off: string[] = [];
+    for (const { kind, name } of QUIET_KINDS)
+        if (!(await readSwitch($, name))) off.push(kind);
+    return off;
+}
+
 // why a message starts a turn; first, a push spends the slot too
 async function quietWhy($: EngineInterface, from: string, body: string) {
     const isAnswer = await quietAnswered($, from, quietTag(body));
     const why: QuietLogLine['why'] =
-        quietPush(body) ?? (isAnswer ? 'answer' : undefined);
+        quietPush(body, await quietKindsOff($)) ??
+        (isAnswer ? 'answer' : undefined);
     return why;
 }
 
@@ -1532,7 +1561,9 @@ async function quietSendStart(
     return {
         at,
         isOwner: false,
-        isPush: isAnswer || quietPush(message) !== undefined,
+        isPush:
+            isAnswer ||
+            quietPush(message, await quietKindsOff($)) !== undefined,
     };
 }
 
@@ -5403,8 +5434,9 @@ export const register: Register = (on) => {
             };
         }
         const isOn = await readSwitch($, 'quiet');
+        const kindsOff = (await quietKindsOff($)).map((k) => `[${k}]`);
         return {
-            text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
+            text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held${kindsOff.length ? `; ${kindsOff.join(', ')} switched off, held like an untagged line` : ''}; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
         };
     });
 
@@ -5470,6 +5502,12 @@ export const register: Register = (on) => {
                             guard: !(await readSwitch($, 'silent')),
                             lines: await readNumber($, 'lines'),
                             quiet: await readSwitch($, 'quiet'),
+                            quietKinds: await Promise.all(
+                                QUIET_KINDS.map(async (k) => ({
+                                    ...k,
+                                    isOn: await readSwitch($, k.name),
+                                })),
+                            ),
                             quietWait: await readNumber($, 'quietWait'),
                             ring: await readSwitch($, 'ring'),
                             speak: await readSwitch($, 'speak'),
@@ -5690,6 +5728,27 @@ export const register: Register = (on) => {
                                     'quiet',
                                     "🤫 hold members' messages unless they push",
                                     knobs.quiet,
+                                )}
+                                {knobs.quietKinds.map(
+                                    ({ cost, isOn, kind, name }) => (
+                                        // no hover card in a pane (engine.md), so what off costs is its own dim line
+                                        <Box
+                                            flexDirection='column'
+                                            key={`quiet-kind:${kind}`}>
+                                            {knobs.quiet ? (
+                                                switchJSX(
+                                                    name,
+                                                    `🤫 [${kind}] starts clio's turn`,
+                                                    isOn,
+                                                )
+                                            ) : (
+                                                <Text dimColor>
+                                                    {`🤫 [${kind}] starts clio's turn`}
+                                                </Text>
+                                            )}
+                                            <Text dimColor>{cost}</Text>
+                                        </Box>
+                                    ),
                                 )}
                                 {numberJSX(
                                     'quietWait',

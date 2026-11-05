@@ -2016,3 +2016,115 @@ test('an unread line names its sender for the ledger', async ($, on) => {
     );
     expect(logOf(w)[0]?.sid).toBe(CODIE.sessionId);
 });
+
+/* a switch per push kind */
+
+for (const [kind, key] of [
+    ['ask', 'quiet-ask'],
+    ['done', 'quiet-done'],
+    ['escalate', 'quiet-escalate'],
+] as const) {
+    test(`[${kind}] switched off holds, no turn`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        w.store.set(key, false);
+        const r = await ping($, `[${kind}] the line`);
+        expect([r.consumed !== undefined, w.queued]).toEqual([true, []]);
+    });
+
+    test(`[${kind}] switched off logs one held line under its tag`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        w.store.set(key, false);
+        await ping($, `[${kind}] the line`, MEMBER);
+        expect(linesFor(w)).toEqual([[MEMBER, kind, 'held', undefined, false]]);
+    });
+
+    test(`[${kind}] switched off reaches the next prompt, its tag kept`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        w.store.set(key, false);
+        await ping($, `[${kind}] the line`);
+        await say($, 'status?');
+        expect(held(w).join('\n')).toContain(`[${kind}] the line`);
+    });
+}
+
+test('one kind off leaves the others pushing', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-ask', false);
+    const r = await ping($, '[done] FRM-1 landed');
+    expect([r.consumed, w.queued.length]).toEqual([undefined, 1]);
+});
+
+test('«for dima» still pushes with its kind off', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-ask', false);
+    await ping($, '[ask] for dima: a or b?');
+    expect(linesFor(w, 'ask')[0]?.[3]).toBe('for-dima');
+});
+
+test('an answer still pushes with its kind off', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    w.store.set('quiet-ask', false);
+    await ping($, '[ask] the second one?', CODIE.name);
+    expect(linesFor(w, 'ask')[0]?.[3]).toBe('answer');
+});
+
+test('a glued kind switched off starts no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-done', false);
+    const r = await fromAppText($, gluedPrompt(message('[done] FRM-1 landed')));
+    expect([r.drop === '', linesFor(w, 'done')[0]?.[2]]).toEqual([
+        true,
+        'held',
+    ]);
+});
+
+test('a flip back binds the next send, and a held line stays held', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-ask', false);
+    await ping($, '[ask] held one');
+    w.store.set('quiet-ask', true);
+    const r = await ping($, '[ask] pushed one');
+    expect([
+        r.consumed,
+        w.queued.length,
+        linesFor(w, 'ask').map((l) => l[2]),
+    ]).toEqual([undefined, 1, ['held', 'passed']]);
+    expect(w.store.get(`quiet-held:${SID}`)).toHaveLength(1);
+});
+
+test('bare /quiet names each kind that is off', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-ask', false);
+    w.store.set('quiet-escalate', false);
+    const r = (await quiet($, '')) as { text: string };
+    expect(r.text).toContain('[ask], [escalate] switched off');
+});
+
+test('bare /quiet names none while all are on', async ($, on) => {
+    world(on);
+    await start($);
+    const r = (await quiet($, '')) as { text: string };
+    expect(r.text).not.toContain('switched off');
+});
+
+test('a sender of a held kind reads the held line', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set('quiet-ask', false);
+    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    const r = await send($, '🦉 clio', '[ask] a or b?');
+    expect([r.result.message, r.context]).toEqual([
+        "held, delivered at clio's next turn",
+        [SLIPSTREAMED],
+    ]);
+});

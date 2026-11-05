@@ -790,6 +790,12 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - proof: tests/quiet.test.ts::a flush appends once, no turn; ::a refused idle append keeps its lines for the next prompt; ::a line held after a flush gets its own, no sooner than the wait; ::8 idle hours with one held line every 30 min: 16 appends, 0 turns
 - ✅ one switch, on by default
   - given no switch set, then quiet holds every day; `/quiet off` passes every message, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' messages unless they push`, is the same store key, `quiet-comms` (dima's o33)
+  - given the `🤫 quiet comms` card, then it holds one switch per push kind, `[ask]`, `[done]`, `[escalate]`, each on, and a dim line under each names what off costs
+  - when a kind is off, then its message holds like an untagged line, one quiet-log line under its tag, never dropped; «for dima» and the answer slot still push; its sender reads the held line
+  - and a flip binds from the next send, a held line stays held, and bare `/quiet` names each kind that is off
+  - and with the master switch off, the three rows draw as dim text with no control, and keep their state
+  - decision: the cost is a dim line, not a tooltip: a hover card in a pane draws over its neighbours (`engine.md`)
+  - proof: tests/quiet.test.ts::[…] switched off holds, no turn; ::[…] switched off logs one held line under its tag; ::[…] switched off reaches the next prompt, its tag kept; ::«for dima» still pushes with its kind off; ::an answer still pushes with its kind off; ::a flip back binds the next send, and a held line stays held; ::bare /quiet names each kind that is off; ::a sender of a held kind reads the held line; tests/settings.test.ts::the … knob saves its flip at once; ::the … row names what off costs; ::the master switch off leaves … no control, its state kept — not asserted: the look, dima's eye
   - given mobile mode is on, then nothing is held
   - decision: always on, no day arm — the a/b compares days by the log's `arm`, read from the switch (dima, 16:53, brief 5)
 - ✅ clio's row counts what waits, and opens it

@@ -25,10 +25,12 @@ export function quietTag(body: string) {
     return tag.endsWith('escalate') ? 'escalate' : tag;
 }
 
-// why a message starts a turn by its own words; undefined holds it, unless it answers clio
-export function quietPush(body: string) {
+// why a message starts a turn by its own words; undefined holds it, unless it answers clio. a kind switched off holds like
+// an untagged line, «for dima» still pushes
+export function quietPush(body: string, kindsOff: readonly string[] = []) {
     const tag = quietTag(body);
-    if (tag !== 'none' && tag !== 'progress') return 'tag';
+    if (tag !== 'none' && tag !== 'progress' && !kindsOff.includes(tag))
+        return 'tag';
     return FOR_DIMA.test(body.replace(CODE_SPAN, '')) ? 'for-dima' : undefined;
 }
 

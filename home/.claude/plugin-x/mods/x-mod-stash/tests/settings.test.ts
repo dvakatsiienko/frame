@@ -237,6 +237,9 @@ for (const [key, before, after] of [
     ['board-colour', undefined, true],
     ['speak-assumed', undefined, false],
     ['guard-silent', undefined, true],
+    ['quiet-ask', undefined, false],
+    ['quiet-done', undefined, false],
+    ['quiet-escalate', undefined, false],
 ] as const)
     test(`the ${key} knob saves its flip at once`, async ($, on) => {
         const { store } = world(on);
@@ -297,3 +300,43 @@ test('🎛️ lays its cards in two columns, the bars, quiet comms and the conte
         ],
     ]);
 });
+
+for (const [key, label, cost] of [
+    [
+        'quiet-ask',
+        "🤫 [ask] starts clio's turn",
+        "off: a member's question waits for clio's next turn",
+    ],
+    [
+        'quiet-done',
+        "🤫 [done] starts clio's turn",
+        "off: a finished chunk waits for clio's next turn",
+    ],
+    [
+        'quiet-escalate',
+        "🤫 [escalate] starts clio's turn",
+        "off: an [escalate] waits for clio's next turn, a stuck member's too",
+    ],
+] as const) {
+    test(`the ${key} row names what off costs`, async ($, on) => {
+        world(on);
+        await band($);
+        const view = await pane($);
+        expect((await view.find({ text: cost, type: 'Text' }))?.text).toBe(
+            cost,
+        );
+    });
+
+    test(`the master switch off leaves ${key} no control, its state kept`, async ($, on) => {
+        const { store } = world(on);
+        store.set(key, false);
+        store.set('quiet-comms', false);
+        await band($);
+        const view = await pane($);
+        expect([
+            await view.find({ key: `knob:${key}`, type: 'Button' }),
+            (await view.find({ text: label, type: 'Text' }))?.props.dimColor,
+            store.get(key),
+        ]).toEqual([undefined, true, false]);
+    });
+}
