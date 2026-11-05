@@ -8,9 +8,9 @@ import {
     type Row,
     behindFalse,
     childEnv,
-    failedToLoad,
     holdsInGroup,
     loadedFrom,
+    moduleLoaded,
     parseRows,
     probeArgv,
     rowVerdicts,
@@ -70,18 +70,20 @@ describe('loadedFrom', () => {
     });
 });
 
-describe('failedToLoad', () => {
-    const failed =
-        '2026-11-05T16:00:00.000Z [DEBUG] hooks module x-mod-guard@inline failed to load: Error: broken at load';
+describe('moduleLoaded', () => {
     const loaded =
         '2026-11-05T16:00:00.000Z [DEBUG] hooks module x-mod-guard@inline loaded (worker, environment 1, tier user)';
 
-    it('reads a module that threw at load', () => {
-        expect(failedToLoad([loaded, failed], 'x-mod-guard')).toBe(true);
+    it.each([
+        ['it threw', '[DEBUG] hooks module x-mod-guard@inline failed to load'],
+        ['its file is gone', '[DEBUG] Plugin loading errors: Path not found'],
+        ['another mod loaded', loaded.replace('x-mod-guard', 'x-mod-holds')],
+    ])('reads no load when %s', (_, line) => {
+        expect(moduleLoaded([line], 'x-mod-guard')).toBe(false);
     });
 
-    it('reads a loaded module as loaded', () => {
-        expect(failedToLoad([loaded], 'x-mod-guard')).toBe(false);
+    it('reads the load line', () => {
+        expect(moduleLoaded([loaded], 'x-mod-guard')).toBe(true);
     });
 });
 
