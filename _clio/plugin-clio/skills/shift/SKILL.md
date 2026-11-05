@@ -51,7 +51,7 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 
 dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any thread inactive for 50 minutes is auto-woken by keep-hot». cold ~$0.80 vs warm ~$0.02 per 100k Opus 5.5 member (`crew-lead` model-cards).
 
-- keep-hot (🔥, `x-mod-stash`) pings a session 50 min after its last turn; every member's 🔥 is on from the shift's start, mine included: on its 🌌 sessions row once FRM-499 lands, until then crow's `armHot` door; no hand beat
+- keep-hot (🔥, `x-mod-stash`) pings a session 50 min after its last turn; every member's 🔥 is on from the shift's start, mine included: his click on its 🌌 sessions row, or crow's `armHot` door; no hand beat
 
 ## 1 · start — the last chat message
 
