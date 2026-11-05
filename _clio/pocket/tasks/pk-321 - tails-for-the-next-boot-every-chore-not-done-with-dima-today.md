@@ -4,7 +4,7 @@ title: 'tails for the next boot: every chore not done with dima today'
 status: open
 assignee: []
 created_date: '2026-11-05T15:58:00Z'
-updated_date: '2026-11-05T17:36:00Z'
+updated_date: '2026-11-05T18:11:00Z'
 labels:
   - m
 dependencies: []
@@ -68,4 +68,11 @@ the first two: a review of the planned queue, only its dispatch read and the cli
 
 refold, W13 above: W13 (2026-11-05 19:11, dima): how to fix? his ← on clio's line that mods-verify's commit hit the 5 s timeouts at load 25.
 FRM-501's want line, exit 4, is mine post-merge: after the first real member send to clio's desktop prompt, read the quiet log for an untagged send held, none starting a turn; FRM-501 stays In Progress until then.
+
+from PK-299's close, the cut conditions for the unused verbs review:
+W1410 (2026-11-02 18:59, dima): well, it actually looks like a useful verb.
+W1412 (2026-11-02 18:59, dima): maybe let's mark it as a candidate for deletion if we won't manage to make it work or if it will be useless.
+W1413 (2026-11-02 18:59, dima): let's try it on today's hold, and if we won't find a way to make it work, then cut.
+W1435 (2026-11-02 18:59, dima, o59 steer): if not works cut.
+worth rule: enforced at c5a4e82a; the note above is stale. the crew board redraw is owed: sources moved after v14.
 <!-- SECTION:NOTES:END -->
