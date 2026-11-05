@@ -42,5 +42,6 @@ Ticket: none
 - 2026-11-05 · frame#124 at ef4a3eb1, a chunk read beside wisphunter · wishkeeper 6 min, 164k tokens, 12 findings: 2 high real (a no-warn-only ship credited to a tick that never named it, an exit notice held at his keyboard), wisphunter 3 · both held the merge ask for a round
 - 2026-11-05 · frame#127 at 81904683, after sixth sense's clean · wishkeeper 8 min, 174k tokens, 12 findings: 3 high real (the audit verb missed codies opened by a Skill call, a limit his tick never covered, a new refusal named only in a comment) · it held the merge ask; sixth sense's next round then refuted its own clean
 - 2026-11-05 · frame#124 at 4b699bd2, its last delta · wishkeeper 4 min, 69k tokens, 6 findings: 0 high, what the ask must say; wisphunter nits · merged on his tick at b7a2e8af
+- 2026-11-06 · frame#127 at 9a6a1cf9, the last delta after sixth sense's clean, and the batch since the second wind · wishkeeper 11 min, 202k tokens, 17 findings: 3 high real (a pocket list i cut under a false pointer, `--since` blind to compaction re-reads, a behaviour change living only in a spec), wisphunter 9 on the audit's parser · each opened; it shaped the merge ask's limits and a rider
 
 ## verdict
