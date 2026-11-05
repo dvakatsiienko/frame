@@ -12,6 +12,7 @@ Ticket: none
 dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods lane, coder plus verifier takes a lot of time for each chunk; last session's side lane was able to implement only four chunks or so, if i recall correctly. today i test coder alone without verifier to see a speed boost, because mods are not so sophisticated, and i assume the verifier can be redundant. i want to know the comparison of coder plus verifier and coder alone in terms of speed gains and quality losses.»
 
 **test card:** we believe a mods chunk lands much faster with no sixth sense, and a coordinator read catches what matters · we test it by mods lane 5 (FRM-507, FRM-501, FRM-505, FRM-504, FRM-491), five layers, against mods lane 4's chunks · we measure, per chunk: minutes from start to `[done]` and to green, rounds, tokens per seat, findings by severity and who found them, the same chunk's reds after merge · we're right if chunks per hour rise by at least half, and the blind read below finds no high that wishkeeper and wisphunter missed
+📌 a same-day control arm: cli lane 4 runs codie plus sixth sense under the same PR model.
 **kill rule:** a high reaches main that this lane's reads missed, or a coordinator read takes as long as the sixth sense rounds it replaced.
 
 📌 this arm is codie plus clio's reads (wishkeeper, wisphunter, `pnpm mods:test` run by clio), not codie with nobody looking. held stacked prs and worktrees add their own hand steps, so the stack's minutes are counted apart (`docs/test-drive/stacked-prs.md`).
@@ -35,6 +36,6 @@ dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods l
 
 ## rounds
 
-- 2026-11-05 · FRM-507, size S, layer 1 · greenlight 17:07 → `[done]` 17:30, 23 min, on top of 17:03 → 17:07 slicing the whole lane; 1 pr, 2 local reviews, 0 fix rounds so far · read 1: 2 high, 4 real bugs, from wishkeeper and wisphunter · fix round 17:40 → 18:21, 41 min, 5 local reviews, 2 riders of dima's in it; so 64 min build to second `[done]`, against lane 4's 88 median
+- 2026-11-05 · FRM-507, size S, layer 1 · greenlight 17:07 → `[done]` 17:30, 23 min, on top of 17:03 → 17:07 slicing the whole lane; 1 pr, 2 local reviews, 0 fix rounds so far · read 1: 2 high, 4 real bugs, from wishkeeper and wisphunter · fix round 17:40 → 18:21, 41 min, 5 local reviews, 2 riders of dima's in it; so 64 min build to second `[done]`, against lane 4's 88 median; read 2, 7 min: 1 high (no live frame at head), 2 medium; a CI round joined at 18:27, 1 m 43 s, clean; merged 18:39: greenlight 17:07 → merge 18:39, 92 min, against lane 4's 88 median wall, with 2 riders in it. first layer, not a pattern yet
 
 ## verdict
