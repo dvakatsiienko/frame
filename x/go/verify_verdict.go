@@ -23,15 +23,17 @@ type testRow struct {
 }
 
 // a test the pr adds. IsUnread: no name a runner's output can be matched to, Why says what stands in the way.
-// IsTable: one title for many rows, of which x sees only the ones that failed
+// IsTable: one title for many rows, of which x sees only the ones that failed. OldTitles: what its file held at the fork, so a
+// placeholder title never claims an old test's row
 type newTest struct {
 	Name, File, Why   string
 	IsUnread, IsTable bool
+	OldTitles         []newTest
 }
 
 type failedTest struct {
 	name, file, output string
-	isGo               bool
+	isGo, isVitest     bool
 }
 
 // one run's output as the runners word it: claude plugin test, pnpm mods:test, go test, vitest
@@ -46,16 +48,17 @@ type testOutput struct {
 }
 
 var (
-	goFailedRow = regexp.MustCompile(`^\s*--- FAIL: (\S+)`)
-	failedRow   = []*regexp.Regexp{regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`), goFailedRow, regexp.MustCompile(`^ FAIL  (.+?)\s*$`)}
-	passedRow   = regexp.MustCompile(`^\(pass\) |^\s*--- PASS: | ✓ `)
+	goFailedRow     = regexp.MustCompile(`^\s*--- FAIL: (\S+)`)
+	vitestFailedRow = regexp.MustCompile(`^ FAIL  (.+?)\s*$`)
+	failedRow       = []*regexp.Regexp{regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`), goFailedRow, vitestFailedRow}
+	passedRow       = regexp.MustCompile(`^\(pass\) |^\s*--- PASS: | ✓ `)
 	// the last alternative is vitest's row for a suite that threw before any test ran
 	loadError   = regexp.MustCompile(`SyntaxError|did not load|Cannot find module|Cannot find package|ERR_MODULE_NOT_FOUND|Failed to load|Transform failed|\[setup failed\]|\[build failed\]|hook was skipped: |^ FAIL  .* \[ .* \]$`)
 	goPackageOK = regexp.MustCompile(`^ok\s+\S+\s+\S+`)
 	testsRan    = regexp.MustCompile(`^\s*Tests\s+.*\d+ (?:passed|failed)|^Ran [1-9]\d* tests? across|^mods:test: .*, (?:[1-9]\d* pass, \d+ fail|\d+ pass, [1-9]\d* fail)`)
 	testsNone   = regexp.MustCompile(`no tests to run|no test files|No test files found|^Ran 0 tests|^mods:test: .*, 0 pass, 0 fail|^\s*Tests\s+no tests`)
-	// vitest's and claude plugin test's word for a failed expect, at a line's start so a throw's own message cannot claim it
-	assertionWord = regexp.MustCompile(`(?m)^\s*AssertionError\b`)
+	// vitest's and claude plugin test's words for a failed expect, at a line's start so a throw's own message cannot claim them
+	assertionWord = regexp.MustCompile(`(?m)^\s*(?:AssertionError\b|Error: Snapshot .* mismatched)`)
 	goPanic       = regexp.MustCompile(`(?m)^\s*panic: `)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
@@ -122,7 +125,7 @@ func readTestOutput(log string) testOutput {
 		}
 		if name != "" {
 			read.ran = true
-			failed := failedTest{name: name, file: file, isGo: goFailedRow.MatchString(line)}
+			failed := failedTest{name: name, file: file, isGo: goFailedRow.MatchString(line), isVitest: vitestFailedRow.MatchString(line)}
 			if head, _, hasFile := strings.Cut(name, " > "); hasFile && testFile.MatchString(head) {
 				failed.file = head
 			}
@@ -135,6 +138,12 @@ func readTestOutput(log string) testOutput {
 		}
 		if n := len(read.failed); n > 0 {
 			read.failed[n-1].output += line + "\n"
+		}
+	}
+	// vitest prints one error under every row a same-worded failure holds, so an each table's rows share the last one's words
+	for i := len(read.failed) - 2; i >= 0; i-- {
+		if read.failed[i].isVitest && read.failed[i].output == "" {
+			read.failed[i].output = read.failed[i+1].output
 		}
 	}
 	return read
@@ -168,7 +177,7 @@ func namesTest(failed failedTest, test newTest) bool {
 		return false
 	}
 	if parts := titleParts(test); len(parts) > 1 {
-		if strings.TrimSpace(strings.Join(parts, "")) == "" {
+		if strings.TrimSpace(strings.Join(parts, "")) == "" || slices.ContainsFunc(test.OldTitles, func(old newTest) bool { return namesTest(failed, old) }) {
 			return false
 		}
 		for i, part := range parts {
@@ -249,8 +258,8 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 	if verdict, why := wholeRunVerdict(read, exitedOK); verdict != "" {
 		return verdict, wholeRunRows(newTests, verdict, why)
 	}
-	failedOnHead := func(name string) bool {
-		return slices.ContainsFunc(head.failed, func(failed failedTest) bool { return failed.name == name })
+	rowOnHead := func(name string) int {
+		return slices.IndexFunc(head.failed, func(failed failedTest) bool { return failed.name == name })
 	}
 	const redOnHeadWhy = "it fails on head too, so this source is not what fails it"
 	votes, rest := []testRow{}, []testRow{}
@@ -274,10 +283,12 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 				if row.Verdict != verdictBroken {
 					row.Verdict, row.Why = got.Verdict, got.Why
 				}
-			case failedOnHead(failed.name):
-				rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
-			default:
+			case rowOnHead(failed.name) < 0:
 				votes = append(votes, got)
+			case hookTimedOut.MatchString(head.failed[rowOnHead(failed.name)].output):
+				votes = append(votes, timedOutRow(failed.name))
+			default:
+				rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
 			}
 		}
 		if isExpanded {
@@ -297,7 +308,7 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 	for i, failed := range read.failed {
 		switch {
 		case claimed[i]:
-		case failedOnHead(failed.name):
+		case rowOnHead(failed.name) >= 0:
 			rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
 		default:
 			rest = append(rest, judgedOnBase(failed))

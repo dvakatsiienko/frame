@@ -316,8 +316,11 @@ func newTestNames(tree, fork, head string, swapped []string) []newTest {
 		if testFile.MatchString(file) && !slices.Contains(swapped, file) {
 			// a test whose call line changed, an async added or a describe around it, is no new test
 			old := addedTestNames(removed, file)
+			atFork, _ := gitIn(tree, "show", fork+":"+file)
 			for _, test := range addedTestNames(added, file) {
-				if !slices.Contains(old, test) && !slices.Contains(tests, test) {
+				same := func(other newTest) bool { return other.Name == test.Name && other.File == test.File }
+				if !slices.ContainsFunc(old, same) && !slices.ContainsFunc(tests, same) {
+					test.OldTitles = addedTestNames(atFork.out, file)
 					tests = append(tests, namedOnce(tree, head, test))
 				}
 			}

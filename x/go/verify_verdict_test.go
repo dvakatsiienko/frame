@@ -124,6 +124,10 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"a literal dollar is a title, no hole", " FAIL  a.test.ts > costs $5\nAssertionError: no\n", false, []string{"costs $5"}, verdictRed, map[string]string{"costs $5": verdictRed}},
 		{"a literal percent is a title, no hole", " FAIL  a.test.ts > took 5%d\nAssertionError: no\n", false, []string{"took 5%d"}, verdictRed, map[string]string{"took 5%d": verdictRed}},
 		{"a title of holes alone claims no row", " FAIL  a.test.ts > old row\nAssertionError: no\n", false, []string{"${typed}"}, verdictBroken, map[string]string{"${typed}": verdictUnread, "a.test.ts > old row": verdictRed}},
+		{"vitest's one error under an each table's rows", " FAIL  a.test.ts > row 1\n FAIL  a.test.ts > row 2\nAssertionError: expected 1 to be 2 // Object.is equality\n", false, []string{"row 1", "row 2"}, verdictRed, map[string]string{"row 1": verdictRed, "row 2": verdictRed}},
+		{"vitest's one throw under two rows", " FAIL  a.test.ts > row 1\n FAIL  a.test.ts > row 2\nError: boom\n", false, []string{"row 1", "row 2"}, verdictBroken, map[string]string{"row 1": verdictBroken, "row 2": verdictBroken}},
+		{"vitest's snapshot mismatch is an assertion", " FAIL  a.test.ts > snap\nError: Snapshot `snap 1` mismatched\n", false, []string{"snap"}, verdictRed, map[string]string{"snap": verdictRed}},
+		{"a custom matcher's words read as a throw", " FAIL  a.test.ts > odd\nError: not odd\n", false, []string{"odd"}, verdictBroken, map[string]string{"odd": verdictBroken}},
 		{"an old test's break does not outvote a red new test", "(fail) old row\n  Error: timed out after 5000 ms\n(fail) new row\n  AssertionError: no\n", false, []string{"new row"}, verdictRed,
 			map[string]string{"old row": verdictBroken, "new row": verdictRed}},
 		{"a failed row on a command that exited 0", "--- FAIL: TestNew (0.00s)\n", true, []string{"TestNew"}, verdictFailed, map[string]string{"TestNew": verdictFailed}},
@@ -185,6 +189,7 @@ func TestJudgeRunReadsGoCasesAndTables(t *testing.T) {
 		{"a suite method that failed", "--- FAIL: TestSuite (0.00s)\n    --- FAIL: TestSuite/TestMethod (0.00s)\nFAIL\n", newTest{Name: "TestMethod", File: "a_test.go"}, verdictRed},
 		{"a js title is no go case", " FAIL  a.test.ts > dir/name\nAssertionError: no\n", newTest{Name: "name", File: "a.test.ts"}, verdictStillGreen},
 		{"a table with no hole in its title", " FAIL  a.test.ts > rows\nAssertionError: no\n", newTest{Name: "rows", File: "a.test.ts", IsTable: true}, verdictRed},
+		{"a hole title leaves an old test's row alone", " FAIL  a.test.ts > parse returns\nAssertionError: no\n", newTest{Name: "${n} returns", File: "a.test.ts", OldTitles: []newTest{{Name: "parse returns", File: "a.test.ts"}}}, verdictBroken},
 		{"a table's hole matches its row", " FAIL  a.test.ts > green each 1\nAssertionError: no\n", newTest{Name: "green each %s", File: "a.test.ts", IsTable: true}, verdictRed},
 		{"a table whose rows stayed green proves nothing", " FAIL  a.test.ts > other\nAssertionError: no\n", newTest{Name: "green each %s", File: "a.test.ts", IsTable: true}, verdictBroken},
 	}
@@ -343,6 +348,7 @@ func TestJudgeRunReadsTheHeadRun(t *testing.T) {
 		{"red on both is no proof", onBase, []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
 		{"an old row of the same title, red on both", " FAIL  a.test.ts > old > one\nAssertionError: no\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
 		{"red on head has no vote beside a red", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
+		{"a row a title expanded to, timed out on head", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
 		{"a timeout on head is load, no proof", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a row a title expanded to, red on both", onBase, []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead, "o${x}": verdictUnread}},
 		{"an old row red on both", onBase, []newTest{{Name: "new"}}, verdictStillGreen, map[string]string{"a.test.ts > one": verdictRedOnHead, "new": verdictStillGreen}},
@@ -428,5 +434,24 @@ func TestNewTestNamesReadsTheAddedLines(t *testing.T) {
 				t.Fatalf("read %q, want %q", got, c.want)
 			}
 		})
+	}
+}
+
+// a hole title needs what its file held at the fork, or it claims an old test edited in the same pr
+func TestNewTestNamesKeepsTheForksTitles(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	write(t, filepath.Join(main, "a.test.ts"), "it('parse returns', f);\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "base")
+	fork := gitT(t, main, "rev-parse", "HEAD")
+	write(t, filepath.Join(main, "a.test.ts"), "it('parse returns', f);\nit(`${n} returns`, f);\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "head")
+
+	tests := newTestNames(main, fork, gitT(t, main, "rev-parse", "HEAD"), nil)
+
+	if len(tests) != 1 || len(tests[0].OldTitles) != 1 || tests[0].OldTitles[0].Name != "parse returns" {
+		t.Fatalf("read %+v, want one new test holding the fork's title", tests)
 	}
 }

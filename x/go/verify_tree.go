@@ -91,7 +91,7 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	path := filepath.Join(main, ".claude/worktrees", name)
 	r.Open(name)
 	if len(paths) == 0 {
-		r.skip("swap", "test", "restore")
+		r.skip("test-head", "swap", "test-base", "restore")
 	}
 
 	var sha string

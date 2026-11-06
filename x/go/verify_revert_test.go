@@ -171,6 +171,19 @@ func TestRevertRefusesBeforeAnySwap(t *testing.T) {
 	}
 }
 
+func TestAPlainRunDrawsNoRevertStepAsNotRun(t *testing.T) {
+	t.Parallel()
+	main, _, _ := revertWorld(t)
+
+	got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--board")
+
+	for _, step := range []string{"test-head", "swap", "test-base", "restore"} {
+		if got.code != 0 || strings.Contains(got.stdout, step) {
+			t.Fatalf("exit %d, the board draws %s:\n%s", got.code, step, got.stdout)
+		}
+	}
+}
+
 func TestVerifyTreeArgsOutsideRevertExitUsage(t *testing.T) {
 	t.Parallel()
 	main, _, _ := revertWorld(t)
