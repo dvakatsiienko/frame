@@ -1078,6 +1078,7 @@ const QUIET_ALARMED_MAX = 50;
 const QUIET_SILENT_WAITS = 3;
 // when clio last sent each member a line, by session id: past its [done], that re-arms its silent alarm
 const QUIET_SENT = 'quiet-sent';
+const QUIET_TAGGED = 'quiet-tagged';
 const QUIET_PARK_MS = 7 * 24 * 60 * 60_000;
 // a transcript's last write in epoch seconds, by its session id under any project folder
 // a ping's reply ends a moment before its last transcript write
@@ -1197,6 +1198,7 @@ const quietLogKey = (at: number) =>
 
 // true once the lines, all of one moment, are in the day's log
 async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
+    await quietKeepTagged($, lines).catch(() => undefined);
     const key = quietLogKey(lines[0]?.at ?? 0);
     const was = ((await $.store.get(key).catch(() => undefined)) ??
         []) as QuietLogLine[];
@@ -1204,6 +1206,27 @@ async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
         .set(key, [...was, ...lines].slice(-QUIET_LOG_MAX))
         .then(() => true)
         .catch(() => false);
+}
+
+// a member's newest tagged line, per sid: the day's log keeps only its last lines, and a parked member's [done] outlives them
+async function quietKeepTagged($: EngineInterface, lines: QuietLogLine[]) {
+    const tagged = lines.filter(
+        (l) => l.sid && QUIET_KINDS.some((k) => k.kind === l.tag),
+    );
+    const now = tagged[0]?.at;
+    if (now === undefined) return;
+    const was = ((await $.store.get(QUIET_TAGGED)) ?? {}) as Record<
+        string,
+        { at: number; tag: string }
+    >;
+    await $.store.set(QUIET_TAGGED, {
+        ...Object.fromEntries(
+            Object.entries(was).filter(([, l]) => now - l.at < QUIET_PARK_MS),
+        ),
+        ...Object.fromEntries(
+            tagged.map((l) => [l.sid, { at: l.at, tag: l.tag }]),
+        ),
+    });
 }
 
 const quietLog = ($: EngineInterface, line: QuietLogLine) =>
@@ -1402,16 +1425,14 @@ async function lastSpokeAt($: EngineInterface, home: string, sid: string) {
 // when a member's newest tagged line to clio is its [done]: an untagged receipt or a turn-end note after it changes nothing,
 // a later [ask] or [escalate] does; a week back at most, past that it reads as no [done]
 async function quietDoneAt($: EngineInterface, sid: string, now: number) {
-    for (let at = now; now - at <= QUIET_PARK_MS; at -= 24 * 60 * 60_000) {
-        const lines = ((await $.store
-            .get(quietLogKey(at))
-            .catch(() => undefined)) ?? []) as QuietLogLine[];
-        const last = lines.findLast(
-            (l) => l.sid === sid && QUIET_KINDS.some((k) => k.kind === l.tag),
-        );
-        if (last) return last.tag === 'done' ? last.at : undefined;
-    }
-    return undefined;
+    const last = (
+        (await $.store.get(QUIET_TAGGED).catch(() => undefined)) as
+            | Record<string, { at: number; tag: string }>
+            | undefined
+    )?.[sid];
+    return last?.tag === 'done' && now - last.at <= QUIET_PARK_MS
+        ? last.at
+        : undefined;
 }
 
 // a hung member sends nothing, so an open lane's member past three waits raises one alarm per silence, under a shift also one

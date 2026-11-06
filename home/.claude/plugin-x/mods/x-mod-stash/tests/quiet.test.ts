@@ -1574,24 +1574,19 @@ test('an [ask] after a [done] alarms', async ($, on) => {
     expect(silentAlarms(w).length).toBe(1);
 });
 
-test('a [done] from yesterday still reads', async ($, on) => {
-    const w = silentWorld(on);
-    await start($);
-    const yesterday = EVEN - 24 * 60 * MIN;
-    w.store.set(`quiet-log:${new Date(yesterday).toISOString().slice(0, 10)}`, [
-        {
-            arm: 'on',
-            at: yesterday,
-            from: codiePeer.name,
-            sid: CODIE_SID,
-            startedTurn: true,
-            tag: 'done',
-            verdict: 'passed',
-        },
-    ]);
-    await w.clock.advance(4 * MIN);
-    expect(silentAlarms(w)).toEqual([]);
-});
+for (const [why, ago, count] of [
+    ['from yesterday still parks', 24 * 60 * MIN, 0],
+    ['past a week parks no more', 8 * 24 * 60 * MIN, 1],
+] as const)
+    test(`a [done] ${why}`, async ($, on) => {
+        const w = silentWorld(on);
+        await start($);
+        w.store.set('quiet-tagged', {
+            [CODIE_SID]: { at: EVEN - ago, tag: 'done' },
+        });
+        await w.clock.advance(4 * MIN);
+        expect(silentAlarms(w).length).toBe(count);
+    });
 
 test("clio's send after a [done] re-arms the member, counted from the send", async ($, on) => {
     const w = silentWorld(on);
@@ -1608,11 +1603,23 @@ test("clio's send after a [done] re-arms the member, counted from the send", asy
     ]);
 });
 
+// real sends, clio's transcripts: only the bare checkpoint re-arms nothing
 for (const line of [
     'pause — clio is checkpointing, hold every message',
+    'pause — clio is checkpointing, hold every message to me until «resume»; finish and commit what you are on.',
+    'pause: clio is taking a second wind, hold every message to me until «resume»; finish what you are on.',
+    'pause — clio is checkpointing: hold every message to me until «resume»; finish and commit what you are on, through the gate queue.',
+    'pause — 🦉 clio is checkpointing. no open chore; hold every message until «resume».',
+    'pause — 🦉 clio (main) is checkpointing (second wind). hold every message to me until «resume».',
     "resume — clio's second wind is done",
+    "resume — clio's second wind is done. Send what you held.",
+    "resume — clio's checkpoint is done, send what you held. Window is on pace.",
+    'resume — clio is back from her checkpoint; send what you held.',
+    "resume — main's second wind is done, send what you held.",
+    "resume — clio's second wind is done, chores open again.",
+    'resume',
 ])
-    test(`clio's «${line.split(' ')[0]}» after a [done] re-arms nothing`, async ($, on) => {
+    test(`clio's «${line}» after a [done] re-arms nothing`, async ($, on) => {
         const w = silentWorld(on);
         await start($);
         await ping($, '[done] FRM-1 landed', codiePeer.name);
@@ -1622,14 +1629,39 @@ for (const line of [
         expect(silentAlarms(w)).toEqual([]);
     });
 
-test("clio's «resume FRM-2» after a [done] is work, so it re-arms", async ($, on) => {
+for (const line of [
+    'resume FRM-2 from step 3',
+    "resume — clio's checkpoint is done. Order after FRM-501 round 4: FRM-510, then the raw merge rule.",
+    "resume — clio's second wind is done. One read I need: the count of held pings.",
+    "resume — clio's second wind is done; send what you held, and carry on with frame#127's scoped round.",
+    "resume — clio's checkpoint is done. send what you held; your final on FRM-472 (07c folded in) goes to me as before.",
+    'pause — clio is taking her second wind; hold every message to me until «resume». keep working on FRM-494 and commit what you finish.',
+])
+    test(`clio's «${line}» after a [done] is work, so it re-arms`, async ($, on) => {
+        const w = silentWorld(on);
+        await start($);
+        await ping($, '[done] FRM-1 landed', codiePeer.name);
+        await w.clock.advance(5 * MIN);
+        await send($, codiePeer.name, line);
+        await w.clock.advance(4 * MIN);
+        expect(silentAlarms(w).length).toBe(1);
+    });
+
+test("a [done] older than the day's log lines still parks the member", async ($, on) => {
     const w = silentWorld(on);
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
-    await w.clock.advance(5 * MIN);
-    await send($, codiePeer.name, 'resume FRM-2 from step 3');
-    await w.clock.advance(4 * MIN);
-    expect(silentAlarms(w).length).toBe(1);
+    const key = `quiet-log:${new Date(w.clock.now()).toISOString().slice(0, 10)}`;
+    const kept = w.store.get(key) as Record<string, unknown>[];
+    w.store.set(
+        key,
+        Array.from({ length: 500 }, () => ({
+            ...kept.at(-1),
+            sid: 'someone-else',
+        })),
+    );
+    await w.clock.advance(9 * MIN);
+    expect(silentAlarms(w)).toEqual([]);
 });
 
 test("clio's send before a [done] re-arms nothing", async ($, on) => {
