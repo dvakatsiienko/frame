@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// the bytes review lane: the label starts a round, a successful review.yml run on the branch is one round,
+// the bytes review lane: the label starts a round, a successful review.yml run on the branch counts toward the cap,
 // one round per pr at «final», and a second only when dima applies the label himself (bytes .github/workflows)
 const (
 	reviewLabel = "🤖 review:requested"

@@ -937,7 +937,7 @@ func roundGated(repo string) bool {
 	return repo == "dvakatsiienko/bytes"
 }
 
-// the steps that end a round red when the reviewer posted nothing: the action refuses itself on a pr editing a workflow
+// the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-guard.sh)
 var standDownSteps = []string{"A green review means a clean review", "A round with no review is red"}
 
 // a round is a run of review.yml whose reviewer job itself finished, on an ancestor of the head: a green run can
@@ -1001,7 +1001,7 @@ func roundCheck(api, repo, n, ref, head, author string, dimaOK bool) (mergeCheck
 	case stoodDown && dimaOK:
 		c.OK, c.Detail = true, "the reviewer stood down on #"+n+", landing on dima's word"
 	case stoodDown:
-		c.Detail = "the reviewer stood down on #" + n + ", as it does on a pr that edits a workflow, so it holds no round; it lands on dima's word, his prompt or a tick quoting it: x lane merge-auto " + n + " --apply --dima-ok " + n + "; on a pr that edits no workflow that red was a failed read: x lane review " + n
+		c.Detail = "the reviewer stood down on #" + n + ", posting nothing, so it holds no round; it lands on dima's word, his prompt or a tick quoting it: x lane merge-auto " + n + " --apply --dima-ok " + n + "; that red can also be a failed read: x lane review " + n
 	default:
 		c.Detail = "no reviewer round finished in " + ref + "'s history — x lane review " + n
 	}
