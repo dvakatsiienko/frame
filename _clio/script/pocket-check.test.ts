@@ -1106,18 +1106,18 @@ describe('the prompt groom (FRM-418)', () => {
         });
     });
 
-    test("a side channel's item waits for the main's takeover, not a groom", () => {
-        const side = task(
-            { labels: ['m', 'side'], updated_date: `${day} 09:30` },
+    test("a wing's item waits for the main's takeover, not a groom", () => {
+        const wing = task(
+            { labels: ['m', 'wing'], updated_date: `${day} 09:30` },
             '\nW301 (2026-10-26 09:12, dima): a fold',
         );
-        expect(checkPocket(config, [side], day, day, () => false)).toEqual([]);
+        expect(checkPocket(config, [wing], day, day, () => false)).toEqual([]);
     });
 
-    test('a side-channel-owned item is groomed in its side channel, not here', () => {
+    test('a wing-owned item is groomed in its wing, not here', () => {
         const owned = task(
             {
-                labels: ['s', 'side-channel-owned'],
+                labels: ['s', 'wing-owned'],
                 updated_date: `${day} 09:30`,
             },
             '\nW302 (2026-10-26 09:12, dima): a fold',

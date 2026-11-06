@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { dimasText, groomNudge, sideChannelNudge } from './prompt-raw-save.ts';
+import { dimasText, groomNudge, wingNudge } from './prompt-raw-save.ts';
 
 const notice =
     '<system-reminder>\nThe user\'s fork "🦉 clio (fork)" finished a turn.\n</system-reminder>\n';
@@ -50,7 +50,7 @@ describe('dimasText', () => {
     });
 });
 
-describe('sideChannelNudge', () => {
+describe('wingNudge', () => {
     const fixture = (pid: number | undefined) => {
         const home = mkdtempSync(join(tmpdir(), 'side-'));
         const dir = join(home, '.claude/sessions');
@@ -71,36 +71,31 @@ describe('sideChannelNudge', () => {
         'my rockstar account is stuck on an old email, can you look',
         'what should i buy now, the $200 plan?',
         'turn off the auto-renew before friday',
-    ])(
-        'a personal chore while a lane runs is offered the side channel: «%s»',
-        (text) => {
-            const line = sideChannelNudge(text, fixture(process.ppid));
-            expect(line).toContain('a wing?');
-            expect(line?.split('\n')).toHaveLength(1);
-        },
-    );
+    ])('a personal chore while a lane runs is offered a wing: «%s»', (text) => {
+        const line = wingNudge(text, fixture(process.ppid));
+        expect(line).toContain('a wing?');
+        expect(line?.split('\n')).toHaveLength(1);
+    });
 
     test.each([
         'codie: the Sonnet grade card is in ← Tell mods lane coder to do a full tech review',
         'You may rearrange the execution order because fixes may be important',
         'they are gated behind a subscription. Let’s have Excalidraw as a main blueprinting tool',
     ])('a fleet prompt from the log prints none: «%s»', (text) => {
-        expect(sideChannelNudge(text, fixture(process.ppid))).toBeUndefined();
+        expect(wingNudge(text, fixture(process.ppid))).toBeUndefined();
     });
 
     test('a half-written registry file never crashes it', () => {
         const home = fixture(process.ppid);
         writeFileSync(join(home, '.claude/sessions/12.json'), '{"na');
-        expect(sideChannelNudge('what should i buy now', home)).toContain(
-            'a wing?',
-        );
+        expect(wingNudge('what should i buy now', home)).toContain('a wing?');
     });
 
     test.each([
         'what is the plan for the cli lane after this',
         'the billing page of the speak app needs a pass',
     ])('a fleet prompt with plan or billing prints none: «%s»', (text) => {
-        expect(sideChannelNudge(text, fixture(process.ppid))).toBeUndefined();
+        expect(wingNudge(text, fixture(process.ppid))).toBeUndefined();
     });
 
     test('the hook prints the side line for his prompt', () => {
@@ -125,10 +120,10 @@ describe('sideChannelNudge', () => {
 
     test('with no live lane, a personal chore prints none', () => {
         expect(
-            sideChannelNudge('what should i buy now', fixture(999_999)),
+            wingNudge('what should i buy now', fixture(999_999)),
         ).toBeUndefined();
         expect(
-            sideChannelNudge('what should i buy now', fixture(undefined)),
+            wingNudge('what should i buy now', fixture(undefined)),
         ).toBeUndefined();
     });
 });

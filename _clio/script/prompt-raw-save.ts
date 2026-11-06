@@ -55,10 +55,10 @@ export function groomNudge(
 const PERSONAL_CHORE =
     /\b(email|buy|auto-renew|refund|invoice|recruiter|tax|bank)\b/i;
 
-// a personal chore mixed into a running lane's thread is offered clio's side channel, one line
-export function sideChannelNudge(text: string, home: string) {
+// a personal chore mixed into a running lane's thread is offered a wing, one line
+export function wingNudge(text: string, home: string) {
     return PERSONAL_CHORE.test(text) && isLaneLive(home)
-        ? '🪽 a wing? a personal chore while a lane runs — `clio:side-channel` keeps it out of the lane'
+        ? '🪽 a wing? a personal chore while a lane runs — `clio:wing` keeps it out of the lane'
         : undefined;
 }
 
@@ -135,7 +135,7 @@ if (import.meta.main) {
             ),
         );
         if (nudge) console.log(nudge);
-        const side = sideChannelNudge(text, process.env.HOME ?? '');
-        if (side) console.log(side);
+        const wing = wingNudge(text, process.env.HOME ?? '');
+        if (wing) console.log(wing);
     }
 }

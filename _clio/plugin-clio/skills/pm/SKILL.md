@@ -41,7 +41,7 @@ traps:
 
 - **one executor, one kind, every touch** (the label groups are exclusive, `docs/tracker/GLOSSARY.md` § label): executor `agent` or `human`; a blocker label only while blocked — `needs human` (an agent waits on dima), `needs agent` (dima waits
   on research). a `human` ticket is dima's to start
-- **a `side` ticket is a wing's** while the label is on: leave it alone until it comes off; a claim, not a lock (dima, 2026-11-06)
+- **a `wing` ticket is a wing's** while the label is on: leave it alone until it comes off; a claim, not a lock (dima, 2026-11-06)
 - **priority** p3; p1 only for a real interrupt, its reason and expiry in the body; p2 or p4 only when
   its importance truly differs; **size** XS · S · M naming its closest done ticket (`size: S, like FRM-372`);
   XS (minutes, under ~80 codie turns) · S (one session, under ~400) · M (allowed, on trial: `craft-fleet-flow` § lane init),

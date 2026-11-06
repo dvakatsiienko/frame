@@ -1,9 +1,9 @@
 ---
-name: side-channel
+name: wing
 description: load when dima asks for a wing — «wing», «second wing», «side channel», «fresh side channel», «forked side channel», «open a side channel» — at any time, in a boot prompt too.
 ---
 
-# side-channel — a 🪽 wing, a second clio beside the main thread
+# wing — a 🪽 wing, a second clio beside the main thread
 
 a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questions, research, fixes, chores, plans and grills, so the main stays on its lanes. the fork-guard banner gives it its role and closing rules; this skill opens the door and draws the split.
 
@@ -30,10 +30,10 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 ## the day plan
 
 the wing's durable plan is one pocket item he can read, so it survives a second wind (dima, 2026-11-06, his standing word for this item's owned tag):
-- first act: `node script/pocket-add.ts "day plan MM-DD: wing <N>" --priority next --top --side-channel-owned`, then one `--ac` per line through `backlog task edit`, in his order
+- first act: `node script/pocket-add.ts "day plan MM-DD: wing <N>" --priority next --top --wing-owned`, then one `--ac` per line through `backlog task edit`, in his order
 - a finished line: `backlog task edit <id> --check-ac <n>`, that turn; a new line: `--ac`
 - `clio:halt` closes it with the other day plans
 
 ## after it
 
-its pocket items carry `side` and `wing-<N>` (`backlog task edit <id> --add-label wing-<N>`), so each names its wing, and come back at the next boot (`clio:boot` § 3); an item dima wants solved here carries `side-channel-owned` (`pocket-add --side-channel-owned`, on his word only): a wing lists them at its start (`backlog task list --labels side-channel-owned --plain`), closes those with its `wing-<N>` on its fork branch, and leaves another's; with none open they wait. a wing lands its own `worktree-fork-*` branch, the banner holds the steps (dima, 2026-11-06: «do it now and merge yourself»); clio merges what it leaves unlanded by the halt, never dropped (dima, 2026-10-29). a ticket it works carries the `side` label and a `wing: <N>` body line; clio and the other wings leave it alone.
+its pocket items carry `wing` and `wing-<N>` (`backlog task edit <id> --add-label wing-<N>`), so each names its wing, and come back at the next boot (`clio:boot` § 3); an item dima wants solved here carries `wing-owned` (`pocket-add --wing-owned`, on his word only): a wing lists them at its start (`backlog task list --labels wing-owned --plain`), closes those with its `wing-<N>` on its fork branch, and leaves another's; with none open they wait. a wing lands its own `worktree-fork-*` branch, the banner holds the steps (dima, 2026-11-06: «do it now and merge yourself»); clio merges what it leaves unlanded by the halt, never dropped (dima, 2026-10-29). a ticket it works carries the `wing` label, off when it hands the ticket back or closes it, and a `wing: <N>` body line; clio and the other wings leave it alone.
