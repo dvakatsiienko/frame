@@ -50,4 +50,6 @@ queue seconds per family, `queue-budget.mjs`:
 
 ## re-measure
 
+a merge reaches a peer only once main's checkout holds it: a lane's script is read from there. read a row's column count to tell which script wrote it.
+
 the same run at pr 1's merge, at each later merge, and on 2026-11-13, at a comparable fleet load, read beside this file; a mods suite row and a go row from `/usr/bin/time -p` each time.
