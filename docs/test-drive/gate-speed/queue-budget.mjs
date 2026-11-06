@@ -28,7 +28,7 @@ const fam = (c) => {
 };
 const sum = {};
 for (const r of q) {
-    const k = `${r[2].padEnd(5)} ${fam(r[6] ?? '')}`;
+    const k = `${r[2].padEnd(5)} ${fam(r.at(-1) ?? '')}`;
     sum[k] ??= { n: 0, run: 0, wait: 0 };
     const s = sum[k];
     s.n++;

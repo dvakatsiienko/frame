@@ -20,9 +20,9 @@ function fixture() {
         join(process.env.TMPDIR ?? tmpdir(), 'gate-queue-'),
     );
     return {
-        longTurn: join(state, 'gate-queue.long.turn'),
+        gateTurn: join(state, 'gate-queue.turn'),
         state,
-        turn: join(state, 'gate-queue.turn'),
+        turn: join(state, 'gate-queue.long.turn'),
     };
 }
 
@@ -33,13 +33,31 @@ function queueEnv(state: string, wait = '20') {
         X_STATE: state,
     };
     delete env.GATE_QUEUE_HELD;
+    delete env.CLAUDE_CODE_SESSION_ID;
     return env;
 }
 
-function queue(state: string, args: string[], wait?: string) {
+function queue(
+    state: string,
+    args: string[],
+    wait?: string,
+    extra: NodeJS.ProcessEnv = {},
+) {
     return spawnSync(script, args, {
         encoding: 'utf8',
+        env: { ...queueEnv(state, wait), ...extra },
+    });
+}
+
+const long = (state: string, args: string[], wait?: string) =>
+    queue(state, ['--long', ...args], wait);
+
+// what x does: --hold prints its ready line once it has the gate turn, and exits with the code x writes on its stdin
+function hold(state: string, wait?: string, code = '0') {
+    return spawnSync(script, ['--hold', 'x', 'lane', 'commit'], {
+        encoding: 'utf8',
         env: queueEnv(state, wait),
+        input: `${code}\n`,
     });
 }
 
@@ -65,10 +83,197 @@ const liveSince = () =>
         encoding: 'utf8',
     }).stdout.trimEnd();
 
-describe('gate-queue', () => {
+describe('gate-queue, no flag: no turn', () => {
+    test.each([
+        ['a script path', ['landing.sh']],
+        ['a chain', ['sh', '-c', 'x lane commit m -- a && x lane push']],
+        ['a pnpm script', ['pnpm', 'x-go:gate']],
+    ])('%s runs past a live gate holder, and says so', (_name, command) => {
+        const { state, gateTurn } = fixture();
+        plantHolder(gateTurn, String(process.pid), liveSince());
+        const stub = join(state, 'bin');
+        mkdirSync(stub);
+        for (const name of ['x', 'pnpm', 'landing.sh']) {
+            writeFileSync(join(stub, name), '#!/bin/sh\nexit 9\n', {
+                mode: 0o755,
+            });
+        }
+        const got = spawnSync(script, command, {
+            encoding: 'utf8',
+            env: {
+                ...queueEnv(state, '1'),
+                PATH: `${stub}:${process.env.PATH}`,
+            },
+        });
+        expect(got.status).toBe(9);
+        expect(got.stderr).toContain('no turn');
+        expect(existsSync(gateTurn)).toBe(true);
+        const row = logRows(state).at(-1);
+        expect(row?.slice(2, 4)).toEqual(['none', '0']);
+        expect(row?.[5]).toBe('9');
+    });
+
+    test('a TERM still logs its row', { timeout: 15_000 }, async () => {
+        const { state } = fixture();
+        const ran = join(state, 'ran');
+        const child = spawn(script, ['sh', '-c', `touch ${ran}; sleep 1`], {
+            env: queueEnv(state),
+            stdio: 'ignore',
+        });
+        while (!existsSync(ran)) await sleep(50);
+        child.kill('SIGTERM');
+        await new Promise((done) => child.on('exit', done));
+        expect(logRows(state).at(-1)?.slice(2, 3)).toEqual(['none']);
+        expect(logRows(state).at(-1)?.[5]).toBe('143');
+    });
+
+    test('a nested run writes no row of its own', () => {
+        const { state } = fixture();
+        queue(state, [script, 'sh', '-c', 'exit 0']);
+        expect(logRows(state)).toHaveLength(1);
+    });
+
+    test('with no command is a usage error', () => {
+        const { state } = fixture();
+        expect(queue(state, []).status).toBe(2);
+    });
+
+    test('a long round inside it inside a long round keeps its turn', () => {
+        const { state } = fixture();
+        const got = long(
+            state,
+            [script, script, '--long', 'sh', '-c', 'exit 3'],
+            '2',
+        );
+        expect(got.status).toBe(3);
+    });
+});
+
+describe('gate-queue --hold: the turn x takes', () => {
+    test('prints ready, exits with the code on its stdin, frees the turn', () => {
+        const { state, gateTurn } = fixture();
+        const got = hold(state, undefined, '7');
+        expect(got.stdout.trim()).toBe('turn');
+        expect(got.status).toBe(7);
+        expect(existsSync(gateTurn)).toBe(false);
+    });
+
+    test('its row carries the gate slot, its wait, its run and its label', () => {
+        const { state } = fixture();
+        hold(state, undefined, '7');
+        const [row] = logRows(state);
+        expect(row?.[2]).toBe('gate');
+        expect(row?.slice(3, 5)).toEqual(
+            Array(2).fill(expect.stringMatching(/^\d+$/)),
+        );
+        expect(row?.slice(5)).toEqual(['7', '-', 'x lane commit']);
+    });
+
+    test('a closed stdin frees the turn', () => {
+        const { state, gateTurn } = fixture();
+        const got = spawnSync(script, ['--hold', 'x'], {
+            encoding: 'utf8',
+            env: queueEnv(state),
+            input: '',
+        });
+        expect(got.stdout.trim()).toBe('turn');
+        expect(got.status).toBe(1);
+        expect(existsSync(gateTurn)).toBe(false);
+    });
+
+    test('a hold past its cap frees the turn, logs 124 and names the cap', () => {
+        const { state, gateTurn } = fixture();
+        const stdin = join(state, 'stdin');
+        // an open pipe nobody writes to: a hung hook, x alive above it
+        const got = spawnSync(
+            'sh',
+            [
+                '-c',
+                `mkfifo ${stdin}; sleep 4 >${stdin} 2>/dev/null & ${script} --hold x <${stdin}`,
+            ],
+            {
+                encoding: 'utf8',
+                env: { ...queueEnv(state), GATE_QUEUE_HOLD_CAP: '1' },
+                timeout: 20_000,
+            },
+        );
+        expect(got.stderr).toContain('1s cap');
+        expect(existsSync(gateTurn)).toBe(false);
+        expect(logRows(state).at(-1)?.[5]).toBe('124');
+    });
+
+    test('a live holder makes it wait to its deadline, never ready', () => {
+        const { state, gateTurn } = fixture();
+        plantHolder(gateTurn, String(process.pid), liveSince());
+        const got = hold(state, '2');
+        expect(got.status).toBe(75);
+        expect(got.stdout).toBe('');
+        expect(got.stderr).toContain('old run');
+        expect(existsSync(gateTurn)).toBe(true);
+    });
+
+    test('it does not wait behind a long holder', () => {
+        const { state, turn } = fixture();
+        plantHolder(turn, String(process.pid), liveSince());
+        expect(hold(state, '2', '5').status).toBe(5);
+        expect(existsSync(turn)).toBe(true);
+    });
+
+    test('inside a long round it still takes the gate slot', () => {
+        const { state, gateTurn } = fixture();
+        plantHolder(gateTurn, String(process.pid), liveSince());
+        const got = long(state, [script, '--hold', 'x'], '2');
+        expect(got.status).toBe(75);
+    });
+
+    test('with no label is a usage error', () => {
+        const { state } = fixture();
+        expect(queue(state, ['--hold']).status).toBe(2);
+    });
+
+    test('two holds never overlap', { timeout: 15_000 }, async () => {
+        const { state } = fixture();
+        const log = join(state, 'log');
+        const start = (name: string) =>
+            new Promise<void>((done) => {
+                const child = spawn(script, ['--hold', name], {
+                    env: queueEnv(state),
+                    stdio: ['pipe', 'pipe', 'ignore'],
+                });
+                child.stdout.once('data', async () => {
+                    writeFileSync(log, 'in\n', { flag: 'a' });
+                    await sleep(1000);
+                    writeFileSync(log, 'out\n', { flag: 'a' });
+                    child.stdin.end('0\n');
+                });
+                child.on('exit', () => done());
+            });
+        await Promise.all([start('one'), start('two')]);
+        expect(readFileSync(log, 'utf8')).toBe('in\nout\nin\nout\n');
+    });
+});
+
+describe('gate-queue session column', () => {
+    test.each([
+        ['a session', 'f39b1ae2-aaaa-bbbb', 'f39b1ae2'],
+        ['none', undefined, '-'],
+    ])('%s reads in the column before the command', (_name, session, want) => {
+        const { state } = fixture();
+        const extra = session ? { CLAUDE_CODE_SESSION_ID: session } : {};
+        queue(state, ['sh', '-c', 'exit 0'], undefined, extra);
+        queue(state, ['--long', 'sh', '-c', 'exit 0'], undefined, extra);
+        const rows = logRows(state);
+        expect(rows).toHaveLength(2);
+        for (const row of rows) {
+            expect(row.slice(-2)).toEqual([want, 'sh -c exit 0']);
+        }
+    });
+});
+
+describe('gate-queue --long', () => {
     test('hands back the command exit code and frees the turn', () => {
         const { state, turn } = fixture();
-        expect(queue(state, ['sh', '-c', 'exit 7']).status).toBe(7);
+        expect(long(state, ['sh', '-c', 'exit 7']).status).toBe(7);
         expect(existsSync(turn)).toBe(false);
     });
 
@@ -76,7 +281,7 @@ describe('gate-queue', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
         const marker = join(state, 'ran');
-        const got = queue(state, ['touch', marker], '2');
+        const got = long(state, ['touch', marker], '2');
         expect(got.status).toBe(75);
         expect(got.stderr).toContain('old run');
         expect(existsSync(marker)).toBe(false);
@@ -89,58 +294,39 @@ describe('gate-queue', () => {
     ])('%s frees the turn', (_name, pid, since) => {
         const { state, turn } = fixture();
         plantHolder(turn, pid, since);
-        const got = queue(state, ['sh', '-c', 'exit 0']);
+        const got = long(state, ['sh', '-c', 'exit 0']);
         expect(got.status).toBe(0);
         expect(got.stderr).toContain('freed');
     });
 
     test('a queued run calling a queued run keeps its turn', () => {
         const { state } = fixture();
-        const got = queue(state, [script, 'sh', '-c', 'exit 3'], '2');
+        const got = long(state, [script, '--long', 'sh', '-c', 'exit 3'], '2');
         expect(got.status).toBe(3);
     });
 
     test('a long run does not wait behind a gate holder', () => {
-        const { state, turn } = fixture();
-        plantHolder(turn, String(process.pid), liveSince());
-        const got = queue(state, ['--long', 'sh', '-c', 'exit 4'], '2');
+        const { state, gateTurn } = fixture();
+        plantHolder(gateTurn, String(process.pid), liveSince());
+        const got = long(state, ['sh', '-c', 'exit 4'], '2');
         expect(got.status).toBe(4);
-        expect(existsSync(turn)).toBe(true);
+        expect(existsSync(gateTurn)).toBe(true);
     });
 
-    test('a gate does not wait behind a long holder', () => {
-        const { state, longTurn } = fixture();
-        plantHolder(longTurn, String(process.pid), liveSince());
-        expect(queue(state, ['sh', '-c', 'exit 5'], '2').status).toBe(5);
-        expect(existsSync(longTurn)).toBe(true);
-    });
-
-    test('a long run waits behind a long holder to its deadline', () => {
-        const { state, longTurn } = fixture();
-        plantHolder(longTurn, String(process.pid), liveSince());
-        const got = queue(state, ['--long', 'sh', '-c', 'exit 0'], '2');
-        expect(got.status).toBe(75);
-        expect(got.stderr).toContain('old run');
-        expect(existsSync(longTurn)).toBe(true);
-    });
-
-    test('--long with no command is a usage error', () => {
+    test('with no command is a usage error', () => {
         const { state } = fixture();
         expect(queue(state, ['--long']).status).toBe(2);
     });
 
     test('a finished run logs its slot, wait, run seconds, exit and command', () => {
         const { state } = fixture();
-        queue(state, ['sh', '-c', 'exit 7']);
-        queue(state, ['--long', 'sh', '-c', 'exit 0']);
+        long(state, ['sh', '-c', 'exit 7']);
+        const [row] = logRows(state);
+        expect(row?.[2]).toBe('long');
+        expect(row?.slice(5)).toEqual(['7', '-', 'sh -c exit 7']);
         // the two seconds columns are wall clock: a number, never a value
-        const rows = logRows(state).map((row) => row.slice(2));
-        expect(rows.map(([slot, , , exit, cmd]) => [slot, exit, cmd])).toEqual([
-            ['gate', '7', 'sh -c exit 7'],
-            ['long', '0', 'sh -c exit 0'],
-        ]);
-        expect(rows.flatMap((row) => row.slice(1, 3))).toEqual(
-            Array(4).fill(expect.stringMatching(/^\d+$/)),
+        expect(row?.slice(3, 5)).toEqual(
+            Array(2).fill(expect.stringMatching(/^\d+$/)),
         );
     });
 
@@ -148,24 +334,18 @@ describe('gate-queue', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
         const marker = join(state, 'ran');
-        queue(state, ['touch', marker], '2');
+        long(state, ['touch', marker], '2');
         const [row] = logRows(state);
         expect(row?.[1]).toMatch(/^\d+\.\d+$/);
         expect(Number(row?.[3])).toBeGreaterThanOrEqual(2);
-        expect(row?.slice(4)).toEqual(['-', '75', `touch ${marker}`]);
-    });
-
-    test('a nested run writes no row of its own', () => {
-        const { state } = fixture();
-        queue(state, [script, 'sh', '-c', 'exit 0']);
-        expect(logRows(state)).toHaveLength(1);
+        expect(row?.slice(4)).toEqual(['-', '75', '-', `touch ${marker}`]);
     });
 
     test('a free turn still waits behind an older live ticket', () => {
         const { state, turn } = fixture();
         plantTicket(turn, `1.${process.pid}`, liveSince());
         const marker = join(state, 'ran');
-        expect(queue(state, ['touch', marker], '2').status).toBe(75);
+        expect(long(state, ['touch', marker], '2').status).toBe(75);
         expect(existsSync(marker)).toBe(false);
     });
 
@@ -175,51 +355,44 @@ describe('gate-queue', () => {
     ])('%s leaves the line', (_name, name, since) => {
         const { state, turn } = fixture();
         plantTicket(turn, name, since);
-        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+        expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
         expect(readdirSync(`${turn}.tickets`)).toEqual([]);
     });
 
     test('a dead owner with a blank ticket leaves the line', () => {
         const { state, turn } = fixture();
         plantTicket(turn, '1.999999', '');
-        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+        expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
     });
 
     test('a dead holder with a blank start frees the turn', () => {
         const { state, turn } = fixture();
         plantHolder(turn, '999999', '');
-        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+        expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
     });
 
     test('a turn with no holder file frees after its minute, and not before', () => {
         const { state, turn } = fixture();
         mkdirSync(turn);
-        expect(queue(state, ['sh', '-c', 'exit 0'], '2').status).toBe(75);
+        expect(long(state, ['sh', '-c', 'exit 0'], '2').status).toBe(75);
         const old = new Date(Date.now() - 300_000);
         utimesSync(turn, old, old);
-        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+        expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
     });
 
     test('a waiter behind the line never frees a stale turn', () => {
         const { state, turn } = fixture();
         plantTicket(turn, `1.${process.pid}`, liveSince());
         plantHolder(turn, '999999', 'Fri Nov  6 10:00:00 2026');
-        const got = queue(state, ['sh', '-c', 'exit 0'], '2');
+        const got = long(state, ['sh', '-c', 'exit 0'], '2');
         expect(got.status).toBe(75);
         expect(existsSync(join(turn, 'holder'))).toBe(true);
-    });
-
-    test('a gate inside a long round still takes the gate slot', () => {
-        const { state, turn } = fixture();
-        plantHolder(turn, String(process.pid), liveSince());
-        const got = queue(state, ['--long', script, 'sh', '-c', 'exit 3'], '2');
-        expect(got.status).toBe(75);
     });
 
     test('a ticket leaves with its deadline', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
-        queue(state, ['sh', '-c', 'exit 0'], '2');
+        long(state, ['sh', '-c', 'exit 0'], '2');
         expect(readdirSync(`${turn}.tickets`)).toEqual([]);
     });
 
@@ -229,9 +402,11 @@ describe('gate-queue', () => {
         const go = join(state, 'go');
         const run = (name: string, wait = 'true') =>
             new Promise<void>((done) => {
-                spawn(script, ['sh', '-c', `${wait}; echo ${name} >>${log}`], {
-                    env: queueEnv(state),
-                }).on('exit', () => done());
+                spawn(
+                    script,
+                    ['--long', 'sh', '-c', `${wait}; echo ${name} >>${log}`],
+                    { env: queueEnv(state) },
+                ).on('exit', () => done());
             });
         const tickets = () => readdirSync(`${turn}.tickets`).length;
         const lined = async (count: number) => {
@@ -257,7 +432,7 @@ describe('gate-queue', () => {
         const body = `echo in >>${log}; sleep 1; echo out >>${log}`;
         const start = () =>
             new Promise<void>((done) => {
-                spawn(script, ['sh', '-c', body], {
+                spawn(script, ['--long', 'sh', '-c', body], {
                     env: queueEnv(state),
                 }).on('exit', () => done());
             });

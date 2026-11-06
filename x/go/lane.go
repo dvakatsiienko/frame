@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"cmp"
 	"encoding/json"
@@ -31,6 +32,11 @@ const (
 	// a peer session's git holds the shared index lock for a moment; commit waits it out before add and commit
 	lockWait  = 30 * time.Second
 	lockPause = 200 * time.Millisecond
+
+	gateQueueScript   = "script/gate-queue.sh"
+	gateQueueReady    = "turn"
+	gateQueueHeld     = "GATE_QUEUE_HELD"
+	gateQueueDeadline = 75
 )
 
 // the one door from core to an add-on, filled at the add-on's init; its zero value is the plain flow
@@ -55,7 +61,9 @@ type prLayers struct {
 }
 
 /* Verbs */
-func commit(r *Run, args []string, flags Flags) (any, error) {
+func commit(r *Run, args []string, flags Flags) (_ any, err error) {
+	leaveTurn := func(error) {}
+	defer func() { leaveTurn(err) }()
 	msgFile, paths := args[0], args[1:]
 	// `-` takes the message on stdin, so no message file is kept or reused (a reused one glued two messages, 2026-10-14)
 	if msgFile == "-" {
@@ -102,6 +110,23 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 
 	if err := r.Step("tree", "checking the tree", func() (string, error) {
 		return home(tree), assertUnlocked(tree)
+	}); err != nil {
+		return nil, err
+	}
+	// before all that reads the tree or the index: a git commit holds the shared index lock through its hook, so a stage outside
+	// the turn dies on a peer's, an edit in the wait would skip format and quotes, and a peer's commit moves the HEAD a dry run copies
+	namedPaths := strings.Join(paths, " ")
+	verb := "x lane commit "
+	switch {
+	case dry:
+		verb += "--dry "
+	case flags["hold-unstaged"] == true:
+		verb += "--hold-unstaged "
+	}
+	if err := r.Step("turn", "waiting for the gate turn", func() (string, error) {
+		leave, err := takeGateTurn(verb+namedPaths, verb+msgFile+" -- "+namedPaths)
+		leaveTurn = leave
+		return "", err
 	}); err != nil {
 		return nil, err
 	}
@@ -218,6 +243,8 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	if !hold {
 		r.skip("hold", "restore")
 	}
+	// the first step that stops the commit: ci or the hooks
+	var stopped error
 	var aside *held
 	if hold {
 		if err := r.Step("hold", "moving the other changes aside", func() (string, error) {
@@ -235,8 +262,6 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	// the first step that stops the commit: ci or the hooks
-	var stopped error
 	if name.out == "main" {
 		stopped = r.Step("ci", "the ci jobs for the touched paths", func() (string, error) {
 			return runCI(tree, paths)
@@ -311,6 +336,58 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		data = append(data, kv{"waited", said})
 	}
 	return data, nil
+}
+
+// takeGateTurn waits for the machine-wide gate turn through frame's script, so one script keeps the queue's rules; the
+// returned func leaves it with the run's exit code, and a dead x's closed pipe frees it. a go test takes no turn unless it
+// asks: the suite must not serialize, and a test inside a commit's own hook must not wait on that commit
+func takeGateTurn(label, again string) (func(error), error) {
+	stay := func(error) {}
+	script := filepath.Join(frameRoot(), gateQueueScript)
+	if (os.Getenv("X_TEST") != "" && os.Getenv("X_GATE_TURN") == "") || !exists(script) {
+		return stay, nil
+	}
+	c := exec.Command(script, "--hold", label)
+	c.Stderr = os.Stderr
+	to, err := c.StdinPipe()
+	if err != nil {
+		return stay, err
+	}
+	from, err := c.StdoutPipe()
+	if err != nil {
+		return stay, err
+	}
+	if err := c.Start(); err != nil {
+		fmt.Fprintf(os.Stderr, "gate turn: %v, running with no turn\n", err)
+		return stay, nil
+	}
+	ready, _ := bufio.NewReader(from).ReadString('\n')
+	if strings.TrimSpace(ready) != gateQueueReady {
+		_ = c.Wait()
+		code := c.ProcessState.ExitCode()
+		if code == gateQueueDeadline {
+			return stay, &Fail{Msg: "the gate turn's wait passed its deadline, nothing ran; the holder is named above", Next: again}
+		}
+		// a broken queue never blocks a commit
+		fmt.Fprintf(os.Stderr, "gate turn: the queue exited %d, running with no turn\n", code)
+		return stay, nil
+	}
+	before, had := os.LookupEnv(gateQueueHeld)
+	_ = os.Setenv(gateQueueHeld, "gate")
+	return func(stopped error) {
+		if had {
+			_ = os.Setenv(gateQueueHeld, before)
+		} else {
+			_ = os.Unsetenv(gateQueueHeld)
+		}
+		code := 0
+		if stopped != nil {
+			code = 1
+		}
+		fmt.Fprintf(to, "%d\n", code)
+		_ = to.Close()
+		_ = c.Wait()
+	}, nil
 }
 
 // lockedGit runs a git that takes the index lock: it waits out a lock a peer holds, and once more when the lock
@@ -443,7 +520,12 @@ func askPush(plan any) string {
 func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	name, sha, from := fields[0].value.(string), fields[1].value.(string), fields[2].value.(string)
-	if err := r.Step("push", "git push", func() (string, error) {
+	if err := r.Step("push", "git push", func() (_ string, err error) {
+		leave, err := takeGateTurn("x lane push "+name, "x lane push --apply")
+		if err != nil {
+			return "", err
+		}
+		defer func() { leave(err) }()
 		pushed, tries := pushRetrying(from, sha+":refs/heads/"+name)
 		if !pushed.ok {
 			return "", &Fail{Msg: fmt.Sprintf("push failed after %s — the git and hook output is above", plural(tries, "try")),

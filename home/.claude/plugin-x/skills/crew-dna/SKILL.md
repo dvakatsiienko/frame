@@ -26,7 +26,7 @@ this file says how every member does it. A section headed with roles binds only 
 - every question carries the options and your pick
 - a decision clio may already hold goes to clio first, not to dima
 
-**heavy runs**, in the background: a commit or push `timeout 1700 ~/frame/script/gate-queue.sh <cmd>`, mutants or a suite by hand add `--long`
+**heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `~/frame/script/gate-queue.sh --long <cmd>`
 
 **fences**
 - you write only inside your role's fence; a problem outside it goes into your report
