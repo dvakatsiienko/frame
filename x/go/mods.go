@@ -94,7 +94,7 @@ func modsEditStatus(r *Run, _ []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	changed := changedScratch(scratch)
-	printOverlayHeader(r, scratch)
+	printOverlayHeader(r, scratch, changed)
 	r.Done(fmt.Sprintf("%d edited", len(changed)), "x mods edit test")
 	return ordered{{"edited", changed}, {"scratch", scratch}}, nil
 }
@@ -113,7 +113,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	if against != "" && only != "" {
 		return nil, usageFail("--only and --against each pick what runs; name one", "x mods edit test --only <test file>")
 	}
-	printOverlayHeader(r, scratch)
+	printOverlayHeader(r, scratch, changed)
 	if only != "" {
 		r.skip("gates")
 		return testOneFile(r, repo, scratch, changed, only)
@@ -191,23 +191,18 @@ func testOneFile(r *Run, repo, scratch string, changed []string, arg string) (an
 
 // an --only path reads from the repo root, and names a test file of a mod, in scratch or in the repo
 func onlyTestFile(repo, scratch, arg string) (string, error) {
-	refuse := func(why string) (string, error) {
-		return "", &Fail{Refused: true, Msg: fmt.Sprintf("--only %q %s; nothing ran", arg, why), Next: "x mods edit status"}
-	}
-	abs := arg
-	if !filepath.IsAbs(arg) {
-		abs = filepath.Join(repo, arg)
-	}
-	rel, err := filepath.Rel(repo, abs)
+	path, err := modPathFrom(repo, repo, arg)
 	if err != nil {
-		return refuse("names no test file")
+		return "", err
 	}
-	path := filepath.ToSlash(rel)
-	if _, ok := modOf(path); !ok {
-		return refuse("is not under " + modsDir + "<mod>/, read from the repo root")
+	refuse := func(why string) (string, error) {
+		return "", usageFail(arg+" "+why+"; nothing ran", "x mods edit status")
 	}
 	if !isTestFile(path) {
 		return refuse("is not a .test.ts or .test.tsx file")
+	}
+	if exists(filepath.Join(scratch, scratchBase, path)) && !exists(filepath.Join(scratch, path)) {
+		return refuse("is deleted in scratch")
 	}
 	for _, root := range []string{scratch, repo} {
 		if info, err := os.Stat(filepath.Join(root, path)); err == nil && info.Mode().IsRegular() {
@@ -222,8 +217,8 @@ func isTestFile(path string) bool {
 }
 
 // what a scratch holds apart from its pull: every changed copy, and a pulled copy since removed
-func overlayDiffers(scratch string) []string {
-	paths := changedScratch(scratch)
+func overlayDiffers(scratch string, changed []string) []string {
+	paths := slices.Clone(changed)
 	for _, path := range readPulled(scratch) {
 		if exists(filepath.Join(scratch, scratchBase, path)) && !exists(filepath.Join(scratch, path)) {
 			paths = append(paths, path)
@@ -234,8 +229,8 @@ func overlayDiffers(scratch string) []string {
 }
 
 // the line a red is read against: a half-done edit here reads apart from a red on main. it says what differs, never whose
-func printOverlayHeader(r *Run, scratch string) {
-	paths := overlayDiffers(scratch)
+func printOverlayHeader(r *Run, scratch string, changed []string) {
+	paths := overlayDiffers(scratch, changed)
 	if len(paths) == 0 {
 		return
 	}
@@ -243,13 +238,18 @@ func printOverlayHeader(r *Run, scratch string) {
 	if len(paths) == 1 {
 		verb = "differs"
 	}
-	line := fmt.Sprintf("overlay %s %s: %s", plural(len(paths), "path"), verb, strings.Join(paths, ", "))
+	count := fmt.Sprintf("overlay %s %s", plural(len(paths), "path"), verb)
 	if r.human {
 		r.Open("")
-		r.Show([]string{line}, inset)
+		// a board row never clips itself
+		rows := []string{count}
+		for _, path := range paths {
+			rows = append(rows, clip(path, r.board.inner()-inset))
+		}
+		r.Show(rows, inset)
 		return
 	}
-	fmt.Fprintln(os.Stderr, line)
+	fmt.Fprintln(os.Stderr, count+": "+strings.Join(paths, ", "))
 }
 
 func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
@@ -720,10 +720,15 @@ func changedScratch(scratch string) []string {
 }
 
 func modsRepoPath(repo, arg string) (string, error) {
+	cwd, _ := os.Getwd()
+	return modPathFrom(cwd, repo, arg)
+}
+
+// a relative arg reads from base; the answer is the mod's path from the repo root
+func modPathFrom(base, repo, arg string) (string, error) {
 	abs := arg
 	if !filepath.IsAbs(arg) {
-		cwd, _ := os.Getwd()
-		abs = filepath.Join(cwd, arg)
+		abs = filepath.Join(base, arg)
 	}
 	rel, err := filepath.Rel(repo, abs)
 	if err != nil || strings.HasPrefix(rel, "..") {
