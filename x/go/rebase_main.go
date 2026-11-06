@@ -15,6 +15,8 @@ type rebaseTarget struct {
 	Main   string `json:"main"`
 	From   string `json:"from"`
 	Onto   string `json:"onto,omitempty"`
+	// a low sha reads like a true old base, and no shape tells them apart: the plan shows what stays
+	Replays string `json:"replays,omitempty"`
 	// a rerun after a conflict and git rebase --continue: the rewrite is done, only the push is left
 	finished bool
 	record   string
@@ -118,6 +120,11 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 		}
 		if t.Main, err = mustGit("rev-parse", "rev-parse", "origin/main"); err != nil {
 			return "", err
+		}
+		if t.Onto != "" && !t.finished {
+			kept, _ := git("rev-list", "--count", t.Onto+"..HEAD")
+			total, _ := git("rev-list", "--count", "origin/main..HEAD")
+			t.Replays = "replays " + kept.out + " of " + total.out + " commits past origin/main, the rest leave the branch"
 		}
 		behind, _ := git("rev-list", "--count", "HEAD..origin/main")
 		return fmt.Sprintf("%s behind origin/main %s, lease on %s", behind.out, short(t.Main), or(short(t.Lease), "a new branch")), nil

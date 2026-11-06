@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { cleanStampWrite } from './x-mod-guard/hooks/rules/clean-stamp.ts';
 import { hints } from './x-mod-guard/hooks/rules/hint.ts';
+import { holdRecordWrite } from './x-mod-guard/hooks/rules/merge-hold.ts';
 
 export function bashCalls(jsonl: string) {
     const calls: Call[] = [];
@@ -35,10 +36,12 @@ export function bashCalls(jsonl: string) {
 export function tally(calls: Call[], home: string) {
     const fired = new Map<string, string[]>();
     for (const { command, cwd, isForeground } of calls) {
-        const stamp = cleanStampWrite(command, cwd, { home })?.rule;
+        const stamp = cleanStampWrite(command, cwd)?.rule;
+        const handEdit = holdRecordWrite(command, cwd)?.rule;
         for (const hint of [
             ...hints(command, cwd, { home, isForeground }),
             ...(stamp ? [stamp] : []),
+            ...(handEdit ? [handEdit] : []),
         ]) {
             const seen = fired.get(hint) ?? [];
             seen.push(command.split('\n')[0]?.slice(0, 120) ?? '');

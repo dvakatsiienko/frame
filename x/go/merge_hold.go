@@ -17,8 +17,7 @@ type holdNote struct {
 // this mac's record, the one store x-mod-guard's raw-merge rule reads too: it reads with no network, before a command runs
 func holdRecord(repo string) string {
 	state := stateDir()
-	// an env var in a real run would swap the record the gate reads
-	if os.Getenv("X_TEST") == "" {
+	if !mergeTestEnvOn() {
 		userHome, _ := os.UserHomeDir()
 		state = filepath.Join(userHome, ".local/state/x")
 	}

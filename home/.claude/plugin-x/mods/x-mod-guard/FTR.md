@@ -351,6 +351,7 @@
   - known gap: a deliberate evasion every guard rule shares slips it — a script piped into `sh` from a file, a script run by path (FRM-423 sixth sense, round 1); a pipe of an `echo` into a shell and a literal variable are read since FRM-478
   - proof: tests/merge-word.test.ts::merge-auto's --dima-ok runs when dima's last prompt says; stays refused when; a peer naming the pr never proves --dima-ok; an unproven --dima-ok is refused however x is reached
 - ⬜ a raw merge of a held pr is refused (FRM-511)
+  - given a Bash line that names `~/.local/state/x/merge-hold/` with anything past a plain read, from any session, then nothing runs and the refusal (rule `merge-hold`) names `--hold` and `--release-hold`: x is the record's one writer
   - given `gh pr merge`, `gh stack merge`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, a wrapper or nested shell included, on a pr in `~/.local/state/x/merge-hold/`, then nothing runs and the refusal (rule `merge-hold`) names the hold and `x lane merge-auto`
   - given a hold file that does not parse or a hold dir that does not list, then every such merge is refused; given a target with no pr number, a graphql merge mutation among them, then it is refused while any hold stands and passes with none; a stack merge of any pr counts as such a target, since the layers under it are github's to list; a plain merge of an unheld pr passes this rule
   - decision: a refusal from its first head, never warn-only: it fires only on a held layer, and past commands carry no mark, so its replay count is 0 by construction
@@ -358,7 +359,8 @@
   - proof: tests/merge-hold.test.ts
 - ⬜ only sixth sense and the coordinator write the clean (FRM-511)
   - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose registry name is neither sixth sense's nor `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; `🦉 clio (side)` is refused; a read or a copy out of the store passes
-  - known gap: the shared evasion above, a script run by path that writes the store from inside
+  - decision: past `cat`, `jq`, `rg` and the few like them, naming the store counts as touching it, and an inline script over it is refused even when it only reads: writers are too many to list
+  - known gap: the shared evasion above, a script run by path that writes the store from inside, and the `Write` and `Edit` tools, which a Bash rule never reads
   - proof: tests/clean-stamp.test.ts
 - ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `x probe bare` and `run_in_background`

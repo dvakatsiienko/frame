@@ -229,9 +229,9 @@ func readSign(ticket, body string) chunkSign {
 
 // a pr that edits merge-auto must never be gated by its own code: the shim's stamp, and x/go as the binary's tree
 // holds it read against origin/main, a git failure counting as dev. a pr head's binary can drop this check, so
-// the merge runs from the main checkout; under X_TEST the override stands in, and X_TEST holds no real key
+// the merge runs from the main checkout; in the test binary the override stands in
 func isDevBuild() bool {
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		if forced, set := os.LookupEnv("X_DEV_BUILD"); set {
 			return forced != ""
 		}
@@ -241,4 +241,9 @@ func isDevBuild() bool {
 	}
 	got, _ := gitIn(sourceDir(), "diff", "--quiet", "origin/main", "--", ".")
 	return !got.ok
+}
+
+// any Bash line can set X_TEST, and an env var in a real run would swap what the merge gates read: only the test binary listens
+func mergeTestEnvOn() bool {
+	return isTestBuild && os.Getenv("X_TEST") != ""
 }

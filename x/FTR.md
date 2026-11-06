@@ -199,7 +199,7 @@
 - ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
   - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
   - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why
-- ⬜ only the real clean store opens the gate (FRM-511): `X_VERIFIED` counts under `X_TEST` alone
+- ⬜ only the real clean store and hold record open the gate (FRM-511): `X_VERIFIED`, `X_STATE`'s hold record, `X_DEV_BUILD` and `X_NOW` count in the test binary alone, a set `X_TEST` on a real one changes nothing
 - ⬜ a held pr merges only on dima's word (FRM-511)
   - given `x lane merge-auto <pr> --hold --apply`, then the pr and every open layer under it are marked in this mac's record (`<state>/merge-hold/<owner>_<repo>.json`) and nothing merges
   - given a held pr, or a top over a held layer, when `x lane merge-auto <pr> --apply` runs, then it refuses naming the hold; a record it cannot read reads as held; with `--dima-ok <pr>` it merges and takes the landed layers' marks off
@@ -214,6 +214,7 @@
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
   - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
+  - given `--onto <sha>` with no `--apply`, then the plan says how many commits past origin/main replay, so a low sha shows what would leave the branch; no shape tells it from a true old base, so it does not refuse
   - given a layer whose lower layer squash-merged, when `x lane rebase-main --onto <old base> --apply` runs, then only the layer's own commits sit on origin/main, pushed with a lease; its own pre-rebase remote head is no refusal, a rival's commit still is, and a sha that is no ancestor of HEAD refuses naming it (FRM-511)
   - given a conflict there, then after `git rebase --continue` the same call reads the head it recorded before the rewrite and finishes the push; after `git rebase --abort` it runs the rebase again
   - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in sixth sense's round 2

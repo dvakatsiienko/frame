@@ -760,7 +760,7 @@ func mergedByX(api string, trailered map[string]bool, key, path string) (bool, e
 }
 
 func clock() time.Time {
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		if at, err := time.Parse(time.RFC3339, os.Getenv("X_NOW")); err == nil {
 			return at
 		}
@@ -776,8 +776,7 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	c := mergeCheck{Name: "sixth-sense"}
 	home, _ := os.UserHomeDir()
 	path := filepath.Join(home, ".claude/shelf/pr-verified.json")
-	// an env var in a real run would swap the store the gate reads
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		path = cmp.Or(os.Getenv("X_VERIFIED"), path)
 	}
 	raw, err := os.ReadFile(path)

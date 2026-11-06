@@ -1,3 +1,4 @@
+import { touchesStore } from './clean-stamp.ts';
 import { type Command, type Refusal, commandsDeep } from './command.ts';
 
 export type MergeHolds = { prs: Set<string>; isUnreadable: boolean };
@@ -23,12 +24,12 @@ const operands = (words: string[]) =>
         return before === undefined || !VALUE_FLAGS.has(before);
     });
 
-// the words a wrapper hands gh: `x as <member> -- gh …`, `github-token-wrap gh …`
+// the words a wrapper hands gh: `x as <member> -- gh …`, `github-token-wrap pr …`, and the leading `gh` the wrap tolerates
 function ghWords(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'gh') return words;
-    if (c.name === 'github-token-wrap' && words[0] === 'gh')
-        return words.slice(1);
+    if (c.name === 'github-token-wrap')
+        return words[0] === 'gh' ? words.slice(1) : words;
     if (c.name === 'x' && words[0] === 'as') {
         const at = words.indexOf('--');
         if (at >= 0 && words[at + 1] === 'gh') return words.slice(at + 2);
@@ -38,6 +39,10 @@ function ghWords(c: Command) {
 
 const GRAPHQL_MERGE =
     /\b(mergePullRequest|enqueuePullRequest|enablePullRequestAutoMerge)\b/;
+const GRAPHQL_PATH = /^(https?:\/\/[^/]+(\/api)?)?\/?graphql\/?$/i;
+// a query read from a file or a variable holds text this rule cannot see
+const GRAPHQL_UNREAD = /=@|\$|^--input/;
+const MERGE_PATH = /\/pulls\/[^/]+\/merge(-async)?\/?(\?.*)?$/;
 const asPr = (digits: string | undefined) =>
     digits === undefined ? undefined : String(Number(digits));
 const prOf = (target: string | undefined) =>
@@ -57,23 +62,37 @@ function isPut(words: string[]) {
 // what one command merges on github outside x: undefined when it merges nothing, `pr` undefined when the target cannot be read
 function rawMerge(c: Command) {
     const words = ghWords(c);
-    if (!words || words.includes('--help')) return undefined;
+    if (
+        !words ||
+        words.some(
+            (w, i) => w === '--help' && !VALUE_FLAGS.has(words[i - 1] ?? ''),
+        )
+    )
+        return undefined;
     const [family, verb, target] = operands(words);
     // a stack merge lands every layer under the pr it names, and those layers are github's to list: it counts as no number
     if (family === 'stack' && verb === 'merge') return { pr: undefined };
     if (family === 'pr' && verb === 'merge') return { pr: prOf(target) };
     // the graphql door takes a node id, never a number, so it reads as a target it cannot name
-    if (family === 'api' && words.includes('graphql'))
-        return words.some((w) => GRAPHQL_MERGE.test(w))
+    if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w)))
+        return words.some(
+            (w) => GRAPHQL_MERGE.test(w) || GRAPHQL_UNREAD.test(w),
+        )
             ? { pr: undefined }
             : undefined;
     if (family !== 'api' || !isPut(words)) return undefined;
-    const path = words.find((w) =>
-        /\/pulls\/[^/]+\/merge(-async)?\/?(\?.*)?$/.test(w),
+    const prs = new Set(
+        words
+            .filter((w) => MERGE_PATH.test(w))
+            .map((w) =>
+                w.includes('/merge-async')
+                    ? undefined
+                    : asPr(w.match(/\/pulls\/(\d+)\/merge/)?.[1]),
+            ),
     );
-    if (!path) return undefined;
-    if (path.includes('/merge-async')) return { pr: undefined };
-    return { pr: asPr(path.match(/\/pulls\/(\d+)\/merge/)?.[1]) };
+    if (!prs.size) return undefined;
+    // a field's value can read like a merge path too, so two different targets name none
+    return { pr: prs.size === 1 ? [...prs][0] : undefined };
 }
 
 export const rawMerges = (command: string, cwd: string) =>
@@ -111,4 +130,21 @@ export function mergeHold(
             why: `dima holds ${[...holds.prs].map((pr) => `#${pr}`).join(', ')}, and this merge names no pr number to tell it from a held one, or lands layers this guard cannot list; a hold on a dead pr comes off through x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply`,
         };
     return undefined;
+}
+
+const isHoldRecord = (text: string) =>
+    /\.local\/state\/x\/merge-hold|\/merge-hold\//i.test(text);
+
+// x is the record's one writer: a hand edit would drop a hold with no word
+export function holdRecordWrite(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
+    if (!touchesStore(command, cwd, isHoldRecord)) return undefined;
+    return {
+        door: "x lane merge-auto <pr> --hold --apply, and x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply on dima's word; a read goes through cat or jq",
+        rule: 'merge-hold',
+        targets: ['merge-hold'],
+        why: "a hold in ~/.local/state/x/merge-hold is dima's, and a hand edit would drop it with no word",
+    };
 }

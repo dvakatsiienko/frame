@@ -795,6 +795,10 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 		"x/go/review.go",
 		"x/go/lane.go",
 		"x/go/registry.json",
+		"x/go/merge_hold.go",
+		"x/go/lane_landed.go",
+		"x/go/panic_seam.go",
+		"x/go/panic_seam_release.go",
 	} {
 		t.Run(path, func(t *testing.T) {
 			w := newMergeWorld(t, "script/foo.ts", path)

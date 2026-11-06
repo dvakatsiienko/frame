@@ -8,7 +8,12 @@ import { linearWritePiped, stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
-import { type MergeHolds, mergeHold, rawMerges } from './rules/merge-hold.ts';
+import {
+    type MergeHolds,
+    holdRecordWrite,
+    mergeHold,
+    rawMerges,
+} from './rules/merge-hold.ts';
 import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
@@ -1521,7 +1526,7 @@ export const register: Register = (on) => {
             if (stop) return stop;
         }
         // enforcing from their first head, never in WARN_ONLY: each fires only on a held layer or a clean's write (FRM-511)
-        const stamp = cleanStampWrite(typed, cwd, ctx);
+        const stamp = cleanStampWrite(typed, cwd);
         if (stamp) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
@@ -1534,6 +1539,16 @@ export const register: Register = (on) => {
                 );
                 if (stop) return stop;
             }
+        }
+        const handEdit = holdRecordWrite(typed, cwd);
+        if (handEdit) {
+            const said = `x-mod-guard stopped this one command. instead: ${handEdit.door}. why: ${handEdit.why} (rule ${handEdit.rule}).`;
+            const stop = await enforce(
+                handEdit,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
         }
         const merges = rawMerges(typed, cwd);
         if (merges.length) {

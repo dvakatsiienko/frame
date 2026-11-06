@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -214,4 +216,44 @@ func TestMergeAutoRefusesHoldAndReleaseTogether(t *testing.T) {
 	if got.code != 2 || exists(holdRecordOf(w)) {
 		t.Fatalf("exit %d, record %v: want a usage refusal and no record", got.code, exists(holdRecordOf(w)))
 	}
+}
+
+// X_TEST is an env var any Bash line can set: past it, a real binary would read the hold and the clean out of a dir the line names
+func TestMergeAutoReleaseBuildIgnoresTheTestEnv(t *testing.T) {
+	t.Parallel()
+	bin := filepath.Join(t.TempDir(), "x-release")
+	if out, err := exec.Command("go", "build", "-o", bin, ".").CombinedOutput(); err != nil {
+		t.Fatalf("build: %v\n%s", err, out)
+	}
+	release := func(w *mergeWorld, home string) (int, string) {
+		c := exec.Command(bin, "lane", "merge-auto", "7", "--apply")
+		c.Dir = w.clone
+		c.Env = append(append(append(cleanEnv(), "X_TEST=1"), w.env...), "HOME="+home)
+		var stdout bytes.Buffer
+		c.Stdout = &stdout
+		code := exitOf(c.Run())
+		return code, stdout.String()
+	}
+	t.Run("the hold comes from the real record, past X_STATE", func(t *testing.T) {
+		t.Parallel()
+		w := newMergeWorld(t, "script/foo.ts")
+		home := t.TempDir()
+		write(t, filepath.Join(home, ".local/state/x/merge-hold/o_r.json"), `{"prs":["7"]}`)
+
+		code, stdout := release(w, home)
+
+		if merges := w.hub.sent("PUT "); code == 0 || len(merges) != 0 || !strings.Contains(stdout, "held") {
+			t.Fatalf("exit %d, merges %q: want the real record read\n%s", code, merges, stdout)
+		}
+	})
+	t.Run("the clean comes from the real store, past X_VERIFIED", func(t *testing.T) {
+		t.Parallel()
+		w := newMergeWorld(t, "script/foo.ts")
+
+		code, stdout := release(w, t.TempDir())
+
+		if merges := w.hub.sent("PUT "); code == 0 || len(merges) != 0 || !strings.Contains(stdout, "sixth") {
+			t.Fatalf("exit %d, merges %q: want the planted clean ignored\n%s", code, merges, stdout)
+		}
+	})
 }

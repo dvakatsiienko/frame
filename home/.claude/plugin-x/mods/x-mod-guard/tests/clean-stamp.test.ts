@@ -81,6 +81,22 @@ const WRITES = [
     'bash -o pipefail watch-pr.sh --verified 7 abc',
     'source watch-pr.sh --verified 7 abc',
     'dash watch-pr.sh --verified 7 abc',
+    `python3 -c "import shutil; shutil.copy('a', '${STORE}')"`,
+    `python3 -c "import os; os.replace('a', '${STORE}')"`,
+    `python3 -c "open('${STORE}', mode='w')"`,
+    `node -e "require('fs').cpSync('a', '${STORE}')"`,
+    `jq . a | sponge ${STORE}`,
+    '> ~/.claude/shelf/PR-verified.json',
+    `dd if=a of=${STORE}`,
+    `sd a b ${STORE}`,
+    `trash ${STORE}`,
+    `find ${STORE} -delete`,
+    `perl -i -pe s/a/b/ ${STORE}`,
+    `awk '{print}' a > ${STORE}`,
+    'cd ~/.claude/shelf && echo {} > pr-verified.json',
+    `python3 script.py ${STORE}`,
+    `p=${STORE}; cp a.json "$p"`,
+    `python3 <<'PY'\nimport os\nos.remove('${STORE}')\nPY`,
 ];
 
 for (const name of [
@@ -122,13 +138,27 @@ for (const line of [
     `cp ${STORE} /tmp/copy.json`,
     `cp ${STORE} /tmp/`,
     '~/frame/_clio/.claude/hooks/watch-pr.sh 7',
-    `node -e "console.log(require('fs').readFileSync('${STORE}', 'utf8'))"`,
-    `python3 -c "import json; print(json.load(open('${STORE}')))"`,
+    `sed -n 1p ${STORE}`,
+    `sd "${STORE} holds it" "${STORE} holds the clean" docs/a.md`,
     'echo watch-pr.sh --verified',
+    `echo ${STORE}`,
+    'rg pr-verified.json x/go',
 ])
     test(`a member's read of the store passes: ${line}`, async ($, on) => {
         const { ran } = world(on, '🌗 🔧 codie: cli lane 5 | FRM-511');
         const r = await bash($, line);
         expect(r.deny ?? '').not.toContain('clean-stamp');
         expect(ran.length).toBe(1);
+    });
+
+// a script names the store and no parser can read what it does with it, so a read goes through jq or cat
+for (const line of [
+    `node -e "console.log(require('fs').readFileSync('${STORE}', 'utf8'))"`,
+    `python3 -c "import json; print(json.load(open('${STORE}')))"`,
+])
+    test(`a member's inline script over the store is refused: ${line}`, async ($, on) => {
+        const { ran } = world(on, '🌗 🔧 codie: cli lane 5 | FRM-511');
+        const r = await bash($, line);
+        expect(r.deny).toContain('clean-stamp');
+        expect(ran).toEqual([]);
     });

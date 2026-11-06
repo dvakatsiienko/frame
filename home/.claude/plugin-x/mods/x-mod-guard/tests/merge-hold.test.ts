@@ -15,6 +15,15 @@ function world(on: On, record: string | null, dirStands = record !== null) {
     on('fs.exists', (_$, e) => ({
         value: e.path === HOLD_DIR ? dirStands : true,
     }));
+    on('fs.stat', (_$, e) => ({
+        value: {
+            isLink: false,
+            kind: 'file' as const,
+            mtimeMs: 0,
+            realPath: e.path,
+            size: 0,
+        },
+    }));
     on('fs.list', (_$, e) =>
         e.path === HOLD_DIR && record !== null
             ? {
@@ -66,6 +75,11 @@ for (const line of [
     'timeout 60 gh pr merge 7',
     'echo first && gh pr merge 7 && echo done',
     'sh -c "gh pr merge 7"',
+    'github-token-wrap pr merge 7',
+    'github-token-wrap api -X PUT repos/o/r/pulls/7/merge',
+    'gh pr merge 7 --body "--help"',
+    'gh pr merge 7 --subject --help',
+    'gh api -X PUT https://api.github.com/repos/o/r/pulls/7/merge',
 ])
     test(`a raw merge of a held pr is refused: ${line}`, async ($, on) => {
         const { ran } = world(on, HELD_7);
@@ -84,8 +98,10 @@ for (const line of [
     'gh pr list',
     'gh api repos/o/r/pulls/7',
     'gh pr merge --help',
+    'gh pr merge 7 --help',
     'gh stack merge --help',
     'echo gh pr merge 7',
+    'github-token-wrap pr view 7',
 ])
     test(`an unheld layer or another gh call passes: ${line}`, async ($, on) => {
         const { ran } = world(on, HELD_7);
@@ -103,6 +119,7 @@ for (const line of [
     'gh stack merge 8',
     'gh api -X PUT repos/o/r/pulls/8/merge-async',
     'gh api -X PUT "repos/o/r/pulls/$n/merge"',
+    'gh api -X PUT -f commit_title=a/pulls/8/merge repos/o/r/pulls/7/merge',
 ]) {
     test(`a raw merge whose target cannot be read is refused while a hold stands: ${line}`, async ($, on) => {
         const { ran } = world(on, HELD_7);
@@ -123,6 +140,11 @@ for (const line of [
     `gh api -X POST graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
     `gh api --method POST graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
     `gh api graphql -f query='mutation { enqueuePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
+    `gh api /graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
+    `gh api https://api.github.com/graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
+    'gh api graphql -F query=@m.graphql',
+    'gh api graphql --input m.json',
+    'gh api graphql -f query="$Q"',
 ])
     test(`a graphql merge names no pr number, so a standing hold refuses it: ${line}`, async ($, on) => {
         const { ran } = world(on, HELD_7);
@@ -169,3 +191,39 @@ test('no read of the record on a line with no raw merge', async ($, on) => {
     expect(r.deny).toBeUndefined();
     expect(ran.length).toBe(1);
 });
+
+const RECORD = `${HOLD_DIR}/o_r.json`;
+// x is the record's one writer, for every session: the rule reads no name
+for (const line of [
+    `echo '{"prs":[]}' > ${RECORD}`,
+    `echo '{"prs":[]}' > ~/.local/state/x/merge-hold/o_r.json`,
+    `trash ${RECORD}`,
+    `mv ${RECORD} /tmp/kept.json`,
+    `cp a.json ${RECORD}`,
+    `python3 -c "import os; os.remove('${RECORD}')"`,
+    'cd ~/.local/state/x/merge-hold && echo {} > o_r.json',
+    'cd ~/.local/state/x/merge-hold && cp /tmp/a.json o_r.json',
+    'd=~/.local/state/x; echo {} > $d/merge-hold/o_r.json',
+])
+    test(`the hold record cannot change by hand: ${line}`, async ($, on) => {
+        const { ran } = world(on, null);
+        const r = await bash($, line);
+        expect(r.deny).toContain('merge-hold');
+        expect(r.deny).toContain('--release-hold');
+        expect(ran).toEqual([]);
+    });
+
+for (const line of [
+    `cat ${RECORD}`,
+    `jq . ${RECORD}`,
+    `ls ${HOLD_DIR}`,
+    'cd ~/.local/state/x/merge-hold && ls',
+    'x lane merge-auto 7 --hold --apply',
+    'rg merge-hold home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/merge-hold.ts',
+])
+    test(`a read of the hold record passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, null);
+        const r = await bash($, line);
+        expect(r.deny).toBeUndefined();
+        expect(ran.length).toBe(1);
+    });
