@@ -42,6 +42,8 @@ type landedPlan struct {
 	archive string
 	main    string
 	clean   []string
+	// the lane plan whose closing slice for this ticket is still open, ticked on --apply
+	openClosing string
 }
 
 // landedPlanOf reads every after-merge chore of a ticket's lane; nothing here writes
@@ -150,6 +152,10 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		spec.detail, spec.fix = "no lane spec holds § "+id, "find the lane's .scratch/<feature>/spec.md"
 	}
 	lines = append(lines, spec)
+	if closing, open, has := closingLine(frame, id); has {
+		lines = append(lines, closing)
+		plan.openClosing = open
+	}
 
 	rounds := landedLine{name: "review-rounds", detail: "no line names " + id + " in docs/test-drive/review-rounds.md",
 		fix: "add the lane's graded lines to docs/test-drive/review-rounds.md"}
@@ -736,6 +742,72 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 	return strings.Join(reasons, ", ")
 }
 
+const closingWords = "reviewed and closed"
+
+// a lane plan's slice lines for one ticket: group 1 the mark, group 2 what follows the id
+func sliceLinesOf(id string) *regexp.Regexp {
+	return regexp.MustCompile(`(?m)^- \[([ xX])\] \d+ · ` + regexp.QuoteMeta(id) + `\b[ \t]*(.*)$`)
+}
+
+// the lane plan beside a ticket's spec, live or archived; a lane with one chunk may have none
+func lanePlanOf(frame, id string) string {
+	spec := archivedSpec(frame, id)
+	if paths, _ := laneSpecSection(frame, id); len(paths) > 0 {
+		spec = paths[0]
+	}
+	if spec == "" {
+		return ""
+	}
+	return filepath.Join(stateDir(), "lanes", filepath.Base(filepath.Dir(spec)), "lane-plan.md")
+}
+
+// closingLine reads the slice that holds a chunk on the glide card while its reviews run; has is false when no
+// lane plan names the chunk, and open names the plan while the slice waits for --apply
+func closingLine(frame, id string) (line landedLine, open string, has bool) {
+	path := lanePlanOf(frame, id)
+	if path == "" {
+		return line, "", false
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return line, "", false
+	}
+	chunk := sliceLinesOf(id).FindAllStringSubmatch(string(raw), -1)
+	if len(chunk) == 0 {
+		return line, "", false
+	}
+	line = landedLine{name: "closing"}
+	for _, s := range chunk {
+		if s[2] != closingWords {
+			continue
+		}
+		if s[1] != " " {
+			line.ok, line.detail = true, id+"'s closing slice is ticked"
+			return line, "", true
+		}
+		line.detail, line.fix = id+"'s closing slice is open in "+home(path), "x lane landed "+id+" --apply"
+		return line, path, true
+	}
+	line.detail = home(path) + " holds no closing slice for " + id
+	line.fix = "end " + id + "'s slices in " + home(path) + " with «- [ ] NN · " + id + " " + closingWords + "»"
+	return line, "", true
+}
+
+// tickClosing marks the one closing line and leaves every other byte as it was
+func tickClosing(path, id string) error {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	ticked := sliceLinesOf(id).ReplaceAllStringFunc(string(raw), func(line string) string {
+		if !strings.HasSuffix(line, " "+closingWords) {
+			return line
+		}
+		return strings.Replace(line, "- [ ]", "- [x]", 1)
+	})
+	return os.WriteFile(path, []byte(ticked), 0o644)
+}
+
 // the archived spec that holds § id, beside the main checkout's other specs
 func archivedSpec(main, id string) string {
 	specs, _ := filepath.Glob(filepath.Join(main, ".scratch", archived, "*", "spec.md"))
@@ -777,6 +849,13 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 				return "", err
 			}
 			return hooksHome(plan.main, tree)
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if plan.openClosing != "" {
+		if err := r.Step("closing", plan.id+"'s closing slice in "+home(plan.openClosing), func() (string, error) {
+			return "ticked", tickClosing(plan.openClosing, plan.id)
 		}); err != nil {
 			return nil, err
 		}

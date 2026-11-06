@@ -13,8 +13,8 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
   when it fits one pr, into `~/.local/state/x/lanes/<feature>/issues/`, never the worktree (a `.scratch/` there keeps
   it from `x lane landed`'s decamp); each spec exit line lands verbatim in exactly one ticket's checklist (FRM-344).
 - **the lane plan**, for 2+ tickets: write `~/.local/state/x/lanes/<feature>/lane-plan.md` (outside your worktree, the one path the isolation allows both of you), one line per ticket in your proposed
-  order (`- [ ] 03 · <ticket title>`; its steps stay in its slice file), ping clio `[ask] lane-plan ready to greenlight`, and start on her 🟢 greenlit order. tick `[x]` at
-  each ticket's commit. when dima steers you in this thread and the steer adds or moves work, append it under
+  order (`- [ ] 03 · <ticket id> <title>`, the id is what the glide card shows; its steps stay in its slice file), each chunk's lines ending in `- [ ] NN · <ticket> reviewed and closed`, ping clio `[ask] lane-plan ready to greenlight`, and start on her 🟢 greenlit order. tick `[x]` at
+  each ticket's commit; `x lane landed --apply` ticks the closing line, so the glide card holds the chunk through its reviews. when dima steers you in this thread and the steer adds or moves work, append it under
   `## not greenlit` and send clio one line; a steer that changes no order (a typo, a style) needs neither.
 - **a second wind between every chunk** (dima, 2026-11-02): once a chunk is clean, write your handoff (`x:handoff`, slug `<feature>-<n>`), ping clio «sw done», and start the next chunk only after the pickup
   build each ticket test-first with `tdd`, through `implement` for granular work dima watches or
