@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"syscall"
@@ -317,7 +318,7 @@ func newTestNames(tree, fork, head string, swapped []string) []newTest {
 			old := addedTestNames(removed, file)
 			for _, test := range addedTestNames(added, file) {
 				if !slices.Contains(old, test) && !slices.Contains(tests, test) {
-					tests = append(tests, test)
+					tests = append(tests, namedOnce(tree, head, test))
 				}
 			}
 		}
@@ -338,6 +339,26 @@ func newTestNames(tree, fork, head string, swapped []string) []newTest {
 	}
 	flush()
 	return tests
+}
+
+// go's output names no package beside a failure, and its import path need not be a dir: a test name another package also
+// holds could be claimed by that package's red, so it never proves
+func namedOnce(tree, head string, test newTest) newTest {
+	if !strings.HasSuffix(test.File, ".go") {
+		return test
+	}
+	got, _ := gitIn(tree, "grep", "-l", "-E", `^func (\([^)]*\) )?`+regexp.QuoteMeta(test.Name)+`\(`, head, "--", "*_test.go")
+	dirs := map[string]bool{}
+	for line := range strings.SplitSeq(got.out, "\n") {
+		if _, path, found := strings.Cut(line, ":"); found {
+			dirs[filepath.Dir(path)] = true
+		}
+	}
+	if len(dirs) > 1 {
+		test.IsComputed = true
+		test.Why = "another package holds a test of this name, and go's output names no package beside a failure, so x cannot tell whose red this is"
+	}
+	return test
 }
 
 // the non-test files as this tree holds them now, read once per side for what a throw names

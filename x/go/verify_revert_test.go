@@ -464,6 +464,32 @@ func TestRevertRefusesToOverwriteAFileOnABaseOnlyPath(t *testing.T) {
 	}
 }
 
+// head adds TestLoad in pkg a while pkg b already holds one: go's output cannot tell whose red it is
+func TestAGoNameInTwoPackagesNeverProves(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	write(t, filepath.Join(main, "b/b_test.go"), "package b\n\nfunc TestLoad(t *testing.T) {}\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "base")
+	fork := gitT(t, main, "rev-parse", "HEAD")
+	write(t, filepath.Join(main, "a/a_test.go"), "package a\n\nfunc TestLoad(t *testing.T) {}\n\nfunc TestAlone(t *testing.T) {}\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "head")
+
+	tests := newTestNames(main, fork, gitT(t, main, "rev-parse", "HEAD"), nil)
+
+	got := map[string]bool{}
+	for _, test := range tests {
+		got[test.Name] = test.IsComputed
+	}
+	if unmatched, seen := got["TestLoad"]; !seen || !unmatched {
+		t.Errorf("TestLoad reads %+v, want it unmatched", tests)
+	}
+	if unmatched, seen := got["TestAlone"]; !seen || unmatched {
+		t.Errorf("TestAlone reads %+v, want it matched", tests)
+	}
+}
+
 // a real diff's shapes: a spaced path, a line that prints like a header, a call line edited in place
 func TestNewTestNamesReadsARealDiff(t *testing.T) {
 	t.Parallel()

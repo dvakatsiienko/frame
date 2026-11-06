@@ -172,6 +172,32 @@ func namedAnywhere(names []string) []newTest {
 	return tests
 }
 
+func TestJudgeRunReadsGoCasesAndTables(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, log string
+		test      newTest
+		want      string
+	}{
+		{"a go case that failed", "--- FAIL: TestOld (0.00s)\n    --- FAIL: TestOld/new_case (0.00s)\nFAIL\n", newTest{Name: "new case", File: "a_test.go"}, verdictRed},
+		{"a go case that passed", "--- FAIL: TestOld (0.00s)\n    --- FAIL: TestOld/other (0.00s)\nFAIL\n", newTest{Name: "new case", File: "a_test.go"}, verdictStillGreen},
+		{"a suite method that failed", "--- FAIL: TestSuite (0.00s)\n    --- FAIL: TestSuite/TestMethod (0.00s)\nFAIL\n", newTest{Name: "TestMethod", File: "a_test.go"}, verdictRed},
+		{"a js title is no go case", " FAIL  a.test.ts > dir/name\nAssertionError: no\n", newTest{Name: "name", File: "a.test.ts"}, verdictStillGreen},
+		{"a table with no hole in its title", " FAIL  a.test.ts > rows\nAssertionError: no\n", newTest{Name: "rows", File: "a.test.ts", IsTable: true}, verdictStillGreen},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
+			verdict, rows := judgeRun(c.log, false, []newTest{c.test}, swappedSource{})
+
+			if verdict != c.want {
+				t.Fatalf("reads %q, want %q: %+v", verdict, c.want, rows)
+			}
+		})
+	}
+}
+
 // the same title in two files: a failure holds only the test in its own file
 func TestJudgeRunTellsTwoFilesApart(t *testing.T) {
 	t.Parallel()
@@ -216,6 +242,10 @@ func TestAddedTestNamesReadsEachShape(t *testing.T) {
 		{"two on one line", "it('one', f); it('two', f);", []string{"one", "two"}, nil},
 		{"a go test", "func TestNewOne(t *testing.T) {", []string{"TestNewOne"}, nil},
 		{"a go helper", "func helper(t *testing.T) {", nil, nil},
+		{"a go suite method", "func (s *S) TestMethod(t *testing.T) {", []string{"TestMethod"}, nil},
+		{"a go case", `	t.Run("new case", func(t *testing.T) {`, []string{"new case"}, nil},
+		{"a go case with a computed name", "	t.Run(c.name, func(t *testing.T) {", nil, nil},
+		{"a tagged each table", "it.each`a | b`('rows $a', f);", []string{"rows $a"}, nil},
 		{"a go call named test", `test(t, "x")`, nil, nil},
 		{"a js helper named test", "function test(name, fn) {", nil, nil},
 		{"a regex's test method", "expect(/a/.test('abc')).toBe(true);", nil, nil},

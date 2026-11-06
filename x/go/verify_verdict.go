@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"regexp"
 	"slices"
 	"strings"
@@ -20,10 +21,11 @@ type testRow struct {
 	Why     string `json:"why,omitempty"`
 }
 
-// a test the pr adds; a computed title has no name a runner's output can be matched to
+// a test the pr adds. IsComputed: no name a runner's output can be matched to, Why says what stands in the way.
+// IsTable: one title for many rows, of which x sees only the ones that failed
 type newTest struct {
-	Name, File string
-	IsComputed bool
+	Name, File, Why     string
+	IsComputed, IsTable bool
 }
 
 // the swapped paths' source on each side, read for what a throw names
@@ -61,8 +63,9 @@ var (
 	evaluateExpr = regexp.MustCompile(`\(evaluating '([\w$.]+)'\)`)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
-	addedJSTest = regexp.MustCompile("(?:^|[^.\\w$])(?:it|test)(?:\\.\\w+)*(?:\\([^()]*\\))?\\(\\s*(?:'((?:[^'\\\\]|\\\\.)+)'|\"((?:[^\"\\\\]|\\\\.)+)\"|`((?:[^`\\\\]|\\\\.)+)`|([^'\"`\\s)][^,\\n]*),)")
-	addedGoTest = regexp.MustCompile(`(?m)^func (Test\w+)\(`)
+	addedJSTest = regexp.MustCompile("(?:^|[^.\\w$])(?:it|test)((?:\\.\\w+)*)(?:\\([^()]*\\)|`[^`]*`)?\\(\\s*(?:'((?:[^'\\\\]|\\\\.)+)'|\"((?:[^\"\\\\]|\\\\.)+)\"|`((?:[^`\\\\]|\\\\.)+)`|([^'\"`\\s)][^,\\n]*),)")
+	addedGoTest = regexp.MustCompile(`(?m)^func (?:\([^)]*\) )?(Test\w+)\(`)
+	addedGoCase = regexp.MustCompile(`\bt\.Run\(\s*"([^"]+)"`)
 	// a helper a test file declares under a runner's name is no test
 	declaredRunner = regexp.MustCompile(`\bfunction\s+(?:it|test)\b`)
 	titleEscape    = regexp.MustCompile("\\\\(['\"`])")
@@ -81,16 +84,20 @@ func addedTestNames(added, file string) []newTest {
 	text := strings.Join(kept, "\n")
 	var tests []newTest
 	if strings.HasSuffix(file, ".go") {
-		for _, m := range addedGoTest.FindAllStringSubmatch(text, -1) {
-			tests = append(tests, newTest{Name: m[1], File: file})
+		for _, shape := range []*regexp.Regexp{addedGoTest, addedGoCase} {
+			for _, m := range shape.FindAllStringSubmatch(text, -1) {
+				tests = append(tests, newTest{Name: m[1], File: file})
+			}
 		}
 		return tests
 	}
 	for _, m := range addedJSTest.FindAllStringSubmatch(declaredRunner.ReplaceAllString(text, ""), -1) {
-		if name := m[1] + m[2] + m[3]; name != "" {
-			tests = append(tests, newTest{Name: titleEscape.ReplaceAllString(name, "$1"), File: file})
+		if name := m[2] + m[3] + m[4]; name != "" {
+			isTable := strings.Contains(m[1], ".each") || strings.Contains(m[1], ".for")
+			tests = append(tests, newTest{Name: titleEscape.ReplaceAllString(name, "$1"), File: file, IsTable: isTable})
 		} else {
-			tests = append(tests, newTest{Name: strings.TrimSpace(m[4]), File: file, IsComputed: true})
+			tests = append(tests, newTest{Name: strings.TrimSpace(m[5]), File: file, IsComputed: true,
+				Why: "a computed title in " + file + ": x cannot tell its row, so a literal title is what proves it"})
 		}
 	}
 	return tests
@@ -160,7 +167,11 @@ func namesTest(failed failedTest, test newTest) bool {
 		}
 		return regexp.MustCompile(`^(?:.* > )?` + strings.Join(parts, `.*`) + `$`).MatchString(failed.name)
 	}
-	return failed.name == test.Name || strings.HasPrefix(failed.name, test.Name+"/") || strings.HasSuffix(failed.name, " > "+test.Name)
+	if failed.name == test.Name || strings.HasPrefix(failed.name, test.Name+"/") || strings.HasSuffix(failed.name, " > "+test.Name) {
+		return true
+	}
+	// a go case or a suite method prints under its parent, its spaces as underscores
+	return strings.HasSuffix(test.File, ".go") && strings.Contains(failed.name+"/", "/"+strings.ReplaceAll(test.Name, " ", "_")+"/")
 }
 
 // a declaration of the symbol, never a mention: `JSON.parse(x)` binds no `parse`
@@ -239,11 +250,11 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, source swappedSourc
 	claimed := make([]bool, len(read.failed))
 	for _, test := range newTests {
 		if test.IsComputed {
-			rows = append(rows, testRow{test.Name, verdictStillGreen, "a computed title in " + test.File + ": x cannot tell its row, so a literal title is what proves it"})
+			rows = append(rows, testRow{test.Name, verdictStillGreen, cmp.Or(test.Why, "a computed title: x cannot tell its row")})
 			continue
 		}
 		row := testRow{Name: test.Name, Verdict: verdictStillGreen}
-		hasHole := titleHole.MatchString(test.Name)
+		hasHole := test.IsTable || titleHole.MatchString(test.Name)
 		if hasHole {
 			row.Why = "a title with a placeholder: x sees the rows that failed, never the ones that passed, so a literal title is what proves it"
 		}
