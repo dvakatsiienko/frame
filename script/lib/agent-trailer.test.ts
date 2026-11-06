@@ -8,6 +8,7 @@ describe('roleFor', () => {
         ['🦉 clio (fork)', 'clio-side'],
         ['🦉 clio (fork 2)', 'clio-side'],
         ['🦉 clio (side)', 'clio-side'],
+        ['🦉🪽 clio: wing 2', 'clio-wing'],
         ['⚡ 🔧 codie: BYT-100', 'codie'],
         ['☕️ 🔧 BYT-100 code: review gate', 'codie'],
         ['🌗 🔎 cli lane sixth sense: #125', 'sixth-sense'],

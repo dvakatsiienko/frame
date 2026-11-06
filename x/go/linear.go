@@ -41,7 +41,7 @@ func actorOf(flags Flags) (string, error) {
 		if strings.Contains(bare, "sixthsense") {
 			return "sixth-sense", nil
 		}
-		if !strings.HasPrefix(bare, "🦉clio") && !strings.HasPrefix(bare, "🦉cclio") { // read-both: a clio tab resumed under its old title
+		if !strings.HasPrefix(bare, "🦉clio") && !strings.HasPrefix(bare, "🦉🪽clio") && !strings.HasPrefix(bare, "🦉cclio") { // read-both: a clio tab resumed under its old title
 			return "codie", nil
 		}
 	}
