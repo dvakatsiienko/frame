@@ -688,6 +688,96 @@ func TestLandedDecampsAVerifyTreeNamedForTheTicket(t *testing.T) {
 	}
 }
 
+func (w landedWorld) lanePlan(t *testing.T, text string) string {
+	t.Helper()
+	path := filepath.Join(w.state, "lanes/lane-1/lane-plan.md")
+	write(t, path, text)
+	return path
+}
+
+func TestLandedReadsAChunksClosingSlice(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, plan string
+		want       []string
+		absent     string
+	}{
+		{"no closing slice reds and names the line to add", "- [x] 01 · FRM-1 the build\n",
+			[]string{"🔴 closing", "- [ ] NN · FRM-1 reviewed and closed"}, ""},
+		{"an open closing slice reds with the apply door", "- [x] 01 · FRM-1 the build\n- [ ] 02 · FRM-1 reviewed and closed\n",
+			[]string{"🔴 closing", "x lane landed FRM-1 --apply"}, ""},
+		{"a ticked closing slice is met", "- [x] 01 · FRM-1 the build\n- [x] 02 · FRM-1 reviewed and closed\n",
+			[]string{"✅ closing"}, ""},
+		{"another chunk's closing slice never stands in", "- [x] 01 · FRM-1 the build\n- [x] 02 · FRM-11 reviewed and closed\n",
+			[]string{"🔴 closing"}, ""},
+		{"a plan with no slice of this chunk says nothing", "- [ ] 01 · FRM-2 the build\n", nil, "closing"},
+		{"a slice that only mentions the words is no closing slice", "- [x] 01 · FRM-1 reviewed and closed the door\n",
+			[]string{"🔴 closing"}, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			w.lanePlan(t, c.plan)
+			envelope, _ := w.landed(t)
+			out := linesOf(envelope)
+			for _, want := range c.want {
+				if !strings.Contains(out, want) {
+					t.Errorf("want %q in:\n%s", want, out)
+				}
+			}
+			if c.absent != "" && strings.Contains(out, c.absent) {
+				t.Errorf("want no %q in:\n%s", c.absent, out)
+			}
+		})
+	}
+}
+
+func TestLandedPrintsNoClosingLineWithNoLanePlan(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); strings.Contains(out, "closing") {
+		t.Errorf("a lane with no plan has no closing line:\n%s", out)
+	}
+}
+
+func TestLandedApplyTicksTheClosingSliceAndNoOtherLine(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	w.done(t)
+	path := w.lanePlan(t, "# plan\n\n- [ ] 01 · FRM-1 the build\n- [ ] 02 · FRM-1 reviewed and closed\n- [ ] 03 · FRM-2 reviewed and closed\n")
+
+	envelope, _ := w.landed(t, "--apply")
+
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "# plan\n\n- [ ] 01 · FRM-1 the build\n- [x] 02 · FRM-1 reviewed and closed\n- [ ] 03 · FRM-2 reviewed and closed\n"
+	if string(raw) != want {
+		t.Errorf("plan after --apply:\n%s", raw)
+	}
+	if out := linesOf(envelope); !strings.Contains(out, "✅ closing") {
+		t.Errorf("the archived spec must still lead to the plan:\n%s", out)
+	}
+}
+
+func TestLandedApplyTicksNothingBeforeTheMerge(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	path := w.lanePlan(t, "- [ ] 01 · FRM-1 reviewed and closed\n")
+	w.landed(t, "--apply")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(raw), "[x]") {
+		t.Errorf("an unmerged lane's closing slice stays open:\n%s", raw)
+	}
+}
+
 func TestLandedReadsAQuickLaneStepLineAsMerged(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
