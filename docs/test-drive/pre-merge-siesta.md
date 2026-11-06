@@ -46,5 +46,8 @@ Ticket: none
 - 2026-11-06 · the batch since 00:02, frame#127's land and two closes, a siesta read · wishkeeper 7 min, 216k tokens, 15 findings: 3 high real (a scripted close line, a false pointer on a ticked home, a row told as in while out) · each opened, PK-308 reopened
 - 2026-11-06 · frame#128 at 67eaf128, a chunk read beside wisphunter, before sixth sense's verdict · wishkeeper 9 min, 215k tokens, 19 findings: 1 high real (the done test's unused-variable clause unmet on the real hook, after his merge tick), wisphunter 5 · it held the merge ask, a new one names the gap
 - 2026-11-06 · FRM-513 at 154af0f3 and today's whole mods range, no sixth sense on this lane · wishkeeper 8 min, 183k tokens, 11 findings: 1 high real (a late fix narrowed his W2 back), two wisphunter cards by seam 317k tokens, 12 findings, 2 guard and 1 stash bugs real · its first full-scope read: all of them after two rounds of local reviews, so the seam pass earned its cost
+- 2026-11-06 · frame#128 at ab9b9aa7, its last delta · wishkeeper 9 min, 138k tokens, 10 findings: 0 high, wisphunter 3 · merged after a fresh ask
+- 2026-11-06 · FRM-513 at bc4bb6b6, its last delta · wishkeeper 7 min, 147k tokens, 12 findings: 1 high real (the live proof owed, then run), wisphunter 6 · held the close
+- 2026-11-06 · the closing batch, no code · wishkeeper 5 min, 144k tokens, 12 findings: 0 high, 5 medium real (a close without `x lane landed`, his 02:38 words homeless, a stale spec hash)
 
 ## verdict

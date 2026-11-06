@@ -1,6 +1,6 @@
 # shift · 2026-11-06 · both lanes finish their chunk and stop, clio parked
 
-status: running
+status: done
 presence: partly away from 00:13, peeking in (dima: «ping me when needed, i'll peek in from time to time»); shift on his 00:21 word, so second winds are planned for everyone
 afk: on since 00:22, his band switch; off for a moment at 00:21
 members: ⚡ 🔧 codie mods lane 5 (desktop thread, local_bbcc7318, no sixth sense), 🌗 🔧 codie cli lane 4 (`--bg`, job 43df2212), 🌗 🔎 sixth sense (`--bg`, job 6e9e9422); 🦉 clio (side) local_262fb07e, parked; 🐦‍⬛ crow; 🎀 helga
@@ -62,3 +62,20 @@ W2's «without the shift» is superseded by his 00:21: «remind how do you keep 
 - 02:00 · reviews · frame#128 last delta: wishkeeper 0 high, 5 medium, 5 low; F6 proven by its own plant on the real gate, TS6133, red in x-mod-redact; wisphunter 3. decided: merge on the 01:07 tick, whose words said the gap stays while his 01:10 «Fix the gap first» wanted it fixed; the report says fixed and names 3 guard rule files in small edits — undo: revert the merge. wisphunter's 3 (F1's formatted tree skips no tests, `sed -Ei`, `&>/dev/null`) go to PK-328 and PK-324's notes, no more rounds at codie's 58 % — undo: a rider
 - 02:04 · dima, clio · his tick on the fresh merge ask, his «proceed»: `x lane merge-auto 128 --apply` merged at 887fce1a, exit 0, sign «dima's word on #128» (the guard adds `--dima-ok` itself from a tick; my hand flag refused twice, `cd ~/frame &&` likely left `repoOf` on an unexpanded dir, inference, the pre-existing `~` shape wisphunter named)
 - 02:05 · clio · cli lane stopped: sixth sense and codie `claude stop` exit 0, both retros on disk, codie's handoff `cli-lane-4-7`; `x plugin bump --apply x` exit 0; `x lane landed FRM-473 --pr 128` 6 of 6 ✅, spec archived, trees gone, look sent. FRM-473 → Todo, ⏰ due 11-07 for its one real `--dry` call; FRM-480 Done with its closing word; glide l38 ended. his tick o117 → PK-330
+- 02:16 · dima, clio · lone-note wakes: PK-331, side-channel-owned, first after the boot. 02:09: PK-330 landed in `clio:shift` § 1, no new surface, self-grilled on his word
+- 02:30 · dima · o118: FRM-504 and FRM-513 re-signed, read back; o119: the band answers at once on his press, codie's 55–136 ms → 7–12 ms. whether it was a regression stays unknown: no commit moved the timing
+- 02:31 · clio · measures, `lane-measures.md` in the scratchpad: 3 mods chunks, 4 cli. min per 100 lines: no verifier 9.19, cli with one 5.36, mods with one 3.67; real highs after done: 3, 0.5, 2 on one row. mixed clocks and parked time unmeasured; FRM-513's row predates its fix round
+- 02:39 · clio · FRM-513's live proof: a piped `x linear comment` on the ticket printed the warning in the same call, its `warned` event read from the guard's store at bc4bb6b6's order; `pnpm mods:test` exit 0, 2957 pass. last reads: wishkeeper 12 (1 high, the proof, now run), wisphunter 6, by reading. decided: no more rounds tonight, his scope; leftovers on FRM-510 and PK-331 — undo: a rider. close ask up, a wider measure running
+- 02:40 · mods codie · retro at `lanes/mods-lane-5/mods-lane-5-codie-retro.md`, handoff `mods-lane-5-4` names FRM-504 and its rider; thread archived, glide l37 ended. all members of both lanes stopped; crow, helga stay until the halt
+- 02:41 · dima, clio · his close tick: FRM-513 Done, `x linear read` state Done, closing word in the body, plan slice ticked. retros wait for the end. FRM-473 Todo with ⏰ due 11-07. left: the wider measure, retros, the report
+- 02:44 · helper · the wider measure, one clock, `lane-measures-wide.md`: active min per 100 lines, no verifier 7.91 (n=3, 1 lane), with one 3.75 (n=13, 5 lanes); with review cost 9.57 and 6.47 (n=7), not like for like. no verdict at that n. FRM-504 → Todo, ⏰ due; retros wait for his return
+- 02:46 · clio · siesta over the close: wishkeeper 12, 0 high, 5 medium fixed: FRM-513's look and rounds line, his 02:38 words W19, W20, FRM-504's spec hash, homeless findings on FRM-510, PK-328 and a FRM-473 comment, PK-330's W-lines. `x lane landed FRM-513`: 🔴 spec only, right, FRM-504 and FRM-505 still read it. clio 56 % by `get_usage`: a wind due at this step's end
+
+## report
+
+- decisions: the unused-variable gap fixed inside FRM-473 on his word; a full-scope mods review before FRM-513's close, 1 high and 3 real bugs; the no-verifier trial stays on FRM-504, FRM-505, re-count at ~6 chunks, his pick
+- kept as built: all else, this log. severity 🟢, no sign-in or data. an unanswered item counts as accepted, except one that moves, defers or drops a line of his or closes a ticket
+- spend: weekly 26 % → 31 %
+- open at the end: FRM-473 ⏰ 11-07; FRM-504 ⏰ 11-06; PK-331 first after the boot; 3 retros wait for his return; `crew-pm-flow` board re-check at the halt; 🔥 still on for clio, crow, helga, until the halt stops them
+- the report as an artifact, the CST by the halt or a wind, on his word
+

@@ -72,6 +72,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-05 · frame#127 (FRM-434, cli lane 4 layer 3) · 3 sixth sense rounds, 9 and 7 min after round 1, 14 of 14 exit lines · its second read found all 4 of round 1's breaks, each invisible to green rows; a scoped reviewer's one-line fix caused round 2's two regressions, which codie's own scoped read missed
 - 2026-11-05 · frame#126 · a miss of every round above: its merge removed a clean tree with cli codie live inside, whose session started elsewhere and entered by `cd`; nothing lost, read from the merge's own log · the fix is FRM-434's exit 11, on frame#127
 - 2026-11-06 · frame#128 (FRM-473, cli lane 4 layer 4) · 2 sixth sense rounds, 7 and 0 findings, 10 of 10 exit lines · 5 local reviews · 1 ci round, 1 blocking, useful · merged at 887fce1a · wishkeeper's high on its read caught a done test unmet on the real hook, which led to his fix; 14 min clean → merge, three merge asks
+- 2026-11-06 · FRM-513 (mods lane 5, main, no pr, no sixth sense) · 0 sixth sense rounds, 6 local review rounds · no ci round · clio's reads: wishkeeper 3, wisphunter 3 by seam and delta, found 1 high and 3 real bugs after two local rounds · closed on his tick, 02:41
 - 2026-11-06 · frame#128 · matt's standards · 14 findings, 12 useful, 2 noise · useful
 - 2026-11-06 · frame#128 · matt's spec · 6 findings, 5 useful · useful
 - 2026-11-06 · frame#128 · plain wisphunter · 9 findings, 9 useful, it found the save-mid-test race · useful
