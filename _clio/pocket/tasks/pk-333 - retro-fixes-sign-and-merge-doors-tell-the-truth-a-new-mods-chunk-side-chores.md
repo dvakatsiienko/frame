@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-06T01:25:00Z'
-updated_date: '2026-11-06T14:41:00Z'
+updated_date: '2026-11-06T14:46:00Z'
 labels:
   - s
   - side-channel-owned
@@ -36,4 +36,29 @@ guard bug, side channel 16:27: from a side channel, `linear issue create` in `fl
 2026-11-06 16:42, main: groom backfill done, 14 prompts through helga, reds 54 → 45; the 45 have no prompt in main's log, the side-channel class PK-332 fixes, they stand. a read of the grooms against the tickets lost no point of his: the misses are thread ops and answered questions; his 02:38 verifier lines were acted on in .scratch/lane-measures-wide.md, W15's call stays on FRM-504. the side bump joined FRM-519 as item 8.
 ticket: FRM-519
 close: all chores solved or moved; the mods chunk and the bump live in FRM-519, unsigned, on his board
+
+groom backfill 2026-11-06, read against their tickets, each acted on or answered in its thread; numbered by the groom, the tickets hold them under their own ids:
+W6 (2026-11-06 01:08, dima): o113 tell codie to fix ⚠️ x mods edit test
+W21 (2026-11-06 01:25, dima): alhough — When I click on, for example, the AFK toggle, it gets enabled and disabled not immediately, but after a slight delay of about 0.7 seconds.
+W22 (2026-11-06 01:26, dima): o115 fix now (codie)
+W43 (2026-11-06 02:24, dima): well this misleading showing will happen again in future so let's fix.
+W44 (2026-11-06 02:24, dima): add as a rider to next chunk which is 504? ❓
+W45 (2026-11-06 02:24, dima): if yes - add
+W23 (2026-11-06 02:38, dima): Well, I know that removing verifier increases the chances of flaws, and the time saved on absent verifier just maybe moves that time to fixes that verifier could have caught beforehand, but the fact that you provided numbers tells me that mods lane without verifier actually runs longer.
+W24 (2026-11-06 02:38, dima): Surprises me.
+W25 (2026-11-06 02:38, dima): I expected that mods lane without verifier will be faster.
+W26 (2026-11-06 02:38, dima): How many lanes? ❓
+W27 (2026-11-06 02:38, dima): Did you count it only today, or did you take previous days as well? ❓
+W28 (2026-11-06 02:38, dima): What if you would count mod lanes with a wider comparison? ❓
+W29 (2026-11-06 02:38, dima): For example, in the recent week, we had a lot of lanes with verifiers for comparison.
+W30 (2026-11-06 02:38, dima): Or today, codie Lens, you count them in with the inclusion of your own verifications via code reviews and fixes? ❓
+W2 (2026-11-06 14:12, dima): can mods lane be started? ❓
+W3 (2026-11-06 14:12, dima): why you holding it? ❓
+W4 (2026-11-06 14:12, dima): (not starting)
+W46 (2026-11-06 14:48, dima): yes, fix habits and make gliade structure consistent.
+W47 (2026-11-06 14:48, dima): i want tickets ids there.
+W1998 (2026-11-06 16:10, dima): how to probe correctly? ❓
+W1999 (2026-11-06 16:10, dima): have less side lanes? ❓
+W2000 (2026-11-06 16:10, dima): So this measure shows that you keep receiving redundant messages, and now you know what to cut, right? ❓
+W2001 (2026-11-06 16:10, dima): If yes, proceed.
 <!-- SECTION:NOTES:END -->

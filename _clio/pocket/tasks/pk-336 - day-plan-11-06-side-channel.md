@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T14:41:00Z'
+updated_date: '2026-11-06T14:50:00Z'
 labels:
   - m
   - side-channel-owned
@@ -36,7 +36,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #12 FRM-491 real to-spec first, 12 lint reds, after FRM-505 lands
 - [ ] #13 PK-328 and PK-334 every gate listed, gate as a vibe word, maintained; commit gate faster
 - [ ] #14 PK-332 side channel habit holds
-- [ ] #15 PK-333 retro fixes: new mods chunk signed, 38 groom reds
+- [x] #15 PK-333 retro fixes: new mods chunk signed, 38 groom reds
 - [ ] #16 PK-324 tails, PK-325 queue review, PK-308's 14 left
 - [ ] #17 grills when he wants: PK-300, PK-304, PK-323
 - [ ] #18 PK-335 rex terminal set up fully with dima
@@ -81,4 +81,8 @@ W (2026-11-06 16:28, dima): write the specs so it is ready to be dispatched by m
 W (2026-11-06 16:28, dima): when fully done, hand over ci made boring to main clio, so it summons it and maintains it.
 
 16:38 quick lane from the side channel, verdict: FRM-514 and FRM-517 both ran from here, every ping reached the side channel by name, no routing failure; no glide card without main; a commit crossing a lane's scope reached origin on another session's push. a side lane with a pr is still unproven.
+
+W (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optimized. you can spot any inefficiencies and gaps and plan fixes and optimizations if needed.
+
+16:50 PK-324 moved to main on dima's word 16:47; PK-333 closed by main. line 16 keeps PK-325 and PK-308 only.
 <!-- SECTION:NOTES:END -->
