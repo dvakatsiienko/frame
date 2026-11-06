@@ -978,9 +978,11 @@ func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
 	return w
 }
 
-// a real row's shape: the caller's job is named `review-round / reviewer`, a failed step names itself
+// a real row's shape: the caller's job is named `review-round / reviewer`, a failed step names itself, and the
+// last step shows as skipped when an earlier one failed
 func jobOf(conclusion, failedStep string) string {
-	return `{"jobs":[{"name":"review-round / reviewer","conclusion":"` + conclusion + `","steps":[{"name":"` + failedStep + `","conclusion":"failure"}]}]}`
+	return `{"jobs":[{"name":"review-round / reviewer","conclusion":"` + conclusion + `","steps":[{"name":"` + failedStep + `","conclusion":"failure"},
+		{"name":"A round with no review is red","conclusion":"skipped"}]}]}`
 }
 
 // bytes once review:clean left its required checks
