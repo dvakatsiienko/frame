@@ -68,5 +68,6 @@ group by 1 order by 2 desc;
 - 2026-11-06 · BYT-94 ci made boring codie · helped: the spec axis found the permission break and the risky-list gap
 - 2026-11-06 · FRM-511 cli lane 5 codie · helped most: a scoped read found 12 real holes after the codie's own fixes; fire it on any rework of a fail-open path
 - 2026-11-06 · FRM-511 cli lane 5 sixth sense · helped: the second read found 5 of the 6 round 1 breaks, one claim (`stateDir`) refuted by the code; always reproduce it
+- 2026-11-06 · lane retros (BYT-94, FRM-474, FRM-521) · all keep; on FRM-474 2 of 3 findings on the redesign were real false proofs nobody else found; on FRM-521 it found the `--dry` HEAD bug and the shared-checkout break apart from the probe; on BYT-94 2 of 4 were by-design lines it could not see. asks: hand it the known list, name the checkouts a diff's consumers share
 
 ## verdict
