@@ -360,7 +360,7 @@
   - proof: tests/merge-hold.test.ts
 - ⬜ only sixth sense and the coordinator write the clean (FRM-511)
   - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose registry name is neither sixth sense's nor `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; `🦉 clio (side)` is refused; a read or a copy out of the store passes
-  - decision: past `cat`, `jq`, `rg` and the few like them, naming the store counts as touching it, and an inline script over it is refused even when it only reads: writers are too many to list
+  - decision: past `cat`, `jq`, `rg` and the few like them, naming the store counts as touching it, and an inline script over it is refused even when it only reads: writers are too many to list; a commit message or a pr body that spells the store's path out is refused too, the price of that list
   - known gap: the shared evasion above, a script run by path that writes the store from inside, and the `Write` and `Edit` tools, which a Bash rule never reads
   - proof: tests/clean-stamp.test.ts
 - ✅ a foreground `claude -p` is refused (FRM-395)

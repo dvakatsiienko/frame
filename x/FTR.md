@@ -199,7 +199,7 @@
 - ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
   - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
   - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why
-- ⬜ only the real clean store and hold record open the gate (FRM-511): `X_VERIFIED`, `X_STATE`'s hold record, `X_DEV_BUILD` and `X_NOW` count in the test binary alone, a set `X_TEST` on a real one changes nothing
+- ⬜ only the real clean store and hold record open the gate (FRM-511): `X_VERIFIED`, `X_STATE`'s hold record, `X_DEV_BUILD` and `X_NOW` count in the test binary alone, a set `X_TEST` on a real one changes nothing; given `X_LINEAR_URL` set on a real binary, then no sign reads, so a forged one pre-approves no self-edit
 - ⬜ a held pr merges only on dima's word (FRM-511)
   - given `x lane merge-auto <pr> --hold --apply`, then the pr and every open layer under it are marked in this mac's record (`<state>/merge-hold/<owner>_<repo>.json`) and nothing merges
   - given a held pr, or a top over a held layer, when `x lane merge-auto <pr> --apply` runs, then it refuses naming the hold; a record it cannot read reads as held; with `--dima-ok <pr>` it merges and takes the landed layers' marks off

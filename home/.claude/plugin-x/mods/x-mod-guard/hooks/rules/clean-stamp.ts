@@ -1,6 +1,8 @@
 import { type Command, type Refusal, commandsDeep } from './command.ts';
 
-const isStore = (text: string) => /(^|[/'"])pr-verified\.json/i.test(text);
+// the shelf dir itself counts: `cp a/pr-verified.json ~/.claude/shelf/` lands on the store with no word for it
+const isStore = (text: string) =>
+    /(^|[/'"]|of=)pr-verified\b|(\.claude|cc)\/shelf\/?$/i.test(text);
 const isWatchPr = (text: string) => /(^|\/)watch-pr\.sh$/.test(text);
 const RUNNERS = new Set(['bash', 'dash', 'ksh', 'sh', 'zsh', 'source', '.']);
 const READERS = new Set([
@@ -36,14 +38,31 @@ const READERS = new Set([
 const OPAQUE =
     /^(python[\d.]*|node|bun|deno|ruby|perl|php|lua|osascript|xargs|parallel|eval)$/;
 
+function operandsOf(words: string[]) {
+    const end = words.indexOf('--');
+    const flagged = end < 0 ? words : words.slice(0, end);
+    return [
+        ...flagged.filter((w) => !w.startsWith('-')),
+        ...(end < 0 ? [] : words.slice(end + 1)),
+    ];
+}
+
 function onlyReads(c: Command, named: (text: string) => boolean) {
     const words = c.args.map((w) => w.text);
-    const operands = words.filter((w) => !w.startsWith('-'));
+    const operands = operandsOf(words);
+    // sed writes from inside its script too (`w <file>`), so the store may stand only as the file it reads
     if (c.name === 'sed')
-        return !words.some((w) => /^(-\w*i|--in-place)/.test(w));
+        return (
+            !words.some((w) => /^(-\w*i|--in-place)/.test(w)) &&
+            words.filter(named).every((w) => w === operands.at(-1))
+        );
     if (c.name === 'cp') return !named(operands.at(-1) ?? '');
     // sd's first two operands are its find and its replace, text that may name a store in a doc
     if (c.name === 'sd') return !operands.slice(2).some(named);
+    if (c.name === 'find')
+        return !words.some((w) =>
+            /^-(delete|exec|execdir|ok|okdir|fprint)/.test(w),
+        );
     return READERS.has(c.name);
 }
 
@@ -54,14 +73,21 @@ export function touchesStore(
     named: (text: string) => boolean,
 ) {
     const parsed = commandsDeep(command, cwd);
-    if (parsed.some((c) => OPAQUE.test(c.name)) && named(command)) return true;
+    const runsOpaque = (c: Command) =>
+        OPAQUE.test(c.name) || c.wrappers.some((w) => OPAQUE.test(w));
+    if (parsed.some(runsOpaque) && named(command)) return true;
     return parsed.some(
         (c) =>
             [...c.writes, ...c.appends].some(named) ||
             (named(`${c.dir}/`) &&
                 (c.writes.length + c.appends.length > 0 ||
                     !READERS.has(c.name))) ||
-            (c.args.some((w) => named(w.text)) && !onlyReads(c, named)),
+            (c.args.some((w) => named(w.text) || named(`${c.dir}/${w.text}`)) &&
+                !onlyReads(c, named)) ||
+            // `trash "$(realpath <store>)"`: the name reaches the word through a substitution
+            (c.args.some((w) => w.isExpanding) &&
+                c.feeders.some((f) => f.args.some((w) => named(w.text))) &&
+                !onlyReads(c, named)),
     );
 }
 

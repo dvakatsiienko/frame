@@ -274,3 +274,16 @@ func TestRebaseMainOntoPlanCountsWhatReplays(t *testing.T) {
 		t.Fatalf("exit %d: want the plan to say 1 of 2 commits replay:\n%s", got.code, got.stdout)
 	}
 }
+
+func TestRebaseMainOntoPlanCountsNoMergedInMain(t *testing.T) {
+	t.Parallel()
+	w, base := layerOffSquash(t)
+	gitT(t, w.clone, "fetch", "-q", "origin")
+	gitT(t, w.clone, "merge", "-q", "--no-edit", "origin/main")
+
+	got := w.run(t, "--onto", base)
+
+	if !strings.Contains(got.stdout, "replays 1 of 2") {
+		t.Fatalf("exit %d: want main's commits and the merge left out of the count:\n%s", got.code, got.stdout)
+	}
+}

@@ -233,10 +233,16 @@ function redirected(words: Word[], apart: RegExp, joined: RegExp) {
         return path ? [path] : [];
     });
 }
+// `>& f` truncates f as `&> f` does; only a number or `-` after it names a descriptor
+const TO_FILE = /^\d*>&$/;
+const TO_FILE_JOINED = /^\d*>&(.+)$/;
 const writes = (words: Word[]) =>
-    redirected(words, TRUNCATE, TRUNCATE_JOINED).filter(
-        (to) => !HARMLESS_DEV.test(to),
-    );
+    [
+        ...redirected(words, TRUNCATE, TRUNCATE_JOINED),
+        ...redirected(words, TO_FILE, TO_FILE_JOINED).filter(
+            (to) => !/^(\d+-?|-)$/.test(to),
+        ),
+    ].filter((to) => !HARMLESS_DEV.test(to));
 export const reads = (words: Word[]) => redirected(words, READ, READ_JOINED);
 const STDOUT = /^[1&]?>>?$/;
 const STDOUT_JOINED = /^[1&]?>>?([^>&].*)$/;

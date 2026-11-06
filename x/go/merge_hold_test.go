@@ -246,6 +246,17 @@ func TestMergeAutoReleaseBuildIgnoresTheTestEnv(t *testing.T) {
 			t.Fatalf("exit %d, merges %q: want the real record read\n%s", code, merges, stdout)
 		}
 	})
+	t.Run("a sign comes from the real linear, past X_LINEAR_URL", func(t *testing.T) {
+		t.Parallel()
+		w := newMergeWorld(t, "x/go/gh.go")
+		w.env = append(w.env, "X_LINEAR_URL=http://127.0.0.1:1")
+
+		code, stdout := release(w, t.TempDir())
+
+		if merges := w.hub.sent("PUT "); code == 0 || len(merges) != 0 || !strings.Contains(stdout, "X_LINEAR_URL") {
+			t.Fatalf("exit %d, merges %q: want a forged linear named, no sign read\n%s", code, merges, stdout)
+		}
+	})
 	t.Run("the clean comes from the real store, past X_VERIFIED", func(t *testing.T) {
 		t.Parallel()
 		w := newMergeWorld(t, "script/foo.ts")

@@ -3,8 +3,21 @@ import { type Command, type Refusal, commandsDeep } from './command.ts';
 
 export type MergeHolds = { prs: Set<string>; isUnreadable: boolean };
 
-// gh's own flags that take the next word, on `pr merge`, `stack merge` and the root
+// gh's own flags that take the next word, on `pr merge`, `stack merge`, `api` and the root
 const VALUE_FLAGS = new Set([
+    '--field',
+    '--header',
+    '--hostname',
+    '--input',
+    '--jq',
+    '--method',
+    '--raw-field',
+    '--template',
+    '-H',
+    '-X',
+    '-f',
+    '-p',
+    '-q',
     '-A',
     '--author-email',
     '-b',
@@ -39,9 +52,7 @@ function ghWords(c: Command) {
 
 const GRAPHQL_MERGE =
     /\b(mergePullRequest|enqueuePullRequest|enablePullRequestAutoMerge)\b/;
-const GRAPHQL_PATH = /^(https?:\/\/[^/]+(\/api)?)?\/?graphql\/?$/i;
-// a query read from a file or a variable holds text this rule cannot see
-const GRAPHQL_UNREAD = /=@|\$|^--input/;
+const GRAPHQL_PATH = /^(https?:\/\/[^/]+(\/api)?)?\/?graphql\/?(\?.*)?$/i;
 const MERGE_PATH = /\/pulls\/[^/]+\/merge(-async)?\/?(\?.*)?$/;
 const asPr = (digits: string | undefined) =>
     digits === undefined ? undefined : String(Number(digits));
@@ -75,8 +86,12 @@ function rawMerge(c: Command) {
     if (family === 'pr' && verb === 'merge') return { pr: prOf(target) };
     // the graphql door takes a node id, never a number, so it reads as a target it cannot name
     if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w)))
-        return words.some(
-            (w) => GRAPHQL_MERGE.test(w) || GRAPHQL_UNREAD.test(w),
+        // a query read from a file or a variable holds text this rule cannot see
+        return c.args.some(
+            (a) =>
+                a.isExpanding ||
+                GRAPHQL_MERGE.test(a.text) ||
+                /=@|^--input/.test(a.text),
         )
             ? { pr: undefined }
             : undefined;
@@ -132,8 +147,11 @@ export function mergeHold(
     return undefined;
 }
 
+// the state dir itself counts, since a move or a trash of it takes the record along
 const isHoldRecord = (text: string) =>
-    /\.local\/state\/x\/merge-hold|\/merge-hold\//i.test(text);
+    /\.local\/state\/x(\/merge-hold|\/?$)|\$\{?\w+\}?\/merge-hold\//i.test(
+        text,
+    );
 
 // x is the record's one writer: a hand edit would drop a hold with no word
 export function holdRecordWrite(

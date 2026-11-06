@@ -122,8 +122,8 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 			return "", err
 		}
 		if t.Onto != "" && !t.finished {
-			kept, _ := git("rev-list", "--count", t.Onto+"..HEAD")
-			total, _ := git("rev-list", "--count", "origin/main..HEAD")
+			kept, _ := git("rev-list", "--count", "--no-merges", t.Onto+"..HEAD", "^origin/main")
+			total, _ := git("rev-list", "--count", "--no-merges", "origin/main..HEAD")
 			t.Replays = "replays " + kept.out + " of " + total.out + " commits past origin/main, the rest leave the branch"
 		}
 		behind, _ := git("rev-list", "--count", "HEAD..origin/main")
@@ -144,7 +144,7 @@ func (t *rebaseTarget) rerun() string {
 func askRebase(plan any) string {
 	t := plan.(*rebaseTarget)
 	if t.Onto != "" {
-		return fmt.Sprintf("move %s off %s onto origin/main %s and force-push it with a lease?", t.Branch, short(t.Onto), short(t.Main))
+		return fmt.Sprintf("move %s off %s onto origin/main %s, %s, and force-push it with a lease?", t.Branch, short(t.Onto), short(t.Main), or(t.Replays, "finishing the push"))
 	}
 	return fmt.Sprintf("rebase %s onto origin/main %s and force-push it with a lease?", t.Branch, short(t.Main))
 }

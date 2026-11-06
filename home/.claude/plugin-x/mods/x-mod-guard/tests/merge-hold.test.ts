@@ -79,6 +79,7 @@ for (const line of [
     'github-token-wrap api -X PUT repos/o/r/pulls/7/merge',
     'gh pr merge 7 --body "--help"',
     'gh pr merge 7 --subject --help',
+    'gh api -X PUT repos/o/r/pulls/7/merge -q --help',
     'gh api -X PUT https://api.github.com/repos/o/r/pulls/7/merge',
 ])
     test(`a raw merge of a held pr is refused: ${line}`, async ($, on) => {
@@ -142,6 +143,7 @@ for (const line of [
     `gh api graphql -f query='mutation { enqueuePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
     `gh api /graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
     `gh api https://api.github.com/graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
+    `gh api '/graphql?a=1' -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
     'gh api graphql -F query=@m.graphql',
     'gh api graphql --input m.json',
     'gh api graphql -f query="$Q"',
@@ -158,6 +160,16 @@ test('a graphql read passes while a hold stands', async ($, on) => {
     const r = await bash(
         $,
         `gh api graphql -f query='query { viewer { login } }'`,
+    );
+    expect(r.deny).toBeUndefined();
+    expect(ran.length).toBe(1);
+});
+
+test('a graphql read with a variable of its own passes while a hold stands', async ($, on) => {
+    const { ran } = world(on, HELD_7);
+    const r = await bash(
+        $,
+        `gh api graphql -f query='query($n: Int!) { viewer { login } }'`,
     );
     expect(r.deny).toBeUndefined();
     expect(ran.length).toBe(1);
@@ -203,6 +215,8 @@ for (const line of [
     `python3 -c "import os; os.remove('${RECORD}')"`,
     'cd ~/.local/state/x/merge-hold && echo {} > o_r.json',
     'cd ~/.local/state/x/merge-hold && cp /tmp/a.json o_r.json',
+    'cd ~/.local/state/x && trash merge-hold',
+    'trash ~/.local/state/x',
     'd=~/.local/state/x; echo {} > $d/merge-hold/o_r.json',
 ])
     test(`the hold record cannot change by hand: ${line}`, async ($, on) => {
@@ -217,6 +231,7 @@ for (const line of [
     `cat ${RECORD}`,
     `jq . ${RECORD}`,
     `ls ${HOLD_DIR}`,
+    'find ~/.local/state/x/lanes -name a',
     'cd ~/.local/state/x/merge-hold && ls',
     'x lane merge-auto 7 --hold --apply',
     'rg merge-hold home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/merge-hold.ts',

@@ -75,6 +75,10 @@ func (d *mergeDecision) wordOpens(pr pullHead, c mergeCheck) mergeCheck {
 
 // the sign lives in linear, never the pr: a pr body is codie's to write
 func signOf(pr pullHead, signs map[string]chunkSign) (chunkSign, error) {
+	// a sign pre-approves a self-edit, and any Bash line can point the read at a server that forges one
+	if !isTestBuild && os.Getenv("X_LINEAR_URL") != "" {
+		return chunkSign{detail: "X_LINEAR_URL is set, so no sign reads: linear here is not the real one"}, nil
+	}
 	ticket := ticketOfPr(pr)
 	if ticket == "" {
 		return chunkSign{detail: "no ticket on " + pr.Head.Ref + " or in the pr body, so no sign to read"}, nil
