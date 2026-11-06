@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:51:00Z'
-updated_date: '2026-11-06T19:56:00Z'
+updated_date: '2026-11-06T20:06:00Z'
 labels:
   - s
   - wing-3
@@ -77,7 +77,8 @@ PK-325:W1334 (2026-11-06 20:07, dima): note: you are 62% ctx, and pk-325 is stil
 
 19:37 his ticks: cli queue splits in two lanes, gates and lanes (FRM-511, FRM-509, FRM-520, FRM-384, FRM-414) vs proof and screens (FRM-474, FRM-383, FRM-433, FRM-424, FRM-436, FRM-387, FRM-360); FRM-43 keeps a someday label; BYT-99, BYT-54 cancelled.
 
-PK-325:W1335 (2026-11-06 21:27, dima): hold second wind until wing 3 is good and no data loss is present. mods chunks scope is important to have precise integrity.
 
 PK-325:W1335 (2026-11-06 21:27, dima): hold SW until wing 3 is good and no data loss is present. mods chunks scope is important to have precise integrity.
+
+PK-325:W1336 (2026-11-06 22:06, dima): no, this one does not need a recipe. it is a skill. let's have it as a skill after PK-325 is fully solved.
 <!-- SECTION:NOTES:END -->
