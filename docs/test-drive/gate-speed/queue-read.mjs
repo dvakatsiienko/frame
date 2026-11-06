@@ -63,11 +63,11 @@ console.log("-- the gate slot's 12 longest holds");
 rows.filter((r) => r.slot === 'gate' && r.run != null)
     .sort((a, b) => b.run - a.run)
     .slice(0, 12)
-    .forEach((r) =>
+    .forEach((r) => {
         console.log(
             `${r.start.slice(11, 16)} run ${r.run} wait ${r.wait} load ${r.load} exit ${r.exit} ${r.cmd.replace(/\/private\/tmp\/claude-501\/|\/Users\/dima\/\.claude\/jobs\//g, '').slice(0, 70)}`,
-        ),
-    );
+        );
+    });
 const gate = rows.filter((r) => r.slot === 'gate' && r.run != null);
 const total = gate.reduce((a, r) => a + r.run, 0);
 const long = gate.filter((r) => r.run > 300).reduce((a, r) => a + r.run, 0);
