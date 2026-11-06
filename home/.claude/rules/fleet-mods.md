@@ -14,7 +14,7 @@
 - **🌔 phases — the session's own plan, live.** every session keeps its next moves (≤7) through orbit's `plan` op (`lines`), reset at a turn end whenever they moved: codie's coding plan, sixth sense's review plan, the coordinator's lane plan; parked → what it waits on. dima opens any thread and sees where it is.
   - a new session seeds them the turn it starts, from its brief, spec or tickets; nothing to do yet → empty is right
   - a line leads with its subject; the mod's «no phases yet» nudge after 3 tool calls is the guard
-- **🛼 glide — a lane's progress, fleet-wide.** one card per running lane on every board, its steps in order with «← we are here»; only the coordinator and a side channel, on a lane it runs, write it; any other session's call is refused. the card is drawn, never read into a session's context; a member's asks sit in its subcard, and a tick there joins that member's next turn (FRM-385)
+- **🛼 glide — a lane's progress, fleet-wide.** one card per running lane on every board, its steps in order with «← we are here»; only the coordinator and a wing, on a lane it runs, write it; any other session's call is refused. the card is drawn, never read into a session's context; a member's asks sit in its subcard, and a tick there joins that member's next turn (FRM-385)
 
 <!-- why: subject-first asks, dima 2026-10-10: the board's long lines got cut. -->
 <!-- why: replies named asks by oN id; dima's o112 counted 65 unglossed-id reminders on 10-14. -->

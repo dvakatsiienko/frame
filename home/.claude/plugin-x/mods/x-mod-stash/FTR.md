@@ -719,7 +719,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given `pnpm mods:set <pace-stop|pace-burn|pace-park|pace-over|pace-under|hot-minutes|hot-late> <number>`, then the next poll uses it with no reload, and the 🎛️ `stash · knobs` row shows it; a number out of its range or an unknown key is refused with the list
   - proof: tests/pace.test.ts::a retuned number moves the rung at the next poll, no reload; ::🎛️ shows a pace number; set.test.ts::a number takes only a known key inside its range
 - ✅ 🔥 on by default for a seated member
-  - given clio, a side channel, crow, helga or a lane member with no `hot:` key, then 🔥 starts on; a plain session or a fork stays off; off is a written `{ off: true }`, so a click off stays off
+  - given clio, a wing, crow, helga or a lane member with no `hot:` key, then 🔥 starts on; a plain session or a fork stays off; off is a written `{ off: true }`, so a click off stays off
   - and a 🔥 session idle at 45 min left whose last turn + 60 min falls before the reset gets one ping; a cache that outlives the reset gets none; at 100 % used no ping is sent
   - proof: tests/pace.test.ts::🦉 clio starts 🔥 (+ a row per seat); ::a 🔥 click off is written and stays off across a restart; ::a cache dying before the reset gets one ping at 45 min left; ::a cache that outlives the reset gets no late ping; ::at 100 % no ping is sent
 - ✅ a quiet meter is normal while everyone is parked
@@ -750,7 +750,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 - ✅ a message that does not push is held in clio's thread
   - given clio's session — the registry names it `🦉 clio`, wherever a Bash `cd` left it — and the switch on
   - decision: the registry name, never the cwd: a `cd` into `~/frame` let every ping through for an hour (clio's wisp, 17:06)
-  - when any member, crow, helga or a side channel sends a message
+  - when any member, crow, helga or a wing sends a message
   - then it is not queued and starts no turn, unless it opens with `[ask]` (clio's answer is needed: a dispute, a decision, a plan to greenlight), `[done]` (a lane or chunk is fully ready) or `[escalate]` (a roadblock climbs a rung; `[🪜 escalate]` too), an emoji before the tag included
   - and a tag mid-line, a tag in another case, `[blocked]`, `final` and `round N` are held; `[progress]` stays a word for «held» and never pushes; any other session holds nothing
   - and a message carrying «for dima» as words is pushed; a path holding them, a backticked span and «nothing for dima» never count
@@ -948,12 +948,12 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
   - proof: tests/lane.test.ts::a create naming a lane plan takes its steps from the file; ::a tick in the plan file moves the card to the first unticked line on the next poll; ::an all-ticked plan file shows the lane done; ::a nested or u… — not asserted: 60-char cut not checked
-- ✅ a side channel writes the card of a lane it runs (FRM-504)
-  - given a session titled «🦉 clio (side)» or «🦉🪽 clio: wing <N>», then `glide` `create` writes a card stamped with its name, and every other act writes that card; a card it did not create is refused, naming it, and it stands: 🦉 clio's own card reaches a side channel only by her `end` and its `create`; 🦉 clio still writes any card, and its stale nag skips a side channel's card, whose turn count is another thread's
+- ✅ a wing writes the card of a lane it runs (FRM-504)
+  - given a session titled «🦉 clio (side)» or «🦉🪽 clio: wing <N>», then `glide` `create` writes a card stamped with its name, and every other act writes that card; a card it did not create is refused, naming it, and it stands: 🦉 clio's own card reaches a wing only by her `end` and its `create`; 🦉 clio still writes any card, and its stale nag skips a wing's card, whose turn count is another thread's
   - and a codie, a fork or a name that only holds those words stays refused; only this door opens, every other coordinator part stays on 🦉 clio
   - and a second card naming a live card's plan is refused, `~/` and absolute reading as one path
   - and a write re-reads the file right before it lands, so a peer's new card survives and a card ended there stays ended; it narrows the gap, with no lock; two creates in one gap can still take one id (inference)
-  - proof: tests/lane.test.ts::a card a side channel creates while a plan poll reads survives the poll; ::a card ended while a plan poll reads stays ended; ::a card ended while a codie step is read stays ended; ::a second card naming one plan by another spelling is refused; ::a side channel writes a card it created; ::a side channel is refused on a card it does not run, naming the card; ::stays refused: … — not asserted: two side channels share one title, so one writes the other's card (inference); the lanes file has no lock, a side write racing clio's poll can lose an update (inference); a linked card's plan still moves only on clio's poll, a steer reaches only clio
+  - proof: tests/lane.test.ts::a card a side channel creates while a plan poll reads survives the poll; ::a card ended while a plan poll reads stays ended; ::a card ended while a codie step is read stays ended; ::a second card naming one plan by another spelling is refused; ::a side channel writes a card it created; ::a side channel is refused on a card it does not run, naming the card; ::stays refused: … — not asserted: two wings share one title, so one writes the other's card (inference); the lanes file has no lock, a side write racing clio's poll can lose an update (inference); a linked card's plan still moves only on clio's poll, a steer reaches only clio
 - ✅ a lane survives a reload, a compaction and a restart, and ends at clio's siesta
   - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back
   - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — clio's next siesta — takes it off and the file records `endedAt`
