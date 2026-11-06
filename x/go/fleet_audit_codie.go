@@ -424,6 +424,9 @@ func auditCounts(sessions []codieSession) []string {
 			}
 		}
 		line := fmt.Sprintf("%s %d of %d read before first edit", name, read, asked)
+		if asked == 0 && older == 0 {
+			line = name + " not checked: no codie session in the window"
+		}
 		if older > 0 {
 			line += fmt.Sprintf(", %d n/a", older)
 		}

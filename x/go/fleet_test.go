@@ -588,6 +588,10 @@ func TestAuditCodieBoardEndsOnTheLessonsCount(t *testing.T) {
 			last = line
 		}
 	}
+	empty := xIn(t, t.TempDir(), []string{"HOME=" + t.TempDir()}, "fleet", "audit-codie", "--days", "30", "--board")
+	if !strings.Contains(empty.stdout, "how-you-work.md not checked") {
+		t.Errorf("no session in the window should read not checked, never 0 of 0:\n%s", empty.stdout)
+	}
 	if got.code != 1 || !strings.Contains(last, "how-you-work.md 1 of 2 read before first edit") {
 		t.Errorf("exit %d, last counted line %q:\n%s", got.code, last, got.stdout)
 	}
