@@ -48,13 +48,18 @@ const slowStub = join(fixtures, 'slow-stub.sh');
 writeFileSync(slowStub, '#!/bin/sh\nsleep 3\n', { mode: 0o755 });
 const lastCommit = join(fixtures, '.local/state/clio/pocket-commits/last');
 
-function run(event: object, check: string, commit = commitStub) {
+function run(
+    event: object,
+    check: string,
+    commit = commitStub,
+    home = fixtures,
+) {
     rmSync(argvLog, { force: true });
     const out = spawnSync('bash', [hook], {
         encoding: 'utf8',
         env: {
             ...gitEnv(),
-            HOME: fixtures,
+            HOME: home,
             POCKET_CHECK_CMD: check,
             POCKET_COMMIT_CMD: commit,
         },
@@ -108,7 +113,13 @@ describe('pocket-check on a pocket write', () => {
         const task = join(frame, '_clio/pocket/tasks/pk-2 - slow.md');
         writeFileSync(task, 'x\n');
         const start = Date.now();
-        const out = run(bash('backlog task edit 2'), redCmd, slowStub);
+        // its own home: the commit outlives the test and writes its state file, which the other tests read
+        const out = run(
+            bash('backlog task edit 2'),
+            redCmd,
+            slowStub,
+            join(fixtures, 'slow-home'),
+        );
         const took = Date.now() - start;
         rmSync(task);
         expect(out?.decision).toBe('block');
