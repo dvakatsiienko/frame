@@ -74,7 +74,6 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 ⏰ 🦉 the empty-wakes re-count, a day after FRM-501 round 3 lands (his o78): `docs/test-drive/gate-speed/empty-wakes.md` holds the first read and its classifier, 9.9 bare replies an hour before, 11.4 per live hour after, members 7.9 → 11.2; one line to dima; a high count opens `clio:shape-idea` on FRM-512, a low one asks to drop it (his o58: «ok but do not forget!») — due: 2026-11-08
 
-⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514), the lazy-rule hook: dispatch after the boot, its own quick lane («let's have it tmrw after boot», o93) — due: 2026-11-06
 
 ⏰ 🦉 [FRM-410](https://linear.app/x-com/issue/FRM-410): after boot, when free: groom, close (his: no `[done]` move, split leftovers, solve the board) — due: 2026-11-06
 
