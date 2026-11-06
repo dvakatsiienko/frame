@@ -44,6 +44,8 @@ type landedPlan struct {
 	clean   []string
 	// the lane plan whose closing slice for this ticket is still open, ticked on --apply
 	openClosing string
+	// the merged pr's branch, when one stands; --apply takes it
+	mergedRef, mergedHead, ghRepo string
 }
 
 // landedPlanOf reads every after-merge chore of a ticket's lane; nothing here writes
@@ -96,11 +98,12 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	frame := mainCheckout(frameRoot())
 
 	merged := landedLine{name: "merged"}
-	var headRef, headSha, mergedHead string
+	var headRef, headSha, mergedHead, ghRepo string
 	var commits []string
+	underReview := false
 	if pr != "" {
 		// --repo here is the checkout's path, so the github slug comes from its origin
-		ghRepo := originSlugIn(repo)
+		ghRepo = originSlugIn(repo)
 		if ghRepo == "" {
 			return nil, usageFail(home(repo)+" has no github origin to read #"+pr+" from", "git -C "+home(repo)+" remote -v")
 		}
@@ -129,6 +132,13 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	} else if base := dispatchOf(issue.Description).base; base != "" {
 		commits, merged = quickMerged(repo, id, base, issue)
+		if !merged.ok && dispatchOf(issue.Description).hasSixthSense {
+			// a verify tree sits at a commit of the open range: named, so it never reads as forgotten
+			underReview = true
+			if ranged, _ := gitIn(repo, "log", "--format=%h %s", base+"..origin/main"); ranged.ok && ranged.out != "" {
+				commits = strings.Split(ranged.out, "\n")
+			}
+		}
 	} else {
 		commits = ticketCommits(repo, id)
 		merged.ok, merged.detail, merged.fix = len(commits) > 0, plural(len(commits), "commit")+" for "+id+" on origin/main", "land "+id+"'s commits on main, or pass --pr <n>"
@@ -167,7 +177,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean = nil
 	var notes []string
-	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits})
+	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits, underReview})
 	for _, tree := range found {
 		if tree.reason == "" {
 			plan.clean = append(plan.clean, tree.path)
@@ -188,6 +198,16 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		trees.ok, trees.detail = false, strings.Join(notes, "; ")
 	}
 	lines = append(lines, trees)
+
+	plan.mergedRef = ""
+	if mergedHead != "" && isLaneBranch(headRef) && branchStands(main, headRef) {
+		plan.mergedRef, plan.mergedHead, plan.ghRepo = headRef, mergedHead, ghRepo
+		branch := landedLine{name: "branch", detail: headRef + " stands", fix: "x lane landed " + id + " --pr " + pr + " --apply"}
+		if why := laneBranchWhy(asCodie, main, ghRepo, headRef, mergedHead); why != "" {
+			branch.detail += ": " + why
+		}
+		lines = append(lines, branch)
+	}
 
 	look := landedLine{name: "look", detail: "no comment on " + id + " carries a look card", fix: "post the done report, its look card first: x linear comment " + id + " --body-file <file>"}
 	wish := landedLine{name: "wish", ok: true, detail: "no W-lines in the body"}
@@ -214,8 +234,17 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	}
 	lines = append(lines, look, wish)
+	if merged.ok {
+		if freed := freedTickets(issue); len(freed) > 0 {
+			lines = append(lines, landedLine{name: "freed", ok: true, detail: strings.Join(freed, ", ")})
+		}
+	}
 	if pr != "" {
 		if line := warnOnlyLine(repo, headSha, mergedHead != ""); line != nil {
+			lines = append(lines, *line)
+		}
+	} else if merged.ok {
+		if line := quickWarnOnlyLine(repo, commits); line != nil {
 			lines = append(lines, *line)
 		}
 	}
@@ -287,13 +316,23 @@ func warnOnlyLine(repo, head string, merged bool) *landedLine {
 		line.detail = "the warn-only set did not read: " + err.Error()
 		return line
 	}
-	var added, left []string
+	return warnOnlyVerdict(line, warnOnlyAdded(nil, before, after), now)
+}
+
+func warnOnlyAdded(added, before, after []string) []string {
 	for _, rule := range after {
-		if !slices.Contains(before, rule) {
+		if !slices.Contains(before, rule) && !slices.Contains(added, rule) {
 			added = append(added, rule)
-			if slices.Contains(now, rule) {
-				left = append(left, rule)
-			}
+		}
+	}
+	return added
+}
+
+func warnOnlyVerdict(line *landedLine, added, now []string) *landedLine {
+	var left []string
+	for _, rule := range added {
+		if slices.Contains(now, rule) {
+			left = append(left, rule)
 		}
 	}
 	switch {
@@ -305,6 +344,47 @@ func warnOnlyLine(repo, head string, merged bool) *landedLine {
 		line.ok, line.detail = true, strings.Join(added, ", ")+" enforcing"
 	}
 	return line
+}
+
+// a lane with no pr: the rules its own commits added, each read against its parent, since main interleaves other lanes
+func quickWarnOnlyLine(repo string, commits []string) *landedLine {
+	if got, _ := gitIn(repo, "ls-tree", "origin/main", "--", warnOnlyFile); got.ok && got.out == "" {
+		return nil
+	}
+	line := &landedLine{name: "warn-only", fix: "take the rule out of WARN_ONLY in " + warnOnlyFile + ", its clean said"}
+	var added []string
+	for _, commit := range commits {
+		sha, _, _ := strings.Cut(commit, " ")
+		after, err := warnOnlyAt(repo, sha)
+		if err == nil && len(after) > 0 {
+			var before []string
+			if before, err = warnOnlyAt(repo, sha+"^"); err == nil {
+				added = warnOnlyAdded(added, before, after)
+			}
+		}
+		if err != nil {
+			line.detail = "the warn-only set did not read: " + err.Error()
+			return line
+		}
+	}
+	now, err := warnOnlyAt(repo, "origin/main")
+	if err != nil {
+		line.detail = "the warn-only set did not read: " + err.Error()
+		return line
+	}
+	return warnOnlyVerdict(line, added, now)
+}
+
+// the tickets this one blocks that are still to do
+func freedTickets(issue landedRead) []string {
+	var freed []string
+	for _, relation := range issue.Relations.Nodes {
+		state := relation.RelatedIssue.State.Type
+		if relation.Type == "blocks" && state != "completed" && state != "canceled" {
+			freed = append(freed, relation.RelatedIssue.Identifier)
+		}
+	}
+	return freed
 }
 
 const (
@@ -518,6 +598,13 @@ type landedRead struct {
 	ProjectMilestone *struct {
 		Issues connection[milestoneIssue]
 	}
+	Relations connection[struct {
+		Type         string
+		RelatedIssue struct {
+			Identifier string
+			State      struct{ Type string }
+		}
+	}]
 }
 
 func landedIssue(flags Flags, id string) (landedRead, error) {
@@ -526,6 +613,7 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 		return landedRead{}, err
 	}
 	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { description comments(first: 100) { nodes { body } }
+		relations(first: 50) { nodes { type relatedIssue { identifier state { type } } } }
 		projectMilestone { issues(first: 100) { nodes { state { type } } } } } }`, map[string]any{"id": id})
 	if err != nil {
 		return landedRead{}, err
@@ -543,6 +631,7 @@ type laneTree struct{ path, reason string }
 type laneRefs struct {
 	pr, headRef, headSha, mergedHead string
 	commits                          []string // a quick lane's commits on origin/main, «<short sha> <subject>»
+	underReview                      bool     // its sixth sense has not said verified: its verify tree stays
 }
 
 // the ticket ids a lane spec names as its chunks, in order, each once
@@ -608,7 +697,11 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
-		trees = append(trees, laneTree{path, treeStay(entry, main, selves, mergedHead)})
+		reason := treeStay(entry, main, selves, mergedHead)
+		if verify && refs.underReview {
+			reason = strings.TrimSuffix("its lane is still under review, "+reason, ", ")
+		}
+		trees = append(trees, laneTree{path, reason})
 	}
 	return trees, nil
 }
@@ -794,7 +887,7 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 		switch {
 		case !strings.HasPrefix(line, "!!"):
 			changed = append(changed, file)
-		case file != ".scratch/" && !disposable.MatchString(file) && !seedCopy(tree, main, file):
+		case file != ".scratch/" && file != seedLink && !disposable.MatchString(file) && !seedCopy(tree, main, file):
 			ignored = append(ignored, file)
 		}
 	}
@@ -824,6 +917,9 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 	}
 	return strings.Join(reasons, ", ")
 }
+
+// worktree-seed.sh's link for a fork's tree: nothing of a session's, and excluded so git calls it ignored
+const seedLink = ".claude/agents/wishkeeper.md"
 
 const closingWords = "reviewed and closed"
 
@@ -988,6 +1084,11 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
+	}
+	if plan.mergedRef != "" {
+		_ = r.Step("branch", plan.mergedRef, func() (string, error) {
+			return laneBranchNote(asCodie, plan.main, plan.ghRepo, plan.mergedRef, plan.mergedHead), nil
+		})
 	}
 	again, err := landedPlanOf(r, args, flags)
 	if err != nil {

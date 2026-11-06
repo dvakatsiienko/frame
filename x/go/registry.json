@@ -208,13 +208,20 @@
             "args": [
                 {
                     "description": "the linked worktree to remove",
+                    "isOptional": true,
                     "name": "path"
                 }
             ],
+            "flags": {
+                "list-stale": {
+                    "description": "print each worktree-*, codie/* and coder/* branch with merged or not and its age; removes nothing, needs no --apply",
+                    "type": "boolean"
+                }
+            },
             "name": "lane decamp",
             "needsApply": true,
-            "purpose": "remove a linked worktree, then point the shared lefthook shims back at the main checkout",
-            "steps": ["tree", "remove", "hooks"]
+            "purpose": "remove a linked worktree and a fork's branch main holds, then point the shared lefthook shims back at the main checkout",
+            "steps": ["tree", "remove", "hooks", "branch", "read"]
         },
         {
             "args": [

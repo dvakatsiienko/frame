@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -498,7 +499,104 @@ func decampMerged(d *mergeDecision) []string {
 		}
 		notes = append(notes, home(e.path)+" decamped")
 	}
+	if d.Merged != "" {
+		if note := laneBranchNote(asDima, main, d.Repo, d.headRef, d.Head); note != "" {
+			notes = append(notes, note)
+		}
+	}
 	return notes
+}
+
+// only a lane's own branch shapes go by themselves: any other branch is someone's
+func isLaneBranch(ref string) bool {
+	return strings.HasPrefix(ref, "codie/") || strings.HasPrefix(ref, "coder/")
+}
+
+// the sha origin holds for a branch, "" with none or with no origin at all
+func remoteBranch(main, ref string) (string, error) {
+	if !ok(gitIn(main, "remote", "get-url", "origin")) {
+		return "", nil
+	}
+	listed, err := mustGitIn(main, "ls-remote", "ls-remote", "origin", "refs/heads/"+ref)
+	sha, _, _ := strings.Cut(listed, "\t")
+	return sha, err
+}
+
+func branchStands(main, ref string) bool {
+	if ok(gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref)) {
+		return true
+	}
+	sha, err := remoteBranch(main, ref)
+	return sha != "" || err != nil
+}
+
+// why a branch must stay, "" when it may go: a tree on it, or a commit carried says is on no landed line
+func branchStay(main, ref, uncarried string, carried func(sha string) bool) string {
+	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
+	if err != nil {
+		return "the worktree list did not read"
+	}
+	for _, e := range worktreesOf(listed) {
+		if e.branch == ref {
+			return "a tree holds it, " + home(e.path)
+		}
+	}
+	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok && !carried(local.out) {
+		return "the local branch holds a commit " + uncarried
+	}
+	sha, err := remoteBranch(main, ref)
+	if err != nil {
+		return "origin did not read"
+	}
+	if sha != "" {
+		_, _ = gitIn(main, "fetch", "-q", "origin", ref)
+		if !carried(sha) {
+			return "origin holds a commit " + uncarried
+		}
+	}
+	return ""
+}
+
+func branchDrop(main, ref string) string {
+	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok {
+		if deleted, _ := gitIn(main, "branch", "-D", ref); !deleted.ok {
+			return "⚠ " + ref + " stays: git kept the local branch"
+		}
+	}
+	if sha, err := remoteBranch(main, ref); sha != "" || err != nil {
+		// a ref delete carries no commit for the pre-push gates to read
+		if deleted, _ := gitIn(main, "-c", "core.hooksPath=/dev/null", "push", "-q", "origin", "--delete", ref); !deleted.ok {
+			return "⚠ " + ref + " stays on origin: the delete failed"
+		}
+	}
+	return ref + " gone"
+}
+
+// a merged lane's branch and what keeps it: an open pr on it would close with it, and a commit past the merged head is no one's but its author's
+func laneBranchWhy(as, main, slug, ref, head string) string {
+	var open []struct {
+		Number int `json:"number"`
+	}
+	if _, err := ghFetch(as, githubBase()+"/repos/"+slug+"/pulls?state=open&base="+url.QueryEscape(ref), &open); err != nil {
+		return "the open prs based on it did not read"
+	}
+	if len(open) > 0 {
+		return fmt.Sprintf("#%d is based on it", open[0].Number)
+	}
+	return branchStay(main, ref, "the merge did not carry", func(sha string) bool {
+		return sha == head || ok(gitIn(main, "merge-base", "--is-ancestor", sha, head))
+	})
+}
+
+// one line on the merged branch, "" when no lane branch stands
+func laneBranchNote(as, main, slug, ref, head string) string {
+	if !isLaneBranch(ref) || !branchStands(main, ref) {
+		return ""
+	}
+	if why := laneBranchWhy(as, main, slug, ref, head); why != "" {
+		return ref + " stays: " + why
+	}
+	return branchDrop(main, ref)
 }
 
 func gitAncestorOfAny(tree string, shas []string) bool {

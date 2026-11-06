@@ -178,6 +178,7 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 	gitT(t, filepath.Dir(clone), "clone", "-q", origin, clone)
 	gitT(t, clone, "remote", "set-url", "origin", "https://github.com/o/r.git")
 	gitT(t, clone, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
+	gitT(t, clone, "config", "url."+origin+".pushInsteadOf", "https://github.com/o/r.git")
 
 	var files []string
 	for _, p := range paths {
@@ -194,6 +195,7 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 		repoPath + "/commits/" + head + "/statuses": `[]`,
 		"graphql":            `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[]}}}}}`,
 		repoPath + "/issues": `[]`,
+		repoPath + "/pulls":  `[]`,
 	}}
 	server := h.serve(t)
 
@@ -799,6 +801,7 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 		"x/go/lane_landed.go",
 		"x/go/panic_seam.go",
 		"x/go/panic_seam_release.go",
+		"x/go/decamp.go",
 	} {
 		t.Run(path, func(t *testing.T) {
 			w := newMergeWorld(t, "script/foo.ts", path)

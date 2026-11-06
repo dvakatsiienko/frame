@@ -34,6 +34,7 @@
         "x/go/merge_hold.go",
         "x/go/lane_landed.go",
         "x/go/panic_seam.go",
-        "x/go/panic_seam_release.go"
+        "x/go/panic_seam_release.go",
+        "x/go/decamp.go"
     ]
 }
