@@ -6,7 +6,6 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
-    statSync,
     utimesSync,
     writeFileSync,
 } from 'node:fs';
@@ -25,6 +24,10 @@ function childEnv(temp: string) {
     for (const key of Object.keys(env))
         if (key.startsWith('VITEST')) delete env[key];
     return env;
+}
+
+function ownTempDir() {
+    return mkdtempSync(join(tmpdir(), 'temp-dir-own-'));
 }
 
 function fixtureDir(testSource: string) {
@@ -66,7 +69,7 @@ test('a child process a test spawns reads the run dir', () => {
 test(
     'a green run leaves nothing in its temp dir',
     () => {
-        const temp = mkdtempSync(join(tmpdir(), 'temp-dir-own-'));
+        const temp = ownTempDir();
 
         const run = runChild(fixtureDir(LEAKY_TEST), temp);
 
@@ -77,9 +80,9 @@ test(
 );
 
 test(
-    'a removal that fails is logged and the run stays green',
+    'a failed removal only logs, the run stays green',
     () => {
-        const temp = mkdtempSync(join(tmpdir(), 'temp-dir-own-'));
+        const temp = ownTempDir();
         const fixture = fixtureDir(`
 import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -153,7 +156,7 @@ const runners = [
 test.each(runners)(
     'a $name run sweeps only a dead pid over an hour old',
     ({ run }) => {
-        const temp = mkdtempSync(join(tmpdir(), 'temp-dir-own-'));
+        const temp = ownTempDir();
         const dead = deadPid();
         const kept = [
             { ageMs: 2 * HOUR, name: `ftr-${process.pid}-aaaa` },
@@ -180,7 +183,7 @@ test.each(runners)(
 test(
     'a mods:test run leaves nothing in its temp dir',
     () => {
-        const temp = mkdtempSync(join(tmpdir(), 'temp-dir-own-'));
+        const temp = ownTempDir();
 
         const run = runModsChild(temp);
 
@@ -191,9 +194,9 @@ test(
 );
 
 test(
-    'a killed run leaves one named dir, and a later run sweeps it past the hour',
+    'a killed run leaves one named dir for a later run to sweep',
     async () => {
-        const temp = mkdtempSync(join(tmpdir(), 'temp-dir-own-'));
+        const temp = ownTempDir();
         const started = join(
             mkdtempSync(join(tmpdir(), 'temp-dir-marker-')),
             'worker-pid',
@@ -214,16 +217,21 @@ test('waits to be killed', async () => {
             stdio: 'ignore',
         });
         const exited = once(child, 'exit');
-        await vi.waitFor(() => statSync(started), {
-            interval: 50,
-            timeout: CHILD_RUN_TIMEOUT / 2,
-        });
+        // never an empty read: pid 0 would signal this run's whole process group
+        const workerPid = await vi.waitFor(
+            () => {
+                const pid = Number(readFileSync(started, 'utf8'));
+                if (!pid) throw new Error('no worker pid yet');
+                return pid;
+            },
+            { interval: 50, timeout: CHILD_RUN_TIMEOUT / 2 },
+        );
 
         child.kill('SIGKILL');
         await exited;
         // the orphaned worker may already have left on the lost ipc channel
         try {
-            process.kill(Number(readFileSync(started, 'utf8')), 'SIGKILL');
+            process.kill(workerPid, 'SIGKILL');
         } catch {}
 
         const leftovers = readdirSync(temp);

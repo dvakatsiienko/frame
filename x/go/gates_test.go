@@ -16,6 +16,7 @@ var realGateScripts = []string{
 	"script/index-run.sh",
 	"script/retired-names-check.ts",
 	"script/lib/retired-names.ts",
+	"script/lib/test-temp-dir.ts",
 	"script/lib/fleet-hazards-check.ts",
 	"recipes/nurture-memory/scripts/memory-lint.ts",
 }
