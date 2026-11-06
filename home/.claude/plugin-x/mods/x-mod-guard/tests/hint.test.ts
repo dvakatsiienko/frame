@@ -9,6 +9,7 @@ function world(on: On, cwd = '/repo') {
     on('session.cwd', () => ({ value: cwd }));
     on('env.get', () => ({ value: '/home' }));
     on('fs.exists', () => ({ value: true }));
+    on('fs.list', () => ({ value: [] }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };

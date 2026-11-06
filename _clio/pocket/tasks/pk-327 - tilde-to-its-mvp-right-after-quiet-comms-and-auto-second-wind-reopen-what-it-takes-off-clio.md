@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T22:08:00Z'
-updated_date: '2026-11-06T19:47:00Z'
+updated_date: '2026-11-06T20:06:00Z'
 labels:
   - s
   - wing-1
@@ -35,4 +35,6 @@ PK-327:W6 (2026-11-06 00:07, dima): i want the side channel to operate with tick
 PK-327:W7 (2026-11-06 03:06, dima): let's prefer side channel execution; it is a spam-free, performant channel, while side lane distractions hurt main lane performance, and even a basic merge interrupts the main lane. i'll hop between you two: you take care of coordination for lanes, and i solve the rest of the operational stuff with the side channel.
 PK-327:W8 (2026-11-06 03:06, dima): eventually i want to test drive tilde. with tilde taking care of coordination, your main lane is unloaded even more, and we have a spare side channel to solve more stuff.
 PK-327:W9 (2026-11-06 03:06, dima): before that, we need to measure quiet comms, because quiet comms affects everyone, you and tilde as well. everything we optimize right now transfers to tilde too, so let's focus on that first.
+
+wing-1 stays only because a label off an item with same-day W-lines reds the groom check, a wing's prompts reach no log (wing 2's hole, proven 22:06); it is main's, due to fold into FRM-368.
 <!-- SECTION:NOTES:END -->

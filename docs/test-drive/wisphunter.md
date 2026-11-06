@@ -65,4 +65,8 @@ group by 1 order by 2 desc;
 - 2026-11-06 · BYT-130 ci made boring · codie · helped: the two axes and the scoped read found real gaps the cases missed · keep
 - 2026-11-06 · BYT-130 ci made boring · sixth sense · helped: the one real finding came from it, and it marked its own traces as unexecuted · keep; suggestion: brief it with the mutants already run
 - 2026-11-06 · cli lane 6 · codie · helped: found the recovery race and the base-only path nobody else did · keep
+- 2026-11-06 · BYT-94 ci made boring codie · helped: the spec axis found the permission break and the risky-list gap
+- 2026-11-06 · FRM-511 cli lane 5 codie · helped most: a scoped read found 12 real holes after the codie's own fixes; fire it on any rework of a fail-open path
+- 2026-11-06 · FRM-511 cli lane 5 sixth sense · helped: the second read found 5 of the 6 round 1 breaks, one claim (`stateDir`) refuted by the code; always reproduce it
+
 ## verdict

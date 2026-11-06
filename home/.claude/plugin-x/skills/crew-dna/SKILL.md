@@ -78,7 +78,7 @@ this file says how every member does it. A section headed with roles binds only 
 - sixth sense's posts are `crew-sixth-sense/posting.md`; a side lane records its clean by `watch-pr.sh --verified` too; codie's done comment says «verified clean, round N»
 
 **proof**
-- a worktree: `EnterWorktree` (it seeds itself), or by hand `git worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main`, in frame with the two git-crypt `-c` flags (`x/AGENTS.md` § lane); then `pnpm worktree:seed` in bytes, `x lane seed <path>` in frame <!-- mac -->
+- a worktree: `EnterWorktree` (it seeds itself), or `git worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main`, in frame with the two git-crypt `-c` flags (`x/AGENTS.md` § lane); then `pnpm worktree:seed <path>` in bytes, `x lane seed <path>` in frame <!-- mac -->
 - skill loads: `x:guide-code` before code, `x:browser-headless` before a ui check, `x:github-contrib` before a `gh` write
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
 - a tool the tests need is proven on the ci runner, not the mac

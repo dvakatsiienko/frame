@@ -55,5 +55,6 @@ Ticket: none
 - 2026-11-06 · the cli groom right after a second wind, and frame#129 at c77e049a · wishkeeper 19 min, 294k tokens, 27 findings: 5 high real (`-count=1` lost from a re-sign, FRM-511's close half unlanded, a silent quick-lane path, a false «doesn't hold you», the pocket's commit refused 102 min) · no code break in the pr, it shaped the merge ask
 - 2026-11-06 · FRM-501 round 3 on main, no sixth sense, and the batch since 20:59 · wishkeeper 13 min, 188k tokens, 20 findings: 3 high real (a tick resolved with its write undone, his o87 with no home, the checks he asked for never shown him), 2 quiet comms gaps for the close · all three were lost hand-offs from main to a wing
 - 2026-11-06 · wing 3's frozen mods drafts, no code · wishkeeper 4 min, 120k tokens, 20 findings: 5 high real (two of his ticks and two checks with no home, an old order line, stale titles) · 113 W-lines held, the losses were in what the ticks added
+- 2026-11-06 · the batch across the second wind, no lane diff · wishkeeper 7 min, 225k tokens, 16 findings: 3 high real (FRM-509's re-signed rider missing from the spec a codie would build from, my words carried as his in two wish lines, a wish title shrunk) · the rider held a pickup, each opened before its fix
 
 ## verdict

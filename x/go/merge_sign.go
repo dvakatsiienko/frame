@@ -27,14 +27,59 @@ type chunkSign struct {
 	detail string
 }
 
+func ticketOfPr(pr pullHead) string {
+	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {
+		return m[1]
+	}
+	if m := ticketOfBody.FindStringSubmatch(pr.Body); m != nil {
+		return m[1]
+	}
+	return ""
+}
+
+// the raw merge's one door on a lane with no sixth sense (his tick o36): his word stands in for a clean that nobody was
+// asked to write; a clean on another head, a sixth sense on the dispatch or a ticket that did not read opens nothing
+func (d *mergeDecision) wordOpens(pr pullHead, c mergeCheck) mergeCheck {
+	if !d.dimaOK || c.OK || !c.noClean {
+		return c
+	}
+	closed := func(why string) mergeCheck {
+		c.Detail += "; --dima-ok opens nothing: " + why
+		return c
+	}
+	ticket := ticketOfPr(pr)
+	if ticket == "" {
+		return closed("no ticket on " + pr.Head.Ref + " or in the pr body, so no dispatch to read")
+	}
+	actor, err := actorOf(Flags{})
+	if err != nil {
+		return closed(ticket + " did not read: " + err.Error())
+	}
+	issue, err := fetchBody(actor, ticket)
+	if err != nil {
+		return closed(ticket + " did not read: " + err.Error())
+	}
+	body := ""
+	if issue.Description != nil {
+		body = *issue.Description
+	}
+	switch {
+	case heldDispatch(body) == "":
+		return closed(ticket + " holds no dispatch")
+	case dispatchOf(body).hasSixthSense:
+		return closed(ticket + "'s dispatch names a sixth sense")
+	}
+	c.OK, c.Detail = true, "no sixth sense on "+ticket+"'s dispatch, dima's word on #"+d.PR+", typed (--dima-ok)"
+	return c
+}
+
 // the sign lives in linear, never the pr: a pr body is codie's to write
 func signOf(pr pullHead, signs map[string]chunkSign) (chunkSign, error) {
-	ticket := ""
-	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {
-		ticket = m[1]
-	} else if m := ticketOfBody.FindStringSubmatch(pr.Body); m != nil {
-		ticket = m[1]
+	// a sign pre-approves a self-edit, and any Bash line can point the read at a server that forges one
+	if !isTestBuild && os.Getenv("X_LINEAR_URL") != "" {
+		return chunkSign{detail: "X_LINEAR_URL is set, so no sign reads: linear here is not the real one"}, nil
 	}
+	ticket := ticketOfPr(pr)
 	if ticket == "" {
 		return chunkSign{detail: "no ticket on " + pr.Head.Ref + " or in the pr body, so no sign to read"}, nil
 	}
@@ -188,9 +233,9 @@ func readSign(ticket, body string) chunkSign {
 
 // a pr that edits merge-auto must never be gated by its own code: the shim's stamp, and x/go as the binary's tree
 // holds it read against origin/main, a git failure counting as dev. a pr head's binary can drop this check, so
-// the merge runs from the main checkout; under X_TEST the override stands in, and X_TEST holds no real key
+// the merge runs from the main checkout; in the test binary the override stands in
 func isDevBuild() bool {
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		if forced, set := os.LookupEnv("X_DEV_BUILD"); set {
 			return forced != ""
 		}
@@ -200,4 +245,9 @@ func isDevBuild() bool {
 	}
 	got, _ := gitIn(sourceDir(), "diff", "--quiet", "origin/main", "--", ".")
 	return !got.ok
+}
+
+// any Bash line can set X_TEST, and an env var in a real run would swap what the merge gates read: only the test binary listens
+func mergeTestEnvOn() bool {
+	return isTestBuild && os.Getenv("X_TEST") != ""
 }

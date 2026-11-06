@@ -165,6 +165,7 @@
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
   - given a lane plan naming the chunk, then 🔴 closing while its `- [ ] NN · <ticket> reviewed and closed` slice is open or missing, and `--apply` on a merged lane ticks an open one, no other line touched, so the glide card holds the chunk until it closes; a lane with no plan, or a plan without the chunk, prints no closing line (FRM-504)
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
+  - given a pr that added a rule to x-mod-guard's `WARN_ONLY`, when `x lane landed <ticket> --pr <n>` runs, then 🔴 warn-only names the rule while the land still lists it, ✅ once it left; a pr that added none prints no such line, the older rules among them; a set that does not read reds (FRM-511)
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
@@ -195,6 +196,15 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
+- ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
+  - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
+  - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why
+- ⬜ only the real clean store and hold record open the gate (FRM-511): `X_VERIFIED`, `X_STATE`'s hold record, `X_DEV_BUILD` and `X_NOW` count in the test binary alone, a set `X_TEST` on a real one changes nothing; given `X_LINEAR_URL` set on a real binary, then no sign reads, so a forged one pre-approves no self-edit
+- ⬜ a held pr merges only on dima's word (FRM-511)
+  - given `x lane merge-auto <pr> --hold --apply`, then the pr and every open layer under it are marked in this mac's record (`<state>/merge-hold/<owner>_<repo>.json`) and nothing merges
+  - given a held pr, or a top over a held layer, when `x lane merge-auto <pr> --apply` runs, then it refuses naming the hold; a record it cannot read reads as held; with `--dima-ok <pr>` it merges and takes the landed layers' marks off
+  - given `x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply`, then those marks come off and nothing merges, an unreadable record with them; without `--dima-ok` it exits 2
+  - decision: a local record over a github label, so x-mod-guard reads it before a raw merge runs, with no network (clio's greenlight, FRM-511)
 - ✅ `x lane rebase-main --apply` puts a codie branch on origin/main with no merge commit
   - given a `codie/*` branch behind origin/main with no conflict
   - when `x lane rebase-main --apply` runs
@@ -204,6 +214,9 @@
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
   - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
+  - given `--onto <sha>` with no `--apply`, then the plan says how many commits past origin/main replay, so a low sha shows what would leave the branch; no shape tells it from a true old base, so it does not refuse
+  - given a layer whose lower layer squash-merged, when `x lane rebase-main --onto <old base> --apply` runs, then only the layer's own commits sit on origin/main, pushed with a lease; its own pre-rebase remote head is no refusal, a rival's commit still is, and a sha that is no ancestor of HEAD refuses naming it (FRM-511)
+  - given a conflict there, then after `git rebase --continue` the same call reads the head it recorded before the rewrite and finishes the push; after `git rebase --abort` it runs the rebase again
   - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in sixth sense's round 2
   - decision: the one force-push door, `codie/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
 - ✅ `x lane verify-tree <pr url | main:<sha>>` gives sixth sense a seeded worktree of a head

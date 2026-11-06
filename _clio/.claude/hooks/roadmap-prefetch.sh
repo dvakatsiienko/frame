@@ -14,7 +14,7 @@ if [ "${1:-}" = --outline ]; then
     "- order: " + ([$d.initiative.content | split("\n")[] | select(test("^[0-9]+\\. ")) | sub("^[0-9]+\\. "; "") | (split(" — ")[0]) + (if test("\\(done [0-9]") then " ✅" else "" end)] | join(" → ")),
     "- now: " + (($desc | capture("now: (?<n>[^.]*)").n) // "?"),
     "- next: " + (($desc | capture("next: (?<n>[^.]*)").n) // "?"),
-    "- started mils: " + ([$d.projectMilestones.nodes[] | ([.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate")))] | length) as $done | (.issues.nodes | length) as $all | select($done > 0 and $done < $all) | "\(.project.name) · \(.name) \($done)/\($all)"] | join(", ") | if . == "" then "none" else . end)
+    "- started mils: " + ([$d.projectMilestones.nodes[] | ([.issues.nodes[] | select((.state.type | IN("completed", "canceled", "duplicate")))] | length) as $done | (.issues.nodes | length) as $all | select($done > 0 and $done < $all) | "\($done)/\($all)"] | if length == 0 then "none" else "\(length): " + join(", ") end)
   ') || exit 0
   [ -n "$body" ] && printf '%s\n' "$body" > "$out" && sed -n '3,$p' "$out"
   exit 0

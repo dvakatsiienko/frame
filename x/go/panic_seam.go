@@ -4,6 +4,9 @@ package main
 
 import "os"
 
+// only the test binary trusts the merge gates' test env, see mergeTestEnvOn
+const isTestBuild = true
+
 // only the test binary is built with this tag: X_PANIC turns `knowledge list` into a panic, so the
 // dispatcher's recover is proven from outside without a branch in the shipped binary
 func init() {
