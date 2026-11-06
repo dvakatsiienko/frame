@@ -780,7 +780,7 @@ describe('full wish ids in the groom checks', () => {
         ).toThrow(/twice/);
         expect(
             moveWishes(
-                'PK-4:W1 (x): quote\nPK-3:W1 (y): mine\n',
+                'PK-3:W1 (y): mine\nPK-4:W1 (x): quote\n',
                 ticket,
                 'PK-3',
                 'FRM-9',
