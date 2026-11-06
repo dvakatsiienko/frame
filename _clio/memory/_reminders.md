@@ -83,3 +83,4 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens; and `pnpm memory-load:replay` for the rows' false fires (his «ok and measure», o43) — set 2026-11-06 · due: 2026-11-20
 ⏰ 🦉 at the halt, lanes quiet: remind dima of FRM-517's timed reboot («remind me via main clio do not forget!», o55): temp dir entries over 1 h old to `trash`, then reboot — set 2026-11-06 · due: 2026-11-06
 ⏰ 🦉 PK-310's Finder watch, past 24 h uptime: 15:29 unless a reboot moves it — set 2026-11-06 · due: 2026-11-07
+⏰📌 🦉 reopen the cpu overload with dima, FRM-525: `docs/test-drive/gate-speed/cpu-cases.md` § next; dies when it closes — set 2026-11-07 · due: 2026-11-07
