@@ -112,8 +112,11 @@ func TestLandedApplyDecampsOnlyTheCleanTrees(t *testing.T) {
 	// worktrees share info/exclude, so a gitignored .scratch/ hides from git status as it does in frame
 	write(t, filepath.Join(w.repo, ".git/info/exclude"), ".scratch/\n")
 	trees := map[string]string{}
-	for _, name := range []string{"clean", "loose", "scratch", "unpushed"} {
+	for _, name := range []string{"clean", "emptied", "loose", "scratch", "unpushed"} {
 		trees[name] = w.laneTree(t, name)
+	}
+	if err := os.MkdirAll(filepath.Join(trees["emptied"], ".scratch/lane"), 0o755); err != nil {
+		t.Fatal(err)
 	}
 	write(t, filepath.Join(trees["loose"], "loose.txt"), "not committed\n")
 	write(t, filepath.Join(trees["scratch"], ".scratch/notes.md"), "a plan\n")
@@ -125,10 +128,12 @@ func TestLandedApplyDecampsOnlyTheCleanTrees(t *testing.T) {
 		"lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
 
 	out := linesOf(envelope)
-	if exists(trees["clean"]) || strings.Contains(gitT(t, w.repo, "worktree", "list"), trees["clean"]) {
-		t.Errorf("the clean tree was not decamped:\n%s", out)
+	for _, name := range []string{"clean", "emptied"} {
+		if exists(trees[name]) || strings.Contains(gitT(t, w.repo, "worktree", "list"), trees[name]) {
+			t.Errorf("the %s tree was not decamped:\n%s", name, out)
+		}
 	}
-	for name, reason := range map[string]string{"loose": "loose.txt", "scratch": "holds a .scratch/ dir", "unpushed": "on no remote"} {
+	for name, reason := range map[string]string{"loose": "loose.txt", "scratch": "holds a file in .scratch/", "unpushed": "on no remote"} {
 		if !exists(trees[name]) {
 			t.Errorf("the %s tree was removed", name)
 		}

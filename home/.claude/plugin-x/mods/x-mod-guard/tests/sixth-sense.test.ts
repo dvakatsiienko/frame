@@ -102,7 +102,7 @@ test('a second sixth sense for a live lane is refused with the next: message its
 });
 
 test('a --name= spelling names the summoned thread, its skill line read mid-prompt', async ($, on) => {
-    const w = world(on, [ROW], { 64218: START });
+    world(on, [ROW], { 64218: START });
     const r = await bash(
         $,
         `claude --bg --name='⚡ 🔎 sixth sense: mods lane 4 | x' 'use the skill: /x:crew-sixth-sense FRM-1 https://github.com/x/y/pull/12 c d'`,
@@ -116,7 +116,7 @@ test('a --name= spelling names the summoned thread, its skill line read mid-prom
 });
 
 test('a re-cased name under another mode badge names the same lane', async ($, on) => {
-    const w = world(on, [ROW], { 64218: START });
+    world(on, [ROW], { 64218: START });
     const r = await bash(
         $,
         `claude --bg -n '🌗 🔎 sixth sense: Mods Lane 4 | #12' 'go'`,

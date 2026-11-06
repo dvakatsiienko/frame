@@ -107,6 +107,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	changed := changedScratch(scratch)
 	r.Open(fmt.Sprintf("%d edited", len(changed)))
 	if against, _ := flags["against"].(string); against != "" {
+		r.skip("gates")
 		return againstRef(r, repo, scratch, changed, against)
 	}
 	// read before the run: a save while the tests run must not stamp bytes they never read
@@ -118,13 +119,36 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	if red := redReports(reports); len(red) > 0 {
-		return nil, &Fail{Msg: "red on the overlay: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
+	red := redReports(reports)
+	var verdicts []gateVerdict
+	// a red test does not stop the gates: one run names every red a commit would meet
+	gatesErr := r.Step("gates", "the commit hook's gates on the overlay", func() (string, error) {
+		verdicts, err = overlayGates(repo, scratch, changed, stamp, len(red) == 0)
+		if err != nil {
+			return "", err
+		}
+		return verdictLine(verdicts), gatesFail(verdicts, "red on the overlay", "x mods edit test")
+	})
+	stopped, isRed := errors.AsType[*Fail](gatesErr)
+	if gatesErr != nil && !isRed {
+		return nil, gatesErr
+	}
+	if len(red) > 0 {
+		msg, log := "red on the overlay: "+reportLine(red), nonBlank(redLog(red))
+		if isRed {
+			msg, log = msg+"; "+stopped.Msg, append(log, stopped.Log...)
+		} else {
+			log = append(log, verdictLine(verdicts))
+		}
+		return nil, &Fail{Msg: msg, Next: "x mods edit test", Log: log}
+	}
+	if isRed {
+		return nil, stopped
 	}
 	// a lost stamp costs one test run at the push, nothing more
 	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
 	r.Done(reportLine(reports), "x mods edit push")
-	return ordered{{"mods", reports}}, nil
+	return ordered{{"mods", reports}, {"gates", verdicts}}, nil
 }
 
 func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
@@ -159,12 +183,16 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 	}
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
-		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == overlayStamp(repo, scratch, changed) {
+		stamp := overlayStamp(repo, scratch, changed)
+		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == stamp {
 			return "x mods edit test passed these bytes", nil
 		}
 		reports, err = overlayTest(repo, scratch, changed)
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
+		}
+		if err == nil && overlayStamp(repo, scratch, changed) == stamp {
+			recordTestedMods(repo, scratch, changed)
 		}
 		return reportLine(reports), err
 	}); err != nil {
@@ -246,6 +274,39 @@ func writeAll(repo, scratch string, changed []string) error {
 
 /* the overlay */
 
+// every pre-commit gate the overlay's paths match, on a temp index of HEAD and the overlay; a green records only bytes the
+// tests read, so a save after the stamp and a red test record nothing
+func overlayGates(repo, scratch string, changed []string, stamp string, testsGreen bool) ([]gateVerdict, error) {
+	gates, err := readHookGates(repo, "pre-commit")
+	if err != nil || len(gates) == 0 || len(changed) == 0 {
+		return nil, err
+	}
+	env, treeOf, done, err := headIndex(repo)
+	if err != nil {
+		return nil, err
+	}
+	defer done()
+	if err := layFormatted(repo, scratch, changed, env); err != nil {
+		return nil, err
+	}
+	staged, err := indexPaths(repo, env)
+	if err != nil {
+		return nil, err
+	}
+	verdicts := runPreCommit(repo, gates, staged, env, func(g hookGate) string {
+		if g.commitOnly {
+			return gateCommits
+		}
+		return ""
+	})
+	redClockReads(repo, gates, verdicts, changed, env)
+	if gatesFail(verdicts, "", "") == nil && testsGreen && overlayStamp(repo, scratch, changed) == stamp {
+		recordTree(repo, treeOf, gates, verdicts)
+		recordTestedMods(repo, scratch, changed)
+	}
+	return verdicts, nil
+}
+
 // every byte an overlay test would read: the touched mods' files with the edited copies laid over
 func overlayStamp(repo, scratch string, changed []string) string {
 	sources := map[string]string{}
@@ -316,6 +377,10 @@ func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
 			got, _ = run("", nil, "", "claude", "plugin", "test", overlay)
 		}
 		report.Passed, report.Failed, report.Errored = testOutcome(got.log)
+		// the engine runs on past a throwing hook, so a test beside it still passes (`engine.md`)
+		if skipped := hookSkipped.FindString(got.log); skipped != "" {
+			report.Errored = append(report.Errored, skipped)
+		}
 		if !got.ok && len(report.Failed)+len(report.Errored) == 0 {
 			report.Errored = []string{"claude plugin test exited red with no failing test named"}
 		}
@@ -376,6 +441,7 @@ func againstRef(r *Run, repo, scratch string, changed []string, ref string) (any
 /* claude plugin test's words */
 
 var (
+	hookSkipped  = regexp.MustCompile(`hook was skipped: .*`)
 	testFileLine = regexp.MustCompile(`^(tests/\S+\.test\.tsx?):$`)
 	testFailLine = regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`)
 	testPassLine = regexp.MustCompile(`^\(pass\) `)

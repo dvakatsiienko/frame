@@ -41,7 +41,14 @@ if (import.meta.main) {
         // the engine's tsconfig leaves out .ts import paths, which every mod writes
         const r = spawnSync(
             'tsc',
-            ['-p', dir, '--noEmit', '--allowImportingTsExtensions'],
+            [
+                '-p',
+                dir,
+                '--noEmit',
+                '--allowImportingTsExtensions',
+                '--noUnusedLocals',
+                '--noUnusedParameters',
+            ],
             { encoding: 'utf8' },
         );
         process.stdout.write(`${r.stdout}${r.stderr}`);

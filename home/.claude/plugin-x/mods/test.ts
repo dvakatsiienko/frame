@@ -1,6 +1,8 @@
 // pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
 // the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
-// mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files
+// mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files; --skip-tested, the
+// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` already read; --clock-only, that
+// verb's flag, reads only the clock rule of the named mods and runs no test
 import { spawnSync } from 'node:child_process';
 import {
     appendFileSync,
@@ -21,6 +23,8 @@ type Run = { clockReads?: string[]; mod: string; output: string };
 
 // claude plugin test's words, read the same way by `x mods edit test` (x/go/mods.go testOutcome); both parsers are
 // held to plugin-test.sample.txt: a test file that cannot load is «errored», a test that runs and fails is «failed»
+const HOOK_SKIPPED = /hook was skipped: /;
+
 export function outcome(output: string) {
     let file = '';
     let passed = 0;
@@ -32,6 +36,7 @@ export function outcome(output: string) {
         if (head) file = head[1] ?? '';
         else if (line.startsWith('(pass) ')) passed++;
         else if (line === '(fail) the file did not load') errored.push(file);
+        else if (HOOK_SKIPPED.test(line)) failed.push(line);
         else {
             const fail = line.match(/^\(fail\) (.+?)(?: \[[\d.]+ms\])?$/);
             if (fail) failed.push(fail[1] ?? '');
@@ -116,7 +121,8 @@ export function failures(output: string) {
             /^\s*\d+ (pass|fail)$/.test(line)
         ) {
             isFailing = false;
-        } else if (isFailing && line.trim()) kept.push(line);
+        } else if ((isFailing || HOOK_SKIPPED.test(line)) && line.trim())
+            kept.push(line);
     }
     return kept.filter(Boolean).join('\n');
 }
@@ -231,6 +237,47 @@ function copyKeepingTests(from: string, mod: string, keep: string[]) {
     return copy;
 }
 
+// the mod's subtree as this index holds it; the hook's own git env points at a path outside the private copy
+function indexedTree(root: string, mod: string) {
+    const env = { ...process.env };
+    for (const key of [
+        'GIT_DIR',
+        'GIT_INDEX_FILE',
+        'GIT_PREFIX',
+        'GIT_WORK_TREE',
+    ])
+        delete env[key];
+    const git = (...args: string[]) =>
+        spawnSync('git', ['-C', root, ...args], {
+            encoding: 'utf8',
+            env,
+        }).stdout?.trim();
+    return git(
+        'write-tree',
+        `--prefix=${git('rev-parse', '--show-prefix')}${mod}/`,
+    );
+}
+
+// the mods a green overlay recorded, each line valid until its first field; a lost or stale line costs one rerun
+function testedTrees(record: string, now: number) {
+    const trees = new Set<string>();
+    for (const line of record.split('\n')) {
+        const [until, subject, sha] = line.split('\t');
+        if (subject?.startsWith('mod ') && now < Number(until) * 1000)
+            trees.add(`${subject.slice(4)} ${sha}`);
+    }
+    return trees;
+}
+
+function readTested() {
+    const state = process.env.X_STATE ?? join(homedir(), '.local/state/x');
+    const path = join(state, 'gates-green.tsv');
+    return testedTrees(
+        existsSync(path) ? readFileSync(path, 'utf8') : '',
+        Date.now(),
+    );
+}
+
 // one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
 function logRun(args: string, line: string) {
     if (process.env.X_TEST) return;
@@ -249,7 +296,12 @@ if (import.meta.main) {
     const root = import.meta.dirname;
     const { positionals, values } = parseArgs({
         allowPositionals: true,
-        options: { extra: { type: 'string' }, only: { type: 'string' } },
+        options: {
+            'clock-only': { type: 'boolean' },
+            extra: { type: 'string' },
+            only: { type: 'string' },
+            'skip-tested': { type: 'boolean' },
+        },
     });
     const all = readdirSync(root)
         .sort()
@@ -270,15 +322,36 @@ if (import.meta.main) {
                 !all.includes(onlyMod as string)))
     ) {
         console.error(
-            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] — mods: ${all.join(', ')}`,
+            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] [--skip-tested] — mods: ${all.join(', ')}`,
         );
         process.exit(2);
     }
     const runs: (Run & { status: number | null })[] = [];
     let reran = false;
+    if (values['clock-only']) {
+        const reads = positionals.flatMap((mod) =>
+            hookClockReads(join(root, mod)).map((at) => `${mod}/${at}`),
+        );
+        for (const at of reads)
+            console.log(`a clock read outside $.clock: ${at}`);
+        process.exit(reads.length ? 1 : 0);
+    }
     const named = onlyMod ? [onlyMod] : positionals;
+    const tested = values['skip-tested'] ? readTested() : undefined;
+    let skipped = 0;
     for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
+        // a clock read reds whatever was tested, so that mod runs and reads red as it always did
+        if (
+            tested?.has(`${mod} ${indexedTree(root, mod)}`) &&
+            !hookClockReads(dir).length
+        ) {
+            skipped++;
+            process.stdout.write(
+                `${mod}: tests skipped, x mods edit test passed these bytes\n`,
+            );
+            continue;
+        }
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
             cpSync(join(root, mod), dir, { recursive: true });
@@ -321,7 +394,8 @@ if (import.meta.main) {
         if (values.extra || only)
             rmSync(dirname(dir), { force: true, recursive: true });
     }
-    const line = summary(runs);
+    const line =
+        summary(runs) + (skipped ? `, ${skipped} skipped on tested bytes` : '');
     console.log(`\n${line}`);
     logRun(
         process.argv.slice(2).join(' '),

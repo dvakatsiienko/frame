@@ -171,6 +171,15 @@ describe('a timeout-only red', () => {
 });
 
 describe('outcome', () => {
+    it('reads a thrown hook as a fail, whatever its rows say', () => {
+        const thrown =
+            "tests/a.test.ts:\n(pass) one\n    m's session.start hook was skipped: m: boom\n";
+        expect(outcome(thrown).failed).toEqual([
+            "m's session.start hook was skipped: m: boom",
+        ]);
+        expect(failures(thrown)).toContain('hook was skipped');
+    });
+
     it('tells a test that failed from a file that did not load', () => {
         expect(outcome(SAMPLE)).toEqual({
             errored: ['tests/c.test.ts'],

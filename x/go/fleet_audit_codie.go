@@ -22,22 +22,199 @@ const (
 	ticketCheck = "ticket read"
 )
 
-// a shell read: the verb, then its args up to the file, the file's name standing alone
-const (
-	shellRead = `(?:(?m:^)|[\s;&|(])(?:cat|head|tail|sed|bat|less)\s`
-	readArgs  = `(?:[^;&|<>\n]*[^\w.\-;&|<>\n])?`
-	nameEnd   = `(?:$|[^\w.\-])`
+// a read matches under any install's skills dir, and a file of that name elsewhere credits nothing; a bare name with no
+// `cd` before it credits how-you-work.md, the one file no other skill shares. a session opened before a file's birth reads n/a
+type auditFile struct {
+	name, born string
+	paths      []string
+	bareName   string
+	skill      string
+}
+
+var auditFiles = []auditFile{
+	{name: "crew-dna", born: "2026-10-09", paths: []string{"crew-dna/SKILL.md"}, skill: "x:crew-dna"},
+	{name: lessonsName, born: "2026-09-30", paths: []string{"crew-codie/" + lessonsName, "crew-coder/" + lessonsName}, bareName: lessonsName}, // read-both
+}
+
+func (f auditFile) namedBy(path string) bool {
+	path = filepath.Clean(path)
+	if f.bareName != "" && (path == f.bareName || filepath.Base(path) == f.bareName && strings.Contains(path, "/skills/")) {
+		return true
+	}
+	return slices.ContainsFunc(f.paths, func(own string) bool { return path == own || strings.HasSuffix(path, "/"+own) })
+}
+
+var (
+	shellReadVerbs = map[string]bool{"cat": true, "head": true, "tail": true, "sed": true, "bat": true, "less": true}
+	shellRedirect  = regexp.MustCompile(`^\d*[<>]`)
+	shellHeredoc   = regexp.MustCompile(`(?:^|[^<])<<-?\s*['"]?([A-Za-z_]\w*)['"]?`)
+	shellEnvWord   = regexp.MustCompile(`^\w+=`)
+	shellOpeners   = map[string]bool{"then": true, "do": true, "else": true, "if": true, "elif": true, "while": true, "until": true, "!": true, "{": true, "time": true}
 )
 
-// a read matches under any skill dir and from any dir the shell sits in, so neither a rename nor a `cd` can break it;
-// a session opened before a file's birth reads n/a for it, never a miss
-var auditFiles = []struct {
-	name, match, born string
-	shell             *regexp.Regexp
-}{
-	{"crew-dna", "/crew-dna/SKILL.md", "2026-10-09", regexp.MustCompile(shellRead + readArgs + `crew-dna/SKILL\.md` + nameEnd +
-		`|\bcd\s+(?:[^;&|\n]*[^\w.\-;&|\n])?crew-dna/?\s*(?:&&|;|\n)[\s\S]*?` + shellRead + `(?:[^;&|<>\n]*\s)?["']?(?:\./)?SKILL\.md` + nameEnd)},
-	{lessonsName, "/how-you-work.md", "2026-09-30", regexp.MustCompile(shellRead + readArgs + `how-you-work\.md` + nameEnd)},
+// the paths a shell line reads, each through the `cd`s before it; a verb counts only as its statement's first word
+func shellReadPaths(command string) []string {
+	var paths, outer []string
+	dir := ""
+	for _, statement := range shellStatements(dropHeredocs(command)) {
+		switch statement {
+		case "(":
+			outer = append(outer, dir)
+			continue
+		case ")":
+			if len(outer) > 0 {
+				dir, outer = outer[len(outer)-1], outer[:len(outer)-1]
+			}
+			continue
+		}
+		words := shellCommandWords(statementWords(statement))
+		if len(words) == 0 {
+			continue
+		}
+		if words[0] == "cd" && len(words) > 1 {
+			dir = pathUnderShellDir(dir, words[1])
+			continue
+		}
+		if !shellReadVerbs[words[0]] || throwsAwayItsRead(words) {
+			continue
+		}
+		for _, word := range words[1:] {
+			if shellRedirect.MatchString(word) {
+				break
+			}
+			if !strings.HasPrefix(word, "-") {
+				paths = append(paths, pathUnderShellDir(dir, word))
+			}
+		}
+	}
+	return paths
+}
+
+// `sed -i` writes its file, and a read sent to /dev/null reaches nobody; errors sent there leave the read standing
+func throwsAwayItsRead(words []string) bool {
+	if words[0] == "sed" && slices.ContainsFunc(words, func(word string) bool { return strings.HasPrefix(word, "-i") }) {
+		return true
+	}
+	for i, word := range words {
+		target, isOut := strings.CutPrefix(strings.TrimPrefix(word, "1"), ">")
+		if isOut && (target == "/dev/null" || target == "" && i+1 < len(words) && words[i+1] == "/dev/null") {
+			return true
+		}
+	}
+	return false
+}
+
+// a statement's words, a quoted one kept whole and its quotes dropped
+func statementWords(statement string) []string {
+	var words []string
+	var now strings.Builder
+	open, inWord := byte(0), false
+	for i := range len(statement) {
+		c := statement[i]
+		switch {
+		case open != 0:
+			if c == open {
+				open = 0
+			} else {
+				now.WriteByte(c)
+			}
+		case c == '"' || c == '\'':
+			open, inWord = c, true
+		case c == ' ' || c == '\t':
+			if inWord {
+				words = append(words, now.String())
+				now.Reset()
+				inWord = false
+			}
+		default:
+			now.WriteByte(c)
+			inWord = true
+		}
+	}
+	if inWord {
+		words = append(words, now.String())
+	}
+	return words
+}
+
+// the words from the command on, past a keyword, an env word or a timeout in front of it
+func shellCommandWords(words []string) []string {
+	for len(words) > 0 {
+		switch {
+		case shellOpeners[words[0]] || shellEnvWord.MatchString(words[0]):
+			words = words[1:]
+		case words[0] == "timeout" && len(words) > 1:
+			words = words[2:]
+		default:
+			return words
+		}
+	}
+	return nil
+}
+
+func pathUnderShellDir(dir, word string) string {
+	if dir == "" || filepath.IsAbs(word) || strings.HasPrefix(word, "~") {
+		return word
+	}
+	return filepath.Join(dir, word)
+}
+
+// a heredoc's body is its command's input: no line of it runs
+func dropHeredocs(command string) string {
+	var kept []string
+	end := ""
+	for line := range strings.SplitSeq(command, "\n") {
+		switch {
+		case end != "":
+			if strings.TrimSpace(line) == end {
+				end = ""
+			}
+		default:
+			kept = append(kept, line)
+			if open := shellHeredoc.FindStringSubmatch(line); open != nil {
+				end = open[1]
+			}
+		}
+	}
+	return strings.Join(kept, "\n")
+}
+
+// split on the shell's separators, a quoted or escaped one staying inside its word; a comment is no statement, and each
+// parenthesis stands as its own item, so a subshell's `cd` can end with it
+func shellStatements(command string) []string {
+	var statements []string
+	var now strings.Builder
+	open := byte(0)
+	for i := 0; i < len(command); i++ {
+		c := command[i]
+		switch {
+		case c == '\\' && open != '\'' && i+1 < len(command):
+			now.WriteByte(c)
+			i++
+			c = command[i]
+		case open != 0:
+			if c == open {
+				open = 0
+			}
+		case c == '"' || c == '\'':
+			open = c
+		case c == '#' && (now.Len() == 0 || strings.HasSuffix(now.String(), " ")):
+			for i+1 < len(command) && command[i+1] != '\n' {
+				i++
+			}
+			continue
+		case c == '(' || c == ')':
+			statements = append(statements, now.String(), string(c))
+			now.Reset()
+			continue
+		case strings.IndexByte(";&|\n", c) >= 0:
+			statements = append(statements, now.String())
+			now.Reset()
+			continue
+		}
+		now.WriteByte(c)
+	}
+	return append(statements, now.String())
 }
 
 var (
@@ -60,10 +237,11 @@ type auditCheck struct {
 }
 
 type codieSession struct {
-	ID        string        `json:"id"`
-	Cwd       string        `json:"cwd"`
-	Opened    string        `json:"opened"`
-	FirstEdit string        `json:"first_edit"`
+	ID        string `json:"id"`
+	Cwd       string `json:"cwd"`
+	Opened    string `json:"opened"`
+	FirstEdit string `json:"first_edit"`
+	lastEdit  string
 	Checks    []auditCheck  `json:"checks"`
 	Compacts  []compactRead `json:"compacts"`
 	Retro     bool          `json:"retro"`
@@ -176,11 +354,11 @@ func auditWindow(flags Flags) (int, time.Time, error) {
 	return 0, since, nil
 }
 
-// --days keeps a session by when it opened; --since by its first edit, so one opened before a siesta and edited after it counts
+// --days keeps a session by when it opened; --since by its last edit, so a compaction's re-read owed past the stamp shows
 func (s codieSession) inWindow(cut time.Time, byEdit bool) bool {
 	stamp := s.Opened
 	if byEdit {
-		stamp = s.FirstEdit
+		stamp = s.lastEdit
 	}
 	at, err := time.Parse(time.RFC3339, stamp)
 	return err == nil && !at.Before(cut)
@@ -334,8 +512,14 @@ func auditSession(path string) (codieSession, bool) {
 
 func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string) {
 	target := b.Input.FilePath + " " + b.Input.Command
+	var shellPaths []string
+	if b.Name == "Bash" {
+		shellPaths = shellReadPaths(b.Input.Command)
+	}
 	for _, file := range auditFiles {
-		if !(b.Name == "Read" && strings.HasSuffix(b.Input.FilePath, file.match) || b.Name == "Bash" && file.shell.MatchString(b.Input.Command)) {
+		isRead := b.Name == "Read" && file.namedBy(b.Input.FilePath) || slices.ContainsFunc(shellPaths, file.namedBy) ||
+			b.Name == "Skill" && file.skill != "" && b.Input.Skill == file.skill
+		if !isRead {
 			continue
 		}
 		reads[file.name] = cmp.Or(reads[file.name], at)
@@ -353,6 +537,7 @@ func (s *codieSession) readBlock(b flowBlock, at string, reads map[string]string
 		return
 	}
 	s.FirstEdit = cmp.Or(s.FirstEdit, at)
+	s.lastEdit = at
 	if n := len(s.Compacts); n > 0 {
 		s.Compacts[n-1].Edited = true
 	}

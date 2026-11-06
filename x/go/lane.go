@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -72,7 +73,11 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		return nil, usageFail("no paths — name what goes into the commit", "x lane commit "+msgFile+" -- <paths…>")
 	}
 	message, _ := filepath.Abs(msgFile)
+	dry := flags["dry"] == true
 	if repo, _ := flags["repo"].(string); repo != "" {
+		if dry {
+			return nil, usageFail("--dry reads this tree's hook, never another repo's", "x lane commit --dry "+msgFile+" -- <paths…>")
+		}
 		if err := enterMain(repo); err != nil {
 			return nil, err
 		}
@@ -88,11 +93,34 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 	name, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Open(name.out)
+	if dry && !exists(filepath.Join(tree, gateCopyRun)) {
+		return nil, usageFail("--dry reads a frame-shaped hook: this tree has no "+gateCopyRun, "x lane commit "+msgFile+" -- <paths…>")
+	}
+	if dry && midOperation() {
+		return nil, usageFail("--dry cannot mirror a commit mid-merge, mid-cherry-pick, mid-revert or mid-rebase", "x lane commit "+msgFile+" -- <paths…>")
+	}
 
 	if err := r.Step("tree", "checking the tree", func() (string, error) {
 		return home(tree), assertUnlocked(tree)
 	}); err != nil {
 		return nil, err
+	}
+	var dryIndex []string
+	var dryTree func() (string, error)
+	if dry {
+		env, treeOf, done, err := headIndex(tree)
+		if err != nil {
+			return nil, err
+		}
+		defer done()
+		// from here on every git of this run stages and reads the temp index, as a pathspec commit's hooks do
+		_, path, _ := strings.Cut(env[0], "=")
+		if err := os.Setenv("GIT_INDEX_FILE", path); err != nil {
+			return nil, err
+		}
+		dryIndex, dryTree = env, treeOf
+	} else {
+		r.skip("gates")
 	}
 	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
 		if held := heldByOthers(tree, paths); len(held) > 0 {
@@ -113,6 +141,9 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			// zsh hands a quoted "$paths" over as one argument; «nothing staged» hid that (2026-10-18)
 			return nil, usageFail(fmt.Sprintf("%q names no file: the path list arrived as one word", path),
 				"x lane commit "+msgFile+" -- "+strings.Join(words, " "))
+		} else if dry {
+			// a dry run's index holds HEAD, so a path it cannot find matches nothing a real commit could take
+			return nil, &Fail{Refused: true, Msg: "pathspec " + path + " matches no file: a real commit refuses it", Next: "x lane commit --dry " + msgFile + " -- <paths that exist>"}
 		}
 	}
 	if err := r.Step("format", "biome on the named paths", func() (string, error) {
@@ -178,6 +209,11 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		defer os.Remove(copied)
 	}
 
+	if dry {
+		named := msgFile + " -- " + strings.Join(paths, " ")
+		return dryCommit(r, tree, message, dryIndex, dryTree, "x lane commit --dry "+named, "x lane commit "+named)
+	}
+
 	hold := flags["hold-unstaged"] == true
 	if !hold {
 		r.skip("hold", "restore")
@@ -212,19 +248,30 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	if stopped == nil {
 		stopped = r.Step("commit", "hooks, then the commit", func() (string, error) {
 			commitArgs := []string{"commit", "-F", message}
-			if !isMerging() {
+			merging := isMerging()
+			if !merging {
 				commitArgs = append(append(commitArgs, "--"), paths...)
 			}
-			committed, took, err := lockedGit(commitArgs...)
+			proven := ""
+			// read after each lock wait, right before its commit: a peer's commit in the wait moves HEAD, and the proof goes with it
+			readProof := func() {
+				proven = ""
+				_ = os.Unsetenv("LEFTHOOK_EXCLUDE")
+				if gates := provenOnThisTree(tree, paths); !merging && len(gates) > 0 {
+					_ = os.Setenv("LEFTHOOK_EXCLUDE", strings.Join(gates, ","))
+					proven = ", " + strings.Join(gates, ", ") + " already green on these bytes"
+				}
+			}
+			committed, took, err := lockedGitAfter(readProof, commitArgs...)
 			waited += took
 			if err != nil {
 				return "", err
 			}
-			said := ""
+			retried := ""
 			if !committed.ok && timeoutOnly(committed.log) {
-				said = ", retried a timeout-only red"
+				retried = ", retried a timeout-only red"
 				var again time.Duration
-				committed, again, err = lockedGit(commitArgs...)
+				committed, again, err = lockedGitAfter(readProof, commitArgs...)
 				took += again
 				waited += again
 				if err != nil {
@@ -235,7 +282,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 				return "", hookFail(committed.log, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
 			}
 			sha, err = head()
-			return withWait(took, short(sha)+"  "+firstLine(message)+said), err
+			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
 		})
 	}
 	// the held files come back whether the hooks passed or refused
@@ -269,10 +316,16 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 // lockedGit runs a git that takes the index lock: it waits out a lock a peer holds, and once more when the lock
 // was taken again in the gap between the wait and the run
 func lockedGit(args ...string) (result, time.Duration, error) {
+	return lockedGitAfter(func() {}, args...)
+}
+
+// lockedGit with a step that runs after each wait, right before its git
+func lockedGitAfter(ready func(), args ...string) (result, time.Duration, error) {
 	took, err := waitIndexLock()
 	if err != nil {
 		return result{}, took, err
 	}
+	ready()
 	got, _ := git(args...)
 	if got.ok || !strings.Contains(got.log, "index.lock': File exists") {
 		return got, took, nil
@@ -281,6 +334,7 @@ func lockedGit(args ...string) (result, time.Duration, error) {
 	if err != nil {
 		return result{}, took + again, err
 	}
+	ready()
 	got, _ = git(args...)
 	return got, took + again, nil
 }
@@ -297,6 +351,10 @@ func durationEnv(name string, fallback time.Duration) time.Duration {
 
 // waitIndexLock waits while the repo's index lock exists, up to lockWait; it never removes a lock itself
 func waitIndexLock() (time.Duration, error) {
+	// a dry run's git reads its own temp index, and --git-path index.lock names the real one all the same
+	if os.Getenv("GIT_INDEX_FILE") != "" {
+		return 0, nil
+	}
 	lock, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-path", "index.lock")
 	if err != nil {
 		return 0, err
@@ -846,6 +904,13 @@ func enterMain(repo string) error {
 	return os.Chdir(root.out)
 }
 
+func midOperation() bool {
+	return slices.ContainsFunc([]string{"MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"}, func(name string) bool {
+		path, _ := git("rev-parse", "--path-format=absolute", "--git-path", name)
+		return path.ok && exists(path.out)
+	})
+}
+
 func isMerging() bool {
 	path, _ := git("rev-parse", "--path-format=absolute", "--git-path", "MERGE_HEAD")
 	return path.ok && exists(path.out)
@@ -1039,7 +1104,7 @@ var (
 func timeoutOnly(log string) bool {
 	log = ansiColor.ReplaceAllString(log, "")
 	for _, gate := range hookRedGate.FindAllStringSubmatch(log, -1) {
-		if gate[1] != "test" && gate[1] != "mods" {
+		if gate[1] != "test" && gate[1] != "mods-test" {
 			return false
 		}
 	}

@@ -457,7 +457,7 @@ export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
     // `-f`/`--file`/`--blob` name where git config writes, never the key
     const ops = operands(
         subArgs.filter(
-            (w, i) => !/^(-f|--file|--blob)$/.test(subArgs[i - 1]?.text ?? ''),
+            (_, i) => !/^(-f|--file|--blob)$/.test(subArgs[i - 1]?.text ?? ''),
         ),
     );
     const [key, value] = ops[0] === 'set' ? ops.slice(1) : ops;

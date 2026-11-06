@@ -1,5 +1,5 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+import { expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
@@ -28,18 +28,6 @@ const kinds = (store: Map<string, unknown>) =>
     [...store.entries()]
         .filter(([k]) => k.startsWith('event:'))
         .map(([, v]) => (v as { kind: string }).kind);
-
-const fork = ($: Engine) =>
-    $.agent.spawn({
-        background: false,
-        description: 'audit',
-        fork: true,
-        parentModel: 'claude-opus-5-5',
-        prompt: 'audit what is left',
-        provider: { plugin: 'engine', tier: 'core' },
-        subagentType: 'fork',
-        tool_use_id: 'tu-1',
-    });
 
 test('a floor rule stays refused when the store says warn', async ($, on) => {
     const { ran, store } = world(on);
