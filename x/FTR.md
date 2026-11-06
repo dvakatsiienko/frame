@@ -194,6 +194,10 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
+- ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
+  - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
+  - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why
+- ⬜ only the real clean store opens the gate (FRM-511): `X_VERIFIED` counts under `X_TEST` alone
 - ⬜ a held pr merges only on dima's word (FRM-511)
   - given `x lane merge-auto <pr> --hold --apply`, then the pr and every open layer under it are marked in this mac's record (`<state>/merge-hold/<owner>_<repo>.json`) and nothing merges
   - given a held pr, or a top over a held layer, when `x lane merge-auto <pr> --apply` runs, then it refuses naming the hold; a record it cannot read reads as held; with `--dima-ok <pr>` it merges and takes the landed layers' marks off

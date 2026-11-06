@@ -27,14 +27,55 @@ type chunkSign struct {
 	detail string
 }
 
+func ticketOfPr(pr pullHead) string {
+	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {
+		return m[1]
+	}
+	if m := ticketOfBody.FindStringSubmatch(pr.Body); m != nil {
+		return m[1]
+	}
+	return ""
+}
+
+// the raw merge's one door on a lane with no sixth sense (his tick o36): his word stands in for a clean that nobody was
+// asked to write; a clean on another head, a sixth sense on the dispatch or a ticket that did not read opens nothing
+func (d *mergeDecision) wordOpens(pr pullHead, c mergeCheck) mergeCheck {
+	if !d.dimaOK || c.OK || !c.noClean {
+		return c
+	}
+	closed := func(why string) mergeCheck {
+		c.Detail += "; --dima-ok opens nothing: " + why
+		return c
+	}
+	ticket := ticketOfPr(pr)
+	if ticket == "" {
+		return closed("no ticket on " + pr.Head.Ref + " or in the pr body, so no dispatch to read")
+	}
+	actor, err := actorOf(Flags{})
+	if err != nil {
+		return closed(ticket + " did not read: " + err.Error())
+	}
+	issue, err := fetchBody(actor, ticket)
+	if err != nil {
+		return closed(ticket + " did not read: " + err.Error())
+	}
+	body := ""
+	if issue.Description != nil {
+		body = *issue.Description
+	}
+	switch {
+	case heldDispatch(body) == "":
+		return closed(ticket + " holds no dispatch")
+	case dispatchOf(body).hasSixthSense:
+		return closed(ticket + "'s dispatch names a sixth sense")
+	}
+	c.OK, c.Detail = true, "no sixth sense on "+ticket+"'s dispatch, dima's word on #"+d.PR+", typed (--dima-ok)"
+	return c
+}
+
 // the sign lives in linear, never the pr: a pr body is codie's to write
 func signOf(pr pullHead, signs map[string]chunkSign) (chunkSign, error) {
-	ticket := ""
-	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {
-		ticket = m[1]
-	} else if m := ticketOfBody.FindStringSubmatch(pr.Body); m != nil {
-		ticket = m[1]
-	}
+	ticket := ticketOfPr(pr)
 	if ticket == "" {
 		return chunkSign{detail: "no ticket on " + pr.Head.Ref + " or in the pr body, so no sign to read"}, nil
 	}

@@ -29,6 +29,8 @@ type mergeCheck struct {
 	Name   string `json:"name"`
 	OK     bool   `json:"ok"`
 	Detail string `json:"detail"`
+	// the store has no clean for this pr at all, as against one on another head or a store that does not read
+	noClean bool
 }
 
 type mergeDecision struct {
@@ -171,7 +173,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 
 	var sixthSense, ci, threads mergeCheck
 	if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
-		sixthSense = sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+		sixthSense = d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 		return sixthSense.shown()
 	}); err != nil {
 		return nil, err
@@ -268,7 +270,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	d.heads[n] = pr.Head.Sha
-	sixthSense := sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+	sixthSense := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
 	if err != nil {
 		return "", err
@@ -761,11 +763,16 @@ func clock() time.Time {
 func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	c := mergeCheck{Name: "sixth-sense"}
 	home, _ := os.UserHomeDir()
-	path := cmp.Or(os.Getenv("X_VERIFIED"), filepath.Join(home, ".claude/shelf/pr-verified.json"))
+	path := filepath.Join(home, ".claude/shelf/pr-verified.json")
+	// an env var in a real run would swap the store the gate reads
+	if os.Getenv("X_TEST") != "" {
+		path = cmp.Or(os.Getenv("X_VERIFIED"), path)
+	}
 	raw, err := os.ReadFile(path)
 	var store map[string]string
 	if err != nil || json.Unmarshal(raw, &store) != nil {
 		c.Detail = "no sixth sense store at " + path
+		c.noClean = errors.Is(err, fs.ErrNotExist)
 		return c
 	}
 	verified := store[repo+"#"+n]
@@ -776,6 +783,7 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	switch {
 	case verified == "":
 		c.Detail = "no clean recorded for " + repo + "#" + n
+		c.noClean = true
 	case verified == head:
 		c.OK, c.Detail = true, "clean on "+short(head)+" by "+by
 	default:
