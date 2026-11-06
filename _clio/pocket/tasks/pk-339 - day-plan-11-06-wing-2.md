@@ -1,13 +1,12 @@
 ---
 id: PK-339
 title: 'day plan 11-06: wing 2'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T16:30:00Z'
-updated_date: '2026-11-06T16:30:00Z'
+updated_date: '2026-11-06T19:47:00Z'
 labels:
   - xs
-  - side
   - wing-2
 dependencies: []
 priority: next
@@ -23,5 +22,11 @@ wing 2's durable plan, a checkbox list, one check per finished line; parked unti
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 PK-335 rex terminal set up fully with dima, warp verdict
+- [x] #1 PK-335 rex terminal set up fully with dima, warp verdict
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+close: PK-335 done, the plan's one line.
+<!-- SECTION:NOTES:END -->

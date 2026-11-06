@@ -26,3 +26,5 @@ one line per spawn: date, member, named skills, loaded skills, misses
 - 2026-11-06 · frm-514 sixth sense · `x:crew-sixth-sense` and the two guides named in the first report; the guides came only by the hook's refusal, the row working on it · keep
 - 2026-11-06 · frm-514 codie · done in the first ping · misses not recorded
 - 2026-11-06 · frm-517 codie · fine · misses not recorded
+- 2026-11-06 · BYT-130 ci made boring · codie · fine, no friction
+- 2026-11-06 · BYT-130 ci made boring · sixth sense · ci-verify loaded on the argv's ci words; its «jq pulled out and fed crafted inputs» line set the hostile shapes; helped, keep

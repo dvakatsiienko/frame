@@ -84,8 +84,8 @@ case "${1:---watch}" in
     # no :by key means sixth sense; a later sixth sense clean drops clio's name
     jq --arg k "$2#$3" --arg v "$4" --arg by "${6:-}" \
       '.[$k] = $v | if $by == "" then del(.[$k + ":by"]) else .[$k + ":by"] = $by end' \
-      "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED"
-    echo "verified: $4 on $2#$3${6:+ by $6}" ;;
+      "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED" \
+      && echo "verified: $4 on $2#$3${6:+ by $6}" ;;
   --once) pass ;;
   --watch) while true; do pass; sleep 60; done ;;
 esac

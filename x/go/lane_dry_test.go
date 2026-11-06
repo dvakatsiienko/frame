@@ -147,6 +147,21 @@ func TestCommitAfterAGreenDryRunsItsTestsNoSecondTime(t *testing.T) {
 	}
 }
 
+func TestCommitAfterADryOnAnotherBranchRunsItsTests(t *testing.T) {
+	t.Parallel()
+	dir, env, msg, ran := dryOnRealLefthook(t)
+	if got := xIn(t, dir, env, "lane", "commit", "--dry", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("dry: exit %d\n%s", got.code, got.stdout)
+	}
+	gitT(t, dir, "switch", "-q", "-c", "other")
+	if got := xIn(t, dir, env, "lane", "commit", msg, "--", dryNamed); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if ran("suite") != 2 {
+		t.Errorf("the suite ran %d times, want 2: a branch's green proves nothing on another", ran("suite"))
+	}
+}
+
 func TestCommitAfterADryOnOtherBytesRunsItsTests(t *testing.T) {
 	t.Parallel()
 	dir, env, msg, ran := dryOnRealLefthook(t)
