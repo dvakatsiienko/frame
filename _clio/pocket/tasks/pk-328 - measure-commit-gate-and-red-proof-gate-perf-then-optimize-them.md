@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T16:21:00Z'
+updated_date: '2026-11-06T16:36:00Z'
 labels:
   - s
   - side
@@ -42,4 +42,13 @@ PK-328:W2 (2026-11-06 18:15, dima): yesterday i peeked into the mods coder windo
 PK-328:W3 (2026-11-06 18:15, dima): maybe rethink this approach at all: why do we have pre-commit, and all these checks on the commits? maybe move them to the push event. commits get much faster, and the gate is still there, just later on push instead of on each commit. i think it would make coders much faster. ❓
 
 measured 18:18, from two commit logs this hour: a non-mods commit takes 16-17 s, test 15-17, typecheck 2-4, under load; the minutes dima saw are mods-test (not timed yet, its log carries no duration here). crow 18:15: split by where the commit lands, branch lanes to push, main keeps typecheck and path tests, plus a nudge at N unpushed commits. landed in my tree: untouched mods skip; gate-queue.sh.
+
+main's pick 18:32, crow's catch: one turn makes a 16 s commit wait behind a whole mutant round, 10+ min at load 19 (my own commit died at 590 s waiting). long rounds, mutants and whole suites, get their own slot, a commit never waits behind one; gate-queue logs each wait's seconds.
+
+PK-328:W4 (2026-11-06 18:32, dima): another reason to optimize commits: if everyone commits and runs gates during the commit, each one draws CPU, and the system is overloaded by everyone committing. not good at all.
+PK-328:W5 (2026-11-06 18:32, dima): i thought our tests via Go and vitest are fast tools. why do they overload my CPU? maybe our testing tools are not properly configured. add this to the scope, identify the bottlenecks and fix them. maybe vitest or Go tests need to be parallelized, maybe they use one core instead of many. ❓
+PK-328:W6 (2026-11-06 18:32, dima): perform as wide an analysis as possible, use all your tools and helpers, and use all threads for consultation and data gathering. i want these issues optimized.
+PK-328:W7 (2026-11-06 18:32, dima): i assume this CPU overloading was only partially related to the finder issues, most likely caused by gate commits.
+
+PK-328:W8 (2026-11-06 18:36, dima): good ideas, fold and consider to implement: reuse the «already tested these bytes» record for typecheck and tests, not just mods; run only the tests related to the staged paths at commit, with the full set at push; commit in the background, so a coder keeps working during the gate; give each gate a time budget that goes red when exceeded, so slowness can't creep back.
 <!-- SECTION:NOTES:END -->
