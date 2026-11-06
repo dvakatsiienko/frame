@@ -13,8 +13,7 @@ import (
 )
 
 // the bytes review lane: the label starts a round, a successful review.yml run on the branch is one round,
-// one round per pr at «final», and past it an approval on dima's account (dima, or clio on sixth sense's clean)
-// publishes review:clean (bytes .github/workflows; dima, 2026-10-22, PK-103 W100, W101)
+// one round per pr at «final», and a second only when dima applies the label himself (bytes .github/workflows)
 const (
 	reviewLabel = "🤖 review:requested"
 	reviewCap   = 1
@@ -23,11 +22,10 @@ const (
 var prNumber = regexp.MustCompile(`^\d+$`)
 
 type prHead struct {
-	Title          string  `json:"title"`
-	HeadRefName    string  `json:"headRefName"`
-	HeadRefOid     string  `json:"headRefOid"`
-	ReviewDecision string  `json:"reviewDecision"`
-	Labels         []label `json:"labels"`
+	Title       string  `json:"title"`
+	HeadRefName string  `json:"headRefName"`
+	HeadRefOid  string  `json:"headRefOid"`
+	Labels      []label `json:"labels"`
 }
 
 type label struct {
@@ -108,18 +106,11 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		r.Done("ok: the verdict judged the head "+short(head), "")
 		return data("current"), nil
 	}
-	// past the cap the way through is an approval on dima's account, which review-approved.yml turns
-	// into a green review:clean on the approved head; either one clears the head without a round
-	if pr.ReviewDecision == "APPROVED" || cleanOnHead(head) {
-		r.skip("request")
-		r.Done("ok: "+short(head)+" is cleared — approved on dima's account or review:clean is green on it", "")
-		return data("cleared"), nil
-	}
 	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
-			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap clio approves #%s on dima's account once sixth sense is clean on the head, and review-approved.yml publishes review:clean on it",
+			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — another round on #%s runs only when dima applies the label himself",
 				len(rounds), pr.HeadRefName, short(judged), short(head), n),
-			Next: "ask clio to approve #" + n + " on sixth sense's clean"}
+			Next: "ask clio for dima's word on a second round of #" + n}
 	}
 
 	if err := r.Step("request", "re-labelling "+reviewLabel, func() (string, error) {
@@ -206,7 +197,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 
 /* Github */
 func readPR(n string) (prHead, error) {
-	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,reviewDecision,labels")
+	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,labels")
 	if err != nil {
 		return prHead{}, err
 	}
@@ -241,12 +232,6 @@ func reviewRuns(branch string) ([]reviewRun, bool, error) {
 		}
 	}
 	return runs, true, nil
-}
-
-// a failed read answers false: the caller then asks for a round, or names the cap
-func cleanOnHead(head string) bool {
-	got, err := ghRaw("api", "repos/{owner}/{repo}/commits/"+head+"/check-runs?check_name=review:clean", "--jq", `.check_runs[0].conclusion // ""`)
-	return err == nil && got.ok && got.out == "success"
 }
 
 // ghCodie runs gh as the x-codie-cc app, the identity every lane write on github wears

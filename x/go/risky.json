@@ -20,7 +20,7 @@
         "lefthook.yaml",
         "lefthook.yml",
         ".github/workflows/review.yml",
-        ".github/workflows/review-approved.yml",
+        ".github/workflows/review-round.yml",
         "x/go/risky.json",
         "x/go/merge_auto.go",
         "x/go/merge_sign.go",
