@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -100,6 +102,13 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"vitest: a timeout is load, no proof", " FAIL  a.test.ts > slow\nError: Test timed out in 5000ms.\n", false, []string{"slow"}, verdictBroken, map[string]string{"slow": verdictBroken}},
 		{"a template name holds each row it expanded to", "(fail) a door: gh pr merge 12\n  AssertionError: no\n(fail) a door: x as codie\n  AssertionError: no\n(fail) other row\n  AssertionError: no\n", false, []string{"a door: ${typed}", "no hint: ${typed}"}, verdictStillGreen,
 			map[string]string{"a door: gh pr merge 12": verdictRed, "a door: x as codie": verdictRed, "no hint: ${typed}": verdictStillGreen, "other row": verdictRed}},
+		{"a load word in a passing title", "(pass) names a file that did not load\n(fail) one\n  AssertionError: no\nRan 2 tests across 1 file.\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
+		{"a load word in a failing title", "(fail) names a file that did not load\n  AssertionError: no\n", false, []string{"names a file that did not load"}, verdictRed, map[string]string{"names a file that did not load": verdictRed}},
+		{"a plugin title holding the vitest arrow", "tests/w.test.ts:\n(fail) a > after a write\n  AssertionError: no\n", false, []string{"a > after a write"}, verdictRed, map[string]string{"a > after a write": verdictRed}},
+		{"a destructure of a field only head binds", " FAIL  a.test.ts > one\nTypeError: Cannot destructure property 'field' of 'lib.CONFIG' as it is undefined.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"an iteration of a name only head binds", " FAIL  a.test.ts > one\nTypeError: lib.CONFIG is not iterable\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a call vite rewrote", " FAIL  a.test.ts > one\nTypeError: (0 , __vi_import_0__.parse) is not a function\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a test that throws from json parse is a red", " FAIL  a.test.ts > one\nSyntaxError: Unexpected token o in JSON at position 1\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
 		{"color codes around a row", "\x1b[31m FAIL  a.test.ts > one\x1b[39m\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
 		{"an empty run that exits 0", "", true, []string{"a"}, verdictBroken, map[string]string{"a": verdictBroken}},
 		{"an empty run that exits red", "", false, []string{"a"}, verdictFailed, map[string]string{"a": verdictFailed}},
@@ -116,7 +125,7 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"a field only head binds", " FAIL  a.test.ts > one\nTypeError: Cannot read properties of undefined (reading 'field')\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a field neither side binds is a real red", " FAIL  a.test.ts > one\nTypeError: Cannot read properties of undefined (reading 'length')\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
 		{"javascriptcore's words for a field only head binds", "(fail) one\n  TypeError: undefined is not an object (evaluating 'lib.CONFIG.field')\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"an each title's hole matches its row", " FAIL  a.test.ts > green each 1\nAssertionError: no\n", false, []string{"green each %s"}, verdictRed, map[string]string{"a.test.ts > green each 1": verdictRed}},
+		{"an each title's hole matches its row", " FAIL  a.test.ts > green each 1\nAssertionError: no\n", false, []string{"green each %s"}, verdictStillGreen, map[string]string{"a.test.ts > green each 1": verdictRed, "green each %s": verdictStillGreen}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -198,7 +207,7 @@ func TestAddedTestNamesReadsEachShape(t *testing.T) {
 		{"a plain name", "    it('a plain name', () => {", []string{"a plain name"}, nil},
 		{"a double quote holding an apostrophe", `test("head's red", () => {`, []string{"head's red"}, nil},
 		{"a template with a quote in its hole", "    test(`a door: ${typed.split(' ')[0]}`, () => {", []string{"a door: ${typed.split(' ')[0]}"}, nil},
-		{"an escaped quote", `    it.only('it\'s escaped', () => {`, []string{`it\'s escaped`}, nil},
+		{"an escaped quote", `    it.only('it\'s escaped', () => {`, []string{`it's escaped`}, nil},
 		{"each with a table", "it.each([1])('green each %s', (n) => {", []string{"green each %s"}, nil},
 		{"a title on its own line", "it(\n  'green multiline',\n  () => {", []string{"green multiline"}, nil},
 		{"after a loop on one line", "for (const n of ['a']) { it('in a loop', () => {}); }", []string{"in a loop"}, nil},
@@ -207,6 +216,8 @@ func TestAddedTestNamesReadsEachShape(t *testing.T) {
 		{"two on one line", "it('one', f); it('two', f);", []string{"one", "two"}, nil},
 		{"a go test", "func TestNewOne(t *testing.T) {", []string{"TestNewOne"}, nil},
 		{"a go helper", "func helper(t *testing.T) {", nil, nil},
+		{"a go call named test", `test(t, "x")`, nil, nil},
+		{"a js helper named test", "function test(name, fn) {", nil, nil},
 		{"a regex's test method", "expect(/a/.test('abc')).toBe(true);", nil, nil},
 		{"a commented test", "// it('gone', f);", nil, nil},
 		{"a word ending in it", "submit('x');", nil, nil},
@@ -215,7 +226,11 @@ func TestAddedTestNamesReadsEachShape(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			var names, computed []string
-			for _, test := range addedTestNames(c.added, "a.test.ts") {
+			file := "a.test.ts"
+			if strings.Contains(c.name, "go ") {
+				file = "a_test.go"
+			}
+			for _, test := range addedTestNames(c.added, file) {
 				if test.IsComputed {
 					computed = append(computed, test.Name)
 				} else {
@@ -225,6 +240,32 @@ func TestAddedTestNamesReadsEachShape(t *testing.T) {
 
 			if strings.Join(names, "|") != strings.Join(c.want, "|") || strings.Join(computed, "|") != strings.Join(c.computed, "|") {
 				t.Fatalf("read %q and computed %q, want %q and %q", names, computed, c.want, c.computed)
+			}
+		})
+	}
+}
+
+func TestReleaseKeepsAClaimNamingFiles(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name  string
+		claim treeClaim
+		kept  bool
+	}{
+		{"a clean run", treeClaim{Pid: 1}, false},
+		{"a failed restore", treeClaim{Pid: 1, Files: []string{"gone.txt"}}, true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "claim.json")
+			raw, _ := json.Marshal(c.claim)
+			write(t, path, string(raw))
+
+			releaseClaim(path)
+
+			if exists(path) != c.kept {
+				t.Fatalf("the claim exists %v, want %v", exists(path), c.kept)
 			}
 		})
 	}

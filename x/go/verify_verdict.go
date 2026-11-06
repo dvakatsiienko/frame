@@ -52,17 +52,21 @@ var (
 	testsNone   = regexp.MustCompile(`no tests to run|no test files|No test files found|^Ran 0 tests|^mods:test: .*, 0 pass, 0 fail|^\s*Tests\s+no tests`)
 	// node's words and javascriptcore's, which claude plugin test runs on
 	namedSymbol = []*regexp.Regexp{
-		regexp.MustCompile(`([\w$]+) is not a (?:function|constructor)`),
+		regexp.MustCompile(`([\w$]+)\)? is not a (?:function|constructor)`),
 		regexp.MustCompile(`([\w$]+) is not defined`),
 		regexp.MustCompile(`Can't find variable: ([\w$]+)`),
 	}
-	readField    = regexp.MustCompile(`\(reading '([\w$]+)'\)`)
+	readField    = regexp.MustCompile(`\(reading '([\w$]+)'\)|Cannot destructure property '([\w$]+)'`)
+	notIterable  = regexp.MustCompile(`([\w$.]+) is not iterable`)
 	evaluateExpr = regexp.MustCompile(`\(evaluating '([\w$.]+)'\)`)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
 	addedJSTest = regexp.MustCompile("(?:^|[^.\\w$])(?:it|test)(?:\\.\\w+)*(?:\\([^()]*\\))?\\(\\s*(?:'((?:[^'\\\\]|\\\\.)+)'|\"((?:[^\"\\\\]|\\\\.)+)\"|`((?:[^`\\\\]|\\\\.)+)`|([^'\"`\\s)][^,\\n]*),)")
 	addedGoTest = regexp.MustCompile(`(?m)^func (Test\w+)\(`)
-	testFile    = regexp.MustCompile(`(?:\.test\.[cm]?[jt]sx?|\.spec\.[cm]?[jt]sx?|_test\.go)$`)
+	// a helper a test file declares under a runner's name is no test
+	declaredRunner = regexp.MustCompile(`\bfunction\s+(?:it|test)\b`)
+	titleEscape    = regexp.MustCompile("\\\\(['\"`])")
+	testFile       = regexp.MustCompile(`(?:\.test\.[cm]?[jt]sx?|\.spec\.[cm]?[jt]sx?|_test\.go)$`)
 	// a template's placeholder or an each table's: what a run expands
 	titleHole = regexp.MustCompile(`\$\{[^}]*\}?|%[sdifjoO#]|\$\w+`)
 )
@@ -76,15 +80,18 @@ func addedTestNames(added, file string) []newTest {
 	}
 	text := strings.Join(kept, "\n")
 	var tests []newTest
-	for _, m := range addedJSTest.FindAllStringSubmatch(text, -1) {
+	if strings.HasSuffix(file, ".go") {
+		for _, m := range addedGoTest.FindAllStringSubmatch(text, -1) {
+			tests = append(tests, newTest{Name: m[1], File: file})
+		}
+		return tests
+	}
+	for _, m := range addedJSTest.FindAllStringSubmatch(declaredRunner.ReplaceAllString(text, ""), -1) {
 		if name := m[1] + m[2] + m[3]; name != "" {
-			tests = append(tests, newTest{Name: name, File: file})
+			tests = append(tests, newTest{Name: titleEscape.ReplaceAllString(name, "$1"), File: file})
 		} else {
 			tests = append(tests, newTest{Name: strings.TrimSpace(m[4]), File: file, IsComputed: true})
 		}
-	}
-	for _, m := range addedGoTest.FindAllStringSubmatch(text, -1) {
-		tests = append(tests, newTest{Name: m[1], File: file})
 	}
 	return tests
 }
@@ -93,7 +100,11 @@ func readTestOutput(log string) testOutput {
 	var read testOutput
 	file := ""
 	for line := range strings.SplitSeq(ansiColor.ReplaceAllString(log, ""), "\n") {
-		if read.load == "" && loadError.MatchString(line) {
+		// a title holding a load word is a test's name, never the runner's report; the two rows below are the runner's
+		name := failedName(line)
+		isTitle := passedRow.MatchString(line) || (name != "" && name != "the file did not load" && !strings.Contains(name, " [ "))
+		// a test that throws from JSON.parse is a red, whatever the error's class
+		if read.load == "" && !isTitle && loadError.MatchString(line) && !strings.Contains(line, "JSON") {
 			read.load = strings.TrimSpace(line)
 		}
 		if testsNone.MatchString(line) {
@@ -105,10 +116,10 @@ func readTestOutput(log string) testOutput {
 			file = m[1]
 			continue
 		}
-		if name := failedName(line); name != "" {
+		if name != "" {
 			read.ran = true
 			failed := failedTest{name: name, file: file}
-			if head, _, hasFile := strings.Cut(name, " > "); hasFile {
+			if head, _, hasFile := strings.Cut(name, " > "); hasFile && testFile.MatchString(head) {
 				failed.file = head
 			}
 			read.failed = append(read.failed, failed)
@@ -174,10 +185,12 @@ func lackedBy(output string, source swappedSource) string {
 	}
 	var fields []string
 	for _, m := range readField.FindAllStringSubmatch(output, -1) {
-		fields = append(fields, m[1])
+		fields = append(fields, m[1]+m[2])
 	}
-	for _, m := range evaluateExpr.FindAllStringSubmatch(output, -1) {
-		fields = append(fields, strings.Split(m[1], ".")...)
+	for _, shape := range []*regexp.Regexp{evaluateExpr, notIterable} {
+		for _, m := range shape.FindAllStringSubmatch(output, -1) {
+			fields = append(fields, strings.Split(m[1], ".")...)
+		}
 	}
 	for _, field := range fields {
 		if bindsSymbol(source.head, field) && !bindsSymbol(source.base, field) {
@@ -230,23 +243,23 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, source swappedSourc
 			continue
 		}
 		row := testRow{Name: test.Name, Verdict: verdictStillGreen}
-		expanded := false
+		hasHole := titleHole.MatchString(test.Name)
+		if hasHole {
+			row.Why = "a title with a placeholder: x sees the rows that failed, never the ones that passed, so a literal title is what proves it"
+		}
 		for i, failed := range read.failed {
 			if !namesTest(failed, test) {
 				continue
 			}
 			claimed[i] = true
-			if titleHole.MatchString(test.Name) {
-				expanded = true
+			if hasHole {
 				rows = append(rows, judged(failed))
 			} else if got := judged(failed); row.Verdict != verdictBroken {
 				// a go subtest prints under its parent: the worst of them stands for the test
 				row.Verdict, row.Why = got.Verdict, got.Why
 			}
 		}
-		if !expanded {
-			rows = append(rows, row)
-		}
+		rows = append(rows, row)
 	}
 	verdict := worstOf(rows)
 	for i, failed := range read.failed {

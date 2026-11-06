@@ -51,10 +51,17 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 		}
 		name = "verify-pr-" + match[2]
 		resolve = func() (string, error) {
-			if _, err := mustGitIn(main, "fetch", "fetch", "-q", "origin", "refs/pull/"+match[2]+"/head"); err != nil {
+			// never FETCH_HEAD: the main checkout's one file, which a peer's fetch rewrites under this read
+			ref := "refs/pull/" + match[2] + "/head"
+			listed, err := mustGitIn(main, "ls-remote", "ls-remote", "origin", ref)
+			if err != nil {
 				return "", err
 			}
-			return mustGitIn(main, "rev-parse", "rev-parse", "--verify", "FETCH_HEAD^{commit}")
+			sha, _, _ := strings.Cut(listed, "\t")
+			if _, err := mustGitIn(main, "fetch", "fetch", "-q", "origin", ref); err != nil {
+				return "", err
+			}
+			return mustGitIn(main, "rev-parse", "rev-parse", "--verify", sha+"^{commit}")
 		}
 	} else if match := mainSha.FindStringSubmatch(target); match != nil {
 		name = "verify-" + short(match[1])

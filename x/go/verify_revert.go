@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 )
 
 const revertHelp = "x lane verify-tree --help"
@@ -42,31 +43,49 @@ func writeTemp(path string, claim treeClaim) (string, error) {
 	return temp, os.WriteFile(temp, raw, 0o644)
 }
 
-// a hard link fails on a path that exists, so of two runs only one claims, and a reader never sees a half-written file
+// a file lock serialises every run's look at the claim, so two runs never both read a dead holder and restore over each other
 func claimTree(tree string) (release func(), err error) {
 	path, err := claimPath(tree)
 	if err != nil {
 		return nil, err
 	}
-	mine := treeClaim{Pid: os.Getpid(), Started: processStarted(os.Getpid())}
-	for range 2 {
-		temp, err := writeTemp(path, mine)
-		if err != nil {
-			return nil, err
-		}
-		err = os.Link(temp, path)
-		_ = os.Remove(temp)
-		if err == nil {
-			return func() { _ = os.Remove(path) }, nil
-		}
-		if !errors.Is(err, fs.ErrExist) {
-			return nil, err
-		}
-		if err := recoverKilledRun(tree, path); err != nil {
-			return nil, err
-		}
+	lock, err := os.OpenFile(path+".lock", os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		return nil, err
 	}
-	return nil, &Fail{Refused: true, Msg: "another run just took " + tree, Next: "wait for it to end, then run this again"}
+	defer lock.Close()
+	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); err != nil {
+		return nil, err
+	}
+	if err := recoverKilledRun(tree, path); err != nil {
+		return nil, err
+	}
+	temp, err := writeTemp(path, treeClaim{Pid: os.Getpid(), Started: processStarted(os.Getpid())})
+	if err == nil {
+		err = os.Rename(temp, path)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return func() { releaseClaim(path) }, nil
+}
+
+// a claim still naming files means the restore failed: it stays, so the next run restores from it
+func releaseClaim(path string) {
+	var claim treeClaim
+	if raw, err := os.ReadFile(path); err == nil && json.Unmarshal(raw, &claim) == nil && len(claim.Files) == 0 {
+		_ = os.Remove(path)
+	}
+}
+
+// a holder that may be alive: only a process that is gone, or one started later under the same pid, reads as dead, so a
+// failing ps never hands over a live swap
+func holderAlive(claim treeClaim) bool {
+	if err := syscall.Kill(claim.Pid, 0); err != nil && !errors.Is(err, syscall.EPERM) {
+		return false
+	}
+	started := processStarted(claim.Pid)
+	return started == "" || started == claim.Started
 }
 
 // the holder is alive: refuse. it is dead: its swap, if any, goes back to head, and its claim goes
@@ -82,17 +101,13 @@ func recoverKilledRun(tree, path string) error {
 	if err := json.Unmarshal(raw, &claim); err != nil {
 		return &Fail{Refused: true, Msg: path + " is no claim this x wrote: " + err.Error(), Next: "trash " + path}
 	}
-	if claim.Started != "" && processStarted(claim.Pid) == claim.Started {
+	if holderAlive(claim) {
 		return &Fail{Refused: true, Msg: fmt.Sprintf("a run, pid %d, holds %s", claim.Pid, tree), Next: "wait for it to end, then run this again"}
 	}
 	if len(claim.Files) > 0 {
 		if err := restoreKilledSwap(tree, claim); err != nil {
 			return err
 		}
-	}
-	// a peer may have claimed since the read: only the bytes read are removed
-	if now, err := os.ReadFile(path); err != nil || string(now) != string(raw) {
-		return nil
 	}
 	return os.Remove(path)
 }
@@ -207,9 +222,10 @@ func filesAt(tree, rev string, paths []string) (map[string]bool, error) {
 }
 
 // every file the named paths reach on either side; a path on neither side refuses, naming it, and so does a file only this
-// tree holds in a dir the swap replaces with base's file, since git would delete it unseen
+// tree holds where the swap would write base's file, since the swap or its restore would delete it unseen
 func swapFiles(tree, fork, head string, paths []string) ([]string, error) {
 	var files, onFork, lost []string
+	onHead := map[string]bool{}
 	for _, path := range paths {
 		atFork, err := filesAt(tree, fork, []string{path})
 		if err != nil {
@@ -228,6 +244,7 @@ func swapFiles(tree, fork, head string, paths []string) ([]string, error) {
 		}
 		for file := range atHead {
 			files = append(files, file)
+			onHead[file] = true
 		}
 	}
 	if len(lost) > 0 {
@@ -239,15 +256,16 @@ func swapFiles(tree, fork, head string, paths []string) ([]string, error) {
 	for _, file := range onFork {
 		_ = filepath.WalkDir(filepath.Join(tree, file), func(path string, entry fs.DirEntry, err error) error {
 			if err == nil && !entry.IsDir() {
-				if rel, _ := filepath.Rel(tree, path); !slices.Contains(files, filepath.ToSlash(rel)) {
-					untracked = append(untracked, filepath.ToSlash(rel))
+				rel, _ := filepath.Rel(tree, path)
+				if rel = filepath.ToSlash(rel); !onHead[rel] {
+					untracked = append(untracked, rel)
 				}
 			}
 			return nil
 		})
 	}
 	if len(untracked) > 0 {
-		return nil, &Fail{Refused: true, Msg: "base holds a file where this tree holds a dir, and the swap would delete " + strings.Join(untracked, ", "), Next: "move it out of the tree, then run this again"}
+		return nil, &Fail{Refused: true, Msg: "the swap would delete a file only this tree holds: " + strings.Join(untracked, ", "), Next: "move it out of the tree, then run this again"}
 	}
 	return files, nil
 }
@@ -290,28 +308,33 @@ func swapTo(tree, rev string, files []string) error {
 
 // the names head's test files add outside the swapped paths: what the run must prove
 func newTestNames(tree, fork, head string, swapped []string) []newTest {
-	got, _ := gitIn(tree, "diff", "-U0", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", fork, head)
+	got, _ := gitIn(tree, "-c", "core.quotePath=false", "diff", "-U0", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", fork, head)
 	var tests []newTest
-	file, added := "", ""
+	file, added, removed := "", "", ""
 	flush := func() {
 		if testFile.MatchString(file) && !slices.Contains(swapped, file) {
+			// a test whose call line changed, an async added or a describe around it, is no new test
+			old := addedTestNames(removed, file)
 			for _, test := range addedTestNames(added, file) {
-				if !slices.Contains(tests, test) {
+				if !slices.Contains(old, test) && !slices.Contains(tests, test) {
 					tests = append(tests, test)
 				}
 			}
 		}
-		added = ""
+		added, removed = "", ""
 	}
+	previous := ""
 	for line := range strings.SplitSeq(got.out, "\n") {
-		if name, isHeader := strings.CutPrefix(line, "+++ "); isHeader {
+		// only the line after a `--- ` header is a file: an added `++ x` prints the same way
+		if name, isHeader := strings.CutPrefix(line, "+++ "); isHeader && strings.HasPrefix(previous, "--- ") {
 			flush()
-			file = strings.TrimPrefix(name, "b/")
-			continue
-		}
-		if body, isAdded := strings.CutPrefix(line, "+"); isAdded {
+			file = strings.TrimPrefix(strings.Trim(strings.TrimRight(name, "\t"), `"`), "b/")
+		} else if body, isAdded := strings.CutPrefix(line, "+"); isAdded {
 			added += body + "\n"
+		} else if body, isRemoved := strings.CutPrefix(line, "-"); isRemoved && !strings.HasPrefix(line, "--- ") {
+			removed += body + "\n"
 		}
+		previous = line
 	}
 	flush()
 	return tests

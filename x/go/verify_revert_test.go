@@ -416,6 +416,51 @@ func TestRevertRefusesToDeleteAnUntrackedFile(t *testing.T) {
 	}
 }
 
+// head dropped gone.txt and a probe left its own there: the swap would overwrite it, the restore remove it
+func TestRevertRefusesToOverwriteAFileOnABaseOnlyPath(t *testing.T) {
+	t.Parallel()
+	main, _, tree := revertWorld(t)
+	if got := xIn(t, main, nil, "lane", "verify-tree", revertPR); got.code != 0 {
+		t.Fatalf("control: %s", got.stdout)
+	}
+	write(t, filepath.Join(tree, "gone.txt"), "a probe's\n")
+
+	got := revert(t, main, "true")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "gone.txt") {
+		t.Fatalf("exit %d, want a refusal naming gone.txt:\n%s", got.code, got.stdout)
+	}
+	if body := readOr(filepath.Join(tree, "gone.txt"), "gone"); body != "a probe's\n" {
+		t.Fatalf("the probe's file reads %q", body)
+	}
+}
+
+// a real diff's shapes: a spaced path, a line that prints like a header, a call line edited in place
+func TestNewTestNamesReadsARealDiff(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	write(t, filepath.Join(main, "edited.test.ts"), "it('old', () => {\n});\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "base")
+	fork := gitT(t, main, "rev-parse", "HEAD")
+	write(t, filepath.Join(main, "edited.test.ts"), "it('old', async () => {\n});\n")
+	write(t, filepath.Join(main, "my file.test.ts"), "it('in a spaced path', f);\n")
+	write(t, filepath.Join(main, "plus.test.ts"), "++ count;\nit('after a plus line', f);\n")
+	write(t, filepath.Join(main, "café.test.ts"), "it('in a non-ascii path', f);\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "head")
+
+	var names []string
+	for _, test := range newTestNames(main, fork, gitT(t, main, "rev-parse", "HEAD"), nil) {
+		names = append(names, test.Name)
+	}
+
+	slices.Sort(names)
+	if want := "after a plus line|in a non-ascii path|in a spaced path"; strings.Join(names, "|") != want {
+		t.Fatalf("read %q, want %q", strings.Join(names, "|"), want)
+	}
+}
+
 // a tracked link under a named dir: a kill must leave the next run able to restore it
 func TestAKilledRevertRestoresPastASymlink(t *testing.T) {
 	t.Parallel()
