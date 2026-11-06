@@ -31,6 +31,9 @@ func seeded(t *testing.T, key string, build func(root string)) string {
 		build(root)
 		seed.root = root
 	})
+	if seed.root == "" {
+		t.Fatalf("seed %q failed to build in an earlier test", key)
+	}
 	to, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -97,7 +100,7 @@ func buildSeedWorld(t *testing.T, dir string) {
 	}
 }
 
-// copyFixture lays a seed over a new dir, modes and times kept, and every file naming the seed's path names the copy's
+// copyFixture lays a seed over a new dir, modes and times kept, and every file naming the seed's path names the copy's: a builder writes the same path form, resolved or raw, it passes here as from
 func copyFixture(t *testing.T, from, to string) {
 	t.Helper()
 	if err := os.MkdirAll(to, 0o755); err != nil {
