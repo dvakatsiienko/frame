@@ -9,7 +9,7 @@ if [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then
 	name=$(jq -r --arg sid "$CLAUDE_CODE_SESSION_ID" 'select(.sessionId == $sid) | .name // empty' "${X_SESSIONS:-$HOME/.claude/sessions}"/*.json 2>/dev/null | head -1)
 	case "$name" in
 	*"sixth sense"*) app=x-sixth-sense-cc ;;
-	"🦉"*clio) app=x-clio-cc ;;
+	"🦉"*clio*) app=x-clio-cc ;;
 	esac
 fi
 GH_TOKEN=$(cd ~/frame && pnpm --silent github:agent-token "$app") exec gh "$@"
