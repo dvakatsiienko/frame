@@ -81,3 +81,4 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 plan with dima how to solve the 🐉 ci made boring milestone («remind me tmrw», his 03:27) — due: 2026-11-06
 ⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, after one lane's warn count reads clean past FRM-504's land, at a siesta (his o10) — set 2026-11-06
 ⏰ 🦉 [FRM-473](https://linear.app/x-com/issue/FRM-473): one real `x lane commit --dry` by a codie that did not build it (cli lane 5 owes it), then close — due: 2026-11-07
+⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens — set 2026-11-06 · due: 2026-11-20

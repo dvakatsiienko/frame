@@ -49,8 +49,7 @@ then whatever the brief calls for:
   «final», shoot the built view at every window shape the brief names (at least 1728×1117, 1440×900,
   900×1200) and compare each with `design:diff`.
 
-the guides load per file type as you reach it, since a complete brief mutes the skill router and
-nobody reminds you:
+the guides load per file type as you reach it; a first edit without its guide is refused once:
 
 - `.ts` → `x:guide-typescript`; `.tsx` → plus `x:guide-react`; `.go` → `x:guide-go`
 - anything a human looks at → `x:guide-ui-ux`; a route, url or layout → `x:guide-conventions`

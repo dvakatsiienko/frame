@@ -78,5 +78,11 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-06 · frame#128 · plain wisphunter · 9 findings, 9 useful, it found the save-mid-test race · useful
 - 2026-11-06 · frame#128 · built-in /code-review · 8 findings, 8 useful · useful
 - 2026-11-06 · frame#128 · coderabbit · 0 findings · noise
+- 2026-11-06 · FRM-514 quick lane · matt spec card · 2 findings, 2 useful · useful
+- 2026-11-06 · FRM-514 quick lane · matt standards card · 6 findings, 3 useful, the `.py` port declined, the spec names it · useful
+- 2026-11-06 · FRM-514 quick lane · built-in /code-review · 10 findings, 3 fixed, the rest named · useful
+- 2026-11-06 · FRM-514 quick lane · plain wisphunter · 5 findings, 2 useful, it found the compaction bug the built-in missed · useful
+- 2026-11-06 · FRM-514 quick lane · coderabbit · 0 findings · noise
+- 2026-11-06 · FRM-514 quick lane · sixth sense · 3 rounds, round 1 the only one that moved the design: a batched sibling edit landed unguided · useful
 
 ## verdict
