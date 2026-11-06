@@ -509,6 +509,12 @@
   - given a scratch file never pulled, or one the repo changed since its pull, then push writes nothing and names it; `--add <paths>` lets a new file land
   - given a write that fails midway, then every file already written is put back from the backup push took first
   - given `test --against HEAD`, then only the edited tests run on HEAD's mod, each named «failed» or, when its file cannot load, «errored»; nothing is written
+- ⬜ `x mods edit test --only <test file>` runs one test file on the overlay (FRM-433)
+  - given a path read from the repo root, then that file runs and its sibling does not; a path that is no test file, a missing file or a run of no test is refused naming it
+  - given a green `--only`, then no `.tested` stamp and no gate green is written, so a push still runs the whole test; a full green's stamp stays
+  - given a long round holding the gate queue, then `--only` runs at once, taking no turn
+- ⬜ `x mods edit status` and `test` print «overlay N paths differ» with the paths (FRM-433)
+  - given scratch edits, an added and a deleted path counted, then the line prints first, before a red; a clean overlay prints no line, and main moving past an untouched copy counts nothing; it names what differs, never whose
   - decision: `scratch-edit` (plugin bin) retired into these verbs; a three-word verb sits under a group per middle word
 - ⬜ `x mods edit push <paths…>` lands only the named paths (FRM-470)
   - given two edits in scratch, when push names one, then only it lands and the other stays in scratch, listed by `status`

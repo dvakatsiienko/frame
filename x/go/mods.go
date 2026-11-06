@@ -94,12 +94,13 @@ func modsEditStatus(r *Run, _ []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	changed := changedScratch(scratch)
+	printOverlayHeader(r, scratch)
 	r.Done(fmt.Sprintf("%d edited", len(changed)), "x mods edit test")
 	return ordered{{"edited", changed}, {"scratch", scratch}}, nil
 }
 
 // test lays the edited copies over a copy of each touched mod and runs the validator and the mod's tests on it;
-// --against HEAD runs only the edited tests on HEAD's mod instead
+// --against HEAD runs only the edited tests on HEAD's mod instead; --only runs one test file
 func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	repo, scratch, err := modsRepo()
 	if err != nil {
@@ -107,7 +108,17 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	}
 	changed := changedScratch(scratch)
 	r.Open(fmt.Sprintf("%d edited", len(changed)))
-	if against, _ := flags["against"].(string); against != "" {
+	against, _ := flags["against"].(string)
+	only, _ := flags["only"].(string)
+	if against != "" && only != "" {
+		return nil, usageFail("--only and --against each pick what runs; name one", "x mods edit test --only <test file>")
+	}
+	printOverlayHeader(r, scratch)
+	if only != "" {
+		r.skip("gates")
+		return testOneFile(r, repo, scratch, changed, only)
+	}
+	if against != "" {
 		r.skip("gates")
 		return againstRef(r, repo, scratch, changed, against)
 	}
@@ -115,7 +126,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	stamp := overlayStamp(repo, scratch, changed)
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
-		reports, err = overlayTest(repo, scratch, changed)
+		reports, err = overlayTest(repo, scratch, changed, "")
 		return reportLine(reports), err
 	}); err != nil {
 		return nil, err
@@ -150,6 +161,95 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
 	r.Done(reportLine(reports), "x mods edit push")
 	return ordered{{"mods", reports}, {"gates", verdicts}}, nil
+}
+
+// one file's green proves one file: it writes no stamp and no gate green, so a push still runs the whole test
+func testOneFile(r *Run, repo, scratch string, changed []string, arg string) (any, error) {
+	var only string
+	var reports []modReport
+	if err := r.Step("test", "validate and test one file on an overlay copy", func() (string, error) {
+		var err error
+		if only, err = onlyTestFile(repo, scratch, arg); err != nil {
+			return "", err
+		}
+		if reports, err = overlayTest(repo, scratch, changed, only); err != nil {
+			return "", err
+		}
+		if red := redReports(reports); len(red) > 0 {
+			return "", &Fail{Msg: "red on the overlay: " + reportLine(red), Next: "x mods edit test --only " + only, Log: nonBlank(redLog(red))}
+		}
+		if reports[0].Passed == 0 {
+			return "", &Fail{Refused: true, Msg: only + " ran no test, so nothing is green", Next: "x mods edit test"}
+		}
+		return reportLine(reports), nil
+	}); err != nil {
+		return nil, err
+	}
+	r.Done(reportLine(reports), "x mods edit test")
+	return ordered{{"only", only}, {"mods", reports}}, nil
+}
+
+// an --only path reads from the repo root, and names a test file of a mod, in scratch or in the repo
+func onlyTestFile(repo, scratch, arg string) (string, error) {
+	refuse := func(why string) (string, error) {
+		return "", &Fail{Refused: true, Msg: fmt.Sprintf("--only %q %s; nothing ran", arg, why), Next: "x mods edit status"}
+	}
+	abs := arg
+	if !filepath.IsAbs(arg) {
+		abs = filepath.Join(repo, arg)
+	}
+	rel, err := filepath.Rel(repo, abs)
+	if err != nil {
+		return refuse("names no test file")
+	}
+	path := filepath.ToSlash(rel)
+	if _, ok := modOf(path); !ok {
+		return refuse("is not under " + modsDir + "<mod>/, read from the repo root")
+	}
+	if !isTestFile(path) {
+		return refuse("is not a .test.ts or .test.tsx file")
+	}
+	for _, root := range []string{scratch, repo} {
+		if info, err := os.Stat(filepath.Join(root, path)); err == nil && info.Mode().IsRegular() {
+			return path, nil
+		}
+	}
+	return refuse("is no file in scratch or the repo")
+}
+
+func isTestFile(path string) bool {
+	return strings.HasSuffix(path, ".test.ts") || strings.HasSuffix(path, ".test.tsx")
+}
+
+// what a scratch holds apart from its pull: every changed copy, and a pulled copy since removed
+func overlayDiffers(scratch string) []string {
+	paths := changedScratch(scratch)
+	for _, path := range readPulled(scratch) {
+		if exists(filepath.Join(scratch, scratchBase, path)) && !exists(filepath.Join(scratch, path)) {
+			paths = append(paths, path)
+		}
+	}
+	slices.Sort(paths)
+	return paths
+}
+
+// the line a red is read against: a half-done edit here reads apart from a red on main. it says what differs, never whose
+func printOverlayHeader(r *Run, scratch string) {
+	paths := overlayDiffers(scratch)
+	if len(paths) == 0 {
+		return
+	}
+	verb := "differ"
+	if len(paths) == 1 {
+		verb = "differs"
+	}
+	line := fmt.Sprintf("overlay %s %s: %s", plural(len(paths), "path"), verb, strings.Join(paths, ", "))
+	if r.human {
+		r.Open("")
+		r.Show([]string{line}, inset)
+		return
+	}
+	fmt.Fprintln(os.Stderr, line)
 }
 
 func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
@@ -188,7 +288,7 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == stamp {
 			return "x mods edit test passed these bytes", nil
 		}
-		reports, err = overlayTest(repo, scratch, changed)
+		reports, err = overlayTest(repo, scratch, changed, "")
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
 		}
@@ -344,10 +444,15 @@ type modReport struct {
 
 func (m modReport) isRed() bool { return m.Validate != "ok" || len(m.Failed)+len(m.Errored) > 0 }
 
-// each touched mod is copied to the job tmp with the edited copies laid over it, then validated, then tested
-func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
+// each touched mod is copied to the job tmp with the edited copies laid over it, then validated, then tested; a named
+// test file narrows the run to its mod and that one file
+func overlayTest(repo, scratch string, changed []string, only string) ([]modReport, error) {
 	var reports []modReport
-	for _, mod := range touchedMods(changed) {
+	mods := touchedMods(changed)
+	if only != "" {
+		mods = touchedMods([]string{only})
+	}
+	for _, mod := range mods {
 		dir, err := os.MkdirTemp("", "x-mods-overlay-")
 		if err != nil {
 			return nil, err
@@ -363,6 +468,12 @@ func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
 				if err := copyFile(filepath.Join(scratch, path), filepath.Join(overlay, rel)); err != nil {
 					return nil, err
 				}
+			}
+		}
+		if only != "" {
+			keep := strings.TrimPrefix(only, modsDir+mod+"/")
+			if err := setAsideTestsBut(overlay, func(rel string) bool { return rel == keep }); err != nil {
+				return nil, err
 			}
 		}
 		report := modReport{Mod: mod, Validate: "ok"}
@@ -422,21 +533,25 @@ func runTimedOutFiles(overlay, log string) (result, int, error) {
 			kept += n
 		}
 	}
-	err := filepath.WalkDir(overlay, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil || entry.IsDir() || !(strings.HasSuffix(path, ".test.ts") || strings.HasSuffix(path, ".test.tsx")) {
-			return err
-		}
-		rel, err := filepath.Rel(overlay, path)
-		if err != nil || timedOut[filepath.ToSlash(rel)] {
-			return err
-		}
-		return os.Rename(path, path+".passed")
-	})
-	if err != nil {
+	if err := setAsideTestsBut(overlay, func(rel string) bool { return timedOut[rel] }); err != nil {
 		return result{}, 0, err
 	}
 	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
 	return got, kept, nil
+}
+
+// claude plugin test takes only a folder, so a test file steps aside in the throwaway overlay for the kit not to find it
+func setAsideTestsBut(overlay string, keep func(rel string) bool) error {
+	return filepath.WalkDir(overlay, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || !isTestFile(path) {
+			return err
+		}
+		rel, err := filepath.Rel(overlay, path)
+		if err != nil || keep(filepath.ToSlash(rel)) {
+			return err
+		}
+		return os.Rename(path, path+".passed")
+	})
 }
 
 // --against <ref>: the edited test files on the ref's mod, so a test that fails there proves it reads the change

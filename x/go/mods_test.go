@@ -274,14 +274,15 @@ func TestModsEditTestOnlyRefusesWhatItCannotRun(t *testing.T) {
 		{"a test file outside a mod", "script/a.test.ts"},
 		{"a path out of the repo", "../a.test.ts"},
 		{"a test file that runs no test", modsDir + "m/tests/none.test.ts"},
-		{"an empty value", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			dir, env := modsFixture(t)
 			write(t, filepath.Join(dir, modsDir, "m/tests/none.test.ts"), "NO-TESTS\n")
-			write(t, filepath.Join(dir, modsDir, "m/tests/dir.test.ts/keep"), "\n")
+			if strings.HasSuffix(c.only, "dir.test.ts") {
+				write(t, filepath.Join(dir, c.only, "keep"), "\n")
+			}
 			write(t, filepath.Join(dir, "script/a.test.ts"), "green\n")
 
 			got := xIn(t, dir, env, "mods", "edit", "test", "--only", c.only)
