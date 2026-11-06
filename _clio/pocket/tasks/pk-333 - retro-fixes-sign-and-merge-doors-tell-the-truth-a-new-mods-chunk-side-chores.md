@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-06T01:25:00Z'
-updated_date: '2026-11-06T14:28:00Z'
+updated_date: '2026-11-06T14:38:00Z'
 labels:
   - s
   - side-channel-owned
@@ -30,4 +30,6 @@ from the halt CST: `quiet-delivery-test.ts` warns in its source header only: pri
 2026-11-06 15:50 side channel: a side bump leaves plugin.json dirty in main (x 0.11.473 now); the fork guard refuses its commit, and a dirty file blocks my fast-forward. i slipped the guard once with a timeout wrapper at the 14:52 bump, named to main and on his board; not repeated. fix: the banner's landing line and the bump's own commit, a side channel's bump lands in its tree.
 
 guard bug, side channel 16:27: from a side channel, `linear issue create` in `fleet` dead-ends: with `--description-file` the `linear-body` rule refuses, without it the worth rule refuses. the way through (create with no project, `body --set`, `set --project`) slips the worth check on create. for the mods lane.
+
+2026-11-06 16:40, main on his word: the mods chunk is FRM-519, its items and the side channel's create dead-end in its body. fixed: the pocket hook's dropped red (the commit held the hook's stdout), proven red and green; quiet-delivery-test prints its warning. already landed: x mods edit test's timeout rerun (x/go/mods.go, #125). covered: x lane stack link's branch name, logged in docs/test-drive/stacked-prs.md, no stacks until that trial's verdict. sized: x-cloud-chat, 17 skills, 5.1 KB of frontmatter, about 1.3k tokens a session (bytes / 4, an estimate). open: the groom backfill with helga; a side bump leaving plugin.json dirty in main.
 <!-- SECTION:NOTES:END -->

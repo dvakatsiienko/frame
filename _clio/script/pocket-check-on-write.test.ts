@@ -44,6 +44,8 @@ writeFileSync(
     '#!/bin/sh\necho \'{"error":"nothing staged under those paths — empty diff, no commit","ok":false}\'\nexit 1\n',
     { mode: 0o755 },
 );
+const slowStub = join(fixtures, 'slow-stub.sh');
+writeFileSync(slowStub, '#!/bin/sh\nsleep 3\n', { mode: 0o755 });
 const lastCommit = join(fixtures, '.local/state/clio/pocket-commits/last');
 
 function run(event: object, check: string, commit = commitStub) {
@@ -100,6 +102,17 @@ describe('pocket-check on a pocket write', () => {
             tool_name: 'Edit',
         };
         expect(run(edit, redCmd)?.decision).toBe('block');
+    });
+
+    test('a slow commit leaves the hook its stdout, so a red block reaches cc at once', () => {
+        const task = join(frame, '_clio/pocket/tasks/pk-2 - slow.md');
+        writeFileSync(task, 'x\n');
+        const start = Date.now();
+        const out = run(bash('backlog task edit 2'), redCmd, slowStub);
+        const took = Date.now() - start;
+        rmSync(task);
+        expect(out?.decision).toBe('block');
+        expect(took).toBeLessThan(1500);
     });
 
     test('a green pocket passes', () => {
