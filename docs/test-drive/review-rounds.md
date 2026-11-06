@@ -33,6 +33,9 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-06 · frm-517 codie · fine
 - 2026-11-06 · frm-514 sixth sense · 11, 4, 3 min of its own wall clock; no reviewer lane, so no other read here · keep, no new read
 
+- 2026-11-06 · BYT-130 ci made boring · codie · 4 sixth sense rounds, 2 of them on steers; local reviews 4
+- 2026-11-06 · BYT-130 ci made boring · sixth sense · r1 14 min, r2 13 min (10 of it CI), r3 19 min (14 in the gate queue), r4 3 min; 4 rounds, all P2 or text, none counted to the cap; scope grew by dima's fix word · keep
+- 2026-11-06 · cli lane 6 · codie · local reviews 4 (built-in, two wisphunter cards, coderabbit); sixth sense rounds 2 so far, the ci reviewer's one spent
 ## graded lines — one per local review, from codie's done report, copied by clio at land
 
 - 2026-10-22 · frame#95 · matt's code-review, spec card (Opus 5.5) · 4 useful, 3 noise · useful
