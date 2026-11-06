@@ -5,10 +5,11 @@
 set -euo pipefail
 repo=$(git rev-parse --show-toplevel)
 sha=${1:-}
+step_ref=
 # a pre-push hook names what it pushes on stdin: a worktree's push runs from the main checkout, whose HEAD is another commit
 if [ -z "$sha" ] && [ ! -t 0 ]; then
-    while read -r -t 1 _ pushed _ _; do
-        case $pushed in *[!0]*) sha=$pushed ;; esac
+    while read -r -t 1 ref pushed _ _; do
+        case $pushed in *[!0]*) sha=$pushed step_ref=$ref ;; esac
     done
 fi
 sha=${sha:-HEAD}
@@ -26,4 +27,14 @@ for dir in . $(sed -n 's/^  - //p' "$repo/pnpm-workspace.yaml"); do
 done
 
 cd "$tmp/frame"
-env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --reporter=dot
+step_start=$(date +%FT%T%z)
+step_load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
+step_code=0
+env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --reporter=dot || step_code=$?
+# one row in gate-steps.log, read by docs/test-drive/gate-speed.md: a red here on a commit whose test step was related is what the trial counts
+if [ -z "${VITEST:-}" ]; then
+    step_state=${X_STATE:-$HOME/.local/state/x}
+    mkdir -p "$step_state"
+    printf '%s\t%s\tpush\t%s\t%s\t%s\t%s\ttest:twin\n' "$step_start" "$step_load" "${step_ref:-unnamed}" "$(git rev-parse --short HEAD)" "$SECONDS" "$step_code" >>"$step_state/gate-steps.log"
+fi
+exit "$step_code"

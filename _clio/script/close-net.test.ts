@@ -18,20 +18,27 @@ type Lane = {
 };
 
 // a stub `x` on PATH: the list and the read answer from the given tickets; none means linear is down.
-// HOME is a fixture dir holding the given glide lanes.
-function run(tickets?: Ticket[], lanes: Lane[] = []) {
+// HOME is a fixture dir holding the given glide lanes. A call whose args hold `failOn` exits 1.
+function run(
+    tickets?: Ticket[],
+    lanes: Lane[] = [],
+    failOn?: string,
+    plan = '',
+) {
     const dir = mkdtempSync(join(tmpdir(), 'close-net-'));
     const home = join(dir, 'home');
     mkdirSync(join(home, '.claude/shelf'), { recursive: true });
+    mkdirSync(join(home, '.local/state/x/lanes/a-lane'), { recursive: true });
     writeFileSync(
         join(home, '.claude/shelf/lanes.json'),
         JSON.stringify({ lanes }),
     );
+    writeFileSync(join(home, '.local/state/x/lanes/a-lane/lane-plan.md'), plan);
     const body = JSON.stringify({ data: { tickets } });
     writeFileSync(
         join(dir, 'x'),
         tickets
-            ? `#!/bin/sh\ncat <<'EOF'\n${body}\nEOF\n`
+            ? `#!/bin/sh\n${failOn ? `case "$*" in *${failOn}*) exit 1;; esac\n` : ''}cat <<'EOF'\n${body}\nEOF\n`
             : '#!/bin/sh\nexit 1\n',
     );
     chmodSync(join(dir, 'x'), 0o755);
@@ -123,6 +130,62 @@ describe('close-net', () => {
         });
     });
 
+    describe('a ticket already built and still Todo', () => {
+        const todo = [{ id: 'FRM-1', labels: ['needs human'] }];
+
+        test('reds on a ticked plan step, with the share', () => {
+            const out = run(
+                todo,
+                [],
+                undefined,
+                '- [x] 01 · FRM-1 a\n- [ ] 02 · FRM-1 b\n',
+            );
+            expect(out.status).toBe(1);
+            expect(out.stdout).toContain(
+                '🔴 FRM-1: built, 1 of 2 plan steps ticked',
+            );
+        });
+
+        test.each([
+            ['another id', '- [x] 01 · FRM-12 a\n'],
+            ['an unticked plan', '- [ ] 01 · FRM-1 a\n'],
+            ['no plan line', ''],
+        ])('passes on %s', (_label, plan) => {
+            expect(run(todo, [], undefined, plan).status).toBe(0);
+        });
+
+        test('passes while a live lane holds it', () => {
+            const out = run(
+                todo,
+                [
+                    {
+                        items: [{ isDone: false, ticket: 'FRM-1' }],
+                        members: { codie: 'x' },
+                    },
+                ],
+                undefined,
+                '- [x] 01 · FRM-1 a\n',
+            );
+            expect(out.stdout).not.toContain('🔴 FRM-1: built');
+        });
+
+        test('a live door keeps it green and prints the built work', () => {
+            const out = run(
+                [
+                    {
+                        ...todo[0],
+                        comments: [{ body: '⏰ due: y by 2999-01-01' }],
+                    } as Ticket,
+                ],
+                [],
+                undefined,
+                '- [x] 01 · FRM-1 a\n',
+            );
+            expect(out.status).toBe(0);
+            expect(out.stdout).toContain('(built, 1 of 1 plan steps ticked)');
+        });
+    });
+
     test('the label needs human passes', () => {
         const out = run([{ id: 'FRM-1', labels: ['needs human'] }]);
         expect(out.status).toBe(0);
@@ -209,9 +272,29 @@ describe('close-net', () => {
             expect(out.stdout).toContain(`🔴 ${id}`);
     });
 
-    test('linear down is not a red', () => {
+    test('linear down is a red', () => {
         const out = run();
-        expect(out.status).toBe(0);
+        expect(out.status).toBe(1);
         expect(out.stdout).toContain('unreachable');
+    });
+
+    test('an In Progress read that fails is a red', () => {
+        const out = run([{ id: 'FRM-1' }], [], 'read');
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('In Progress tickets unread');
+    });
+
+    test('a Todo list that fails is a red', () => {
+        const out = run([], [], 'Todo');
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('Todo tickets unread');
+    });
+
+    test('a Todo ticket never moved back, with no door, is skipped by name', () => {
+        const out = run([{ id: 'FRM-1', labels: ['needs human'] }]);
+        expect(out.status).toBe(0);
+        expect(out.stdout).toContain(
+            '⏭️ 1 Todo never moved back, skipped: FRM-1',
+        );
     });
 });

@@ -84,6 +84,27 @@ describe('runner-twin', () => {
         expect(tested(context.dir)).toBe(context.pushed);
     });
 
+    test('a red at push logs its ref, its commit and its exit', () => {
+        const context = fixture();
+        const state = join(context.dir, 'state');
+        writeFileSync(
+            join(context.repo, 'node_modules/.bin/vitest'),
+            '#!/bin/sh\nexit 4\n',
+        );
+        const got = twin(
+            context,
+            `refs/heads/codie/FRM-1-x ${context.pushed} refs/heads/codie/FRM-1-x ${zeros}\n`,
+            { VITEST: '', X_STATE: state },
+        );
+        expect(got.status).toBe(4);
+        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+            .trimEnd()
+            .split('\t');
+        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/codie/FRM-1-x']);
+        expect(context.pushed.startsWith(row[4] ?? 'none')).toBe(true);
+        expect(row.slice(6)).toEqual(['4', 'test:twin']);
+    });
+
     test('a deleted ref on stdin falls back to HEAD', () => {
         const context = fixture();
         const got = twin(

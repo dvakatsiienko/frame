@@ -102,8 +102,8 @@ export function checkPocket(
         )
             report('wish born without W-lines: fold it into PK-N:W1… lines');
         // a wing's prompts reach no prompt log; the main folds its asks from the closing report (FRM-464)
-        const wing = (front.lists.labels ?? []).some(
-            (label) => label === 'wing' || label === 'wing-owned',
+        const wing = (front.lists.labels ?? []).some((label) =>
+            /^wing-\d+$/.test(label),
         );
         for (const hhmm of wing ? [] : ungroomedStamps(text, today, isGroomed))
             report(

@@ -326,10 +326,17 @@ func recordTree(repo string, treeOf func() (string, error), gates []hookGate, ve
 			proven = append(proven, g.name+"="+runHash(g))
 		}
 	}
-	at, _ := run(repo, nil, "", "git", "rev-parse", "HEAD")
-	if sha, err := treeOf(); err == nil && at.ok && len(proven) > 0 {
-		recordGreen(treeSubject+" "+at.out, sha, proven)
+	subject, ok := treeRecord(repo)
+	if sha, err := treeOf(); err == nil && ok && len(proven) > 0 {
+		recordGreen(subject, sha, proven)
 	}
+}
+
+// a green's key: the HEAD a gate may diff against, and the branch, since a gate may run less on one (script/test-commit.sh)
+func treeRecord(repo string) (string, bool) {
+	at, _ := run(repo, nil, "", "git", "rev-parse", "HEAD")
+	branch, _ := run(repo, nil, "", "git", "symbolic-ref", "--quiet", "--short", "HEAD")
+	return treeSubject + " " + at.out + " " + branch.out, at.ok
 }
 
 // a gate's run line in a record, so a gate edited since its green proves nothing
@@ -352,8 +359,8 @@ func provenOnThisTree(tree string, paths []string) []string {
 		}
 	}
 	sha, err := treeOf()
-	at, _ := run(tree, nil, "", "git", "rev-parse", "HEAD")
-	if err != nil || !at.ok {
+	subject, ok := treeRecord(tree)
+	if err != nil || !ok {
 		return nil
 	}
 	record, _ := os.ReadFile(filepath.Join(stateDir(), gatesGreenFile))
@@ -361,7 +368,7 @@ func provenOnThisTree(tree string, paths []string) []string {
 	slices.Reverse(lines)
 	for _, line := range lines {
 		fields := strings.Split(line, "\t")
-		if len(fields) != 4 || fields[1] != treeSubject+" "+at.out || fields[2] != sha {
+		if len(fields) != 4 || fields[1] != subject || fields[2] != sha {
 			continue
 		}
 		if until, err := strconv.ParseInt(fields[0], 10, 64); err != nil || time.Now().Unix() >= until {

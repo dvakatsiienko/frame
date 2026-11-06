@@ -350,18 +350,19 @@ export const ticketOf = (name: string) =>
 
 const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
 const ROUND_HEAD = new RegExp(
-    String.raw`^${ROUND_LEAD}round\s+(\d+)\s+on\s+\**([0-9a-f]{7,40})\b`,
+    String.raw`^${ROUND_LEAD}round\s+(\d+)\b[^\n]*?(?:\bon\s+\**([0-9a-f]{7,40})|\b((?=[0-9a-f]*\d)[0-9a-f]{7,40}))\b`,
 );
 // a sha holds a digit, so a word like «defaced» is none
 const FINAL_HEAD = new RegExp(
     String.raw`^${ROUND_LEAD}final\s+on\s+\**((?=[0-9a-f]*\d)[0-9a-f]{7,40})\b`,
 );
 
-// codie's round, only at the message's head: a quoted round further in is a report of one. «final on <sha>» is round 1
+// codie's round, only at the message's head: a quoted round further in is a report of one. a leading «round N» counts with the first
+// sha on its line, whatever sits between (a real «round 4, final, on <sha>» read 3); «final on <sha>» is round 1
 export function roundOf(message: string) {
     const head = message.trimStart();
     const m = head.match(ROUND_HEAD);
-    if (m) return { n: Number(m[1]), sha: m[2] ?? '' };
+    if (m) return { n: Number(m[1]), sha: m[2] ?? m[3] ?? '' };
     const sha = head.match(FINAL_HEAD)?.[1];
     return sha ? { n: 1, sha } : undefined;
 }

@@ -161,6 +161,43 @@ test("a fixture's git inside a gate never reaches the real repo under a hook's G
     );
 });
 
+test.each([
+    ['a commit hook', { GIT_EDITOR: ':' }, 'commit'],
+    ['any other caller', {}, 'other'],
+])("%s's gate logs one step row, with its exit", (_name, extra, source) => {
+    const { gate, repo } = peerStaged();
+    const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
+    execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
+        cwd: repo,
+        env: gitEnv(),
+    });
+
+    const run = gate('sh -c "exit 7"', {
+        ...extra,
+        VITEST: '',
+        X_STATE: state,
+    });
+
+    expect(run.status, run.stderr).toBe(7);
+    const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+        .trimEnd()
+        .split('\t');
+    expect(row).toHaveLength(8);
+    expect(row.slice(2, 4)).toEqual([source, 'codie/FRM-1-x']);
+    expect(row[4]).toMatch(/^[0-9a-f]+$/);
+    expect(row[6]).toBe('7');
+    expect(row[7]).toContain('exit 7');
+});
+
+test('a gate under vitest writes no step row', () => {
+    const { gate } = peerStaged();
+    const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
+
+    gate('true', { VITEST: 'true', X_STATE: state });
+
+    expect(readdirSync(state)).toEqual([]);
+});
+
 test("a gate's staged diff names only the commit's files", () => {
     const { commitIndex, gate } = peerStaged();
 

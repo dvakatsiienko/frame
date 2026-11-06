@@ -9,6 +9,7 @@
   - a pick names its whole outcome, so a tick needs no follow-up: a rename carries the new name («breather → breathing bars»), a choice its option, never the verb alone
   - a reply names an ask by its subject in plain words; its `oN` id stays on the board, never in the reply
   - one ask leads with its subject, the why in its hidden note (the tool refuses one past 90 chars); an irreversible one leads with ⚠️ and names its exact target; another round is a `follow`, never a second add
+  - a command `x-mod-guard` refused: the ask quotes it whole in one backtick span, and his one tick runs it once within 2 h; a command too long for the 90 chars takes his typed word (`x-mod-guard/FTR.md`, its given)
   - a member in a lane keeps its asks in its own orbit only; the 🛼 glide card on every board shows them, and dima's tick there reaches the member — never copied into the coordinator's orbit. a member in no lane names its ask in its ping to the coordinator
   - in mobile mode the board is out of his reach: open asks and phases print in the ⏳ fence (`x:mobile-mode`)
 - **🌔 phases — the session's own plan, live.** every session keeps its next moves (≤7) through orbit's `plan` op (`lines`), reset at a turn end whenever they moved: codie's coding plan, sixth sense's review plan, the coordinator's lane plan; parked → what it waits on. dima opens any thread and sees where it is.

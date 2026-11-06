@@ -60,7 +60,21 @@ done
 # pnpm checks its install before a script and dies on a symlinked node_modules; the copy never installs
 printf '\nverifyDepsBeforeRun: false\n' >>"$copy/pnpm-workspace.yaml"
 cd "$copy"
+# one row a gate in gate-steps.log, read by docs/test-drive/gate-speed.md; git sets GIT_EDITOR for a commit's hook, x's own gate runs don't
+step_source=other
+[ -n "${GIT_EDITOR:-}" ] && step_source=commit
+step_head=$(git rev-parse --short HEAD)
 # a hook exports GIT_DIR and friends: inherited, a fixture's `git init` and `git config` write the real repo (core.bare, 2026-11-06)
 # shellcheck disable=SC2046
 unset $(git rev-parse --local-env-vars)
-"$@"
+step_start=$(date +%FT%T%z)
+step_load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
+step_code=0
+"$@" || step_code=$?
+# a nested run under vitest is a fixture, not a gate
+if [ -z "${VITEST:-}" ]; then
+    step_state=${X_STATE:-$HOME/.local/state/x}
+    mkdir -p "$step_state"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$step_start" "$step_load" "$step_source" "$INDEX_RUN_BRANCH" "$step_head" "$SECONDS" "$step_code" "$*" >>"$step_state/gate-steps.log"
+fi
+exit "$step_code"

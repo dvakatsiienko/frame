@@ -1495,6 +1495,7 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
     Array.isArray(v) && v.length
         ? v.filter(
               (p): p is QuietPing =>
+                  p?.tag !== QUIET_NOTICE &&
                   typeof p?.at === 'number' &&
                   typeof p?.from === 'string' &&
                   typeof p?.text === 'string',
@@ -1555,23 +1556,24 @@ async function quietHoldPrompt(
                 body,
                 from,
                 head,
+                isTagged: true,
+                kind: tag,
                 marks,
                 tag,
                 text: quietHeldText(body),
             };
         }),
-        // a report opening a tag with its kind switched off holds under that tag, so its words wait instead of going
+        // a report opening a tag with its kind switched off waits with its words, its log line still a note's
         ...glued.notes.map(({ body, from, head }) => {
             const kind = quietTag(body);
             return {
                 body,
                 from,
                 head,
+                isTagged: kind !== 'none' && kind !== 'progress',
+                kind,
                 marks: {},
-                tag:
-                    kind === 'none' || kind === 'progress'
-                        ? QUIET_NOTICE
-                        : kind,
+                tag: QUIET_NOTICE,
                 text: body,
             };
         }),
@@ -1597,7 +1599,17 @@ async function quietHoldPrompt(
             });
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
         const canCut = !isEngineNotice || judged.every((j) => !j.why);
-        for (const { from, head, marks, sid, tag, text, why } of judged) {
+        for (const {
+            from,
+            head,
+            isTagged,
+            kind,
+            marks,
+            sid,
+            tag,
+            text,
+            why,
+        } of judged) {
             const line = {
                 arm,
                 at,
@@ -1607,11 +1619,11 @@ async function quietHoldPrompt(
                 ...marks,
             };
             // a turn-end note is logged and goes no further, in every mode the switch is on: nobody acted on 10 of 13 in an hour
-            if (tag === QUIET_NOTICE && isOn && canCut && !why) {
+            if (!isTagged && tag === QUIET_NOTICE && isOn && canCut && !why) {
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'logged' });
             } else if (isHolding && canCut && !why) {
-                held.push({ at, from, tag, text, ...marks });
+                held.push({ at, from, tag: kind, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
             } else
@@ -1634,10 +1646,10 @@ async function quietHoldPrompt(
             if (held.length) await saveQuiet($, q);
             throw new Error('the log lines did not save');
         }
-        if (!cut.size) return undefined;
         const isAllCut = items.every((item) => cut.has(item.head));
         if (glued.silentEvent !== undefined && isOn && canCut)
             cut.add(glued.silentEvent);
+        if (!cut.size) return undefined;
         if (isAllCut && !glued.hasOther) return { drop: '' };
         return {
             text: glued.heads
