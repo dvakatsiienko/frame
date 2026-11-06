@@ -12,7 +12,8 @@ import (
 const headSha, oldSha = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 // a fake gh answering from files beside it: pr.json, runs.jsonl (absent → 404), body; every call
-// lands in calls.log behind the token it ran with. FAKE_GH_ADD_FAIL refuses a label add, FAKE_GH_COMPARE is github's compare status
+// lands in calls.log behind the token it ran with. FAKE_GH_ADD_FAIL refuses a label add, FAKE_GH_COMPARE is github's compare status,
+// FAKE_GH_JOB the reviewer job's conclusion, success when unset; FAKE_GH_JOBS_BODY replaces that answer, and «fail» makes it a 5xx
 func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 	t.Helper()
 	dir = t.TempDir()
@@ -24,7 +25,12 @@ func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 d='`+dir+`'
 printf '%s %s\n' "$GH_TOKEN" "$*" >> "$d/calls.log"
 case "$1" in
-api) case "$*" in *compare/*) echo "$FAKE_GH_COMPARE"; exit 0 ;; esac
+api) case "$*" in
+	*compare/*) echo "$FAKE_GH_COMPARE"; exit 0 ;;
+	*/jobs*) if [ "$FAKE_GH_JOBS_BODY" = fail ]; then echo 'HTTP 502' >&2; exit 1; fi
+		if [ -n "$FAKE_GH_JOBS_BODY" ]; then echo "$FAKE_GH_JOBS_BODY"; exit 0; fi
+		echo "{\"jobs\":[{\"name\":\"review-round / reviewer\",\"conclusion\":\"${FAKE_GH_JOB:-success}\"}]}"; exit 0 ;;
+	esac
 	[ -f "$d/runs.jsonl" ] && exec cat "$d/runs.jsonl"; echo 'gh: Not Found (HTTP 404)' >&2; exit 1 ;;
 pr) case "$2 $*" in
 	view*'--json body'*) cat "$d/body"; if [ -n "$FAKE_GH_MANGLE" ]; then echo mangled; fi ;;
@@ -39,7 +45,7 @@ esac
 }
 
 func runOf(number int, sha, status, conclusion string) string {
-	return fmt.Sprintf(`{"run_number":%d,"head_branch":"coder/x","head_sha":%q,"status":%q,"conclusion":%q}`, number, sha, status, conclusion)
+	return fmt.Sprintf(`{"id":%d,"run_number":%d,"head_branch":"coder/x","head_sha":%q,"status":%q,"conclusion":%q}`, number, number, sha, status, conclusion)
 }
 
 func calls(t *testing.T, dir string) string {
@@ -84,6 +90,33 @@ func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
 
 			if got.code != 0 || got.data["review"] != c.review || strings.Contains(calls(t, dir), "pr edit") {
 				t.Fatalf("exit %d, review %v, calls:\n%s", got.code, got.data["review"], calls(t, dir))
+			}
+		})
+	}
+}
+
+func TestReviewCountsNoRoundForAGreenRunWithASkippedJob(t *testing.T) {
+	t.Parallel()
+	env, dir := fakeGh(t, []string{runOf(1, headSha, "completed", "success")})
+
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_JOB=skipped"), "lane", "review", "7")
+
+	if got.code != 0 || got.data["review"] != "requested" || !strings.Contains(calls(t, dir), "--add-label") {
+		t.Fatalf("exit %d, review %v, want a round requested:\n%s%s", got.code, got.data["review"], calls(t, dir), got.stdout)
+	}
+}
+
+func TestReviewRefusesWhenARunsJobsCannotBeRead(t *testing.T) {
+	t.Parallel()
+	for _, body := range []string{"fail", "not json"} {
+		t.Run(body, func(t *testing.T) {
+			t.Parallel()
+			env, dir := fakeGh(t, []string{runOf(1, headSha, "completed", "success")})
+
+			got := xIn(t, t.TempDir(), append(env, "FAKE_GH_JOBS_BODY="+body), "lane", "review", "7")
+
+			if got.code != 1 || got.data["review"] != nil || strings.Contains(calls(t, dir), "pr edit") {
+				t.Fatalf("exit %d, review %v, want a refusal and no label:\n%s%s", got.code, got.data["review"], calls(t, dir), got.stdout)
 			}
 		})
 	}

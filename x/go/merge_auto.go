@@ -988,10 +988,31 @@ func ciCheck(api, base, head string) (mergeCheck, bool, error) {
 
 // the one repo whose merges need a reviewer round; frame's round stays advice
 func roundGated(repo string) bool {
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		return repo == os.Getenv("X_ROUND_REPO")
 	}
 	return repo == "dvakatsiienko/bytes"
+}
+
+// a run's jobs, as github answers /actions/runs/<id>/jobs
+type runJobs struct {
+	Jobs []runJob `json:"jobs"`
+}
+
+type runJob struct {
+	Name       string `json:"name"`
+	Conclusion string `json:"conclusion"`
+	Steps      []struct {
+		Name       string `json:"name"`
+		Conclusion string `json:"conclusion"`
+	} `json:"steps"`
+}
+
+// a run counts as a round only here: a green run can hold a skipped job
+func (j runJobs) reviewerFinished() bool {
+	return slices.ContainsFunc(j.Jobs, func(job runJob) bool {
+		return strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success"
+	})
 }
 
 // the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-guard.sh)
@@ -1040,24 +1061,15 @@ func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (merg
 			!roundReaches(r.HeadSha, head, base, ref) {
 			continue
 		}
-		var answer struct {
-			Jobs []struct {
-				Name       string `json:"name"`
-				Conclusion string `json:"conclusion"`
-				Steps      []struct {
-					Name       string `json:"name"`
-					Conclusion string `json:"conclusion"`
-				} `json:"steps"`
-			} `json:"jobs"`
-		}
+		var answer runJobs
 		if _, err := ghFetch(asDima, fmt.Sprintf("%s/actions/runs/%d/jobs", api, r.ID), &answer); err != nil {
 			return c, err
 		}
+		if answer.reviewerFinished() {
+			c.OK, c.Detail = true, "the reviewer finished a round on "+short(r.HeadSha)
+			return c, nil
+		}
 		for _, job := range answer.Jobs {
-			if strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success" {
-				c.OK, c.Detail = true, "the reviewer finished a round on "+short(r.HeadSha)
-				return c, nil
-			}
 			for _, step := range job.Steps {
 				stoodDown = stoodDown || (step.Conclusion == "failure" && slices.Contains(standDownSteps, step.Name))
 			}
