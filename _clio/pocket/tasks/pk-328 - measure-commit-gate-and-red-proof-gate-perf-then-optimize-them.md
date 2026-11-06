@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T19:47:00Z'
+updated_date: '2026-11-06T19:52:00Z'
 labels:
   - s
   - wing-1
@@ -94,4 +94,6 @@ PK-328:W22 (2026-11-06 21:37, dima's word through main): the gate queue's wait i
 PK-328:W23 (2026-11-06 21:45, dima): are you ready to second wind yourself? ❓ answered: lane running, handoff written, wind taken.
 marked done, the 20:33 homes: W10's guard row is FRM-519 item 10, its re-sign main's; the tested-bytes branch key landed; W5's fix and W8's budget read are in FRM-521's spec and docs/test-drive/gate-speed.md; red-proof's --cmd is FRM-383's W3 and exit 11; 3 test mutants FRM-383; the -count=1 line FRM-520.
 held: 2026-11-06 — FRM-521 the side lane's landing; PK-328 closes there or stays by a kept line for the 11-13 read.
+
+PK-328:W11's ❓ answered, in the thread 2026-11-06 20:03: go's test cache works, cached runs are near instant, one package reruns on any x/go edit, and it is blind to scripts outside the module.
 <!-- SECTION:NOTES:END -->
