@@ -47,10 +47,11 @@
   - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
   - proof: tests/hint.test.ts::a raw pr read runs with an x gh pr hint: …; a raw git add or commit in frame or bytes runs with an x lane commit hint: …; no hint for: …
 - ✅ a numbered wing, `🦉🪽 clio: wing <N>`, reads as the coordinator on every rule that names her (FRM-504); proof: tests/linearwrite.test.ts::a numbered wing runs as the coordinator does; ::a wing title with no number is still a member
-- ✅ a raw `gh pr merge` runs with a hint naming `x lane merge-auto` as the door (FRM-504)
-  - given `gh pr merge`, past gh's own flags or under `x as <member>`, then it runs as typed with one line naming the door; `gh stack merge`, `gh pr merge --help`, `x lane merge-auto`, quoted text and a heredoc body get no line
-  - decision: a hint for now, warn-only; a refusal is a later word of dima's
-  - proof: tests/hint.test.ts::a raw merge runs with its door named: …; no merge hint for: …
+- ✅ a raw merge is refused, naming `x lane merge-auto` as the door (BYT-94, was a hint since FRM-504)
+  - given `gh pr merge`, `gh pr merge --auto`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, or a graphql merge mutation, past gh's own flags, bare, through `github-token-wrap`, under `x as <member>` or in a nested shell, on any pr, then nothing runs and the refusal (rule `raw-merge`) names the door; `gh stack merge`, `gh pr merge --help`, `x lane merge-auto`, quoted text and a heredoc body pass
+  - decision: a refusal from its first head, never warn-only: after the required check went, nothing on github stops a raw merge reaching production (dima's o48); the one named exception to `mods/AGENTS.md`'s warn-only line
+  - known gap: the web button, a hand-typed merge, a `curl` to the merge url
+  - proof: tests/merge-hold.test.ts::a raw merge is refused naming the door, nothing held: …; ::no raw merge in: …
 - ✅ a `gh --jq` call gets a gojq hint (FRM-394)
   - given a Bash call runs `gh … --jq <program>` (also `--jq=…` or `-q`), then it runs as typed and the model reads: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`
   - given `gh … --json f | jq …`, then no hint
@@ -356,7 +357,7 @@
 - ⬜ a raw merge of a held pr is refused (FRM-511)
   - given a Bash line that names `~/.local/state/x/merge-hold/` with anything past a plain read, from any session, then nothing runs and the refusal (rule `merge-hold`) names `--hold` and `--release-hold`: x is the record's one writer
   - given `gh pr merge`, `gh stack merge`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, a wrapper or nested shell included, on a pr in `~/.local/state/x/merge-hold/`, then nothing runs and the refusal (rule `merge-hold`) names the hold and `x lane merge-auto`
-  - given a hold file that does not parse or a hold dir that does not list, then every such merge is refused; given a target with no pr number, a graphql merge mutation among them, then it is refused while any hold stands and passes with none; a stack merge of any pr counts as such a target, since the layers under it are github's to list; a plain merge of an unheld pr passes this rule
+  - given a hold file that does not parse or a hold dir that does not list, then every such merge is refused; given a target with no pr number, a graphql merge mutation among them, then it is refused while any hold stands and passes with none; a stack merge of any pr counts as such a target, since the layers under it are github's to list; a plain merge of an unheld pr passes this rule, and meets `raw-merge`
   - decision: a refusal from its first head, never warn-only: it fires only on a held layer, and past commands carry no mark, so its replay count is 0 by construction
   - known gap: a `curl` to the merge url, and the evasion every guard rule shares
   - proof: tests/merge-hold.test.ts

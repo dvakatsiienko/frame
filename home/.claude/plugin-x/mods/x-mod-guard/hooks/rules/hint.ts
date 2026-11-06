@@ -17,8 +17,6 @@ import { commandWrites, pythonWrites } from './overwrite.ts';
 
 const PR_HINT =
     'x-mod-guard hint: `x gh pr <n>` reads a pr — its checks and all three comment feeds, newest first — in one call';
-const MERGE_HINT =
-    'x-mod-guard hint: `x lane merge-auto <pr>` is the door to a merge: a raw `gh pr merge` skips its gates; `gh stack merge` stays open';
 const LANE_HINT =
     'x-mod-guard hint: `x lane commit <msg file> -- <paths>` formats and stages exactly those paths, then commits them';
 // gh's --jq runs gojq built into gh, not the system jq: a program proven with jq can read differently inside gh
@@ -270,11 +268,6 @@ export function hints(command: string, cwd: string, ctx: Context) {
                 (sub === 'api' && isPullsRead(c.args.slice(1))))
         )
             found.add(PR_HINT);
-        if (c.name === 'gh' && !hasFlag(c.args, ['--help'], 'h')) {
-            const words = c.args.map((w) => w.text);
-            if (words.some((w, at) => w === 'pr' && words[at + 1] === 'merge'))
-                found.add(MERGE_HINT);
-        }
         if (
             ctx.isForeground &&
             /(^|\/)x$/.test(c.name) &&

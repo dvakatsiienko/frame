@@ -85,36 +85,6 @@ for (const [cwd, typed] of LANE)
         expect(hinted(r.context, 'x lane commit')).toHaveLength(1);
     });
 
-const RAW_MERGES = [
-    'gh pr merge 12 --squash',
-    'gh -R o/r pr merge 12',
-    'x as codie -- gh pr merge 12',
-    'cd /repo && gh pr merge 12 --admin',
-] as const;
-for (const typed of RAW_MERGES)
-    test(`a raw merge runs with its door named: ${typed}`, async ($, on) => {
-        const w = world(on);
-        const r = await bash($, typed);
-        expect(w.ran).toEqual([typed]);
-        expect(hinted(r.context, 'x lane merge-auto')).toHaveLength(1);
-    });
-
-const NO_RAW_MERGES = [
-    'gh stack merge 12',
-    'gh pr merge --help',
-    'x lane merge-auto 12',
-    'gh pr view 12',
-    "echo 'gh pr merge 12'",
-    "cat <<'EOF'\ngh pr merge 12\nEOF",
-    'git merge main',
-] as const;
-for (const typed of NO_RAW_MERGES)
-    test(`no merge hint for: ${typed.split('\n')[0]}`, async ($, on) => {
-        world(on);
-        const r = await bash($, typed);
-        expect(hinted(r.context, 'x lane merge-auto')).toHaveLength(0);
-    });
-
 const QUIET = [
     ['/repo', 'git add a.ts'],
     ['/repo', 'git commit -m m -- a.ts'],

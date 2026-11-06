@@ -12,6 +12,7 @@ import {
     type MergeHolds,
     holdRecordWrite,
     mergeHold,
+    rawMergeRefused,
     rawMerges,
 } from './rules/merge-hold.ts';
 import { projectMoves } from './rules/milestone.ts';
@@ -1549,7 +1550,9 @@ export const register: Register = (on) => {
         }
         const merges = rawMerges(typed, cwd);
         if (merges.length) {
-            const hold = mergeHold(merges, await readMergeHolds($));
+            const hold =
+                mergeHold(merges, await readMergeHolds($)) ??
+                rawMergeRefused(merges);
             if (hold) {
                 const said = `x-mod-guard stopped this one command. instead: ${hold.door}. why: ${hold.why} (rule ${hold.rule}).`;
                 const stop = await enforce(

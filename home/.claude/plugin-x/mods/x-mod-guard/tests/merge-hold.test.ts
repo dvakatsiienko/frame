@@ -91,9 +91,53 @@ for (const line of [
         expect(ran).toEqual([]);
     });
 
+// BYT-94's rider, o48: every raw merge is refused from birth, held or not, naming the door
 for (const line of [
-    'gh pr merge 8',
-    'gh api -X PUT repos/o/r/pulls/8/merge',
+    'gh pr merge 12',
+    'gh pr merge 12 --squash',
+    'gh pr merge --auto 12',
+    'gh pr merge 12 --auto --squash',
+    'gh pr merge',
+    'gh pr merge "$PR"',
+    'gh -R o/r pr merge 12',
+    'x as codie -- gh pr merge 12',
+    'cd /repo && gh pr merge 12 --admin',
+    'github-token-wrap gh pr merge 12',
+    'github-token-wrap pr merge 12',
+    'sh -c "gh pr merge 12"',
+    'gh api -X PUT repos/o/r/pulls/12/merge',
+    'gh api --method PUT repos/o/r/pulls/12/merge',
+    'github-token-wrap gh api -X PUT repos/o/r/pulls/12/merge',
+    'gh api -X PUT repos/o/r/pulls/12/merge-async',
+    `gh api graphql -f query='mutation { mergePullRequest(input: {}) { clientMutationId } }'`,
+    'github-token-wrap gh api graphql -f query=@merge.graphql',
+])
+    test(`a raw merge is refused naming the door, nothing held: ${line}`, async ($, on) => {
+        const { ran } = world(on, null);
+        const r = await bash($, line);
+        expect(ran).toEqual([]);
+        expect(r.deny).toContain('x lane merge-auto');
+        expect(r.deny).toContain('rule raw-merge');
+    });
+
+for (const line of [
+    'gh stack merge 12',
+    'gh stack merge',
+    'gh pr merge --help',
+    'x lane merge-auto 12',
+    "echo 'gh pr merge 12'",
+    "cat <<'EOF'\ngh pr merge 12\nEOF",
+    'git merge main',
+    'gh api repos/o/r/pulls/12/merge',
+    `gh api graphql -f query='{ viewer { login } }'`,
+])
+    test(`no raw merge in: ${line.split('\n')[0]}`, async ($, on) => {
+        const { ran } = world(on, null);
+        const r = await bash($, line);
+        expect([r.deny, ran.length]).toEqual([undefined, 1]);
+    });
+
+for (const line of [
     'gh api repos/o/r/pulls/7/merge',
     'gh pr view 7',
     'gh pr list',
@@ -128,11 +172,10 @@ for (const line of [
         expect(r.deny).toContain('merge-hold');
         expect(ran).toEqual([]);
     });
-    test(`with no hold anywhere it passes: ${line}`, async ($, on) => {
-        const { ran } = world(on, null);
+    test(`with no hold anywhere merge-hold stays out: ${line}`, async ($, on) => {
+        world(on, null);
         const r = await bash($, line);
-        expect(r.deny).toBeUndefined();
-        expect(ran.length).toBe(1);
+        expect(r.deny ?? '').not.toContain('rule merge-hold');
     });
 }
 
