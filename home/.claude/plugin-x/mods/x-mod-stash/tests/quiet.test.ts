@@ -1520,6 +1520,36 @@ test('a note opening a kind switched off waits with its words', async ($, on) =>
     expect(held(w).join('\n')).toContain('FRM-1 landed');
 });
 
+test('a note opening a kind switched off logs as a note, never as a send', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-done', false);
+    await fromApp($, noteOf('A', '[done] FRM-1 landed'));
+    expect(logOf(w).map((l) => [l.tag, l.verdict])).toEqual([
+        ['notice', 'held'],
+    ]);
+});
+
+test('an event beside a pushing note leaves that turn', async ($, on) => {
+    world(on);
+    await start($);
+    const r = (await fromAppText(
+        $,
+        notice(noteOf('A', '[done] FRM-1 landed'), EVENT),
+    )) as { text?: string };
+    expect(r.text?.includes('None of the sessions')).toBe(false);
+});
+
+test('an old held notice draws no stuck alarm', async ($, on) => {
+    const w = alarmWorld(on);
+    w.store.set(`quiet-held:${SID}`, [
+        { at: EVEN - 33 * MIN, from: codiePeer.name, tag: 'notice', text: 'a' },
+    ]);
+    await start($);
+    await w.clock.advance(3 * MIN);
+    expect(w.scripted.join('')).not.toContain('stuck');
+});
+
 test("a note the old build held never reaches clio's prompt", async ($, on) => {
     const w = world(on);
     await start($);
@@ -2453,8 +2483,8 @@ for (const [what, submit] of [
             w.store.set(key, value);
             const r = await submit($);
             const before = w.contexts.length;
-            // past the old wake's three waits, short of the keep-hot ping
-            await w.clock.advance(35 * MIN);
+            // past the old wake's own wait
+            await w.clock.advance(12 * MIN);
             expect([
                 r.drop,
                 w.contexts.length - before,
@@ -2813,6 +2843,8 @@ for (const message of [
     'FRM-504: round 2 on 7c90198',
     'BYT-1 #127 round 2 on 7c90198',
     'BYT-1 slice 01 round 2 on 7c90198',
+    'round 4, final, on 7c90198',
+    'round 2 pushed: 7c90198 holds the fix',
 ])
     test(`a real lead counts: ${message}`, async ($, on) => {
         const w = world(on, { name: ROUND_CODIE });
@@ -2829,6 +2861,8 @@ for (const message of [
     'final word, your round 2 on 7c90198 stands',
     'BYT-105: clean — «round 4 on dbc4c111 — verdict: clean»',
     'parked: nothing new since the review',
+    'round 2 needs a look, nothing pushed yet',
+    'round 2 defaced the old row',
 ])
     test(`no round in this line: ${message}`, async ($, on) => {
         const w = world(on, { name: ROUND_CODIE });
