@@ -1025,7 +1025,7 @@ func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
 			w.hub.mu.Lock()
 			defer w.hub.mu.Unlock()
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
-				{"id":1,"head_branch":"other","head_sha":"x","status":"completed","conclusion":"success"}]}`
+				{"id":1,"head_branch":"other","head_sha":"` + w.head + `","status":"completed","conclusion":"success"}]}`
 		}},
 		{"a run still going", func(w *mergeWorld) {
 			w.reviewRun("success", "success", "")
@@ -1038,6 +1038,13 @@ func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
 		{"the run cancelled", func(w *mergeWorld) { w.reviewRun("cancelled", "cancelled", "") }},
 		{"a green run whose reviewer job skipped", func(w *mergeWorld) { w.reviewRun("success", "skipped", "") }},
 		{"a green run whose reviewer job cancelled", func(w *mergeWorld) { w.reviewRun("success", "cancelled", "") }},
+		{"a green run whose only green job is not the reviewer", func(w *mergeWorld) {
+			w.reviewRun("success", "skipped", "")
+			w.hub.mu.Lock()
+			defer w.hub.mu.Unlock()
+			w.hub.pages[repoPath+"/actions/runs/1/jobs"] = `{"jobs":[{"name":"other","conclusion":"success","steps":[]},
+				{"name":"review-round / reviewer","conclusion":"skipped","steps":[]}]}`
+		}},
 		{"a run dead on the cap", func(w *mergeWorld) { w.reviewRun("failure", "failure", "One review round per PR") }},
 	}
 	for _, c := range cases {
@@ -1048,8 +1055,8 @@ func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
 
 			got := w.run(t, "7")
 
-			if got.code != 1 || !strings.Contains(envelopeOf(got).Error, "x lane review 7") {
-				t.Fatalf("exit %d, want a refusal naming x lane review 7:\n%s", got.code, got.stdout)
+			if err := envelopeOf(got).Error; got.code != 1 || !strings.Contains(err, "x lane review 7") || strings.Contains(err, "stood down") {
+				t.Fatalf("exit %d, want a refusal naming x lane review 7 and no stand-down:\n%s", got.code, got.stdout)
 			}
 		})
 	}
