@@ -3839,6 +3839,9 @@ for (const [text, pick] of [
     ['FRM-471 re-sign: the rows', 're-sign it'],
     ['sign FRM-1 please', 'sign: as drafted'],
     ['sign FRM-1 please', 'yes, sign it'],
+    ['sign FRM-1 please', 'yes. sign it'],
+    ['sign FRM-1 please', 'ok to sign'],
+    ['sign FRM-1 please', 'signed-off'],
 ] as const)
     test(`add refuses the pick «${pick}» on a mis-shaped sign ask`, async ($, on) => {
         world(on);
@@ -3849,6 +3852,7 @@ for (const [text, pick] of [
 for (const [what, text, pick] of [
     ['a pick holding sign-in', 'push FRM-1', 'sign-in flow first'],
     ['a pick holding signed-in', 'push FRM-1', 'signed-in flow first'],
+    ['a pick reading signed in', 'push FRM-1', 'signed in already'],
     ['a pick with no need', 'push FRM-1', 'no need to re-sign'],
     ['one id', '✍️ sign FRM-1: the title', 'signed'],
     ['a batch', '✍️ sign FRM-1, BYT-2: the titles', 're-signed'],

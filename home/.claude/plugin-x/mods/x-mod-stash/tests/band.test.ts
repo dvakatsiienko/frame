@@ -428,10 +428,14 @@ function pressWorld(
     store = new Map<string, unknown>(),
 ) {
     const clock = world(on, false);
-    const hooks: { onDraw?: () => Promise<unknown> } = {};
+    const hooks: { onDraw?: () => Promise<unknown>; refusedRead?: string } = {};
     const events: string[] = [];
     const views: Record<string, unknown>[] = [];
-    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    on('store.get', (_$, e) =>
+        e.key === hooks.refusedRead
+            ? { deny: 'disk full' }
+            : { value: store.get(e.key) },
+    );
     on('store.keys', () => ({ value: [...store.keys()] }));
     on('store.delete', (_$, e) => {
         store.delete(e.key);
@@ -559,4 +563,30 @@ test('a half-failed waker puts its first write back', async ($, on) => {
         views.at(-1)?.isWaker,
         (store.get('waker') as { on?: boolean }).on,
     ]).toEqual([false, false]);
+});
+
+test('a press ending during another keeps the poll off it', async ($, on) => {
+    const { clock, hooks, store, views } = pressWorld(on);
+    const ui = await band($);
+    hooks.onDraw = async () => {
+        await ui.press({ key: 'waker' });
+        await clock.advance(10_000);
+    };
+    await ui.press({ key: 'hot' });
+    await clock.advance(10_000);
+    await clock.advance(10_000);
+    expect([
+        views.at(-1)?.isHot,
+        JSON.stringify(store.get(`hot:${SID}`) ?? {}).includes('"off"'),
+    ]).toEqual([true, false]);
+});
+
+test('an afk press whose first read fails writes nothing back', async ($, on) => {
+    const seeded = new Map<string, unknown>([['afk', { on: true }]]);
+    const { clock, hooks, store } = pressWorld(on, undefined, seeded);
+    const ui = await band($);
+    hooks.refusedRead = 'afk';
+    await ui.press({ key: 'afk' });
+    await clock.advance(10_000);
+    expect((store.get('afk') as { on?: boolean }).on).toBe(true);
 });

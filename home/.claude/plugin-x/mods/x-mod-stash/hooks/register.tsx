@@ -1801,6 +1801,7 @@ async function quietAwayWake($: EngineInterface) {
         await quietLocked(() => quietPutBack($, due));
         isBusy = false;
         await keepTurn($);
+        await armHot($);
         return;
     }
     await $.store.set(QUIET_AWAY_SEEN, true);
@@ -3076,7 +3077,7 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
 }
 
 async function load($: EngineInterface) {
-    if (isBandPressed) return;
+    if (bandPresses) return;
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     const wasAfk = afk;
     afk = flag?.on === true;
@@ -3937,7 +3938,7 @@ async function drawBand($: EngineInterface, patch: Partial<StashView>) {
 }
 
 // a poll during a press would read the store before its write lands and undo it, so load and followHot sit it out
-let isBandPressed = false;
+let bandPresses = 0;
 async function pressSwitch(
     $: EngineInterface,
     name: string,
@@ -3945,7 +3946,7 @@ async function pressSwitch(
     write: () => Promise<unknown>,
     undo: () => Promise<unknown>,
 ) {
-    isBandPressed = true;
+    bandPresses++;
     try {
         await drawBand($, patch);
         await write();
@@ -3953,7 +3954,7 @@ async function pressSwitch(
         await undo();
         await $.ui.log(`x-mod-stash: ${name} was not kept: ${errorText(err)}`);
     } finally {
-        isBandPressed = false;
+        bandPresses--;
     }
     await publish($);
 }
@@ -4067,7 +4068,7 @@ async function hotLate($: EngineInterface) {
 // change and arms or cancels the ping with no turn (FRM-499); it only reads, since a write back could undo a press
 // made between its read and its write
 async function followHot($: EngineInterface) {
-    if (isBandPressed) return;
+    if (bandPresses) return;
     const sid = await currentId($);
     if (!sid) return;
     const stored = hotOf(await $.store.get(HOT + sid));
@@ -7839,6 +7840,7 @@ export const register: Register = (on) => {
                     const { Box, Text, Button } = ui;
                     const handleAfkFlip = () => {
                         afk = !view.afk;
+                        let isRead = false;
                         let was:
                             | {
                                   at?: number;
@@ -7854,6 +7856,7 @@ export const register: Register = (on) => {
                                 was = (await $.store.get(
                                     AFK_KEY,
                                 )) as typeof was;
+                                isRead = true;
                                 const wakerWas = (await $.store.get(
                                     WAKER_KEY,
                                 )) as { on?: boolean } | undefined;
@@ -7877,21 +7880,26 @@ export const register: Register = (on) => {
                             async () => {
                                 afk = view.afk === true;
                                 isWaker = view.isWaker === true;
-                                await $.store
-                                    .set(AFK_KEY, was ?? { on: false })
-                                    .catch(() => undefined);
+                                // a read that failed wrote nothing, so nothing goes back
+                                if (isRead)
+                                    await $.store
+                                        .set(AFK_KEY, was ?? { on: false })
+                                        .catch(() => undefined);
                             },
                         );
                     };
                     // one switch for every session, kept in the store so a restart keeps it
                     const handleWakerFlip = () => {
-                        isWaker = !view.isWaker;
+                        const wanted = !view.isWaker;
+                        isWaker = wanted;
                         return pressSwitch(
                             $,
                             '⏰',
                             { isWaker },
                             async () => {
-                                await $.store.set(WAKER_KEY, { on: isWaker });
+                                // a poll already past load's guard may have read the old value
+                                isWaker = wanted;
+                                await $.store.set(WAKER_KEY, { on: wanted });
                                 // a press during afk is what afk off puts back
                                 const away = (await $.store.get(AFK_KEY)) as
                                     | {
@@ -7903,7 +7911,7 @@ export const register: Register = (on) => {
                                 if (away?.on)
                                     await $.store.set(AFK_KEY, {
                                         ...away,
-                                        wakerBefore: isWaker,
+                                        wakerBefore: wanted,
                                     });
                             },
                             async () => {
@@ -7917,14 +7925,19 @@ export const register: Register = (on) => {
                     const handleHotFlip = async () => {
                         const hotWas = hot;
                         const now = await $.clock.now();
-                        hot = hot
+                        const wanted = hot
                             ? undefined
                             : { since: isBusy ? now : (endedAt ?? now) };
+                        hot = wanted;
                         await pressSwitch(
                             $,
                             '🔥',
-                            { isHot: Boolean(hot) },
-                            () => saveHot($),
+                            { isHot: Boolean(wanted) },
+                            () => {
+                                // a poll already past followHot's guard may have read the old value
+                                hot = wanted;
+                                return saveHot($);
+                            },
                             async () => {
                                 hot = hotWas;
                             },

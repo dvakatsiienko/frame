@@ -146,7 +146,7 @@ export const SIGN_ASK =
 // twin end
 // opens with sign, a yes or an ok before it (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
 const SIGN_PICK =
-    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:]?\s+)?sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?!-)/iu;
+    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:.]?\s+(?:to\s+)?)?sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?![\s-]+(?:in|up|out)\b)/iu;
 // opens with merge, a yes or a squash before it, its label form `merge: …` apart; anywhere else it counts only beside a pr
 const MERGE_PICK_OPENS =
     /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:]?\s+(?:to\s+)?)?(?:squash and\s+)?merged?\b(?!:)/iu;
