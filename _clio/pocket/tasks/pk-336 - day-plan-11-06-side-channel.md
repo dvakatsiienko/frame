@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T13:52:00Z'
+updated_date: '2026-11-06T14:41:00Z'
 labels:
   - m
   - side-channel-owned
@@ -42,7 +42,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #18 PK-335 rex terminal set up fully with dima
 - [ ] #19 PK-310 second finder watch after 17:54, past 24 h uptime
 - [x] #20 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
-- [ ] #21 FRM-514 quick lane test from the side channel
+- [x] #21 FRM-514 quick lane test from the side channel
 - [ ] #22 crow watches the side channel too (PK-323, his W9)
 <!-- AC:END -->
 
@@ -67,4 +67,18 @@ W14 (2026-11-06 13:43, dima): tell it to set it up fully with me. i plan to move
 15:36 mac force reset 15:29: lanes back by the daemon's resume; FRM-516 summon waits for load to settle. line 19's Finder watch moved to 15:29 tomorrow, next day's plan.
 
 W (2026-11-06 15:52, dima): prio ci made boring: revisit and plan when to do it at the nearest convenient point, maybe after the freeze cause is found and fixed.
+
+W (2026-11-06 16:28, dima): we planned ci made boring really long ago. it stayed parked for a long time. let's solve it, let's revisit it.
+
+W (2026-11-06 16:28, dima): go look and see if all chunks are still valid, relevant and useful.
+
+W (2026-11-06 16:28, dima): let's groom and shape them, because we shaped them last time with outdated habits.
+
+W (2026-11-06 16:28, dima): let's process them through the worth-it check and fully process them through the shape lane.
+
+W (2026-11-06 16:28, dima): write the specs so it is ready to be dispatched by main clio.
+
+W (2026-11-06 16:28, dima): when fully done, hand over ci made boring to main clio, so it summons it and maintains it.
+
+16:38 quick lane from the side channel, verdict: FRM-514 and FRM-517 both ran from here, every ping reached the side channel by name, no routing failure; no glide card without main; a commit crossing a lane's scope reached origin on another session's push. a side lane with a pr is still unproven.
 <!-- SECTION:NOTES:END -->
