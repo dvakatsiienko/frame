@@ -209,9 +209,9 @@ describe('close-net', () => {
             expect(out.stdout).toContain(`🔴 ${id}`);
     });
 
-    test('linear down is not a red', () => {
+    test('linear down is a red', () => {
         const out = run();
-        expect(out.status).toBe(0);
+        expect(out.status).toBe(1);
         expect(out.stdout).toContain('unreachable');
     });
 });
