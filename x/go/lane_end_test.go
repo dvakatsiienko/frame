@@ -321,6 +321,59 @@ func TestLandedNamesAVerifyTreeOfALaneUnderReview(t *testing.T) {
 	}
 }
 
+// a two-commit pr, squash-merged and its branch gone: the landed sees both commits on no remote
+func landedOnTwoCommitPr(t *testing.T, plant func(w landedWorld, earlier, merged string)) asRun {
+	t.Helper()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "remote", "add", "origin", "https://github.com/o/r.git")
+	squashed := w.laneTree(t, "squashed")
+	commit := func(name string) string {
+		write(t, filepath.Join(squashed, name), name+"\n")
+		gitT(t, squashed, "add", name)
+		gitT(t, squashed, "commit", "-q", "-m", name)
+		return strings.TrimSpace(gitT(t, squashed, "rev-parse", "HEAD"))
+	}
+	earlier, merged := commit("first.txt"), commit("second.txt")
+	plant(w, earlier, merged)
+	server, _ := fakeGithub(t, map[string]string{repoPath + "/pulls/7": `{"merged":true,"head":{"ref":"codie/FRM-1-squashed","sha":"` + merged + `"}}`})
+	keys := keysFixture(t, map[string]string{
+		"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder",
+		"keychain:x-token-linear-codie:x":  farFuture + ":tok-codie",
+		"keychain:x-token-linear-clio:x":   farFuture + ":tok-clio",
+	})
+	return runAs(t, []string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL, "X_LINEAR_URL=" + w.server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)},
+		"lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "7", "--apply")
+}
+
+func TestLandedTakesAVerifyTreeAtAnEarlierHeadOfTheMergedPr(t *testing.T) {
+	t.Parallel()
+	var verify string
+	got := landedOnTwoCommitPr(t, func(w landedWorld, earlier, _ string) {
+		verify = filepath.Join(w.repo, ".claude/worktrees/verify-pr-7")
+		gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, earlier)
+	})
+
+	if exists(verify) {
+		t.Fatalf("the verify tree at the pr's earlier head was kept:\n%s", got.stdout)
+	}
+}
+
+func TestLandedKeepsALaneTreeACommitPastTheMergedHead(t *testing.T) {
+	t.Parallel()
+	var past string
+	got := landedOnTwoCommitPr(t, func(w landedWorld, _, merged string) {
+		past = w.laneTree(t, "past")
+		gitT(t, past, "reset", "-q", "--hard", merged)
+		write(t, filepath.Join(past, "third.txt"), "local only\n")
+		gitT(t, past, "add", "third.txt")
+		gitT(t, past, "commit", "-q", "-m", "local only")
+	})
+
+	if !exists(past) || !strings.Contains(got.stdout, "3 commits on no remote") {
+		t.Fatalf("tree %v: want it kept, naming its commits on no remote\n%s", exists(past), got.stdout)
+	}
+}
+
 func TestDecampListStaleCountsWhatForEachRefCounts(t *testing.T) {
 	t.Parallel()
 	main := repo(t)

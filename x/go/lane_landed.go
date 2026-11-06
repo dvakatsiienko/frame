@@ -919,9 +919,13 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 		reasons = append(reasons, "holds a file in .scratch/")
 	}
 	// a squash merge leaves the branch's commits off main, and a deleted branch leaves them on no remote:
-	// a tree still at the merged pr's head holds nothing the pr did not carry
-	at, _ := gitIn(tree, "rev-parse", "HEAD")
-	if mergedHead == "" || at.out != mergedHead {
+	// a tree at the merged pr's head, or at an earlier one, holds nothing the pr did not carry
+	carried := false
+	if mergedHead != "" {
+		within, _ := gitIn(tree, "merge-base", "--is-ancestor", "HEAD", mergedHead)
+		carried = within.ok
+	}
+	if !carried {
 		ahead, _ := gitIn(tree, "rev-list", "HEAD", "--not", "--remotes=origin")
 		switch {
 		case !ahead.ok:
