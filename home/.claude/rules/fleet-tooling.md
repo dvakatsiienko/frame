@@ -22,26 +22,28 @@ the cloud chat leaf `/areas/tooling.md`; the `cc only` section never leaves the 
 - **a page your fetch can't read → `pnpm -C ~/frame --silent web-bot-blocked:fetch <url>`** (cloud chat: through Desktop Commander on the mac, wrapped as `zsh -lc '…'` so homebrew's `pnpm` is on PATH) — a MediaWiki page goes through the wiki's free api, `--index <wiki host>` lists every article; anything else through firecrawl, the escape hatch for bot-blocked sites (1 credit a page, 1,000 free a month, key `op://dev/firecrawl-golden/credential`); reddit, which firecrawl refuses, goes through `~/frame/script/op-run.sh parallel-cli extract <url>` (post bodies only); a docs site that serves `llms.txt` is read directly, never crawled
   - a source a reply names or quotes is opened first, never quoted from a search snippet; «couldn't open» is said only after `WebFetch` and this door both failed
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
-- **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too
+- **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files
 - **yq** — yaml/toml read-write (`settings.toml`, lefthook)
 - **sd** — in-place text replace without sed's macos `-i ''` traps
 - **trash over rm** — `trash <path>` moves to the recoverable macos trash; prefer it wherever a deletion is approved but regret is possible
 - **install order for any tool** — `brew` (formula or cask) first; not in brew → `pnpm add -g`; never `npm -g`
 
-<!-- measured 2026-09-30: rg searches 65 docs in ~15 ms, so a doc is findable the moment it exists · measured 2026-09-10 (FRM-228): the mcp lanes lose on every metric, the notion connector costs 34× the time of `ntn` per edit -->
+<!-- measured 2026-09-10 (FRM-228): the mcp lanes lose on every metric, the notion connector costs 34× the time of `ntn` per edit -->
 
 ## cc only
 
-- **package.json** — before printing or writing a manifest, `x:guide-conventions` (`conventions/package-json.md`); the full line loads with any manifest from `rules/code.md`
-
+- **rex** — dima's terminal and a session server any shell on this mac drives; the door: `rules/fleet-doors.md`, the recipes: `x:rex`
+  - `rex capture` reads any pane, `rex block call … program_status` says what a Claude Code in a pane is doing (`working`, `blocked`, `done`)
+  - on trial, the numbers: `docs/test-drive/rex.md`
+- **package.json** — before printing or writing a manifest, `x:guide-conventions` (`conventions/package-json.md`)
 - **`claude plugin eval` only on dima's word** — an eval run spends the weekly usage fast (dima, 2026-10-16)
-- **a bare cc for clean runs** — `x probe bare '<prompt>'` (it wraps `claude -p --model haiku --safe-mode --strict-mcp-config` from a temp dir), run in the background (a foreground `claude -p` is refused, FRM-395): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
+- **a bare cc for clean runs** — `x probe bare '<prompt>'` (it wraps `claude -p --model haiku --safe-mode --strict-mcp-config` from a temp dir), run in the background (a foreground `claude -p` is refused): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login
 - **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"`; the measuring engine for transcripts and x traces
-- **fnm** — node version manager, use if needed
+- **fnm** — node version manager
 - **ctx7** — library docs: `ctx7 library <name>` → id, `ctx7 docs <id> "<query>" --language typescript` (examples in that language first); a library it lacks → `WebSearch`
-- **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z` `7zz` `unar` `unrar` `tar` `xz` `zstd` `brotli` `lz4` `lzip` `pigz` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases
-- **5+ screenshots read for their data → `helper-lite` agents, ≤20 a batch** (a design review looks at the shot itself), every shot transcribed to text, a settings or config review included; you reason on the text, spot-check 2–3 shots yourself, and open any shot whose transcribed value looks doubtful (haiku transcribes like opus but misreads single small values, `crew-lead/references/model-cards.md`)
-- **big or tiny images → crop first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px (a sprite, an icon, a chart tick), is cropped — `sips -c <h> <w> --cropOffset <y> <x> <in> --out <crop>` (an offset of 0 returns the whole image, use 1) or pillow — and the crop is read (≈300 tokens); the harness downscales big images and small text dies
+- **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z`, `unrar`, `zstd` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases
+- **5+ screenshots read for their data → `helper-lite` agents, ≤20 a batch** (a design review looks at the shot itself), every shot transcribed to text; you reason on the text, spot-check 2–3 shots yourself, and open any shot whose transcribed value looks doubtful (haiku transcribes like opus but misreads single small values, `crew-lead/references/model-cards.md`)
+- **big or tiny images → crop first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px, is cropped — `sips -c <h> <w> --cropOffset <y> <x> <in> --out <crop>` (an offset of 0 returns the whole image, use 1) or pillow — and the crop is read (≈300 tokens); the harness downscales big images and small text dies
 - **uv** — the Python package manager here; pip in any form is not used
   - `uv pip install <package> --system --break-system-packages`, or `uv venv` + `uv pip install`
 - **app removal, a cask** → `brew uninstall --zap --cask <name>`; the cask traps: `docs/knowledge/macos-apps.md`

@@ -380,6 +380,19 @@ retro (14:43 on):
 - 2026-11-06 · prompt-groom · yes · 0 · groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1448.groomed.md
 - 2026-11-06 · prompt-groom · yes · 0 · groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1610.groomed.md
 - 2026-11-06 · prompt-groom · yes · 0 · groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1626.groomed.md
+- 2026-11-06 · prompt-groom · yes · 0 · groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1754.groomed.md
+- 2026-11-06 · prompt-groom · yes · 0 · groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1759.groomed.md
+- 2026-11-06 · prompt-groom · no · 1 · rework: groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1754.groomed.md (clio quotes and ← tails were read as dima's)
+- 2026-11-06 · prompt-groom · no · 1 · rework: groomed /Users/dima/.local/state/clio/grooms/2026-11-06-1759.groomed.md (clio quotes and ← tails were read as dima's)
+- 2026-11-06 · prompt-groom · yes · 0 · PK-340 groom: 18:10, 18:16, 18:18, 18:19, 18:28, 18:30 (W1–W18)
+- 2026-11-06 · pocket-write · yes · 0 · PK-340 notes: 18 groomed lines appended (W1–W18); W6 and W7 carry wing 1 and wing 2 titles
+- 2026-11-06 · trial-log · no · 0 · 16 of 17 trial lines appended dated 2026-11-06 to wisphunter, skill-named-load, helper-lite, ts-lsp log, tdd log; review-rounds held by session 89a213e9 (x-mod-holds, 2 retries), not appended; no commit
+- 2026-11-06 · trial-log · yes · 0 · 17 trial lines committed in 6 files, sha 253e07616ad3e53158f4740b61d2fcd4746a0ba1; helga.md not included (7 uncommitted lines by another session)
+- 2026-11-06 · groom · yes · 0 · PK-325: 4 W-lines W1313-W1316 appended; PK-340: 1 no-wish line (board steer o44). 5 lines total
+- 2026-11-06 · groom · yes · 0 · 19:32 prompt: 2 W-lines W1318-W1319, W1319 marked ❓ (2 questions? 1 ❓)
+- 2026-11-06 · groom · yes · 0 · 19:42 + 19:52 groomed (8 W-lines: W1318-W1321, W1322-W1325; ❓ x3); 7 no-wish lines 19:26 19:34 19:37 o42 o52 o53 o54. W1318/W1319 collide with 19:32 groom; pocket-check green, 10 no-home reds on W-lines not yet folded
+- 2026-11-06 · groom · yes · 0 · renumbered 19:42 W1320-W1323, 19:52 W1324-W1327; folded PK-325 W1318-W1327 into notes; 9 reds: 2 no-wish (o20, o25), 7 named to clio (o11 o21 o35 o46 o55 o69 o70) - steer texts not in transcript, judged on 70-char red text
+- 2026-11-06 · groom · yes · 0 · 2014 groom W1328-W1332, o65 steer W1333, 20:00 no-wish
 
 ## rounds
 

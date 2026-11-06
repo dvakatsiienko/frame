@@ -49,6 +49,7 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
 - 2026-11-06 · frm-514 codie · not used for transcripts, a read-back script answered it for free; one card ran the subagent probe, good
 - 2026-11-06 · mods lane 5 codie · unused this chunk; the codie should have used it for the logs
 
+- 2026-11-06 · BYT-130 ci made boring codie and cli lane 6 codie · not used, the reads were small; no impression
 ## verdict
 
 2026-11-05 adopted on dima's tick: 6 of 7 stress uses tried, no wrong number found, kill rule not hit. 103 runs since 10-08, median 13 s, 3 tool calls. 21 days of otel: 511 requests, 0.78 usd, 0.0015 usd a request at list price, against **Sonnet 5.5** agents' 0.0252. untried: flow numbers, a file over 100K tokens. the one rule it adds: a quote it returns is checked against its source (`x:crew-subagent`).

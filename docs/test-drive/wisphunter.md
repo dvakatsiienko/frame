@@ -62,4 +62,7 @@ group by 1 order by 2 desc;
 - 2026-11-06 · frm-517 codie · helped: found the one defect nobody else did · keep
 - 2026-11-06 · mods lane 5 codie · helped: found most real bugs
 
+- 2026-11-06 · BYT-130 ci made boring · codie · helped: the two axes and the scoped read found real gaps the cases missed · keep
+- 2026-11-06 · BYT-130 ci made boring · sixth sense · helped: the one real finding came from it, and it marked its own traces as unexecuted · keep; suggestion: brief it with the mutants already run
+- 2026-11-06 · cli lane 6 · codie · helped: found the recovery race and the base-only path nobody else did · keep
 ## verdict

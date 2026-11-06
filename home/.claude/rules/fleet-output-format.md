@@ -91,8 +91,8 @@ a page you named, never navigates from a site root to the page you meant.
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
   a bare `#787` autolinks to the repo in view.
-  - **inside a repo file, a plain relative markdown link** — `[pm](pm.md)` — renders in every
-    viewer; no scheme.
+- **inside a repo file, a plain relative markdown link** — `[pm](pm.md)` — renders in every
+  viewer; no scheme.
 
 <!-- failure: 2026-09-25, a bare #787 landed him on the wrong repo's page -->
 
@@ -118,8 +118,9 @@ in every pane:
 - **label the top ribbon with the destination** — `copy → next session`, `copy → terminal`.
 - applies to **every** prompt. a one-line command is the easiest to mis-copy, because it looks
   like prose.
-- **his hands needed → hand him the exact command in this fence, unprompted.** but first ask
-  whether your own shell reaches it — run what you can run; fence only what truly needs him.
+- **his hands needed → first ask whether your own shell reaches it**: run what you can run; what
+  truly needs him goes out unprompted as the exact command in this fence.
+- **on his mac that command is prefilled in a Rex tab instead (`x:rex`)**, the reply naming the tab; the fence stays for a command he runs elsewhere. <!-- cc -->
 
 ## casing — lowercase sentence-initial capitals
 
@@ -165,8 +166,8 @@ file he names.
 
 ## questions, options, and the ➡️ cta
 
-- every question round ends with a ➡️ recommendation.
-- **one home for the next move**: an orbit ask holds it, one he ticks; never both. <!-- cc -->
+- every question round carries a recommendation, as a ➡️ line.
+- **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
 - nothing to ask → one ➡️ line; a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.

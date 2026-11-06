@@ -76,6 +76,7 @@ brew "docker-compose"
 brew "jq"                        # JSON on the command line
 brew "yq"                        # jq-syntax for YAML/TOML — settings.toml, lefthook configs
 brew "sd"                        # sed replacement without the macos -i '' quoting traps
+brew "forgejo-cli"               # fj — codeberg cli, read-only mirrors of frame and bytes
 brew "ffmpeg"
 brew "vhs"                       # charm terminal recorder → gif from a .tape script
 brew "freeze"                    # charm code/terminal shots → png; FRM-284 shoots the cli arms with it
@@ -103,7 +104,7 @@ brew "mole"                             # `mo` — uninstall + clean + disk tree
 cask "1password-cli"             # op — SSH agent + signing
 cask "obsidian"                  # notes — the vault is icloud, config in ~/Library/Application Support/obsidian; ships the official `obsidian` cli
 cask "raycast"                   # the launcher — self-updates ahead of brew, `brew upgrade --greedy` follows
-cask "warp"                      # terminal — the daily one
+cask "warp"                      # terminal — until the rex verdict; Rex Beta is the daily one, no cask yet
 cask "iterm2"                    # terminal — fallback; its prefs live in import/iterm2
 cask "font-hack-nerd-font"       # the font iTerm2 profiles name; without it, glyphs render as boxes
 cask "font-ia-writer-duo"        # cursor markdown font (iA Writer DuoS)

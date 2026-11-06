@@ -67,9 +67,9 @@ the workaround in place, the undo. checked against the changelog through 2.1.314
 - workaround: none: `{ drop: '' }`, the card stays
 - undo when fixed: a mod's way to end a prompt silently, or the app rolling such a card up
 
-## a held idle notice: part of a batch
+## a logged idle notice: part of a batch
 
-- want: of a prompt batching several `[Cross-session idle notice]`s, hold the ones with nothing to say and let the one that pushes start clio's turn (FRM-501)
+- want: of a prompt batching several `[Cross-session idle notice]`s, log the ones with nothing to say and let the one that pushes start clio's turn (FRM-501)
 - issue: an `isMeta` prompt starting a turn takes no rewrite (`PromptSubmitInput.isMeta`'s doc in the engine's types), so its text cannot lose a notice
-- workaround: `canCut` in `quietHoldPrompt`: the batch holds whole or comes in whole
+- workaround: `canCut` in `quietHoldPrompt`: the batch logs whole or comes in whole
 - undo when fixed: drop `canCut`, so each notice goes by its own words
