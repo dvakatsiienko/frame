@@ -348,6 +348,27 @@ export function planSteps(text: string) {
 export const ticketOf = (name: string) =>
     name.match(/\b(?:FRM|BYT)-\d+\b/)?.[0];
 
+// the sha of codie's «round N on <sha>», only at the message's head: a quoted round further in is a report of one
+export const roundSha = (message: string) =>
+    message
+        .trimStart()
+        .match(
+            /^(?:(?:\[\w+\]|[A-Z]{2,5}-\d+|coder:|final\s+[—–-])\s+)*round\s+\d+\s+on\s+\**([0-9a-f]{7,40})\b/,
+        )?.[1];
+
+// the lane a codie thread names, what its name holds past «codie:»
+export const codieLane = (name: string) =>
+    name.match(/^[^:]*\bcodie:\s*(\S.*?)\s*$/)?.[1];
+
+const ROUND_CAP = 3;
+// the count only signals: the cap's terms, a P0 or P1 and a scope reset, stay sixth sense's judgment
+export function roundLine(count: number) {
+    if (count < ROUND_CAP) return undefined;
+    return count === ROUND_CAP
+        ? `round ${count} of this lane: a next round with a P0 or P1 is past the cap of ${ROUND_CAP}`
+        : `round ${count} of this lane, past the cap of ${ROUND_CAP}: with a P0 or P1 and no scope reset from sixth sense, the stop goes to the coordinator`;
+}
+
 // `<mode> <role emoji> <member name>: <scope> | <ticket>` (dima, 2026-10-30) — «⚡ 🔧 codie: mods lane 3 | FRM-467»;
 // the 10-29 shape «⚡ 🔧 mods lane 3 codie: FRM-431» and the older ☕️ 🎯 shape («☕️ 🔧 FRM-303 code: stash keep-hot») still reads true; a standing member keeps
 // its own name, badge or not — «🐦‍⬛ crow», which the registry writes with a space for the joiner

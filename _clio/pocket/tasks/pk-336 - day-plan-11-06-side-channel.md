@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T12:34:00Z'
+updated_date: '2026-11-06T13:52:00Z'
 labels:
   - m
   - side-channel-owned
@@ -27,9 +27,9 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #3 FRM-501 re-sign line written (o70 rule changed)
 - [x] #4 FRM-484 sixth sense posting habits written into its skill
 - [x] #5 split habit: main runs lanes, side channel takes all chores, settled with main
-- [ ] #6 PK-310 finder watch when two side lanes run, again past 17:54
+- [x] #6 PK-310 finder watch when two side lanes run, again past 17:54
 - [ ] #7 ci made boring milestone planned with dima (due today)
-- [ ] #8 PK-329 side channel limits and capabilities, helga's use decided
+- [x] #8 PK-329 side channel limits and capabilities, helga's use decided
 - [ ] #9 FRM-495 his asks answered
 - [ ] #10 FRM-503 merge door audit printed once
 - [ ] #11 FRM-514 re-sign read, then FRM-410 grooming and close
@@ -41,4 +41,30 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #17 grills when he wants: PK-300, PK-304, PK-323
 - [ ] #18 PK-335 rex terminal set up fully with dima
 - [ ] #19 PK-310 second finder watch after 17:54, past 24 h uptime
+- [x] #20 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
+- [ ] #21 FRM-514 quick lane test from the side channel
+- [ ] #22 crow watches the side channel too (PK-323, his W9)
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+from PK-334:
+W1 (2026-11-06 inbox, dima): list all possible gates at all list places, like the commit gate and the red prof gate.
+W2 (2026-11-06 inbox, dima): i want our gate as a vibe word, and a top-seven emoji, so we treat all gates properly.
+W3 (2026-11-06 inbox, dima): and maintain them.
+W4 (2026-11-06 inbox, dima): all gates should have a clear purpose, be relevant, and be in good shape.
+W5 (2026-11-06 inbox, dima): per wise (?), i spotted that the commit gate should be perf revised: it's slow. optimize it.
+from PK-335:
+W12 (2026-11-06 13:43, dima): add to side lane scope (at the end):
+W13 (2026-11-06 13:43, dima): i have an invite to test out rex terminal https://www.superlogical.com/updates/public-testing-beginning (closed beta).
+W14 (2026-11-06 13:43, dima): tell it to set it up fully with me. i plan to move out from warp if rex is good.
+
+15:15 crow item shaped as FRM-516; FRM-514 summoned as a quick lane reporting here.
+
+15:18 his word: PK-324 and PK-325 are in this plan, line 16, next after the lanes; FRM-516 dispatch now, a second lane beside FRM-514.
+
+15:36 mac force reset 15:29: lanes back by the daemon's resume; FRM-516 summon waits for load to settle. line 19's Finder watch moved to 15:29 tomorrow, next day's plan.
+
+W (2026-11-06 15:52, dima): prio ci made boring: revisit and plan when to do it at the nearest convenient point, maybe after the freeze cause is found and fixed.
+<!-- SECTION:NOTES:END -->

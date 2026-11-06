@@ -106,6 +106,7 @@ the door for all coding work: real, watchable, outlives the session that started
   passed the trust prompt it asks first, or **exits when not run interactively**. a subdirectory of
   a trusted repo counts: `~/frame/docs` (no trust entry of its own, `~/frame` trusted) launched
   from a non-tty shell [verified 2.1.283]. a shift summoning into a new repo trusts it first.
+- **after a mac restart a bg session is offline and a message only queues: `claude --bg --resume <id> "<prompt>"`, no other flag, wakes it under its id; any flag starts a copy** [verified 2.1.317, 2026-11-06, 5 dupes]
 - **a bg session can be retired by the daemon** [inferred — binary strings only]: the build names
   retire reasons `stale-spare`, `empty-idle`, `empty-idle-grace`, `abandoned-stale`, `max session
   age`. which of them hits a live idle codie is unmeasured.

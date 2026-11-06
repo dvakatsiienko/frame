@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-06T12:45:00Z'
+updated_date: '2026-11-06T14:02:00Z'
 labels:
   - s
 dependencies: []
@@ -87,4 +87,6 @@ PK-331 landed 14:25, the proof's new read: log lines hold no passed or away any 
 crow's second wind, probed on today's code (W24): compact 14:26:12, no ingest through 14:36, ingested by hand; the fix is FRM-505's.
 answered: W11 → sent to the side channel, W17 → no stacks (board), W26 → the real weekly cap, reminder dropped, W30 → yes, oldest item 11-02, W435 and W436 → yes (14:24 reply).
 FRM-368 owns W427–W433; the copies of W430–W432 here are pointers.
+
+afk hour read 16:01, 15:01–16:01, a forced restart 15:29–15:33 inside: 31 log lines, 17 messages once flushes are netted (14 flush lines repeat held ones), 4 woke a turn, all tagged asks; 0 lone-note wakes against the old 54 in a night, but that night ran longer and busier. held lines joined turns, none lost. the 10-min silent wake never fired: no line sat 10 min, unproven; `drop` unproven. graded by me from the lines as printed, a judgment: of 13 held notices, 3 used (mods' writeLanes flag, its file ownership answer, l43's step), 10 not, 7 of the 13 the side channel's turn-ends.
 <!-- SECTION:NOTES:END -->

@@ -83,7 +83,7 @@ def replay(path, rule, subagent=False):
 
 
 def row_fires(path, subagent=False):
-    # one row's fires in one transcript, as the hook decides them: once each, never past a loaded skill
+    # a row's first fires in one transcript: once until a compaction re-arms it, never past a loaded skill; a held sibling's refusal shows only in the hook's log
     loaded, skills, fires, cwd, seen = set(), set(), [], None, set()
 
     def fire(rule, kind, hit):
@@ -106,6 +106,7 @@ def row_fires(path, subagent=False):
                 fire(rule, "project", not subagent and hook.project_trigger(rule, cwd))
         if hook.is_compact_boundary(entry):
             skills.clear()
+            loaded.intersection_update(r for r in hook.TRIGGERS if hook.reloads_at_compaction(r))
             continue
         prompt = prompt_text(entry)
         if prompt is not None:
@@ -129,7 +130,7 @@ def print_row_fires(paths):
     for path in paths:
         for rule, kind, hit in row_fires(path, subagent="/subagents/" in path):
             counts[rule][(kind, hit)] += 1
-    print(f"row fires over {len(paths)} transcripts, once per transcript:")
+    print(f"row fires over {len(paths)} transcripts:")
     for rule, hits in counts.items():
         print(f"- {rule}: {sum(hits.values())} fires")
         for (kind, hit), count in hits.most_common(SHOWN_HITS):

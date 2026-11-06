@@ -50,5 +50,6 @@ Ticket: none
 - 2026-11-06 · FRM-513 at bc4bb6b6, its last delta · wishkeeper 7 min, 147k tokens, 12 findings: 1 high real (the live proof owed, then run), wisphunter 6 · held the close
 - 2026-11-06 · the closing batch, no code · wishkeeper 5 min, 144k tokens, 12 findings: 0 high, 5 medium real (a close without `x lane landed`, his 02:38 words homeless, a stale spec hash)
 - 2026-11-06 · the flush and the CST, a checkpoint read · wishkeeper 4 min, 110k tokens, 13 findings: 1 high real (two items missing from the side channel's list), 4 medium fixed · the card closes on that read: the only edit after it is its own finding, a split line
+- 2026-11-06 · the boot batch, a siesta read · wishkeeper 13 min, 210k tokens, 20 findings: 1 high real (his no-verifier line on neither ticket the lane closes against)
 
 ## verdict

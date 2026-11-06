@@ -75,8 +75,8 @@
         "input": [],
         "project": [],
         "prompt": [
-            "(?i)\\bhow (?:much|many)\\b[^.?!\\n]{0,60}\\b(?:tokens?|costs?|pric(?:e|es|ing)|prompt cache|cache (?:hit|miss|write|read|ttl)s?)\\b",
-            "(?im)(?:^|[.!?]\\s+)(?:what|which|why|is|are|does|do|did|can|will|would|should)\\b[^.?!\\n]{0,60}\\b(?:tokens?|costs?|pric(?:e|es|ing)|prompt cache|cache (?:hit|miss|write|read|ttl)s?)\\b"
+            "(?i)\\bhow (?:much|many|long)\\b[^.?!\\n]{0,60}\\b(?:tokens?|costs?|pric(?:e|es|ing)|cache)\\b",
+            "(?im)(?:^|[.!?]\\s+)(?:what|which|why(?!:)|is|are|does|do|did)\\b[^.?!\\n]{0,60}\\b(?:tokens?|costs?|pric(?:e|es|ing)|cache)\\b"
         ],
         "signal": {
             "reply": [],

@@ -3,7 +3,7 @@ status: dropped
 until: 2026-11-05
 ---
 
-Ticket: none · pocket PK-79 · spec `~/frame/.scratch/primer/spec.md`
+Ticket: none · pocket PK-79 · spec trashed 2026-11-06
 
 # x-mod-primer — does the knowledge core reach the agent, and does the agent use it?
 

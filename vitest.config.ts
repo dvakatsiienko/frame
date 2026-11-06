@@ -14,5 +14,6 @@ export default defineConfig({
             // its own pnpm root with its own deps: `pnpm -C _clio/blueprints/excalidraw test`
             '_clio/blueprints/excalidraw/**',
         ],
+        globalSetup: './script/lib/test-temp-dir.ts',
     },
 });

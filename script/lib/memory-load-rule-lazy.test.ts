@@ -57,14 +57,14 @@ function session(hookPath = hook) {
     }
 
     function tool(
-        tool_name: string,
-        tool_input: Record<string, unknown>,
+        toolName: string,
+        toolInput: Record<string, unknown>,
         extra: Record<string, unknown> = {},
     ) {
         return run({
             hook_event_name: 'PreToolUse',
-            tool_input,
-            tool_name,
+            tool_input: toolInput,
+            tool_name: toolName,
             ...extra,
         });
     }
@@ -79,10 +79,10 @@ function session(hookPath = hook) {
         compact: () =>
             run({ hook_event_name: 'SessionStart', source: 'compact' }),
         dir,
-        edit: (file_path: string, extra: Record<string, unknown> = {}) =>
+        edit: (filePath: string, extra: Record<string, unknown> = {}) =>
             tool(
                 'Edit',
-                { file_path, new_string: 'b', old_string: 'a' },
+                { file_path: filePath, new_string: 'b', old_string: 'a' },
                 extra,
             ),
         id,
@@ -272,11 +272,78 @@ describe('guide-load-before-edit', () => {
         expect(out.permissionDecisionReason).toContain(typescript);
     });
 
-    it('passes the identical retry and a second .ts edit', () => {
+    it('passes the identical retry', () => {
         const s = session();
         s.edit('/w/a.ts');
         expect(s.edit('/w/a.ts')).toEqual({});
+    });
+
+    it('passes a second .ts edit after the retry', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        s.edit('/w/a.ts');
         expect(s.edit('/w/b.ts')).toEqual({});
+    });
+
+    it('refuses a batched sibling before any retry', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        expect(s.edit('/w/b.ts').permissionDecision).toBe('deny');
+    });
+
+    it('passes each batched call on its retry', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        s.edit('/w/b.ts');
+        expect(s.edit('/w/a.ts')).toEqual({});
+        expect(s.edit('/w/b.ts')).toEqual({});
+    });
+
+    it('passes a sibling once the guide has loaded', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        const out = s.edit('/w/b.ts', {
+            transcript_path: s.transcript([skillCall(typescript)]),
+        });
+        expect(out).toEqual({});
+    });
+
+    it('stops refusing after five distinct calls', () => {
+        const s = session();
+        const denied = ['a', 'b', 'c', 'd', 'e', 'f'].map(
+            (name) => s.edit(`/w/${name}.ts`).permissionDecision,
+        );
+        expect(denied.filter(Boolean)).toHaveLength(5);
+        expect(denied[5]).toBeUndefined();
+    });
+
+    it('holds no sibling on a rule with no skill', () => {
+        const s = session();
+        s.bash('mo uninstall Foo');
+        expect(s.bash('mo uninstall Bar')).toEqual({});
+    });
+
+    it('refuses again after a compaction', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        s.compact();
+        expect(s.edit('/w/b.ts').permissionDecision).toBe('deny');
+    });
+
+    it('injects no retry order at a compaction', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        expect(s.compact()).toEqual({});
+    });
+
+    it('passes after a compaction when the guide loaded past it', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        s.compact();
+        const out = s.edit('/w/b.ts', {
+            transcript_path: s.transcript([boundary, skillCall(typescript)]),
+        });
+        expect(out).toEqual({});
     });
 
     it.each([
@@ -336,12 +403,14 @@ describe('guide-load-before-edit', () => {
     it('fires each guide once across a .ts then a .go edit', () => {
         const s = session();
         expect(s.edit('/w/a.ts').permissionDecision).toBe('deny');
+        expect(s.edit('/w/a.ts')).toEqual({});
         expect(s.edit('/w/a.go').permissionDecision).toBe('deny');
+        expect(s.edit('/w/a.go')).toEqual({});
         expect(s.edit('/w/b.ts')).toEqual({});
         expect(s.edit('/w/b.go')).toEqual({});
     });
 
-    it('refuses a .tsx edit once, naming typescript and react', () => {
+    it('refuses a .tsx edit once, naming both guides', () => {
         const s = session();
         const reason = s.edit('/w/a.tsx').permissionDecisionReason;
         expect(reason).toContain(typescript);
@@ -363,7 +432,7 @@ describe('guide-load-before-edit', () => {
             expect(edit(s, [boundary, skillCall(typescript)])).toEqual({});
         });
 
-        it('passes through a garbled line and a non-object line', () => {
+        it('passes through garbled lines', () => {
             const s = session();
             expect(
                 edit(s, ['{broken "Skill"', '"Skill"', skillCall(typescript)]),
@@ -436,6 +505,21 @@ describe('guide-load-before-edit', () => {
                 transcript_path: join(s.dir, 'session.jsonl'),
             });
             expect(out).toEqual({});
+        });
+
+        it.each([
+            [
+                'a string message',
+                { message: 'x', name: 'Skill', type: 'assistant' },
+            ],
+            ['no message', { name: 'Skill', type: 'assistant' }],
+            [
+                'a Skill input that is no object',
+                toolCall('Skill', 'x:guide-typescript' as never),
+            ],
+        ])('fires past a malformed line with %s', (_name, line) => {
+            const s = session();
+            expect(edit(s, [line]).permissionDecision).toBe('deny');
         });
 
         it('fires on a transcript the hook cannot read', () => {
@@ -531,6 +615,8 @@ describe('shelf and model-cards rows', () => {
         'how much does a 1m cache write cost',
         'How many tokens does this boot eat?',
         'what is the prompt cache ttl',
+        'how long does the prompt cache last?',
+        'does the cache expire?',
         'is opus pricing higher than sonnet?',
     ])('model-cards-load-on-cost-question loads on «%s»', (prompt) => {
         expect(session().prompt(prompt).additionalContext).toContain(
@@ -542,6 +628,8 @@ describe('shelf and model-cards rows', () => {
         'fix the cost column in the table',
         'the cache is stale, clear it',
         'rotate the github token',
+        'can you rotate the github token',
+        'closing note.\n  why: the cost of this row is small',
         'held the same way: who asked for it, what it costs.',
         'const tokens = usage?.context.breakdown;',
         'the size of that cost is my inference «?»',
@@ -591,7 +679,7 @@ describe('fails open', () => {
         { hook_event_name: 'Stop', last_assistant_message: 'FRM-12' },
     ];
 
-    it('a row with no new key loads linear-flow and exits clean', () => {
+    it('a row with no new key loads linear-flow cleanly', () => {
         const s = session(hookWithOnlyLinearFlow());
         const result = s.spawnHook({
             hook_event_name: 'UserPromptSubmit',
@@ -612,7 +700,7 @@ describe('fails open', () => {
         expect(result.status).toBe(0);
     });
 
-    it('refuses nothing and exits 0 with a read-only state dir', () => {
+    it('refuses nothing with a read-only state dir', () => {
         const s = session();
         const state = join(s.dir, 'cc-memory-load-rule-lazy');
         mkdirSync(state);
@@ -628,7 +716,7 @@ describe('fails open', () => {
         expect(result.status).toBe(0);
     });
 
-    it('refuses nothing and does not repeat when the log cannot be written', () => {
+    it('refuses nothing when the log cannot be written', () => {
         const s = session();
         writeFileSync(join(s.dir, 'log.tsv'), '');
         chmodSync(join(s.dir, 'log.tsv'), 0o444);
@@ -656,10 +744,25 @@ describe('memory-load-replay', () => {
         ).stdout;
     }
 
-    it('prints a row fire with its tool and hit', () => {
+    it('prints a row fire with its hit', () => {
         const out = replay([toolCall('Edit', { file_path: '/w/a.ts' })]);
         expect(out).toContain('guide-load-before-edit-typescript: 1 fires');
         expect(out).toContain('1× Edit: .ts');
+    });
+
+    it('counts a refusal-only row again past a compaction', () => {
+        const edit = toolCall('Edit', { file_path: '/w/a.ts' });
+        expect(replay([edit, boundary, edit])).toContain(
+            'guide-load-before-edit-typescript: 2 fires',
+        );
+    });
+
+    it('keeps other rows firing after a Skill call with no name', () => {
+        const out = replay([
+            toolCall('Skill', {}),
+            toolCall('Bash', { command: 'mo uninstall Foo' }),
+        ]);
+        expect(out).toContain('shelf-load-macos-apps: 1 fires');
     });
 
     it('prints a row with no fires', () => {
@@ -731,6 +834,13 @@ describe('memory-load-guide-share', () => {
                 edit('t2'),
             ]),
         ).toContain('x:guide-typescript before the first ts edit: 1/1');
+    });
+
+    it('counts an errored Skill call as no load', () => {
+        const skill = toolCall('Skill', { skill: 'x:guide-typescript' }, 's1');
+        expect(share([skill, refused('s1'), edit('t2')])).toContain(
+            'x:guide-typescript before the first ts edit: 0/1',
+        );
     });
 
     it('counts a retry with no load as a miss', () => {

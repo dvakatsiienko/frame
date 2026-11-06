@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-06T12:41:00Z'
+updated_date: '2026-11-06T13:34:00Z'
 labels:
   - xs
   - side-channel-owned
@@ -50,4 +50,10 @@ W1 (2026-11-06 03:14, dima): once we have two side lanes at once, the side chann
 2026-11-06 14:34 side channel, two side lanes running, no restart: Finder up 20.6 h, one window on ~/Downloads, load 16-19: 8 of 75 polls at or over 15 %, max 51.5 %, footprint 172 MB. baselines: 11-05 sizes off 0/75 max 9.2 % on one fresh run; 11-03 8/75 max 98 %. 3 samples read. the past-24 h watch runs after 17:54.
 
 2026-11-06 14:41 side channel, same lanes, no Finder window (closed on dima's tick, read back empty): 5 of 75 polls at or over 15 %, max 38.4 %, footprint 168 MB, load 22-37. all 5 fell in the first 96 s, none in the last 3.5 min, while load rose. 3 samples: TFSInfo property sync (FetchProperties, SynchronizeCatalog, CopyPropertyValues), TNode::HandleSync, 0 sizing frames read in the 14:29 run. against the open window 14:29: 8/75, max 51.5 %. one pair, no controlled churn, a window reopened 14:35-14:36 just before: the early cluster may be its aftermath (inference). so a window helps at most; bursts run without one.
+
+2026-11-06 14:50 side channel via helga: the 17:54 watch is the next read; the closed-window run stands as one pair, no controlled churn.
+
+2026-11-06 15:05 settle test, his tick: 0 windows, settled 2 min, then 5 min under the lanes (load 30.7): 0 of 75 polls at or over 15 %, max 10.8 %, rss 82 MB, no samples. against 14:29 window open on ~/Downloads 8/75 max 51.5 %, and 14:36 closed 5/75 max 38.4 %, all within 96 s of his reopen. inference from one run each: bursts follow an open window or a recent touch, a settled closed Finder is quiet. past-24 h watch after 17:54 still due.
+
+2026-11-06 15:36 side channel: the mac was force reset at 15:29 (panic btn_rst, the power button; cause unknown), so Finder and uptime restarted: the past-24 h watch due 17:54 can't run. a day of uptime is now 15:29 tomorrow, moved. the 15:05 settle test stands. the day plan's line 19 was ticked wrong at 14:39: no 17:54 watch ever ran; unticked 15:21.
 <!-- SECTION:NOTES:END -->

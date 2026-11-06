@@ -12,7 +12,7 @@ it('a hook under a made-up HOME writes there and not into the real ~/.local/stat
         'sh',
         [
             '-c',
-            `H=$(mktemp -d) && HOME=$H node -e "const { mkdirSync, writeFileSync } = require('node:fs'); const { homedir } = require('node:os'); const d = homedir() + '/.local/state/x/' + process.argv[1]; mkdirSync(d, { recursive: true }); writeFileSync(d + '/f', 'x'); console.log(d)" ${probe}; echo "$H"`,
+            `H=$(mktemp -d "\${TMPDIR:-/tmp}/home-door.XXXX") && HOME=$H node -e "const { mkdirSync, writeFileSync } = require('node:fs'); const { homedir } = require('node:os'); const d = homedir() + '/.local/state/x/' + process.argv[1]; mkdirSync(d, { recursive: true }); writeFileSync(d + '/f', 'x'); console.log(d)" ${probe}; echo "$H"`,
         ],
         { encoding: 'utf8' },
     )
