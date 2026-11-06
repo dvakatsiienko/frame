@@ -298,6 +298,48 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 	}
 }
 
+func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
+	t.Parallel()
+	upper := `{"id":2,"head_branch":"coder/x-2","head_sha":"%s","status":"completed","conclusion":"success"}`
+	lower := `{"id":1,"head_branch":"coder/x","head_sha":"%s","status":"completed","conclusion":"success"}`
+	cases := []struct {
+		name string
+		runs []string
+		code int
+	}{
+		{"both layers hold a round", []string{upper, lower}, 4},
+		{"the lower layer holds none", []string{upper}, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := linkedMergeWorld(t)
+			w.env = append(w.env, "X_ROUND_REPO=o/r")
+			gitT(t, w.seed, "push", "-q", "origin", "coder/x:coder/x-2")
+			var runs []string
+			for _, run := range c.runs {
+				runs = append(runs, strings.ReplaceAll(run, "%s", w.head))
+			}
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/7"] = `{"number":7,"title":"part 1","state":"open","merged":false,"body":"b",
+				"head":{"sha":"` + w.head + `","ref":"coder/x"},"base":{"ref":"main"}}`
+			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[` + strings.Join(runs, ",") + `]}`
+			w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf("success", "")
+			w.hub.pages[repoPath+"/actions/runs/2/jobs"] = jobOf("success", "")
+			w.hub.mu.Unlock()
+
+			got := w.run(t, "8")
+
+			if got.code != c.code {
+				t.Fatalf("exit %d, want %d:\n%s", got.code, c.code, got.stdout)
+			}
+			if c.code == 1 && !strings.Contains(got.stdout, "#7") {
+				t.Errorf("the wait does not name #7:\n%s", got.stdout)
+			}
+		})
+	}
+}
+
 // github merged a head the gate never read: loud on stderr, and the brake goes on for every next merge
 func TestMergeAutoBrakesWhenTheStackMergedAnotherHead(t *testing.T) {
 	t.Parallel()
