@@ -36,17 +36,20 @@ type Impl struct {
 	Apply  func(r *Run, args []string, flags Flags, plan any) (any, error)
 	Undone string
 	Ask    func(plan any) string
+	// a needsApply verb's read-only mode: its plan is the answer, with nothing to apply
+	ReadOnly func(flags Flags) bool
 }
 
 var impls = map[string]Impl{
-	"lane commit":       {Run: commit, Undone: "nothing was committed"},
-	"lane push":         {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
-	"lane pr-open":      {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
-	"lane merge-main":   {Run: mergeMain, Undone: "nothing was merged"},
-	"lane rebase-main":  {Plan: rebasePlan, Apply: rebaseMain, Undone: "the branch is as it was", Ask: askRebase},
-	"lane verify-tree":  {Run: verifyTree, Undone: "no worktree was added"},
-	"lane unlock":       {Run: unlock, Undone: "nothing was decrypted"},
-	"lane decamp":       {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp},
+	"lane commit":      {Run: commit, Undone: "nothing was committed"},
+	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
+	"lane pr-open":     {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
+	"lane merge-main":  {Run: mergeMain, Undone: "nothing was merged"},
+	"lane rebase-main": {Plan: rebasePlan, Apply: rebaseMain, Undone: "the branch is as it was", Ask: askRebase},
+	"lane verify-tree": {Run: verifyTree, Undone: "no worktree was added"},
+	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
+	"lane decamp": {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp,
+		ReadOnly: listingStale},
 	"lane dispatch":     {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "a ticket before the failed one keeps its marks", Ask: askDispatch},
 	"lane landed":       {Plan: landedPlanOf, Apply: laneLanded, Undone: "a step that ran stands; the list above is read after it", Ask: askLanded},
 	"lane seed":         {Run: seed, Undone: "the tree is as the hook left it"},
@@ -290,6 +293,9 @@ func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 	plan, err := impl.Plan(r, args, flags)
 	if err != nil {
 		return finishFail(m, verb.Name, r, err)
+	}
+	if impl.ReadOnly != nil && impl.ReadOnly(flags) {
+		return finishOK(m, verb.Name, r, plan)
 	}
 	if flags["apply"] != true {
 		approved := false
