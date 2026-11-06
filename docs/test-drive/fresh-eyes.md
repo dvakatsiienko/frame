@@ -1,6 +1,6 @@
 ---
 status: parked
-until: 2026-11-07
+until: 2026-12-07
 parked-on: speak v2's first screen pr, the next web lane (dima's tick, 2026-11-04)
 dies-when: the verdict line below is written
 fits: sixth-sense
