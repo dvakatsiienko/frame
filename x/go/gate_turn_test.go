@@ -75,6 +75,60 @@ func turnRepo(t *testing.T, hook string) string {
 	return dir
 }
 
+// go test's default timeout kills a test binary at 10 minutes, so past 6,000 polls nobody can still be waiting
+const markerWaitPolls = 6000
+
+// a fixture's wait for its test's marker: it ends with the marker, with the test's temp dir, or at its poll bound, so a dead test leaves no poller
+func markerWait(path string) string {
+	return boundedMarkerWait(path, markerWaitPolls)
+}
+
+func boundedMarkerWait(path string, polls int) string {
+	return "i=0; until [ -e " + path + " ] || [ ! -d " + filepath.Dir(path) + " ] || [ $i -ge " + strconv.Itoa(polls) + " ]; do sleep 0.1; i=$((i+1)); done"
+}
+
+func TestMarkerWaitEndsWithoutItsTest(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name  string
+		polls int
+		act   func(t *testing.T, path string)
+	}{
+		{"the marker appears", markerWaitPolls, func(t *testing.T, path string) { write(t, path, "") }},
+		{"the test's temp dir goes", markerWaitPolls, func(t *testing.T, path string) {
+			if err := os.RemoveAll(filepath.Dir(path)); err != nil {
+				t.Fatal(err)
+			}
+		}},
+		{"the poll bound passes", 5, func(*testing.T, string) {}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "scratch", "release")
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			wait := exec.Command("sh", "-c", boundedMarkerWait(path, c.polls))
+			if err := wait.Start(); err != nil {
+				t.Fatal(err)
+			}
+			ended := make(chan error, 1)
+			go func() { ended <- wait.Wait() }()
+			c.act(t, path)
+			select {
+			case err := <-ended:
+				if err != nil {
+					t.Errorf("the wait: %v", err)
+				}
+			case <-time.After(turnWait):
+				_ = wait.Process.Kill()
+				t.Errorf("still polling after %s", turnWait)
+			}
+		})
+	}
+}
+
 func xStart(t *testing.T, dir string, env []string, args ...string) *exec.Cmd {
 	t.Helper()
 	c := exec.Command(xbin, args...)
@@ -180,7 +234,7 @@ func TestGateTurnRunsEachHookAlone(t *testing.T) {
 	scratch := t.TempDir()
 	log, release := filepath.Join(scratch, "log"), filepath.Join(scratch, "release")
 	// the hook leaves only on the marker: a slow machine cannot end the first commit before the second is in line
-	hook := "echo in >>" + log + "; until [ -e " + release + " ]; do sleep 0.1; done; echo out >>" + log
+	hook := "echo in >>" + log + "; " + markerWait(release) + "; echo out >>" + log
 	first := xStart(t, turnRepo(t, hook), env, "lane", "commit", message(t), "--", "readme.txt")
 	second := xStart(t, turnRepo(t, hook), env, "lane", "commit", message(t), "--", "readme.txt")
 	turn := filepath.Join(state, "gate-queue.turn")
@@ -302,8 +356,7 @@ func TestGateTurnIsFreedWhenXDies(t *testing.T) {
 	turn := filepath.Join(state, "gate-queue.turn")
 	scratch := t.TempDir()
 	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
-	t.Cleanup(func() { write(t, release, "") })
-	hook := "touch " + started + "; until [ -e " + release + " ]; do sleep 0.1; done"
+	hook := "touch " + started + "; " + markerWait(release)
 	dir := turnRepo(t, hook)
 	head := gitT(t, dir, "rev-parse", "HEAD")
 	dying := xStart(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
@@ -385,7 +438,7 @@ func TestTwoCommitsInOneCheckoutBothLand(t *testing.T) {
 	state, env := turnOn(t)
 	scratch := t.TempDir()
 	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
-	dir := turnRepo(t, "touch "+started+"; until [ -e "+release+" ]; do sleep 0.1; done")
+	dir := turnRepo(t, "touch "+started+"; "+markerWait(release))
 	write(t, filepath.Join(dir, "other.txt"), "other\n")
 	// a lock wait this short shows a stage that meets the first commit's hook at once
 	env = append(env, "X_LOCK_WAIT=100ms")
@@ -485,7 +538,7 @@ func TestAHungHookFreesTheTurnAtItsCap(t *testing.T) {
 	env = append(env, "GATE_QUEUE_HOLD_CAP=1")
 	scratch := t.TempDir()
 	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
-	hook := "touch " + started + "; until [ -e " + release + " ]; do sleep 0.1; done"
+	hook := "touch " + started + "; " + markerWait(release)
 	dir := turnRepo(t, hook)
 	head := gitT(t, dir, "rev-parse", "HEAD")
 	hung := xStart(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
@@ -585,7 +638,7 @@ func TestAPeerNeverWaitsBehindALandingScript(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	landing := exec.Command(script, "sh", "-c", xbin+` lane commit "$1" -- readme.txt && touch "$2"; until [ -e "$3" ]; do sleep 0.1; done`, "landing", message(t), done, release)
+	landing := exec.Command(script, "sh", "-c", xbin+` lane commit "$1" -- readme.txt && touch "$2"; `+markerWait(release), "landing", message(t), done)
 	landing.Dir = turnRepo(t, "true")
 	landing.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
 	if err := landing.Start(); err != nil {
