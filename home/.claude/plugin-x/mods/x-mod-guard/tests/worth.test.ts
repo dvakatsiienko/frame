@@ -406,6 +406,24 @@ test('the note on an unread ticket names the failed read', async ($, on) => {
     expect((await bash($, SET)).deny).toContain('could not read FRM-1');
 });
 
+const WRITTEN_BODY = `cat > /repo/b.md <<'EOF'\nbody\nEOF\nlinear issue update FRM-5 --description-file /repo/b.md`;
+
+test('a body this command writes on a ticket out of scope runs', async ($, on) => {
+    const { ran } = world(
+        on,
+        {},
+        { 'FRM-5': { description: 'x', project: 'apps' } },
+    );
+    const r = await bash($, WRITTEN_BODY);
+    expect([refused(r), ran]).toEqual([false, [WRITTEN_BODY]]);
+});
+
+test('a body this command writes in scope is told to split the write', async ($, on) => {
+    world(on, {}, { 'FRM-5': { description: 'x', project: 'cli' } });
+    const r = await bash($, WRITTEN_BODY);
+    expect(r.deny).toContain('in a call of its own');
+});
+
 test('a re-sign body this command writes is refused as unread', async ($, on) => {
     world(on, {}, { 'FRM-1': { description: SIGNED, project: 'cli' } }, [
         SIGN_TICK,

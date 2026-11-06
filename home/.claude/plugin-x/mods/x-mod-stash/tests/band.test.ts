@@ -6,9 +6,9 @@ import { completedAgent, failedCommand, killedAgent } from './notices.ts';
 const SID = 'b1b1b1b1-band';
 const TOOL = 'mcp__x-mod-stash__orbit';
 
-function world(on: On) {
+function world(on: On, hasStore = true) {
     mock.clock(on);
-    mock.store(on);
+    if (hasStore) mock.store(on);
     on('session.id', () => ({ value: SID }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({ value: null }));
@@ -419,3 +419,100 @@ test('afk off after two members finished leaves the band as it was with afk on',
     expect(back.filter((t) => /were away|^done · /.test(t))).toEqual([]);
     expect(back.length).toBe(away.length);
 });
+
+/* a press draws first, the store after */
+function pressWorld(
+    on: On,
+    refused?: string,
+    store = new Map<string, unknown>(),
+) {
+    world(on, false);
+    const events: string[] = [];
+    const views: Record<string, unknown>[] = [];
+    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    on('store.keys', () => ({ value: [...store.keys()] }));
+    on('store.delete', (_$, e) => {
+        store.delete(e.key);
+        return { value: undefined };
+    });
+    on('store.set', (_$, e) => {
+        if (e.key === refused) return { deny: 'disk full' };
+        events.push(`store ${e.key}`);
+        store.set(e.key, e.value);
+        return { value: undefined };
+    });
+    on('state.set', (_$, e, next) => {
+        if (e.key === 'view') {
+            const view = e.value as Record<string, unknown>;
+            views.push(view);
+            events.push(`view ${JSON.stringify(view)}`);
+        }
+        return next(e);
+    });
+    on('ui.log', () => ({ value: undefined }));
+    on('ui.open', () => {
+        events.push('open');
+        return { value: { isPlaced: true as const } };
+    });
+    on('ui.close', () => ({ value: undefined }));
+    return { events, store, views };
+}
+
+const drawnAt = (events: string[], field: string) =>
+    events.findIndex(
+        (x) => x.startsWith('view') && x.includes(`"${field}":true`),
+    );
+
+for (const [press, key, field] of [
+    ['afk', 'afk', 'afk'],
+    ['waker', 'waker', 'isWaker'],
+    ['hot', `hot:${SID}`, 'isHot'],
+] as const) {
+    test(`${press} draws before its store write`, async ($, on) => {
+        const { events } = pressWorld(on);
+        const ui = await band($);
+        const from = events.length;
+        await ui.press({ key: press });
+        const after = events.slice(from);
+        const drawn = drawnAt(after, field);
+        expect([drawn >= 0, drawn < after.indexOf(`store ${key}`)]).toEqual([
+            true,
+            true,
+        ]);
+    });
+
+    test(`${press} goes back when its store write fails`, async ($, on) => {
+        const { views } = pressWorld(on, key);
+        const ui = await band($);
+        await ui.press({ key: press });
+        expect(views.at(-1)?.[field]).toBeFalsy();
+    });
+}
+
+test('afk reads the store, so a flip from another session still wins', async ($, on) => {
+    const { store, views } = pressWorld(on);
+    const ui = await band($);
+    store.set('afk', { on: true });
+    await ui.press({ key: 'afk' });
+    expect([
+        views.at(-1)?.afk,
+        (store.get('afk') as { on: boolean }).on,
+    ]).toEqual([false, false]);
+});
+
+for (const [press, field] of [
+    ['settings', 'isSettingsOpen'],
+    ['board', 'isBoardOpen'],
+] as const)
+    test(`${press} draws before its pane opens`, async ($, on) => {
+        const { events } = pressWorld(on);
+        const ui = await band($);
+        const from = events.length;
+        await ui.press({ key: press });
+        const after = events.slice(from);
+        const drawn = drawnAt(after, field);
+        expect([drawn >= 0, drawn < after.indexOf('open')]).toEqual([
+            true,
+            true,
+        ]);
+    });

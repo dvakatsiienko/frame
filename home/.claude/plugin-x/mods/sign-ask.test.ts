@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { TICKET_KEY } from './x-mod-guard/hooks/rules/command.ts';
 import { SIGN_ASK as guard, quotesPr } from './x-mod-guard/hooks/rules.ts';
 import { MERGE_ASK, SIGN_ASK as orbit } from './x-mod-stash/hooks/orbit.ts';
 
@@ -35,6 +36,11 @@ describe('the merge shape', () => {
 });
 
 describe('the sign shape', () => {
+    for (const team of TICKET_KEY.split('|'))
+        it(`both copies read a ${team} ticket`, () => {
+            const text = `✍️ sign ${team}-1: the title`;
+            expect([guard.test(text), orbit.test(text)]).toEqual([true, true]);
+        });
     for (const [text, isSign] of SHAPES)
         it(`both copies read «${text}» as ${isSign}`, () => {
             expect([guard.test(text), orbit.test(text)]).toEqual([

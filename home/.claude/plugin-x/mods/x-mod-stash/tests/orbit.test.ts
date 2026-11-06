@@ -3833,7 +3833,20 @@ for (const pick of ['signed', 're-signed', 'signed as drafted'])
         );
     });
 
+for (const [text, pick] of [
+    ['✍️ re-sign FRM-472: the rows', 're-sign: FRM-472 takes 22 rows'],
+    ['FRM-491 siesta gate: re-sign the gate', 'yes: re-sign as built'],
+    ['FRM-471 re-sign: the rows', 're-sign it'],
+    ['sign FRM-1 please', 'sign: as drafted'],
+] as const)
+    test(`add refuses the pick «${pick}» on a mis-shaped sign ask`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(denied(await add($, [text, pick]))).toContain(SIGN_DENY);
+    });
+
 for (const [what, text, pick] of [
+    ['a pick holding sign-in', 'push FRM-1', 'sign-in flow first'],
     ['one id', '✍️ sign FRM-1: the title', 'signed'],
     ['a batch', '✍️ sign FRM-1, BYT-2: the titles', 're-signed'],
     ['no sign word in the pick', 'push FRM-1', 'yes'],
@@ -3897,6 +3910,8 @@ for (const pick of [
     'merge it',
     'Merge when green',
     'merged, as ticked',
+    'yes, merge #7',
+    'yes, merge the pr',
 ])
     test(`add refuses the pick «${pick}» on a text naming no pr`, async ($, on) => {
         world(on);
@@ -3915,6 +3930,21 @@ for (const [what, text, pick] of [
     ['a pick that holds it, typed curly', 'push FRM-1', 'don’t merge yet'],
     ['a pick that never merges', 'push FRM-1', 'never merge it'],
     ['a pick of no merge', 'push FRM-1', 'no merge tonight'],
+    [
+        'a sign ask whose pick names its merge',
+        '✍️ sign FRM-511: the title',
+        'signed, its merge on your word',
+    ],
+    [
+        'a merge word that names no pr',
+        'FRM-360 into FRM-387',
+        'merge: you made 0 rows',
+    ],
+    [
+        'a merge word mid pick',
+        'one row each',
+        'one merged before the next opens',
+    ],
     ['no merge word in the pick', 'merge frame#7 please', 'yes'],
 ] as const)
     test(`add passes ${what}`, async ($, on) => {

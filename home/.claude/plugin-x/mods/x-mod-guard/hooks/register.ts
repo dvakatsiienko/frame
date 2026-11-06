@@ -16,6 +16,7 @@ import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
 import {
     RESIGN_DOOR,
     hasResign,
+    isWorthScope,
     resignGap,
     worthCreates,
     worthRewrites,
@@ -411,7 +412,7 @@ async function isWarnOnly($: EngineInterface, rule: string) {
     );
 }
 const wouldRefuse = (rule: string, text: string) =>
-    `x-mod-guard would refuse this (rule ${rule}, warn-only until its sixth sense says clean): ${text}`;
+    `x-mod-guard would refuse this (rule ${rule}, warn-only for now): ${text}`;
 
 // the local day, `yyyy-mm-dd`
 function day(at: number) {
@@ -1207,11 +1208,11 @@ export const register: Register = (on) => {
         const go = async (run = command) => {
             // every run leaves through here, so a call any rule stopped never reads «already ran» or counts as warned
             const piped = linearWritePiped(typed, cwd);
-            if (piped) {
+            const isPipedWarn = !!piped && (await isWarnOnly($, piped.rule));
+            if (piped && !isPipedWarn) {
                 const stop = await enforce(
                     piped,
                     `nothing in this command ran — x-mod-guard stopped this one command. instead: run the write unpiped, its exit is the receipt. why: ${piped.why}.`,
-                    `x-mod-guard: instead: ${piped.door}. why: ${piped.why}.`,
                 );
                 if (stop) return stop;
             }
@@ -1233,6 +1234,12 @@ export const register: Register = (on) => {
                     ISOLATED.test(result.deny)
                         ? `${result.deny} — ${ISOLATED_DOOR}`
                         : result.deny,
+                );
+            // only now is «already ran» true
+            if (piped && isPipedWarn)
+                await enforce(
+                    piped,
+                    `x-mod-guard: instead: ${piped.door}. why: ${piped.why}.`,
                 );
             // a line that errors may have run any of its writes before the error, so what it wrote is unread
             const writes = lineWrites(run, cwd, ctx);
@@ -1460,6 +1467,8 @@ export const register: Register = (on) => {
             const current = await ticketOf($, rewrite.id).catch(
                 () => undefined,
             );
+            if (current && !isWorthScope(current.project, current.milestone))
+                continue;
             if (
                 current &&
                 rewritten !== undefined &&
@@ -1467,7 +1476,9 @@ export const register: Register = (on) => {
             )
                 continue;
             const r = {
-                door: RESIGN_DOOR,
+                door: isWritten
+                    ? `write the body in a call of its own first, so its section can be read; then ${RESIGN_DOOR}`
+                    : RESIGN_DOOR,
                 rule: 'worth',
                 targets: [rewrite.id],
                 why: isWritten

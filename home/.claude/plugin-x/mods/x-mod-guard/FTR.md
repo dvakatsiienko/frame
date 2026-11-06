@@ -266,7 +266,7 @@
   - proof: tests/written.test.ts::a script written then run warns naming the rule its body trips; a script a Write made this turn warns when Bash runs it; a script an earlier Bash call wrote warns when a later one runs it; a write then run passes unwarned; a script written in an earlier turn is not read; a line an earlier Bash call appended is read with the text before it; a written script that runs itself is read once
 - ✅ a new rule warns before it refuses (dima's o70)
   - given a rule listed in `WARN_ONLY`
-  - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its sixth sense says clean): <the refusal>»
+  - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only for now): <the refusal>»
   - and every check below the warned rule still runs: a floor command, a sign or a merge word later on the line is refused as if the warned rule were not there (`claude plugin update x && rm -rf build` and `CI=1 pnpm add zod && rm -rf x` refuse the rm)
   - when it fires on an Agent spawn, then the agent runs — a spawn takes no note
   - then the event is kept as `warned`, and the day's tally counts it apart

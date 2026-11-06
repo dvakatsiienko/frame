@@ -5,7 +5,7 @@ import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
 // a session the registry lists is a member, whom linear-body stops; dima's is not listed
-function world(on: On, isMember = false) {
+function world(on: On, isMember = false, isCoreDeny = false) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
@@ -41,6 +41,7 @@ function world(on: On, isMember = false) {
     );
     on('ui.log', () => ({ value: undefined }));
     on('tool.call', (_$, e) => {
+        if (isCoreDeny) return { deny: 'the engine refused it' };
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
@@ -219,9 +220,19 @@ test('enforced, the refusal says nothing ran', async ($, on) => {
     ]).toEqual([true, false, []]);
 });
 
+test('a call the engine denies never reads «already ran» or counts as warned', async ($, on) => {
+    const w = world(on, false, true);
+    const r = JSON.stringify(
+        await bash($, 'x linear comment FRM-1 --body-file f | jq .ok'),
+    );
+    expect([
+        r.includes('already ran'),
+        JSON.stringify([...w.store.values()]).includes('warned'),
+    ]).toEqual([false, false]);
+});
+
 test('a call a later rule stops leaves no warned event', async ($, on) => {
     const w = world(on);
-    w.store.set('rule-mode:sign-untick', 'enforce');
     await bash($, 'x linear set FRM-1 --add-label signed | jq .ok');
     // the clock stands still here, so its event key is reused: the day's tally is what still counts a warning
     expect([

@@ -1187,14 +1187,18 @@ const quietLog = ($: EngineInterface, line: QuietLogLine) =>
     quietLogAll($, [line]);
 
 // each held ping that reached clio's thread gets a `flushed` line, so a deliveryTest sees held → delivered
-async function quietFlushed($: EngineInterface, held: QuietPing[]) {
+async function quietFlushed(
+    $: EngineInterface,
+    held: QuietPing[],
+    startedTurn = false,
+) {
     const at = await $.clock.now();
     for (const p of held)
         await quietLog($, {
             arm: 'on',
             at,
             from: p.from,
-            startedTurn: false,
+            startedTurn,
             tag: p.tag ?? 'none',
             verdict: 'flushed',
             ...(p.deliveryTest ? { deliveryTest: p.deliveryTest } : {}),
@@ -1758,6 +1762,41 @@ async function quietDue($: EngineInterface) {
 async function quietPutBack($: EngineInterface, held: QuietPing[]) {
     const q = await quietOf($);
     await saveQuiet($, { ...q, held: [...held, ...q.held] });
+}
+
+// a lone notice held before he went away would stay unseen while nobody prompts: the edge into away starts one turn,
+// once a real notice is held; its text carries the held list, since the mod's own prompt skips its prompt.submit hook
+const QUIET_AWAY_SEEN = 'quiet-away-seen';
+async function quietAwayWake($: EngineInterface) {
+    if (!(await isQuietHome($))) return;
+    const isAway = await isAwayNow($);
+    const wasAway = (await $.store.get(QUIET_AWAY_SEEN)) === true;
+    if (isAway === wasAway) return;
+    if (
+        isAway &&
+        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy
+    )
+        return;
+    await $.store.set(QUIET_AWAY_SEEN, isAway);
+    if (!isAway) return;
+    const members = await registry($);
+    const due = await quietLocked(async () => {
+        const q = await quietOf($);
+        for (const p of q.held) {
+            if (p.tag !== QUIET_NOTICE) continue;
+            const sid = memberOf(members, p.from)?.base.sid;
+            if (sid && (await isLastReplyPing($, sid))) continue;
+            return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
+        }
+        return [];
+    });
+    if (!due.length) return;
+    const r = await selfSubmit($, quietNote(due)).catch(() => undefined);
+    if (!r || 'deny' in r) {
+        await quietLocked(() => quietPutBack($, due));
+        return;
+    }
+    await quietLocked(() => quietFlushed($, due, true));
 }
 
 // held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
@@ -3613,10 +3652,17 @@ async function pacePoll($: EngineInterface) {
 async function pressPace($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    await $.store.set(
-        PACE + sid,
-        isPaceOn(await $.store.get(PACE + sid)) ? { off: true } : { on: true },
-    );
+    await drawBand($, { isPaced: !isPaced });
+    try {
+        await $.store.set(
+            PACE + sid,
+            isPaceOn(await $.store.get(PACE + sid))
+                ? { off: true }
+                : { on: true },
+        );
+    } catch (err) {
+        await $.ui.log(`x-mod-stash: 🔋 was not kept: ${errorText(err)}`);
+    }
     await load($);
     await publish($);
     $.ui.invalidate('ui.render');
@@ -3855,6 +3901,20 @@ async function publish($: EngineInterface) {
     const text = JSON.stringify(view);
     if (text === published) return;
     published = text;
+    await $.state
+        .set(VIEW, view)
+        .catch((err) =>
+            $.ui.log(`x-mod-stash: the view was not kept: ${errorText(err)}`),
+        );
+}
+
+// a press answers at once: only the pressed chip is drawn here, and the publish after the write settles the rest
+async function drawBand($: EngineInterface, patch: Partial<StashView>) {
+    const view = {
+        ...((await $.state.get(VIEW)).value ?? viewOf(false)),
+        ...patch,
+    };
+    published = JSON.stringify(view);
     await $.state
         .set(VIEW, view)
         .catch((err) =>
@@ -5040,6 +5100,7 @@ export const register: Register = (on) => {
                     await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
+                    await quietAwayWake($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await pacePoll($).catch(() => undefined);
@@ -7741,57 +7802,84 @@ export const register: Register = (on) => {
                     const ui = $.ui.resolve(e);
                     const { Box, Text, Button } = ui;
                     const handleAfkFlip = async () => {
-                        const was = (await $.store.get(AFK_KEY)) as
-                            | {
-                                  at?: number;
-                                  on?: boolean;
-                                  wakerBefore?: boolean;
-                              }
-                            | undefined;
-                        const wakerWas = (await $.store.get(WAKER_KEY)) as
-                            | { on?: boolean }
-                            | undefined;
-                        // the store's value, never the module copy: another session may have flipped it since the last poll
-                        afk = !was?.on;
-                        await $.store.set(AFK_KEY, {
-                            at: await $.clock.now(),
-                            on: afk,
-                            ...(afk
-                                ? { wakerBefore: wakerWas?.on === true }
-                                : {}),
-                        });
-                        // afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
-                        if (afk || was?.wakerBefore !== undefined) {
-                            isWaker = afk || was?.wakerBefore === true;
-                            await $.store.set(WAKER_KEY, { on: isWaker });
+                        afk = !view.afk;
+                        await drawBand($, { afk });
+                        try {
+                            const was = (await $.store.get(AFK_KEY)) as
+                                | {
+                                      at?: number;
+                                      on?: boolean;
+                                      wakerBefore?: boolean;
+                                  }
+                                | undefined;
+                            const wakerWas = (await $.store.get(WAKER_KEY)) as
+                                | { on?: boolean }
+                                | undefined;
+                            // the store's value, never the module copy: another session may have flipped it since the last poll
+                            afk = !was?.on;
+                            await $.store.set(AFK_KEY, {
+                                at: await $.clock.now(),
+                                on: afk,
+                                ...(afk
+                                    ? { wakerBefore: wakerWas?.on === true }
+                                    : {}),
+                            });
+                            // afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
+                            if (afk || was?.wakerBefore !== undefined) {
+                                isWaker = afk || was?.wakerBefore === true;
+                                await $.store.set(WAKER_KEY, { on: isWaker });
+                            }
+                        } catch (err) {
+                            afk = view.afk === true;
+                            isWaker = view.isWaker === true;
+                            await $.ui.log(
+                                `x-mod-stash: afk was not kept: ${errorText(err)}`,
+                            );
                         }
                         await publish($);
                     };
                     // one switch for every session, kept in the store so a restart keeps it
                     const handleWakerFlip = async () => {
                         isWaker = !view.isWaker;
-                        await $.store.set(WAKER_KEY, { on: isWaker });
-                        // a press during afk is what afk off puts back
-                        const away = (await $.store.get(AFK_KEY)) as
-                            | {
-                                  at?: number;
-                                  on?: boolean;
-                                  wakerBefore?: boolean;
-                              }
-                            | undefined;
-                        if (away?.on)
-                            await $.store.set(AFK_KEY, {
-                                ...away,
-                                wakerBefore: isWaker,
-                            });
+                        await drawBand($, { isWaker });
+                        try {
+                            await $.store.set(WAKER_KEY, { on: isWaker });
+                            // a press during afk is what afk off puts back
+                            const away = (await $.store.get(AFK_KEY)) as
+                                | {
+                                      at?: number;
+                                      on?: boolean;
+                                      wakerBefore?: boolean;
+                                  }
+                                | undefined;
+                            if (away?.on)
+                                await $.store.set(AFK_KEY, {
+                                    ...away,
+                                    wakerBefore: isWaker,
+                                });
+                        } catch (err) {
+                            isWaker = view.isWaker === true;
+                            await $.ui.log(
+                                `x-mod-stash: ⏰ was not kept: ${errorText(err)}`,
+                            );
+                        }
                         await publish($);
                     };
                     const handleHotFlip = async () => {
+                        const hotWas = hot;
                         const now = await $.clock.now();
                         hot = hot
                             ? undefined
                             : { since: isBusy ? now : (endedAt ?? now) };
-                        await saveHot($);
+                        await drawBand($, { isHot: Boolean(hot) });
+                        try {
+                            await saveHot($);
+                        } catch (err) {
+                            hot = hotWas;
+                            await $.ui.log(
+                                `x-mod-stash: 🔥 was not kept: ${errorText(err)}`,
+                            );
+                        }
                         await armHot($);
                         await publish($);
                     };
@@ -7810,6 +7898,7 @@ export const register: Register = (on) => {
                     const isPaceWatched = view.isPaced === true;
                     const handleSettingsFlip = async () => {
                         isSettingsOpen = !view.isSettingsOpen;
+                        await drawBand($, { isSettingsOpen });
                         if (isSettingsOpen)
                             await $.ui.open({
                                 id: SETTINGS_PANE,
@@ -7819,6 +7908,7 @@ export const register: Register = (on) => {
                         await publish($);
                     };
                     const handleBoardFlip = async () => {
+                        await drawBand($, { isBoardOpen: !view.isBoardOpen });
                         if (await isOpen($)) await $.ui.close({ id: BOARD });
                         else await openBoard($);
                         await publish($);

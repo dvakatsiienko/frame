@@ -144,9 +144,13 @@ export function joinText(asks: OrbitAsk[]) {
 export const SIGN_ASK =
     /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
 // twin end
+// opens with sign (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
 const SIGN_PICK =
-    /(?<!\b(?:not|never|no|don['’]t)\s(?:re-)?)\b(?:re-)?signed\b/i;
-const MERGE_PICK = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
+    /^[^\p{L}]*sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b/iu;
+// opens with merge, its label form `merge: …` apart; anywhere else it counts only beside a pr
+const MERGE_PICK_OPENS = /^[^\p{L}]*merged?\b(?!:)/iu;
+const MERGE_PICK_NAMED = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
+const PR_NAMED = /#\d+|\bpr\b|\/pull\/\d+/i;
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr
 export const MERGE_ASK =
     /github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|(?:^|\s)⚠️ merge [\w.-]+#\d+/u;
@@ -157,7 +161,11 @@ function misShapedAsk(op: string, text: string, pick: string) {
         return {
             deny: `orbit ${op}: a pick that signs needs the text to read «✍️ sign <id>: <title>», the shape x-mod-guard reads when it signs`,
         };
-    return MERGE_PICK.test(pick) && !MERGE_ASK.test(text)
+    if (SIGN_ASK.test(text)) return undefined;
+    const isMergePick =
+        MERGE_PICK_OPENS.test(pick) ||
+        (MERGE_PICK_NAMED.test(pick) && PR_NAMED.test(pick));
+    return isMergePick && !MERGE_ASK.test(text)
         ? {
               deny: `orbit ${op}: a pick that merges needs the pr's url in the text, or «⚠️ merge <repo>#<n>», the shape x-mod-guard reads for --dima-ok`,
           }

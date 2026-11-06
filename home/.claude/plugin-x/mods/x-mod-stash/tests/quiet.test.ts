@@ -2617,6 +2617,35 @@ test('a keep-hot notice batched beside a real one stays whole while away', async
     ]);
 });
 
+test('a lone notice held before afk wakes clio once at the flip', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await fromAppText($, noteOf(CODIE.name, '.'));
+    const before = w.contexts.length;
+    w.store.set('afk', { on: true });
+    await w.clock.advance(MIN);
+    const once = w.contexts.length - before;
+    w.store.set('afk', { on: false });
+    await w.clock.advance(MIN);
+    w.store.set('afk', { on: true });
+    await w.clock.advance(MIN);
+    expect([once, w.contexts.length - before, held(w)]).toEqual([1, 1, []]);
+});
+
+test('a keep-hot notice held before afk starts no turn at the flip', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    w.store.set(`reply:${CODIE.sessionId}`, {
+        at: EVEN - 60_000,
+        pingedAt: EVEN - 1000,
+    });
+    await fromAppText($, noteOf(CODIE.name, '.'));
+    const before = w.contexts.length;
+    w.store.set('afk', { on: true });
+    await w.clock.advance(MIN);
+    expect(w.contexts.length - before).toBe(0);
+});
+
 test('a flip off mid-send reads held, never pushed', async ($, on) => {
     const w = world(on, {
         name: MEMBER,
