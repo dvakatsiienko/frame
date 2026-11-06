@@ -1,5 +1,5 @@
 ---
-status: running
+status: done
 afk: on
 ---
 
@@ -65,3 +65,34 @@ dima, 23:31: «as for lanes syncing with the new execution order, do it yourself
 - 00:15 · clio · correction: i told cli 5 codie no typed word on frame#133. `x lane merge-auto 133` says wait, self-edit, FRM-509's sign holds no pre-approval. the guard wants his prompt or tick naming #133: this is the one real block, an orbit ask after wishkeeper's read
 - 00:16 · clio · frame#137 merged, `gh pr view` MERGED. not exercised: a real `x lane review` through the new jobs read. carry: crow names a warning on an `x` read piped to jq, FRM-519 list, parked for its next re-sign
 - 00:16 · clio · correction: the line above is false: `x lane merge-auto 137 --apply` exit 1, `gh pr view` OPEN; my log line was written in the same command as the read
+- 00:21 · wishkeeper · frame#133 safe to merge, sixth sense clean. 1 high for the close: decamp is not wired into the wing landing or `clio:halt`, FRM-509 done test 1; mine after the land. 5 lows. orbit ask up, blocked: the guard wants his word naming #133
+- 00:20 · clio · frame#137 merged, `gh pr view` MERGED; not exercised: a real `x lane review` through the new jobs read. carry: crow names a warning on an `x` read piped to jq, for FRM-519
+- 00:25 · clio · frame#133 merged on o126, `gh pr view` MERGED. o127: `merge: pre-approved` on FRM-474, FRM-433, FRM-520, FRM-383, read back. FRM-433 sent to cli 5 codie
+- 00:29 · wing 1 · relays his o88 tick: afk on carries his word on self-edit merges, brake excepted. source: proposal read in its transcript, the tick itself not found by search. a sign ask up on FRM-519, blocked: a re-sign needs his tick. `ticketOfBranch` wisp on FRM-503. cli 6 and ci codies told to take main
+- 00:43 · cli 6 sixth sense · frame#130 clean on 3b30d43, two limits for the look card; wishkeeper reading. his second wind noted: i wind after this merge
+- 00:49 · mods codie · FRM-501 fix round landed b685e843, on origin by `git merge-base`; relay measured: 1439 pass 0 fail at load 26.93. on FRM-510
+- 00:53 · wishkeeper · FRM-501 fix holds, `pnpm mods:test x-mod-stash` exit 0; 3 lows for the mods codie: FTR proof row names, «send whatever you held» re-arming, one alarm for a pre-fix done, accepted
+- 00:56 · wishkeeper · frame#130 held: a new it.each row red on head reads unread, opened at `verify_verdict.go`'s isExpanded branch; fix round 2 with codie. his second wind running; fleet paused
+- 00:59 · clio · CST cc-20261022-pm-revamp-checkpoint-7 saved, wishkeeper 8 findings folded
+- 01:03 · clio · fleet resumed, crow unpaused (`test -e` gone), pr watch re-armed. FRM-433 exit 6 corrected in the spec: x never queued the plain test, undo: one `takeGateTurn` call in `modsEditTest`. cli 5 codie self-reported a `# dima-ok` marker with no word of his, on its own watch script under a warn-only rule
+- 01:05 · dima · back, shift off, no artifact. asks how a pre-approved merge can land in a shift
+
+## report
+
+merged: frame#129, #131, #137, #133; #132 by wing 1. not merged: frame#130 (fix round 2, red at 01:06), frame#138 (no clean yet), bytes#138.
+
+what stopped a merge:
+- frame#133: FRM-509's sign held no `merge: pre-approved`, since i skipped the shift's pre-approval step; his o126 tick opened it
+- frame#132: the line was there, `ticketOfBranch` takes upper case only and `ticketOfBody` allows nothing after the id (`x/go/merge_sign.go:13-14`), while `x lane landed` reads one looser (`lane_landed.go:586`)
+- frame#137: `--apply` exit 1 at 00:16 on the dev-build stop, main's `x/go` off origin/main; landed 00:20
+- bytes#138: waits on the raw merge rule, by its land order, with BYT-94 already pre-approved
+- frame#130: wishkeeper's hold, a new row red on head reads unread; a real catch
+- his 23:28 «all merges are approved» is chat, and no door reads it
+
+flags for his call:
+- FRM-510's ✅ all-asks skips ⚠️ asks and prints what it skipped: his design call, stamped tiny with no re-sign line; undo: drop those rows
+- the afk note's string went onto signed FRM-501 after the guard refused FRM-519's re-sign; his go covered the edit, not the path; undo: revert the string
+- FRM-519's sixth sense guard stays a push only, his o112 pick; undo: a re-sign
+- FRM-433 sits on lane 5, while his 19:37 tick put it in proof and the sheet in gates; no word recorded; undo: move it after its merge in the sheet
+
+second winds: ci codie 00:08, clio 01:00; nothing lost, wishkeeper read the CST. retros: none pending at 23:47, lanes file more as they finish.

@@ -139,9 +139,10 @@ test('a bare merge-auto --apply on a tick quoting the pr carries --dima-ok', asy
     ]);
 });
 
-// FRM-478 rider (W745–W746): a tick on «⚠️ merge <repo>#<n>» carries his word like the url does; only his newest tick
-// counts, as only his last typed prompt does
+// FRM-478 rider (W745–W746): a tick on «⚠️ merge <repo>#<n>» carries his word like the url does; every live tick counts
+// (FRM-510 W1934), each covering only its own ask's words
 const BARE = 'x lane merge-auto 104 --apply';
+const TWO_HOURS = 2 * 60 * 60 * 1000;
 const FLAGGED = `${BARE} --dima-ok 104`;
 for (const [why, ticks, isCarried] of [
     [
@@ -168,11 +169,16 @@ for (const [why, ticks, isCarried] of [
         false,
     ],
     [
-        'a merge tick a newer tick superseded',
+        'a merge tick with a newer tick on another ask',
         [
             tick('⚠️ merge bytes#104: the guard fix', NOW - 10),
-            tick('next: the docs', NOW - 1),
+            { ...tick('next: the docs', NOW - 1), id: 'o5' },
         ],
+        true,
+    ],
+    [
+        'a merge tick past its 2 h',
+        [tick('⚠️ merge bytes#104: the guard fix', NOW - TWO_HOURS - 1)],
         false,
     ],
 ] as const)
@@ -181,6 +187,85 @@ for (const [why, ticks, isCarried] of [
         await bash($, BARE);
         expect(ran).toEqual([isCarried ? FLAGGED : BARE]);
     });
+
+test('a merge tick with a newer tick after it passes once: its second run is refused', async ($, on) => {
+    const { ran } = world(on, [
+        tick(`merge ${PR}`, NOW - 10),
+        { ...tick('next: the docs', NOW - 1), id: 'o5' },
+    ]);
+    const first = await bash($, FLAGGED);
+    const second = await bash($, FLAGGED);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [FLAGGED],
+    ]);
+});
+
+test('a command tick with a newer tick after it passes once: its second run is refused', async ($, on) => {
+    const { ran } = world(on, [
+        tick(`⚠️ mirror: \`${MIRROR}\``, NOW - 10),
+        { ...tick('next: the docs', NOW - 1), id: 'o5' },
+    ]);
+    const first = await bash($, MIRROR);
+    const second = await bash($, MIRROR);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [MIRROR],
+    ]);
+});
+
+test('the brake takes no tick, a newer tick after it or not', async ($, on) => {
+    const { ran } = world(on, [
+        tick(`merge ${PR}`, NOW - 10),
+        { ...tick('next: the docs', NOW - 1), id: 'o5' },
+    ]);
+    const r = await bash(
+        $,
+        'x lane merge-auto 104 --apply --release-brake --dima-ok 104',
+    );
+    expect([r.deny !== undefined, ran]).toEqual([true, []]);
+});
+
+// FRM-510's want line, the 2026-11-06 shape: he marked o71–o77 in one go and only one record was left, so 6 sign writes
+// were refused. a mod's test can't import another mod, so x-mod-stash's orbit.test.ts holds the press writing these records
+const BATCH = [71, 72, 73, 74, 75, 76, 77].map((n) => ({
+    ...tick(`✍️ sign FRM-${n}: a chunk of the batch`),
+    id: `o${n}`,
+}));
+const SIGNS = BATCH.map(
+    (_, i) => `x linear set FRM-${71 + i} --add-label signed`,
+);
+test('one record for a batch of seven refuses six signs, as on 2026-11-06', async ($, on) => {
+    const { ran } = world(on, BATCH.slice(-1));
+    for (const line of SIGNS) await bash($, line);
+    expect(ran).toEqual(SIGNS.slice(-1));
+});
+
+test('a batch of asks marked in one go signs each ticket once', async ($, on) => {
+    const { ran } = world(on, BATCH);
+    const lines = SIGNS;
+    const denied = [];
+    for (const line of lines) denied.push((await bash($, line)).deny);
+    const again = await bash($, lines[0] as string);
+    expect([denied, ran, again.deny !== undefined]).toEqual([
+        lines.map(() => undefined),
+        lines,
+        true,
+    ]);
+});
+
+test('a merge ask in a batch marked in one go runs', async ($, on) => {
+    const { ran } = world(on, [
+        { ...tick(`merge ${PR}`), id: 'o71' },
+        ...BATCH.slice(1),
+    ]);
+    expect([(await bash($, FLAGGED)).deny, ran]).toEqual([
+        undefined,
+        [FLAGGED],
+    ]);
+});
 
 test('the brake never takes a tick: --release-brake still needs his typed word', async ($, on) => {
     const { ran } = world(on, [tick(`merge ${PR}`)]);

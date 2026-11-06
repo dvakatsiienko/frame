@@ -1616,6 +1616,7 @@ for (const line of [
     "resume — clio's checkpoint is done, send what you held. Window is on pace.",
     'resume — clio is back from her checkpoint; send what you held.',
     "resume — main's second wind is done, send what you held.",
+    "resume — main clio's second wind is done, send whatever you held.",
     "resume — clio's second wind is done, chores open again.",
     'resume',
 ])

@@ -5,6 +5,7 @@ import type {
     OrbitAssumption,
     StashOrbit,
     StashPlan,
+    StashTick,
 } from '../types/stash.d.ts';
 
 export const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
@@ -38,6 +39,22 @@ export const oneLine = (v: unknown) =>
     typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
 const idsOf = (v: unknown) =>
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+
+// what ✅ marks: an open ask he has not marked; a ⚠️ ask takes its own 🛎️, so one press never unlocks what he has not read
+export const isAllAsksMarkable = (a: OrbitAsk) =>
+    !a.mark && !a.isLocked && !a.isResolved && !a.text.includes('⚠️');
+
+// the record x-mod-guard reads as dima's word, one per ask his press marks
+export const allAsksTicks = (
+    asks: Pick<OrbitAsk, 'id' | 'text'>[],
+    at: number,
+): StashTick[] =>
+    asks.map(({ id, text }) => ({
+        at,
+        id,
+        targets: [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string),
+        text,
+    }));
 
 // a marked ask no turn has taken yet
 export const isFresh = (a: OrbitAsk) =>

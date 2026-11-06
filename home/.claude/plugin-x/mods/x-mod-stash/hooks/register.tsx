@@ -31,7 +31,9 @@ import {
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
+    allAsksTicks,
     hasPlanMark,
+    isAllAsksMarkable,
     isFresh,
     joinText,
     linkLabel,
@@ -2031,11 +2033,7 @@ async function saveOrbit(
             ),
         ),
     };
-    await $.state
-        .set(ORBIT, orbit)
-        .catch((err) =>
-            $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`),
-        );
+    await keepOrbit($);
     await keepState($, { orbit }).catch(() => undefined);
     const sid = await currentId($);
     if (!sid) return;
@@ -2062,13 +2060,32 @@ async function saveOrbit(
     else await $.store.delete(PREFIX + sid).catch(() => undefined);
 }
 
+// every get of one dispatch reads one moment (engine.md), so a hook running while he presses reads from before the
+// press and would put that copy back: a read older than this process's last write, or racing one, never wins
+let orbitVersion = 0;
+let orbitWrites = 0;
+async function keepOrbit($: EngineInterface) {
+    orbitWrites++;
+    try {
+        orbitVersion = (await $.state.set(ORBIT, orbit)).version;
+    } catch (err) {
+        await $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`);
+    } finally {
+        orbitWrites--;
+    }
+}
+
 // the orbit as $.state holds it now: a reload can run a hook before session.start reads it back, and a module copy
 // that never loaded would write an empty orbit over the kept one (FRM-381: «coder wiped the orbit»)
 async function currentOrbit($: EngineInterface) {
-    const kept = (await $.state.get(ORBIT).catch(() => undefined))?.value;
-    if (kept) orbit = steeredOrbit(kept);
+    const read = await $.state.get(ORBIT).catch(() => undefined);
+    const kept = read?.value;
+    if (kept && !orbitWrites && (read?.version ?? 0) >= orbitVersion) {
+        orbit = steeredOrbit(kept);
+        orbitVersion = read?.version ?? 0;
+    }
     // a new process whose first hook is a turn's end, before its start (an app restart mid-turn): the kept copy first
-    else if (!isOrbitLoaded)
+    else if (!kept && !isOrbitLoaded)
         orbit = await resumeState($).catch(() => EMPTY_ORBIT);
     isOrbitLoaded = true;
     return orbit;
@@ -2146,13 +2163,17 @@ async function wakeForMarks($: EngineInterface) {
     )
         return;
     if (!(await partsShown($))('stash.orbit')) return;
-    const o = await currentOrbit($);
-    const due = o.asks.filter(isFresh).filter((a) => a.markedAt !== undefined);
-    if (!due.length) return;
     const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
-    if (dimaAt <= Math.min(...due.map((a) => a.markedAt ?? 0))) return;
-    await saveOrbit($, lockJoined(o, due));
-    void selfSubmit($, joinText(due)).catch(() => undefined);
+    const due = await takeMarks($, (o) => {
+        const held = o.asks
+            .filter(isFresh)
+            .filter((a) => a.markedAt !== undefined);
+        return held.length &&
+            dimaAt > Math.min(...held.map((a) => a.markedAt ?? 0))
+            ? held
+            : [];
+    });
+    if (due.length) void selfSubmit($, joinText(due)).catch(() => undefined);
 }
 
 // a plan set this turn counts from the turn's end, so a prompt landing mid-turn would read it as -1
@@ -2283,6 +2304,21 @@ async function markAsksNow(
     await saveOrbit($, { ...o, asks }, typedId);
 }
 
+// a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
+async function takeMarks(
+    $: EngineInterface,
+    pick: (o: StashOrbit) => OrbitAsk[],
+) {
+    const run = marking.then(async () => {
+        const o = await currentOrbit($);
+        const asks = pick(o);
+        if (asks.length) await saveOrbit($, lockJoined(o, asks));
+        return asks;
+    });
+    marking = run.catch(() => undefined);
+    return run;
+}
+
 // an unmounted box mounts again with the stored steer: a fold or a closed board drops what each box mounted with
 async function unmountSteers($: EngineInterface) {
     askTypedAt.clear();
@@ -2293,11 +2329,7 @@ async function unmountSteers($: EngineInterface) {
         ...o,
         asks: o.asks.map(({ shown: _, ...a }) => a),
     };
-    await $.state
-        .set(ORBIT, orbit)
-        .catch((err) =>
-            $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`),
-        );
+    await keepOrbit($);
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
@@ -2305,30 +2337,38 @@ async function unmountSteers($: EngineInterface) {
 // takes the mark finds it; an untick clears the mark first, so no tick is ever marked without its record
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const TICKS_KEPT = 20;
-const quotedOf = (text: string) =>
-    [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
-async function recordTick(
+// as the orbit's read: a read from before this process's last write never wins
+let ticksKept: { value: StashTick[]; version: number } = {
+    value: [],
+    version: 0,
+};
+async function readTicks($: EngineInterface) {
+    const read = await $.state.get(TICKS);
+    if (read.version >= ticksKept.version)
+        ticksKept = { value: read.value ?? [], version: read.version };
+    return ticksKept.value;
+}
+async function writeTicks($: EngineInterface, value: StashTick[]) {
+    const { version } = await $.state.set(TICKS, value);
+    ticksKept = { value, version };
+}
+async function recordTicks(
     $: EngineInterface,
-    ask: OrbitAsk,
+    asks: OrbitAsk[],
     isTicked: boolean,
 ) {
     // the press still marks: a tick with no record fails closed at the guard; a drop that fails leaves his taken-back
     // tick honoured for its 2 h, so that one tells him
     try {
-        const { value: kept = [] } = await $.state.get(TICKS);
-        const rest = kept.filter((t) => t.id !== ask.id);
-        await $.state.set(
-            TICKS,
+        const rest = (await readTicks($)).filter(
+            (t) => !asks.some((a) => a.id === t.id),
+        );
+        await writeTicks(
+            $,
             isTicked
-                ? [
-                      ...rest,
-                      {
-                          at: await $.clock.now(),
-                          id: ask.id,
-                          targets: quotedOf(ask.text),
-                          text: ask.text,
-                      } satisfies StashTick,
-                  ].slice(-TICKS_KEPT)
+                ? [...rest, ...allAsksTicks(asks, await $.clock.now())].slice(
+                      -TICKS_KEPT,
+                  )
                 : rest,
         );
     } catch (err) {
@@ -2350,7 +2390,7 @@ async function pressMarkNow(
     if (!ask || ask.isLocked || ask.isResolved) return;
     const next = ask.mark === mark ? undefined : mark;
     const isTicked = next === 'accepted';
-    if (isTicked) await recordTick($, ask, true);
+    if (isTicked) await recordTicks($, [ask], true);
     // a tool call may lock this ask while the record is written: then the mark never lands and the record goes too
     let isMarked = false;
     await markAsksNow(
@@ -2363,7 +2403,43 @@ async function pressMarkNow(
         false,
         undefined,
     );
-    if (!isTicked || !isMarked) await recordTick($, ask, false);
+    if (!isTicked || !isMarked) await recordTicks($, [ask], false);
+}
+// ✅ is a press on the frame he read: an ask added since waits for its own look
+async function pressAllAsksNow($: EngineInterface, drawn: string[]) {
+    await $.state.set(MOBILE, false).catch(() => undefined);
+    const open = (await currentOrbit($)).asks.filter(
+        (a) => !a.mark && !a.isLocked && !a.isResolved,
+    );
+    const asks = open.filter(
+        (a) => drawn.includes(a.id) && isAllAsksMarkable(a),
+    );
+    // a merge ask is ⚠️: a silent skip would read as a block at the guard
+    const skipped = open.filter((a) => !asks.includes(a));
+    if (skipped.length)
+        await $.ui.toast(
+            `✅ left unticked: ${skipped.map((a) => `${a.id} ${a.text}`).join('; ')}`,
+        );
+    if (!asks.length) return;
+    await recordTicks($, asks, true);
+    const marked = new Set<string>();
+    await markAsksNow(
+        $,
+        (a) => {
+            if (!asks.some((x) => x.id === a.id) || a.mark) return a;
+            marked.add(a.id);
+            return { ...a, isChanged: false, mark: 'accepted' };
+        },
+        false,
+        undefined,
+    );
+    const unmarked = asks.filter((a) => !marked.has(a.id));
+    if (unmarked.length) await recordTicks($, unmarked, false);
+}
+async function pressAllAsks($: EngineInterface, drawn: string[]) {
+    const run = marking.then(() => pressAllAsksNow($, drawn));
+    marking = run.catch(() => undefined);
+    await run;
 }
 async function pressMark(
     $: EngineInterface,
@@ -2376,10 +2452,10 @@ async function pressMark(
 }
 
 async function dropTicks($: EngineInterface, id: string) {
-    const { value: kept = [] } = await $.state.get(TICKS);
+    const kept = await readTicks($);
     if (kept.some((t) => t.id === id))
-        await $.state.set(
-            TICKS,
+        await writeTicks(
+            $,
             kept.filter((t) => t.id !== id),
         );
 }
@@ -3340,17 +3416,27 @@ async function windOf($: EngineInterface, sid: string) {
 
 // a board's press on a row: asks, or takes the ask back; a note already delivered is taken back at the next turn, a
 // press on a cancel not yet delivered asks again, and a session already compacting goes on (no timer cancels, o2)
-async function pressWind($: EngineInterface, sid: string) {
+const windAfterPress = (state?: StashWind['state']) => {
+    if (!state) return 'asked';
+    if (state === 'asked') return undefined;
+    if (state === 'writing') return 'cancelled';
+    return state === 'cancelled' ? 'writing' : state;
+};
+// the store's value decides, never the drawn one: another board may have pressed since
+async function flipWind($: EngineInterface, sid: string) {
     const was = await windOf($, sid);
-    const at = await $.clock.now();
+    const state = windAfterPress(was?.state);
     const key = WIND + sid;
-    if (!was)
-        await $.store.set(key, { at, state: 'asked' } satisfies StashWind);
-    else if (was.state === 'asked') await $.store.delete(key);
-    else if (was.state === 'writing')
-        await $.store.set(key, { at, state: 'cancelled' } satisfies StashWind);
-    else if (was.state === 'cancelled')
-        await $.store.set(key, { at, state: 'writing' } satisfies StashWind);
+    if (!state) await $.store.delete(key);
+    else if (state !== was?.state)
+        await $.store.set(key, {
+            at: await $.clock.now(),
+            state,
+        } satisfies StashWind);
+    return state;
+}
+async function pressWind($: EngineInterface, sid: string) {
+    await flipWind($, sid);
     await load($);
 }
 
@@ -5404,15 +5490,17 @@ export const register: Register = (on) => {
         await currentOrbit($);
         const isOn = await partsShown($);
         const marked =
-            isUserTurn && isOn('stash.orbit') ? orbit.asks.filter(isFresh) : [];
+            isUserTurn && isOn('stash.orbit')
+                ? await takeMarks($, (o) => o.asks.filter(isFresh))
+                : [];
         // an assumption dima sent back joins his prompt once and leaves orbit
         const wrong =
             isUserTurn && isOn('stash.assumed')
                 ? (orbit.assumed ?? []).filter((x) => x.isWrong)
                 : [];
-        if (marked.length || wrong.length)
+        if (wrong.length)
             await saveOrbit($, {
-                ...lockJoined(orbit, marked),
+                ...orbit,
                 assumed: (orbit.assumed ?? []).filter(
                     (x) => !wrong.includes(x),
                 ),
@@ -6632,23 +6720,13 @@ export const register: Register = (on) => {
                                     alignItems='center'
                                     flexDirection='row'
                                     gap={1}>
-                                    {open.some(
-                                        (a) => !a.mark && !a.isLocked,
-                                    ) ? (
+                                    {open.some(isAllAsksMarkable) ? (
                                         <Button
                                             key='orbit:all'
                                             onPress={() =>
-                                                void markAsks(
+                                                void pressAllAsks(
                                                     $,
-                                                    (x) =>
-                                                        x.mark
-                                                            ? x
-                                                            : {
-                                                                  ...x,
-                                                                  isChanged: false,
-                                                                  mark: 'accepted',
-                                                              },
-                                                    true,
+                                                    open.map((x) => x.id),
                                                 )
                                             }
                                             plain>
@@ -7867,6 +7945,7 @@ export const register: Register = (on) => {
         const left = await currentId($);
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
+        ticksKept = { value: [], version: 0 };
         await saveOrbit($, EMPTY_ORBIT);
         await load($);
         await seatDefaults($).catch(() => undefined);
@@ -7971,14 +8050,12 @@ export const register: Register = (on) => {
         // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
         // mid-turn reload keeps
         await absorbMarks($);
-        const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
         const fresh =
-            isPing || !isOn('stash.orbit') ? [] : o.asks.filter(isFresh);
-        if (fresh.length) {
-            await saveOrbit($, lockJoined(o, fresh));
-            notes.push(joinText(fresh));
-        }
+            isPing || !isOn('stash.orbit')
+                ? []
+                : await takeMarks($, (o) => o.asks.filter(isFresh));
+        if (fresh.length) notes.push(joinText(fresh));
         // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
         if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
             notes.push(...(await takeLaneMoves($)));
@@ -8001,6 +8078,7 @@ export const register: Register = (on) => {
             });
             notes.push(planText(p));
         }
+        const o = await currentOrbit($);
         if (
             !isNudged &&
             isOn('stash.phases') &&
@@ -8118,6 +8196,22 @@ export const register: Register = (on) => {
                                 await $.store
                                     .set(WAKER_KEY, { on: isWaker })
                                     .catch(() => undefined);
+                            },
+                        );
+                    };
+                    const handleWindFlip = () => {
+                        const sid = view.selfId ?? '';
+                        const wanted = windAfterPress(view.wind);
+                        selfWind = wanted;
+                        return pressSwitch(
+                            $,
+                            '🐦‍🔥',
+                            { wind: wanted },
+                            async () => {
+                                selfWind = await flipWind($, sid);
+                            },
+                            async () => {
+                                selfWind = view.wind;
                             },
                         );
                     };
@@ -8344,12 +8438,7 @@ export const register: Register = (on) => {
                                       'second wind',
                                       <Button
                                           key='wind'
-                                          onPress={() =>
-                                              void pressWind(
-                                                  $,
-                                                  view.selfId ?? '',
-                                              )
-                                          }
+                                          onPress={() => void handleWindFlip()}
                                           {...(view.wind
                                               ? {
                                                     variant:

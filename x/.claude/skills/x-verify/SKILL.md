@@ -11,6 +11,7 @@ prove an `x` verb by running it, not reading it. the checks `x/AGENTS.md` § ver
 
 - a verb meant for a broken tree is run inside that broken tree, through the shim (FRM-352 retro, FRM-342 pr B)
 - a worktree's `x/bin/x` is run by path, with a faked session id (FRM-359 codie)
+- a mutant's verdict counts against the whole package: a `go test -run` filter hid 3 rows that read as survivors (FRM-509 sixth sense)
 
 ## the gate and the live checks
 

@@ -1607,7 +1607,7 @@ test('a tick record that cannot be written still marks the ask', async ($, on) =
     expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
-test('a tick whose ask a tool call locked meanwhile leaves no record', async ($, on) => {
+test('a tool call landing during a press takes its mark whole, record and all', async ($, on) => {
     world(on);
     const writes = tickLog(on);
     let open = () => {};
@@ -1626,10 +1626,13 @@ test('a tick whose ask a tool call locked meanwhile leaves no record', async ($,
     await ui.press({ key: 'orbit:rejected:o1' });
     isHeld = true;
     await ui.press({ key: 'orbit:accepted:o1' });
-    await $.tool.call({ command: 'ls', tool: 'Bash' });
+    const call = $.tool.call({ command: 'ls', tool: 'Bash' });
     open();
-    await ui.find({ key: 'orbit:accepted:o1' });
-    expect(writes.at(-1)).toEqual([]);
+    const r = await call;
+    expect([
+        (writes.at(-1) as { id: string }[]).map((t) => t.id),
+        r.context?.some((c) => /o1 🛎️ accepted/.test(c)),
+    ]).toEqual([['o1'], true]);
 });
 
 test('an untick whose record cannot be dropped says so', async ($, on) => {
@@ -1642,7 +1645,7 @@ test('an untick whose record cannot be dropped says so', async ($, on) => {
     });
     on('state.get', (_$, e, next) =>
         isBroken && e.key === 'ticks'
-            ? { value: { value: 5, version: 1 } }
+            ? { value: { value: 5, version: 1000 } }
             : next(e as never),
     );
     await start($);
@@ -3370,12 +3373,13 @@ test('an ask that breaks the orbit card blanks the card alone, the board still d
    row forgets the module's boxes with a fold, lays back the $.state the old module left, and runs the reload's start */
 
 function keptState(on: On, state: Record<string, unknown> = {}) {
+    let version = 0;
     on('state.get', (_$, e) => ({
-        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+        value: { value: state[e.key], version: e.key in state ? ++version : 0 },
     }));
     on('state.set', (_$, e) => {
         state[e.key] = e.value;
-        return { value: { isSet: true, version: 2 } };
+        return { value: { isSet: true, version: ++version } };
     });
     return state;
 }
@@ -3974,4 +3978,293 @@ test('follow refuses a merge pick on a text naming no pr', async ($, on) => {
         text: 'merge it',
     });
     expect(denied(r)).toContain(MERGE_DENY);
+});
+
+/* FRM-510: his press is never lost. every get of one dispatch reads one moment (engine.md), so a hook running while he
+   presses reads the orbit from before the press; `frozen` serves that old copy, and writes keeps what landed */
+function pressRace(on: On) {
+    const race = {
+        frozen: undefined as unknown,
+        frozenTicks: undefined as unknown,
+        last: undefined as unknown,
+        lastTicks: undefined as unknown,
+        onLock: undefined as (() => void) | undefined,
+        orbit: undefined as
+            | { asks: { id: string; isLocked?: boolean; mark?: string }[] }
+            | undefined,
+        ticks: [] as { id: string }[],
+    };
+    on('state.get', async (_$, e, next) => {
+        const isOrbit = e.key === 'orbit';
+        if (!isOrbit && e.key !== 'ticks') return next(e as never);
+        const held = isOrbit ? race.frozen : race.frozenTicks;
+        if (held) return { value: held } as never;
+        const r = (await next(e as never)) as { value?: unknown };
+        if (isOrbit) race.last = r.value;
+        else race.lastTicks = r.value;
+        return r as never;
+    });
+    on('state.set', async (_$, e, next) => {
+        if (e.key === 'orbit') {
+            const value = e.value as NonNullable<typeof race.orbit>;
+            const onLock = race.onLock;
+            if (onLock && value.asks.some((a) => a.isLocked)) {
+                race.onLock = undefined;
+                onLock();
+                for (let i = 0; i < 2000; i++) await Promise.resolve();
+            }
+            race.orbit = value;
+        }
+        if (e.key === 'ticks') race.ticks = e.value as typeof race.ticks;
+        return next(e);
+    });
+    return race;
+}
+const askOf = (race: ReturnType<typeof pressRace>, id: string) =>
+    race.orbit?.asks.find((a) => a.id === id);
+
+for (const [site, act] of [
+    ["his prompt's lock", ($: Engine) => say($, 'next')],
+    [
+        "a tool call's lock",
+        ($: Engine) => $.tool.call({ command: 'ls', tool: 'Bash' }),
+    ],
+] as const) {
+    test(`${site}, reading from before his press, keeps the mark and the tick`, async ($, on) => {
+        world(on);
+        const race = pressRace(on);
+        await start($);
+        const ui = await board($);
+        await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+        await say($, 'run the long job');
+        await ui.press({ key: 'orbit:accepted:o1' });
+        await ui.find({ key: 'orbit:accepted:o1' });
+        const stale = race.last;
+        await ui.press({ key: 'orbit:accepted:o2' });
+        race.frozen = stale;
+        await act($);
+        race.frozen = undefined;
+        expect([
+            askOf(race, 'o1')?.isLocked,
+            askOf(race, 'o2')?.mark,
+            race.ticks.map((t) => t.id),
+        ]).toEqual([true, 'accepted', ['o1', 'o2']]);
+    });
+
+    test(`a press landing inside ${site}'s write stays marked`, async ($, on) => {
+        world(on);
+        const race = pressRace(on);
+        await start($);
+        const ui = await board($);
+        await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+        await say($, 'run the long job');
+        await ui.press({ key: 'orbit:accepted:o1' });
+        race.onLock = () => void ui.press({ key: 'orbit:accepted:o2' });
+        await act($);
+        await ui.find({ key: 'orbit:accepted:o2' });
+        expect([askOf(race, 'o1')?.isLocked, askOf(race, 'o2')?.mark]).toEqual([
+            true,
+            'accepted',
+        ]);
+    });
+}
+
+test("the idle wake's lock, reading from before his press, keeps the mark", async ($, on) => {
+    const w = world(on);
+    const race = pressRace(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await endTurn($);
+    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
+    await w.clock.advance(5_000);
+    await ui.find({ key: 'orbit:accepted:o1' });
+    const stale = race.last;
+    await ui.press({ key: 'orbit:accepted:o2' });
+    w.store.set('dima-at', w.clock.now() + 1);
+    race.frozen = stale;
+    await w.clock.advance(5_000);
+    race.frozen = undefined;
+    expect([askOf(race, 'o1')?.isLocked, askOf(race, 'o2')?.mark]).toEqual([
+        true,
+        'accepted',
+    ]);
+});
+
+test("a press reading from before a turn's lock leaves the lock", async ($, on) => {
+    world(on);
+    const race = pressRace(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.find({ key: 'orbit:accepted:o1' });
+    const stale = race.last;
+    await $.tool.call({ command: 'ls', tool: 'Bash' });
+    race.frozen = stale;
+    await ui.press({ key: 'orbit:accepted:o2' });
+    race.frozen = undefined;
+    expect([askOf(race, 'o1')?.isLocked, askOf(race, 'o2')?.mark]).toEqual([
+        true,
+        'accepted',
+    ]);
+});
+
+test('a second press reading ticks from before the first keeps both records', async ($, on) => {
+    world(on);
+    const race = pressRace(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const stale = race.lastTicks;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    race.frozenTicks = stale;
+    await ui.press({ key: 'orbit:accepted:o2' });
+    race.frozenTicks = undefined;
+    expect(race.ticks.map((t) => t.id)).toEqual(['o1', 'o2']);
+});
+
+/* FRM-510: ✅ is his word on what it marks, one record per ask; a ⚠️ ask takes its own 🛎️ */
+test('✅ writes one tick record per ask it marks', async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await ui.press({ key: 'orbit:all' });
+    expect(
+        (writes.at(-1) as { id: string; targets: string[] }[]).map((t) => [
+            t.id,
+            t.targets,
+        ]),
+    ).toEqual([
+        ['o1', ['origin']],
+        ['o2', ['backup']],
+    ]);
+});
+
+test('✅ on an ask quoting nothing marks it, with a record that unlocks nothing', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['trash the probe', 'yes']);
+    await ui.press({ key: 'orbit:all' });
+    await say($, 'go');
+    expect([
+        (writes.at(-1) as { targets: string[] }[]).map((t) => t.targets),
+        joined(w.contexts).join('\n'),
+    ]).toEqual([[[]], expect.stringMatching(/o1 🛎️ accepted/)]);
+});
+
+test('✅ leaves a ⚠️ ask unmarked, with no record', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add(
+        $,
+        ['⚠️ mirror: `git push --mirror origin`', 'yes'],
+        ['push `backup`', 'yes'],
+    );
+    await ui.press({ key: 'orbit:all' });
+    await say($, 'go');
+    expect([
+        (writes.at(-1) as { id: string }[]).map((t) => t.id),
+        joined(w.contexts)
+            .join('\n')
+            .match(/o\d 🛎️/g),
+    ]).toEqual([['o2'], ['o2 🛎️']]);
+});
+
+test('✅ names every ask it left unticked', async ($, on) => {
+    world(on);
+    const toasts: string[] = [];
+    on('ui.toast', (_$, e) => {
+        toasts.push(e.text);
+        return { value: undefined };
+    });
+    await start($);
+    const ui = await board($);
+    await add(
+        $,
+        ['⚠️ merge bytes#104: the guard fix', 'merge it'],
+        ['push `backup`', 'yes'],
+    );
+    await ui.press({ key: 'orbit:all' });
+    expect([
+        toasts,
+        (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
+    ]).toEqual([
+        ['✅ left unticked: o1 ⚠️ merge bytes#104: the guard fix'],
+        '🛎️ tick',
+    ]);
+});
+
+test('✅ is not drawn while only ⚠️ asks are left to mark', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['⚠️ mirror: `git push --mirror origin`', 'yes']);
+    expect(await ui.find({ key: 'orbit:all' })).toBeUndefined();
+});
+
+for (const [press, key, left] of [
+    ['🛎️', 'orbit:accepted:o1', []],
+    ['✅', 'orbit:all', ['o2']],
+] as const)
+    test(`${press} on an ask resolved during its record write leaves it no record`, async ($, on) => {
+        const w = world(on);
+        const writes = tickLog(on);
+        let open = () => {};
+        let isHeld = false;
+        const gate = new Promise<void>((resolve) => {
+            open = resolve;
+        });
+        on('state.get', async (_$, e, next) => {
+            if (isHeld && e.key === 'ticks') await gate;
+            return next(e as never);
+        });
+        await start($);
+        const ui = await board($);
+        await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+        isHeld = true;
+        await ui.press({ key });
+        await orbit($, { ids: ['o1'], op: 'resolve' });
+        open();
+        await w.clock.advance(1);
+        expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
+            ...left,
+        ]);
+    });
+
+test('✅ marks only the asks on the frame he pressed', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    // his 🛎️ waits inside its record read, so ✅ queues behind it and an ask lands before ✅ runs
+    let open = () => {};
+    let isHeld = false;
+    const gate = new Promise<void>((resolve) => {
+        open = resolve;
+    });
+    on('state.get', async (_$, e, next) => {
+        if (isHeld && e.key === 'ticks') await gate;
+        return next(e as never);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    isHeld = true;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:all' });
+    await add($, ['push `late`', 'yes']);
+    open();
+    await w.clock.advance(1);
+    expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
+        'o1',
+        'o2',
+    ]);
 });
