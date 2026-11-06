@@ -46,6 +46,10 @@
   - then `x gh pr`, `x lane commit`, `x as <member> -- gh …`, a `gh api` with a body or a non-GET method, quoted text and a heredoc body get no line
   - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
   - proof: tests/hint.test.ts::a raw pr read runs with an x gh pr hint: …; a raw git add or commit in frame or bytes runs with an x lane commit hint: …; no hint for: …
+- ✅ a raw `gh pr merge` runs with a hint naming `x lane merge-auto` as the door (FRM-504)
+  - given `gh pr merge`, past gh's own flags or under `x as <member>`, then it runs as typed with one line naming the door; `gh stack merge`, `gh pr merge --help`, `x lane merge-auto`, quoted text and a heredoc body get no line
+  - decision: a hint for now, warn-only; a refusal is a later word of dima's
+  - proof: tests/hint.test.ts::a raw merge runs with its door named: …; no merge hint for: …
 - ✅ a `gh --jq` call gets a gojq hint (FRM-394)
   - given a Bash call runs `gh … --jq <program>` (also `--jq=…` or `-q`), then it runs as typed and the model reads: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`
   - given `gh … --json f | jq …`, then no hint
