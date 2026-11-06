@@ -79,6 +79,23 @@ func TestMergeAutoLeavesAPrWithNoMarkAlone(t *testing.T) {
 
 func TestMergeAutoReadsAnUnreadableMarkAsHeld(t *testing.T) {
 	t.Parallel()
+	for _, record := range []string{"not json", "null", `{"prs":null}`, `{"other":1}`} {
+		t.Run(record, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			write(t, holdRecordOf(w), record)
+
+			got := w.run(t, "7", "--apply")
+
+			if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "unreadable") {
+				t.Fatalf("exit %d, error %q: want a record with no list to read as held", got.code, msg)
+			}
+		})
+	}
+}
+
+func TestMergeAutoLandsOverAnUnreadableMarkOnDimasWord(t *testing.T) {
+	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	write(t, holdRecordOf(w), "not json")
 

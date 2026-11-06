@@ -5,14 +5,16 @@ import { liveStore } from './store.ts';
 
 const HOLD_DIR = '/home/.local/state/x/merge-hold';
 
-function world(on: On, record: string | null) {
+function world(on: On, record: string | null, dirStands = record !== null) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
     on('session.id', () => ({ value: 'h1h1h1h1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
-    on('fs.exists', () => ({ value: true }));
+    on('fs.exists', (_$, e) => ({
+        value: e.path === HOLD_DIR ? dirStands : true,
+    }));
     on('fs.list', (_$, e) =>
         e.path === HOLD_DIR && record !== null
             ? {
@@ -114,6 +116,13 @@ test('a record that does not parse reads as held', async ($, on) => {
     const { ran } = world(on, 'not json');
     const r = await bash($, 'gh pr merge 8');
     expect(r.deny).toContain('merge-hold');
+    expect(r.deny).toContain('unreadable');
+    expect(ran).toEqual([]);
+});
+
+test('a hold dir that exists and does not list reads as held', async ($, on) => {
+    const { ran } = world(on, null, true);
+    const r = await bash($, 'gh pr merge 8');
     expect(r.deny).toContain('unreadable');
     expect(ran).toEqual([]);
 });

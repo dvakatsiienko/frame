@@ -265,6 +265,7 @@ func warnOnlyLine(repo, base, head string, merged bool) *landedLine {
 	}
 	// a squash leaves the pr's shas on no branch; a failed fetch shows at the read below
 	_, _ = gitIn(repo, "fetch", "-q", "origin", base, head)
+	_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
 	before, err := warnOnlyAt(repo, base)
 	var after, now []string
 	if err == nil {

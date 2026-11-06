@@ -172,6 +172,22 @@ func TestRebaseMainOntoRunsAgainAfterAnAbort(t *testing.T) {
 	}
 }
 
+// the aborted run's record stays; a commit on top of the old head is no finished rewrite, so the rebase still runs
+func TestRebaseMainOntoRebasesACommitMadeAfterAnAbort(t *testing.T) {
+	t.Parallel()
+	w, base := layerOffSquash(t)
+	write(t, filepath.Join(w.clone, ".git", ontoRecordName), `{"branch":"coder/x-2","head":"`+gitT(t, w.clone, "rev-parse", "HEAD")+`"}`)
+	write(t, filepath.Join(w.clone, "more.txt"), "one more\n")
+	gitT(t, w.clone, "add", "more.txt")
+	gitT(t, w.clone, "commit", "-q", "-m", "one more")
+
+	got := w.run(t, "--onto", base, "--apply")
+
+	if above := subjectsAboveMain(t, w); got.code != 0 || above != "one more\nthe layer's change" {
+		t.Fatalf("exit %d, above main %q: want both commits rebased off the squash:\n%s", got.code, above, got.stdout)
+	}
+}
+
 func TestRebaseMainPlainLeavesNoRecord(t *testing.T) {
 	t.Parallel()
 	w := newRebaseWorld(t, "coder/x")

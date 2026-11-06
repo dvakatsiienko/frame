@@ -361,7 +361,10 @@ async function sessionName($: EngineInterface, sid: string) {
 async function readMergeHolds($: EngineInterface) {
     const dir = `${await $.env.get('HOME')}/.local/state/x/merge-hold`;
     const holds: MergeHolds = { isUnreadable: false, prs: new Set() };
-    for (const f of await $.fs.list(dir).catch(() => [])) {
+    if (!(await $.fs.exists(dir).catch(() => true))) return holds;
+    const files = await $.fs.list(dir).catch(() => undefined);
+    if (!files) return { ...holds, isUnreadable: true };
+    for (const f of files) {
         if (!f.name.endsWith('.json')) continue;
         try {
             const note = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {

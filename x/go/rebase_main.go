@@ -83,7 +83,8 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 			return "", err
 		}
 		note, recorded := readOntoRecord(t.record, name)
-		t.finished = recorded && note.Head != current
+		// a rewrite leaves the recorded head off HEAD's history; a commit on top of it after an abort does not
+		t.finished = recorded && note.Head != current && !ok(git("merge-base", "--is-ancestor", note.Head, "HEAD"))
 		if t.Lease, err = remoteSha(name); err != nil {
 			return "", err
 		}

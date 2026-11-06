@@ -31,6 +31,9 @@ func readHolds(repo string) ([]string, error) {
 	if err := json.Unmarshal(raw, &note); err != nil {
 		return nil, err
 	}
+	if note.PRs == nil {
+		return nil, errors.New("no prs list")
+	}
 	return note.PRs, nil
 }
 
