@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T16:36:00Z'
+updated_date: '2026-11-06T16:56:00Z'
 labels:
   - s
   - side
@@ -51,4 +51,11 @@ PK-328:W6 (2026-11-06 18:32, dima): perform as wide an analysis as possible, use
 PK-328:W7 (2026-11-06 18:32, dima): i assume this CPU overloading was only partially related to the finder issues, most likely caused by gate commits.
 
 PK-328:W8 (2026-11-06 18:36, dima): good ideas, fold and consider to implement: reuse the «already tested these bytes» record for typecheck and tests, not just mods; run only the tests related to the staged paths at commit, with the full set at push; commit in the background, so a coder keeps working during the gate; give each gate a time budget that goes red when exceeded, so slowness can't creep back.
+
+mods lane 5 codie's probe, 18:53, measured at load 9–16: x-mod-stash 76 s 1390 rows, x-mod-guard 31 s 1586, x-mod-holds 5 s 24, x-mod-redact 5 s 40. parallel by file: stash rows sum 234 s in 72 s wall, about 3×, peak ~11 cores, mean 3–5. slowest stash files: quiet 71 s, pace 34, orbit 23, hot 17, waker 15. the probe waited 506 s in the queue. remembered, not measured: slowest commits 3–5 min: a commit touching x/go runs go test ./... ~1 min, plus typecheck and mods tests; a commit re-running what x mods edit push just passed when its bytes moved; worst waits are load timeouts on 5 s rows in hot, pace, waker, each a whole rerun. its cut, inference: rerun only timed-out files, split quiet.test.ts.
+
+crow's read, 18:55, measured over x-commit logs of the last 24 h (18 hook runs over 2 s; they miss x mods edit push): p50 16 s, p90 84 s, max 133 s, 1 over 120 s, 0 over 180 s; test max 84, mods-test max 133, typecheck p90 2.6. the queue is the biggest measured cost (506 s against 76 s of tests), and moving gates to push moves the wait with them. her order: 1 background commit, on the private copy index-run.sh already makes, a lane's commits keep their order and a red stops those behind, inference; 2 split the queue, one log line per commit: queue wait, hook, total; 3 tested-bytes for typecheck and test; 4 push-only for branch lanes after that, main keeps commit checks; 5 read quiet (71 s) and pace (34 s) for real sleeps, a fake clock may cut most, inference. the catches dima raised: he asked «which tradeoffs, will it work at all».
+
+PK-328:W9 (2026-11-06 18:26, dima): changes are quite noticeable, but you have a lot of options to gather all necessary data for a weighted decision. i want a faster commit gate: i feel it wastes time and we can have reliable gates in a more efficient, faster way; red proofs are also long, i want them faster. is that possible? ❓ my order: you second wind; then gather all data on all surfaces, consult everyone active, codies at cli, mods, ci, the verifier, clio, crow; read histories, find the longest commits and red proofs, starting with commits; propose how to optimize, and whether moving the commit gate to push works; tell other ideas of your own.
+his steer on o70, 18:26: let's try. this ticket could be slightly bigger, but it's worth it if 30 min of waiting for commits turns into 3 min for commits and 6 min for push, 9 min total, 21 saved, roughly. but there are tradeoffs: which are those? will it work at all?
 <!-- SECTION:NOTES:END -->

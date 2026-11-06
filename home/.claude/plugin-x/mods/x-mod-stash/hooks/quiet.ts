@@ -69,8 +69,7 @@ const isUnreadBlock = (block: string) =>
     block.startsWith(OPEN) &&
     block.indexOf(CLOSE) === block.length - CLOSE.length;
 
-// the desktop's one `sdk` prompt, block by block: its notes as sender, report and the held text (the report, whether it is
-// cut, the session holding the rest), its member messages, each with its place among the blocks, whether another reminder
+// the desktop's one `sdk` prompt, block by block: its notes as sender and report, its member messages, each with its place among the blocks, whether another reminder
 // starts a turn by itself, and a message it could not read, its body holding a tag at a line's start; undefined once typed
 // words remain, since those may be dima quoting a block
 // (the origin is the same as dima's typing, so only the blocks' shape tells them apart)
@@ -87,25 +86,18 @@ export function quietGlued(text: string) {
         const head = heads.push(taken) - 1;
         const note = reminder?.match(NOTE);
         if (note)
-            notes.push({
-                body: note[3] ?? '',
-                from: note[1] ?? '',
-                head,
-                held: `${note[3]}${note[4] ?? ''} (session ${note[2]})`,
-            });
+            notes.push({ body: note[3] ?? '', from: note[1] ?? '', head });
         else if (event !== undefined) lone = head;
         else if (block) messages.push({ block, head });
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             hasOther = true;
     }
-    // the app's notice holds like a note, beside a message too, so a silent end is seen; beside a note it only says what the note says. its own text is written
-    // to the turn it arrives in, so what it says never rides a later one
+    // the app's notice logs like a note, beside a message too; beside a note it only says what the note says
     if (lone !== undefined && !notes.length && !hasOther)
         notes.push({
             body: '',
             from: 'the app',
             head: lone,
-            held: 'a side-sessions notice',
             isEvent: true,
         });
     const tail = rest.trim();
@@ -124,13 +116,12 @@ export function quietIdleNotices(text: string): ReturnType<typeof quietGlued> {
     const notes: QuietNote[] = [];
     let rest = text;
     for (let m = rest.match(IDLE_HEAD); m; m = rest.match(IDLE_HEAD)) {
-        const [taken, from, status, report] = m;
+        const [taken, from, , report] = m;
         rest = rest.slice(taken.length);
         notes.push({
             body: report ?? '',
             from: from ?? '',
             head: heads.push(taken) - 1,
-            held: report || status || '',
         });
     }
     if (rest.trim() || !notes.length) return undefined;
@@ -152,6 +143,5 @@ type QuietNote = {
     from: string;
     body: string;
     head: number;
-    held: string;
     isEvent?: boolean;
 };

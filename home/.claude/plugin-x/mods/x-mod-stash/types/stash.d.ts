@@ -190,7 +190,7 @@ export type QuietLogLine = {
     from: string;
     tag: string;
     // failed-open: the hook threw, so the delivery passed unjudged
-    verdict: 'held' | 'passed' | 'flushed' | 'failed-open';
+    verdict: 'held' | 'logged' | 'passed' | 'flushed' | 'failed-open';
     startedTurn: boolean;
     arm: 'on' | 'off';
     deliveryTest?: string;
@@ -239,7 +239,7 @@ export type StashLane = {
     id: string;
     title: string;
     items: LaneItem[];
-    // the side channel that created this card, the one other session that writes it
+    // the wing that created this card, the one other session that writes it
     runner?: string;
     // the lane plan file this card follows: its numbered lines are the steps, so a tick there moves the card (FRM-429)
     plan?: string;

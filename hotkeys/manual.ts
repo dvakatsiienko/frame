@@ -18,7 +18,7 @@ export const manualHotkeys = [
             ['c', 'Slack'],
             ['s', 'Spark'],
             ['v', 'Things'],
-            ['t', 'Warp'],
+            ['t', 'Rex Beta'],
             ['w', 'Wispr Flow'],
             ['space', 'Search Emoji & Symbols'],
             ['y', 'Raycast Notes'],

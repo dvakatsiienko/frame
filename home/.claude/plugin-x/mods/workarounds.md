@@ -60,6 +60,13 @@ the workaround in place, the undo. checked against the changelog through 2.1.314
 - workaround: a sync read carries `// clock-ok: <why>` on the line above, and `mods:test` lets it pass
 - undo when fixed: swap each `clock-ok` read for the sync api, drop the exemption in `test.ts` `clockReads`
 
+## a dropped prompt draws a card on the desktop
+
+- want: a turn-end note the quiet gate drops draws nothing in clio's thread (dima, 2026-11-06, with a shot)
+- issue: the engine ends every prompt that does not enter with one `prevent_continuation` line, a `{ drop }` or a hook answering without `next` alike, its words fixed; the app draws `prompt_blocked` for each such line, an empty reason included (read from cc 2.1.317's binary and the app's `ion-dist.asar`, no live desktop run)
+- workaround: none: `{ drop: '' }`, the card stays
+- undo when fixed: a mod's way to end a prompt silently, or the app rolling such a card up
+
 ## a held idle notice: part of a batch
 
 - want: of a prompt batching several `[Cross-session idle notice]`s, hold the ones with nothing to say and let the one that pushes start clio's turn (FRM-501)
