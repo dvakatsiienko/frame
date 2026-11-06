@@ -114,8 +114,8 @@ home/.claude/plugin-x/skills/writing-for-humans/references/dima-voice.md	3900	se
 home/.claude/plugin-x/skills/writing-for-humans/references/sources.md	4900	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/writing-for-humans/SKILL.md	4100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/yt-transcript/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
-home/.claude/rules-lazy/FTR.md	4300	seed 2026-10-16, today's size + 15 %
-home/.claude/rules-lazy/GLOSSARY.md	1000	seed 2026-10-16, today's size + 15 %
+home/.claude/rules-lazy/FTR.md	4700	raised 2026-11-06: the guide and shelf rows' lines, FRM-514
+home/.claude/rules-lazy/GLOSSARY.md	1300	raised 2026-11-06: row and guide share, FRM-514
 home/.claude/rules-lazy/guide-load-before-edit-code.md	200	seed 2026-11-06, its size + 15 %
 home/.claude/rules-lazy/guide-load-before-edit-go.md	300	seed 2026-11-06, its size + 15 %
 home/.claude/rules-lazy/guide-load-before-edit-react.md	300	seed 2026-11-06, its size + 15 %

@@ -13,8 +13,14 @@ A pattern in dima's prompt, in a command the session runs, in the path or the wr
 _Avoid_: matcher, hook (the hook is the mechanism, the trigger is the pattern)
 
 **Load**:
-The moment a lazy rule enters a session's context, once per session and again after a compaction.
+The moment a lazy rule enters a session's context, once per session; after a compaction a prompt or project rule loads again, a refusal-only rule at its next trigger.
 _Avoid_: inject, attach
+
+**Row**:
+One entry of `triggers.json`: a lazy rule's triggers, by rule name.
+
+**Guide share**:
+Of the sessions that really edited a kind of source file, how many reached its guide first.
 
 **Signal**:
 A trace in a turn that shows a lazy rule's work happened — a ticket id, a `linear.app` link, a `- ticket:` line, a `linear` call.

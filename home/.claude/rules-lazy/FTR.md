@@ -29,6 +29,7 @@
   - given a session compacted after a load
   - then linear-flow loads again at the compaction, and `memory-load-agents-md` loads each `AGENTS.md` again at its next trigger
   - decision: reload at the compaction, never at the next trigger — codie named its ticket a minute after one, no trigger between
+  - decision: a refusal-only row re-arms instead and refuses once more: its text orders a retry, and nothing was refused
 - ✅ a subagent loads on its own
   - given the parent session loaded linear-flow
   - when a subagent runs `linear`

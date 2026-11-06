@@ -11,7 +11,6 @@ KINDS = {
     "ts": ((".ts", ".tsx"), ("x:guide-typescript", "x:guide-code")),
     "go": ((".go",), ("x:guide-go", "go-charm")),
 }
-NEEDLES = {"x:guide-typescript": "guide-typescript", "x:guide-code": "guide-code", "x:guide-go": "guide-go", "go-charm": "go-charm"}
 
 
 def entries(path):
@@ -39,9 +38,9 @@ def first_edits(path):
                 continue
             name, tool_input = block.get("name"), block.get("input") or {}
             # the 47 % baseline counted a Skill call, or a Read or Bash that reached the file, the same way
-            if name in ("Skill", "Read", "Bash"):
+            if name in ("Skill", "Read", "Bash") and block.get("id") not in failed:
                 text = str(tool_input.get("skill", "")) if name == "Skill" else json.dumps(tool_input)
-                reached.update(door for door, needle in NEEDLES.items() if needle in text)
+                reached.update(door for _extensions, doors in KINDS.values() for door in doors if door.removeprefix("x:") in text)
             if name in ("Edit", "Write", "MultiEdit") and block.get("id") not in failed:
                 path_edited = str(tool_input.get("file_path", ""))
                 for kind, (extensions, _doors) in KINDS.items():

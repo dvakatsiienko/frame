@@ -6,8 +6,8 @@
 # string of the call (`input`), the edited path alone (`file_path`) or the edit's written text alone (`edit_text`);
 # a rule with a `skill` stays quiet while that skill is loaded in the caller's own context. Stop logs a miss: a signal in a
 # session where the rule never loaded. a compaction drops what every memory-load-* hook loaded, so it
-# clears their marks and reloads at once each lazy rule loaded before it — the summary carries the
-# work on, and no trigger fires again for work already under way. `pnpm memory-load:replay` runs the same matching over real transcripts.
+# clears their marks and reloads at once each prompt or project rule loaded before it — the summary carries the
+# work on, and no trigger fires again for work already under way; a refusal-only rule refuses once more. `pnpm memory-load:replay` runs the same matching over real transcripts.
 import glob
 import json
 import os
@@ -85,13 +85,20 @@ def tool_trigger(rule, tool, tool_input):
 def skills_called(entry):
     if not isinstance(entry, dict) or entry.get("type") != "assistant":
         return []
-    content = (entry.get("message") or {}).get("content")
+    message = entry.get("message")
+    content = message.get("content") if isinstance(message, dict) else None
     blocks = [b for b in content if isinstance(b, dict)] if isinstance(content, list) else []
-    return [(b.get("input") or {}).get("skill") for b in blocks if b.get("type") == "tool_use" and b.get("name") == "Skill"]
+    calls = [b.get("input") for b in blocks if b.get("type") == "tool_use" and b.get("name") == "Skill"]
+    return [call["skill"] for call in calls if isinstance(call, dict) and isinstance(call.get("skill"), str)]
 
 
 def is_compact_boundary(entry):
     return isinstance(entry, dict) and entry.get("type") == "system" and entry.get("subtype") == "compact_boundary"
+
+
+def reloads_at_compaction(rule):
+    # a refusal-only row re-arms instead: its text orders a retry, and nothing was refused
+    return bool(TRIGGERS[rule]["project"] or TRIGGERS[rule]["prompt"])
 
 
 def caller_transcript(event):
@@ -241,7 +248,7 @@ def main():
     if name == "SessionStart" and event.get("source") == "compact":
         before = loaded(session)
         forget(session)
-        loads += [load(event, session, r, "compaction", "compact", "again after a compaction") for r in before & set(TRIGGERS)]
+        loads += [load(event, session, r, "compaction", "compact", "again after a compaction") for r in before & set(TRIGGERS) if reloads_at_compaction(r)]
     fresh = [rule for rule in TRIGGERS if rule not in loaded(session)]
     if name == "SessionStart":
         cwd = str(event.get("cwd", ""))
