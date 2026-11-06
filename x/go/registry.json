@@ -154,6 +154,13 @@
             "steps": ["plan", "open"]
         },
         {
+            "flags": {
+                "onto": {
+                    "description": "the old base's sha: move only this layer's own commits off a squash-merged layer below; a rerun after a conflict and git rebase --continue finishes the push",
+                    "type": "string",
+                    "value": "sha"
+                }
+            },
             "name": "lane rebase-main",
             "needsApply": true,
             "purpose": "rebase a codie/* or coder/* branch onto origin/main, push it with a lease on the sha read back; no merge commit",

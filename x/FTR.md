@@ -212,6 +212,8 @@
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
   - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
+  - given a layer whose lower layer squash-merged, when `x lane rebase-main --onto <old base> --apply` runs, then only the layer's own commits sit on origin/main, pushed with a lease; its own pre-rebase remote head is no refusal, a rival's commit still is, and a sha that is no ancestor of HEAD refuses naming it (FRM-511)
+  - given a conflict there, then after `git rebase --continue` the same call reads the head it recorded before the rewrite and finishes the push; after `git rebase --abort` it runs the rebase again
   - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in sixth sense's round 2
   - decision: the one force-push door, `codie/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
 - ✅ `x lane verify-tree <pr url | main:<sha>>` gives sixth sense a seeded worktree of a head
