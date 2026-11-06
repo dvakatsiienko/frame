@@ -68,6 +68,7 @@ import {
     boldFleetWords,
     bulletDots,
     capOf,
+    codieLane,
     dropWaitAside,
     isFleetName,
     linkTickets,
@@ -76,6 +77,8 @@ import {
     numberCircled,
     parseWait,
     planSteps,
+    roundLine,
+    roundSha,
     ticketOf,
     unbold,
     waitSpans,
@@ -438,7 +441,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · text» lines are the steps, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide (${LANE_OWNER} only): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · FRM-N text» lines are the steps, each with its ticket id, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
@@ -1358,6 +1361,15 @@ async function takeGapNotes($: EngineInterface) {
     );
 }
 
+// past this a hold reads stuck; while he is away a held notice is meant to wait up to three waits, a repeating member's
+async function heldStuckMs($: EngineInterface, held: QuietPing[]) {
+    const waits =
+        held.some((p) => p.tag === QUIET_NOTICE) && (await isAwayNow($))
+            ? QUIET_REPEAT_WAITS
+            : 1;
+    return waits * (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
+}
+
 // the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
 // new gap or a held ping stuck past the idle wait + 2 min raises one native alarm
 let ledgerAt = 0;
@@ -1383,9 +1395,7 @@ async function quietBooks($: EngineInterface) {
     const held = heldOf(await $.store.get(QUIET_HELD + (await currentId($))));
     if (!held) return;
     const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));
-    const stuckMs =
-        (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
-    if (now - oldest.at > stuckMs)
+    if (now - oldest.at > (await heldStuckMs($, held)))
         await quietAlarm(
             $,
             `stuck:${oldest.at}`,
@@ -1612,11 +1622,7 @@ async function quietSendStart(
             isOwner: true,
             to,
         };
-    const row = rowOfTo(await registry($), to);
-    const isClio =
-        isCoordinator(bareTo(to)) ||
-        (row !== undefined && isCoordinator(row.base.name));
-    if (!isClio) return undefined;
+    if (!(await isToCoordinator($, to))) return undefined;
     const at = await $.clock.now();
     const name = await sessionName($);
     const asked = name ? (await askedOf($))[memberKey(name)] : undefined;
@@ -1663,6 +1669,37 @@ async function quietSendEnd(
     return isHeld
         ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
         : { line };
+}
+
+async function isToCoordinator($: EngineInterface, to: string) {
+    const row = rowOfTo(await registry($), to);
+    return (
+        isCoordinator(bareTo(to)) ||
+        (row !== undefined && isCoordinator(row.base.name))
+    );
+}
+
+// `lane-rounds:<lane>`, the shas codie sent as rounds: a resend adds nothing, and a compact, which empties a thread's
+// memory of its count, leaves the key
+const LANE_ROUNDS = 'lane-rounds:';
+async function laneRoundLine(
+    $: EngineInterface,
+    e: Record<string, unknown>,
+    result: unknown,
+) {
+    const sha = roundSha(text(e.message) ?? '');
+    const to = text(e.to);
+    if (!sha || !to || (result as { success?: boolean })?.success === false)
+        return undefined;
+    const lane = codieLane((await sessionName($)) ?? '');
+    if (!lane) return undefined;
+    if (await isToCoordinator($, to)) return undefined;
+    const key = LANE_ROUNDS + lane;
+    const seen = ((await $.store.get(key)) ?? []) as string[];
+    if (seen.some((s) => s.startsWith(sha) || sha.startsWith(s)))
+        return roundLine(seen.length);
+    await $.store.set(key, [...seen, sha]);
+    return roundLine(seen.length + 1);
 }
 
 async function askedOf($: EngineInterface) {
@@ -4608,8 +4645,6 @@ async function members($: EngineInterface): Promise<Member[]> {
         if (isYoung && !(await isResumed($, home, r))) continue;
         shown.push(r);
     }
-    const stuckMs =
-        (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
     for (const { bg, cwd, base: r } of shown) {
         if (await isUnstarted($, home, cwd, r.sid)) continue;
         const reply = (await $.store.get(REPLY + r.sid)) as
@@ -4623,7 +4658,9 @@ async function members($: EngineInterface): Promise<Member[]> {
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             held,
             isHeldStuck:
-                !!held && now - Math.min(...held.map((p) => p.at)) > stuckMs,
+                !!held &&
+                now - Math.min(...held.map((p) => p.at)) >
+                    (await heldStuckMs($, held)),
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
@@ -4954,7 +4991,12 @@ async function orbitCall(
             }));
             if (!steps.length)
                 return {
-                    deny: `orbit glide: ${input.plan} holds no numbered step line («- [ ] 01 · text»)`,
+                    deny: `orbit glide: ${input.plan} holds no numbered step line («- [ ] 01 · FRM-1 text»)`,
+                };
+            const unticketed = steps.find((s) => !s.ticket);
+            if (unticketed)
+                return {
+                    deny: `orbit glide: ${input.plan} has a step with no ticket id, «${unticketed.text}»: every line reads «- [ ] NN · FRM-N text»`,
                 };
             given = { ...given, items: steps };
         }
@@ -7751,6 +7793,14 @@ export const register: Register = (on) => {
             ? await quietSendEnd($, send, r.result).catch(() => undefined)
             : undefined;
         if (sent?.line) notes.push(sent.line);
+        if ((e.tool as string) === SEND_TOOL) {
+            const round = await laneRoundLine(
+                $,
+                e as Record<string, unknown>,
+                r.result,
+            ).catch(() => undefined);
+            if (round) notes.push(round);
+        }
         // a fresh answer: core's `text` and `ref` still name the refusal
         const answer = sent?.held ? ({ result: sent.held } as never) : r;
         const isOn = await partsShown($);

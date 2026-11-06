@@ -1436,7 +1436,7 @@ const PLAN = '/home/.local/state/x/lanes/mods/lane-plan.md';
 const planText = (marks: string) =>
     marks
         .split('')
-        .map((m, i) => `- [${m}] 0${i + 1} · step ${i + 1}`)
+        .map((m, i) => `- [${m}] 0${i + 1} · FRM-1 step ${i + 1}`)
         .join('\n');
 const linkedPlan = async (
     $: Engine,
@@ -1470,6 +1470,50 @@ test('a tick in the plan file moves the card to the first unticked line on the n
     w.files[PLAN] = planText('xx ');
     await poll(w);
     expect(kept(w)[0]?.current).toBe(2);
+});
+
+test('a plan with a step line holding no ticket id is refused, naming that line', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n- [ ] 02 · the loose one\n';
+    const r = await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+    });
+    expect(r.deny).toContain('«the loose one»');
+    expect(kept(w)).toEqual([]);
+});
+
+test('a plan whose every line carries its ticket draws the ids', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n- [ ] 02 · FRM-8 next\n';
+    const r = await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+    });
+    expect(r.deny).toBeUndefined();
+    expect(kept(w)[0]?.items.map((i) => i.ticket)).toEqual(['FRM-7', 'FRM-8']);
+});
+
+test('a chunk with its build ticked stays on the card until its closing slice ticks', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const plan = (closing: ' ' | 'x') =>
+        `- [x] 01 · FRM-7 the build\n- [${closing}] 02 · FRM-7 reviewed and closed\n- [ ] 03 · FRM-8 the next chunk\n`;
+    w.files[PLAN] = plan(' ');
+    await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+    });
+    const onCard = () => {
+        const lane = kept(w)[0];
+        return lane?.items[lane.current]?.ticket;
+    };
+    expect(onCard()).toBe('FRM-7');
+    w.files[PLAN] = plan('x');
+    await poll(w);
+    expect(onCard()).toBe('FRM-8');
 });
 
 test('an all-ticked plan file shows the lane done', async ($, on) => {

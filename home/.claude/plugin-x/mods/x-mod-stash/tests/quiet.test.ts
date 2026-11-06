@@ -1371,6 +1371,7 @@ const sendAt = (min: number) =>
 function alarmWorld(
     on: On,
     {
+        dropSubmit = (_text: string): boolean => false,
         isTestChild = false,
         notify = 'no-surface',
         osascript = 0,
@@ -1380,6 +1381,7 @@ function alarmWorld(
 ) {
     const scripted: string[] = [];
     const w = world(on, {
+        dropSubmit,
         isTestChild,
         peers: [codiePeer],
         refuseAppend,
@@ -2796,4 +2798,149 @@ test('a waiting note with the event keeps its wake', async ($, on) => {
     );
     const r = await fromAppText($, notice(waiting, LINKED, EVENT));
     expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
+});
+
+/* the round count: codie's own «round N on <sha>», one store key per lane */
+
+const ROUND_CODIE = '⚡ 🔧 codie: mods lane 5 | FRM-9';
+const LANE_KEY = 'lane-rounds:mods lane 5 | FRM-9';
+const ROUND_SENSE = '⚡ 🔦 sixth sense: mods lane 5';
+const roundLines = (r: { context?: string[] }) =>
+    (r.context ?? []).filter((c) => /\bround \d/.test(c));
+
+test('a round message counts in one store key for its lane', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on abc12345 — pushed');
+    await send($, ROUND_SENSE, 'round 2 on def67890');
+    expect(w.store.get(LANE_KEY)).toEqual(['abc12345', 'def67890']);
+    expect([...w.store.keys()].filter((k) => k.includes('rounds'))).toEqual([
+        LANE_KEY,
+    ]);
+});
+
+test('a resend of one round counts once, its sha long or short', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on abc12345');
+    await send($, ROUND_SENSE, 'round 1 on abc12345');
+    await send($, ROUND_SENSE, 'round 1 on abc1234567890');
+    expect(w.store.get(LANE_KEY)).toEqual(['abc12345']);
+});
+
+for (const message of [
+    'BYT-116 round 4 on e4fa48a. Fixed: the replace',
+    'coder: round 2 on 78c130b9 — all 7 addressed',
+    'final — round 3 on 6381739f, the pr',
+    'round 1 on **fc54774**, branch codie/x',
+])
+    test(`a real lead counts: ${message}`, async ($, on) => {
+        const w = world(on, { name: ROUND_CODIE });
+        await start($);
+        await send($, ROUND_SENSE, message);
+        expect((w.store.get(LANE_KEY) as string[]).length).toBe(1);
+    });
+
+for (const message of [
+    'your round 2 on abc12345 still stands',
+    'BYT-105: clean — «round 4 on dbc4c111 — verdict: clean»',
+    'parked: nothing new since the review',
+])
+    test(`no round in this line: ${message}`, async ($, on) => {
+        const w = world(on, { name: ROUND_CODIE });
+        await start($);
+        const r = await send($, ROUND_SENSE, message);
+        expect([w.store.get(LANE_KEY), roundLines(r)]).toEqual([undefined, []]);
+    });
+
+for (const [name, sender, to] of [
+    ["sixth sense's own verdict", ROUND_SENSE, ROUND_CODIE],
+    ['a session outside a lane', '🦉 clio', ROUND_SENSE],
+    [
+        'a thread that only names codie past its colon',
+        '🔎 helper: codie round',
+        ROUND_SENSE,
+    ],
+    ['a report to the coordinator', ROUND_CODIE, '🦉 clio'],
+] as const)
+    test(`not counted: ${name}`, async ($, on) => {
+        const w = world(on, { name: sender });
+        await start($);
+        await send($, to, 'round 1 on abc12345');
+        expect(
+            [...w.store.keys()].filter((k) => k.startsWith('lane-rounds:')),
+        ).toEqual([]);
+    });
+
+test('a send that went nowhere is no round', async ($, on) => {
+    const w = world(on, {
+        name: ROUND_CODIE,
+        sent: { message: 'no such session', success: false },
+    });
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on abc12345');
+    expect(w.store.get(LANE_KEY)).toBeUndefined();
+});
+
+test('the sender hears nothing below the cap, the next round at it, the stop past it, and every send lands', async ($, on) => {
+    world(on, { name: ROUND_CODIE });
+    await start($);
+    const lines: string[] = [];
+    for (const sha of ['aaaaaaa', 'bbbbbbb', 'ccccccc', 'ddddddd']) {
+        const r = await send($, ROUND_SENSE, `round 1 on ${sha}`);
+        expect(r.result.success).toBe(true);
+        lines.push(roundLines(r).join(''));
+    }
+    expect(lines.slice(0, 2)).toEqual(['', '']);
+    expect(lines[2]).toContain('a next round with a P0 or P1 is past the cap');
+    expect(lines[3]).toContain('round 4');
+    expect(lines[3]).toContain('the stop goes to the coordinator');
+});
+
+test('the stop still fires across a compact, from the store key alone', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    w.store.set(LANE_KEY, ['aaaaaaa', 'bbbbbbb', 'ccccccc']);
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ddddddd');
+    expect(roundLines(r).join('')).toContain(
+        'the stop goes to the coordinator',
+    );
+});
+
+/* under away a repeating member's notes hold for three waits, so the stuck alarm waits for them too */
+
+test('while he is away a member repeating notes every 8 min draws no stuck alarm', async ($, on) => {
+    const w = alarmWorld(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    for (const _ of [1, 2]) {
+        await fromAppText(
+            $,
+            noteOf(codiePeer.name, 'waiting on the green run'),
+        );
+        await w.clock.advance(8 * MIN);
+    }
+    expect(w.scripted).toEqual([]);
+});
+
+test('while he is away a hold past three waits + 2 min still alarms', async ($, on) => {
+    const w = alarmWorld(on, { dropSubmit: () => true });
+    w.store.set('afk', { on: true });
+    w.store.set(`quiet-held:${SID}`, [
+        { at: EVEN - 33 * MIN, from: codiePeer.name, tag: 'notice', text: 'a' },
+    ]);
+    await start($);
+    await w.clock.advance(3 * MIN);
+    expect(w.scripted.join('')).toContain('stuck 33 min');
+});
+
+test('while he is away a hold with no notice in it alarms at the idle wait + 2 min', async ($, on) => {
+    const w = alarmWorld(on, { refuseAppend: true });
+    w.store.set('afk', { on: true });
+    w.store.set(`quiet-held:${SID}`, [
+        { at: EVEN - 13 * MIN, from: codiePeer.name, text: '[progress] a' },
+    ]);
+    await start($);
+    await w.clock.advance(3 * MIN);
+    expect(w.scripted.join('')).toContain('stuck 13 min');
 });

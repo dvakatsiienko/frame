@@ -850,6 +850,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - given the minute's ledger in clio's thread finds a member's gap, or her oldest held ping past the idle wait + 2 min
   - then one notification names it (`<member> sent clio <n>, her quiet log holds <m>`, or `<n> held pings stuck <m> min, oldest from <member>`), beside the red row
   - and a member's gap alarms once while it stays open, again only after it closed; a stuck hold alarms once per oldest ping
+  - and a hold reads stuck past the idle wait + 2 min; while he is away with a notice in it, past three waits + 2 min, the ceiling a repeating member's notes hold to; proof: tests/quiet.test.ts::while he is away a member repeating notes every 8 min draws no stuck alarm; ::while he is away a hold past three waits + 2 min still alarms; ::while he is away a hold with no notice in it alarms at the idle wait + 2 min
   - and in a child of `pnpm mods:live` or `pnpm mods:probe` (`X_MODS_TEST_CHILD`, set in their shared `childEnv`) nothing reaches dima's mac: a `ui.log` line in the child's debug log says what would have been raised
   - and when neither `$.ui.notify` nor osascript raises it, a `ui.log` line says so; nothing throws
   - decision: `$.ui.notify` first, osascript when it answers not sent — the desktop, where clio runs, answers `no-surface` (dima's o75, 2026-10-12)
@@ -940,6 +941,8 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - proof: tests/lane.test.ts::a session the registry does not name 🦉 clio is refused; ::a new clio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
 - ✅ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
   - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
+  - and a plan with a step line holding no `FRM-N` or `BYT-N` is refused at `create`, naming the line; a line added later draws with no id, since a poll refuses nothing (FRM-504); proof: tests/lane.test.ts::a plan with a step line holding no ticket id is refused, naming that line; ::a plan whose every line carries its ticket draws the ids
+  - given a chunk's build slices ticked and its closing slice `- [ ] NN · FRM-N reviewed and closed` open, then the card reads that chunk, never the next one, while its reviews run; `x lane landed --apply` ticks it (FRM-504); proof: tests/lane.test.ts::a chunk with its build ticked stays on the card until its closing slice ticks
   - when codie ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
@@ -976,6 +979,14 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 - ✅ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ tick, 🔁 replay, 🔊 and the steer
   - decision: the buttons never share the pick's line — exit 4's «one row» misread the 19:31 shot (dima, 20:23)
   - proof: tests/lane.test.ts::an ask's buttons sit on the line under its pick, never beside it
+
+## the round count — a lane's 3-round stop, kept by the mod (FRM-504)
+
+- ✅ codie's rounds count in the store, so a compact loses nothing
+  - given a `codie:` thread's send to anyone but the coordinator, opening `round N on <sha>` (a ticket id, `coder:`, `final —` or a tag may lead it), then its sha joins `lane-rounds:<what its name holds past «codie:»>`; the key is one per lane, never the lanes file
+  - and a resend of a sha, a round word further in, a failed send, sixth sense's own round or any other sender counts nothing
+  - given round 3, then the sender reads that a next round with a P0 or P1 is past the cap; past 3, that the stop goes to the coordinator; no message is ever refused, and the cap's terms stay sixth sense's judgment
+  - proof: tests/quiet.test.ts § the round count — not asserted: a thread renamed mid-lane starts a new key (inference from the key); `_clio`'s compact carry reads the key at the land, clio's
 
 ## spawn hints — the board's name flag only
 
