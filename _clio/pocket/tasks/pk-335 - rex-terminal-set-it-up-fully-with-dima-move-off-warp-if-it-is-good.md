@@ -4,7 +4,7 @@ title: 'rex terminal: set it up fully with dima, move off warp if it is good'
 status: open
 assignee: []
 created_date: '2026-11-06T11:50:00Z'
-updated_date: '2026-11-06T16:30:00Z'
+updated_date: '2026-11-06T16:39:00Z'
 labels:
   - s
   - side-channel-owned
@@ -18,7 +18,7 @@ ordinal: 36000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-closed beta invite, https://www.superlogical.com/updates/public-testing-beginning; the side channel's scope end
+closed beta invite, https://www.superlogical.com/updates/public-testing-beginning; wing 2's
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
