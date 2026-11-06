@@ -28,3 +28,6 @@ one line per spawn: date, member, named skills, loaded skills, misses
 - 2026-11-06 · frm-517 codie · fine · misses not recorded
 - 2026-11-06 · BYT-130 ci made boring · codie · fine, no friction
 - 2026-11-06 · BYT-130 ci made boring · sixth sense · ci-verify loaded on the argv's ci words; its «jq pulled out and fed crafted inputs» line set the hostile shapes; helped, keep
+- 2026-11-06 · BYT-94 ci made boring codie · fine
+- 2026-11-06 · FRM-511 cli lane 5 codie · `mods-verify` and `x-verify` load only from a worktree's nested `.claude/skills`, so the first reply named one as missing; a brief should say so
+- 2026-11-06 · FRM-511 cli lane 5 sixth sense · neutral: the role skill names what to load; a Write refusal forced `x:guide-typescript` for a probe script under a job tmp
