@@ -15,8 +15,8 @@ turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes hi
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a summoned session, an
   unanswered question put to dima, an unpushed commit
-- **wings and forks first**: each live `wing` or `(fork` session (`list_sessions`) hands back its `wing-<N>` items and sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged now (`clio:wing`), kept or dropped only on his word
-- **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door; a tree it keeps prints why
+- **wings and forks first**: each live `wing` or `(fork` session (`list_sessions`) hands back its `wing-<N>` items and sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply`
+- **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
   — every hit without the `standing` label: landed and proven is closed now and named (closing.md, landed); the rest
