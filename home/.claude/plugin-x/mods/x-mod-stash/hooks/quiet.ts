@@ -56,7 +56,7 @@ export const isQuietRefusal = (message: unknown) =>
 const APP_HEAD =
     /^\s*(?:<system-reminder>\n([\s\S]*?)\n<\/system-reminder>|<side-sessions-event>([^<]*)<\/side-sessions-event>|(<cross-session-message[^>]*>(?:(?!\n<\/?cross-session-message)[\s\S])*\n<\/cross-session-message>))/;
 const NOTE =
-    /^The session "([^"]*)" you started \((local_[^)]*)\) finished a turn(?: \([^)]*\))?\. It reported[^:]*: "([\s\S]*)"( \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
+    /^The session "([^"]*)" you started \(local_[^)]*\) finished a turn(?: \([^)]*\))?\. It reported[^:]*: "([\s\S]*)"(?: \(first \d+ of \d+ characters\))? Read it with [^"]*$/;
 
 const OPEN = '<cross-session-message';
 const CLOSE = '</cross-session-message>';
@@ -86,24 +86,20 @@ export function quietGlued(text: string) {
         const head = heads.push(taken) - 1;
         const note = reminder?.match(NOTE);
         if (note)
-            notes.push({ body: note[3] ?? '', from: note[1] ?? '', head });
+            notes.push({ body: note[2] ?? '', from: note[1] ?? '', head });
         else if (event !== undefined) lone = head;
         else if (block) messages.push({ block, head });
         else if (reminder && !reminder.startsWith('Linked sessions now'))
             hasOther = true;
     }
-    // the app's notice logs like a note, beside a message too; beside a note it only says what the note says
+    // the app's notice logs like a note, beside a message too; beside a note it only says what the note says, so it adds no line
     if (lone !== undefined && !notes.length && !hasOther)
-        notes.push({
-            body: '',
-            from: 'the app',
-            head: lone,
-            isEvent: true,
-        });
+        notes.push({ body: '', from: 'the app', head: lone });
+    const silentEvent = lone !== undefined && !hasOther ? lone : undefined;
     const tail = rest.trim();
     const unread = tail ? tail.split(UNREAD_SPLIT) : undefined;
     if (unread && !unread.every(isUnreadBlock)) return undefined;
-    return { hasOther, heads, messages, notes, unread };
+    return { hasOther, heads, messages, notes, silentEvent, unread };
 }
 
 const IDLE_HEAD =
@@ -125,7 +121,14 @@ export function quietIdleNotices(text: string): ReturnType<typeof quietGlued> {
         });
     }
     if (rest.trim() || !notes.length) return undefined;
-    return { hasOther: false, heads, messages: [], notes, unread: undefined };
+    return {
+        hasOther: false,
+        heads,
+        messages: [],
+        notes,
+        silentEvent: undefined,
+        unread: undefined,
+    };
 }
 
 // the app's own prompt, no word of his in it, so it never counts as his turn whatever becomes of its hold
@@ -143,5 +146,4 @@ type QuietNote = {
     from: string;
     body: string;
     head: number;
-    isEvent?: boolean;
 };

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 type Tickets = {
     id: string;
+    description?: string;
     labels?: string[];
     relations?: { type: string; state: string }[];
     comments?: { body: string }[];
@@ -90,16 +91,27 @@ const today = new Date().toISOString().slice(0, 10);
 for (const t of todo) {
     const bodies = (t.comments ?? []).map((c) => c.body);
     const moved = bodies.findLastIndex((body) => /^(↩️|⏳)/.test(body));
-    if (moved === -1) continue;
-    const by = bodies
+    const door = bodies
         .slice(moved + 1)
-        .findLast((body) => /^(⏰|🚪)/.test(body))
-        ?.match(/by (\d{4}-\d{2}-\d{2})/)?.[1];
-    if (by && by >= today) console.log(`🟢 ${t.id}: due by ${by}`);
+        .findLast((body) => /^(⏰|🚪)/.test(body));
+    if (moved === -1 && !door) {
+        // shipped work hangs here: dispatched, off every card, and no door to read
+        if (t.description?.includes('🚀 dispatched') && !glide.has(t.id))
+            console.log(
+                `🟡 ${t.id}: dispatched, in Todo, on no lane, no door: shipped? close it; else comment «⏰ due: <what> by <date>»`,
+            );
+        continue;
+    }
+    const by = door?.match(/by (\d{4}-\d{2}-\d{2})/)?.[1];
+    // the door's words print every siesta, since what it waits on can happen long before its date
+    if (by && by >= today)
+        console.log(
+            `🟢 ${t.id}: due by ${by}, has it fired? ${door?.split('\n')[0]?.slice(0, 160)}`,
+        );
     else {
         reds++;
         console.log(
-            `🔴 ${t.id}: moved out of In Progress, ${by ? `its due date passed ${by}` : 'nothing due'}: close it, or comment «⏰ due: <what> by <date>»`,
+            `🔴 ${t.id}: ${by ? `its due date passed ${by}` : 'nothing due'}: close it, or comment «⏰ due: <what> by <date>»`,
         );
     }
 }

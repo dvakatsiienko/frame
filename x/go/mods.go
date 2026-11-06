@@ -27,7 +27,8 @@ const (
 )
 
 func scratchRoot(repo string) string {
-	dir := os.TempDir()
+	// the os tmp dies with the mac, and an unpushed edit with it
+	dir := stateDir()
 	if job := os.Getenv("CLAUDE_JOB_DIR"); job != "" {
 		dir = filepath.Join(job, "tmp")
 	}
@@ -373,21 +374,69 @@ func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
 			continue
 		}
 		got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
-		if !got.ok && timeoutOnly(got.log) {
-			got, _ = run("", nil, "", "claude", "plugin", "test", overlay)
+		log := got.log
+		report.Passed, report.Failed, report.Errored = testOutcome(log)
+		if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
+			again, kept, err := runTimedOutFiles(overlay, log)
+			if err != nil {
+				return nil, err
+			}
+			got = again
+			log += "\n" + again.log
+			passed, failed, errored := testOutcome(again.log)
+			report.Passed, report.Failed, report.Errored = kept+passed, failed, errored
 		}
-		report.Passed, report.Failed, report.Errored = testOutcome(got.log)
 		// the engine runs on past a throwing hook, so a test beside it still passes (`engine.md`)
-		if skipped := hookSkipped.FindString(got.log); skipped != "" {
+		if skipped := hookSkipped.FindString(log); skipped != "" {
 			report.Errored = append(report.Errored, skipped)
 		}
 		if !got.ok && len(report.Failed)+len(report.Errored) == 0 {
 			report.Errored = []string{"claude plugin test exited red with no failing test named"}
 		}
-		report.log = got.log
+		report.log = log
 		reports = append(reports, report)
 	}
 	return reports, nil
+}
+
+// only the files that timed out run again, as `mods/test.ts` does: a second whole run on a loaded machine times out other
+// rows. the rest step aside in this throwaway overlay, so the kit does not find them; answers the second run and the
+// passes of the files it left out
+func runTimedOutFiles(overlay, log string) (result, int, error) {
+	timedOut := map[string]bool{}
+	passes := map[string]int{}
+	file := ""
+	for line := range strings.SplitSeq(log, "\n") {
+		line = strings.TrimSpace(line)
+		if m := testFileLine.FindStringSubmatch(line); m != nil {
+			file = m[1]
+		} else if testFailLine.MatchString(line) {
+			timedOut[file] = true
+		} else if testPassLine.MatchString(line) {
+			passes[file]++
+		}
+	}
+	kept := 0
+	for name, n := range passes {
+		if !timedOut[name] {
+			kept += n
+		}
+	}
+	err := filepath.WalkDir(overlay, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || !(strings.HasSuffix(path, ".test.ts") || strings.HasSuffix(path, ".test.tsx")) {
+			return err
+		}
+		rel, err := filepath.Rel(overlay, path)
+		if err != nil || timedOut[filepath.ToSlash(rel)] {
+			return err
+		}
+		return os.Rename(path, path+".passed")
+	})
+	if err != nil {
+		return result{}, 0, err
+	}
+	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
+	return got, kept, nil
 }
 
 // --against <ref>: the edited test files on the ref's mod, so a test that fails there proves it reads the change
@@ -445,6 +494,8 @@ var (
 	testFileLine = regexp.MustCompile(`^(tests/\S+\.test\.tsx?):$`)
 	testFailLine = regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`)
 	testPassLine = regexp.MustCompile(`^\(pass\) `)
+	// no tally: the run died partway, so files it never reached would read green on a rerun of the rest
+	testTally = regexp.MustCompile(`(?m)^Ran \d+ tests? across`)
 )
 
 // a test file that cannot load is «errored», a test that runs and fails is «failed» (`(fail) the file did not load`)

@@ -1486,10 +1486,58 @@ test('a keep-hot ping is no word of the member, so it raises no second alarm', a
     const w = silentWorld(on);
     await start($);
     await w.clock.advance(12 * MIN);
-    w.store.set(`reply:${CODIE_SID}`, { at: EVEN, pingedAt: EVEN + 12 * MIN });
+    w.store.set(`reply:${CODIE_SID}`, {
+        at: EVEN - 3000,
+        pingedAt: EVEN + 12 * MIN,
+    });
     w.spoke.at = EVEN + 12 * MIN;
     await w.clock.advance(12 * MIN);
     expect(silentAlarms(w).length).toBe(1);
+});
+
+test('a member working after a ping reads as speaking', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    w.store.set(`reply:${CODIE_SID}`, { at: EVEN - 60 * MIN, pingedAt: EVEN });
+    w.spoke.at = EVEN + 9 * MIN;
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w)).toEqual([]);
+});
+
+test('a member of a finished card raises none', async ($, on) => {
+    const w = silentWorld(on, { card: { current: 1 } });
+    await start($);
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w)).toEqual([]);
+});
+
+test('a note opening a kind switched off waits with its words', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('quiet-done', false);
+    await fromApp($, noteOf('A', '[done] FRM-1 landed'));
+    await say($, 'status?');
+    expect(held(w).join('\n')).toContain('FRM-1 landed');
+});
+
+test("a note the old build held never reaches clio's prompt", async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set(`quiet-held:${SID}`, [
+        { at: EVEN, from: 'A', tag: 'notice', text: 'old report' },
+    ]);
+    await say($, 'status?');
+    expect(held(w)).toEqual([]);
+});
+
+test('an old held notice line leaves a refusal a refusal', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [
+        { ...heldLine(MEMBER, EVEN), tag: 'notice' },
+    ]);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result).toEqual(REFUSED);
 });
 
 test('a member of an ended lane raises none', async ($, on) => {
@@ -1527,10 +1575,37 @@ test('under a shift a silent member wakes clio once', async ($, on) => {
     await start($);
     w.store.set(`pace:${SID}`, { since: EVEN });
     const before = w.contexts.length;
-    await w.clock.advance(14 * MIN);
+    await w.clock.advance(12 * MIN);
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    await w.clock.advance(3 * MIN);
     expect([silentAlarms(w).length, w.contexts.length - before]).toEqual([
         1, 1,
     ]);
+});
+
+test('under a shift a busy clio takes the wake when her turn ends', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: EVEN });
+    await say($, 'status?');
+    const before = w.contexts.length;
+    await w.clock.advance(12 * MIN);
+    const busy = w.contexts.length - before;
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    await w.clock.advance(2 * MIN);
+    expect([busy, w.contexts.length - before]).toEqual([0, 1]);
 });
 
 test('under a shift a refused wake asks again at the next poll', async ($, on) => {
@@ -2618,7 +2693,7 @@ test('a send the gate held reads held, its kind back on by the end', async ($, o
     expect(r.context).toEqual([SLIPSTREAMED]);
 });
 
-test('a side-sessions notice beside a pushing message stays whole in that turn', async ($, on) => {
+test('a side-sessions notice beside a pushing message leaves that turn', async ($, on) => {
     const w = world(on);
     await start($);
     const push = GLUED_LINE.replace('sw done', '[done] step 2');
@@ -2627,7 +2702,7 @@ test('a side-sessions notice beside a pushing message stays whole in that turn',
         r.drop,
         r.text?.includes(EVENT),
         held(w).join('\n').includes('a side-sessions notice'),
-    ]).toEqual([undefined, true, false]);
+    ]).toEqual([undefined, false, false]);
 });
 
 test('a meta idle notice let in never counts as his turn', async ($, on) => {

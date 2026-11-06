@@ -34,10 +34,15 @@ for f in "$d"/tests/*.test.ts; do
   echo "tests/$n:"
   if grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q PASS-THEN-SLOW "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(pass) $n first [1.0ms]"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q SLOW-SECOND "$f" && [ -e "$f.ran" ]; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q DIES-PARTWAY "$f"; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; exit 1
   elif grep -q HOOK-THROWS "$f"; then echo "(pass) $n [1.0ms]"; echo "    m's session.start hook was skipped: m: boom"
   elif grep -q RED "$f"; then echo "(fail) $n is red [1.0ms]"; red=1
   else echo "(pass) $n [1.0ms]"; fi
+  touch "$f.ran"
 done
+echo "Ran 2 tests across 2 files."
 exit $red
 `)
 	return dir, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "CLAUDE_JOB_DIR=" + t.TempDir()}
@@ -143,6 +148,18 @@ func TestModsEditPushRunsItsTestOnlyWhenTheBytesMoved(t *testing.T) {
 	}
 }
 
+func TestModsEditTestCountsARerunFilesPassesOnce(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "PASS-THEN-SLOW\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
+		t.Fatalf("a's first-run pass counted beside its rerun, exit %d\n%s", got.code, got.stdout)
+	}
+}
+
 func TestModsEditTestRunsATimeoutOnlyRedOnceMore(t *testing.T) {
 	t.Parallel()
 	dir, env := modsFixture(t)
@@ -152,6 +169,44 @@ func TestModsEditTestRunsATimeoutOnlyRedOnceMore(t *testing.T) {
 
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestModsEditTestRunsOnlyTheTimedOutFileAgain(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "SLOW-ONCE\n")
+	write(t, pullCopy(t, dir, env, modTestB), "SLOW-SECOND\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if got.code != 0 {
+		t.Fatalf("a file that passed its run must not be run again, exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestModsEditTestRunsNoSecondTimeWhenTheRunDiedPartway(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "DIES-PARTWAY\n")
+	calls := filepath.Join(t.TempDir(), "calls")
+
+	got := xIn(t, dir, append(env, "CLAUDE_CALLS="+calls), "mods", "edit", "test")
+
+	if ran := strings.Count(readFile(t, calls), "test\n"); got.code != 1 || ran != 1 {
+		t.Fatalf("files it never reached would read green on a rerun: exit %d, %d test runs\n%s", got.code, ran, got.stdout)
+	}
+}
+
+func TestModsEditScratchLivesUnderTheStateDirOutsideAJob(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	state := t.TempDir()
+
+	copied := pullCopy(t, dir, append(env, "CLAUDE_JOB_DIR=", "X_STATE="+state), modTestA)
+
+	if !strings.HasPrefix(copied, filepath.Join(state, "x-mods-edit")) {
+		t.Fatalf("a restart would lose the edit: scratch at %s", copied)
 	}
 }
 
