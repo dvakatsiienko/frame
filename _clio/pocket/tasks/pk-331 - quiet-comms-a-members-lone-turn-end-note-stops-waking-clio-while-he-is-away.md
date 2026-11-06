@@ -1,0 +1,27 @@
+---
+id: PK-331
+title: 'quiet comms: a member''s lone turn-end note stops waking clio while he is away'
+status: open
+assignee: []
+created_date: '2026-11-06T00:17:00Z'
+labels:
+  - s
+  - side-channel-owned
+dependencies: []
+priority: now
+type: task
+ordinal: 9999
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+W1 (2026-11-06 02:16, dima): does the current recent few messages from codie useful to you? ❓ — answered: no, «waiting on the green run» repeats woke a turn of mine each, and changed nothing
+W2 (2026-11-06 02:17, dima): let's solve this as one of the first things to do. can we solve it with side channel? if yes - plan as a side channel. ❓ — answered: yes, before the mods lane restarts
+
+the want: while he is away, a member's lone turn-end note stops waking clio unless it matters. today's build wakes on each (FRM-501's lone-wake rule, his o70, `x-mod-stash/hooks/register.tsx`, `isAwayNow` and `quietIdle`).
+measured: 25 of 27 turn-starting quiet lines 00:22–01:14 were lone notices; crow: 7 of 9 wakes in 26 min answered with a bare waiting line; tonight's whole mods fix round reads the same.
+my pick to bring him, one short round in the side channel: a lone note holds under afk as it does at the keyboard; only a member's tagged send ([done], [ask], [escalate]), an exit notice, or a member silent past N minutes wakes clio. what it must keep: a member that ended silently and stuck is still seen, FRM-501's want.
+order: first act after the boot, before FRM-504 starts, since FRM-504 and FRM-505 edit the same file; x-mod-holds refuses two writers. the side channel works on its fork branch and lands by its own door. its effect feeds PK-326's empty-wakes count, so measure the count before and after.
+it changes signed FRM-501 behaviour (o70): the side's ask carries his re-sign on that line.
+<!-- SECTION:DESCRIPTION:END -->
