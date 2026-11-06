@@ -588,6 +588,10 @@ func TestAuditCodieBoardEndsOnTheLessonsCount(t *testing.T) {
 			last = line
 		}
 	}
+	empty := xIn(t, t.TempDir(), []string{"HOME=" + t.TempDir()}, "fleet", "audit-codie", "--days", "30", "--board")
+	if !strings.Contains(empty.stdout, "how-you-work.md not checked") {
+		t.Errorf("no session in the window should read not checked, never 0 of 0:\n%s", empty.stdout)
+	}
 	if got.code != 1 || !strings.Contains(last, "how-you-work.md 1 of 2 read before first edit") {
 		t.Errorf("exit %d, last counted line %q:\n%s", got.code, last, got.stdout)
 	}
@@ -700,6 +704,11 @@ func TestAuditCodieReadsABashLineWhateverDirItSitsIn(t *testing.T) {
 		{"a file of that name elsewhere", "cat /tmp/how-you-work.md", lessonsName, checkMissed},
 		{"a file of that name after a cd elsewhere", "cd /tmp && cat how-you-work.md", lessonsName, checkMissed},
 		{"an edit in place", "sed -i '' s/a/b/ /p/skills/crew-codie/how-you-work.md", lessonsName, checkMissed},
+		{"an edit in place, in a flag cluster", "sed -Ei s/a/b/ /p/skills/crew-codie/how-you-work.md", lessonsName, checkMissed},
+		{"an edit in place, its long form", "sed --in-place s/a/b/ /p/skills/crew-codie/how-you-work.md", lessonsName, checkMissed},
+		{"a sed read with an expression", "sed -n -e 1,5p /p/skills/crew-codie/how-you-work.md", lessonsName, checkRead},
+		{"a read and its errors thrown away", "cat /p/skills/crew-codie/how-you-work.md &>/dev/null", lessonsName, checkMissed},
+		{"a read thrown away after its errors joined it", "cat /p/skills/crew-codie/how-you-work.md 2>&1 >/dev/null", lessonsName, checkMissed},
 		{"a read thrown away", "cat /p/skills/crew-codie/how-you-work.md >/dev/null", lessonsName, checkMissed},
 		{"a read thrown away, spaced", "cat /p/skills/crew-codie/how-you-work.md > /dev/null", lessonsName, checkMissed},
 		{"a read with its errors thrown away", "cat /p/skills/crew-codie/how-you-work.md 2>/dev/null", lessonsName, checkRead},
