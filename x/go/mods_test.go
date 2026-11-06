@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
 // a frame-shaped repo with one mod, and a fake `claude` reading markers the tests plant: PARSE-ERROR in a hooks file
-// fails the validator, RED in a test fails that test, NO-IMPORT makes its file fail to load
+// fails the validator, RED in a test fails that test, NO-IMPORT makes its file fail to load, NO-TESTS makes it run none,
+// HALF-DONE in a hooks file fails every test that runs
 func modsFixture(t *testing.T) (dir string, env []string) {
 	t.Helper()
 	dir = repo(t)
@@ -32,7 +35,9 @@ red=0
 for f in "$d"/tests/*.test.ts; do
   n=$(basename "$f")
   echo "tests/$n:"
-  if grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
+  if grep -q NO-TESTS "$f"; then continue
+  elif grep -q HALF-DONE "$d"/hooks/* 2>/dev/null; then echo "(fail) $n imports a half-done hook [1.0ms]"; red=1
+  elif grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q PASS-THEN-SLOW "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(pass) $n first [1.0ms]"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q SLOW-SECOND "$f" && [ -e "$f.ran" ]; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
@@ -145,6 +150,295 @@ func TestModsEditPushRunsItsTestOnlyWhenTheBytesMoved(t *testing.T) {
 				t.Fatalf("exit %d, %d test runs, want %d\n%s", got.code, n, c.tests, got.stdout)
 			}
 		})
+	}
+}
+
+// a green --only proves one file, so it never stands in for the whole test a push needs
+func TestModsEditPushAfterAGreenOnlyRunsTheWholeTest(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copyA, copyB := pullCopy(t, dir, env, modTestA), pullCopy(t, dir, env, modTestB)
+	write(t, copyA, "green, edited\n")
+	write(t, copyB, "RED\n")
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA); got.code != 0 {
+		t.Fatalf("--only: exit %d\n%s", got.code, got.stdout)
+	}
+
+	got := xIn(t, dir, env, "mods", "edit", "push")
+
+	if got.code == 0 || readFile(t, filepath.Join(dir, modTestA)) != "green\n" {
+		t.Fatalf("a push after a green --only skipped the red sibling: exit %d, a %q\n%s", got.code, readFile(t, filepath.Join(dir, modTestA)), got.stdout)
+	}
+}
+
+func TestModsEditOnlyLeavesAFullGreensStampAlone(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	calls := filepath.Join(t.TempDir(), "calls")
+	env = append(env, "CLAUDE_CALLS="+calls)
+	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+		t.Fatalf("test: exit %d\n%s", got.code, got.stdout)
+	}
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA); got.code != 0 {
+		t.Fatalf("--only: exit %d\n%s", got.code, got.stdout)
+	}
+
+	got := xIn(t, dir, env, "mods", "edit", "push")
+
+	if n := strings.Count(readFile(t, calls), "test\n"); got.code != 0 || n != 2 {
+		t.Fatalf("exit %d, %d test runs, want 2: the full test and --only, none from the push\n%s", got.code, n, got.stdout)
+	}
+}
+
+// a recorded green would pass the mod's tests at its commit through --skip-tested, on one file's proof
+func TestModsEditOnlyRecordsNoGreen(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	state := t.TempDir()
+	env = append(env, "X_STATE="+state)
+	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA)
+
+	scratch, _ := xIn(t, dir, env, "mods", "edit", "status").data["scratch"].(string)
+	if got.code != 0 || scratch == "" || exists(filepath.Join(state, "gates-green.tsv")) || exists(filepath.Join(scratch, scratchTested)) {
+		t.Fatalf("exit %d, scratch %q: a green --only recorded a stamp or a gate green\n%s", got.code, scratch, got.stdout)
+	}
+}
+
+func TestModsEditTestOnlyRunsThatOneFile(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	calls := filepath.Join(t.TempDir(), "calls")
+	env = append(env, "CLAUDE_CALLS="+calls)
+	write(t, pullCopy(t, dir, env, modTestB), "RED\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA)
+
+	reports, _ := got.data["mods"].([]any)
+	if got.code != 0 || got.data["only"] != modTestA || len(reports) != 1 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	if passed := reports[0].(map[string]any)["passed"]; passed != 1.0 {
+		t.Errorf("passed %v, want the one file's 1\n%s", passed, got.stdout)
+	}
+	if n := strings.Count(readFile(t, calls), "test\n"); n != 1 {
+		t.Errorf("%d test runs, want 1", n)
+	}
+}
+
+func TestModsEditTestOnlyReadsItsPathFromTheRepoRoot(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+
+	got := xIn(t, filepath.Join(dir, modsDir, "m/tests"), env, "mods", "edit", "test", "--only", modTestA)
+
+	if got.code != 0 || got.data["only"] != modTestA {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestModsEditTestOnlyRunsATestFileThatLivesOnlyInScratch(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	fresh := modsDir + "m/tests/fresh.test.ts"
+	write(t, pullCopy(t, dir, env, fresh), "green\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--only", fresh)
+
+	if got.code != 0 || got.data["only"] != fresh {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestModsEditTestOnlyRedNamesItsOwnRerun(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "RED\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA)
+
+	if got.code != 1 || got.next != "x mods edit test --only "+modTestA {
+		t.Fatalf("exit %d, next %q\n%s", got.code, got.next, got.stdout)
+	}
+}
+
+func TestModsEditTestOnlyRefusesWhatItCannotRun(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, only string }{
+		{"a file that is no test", modHooks},
+		{"a missing test file", modsDir + "m/tests/gone.test.ts"},
+		{"a dir", modsDir + "m/tests"},
+		{"a dir named like a test", modsDir + "m/tests/dir.test.ts"},
+		{"a test file outside a mod", "script/a.test.ts"},
+		{"a path out of the repo", "../a.test.ts"},
+		{"a test file that runs no test", modsDir + "m/tests/none.test.ts"},
+		{"an empty value", ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			write(t, filepath.Join(dir, modsDir, "m/tests/none.test.ts"), "NO-TESTS\n")
+			write(t, filepath.Join(dir, modsDir, "m/tests/dir.test.ts/keep"), "\n")
+			write(t, filepath.Join(dir, "script/a.test.ts"), "green\n")
+
+			got := xIn(t, dir, env, "mods", "edit", "test", "--only", c.only)
+
+			if got.code == 0 || !strings.Contains(got.stdout, c.only) {
+				t.Fatalf("exit %d, the refusal must name %q\n%s", got.code, c.only, got.stdout)
+			}
+		})
+	}
+}
+
+func TestModsEditTestOnlyRefusesBesideAgainst(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA, "--against", "HEAD")
+
+	if got.code != 2 {
+		t.Fatalf("exit %d, want the usage exit\n%s", got.code, got.stdout)
+	}
+}
+
+// xBoth is xIn with stderr kept: the overlay line is read there, ahead of a red's own log
+func xBoth(t *testing.T, dir string, env []string, args ...string) (int, string, string) {
+	t.Helper()
+	c := exec.Command(xbin, args...)
+	c.Dir = dir
+	c.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	var stdout, stderr bytes.Buffer
+	c.Stdout, c.Stderr = &stdout, &stderr
+	return exitOf(c.Run()), stdout.String(), stderr.String()
+}
+
+func TestModsEditHeaderCountsWhatTheOverlayDiffersIn(t *testing.T) {
+	t.Parallel()
+	added := modsDir + "m/tests/added.test.ts"
+	cases := []struct {
+		name  string
+		plant func(t *testing.T, dir string, env []string)
+		verb  string
+		want  string
+	}{
+		{"nothing pulled prints no line", func(*testing.T, string, []string) {}, "status", ""},
+		{"a pull left as it was prints no line", func(t *testing.T, dir string, env []string) {
+			pullCopy(t, dir, env, modTestA)
+		}, "status", ""},
+		{"main moving past an untouched copy prints no line", func(t *testing.T, dir string, env []string) {
+			pullCopy(t, dir, env, modTestA)
+			write(t, filepath.Join(dir, modTestA), "green, main moved\n")
+		}, "status", ""},
+		{"one edit", func(t *testing.T, dir string, env []string) {
+			write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+		}, "status", "overlay 1 path differs: " + modTestA},
+		{"one edit on test", func(t *testing.T, dir string, env []string) {
+			write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+		}, "test", "overlay 1 path differs: " + modTestA},
+		{"an added and a deleted path", func(t *testing.T, dir string, env []string) {
+			write(t, pullCopy(t, dir, env, added), "green\n")
+			if err := os.Remove(pullCopy(t, dir, env, modTestB)); err != nil {
+				t.Fatal(err)
+			}
+		}, "status", "overlay 2 paths differ: " + added + ", " + modTestB},
+		{"two edits on test", func(t *testing.T, dir string, env []string) {
+			write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+			write(t, pullCopy(t, dir, env, modTestB), "green, edited\n")
+		}, "test", "overlay 2 paths differ: " + modTestA + ", " + modTestB},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			c.plant(t, dir, env)
+
+			code, stdout, stderr := xBoth(t, dir, env, "mods", "edit", c.verb)
+
+			if code != 0 {
+				t.Fatalf("exit %d\n%s\n%s", code, stdout, stderr)
+			}
+			if c.want == "" && strings.Contains(stderr, "differ") {
+				t.Errorf("a clean overlay printed a line:\n%s", stderr)
+			}
+			if c.want != "" && !strings.Contains(stderr, c.want+"\n") {
+				t.Errorf("stderr lacks %q:\n%s", c.want, stderr)
+			}
+		})
+	}
+}
+
+// the 10-18 sighting: a red read as main's while the overlay held another writer's half-done edit of what the test imports
+func TestModsEditTestRedReadsApartFromMains(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modHooks), "HALF-DONE\n")
+
+	code, _, stderr := xBoth(t, dir, env, "mods", "edit", "test")
+
+	line, red := strings.Index(stderr, "overlay 1 path differs: "+modHooks), strings.Index(stderr, "imports a half-done hook")
+	if code == 0 || line < 0 || red < line {
+		t.Fatalf("exit %d, overlay line at %d, red at %d\n%s", code, line, red, stderr)
+	}
+
+	onMain, mainEnv := modsFixture(t)
+	write(t, filepath.Join(onMain, modHooks), "HALF-DONE\n")
+	gitT(t, onMain, "add", ".")
+	gitT(t, onMain, "commit", "-q", "-m", "main is red")
+
+	code, _, stderr = xBoth(t, onMain, mainEnv, "mods", "edit", "test", "--only", modTestA)
+
+	if code == 0 || strings.Contains(stderr, "differ") || !strings.Contains(stderr, "imports a half-done hook") {
+		t.Fatalf("the same red on main: exit %d\n%s", code, stderr)
+	}
+}
+
+func holdBothQueueSlots(t *testing.T, state string) {
+	t.Helper()
+	plantLiveHolder(t, state)
+	write(t, filepath.Join(state, "gate-queue.long.turn/holder"), readFile(t, filepath.Join(state, "gate-queue.turn/holder")))
+}
+
+// a turn would wait out its deadline and run nothing; a one-file run answers at once
+func TestModsEditTestOnlyTakesNoQueueTurn(t *testing.T) {
+	t.Parallel()
+	state, turn := turnOn(t)
+	holdBothQueueSlots(t, state)
+	dir, env := modsFixture(t)
+	env = append(append(env, turn...), "GATE_QUEUE_WAIT=1")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA)
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	if rows := queueRows(t, state); rows != nil {
+		t.Errorf("--only logged a turn: %v", rows)
+	}
+}
+
+// the plain test's queue is the hand wrap the fleet runs it in: behind a long round it waits, and nothing runs
+func TestModsEditTestPlainWaitsBehindALongRound(t *testing.T) {
+	t.Parallel()
+	state, turn := turnOn(t)
+	holdBothQueueSlots(t, state)
+	dir, env := modsFixture(t)
+	calls := filepath.Join(t.TempDir(), "calls")
+	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+	script, err := filepath.Abs("../../" + gateQueueScript)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := exec.Command(script, "--long", xbin, "mods", "edit", "test")
+	c.Dir = dir
+	c.Env = append(append(append(append(cleanEnv(), "X_TEST=1"), env...), turn...), "GATE_QUEUE_WAIT=1", "CLAUDE_CALLS="+calls)
+
+	out, _ := c.CombinedOutput()
+
+	if code := c.ProcessState.ExitCode(); code != gateQueueDeadline || exists(calls) {
+		t.Fatalf("exit %d, the test ran %v, want the queue's deadline and no run\n%s", code, exists(calls), out)
 	}
 }
 
