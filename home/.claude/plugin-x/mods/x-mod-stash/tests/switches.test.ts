@@ -16,13 +16,13 @@ const CAPPED = "You've hit your session limit · resets 11:40pm (Europe/Kiev)";
 
 // clio's session with the band and the board drawn: `lines` holds every model-only line a prompt or a tool result
 // carried, and every turn the mod started itself
-function world(on: On) {
+function world(on: On, name = '🦉 clio') {
     const lines: string[] = [];
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     const files: Record<string, string> = {
         [`/home/.claude/sessions/${PID}.json`]: JSON.stringify({
-            name: '🦉 clio',
+            name,
             pid: PID,
         }),
     };
@@ -153,6 +153,7 @@ type Scenario = {
     fire: ($: Engine, w: World) => Promise<unknown>;
     trace: RegExp;
     op?: Record<string, unknown>;
+    name?: string;
 };
 
 const SCENARIOS: Record<string, Scenario> = {
@@ -266,6 +267,26 @@ const SCENARIOS: Record<string, Scenario> = {
         op: { lines: ['now: b'], op: 'plan' },
         trace: /phases|plan/,
     },
+    'stash.rounds': {
+        arm: async ($) => {
+            for (const sha of ['aaaaaaa', 'bbbbbbb'])
+                await $.tool.call({
+                    message: `round 1 on ${sha}`,
+                    to: '⚡ 🔦 sixth sense: x',
+                    tool: 'SendMessage',
+                } as never);
+        },
+        fire: async ($, w) => {
+            const r = await $.tool.call({
+                message: 'round 1 on ccccccc',
+                to: '⚡ 🔦 sixth sense: x',
+                tool: 'SendMessage',
+            } as never);
+            w.lines.push(...((r as { context?: string[] }).context ?? []));
+        },
+        name: '⚡ 🔧 codie: x',
+        trace: /round \d of this lane/,
+    },
     'stash.second-wind': {
         // a board asked this session: the note rides its next prompt, and the op takes the handoff it wrote
         arm: async (_$, w) => {
@@ -326,7 +347,7 @@ test('every 🎛️ part has a switch scenario or says why it never reaches a mo
 async function run($: Engine, on: On, key: string, isOn: boolean) {
     const s = SCENARIOS[key];
     if (!s) throw new Error(`no scenario for ${key}`);
-    const w = world(on);
+    const w = world(on, s.name);
     await $.session.start({
         cwd: '/tmp',
         isInteractive: true,

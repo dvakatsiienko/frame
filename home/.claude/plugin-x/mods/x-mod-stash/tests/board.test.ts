@@ -1358,6 +1358,25 @@ test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => 
     expect(badge?.props.color).toBe('error');
 });
 
+const heldNotice = (ms: number) => ({
+    afk: { on: true },
+    [`quiet-held:${HERE}`]: [
+        { at: NOW - ms, from: PEER_NAME, tag: 'notice', text: 'a note' },
+    ],
+});
+
+test('while he is away a held notice inside three waits + 2 min keeps the 🤫 n plain', async ($, on) => {
+    fleet(on, heldNotice(16 * MIN));
+    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
+    expect(badge?.props.color).toBeUndefined();
+});
+
+test('while he is away a held notice past three waits + 2 min turns the 🤫 n red', async ($, on) => {
+    fleet(on, heldNotice(33 * MIN));
+    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
+    expect(badge?.props.color).toBe('error');
+});
+
 test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on) => {
     fleet(on, heldFor(11 * MIN));
     const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });

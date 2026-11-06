@@ -268,10 +268,11 @@
             },
             "name": "lane landed",
             "needsApply": true,
-            "purpose": "print a merged lane's after-merge chores, met or red with a fix; --apply archives the spec, decamps clean trees",
-            "steps": ["ticket", "read", "archive", "decamp"],
+            "purpose": "print a merged lane's after-merge chores, met or red; --apply ticks its closing slice, archives the spec, decamps trees",
+            "steps": ["ticket", "read", "closing", "archive", "decamp"],
             "touches": [
                 "~/.claude/sessions/ — who sits in a tree, read",
+                "~/.local/state/x/lanes/<feature>/lane-plan.md — its closing slice read, ticked on --apply",
                 "~/.local/state/x/traces/ — a new verb's calls at its milestone's close, read",
                 "github — the pr's merged state, head and body, read",
                 "linear — the ticket's W-lines and comments (the look card), read",
