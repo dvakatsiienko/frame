@@ -166,7 +166,7 @@ file he names.
 
 ## questions, options, and the ➡️ cta
 
-- every question round carries a recommendation, as a ➡️ line.
+- every question round ends with a ➡️ recommendation.
 - **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
 - nothing to ask → one ➡️ line; a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
