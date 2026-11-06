@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-06T01:25:00Z'
-updated_date: '2026-11-06T14:46:00Z'
+updated_date: '2026-11-06T14:54:00Z'
 labels:
   - s
   - side-channel-owned
@@ -61,4 +61,6 @@ W1998 (2026-11-06 16:10, dima): how to probe correctly? ❓
 W1999 (2026-11-06 16:10, dima): have less side lanes? ❓
 W2000 (2026-11-06 16:10, dima): So this measure shows that you keep receiving redundant messages, and now you know what to cut, right? ❓
 W2001 (2026-11-06 16:10, dima): If yes, proceed.
+
+close: W6 W21 W22 W43 W44 W45 W23 W24 W25 W26 W27 W28 W29 W30 W2 W3 W4 W46 W47 W1998 W1999 W2000 W2001 done: the backfill's lines, each acted on or answered in its thread, none moved to FRM-519
 <!-- SECTION:NOTES:END -->
