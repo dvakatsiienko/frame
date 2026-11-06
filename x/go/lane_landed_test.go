@@ -713,6 +713,11 @@ func TestLandedReadsAChunksClosingSlice(t *testing.T) {
 		{"a plan with no slice of this chunk says nothing", "- [ ] 01 · FRM-2 the build\n", nil, "closing"},
 		{"a slice that only mentions the words is no closing slice", "- [x] 01 · FRM-1 reviewed and closed the door\n",
 			[]string{"🔴 closing"}, ""},
+		{"a chunk named mid-line still needs its closing slice", "- [x] 01 · quiet reads FRM-1\n",
+			[]string{"🔴 closing", "holds no closing slice"}, ""},
+		{"a line that leads with another ticket is that ticket's", "- [ ] 01 · FRM-2 fixes FRM-1\n", nil, "closing"},
+		{"a crlf plan reads its closing slice", "- [x] 01 · FRM-1 the build\r\n- [x] 02 · FRM-1 reviewed and closed\r\n",
+			[]string{"✅ closing"}, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -742,11 +747,37 @@ func TestLandedPrintsNoClosingLineWithNoLanePlan(t *testing.T) {
 	}
 }
 
-func TestLandedApplyTicksTheClosingSliceAndNoOtherLine(t *testing.T) {
+func TestLandedReadsThePlanOfTheSpecThatHasOne(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/a-old/spec.md"), "# old\n\n## FRM-1 — the chunk\n")
+	w.lanePlan(t, "- [x] 01 · FRM-1 reviewed and closed\n")
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "✅ closing") {
+		t.Errorf("a stale spec with no plan must not hide the live one:\n%s", out)
+	}
+}
+
+func TestLandedApplyTicksTheClosingSliceEvenWhenTheArchiveRefuses(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/_archive/lane-1/spec.md"), "# an older run\n")
+	path := w.lanePlan(t, "- [ ] 01 · FRM-1 reviewed and closed\n")
+	w.landed(t, "--apply")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(raw), "[x]") {
+		t.Errorf("the tick must land ahead of the archive:\n%s", raw)
+	}
+}
+
+func TestLandedApplyTicksOnlyTheClosingSlice(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
 	w.done(t)
-	path := w.lanePlan(t, "# plan\n\n- [ ] 01 · FRM-1 the build\n- [ ] 02 · FRM-1 reviewed and closed\n- [ ] 03 · FRM-2 reviewed and closed\n")
+	path := w.lanePlan(t, "# plan\n\n- [ ] 01 · FRM-1 the pr reviewed and closed\n- [ ] 02 · FRM-1 reviewed and closed\n- [ ] 03 · FRM-2 reviewed and closed\n")
 
 	envelope, _ := w.landed(t, "--apply")
 
@@ -754,7 +785,7 @@ func TestLandedApplyTicksTheClosingSliceAndNoOtherLine(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "# plan\n\n- [ ] 01 · FRM-1 the build\n- [x] 02 · FRM-1 reviewed and closed\n- [ ] 03 · FRM-2 reviewed and closed\n"
+	want := "# plan\n\n- [ ] 01 · FRM-1 the pr reviewed and closed\n- [x] 02 · FRM-1 reviewed and closed\n- [ ] 03 · FRM-2 reviewed and closed\n"
 	if string(raw) != want {
 		t.Errorf("plan after --apply:\n%s", raw)
 	}

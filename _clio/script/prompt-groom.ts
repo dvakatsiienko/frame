@@ -127,10 +127,25 @@ export function rawPromptAt(dayFile: string, hhmm: string) {
     return prompts.length > 0 ? prompts.join('\n\n---\n\n') : undefined;
 }
 
+// a minute with 2+ typed prompts needs `HH:MM ×N — <why>`, so a line written for one can't hide the other
+function noWishKey(hhmm: string, text: string) {
+    const typed = text
+        .split('\n\n---\n\n')
+        .filter((part) =>
+            part
+                .replace(
+                    /<(side-sessions-event|task-notification|system-reminder)>[\s\S]*?<\/\1>/g,
+                    '',
+                )
+                .trim(),
+        ).length;
+    return typed > 1 ? `${hhmm} ×${typed}` : hhmm;
+}
+
 // the `HH:MM — <why>` and `oN — <why>` lines of a no-wish file: a prompt minute or an orbit steer that carries no wish
 const noWishIds = (noWishText: string) =>
     new Set(
-        [...noWishText.matchAll(/^(\d{2}:\d{2}|o\d+) — /gm)].map(
+        [...noWishText.matchAll(/^(\d{2}:\d{2}(?: ×\d+)?|o\d+) — /gm)].map(
             ([, id]) => id,
         ),
     );
@@ -171,7 +186,7 @@ export function ungroomedPrompts(
         if (
             !text ||
             minutes(now) - minutes(hhmm) <= 10 ||
-            noWish.has(hhmm) ||
+            noWish.has(noWishKey(hhmm, text)) ||
             isGroomed(day, hhmm, text) ||
             text
                 .replace(

@@ -3,10 +3,10 @@ id: PK-324
 title: >-
   checkpoint-5's tails: x linear sign chunk, to-spec on 3 sections, FRM-509's
   listing, the crew-pm-flow redraw, wishkeeper's small ones
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-06T15:00:00Z'
+updated_date: '2026-11-06T15:09:00Z'
 labels:
   - m
 dependencies: []
@@ -60,4 +60,7 @@ x linear sign: the retro counts 42 body calls, 23 through python, 48.7k bytes: i
 2026-11-06 16:55, main on his word, triage by a helper card, 31 rows. done now: FRM-441's next boot → someday; craft-pm names wish-cover --all; shape-lane-dispatch says how a planless card moves; fleet audit credits no read for sed -Ei, sed --in-place, &>/dev/null, 2>&1 >/dev/null, proven red. kept, no fix: W847 and W2000, a done ticket and an open one each hold it. siesta/SKILL.md:22, no history of those words in git, left as is. already landed: FRM-514's re-sign, FRM-434 and FRM-473 worth sections, ticket-flow.build.py, review-rounds, body.md, FRM-304's PK-79. owned elsewhere: FRM-509's branch listing, FRM-519 the sign door hole, FRM-501's habits line at its pr, FRM-473's real --dry call with the cli codie (due 11-07). on his board: x linear sign, FRM-410, W1979, the to-spec pass. left to check: PK-321 F1's verify gaps, its borrows, wishkeeper's 00:27 list.
 
 2026-11-06 17:02, main: the three lists read. borrows: every card sets its effort, nothing to do. zero-session audit reads not checked, fixed and proven red. F1's 10 verify gaps: lines 1, 3, 4, 8 go with FRM-383's verb, the rest wait for that verb's landing grooms. bytes pr median: two baselines 25 vs 36, flow's bytes number counts renovate, stays a note for x fleet flow. dima's calls: FRM-410 and W1979 written, the to-spec pass dropped. open: the signing script's call; PK-321's 19:02 minute-keyed no-wish collision, unfixed.
+
+2026-11-06 17:10, main, closing on his 17:06 «fully solve 324». solved: ticket-sign (name his pick o24, ## ⚖️ worth it: removes 42 hand body calls of the night, 23 through python; cheaper door: this script over an x verb, only clio signs; upkeep: one file; 🔌 fleet wired: clio:shape-lane's sign step; first real calls FRM-518 and FRM-383); the no-wish minute collision (x N lines, proven red); F1's verify gaps go with FRM-383's spec; FRM-473's --dry stays with the cli codie, due 11-07; FRM-509, FRM-519, FRM-501's habits line hold theirs.
+close: W1 done, the cancel-candidate habit in habit-dima-comms; W2 done, the same line; W3 done, FRM-447 canceled with its reason at the 11-05 worth-it pass
 <!-- SECTION:NOTES:END -->

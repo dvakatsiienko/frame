@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-06T01:25:00Z'
-updated_date: '2026-11-06T14:54:00Z'
+updated_date: '2026-11-06T15:11:00Z'
 labels:
   - s
   - side-channel-owned
@@ -63,4 +63,6 @@ W2000 (2026-11-06 16:10, dima): So this measure shows that you keep receiving re
 W2001 (2026-11-06 16:10, dima): If yes, proceed.
 
 close: W6 W21 W22 W43 W44 W45 W23 W24 W25 W26 W27 W28 W29 W30 W2 W3 W4 W46 W47 W1998 W1999 W2000 W2001 done: the backfill's lines, each acted on or answered in its thread, none moved to FRM-519
+
+2026-11-06 17:12, main, wishkeeper's read: my 16:55 rewording of the ticket line to «its mods chunk» broke the append rule and is named, his call on the board. this close corrected: FRM-519 is signed with a re-sign pending for item 8, and 45 older groom reds stand under PK-332, so «all chores solved or moved» excludes them. «lost no point of his» was a word-overlap script plus one read, an inference; W2007–W2020's read against FRM-509 is the next window's.
 <!-- SECTION:NOTES:END -->

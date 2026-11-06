@@ -744,44 +744,58 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 
 const closingWords = "reviewed and closed"
 
-// a lane plan's slice lines for one ticket: group 1 the mark, group 2 what follows the id
-func sliceLinesOf(id string) *regexp.Regexp {
-	return regexp.MustCompile(`(?m)^- \[([ xX])\] \d+ · ` + regexp.QuoteMeta(id) + `\b[ \t]*(.*)$`)
+// a lane plan's step line, read as the glide card reads it: its ticket is the first id in its text
+var (
+	planStepLine = regexp.MustCompile(`^- \[([ xX])\] \d+ · (.+?)[ \t\r]*$`)
+	stepTicket   = regexp.MustCompile(`\b(?:FRM|BYT)-\d+\b`)
+)
+
+// the mark and text of a step belonging to id; a line of another ticket or no step at all answers false
+func stepOf(line, id string) (mark, text string, ok bool) {
+	m := planStepLine.FindStringSubmatch(line)
+	if m == nil || stepTicket.FindString(m[2]) != id {
+		return "", "", false
+	}
+	return m[1], m[2], true
 }
 
-// the lane plan beside a ticket's spec, live or archived; a lane with one chunk may have none
-func lanePlanOf(frame, id string) string {
-	spec := archivedSpec(frame, id)
-	if paths, _ := laneSpecSection(frame, id); len(paths) > 0 {
-		spec = paths[0]
+// the plans of a ticket's specs, live first, then the first holding a step of the ticket: a stale spec may sort ahead
+func lanePlanOf(frame, id string) (path string, lines []string) {
+	specs, _ := laneSpecSection(frame, id)
+	if found := archivedSpec(frame, id); found != "" {
+		specs = append(specs, found)
 	}
-	if spec == "" {
-		return ""
+	for _, spec := range specs {
+		candidate := filepath.Join(stateDir(), "lanes", filepath.Base(filepath.Dir(spec)), "lane-plan.md")
+		raw, err := os.ReadFile(candidate)
+		if err != nil {
+			continue
+		}
+		split := strings.Split(string(raw), "\n")
+		for _, line := range split {
+			if _, _, ok := stepOf(line, id); ok {
+				return candidate, split
+			}
+		}
 	}
-	return filepath.Join(stateDir(), "lanes", filepath.Base(filepath.Dir(spec)), "lane-plan.md")
+	return "", nil
 }
 
 // closingLine reads the slice that holds a chunk on the glide card while its reviews run; has is false when no
 // lane plan names the chunk, and open names the plan while the slice waits for --apply
 func closingLine(frame, id string) (line landedLine, open string, has bool) {
-	path := lanePlanOf(frame, id)
+	path, lines := lanePlanOf(frame, id)
 	if path == "" {
 		return line, "", false
 	}
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		return line, "", false
-	}
-	chunk := sliceLinesOf(id).FindAllStringSubmatch(string(raw), -1)
-	if len(chunk) == 0 {
-		return line, "", false
-	}
 	line = landedLine{name: "closing"}
-	for _, s := range chunk {
-		if s[2] != closingWords {
+	closing := id + " " + closingWords
+	for _, l := range lines {
+		mark, text, ok := stepOf(l, id)
+		if !ok || text != closing {
 			continue
 		}
-		if s[1] != " " {
+		if mark != " " {
 			line.ok, line.detail = true, id+"'s closing slice is ticked"
 			return line, "", true
 		}
@@ -789,7 +803,7 @@ func closingLine(frame, id string) (line landedLine, open string, has bool) {
 		return line, path, true
 	}
 	line.detail = home(path) + " holds no closing slice for " + id
-	line.fix = "end " + id + "'s slices in " + home(path) + " with «- [ ] NN · " + id + " " + closingWords + "»"
+	line.fix = "end " + id + "'s slices in " + home(path) + " with «- [ ] NN · " + closing + "»"
 	return line, "", true
 }
 
@@ -799,13 +813,13 @@ func tickClosing(path, id string) error {
 	if err != nil {
 		return err
 	}
-	ticked := sliceLinesOf(id).ReplaceAllStringFunc(string(raw), func(line string) string {
-		if !strings.HasSuffix(line, " "+closingWords) {
-			return line
+	lines := strings.Split(string(raw), "\n")
+	for i, l := range lines {
+		if _, text, ok := stepOf(l, id); ok && text == id+" "+closingWords {
+			lines[i] = strings.Replace(l, "- [ ]", "- [x]", 1)
 		}
-		return strings.Replace(line, "- [ ]", "- [x]", 1)
-	})
-	return os.WriteFile(path, []byte(ticked), 0o644)
+	}
+	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o644)
 }
 
 // the archived spec that holds § id, beside the main checkout's other specs
@@ -830,6 +844,13 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	if merged := plan.lines[0]; !merged.ok {
 		return nil, &Fail{Refused: true, Msg: "the lane has not landed (" + merged.detail + "): --apply archives and decamps only after the merge", Next: merged.fix}
 	}
+	if plan.openClosing != "" {
+		if err := r.Step("closing", plan.id+"'s closing slice in "+home(plan.openClosing), func() (string, error) {
+			return "ticked", tickClosing(plan.openClosing, plan.id)
+		}); err != nil {
+			return nil, err
+		}
+	}
 	if plan.specDir != "" {
 		if err := r.Step("archive", "the spec dir into .scratch/"+archived, func() (string, error) {
 			if exists(plan.archive) {
@@ -849,13 +870,6 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 				return "", err
 			}
 			return hooksHome(plan.main, tree)
-		}); err != nil {
-			return nil, err
-		}
-	}
-	if plan.openClosing != "" {
-		if err := r.Step("closing", plan.id+"'s closing slice in "+home(plan.openClosing), func() (string, error) {
-			return "ticked", tickClosing(plan.openClosing, plan.id)
 		}); err != nil {
 			return nil, err
 		}

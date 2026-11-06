@@ -254,6 +254,11 @@ export const PARTS = [
     { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
     { group: 'stash · band', key: 'stash.ctx', label: '🧠 ctx bar (desktop)' },
     { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
+    {
+        group: 'stash · board',
+        key: 'stash.rounds',
+        label: "a lane's round count and its stop line",
+    },
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
     { group: 'stash · board', key: 'stash.glide', label: '🛼 glide' },
@@ -1362,9 +1367,13 @@ async function takeGapNotes($: EngineInterface) {
 }
 
 // past this a hold reads stuck; while he is away a held notice is meant to wait up to three waits, a repeating member's
-async function heldStuckMs($: EngineInterface, held: QuietPing[]) {
+async function heldStuckMs(
+    $: EngineInterface,
+    held: QuietPing[],
+    sid?: string,
+) {
     const waits =
-        held.some((p) => p.tag === QUIET_NOTICE) && (await isAwayNow($))
+        held.some((p) => p.tag === QUIET_NOTICE) && (await isAwayNow($, sid))
             ? QUIET_REPEAT_WAITS
             : 1;
     return waits * (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
@@ -1455,10 +1464,10 @@ async function isLastReplyPing($: EngineInterface, sid: string) {
 }
 
 // afk on or a shift running: nobody is at the keyboard to notice a member ending silently
-async function isAwayNow($: EngineInterface) {
+async function isAwayNow($: EngineInterface, of?: string) {
     const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     if (away?.on === true && (await partsShown($))('stash.afk')) return true;
-    const sid = await currentId($);
+    const sid = of ?? (await currentId($));
     const pace = sid
         ? ((await $.store.get(PACE + sid)) as { since?: number } | undefined)
         : undefined;
@@ -4660,7 +4669,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             isHeldStuck:
                 !!held &&
                 now - Math.min(...held.map((p) => p.at)) >
-                    (await heldStuckMs($, held)),
+                    (await heldStuckMs($, held, r.sid)),
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
@@ -4972,7 +4981,7 @@ async function orbitCall(
         const before = await readLanes($);
         if (side && input.act !== 'create') {
             const card = before.find((l) => l.id === oneLine(input.id));
-            if (card && card.runner !== side)
+            if (card && bare(card.runner ?? '') !== bare(side))
                 return {
                     deny: `orbit glide: lane ${card.id} is not this side channel's; it writes only a card it created, ${LANE_OWNER} the rest`,
                 };
@@ -4984,7 +4993,10 @@ async function orbitCall(
                 : undefined;
         // a create that names its lane plan takes its first steps from that file, so the card is never drawn from a guess
         let given = linkTo ? { ...input, session: linkTo } : input;
-        if (input.act === 'create' && typeof input.plan === 'string') {
+        if (
+            (input.act === 'create' || input.act === 'edit') &&
+            typeof input.plan === 'string'
+        ) {
             if (!/^(?:\/|~\/)/.test(input.plan))
                 return {
                     deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
@@ -5011,7 +5023,14 @@ async function orbitCall(
                 return {
                     deny: `orbit glide: ${input.plan} has a step with no ticket id, «${unticketed.text}»: every line reads «- [ ] NN · FRM-N text»`,
                 };
-            given = { ...given, items: steps };
+            if (input.act === 'create') given = { ...given, items: steps };
+            else if (
+                before.find((l) => l.id === oneLine(input.id))?.plan !==
+                input.plan
+            )
+                return {
+                    deny: `orbit glide: edit cannot link a plan; lane ${oneLine(input.id)} takes one at create`,
+                };
         }
         const op = glideOp(
             before,
@@ -5298,7 +5317,7 @@ export const register: Register = (on) => {
         const lanes = isOwner && isOn('stash.glide') ? await readLanes($) : [];
         const live = lanes.filter((l) => !l.endedAt);
         const laneStale = live
-            .filter((l) => orbit.turns - l.movedAt >= LANE_STALE)
+            .filter((l) => !l.runner && orbit.turns - l.movedAt >= LANE_STALE)
             .map(
                 (l) =>
                     `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
@@ -7812,7 +7831,10 @@ export const register: Register = (on) => {
             ? await quietSendEnd($, send, r.result).catch(() => undefined)
             : undefined;
         if (sent?.line) notes.push(sent.line);
-        if ((e.tool as string) === SEND_TOOL) {
+        // a fresh answer: core's `text` and `ref` still name the refusal
+        const answer = sent?.held ? ({ result: sent.held } as never) : r;
+        const isOn = await partsShown($);
+        if ((e.tool as string) === SEND_TOOL && isOn('stash.rounds')) {
             const round = await laneRoundLine(
                 $,
                 e as Record<string, unknown>,
@@ -7820,9 +7842,6 @@ export const register: Register = (on) => {
             ).catch(() => undefined);
             if (round) notes.push(round);
         }
-        // a fresh answer: core's `text` and `ref` still name the refusal
-        const answer = sent?.held ? ({ result: sent.held } as never) : r;
-        const isOn = await partsShown($);
         if (turnAfk !== undefined && turnAfk !== afk) {
             turnAfk = afk;
             if (isOn('stash.afk')) notes.push(afk ? AWAY_NOTE : BACK_NOTE);

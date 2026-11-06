@@ -18,9 +18,39 @@ import {
     openStanding,
     rawPromptAt,
     strayRaws,
+    ungroomedPrompts,
     ungroomedStamps,
     unnumberedAsks,
 } from './prompt-groom.ts';
+
+describe('a no-wish line on a minute with two prompts', () => {
+    const day = '## 10:00\n\nfirst wish\n\n## 10:00\n\nsecond wish\n';
+    const reds = (noWish: string) =>
+        ungroomedPrompts(day, '2026-11-06', '11:00', noWish, () => false)
+            .length;
+
+    test('a plain line hides nothing', () => {
+        expect(reds('10:00 — about the first\n')).toBe(1);
+    });
+
+    test('a line naming both clears the minute', () => {
+        expect(reds('10:00 ×2 — both answered\n')).toBe(0);
+    });
+
+    test('a side note beside one prompt counts as one', () => {
+        const noted =
+            '## 10:00\n\na wish\n\n## 10:00\n\n<side-sessions-event>x</side-sessions-event>\n';
+        expect(
+            ungroomedPrompts(
+                noted,
+                '2026-11-06',
+                '11:00',
+                '10:00 — it\n',
+                () => false,
+            ),
+        ).toEqual([]);
+    });
+});
 
 describe('standing lines', () => {
     const groomed = () => {
