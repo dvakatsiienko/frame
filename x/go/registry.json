@@ -1215,6 +1215,11 @@
                     "description": "run only the edited tests on that ref's mod, naming which fail there and which errored",
                     "type": "string",
                     "value": "ref"
+                },
+                "only": {
+                    "description": "run one test file on the overlay, its path read from the repo root: no queue turn, no gates, no stamp, so a push still runs the whole test",
+                    "type": "string",
+                    "value": "test file"
                 }
             },
             "name": "mods edit test",
