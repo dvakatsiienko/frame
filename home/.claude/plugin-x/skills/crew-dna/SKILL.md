@@ -19,12 +19,12 @@ this file says how every member does it. A section headed with roles binds only 
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
 - the quiet mod sets when a message pushes
-- a send that bounces is retried once, then named in your next ping with its error
+- a send that errors or bounces is retried once, then named in your next ping with its error
 - every external write is named in your next ping
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
 - every question carries the options and your pick
-- a decision clio may already hold goes to clio first, never a new ask to dima
+- a decision clio may already hold goes to clio first, not to dima
 
 **heavy runs**, in the background: a commit or push `timeout 1700 ~/frame/script/gate-queue.sh <cmd>`, mutants or a suite by hand add `--long`
 
