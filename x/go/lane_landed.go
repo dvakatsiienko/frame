@@ -748,6 +748,7 @@ const closingWords = "reviewed and closed"
 var (
 	planStepLine = regexp.MustCompile(`^- \[([ xX])\] \d+ · (.+?)[ \t\r]*$`)
 	stepTicket   = regexp.MustCompile(`\b(?:FRM|BYT)-\d+\b`)
+	closingStep  = regexp.MustCompile(`\b(?:reviewed and closed|closes)$`)
 )
 
 // the mark and text of a step belonging to id; a line of another ticket or no step at all answers false
@@ -781,6 +782,18 @@ func lanePlanOf(frame, id string) (path string, lines []string) {
 	return "", nil
 }
 
+// the chunk's closing slice, -1 for none: its last step ending in a closing word, so a second round's own closing line
+// is read, not the first round's, and a plan's own wording passes
+func closingIndex(lines []string, id string) int {
+	at := -1
+	for i, l := range lines {
+		if _, text, ok := stepOf(l, id); ok && closingStep.MatchString(text) {
+			at = i
+		}
+	}
+	return at
+}
+
 // closingLine reads the slice that holds a chunk on the glide card while its reviews run; has is false when no
 // lane plan names the chunk, and open names the plan while the slice waits for --apply
 func closingLine(frame, id string) (line landedLine, open string, has bool) {
@@ -789,22 +802,18 @@ func closingLine(frame, id string) (line landedLine, open string, has bool) {
 		return line, "", false
 	}
 	line = landedLine{name: "closing"}
-	closing := id + " " + closingWords
-	for _, l := range lines {
-		mark, text, ok := stepOf(l, id)
-		if !ok || text != closing {
-			continue
-		}
-		if mark != " " {
-			line.ok, line.detail = true, id+"'s closing slice is ticked"
-			return line, "", true
-		}
-		line.detail, line.fix = id+"'s closing slice is open in "+home(path), "x lane landed "+id+" --apply"
-		return line, path, true
+	at := closingIndex(lines, id)
+	if at < 0 {
+		line.detail = home(path) + " holds no closing slice for " + id
+		line.fix = "end " + id + "'s slices in " + home(path) + " with «- [ ] NN · " + id + " " + closingWords + "»"
+		return line, "", true
 	}
-	line.detail = home(path) + " holds no closing slice for " + id
-	line.fix = "end " + id + "'s slices in " + home(path) + " with «- [ ] NN · " + closing + "»"
-	return line, "", true
+	if mark, _, _ := stepOf(lines[at], id); mark != " " {
+		line.ok, line.detail = true, id+"'s closing slice is ticked"
+		return line, "", true
+	}
+	line.detail, line.fix = id+"'s closing slice is open in "+home(path), "x lane landed "+id+" --apply"
+	return line, path, true
 }
 
 // tickClosing marks the one closing line and leaves every other byte as it was
@@ -814,10 +823,8 @@ func tickClosing(path, id string) error {
 		return err
 	}
 	lines := strings.Split(string(raw), "\n")
-	for i, l := range lines {
-		if _, text, ok := stepOf(l, id); ok && text == id+" "+closingWords {
-			lines[i] = strings.Replace(l, "- [ ]", "- [x]", 1)
-		}
+	if at := closingIndex(lines, id); at >= 0 {
+		lines[at] = strings.Replace(lines[at], "- [ ]", "- [x]", 1)
 	}
 	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o644)
 }
