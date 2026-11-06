@@ -4,6 +4,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
+import { cleanStampWrite } from './x-mod-guard/hooks/rules/clean-stamp.ts';
 import { hints } from './x-mod-guard/hooks/rules/hint.ts';
 
 export function bashCalls(jsonl: string) {
@@ -33,12 +34,17 @@ export function bashCalls(jsonl: string) {
 
 export function tally(calls: Call[], home: string) {
     const fired = new Map<string, string[]>();
-    for (const { command, cwd, isForeground } of calls)
-        for (const hint of hints(command, cwd, { home, isForeground })) {
+    for (const { command, cwd, isForeground } of calls) {
+        const stamp = cleanStampWrite(command, cwd, { home })?.rule;
+        for (const hint of [
+            ...hints(command, cwd, { home, isForeground }),
+            ...(stamp ? [stamp] : []),
+        ]) {
             const seen = fired.get(hint) ?? [];
             seen.push(command.split('\n')[0]?.slice(0, 120) ?? '');
             fired.set(hint, seen);
         }
+    }
     return fired;
 }
 

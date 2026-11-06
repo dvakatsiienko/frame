@@ -1193,3 +1193,45 @@ func TestPrOpenRefusesABaseMissingFromOrigin(t *testing.T) {
 		t.Fatalf("exit %d, want a refusal naming the missing base and no gh call\n%s", got.code, got.stdout)
 	}
 }
+
+// a top's merge lands every layer under it
+func TestMergeAutoRefusesATopOverAHeldLowerLayer(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	plantHold(t, w, "7")
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "#7") || !strings.Contains(msg, "held") || got.next != "x lane merge-auto 8 --apply --dima-ok 8" || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, error %q, next %q, puts %q: want no merge and a refusal naming held #7", got.code, msg, got.next, w.hub.sent("PUT "))
+	}
+}
+
+func TestMergeAutoLandsATopOverAHeldLowerLayerOnDimasWord(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	plantHold(t, w, "7", "8")
+
+	got := w.run(t, "8", "--apply", "--dima-ok", "8")
+
+	if got.code != 0 || len(w.hub.sent("PUT "+repoPath+"/pulls/8/merge-async")) != 1 {
+		t.Fatalf("exit %d, puts %q: want his word on the top to land the held stack\n%s", got.code, w.hub.sent("PUT"), got.stdout)
+	}
+	if exists(holdRecordOf(w)) {
+		t.Errorf("held %q: want every landed layer's mark off and the record gone", heldPrs(t, w))
+	}
+}
+
+// dima holds a stack by its top: the layers under it land with it, so they hold with it
+func TestMergeAutoHoldOnATopMarksTheLayersUnderIt(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+
+	got := w.run(t, "8", "--hold", "--apply")
+
+	held := heldPrs(t, w)
+	slices.Sort(held)
+	if got.code != 0 || !slices.Equal(held, []string{"7", "8"}) {
+		t.Fatalf("exit %d, held %q: want the top and the layer under it marked\n%s", got.code, held, got.stdout)
+	}
+}
