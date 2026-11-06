@@ -6,11 +6,9 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:51:00Z'
-updated_date: '2026-11-06T16:21:00Z'
+updated_date: '2026-11-06T17:08:00Z'
 labels:
   - s
-  - side
-  - wing-1
 dependencies: []
 priority: next
 type: task
