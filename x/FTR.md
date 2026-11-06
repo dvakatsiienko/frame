@@ -135,8 +135,7 @@
   - when `x lane review <pr>` runs
   - then it adds `🤖 review:requested` as the codie app
   - given the last round judged the head, a round still running on the branch, or a repo with no `review.yml`, then it prints ok and touches no label
-  - given the head is approved on dima's account, or `review:clean` is green on it, then it prints ok («cleared») and touches no label, past the cap too
-  - given the round already ran and neither holds, then it requests nothing, exits 1 and names clio's approval on sixth sense's clean as the way past
+  - given the round already ran on an ancestor of the head, or a rebase kept its code, then it prints ok and touches no label; otherwise it requests nothing, exits 1 and names dima's label as the way to a second round
   - given the label came off and the add failed, then the failure says the pr now holds no review label
   - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and codie's «final» ping runs it as one call (FRM-355)
 - ✅ `x lane gate <msg-file>` holds a commit at commit-msg, in frame and bytes
@@ -179,7 +178,8 @@
   - when `x lane merge-auto <pr> --apply` runs
   - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
   - given no run, a skipped or red required check, 0 required checks, an open thread, no sixth sense clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
-  - given bytes' `review:clean` is the one required check missing and the ci review round ran on the branch, then it approves the head on dima's account, waits for `review:clean` to go green on it, then merges; before that round it waits and names `x lane review`
+  - given a bytes pr whose reviewer job finished a round on an ancestor of its head, sixth sense's clean covering the commits after it, or on a head a rebase carried with its patch-id unchanged, then it merges with no approve while `review:clean` is not required; a required one still takes the approve, then the merge
+  - given no round, a round a rebase changed the code under, or a run whose reviewer job skipped or was cancelled, then it waits and names `x lane review <pr>`; given a stand-down alone, then it names the `--dima-ok` door, which passes the round; a renovate author needs no round
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it

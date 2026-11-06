@@ -297,7 +297,7 @@
             ],
             "name": "lane review",
             "needsApply": false,
-            "purpose": "re-request a ci review that judged an older commit than the pr head; at the 2-round cap, name dima's approval instead",
+            "purpose": "re-request a ci review that judged an older commit than the pr head; at the 1-round cap, name dima's label instead",
             "steps": ["pr", "rounds", "request"],
             "touches": ["github — the pr's labels, as the x-codie-cc app"]
         },
@@ -370,12 +370,13 @@
             },
             "name": "lane merge-auto",
             "needsApply": true,
-            "purpose": "merge a pr once its head is sixth-sense-clean, required checks green and threads closed; else wait and name why",
+            "purpose": "merge a pr once its head is sixth-sense-clean, checks green, a bytes round finished, threads closed; else name the wait",
             "steps": [
                 "pr",
                 "layers",
                 "sixth-sense",
                 "ci",
+                "round",
                 "threads",
                 "risky",
                 "brake",
