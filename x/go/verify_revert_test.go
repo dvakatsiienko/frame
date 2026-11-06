@@ -358,6 +358,75 @@ func TestRevertNamesEachNewTest(t *testing.T) {
 	}
 }
 
+// exit line 7: each run goes through the queue's long slot, and the queue's own words read as no test's
+func TestRevertTakesTheLongSlot(t *testing.T) {
+	t.Parallel()
+	main, _, tree := revertWorld(t)
+	root := t.TempDir()
+	calls := filepath.Join(t.TempDir(), "calls")
+	write(t, filepath.Join(root, "script/gate-queue.sh"), "#!/bin/sh\necho \"$1\" >> "+calls+"\nshift\necho 'gate-queue: waiting 30s, holder: (fail) the file did not load' >&2\nexec \"$@\"\n")
+	if err := os.Chmod(filepath.Join(root, "script/gate-queue.sh"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	command := goPrints("--- FAIL: TestNewOne (0.00s)", "--- FAIL: TestNewTwo (0.00s)", "FAIL")
+	args := append([]string{"lane", "verify-tree", revertPR, "--revert", "main", "src.txt", "secret.txt", "added.txt", "gone.txt", "--"}, command...)
+
+	got := xIn(t, main, []string{"X_FRAME_ROOT=" + root}, args...)
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want the queue's words read as no test's:\n%s", got.code, got.stdout)
+	}
+	if read := readOr(calls, ""); read != "--long\n--long\n" {
+		t.Fatalf("the queue heard %q, want two runs on the long slot", read)
+	}
+	assertHeadBack(t, tree)
+}
+
+// exit line 7: a real go package in place of `pnpm mods:test`
+func TestRevertReadsARealGoPackage(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, test string
+		code       int
+		verdict    string
+	}{
+		{"an assertion on base", "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatalf(\"got %d\", Limit)\n\t}\n}\n", 0, "red"},
+		{"a test that reads nothing", "func TestNew(t *testing.T) {}\n", 1, "still green"},
+		{"a panic on base", "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n", 1, "broken"},
+		{"a symbol base lacks", "func TestNew(t *testing.T) {\n\tif Added != 1 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
+		{"red on head too", "func TestNew(t *testing.T) {\n\tt.Fatal(\"always\")\n}\n", 1, "broken"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			main, _ := verifyWorld(t)
+			write(t, filepath.Join(main, "go.mod"), "module p\n\ngo 1.24\n")
+			write(t, filepath.Join(main, "lib.go"), "package p\n\nconst Limit = 1\n")
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "base")
+			gitT(t, main, "push", "-q", "origin", "main")
+			gitT(t, main, "switch", "-q", "-c", "coder/y")
+			write(t, filepath.Join(main, "lib.go"), "package p\n\nconst Limit = 3\nconst Added = 1\n")
+			write(t, filepath.Join(main, "lib_test.go"), "package p\n\nimport \"testing\"\n\n"+c.test)
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "the pr")
+			gitT(t, main, "push", "-q", "origin", "HEAD:refs/pull/8/head")
+			gitT(t, main, "switch", "-q", "main")
+			gitT(t, main, "branch", "-q", "-D", "coder/y")
+
+			got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--revert", "main", "lib.go", "--", "go", "test", "-count=1", "./...")
+
+			if rows := rowsOf(t, got); got.code != c.code || rows[""] != c.verdict {
+				t.Fatalf("exit %d, rows %v, want %d and %s:\n%s", got.code, rows, c.code, c.verdict, got.stdout)
+			}
+			tree := filepath.Join(main, ".claude/worktrees/verify-pr-8")
+			if body := readOr(filepath.Join(tree, "lib.go"), ""); !strings.Contains(body, "Limit = 3") {
+				t.Fatalf("lib.go reads %q, want head's", body)
+			}
+		})
+	}
+}
+
 // exit line 4: x itself dies mid-swap, so nothing deferred runs and the marker is all that is left
 func killedMidSwap(t *testing.T, main string) (tree string) {
 	t.Helper()

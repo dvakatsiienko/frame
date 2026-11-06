@@ -393,13 +393,14 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		return data, nil
 	}
 
+	command = inLongSlot(command)
 	var verdict, output string
 	var rows []testRow
 	var onHead testOutput
 	if err := r.Step("test-head", strings.Join(command, " "), func() (string, error) {
 		got, _ := run(tree, nil, "", command[0], command[1:]...)
-		output = got.log
-		onHead = readTestOutput(got.log)
+		output = withoutQueueLines(got.log)
+		onHead = readTestOutput(output)
 		if whole, why := wholeRunVerdict(onHead, got.ok); whole != "" {
 			verdict, rows = whole, wholeRunRows(newTests, whole, "on head: "+why)
 			return "", notHeld(whole)
@@ -435,8 +436,8 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		defer func() { restoreErr = restore() }()
 		_ = r.Step("test-base", strings.Join(command, " "), func() (string, error) {
 			got, _ := run(tree, nil, "", command[0], command[1:]...)
-			output = got.log
-			verdict, rows = judgeRun(got.log, got.ok, newTests, onHead)
+			output = withoutQueueLines(got.log)
+			verdict, rows = judgeRun(output, got.ok, newTests, onHead)
 			if verdict != verdictRed {
 				return "", notHeld(verdict)
 			}
@@ -447,6 +448,25 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		return nil, restoreErr
 	}
 	return report(verdict, output, rows)
+}
+
+// a suite is a long round, so each run takes the queue's long slot; a test stays off the real slot unless it plants a queue
+func inLongSlot(command []string) []string {
+	if os.Getenv("X_TEST") != "" && os.Getenv("X_FRAME_ROOT") == "" {
+		return command
+	}
+	return append([]string{filepath.Join(frameRoot(), "script/gate-queue.sh"), "--long"}, command...)
+}
+
+// the queue's wait lines name its holder's command, whose words are no test's; its deadline line stays, the only reason a run did not run
+func withoutQueueLines(log string) string {
+	var kept []string
+	for line := range strings.SplitSeq(log, "\n") {
+		if !strings.HasPrefix(line, "gate-queue: waiting ") && !strings.HasPrefix(line, "gate-queue: took the turn") {
+			kept = append(kept, line)
+		}
+	}
+	return strings.Join(kept, "\n")
 }
 
 func rowsLine(rows []testRow) string {
