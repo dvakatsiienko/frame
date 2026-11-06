@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T16:15:00Z'
+updated_date: '2026-11-06T16:16:00Z'
 labels:
   - s
   - side
@@ -39,4 +39,6 @@ crow's read 18:06, on a gate lock in gates.go: the lock first, narrowing next, o
 
 PK-328:W2 (2026-11-06 18:15, dima): yesterday i peeked into the mods coder window and spotted the commit gate and red-proof gate taking a lot of time. codie itself told me it would make sense to offload it to the background and parallelize it, since codie waits up to a few minutes for commits only. one commit at 3 minutes, 10 commits: half an hour just waiting for commits.
 PK-328:W3 (2026-11-06 18:15, dima): maybe rethink this approach at all: why do we have pre-commit, and all these checks on the commits? maybe move them to the push event. commits get much faster, and the gate is still there, just later on push instead of on each commit. i think it would make coders much faster. ❓
+
+measured 18:18, from two commit logs this hour: a non-mods commit takes 16-17 s, test 15-17, typecheck 2-4, under load; the minutes dima saw are mods-test (not timed yet, its log carries no duration here). crow 18:15: split by where the commit lands, branch lanes to push, main keeps typecheck and path tests, plus a nudge at N unpushed commits. landed in my tree: untouched mods skip; gate-queue.sh.
 <!-- SECTION:NOTES:END -->
