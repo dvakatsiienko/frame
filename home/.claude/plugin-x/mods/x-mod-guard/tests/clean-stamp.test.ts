@@ -74,6 +74,12 @@ const WRITES = [
     `sed -i '' s/a/b/ ${STORE}`,
     `python3 -c "open('${STORE}', 'w').write('{}')"`,
     `node -e "require('fs').writeFileSync('${STORE}', '{}')"`,
+    `python3 -c "from pathlib import Path; (Path.home()/'.claude/shelf/pr-verified.json').write_text('{}')"`,
+    `python3 -c "import json,os; json.dump({},open(os.path.expanduser('~/.claude/shelf/pr-verified.json'),'w'))"`,
+    `echo '{}' > ~/frame/cc/shelf/pr-verified.json`,
+    'bash -o pipefail watch-pr.sh --verified 7 abc',
+    'source watch-pr.sh --verified 7 abc',
+    'dash watch-pr.sh --verified 7 abc',
 ];
 
 for (const name of [
@@ -116,6 +122,7 @@ for (const line of [
     `cp ${STORE} /tmp/`,
     '~/frame/_clio/.claude/hooks/watch-pr.sh 7',
     `node -e "console.log(require('fs').readFileSync('${STORE}', 'utf8'))"`,
+    `python3 -c "import json; print(json.load(open('${STORE}')))"`,
     'echo watch-pr.sh --verified',
 ])
     test(`a member's read of the store passes: ${line}`, async ($, on) => {

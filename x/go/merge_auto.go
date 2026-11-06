@@ -375,6 +375,18 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
+		// a hold set since the plan read: the approve alone waits minutes
+		if !d.dimaOK {
+			held, holdErr := readHolds(d.Repo)
+			if stop := holdStop(d.Repo, d.PR, held, holdErr); stop != "" {
+				return "", holdRefusal(d.PR, stop)
+			}
+			for layer := range d.heads {
+				if stop := holdStop(d.Repo, layer, held, holdErr); stop != "" {
+					return "", holdRefusal(d.PR, stop)
+				}
+			}
+		}
 		if d.layered && laneAddOn.mergeLayers != nil {
 			// a stacked pr refuses the plain endpoint (403); its layers land together or not at all
 			if err := headsHeld(api, d.heads); err != nil {

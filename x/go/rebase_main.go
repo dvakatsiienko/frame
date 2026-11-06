@@ -83,8 +83,8 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 			return "", err
 		}
 		note, recorded := readOntoRecord(t.record, name)
-		// a rewrite leaves the recorded head off HEAD's history; a commit on top of it after an abort does not
-		t.finished = recorded && note.Head != current && !ok(git("merge-base", "--is-ancestor", note.Head, "HEAD"))
+		// a finished rewrite leaves the recorded head and the old base off HEAD's history; a later commit or an amend after an abort does not
+		t.finished = recorded && t.Onto != "" && !ok(git("merge-base", "--is-ancestor", note.Head, "HEAD")) && !ok(git("merge-base", "--is-ancestor", t.Onto, "HEAD"))
 		if t.Lease, err = remoteSha(name); err != nil {
 			return "", err
 		}
@@ -95,14 +95,17 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 			// a matching lease alone would still overwrite a teammate's push from before this run; the head this
 			// verb recorded before it rewrote is its own, so it is no such push
 			if t.finished {
-				if !ok(git("merge-base", "--is-ancestor", t.Lease, note.Head)) {
+				if t.Lease != current && !ok(git("merge-base", "--is-ancestor", t.Lease, note.Head)) {
 					return "", &Fail{Refused: true, Msg: "origin/" + name + " holds " + short(t.Lease) + ", past the " + short(note.Head) + " this verb rewrote: a push this branch has not taken in",
 						Next: "git log " + note.Head + ".." + t.Lease}
 				}
-			} else if !ok(git("merge-base", "--is-ancestor", t.Lease, "HEAD")) {
+			} else if !(recorded && t.Lease == note.Head) && !ok(git("merge-base", "--is-ancestor", t.Lease, "HEAD")) {
 				return "", &Fail{Refused: true, Msg: "origin/" + name + " holds " + short(t.Lease) + ", a commit HEAD lacks: a push this branch has not taken in",
 					Next: "git log HEAD.." + t.Lease}
 			}
+		}
+		if t.Onto != "" && !t.finished && t.Onto == current {
+			return "", &Fail{Refused: true, Msg: short(t.Onto) + " is HEAD itself: nothing would replay, and the layer's commits would leave the remote", Next: "git log --oneline origin/main..HEAD"}
 		}
 		if t.Onto != "" && !t.finished && !ok(git("merge-base", "--is-ancestor", t.Onto, "HEAD")) {
 			return "", &Fail{Refused: true, Msg: short(t.Onto) + " is not an ancestor of HEAD, so it is not this layer's old base", Next: "git log --oneline origin/main..HEAD"}
@@ -122,6 +125,13 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	return t, nil
+}
+
+func (t *rebaseTarget) rerun() string {
+	if t.Onto != "" {
+		return "x lane rebase-main --onto " + t.Onto + " --apply"
+	}
+	return "x lane rebase-main --apply"
 }
 
 func askRebase(plan any) string {
@@ -180,7 +190,7 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			return "", &Fail{Msg: fmt.Sprintf("origin/%s moved to %s since the read at %s, and the lease kept that push",
 				t.Branch, short(remote), or(short(t.Lease), "nothing")), Next: "git log HEAD.." + remote, Log: nonBlank(pushed.log)}
 		}
-		return "", &Fail{Msg: "push failed — the git and hook output is above", Next: "x lane rebase-main --apply", Log: nonBlank(pushed.log)}
+		return "", &Fail{Msg: "push failed — the git and hook output is above", Next: t.rerun(), Log: nonBlank(pushed.log)}
 	}); err != nil {
 		return nil, err
 	}
@@ -190,7 +200,7 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			return "", err
 		}
 		if remote != sha {
-			return "", &Fail{Msg: fmt.Sprintf("remote is %s, HEAD is %s", or(remote, "empty"), sha), Next: "x lane rebase-main --apply"}
+			return "", &Fail{Msg: fmt.Sprintf("remote is %s, HEAD is %s", or(remote, "empty"), sha), Next: t.rerun()}
 		}
 		return "the remote holds " + short(remote), nil
 	}); err != nil {

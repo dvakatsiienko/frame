@@ -55,6 +55,9 @@ for (const line of [
     'gh -R o/r pr merge 7',
     'gh stack merge 7',
     'gh api -X PUT repos/o/r/pulls/7/merge',
+    'gh api -X=PUT repos/o/r/pulls/7/merge',
+    'gh api -X PUT "repos/o/r/pulls/7/merge?merge_method=squash"',
+    'gh pr merge 007',
     'gh api --method PUT repos/o/r/pulls/7/merge',
     'gh api --method=put repos/o/r/pulls/7/merge -f merge_method=squash',
     'gh api -XPUT /repos/o/r/pulls/7/merge-async',
@@ -75,7 +78,6 @@ for (const line of [
 
 for (const line of [
     'gh pr merge 8',
-    'gh stack merge 8',
     'gh api -X PUT repos/o/r/pulls/8/merge',
     'gh api repos/o/r/pulls/7/merge',
     'gh pr view 7',
@@ -96,6 +98,8 @@ for (const line of [
     'gh pr merge codie/FRM-1-a',
     'gh pr merge "$PR"',
     'gh stack merge',
+    'gh stack merge 8',
+    'gh api -X PUT repos/o/r/pulls/8/merge-async',
     'gh api -X PUT "repos/o/r/pulls/$n/merge"',
 ]) {
     test(`a raw merge whose target cannot be read is refused while a hold stands: ${line}`, async ($, on) => {
@@ -111,6 +115,27 @@ for (const line of [
         expect(ran.length).toBe(1);
     });
 }
+
+for (const line of [
+    `gh api graphql -f query='mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
+    `gh api graphql -f query='mutation { enqueuePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }'`,
+])
+    test(`a graphql merge names no pr number, so a standing hold refuses it: ${line}`, async ($, on) => {
+        const { ran } = world(on, HELD_7);
+        const r = await bash($, line);
+        expect(r.deny).toContain('merge-hold');
+        expect(ran).toEqual([]);
+    });
+
+test('a graphql read passes while a hold stands', async ($, on) => {
+    const { ran } = world(on, HELD_7);
+    const r = await bash(
+        $,
+        `gh api graphql -f query='query { viewer { login } }'`,
+    );
+    expect(r.deny).toBeUndefined();
+    expect(ran.length).toBe(1);
+});
 
 test('a record that does not parse reads as held', async ($, on) => {
     const { ran } = world(on, 'not json');

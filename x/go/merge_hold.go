@@ -16,7 +16,13 @@ type holdNote struct {
 
 // this mac's record, the one store x-mod-guard's raw-merge rule reads too: it reads with no network, before a command runs
 func holdRecord(repo string) string {
-	return filepath.Join(stateDir(), "merge-hold", strings.ReplaceAll(repo, "/", "_")+".json")
+	state := stateDir()
+	// an env var in a real run would swap the record the gate reads
+	if os.Getenv("X_TEST") == "" {
+		userHome, _ := os.UserHomeDir()
+		state = filepath.Join(userHome, ".local/state/x")
+	}
+	return filepath.Join(state, "merge-hold", strings.ReplaceAll(repo, "/", "_")+".json")
 }
 
 func readHolds(repo string) ([]string, error) {
@@ -108,7 +114,7 @@ func holdApply(r *Run, d *mergeDecision) (any, error) {
 		held, readErr := readHolds(d.Repo)
 		if d.Decision == "hold" {
 			if readErr != nil {
-				return "", &Fail{Msg: "the hold record " + home(holdRecord(d.Repo)) + " is unreadable, nothing written", Next: "x lane merge-auto " + d.PR + " --release-hold --dima-ok " + d.PR + " --apply"}
+				return "", &Fail{Refused: true, Msg: "the hold record " + home(holdRecord(d.Repo)) + " is unreadable, nothing written", Next: "x lane merge-auto " + d.PR + " --release-hold --dima-ok " + d.PR + " --apply"}
 			}
 			for _, pr := range d.holds {
 				if !slices.Contains(held, pr) {

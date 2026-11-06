@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -83,6 +84,35 @@ func TestRebaseMainOntoRefusesAShaNotUnderHead(t *testing.T) {
 
 	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, short(elsewhere)) || gitT(t, w.clone, "rev-parse", "HEAD") != before {
 		t.Fatalf("exit %d, error %q: want a refusal naming %s and HEAD untouched", got.code, msg, short(elsewhere))
+	}
+}
+
+// the layer's own tip as the old base would replay nothing and drop every commit from the remote
+func TestRebaseMainOntoRefusesHeadItself(t *testing.T) {
+	t.Parallel()
+	w, _ := layerOffSquash(t)
+	tip := gitT(t, w.clone, "rev-parse", "HEAD")
+
+	got := w.run(t, "--onto", tip, "--apply")
+
+	if got.code != 1 || remoteHead(t, w, "coder/x-2") != tip {
+		t.Fatalf("exit %d, remote %s: want a refusal and the remote kept:\n%s", got.code, short(remoteHead(t, w, "coder/x-2")), got.stdout)
+	}
+}
+
+// a failed push names the rerun that works: a plain rerun refuses on the rewritten head
+func TestRebaseMainOntoFailedPushNamesTheOntoRerun(t *testing.T) {
+	t.Parallel()
+	w, base := layerOffSquash(t)
+	write(t, filepath.Join(w.origin, "hooks/pre-receive"), "#!/bin/sh\nexit 1\n")
+	if err := os.Chmod(filepath.Join(w.origin, "hooks/pre-receive"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	got := w.run(t, "--onto", base, "--apply")
+
+	if want := "x lane rebase-main --onto " + base + " --apply"; got.code == 0 || got.next != want {
+		t.Fatalf("exit %d, next %q, want %q:\n%s", got.code, got.next, want, got.stdout)
 	}
 }
 
@@ -185,6 +215,39 @@ func TestRebaseMainOntoRebasesACommitMadeAfterAnAbort(t *testing.T) {
 
 	if above := subjectsAboveMain(t, w); got.code != 0 || above != "one more\nthe layer's change" {
 		t.Fatalf("exit %d, above main %q: want both commits rebased off the squash:\n%s", got.code, above, got.stdout)
+	}
+}
+
+// an amend rewrites the recorded head too, but the old base still sits under it: no finished rewrite
+func TestRebaseMainOntoRebasesAnAmendMadeAfterAnAbort(t *testing.T) {
+	t.Parallel()
+	w, base := layerOffSquash(t)
+	write(t, filepath.Join(w.clone, ".git", ontoRecordName), `{"branch":"coder/x-2","head":"`+gitT(t, w.clone, "rev-parse", "HEAD")+`"}`)
+	gitT(t, w.clone, "commit", "-q", "--amend", "-m", "the layer's change, amended")
+
+	got := w.run(t, "--onto", base, "--apply")
+
+	if above := subjectsAboveMain(t, w); got.code != 0 || above != "the layer's change, amended" {
+		t.Fatalf("exit %d, above main %q: want the amend rebased off the squash:\n%s", got.code, above, got.stdout)
+	}
+}
+
+// the push landed and its read back failed: the remote holds this very HEAD, so the rerun is no rival's
+func TestRebaseMainOntoRerunTakesItsOwnLandedPush(t *testing.T) {
+	t.Parallel()
+	w, base := conflictingLayer(t)
+	was := gitT(t, w.clone, "rev-parse", "HEAD")
+	w.run(t, "--onto", base, "--apply")
+	continueByHand(t, w)
+	gitT(t, w.clone, "push", "-q", "-f", "origin", "coder/x-2")
+	if was == gitT(t, w.clone, "rev-parse", "HEAD") {
+		t.Fatal("the rewrite left HEAD where it was")
+	}
+
+	got := w.run(t, "--onto", base, "--apply")
+
+	if got.code != 0 || exists(filepath.Join(w.clone, ".git", ontoRecordName)) {
+		t.Fatalf("exit %d: want the rerun to read its own push back and clear the record:\n%s", got.code, got.stdout)
 	}
 }
 

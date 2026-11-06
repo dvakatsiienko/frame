@@ -2,13 +2,13 @@ import { type Context, type Refusal, commandsDeep } from './command.ts';
 import { commandWrites, pythonWrites } from './overwrite.ts';
 
 const isStore = (text: string) =>
-    /(^|\/)\.claude\/shelf\/pr-verified\.json$/.test(text);
+    /(^|\/)(\.claude|cc)\/shelf\/pr-verified\.json$/.test(text);
 const isWatchPr = (text: string) => /(^|\/)watch-pr\.sh$/.test(text);
-const SHELLS = new Set(['bash', 'sh', 'zsh']);
+const RUNNERS = new Set(['bash', 'dash', 'ksh', 'sh', 'zsh', 'source', '.']);
 const DESTINED = new Set(['cp', 'mv', 'ln', 'install', 'rsync', 'ditto']);
 // a script handed inline: the parser sees one word, so a write call beside the store's name counts
 const INLINE_WRITE =
-    /\b(writeFile\w*|appendFile\w*|write_text|renameSync|copyFile\w*)\s*\(/;
+    /\b(writeFile\w*|appendFile\w*|write_text|write_bytes|renameSync|copyFile\w*|dump)\s*\(|\bopen\([^)]*,\s*['"][wax]/;
 
 // `merge-auto` reads this store as sixth sense's clean, so only sixth sense and the coordinator write it; the caller checks
 // who runs the line. a script run by path writes unseen: a Bash rule reads the line, never what the line goes on to run
@@ -18,20 +18,18 @@ export function cleanStampWrite(
     ctx: Context = {},
 ): Refusal | undefined {
     const parsed = commandsDeep(command, cwd);
-    const stamps = parsed.some((c) => {
+    const isStamp = parsed.some((c) => {
         const words = c.args.map((w) => w.text);
-        const script = SHELLS.has(c.name)
-            ? words.find((w) => !w.startsWith('-'))
-            : c.name;
+        const runsIt =
+            isWatchPr(c.name) || (RUNNERS.has(c.name) && words.some(isWatchPr));
         return (
-            script !== undefined &&
-            isWatchPr(script) &&
+            runsIt &&
             words.some((w) => w === '--verified' || w.startsWith('--verified='))
         );
     });
-    const writes =
+    const isWrite =
         pythonWrites(command, cwd, ctx).some(isStore) ||
-        (isStore(command.match(/\S*pr-verified\.json/)?.[0] ?? '') &&
+        (command.includes('.claude/shelf/pr-verified.json') &&
             INLINE_WRITE.test(command)) ||
         parsed.some((c) => {
             const words = c.args
@@ -45,7 +43,7 @@ export function cleanStampWrite(
                 ...(DESTINED.has(c.name) ? words.slice(-1) : []),
             ].some(isStore);
         });
-    if (!stamps && !writes) return undefined;
+    if (!isStamp && !isWrite) return undefined;
     return {
         door: "sixth sense's clean, or the coordinator's stamp, through watch-pr.sh --verified in that session; ask the lane's sixth sense or clio",
         rule: 'clean-stamp',

@@ -50,7 +50,7 @@ func TestMergeAutoRefusesAHeldPrNamingTheHold(t *testing.T) {
 	}
 }
 
-func TestMergeAutoMergesAHeldPrOnDimasWordAndTakesItsMarkOff(t *testing.T) {
+func TestMergeAutoTakesALandedPrsMarkOff(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	plantHold(t, w, "7", "9")
@@ -62,6 +62,37 @@ func TestMergeAutoMergesAHeldPrOnDimasWordAndTakesItsMarkOff(t *testing.T) {
 	}
 	if held := heldPrs(t, w); !slices.Equal(held, []string{"9"}) {
 		t.Errorf("held %q, want only #9's mark left", held)
+	}
+}
+
+// an env var in a real run would swap the record the gate reads, the way X_VERIFIED once swapped the clean store
+func TestMergeAutoHonoursXStateForTheHoldOnlyUnderXTest(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	home := t.TempDir()
+	write(t, filepath.Join(home, ".local/state/x/merge-hold/o_r.json"), `{"prs":["7"]}`)
+
+	got := xIn(t, w.clone, append(w.env, "X_TEST=", "HOME="+home), "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code == 0 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "held") {
+		t.Fatalf("exit %d, error %q, merges %q: want the real record read past X_STATE", got.code, envelopeOf(got).Error, merges)
+	}
+}
+
+// the approve waits minutes for review:clean; a hold set in that wait still stops the merge
+func TestMergeAutoReadsAHoldSetDuringItsApproveWait(t *testing.T) {
+	t.Parallel()
+	w := bytesWorld(t, true)
+	publish := w.hub.onApprove
+	w.hub.onApprove = func(h *hub) {
+		write(t, holdRecordOf(w), `{"prs":["7"]}`)
+		publish(h)
+	}
+
+	got := w.run(t, "7", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(msg, "held") {
+		t.Fatalf("exit %d, puts %q, error %q: want the late hold to stop the merge", got.code, w.hub.sent("PUT "), msg)
 	}
 }
 

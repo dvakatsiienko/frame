@@ -94,7 +94,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	frame := mainCheckout(frameRoot())
 
 	merged := landedLine{name: "merged"}
-	var headRef, headSha, baseSha, mergedHead string
+	var headRef, headSha, mergedHead string
 	var commits []string
 	if pr != "" {
 		// --repo here is the checkout's path, so the github slug comes from its origin
@@ -109,14 +109,10 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 				Ref string `json:"ref"`
 				Sha string `json:"sha"`
 			} `json:"head"`
-			Base struct {
-				Sha string `json:"sha"`
-			} `json:"base"`
 		}
 		if _, ferr := ghFetch(asCodie, githubBase()+"/repos/"+ghRepo+"/pulls/"+pr, &read); ferr != nil {
 			return nil, ferr
 		}
-		baseSha = read.Base.Sha
 		// another lane's pr would green «merged» and hand its trees to this ticket
 		if !strings.HasPrefix(read.Head.Ref, "codie/"+id+"-") && !bodyNamesTicket(read.Body, id) {
 			return nil, &Fail{Refused: true, Msg: "#" + pr + " is not " + id + "'s pr: its head is " + read.Head.Ref + " and its body holds no «- ticket: " + id + "» line", Next: "x lane landed " + id + " --pr <" + id + "'s pr>"}
@@ -213,7 +209,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	}
 	lines = append(lines, look, wish)
 	if pr != "" {
-		if line := warnOnlyLine(repo, baseSha, headSha, mergedHead != ""); line != nil {
+		if line := warnOnlyLine(repo, headSha, mergedHead != ""); line != nil {
 			lines = append(lines, *line)
 		}
 	}
@@ -257,17 +253,24 @@ func warnOnlyAt(repo, ref string) ([]string, error) {
 }
 
 // a rule the pr added to the set and the land still lists; nil when the pr added none, so the older rules print nothing
-func warnOnlyLine(repo, base, head string, merged bool) *landedLine {
+func warnOnlyLine(repo, head string, merged bool) *landedLine {
+	if got, _ := gitIn(repo, "ls-tree", "origin/main", "--", warnOnlyFile); got.ok && got.out == "" {
+		return nil
+	}
 	line := &landedLine{name: "warn-only", fix: "take the rule out of WARN_ONLY in " + warnOnlyFile + ", its clean said"}
 	land := head
 	if merged {
 		land = "origin/main"
 	}
 	// a squash leaves the pr's shas on no branch; a failed fetch shows at the read below
-	_, _ = gitIn(repo, "fetch", "-q", "origin", base, head)
+	_, _ = gitIn(repo, "fetch", "-q", "origin", head)
 	_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
-	before, err := warnOnlyAt(repo, base)
-	var after, now []string
+	// the fork point, never github's base sha, which can sit behind a branch that took main in: another lane's rule would read as this pr's
+	var before, after, now []string
+	base, err := mustGitIn(repo, "merge-base", "merge-base", head, "origin/main")
+	if err == nil {
+		before, err = warnOnlyAt(repo, base)
+	}
 	if err == nil {
 		after, err = warnOnlyAt(repo, head)
 	}

@@ -25,19 +25,21 @@ func warnWorld(t *testing.T, head, main []string) (landedWorld, []string) {
 		gitT(t, w.repo, "commit", "-q", "--allow-empty", "-m", say)
 		return gitT(t, w.repo, "rev-parse", "HEAD")
 	}
-	base := commit([]string{"older-rule"}, "base")
+	commit([]string{"older-rule"}, "base")
+	gitT(t, w.repo, "switch", "-q", "-c", "codie/FRM-1-a")
 	headSha := commit(head, "the pr")
+	gitT(t, w.repo, "switch", "-q", "main")
 	mainSha := commit(main, "main at the land")
 	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", mainSha)
 	gitT(t, w.repo, "remote", "add", "origin", "https://github.com/o/r.git")
 	// a fetch stays on this machine: the fixture's origin answers from the repo itself
 	gitT(t, w.repo, "config", "url."+w.repo+".insteadOf", "https://github.com/o/r.git")
-	return w, warnEnv(t, w, base, headSha)
+	return w, warnEnv(t, w, headSha)
 }
 
-func warnEnv(t *testing.T, w landedWorld, base, head string) []string {
+func warnEnv(t *testing.T, w landedWorld, head string) []string {
 	t.Helper()
-	server, _ := fakeGithub(t, map[string]string{repoPath + "/pulls/7": `{"merged":true,"body":"- ticket: FRM-1","head":{"ref":"codie/FRM-1-a","sha":"` + head + `"},"base":{"sha":"` + base + `"}}`})
+	server, _ := fakeGithub(t, map[string]string{repoPath + "/pulls/7": `{"merged":true,"body":"- ticket: FRM-1","head":{"ref":"codie/FRM-1-a","sha":"` + head + `"}}`})
 	keys := keysFixture(t, map[string]string{
 		"keychain:x-token-gh-x-codie-cc:x": farFuture + ":ghs_coder",
 		"keychain:x-token-linear-codie:x":  farFuture + ":tok-codie",
@@ -86,7 +88,7 @@ func TestLandedRedsWhenTheWarnOnlySetCannotBeRead(t *testing.T) {
 	w, _ := warnWorld(t, []string{"older-rule"}, []string{"older-rule"})
 	gone := "0000000000000000000000000000000000000000"
 
-	got := runAs(t, warnEnv(t, w, gone, gone), "lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "7")
+	got := runAs(t, warnEnv(t, w, gone), "lane", "landed", "FRM-1", "--repo", w.repo, "--pr", "7")
 
 	if out := got.stdout; !strings.Contains(out, "🔴 warn-only") {
 		t.Fatalf("want a red line when the set does not read:\n%s", out)

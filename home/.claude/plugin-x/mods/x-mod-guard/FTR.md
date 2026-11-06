@@ -341,14 +341,21 @@
   - when dima's last prompt typed at the composer or sent over the bridge names the pr as a whole word, `104` or `#104`, by the same match as a dima-ok marker
   - then it runs; when no such prompt exists, it names another number (`1041`, `#10`), or only a peer or a notification said it, then nothing runs and the refusal (rule `dima-ok-flag`) names the numbers his prompt lacks
   - given `x lane merge-auto` with no `--dima-ok`, then the rule never judges it
-  - given a raw `gh pr merge`, `gh stack merge` or `gh api -X PUT …/pulls/<n>/merge` (merge-async too, a wrapper or nested shell included) on a pr in `~/.local/state/x/merge-hold/`, then nothing runs and the refusal (rule `merge-hold`) names the hold and `x lane merge-auto`; a hold file that does not parse holds every merge; a target with no pr number is refused while any hold stands, and passes with none; an unheld pr passes this rule (FRM-511)
-  - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose registry name is neither sixth sense's nor `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; a read or a copy out of the store passes (FRM-511)
-  - 📌 not read: a script run by path that writes the store from inside
   - decision: x trusts a `--dima-ok` that reached it, since only this mod reads dima's last typed prompt; the flag never lifts merge-auto's brake (FRM-423 grill, o140)
   - decision: a refusal from day one, never warn-only — a warning would run the merge it means to stop (dima's o102, the `foreground-claude` precedent)
   - given x's root flags before the family or between it and the verb (`x --json lane merge-auto …`, `x lane --board merge-auto …`), a full path to x, `bash -c` or `eval`, then the rule judges it the same
   - known gap: a deliberate evasion every guard rule shares slips it — a script piped into `sh` from a file, a script run by path (FRM-423 sixth sense, round 1); a pipe of an `echo` into a shell and a literal variable are read since FRM-478
   - proof: tests/merge-word.test.ts::merge-auto's --dima-ok runs when dima's last prompt says; stays refused when; a peer naming the pr never proves --dima-ok; an unproven --dima-ok is refused however x is reached
+- ⬜ a raw merge of a held pr is refused (FRM-511)
+  - given `gh pr merge`, `gh stack merge`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, a wrapper or nested shell included, on a pr in `~/.local/state/x/merge-hold/`, then nothing runs and the refusal (rule `merge-hold`) names the hold and `x lane merge-auto`
+  - given a hold file that does not parse or a hold dir that does not list, then every such merge is refused; given a target with no pr number, a graphql merge mutation among them, then it is refused while any hold stands and passes with none; a stack merge of any pr counts as such a target, since the layers under it are github's to list; a plain merge of an unheld pr passes this rule
+  - decision: a refusal from its first head, never warn-only: it fires only on a held layer, and past commands carry no mark, so its replay count is 0 by construction
+  - known gap: a `curl` to the merge url, and the evasion every guard rule shares
+  - proof: tests/merge-hold.test.ts
+- ⬜ only sixth sense and the coordinator write the clean (FRM-511)
+  - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose registry name is neither sixth sense's nor `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; `🦉 clio (side)` is refused; a read or a copy out of the store passes
+  - known gap: the shared evasion above, a script run by path that writes the store from inside
+  - proof: tests/clean-stamp.test.ts
 - ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `x probe bare` and `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
