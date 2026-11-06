@@ -116,6 +116,7 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 			map[string]string{"old row": verdictRed, "new row": verdictStillGreen}},
 		{"a real TypeError on existing code reads broken, a false no-proof on the safe side", " FAIL  a.test.ts > one\nTypeError: Cannot read properties of undefined (reading 'length')\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a constant asserted is a red: an assertion by the word set", " FAIL  a.test.ts > limit is three\nAssertionError: expected undefined to be 3\n", false, []string{"limit is three"}, verdictRed, map[string]string{"limit is three": verdictRed}},
+		{"a passing row with no tally says a test ran", "(pass) one\n", true, []string{"one"}, verdictStillGreen, map[string]string{"one": verdictStillGreen}},
 		{"a js row in no words reads as a throw", "(fail) one\nRan 1 test across 1 file.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a passing row's title lends no assertion to the throw above it", "(fail) one\n  Error: boom\n(pass) AssertionError holds\nRan 2 tests across 1 file.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a throw's message lends no assertion to itself", "(fail) one\n  Error: AssertionError is not defined\nRan 1 test across 1 file.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},

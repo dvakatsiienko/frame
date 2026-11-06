@@ -134,7 +134,6 @@ func readTestOutput(log string) testOutput {
 		}
 		if isPassed {
 			read.ran = true
-			continue
 		}
 		if n := len(read.failed); n > 0 {
 			read.failed[n-1].output += line + "\n"
