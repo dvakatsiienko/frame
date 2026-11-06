@@ -212,7 +212,7 @@
   - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
   - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
-- ⬜ `x lane verify-tree <head> --revert <base> <paths…> -- <command>` proves head's new tests red on base's source
+- ✅ `x lane verify-tree <head> --revert <base> <paths…> -- <command>` proves head's new tests red on base's source
   - given a verify tree on a head, when the flag runs, then for the run each named path holds its merge-base content, a path the pr added is gone, and a path on neither side refuses before any swap, naming it; a stray arg without the flag still exits 2
   - given the run ends, then each new test reads red, still green or broken, and the exit is 0 only when at least one exists and every one is red; a load error, a timeout, a throw on a symbol that source lacks, a run of 0 tests and a pr adding no test x can name read broken; a computed title, or one with a placeholder, reads still green, since x sees only the rows that failed; a failing old test gets a row and no vote; an opaque command that fails, or a command that exits 0 while naming a failure, reads failed
   - given the command throws or exits non-zero, then head's content is back and the tree's porcelain equals its baseline

@@ -100,6 +100,35 @@ func TestRevertHoldsTheMergeBaseContentForTheRun(t *testing.T) {
 	assertHeadBack(t, tree)
 }
 
+// a local main behind origin would fork the base too early: the base is read from origin
+func TestRevertReadsTheBaseFromOriginOverAStaleLocalBranch(t *testing.T) {
+	t.Parallel()
+	main, _ := verifyWorld(t)
+	write(t, filepath.Join(main, "src.txt"), "local main stops here\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "the commit local main keeps")
+	write(t, filepath.Join(main, "src.txt"), "origin's main\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "the commit only origin keeps")
+	gitT(t, main, "push", "-q", "origin", "main")
+	gitT(t, main, "switch", "-q", "-c", "coder/y")
+	write(t, filepath.Join(main, "src.txt"), "head\n")
+	write(t, filepath.Join(main, "probe_test.go"), "package p\n\nfunc TestNewOne(t *testing.T) {}\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "the pr")
+	gitT(t, main, "push", "-q", "origin", "HEAD:refs/pull/8/head")
+	gitT(t, main, "switch", "-q", "main")
+	gitT(t, main, "branch", "-q", "-D", "coder/y")
+	gitT(t, main, "reset", "-q", "--hard", "HEAD~1")
+	seen := filepath.Join(t.TempDir(), "seen")
+
+	got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--revert", "main", "src.txt", "--", "sh", "-c", "cat src.txt > "+seen+"; echo '--- FAIL: TestNewOne (0.00s)'; exit 1")
+
+	if read := readOr(seen, "the command never ran"); got.code != 0 || read != "origin's main\n" {
+		t.Fatalf("exit %d, the command read %q, want origin's main:\n%s", got.code, read, got.stdout)
+	}
+}
+
 func TestRevertRefusesBeforeAnySwap(t *testing.T) {
 	t.Parallel()
 	main, _, tree := revertWorld(t)
