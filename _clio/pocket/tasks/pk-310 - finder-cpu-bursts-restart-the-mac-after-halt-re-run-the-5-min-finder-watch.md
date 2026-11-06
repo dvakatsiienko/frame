@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-06T12:34:00Z'
+updated_date: '2026-11-06T12:41:00Z'
 labels:
   - xs
   - side-channel-owned
@@ -48,4 +48,6 @@ W (2026-11-06 03:14, dima): once we have two side lanes at once, the side channe
 W1 (2026-11-06 03:14, dima): once we have two side lanes at once, the side channel should start finder measures at once, at any point where we will be with the side channel. i want it to be solved.
 
 2026-11-06 14:34 side channel, two side lanes running, no restart: Finder up 20.6 h, one window on ~/Downloads, load 16-19: 8 of 75 polls at or over 15 %, max 51.5 %, footprint 172 MB. baselines: 11-05 sizes off 0/75 max 9.2 % on one fresh run; 11-03 8/75 max 98 %. 3 samples read. the past-24 h watch runs after 17:54.
+
+2026-11-06 14:41 side channel, same lanes, no Finder window (closed on dima's tick, read back empty): 5 of 75 polls at or over 15 %, max 38.4 %, footprint 168 MB, load 22-37. all 5 fell in the first 96 s, none in the last 3.5 min, while load rose. 3 samples: TFSInfo property sync (FetchProperties, SynchronizeCatalog, CopyPropertyValues), TNode::HandleSync, 0 sizing frames read in the 14:29 run. against the open window 14:29: 8/75, max 51.5 %. one pair, no controlled churn, a window reopened 14:35-14:36 just before: the early cluster may be its aftermath (inference). so a window helps at most; bursts run without one.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-06T12:25:00Z'
+updated_date: '2026-11-06T12:45:00Z'
 labels:
   - s
 dependencies: []
@@ -81,4 +81,10 @@ W432 (2026-11-06 14:24, dima): we essentially could move the model from today, w
 W434 (2026-11-06 14:24, dima): tell what is your plan now.
 W435 (2026-11-06 14:24, dima): do you wait until i solve 331 with side channel? ❓
 W436 (2026-11-06 14:24, dima): and stay parked, observe side lanes, right? ❓
+
+his eye, tick o6 (11-06): a 🎛️ row's tooltip names what off costs: the 01:24 open line is settled.
+PK-331 landed 14:25, the proof's new read: log lines hold no passed or away any more, a wake reads flushed with startedTurn true; before 54 away wakes (11-05 night), replay predicts 6 at a 10 min wait; the lone-note delay option landed with it.
+crow's second wind, probed on today's code (W24): compact 14:26:12, no ingest through 14:36, ingested by hand; the fix is FRM-505's.
+answered: W11 → sent to the side channel, W17 → no stacks (board), W26 → the real weekly cap, reminder dropped, W30 → yes, oldest item 11-02, W435 and W436 → yes (14:24 reply).
+FRM-368 owns W427–W433; the copies of W430–W432 here are pointers.
 <!-- SECTION:NOTES:END -->
