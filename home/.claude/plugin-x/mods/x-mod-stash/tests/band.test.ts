@@ -422,6 +422,41 @@ test('afk off after two members finished leaves the band as it was with afk on',
 });
 
 /* a press draws first, the store after */
+const windDrawn = (events: string[]) =>
+    events.findIndex(
+        (x) => x.startsWith('view') && x.includes('"wind":"asked"'),
+    );
+
+test('🐦‍🔥 draws lit before its store write', async ($, on) => {
+    const { events } = pressWorld(on);
+    const ui = await band($);
+    const from = events.length;
+    await ui.press({ key: 'wind' });
+    const after = events.slice(from);
+    expect([
+        windDrawn(after) >= 0,
+        windDrawn(after) < after.indexOf(`store wind:${SID}`),
+    ]).toEqual([true, true]);
+});
+
+test('🐦‍🔥 goes back when its store write fails', async ($, on) => {
+    const { views } = pressWorld(on, `wind:${SID}`);
+    const ui = await band($);
+    await ui.press({ key: 'wind' });
+    expect(views.at(-1)?.wind).toBeUndefined();
+});
+
+test("🐦‍🔥 lands on the store's value, not the one it drew", async ($, on) => {
+    const { store, views } = pressWorld(on);
+    const ui = await band($);
+    store.set(`wind:${SID}`, { at: 1, state: 'writing' });
+    await ui.press({ key: 'wind' });
+    expect([
+        views.at(-1)?.wind,
+        (store.get(`wind:${SID}`) as { state: string }).state,
+    ]).toEqual(['cancelled', 'cancelled']);
+});
+
 function pressWorld(
     on: On,
     refused?: string,
