@@ -393,6 +393,25 @@ func TestModsEditHeaderCountsWhatTheOverlayDiffersIn(t *testing.T) {
 	}
 }
 
+// a pull refused on its second path has copied its first with no `.pulled` row: the base alone says it was pulled
+func TestModsEditHeaderCountsADeleteAfterARefusedPull(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	if got := xIn(t, dir, env, "mods", "edit", "pull", modTestA, "../out"); got.code == 0 {
+		t.Fatalf("the pull took a path outside the repo\n%s", got.stdout)
+	}
+	scratch, _ := xIn(t, dir, env, "mods", "edit", "status").data["scratch"].(string)
+	if err := os.Remove(filepath.Join(scratch, modTestA)); err != nil {
+		t.Fatal(err)
+	}
+
+	code, stdout, stderr := xBoth(t, dir, env, "mods", "edit", "status")
+
+	if code != 0 || !strings.Contains(stderr, "overlay 1 path differs: "+modTestA+"\n") {
+		t.Fatalf("exit %d\n%s\n%s", code, stdout, stderr)
+	}
+}
+
 // a long path stays inside the frame: a board row never clips itself
 func TestModsEditHeaderKeepsItsPathsInsideTheBoard(t *testing.T) {
 	t.Parallel()

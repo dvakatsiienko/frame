@@ -216,14 +216,20 @@ func isTestFile(path string) bool {
 	return strings.HasSuffix(path, ".test.ts") || strings.HasSuffix(path, ".test.tsx")
 }
 
-// what a scratch holds apart from its pull: every changed copy, and a pulled copy since removed
+// what a scratch holds apart from its pull: every changed copy, and a copy since removed, whose base alone stands
 func overlayDiffers(scratch string, changed []string) []string {
 	paths := slices.Clone(changed)
-	for _, path := range readPulled(scratch) {
-		if exists(filepath.Join(scratch, scratchBase, path)) && !exists(filepath.Join(scratch, path)) {
-			paths = append(paths, path)
+	base := filepath.Join(scratch, scratchBase)
+	_ = filepath.WalkDir(base, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
 		}
-	}
+		rel, _ := filepath.Rel(base, path)
+		if !exists(filepath.Join(scratch, rel)) {
+			paths = append(paths, filepath.ToSlash(rel))
+		}
+		return nil
+	})
 	slices.Sort(paths)
 	return paths
 }
