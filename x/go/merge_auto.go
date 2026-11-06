@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -517,7 +518,124 @@ func decampMerged(d *mergeDecision) []string {
 		}
 		notes = append(notes, home(e.path)+" decamped")
 	}
+	if d.Merged != "" {
+		if note := laneBranchNote(asDima, main, d.Repo, d.headRef, d.Head); note != "" {
+			notes = append(notes, note)
+		}
+	}
 	return notes
+}
+
+// only a lane's own branch shapes go by themselves; coder/ is a branch cut before the rename
+func isLaneBranch(ref string) bool {
+	return strings.HasPrefix(ref, "codie/") || strings.HasPrefix(ref, "coder/")
+}
+
+// the sha origin holds for a branch, "" with none or with no origin at all
+func remoteBranch(dir, ref string) (string, error) {
+	if !ok(gitIn(dir, "remote", "get-url", "origin")) {
+		return "", nil
+	}
+	listed, err := mustGitIn(dir, "ls-remote", "ls-remote", "origin", "refs/heads/"+ref)
+	sha, _, _ := strings.Cut(listed, "\t")
+	return sha, err
+}
+
+func branchStands(main, ref string) bool {
+	if ok(gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref)) {
+		return true
+	}
+	sha, err := remoteBranch(main, ref)
+	return sha != "" || err != nil
+}
+
+// a rebase or a bisect detaches its tree, and only these files still name what it will come back to
+func stoppedOn(tree string) string {
+	for _, file := range []string{"rebase-merge/head-name", "rebase-apply/head-name", "BISECT_START"} {
+		path, _ := gitIn(tree, "rev-parse", "--path-format=absolute", "--git-path", file)
+		if raw, err := os.ReadFile(path.out); path.ok && err == nil {
+			return strings.TrimPrefix(strings.TrimSpace(string(raw)), "refs/heads/")
+		}
+	}
+	return ""
+}
+
+// the shas a branch was judged at: its delete leases on them, so a push since the read survives
+type branchTips struct{ local, remote string }
+
+// why a branch must stay, "" when it may go: a tree on it, or a commit carried does not vouch for
+func branchStay(main, ref, uncarried string, carried func(sha string) bool) (string, branchTips) {
+	var tips branchTips
+	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
+	if err != nil {
+		return "the worktree list did not read", tips
+	}
+	for _, e := range worktreesOf(listed) {
+		if e.branch == ref || (e.detached && stoppedOn(e.path) == ref) {
+			return "a tree holds it, " + home(e.path), tips
+		}
+	}
+	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok {
+		if !carried(local.out) {
+			return "the local branch holds a commit " + uncarried, tips
+		}
+		tips.local = local.out
+	}
+	sha, err := remoteBranch(main, ref)
+	if err != nil {
+		return "origin did not read", tips
+	}
+	if sha != "" {
+		_, _ = gitIn(main, "fetch", "-q", "origin", ref)
+		if !carried(sha) {
+			return "origin holds a commit " + uncarried, tips
+		}
+		tips.remote = sha
+	}
+	return "", tips
+}
+
+func branchDrop(main, ref string, tips branchTips) string {
+	if tips.local != "" {
+		if deleted, _ := gitIn(main, "update-ref", "-d", "refs/heads/"+ref, tips.local); !deleted.ok {
+			return "⚠ " + ref + " stays: it moved since the read"
+		}
+	}
+	if tips.remote != "" {
+		// a ref delete carries no commit for the pre-push gates to read
+		if deleted, _ := gitIn(main, "-c", "core.hooksPath=/dev/null", "push", "-q", "--force-with-lease=refs/heads/"+ref+":"+tips.remote, "origin", ":refs/heads/"+ref); !deleted.ok {
+			return "⚠ " + ref + " stays on origin: the delete failed or it moved since the read"
+		}
+	}
+	return ref + " gone"
+}
+
+// an open pr based on the branch would close with it
+func laneBranchWhy(as, main, slug, ref, head string) (string, branchTips) {
+	var open []struct {
+		Number int `json:"number"`
+	}
+	if _, err := ghFetch(as, githubBase()+"/repos/"+slug+"/pulls?state=open&base="+url.QueryEscape(ref), &open); err != nil {
+		return "the open prs based on it did not read", branchTips{}
+	}
+	if len(open) > 0 {
+		return fmt.Sprintf("#%d is based on it", open[0].Number), branchTips{}
+	}
+	return branchStay(main, ref, "the merge did not carry", func(sha string) bool {
+		return sha == head || ok(gitIn(main, "merge-base", "--is-ancestor", sha, head))
+	})
+}
+
+// one line on the merged branch, "" when no lane branch stands
+func laneBranchNote(as, main, slug, ref, head string) string {
+	if !isLaneBranch(ref) || !branchStands(main, ref) {
+		return ""
+	}
+	why, tips := laneBranchWhy(as, main, slug, ref, head)
+	if why != "" {
+		return ref + " stays: " + why
+	}
+	return branchDrop(main, ref, tips)
 }
 
 func gitAncestorOfAny(tree string, shas []string) bool {
@@ -988,10 +1106,31 @@ func ciCheck(api, base, head string) (mergeCheck, bool, error) {
 
 // the one repo whose merges need a reviewer round; frame's round stays advice
 func roundGated(repo string) bool {
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		return repo == os.Getenv("X_ROUND_REPO")
 	}
 	return repo == "dvakatsiienko/bytes"
+}
+
+// a run's jobs, as github answers /actions/runs/<id>/jobs
+type runJobs struct {
+	Jobs []runJob `json:"jobs"`
+}
+
+type runJob struct {
+	Name       string `json:"name"`
+	Conclusion string `json:"conclusion"`
+	Steps      []struct {
+		Name       string `json:"name"`
+		Conclusion string `json:"conclusion"`
+	} `json:"steps"`
+}
+
+// a run counts as a round only here: a green run can hold a skipped job
+func (j runJobs) reviewerFinished() bool {
+	return slices.ContainsFunc(j.Jobs, func(job runJob) bool {
+		return strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success"
+	})
 }
 
 // the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-guard.sh)
@@ -1040,24 +1179,15 @@ func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (merg
 			!roundReaches(r.HeadSha, head, base, ref) {
 			continue
 		}
-		var answer struct {
-			Jobs []struct {
-				Name       string `json:"name"`
-				Conclusion string `json:"conclusion"`
-				Steps      []struct {
-					Name       string `json:"name"`
-					Conclusion string `json:"conclusion"`
-				} `json:"steps"`
-			} `json:"jobs"`
-		}
+		var answer runJobs
 		if _, err := ghFetch(asDima, fmt.Sprintf("%s/actions/runs/%d/jobs", api, r.ID), &answer); err != nil {
 			return c, err
 		}
+		if answer.reviewerFinished() {
+			c.OK, c.Detail = true, "the reviewer finished a round on "+short(r.HeadSha)
+			return c, nil
+		}
 		for _, job := range answer.Jobs {
-			if strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success" {
-				c.OK, c.Detail = true, "the reviewer finished a round on "+short(r.HeadSha)
-				return c, nil
-			}
 			for _, step := range job.Steps {
 				stoodDown = stoodDown || (step.Conclusion == "failure" && slices.Contains(standDownSteps, step.Name))
 			}

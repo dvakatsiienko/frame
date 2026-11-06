@@ -74,6 +74,35 @@ test('the index copy leaves nothing behind', () => {
     expect(readdirSync(scratch)).toEqual([]);
 });
 
+test('the index copy registers no worktree', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'index-run-list-'));
+    mkdirSync(join(repo, 'script'));
+    copyFileSync(
+        join(root, 'script/index-run.sh'),
+        join(repo, 'script/index-run.sh'),
+    );
+    writeFileSync(join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
+    execFileSync('git', ['init', '-q'], { cwd: repo, env });
+    execFileSync('git', ['add', '-A'], { cwd: repo, env });
+    execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: repo, env });
+    const listed = () =>
+        execFileSync('git', ['worktree', 'list', '--porcelain'], {
+            cwd: repo,
+            encoding: 'utf8',
+            env,
+        });
+    const before = listed();
+
+    const run = spawnSync('bash', ['script/index-run.sh', 'true'], {
+        cwd: repo,
+        encoding: 'utf8',
+        env,
+    });
+
+    expect(run.status, run.stderr).toBe(0);
+    expect(listed()).toBe(before);
+});
+
 // a repo whose shared index holds a peer's staged new file, and a pathspec commit's own index that lacks it
 function peerStaged() {
     const repo = mkdtempSync(join(tmpdir(), 'index-run-peer-'));
