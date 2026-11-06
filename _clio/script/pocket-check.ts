@@ -6,13 +6,14 @@ import {
     type Groomed,
     groomStep,
     groomedOnDisk,
+    newBare,
     newUnstamped,
     ungroomedStamps,
 } from './prompt-groom.ts';
 import {
-    bareWish,
     citedIds,
     normalize,
+    prefixWish,
     wishBlock,
     wishLines,
 } from './wish-cover.ts';
@@ -93,7 +94,7 @@ export function checkPocket(
             front.scalars.updated_date || front.scalars.created_date || '',
         );
         const born = localDay(front.scalars.created_date ?? '');
-        const wishIds = [...wishLines(text).keys()];
+        const wishIds = [...wishLines(text, [home]).keys()];
         if (
             front.scalars.type === 'wish' &&
             born >= WISH_RULES_FROM &&
@@ -152,12 +153,12 @@ export function checkPocket(
             for (const ticket of ticketsOf(text)) {
                 const block = wishBlocks.get(ticket);
                 if (block === undefined) continue;
-                const home = normalize(block);
-                for (const [wishId, words] of wishLines(text))
+                const blockText = normalize(block);
+                for (const [wishId, words] of wishLines(text, [home]))
                     if (
                         words &&
                         !dropped.has(wishId) &&
-                        !home.includes(normalize(words))
+                        !blockText.includes(normalize(words))
                     )
                         report(
                             `${wishId} moved to ${ticket} but not in its wish block: copy it there verbatim`,
@@ -375,9 +376,16 @@ function frontmatter(text: string) {
 }
 
 // a close with `backlog task edit --notes` replaces every note, dima's quoted steers included
-export function lostNoteLines(current: string, head: string): string[] {
-    const kept = new Set(noteLines(current).map(bareWish));
-    return noteLines(head).filter((line) => !kept.has(bareWish(line)));
+export function lostNoteLines(
+    current: string,
+    head: string,
+    home = '',
+): string[] {
+    const kept = new Set(noteLines(current));
+    return noteLines(head).filter(
+        (line) =>
+            !kept.has(line) && !(home && kept.has(prefixWish(line, home))),
+    );
 }
 
 function noteLines(text: string): string[] {
@@ -400,9 +408,22 @@ export function auditAgainstHead(
     const problems: string[] = [];
     const idOf = (name: string) => name.split(' ')[0];
     for (const { name, text } of tasks)
-        for (const line of newUnstamped(text, head.text('tasks', name)))
+        for (const line of newUnstamped(
+            text,
+            head.text('tasks', name),
+            idOf(name)?.toUpperCase(),
+        ))
             problems.push(
                 `${idOf(name)}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «<home>:W<n> (<date> <HH:MM>, dima)» for a prompt, «<home>:W<n> (<date> inbox, dima)» for an inbox drop`,
+            );
+    for (const { name, text } of tasks)
+        for (const line of newBare(
+            text,
+            head.text('tasks', name),
+            idOf(name)?.toUpperCase() ?? '',
+        ))
+            problems.push(
+                `${idOf(name)}: a new W-line with a bare id: «${line.trim().slice(0, 60)}» — head it ${idOf(name)?.toUpperCase()}:W<n>, the number from \`prompt-groom.ts --next\``,
             );
     for (const [dir, files] of [
         ['tasks', tasks],
@@ -420,6 +441,7 @@ export function auditAgainstHead(
                     (dir === 'archive' && before
                         ? head.text('tasks', before)
                         : ''),
+                prefix?.trim().toUpperCase(),
             );
             if (lost.length > 0)
                 problems.push(

@@ -63,7 +63,7 @@ describe('wish-cover on a .scratch spec write', () => {
         const filler = '\n'.repeat(12);
         const out = runOn(`wish: none\n${filler}wish: FRM-9\nW1 reworded\n`);
         expect(out?.decision).toBe('block');
-        expect(out?.reason).toContain('✗ W1 text missing: the exact words');
+        expect(out?.reason).toContain(':W1 text missing: the exact words');
     });
 
     test('a section whose wish line is a ticket link is checked against its own ticket', () => {
@@ -71,7 +71,7 @@ describe('wish-cover on a .scratch spec write', () => {
             `wish: FRM-9\nW1 the exact words\n\nwish: [FRM-8](https://linear.app/x-com/issue/FRM-8)\nW1 ${words}\n`;
         expect(runOn(linked('other words'))).toBeUndefined();
         expect(runOn(linked('reworded'))?.reason).toContain(
-            '✗ W1 text missing: other words',
+            ':W1 text missing: other words',
         );
     });
 
@@ -84,7 +84,7 @@ describe('wish-cover on a .scratch spec write', () => {
     test('a spec missing the words of W1 blocks', () => {
         const out = runOn('wish: FRM-9\n\nW1 reworded\n\n# spec\n');
         expect(out?.decision).toBe('block');
-        expect(out?.reason).toContain('✗ W1 text missing: the exact words');
+        expect(out?.reason).toContain(':W1 text missing: the exact words');
     });
 
     test('each section is checked against its own wish id', () => {

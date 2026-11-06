@@ -726,18 +726,67 @@ describe('full wish ids in the groom checks', () => {
     });
 
     test('an old unstamped line that only gained a prefix is not new', () => {
-        expect(newUnstamped('PK-3:W1 an old unstamped line\n', head)).toEqual(
-            [],
+        expect(
+            newUnstamped('PK-3:W1 an old unstamped line\n', head, 'PK-3'),
+        ).toEqual([]);
+    });
+
+    test('an old unstamped line that swapped to another home is new', () => {
+        expect(
+            newUnstamped('PK-4:W1 an old unstamped line\n', head, 'PK-3'),
+        ).toEqual(['PK-4:W1 an old unstamped line']);
+    });
+
+    test('a new bare line reds, an old one and a full one pass', async () => {
+        const { newBare } = await import('./prompt-groom.ts');
+        const old = 'W1 (2026-11-05 10:00, dima): old\n';
+        expect(
+            newBare(`${old}W2 (2026-11-06 10:00, dima): new\n`, old, 'PK-3'),
+        ).toEqual(['W2 (2026-11-06 10:00, dima): new']);
+        expect(
+            newBare(
+                `${old}PK-3:W2 (2026-11-06 10:00, dima): new\n`,
+                old,
+                'PK-3',
+            ),
+        ).toEqual([]);
+        expect(
+            newBare('PK-3:W1 (2026-11-05 10:00, dima): old\n', old, 'PK-3'),
+        ).toEqual([]);
+    });
+
+    test("a full argument leaves another home's line of that number alone", () => {
+        const dir = mkdtempSync(join(tmpdir(), 'groom-tag-'));
+        const file = join(dir, '2026-11-06-1000.groomed.md');
+        writeFileSync(file, 'PK-3:W1 (x): mine\nFRM-9:W1 (x): theirs\n');
+        expect(tagStanding('2026-11-06', dir, 'PK-3:W1')).toEqual(['W1']);
+        expect(readFileSync(file, 'utf8')).toBe(
+            'PK-3:W1 (x): mine #standing\nFRM-9:W1 (x): theirs\n',
         );
     });
 
-    test('an old unstamped line prefixed at HEAD and bare now is not new', () => {
+    test("a move refuses another home's id and a home numbering twice, and skips a quoted line", async () => {
+        const { moveWishes } = await import('./prompt-groom.ts');
+        const ticket = '* FRM-9:W6 (x): six\n';
+        expect(() =>
+            moveWishes('PK-3:W1 (x): a\n', ticket, 'PK-3', 'FRM-9', [
+                'PK-4:W1',
+            ]),
+        ).toThrow(/PK-4:W1/);
+        expect(() =>
+            moveWishes('W1 (x): a\nPK-3:W1 (y): b\n', ticket, 'PK-3', 'FRM-9', [
+                'W1',
+            ]),
+        ).toThrow(/twice/);
         expect(
-            newUnstamped(
-                'W1 an old unstamped line\n',
-                'PK-3:W1 an old unstamped line\n',
-            ),
-        ).toEqual([]);
+            moveWishes(
+                'PK-4:W1 (x): quote\nPK-3:W1 (y): mine\n',
+                ticket,
+                'PK-3',
+                'FRM-9',
+                ['W1'],
+            ).lines,
+        ).toEqual(['* FRM-9:W7 (y): mine']);
     });
 
     test('a brand new unstamped full line is new', () => {

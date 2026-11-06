@@ -7,8 +7,9 @@ import { TICKET_LINE } from './pocket-check.ts';
 
 const pocketDirs = ['pocket/tasks', 'pocket/archive/tasks'];
 
-export function bareWish(line: string) {
-    return line.replace(/^(\s*(?:[*-]\s+)?)(?:PK|FRM|BYT)-\d+:(W\d+)/, '$1$2');
+// the same line after its bare head gained this home's prefix; another home's prefix is never the same line
+export function prefixWish(line: string, home: string) {
+    return line.replace(/^(\s*(?:[*-]\s+)?)(W\d+\b)/, `$1${home}:$2`);
 }
 
 // a markdown link around an id, directly before «:W4», is the plain id: linear may autolink an id it stores
@@ -16,12 +17,22 @@ export function unwrapIds(text: string) {
     return text.replace(/\[([^\]]*)\]\(<?[^)>\s]+>?\)(?=:W\d)/g, '$1');
 }
 
-export function wishLines(item: string) {
+// a head carrying another home's prefix is a quote of that home's line, never this one's
+function isForeign(prefix: string | undefined, homes: string[]) {
+    return (
+        Boolean(prefix) &&
+        homes.length > 0 &&
+        !homes.some((home) => home.toUpperCase() === prefix?.toUpperCase())
+    );
+}
+
+export function wishLines(item: string, homes: string[] = []) {
     const lines = new Map<string, string>();
     for (const match of item.matchAll(
-        /^\s*[-*]?\s*(?:(?:PK|FRM|BYT)-\d+:)?(W\d+)\b[ \t]*(.*)$/gm,
+        /^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b[ \t]*(.*)$/gm,
     )) {
-        const [, id, text] = match;
+        const [, prefix, id, text] = match;
+        if (isForeign(prefix, homes)) continue;
         // a leading «(Q1)» or «(band 4)» is clio's source tag, never his words
         if (id && !lines.has(id))
             lines.set(id, (text ?? '').replace(/^\(.*?\)\s*:?\s*/, '').trim());
@@ -30,10 +41,12 @@ export function wishLines(item: string) {
 }
 
 // a wish joining an old block that restarts at W1 hides its lines behind the first of each number
-export function repeatedIds(item: string) {
+export function repeatedIds(item: string, homes: string[] = []) {
     const ids = [
-        ...item.matchAll(/^\s*[-*]?\s*(?:(?:PK|FRM|BYT)-\d+:)?(W\d+)\b/gm),
-    ].map((m) => m[1]);
+        ...item.matchAll(/^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b/gm),
+    ]
+        .filter((m) => !isForeign(m[1], homes))
+        .map((m) => m[2]);
     return [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
 }
 
@@ -49,8 +62,8 @@ export function wishBlock(body: string) {
 export function citedIds(draft: string, homes: string[] = []) {
     const own = homes.map((home) => home.toUpperCase());
     const ids = new Set<string>();
-    for (const [, home, id] of draft.matchAll(
-        /(?<!W?\d+[ \t]*[–-][ \t]*)(?:\b((?:PK|FRM|BYT)-\d+):|(?<!:))\b(W\d+)\b(?![ \t]*[–-][ \t]*(?:(?:PK|FRM|BYT)-\d+:)?W?\d)/g,
+    for (const [, home, id] of unwrapIds(draft).matchAll(
+        /(?<!W?\d+[ \t]*[–-][ \t]*)(?:\b((?:PK|FRM|BYT|pk|frm|byt)-\d+):|(?<!:))\b(W\d+)\b(?![ \t]*[–-][ \t]*(?:(?:PK|FRM|BYT)-\d+:)?W?\d)/g,
     ))
         if (id && (!home || own.includes(home.toUpperCase()))) ids.add(id);
     return ids;
@@ -95,7 +108,7 @@ export function missingText(
 ) {
     const joined = drafts.join('\n');
     const body = normalize(joined);
-    const lines = wishLines(item);
+    const lines = wishLines(item, homes);
     return [...citedIds(joined, homes)].flatMap((id): [string, string][] => {
         const text = lines.get(id);
         if (text === undefined) return [[id, '(no such W-line in the item)']];
@@ -110,7 +123,7 @@ export function uncovered(
     homes: string[] = [],
 ) {
     const cited = citedIds(drafts.join('\n'), homes);
-    return [...wishLines(item)].filter(([id]) => !cited.has(id));
+    return [...wishLines(item, homes)].filter(([id]) => !cited.has(id));
 }
 
 function pocketItems(root: string) {
@@ -152,6 +165,7 @@ if (import.meta.main) {
     }
     const items = pocketItems(path.resolve(import.meta.dirname, '..'));
     let item: string | undefined;
+    const homes = [id];
     const isTicket = /^(FRM|BYT)-\d+$/i.test(id);
     if (isTicket) {
         try {
@@ -184,6 +198,7 @@ if (import.meta.main) {
                     ? readItem(items, owners[0])
                     : undefined;
             item = owned ?? item;
+            if (owned && owners[0]) homes.push(owners[0]);
         }
     } else {
         item = readItem(items, id);
@@ -192,11 +207,10 @@ if (import.meta.main) {
         console.error(`${id}: no pocket item`);
         process.exit(2);
     }
-    const homes = [id, ...(isTicket ? itemsForTicket(items, id) : [])];
     const drafts = draftPaths.map((p) =>
         sectionsFor(readFileSync(p, 'utf8'), id),
     );
-    if (wishLines(item).size === 0) {
+    if (wishLines(item, homes).size === 0) {
         console.error(
             isTicket
                 ? `${id}: number the ticket's wish block into ${id}:W1… lines first`
@@ -204,7 +218,7 @@ if (import.meta.main) {
         );
         process.exit(2);
     }
-    const repeated = repeatedIds(item);
+    const repeated = repeatedIds(item, homes);
     if (repeated.length > 0) {
         console.log(
             `✗ ${id}: ${repeated.join(', ')} numbered twice — renumber the joined lines from the block's next free W`,
@@ -219,12 +233,12 @@ if (import.meta.main) {
     for (const [lineId, text] of missing)
         console.log(
             text === ''
-                ? `✗ ${lineId} has no text`
-                : `✗ ${lineId} text missing: ${text.slice(0, 60)}`,
+                ? `✗ ${id}:${lineId} has no text`
+                : `✗ ${id}:${lineId} text missing: ${text.slice(0, 60)}`,
         );
     const uncited = all ? uncovered(item, drafts, homes) : [];
     for (const [lineId, text] of uncited)
-        console.log(`✗ ${lineId} uncited: ${text.slice(0, 60)}`);
+        console.log(`✗ ${id}:${lineId} uncited: ${text.slice(0, 60)}`);
     if (missing.length + uncited.length === 0) {
         console.log(`${id}: every cited W-line's text is in the drafts`);
         process.exit(0);

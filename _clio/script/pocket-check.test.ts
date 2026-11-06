@@ -808,8 +808,19 @@ describe('lostNoteLines', () => {
             lostNoteLines(
                 notes('PK-1:W3 (2026-11-06 10:00, dima): keep'),
                 notes('W3 (2026-11-06 10:00, dima): keep'),
+                'PK-1',
             ),
         ).toEqual([]);
+    });
+
+    test('a note line that swapped to another home is lost', () => {
+        expect(
+            lostNoteLines(
+                notes('PK-4:W3 (2026-11-06 10:00, dima): keep'),
+                notes('PK-1:W3 (2026-11-06 10:00, dima): keep'),
+                'PK-1',
+            ),
+        ).toEqual(['PK-1:W3 (2026-11-06 10:00, dima): keep']);
     });
 
     test('a note line removed beside a prefixed one is lost', () => {
@@ -819,6 +830,7 @@ describe('lostNoteLines', () => {
                 notes(
                     'W3 (2026-11-06 10:00, dima): keep\nW4 (2026-11-06 10:01, dima): gone',
                 ),
+                'PK-1',
             ),
         ).toEqual(['W4 (2026-11-06 10:01, dima): gone']);
     });

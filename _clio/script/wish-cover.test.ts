@@ -11,11 +11,11 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
-    bareWish,
     citedIds,
     itemsForTicket,
     missingText,
     normalize,
+    prefixWish,
     repeatedIds,
     sectionsFor,
     uncovered,
@@ -371,11 +371,35 @@ describe('wish ids in both shapes', () => {
         ).toContain('* FRM-9:W4 a');
     });
 
-    test('bareWish strips only a line-head home prefix', () => {
-        expect(bareWish('  * PK-3:W1 (d): see PK-4:W2')).toBe(
-            '  * W1 (d): see PK-4:W2',
-        );
-        expect(bareWish('W1 plain')).toBe('W1 plain');
+    test('prefixWish gives a bare head its home and leaves a full head alone', () => {
+        expect(prefixWish('* W1 (x): y', 'PK-3')).toBe('* PK-3:W1 (x): y');
+        expect(prefixWish('PK-4:W1 (x): y', 'PK-3')).toBe('PK-4:W1 (x): y');
+    });
+
+    test('a head from another home is a quote, never this item line', () => {
+        const item = 'PK-329:W9 (x): theirs\nPK-323:W9 (x): mine\n';
+        expect(wishLines(item, ['PK-323']).get('W9')).toBe('mine');
+        expect(repeatedIds(item, ['PK-323'])).toEqual([]);
+    });
+
+    test('an owner item cite never collides with the ticket line of that number', () => {
+        const block =
+            '* FRM-9:W1 (x): ticket words\n* FRM-9:W7 (x): moved words\n';
+        expect(
+            missingText(
+                block,
+                ['FRM-9:W1 ticket words\nPK-3:W1 a paraphrase'],
+                ['FRM-9'],
+            ),
+        ).toEqual([]);
+        expect(citedIds('PK-3:W1 a paraphrase', ['FRM-9']).size).toBe(0);
+    });
+
+    test('a linked or lowercase own cite counts', () => {
+        expect([
+            ...citedIds('[FRM-9](https://x.y/z):W4 words', ['FRM-9']),
+        ]).toEqual(['W4']);
+        expect([...citedIds('frm-9:W4 words', ['FRM-9'])]).toEqual(['W4']);
     });
 
     test('a full-id line is covered by a draft citing it under its home', () => {
