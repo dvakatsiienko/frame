@@ -4,7 +4,7 @@ title: 'quiet comms: a member''s lone turn-end note stops waking clio while he i
 status: done
 assignee: []
 created_date: '2026-11-06T00:17:00Z'
-updated_date: '2026-11-06T12:25:00Z'
+updated_date: '2026-11-06T12:56:00Z'
 labels:
   - s
   - side-channel-owned
@@ -36,4 +36,6 @@ from FRM-513's last reads, these belong to this item's «a stuck member is still
 close: done, landed and proven; the live effect is read by PK-326
 
 close: W1 done, answered and the waiting-note wakes stop; W2 done, solved with the side channel before the mods lane restarted
+
+2026-11-06 14:56 side channel, correction of the close, wishkeeper's catch: «the waiting-note wakes stop» is a replay, 54 → 6; the live read is PK-326's. the rule landed differs from his tick: no idle status, a ceiling at 3 waits; a re-sign ask is up. the FRM-513 reads: «a notice already flushed starts no turn» stays by design, FTR says so; «a refused wake falls to the row» is gone, a refused turn holds its lines; register.tsx:1771's lost edge is gone with the edge; quiet.test.ts:2629's hollow row is rewritten with a real held list.
 <!-- SECTION:NOTES:END -->
