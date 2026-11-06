@@ -79,7 +79,7 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 [FRM-410](https://linear.app/x-com/issue/FRM-410): after boot, when free: groom, close (his: no `[done]` move, split leftovers, solve the board) — due: 2026-11-06
 
 ⏰ 🦉 plan with dima how to solve the 🐉 ci made boring milestone («remind me tmrw», his 03:27) — due: 2026-11-06
-⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, after one lane's warn count reads clean past FRM-504's land, at a siesta (his o10) — set 2026-11-06
+⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, a mods lane slice before FRM-505 and before BYT-94's required-check flip (his o48, moving his o10); its count reads through `pnpm mods:replay`, since the hint records no warned event — set 2026-11-06
 ⏰ 🦉 [FRM-473](https://linear.app/x-com/issue/FRM-473): one real `x lane commit --dry` by a codie that did not build it (cli lane 5 owes it), then close — due: 2026-11-07
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens; and `pnpm memory-load:replay` for the rows' false fires (his «ok and measure», o43) — set 2026-11-06 · due: 2026-11-20
 ⏰ 🦉 at the halt, lanes quiet: remind dima of FRM-517's timed reboot («remind me via main clio do not forget!», o55): temp dir entries over 1 h old to `trash`, then reboot — set 2026-11-06 · due: 2026-11-06
