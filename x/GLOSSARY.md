@@ -64,7 +64,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **swap** — a `lane verify-tree --revert` run's named paths holding their merge-base content for the command; a **marker** in the tree's git dir, written before it and gone after the restore, is what the next run reads when a kill stopped the restore
 - **red** — a test that failed on an assertion, or threw on code that exists on the source it ran on; a proof it reads that source
 - **still green** — a test that passed on the source it should have failed on; it does not read the change
-- **broken** — nothing proved: a compile or load error, 0 tests, or a throw naming a symbol that source lacks
+- **broken** — nothing proved: a compile or load error, 0 tests, a timeout, or a throw naming a symbol that source lacks
 - **failed** (a proof's word) — an opaque command failed and its output names no test, so x has no verdict
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
 - **stack** — prs that each open onto the branch of the one below, merged together in one async call up to the pr named; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)

@@ -94,6 +94,11 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"go: no test matched", wordsGoNone, true, []string{"TestNew"}, verdictBroken, map[string]string{"TestNew": verdictBroken}},
 		{"a test edited in place adds no name", wordsGoRed, false, nil, verdictRed, map[string]string{"TestNew": verdictRed, "TestNew/a_case": verdictRed}},
 		{"a name that only starts the same is another test", wordsGoRed, false, []string{"TestNewer"}, verdictStillGreen, map[string]string{"TestNewer": verdictStillGreen}},
+		{"plugin test: a timeout is load, no proof", "(fail) slow [5002.31ms]\n  Error: timed out after 5000 ms\n(fail) fast [1.0ms]\n  AssertionError: no\nRan 2 tests across 1 file.\n", false, []string{"slow", "fast"}, verdictBroken,
+			map[string]string{"slow": verdictBroken, "fast": verdictRed}},
+		{"vitest: a timeout is load, no proof", " FAIL  a.test.ts > slow\nError: Test timed out in 5000ms.\n", false, []string{"slow"}, verdictBroken, map[string]string{"slow": verdictBroken}},
+		{"a template name holds each row it expanded to", "(fail) a door: gh pr merge 12\n  AssertionError: no\n(fail) a door: x as codie\n  AssertionError: no\n(fail) other row\n  AssertionError: no\n", false, []string{"a door: ${typed}", "no hint: ${typed}"}, verdictStillGreen,
+			map[string]string{"a door: gh pr merge 12": verdictRed, "a door: x as codie": verdictRed, "no hint: ${typed}": verdictStillGreen, "other row": verdictRed}},
 		{"color codes around a row", "\x1b[31m FAIL  a.test.ts > one\x1b[39m\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
 		{"an empty run that exits 0", "", true, []string{"a"}, verdictBroken, map[string]string{"a": verdictBroken}},
 		{"an empty run that exits red", "", false, []string{"a"}, verdictFailed, map[string]string{"a": verdictFailed}},
@@ -134,6 +139,28 @@ func TestJudgeRunReadsThePluginTestSample(t *testing.T) {
 
 	if verdict != verdictBroken || !strings.Contains(rows[0].Why, "did not load") {
 		t.Fatalf("the sample holds a file that did not load: %s, %+v", verdict, rows)
+	}
+}
+
+func TestAddedTestNameReadsEachShape(t *testing.T) {
+	t.Parallel()
+	cases := map[string]string{
+		"+    it('a plain name', () => {":                     "a plain name",
+		"+test(\"a double quote's name\", () => {":            "a double quote's name",
+		"+  test.each(rows)(`no`":                             "",
+		"+    test(`a door: ${typed.split(' ')[0]}`, () => {": "a door: ${typed.split(' ')[0]}",
+		"+    it.only('it\\'s escaped', () => {":              "it\\'s escaped",
+		"+func TestNewOne(t *testing.T) {":                    "TestNewOne",
+		"+func helper(t *testing.T) {":                        "",
+		" func TestOld(t *testing.T) {":                       "",
+	}
+	for line, want := range cases {
+		t.Run(line, func(t *testing.T) {
+			t.Parallel()
+			if got := addedTestNameIn(line); got != want {
+				t.Fatalf("read %q, want %q", got, want)
+			}
+		})
 	}
 }
 

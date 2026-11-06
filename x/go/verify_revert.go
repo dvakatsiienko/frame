@@ -220,10 +220,8 @@ func newTestNames(tree, fork, head string, swapped []string) []string {
 		if !isTest {
 			continue
 		}
-		for _, shape := range addedTestName {
-			if m := shape.FindStringSubmatch(line); m != nil && !slices.Contains(names, m[1]) {
-				names = append(names, m[1])
-			}
+		if name := addedTestNameIn(line); name != "" && !slices.Contains(names, name) {
+			names = append(names, name)
 		}
 	}
 	return names

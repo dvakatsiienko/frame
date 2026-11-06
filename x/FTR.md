@@ -214,7 +214,7 @@
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
 - ⬜ `x lane verify-tree <head> --revert <base> <paths…> -- <command>` proves head's new tests red on base's source
   - given a verify tree on a head, when the flag runs, then for the run each named path holds its merge-base content, a path the pr added is gone, and a path on neither side refuses before any swap, naming it; a stray arg without the flag still exits 2
-  - given the run ends, then each new test reads red, still green or broken, and the exit is 0 only when every one is red; a load error, a throw on a symbol that source lacks and a run of 0 tests read broken; an opaque command that fails reads failed
+  - given the run ends, then each new test reads red, still green or broken, and the exit is 0 only when every one is red; a load error, a timeout, a throw on a symbol that source lacks and a run of 0 tests read broken; an opaque command that fails reads failed
   - given the command throws or exits non-zero, then head's content is back and the tree's porcelain equals its baseline
   - given a run killed mid-swap, when the next `x lane verify-tree` touches that tree, then it restores head's content, or refuses naming a file that holds neither side; a run still alive refuses naming its pid
   - decision: a symbol absent from the swapped source reads broken even when head lacks it too, since a typo in a test fails on both sides and must never pass as a proof

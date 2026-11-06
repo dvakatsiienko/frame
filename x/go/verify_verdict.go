@@ -47,11 +47,15 @@ var (
 		regexp.MustCompile(`([\w$]+) is not defined`),
 		regexp.MustCompile(`Can't find variable: ([\w$]+)`),
 	}
+	// one shape per quote, since a template's placeholder can hold the other two; go's regexp has no backreference
 	addedTestName = []*regexp.Regexp{
-		regexp.MustCompile("^\\+\\s*(?:it|test)(?:\\.\\w+)*\\(\\s*['\"`]((?:[^'\"`\\\\]|\\\\.)+)['\"`]"),
+		regexp.MustCompile(`^\+\s*(?:it|test)(?:\.\w+)*\(\s*'((?:[^'\\]|\\.)+)'`),
+		regexp.MustCompile(`^\+\s*(?:it|test)(?:\.\w+)*\(\s*"((?:[^"\\]|\\.)+)"`),
+		regexp.MustCompile("^\\+\\s*(?:it|test)(?:\\.\\w+)*\\(\\s*`((?:[^`\\\\]|\\\\.)+)`"),
 		regexp.MustCompile(`^\+func (Test\w+)\(`),
 	}
-	testFile = regexp.MustCompile(`(?:\.test\.[cm]?[jt]sx?|\.spec\.[cm]?[jt]sx?|_test\.go)$`)
+	templateHole = regexp.MustCompile(`\$\{[^}]*\}?`)
+	testFile     = regexp.MustCompile(`(?:\.test\.[cm]?[jt]sx?|\.spec\.[cm]?[jt]sx?|_test\.go)$`)
 )
 
 func readTestOutput(log string) testOutput {
@@ -89,8 +93,27 @@ func failedName(line string) string {
 	return ""
 }
 
-// a failure's name holds a new test's when it is that test, a go subtest of it, or a vitest row under a describe
+func addedTestNameIn(line string) string {
+	for _, shape := range addedTestName {
+		if m := shape.FindStringSubmatch(line); m != nil {
+			return m[1]
+		}
+	}
+	return ""
+}
+
+func isTemplateName(name string) bool { return templateHole.MatchString(name) }
+
+// a failure's name holds a new test's when it is that test, a go subtest of it, or a vitest row under a describe;
+// a template's placeholders match whatever the run expanded them to
 func namesTest(failed, name string) bool {
+	if isTemplateName(name) {
+		parts := templateHole.Split(name, -1)
+		for i, part := range parts {
+			parts[i] = regexp.QuoteMeta(part)
+		}
+		return regexp.MustCompile(`^(?:.* > )?` + strings.Join(parts, `.*`) + `$`).MatchString(failed)
+	}
 	return failed == name || strings.HasPrefix(failed, name+"/") || strings.HasSuffix(failed, " > "+name)
 }
 
@@ -131,6 +154,9 @@ func judgeRun(log string, exitedOK bool, newTests []string, sourceHas func(strin
 		return whole(verdictFailed, "the command failed and its output names no failed test")
 	}
 	judged := func(failed failedTest) testRow {
+		if hookTimedOut.MatchString(failed.output) {
+			return testRow{failed.name, verdictBroken, "it timed out, which a loaded machine does on any source; wait for the load to fall and run it again"}
+		}
 		if symbol := lackedBy(failed.output, sourceHas); symbol != "" {
 			return testRow{failed.name, verdictBroken, "it throws on " + symbol + ", which this source lacks"}
 		}
@@ -140,16 +166,23 @@ func judgeRun(log string, exitedOK bool, newTests []string, sourceHas func(strin
 	claimed := make([]bool, len(read.failed))
 	for _, name := range newTests {
 		row := testRow{Name: name, Verdict: verdictStillGreen}
+		expanded := false
 		for i, failed := range read.failed {
-			if namesTest(failed.name, name) {
-				claimed[i] = true
+			if !namesTest(failed.name, name) {
+				continue
+			}
+			claimed[i] = true
+			if isTemplateName(name) {
+				expanded = true
+				rows = append(rows, judged(failed))
+			} else if got := judged(failed); row.Verdict != verdictBroken {
 				// a go subtest prints under its parent: the worst of them stands for the test
-				if got := judged(failed); row.Verdict != verdictBroken {
-					row.Verdict, row.Why = got.Verdict, got.Why
-				}
+				row.Verdict, row.Why = got.Verdict, got.Why
 			}
 		}
-		rows = append(rows, row)
+		if !expanded {
+			rows = append(rows, row)
+		}
 	}
 	// a test edited in place adds no name; its failure still gets a row
 	for i, failed := range read.failed {
