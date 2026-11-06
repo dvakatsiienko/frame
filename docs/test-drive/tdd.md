@@ -45,6 +45,8 @@ one line per ticket: date · ticket · tdd loaded? · verifier findings · round
 - 2026-11-06 · frm-517 codie · no ticket in the retro line · helped: reds showed the right causes · keep
 - 2026-11-06 · mods lane 5 codie · no ticket in the retro line · helped on the stuck alarm; its false alarm was unproven until the row
 
+- 2026-11-06 · BYT-130 ci made boring · codie · red first held for shell cases; a scratch-copy mutant is the better form · keep
+- 2026-11-06 · cli lane 6 · codie · helped on the verb; red first caught nothing false, but did not catch the design gap · keep
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 tdd test drive, two weeks to 2026-10-20 — `mattpocock-skills:tdd`, named in `x:crew-coder` for test-shaped exit lines; one log line per ticket in `docs/test-drive/tdd.md` (loaded or not, verifier findings, rounds, tests proven red). on 10-20: a default for every coder, for some tickets, or drop. dima 2026-10-06: «it changes a coder's approach a lot … deserves a test drive and measure» — set 2026-10-06
