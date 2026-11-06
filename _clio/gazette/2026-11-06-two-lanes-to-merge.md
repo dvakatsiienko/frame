@@ -80,3 +80,18 @@ covers 2026-11-05 and the night into 2026-11-06; no post was written for 11-05.
 **state**
 - [FRM-504](https://linear.app/x-com/issue/FRM-504) in its second fix round; wings first after this reset
 
+
+⸻ upd 23:06
+
+**shipped**
+- frame#129 merged, [FRM-511](https://linear.app/x-com/issue/FRM-511): the flow gates hold in code, on his typed word; its close waits on its tree and plan slice
+- [FRM-514](https://linear.app/x-com/issue/FRM-514) found already Done, its reminder dropped; wing 3's mods groom landed: 501 round 4, the raw merge rule, 510, 505, 504, 519, 490, 493, 472, 489
+- `x-sixth-sense-cc` holds contents write on his clicks, a fresh token resolves a thread; a sixth sense joins every mods chunk after round 4, his 23:05 word
+- the roadmap outline prints started mils as counts, 631 B to 384 B
+
+**tricks gained**
+- a board steer and a tick both lose to a newer tick at the merge door: only a typed prompt naming the pr held; FRM-510 now runs next on the mods lane
+- a github app's comment right is not its thread-resolve right: contents write is the difference, inference from one app that could and two that could not
+
+**state**
+- frame#130 in a fix round after wishkeeper's high; frame#131 on two test rows; frame#133 and frame#132 under review; bytes#138 behind the raw merge rule and the check flip
