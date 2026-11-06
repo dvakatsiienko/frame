@@ -2804,7 +2804,7 @@ test('a waiting note with the event keeps its wake', async ($, on) => {
 /* the round count: codie's own «round N on <sha>», one store key per lane */
 
 const ROUND_CODIE = '⚡ 🔧 codie: mods lane 5 | FRM-9';
-const LANE_KEY = 'lane-rounds:mods lane 5';
+const LANE_KEY = 'lane-rounds:mods lane 5 | FRM-9';
 const ROUND_SENSE = '⚡ 🔦 sixth sense: mods lane 5';
 const roundLines = (r: { context?: string[] }) =>
     (r.context ?? []).filter((c) => /\bround \d/.test(c));
@@ -2814,7 +2814,10 @@ test('a round message counts in one store key for its lane', async ($, on) => {
     await start($);
     await send($, ROUND_SENSE, 'round 1 on abc12345 — pushed');
     await send($, ROUND_SENSE, 'round 2 on def67890');
-    expect(w.store.get(LANE_KEY)).toEqual(['abc12345', 'def67890']);
+    expect(w.store.get(LANE_KEY)).toEqual({
+        count: 2,
+        shas: ['abc12345', 'def67890'],
+    });
     expect([...w.store.keys()].filter((k) => k.includes('rounds'))).toEqual([
         LANE_KEY,
     ]);
@@ -2826,7 +2829,7 @@ test('a resend of one round counts once, its sha long or short', async ($, on) =
     await send($, ROUND_SENSE, 'round 1 on abc12345');
     await send($, ROUND_SENSE, 'round 1 on abc12345');
     await send($, ROUND_SENSE, 'round 1 on abc1234567890');
-    expect(w.store.get(LANE_KEY)).toEqual(['abc12345']);
+    expect(w.store.get(LANE_KEY)).toEqual({ count: 1, shas: ['abc12345'] });
 });
 
 for (const message of [
@@ -2844,7 +2847,9 @@ for (const message of [
         const w = world(on, { name: ROUND_CODIE });
         await start($);
         await send($, ROUND_SENSE, message);
-        expect((w.store.get(LANE_KEY) as string[]).length).toBe(1);
+        expect((w.store.get(LANE_KEY) as { shas: string[] }).shas.length).toBe(
+            1,
+        );
     });
 
 for (const message of [
@@ -2895,10 +2900,55 @@ const sendRounds = async ($: Engine, n: number) => {
     return out;
 };
 
-test('a ticket rename inside a lane keeps its key', () => {
-    expect(codieLane('⚡ 🔧 codie: mods lane 5 | FRM-504')).toBe(
+test('a next chunk of one lane starts its own count', () => {
+    expect(codieLane('⚡ 🔧 codie: mods lane 5 | FRM-504')).not.toBe(
         codieLane('⚡ 🔧 codie: mods lane 5 | FRM-505'),
     );
+});
+
+test('a count follows the number sent, a lane opening past round 1', async ($, on) => {
+    world(on, { name: ROUND_CODIE });
+    await start($);
+    const lines: string[] = [];
+    for (const [n, sha] of [
+        [2, 'aaaaaaa'],
+        [3, 'bbbbbbb'],
+        [4, 'ccccccc'],
+    ] as const)
+        lines.push(
+            roundLines(await send($, ROUND_SENSE, `round ${n} on ${sha}`)).join(
+                '',
+            ),
+        );
+    expect(lines[0]).toBe('');
+    expect(lines[1]).toContain('past the cap');
+    expect(lines[2]).toContain('the stop goes to the coordinator');
+});
+
+test('a final with no number counts as round 1', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    await start($);
+    await send($, ROUND_SENSE, 'final on 6381739f, the pr');
+    await send($, ROUND_SENSE, 'round 2 on 7c90198');
+    expect(w.store.get(LANE_KEY)).toEqual({
+        count: 2,
+        shas: ['6381739f', '7c90198'],
+    });
+});
+
+test('a final with no sha in it is no round', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    await start($);
+    await send($, ROUND_SENSE, 'final word: defaced is not a sha');
+    expect(w.store.get(LANE_KEY)).toBeUndefined();
+});
+
+test('a key the first build wrote keeps counting', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    w.store.set(LANE_KEY, ['aaaaaaa', 'bbbbbbb']);
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect((w.store.get(LANE_KEY) as { count: number }).count).toBe(3);
 });
 
 test('a thread with no scope keys on its ticket', () => {

@@ -1576,6 +1576,70 @@ test('an edit naming a plan with a step line holding no ticket id is refused', a
     ).toContain('«the loose one»');
 });
 
+test('an edit naming the plan its card follows passes, however its path is spelled', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    await create($, { items: undefined, plan: PLAN });
+    expect(
+        await denied($, {
+            act: 'edit',
+            id: 'l1',
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+            title: 'mods y',
+        }),
+    ).toBeUndefined();
+});
+
+test('a card a side channel creates while a plan poll reads survives the poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    await create($, { items: undefined, plan: PLAN });
+    const text = '- [x] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    Object.defineProperty(w.files, PLAN, {
+        configurable: true,
+        enumerable: true,
+        get() {
+            const lanes = JSON.parse(w.files[FILE] ?? '{"lanes":[]}').lanes;
+            if (lanes.length === 1)
+                w.files[FILE] = JSON.stringify({
+                    lanes: [
+                        ...lanes,
+                        keptLane({ id: 'l2', runner: '🦉 clio (side)' }),
+                    ],
+                });
+            return text;
+        },
+    });
+    await poll(w);
+    expect(kept(w).map((l) => [l.id, l.current])).toEqual([
+        ['l1', 1],
+        ['l2', 0],
+    ]);
+});
+
+test('a card ended while a plan poll reads stays ended', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    await create($, { items: undefined, plan: PLAN });
+    const text = '- [x] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    Object.defineProperty(w.files, PLAN, {
+        configurable: true,
+        enumerable: true,
+        get() {
+            const lanes = JSON.parse(w.files[FILE] ?? '{"lanes":[]}').lanes;
+            w.files[FILE] = JSON.stringify({
+                lanes: lanes.map((l: object) => ({ ...l, endedAt: NOW })),
+            });
+            return text;
+        },
+    });
+    await poll(w);
+    expect(kept(w)[0]?.endedAt).toBe(NOW);
+});
+
 test('an edit naming a plan its card does not follow is refused', async ($, on) => {
     const w = world(on);
     await start($);

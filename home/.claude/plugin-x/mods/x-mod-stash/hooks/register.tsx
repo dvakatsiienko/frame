@@ -78,7 +78,7 @@ import {
     parseWait,
     planSteps,
     roundLine,
-    roundSha,
+    roundOf,
     ticketOf,
     unbold,
     waitSpans,
@@ -1696,19 +1696,27 @@ async function laneRoundLine(
     e: Record<string, unknown>,
     result: unknown,
 ) {
-    const sha = roundSha(text(e.message) ?? '');
+    const round = roundOf(text(e.message) ?? '');
     const to = text(e.to);
-    if (!sha || !to || (result as { success?: boolean })?.success === false)
+    if (!round || !to || (result as { success?: boolean })?.success === false)
         return undefined;
     const lane = codieLane((await sessionName($)) ?? '');
     if (!lane) return undefined;
     if (await isToCoordinator($, to)) return undefined;
     const key = LANE_ROUNDS + lane;
-    const seen = ((await $.store.get(key)) ?? []) as string[];
-    if (seen.some((s) => s.startsWith(sha) || sha.startsWith(s)))
-        return roundLine(seen.length);
-    await $.store.set(key, [...seen, sha]);
-    return roundLine(seen.length + 1);
+    const kept = await $.store.get(key);
+    // an array is the first build's shape
+    const { count, shas } = (
+        Array.isArray(kept)
+            ? { count: kept.length, shas: kept }
+            : (kept ?? { count: 0, shas: [] })
+    ) as { count: number; shas: string[] };
+    if (shas.some((s) => s.startsWith(round.sha) || round.sha.startsWith(s)))
+        return roundLine(count);
+    // a lane may open past round 1, and a number sent is never read back as less
+    const next = Math.max(round.n, count + 1);
+    await $.store.set(key, { count: next, shas: [...shas, round.sha] });
+    return roundLine(next);
 }
 
 async function askedOf($: EngineInterface) {
@@ -2627,7 +2635,8 @@ async function followPlans($: EngineInterface) {
             movedAt: at === lane.current ? lane.movedAt : turns,
         });
     }
-    if (isChanged) await writeLanes($, next);
+    if (isChanged)
+        await writeLanes($, mergeLanes(lanes, next, await readLanes($)));
 }
 
 async function heldLaneMoves($: EngineInterface) {
@@ -2748,6 +2757,27 @@ async function readLanes($: EngineInterface): Promise<StashLane[]> {
     } catch {
         return [];
     }
+}
+
+// the file a peer wrote while this write was being worked out: mine wins only on a lane mine changed, and a lane ended
+// there stays ended. it narrows the gap, it holds no lock
+export function mergeLanes(
+    before: StashLane[],
+    mine: StashLane[],
+    fresh: StashLane[],
+) {
+    if (!fresh.length) return mine;
+    const was = new Map(before.map((l) => [l.id, l]));
+    const mineById = new Map(mine.map((l) => [l.id, l]));
+    const held = new Set(fresh.map((l) => l.id));
+    return [
+        ...fresh.map((f) => {
+            const m = mineById.get(f.id);
+            if (!m || m === was.get(f.id)) return f;
+            return f.endedAt && !m.endedAt ? f : m;
+        }),
+        ...mine.filter((m) => !held.has(m.id) && !was.has(m.id)),
+    ];
 }
 
 async function writeLanes($: EngineInterface, lanes: StashLane[]) {
@@ -5025,8 +5055,10 @@ async function orbitCall(
                 };
             if (input.act === 'create') given = { ...given, items: steps };
             else if (
-                before.find((l) => l.id === oneLine(input.id))?.plan !==
-                input.plan
+                before
+                    .find((l) => l.id === oneLine(input.id))
+                    ?.plan?.replace(/^~(?=\/)/, home) !==
+                input.plan.replace(/^~(?=\/)/, home)
             )
                 return {
                     deny: `orbit glide: edit cannot link a plan; lane ${oneLine(input.id)} takes one at create`,
@@ -5057,7 +5089,7 @@ async function orbitCall(
                     .delete(LANE_STEER_OLD + l.id)
                     .catch(() => undefined);
             }
-        await writeLanes($, lanes);
+        await writeLanes($, mergeLanes(before, lanes, await readLanes($)));
         isWorkTurn = true;
         return { result: op.result };
     }
