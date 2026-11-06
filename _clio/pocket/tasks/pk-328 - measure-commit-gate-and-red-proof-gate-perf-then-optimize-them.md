@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T19:52:00Z'
+updated_date: '2026-11-06T20:04:00Z'
 labels:
   - s
   - wing-1
@@ -96,4 +96,9 @@ marked done, the 20:33 homes: W10's guard row is FRM-519 item 10, its re-sign ma
 held: 2026-11-06 — FRM-521 the side lane's landing; PK-328 closes there or stays by a kept line for the 11-13 read.
 
 PK-328:W11's ❓ answered, in the thread 2026-11-06 20:03: go's test cache works, cached runs are near instant, one package reruns on any x/go edit, and it is blind to scripts outside the module.
+
+PK-328:W24 (2026-11-06 22:03, dima): you are responsible for PK-328. we test a lot of lanes at once, at least 14 from what i saw, and the commit gate seems the main reason for cpu overload and fleet hangs, so everyone slows down. with your lane, find a way to solve this bottleneck.
+PK-328:W25 (2026-11-06 22:03, dima): you are allowed the full scale of capabilities: do analysis, grab and read histories, measure; consult main clio and the active lanes for useful info, tests or probes; mods codie is running too, so ask him to probe tests or commits, or start a probe in the mods area yourself.
+PK-328:W26 (2026-11-06 22:03, dima): when you fully solve this ticket, give me numbers comparing the perf gains, and measure everything: measuring is half of getting the benefit. without re-measures we won't know if these changes are worth it or if we move in the right direction.
+PK-328:W27 (2026-11-06 22:03, dima): for example, if you do nothing special right now, your commit just took 8 minutes.
 <!-- SECTION:NOTES:END -->
