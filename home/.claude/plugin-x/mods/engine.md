@@ -72,6 +72,10 @@ the facts a mod round needs only when a probe or a test bites; the doors and rul
 - a declaration a mod needs (a vault, a store shape) sits in a `types` contract the manifest names, never inline — `claude plugin validate` goes red otherwise; stop on that red before committing (FRM-307). a contract file keeps its comments to plain text: an emoji's variation selector (U+FE0F), even in a comment, fails it (pk-93)
 
 - the harness clones an event before any hook runs, so no test row can make a hook throw — test a `.catch` by calling the handler directly; a row's `children` carry only `type`, no text or key (mods codie, lane l12)
+- one `on` per event in a test world: a second reads «registered twice» (FRM-513)
+- a test hook's `$` refuses a call its module never makes (FRM-513)
+- under a still test clock, an event key is reused, so `kinds` reads empty: move the clock between events (FRM-513)
+- await a press past a hook's delay before asserting (FRM-513)
 
 ## secrets and chain order
 

@@ -24,3 +24,5 @@ prove an `x` verb by running it, not reading it. the checks `x/AGENTS.md` § ver
 - a cursor handed between polls gets a same-second case (FRM-364 codie)
 - a fix that reorders a read reruns each probe on head and base, in both directions: a top-down fix passed its own rows and broke the reverse case (FRM-434 sixth sense)
 - an audit verb's misses are opened in their transcripts before a clean, a sample at least, never only counted: 10 of 11 passed as real (FRM-434 sixth sense)
+- a gate's row carries one real plant through the real hook before a clean: a fixture's strict flag hid a gate the hook lacked (FRM-473 sixth sense)
+- mutants batch by 8 when the filter runs many go tests: 12 at load 38 took 585 s (FRM-473 sixth sense)

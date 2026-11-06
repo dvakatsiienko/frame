@@ -1,6 +1,6 @@
 // pnpm mods:quiet-delivery-test [--deadline <min>] — sends clio a test [progress] ping through x-mod-stash's /quiet-delivery-test in
 // a headless session (no model call), then reads her quiet log by the ping's nonce: held → delivered, or FAIL. exit 0
-// delivered, 1 FAIL, 2 bad input
+// delivered, 1 FAIL, 2 bad input. the ping is real: it lands in her thread, so never run it while she holds messages
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';

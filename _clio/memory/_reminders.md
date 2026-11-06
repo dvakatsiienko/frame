@@ -78,3 +78,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514), the lazy-rule hook: dispatch after the boot, its own quick lane («let's have it tmrw after boot», o93) — due: 2026-11-06
 
 ⏰ 🦉 [FRM-410](https://linear.app/x-com/issue/FRM-410): after boot, when free: groom, close (his: no `[done]` move, split leftovers, solve the board) — due: 2026-11-06
+
+⏰ 🦉 plan with dima how to solve the 🐉 ci made boring milestone («remind me tmrw», his 03:27) — due: 2026-11-06
