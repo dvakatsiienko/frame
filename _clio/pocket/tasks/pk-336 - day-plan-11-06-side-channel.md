@@ -4,10 +4,11 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T16:13:00Z'
+updated_date: '2026-11-06T16:16:00Z'
 labels:
   - m
   - side-channel-owned
+  - wing-1
 dependencies: []
 priority: now
 type: task
