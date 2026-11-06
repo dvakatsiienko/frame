@@ -21,6 +21,8 @@ type ArgSpec struct {
 	Description string `json:"description"`
 	IsOptional  bool   `json:"isOptional,omitempty"`
 	IsVariadic  bool   `json:"isVariadic,omitempty"`
+	// it follows a `--`, and the usage line says so
+	AfterDash bool `json:"afterDash,omitempty"`
 }
 
 type FlagSpec struct {
@@ -108,16 +110,23 @@ func usageOf(verb Verb) string {
 		}
 	}
 	for _, arg := range verb.Args {
-		name := "<" + arg.Name + ">"
-		if arg.IsVariadic {
-			name = "<" + arg.Name + "…>"
-		}
-		if arg.IsOptional {
-			name = "[" + name + "]"
-		}
-		parts = append(parts, name)
+		parts = append(parts, arg.Usage())
 	}
 	return strings.Join(parts, " ")
+}
+
+func (arg ArgSpec) Usage() string {
+	name := "<" + arg.Name + ">"
+	if arg.IsVariadic {
+		name = "<" + arg.Name + "…>"
+	}
+	if arg.AfterDash {
+		name = "-- " + name
+	}
+	if arg.IsOptional {
+		name = "[" + name + "]"
+	}
+	return name
 }
 
 // the whole schema of a verb, the shape `x schema` prints

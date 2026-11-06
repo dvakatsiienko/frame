@@ -28,14 +28,7 @@ func takes(verb Verb) string {
 		}
 	}
 	for _, arg := range verb.Args {
-		name := "<" + arg.Name + ">"
-		if arg.IsVariadic {
-			name = "<" + arg.Name + "…>"
-		}
-		if arg.IsOptional {
-			name = "[" + name + "]"
-		}
-		parts = append(parts, name)
+		parts = append(parts, arg.Usage())
 	}
 	return strings.Join(parts, "  ")
 }

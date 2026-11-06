@@ -244,6 +244,7 @@ func leaf(m mode, verb Verb) *cobra.Command {
 		RunE: func(c *cobra.Command, args []string) error {
 			flags := Flags{}
 			c.Flags().VisitAll(func(f *pflag.Flag) { flags[f.Name] = flagValue(f) })
+			flags[argsBeforeDash] = c.ArgsLenAtDash()
 			exitCode = dispatch(m, verb, args, flags)
 			return nil
 		},
@@ -482,6 +483,10 @@ func sourceDir() string {
 }
 
 /* Argv */
+
+// the flags' key for how many args came before a `--`, -1 with none; no flag can take the name
+const argsBeforeDash = "--"
+
 func optionsOf(argv []string) []string {
 	if end := slices.Index(argv, "--"); end != -1 {
 		return argv[:end]

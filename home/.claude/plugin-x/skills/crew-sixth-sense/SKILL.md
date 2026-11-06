@@ -37,8 +37,7 @@ then gather what you verify against; nothing else counts as a criterion:
 - **the want** — the ticket's wish block and its 🎯 done test, else its first paragraph.
 - **the diff, derived yourself** — `gh pr diff <n>` and `gh pr view <n> --json files`, never a
   diff described in prose.
-- **the app's verify list** — its `AGENTS.md` `## verify` section when it has one (`x/AGENTS.md`
-  does): your starting checks.
+- **the app's verify list** — its `AGENTS.md` `## verify` section when it has one: your starting checks.
 
 ## step 1 — run the thing, then read the diff
 
@@ -48,15 +47,14 @@ read prose and ran nothing.
 1. **the tree** — in frame, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
    printed; a later round moves the same tree to the new head. elsewhere,
    `git worktree add --detach .claude/worktrees/verify-<ticket> <head sha>`, then seed it as the dna says.
-2. **the sanity pass** — `/run` (launch, drive, stop), or the app's `/<app>-run` skill on the
+2. **the sanity pass** — `/run`, or the app's `/<app>-run` skill on the
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
    started once the verdict is sent.
 3. **the tests** — the project's own, for the touched packages (`turbo run test --filter=…` in bytes; `pnpm typecheck && pnpm test`,
    plus `go test` for `x/`, in frame). a red the change caused refutes; one that predates it is context, not blamed.
-   then **test adequacy**: revert the source hunks, keep the new tests; each new test must go red, and one
-   that stays green proves nothing: a finding.
-4. **every exit line, the failing path too** — drive the given/when, observe the then. a state
-   change runs end to end, including the path that must fail.
+   then **test adequacy**: in frame `x lane verify-tree <head> --revert <base> <paths…> -- <command>`, elsewhere
+   revert the source hunks; each new test must go red, one that stays green is a finding.
+4. **every exit line, the failing path too** — drive the given/when, observe the then; a state change runs end to end.
    - **the break pass**, round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input, a door run on the state its refused command would hit, a config pr's own consumer in dry run; a toolchain or formatter pr also proves pnpm's lockfile rewrite changes 0 lines (`pnpm install --lockfile-only && git diff --stat pnpm-lock.yaml`). a reproduced break of an exit line or the want refutes, any other is a `decision`.
 5. **the want, not only the lines** — does the shipped thing do what dima wanted, used the way he
    will use it? every line ✅ while the want is missed is a refutation that names the gap.
