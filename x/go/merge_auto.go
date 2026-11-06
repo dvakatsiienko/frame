@@ -507,17 +507,17 @@ func decampMerged(d *mergeDecision) []string {
 	return notes
 }
 
-// only a lane's own branch shapes go by themselves: any other branch is someone's
+// only a lane's own branch shapes go by themselves; coder/ is a branch cut before the rename
 func isLaneBranch(ref string) bool {
 	return strings.HasPrefix(ref, "codie/") || strings.HasPrefix(ref, "coder/")
 }
 
 // the sha origin holds for a branch, "" with none or with no origin at all
-func remoteBranch(main, ref string) (string, error) {
-	if !ok(gitIn(main, "remote", "get-url", "origin")) {
+func remoteBranch(dir, ref string) (string, error) {
+	if !ok(gitIn(dir, "remote", "get-url", "origin")) {
 		return "", nil
 	}
-	listed, err := mustGitIn(main, "ls-remote", "ls-remote", "origin", "refs/heads/"+ref)
+	listed, err := mustGitIn(dir, "ls-remote", "ls-remote", "origin", "refs/heads/"+ref)
 	sha, _, _ := strings.Cut(listed, "\t")
 	return sha, err
 }
@@ -530,58 +530,66 @@ func branchStands(main, ref string) bool {
 	return sha != "" || err != nil
 }
 
-// why a branch must stay, "" when it may go: a tree on it, or a commit carried says is on no landed line
-func branchStay(main, ref, uncarried string, carried func(sha string) bool) string {
+// the shas a branch was judged at: its delete leases on them, so a push since the read survives
+type branchTips struct{ local, remote string }
+
+// why a branch must stay, "" when it may go: a tree on it, or a commit carried does not vouch for
+func branchStay(main, ref, uncarried string, carried func(sha string) bool) (string, branchTips) {
+	var tips branchTips
 	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
 	if err != nil {
-		return "the worktree list did not read"
+		return "the worktree list did not read", tips
 	}
 	for _, e := range worktreesOf(listed) {
 		if e.branch == ref {
-			return "a tree holds it, " + home(e.path)
+			return "a tree holds it, " + home(e.path), tips
 		}
 	}
-	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok && !carried(local.out) {
-		return "the local branch holds a commit " + uncarried
+	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok {
+		if !carried(local.out) {
+			return "the local branch holds a commit " + uncarried, tips
+		}
+		tips.local = local.out
 	}
 	sha, err := remoteBranch(main, ref)
 	if err != nil {
-		return "origin did not read"
+		return "origin did not read", tips
 	}
 	if sha != "" {
 		_, _ = gitIn(main, "fetch", "-q", "origin", ref)
 		if !carried(sha) {
-			return "origin holds a commit " + uncarried
+			return "origin holds a commit " + uncarried, tips
 		}
+		tips.remote = sha
 	}
-	return ""
+	return "", tips
 }
 
-func branchDrop(main, ref string) string {
-	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok {
-		if deleted, _ := gitIn(main, "branch", "-D", ref); !deleted.ok {
-			return "⚠ " + ref + " stays: git kept the local branch"
+func branchDrop(main, ref string, tips branchTips) string {
+	if tips.local != "" {
+		if deleted, _ := gitIn(main, "update-ref", "-d", "refs/heads/"+ref, tips.local); !deleted.ok {
+			return "⚠ " + ref + " stays: it moved since the read"
 		}
 	}
-	if sha, err := remoteBranch(main, ref); sha != "" || err != nil {
+	if tips.remote != "" {
 		// a ref delete carries no commit for the pre-push gates to read
-		if deleted, _ := gitIn(main, "-c", "core.hooksPath=/dev/null", "push", "-q", "origin", "--delete", ref); !deleted.ok {
-			return "⚠ " + ref + " stays on origin: the delete failed"
+		if deleted, _ := gitIn(main, "-c", "core.hooksPath=/dev/null", "push", "-q", "--force-with-lease=refs/heads/"+ref+":"+tips.remote, "origin", ":refs/heads/"+ref); !deleted.ok {
+			return "⚠ " + ref + " stays on origin: the delete failed or it moved since the read"
 		}
 	}
 	return ref + " gone"
 }
 
-// a merged lane's branch and what keeps it: an open pr on it would close with it, and a commit past the merged head is no one's but its author's
-func laneBranchWhy(as, main, slug, ref, head string) string {
+// an open pr based on the branch would close with it
+func laneBranchWhy(as, main, slug, ref, head string) (string, branchTips) {
 	var open []struct {
 		Number int `json:"number"`
 	}
 	if _, err := ghFetch(as, githubBase()+"/repos/"+slug+"/pulls?state=open&base="+url.QueryEscape(ref), &open); err != nil {
-		return "the open prs based on it did not read"
+		return "the open prs based on it did not read", branchTips{}
 	}
 	if len(open) > 0 {
-		return fmt.Sprintf("#%d is based on it", open[0].Number)
+		return fmt.Sprintf("#%d is based on it", open[0].Number), branchTips{}
 	}
 	return branchStay(main, ref, "the merge did not carry", func(sha string) bool {
 		return sha == head || ok(gitIn(main, "merge-base", "--is-ancestor", sha, head))
@@ -593,10 +601,11 @@ func laneBranchNote(as, main, slug, ref, head string) string {
 	if !isLaneBranch(ref) || !branchStands(main, ref) {
 		return ""
 	}
-	if why := laneBranchWhy(as, main, slug, ref, head); why != "" {
+	why, tips := laneBranchWhy(as, main, slug, ref, head)
+	if why != "" {
 		return ref + " stays: " + why
 	}
-	return branchDrop(main, ref)
+	return branchDrop(main, ref, tips)
 }
 
 func gitAncestorOfAny(tree string, shas []string) bool {

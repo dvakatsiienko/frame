@@ -64,7 +64,7 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(name, "codie/") && !strings.HasPrefix(name, "coder/") { // read-both: branches cut before the 10-29 rename keep coder/
+	if !isLaneBranch(name) {
 		return nil, usageFail(name+" is not a codie/* branch: rebase-main force-pushes only those", "git switch -c codie/<ticket>-<slug>")
 	}
 	r.Open(name)
@@ -87,7 +87,7 @@ func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 		note, recorded := readOntoRecord(t.record, name)
 		// a finished rewrite leaves the recorded head and the old base off HEAD's history; a later commit or an amend after an abort does not
 		t.finished = recorded && t.Onto != "" && !ok(git("merge-base", "--is-ancestor", note.Head, "HEAD")) && !ok(git("merge-base", "--is-ancestor", t.Onto, "HEAD"))
-		if t.Lease, err = remoteSha(name); err != nil {
+		if t.Lease, err = remoteBranch(".", name); err != nil {
 			return "", err
 		}
 		if t.Lease != "" {
@@ -189,7 +189,7 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		if pushed.ok {
 			return "origin/" + t.Branch, nil
 		}
-		remote, err := remoteSha(t.Branch)
+		remote, err := remoteBranch(".", t.Branch)
 		if err != nil {
 			return "", err
 		}
@@ -202,7 +202,7 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("verify", "reading the remote back", func() (string, error) {
-		remote, err := remoteSha(t.Branch)
+		remote, err := remoteBranch(".", t.Branch)
 		if err != nil {
 			return "", err
 		}

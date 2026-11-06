@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -161,7 +162,7 @@ func TestAMergedChunkLeavesNoTreeNoBranchAndKeepsItsRetro(t *testing.T) {
 	merge := w.run(t, "7", "--apply")
 	landed := w.landedAfterMerge(t, "--apply")
 
-	if listed := gitT(t, w.clone, "worktree", "list"); strings.Contains(listed, tree) {
+	if listed := gitT(t, w.clone, "worktree", "list"); exists(tree) || strings.Contains(listed, tree) {
 		t.Errorf("the tree stands:\n%s\n%s", listed, merge.stdout)
 	}
 	if left := gitT(t, w.clone, "branch", "--list", "codie/FRM-1-*"); strings.TrimSpace(left) != "" {
@@ -239,6 +240,37 @@ func TestDecampKeepsAForkBranchMainDoesNotHold(t *testing.T) {
 	}
 }
 
+// a commit on no ref dies with the tree: a detached tree has no branch to keep it
+func TestDecampKeepsADetachedTreeHoldingACommit(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	gitT(t, main, "update-ref", "refs/remotes/origin/main", "HEAD")
+	tree := filepath.Join(main, ".claude/worktrees/verify-x")
+	gitT(t, main, "worktree", "add", "-q", "--detach", tree, "HEAD")
+	write(t, filepath.Join(tree, "y.txt"), "local only\n")
+	gitT(t, tree, "add", "y.txt")
+	gitT(t, tree, "commit", "-q", "-m", "local only")
+
+	got := decampIn(t, main, tree, "--apply")
+
+	if got.code == 0 || !exists(tree) || !strings.Contains(got.stdout, "on no remote") {
+		t.Fatalf("exit %d, tree %v: want it kept and named\n%s", got.code, exists(tree), got.stdout)
+	}
+}
+
+// main's tree matches the tip, yet the commit under it is on no ref of main
+func TestDecampKeepsAForkThatRevertedItsOwnWork(t *testing.T) {
+	t.Parallel()
+	main, tree := forkWorld(t, "nowhere")
+	gitT(t, tree, "revert", "--no-edit", "HEAD")
+
+	got := decampIn(t, main, tree, "--apply")
+
+	if strings.TrimSpace(gitT(t, main, "branch", "--list", "worktree-fork-abc")) == "" || !strings.Contains(got.stdout, "main does not hold") {
+		t.Fatalf("exit %d: want the branch kept and named\n%s", got.code, got.stdout)
+	}
+}
+
 func TestDecampKeepsATreeHoldingWorkAndNamesIt(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, file, why string }{
@@ -300,10 +332,15 @@ func TestDecampListStaleCountsWhatForEachRefCounts(t *testing.T) {
 	gitT(t, main, "switch", "-q", "-c", "codie/FRM-2-open")
 	write(t, filepath.Join(main, "o.txt"), "not on main\n")
 	gitT(t, main, "add", "o.txt")
-	gitT(t, main, "commit", "-q", "-m", "open work")
+	dated := exec.Command("git", "commit", "-q", "-m", "open work")
+	dated.Dir = main
+	dated.Env = append(os.Environ(), "GIT_COMMITTER_DATE=2026-10-27T00:00:00Z")
+	if out, err := dated.CombinedOutput(); err != nil {
+		t.Fatalf("%v: %s", err, out)
+	}
 	gitT(t, main, "switch", "-q", "main")
 
-	got := decampIn(t, main, "--list-stale")
+	got := xIn(t, main, []string{stubPnpm(t), "X_STATE=" + t.TempDir(), "X_NOW=2026-11-06T00:00:00Z"}, "lane", "decamp", "--list-stale")
 
 	var envelope struct {
 		Data struct {
@@ -323,8 +360,11 @@ func TestDecampListStaleCountsWhatForEachRefCounts(t *testing.T) {
 		t.Fatalf("count %d, want %d %v:\n%s", envelope.Data.Count, len(want), want, got.stdout)
 	}
 	for _, b := range envelope.Data.Branches {
-		if b.Merged == (b.Name == "codie/FRM-2-open") || b.Age == "" {
-			t.Errorf("%+v: only codie/FRM-2-open is not merged, every row has an age", b)
+		if b.Merged == (b.Name == "codie/FRM-2-open") {
+			t.Errorf("%+v: only codie/FRM-2-open is not merged", b)
+		}
+		if b.Name == "codie/FRM-2-open" && b.Age != "10d" {
+			t.Errorf("%+v: want the age from its commit date, 10d", b)
 		}
 	}
 	if strings.TrimSpace(gitT(t, main, "branch", "--list", "codie/FRM-1-merged")) == "" {
@@ -342,18 +382,22 @@ func TestDecampWantsAPathOrTheListing(t *testing.T) {
 func TestLandedPrintsWhatItsLandingFreed(t *testing.T) {
 	t.Parallel()
 	w := newLandedWorld(t)
-	*w.relations = `[{"type":"blocks","relatedIssue":{"identifier":"FRM-2","state":{"type":"unstarted"}}},
-		{"type":"blocks","relatedIssue":{"identifier":"FRM-3","state":{"type":"completed"}}},
-		{"type":"related","relatedIssue":{"identifier":"FRM-4","state":{"type":"unstarted"}}}]`
+	blockers := func(nodes string) string { return `,"inverseRelations":{"nodes":[` + nodes + `]}` }
+	self := `{"type":"blocks","issue":{"identifier":"FRM-1","state":{"type":"started"}}}`
+	*w.relations = `[{"type":"blocks","relatedIssue":{"identifier":"FRM-2","state":{"type":"unstarted"}` + blockers(self) + `}},
+		{"type":"blocks","relatedIssue":{"identifier":"FRM-3","state":{"type":"completed"}` + blockers(self) + `}},
+		{"type":"related","relatedIssue":{"identifier":"FRM-4","state":{"type":"unstarted"}` + blockers("") + `}},
+		{"type":"blocks","relatedIssue":{"identifier":"FRM-5","state":{"type":"unstarted"}` + blockers(self+`,{"type":"blocks","issue":{"identifier":"FRM-9","state":{"type":"started"}}}`) + `}},
+		{"type":"blocks","relatedIssue":{"identifier":"FRM-6","state":{"type":"unstarted"}` + blockers(self+`,{"type":"blocks","issue":{"identifier":"FRM-8","state":{"type":"completed"}}}`) + `}}]`
 
 	envelope, _ := w.landed(t)
 
 	out := linesOf(envelope)
-	if !strings.Contains(out, "✅ freed") || !strings.Contains(out, "FRM-2") {
-		t.Errorf("want FRM-2 named as freed:\n%s", out)
+	if !strings.Contains(out, "✅ freed") || !strings.Contains(out, "FRM-2") || !strings.Contains(out, "FRM-6") {
+		t.Errorf("want FRM-2 and FRM-6, whose other blocker is done, named as freed:\n%s", out)
 	}
-	if strings.Contains(out, "FRM-3") || strings.Contains(out, "FRM-4") {
-		t.Errorf("a done ticket and a plain relation are not freed:\n%s", out)
+	if strings.Contains(out, "FRM-3") || strings.Contains(out, "FRM-4") || strings.Contains(out, "FRM-5") {
+		t.Errorf("a done ticket, a plain relation and a ticket another open one still blocks are not freed:\n%s", out)
 	}
 }
 
@@ -411,6 +455,28 @@ func TestLandedRedsARuleAQuickLaneLeftWarnOnly(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// the real dispatch shape: the 🚀 line's base and a verified sha bound the range
+func TestLandedRedsARuleOnADispatchedQuickLane(t *testing.T) {
+	t.Parallel()
+	w, _ := quickWorld(t)
+	write(t, filepath.Join(w.repo, warnOnlyFile), warnSet("older-rule"))
+	gitT(t, w.repo, "add", warnOnlyFile)
+	gitT(t, w.repo, "commit", "-q", "-m", "another lane's rule")
+	write(t, filepath.Join(w.repo, warnOnlyFile), warnSet("older-rule", "new-rule"))
+	gitT(t, w.repo, "add", warnOnlyFile)
+	gitT(t, w.repo, "commit", "-q", "-m", "a guard rule")
+	tip := gitT(t, w.repo, "rev-parse", "HEAD")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", tip)
+	*w.comments = `[{"body":"verified: ` + tip + `"}]`
+
+	envelope, _ := w.landed(t)
+
+	out := linesOf(envelope)
+	if !strings.Contains(out, "🔴 warn-only") || !strings.Contains(out, "new-rule") || strings.Contains(out, "older-rule") {
+		t.Errorf("want only this lane's rule red:\n%s", out)
 	}
 }
 

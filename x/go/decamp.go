@@ -70,8 +70,10 @@ func removeTree(main, tree string) error {
 
 const forkBranch = "worktree-fork-"
 
+func listingStale(flags Flags) bool { return flags["list-stale"] == true }
+
 func decampPlan(r *Run, args []string, flags Flags) (any, error) {
-	if flags["list-stale"] == true {
+	if listingStale(flags) {
 		return listStale(r)
 	}
 	if len(args) == 0 {
@@ -92,8 +94,12 @@ func decampPlan(r *Run, args []string, flags Flags) (any, error) {
 			if e.path != tree {
 				continue
 			}
-			// worktree remove takes ignored files with it, .scratch/ among them; a commit keeps on its branch
-			if why := treeStay(e, main, nil, e.sha); why != "" {
+			// worktree remove takes ignored files with it, .scratch/ among them; a branch keeps its commits, a detached tree does not
+			merged := e.sha
+			if e.detached {
+				merged = ""
+			}
+			if why := treeStay(e, main, nil, merged); why != "" {
 				return "", &Fail{Refused: true, Msg: home(tree) + " stays: " + why, Next: "settle it, then x lane decamp " + home(tree) + " --apply"}
 			}
 			if strings.HasPrefix(e.branch, forkBranch) {
@@ -107,14 +113,23 @@ func decampPlan(r *Run, args []string, flags Flags) (any, error) {
 	return ordered{{"tree", tree}, {"main", main}, {"branch", branch}}, nil
 }
 
-// a commit is on main by ancestry, or by a squash: merging it into main would change nothing
+// on main by ancestry, or by a squash: merging any of its commits into main would change nothing. each commit, since a
+// branch that reverted its own work matches main at its tip
 func onMain(main, sha string) bool {
 	if ok(gitIn(main, "merge-base", "--is-ancestor", sha, "origin/main")) {
 		return true
 	}
-	merged, _ := gitIn(main, "merge-tree", "--write-tree", "origin/main", sha)
 	tree, _ := gitIn(main, "rev-parse", "origin/main^{tree}")
-	return merged.ok && tree.ok && merged.out == tree.out
+	commits, _ := gitIn(main, "rev-list", "origin/main.."+sha)
+	if !tree.ok || !commits.ok {
+		return false
+	}
+	for commit := range strings.SplitSeq(commits.out, "\n") {
+		if merged, _ := gitIn(main, "merge-tree", "--write-tree", "origin/main", commit); !merged.ok || merged.out != tree.out {
+			return false
+		}
+	}
+	return true
 }
 
 type staleBranch struct {
@@ -123,7 +138,6 @@ type staleBranch struct {
 	Age    string `json:"age"`
 }
 
-// read-only: what dima reads before the old lane branches go, nothing is removed here
 func listStale(r *Run) (any, error) {
 	r.Open("the lane branches")
 	repo, err := top()
@@ -178,18 +192,22 @@ func decamp(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	said := home(tree) + " removed, hooks home"
 	result := ordered{{"tree", tree}, {"main", main}}
 	if branch := fields[2].value.(string); branch != "" {
-		_ = r.Step("branch", branch, func() (string, error) {
+		if err := r.Step("branch", branch, func() (string, error) {
 			_, _ = gitIn(main, "fetch", "-q", "origin", "main")
-			note := branch + " stays: "
-			if why := branchStay(main, branch, "main does not hold", func(sha string) bool { return onMain(main, sha) }); why != "" {
-				note += why
-			} else {
-				note = branchDrop(main, branch)
+			why, tips := branchStay(main, branch, "main does not hold", func(sha string) bool { return onMain(main, sha) })
+			note := branch + " stays: " + why
+			if why == "" {
+				note = branchDrop(main, branch, tips)
+			}
+			if strings.HasPrefix(note, "⚠") {
+				return "", &Fail{Msg: note, Next: "git branch --list " + branch}
 			}
 			said += "\n" + note
 			result = append(result, kv{"branch", note})
 			return note, nil
-		})
+		}); err != nil {
+			return nil, err
+		}
 	}
 	r.Done(said, "")
 	return result, nil

@@ -203,7 +203,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	if mergedHead != "" && isLaneBranch(headRef) && branchStands(main, headRef) {
 		plan.mergedRef, plan.mergedHead, plan.ghRepo = headRef, mergedHead, ghRepo
 		branch := landedLine{name: "branch", detail: headRef + " stands", fix: "x lane landed " + id + " --pr " + pr + " --apply"}
-		if why := laneBranchWhy(asCodie, main, ghRepo, headRef, mergedHead); why != "" {
+		if why, _ := laneBranchWhy(asCodie, main, ghRepo, headRef, mergedHead); why != "" {
 			branch.detail += ": " + why
 		}
 		lines = append(lines, branch)
@@ -235,7 +235,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	}
 	lines = append(lines, look, wish)
 	if merged.ok {
-		if freed := freedTickets(issue); len(freed) > 0 {
+		if freed := freedTickets(issue, id); len(freed) > 0 {
 			lines = append(lines, landedLine{name: "freed", ok: true, detail: strings.Join(freed, ", ")})
 		}
 	}
@@ -375,13 +375,19 @@ func quickWarnOnlyLine(repo string, commits []string) *landedLine {
 	return warnOnlyVerdict(line, added, now)
 }
 
-// the tickets this one blocks that are still to do
-func freedTickets(issue landedRead) []string {
+// a ticket another open one still blocks is not freed
+func freedTickets(issue landedRead, id string) []string {
+	closed := func(state string) bool { return state == "completed" || state == "canceled" }
 	var freed []string
 	for _, relation := range issue.Relations.Nodes {
-		state := relation.RelatedIssue.State.Type
-		if relation.Type == "blocks" && state != "completed" && state != "canceled" {
-			freed = append(freed, relation.RelatedIssue.Identifier)
+		blocked := relation.RelatedIssue
+		if relation.Type != "blocks" || closed(blocked.State.Type) {
+			continue
+		}
+		if !slices.ContainsFunc(blocked.InverseRelations.Nodes, func(by blockerRelation) bool {
+			return by.Type == "blocks" && by.Issue.Identifier != id && !closed(by.Issue.State.Type)
+		}) {
+			freed = append(freed, blocked.Identifier)
 		}
 	}
 	return freed
@@ -601,10 +607,19 @@ type landedRead struct {
 	Relations connection[struct {
 		Type         string
 		RelatedIssue struct {
-			Identifier string
-			State      struct{ Type string }
+			Identifier       string
+			State            struct{ Type string }
+			InverseRelations connection[blockerRelation]
 		}
 	}]
+}
+
+type blockerRelation struct {
+	Type  string
+	Issue struct {
+		Identifier string
+		State      struct{ Type string }
+	}
 }
 
 func landedIssue(flags Flags, id string) (landedRead, error) {
@@ -613,7 +628,7 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 		return landedRead{}, err
 	}
 	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { description comments(first: 100) { nodes { body } }
-		relations(first: 50) { nodes { type relatedIssue { identifier state { type } } } }
+		relations(first: 50) { nodes { type relatedIssue { identifier state { type } inverseRelations(first: 50) { nodes { type issue { identifier state { type } } } } } } }
 		projectMilestone { issues(first: 100) { nodes { state { type } } } } } }`, map[string]any{"id": id})
 	if err != nil {
 		return landedRead{}, err

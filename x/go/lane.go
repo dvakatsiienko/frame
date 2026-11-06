@@ -415,7 +415,7 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 		target = pushTarget{name, sha, from, reason}
 		// counted from the remote's own sha: a local origin/<branch> ref can be stale
 		detail := fmt.Sprintf("%s to origin/%s", short(sha), name)
-		if remote, _ := remoteSha(name); remote != "" {
+		if remote, _ := remoteBranch(".", name); remote != "" {
 			if ahead, _ := git("rev-list", "--count", remote+"..HEAD"); ahead.ok {
 				n, _ := strconv.Atoi(ahead.out)
 				detail = fmt.Sprintf("%s to origin/%s", plural(n, "commit"), name)
@@ -459,7 +459,7 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	var remote string
 	if err := r.Step("verify", "reading the remote back", func() (string, error) {
 		var err error
-		if remote, err = remoteSha(name); err != nil {
+		if remote, err = remoteBranch(".", name); err != nil {
 			return "", err
 		}
 		if remote != sha {
@@ -505,7 +505,7 @@ func prPlan(r *Run, args []string, flags Flags) (any, error) {
 			}
 			base = cmp.Or(onto, base)
 		}
-		remote, err := remoteSha(name)
+		remote, err := remoteBranch(".", name)
 		if err != nil {
 			return "", err
 		}
@@ -999,12 +999,6 @@ func branch() (string, error) {
 		return "", &Fail{Refused: true, Msg: "detached HEAD", Next: "git switch -c <branch>"}
 	}
 	return found.out, nil
-}
-
-func remoteSha(name string) (string, error) {
-	out, err := mustGit("ls-remote", "ls-remote", "origin", "refs/heads/"+name)
-	sha, _, _ := strings.Cut(out, "\t")
-	return sha, err
 }
 
 type result struct {

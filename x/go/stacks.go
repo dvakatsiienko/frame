@@ -404,7 +404,7 @@ func restackPlan(r *Run, _ []string, _ Flags) (any, error) {
 			return "", err
 		}
 		for _, layer := range t.Layers {
-			if t.Leases[layer], err = remoteSha(layer); err != nil {
+			if t.Leases[layer], err = remoteBranch(".", layer); err != nil {
 				return "", err
 			}
 		}
@@ -557,7 +557,7 @@ func restack(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}
 	if err := r.Step("verify", "reading the remote back, then the branch restack started on", func() (string, error) {
 		for layer, sha := range moved {
-			if remote, err := remoteSha(layer); err != nil || remote != sha {
+			if remote, err := remoteBranch(".", layer); err != nil || remote != sha {
 				return "", errors.Join(err, &Fail{Msg: fmt.Sprintf("origin/%s is %s, the restack made %s", layer, short(remote), short(sha)), Next: "x lane restack --apply"})
 			}
 		}
@@ -730,7 +730,7 @@ func stackBase(flags Flags) (string, error) {
 	if base == "" {
 		return "", nil
 	}
-	sha, err := remoteSha(base)
+	sha, err := remoteBranch(".", base)
 	if err != nil {
 		return "", err
 	}

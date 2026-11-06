@@ -49,7 +49,7 @@ var impls = map[string]Impl{
 	"lane verify-tree": {Run: verifyTree, Undone: "no worktree was added"},
 	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
 	"lane decamp": {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp,
-		ReadOnly: func(flags Flags) bool { return flags["list-stale"] == true }},
+		ReadOnly: listingStale},
 	"lane dispatch":     {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "a ticket before the failed one keeps its marks", Ask: askDispatch},
 	"lane landed":       {Plan: landedPlanOf, Apply: laneLanded, Undone: "a step that ran stands; the list above is read after it", Ask: askLanded},
 	"lane seed":         {Run: seed, Undone: "the tree is as the hook left it"},
