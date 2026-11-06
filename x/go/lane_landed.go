@@ -919,6 +919,9 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 	if holdsAFile(filepath.Join(tree, ".scratch")) {
 		reasons = append(reasons, "holds a file in .scratch/")
 	}
+	if stoppedOn(tree) != "" {
+		reasons = append(reasons, "a rebase or bisect is stopped in it")
+	}
 	// a squash merge leaves the branch's commits off main, and a deleted branch leaves them on no remote:
 	// a tree at the merged pr's head, or at an earlier one, holds nothing the pr did not carry
 	carried := false

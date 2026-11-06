@@ -530,6 +530,17 @@ func branchStands(main, ref string) bool {
 	return sha != "" || err != nil
 }
 
+// a rebase or a bisect detaches its tree, and only these files still name what it will come back to
+func stoppedOn(tree string) string {
+	for _, file := range []string{"rebase-merge/head-name", "rebase-apply/head-name", "BISECT_START"} {
+		path, _ := gitIn(tree, "rev-parse", "--path-format=absolute", "--git-path", file)
+		if raw, err := os.ReadFile(path.out); path.ok && err == nil {
+			return strings.TrimPrefix(strings.TrimSpace(string(raw)), "refs/heads/")
+		}
+	}
+	return ""
+}
+
 // the shas a branch was judged at: its delete leases on them, so a push since the read survives
 type branchTips struct{ local, remote string }
 
@@ -541,7 +552,7 @@ func branchStay(main, ref, uncarried string, carried func(sha string) bool) (str
 		return "the worktree list did not read", tips
 	}
 	for _, e := range worktreesOf(listed) {
-		if e.branch == ref {
+		if e.branch == ref || (e.detached && stoppedOn(e.path) == ref) {
 			return "a tree holds it, " + home(e.path), tips
 		}
 	}

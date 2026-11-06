@@ -49,6 +49,45 @@ func TestMergeAutoTakesTheMergedBranchLocalAndRemote(t *testing.T) {
 	}
 }
 
+// the tree's branch, stopped on a conflict against a rival commit: git shows the tree as detached
+func stopRebase(t *testing.T, tree, backend string) {
+	t.Helper()
+	gitT(t, tree, "checkout", "-q", "--detach", "HEAD~1")
+	write(t, filepath.Join(tree, "script/foo.ts"), "a rival\n")
+	gitT(t, tree, "add", "script/foo.ts")
+	gitT(t, tree, "commit", "-q", "-m", "a rival")
+	rival := strings.TrimSpace(gitT(t, tree, "rev-parse", "HEAD"))
+	gitT(t, tree, "checkout", "-q", "coder/x")
+	rebaseStops(t, tree, backend, rival)
+}
+
+func rebaseStops(t *testing.T, tree string, args ...string) {
+	t.Helper()
+	// a dev's global rebase.updateRefs refuses --apply before the rebase starts
+	rebase := exec.Command("git", append([]string{"-c", "rebase.updateRefs=false", "rebase", "-q"}, args...)...)
+	rebase.Dir = tree
+	rebase.Env = cleanEnv()
+	out, _ := rebase.CombinedOutput()
+	if stoppedOn(tree) != "coder/x" {
+		t.Fatalf("want the rebase stopped on coder/x, it read %q: %s", stoppedOn(tree), out)
+	}
+}
+
+// stopped by a failed exec: clean, detached, and at the merged head, so only the stop itself holds it
+func TestMergeAutoLeavesATreeWithAStoppedRebase(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	tree := w.laneTree(t)
+	rebaseStops(t, tree, "--exec", "false", "HEAD~1")
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, "a rebase or bisect is stopped in it") {
+		t.Fatalf("exit %d, tree %v: want the tree kept and named\n%s", got.code, exists(tree), got.stdout)
+	}
+}
+
 func TestMergeAutoKeepsABranchAndNamesWhy(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -59,6 +98,17 @@ func TestMergeAutoKeepsABranchAndNamesWhy(t *testing.T) {
 	}{
 		{"a dirty tree holds it", func(t *testing.T, w *mergeWorld) {
 			write(t, filepath.Join(w.laneTree(t), "loose.txt"), "not committed\n")
+		}, "a tree holds it", true},
+		{"a stopped rebase holds it", func(t *testing.T, w *mergeWorld) {
+			stopRebase(t, w.laneTree(t), "--merge")
+		}, "a tree holds it", true},
+		{"a stopped am-style rebase holds it", func(t *testing.T, w *mergeWorld) {
+			stopRebase(t, w.laneTree(t), "--apply")
+		}, "a tree holds it", true},
+		{"a bisect holds it", func(t *testing.T, w *mergeWorld) {
+			tree := w.laneTree(t)
+			gitT(t, tree, "bisect", "start")
+			gitT(t, tree, "checkout", "-q", "--detach")
 		}, "a tree holds it", true},
 		{"a local commit the merge did not carry", func(t *testing.T, w *mergeWorld) {
 			tree := w.laneTree(t)
@@ -107,6 +157,56 @@ func TestMergeAutoLeavesABranchOutsideTheLaneShapes(t *testing.T) {
 
 	if got.code != 0 || !w.onOrigin(t, "feature/x") {
 		t.Fatalf("exit %d, remote %v: a branch no lane named stays\n%s", got.code, w.onOrigin(t, "feature/x"), got.stdout)
+	}
+}
+
+// a repo and a bare origin both holding codie/x one commit past old, the tip the delete judged
+func movedBranchWorld(t *testing.T) (main, old, moved string) {
+	t.Helper()
+	main = repo(t)
+	origin := t.TempDir()
+	gitT(t, origin, "init", "-q", "--bare")
+	gitT(t, main, "remote", "add", "origin", origin)
+	old = strings.TrimSpace(gitT(t, main, "rev-parse", "HEAD"))
+	gitT(t, main, "switch", "-q", "-c", "codie/x")
+	gitT(t, main, "commit", "-q", "--allow-empty", "-m", "a push since the read")
+	moved = strings.TrimSpace(gitT(t, main, "rev-parse", "HEAD"))
+	gitT(t, main, "push", "-q", "origin", "codie/x")
+	gitT(t, main, "switch", "-q", "main")
+	return main, old, moved
+}
+
+func TestBranchDropLeavesALocalBranchThatMovedSinceItsRead(t *testing.T) {
+	t.Parallel()
+	main, old, moved := movedBranchWorld(t)
+
+	note := branchDrop(main, "codie/x", branchTips{local: old})
+
+	if at := strings.TrimSpace(gitT(t, main, "for-each-ref", "--format=%(objectname)", "refs/heads/codie/x")); !strings.HasPrefix(note, "⚠") || at != moved {
+		t.Fatalf("note %q, local at %q: want %s kept and a warning", note, at, moved)
+	}
+}
+
+func TestBranchDropLeavesARemoteBranchThatMovedSinceItsRead(t *testing.T) {
+	t.Parallel()
+	main, old, moved := movedBranchWorld(t)
+
+	note := branchDrop(main, "codie/x", branchTips{remote: old})
+
+	if at, err := remoteBranch(main, "codie/x"); err != nil || !strings.HasPrefix(note, "⚠") || at != moved {
+		t.Fatalf("note %q, origin at %q, %v: want %s kept and a warning", note, at, err, moved)
+	}
+}
+
+func TestBranchStaysWhenOriginDoesNotRead(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	gitT(t, main, "remote", "add", "origin", filepath.Join(t.TempDir(), "gone"))
+
+	why, _ := branchStay(main, "codie/x", "not carried", func(string) bool { return true })
+
+	if why != "origin did not read" {
+		t.Fatalf("why %q: want origin did not read", why)
 	}
 }
 
@@ -255,6 +355,36 @@ func TestDecampKeepsAForkBranchMainDoesNotHold(t *testing.T) {
 
 	if got.code != 0 || strings.TrimSpace(gitT(t, main, "branch", "--list", "worktree-fork-abc")) == "" || !strings.Contains(got.stdout, "main does not hold") {
 		t.Fatalf("exit %d: want the branch kept and named\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDecampLeavesABranchOutsideTheForkShape(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	gitT(t, main, "update-ref", "refs/remotes/origin/main", "HEAD")
+	tree := filepath.Join(main, ".claude/worktrees/lane")
+	gitT(t, main, "worktree", "add", "-q", tree, "-b", "codie/FRM-1-x")
+
+	got := decampIn(t, main, tree, "--apply")
+
+	if got.code != 0 || exists(tree) || strings.TrimSpace(gitT(t, main, "branch", "--list", "codie/FRM-1-x")) == "" {
+		t.Fatalf("exit %d, tree %v: want the tree gone and its branch kept\n%s", got.code, exists(tree), got.stdout)
+	}
+}
+
+func TestDecampFailsWhenOriginRefusesTheForksDelete(t *testing.T) {
+	t.Parallel()
+	main, tree := forkWorld(t, "ancestor")
+	origin := t.TempDir()
+	gitT(t, origin, "init", "-q", "--bare")
+	gitT(t, main, "remote", "add", "origin", origin)
+	gitT(t, main, "push", "-q", "origin", "worktree-fork-abc:main", "worktree-fork-abc")
+	write(t, filepath.Join(origin, "hooks/pre-receive"), "#!/bin/sh\nexit 1\n")
+
+	got := decampIn(t, main, tree, "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "stays on origin") {
+		t.Fatalf("exit %d: want a failure naming the origin branch\n%s", got.code, got.stdout)
 	}
 }
 

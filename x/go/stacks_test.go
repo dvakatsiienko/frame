@@ -684,14 +684,20 @@ func TestStackMergeStillEnqueuedLeavesTheTrees(t *testing.T) {
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"enqueued","details":{"expected_head_sha":"` + w.head + `"}}`
+	// no open pr to hold the branch: only the enqueued merge may keep it
+	w.hub.pages[repoPath+"/pulls"] = `[]`
 	w.hub.mu.Unlock()
 	w.withPnpm(t, "exit 0")
 	tree := w.laneTree(t)
+	gitT(t, w.seed, "push", "-q", "origin", "coder/x:coder/x-2")
 
 	got := w.run(t, "8", "--apply")
 
 	if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, "still enqueued") {
 		t.Fatalf("exit %d, tree there: %v:\n%s", got.code, exists(tree), got.stdout)
+	}
+	if !w.onOrigin(t, "coder/x-2") {
+		t.Fatalf("an enqueued merge took its branch:\n%s", got.stdout)
 	}
 }
 
