@@ -108,6 +108,15 @@
   - then it waits until the lock goes, up to 30 s, and the commit lands with one «index lock held, waited n s» line
   - given the lock outlives the wait, then the verb fails naming the lock's path and age, and the lock stays
   - decision: the verb never deletes a lock — a stale one is a crashed git, the caller's to check (PK-97)
+- ⬜ `x lane commit`, its `--dry` and `x lane push` wait for the gate turn, alone in it (FRM-521)
+  - given another session holds the gate turn, when one runs, then it waits first come and runs its hook alone; `gate-queue.log` has its row, wait and run seconds, session and exit
+  - given the wait passes its deadline, then nothing ran, it exits 1 and the holder stays
+  - given a peer's commit lands in the wait, then the tested-bytes proof is read after it, so a moved HEAD runs the gates again
+  - given it is wrapped in `script/gate-queue.sh`, or x dies while it holds, then one turn, never a wait on itself, and a dead x frees it
+  - given a chain or a script wrapped in `script/gate-queue.sh` with no `--long`, then it takes no turn and says so, and a peer's commit runs beside it
+  - given `--hold-unstaged`, then the turn comes before any file moves aside; a stage or message step sits outside it
+  - given `X_TEST`, then no turn is taken unless `X_GATE_TURN` asks, in its own `X_STATE`; `x lane rebase-main` and the stack push take none
+  - decision: the turn belongs to the gate, never to whoever wraps it; a landing script held the line 993 s (FRM-521:W8)
 - ⬜ `x lane commit` stops a changed quote of dima's in a memory, skill or rules file
   - given a staged `rules/`, `rules-lazy/`, `skills/`, `memory/` markdown file, or a `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, whose «» quoted lines changed against HEAD (`_clio/script/quote-diff.py`)
   - when `x lane commit` runs

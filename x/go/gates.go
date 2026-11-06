@@ -264,7 +264,7 @@ func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string
 	r.skip("hold", "ci", "commit", "restore")
 	var verdicts []gateVerdict
 	var pre []hookGate
-	if err := r.Step("gates", "the commit hook's gates on a temp index", func() (string, error) {
+	if err := r.Step("gates", "the commit hook's gates on a temp index", inGateTurn("x lane commit --dry", again, func() (string, error) {
 		staged, err := indexPaths(tree, env)
 		if err != nil {
 			return "", err
@@ -283,7 +283,7 @@ func dryCommit(r *Run, tree, message string, env []string, treeOf func() (string
 		}
 		verdicts = append(verdicts, onMessage...)
 		return verdictLine(verdicts), gatesFail(verdicts, "red on the dry run", again)
-	}); err != nil {
+	})); err != nil {
 		return nil, err
 	}
 	recordTree(tree, treeOf, pre, verdicts)

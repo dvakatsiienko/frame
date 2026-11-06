@@ -16,7 +16,7 @@ PK-328:W15 (2026-11-06 20:49, dima, on the expected gains): ensure all these poi
 
 ## where the numbers come from
 
-- `~/.local/state/x/gate-queue.log`: start, load, slot, wait, run, exit, command; each queued commit, push and long round
+- `~/.local/state/x/gate-queue.log`: start, load, slot (`gate`, `long`, `none`), wait, run, exit, session (first 8 characters, or `-`), command; each commit, push, long round and wrapped run; rows before FRM-521's turn change have no session column. `x lane rebase-main` and the stack push take no turn and log no row
 - `~/.local/state/x/gate-steps.log`: start, load, source (`commit`, `push`, `other`), branch or ref, commit, seconds, exit, command; each gate run through `script/index-run.sh`, each push's whole suite
 - `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`), staged paths, commit, seconds, exit
 - `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns

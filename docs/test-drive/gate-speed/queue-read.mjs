@@ -8,12 +8,14 @@ const rows = readFileSync(
     .split('\n')
     .map((line) => line.split('\t'))
     .filter((row) => row.length >= 7)
-    .map(([start, load, slot, wait, run, exit, cmd]) => ({
-        cmd,
+    // rows from before the session column hold 7 fields
+    .map(([start, load, slot, wait, run, exit, ...rest]) => ({
+        cmd: rest.at(-1),
         exit,
         hour: start.slice(11, 13),
         load: Number(load),
         run: run === '-' ? null : Number(run),
+        session: rest.length > 1 ? rest[0] : '-',
         slot,
         start,
         wait: Number(wait),
