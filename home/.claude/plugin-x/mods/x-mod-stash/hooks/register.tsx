@@ -5024,6 +5024,13 @@ async function orbitCall(
                     deny: `orbit glide: ${input.plan} has a step with no ticket id, «${unticketed.text}»: every line reads «- [ ] NN · FRM-N text»`,
                 };
             if (input.act === 'create') given = { ...given, items: steps };
+            else if (
+                before.find((l) => l.id === oneLine(input.id))?.plan !==
+                input.plan
+            )
+                return {
+                    deny: `orbit glide: edit cannot link a plan; lane ${oneLine(input.id)} takes one at create`,
+                };
         }
         const op = glideOp(
             before,

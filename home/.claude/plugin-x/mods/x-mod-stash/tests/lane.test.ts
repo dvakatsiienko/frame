@@ -1576,6 +1576,20 @@ test('an edit naming a plan with a step line holding no ticket id is refused', a
     ).toContain('«the loose one»');
 });
 
+test('an edit naming a plan its card does not follow is refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    expect(
+        await denied($, {
+            act: 'edit',
+            id: 'l1',
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        }),
+    ).toContain('edit cannot link a plan');
+});
+
 test('a plan whose every line carries its ticket draws the ids', async ($, on) => {
     const w = world(on);
     await start($);

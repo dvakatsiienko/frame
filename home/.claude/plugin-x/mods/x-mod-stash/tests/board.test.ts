@@ -1377,6 +1377,22 @@ test('while he is away a held notice past three waits + 2 min turns the 🤫 n r
     expect(badge?.props.color).toBe('error');
 });
 
+test('a row reads the shift of its own session, not the viewer', async ($, on) => {
+    fleet(on, {
+        [`pace:${PEER}`]: { since: NOW - 60 * MIN },
+        [`quiet-held:${PEER}`]: [
+            {
+                at: NOW - 16 * MIN,
+                from: PEER_NAME,
+                tag: 'notice',
+                text: 'a note',
+            },
+        ],
+    });
+    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
+    expect(badge?.props.color).toBeUndefined();
+});
+
 test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on) => {
     fleet(on, heldFor(11 * MIN));
     const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
