@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-06T01:15:00Z'
+updated_date: '2026-11-06T11:51:00Z'
 labels:
   - s
 dependencies: []
@@ -41,4 +41,15 @@ the split for the boot plan, his tick in the side channel: grills and shaping ru
 hover, his eye 11-06 01:24: «They show», tooltips reveal on the desktop. the rest of that line stays: a row's tooltip naming what off costs was not asked apart.
 
 tomorrow's whole plan, his tick o122 and 03:14 steers: _clio/.scratch/boot-plan-2026-11-06.md. first act of the boot: a side channel, PK-331 with him.
+
+boot 11-06, his words, numbered past the duplicates:
+W10 (2026-11-06 13:43, dima): for side channel: send it the agreed plan, and tell it to write its plan into a durable place: scratch or a pocket item.
+W11 (2026-11-06 13:43, dima): tell it to propose a good point to do PK-310: what's the best time, while both side lanes are active? ❓
+W15 (2026-11-06 13:43, dima): side lanes: mods: quick lane, no verifier; test holds for agreed chunks then. let's see the numbers and decide whether to add a verifier for the mods lane or not.
+W16 (2026-11-06 13:43, dima): cli lane: as usual.
+W17 (2026-11-06 13:43, dima): stacks or not? propose it yourself. ❓
+W18 (2026-11-06 13:43, dima): i won't be afk too much today, mostly near kb.
+W19 (2026-11-06 13:43, dima): you: remember your measures. quiet comms, and look up all your other plans to test out, watch/measure.
+W20 (2026-11-06 13:43, dima): i want to unblock the ability to have tilde.
+W21 (2026-11-06 13:43, dima): side issues: piled up handoffs from yesterday's fleet second winds.
 <!-- SECTION:NOTES:END -->
