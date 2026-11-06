@@ -20,7 +20,7 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 1. install and first open: the DMG, activation, the agent skill
 2. native themes: a look through the 41 built-ins, light and dark slots
 3. gruvbox light and dark: import both from `~/.config/rex/themes/`, slot them, Auto follows macOS
-4. config from scratch: font, tabs, `~/.config/rex/init.lua` in the frame mirror, `cmd+k` decided, only the keys he misses
+4. config from scratch: Rex defaults kept, `cmd+k` stays the session picker, `~/.config/rex/init.lua` only once he misses a key
 5. agent doors: Remote Control on, an agent drives tabs, panes and themes through `rex`
 6. the fleet door: Claude Code status dots, the Activity sidebar, session survival, what stays with the desktop app
 7. verdict setup: the week of real use, then the warp call
@@ -44,5 +44,11 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 ## rounds
 
 - 2026-11-06 · install from the DMG, first launch, activation, skill setup · build 1829, 175 MB, app ran translocated because the agent's `ditto` copy kept quarantine · first run good, the copy door needs Finder
+
+- 2026-11-06 · gruvbox from the Ghostty files through `client.theme.import`, Remote Control on · 2 imports, 2 exit 0, each filled its slot, stored cursor colors match the files · better than warp: the theme tints the whole window
+- 2026-11-06 · persistence, an idle session across an app quit · session id unchanged · one pass, no real program in it yet
+- 2026-11-06 · from scratch · `init.lua` absent, Rex defaults kept on his word, themes and fonts now his · nothing to write so far
+- 2026-11-06 · `rex terminfo setup` · entry and guard written, it refused the symlinked `~/.ssh/config` and printed the `Include` to add by hand · the right call for a dotfile mirror
+- 2026-11-06 · dima: «i like rex, let's make it my default terminal» · macOS has no one default: the door is his Raycast hyper+t, then login items; warp stays installed until the verdict
 
 ## verdict
