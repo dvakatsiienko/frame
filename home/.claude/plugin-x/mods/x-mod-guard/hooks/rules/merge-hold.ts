@@ -57,7 +57,7 @@ function isPut(words: string[]) {
 // what one command merges on github outside x: undefined when it merges nothing, `pr` undefined when the target cannot be read
 function rawMerge(c: Command) {
     const words = ghWords(c);
-    if (!words) return undefined;
+    if (!words || words.includes('--help')) return undefined;
     const [family, verb, target] = operands(words);
     // a stack merge lands every layer under the pr it names, and those layers are github's to list: it counts as no number
     if (family === 'stack' && verb === 'merge') return { pr: undefined };

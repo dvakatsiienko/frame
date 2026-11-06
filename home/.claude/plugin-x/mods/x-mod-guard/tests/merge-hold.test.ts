@@ -83,6 +83,8 @@ for (const line of [
     'gh pr view 7',
     'gh pr list',
     'gh api repos/o/r/pulls/7',
+    'gh pr merge --help',
+    'gh stack merge --help',
     'echo gh pr merge 7',
 ])
     test(`an unheld layer or another gh call passes: ${line}`, async ($, on) => {
