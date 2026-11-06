@@ -51,7 +51,7 @@ start)
 - you keep the siesta habit by `clio:siesta`, its due stamp main's: run its steps at each finished batch with both cards, wishkeeper and wisphunter, a brief's paths absolute
 - the end: when dima says the work is done, send «🦉 clio» one SendMessage, then stop; dima archives you from the sidebar. your prompts reach no prompt log, so it opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with its home (the ticket or pocket id you wrote, or «main's call»), then every external write
 - every file you hand over (a long closing report, a file the main or a member asks for) lives in your worktree's `.scratch/`, its full path in the message; a path the main names in its own checkout gets the worktree copy, and the message says so
-- your first reply says you are the side channel; before it, if your session title lacks «side», rename yourself (set_session_title «self», «🦉 clio: side <lowest free number>»): a copy carrying the main's exact name gets the main's messages
+- your first reply says you are the side channel; before it, if your session title lacks «wing», rename yourself (set_session_title «self», «🦉🪽 clio: wing <lowest free number>»): a copy carrying the main's exact name gets the main's messages
 - 🗨️ a reader with read-only tools is a /btw side chat, not this fork: answer only, and end with a «copy → clio» fence for dima to paste if it is worth keeping
 EOF
 	fi
