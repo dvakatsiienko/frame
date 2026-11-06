@@ -44,7 +44,7 @@ queue seconds per family, `queue-budget.mjs`:
 - wrapped scripts in the gate slot: ran 44 min, n=7: pr 1 ends these holds
 - mutant or red-proof rounds in the long slot: ran 62 min, n=21
 
-## commits by what they hold, 16:00 to 22:45
+## commits by what they hold, 16:00 to about 22:37
 
 `commit-classes.mjs`, 167 commits on all branches: 97 touch code, 70 none: 35 pocket only, 3 `_clio/` only, 32 docs, skills or rules. each still runs the whole test step, 28 to 32 s and 76 cpu-s: of the 43 test-step rows joined to a commit since 20:07, 22 had no code, 10 of them pocket only. 38 test files read `.md`, so only pocket-only looks safe to skip
 
