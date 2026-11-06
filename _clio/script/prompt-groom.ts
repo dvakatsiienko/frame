@@ -285,7 +285,7 @@ export function homelessWishes(
         );
 }
 
-const W_LINE = /^\s*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?W\d+\b.*$/gm;
+const W_LINE = /^[ \t]*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?W\d+\b.*$/gm;
 
 function bareId(id: string) {
     return id.replace(/^(?:PK|FRM|BYT)-\d+:/i, '');
@@ -321,7 +321,28 @@ export function openStanding(day: string, dir: string) {
     );
 }
 
+// a bare id two homes answer to names neither: a standing order stays where it is until the id says whose
+function refuseAmbiguous(day: string, dir: string, id: string) {
+    if (id === 'all' || bareId(id) !== id) return;
+    const homes = new Set(
+        dayGrooms(day, dir).flatMap((file) =>
+            [
+                ...readFileSync(file, 'utf8').matchAll(
+                    /^\s*(?:[*-]\s+)?((?:PK|FRM|BYT)-\d+):(W\d+)\b/gm,
+                ),
+            ]
+                .filter((m) => m[2] === id)
+                .map((m) => m[1]),
+        ),
+    );
+    if (homes.size > 1)
+        throw new Error(
+            `${id} names ${[...homes].map((home) => `${home}:${id}`).join(', ')}: pass the full id`,
+        );
+}
+
 export function tagStanding(day: string, dir: string, id: string) {
+    refuseAmbiguous(day, dir, id);
     const tagged: string[] = [];
     for (const file of dayGrooms(day, dir)) {
         const text = readFileSync(file, 'utf8');
@@ -344,6 +365,7 @@ export function tagStanding(day: string, dir: string, id: string) {
 }
 
 export function liftStanding(day: string, dir: string, id: string) {
+    refuseAmbiguous(day, dir, id);
     const lifted: string[] = [];
     for (const file of dayGrooms(day, dir)) {
         const text = readFileSync(file, 'utf8');

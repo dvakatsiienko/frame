@@ -407,10 +407,22 @@ export function auditAgainstHead(
 ): string[] {
     const problems: string[] = [];
     const idOf = (name: string) => name.split(' ')[0];
+    // an item restored from the archive or retitled keeps its old lines as old
+    const baseline = (name: string) => {
+        const prefix = `${idOf(name)?.toLowerCase()} `;
+        const renamed = head.names.find((file) =>
+            file.toLowerCase().startsWith(prefix),
+        );
+        return (
+            head.text('tasks', name) ||
+            head.text('archive', name) ||
+            (renamed ? head.text('tasks', renamed) : '')
+        );
+    };
     for (const { name, text } of tasks)
         for (const line of newUnstamped(
             text,
-            head.text('tasks', name),
+            baseline(name),
             idOf(name)?.toUpperCase(),
         ))
             problems.push(
@@ -419,7 +431,7 @@ export function auditAgainstHead(
     for (const { name, text } of tasks)
         for (const line of newBare(
             text,
-            head.text('tasks', name),
+            baseline(name),
             idOf(name)?.toUpperCase() ?? '',
         ))
             problems.push(

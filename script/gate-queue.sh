@@ -22,7 +22,7 @@ started_at() { one_line "$(ps -o lstart= -p "$1" 2>/dev/null)"; }
 # a turn is stale when its holder is gone; a turn just taken has no holder file yet, so it gets 10 s
 is_stale() {
     local pid since
-    if ! { read -r pid && read -r since; } <"$turn/holder" 2>/dev/null; then
+    if ! { read -r pid && read -r since; } 2>/dev/null <"$turn/holder"; then
         [ -n "$(find "$turn" -maxdepth 0 -mmin +0.17 2>/dev/null)" ]
         return
     fi
