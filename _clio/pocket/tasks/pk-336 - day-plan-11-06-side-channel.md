@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T12:32:00Z'
+updated_date: '2026-11-06T12:34:00Z'
 labels:
   - m
   - side-channel-owned
@@ -40,4 +40,5 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #16 PK-324 tails, PK-325 queue review, PK-308's 14 left
 - [ ] #17 grills when he wants: PK-300, PK-304, PK-323
 - [ ] #18 PK-335 rex terminal set up fully with dima
+- [ ] #19 PK-310 second finder watch after 17:54, past 24 h uptime
 <!-- AC:END -->
