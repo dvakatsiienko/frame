@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T20:06:00Z'
+updated_date: '2026-11-06T21:47:00Z'
 labels:
   - s
   - wing-1
@@ -104,4 +104,8 @@ PK-328:W27 (2026-11-06 22:03, dima): for example, if you do nothing special righ
 
 PK-328:W28 (2026-11-06 21:37, dima): pk-328? if so, wing 1 is solving it. tell wing 1 about the importance of the bottleneck, and tell it that it is responsible for resolving the bottleneck.
 main's correction, wishkeeper's catch: W22's «the biggest wait on the mods lane» and «through to a measured drop … tell him the number» are main's brief to wing 1, not his words; W28 holds his.
+
+PK-328:W29 (2026-11-06 23:38, dima): okay, try to solve the perf issues then with your lane. i'm going afk, and i approved all merges everywhere: main, clio's lanes, yours too. once your lane is fully done, merge it yourself and sync your worktree with main, let clio know you are done and solved PK-328, and park.
+
+PK-328:W30 (2026-11-06 23:46, dima): one more steer. however your lane resolves, it is still unknown if any perf gains will actually be gained. since you explored this area thoroughly today through measures and the lane's run, once the lane is resolved, consult the actual lane to update the go cli's AGENTS.md: think how to groom it to tell the tests' best practices, how to write tests so they do not cause bottlenecks, and the gotchas you and your lane found about tests. only if go tests are identified as a cause of the cpu bottleneck: then groom AGENTS.md for the cli and tell the gotchas, so no one writes tests that bottleneck the cpu on my mac.
 <!-- SECTION:NOTES:END -->

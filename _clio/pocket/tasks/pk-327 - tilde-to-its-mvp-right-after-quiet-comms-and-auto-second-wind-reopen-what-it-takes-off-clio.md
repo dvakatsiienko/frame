@@ -42,4 +42,6 @@ wing-1 stays only because a label off an item with same-day W-lines reds the gro
 
 ticket: FRM-368
 close: folded into FRM-368 as FRM-368:W443–W451, W3 now moves its pace in the body; the raw lines above stay
+
+close: moved to FRM-368: PK-327:W1 as FRM-368:W443, PK-327:W2 as W444, PK-327:W3 as W445, PK-327:W4 as W446, PK-327:W5 as W447, PK-327:W6 as W448, PK-327:W7 as W449, PK-327:W8 as W450, PK-327:W9 as W451
 <!-- SECTION:NOTES:END -->

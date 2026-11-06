@@ -3,10 +3,10 @@ id: PK-325
 title: >-
   planned-queue review: are the signed chunks still worth building, solved by
   clio with the side channel
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T21:51:00Z'
-updated_date: '2026-11-06T20:06:00Z'
+updated_date: '2026-11-06T21:53:00Z'
 labels:
   - s
   - wing-3
@@ -77,8 +77,23 @@ PK-325:W1334 (2026-11-06 20:07, dima): note: you are 62% ctx, and pk-325 is stil
 
 19:37 his ticks: cli queue splits in two lanes, gates and lanes (FRM-511, FRM-509, FRM-520, FRM-384, FRM-414) vs proof and screens (FRM-474, FRM-383, FRM-433, FRM-424, FRM-436, FRM-387, FRM-360); FRM-43 keeps a someday label; BYT-99, BYT-54 cancelled.
 
-
 PK-325:W1335 (2026-11-06 21:27, dima): hold SW until wing 3 is good and no data loss is present. mods chunks scope is important to have precise integrity.
 
 PK-325:W1336 (2026-11-06 22:06, dima): no, this one does not need a recipe. it is a skill. let's have it as a skill after PK-325 is fully solved.
+
+ids: the bare W1308, W1312 and W1411 above are this item's PK-325:W1308, PK-325:W1312, PK-325:W1411.
+
+close: done, its sheet ~/frame/.claude/worktrees/fork-705d3867/.scratch/pk-325-close.md holds every line with its answer; 21 chunks, all signed or dispatched, none on a pending re-sign. PK-325:W1308 PK-325:W1312 PK-325:W1411 PK-325:W1313 PK-325:W1314 PK-325:W1315 PK-325:W1316 PK-325:W1317 PK-325:W1318 PK-325:W1319 PK-325:W1320 PK-325:W1321 PK-325:W1322 PK-325:W1323 PK-325:W1324 PK-325:W1325 PK-325:W1326 PK-325:W1327 PK-325:W1328 PK-325:W1329 PK-325:W1330 PK-325:W1331 PK-325:W1332 PK-325:W1333 PK-325:W1334 PK-325:W1335 done. PK-325:W1336 moved: the revisit skill, main's call after this hand-over.
+
+23:19 corrects the close line's PK-325:W1336: not main's. dima, relayed by main: «No, relay it back to wing 3 and tell them that I solved it with wing 3 myself.» no revisit skill file exists on disk, read 23:19.
+
+PK-325:W1411 (2026-11-02 18:59, dima): why don't coders use it, and how to make coders use them? ❓
+
+PK-325:W1337 (2026-11-06 21:59, dima): how to fix your habit so when you propose revisits like this you print good shape right away so i do not need to reask? maybe a skill? i feel we will do such revisits from time to time.
+
+close: PK-325:W1411 done, the sheet; PK-325:W1337 and PK-325:W1336: dima's 23:19 word, solved with wing 3; the shape reprinted to him 23:20, no skill file and no memory line exists, main told.
+
+23:29 PK-325:W1336 and PK-325:W1337 built on his 23:23 word: `clio:cut-proposals-print`, on main, clio plugin 0.3.428.
+
+repoint: the close sheet moved with its tree's decamp, now ~/frame/_clio/.scratch/wing-3/pk-325-close.md
 <!-- SECTION:NOTES:END -->
