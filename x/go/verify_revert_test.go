@@ -484,6 +484,7 @@ func TestGoTestGetsItsPassAndSkipLines(t *testing.T) {
 		{"go alone", []string{"go"}, []string{"go"}},
 		{"a shell around it", []string{"sh", "-c", "go test"}, []string{"sh", "-c", "go test"}},
 		{"a script around it", []string{"pnpm", "x-go:test"}, []string{"pnpm", "x-go:test"}},
+		{"another tool's test verb", []string{"pnpm", "test"}, []string{"pnpm", "test"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
