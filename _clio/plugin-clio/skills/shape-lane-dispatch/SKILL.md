@@ -49,4 +49,4 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 - **a re-seal** lands on disk before its ping and re-reads its sibling lines
 - **a park** — his weekly window out, the 5h pace, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it; the next siesta back on pace resumes a pace park
 
-**done** = each picked chunk, a joiner included, has its spec section with sealed exit lines, its `🚀 dispatched` line, a summoned codie (a sixth sense unless his pick said no), and a greenlit lane plan.
+**done** = each picked chunk, a joiner included, has its spec section with sealed exit lines, its `🚀 dispatched` line, a summoned codie (sixth sense at «final» unless his pick said no), and a greenlit lane plan.
