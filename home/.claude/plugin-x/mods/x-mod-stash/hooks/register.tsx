@@ -1403,7 +1403,7 @@ async function quietSilentMembers($: EngineInterface, now: number) {
             const words = `${row.base.name} silent ${Math.round((now - at) / 60_000)} min on «${lane.title}»`;
             const key = `silent:${row.base.sid}:${at}`;
             await quietAlarm($, key, words);
-            if (!isShift || isBusy) continue;
+            if (!isShift || (await quietIsBusy($))) continue;
             const raised =
                 ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ??
                 [];
