@@ -47,6 +47,9 @@ type testOutput struct {
 	none bool
 	// the rows a runner printed as passed; go and vitest's default reporter print few or none
 	passed []failedTest
+	// the rows a runner printed as skipped, and whether its tally counts a skip it may not name
+	skipped  []failedTest
+	hasSkips bool
 }
 
 var (
@@ -54,6 +57,9 @@ var (
 	vitestFailedRow = regexp.MustCompile(`^ FAIL  (.+?)\s*$`)
 	failedRow       = []*regexp.Regexp{regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`), goFailedRow, vitestFailedRow}
 	passedRows      = []*regexp.Regexp{regexp.MustCompile(`^\(pass\) (.+?)(?: \[[\d.]+ms\])?$`), regexp.MustCompile(`^\s*--- PASS: (\S+)`), regexp.MustCompile(`(?:^|\s)✓ (.+?)(?: \d+(?:\.\d+)?m?s)?\s*$`)}
+	// `--- SKIP` and vitest's arrow and box are real words; `(skip)` is the kit's sibling of `(pass)`, unseen since it has no test.skip yet
+	skippedRows = []*regexp.Regexp{regexp.MustCompile(`^\(skip\) (.+?)(?: \[[\d.]+ms\])?$`), regexp.MustCompile(`^\s*--- SKIP: (\S+)`), regexp.MustCompile(`(?:^|\s)[↓□] (.+?)(?: \d+(?:\.\d+)?m?s)?\s*$`)}
+	skipsTally  = regexp.MustCompile(`^\s*Tests\s+.*\b[1-9]\d* (?:skipped|todo)\b`)
 	// the last alternative is vitest's row for a suite that threw before any test ran
 	loadError   = regexp.MustCompile(`SyntaxError|did not load|Cannot find module|Cannot find package|ERR_MODULE_NOT_FOUND|Failed to load|Transform failed|\[setup failed\]|\[build failed\]|hook was skipped: |^ FAIL  .* \[ .* \]$`)
 	goPackageOK = regexp.MustCompile(`^ok\s+\S+\s+\S+`)
@@ -71,6 +77,9 @@ var (
 	declaredRunner = regexp.MustCompile(`\bfunction\s+(?:it|test)\b`)
 	titleEscape    = regexp.MustCompile("\\\\(['\"`])")
 	testFile       = regexp.MustCompile(`(?:\.test\.[cm]?[jt]sx?|\.spec\.[cm]?[jt]sx?|_test\.go)$`)
+	// a line of a test file that adds no behaviour of its own
+	addedNoise = regexp.MustCompile(`^\s*(?://.*|\*.*|/\*.*|import\b.*|package\b.*|"[^"]+"|[})\]\s;,(]*)$`)
+	hunkStart  = regexp.MustCompile(`^@@ -\S+ \+(\d+)`)
 	// what a run expands: a template's placeholder anywhere, `%s` and `$name` only in an each table, so `costs $5` stays a title
 	templateHole = regexp.MustCompile(`\$\{[^}]*\}?`)
 	tableHole    = regexp.MustCompile(`\$\{[^}]*\}?|%[sdifjoO#]|\$\w+`)
@@ -136,6 +145,10 @@ func readTestOutput(log string) testOutput {
 			read.ran = true
 			read.passed = append(read.passed, rowIn(passedName, file))
 		}
+		if skippedName := firstRowName(skippedRows, line); skippedName != "" {
+			read.skipped = append(read.skipped, rowIn(skippedName, file))
+		}
+		read.hasSkips = read.hasSkips || skipsTally.MatchString(line)
 		if n := len(read.failed); n > 0 {
 			read.failed[n-1].output += line + "\n"
 		}
@@ -260,20 +273,37 @@ func wholeRunRows(newTests []newTest, verdict, why string) []testRow {
 	return rows
 }
 
-// base's run read against head's: a row is red when it failed on an assertion on base and did not fail on head. only a new
-// test votes, and the run reads red when at least one voted and every vote is red
+// base's run read against head's: a row is red when it failed on an assertion on base and passed on head. a new test votes,
+// and the run reads red when at least one voted and every vote is red; an unread test or an old test's row is named, no vote
 func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (string, []testRow) {
 	read := readTestOutput(log)
 	if verdict, why := wholeRunVerdict(read, exitedOK); verdict != "" {
 		return verdict, wholeRunRows(newTests, verdict, why)
 	}
 	const redOnHeadWhy = "it fails on head too, so this source is not what fails it"
-	// a failure on head can stop the run however it was asked to (a config, an env, an exit), so no row there no longer says passed
-	unreached := testRow{Verdict: verdictBroken, Why: "head failed elsewhere and no line says this test passed there, so the run may never have reached it"}
-	reachedOnHead := func(isIt func(failedTest) bool) bool {
-		return len(head.failed) == 0 || slices.ContainsFunc(head.passed, isIt)
+	// plain go prints no pass or skip line, so a green head with no line for this test is all it gives
+	notPassedOnHead := func(name string, isIt func(failedTest) bool) (testRow, bool) {
+		switch {
+		case slices.ContainsFunc(head.skipped, isIt):
+			return testRow{name, verdictUnread, "it skips on head, so it does not pass there"}, true
+		case slices.ContainsFunc(head.passed, isIt):
+			return testRow{}, false
+		case len(head.failed) > 0:
+			// a failure can stop a run however it was asked to: a config, an env, an exit
+			return testRow{name, verdictBroken, "head failed elsewhere and no line says this test passed there, so the run may never have reached it"}, true
+		case head.hasSkips:
+			return testRow{name, verdictUnread, "head's tally counts skips its reporter does not name, so this may be one; vitest's --reporter=verbose names them"}, true
+		}
+		return testRow{}, false
 	}
 	votes, rest := []testRow{}, []testRow{}
+	place := func(row testRow) {
+		if row.Verdict == verdictUnread {
+			rest = append(rest, row)
+		} else {
+			votes = append(votes, row)
+		}
+	}
 	claimed := make([]bool, len(read.failed))
 	for _, test := range newTests {
 		if test.IsUnread {
@@ -290,37 +320,40 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 			}
 			claimed[i] = true
 			got := judgedOnBase(failed)
-			switch {
-			case !isExpanded:
+			if !isExpanded {
 				// a go subtest prints under its parent: the worst of them stands for the test
 				if row.Verdict != verdictBroken {
 					row.Verdict, row.Why = got.Verdict, got.Why
 				}
-			case onHead < 0 && got.Verdict == verdictRed && !reachedOnHead(func(passed failedTest) bool { return passed.name == failed.name }):
-				unreached.Name = failed.name
-				votes = append(votes, unreached)
-			case onHead < 0:
-				votes = append(votes, got)
-			case hookTimedOut.MatchString(head.failed[onHead].output):
-				votes = append(votes, timedOutRow(failed.name))
-			default:
-				rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
+				continue
 			}
+			if onHead >= 0 {
+				if hookTimedOut.MatchString(head.failed[onHead].output) {
+					votes = append(votes, timedOutRow(failed.name))
+				} else {
+					votes = append(votes, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
+				}
+				continue
+			}
+			if not, isNot := notPassedOnHead(failed.name, func(other failedTest) bool { return other.name == failed.name }); isNot && got.Verdict == verdictRed {
+				got = not
+			}
+			place(got)
 		}
 		if isExpanded {
 			rest = append(rest, testRow{test.Name, verdictUnread, "a title with a placeholder: x sees the rows that failed, never the ones that passed"})
 			continue
 		}
 		switch {
-		case onHead < 0 && row.Verdict == verdictRed && !reachedOnHead(func(passed failedTest) bool { return namesTest(passed, test) }):
-			unreached.Name = test.Name
-			votes = append(votes, unreached)
 		case onHead < 0:
-			votes = append(votes, row)
+			if not, isNot := notPassedOnHead(test.Name, func(other failedTest) bool { return namesTest(other, test) }); isNot && row.Verdict == verdictRed {
+				row = not
+			}
+			place(row)
 		case hookTimedOut.MatchString(head.failed[onHead].output):
 			votes = append(votes, timedOutRow(test.Name))
 		default:
-			rest = append(rest, testRow{test.Name, verdictRedOnHead, redOnHeadWhy})
+			votes = append(votes, testRow{test.Name, verdictRedOnHead, redOnHeadWhy})
 		}
 	}
 	for i, failed := range read.failed {
@@ -350,6 +383,8 @@ func worstOf(rows []testRow) string {
 	switch {
 	case slices.Contains(verdicts, verdictBroken):
 		return verdictBroken
+	case slices.Contains(verdicts, verdictRedOnHead):
+		return verdictRedOnHead
 	case slices.Contains(verdicts, verdictStillGreen):
 		return verdictStillGreen
 	}

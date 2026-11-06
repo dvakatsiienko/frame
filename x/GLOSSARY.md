@@ -63,11 +63,11 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; sixth sense's bench, made by `lane verify-tree`
 - **swap** — a `lane verify-tree --revert` run's named paths holding their merge-base content for the command
 - **claim** — a file in a verify tree's git dir, naming the run that holds the tree from its first step and, during a swap, the swapped files; a live holder refuses the next run, a dead one's swap is restored from it
-- **red** — a test that failed on an assertion on base's source and did not fail on head; a proof it reads the change
-- **red on head** — a test that fails on head too, so base's source is not what fails it; named, no vote
+- **red** — a test that failed on an assertion on base's source and passed on head; a proof it reads the change
+- **red on head** — a new test that fails on head too, so base's source is not what fails it; the run exits non-zero
 - **still green** — a test that passed on the source it should have failed on; it does not read the change
-- **broken** — nothing proved: a compile or load error, 0 tests, a timeout, any throw on base, or a pr adding no test x can read
-- **unread** — a new test x cannot name in a runner's output: a computed title, a placeholder or table title, a go name two packages hold; named, no vote
+- **broken** — nothing proved: a compile or load error, 0 tests, a timeout, a new test's throw on base, or a pr adding no test x can read
+- **unread** — what a pr adds that x cannot read as a proof: a computed, placeholder or table title, a name another test holds, a test that skips on head, an added line no named test holds; named, no vote
 - **failed** (a proof's word) — an opaque command failed and its output names no test, or it exited 0 while naming a failure, so x has no verdict
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
 - **stack** — prs that each open onto the branch of the one below, merged together in one async call up to the pr named; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)

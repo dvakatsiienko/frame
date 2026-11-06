@@ -309,13 +309,28 @@ func swapTo(tree, rev string, files []string) error {
 	return nil
 }
 
-// the names head's test files add outside the swapped paths: what the run must prove
+// the names head's test files add outside the swapped paths: what the run must prove. a hunk that adds lines and no name, a
+// new go table row or a call to an older helper, is named by its first line as unread
 func newTestNames(tree, fork, head string, swapped []string) []newTest {
 	got, _ := gitIn(tree, "-c", "core.quotePath=false", "diff", "-U0", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", fork, head)
 	var tests []newTest
-	file, added, removed := "", "", ""
+	file, added, removed, hunk, hunkAt := "", "", "", "", ""
+	isRead := func() bool { return testFile.MatchString(file) && !slices.Contains(swapped, file) }
+	endHunk := func() {
+		if isRead() && len(addedTestNames(hunk, file)) == 0 {
+			for line := range strings.SplitSeq(hunk, "\n") {
+				if !addedNoise.MatchString(line) {
+					tests = append(tests, newTest{Name: file + ":" + hunkAt + " " + strings.TrimSpace(line), File: file, IsUnread: true,
+						Why: "an added line no test x can name holds, so nothing here says it goes red"})
+					break
+				}
+			}
+		}
+		hunk = ""
+	}
 	flush := func() {
-		if testFile.MatchString(file) && !slices.Contains(swapped, file) {
+		endHunk()
+		if isRead() {
 			// a test whose call line changed, an async added or a describe around it, is no new test
 			old := addedTestNames(removed, file)
 			atFork, _ := gitIn(tree, "show", fork+":"+file)
@@ -335,8 +350,12 @@ func newTestNames(tree, fork, head string, swapped []string) []newTest {
 		if name, isHeader := strings.CutPrefix(line, "+++ "); isHeader && strings.HasPrefix(previous, "--- ") {
 			flush()
 			file = strings.TrimPrefix(strings.Trim(strings.TrimRight(name, "\t"), `"`), "b/")
+		} else if m := hunkStart.FindStringSubmatch(line); m != nil {
+			endHunk()
+			hunkAt = m[1]
 		} else if body, isAdded := strings.CutPrefix(line, "+"); isAdded {
 			added += body + "\n"
+			hunk += body + "\n"
 		} else if body, isRemoved := strings.CutPrefix(line, "-"); isRemoved && !strings.HasPrefix(line, "--- ") {
 			removed += body + "\n"
 		}
@@ -346,22 +365,37 @@ func newTestNames(tree, fork, head string, swapped []string) []newTest {
 	return tests
 }
 
-// go's output names no package beside a failure, and its import path need not be a dir: a test name another package also
-// holds could be claimed by that package's red, so it never proves
+// a name x could read as another test's row reads unread: go's output names no package beside a failure and its import path
+// need not be a dir, a go case prints under whichever parent ran it, and a js row names a describe the diff never shows
 func namedOnce(tree, head string, test newTest) newTest {
-	if !strings.HasSuffix(test.File, ".go") {
+	if strings.HasSuffix(test.File, ".go") {
+		word := regexp.QuoteMeta(test.Name)
+		got, _ := gitIn(tree, "grep", "-E", `^func (\([^)]*\) )?`+word+`\(|t\.Run\( *"`+word+`"`, head, "--", "*_test.go")
+		if len(strings.Split(strings.TrimSpace(got.out), "\n")) > 1 {
+			test.IsUnread = true
+			test.Why = "another test holds this name, and go's output cannot tell whose red this is"
+		}
 		return test
 	}
-	got, _ := gitIn(tree, "grep", "-l", "-E", `^func (\([^)]*\) )?`+regexp.QuoteMeta(test.Name)+`\(`, head, "--", "*_test.go")
-	dirs := map[string]bool{}
-	for line := range strings.SplitSeq(got.out, "\n") {
-		if _, path, found := strings.Cut(line, ":"); found {
-			dirs[filepath.Dir(path)] = true
+	if test.IsTable || len(titleParts(test)) > 1 {
+		return test
+	}
+	listed, _ := gitIn(tree, "ls-tree", "-r", "--name-only", "--full-tree", head)
+	holders := 0
+	for file := range strings.SplitSeq(listed.out, "\n") {
+		if filepath.Base(file) != filepath.Base(test.File) {
+			continue
+		}
+		body, _ := gitIn(tree, "show", head+":"+file)
+		for _, other := range addedTestNames(body.out, file) {
+			if other.Name == test.Name {
+				holders++
+			}
 		}
 	}
-	if len(dirs) > 1 {
+	if holders > 1 {
 		test.IsUnread = true
-		test.Why = "another package holds a test of this name, and go's output names no package beside a failure, so x cannot tell whose red this is"
+		test.Why = "another test holds this title in this file or one of its name, so x cannot tell whose red this is"
 	}
 	return test
 }

@@ -346,20 +346,29 @@ func TestJudgeRunReadsTheHeadRun(t *testing.T) {
 		rows       map[string]string
 	}{
 		{"green on head", "", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
-		{"red on both is no proof", onBase, []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
-		{"an old row of the same title, red on both", " FAIL  a.test.ts > old > one\nAssertionError: no\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
-		{"red on head has no vote beside a red head says passed", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
-		{"plugin test's pass row says it passed", "(pass) one [1.0ms]\n(fail) two\n  AssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed}},
-		{"go's pass row says it passed", "--- PASS: one (0.00s)\n--- FAIL: two (0.00s)\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"red on both is no proof", onBase, []newTest{{Name: "one"}}, verdictRedOnHead, map[string]string{"one": verdictRedOnHead}},
+		{"an old row of the same title, red on both", " FAIL  a.test.ts > old > one\nAssertionError: no\n", []newTest{{Name: "one"}}, verdictRedOnHead, map[string]string{"one": verdictRedOnHead}},
+		{"a new test red on head exits non-zero beside a red", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRedOnHead, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
+		{"plugin test's pass row says it passed", "(pass) one [1.0ms]\n(fail) two\n  AssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRedOnHead, map[string]string{"one": verdictRed}},
+		{"go's pass row says it passed", "--- PASS: one (0.00s)\n--- FAIL: two (0.00s)\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRedOnHead, map[string]string{"one": verdictRed}},
 		{"a failure on head and no line for this test: the run may not have reached it", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictBroken, map[string]string{"one": verdictBroken, "two": verdictRedOnHead}},
 		{"a pass line for another test says nothing of this one", " ✓ a.test.ts > other 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a pass line for another row says nothing of this expanded one", " ✓ a.test.ts > other 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
 		{"an expanded row head did not reach", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
-		{"an expanded row head says passed", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictRed, map[string]string{"a.test.ts > one": verdictRed}},
+		{"an expanded row head says passed", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictRedOnHead, map[string]string{"a.test.ts > one": verdictRed}},
 		{"a row a title expanded to, timed out on head", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
-		{"an expanded row whose name varies between runs", " FAIL  a.test.ts > other\nAssertionError: no\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead}},
+		{"an expanded row whose name varies between runs", " FAIL  a.test.ts > other\nAssertionError: no\n", []newTest{{Name: "o${x}"}}, verdictRedOnHead, map[string]string{"a.test.ts > one": verdictRedOnHead}},
+		{"an old test red on head beside a new test head says passed", "(pass) one\n(fail) old\n  AssertionError: no\n", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"go's skip line on head", "--- SKIP: one (0.00s)\nok  \tp\t0.1s\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
+		{"the kit's skip line on head", "(skip) one\nRan 1 test across 1 file.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
+		{"vitest's verbose skip on head", " ↓ a.test.ts > one\n ✓ a.test.ts > two 1ms\n      Tests  1 passed | 1 skipped (2)\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
+		{"vitest's todo on head", " □ a.test.ts > one\n      Tests  1 todo (1)\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
+		{"vitest's tally counts a skip it does not name", " ✓ a.test.ts (2 tests | 1 skipped) 1ms\n      Tests  1 passed | 1 skipped (2)\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
+		{"a skip's tally beside this test's own pass line", " ✓ a.test.ts > one 1ms\n ↓ a.test.ts > other\n      Tests  1 passed | 1 skipped (2)\n", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"a skip of another test says nothing of this one", " ↓ a.test.ts > other\nok  \tp\t0.1s\n", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"an expanded row skipped on head", " ↓ a.test.ts > one\nRan 1 test across 1 file.\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictUnread}},
 		{"a timeout on head is load, no proof", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"a row a title expanded to, red on both", onBase, []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead, "o${x}": verdictUnread}},
+		{"a row a title expanded to, red on both", onBase, []newTest{{Name: "o${x}"}}, verdictRedOnHead, map[string]string{"a.test.ts > one": verdictRedOnHead, "o${x}": verdictUnread}},
 		{"an old row red on both", onBase, []newTest{{Name: "new"}}, verdictStillGreen, map[string]string{"a.test.ts > one": verdictRedOnHead, "new": verdictStillGreen}},
 	}
 	for _, c := range cases {
@@ -502,6 +511,95 @@ func TestAddedTestNamesTellsATableFromATitle(t *testing.T) {
 
 			if len(tests) != 1 || tests[0].IsTable != c.isTable || len(titleParts(tests[0])) != c.parts {
 				t.Fatalf("read %+v, want table %v in %d parts", tests, c.isTable, c.parts)
+			}
+		})
+	}
+}
+
+// an old test's throw has no vote beside a red new test, and the verdict line still names it
+func TestTheVerdictLineNamesAnOldTestsThrow(t *testing.T) {
+	t.Parallel()
+
+	verdict, rows := judgeRun(" FAIL  a.test.ts > old\nTypeError: boom\n FAIL  a.test.ts > new\nAssertionError: no\n", false, []newTest{{Name: "new"}}, testOutput{})
+
+	if line := rowsLine(rows); verdict != verdictRed || !strings.Contains(line, "1 broken: a.test.ts > old") {
+		t.Fatalf("reads %q, the line %q, want red and the old throw named", verdict, line)
+	}
+}
+
+// what the diff adds with no name of its own is named unread, by its file and first line
+func TestNewTestNamesNamesAnUnclaimedAddedLine(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, file, base, head, want string
+	}{
+		{"a call to an older helper", "a.test.ts", "check('old');\n", "check('old');\ncheck('new green');\n", "a.test.ts:2 check('new green');"},
+		{"a new go table row", "a_test.go", "var rows = []row{\n\t{\"old\", 1},\n}\n", "var rows = []row{\n\t{\"old\", 1},\n\t{\"new\", 2},\n}\n", "a_test.go:3 {\"new\", 2},"},
+		{"an import alone", "a.test.ts", "check('old');\n", "import { x } from 'y';\ncheck('old');\n", ""},
+		{"a blank line and a brace", "a.test.ts", "check('old');\n", "check('old');\n\n});\n", ""},
+		{"a hunk holding a name", "a.test.ts", "check('old');\n", "check('old');\nit('named', f);\n", "named"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			main := repo(t)
+			write(t, filepath.Join(main, c.file), c.base)
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "base")
+			fork := gitT(t, main, "rev-parse", "HEAD")
+			write(t, filepath.Join(main, c.file), c.head)
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "head")
+
+			var names []string
+			for _, test := range newTestNames(main, fork, gitT(t, main, "rev-parse", "HEAD"), nil) {
+				names = append(names, test.Name)
+			}
+
+			if got := strings.Join(names, "|"); got != c.want {
+				t.Fatalf("read %q, want %q", got, c.want)
+			}
+		})
+	}
+}
+
+// Y8: an old test of a new test's name could claim its row, so that name reads unread
+func TestNewTestNamesReadsASharedTitleAsUnread(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name         string
+		base, head   map[string]string
+		title        string
+		wantIsUnread bool
+	}{
+		{"an old describe in the same file", map[string]string{"x.test.ts": "describe('old', () => {\n  it('empty', f);\n});\n"},
+			map[string]string{"x.test.ts": "describe('old', () => {\n  it('empty', f);\n});\ndescribe('new', () => {\n  it('empty', f);\n});\n"}, "empty", true},
+		{"an old file of its name in another dir", map[string]string{"x.test.ts": "it('empty', f);\n"}, map[string]string{"sub/x.test.ts": "it('empty', f);\n"}, "empty", true},
+		{"another file's name", map[string]string{"y.test.ts": "it('empty', f);\n"}, map[string]string{"sub/x.test.ts": "it('empty', f);\n"}, "empty", false},
+		{"a go case under another parent", map[string]string{"a_test.go": "func TestA(t *testing.T) {\n\tt.Run(\"empty\", f)\n}\n"}, map[string]string{"b_test.go": "func TestB(t *testing.T) {\n\tt.Run(\"empty\", f)\n}\n"}, "empty", true},
+		{"a go case alone", map[string]string{"a_test.go": "func TestA(t *testing.T) {}\n"}, map[string]string{"b_test.go": "func TestB(t *testing.T) {\n\tt.Run(\"empty\", f)\n}\n"}, "empty", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			main := repo(t)
+			for path, body := range c.base {
+				write(t, filepath.Join(main, path), body)
+			}
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "base")
+			fork := gitT(t, main, "rev-parse", "HEAD")
+			for path, body := range c.head {
+				write(t, filepath.Join(main, path), body)
+			}
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "head")
+
+			tests := newTestNames(main, fork, gitT(t, main, "rev-parse", "HEAD"), nil)
+
+			i := slices.IndexFunc(tests, func(test newTest) bool { return test.Name == c.title })
+			if i < 0 || tests[i].IsUnread != c.wantIsUnread {
+				t.Fatalf("read %+v, want %q unread %v", tests, c.title, c.wantIsUnread)
 			}
 		})
 	}
