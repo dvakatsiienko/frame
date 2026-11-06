@@ -1527,10 +1527,37 @@ test('under a shift a silent member wakes clio once', async ($, on) => {
     await start($);
     w.store.set(`pace:${SID}`, { since: EVEN });
     const before = w.contexts.length;
-    await w.clock.advance(14 * MIN);
+    await w.clock.advance(12 * MIN);
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    await w.clock.advance(3 * MIN);
     expect([silentAlarms(w).length, w.contexts.length - before]).toEqual([
         1, 1,
     ]);
+});
+
+test('under a shift a busy clio takes the wake when her turn ends', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: EVEN });
+    await say($, 'status?');
+    const before = w.contexts.length;
+    await w.clock.advance(12 * MIN);
+    const busy = w.contexts.length - before;
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    await w.clock.advance(2 * MIN);
+    expect([busy, w.contexts.length - before]).toEqual([0, 1]);
 });
 
 test('under a shift a refused wake asks again at the next poll', async ($, on) => {
