@@ -165,6 +165,7 @@
   - given a quick lane mid-verify, then `--apply` refuses; `merged` counts, from the 🚀 line's base to the verified sha, that sha and the commits whose `step N of <ticket>` line names this ticket, and says how many it left out; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
+  - given a pr that added a rule to x-mod-guard's `WARN_ONLY`, when `x lane landed <ticket> --pr <n>` runs, then 🔴 warn-only names the rule while the land still lists it, ✅ once it left; a pr that added none prints no such line, the older rules among them; a set that does not read reds (FRM-511)
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named

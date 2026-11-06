@@ -94,7 +94,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	frame := mainCheckout(frameRoot())
 
 	merged := landedLine{name: "merged"}
-	var headRef, headSha, mergedHead string
+	var headRef, headSha, baseSha, mergedHead string
 	var commits []string
 	if pr != "" {
 		// --repo here is the checkout's path, so the github slug comes from its origin
@@ -109,10 +109,14 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 				Ref string `json:"ref"`
 				Sha string `json:"sha"`
 			} `json:"head"`
+			Base struct {
+				Sha string `json:"sha"`
+			} `json:"base"`
 		}
 		if _, ferr := ghFetch(asCodie, githubBase()+"/repos/"+ghRepo+"/pulls/"+pr, &read); ferr != nil {
 			return nil, ferr
 		}
+		baseSha = read.Base.Sha
 		// another lane's pr would green «merged» and hand its trees to this ticket
 		if !strings.HasPrefix(read.Head.Ref, "codie/"+id+"-") && !bodyNamesTicket(read.Body, id) {
 			return nil, &Fail{Refused: true, Msg: "#" + pr + " is not " + id + "'s pr: its head is " + read.Head.Ref + " and its body holds no «- ticket: " + id + "» line", Next: "x lane landed " + id + " --pr <" + id + "'s pr>"}
@@ -208,6 +212,11 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	}
 	lines = append(lines, look, wish)
+	if pr != "" {
+		if line := warnOnlyLine(repo, baseSha, headSha, mergedHead != ""); line != nil {
+			lines = append(lines, *line)
+		}
+	}
 	verbs, nameless := newVerbsOf(issue.Description)
 	for _, verb := range verbs {
 		lines = append(lines, wiredLine(verb, issue))
@@ -216,6 +225,76 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		lines = append(lines, landedLine{name: "wired", detail: name + " names no x verb", fix: "fix that new verb: line in " + id + "'s ⚖️ worth it"})
 	}
 	return lines, nil
+}
+
+const warnOnlyFile = "home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts"
+
+var (
+	warnOnlySet  = regexp.MustCompile(`(?s)const WARN_ONLY\b[^=]*= new Set\(\[(.*?)\]\)`)
+	warnOnlyRule = regexp.MustCompile(`'([^']+)'`)
+)
+
+// the guard's warn-only rules at a ref, nil with no such file; a rule leaves the set at its sixth sense's clean
+func warnOnlyAt(repo, ref string) ([]string, error) {
+	listed, _ := gitIn(repo, "ls-tree", ref, "--", warnOnlyFile)
+	if !listed.ok {
+		return nil, fmt.Errorf("%s does not read here", short(ref))
+	}
+	if listed.out == "" {
+		return nil, nil
+	}
+	shown, err := mustGitIn(repo, "show", "show", ref+":"+warnOnlyFile)
+	if err != nil {
+		return nil, err
+	}
+	var rules []string
+	if set := warnOnlySet.FindStringSubmatch(shown); set != nil {
+		for _, m := range warnOnlyRule.FindAllStringSubmatch(set[1], -1) {
+			rules = append(rules, m[1])
+		}
+	}
+	return rules, nil
+}
+
+// a rule the pr added to the set and the land still lists; nil when the pr added none, so the older rules print nothing
+func warnOnlyLine(repo, base, head string, merged bool) *landedLine {
+	line := &landedLine{name: "warn-only", fix: "take the rule out of WARN_ONLY in " + warnOnlyFile + ", its clean said"}
+	land := head
+	if merged {
+		land = "origin/main"
+	}
+	// a squash leaves the pr's shas on no branch; a failed fetch shows at the read below
+	_, _ = gitIn(repo, "fetch", "-q", "origin", base, head)
+	before, err := warnOnlyAt(repo, base)
+	var after, now []string
+	if err == nil {
+		after, err = warnOnlyAt(repo, head)
+	}
+	if err == nil {
+		now, err = warnOnlyAt(repo, land)
+	}
+	if err != nil {
+		line.detail = "the warn-only set did not read: " + err.Error()
+		return line
+	}
+	var added, left []string
+	for _, rule := range after {
+		if !slices.Contains(before, rule) {
+			added = append(added, rule)
+			if slices.Contains(now, rule) {
+				left = append(left, rule)
+			}
+		}
+	}
+	switch {
+	case len(added) == 0:
+		return nil
+	case len(left) > 0:
+		line.detail = strings.Join(left, ", ") + " still warn-only at the land"
+	default:
+		line.ok, line.detail = true, strings.Join(added, ", ")+" enforcing"
+	}
+	return line
 }
 
 const (

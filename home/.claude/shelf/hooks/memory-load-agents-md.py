@@ -49,6 +49,16 @@ def bash_paths(command):
 is_bash = event.get("tool_name") == "Bash"
 raw = bash_paths(str(tool_input.get("command", ""))) if is_bash else [tool_input.get("file_path") or ""]
 targets = [os.path.realpath(os.path.expanduser(t)) for t in raw if t]
+COORDINATOR_HOME = "_clio"
+
+
+def in_coordinator_home(path):
+    return COORDINATOR_HOME in path.split(os.sep)
+
+
+# its memory rebrands whoever reads it, so only a session booted there gets it; cc's own load of a Read inside the project is out of reach
+if not in_coordinator_home(project):
+    targets = [t for t in targets if not in_coordinator_home(t)]
 if not targets or not project:
     sys.exit(0)
 
