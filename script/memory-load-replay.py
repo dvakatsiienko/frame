@@ -83,7 +83,7 @@ def replay(path, rule, subagent=False):
 
 
 def row_fires(path, subagent=False):
-    # one row's fires in one transcript, as the hook decides them: once until a compaction re-arms it, never past a loaded skill
+    # a row's first fires in one transcript: once until a compaction re-arms it, never past a loaded skill; a held sibling's refusal shows only in the hook's log
     loaded, skills, fires, cwd, seen = set(), set(), [], None, set()
 
     def fire(rule, kind, hit):
