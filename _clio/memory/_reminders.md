@@ -49,7 +49,6 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 
 
-⏰ 🦉💸 ultra ($200) bought 2026-11-05, ahead of the plan: `get_usage` shows no 5h window, `five_hour` null; Settings → Usage: no «Current session» bar = verified, not looked at; left: auto-renew off again (his), the month measures the real weekly cap (10× pro) — set 2026-10-13, reshaped 2026-11-05 · due: 2026-11-06
 
 ⏰ 🦉🧬 stryker resumes when [stryker-js#6210](https://github.com/stryker-mutator/stryker-js/issues/6210) closes fixed (watched in x-changedetector): then `pnpm up @stryker-mutator/core @stryker-mutator/vitest-runner`, rerun the day-0 round, unfreeze `docs/test-drive/stryker.md` and tell dima (his ask, 2026-10-15) — set 2026-10-15
 
@@ -80,3 +79,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 [FRM-410](https://linear.app/x-com/issue/FRM-410): after boot, when free: groom, close (his: no `[done]` move, split leftovers, solve the board) — due: 2026-11-06
 
 ⏰ 🦉 plan with dima how to solve the 🐉 ci made boring milestone («remind me tmrw», his 03:27) — due: 2026-11-06
+⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, after one lane's warn count reads clean past FRM-504's land, at a siesta (his o10) — set 2026-11-06
+⏰ 🦉 [FRM-473](https://linear.app/x-com/issue/FRM-473): one real `x lane commit --dry` by a codie that did not build it (cli lane 5 owes it), then close — due: 2026-11-07

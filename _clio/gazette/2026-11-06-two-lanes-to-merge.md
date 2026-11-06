@@ -31,8 +31,21 @@ covers 2026-11-05 and the night into 2026-11-06; no post was written for 11-05.
 - plan: `_clio/.scratch/boot-plan-2026-11-06.md`: lanes on main, the rest of operations in a side channel, tilde after quiet comms
 - retro: `_clio/.scratch/retro-2026-11-06.md`; sign and merge door fixes become a new mods chunk
 
-## trail
+⸻ upd 16:02
 
-- shipped: FRM-507, FRM-513, FRM-480, frame#124, #125, #126, #127, #128; the mods' typecheck reds an unused variable
-- open: PK-331 first in a side channel, quiet comms proof, FRM-504, FRM-505, FRM-473's --dry call, then tilde
-- state: both lanes stopped; lanes on main, the rest of operations in a side channel from the next boot
+**shipped**
+- PK-331: a lone note under afk holds until a member sits silent, on main; the afk hour 15:01–16:01 woke clio 4 times, all tagged asks, 0 lone notes
+- [FRM-514](https://linear.app/x-com/issue/FRM-514)'s final pushed by the side channel's own quick lane; [FRM-511](https://linear.app/x-com/issue/FRM-511) and [FRM-504](https://linear.app/x-com/issue/FRM-504) building
+
+**tricks gained**
+- `start_session` takes only his words in the same thread, never a peer's relay: a tilde input, in [FRM-368](https://linear.app/x-com/issue/FRM-368)
+- `claude --bg --resume <id>` with any flag starts a copy; no flag wakes the session: 5 dupes after the 15:29 forced reset
+- crow's `--bg` second wind reproduced broken: compact, no ingest, 10 min idle
+
+**state**
+- second wind on his press; FRM-501's silent wake and `drop` unproven; 10 of 13 held notes unused, his call on the board
+
+## trail
+- shipped: PK-331, the afk hour's 4 wakes, FRM-514's final, the start gate and resume facts
+- open: FRM-504, FRM-505, FRM-511 and FRM-509 merges on his word, FRM-501's close, then tilde's plan
+- state: both lanes running, side channel beside them, clio on a second wind
