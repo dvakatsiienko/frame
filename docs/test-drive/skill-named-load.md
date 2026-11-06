@@ -31,3 +31,4 @@ one line per spawn: date, member, named skills, loaded skills, misses
 - 2026-11-06 · BYT-94 ci made boring codie · fine
 - 2026-11-06 · FRM-511 cli lane 5 codie · `mods-verify` and `x-verify` load only from a worktree's nested `.claude/skills`, so the first reply named one as missing; a brief should say so
 - 2026-11-06 · FRM-511 cli lane 5 sixth sense · neutral: the role skill names what to load; a Write refusal forced `x:guide-typescript` for a probe script under a job tmp
+- 2026-11-06 · lane retros (FRM-474, FRM-521) · neutral both: no effect on FRM-474; on FRM-521 `x-verify` surfaced only after cd into the tree, and the guide-code hook refused a scratch probe file once

@@ -82,10 +82,9 @@ Every decision is one of three:
 - codie's premise doubt is built and flagged the same minute, never found at review
 - every «done / fixed / sealed / reset» i log or tell names the command that read it back, with its exit code; a member's relay says `measured:` or `inference:`, and no ticket is born from an `inference:` line mid-shift
 - a joiner chunk gets its spec section, `x brief preflight` and `x lane dispatch --apply` before its steer; its reviewers match its `## signed` line
-- in a quick lane codie pushes its own head through `x lane push` and sends «round N» straight to sixth sense
 - events go to the plan file's `## log`, append-only, oldest first (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
-- **while he is afk, an ask that wants his attention parks in orbit, and nothing wakes him**: everything else i decide and log, and the report carries the decisions (dima, 2026-11-05: «only hold ones that wants my attention i'll see when i return»)
+- **while he is afk, i pick**: every ask, an open one included, takes my best pick, logged with its undo. one goes up only when i'm blocked, it needs his design call, or it's irreversible; it parks in orbit and nothing wakes him (dima, 2026-11-05: «only hold ones that wants my attention i'll see when i return»; 2026-11-06: «for pending asks, you just decide yourself what's the best pick»)
 - watch per `x:crew-lead`
 
 ## 3 · end — the report

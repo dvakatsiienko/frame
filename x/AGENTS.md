@@ -21,7 +21,7 @@ source file is newer.
 - a failure returns a `*Fail` with `Next`: the command that moves the caller forward.
 - the purpose line is what an agent picks a verb by; a test runs `lintPurpose` over every verb.
 - `hidden: true` keeps a verb out of the overview, completion and `x stats`' unused list; it still
-  dispatches, and its purpose says why it exists (`trace record`, the zsh hook's door).
+  dispatches, and its purpose says why it exists.
 
 ## trace
 
@@ -42,19 +42,23 @@ source file is newer.
 
 the checks sixth sense or codie on `x` starts from.
 - a fake of an external cli traces one assertion to its upstream source; a staged-path gate is probed with a `git mv` and a staged delete; an exit-line count is re-counted from `go test -json` passes (FRM-422)
-- **a red test whose cause is not in the diff** is stepped through with delve before a print goes in: the headless recipe is `x:guide-go` § delve (no x verb: a one-line recipe fails the admission rule).
+- **a red test whose cause is not in the diff** is stepped through with delve before a print goes in: the headless recipe is `x:guide-go` § delve.
 - **a «no free text» exit line** is proven against hostile argv, never one example: an unknown `-word`, a bare `-`, words after `--`, free text in an id-named arg, a quoted multi-word arg as zsh `${(z)}` splits it, a flag value equal to a verb name.
-- **the zsh hook** is proven in a real `zsh -i` on a pty (python `pty` + a temp `ZDOTDIR`) with another `precmd` registered first, so `$?` reaching the hook is checked — calling `_x_trace_preexec` by hand proves nothing about firing.
+- **the zsh hook** is proven in a real `zsh -i` on a pty (python `pty` + a temp `ZDOTDIR`) with another `precmd` registered first, so `$?` reaching the hook is checked.
 - **`x stats`** runs over a planted trace dir under a temp `X_STATE`, with a fake `trash` on `PATH` for the 90-day move.
-- a git-crypt worktree builds go with no extra env once `x lane unlock` (or `x lane seed <path>`) ran; a locked tree dies on the vcs stamp (exit 128), which `seed_test.go` reproduces.
+- a git-crypt worktree builds go with no extra env once `x lane unlock` (or `x lane seed <path>`) ran; a locked tree dies on the vcs stamp (exit 128).
 - **a port** is proven against the old door run side by side before it dies: twin stores, one verb script through both.
 - **every repro in a verdict ran on the verdict's head**, with a fresh temp store or `X_STATE` per probe.
-- **a ts test that shells to `x`** resolves the shim beside itself, never `~/frame` (ci set up go after vitest once).
+- **a ts test that shells to `x`** resolves the shim beside itself, never `~/frame`.
 - **a `replaces:` claim** is proven by planting a caller of the old name and watching `replaces_test.go` go red.
 - **a secret-shape check** plants every key form it claims: base64 pem, `OPENSSH`, `ghp_`.
 - **an actor rule** (tty vs agent) runs in a python pty with and without `CLAUDECODE`.
 - **a never-fail path** (a verb a hook runs) runs against a dead-port `X_LINEAR_URL`.
 - **a test's adequacy** (base's source, head's tests) restores the old source in a verify tree with `git archive <base> <paths> | tar -x`, since the guard refuses `git checkout <sha> -- <path>` over a tree.
+- **a jobs fixture** copies a real run's whole step list, skipped steps included (BYT-94).
+- **a reader of a runner's silence** is probed with real runs cut short by a config, an env and an exit; a positive pass line replaces «no failure row» (FRM-474).
+- **a queue or lock change** gets a two-runs probe in one checkout (FRM-521).
+- **a conflict's resolved line** is its own mutant target (BYT-94).
 
 ## output
 
@@ -76,15 +80,15 @@ the checks sixth sense or codie on `x` starts from.
 - `lane commit` runs `_clio/script/quote-diff.py HEAD` over staged memory, skill and rules markdown; a gone «» quote refuses unless the message holds `quotes: shown`. the script is clio's, x only calls it
 - `lane commit` runs `biome check --write` over the named paths before staging (format, sorted keys and imports) — the commit hook only reports, so this is where a fix writes
 - `lane commit` waits out a peer's `index.lock` before its `add` and its `commit`, up to `lockWait` (30 s), and once more on a lock race right after; a lock past the wait fails and stays — the verb never deletes one (`FTR.md`). `X_LOCK_WAIT` shortens the wait under `X_TEST` only
-- `lane commit` retries the commit once when only the test gates went red and every row they failed carries the runner's timeout line (`timeoutOnly`): a load flake, never a real red
+- `lane commit` retries the commit once when only the test gates went red and every row they failed carries the runner's timeout line (`timeoutOnly`)
 - `lane commit --dry` runs the hook's gates on a temp index of HEAD plus the paths, `GIT_INDEX_FILE` set for the whole run; a green records its tree in `gates-green.tsv`, and a real commit of that tree passes its index-copy gates to `LEFTHOOK_EXCLUDE`
 - `lane commit` on main runs the ci jobs for the touched paths after the hold, before the hooks: `go test ./...` per go module a path sits in, the repo's `pnpm typecheck` + `pnpm test` for a `.ts`/`.tsx` unless the installed lefthook pre-commit already runs it (`preCommitRuns`). a pr branch skips them — ci sees it before main does
 - `lane merge-auto` calls github as dima's `gh` login (`asDima` in `gh.go`), since the codie app has no `contents: write` and branch protection needs admin; it reads the brake and the patch-ids from the clone it runs in, after a fetch. a stacked pr merges through `PUT /pulls/<n>/merge-async` (the add-on's `stackMerge`), every layer under it gated first; the merge then decamps clean trees at the landed head and never fails on it
-- `lane rebase-main` pushes from the push home `lane push` uses, with `--force-with-lease=refs/heads/<branch>:<read sha>`; its tests land a rival push through a real `post-rewrite` hook, the gap between the rebase and the push
+- `lane rebase-main` pushes from the push home `lane push` uses, with `--force-with-lease=refs/heads/<branch>:<read sha>`; its tests land a rival push through a real `post-rewrite` hook
 - a test fixture that pushes to a fake `github.com` origin sets `pushInsteadOf` beside `insteadOf`: dima's global gitconfig rewrites https pushes to ssh, and that outranks `insteadOf`
 - **two pr modes**: plain prs in core; stacked prs in the add-on (`go/stacks*`, on trial, easy to delete) behind `//go:build !nostacks`, reaching core only via `laneAddOn` (`lane.go`); `go/nostacks-pass.sh` reruns lane tests built out; deleting it is those files and that pass
-- `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries; a 4xx or a hook refusal fails on the first
+- `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries
 
-- **the by-hand worktree unlock**: a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter), plus the remove + checkout per still-locked file from the `lane commit` line above. a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe only after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
+- **the by-hand worktree unlock**: a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter), plus the remove + checkout per still-locked file from the `lane commit` line above. a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe only after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob
 
 `PRODUCT.md` (the want, what x is not) · `FTR.md` + `GLOSSARY.md` — read your section before changing what x does.
