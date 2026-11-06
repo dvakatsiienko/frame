@@ -51,11 +51,15 @@ function glideTickets(): Set<string> {
 
 const listed = read(['list', '--state', 'In Progress']);
 if (!listed) {
-    console.log('🟡 linear unreachable, the net not run');
-    process.exit(0);
+    console.log('🔴 linear unreachable, the net not run');
+    process.exit(1);
 }
 const ids = listed.map((t) => t.id);
-const tickets = ids.length ? (read(['read', ...ids, '--relations']) ?? []) : [];
+const tickets = ids.length ? read(['read', ...ids, '--relations']) : [];
+if (!tickets) {
+    console.log('🔴 In Progress tickets unread, the net not run');
+    process.exit(1);
+}
 const glide = glideTickets();
 let reds = 0;
 for (const t of tickets) {
@@ -83,11 +87,15 @@ if (!reds)
     console.log(`🟢 ${ids.length} In Progress, each with a reason to stay`);
 
 // a move back to Todo is no way out of the net: it holds a dated `⏰ due:` comment until it closes
-const todoIds = (read(['list', '--state', 'Todo']) ?? []).map((t) => t.id);
-const todo = todoIds.length
-    ? (read(['read', ...todoIds, '--comments']) ?? [])
-    : [];
+const todoList = read(['list', '--state', 'Todo']);
+const todoIds = (todoList ?? []).map((t) => t.id);
+const todo = todoIds.length ? read(['read', ...todoIds, '--comments']) : [];
+if (!todoList || !todo) {
+    console.log('🔴 Todo tickets unread, the moved-back half not run');
+    process.exit(1);
+}
 const today = new Date().toISOString().slice(0, 10);
+const skipped: string[] = [];
 for (const t of todo) {
     const bodies = (t.comments ?? []).map((c) => c.body);
     const moved = bodies.findLastIndex((body) => /^(↩️|⏳)/.test(body));
@@ -100,6 +108,7 @@ for (const t of todo) {
             console.log(
                 `🟡 ${t.id}: dispatched, in Todo, on no lane, no door: shipped? close it; else comment «⏰ due: <what> by <date>»`,
             );
+        else skipped.push(t.id);
         continue;
     }
     const by = door?.match(/by (\d{4}-\d{2}-\d{2})/)?.[1];
@@ -115,4 +124,8 @@ for (const t of todo) {
         );
     }
 }
+if (skipped.length)
+    console.log(
+        `⏭️ ${skipped.length} Todo never moved back, skipped: ${skipped.join(' ')}`,
+    );
 process.exit(reds ? 1 : 0);

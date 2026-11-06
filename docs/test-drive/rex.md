@@ -32,7 +32,7 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - Auto appearance — macOS light and dark flip — seconds to follow, every pane flips yes or no
 - program status (OSC 7501) — a real Claude Code session: working, permission prompt, done — dot right on each state, count
 - Activity sidebar (`cmd+.`) — three Claude Code sessions at once — time to find the blocked one, against warp
-- persistence — quit the app mid-run, reopen — program alive yes or no; again across a Rex update
+- persistence — quit the app mid-run, reopen — program alive yes or no; again across a Rex update, which also proves `~/.local/bin/rex` still resolves (`rex version` against `rex server status`), since its target is the server's `Versions/Current`
 - `rex` cli — an agent opens a tab, splits, runs, reads the screen — calls needed, errors
 - client actions — an agent imports a theme and bumps the font with Remote Control on — works yes or no
 - `init.lua` — keys from scratch, `rex config check`, `rex config reload` — reload seconds, silent failures
@@ -59,5 +59,12 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - 2026-11-06 · `rex` on `PATH` through `home/.local/bin/rex` · the hook stays silent outside Rex, 10 ms a run · Run buttons in the desktop app stay in its own panel, no setting for it; `rex run` is the door to a Rex tab
 - 2026-11-06 · persistence with a live agent: `cmd+Q`, reopen · Claude Code pid 28550 alive across the app restart at 20:22, server pid unchanged since 18:54, no restart gap he noticed · a pass, an update still untried
 - 2026-11-06 · a Claude Code started in Rex also showed in the desktop app, where dima answered its permission prompt by accident and typed to it; the Rex pane followed · both surfaces drive one session (Remote Control on at startup is the likely cause, an inference)
+- 2026-11-06 · the blocked marker, a staged permission prompt in a `dot-check` tab · dima's two shots: a blue dot on the tab's icon, an orange Claude icon, a blue dot on the eye (Activity) button · seen by his eye, nothing like it in warp
+
+## for the verdict
+
+- a nudge when a reply prints a copy fence, if a session skips the Rex door
+- Rex's own `rex` skill beside `x:rex`: keep both or one
+- fold these habits into their final home
 
 ## verdict
