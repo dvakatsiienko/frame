@@ -947,6 +947,10 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
   - proof: tests/lane.test.ts::a create naming a lane plan takes its steps from the file; ::a tick in the plan file moves the card to the first unticked line on the next poll; ::an all-ticked plan file shows the lane done; ::a nested or u… — not asserted: 60-char cut not checked
+- ✅ a side channel writes the card of a lane it runs (FRM-504)
+  - given a session titled «🦉 clio (side)», then `glide` `create` writes a card stamped with its name, and every other act writes that card; a card it did not create is refused, naming it; 🦉 clio still writes any card
+  - and a codie, a fork or a name that only holds those words stays refused; only this door opens, every other coordinator part stays on 🦉 clio
+  - proof: tests/lane.test.ts::a side channel creates a card and writes it; ::a side channel is refused on a card it does not run, naming the card; ::stays refused: … — not asserted: two side channels share one title, so one writes the other's card (inference); the lanes file has no lock, a side write racing clio's poll can lose an update (inference); a linked card's plan still moves only on clio's poll, a steer reaches only clio
 - ✅ a lane survives a reload, a compaction and a restart, and ends at clio's siesta
   - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back
   - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — clio's next siesta — takes it off and the file records `endedAt`

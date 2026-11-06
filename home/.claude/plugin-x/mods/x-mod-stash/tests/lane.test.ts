@@ -313,6 +313,56 @@ for (const title of CLIO_TITLES)
         expect(kept(w).map((l) => l.id)).toEqual(['l1']);
     });
 
+/* a side channel writes the card of a lane it runs */
+
+const SIDE = '🦉 clio (side)';
+
+test('a side channel creates a card and writes it', async ($, on) => {
+    const w = world(on, { name: SIDE });
+    await start($);
+    expect((await create($)).deny).toBeUndefined();
+    expect(
+        await denied($, { act: 'step', current: 1, id: 'l1' }),
+    ).toBeUndefined();
+    expect([kept(w)[0]?.runner, kept(w)[0]?.current]).toEqual([SIDE, 1]);
+});
+
+test('a side channel is refused on a card it does not run, naming the card', async ($, on) => {
+    const w = world(on, { name: SIDE });
+    w.files[FILE] = JSON.stringify({
+        lanes: [
+            {
+                current: 0,
+                history: [],
+                id: 'l1',
+                items: [{ isDone: false, text: 'a' }],
+                members: {},
+                movedAt: 0,
+                title: 'mods x',
+            },
+        ],
+    });
+    await start($);
+    const was = w.files[FILE];
+    expect(await denied($, { act: 'step', current: 1, id: 'l1' })).toContain(
+        'lane l1',
+    );
+    expect(w.files[FILE]).toBe(was);
+});
+
+for (const name of [
+    '⚡ 🔧 codie: 🦉 clio (side)',
+    '🦉 clio (fork)',
+    '⚡ 🔧 codie: mods lane 5 | FRM-1',
+])
+    test(`stays refused: ${name}`, async ($, on) => {
+        world(on, { name });
+        await start($);
+        expect(
+            await denied($, { act: 'create', items: ITEMS, title: 'mods x' }),
+        ).toContain('writes the lanes');
+    });
+
 test('a session whose name only ends in clio is not the lane owner', async ($, on) => {
     world(on, { name: '⚡ 🔧 codie: board for clio' });
     await start($);
@@ -967,6 +1017,7 @@ test('with 🛼 glide switched off, op glide is refused in one line naming the s
 /* Types */
 
 interface KeptLane {
+    runner?: string;
     id: string;
     title: string;
     items: { isDone: boolean; text: string; ticket?: string }[];
