@@ -4,10 +4,9 @@ title: 'day plan 11-06: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T16:39:00Z'
+updated_date: '2026-11-06T19:47:00Z'
 labels:
   - m
-  - side-channel-owned
   - wing-1
 dependencies: []
 priority: now
@@ -44,7 +43,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #19 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
 - [x] #20 FRM-514 quick lane test from the side channel
 - [ ] #21 crow watches the side channel too (PK-323, his W9)
-- [ ] #22 PK-325 queue review, PK-308's 14 left (split from #16)
+- [ ] #22 PK-308's 14 left (PK-325 moved to main, dima 19:08)
 <!-- AC:END -->
 
 ## Implementation Notes

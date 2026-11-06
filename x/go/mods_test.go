@@ -34,6 +34,7 @@ for f in "$d"/tests/*.test.ts; do
   echo "tests/$n:"
   if grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q PASS-THEN-SLOW "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(pass) $n first [1.0ms]"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q SLOW-SECOND "$f" && [ -e "$f.ran" ]; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q DIES-PARTWAY "$f"; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; exit 1
   elif grep -q HOOK-THROWS "$f"; then echo "(pass) $n [1.0ms]"; echo "    m's session.start hook was skipped: m: boom"
@@ -144,6 +145,18 @@ func TestModsEditPushRunsItsTestOnlyWhenTheBytesMoved(t *testing.T) {
 				t.Fatalf("exit %d, %d test runs, want %d\n%s", got.code, n, c.tests, got.stdout)
 			}
 		})
+	}
+}
+
+func TestModsEditTestCountsARerunFilesPassesOnce(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "PASS-THEN-SLOW\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
+		t.Fatalf("a's first-run pass counted beside its rerun, exit %d\n%s", got.code, got.stdout)
 	}
 }
 

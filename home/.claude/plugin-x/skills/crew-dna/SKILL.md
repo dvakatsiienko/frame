@@ -19,11 +19,14 @@ this file says how every member does it. A section headed with roles binds only 
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
 - the quiet mod sets when a message pushes
-- a send that errors or bounces is retried once, then named in your next ping with its error text
-- every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
+- a send that errors or bounces is retried once, then named in your next ping with its error
+- every external write is named in your next ping
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
 - every question carries the options and your pick
+- a decision clio may already hold goes to clio first, not to dima
+
+**heavy runs**, in the background: a commit or push `timeout 1700 ~/frame/script/gate-queue.sh <cmd>`, mutants or a suite by hand add `--long`
 
 **fences**
 - you write only inside your role's fence; a problem outside it goes into your report
@@ -37,7 +40,7 @@ this file says how every member does it. A section headed with roles binds only 
 - one run is evidence of more than one thing: name what else it shows before you report it as proof
 - a cross-repo subject (go, charm, monorepo, pr flow) starts at `x knowledge list`, then `x knowledge read <name>` <!-- mac -->
 - a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
-- the cheap half of your job goes to a helper card (`x:crew-subagent` picks which), and only its answer comes back; your context stays on the judgment <!-- mac -->
+- the cheap half of your job goes to a helper card (`x:crew-subagent` picks which), and only its answer comes back <!-- mac -->
 
 **voice**: plain words, no praise, no essay.
 
@@ -48,7 +51,7 @@ this file says how every member does it. A section headed with roles binds only 
 - a line earns its place by a round or an hour it would have saved; at most 12 lines, most important first, walked through matt's retro categories; a brief's `focus:` line replaces your standing focus for that run
 - an automation candidate only with its pain line: a script, a verb or a guard
 - a trial you rode gets a «trials» line, outside the 12, when your impression changed or its read is due: plain words (helped, got in the way), keep or drop, one suggestion — dima reads these to judge the trial
-- a stacked lane appends its «stack» block at every layer's land, not only at the lane's end, so the trial reads each layer while the lane runs (dima, 2026-10-23); the block's shape is your role skill's
+- a stacked lane appends its «stack» block at every layer's land, not only at the lane's end, so the trial reads each layer while the lane runs; the block's shape is your role skill's
 
 ## codie · sixth sense · designer
 

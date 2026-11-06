@@ -377,14 +377,14 @@ func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
 		log := got.log
 		report.Passed, report.Failed, report.Errored = testOutcome(log)
 		if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
-			again, err := runTimedOutFiles(overlay, log)
+			again, kept, err := runTimedOutFiles(overlay, log)
 			if err != nil {
 				return nil, err
 			}
 			got = again
 			log += "\n" + again.log
 			passed, failed, errored := testOutcome(again.log)
-			report.Passed, report.Failed, report.Errored = report.Passed+passed, failed, errored
+			report.Passed, report.Failed, report.Errored = kept+passed, failed, errored
 		}
 		// the engine runs on past a throwing hook, so a test beside it still passes (`engine.md`)
 		if skipped := hookSkipped.FindString(log); skipped != "" {
@@ -400,9 +400,11 @@ func overlayTest(repo, scratch string, changed []string) ([]modReport, error) {
 }
 
 // only the files that timed out run again, as `mods/test.ts` does: a second whole run on a loaded machine times out other
-// rows. the rest step aside in this throwaway overlay, so the kit does not find them
-func runTimedOutFiles(overlay, log string) (result, error) {
+// rows. the rest step aside in this throwaway overlay, so the kit does not find them; answers the second run and the
+// passes of the files it left out
+func runTimedOutFiles(overlay, log string) (result, int, error) {
 	timedOut := map[string]bool{}
+	passes := map[string]int{}
 	file := ""
 	for line := range strings.SplitSeq(log, "\n") {
 		line = strings.TrimSpace(line)
@@ -410,6 +412,14 @@ func runTimedOutFiles(overlay, log string) (result, error) {
 			file = m[1]
 		} else if testFailLine.MatchString(line) {
 			timedOut[file] = true
+		} else if testPassLine.MatchString(line) {
+			passes[file]++
+		}
+	}
+	kept := 0
+	for name, n := range passes {
+		if !timedOut[name] {
+			kept += n
 		}
 	}
 	err := filepath.WalkDir(overlay, func(path string, entry fs.DirEntry, err error) error {
@@ -423,10 +433,10 @@ func runTimedOutFiles(overlay, log string) (result, error) {
 		return os.Rename(path, path+".passed")
 	})
 	if err != nil {
-		return result{}, err
+		return result{}, 0, err
 	}
 	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
-	return got, nil
+	return got, kept, nil
 }
 
 // --against <ref>: the edited test files on the ref's mod, so a test that fails there proves it reads the change

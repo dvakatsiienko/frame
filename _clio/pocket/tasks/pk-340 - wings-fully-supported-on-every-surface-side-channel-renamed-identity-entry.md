@@ -51,4 +51,5 @@ PK-340:W16 (2026-11-06 18:30, dima): plus — a new entry in identities + maybe 
 PK-340:W17 (2026-11-06 18:30, dima): so if a wing messages to anyone - anyone should know who wing is.
 
 PK-340:W18 (2026-11-06 18:30, dima): so no one is confused.
+board steer o44 (2026-11-06 18:42, dima): groom fleet identities with /x:author-memory, see if you can optimize it without budget raise (with no data loss, drop fluff). if cant without data loss - raise budget
 <!-- SECTION:NOTES:END -->

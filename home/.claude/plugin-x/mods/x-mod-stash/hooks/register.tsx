@@ -1074,6 +1074,8 @@ const LEDGER_EVERY_MS = 60_000;
 const QUIET_ALARMED = 'quiet-alarmed';
 const QUIET_ALARMED_MAX = 50;
 // a transcript's last write in epoch seconds, by its session id under any project folder
+// a ping's reply ends a moment before its last transcript write
+const PING_WRITE_MS = 60_000;
 const LAST_WRITE =
     'stat -f %m "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | sort -n | tail -n 1';
 const QUIET_ALARM_TITLE = '🚨 quiet comms';
@@ -1158,7 +1160,11 @@ async function quietOf($: EngineInterface): Promise<StashQuiet> {
     const held = sid
         ? await $.store.get(QUIET_HELD + sid).catch(() => undefined)
         : undefined;
-    if (Array.isArray(held)) return { held: held as QuietPing[] };
+    // a held note from before turn-end notes went log-only never reaches her
+    if (Array.isArray(held))
+        return {
+            held: (held as QuietPing[]).filter((p) => p.tag !== QUIET_NOTICE),
+        };
     return (
         (await $.state.get(QUIET).catch(() => undefined))?.value ?? { held: [] }
     );
@@ -1370,15 +1376,21 @@ async function heldStuckMs($: EngineInterface) {
     return (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
 }
 
-// a keep-hot ping's reply is no word of the member's, so its write never counts as it speaking
+// a keep-hot ping's reply is no word of the member's: a last write no later than its end reads as the reply before it,
+// in whole seconds as a write's time is; a write past that is real work
 async function lastSpokeAt($: EngineInterface, home: string, sid: string) {
-    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    if (reply?.pingedAt && reply.pingedAt > reply.at) return reply.at;
     const out = await $.process
         .run(['sh', '-c', LAST_WRITE, 'sh', home, sid])
         .catch(() => undefined);
     const seconds = Number(out?.stdout.trim());
-    return seconds > 0 ? seconds * 1000 : undefined;
+    if (!(seconds > 0)) return undefined;
+    const wrote = seconds * 1000;
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    const isPingLast =
+        !!reply?.pingedAt &&
+        reply.pingedAt > reply.at &&
+        wrote <= reply.pingedAt + PING_WRITE_MS;
+    return isPingLast ? Math.floor(reply.at / 1000) * 1000 : wrote;
 }
 
 // a hung member sends nothing, so an open lane's member past the wait raises one alarm per silence, under a shift also one
@@ -1393,7 +1405,8 @@ async function quietSilentMembers($: EngineInterface, now: number) {
         : undefined;
     const isShift = await isShiftOn($, pace);
     for (const lane of await readLanes($)) {
-        if (lane.endedAt) continue;
+        // a finished card stays on the board until the siesta's end, its members parked
+        if (lane.endedAt || lane.current >= lane.items.length) continue;
         for (const name of Object.values(lane.members)) {
             if (!name) continue;
             const row = memberOf(rows, await successorOf($, name));
@@ -1401,7 +1414,15 @@ async function quietSilentMembers($: EngineInterface, now: number) {
             const at = await lastSpokeAt($, home, row.base.sid);
             if (at === undefined || now - at < waitMs) continue;
             const words = `${row.base.name} silent ${Math.round((now - at) / 60_000)} min on «${lane.title}»`;
-            const key = `silent:${row.base.sid}:${at}`;
+            // one silence, one key: a ping moves `at` back to the reply before it, past the time the alarm keyed on
+            const prefix = `silent:${row.base.sid}:`;
+            const known = (
+                ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ??
+                []
+            )
+                .filter((k) => k.startsWith(prefix))
+                .map((k) => Number(k.slice(prefix.length)));
+            const key = `${prefix}${Math.max(...known, 0) >= at ? Math.max(...known) : at}`;
             await quietAlarm($, key, words);
             if (!isShift || (await quietIsBusy($))) continue;
             const raised =
@@ -1474,6 +1495,7 @@ const heldOf = (v: unknown): QuietPing[] | undefined =>
     Array.isArray(v) && v.length
         ? v.filter(
               (p): p is QuietPing =>
+                  p?.tag !== QUIET_NOTICE &&
                   typeof p?.at === 'number' &&
                   typeof p?.from === 'string' &&
                   typeof p?.text === 'string',
@@ -1534,21 +1556,27 @@ async function quietHoldPrompt(
                 body,
                 from,
                 head,
-                isEvent: false,
+                isTagged: true,
+                kind: tag,
                 marks,
                 tag,
                 text: quietHeldText(body),
             };
         }),
-        ...glued.notes.map(({ body, from, head, isEvent }) => ({
-            body,
-            from,
-            head,
-            isEvent,
-            marks: {},
-            tag: QUIET_NOTICE,
-            text: '',
-        })),
+        // a report opening a tag with its kind switched off waits with its words, its log line still a note's
+        ...glued.notes.map(({ body, from, head }) => {
+            const kind = quietTag(body);
+            return {
+                body,
+                from,
+                head,
+                isTagged: kind !== 'none' && kind !== 'progress',
+                kind,
+                marks: {},
+                tag: QUIET_NOTICE,
+                text: body,
+            };
+        }),
     ];
     if (!items.length || !(await isQuietHome($))) return undefined;
     const at = await $.clock.now();
@@ -1571,12 +1599,11 @@ async function quietHoldPrompt(
             });
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
         const canCut = !isEngineNotice || judged.every((j) => !j.why);
-        // a turn is starting anyway, and the event's words are written to that turn
-        const isTurnStarting = judged.some((j) => j.why);
         for (const {
             from,
             head,
-            isEvent,
+            isTagged,
+            kind,
             marks,
             sid,
             tag,
@@ -1591,19 +1618,12 @@ async function quietHoldPrompt(
                 ...(sid ? { sid } : {}),
                 ...marks,
             };
-            const isEventKept = isEvent && isTurnStarting;
             // a turn-end note is logged and goes no further, in every mode the switch is on: nobody acted on 10 of 13 in an hour
-            if (
-                tag === QUIET_NOTICE &&
-                isOn &&
-                canCut &&
-                !why &&
-                !isEventKept
-            ) {
+            if (!isTagged && tag === QUIET_NOTICE && isOn && canCut && !why) {
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'logged' });
-            } else if (isHolding && canCut && !why && !isEventKept) {
-                held.push({ at, from, tag, text, ...marks });
+            } else if (isHolding && canCut && !why) {
+                held.push({ at, from, tag: kind, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
             } else
@@ -1626,8 +1646,11 @@ async function quietHoldPrompt(
             if (held.length) await saveQuiet($, q);
             throw new Error('the log lines did not save');
         }
+        const isAllCut = items.every((item) => cut.has(item.head));
+        if (glued.silentEvent !== undefined && isOn && canCut)
+            cut.add(glued.silentEvent);
         if (!cut.size) return undefined;
-        if (cut.size === items.length && !glued.hasOther) return { drop: '' };
+        if (isAllCut && !glued.hasOther) return { drop: '' };
         return {
             text: glued.heads
                 .filter((_, i) => !cut.has(i))
@@ -1816,6 +1839,7 @@ async function isHeldSince($: EngineInterface, since: number) {
         const isOurs = lines.some(
             (l) =>
                 l.verdict === 'held' &&
+                l.tag !== QUIET_NOTICE &&
                 l.at >= since &&
                 (l.sid
                     ? l.sid === me
