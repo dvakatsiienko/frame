@@ -1,13 +1,13 @@
 # fleet flow — who talks to whom
-**scope:** the comms model between fleet members. the per-member contracts stay in their briefs
-(`x:crew-codie`, `x:crew-sixth-sense`, `x:crew-lead`); this file is the map they hang on.
-**not here →** the path work takes (ten stages, three kinds of work, the done test) is the coordinator's: clio memory, `craft-fleet-flow`. a member gets its lane as the brief's `lane:` line.
+**scope:** the comms model. the per-member contracts stay in their briefs
+(`x:crew-codie`, `x:crew-sixth-sense`, `x:crew-lead`).
+**not here →** the path work takes is the coordinator's: clio memory, `craft-fleet-flow`. a member gets its lane as the brief's `lane:` line.
 
 ## the loop
 
 dima steers clio. clio does the small nonblocking bits herself and delegates the rest, research
-included. every reply to dima comes back through clio; a member's own chat is a workbench, not a
-channel — dima may step into it and steer there, and the member answers him there.
+included. every reply to dima comes back through clio; a member's own chat is a workbench, not a channel:
+dima may steer there, and the member answers there.
 
 ## per member — talks to, hears from, reply lands as
 
@@ -15,6 +15,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - talks to dima and every member
   - hears from all
   - lands as: the board in dima's tab
+- **🪽 wing** — a second clio: talks to dima, the main and any member its chore needs; lands as: its tab, a closing report to the main at the halt
 - **codie**
   - talks to clio on the events the quiet mod pushes; all else slipstreams (`plugin-x/mods/x-mod-stash/FTR.md`)
   - talks to its sixth sense freely
@@ -24,7 +25,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - talks to codie; to clio only on a dispute, a round-3 or not-checkable stop, or its exit line
   - hears from codie
   - lands as: codie carries `clean`; a dispute or a stop goes to clio
-- **retros** — every member writes its retro beside its lane plan (path: `crew-dna` skill § the retro), never as a message;
+- **retros** — every member writes its retro beside its lane plan (`crew-dna` § the retro), never as a message;
   clio solves every pending one in place at a siesta or the halt, and trashes it once processed
 - **designer**
   - talks to clio (one ping per spread) and to dima when he drops in
@@ -42,6 +43,8 @@ channel — dima may step into it and steer there, and the member answers him th
 
 ## silence
 
+a wait on another lane's commit or merge: the waiter arms its own `Monitor`, with a deadline.
+
 a question dima has not answered means he is in another thread. the member does not wait on it:
-a timed question goes to clio, and clio relays (the mechanics are in each brief). an ended turn
+a timed question goes to clio, and clio relays (each brief holds how). an ended turn
 has no clock — a member watching for dima's answer arms its own timer.

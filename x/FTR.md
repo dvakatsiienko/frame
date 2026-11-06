@@ -460,7 +460,7 @@
   - when it runs, then it prints the plan and exits 4; with `--apply`, one request archives them all and a capped page says «run again»
 - ⬜ a ticket's size prints as its word: `x linear read` carries `size` (XS · S · M) beside the estimate (FRM-399)
 - ✅ every `x linear` call acts as someone, and says who
-  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cloud chat — anything without a terminal — then it acts as the clio app — but a session whose registry name does not open with 🦉 clio, her side channels included (by `CLAUDE_CODE_SESSION_ID`), acts as the codie app (FRM-399); given dima's own terminal, as dima; `--as codie|clio|dima` overrides
+  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cloud chat — anything without a terminal — then it acts as the clio app — but a session whose registry name does not open with 🦉 clio or 🦉🪽 clio, her wings (by `CLAUDE_CODE_SESSION_ID`), acts as the codie app (FRM-399); given dima's own terminal, as dima; `--as codie|clio|dima` overrides
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
@@ -481,7 +481,7 @@
 ## mods — a live mod edited safely
 
 - ⬜ `x mods edit pull|status|test|push` edits a live mod through a scratch copy and lands it only green and whole (FRM-388)
-  - makes: the scratch copies under the job tmp (`$CLAUDE_JOB_DIR/tmp/x-mods-edit/<repo>`, else the os tmp), and on a push the edited files in `home/.claude/plugin-x/mods/<mod>/`
+  - makes: the scratch copies under the job tmp (`$CLAUDE_JOB_DIR/tmp/x-mods-edit/<repo>`, else `~/.local/state/x/x-mods-edit/<repo>`, so a mac restart loses no edit; proof: mods_test.go::TestModsEditScratchLivesUnderTheStateDirOutsideAJob), and on a push the edited files in `home/.claude/plugin-x/mods/<mod>/`
   - given a path outside `home/.claude/plugin-x/mods/<mod>/`, then pull exits 2 naming the shape
   - given an edit that turns a mod test red, when push runs, then nothing reaches the mod and the refusal names the red test; `test` shows the same red on the overlay copy
   - given a hooks file that does not parse, when push runs, then the validator refuses it before any test or write, naming the parse error (PK-64)
@@ -495,7 +495,7 @@
 - ⬜ `x mods edit push` runs no second test on bytes `test` passed (FRM-470)
   - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
 - ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
-  - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
+  - given an overlay whose every failed row timed out, then only the files holding those rows run once more, and that second run is their verdict; a run that died with no tally runs no second time (proof: mods_test.go::TestModsEditTestRunsOnlyTheTimedOutFileAgain; ::TestModsEditTestRunsNoSecondTimeWhenTheRunDiedPartway)
 - ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
   - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run

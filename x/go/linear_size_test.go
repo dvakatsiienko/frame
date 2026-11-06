@@ -24,6 +24,7 @@ func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
 		{"clio stays clio", "🦉 clio", "clio"},
 		{"clio as the registry stores her keeps clio", "🦉  clio", "clio"},
 		{"her side channel signs as clio", "🦉 clio (side)", "clio"},
+		{"her wing signs as clio", "🦉🪽 clio: wing 2", "clio"},
 		{"a member naming clio in its scope stays codie", "⚡ 🔧 codie: 🦉 clio memory", "codie"},
 	}
 	for _, c := range cases {

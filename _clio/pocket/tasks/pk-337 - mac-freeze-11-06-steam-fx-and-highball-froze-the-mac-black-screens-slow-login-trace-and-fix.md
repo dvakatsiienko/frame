@@ -6,10 +6,11 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-06T13:39:00Z'
-updated_date: '2026-11-06T14:08:00Z'
+updated_date: '2026-11-06T16:21:00Z'
 labels:
   - m
   - side
+  - wing-1
 dependencies: []
 priority: now
 type: task
@@ -26,4 +27,6 @@ W1 (2026-11-06 15:38, dima): a wisp. i was messing with the steam fx app and the
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-11-06 16:08 side channel: dima filed the WindowServer report with Apple, FB25461148. fixes so far: firelink's vm rules landed; FRM-517 in its quick lane; reboot timing after it lands.
+
+⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W1–W4 share one line, split them, then its lines get full ids.
 <!-- SECTION:NOTES:END -->

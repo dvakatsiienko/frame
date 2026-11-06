@@ -4,7 +4,17 @@
 # node_modules are symlinked from the main checkout, so no install runs.
 set -euo pipefail
 repo=$(git rev-parse --show-toplevel)
-sha=${1:-HEAD}
+sha=${1:-}
+# a pre-push hook names what it pushes on stdin: a worktree's push runs from the main checkout, whose HEAD is another commit
+if [ -z "$sha" ] && [ ! -t 0 ]; then
+    while read -r -t 1 _ pushed _ _; do
+        case $pushed in *[!0]*) sha=$pushed ;; esac
+    done
+fi
+sha=${sha:-HEAD}
+# a hook may export GIT_DIR and friends: a fixture's git, or this clone's, must never write the real repo, as in index-run.sh
+# shellcheck disable=SC2046
+unset $(git rev-parse --local-env-vars)
 tmp=$(mktemp -d)
 home=$(mktemp -d)
 trap 'trash "$tmp" "$home" 2>/dev/null' EXIT

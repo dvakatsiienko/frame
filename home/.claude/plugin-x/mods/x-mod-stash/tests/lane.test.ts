@@ -313,11 +313,11 @@ for (const title of CLIO_TITLES)
         expect(kept(w).map((l) => l.id)).toEqual(['l1']);
     });
 
-/* a side channel writes the card of a lane it runs */
+/* a wing writes the card of a lane it runs */
 
 const SIDE = '🦉 clio (side)';
 
-test('a side channel writes a card it created', async ($, on) => {
+test('a wing writes a card it created', async ($, on) => {
     const w = world(on, { name: SIDE });
     await start($);
     expect((await create($)).deny).toBeUndefined();
@@ -327,7 +327,19 @@ test('a side channel writes a card it created', async ($, on) => {
     expect([kept(w)[0]?.runner, kept(w)[0]?.current]).toEqual([SIDE, 1]);
 });
 
-test('a side channel is refused on a card it does not run, naming the card', async ($, on) => {
+for (const name of [
+    '🦉🪽 clio: wing 2',
+    '🦉🪽 clio: wing 12',
+    '🦉 🪽 clio: wing 3',
+])
+    test(`a numbered wing writes a card it created: ${name}`, async ($, on) => {
+        const w = world(on, { name });
+        await start($);
+        expect((await create($)).deny).toBeUndefined();
+        expect(kept(w)[0]?.runner).toBe(name);
+    });
+
+test('a wing is refused on a card it does not run, naming the card', async ($, on) => {
     const w = world(on, { name: SIDE });
     w.files[FILE] = JSON.stringify({
         lanes: [
@@ -353,6 +365,9 @@ test('a side channel is refused on a card it does not run, naming the card', asy
 for (const name of [
     '⚡ 🔧 codie: 🦉 clio (side)',
     '🦉 clio (fork)',
+    '🦉🪽 clio: wing',
+    '🦉🪽 clio: wing two',
+    '🦉 clio: wing 2',
     '⚡ 🔧 codie: mods lane 5 | FRM-1',
 ])
     test(`stays refused: ${name}`, async ($, on) => {
@@ -363,7 +378,7 @@ for (const name of [
         ).toContain('writes the lanes');
     });
 
-test('a side channel retitled with other spacing still writes its card', async ($, on) => {
+test('a wing retitled with other spacing still writes its card', async ($, on) => {
     const w = world(on, { name: '🦉clio (side)' });
     w.files[FILE] = JSON.stringify({
         lanes: [keptLane({ current: 0, id: 'l1', runner: SIDE })],
@@ -374,7 +389,7 @@ test('a side channel retitled with other spacing still writes its card', async (
     ).toBeUndefined();
 });
 
-test("a side channel's card never nags clio, its turn count being another thread's", async ($, on) => {
+test("a wing's card never nags clio, its turn count being another thread's", async ($, on) => {
     const w = world(on);
     w.files[FILE] = JSON.stringify({
         lanes: [keptLane({ id: 'l1', movedAt: 0, runner: SIDE })],
@@ -1445,6 +1460,23 @@ test("the linked codie's step 3 moves the lane while clio idles, and her next pr
     ]);
 });
 
+test('a card ended while a codie step is read stays ended', async ($, on) => {
+    const w = world(on, { files: shelf(codieLane()) });
+    w.store.set(stepKey(CODIE_NAME), {
+        get at() {
+            const { lanes } = JSON.parse(w.files[FILE] ?? '{"lanes":[]}');
+            w.files[FILE] = JSON.stringify({
+                lanes: lanes.map((l: object) => ({ ...l, endedAt: NOW })),
+            });
+            return NOW + 1;
+        },
+        step: 3,
+    });
+    await start($);
+    await w.clock.advance(5_000);
+    expect(kept(w)[0]?.endedAt).toBe(NOW);
+});
+
 test("a move reaches clio's running turn at her next tool call", async ($, on) => {
     const w = world(on, { files: shelf(codieLane()) });
     w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 2 });
@@ -1574,6 +1606,85 @@ test('an edit naming a plan with a step line holding no ticket id is refused', a
             plan: '~/.local/state/x/lanes/mods/lane-plan.md',
         }),
     ).toContain('«the loose one»');
+});
+
+test('an edit naming the plan its card follows passes, however its path is spelled', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    await create($, { items: undefined, plan: PLAN });
+    expect(
+        await denied($, {
+            act: 'edit',
+            id: 'l1',
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+            title: 'mods y',
+        }),
+    ).toBeUndefined();
+});
+
+test('a second card naming one plan by another spelling is refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    await create($, { items: undefined, plan: PLAN });
+    expect(
+        await denied($, {
+            act: 'create',
+            items: undefined,
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+            title: 'another name',
+        }),
+    ).toBe(LIVE_FIX);
+});
+
+test('a card a wing creates while a plan poll reads survives the poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    await create($, { items: undefined, plan: PLAN });
+    const text = '- [x] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    Object.defineProperty(w.files, PLAN, {
+        configurable: true,
+        enumerable: true,
+        get() {
+            const lanes = JSON.parse(w.files[FILE] ?? '{"lanes":[]}').lanes;
+            if (lanes.length === 1)
+                w.files[FILE] = JSON.stringify({
+                    lanes: [
+                        ...lanes,
+                        keptLane({ id: 'l2', runner: '🦉 clio (side)' }),
+                    ],
+                });
+            return text;
+        },
+    });
+    await poll(w);
+    expect(kept(w).map((l) => [l.id, l.current])).toEqual([
+        ['l1', 1],
+        ['l2', 0],
+    ]);
+});
+
+test('a card ended while a plan poll reads stays ended', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    await create($, { items: undefined, plan: PLAN });
+    const text = '- [x] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    Object.defineProperty(w.files, PLAN, {
+        configurable: true,
+        enumerable: true,
+        get() {
+            const lanes = JSON.parse(w.files[FILE] ?? '{"lanes":[]}').lanes;
+            w.files[FILE] = JSON.stringify({
+                lanes: lanes.map((l: object) => ({ ...l, endedAt: NOW })),
+            });
+            return text;
+        },
+    });
+    await poll(w);
+    expect(kept(w)[0]?.endedAt).toBe(NOW);
 });
 
 test('an edit naming a plan its card does not follow is refused', async ($, on) => {

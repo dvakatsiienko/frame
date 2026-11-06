@@ -57,13 +57,13 @@ if (import.meta.main) {
             desc: { short: 'd', type: 'string' },
             due: { type: 'string' },
             priority: { default: 'next', type: 'string' },
-            // a side channel's item; the main's boot takes it over (FRM-464)
-            side: { type: 'boolean' },
-            // owned and solved by a side channel, set only on dima's word; the boot never takes it over (PK-311)
-            'side-channel-owned': { type: 'boolean' },
             size: { default: 's', type: 'string' },
             top: { type: 'boolean' },
             type: { default: 'task', type: 'string' },
+            // a wing's item; the main's boot takes it over (FRM-464)
+            wing: { type: 'boolean' },
+            // owned and solved by a wing, set only on dima's word; the boot never takes it over (PK-311)
+            'wing-owned': { type: 'boolean' },
         },
     });
     const [title] = positionals;
@@ -75,7 +75,7 @@ if (import.meta.main) {
         !['xs', 's', 'm'].includes(values.size)
     ) {
         console.error(
-            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m] [--priority now|next|later] [--top] [--side] [--side-channel-owned] [--type task] [--due YYYY-MM-DD]',
+            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m] [--priority now|next|later] [--top] [--wing] [--wing-owned] [--type task] [--due YYYY-MM-DD]',
         );
         process.exit(2);
     }
@@ -115,8 +115,8 @@ if (import.meta.main) {
         '-l',
         [
             values.size,
-            values.side && 'side',
-            values['side-channel-owned'] && 'side-channel-owned',
+            values.wing && 'wing',
+            values['wing-owned'] && 'wing-owned',
         ]
             .filter(Boolean)
             .join(','),

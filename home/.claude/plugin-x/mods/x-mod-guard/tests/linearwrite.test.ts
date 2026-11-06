@@ -204,6 +204,18 @@ for (const typed of [UPDATE, 'x linear read FRM-1 --as dima'])
         expect([w.ran, r.deny]).toEqual([[typed], undefined]);
     });
 
+test('a numbered wing runs as the coordinator does', async ($, on) => {
+    const w = world(on, '🦉🪽 clio: wing 1');
+    const r = await bash($, UPDATE);
+    expect([w.ran, r.deny]).toEqual([[UPDATE], undefined]);
+});
+
+test('a wing title with no number is still a member', async ($, on) => {
+    const w = world(on, '🦉🪽 clio: wing');
+    await bash($, UPDATE);
+    expect(w.ran).toEqual([]);
+});
+
 test('a session the registry does not list runs both, fail open', async ($, on) => {
     const w = world(on, null);
     await bash($, UPDATE);

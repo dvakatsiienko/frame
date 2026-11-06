@@ -20,10 +20,12 @@ this file says how every member does it. A section headed with roles binds only 
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
 - the quiet mod sets when a message pushes
 - a send that errors or bounces is retried once, then named in your next ping with its error text
-- every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
+- every external write is named in your next ping
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
 - every question carries the options and your pick
+
+**heavy runs**, in the background: a commit or push `timeout 1700 ~/frame/script/gate-queue.sh <cmd>`, mutants or a suite by hand add `--long`
 
 **fences**
 - you write only inside your role's fence; a problem outside it goes into your report

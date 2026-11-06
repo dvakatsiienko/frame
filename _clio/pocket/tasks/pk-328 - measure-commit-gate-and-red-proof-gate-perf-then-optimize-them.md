@@ -4,11 +4,12 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T00:46:00Z'
+updated_date: '2026-11-06T16:56:00Z'
 labels:
   - s
   - side
   - side-channel-owned
+  - wing-1
 dependencies: []
 priority: next
 type: task
@@ -24,7 +25,7 @@ dima's word 11-06 00:23: solve with the side channel tomorrow.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-W1 (2026-11-06 00:23, dima): one more item to solve with the side channel tomorrow: measure commit gate and red-proof gate perf and optimize it.
+PK-328:W1 (2026-11-06 00:23, dima): one more item to solve with the side channel tomorrow: measure commit gate and red-proof gate perf and optimize it.
 kept here, not in linear: a measure first, today-or-tomorrow work; FRM-473 and FRM-383 touch these gates (FRM-383's red-proof is a rewrite), read them before optimizing so the work doesn't collide.
 
 input from cli codie, FRM-473's D1, measured 11-06 01:29: overlay 15 s, commit 88 s at load 38, the skip fires («1 skipped on tested bytes»), and 2,820 of the commit's rows belong to the 3 mods the commit never touched. candidate: skip a mod whose subtree equals HEAD's, one condition in test.ts; a look first, since a mod's tests can read outside its folder through the engine.
@@ -32,4 +33,29 @@ input from cli codie, FRM-473's D1, measured 11-06 01:29: overlay 15 s, commit 8
 from frame#128's last read, wisphunter, by reading, not run: x/go/gates.go:414, F1's format step greens the gates on the formatted scratch while recordTestedMods records the raw tree, so a file the format step changes loses the commit's test skip; fix: record the formatted tree, a row through push and commit asserting one test run. correction: the numbers above were measured at 01:08, 01:29 is codie's message.
 
 correction, the note above: the skip's log row reads 01:08; 01:29 is codie's message.
+
+2026-11-06 18:03 clio: load 126 with four lanes' gates in parallel (crow's read, mine beside it), 3 commit-hook tests timed out at 5 s on main at 17:59. stagger line sent to all four lanes: wait under load 18 before a gate, mutants last.
+
+crow's read 18:06, on a gate lock in gates.go: the lock first, narrowing next, or narrowing first if one small line. the 18:02 spike had 14 go test, mutant and red-proof runs plus 2+ plugin tests, so a lock on x lane commit and push may not cover them: name what it leaves out, or put the mutation door under it. a run past the deadline prints loudly. pid plus start time, no queue order. check nesting and the 10-min Bash limit, the wait prints while it waits. side, 18:07: no gate limit exists today, x lane commit waits only on git's index lock.
+
+PK-328:W2 (2026-11-06 18:15, dima): yesterday i peeked into the mods coder window and spotted the commit gate and red-proof gate taking a lot of time. codie itself told me it would make sense to offload it to the background and parallelize it, since codie waits up to a few minutes for commits only. one commit at 3 minutes, 10 commits: half an hour just waiting for commits.
+PK-328:W3 (2026-11-06 18:15, dima): maybe rethink this approach at all: why do we have pre-commit, and all these checks on the commits? maybe move them to the push event. commits get much faster, and the gate is still there, just later on push instead of on each commit. i think it would make coders much faster. ❓
+
+measured 18:18, from two commit logs this hour: a non-mods commit takes 16-17 s, test 15-17, typecheck 2-4, under load; the minutes dima saw are mods-test (not timed yet, its log carries no duration here). crow 18:15: split by where the commit lands, branch lanes to push, main keeps typecheck and path tests, plus a nudge at N unpushed commits. landed in my tree: untouched mods skip; gate-queue.sh.
+
+main's pick 18:32, crow's catch: one turn makes a 16 s commit wait behind a whole mutant round, 10+ min at load 19 (my own commit died at 590 s waiting). long rounds, mutants and whole suites, get their own slot, a commit never waits behind one; gate-queue logs each wait's seconds.
+
+PK-328:W4 (2026-11-06 18:32, dima): another reason to optimize commits: if everyone commits and runs gates during the commit, each one draws CPU, and the system is overloaded by everyone committing. not good at all.
+PK-328:W5 (2026-11-06 18:32, dima): i thought our tests via Go and vitest are fast tools. why do they overload my CPU? maybe our testing tools are not properly configured. add this to the scope, identify the bottlenecks and fix them. maybe vitest or Go tests need to be parallelized, maybe they use one core instead of many. ❓
+PK-328:W6 (2026-11-06 18:32, dima): perform as wide an analysis as possible, use all your tools and helpers, and use all threads for consultation and data gathering. i want these issues optimized.
+PK-328:W7 (2026-11-06 18:32, dima): i assume this CPU overloading was only partially related to the finder issues, most likely caused by gate commits.
+
+PK-328:W8 (2026-11-06 18:36, dima): good ideas, fold and consider to implement: reuse the «already tested these bytes» record for typecheck and tests, not just mods; run only the tests related to the staged paths at commit, with the full set at push; commit in the background, so a coder keeps working during the gate; give each gate a time budget that goes red when exceeded, so slowness can't creep back.
+
+mods lane 5 codie's probe, 18:53, measured at load 9–16: x-mod-stash 76 s 1390 rows, x-mod-guard 31 s 1586, x-mod-holds 5 s 24, x-mod-redact 5 s 40. parallel by file: stash rows sum 234 s in 72 s wall, about 3×, peak ~11 cores, mean 3–5. slowest stash files: quiet 71 s, pace 34, orbit 23, hot 17, waker 15. the probe waited 506 s in the queue. remembered, not measured: slowest commits 3–5 min: a commit touching x/go runs go test ./... ~1 min, plus typecheck and mods tests; a commit re-running what x mods edit push just passed when its bytes moved; worst waits are load timeouts on 5 s rows in hot, pace, waker, each a whole rerun. its cut, inference: rerun only timed-out files, split quiet.test.ts.
+
+crow's read, 18:55, measured over x-commit logs of the last 24 h (18 hook runs over 2 s; they miss x mods edit push): p50 16 s, p90 84 s, max 133 s, 1 over 120 s, 0 over 180 s; test max 84, mods-test max 133, typecheck p90 2.6. the queue is the biggest measured cost (506 s against 76 s of tests), and moving gates to push moves the wait with them. her order: 1 background commit, on the private copy index-run.sh already makes, a lane's commits keep their order and a red stops those behind, inference; 2 split the queue, one log line per commit: queue wait, hook, total; 3 tested-bytes for typecheck and test; 4 push-only for branch lanes after that, main keeps commit checks; 5 read quiet (71 s) and pace (34 s) for real sleeps, a fake clock may cut most, inference. the catches dima raised: he asked «which tradeoffs, will it work at all».
+
+PK-328:W9 (2026-11-06 18:26, dima): changes are quite noticeable, but you have a lot of options to gather all necessary data for a weighted decision. i want a faster commit gate: i feel it wastes time and we can have reliable gates in a more efficient, faster way; red proofs are also long, i want them faster. is that possible? ❓ my order: you second wind; then gather all data on all surfaces, consult everyone active, codies at cli, mods, ci, the verifier, clio, crow; read histories, find the longest commits and red proofs, starting with commits; propose how to optimize, and whether moving the commit gate to push works; tell other ideas of your own.
+his steer on o70, 18:26: let's try. this ticket could be slightly bigger, but it's worth it if 30 min of waiting for commits turns into 3 min for commits and 6 min for push, 9 min total, 21 saved, roughly. but there are tradeoffs: which are those? will it work at all?
 <!-- SECTION:NOTES:END -->

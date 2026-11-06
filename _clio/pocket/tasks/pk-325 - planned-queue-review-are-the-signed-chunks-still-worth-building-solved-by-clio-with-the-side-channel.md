@@ -6,10 +6,9 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:51:00Z'
-updated_date: '2026-11-05T21:58:00Z'
+updated_date: '2026-11-06T17:08:00Z'
 labels:
   - s
-  - side
 dependencies: []
 priority: next
 type: task
@@ -29,4 +28,6 @@ W1308 (2026-11-02 17:37, dima): it actually would be a good idea to review what 
 W1312 (2026-11-02 17:37, dima): then proceed with what we planned and planned scope verification against needed or not.
 
 from PK-321's close, 23:58, unanswered, joins this review: W1411 (2026-11-02 18:59, dima): why don't coders use it, and how to make coders use them? ❓
+
+⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W1308, W1312 also live in PK-321, PK-299; W1411 sits mid-prose, then its lines get full ids.
 <!-- SECTION:NOTES:END -->

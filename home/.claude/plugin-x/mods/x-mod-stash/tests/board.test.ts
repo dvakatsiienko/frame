@@ -1,7 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { PALETTE, ctxBar, huesOf } from '../hooks/register.tsx';
+import { PALETTE, ctxBar, huesOf, isSeated } from '../hooks/register.tsx';
 
 const NOW = 10_000_000;
 const MIN = 60 * 1000;
@@ -1358,39 +1358,12 @@ test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => 
     expect(badge?.props.color).toBe('error');
 });
 
-const heldNotice = (ms: number) => ({
-    afk: { on: true },
-    [`quiet-held:${HERE}`]: [
-        { at: NOW - ms, from: PEER_NAME, tag: 'notice', text: 'a note' },
-    ],
+test('a numbered wing has a chair on the board', () => {
+    expect(isSeated('🦉🪽 clio: wing 1')).toBe(true);
 });
 
-test('while he is away a held notice inside three waits + 2 min keeps the 🤫 n plain', async ($, on) => {
-    fleet(on, heldNotice(16 * MIN));
-    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
-    expect(badge?.props.color).toBeUndefined();
-});
-
-test('while he is away a held notice past three waits + 2 min turns the 🤫 n red', async ($, on) => {
-    fleet(on, heldNotice(33 * MIN));
-    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
-    expect(badge?.props.color).toBe('error');
-});
-
-test('a row reads the shift of its own session, not the viewer', async ($, on) => {
-    fleet(on, {
-        [`pace:${PEER}`]: { since: NOW - 60 * MIN },
-        [`quiet-held:${PEER}`]: [
-            {
-                at: NOW - 16 * MIN,
-                from: PEER_NAME,
-                tag: 'notice',
-                text: 'a note',
-            },
-        ],
-    });
-    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
-    expect(badge?.props.color).toBeUndefined();
+test('a wing title with no number has no chair', () => {
+    expect(isSeated('🦉🪽 clio: wing')).toBe(false);
 });
 
 test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on) => {

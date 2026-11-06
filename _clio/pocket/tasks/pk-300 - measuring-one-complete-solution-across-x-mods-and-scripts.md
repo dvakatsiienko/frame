@@ -4,9 +4,10 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-05T23:56:00Z'
+updated_date: '2026-11-06T16:23:00Z'
 labels:
   - m
+  - wing-1
 dependencies: []
 priority: next
 type: task
@@ -22,7 +23,7 @@ one complete measurement solution on all surfaces (x, mods, scripts); today all 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-W1517 (2026-11-02 22:16, dima, o93 steer): related to measuring? ❓ we need one complete measurement solution on all surfaces; all measures are scattered.
+PK-300:W1517 (2026-11-02 22:16, dima, o93 steer): related to measuring? ❓ we need one complete measurement solution on all surfaces; all measures are scattered.
 
 kept: 2026-11-04 — in today's tails queue, worked one by one on the main lane this session
 

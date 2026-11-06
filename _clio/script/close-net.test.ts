@@ -6,6 +6,7 @@ import { describe, expect, test } from 'vitest';
 
 type Ticket = {
     id: string;
+    description?: string;
     labels?: string[];
     relations?: { type: string; state: string }[];
     comments?: { body: string }[];
@@ -64,6 +65,61 @@ describe('close-net', () => {
             ['a ticket never moved passes', ['a plain comment'], 0],
         ])('%s', (_label, bodies, status) => {
             expect(run(moved(...bodies)).status).toBe(status);
+        });
+
+        test('a live door prints what it waits on', () => {
+            const out = run(
+                moved('↩️ x', '🚪 door: the first real pr, by 2999-01-01'),
+            );
+            expect(out.stdout).toContain('the first real pr');
+        });
+    });
+
+    describe('a door on a ticket never moved', () => {
+        const never = (body: string) => [
+            { comments: [{ body }], id: 'FRM-1', labels: ['needs human'] },
+        ];
+
+        test('prints what it waits on', () => {
+            const out = run(never('🚪 door: the first real pr, by 2999-01-01'));
+            expect(out.status).toBe(0);
+            expect(out.stdout).toContain('the first real pr');
+        });
+
+        test('reds once its date passed', () => {
+            expect(run(never('⏰ due: y by 2000-01-01')).status).toBe(1);
+        });
+
+        test('quiets the dispatched warning', () => {
+            const [ticket] = never('⏰ due: y by 2999-01-01');
+            const out = run([
+                { ...ticket, description: '🚀 dispatched' } as Ticket,
+            ]);
+            expect(out.stdout).not.toContain('🟡');
+        });
+    });
+
+    describe('a dispatched ticket in Todo with no door', () => {
+        const dispatched = [
+            {
+                description: '🚀 dispatched 2026-11-05',
+                id: 'FRM-1',
+                labels: ['needs human'],
+            },
+        ];
+
+        test('is named', () => {
+            expect(run(dispatched).stdout).toContain('🟡 FRM-1: dispatched');
+        });
+
+        test('on a live lane step stays quiet', () => {
+            const out = run(dispatched, [
+                {
+                    items: [{ isDone: false, ticket: 'FRM-1' }],
+                    members: { codie: 'x' },
+                },
+            ]);
+            expect(out.stdout).not.toContain('🟡');
         });
     });
 

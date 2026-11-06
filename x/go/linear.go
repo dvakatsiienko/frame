@@ -22,7 +22,7 @@ import (
 
 var ticketShape = regexp.MustCompile(`^[A-Z]+-\d+$`)
 
-// a clio session, her side channels included, acts as the clio app, a sixth sense session as its own app (FRM-484), any
+// a clio session, her wings included, acts as the clio app, a sixth sense session as its own app (FRM-484), any
 // other member's session as the codie app, dima on his own terminal as himself; --as names anyone else (FRM-399)
 func actorOf(flags Flags) (string, error) {
 	if given, _ := flags["as"].(string); given != "" {
@@ -41,7 +41,7 @@ func actorOf(flags Flags) (string, error) {
 		if strings.Contains(bare, "sixthsense") {
 			return "sixth-sense", nil
 		}
-		if !strings.HasPrefix(bare, "🦉clio") && !strings.HasPrefix(bare, "🦉cclio") { // read-both: a clio tab resumed under its old title
+		if !strings.HasPrefix(bare, "🦉clio") && !strings.HasPrefix(bare, "🦉🪽clio") && !strings.HasPrefix(bare, "🦉cclio") { // read-both: a clio tab resumed under its old title
 			return "codie", nil
 		}
 	}
