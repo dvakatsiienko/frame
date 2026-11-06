@@ -9,9 +9,9 @@ a subject scattered across the filesystem: go and charm live in any app. a subje
 ## every file carries
 
 - `fed-by:` in frontmatter — `recipe <name>` (the recipe whose runs keep it true) or `incidents` (a ledger grown by what went wrong)
-- `when:` in frontmatter — the signals that deliver it: `{ kind, value }` with kind `extension`, `basename`, `import`, `command`, or `skill`; a signal names the kind of thing touched, never a path
+- `when:` in frontmatter — the touches that should bring it, the source of a `rules-lazy` row: `{ kind, value }` with kind `extension`, `basename`, `import`, `command`, or `skill`; it names the kind of thing touched, never a path, and no code reads it
 - `## core` first in the body — ≤4 KB, the part an agent needs before acting; traps and design rules over api lists (the 10-12 knowledge A/B: coders read the types themselves, the knowledge paid on what to build)
 
 ## how it reaches an agent
 
-`x-mod-primer` (sealed, built after the shelf revamp) watches each touch and attaches the matching file's core to the tool result, once per session, again after a compaction. until it ships, the `x:author-memory` skill and the recipes point here by name.
+a row in `home/.claude/rules-lazy/triggers.json` brings a file when its subject comes up: the first matching call is refused once, naming `x knowledge read <name>` (`shelf-load-go-charm`, `shelf-load-macos-apps`). every other file is reached by name: `x knowledge list` in `crew-dna`, `x:author-memory`, the recipes. a new row waits for a miss that cost something; `pnpm memory-load:replay` shows its false fires before it ships.

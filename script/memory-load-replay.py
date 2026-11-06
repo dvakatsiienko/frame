@@ -4,6 +4,7 @@
 # or in the same tool call (the refusal lands the rule before the call runs). prints the hit rate
 # per session role and every miss. the matching is the hook's own, imported, so the two cannot drift.
 import argparse
+import collections
 import glob
 import importlib.util
 import json
@@ -16,6 +17,7 @@ spec = importlib.util.spec_from_file_location("hook", os.path.join(HOOK, "memory
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
+SHOWN_HITS = 40
 CODIE_BOOT = ("<command-name>/x:crew-codie</command-name>", "<command-name>/x:crew-coder</command-name>")  # read-both: the id before 10-29
 
 
@@ -80,6 +82,62 @@ def replay(path, rule, subagent=False):
     return role or "other", signals, misses
 
 
+def row_fires(path, subagent=False):
+    # one row's fires in one transcript, as the hook decides them: once each, never past a loaded skill
+    loaded, skills, fires, cwd, seen = set(), set(), [], None, set()
+
+    def fire(rule, kind, hit):
+        if hit and rule not in loaded:
+            loaded.add(rule)
+            fires.append((rule, kind, hit))
+
+    for raw in open(path, encoding="utf-8", errors="replace"):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        uuid = entry.get("uuid")
+        if uuid and uuid in seen:
+            continue
+        seen.add(uuid)
+        if cwd is None and entry.get("cwd"):
+            cwd = entry["cwd"]
+            for rule in hook.TRIGGERS:
+                fire(rule, "project", not subagent and hook.project_trigger(rule, cwd))
+        if hook.is_compact_boundary(entry):
+            skills.clear()
+            continue
+        prompt = prompt_text(entry)
+        if prompt is not None:
+            for rule in hook.TRIGGERS:
+                fire(rule, "prompt", not subagent and hook.prompt_trigger(rule, prompt))
+            continue
+        skills.update(hook.skills_called(entry))
+        if entry.get("type") != "assistant":
+            continue
+        for block in (entry.get("message") or {}).get("content") or []:
+            if isinstance(block, dict) and block.get("type") == "tool_use":
+                name, tool_input = block.get("name", ""), block.get("input") or {}
+                for rule in hook.TRIGGERS:
+                    if hook.TRIGGERS[rule].get("skill") not in skills:
+                        fire(rule, name, hook.tool_trigger(rule, name, tool_input))
+    return fires
+
+
+def print_row_fires(paths):
+    counts = {rule: collections.Counter() for rule in hook.TRIGGERS}
+    for path in paths:
+        for rule, kind, hit in row_fires(path, subagent="/subagents/" in path):
+            counts[rule][(kind, hit)] += 1
+    print(f"row fires over {len(paths)} transcripts, once per transcript:")
+    for rule, hits in counts.items():
+        print(f"- {rule}: {sum(hits.values())} fires")
+        for (kind, hit), count in hits.most_common(SHOWN_HITS):
+            print(f"  - {count}× {kind}: {hit}")
+        if len(hits) > SHOWN_HITS:
+            print(f"  - +{len(hits) - SHOWN_HITS} more hits")
+
+
 def main():
     parser = argparse.ArgumentParser(description="replay memory-load-rule-lazy over real transcripts")
     parser.add_argument("--days", type=int, default=14)
@@ -117,6 +175,7 @@ def main():
     print(f"misses: {len(missed)}")
     for role, session, stamp, kind, hit in missed:
         print(f"- {role} {session} {stamp} {kind}: {hit}")
+    print_row_fires(paths)
     # a subagent's prompt loads nothing by design, so its rate is reported, not gated
     gated = [m for m in missed if m[0] in ("clio", "codie")]
     print(f"gate (clio + codie at 100 %): {'red' if gated else 'green'}")

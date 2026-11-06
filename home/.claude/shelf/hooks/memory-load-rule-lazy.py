@@ -2,7 +2,9 @@
 # a lazy rule (`rules-lazy/<rule>.md`) stays out of resident memory and loads once per session when
 # one of its triggers in `rules-lazy/triggers.json` fires. a project trigger (the session's cwd) and a
 # prompt trigger inject the rule; a tool trigger refuses the call once with the rule attached —
-# injected context alone lands after the command is already written. Stop logs a miss: a signal in a
+# injected context alone lands after the command is already written. a tool trigger reads the command, every
+# string of the call (`input`), the edited path alone (`file_path`) or the edit's written text alone (`edit_text`);
+# a rule with a `skill` stays quiet while that skill is loaded in the caller's own context. Stop logs a miss: a signal in a
 # session where the rule never loaded. a compaction drops what every memory-load-* hook loaded, so it
 # clears their marks and reloads at once each lazy rule loaded before it — the summary carries the
 # work on, and no trigger fires again for work already under way. `pnpm memory-load:replay` runs the same matching over real transcripts.
@@ -48,6 +50,13 @@ def strings(value):
             yield from strings(item)
 
 
+def written_text(tool_input):
+    edits = tool_input.get("edits")
+    parts = [tool_input.get("content"), tool_input.get("new_string")]
+    parts += [edit.get("new_string") for edit in edits if isinstance(edit, dict)] if isinstance(edits, list) else []
+    return [part for part in parts if isinstance(part, str)]
+
+
 def project_trigger(rule, cwd):
     return first_match(TRIGGERS[rule]["project"], cwd)
 
@@ -59,11 +68,61 @@ def prompt_trigger(rule, prompt):
 def tool_trigger(rule, tool, tool_input):
     if tool not in TOOLS:
         return None
+    row = TRIGGERS[rule]
     if tool == "Bash":
-        hit = first_match(TRIGGERS[rule]["command"], str(tool_input.get("command", "")))
+        hit = first_match(row["command"], str(tool_input.get("command", "")))
         if hit:
             return hit
-    return next((hit for text in strings(tool_input) if (hit := first_match(TRIGGERS[rule]["input"], text))), None)
+    hit = first_match(row.get("file_path", []), str(tool_input.get("file_path", "")))
+    if hit:
+        return hit
+    hit = next((hit for text in written_text(tool_input) if (hit := first_match(row.get("edit_text", []), text))), None)
+    if hit:
+        return hit
+    return next((hit for text in strings(tool_input) if (hit := first_match(row["input"], text))), None)
+
+
+def skills_called(entry):
+    if not isinstance(entry, dict) or entry.get("type") != "assistant":
+        return []
+    content = (entry.get("message") or {}).get("content")
+    blocks = [b for b in content if isinstance(b, dict)] if isinstance(content, list) else []
+    return [(b.get("input") or {}).get("skill") for b in blocks if b.get("type") == "tool_use" and b.get("name") == "Skill"]
+
+
+def is_compact_boundary(entry):
+    return isinstance(entry, dict) and entry.get("type") == "system" and entry.get("subtype") == "compact_boundary"
+
+
+def caller_transcript(event):
+    # a subagent's payload carries its parent's transcript_path; a parent's load gives the subagent nothing
+    path, agent = str(event.get("transcript_path") or ""), event.get("agent_id")
+    return f"{path.removesuffix('.jsonl')}/subagents/agent-{agent}.jsonl" if path and agent else path
+
+
+def skill_loaded(event, skill):
+    found = False
+    try:
+        with open(caller_transcript(event), encoding="utf-8", errors="replace") as transcript:
+            for raw in transcript:
+                if '"Skill"' not in raw and "compact_boundary" not in raw:
+                    continue
+                try:
+                    entry = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
+                if is_compact_boundary(entry):
+                    found = False
+                elif skill in skills_called(entry):
+                    found = True
+    except OSError:  # unreadable means unproven, so the rule fires
+        return False
+    return found
+
+
+def fires_now(event, rule):
+    skill = TRIGGERS[rule].get("skill")
+    return not (skill and skill_loaded(event, skill))
 
 
 def reply_signal(rule, text):
@@ -141,7 +200,8 @@ def load(event, session, rule, by, hit, why):
 def on_tool(event, session, fresh):
     tool, tool_input = event.get("tool_name", ""), event.get("tool_input") or {}
     hits = {rule: tool_trigger(rule, tool, tool_input) for rule in fresh}
-    loads = [load(event, session, r, "command", h, f"because this {tool} call matched {h!r}") for r, h in hits.items() if h]
+    hits = {rule: hit for rule, hit in hits.items() if hit and fires_now(event, rule)}
+    loads = [load(event, session, r, "command", h, f"because this {tool} call matched {h!r}") for r, h in hits.items()]
     if loads:
         reason = "refused once, so the rule below lands before the call runs. read it, then retry the same call"
         output = {

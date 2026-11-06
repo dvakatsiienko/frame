@@ -1,4 +1,52 @@
 {
+    "guide-load-before-edit-code": {
+        "command": [],
+        "file_path": ["\\.(?:py|sh)$"],
+        "input": [],
+        "project": [],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        },
+        "skill": "x:guide-code"
+    },
+    "guide-load-before-edit-go": {
+        "command": [],
+        "file_path": ["\\.go$"],
+        "input": [],
+        "project": [],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        },
+        "skill": "x:guide-go"
+    },
+    "guide-load-before-edit-react": {
+        "command": [],
+        "file_path": ["\\.tsx$"],
+        "input": [],
+        "project": [],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        },
+        "skill": "x:guide-react"
+    },
+    "guide-load-before-edit-typescript": {
+        "command": [],
+        "file_path": ["\\.tsx?$"],
+        "input": [],
+        "project": [],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        },
+        "skill": "x:guide-typescript"
+    },
     "linear-flow": {
         "command": [
             "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?linear(?:-as)?\\s",
@@ -20,6 +68,46 @@
                 "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?pnpm\\s+(?:-C\\s+\\S+\\s+)?linear:",
                 "(?m)^\\s*- ticket:"
             ]
+        }
+    },
+    "model-cards-load-on-cost-question": {
+        "command": [],
+        "input": [],
+        "project": [],
+        "prompt": [
+            "(?i)\\bhow (?:much|many)\\b[^.?!\\n]{0,60}\\b(?:tokens?|costs?|pric(?:e|es|ing)|prompt cache|cache (?:hit|miss|write|read|ttl)s?)\\b",
+            "(?im)(?:^|[.!?]\\s+)(?:what|which|why|is|are|does|do|did|can|will|would|should)\\b[^.?!\\n]{0,60}\\b(?:tokens?|costs?|pric(?:e|es|ing)|prompt cache|cache (?:hit|miss|write|read|ttl)s?)\\b"
+        ],
+        "signal": {
+            "reply": [],
+            "tool": []
+        }
+    },
+    "shelf-load-go-charm": {
+        "command": [
+            "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?go\\s+get\\b[^;&|\\n]*\\bcharm\\.land",
+            "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?go\\s+mod\\s+init\\b"
+        ],
+        "edit_text": ["charm\\.land"],
+        "input": [],
+        "project": [],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        }
+    },
+    "shelf-load-macos-apps": {
+        "command": [
+            "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?brew\\s+(?:install|reinstall|uninstall|remove|rm|upgrade)\\b[^;&|\\n]*--cask\\b",
+            "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?mo\\s+uninstall\\b"
+        ],
+        "input": [],
+        "project": [],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
         }
     }
 }
