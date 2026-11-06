@@ -365,6 +365,7 @@ retro (14:43 on):
 - 2026-11-06 · prompt-groom · 1 · 0 · PK-326 batch 1400: W22-W34, 2 ❓ (W26, W30); clio-quoted segments before ← (no W-line), his words after ←; verbatim cut kept at W31
 - 2026-11-06 · prompt-groom · 1 · 0 · FRM-368 batch 1424: W426-W436, 2 ❓ (W435, W436); pasted_content d2a1 groomed W427-W433 as his words; 14:12 and 14:13 raw files not found, no no-wish lines written
 - 2026-11-06 · pocket-write · 1 · 0 · PK-326 notes: 13:43 (3), 14:00 (13), 14:24 (7) red lines appended verbatim; day check green 14:25
+- 2026-11-06 · pocket-write · 1 · 0 · PK-310 note appended (side channel); exit 0, last line read back
 
 ## rounds
 
