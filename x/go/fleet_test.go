@@ -486,7 +486,7 @@ func TestAuditCodieChecksEachFileBeforeTheFirstEdit(t *testing.T) {
 func TestAuditCodieReadsACompactionByTheEditAfterIt(t *testing.T) {
 	t.Parallel()
 	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
-	read := called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
+	read := called("Read", map[string]any{"file_path": "/x/skills/crew-codie/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
 	dna := called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, "2026-10-20T10:01:00.000Z")
 	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-20T10:02:00.000Z")
 	compact := map[string]any{"type": "system", "subtype": "compact_boundary", "uuid": "c1", "timestamp": "2026-10-20T10:03:00.000Z"}
@@ -518,7 +518,7 @@ func TestAuditCodieReadsACompactionByTheEditAfterIt(t *testing.T) {
 func TestAuditCodieCountsARetroAsNoMiss(t *testing.T) {
 	t.Parallel()
 	opening := auditOpening("2026-10-20T09:00:00.000Z", "a brief")
-	read := called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
+	read := called("Read", map[string]any{"file_path": "/x/skills/crew-codie/how-you-work.md"}, "2026-10-20T10:01:00.000Z")
 	dna := called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, "2026-10-20T10:01:00.000Z")
 	retro := called("Write", map[string]any{"file_path": "/l/lane-1-codie-retro.md"}, "2026-10-20T10:02:00.000Z")
 	edit := called("Edit", map[string]any{"file_path": "/x/a.go"}, "2026-10-20T10:02:00.000Z")
@@ -565,7 +565,7 @@ func auditAt(ago time.Duration) string { return time.Now().Add(-ago).UTC().Forma
 
 func auditClean(opened, edited time.Duration) []any {
 	return []any{auditOpening(auditAt(opened), "a brief"),
-		called("Read", map[string]any{"file_path": "/x/how-you-work.md"}, auditAt(opened)),
+		called("Read", map[string]any{"file_path": "/x/skills/crew-codie/how-you-work.md"}, auditAt(opened)),
 		called("Read", map[string]any{"file_path": "/x/crew-dna/SKILL.md"}, auditAt(opened)),
 		called("Edit", map[string]any{"file_path": "/x/a.go"}, auditAt(edited))}
 }
@@ -626,6 +626,7 @@ func TestAuditCodieWindow(t *testing.T) {
 		{"--days keeps one opened inside", auditClean(day, day), []string{"--days", "3"}, true},
 		{"--days drops a touched old one", auditClean(9*day, 9*day), []string{"--days", "3"}, false},
 		{"--since keeps one opened before it and edited past it", auditClean(3*time.Hour, 10*time.Minute), []string{"--since", stamp}, true},
+		{"--since keeps one edited before it and again past it", append(auditClean(3*time.Hour, 2*time.Hour), called("Edit", map[string]any{"file_path": "/x/b.go"}, auditAt(10*time.Minute))), []string{"--since", stamp}, true},
 		{"--since drops one edited before it", auditClean(3*time.Hour, 2*time.Hour), []string{"--since", stamp}, false},
 		{"--since drops one with no edit", auditClean(3*time.Hour, time.Hour)[:3], []string{"--since", stamp}, false},
 	}
@@ -692,12 +693,61 @@ func TestAuditCodieReadsABashLineWhateverDirItSitsIn(t *testing.T) {
 		{"a name only mentioned beside a read", "cat a.txt; echo how-you-work.md", lessonsName, checkMissed},
 		{"a search of the file", "rg rule how-you-work.md", lessonsName, checkMissed},
 		{"a write to the file", "echo x > how-you-work.md", lessonsName, checkMissed},
+		{"a chained cd past crew-dna", "cd crew-dna && ls && cd ../crew-codie && cat SKILL.md", "crew-dna", checkMissed},
+		{"a read verb standing as an argument", "rg head how-you-work.md", lessonsName, checkMissed},
+		{"a heredoc line naming the verb", "cat > note.md <<'EOF'\nhead how-you-work.md\nEOF", lessonsName, checkMissed},
+		{"a read verb inside quotes", `echo "a; cat how-you-work.md"`, lessonsName, checkMissed},
+		{"a file of that name elsewhere", "cat /tmp/how-you-work.md", lessonsName, checkMissed},
+		{"a file of that name after a cd elsewhere", "cd /tmp && cat how-you-work.md", lessonsName, checkMissed},
+		{"an edit in place", "sed -i '' s/a/b/ /p/skills/crew-codie/how-you-work.md", lessonsName, checkMissed},
+		{"a read thrown away", "cat /p/skills/crew-codie/how-you-work.md >/dev/null", lessonsName, checkMissed},
+		{"a read thrown away, spaced", "cat /p/skills/crew-codie/how-you-work.md > /dev/null", lessonsName, checkMissed},
+		{"a read with its errors thrown away", "cat /p/skills/crew-codie/how-you-work.md 2>/dev/null", lessonsName, checkRead},
+		{"a quoted name holding a space", `tail "old how-you-work.md"`, lessonsName, checkMissed},
+		{"a quoted path holding a space", `cat "/p/my skills/crew-codie/how-you-work.md"`, lessonsName, checkRead},
+		{"a read after then", "if [ -f f ]; then cat /p/skills/crew-dna/SKILL.md; fi", "crew-dna", checkRead},
+		{"a read after do", "for f in a; do cat /p/skills/crew-dna/SKILL.md; done", "crew-dna", checkRead},
+		{"a read behind an env word", "FOO=1 cat /p/skills/crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"a read behind a timeout", "timeout 5 cat /p/skills/crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"a read after a comment's apostrophe", "# don't skip\ncat /p/skills/crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"a read after an escaped quote", "echo \"a \\\" b\"; cat /p/skills/crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"a read after a here-string", "grep x <<< foo\ncat /p/skills/crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"a read after shell arithmetic", "echo $((1<<2))\ncat /p/skills/crew-dna/SKILL.md", "crew-dna", checkRead},
+		{"a cd inside a subshell stays in it", "(cd /p/skills/crew-dna && ls); cat SKILL.md", "crew-dna", checkMissed},
+		{"a read after a heredoc", "cat > note.md <<'EOF'\nnote\nEOF\ncat /p/skills/crew-codie/how-you-work.md", lessonsName, checkRead},
+		{"a read inside a substitution", "x=$(cat /p/skills/crew-codie/how-you-work.md)", lessonsName, checkRead},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			s := auditOf(t, auditOpening(day+"09:00:00.000Z", "a brief"),
 				called("Bash", map[string]any{"command": c.command}, day+"10:01:00.000Z"),
+				called("Edit", map[string]any{"file_path": "/x/a.go"}, day+"10:02:00.000Z"))
+			if got := auditStateOf(s, c.file); got != c.want {
+				t.Errorf("%s reads %q, want %q", c.file, got, c.want)
+			}
+		})
+	}
+}
+
+func TestAuditCodieReadsAReadOrALoadByItsFile(t *testing.T) {
+	t.Parallel()
+	const day = "2026-10-20T"
+	cases := []struct {
+		name string
+		call map[string]any
+		file string
+		want string
+	}{
+		{"a Read of the contract's own file", called("Read", map[string]any{"file_path": "/p/skills/crew-codie/how-you-work.md"}, day+"10:01:00.000Z"), lessonsName, checkRead},
+		{"a Read of a file of that name elsewhere", called("Read", map[string]any{"file_path": "/tmp/how-you-work.md"}, day+"10:01:00.000Z"), lessonsName, checkMissed},
+		{"a Skill load of crew-dna", called("Skill", map[string]any{"skill": "x:crew-dna"}, day+"10:01:00.000Z"), "crew-dna", checkRead},
+		{"a Skill load of another", called("Skill", map[string]any{"skill": "x:crew-lead"}, day+"10:01:00.000Z"), "crew-dna", checkMissed},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			s := auditOf(t, auditOpening(day+"09:00:00.000Z", "a brief"), c.call,
 				called("Edit", map[string]any{"file_path": "/x/a.go"}, day+"10:02:00.000Z"))
 			if got := auditStateOf(s, c.file); got != c.want {
 				t.Errorf("%s reads %q, want %q", c.file, got, c.want)

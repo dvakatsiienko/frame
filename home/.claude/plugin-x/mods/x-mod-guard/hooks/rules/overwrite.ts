@@ -1,11 +1,10 @@
-import { type Word, parse } from '../shell.ts';
+import type { Word } from '../shell.ts';
 import {
     type Command,
     type Context,
     type Refusal,
     SD_VALUE,
     basename,
-    commands,
     commandsDeep,
     gitDir,
     gitParts,

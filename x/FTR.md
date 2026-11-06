@@ -167,7 +167,7 @@
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
-  - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so
+  - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
   - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
   - given a decamp that fails, then it warns and the exit stays 0
 - ⬜ `x lane merge-auto` names whose clean it reads (W210)
@@ -326,6 +326,7 @@
   - given a clean ticket, then it prints ok
   - decision: a path counts as shipped only through a commit for this ticket, never by existing — most exit lines edit files main has (clio, 2026-10-09)
 - ⬜ `x brief preflight <ticket>` reads the exit lines from the lane spec when one holds the ticket
+  - given a section whose `wish:` line records `body <hash>` and a ticket whose newest `✍️` line holds another, then it reds naming both; a `✏️` line or a section with no hash never reds
   - given a `.scratch/<feature>/spec.md` in the repo with a `## <ticket> —` section, when `x brief preflight <ticket>` runs, then it lints that section's exit lines instead of the ticket's, and its ok names the spec it read; with no such section, the ticket's own exit lines as before
   - decision: the spec binds, so a seal no longer copies its exit lines into the ticket (FRM-423 grill)
 - ✅ `x brief preflight <ticket>` checks every `x` verb and flag an exit line names, statically
@@ -484,6 +485,26 @@
   - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
 - ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
   - given an overlay whose every failed row timed out, then the mod's tests run once more, and that second run is the verdict
+- ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
+  - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
+  - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run
+  - given `--repo`, or a merge, cherry-pick, revert or rebase in progress, then it refuses, exit 2
+  - given a gate whose run line changed since its green, or a HEAD that moved, then a real commit runs it again
+  - given a path that matches nothing, then it reds naming it, as a real commit would; the ci jobs a real commit on main runs are not its gates and it skips them
+  - given a tree with no `script/index-run.sh`, then it refuses, exit 2: it reads a frame-shaped hook
+- ⬜ a mod's tests run once across `x mods edit test`, `push` and `x lane commit` (FRM-473)
+  - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again
+  - given a hand `pnpm mods:test`, then nothing is skipped; given a clock read in a mod's hooks, then the commit reds it whatever was tested
+- ⬜ `x mods edit test` runs the commit hook's pre-commit gates on the overlay's bytes (FRM-473)
+  - given `lefthook.yaml`, then each gate's name, glob and run come from it, on a temp index of HEAD plus the overlay, the tree and the real index untouched
+  - given an unused variable, a dropped import, a retired name or a budget overrun, then the verb exits 1 naming the gate the commit would red; every gate's verdict prints in the hook's order
+  - given a gate tagged `commit-only`, then its verdict reads «the commit's», and a glob no overlay path matches reads «no path»
+  - given a gate x cannot run (an unknown placeholder or key, no run line, a `[` in a glob), then the verb names it and exits 1
+  - given a test output holding «hook was skipped», then the mod reads errored, whatever its rows say, and `pnpm mods:test` reds it too
+  - given a red test, then the gates still run, so one run names every red a commit would meet
+  - given a peer's edit elsewhere in the mod, then no gate reads it: the gates read HEAD plus the overlay's own paths
+  - given a clock read in a mod's hooks, then `mods-test` reads red here, not only at the commit
+  - given an import order biome fixes, then the format gate reads the bytes `x lane commit`'s format would leave, and stays green
 - ✅ `x schema mods` lists the verbs
 
 ## fleet — the fleet measuring itself
@@ -494,10 +515,10 @@
   - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
   - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
 - ✅ `x fleet audit-codie` checks each codie read its contract before its first edit
-  - given the session transcripts opened in the last `--days` (default 1), or first edited past `--since <local stamp>`
+  - given the session transcripts opened in the last `--days` (default 1), or edited past `--since <local stamp>`, so a compaction's re-read owed after it shows
   - when `x fleet audit-codie` runs
   - then the board's last line counts `how-you-work.md` reads (`57 of 58 read before first edit`), `crew-dna` and the ticket read above it, every miss row above those names the file and the session, and a miss exits 1
-  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read` or a Bash `cat`-like line, the ticket read names a ticket of the brief
+  - given a session older than a checked file, then that file reads n/a; given a session with no edit, then it is no miss; a transcript row seen twice counts once; a compaction misses only when an edit follows it before a re-read of `how-you-work.md`; a read is a `Read`, a Bash statement opening on a `cat`-like verb, each path read through the `cd`s before it, no heredoc line counting, or a `Skill` load of `x:crew-dna`; a file of that name outside a skills dir credits nothing; the ticket read names a ticket of the brief
   - decision: a retro is a count, never a miss or an edit, since 0 lines is a valid retro; a bare `x fleet audit` stays free for a whole-fleet audit later
 - ✅ `x fleet ops` prices the agents' work
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)

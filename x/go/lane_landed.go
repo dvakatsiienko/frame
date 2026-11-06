@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -489,7 +490,7 @@ func unmergedChunks(repo, spec, id string) []string {
 }
 
 // laneTrees lists the ticket's trees under .claude/worktrees/, each with why it must stay, or clean by
-// the root rule: no change in git status, no .scratch/ dir, every commit on an origin ref or in the merged pr.
+// the root rule: no change in git status, no file in .scratch/, every commit on an origin ref or in the merged pr.
 // a lane tree is a codie/<ticket>-* branch or the pr's head ref; a detached one is sixth sense's verify tree,
 // named verify-pr-<n> (frame), verify-<ticket> (any other repo) or sitting at the pr's head
 func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
@@ -717,8 +718,8 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 	if len(ignored) > 0 {
 		reasons = append(reasons, "ignored files no build or seed makes: "+strings.Join(ignored, ", "))
 	}
-	if exists(filepath.Join(tree, ".scratch")) {
-		reasons = append(reasons, "holds a .scratch/ dir")
+	if holdsAFile(filepath.Join(tree, ".scratch")) {
+		reasons = append(reasons, "holds a file in .scratch/")
 	}
 	// a squash merge leaves the branch's commits off main, and a deleted branch leaves them on no remote:
 	// a tree still at the merged pr's head holds nothing the pr did not carry
@@ -796,4 +797,20 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	}
 	r.Done("landed: every after-merge line is met", "")
 	return ordered{{"lines", after.Lines}}, nil
+}
+
+// a walk that fails holds something it could not read, so it reads as holding a file
+func holdsAFile(dir string) bool {
+	found := false
+	err := filepath.WalkDir(dir, func(_ string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !entry.IsDir() {
+			found = true
+			return fs.SkipAll
+		}
+		return nil
+	})
+	return found || err != nil && !errors.Is(err, fs.ErrNotExist)
 }

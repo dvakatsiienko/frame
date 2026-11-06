@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseLive, requestOf, skipPromptArgs } from './live-args.ts';
+import {
+    parkedLine,
+    parseLive,
+    requestOf,
+    skipPromptArgs,
+} from './live-args.ts';
 
 describe('parseLive', () => {
     it('reads a bare mod dir as serve', () => {
@@ -55,6 +60,42 @@ describe('parseLive', () => {
                 [],
             ].map((argv) => parseLive(argv).kind),
         ).toEqual(['usage', 'usage', 'usage', 'usage']);
+    });
+});
+
+describe('parkedLine', () => {
+    // a real child's frame with no --settings: the control of the 2026-11-05 probe
+    const parked = [
+        ' WARNING: Claude Code running in Bypass Permissions mode',
+        '',
+        ' ❯ 1. No, exit',
+        '   2. Yes, I accept',
+        '',
+        ' Enter to confirm · Esc to cancel',
+    ].join('\n');
+
+    it('names the mod and the setting on the bypass dialog', () => {
+        expect(parkedLine('m', parked)).toBe(
+            "mods:live parked: m on cc's Bypass Permissions dialog: set skipDangerousModePermissionPrompt in user settings",
+        );
+    });
+
+    it('reads a session past the dialog as not parked', () => {
+        expect(
+            parkedLine(
+                'm',
+                '> \n  ⏵⏵ bypass permissions on (shift+tab to cycle)',
+            ),
+        ).toBeUndefined();
+    });
+
+    it('reads a transcript that only quotes the warning as not parked', () => {
+        expect(
+            parkedLine(
+                'm',
+                '> why does it say WARNING: Claude Code running in Bypass Permissions mode?',
+            ),
+        ).toBeUndefined();
     });
 });
 

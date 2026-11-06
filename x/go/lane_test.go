@@ -122,16 +122,16 @@ func TestCommitRetriesATimeoutOnlyRedOnce(t *testing.T) {
 		wantRuns   int
 		wantCommit bool
 	}{
-		{"a mods row timed out", pluginTimeout + "🥊 mods (40.1 seconds)\n", 1, 2, true},
+		{"a mods row timed out", pluginTimeout + "🥊 mods-test (40.1 seconds)\n", 1, 2, true},
 		{"a vitest row timed out", vitestTimeout + "\x1b[31m🥊 test (9.2 seconds)\x1b[m\n", 1, 2, true},
-		{"both gates timed out", pluginTimeout + vitestTimeout + "🥊 mods (1 seconds)\n🥊 test (1 seconds)\n", 1, 2, true},
+		{"both gates timed out", pluginTimeout + vitestTimeout + "🥊 mods-test (1 seconds)\n🥊 test (1 seconds)\n", 1, 2, true},
 		{"vitest grouped two timed-out rows", " FAIL  a.test.ts > one\n FAIL  a.test.ts > two\nError: Test timed out in 5000ms.\n🥊 test (1 seconds)\n", 1, 2, true},
 		{"a log that ends on a failed row", pluginTimeout + "(fail) a row with no error line\n", 1, 1, false},
 		{"vitest grouped two real reds", " FAIL  a.test.ts > one\n FAIL  a.test.ts > two\nAssertionError: no\n🥊 test (1 seconds)\n", 1, 1, false},
-		{"a second timeout stays red", pluginTimeout + "🥊 mods (1 seconds)\n", 2, 2, false},
-		{"a real red beside a timeout", pluginTimeout + realRed + "🥊 mods (1 seconds)\n", 1, 1, false},
-		{"another gate red beside a timeout", pluginTimeout + "🥊 mods (1 seconds)\n🥊 typecheck (1 seconds)\n", 1, 1, false},
-		{"a file that did not load", "(fail) the file did not load\n🥊 mods (1 seconds)\n", 1, 1, false},
+		{"a second timeout stays red", pluginTimeout + "🥊 mods-test (1 seconds)\n", 2, 2, false},
+		{"a real red beside a timeout", pluginTimeout + realRed + "🥊 mods-test (1 seconds)\n", 1, 1, false},
+		{"another gate red beside a timeout", pluginTimeout + "🥊 mods-test (1 seconds)\n🥊 typecheck (1 seconds)\n", 1, 1, false},
+		{"a file that did not load", "(fail) the file did not load\n🥊 mods-test (1 seconds)\n", 1, 1, false},
 		{"a red with no test row", "🥊 format (1 seconds)\n", 1, 1, false},
 	}
 	for _, c := range cases {

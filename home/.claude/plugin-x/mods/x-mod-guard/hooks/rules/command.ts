@@ -984,7 +984,7 @@ export function aliasRun(body: string, args: Word[]) {
 // a shell's operands: past its flags and the option names `-o`/`+o`/`-O`/`+O` take
 export function shellOperands(args: Word[]) {
     return args
-        .filter((w, i) => !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? ''))
+        .filter((_, i) => !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? ''))
         .filter((w) => !/^[-+]/.test(w.text) || w.text === '-')
         .map((w) => w.text);
 }

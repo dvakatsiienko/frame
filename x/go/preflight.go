@@ -27,6 +27,8 @@ var (
 	shellSep = regexp.MustCompile(`\|\||&&|[|;&]`)
 )
 
+var signHash = regexp.MustCompile(`\bbody ([0-9a-f]{6,})\b`)
+
 func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	id := args[0]
 	if !ticketShape.MatchString(id) {
@@ -102,6 +104,9 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		if exits == 0 {
 			found = append(found, finding{1, "lint", "## exit", "the ticket has no exit lines"})
 		}
+		if line, recorded, signed := staleSignHash(section, body); recorded != "" {
+			found = append(found, finding{line, "lint", "wish: line", "records body " + recorded + ", the ticket's newest ✍️ line holds body " + signed + ": sync the section to the re-sign"})
+		}
 		if len(paths) == 1 {
 			if spec, err := os.ReadFile(paths[0]); err == nil && !strings.Contains(string(spec), "## Problem Statement") {
 				found = append(found, finding{1, "lint", "## Problem Statement", "the spec never ran matt's to-spec: read its SKILL.md and add its sections"})
@@ -176,6 +181,31 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	}
 	r.Done(fmt.Sprintf("ok: %s from %s, numbered, each with a surface", plural(exits, "exit line"), from), "")
 	return ordered{{"ticket", id}, {"exits", exits}, {"from", from}, {"repo", repo}}, nil
+}
+
+// the spec section's recorded sign hash when the ticket's newest ✍️ line holds another
+func staleSignHash(section, ticket string) (line int, recorded, signed string) {
+	for i, text := range strings.Split(section, "\n") {
+		if strings.HasPrefix(text, "wish:") {
+			if found := signHash.FindStringSubmatch(text); found != nil {
+				line, recorded = i+1, found[1]
+			}
+			break
+		}
+	}
+	for text := range strings.SplitSeq(ticket, "\n") {
+		if !strings.HasPrefix(text, "✍️") {
+			continue
+		}
+		signed = ""
+		if found := signHash.FindStringSubmatch(text); found != nil {
+			signed = found[1]
+		}
+	}
+	if recorded == "" || signed == "" || recorded == signed {
+		return 0, "", ""
+	}
+	return line, recorded, signed
 }
 
 // the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id, blank lines standing in
