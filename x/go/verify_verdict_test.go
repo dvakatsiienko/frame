@@ -455,3 +455,21 @@ func TestNewTestNamesKeepsTheForksTitles(t *testing.T) {
 		t.Fatalf("read %+v, want one new test holding the fork's title", tests)
 	}
 }
+
+// a dirty tree refuses whatever its status line reads, so the status compare is a content compare
+func TestTreeHoldsHeadReadsContent(t *testing.T) {
+	t.Parallel()
+	main := repo(t)
+	write(t, filepath.Join(main, "src.txt"), "head\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "head")
+	if err := treeHoldsHead(main); err != nil {
+		t.Fatalf("a clean tree refused: %v", err)
+	}
+
+	write(t, filepath.Join(main, "src.txt"), "a probe's\n")
+
+	if err := treeHoldsHead(main); err == nil || !strings.Contains(err.Error(), "src.txt") {
+		t.Fatalf("read %v, want a refusal naming src.txt", err)
+	}
+}

@@ -373,8 +373,7 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	if err != nil {
 		return nil, err
 	}
-	baseline, err := mustGitIn(tree, "status", "status", "--porcelain", "--untracked-files=no")
-	if err != nil {
+	if err := treeHoldsHead(tree); err != nil {
 		return nil, err
 	}
 	path, err := claimPath(tree)
@@ -408,19 +407,19 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 			verdict, rows = whole, wholeRunRows(newTests, whole, "on head: "+why)
 			return "", notHeld(whole)
 		}
-		return fmt.Sprintf("%d failed on head", len(onHead.failed)), sameAsBaseline(tree, baseline)
+		return fmt.Sprintf("%d failed on head", len(onHead.failed)), treeHoldsHead(tree)
 	}); err != nil {
 		return nil, err
 	}
 	if verdict != "" {
-		if err := sameAsBaseline(tree, baseline); err != nil {
+		if err := treeHoldsHead(tree); err != nil {
 			return nil, err
 		}
 		return report(verdict, output, rows)
 	}
 
 	mine := treeClaim{Pid: os.Getpid(), Started: processStarted(os.Getpid())}
-	restore := func() error { return restoreHead(r, tree, head, path, mine, files, baseline) }
+	restore := func() error { return restoreHead(r, tree, head, path, mine, files) }
 	if err := r.Step("swap", "base's content into the named paths", func() (string, error) {
 		temp, err := writeTemp(path, treeClaim{mine.Pid, mine.Started, head, fork, files})
 		if err == nil {
@@ -489,7 +488,7 @@ func rowsLine(rows []testRow) string {
 }
 
 // the proof the restore held is git's own compare against the state before the swap
-func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string, baseline string) error {
+func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string) error {
 	return r.Step("restore", "head's content back", func() (string, error) {
 		if err := swapTo(tree, head, files); err != nil {
 			return "", err
@@ -502,17 +501,19 @@ func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string
 		if err != nil {
 			return "", err
 		}
-		return "the porcelain compare holds", sameAsBaseline(tree, baseline)
+		return "the porcelain compare holds", treeHoldsHead(tree)
 	})
 }
 
-func sameAsBaseline(tree, baseline string) error {
+// an empty status is git's own content compare with head; two dirty trees can print the same status over different content, so
+// a run starts from a clean tree and ends on one, and a path dirty before the call can never lose its edit to the swap
+func treeHoldsHead(tree string) error {
 	status, err := mustGitIn(tree, "status", "status", "--porcelain", "--untracked-files=no")
 	if err != nil {
 		return err
 	}
-	if status != baseline {
-		return &Fail{Msg: tree + " differs from before the run: " + status, Next: "git -C " + tree + " status", Log: nonBlank(status)}
+	if status != "" {
+		return &Fail{Msg: tree + " differs from head: " + status, Next: "git -C " + tree + " status", Log: nonBlank(status)}
 	}
 	return nil
 }
