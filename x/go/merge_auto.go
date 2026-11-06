@@ -970,7 +970,8 @@ func roundCheck(api, repo, n, ref, head, author string, dimaOK bool) (mergeCheck
 	}
 	stoodDown := false
 	for _, r := range runs {
-		if r.HeadBranch != ref || r.Status != "completed" || (r.Conclusion != "success" && r.Conclusion != "failure") {
+		if r.HeadBranch != ref || r.Status != "completed" || (r.Conclusion != "success" && r.Conclusion != "failure") ||
+			!ok(gitIn("", "merge-base", "--is-ancestor", r.HeadSha, head)) {
 			continue
 		}
 		var answer struct {
@@ -987,7 +988,7 @@ func roundCheck(api, repo, n, ref, head, author string, dimaOK bool) (mergeCheck
 			return c, err
 		}
 		for _, job := range answer.Jobs {
-			if strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success" && ok(gitIn("", "merge-base", "--is-ancestor", r.HeadSha, head)) {
+			if strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success" {
 				c.OK, c.Detail = true, "the reviewer finished a round on "+short(r.HeadSha)
 				return c, nil
 			}
@@ -1000,7 +1001,7 @@ func roundCheck(api, repo, n, ref, head, author string, dimaOK bool) (mergeCheck
 	case stoodDown && dimaOK:
 		c.OK, c.Detail = true, "the reviewer stood down on #"+n+", landing on dima's word"
 	case stoodDown:
-		c.Detail = "the reviewer stood down on #" + n + ", as it does on a pr that edits a workflow, so it holds no round; it lands on dima's word, his prompt or a tick quoting it: x lane merge-auto " + n + " --apply --dima-ok " + n
+		c.Detail = "the reviewer stood down on #" + n + ", as it does on a pr that edits a workflow, so it holds no round; it lands on dima's word, his prompt or a tick quoting it: x lane merge-auto " + n + " --apply --dima-ok " + n + "; on a pr that edits no workflow that red was a failed read: x lane review " + n
 	default:
 		c.Detail = "no reviewer round finished in " + ref + "'s history — x lane review " + n
 	}

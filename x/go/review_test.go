@@ -12,7 +12,7 @@ import (
 const headSha, oldSha = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 // a fake gh answering from files beside it: pr.json, runs.jsonl (absent → 404), body; every call
-// lands in calls.log behind the token it ran with. FAKE_GH_ADD_FAIL refuses a label add
+// lands in calls.log behind the token it ran with. FAKE_GH_ADD_FAIL refuses a label add, FAKE_GH_COMPARE is github's compare status
 func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 	t.Helper()
 	dir = t.TempDir()
@@ -24,7 +24,8 @@ func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 d='`+dir+`'
 printf '%s %s\n' "$GH_TOKEN" "$*" >> "$d/calls.log"
 case "$1" in
-api) [ -f "$d/runs.jsonl" ] && exec cat "$d/runs.jsonl"; echo 'gh: Not Found (HTTP 404)' >&2; exit 1 ;;
+api) case "$*" in *compare/*) echo "$FAKE_GH_COMPARE"; exit 0 ;; esac
+	[ -f "$d/runs.jsonl" ] && exec cat "$d/runs.jsonl"; echo 'gh: Not Found (HTTP 404)' >&2; exit 1 ;;
 pr) case "$2 $*" in
 	view*'--json body'*) cat "$d/body"; if [ -n "$FAKE_GH_MANGLE" ]; then echo mangled; fi ;;
 	view*) cat "$d/pr.json" ;;
@@ -88,6 +89,17 @@ func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
 	}
 }
 
+func TestReviewAtTheCapAcceptsARoundOnAnAncestorOfTheHead(t *testing.T) {
+	t.Parallel()
+	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success")})
+
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_COMPARE=ahead"), "lane", "review", "7")
+
+	if got.code != 0 || got.data["review"] != "on history" || strings.Contains(calls(t, dir), "pr edit") {
+		t.Fatalf("exit %d, review %v, calls:\n%s", got.code, got.data["review"], calls(t, dir))
+	}
+}
+
 func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
 	t.Parallel()
 	env, dir := fakeGh(t, []string{`{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
@@ -106,7 +118,7 @@ func TestReviewAtTheCapNamesDimasLabelAndRequestsNothing(t *testing.T) {
 	t.Parallel()
 	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "failure")})
 
-	got := xIn(t, t.TempDir(), env, "lane", "review", "7")
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_COMPARE=diverged"), "lane", "review", "7")
 
 	if got.code != 1 || strings.Contains(calls(t, dir), "pr edit") {
 		t.Fatalf("exit %d, calls:\n%s", got.code, calls(t, dir))

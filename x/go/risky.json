@@ -21,6 +21,7 @@
         "lefthook.yml",
         ".github/workflows/review.yml",
         ".github/workflows/review-round.yml",
+        ".github/scripts/review-rounds.sh",
         "x/go/risky.json",
         "x/go/merge_auto.go",
         "x/go/merge_sign.go",

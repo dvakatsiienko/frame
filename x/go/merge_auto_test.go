@@ -1027,7 +1027,13 @@ func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
 				{"id":1,"head_branch":"other","head_sha":"x","status":"completed","conclusion":"success"}]}`
 		}},
-		{"a run still going", func(w *mergeWorld) { w.reviewRun("", "", "") }},
+		{"a run still going", func(w *mergeWorld) {
+			w.reviewRun("success", "success", "")
+			w.hub.mu.Lock()
+			defer w.hub.mu.Unlock()
+			key := repoPath + "/actions/workflows/review.yml/runs"
+			w.hub.pages[key] = strings.Replace(w.hub.pages[key], `"status":"completed"`, `"status":"in_progress"`, 1)
+		}},
 		{"the run skipped", func(w *mergeWorld) { w.reviewRun("skipped", "skipped", "") }},
 		{"the run cancelled", func(w *mergeWorld) { w.reviewRun("cancelled", "cancelled", "") }},
 		{"a green run whose reviewer job skipped", func(w *mergeWorld) { w.reviewRun("success", "skipped", "") }},
@@ -1066,6 +1072,20 @@ func TestMergeAutoNamesTheDoorForAStandDown(t *testing.T) {
 				t.Errorf("exit %d on dima's word, want a plan to confirm:\n%s", word.code, word.stdout)
 			}
 		})
+	}
+}
+
+func TestMergeAutoNamesNoStandDownDoorOffTheHeadsHistory(t *testing.T) {
+	t.Parallel()
+	w := roundWorld(t)
+	w.reviewRun("failure", "failure", "A round with no review is red")
+	w.mainMoves(t, "one.txt")
+	w.moveHead(t)
+
+	got := w.run(t, "7", "--dima-ok", "7")
+
+	if err := envelopeOf(got).Error; got.code != 1 || !strings.Contains(err, "x lane review 7") || strings.Contains(err, "stood down") {
+		t.Fatalf("exit %d, want no stand-down door for a run off the history:\n%s", got.code, got.stdout)
 	}
 }
 

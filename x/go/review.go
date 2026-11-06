@@ -106,6 +106,11 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		r.Done("ok: the verdict judged the head "+short(head), "")
 		return data("current"), nil
 	}
+	if len(rounds) >= reviewCap && roundOnHistory(judged, head) {
+		r.skip("request")
+		r.Done("ok: the round judged "+short(judged)+", an ancestor of the head; sixth sense's clean covers the commits after it", "")
+		return data("on history"), nil
+	}
 	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
 			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — another round on #%s runs only when dima applies the label himself",
@@ -232,6 +237,12 @@ func reviewRuns(branch string) ([]reviewRun, bool, error) {
 		}
 	}
 	return runs, true, nil
+}
+
+// a failed read answers false: the caller then names the cap, the side that asks a person
+func roundOnHistory(judged, head string) bool {
+	got, err := ghRaw("api", "repos/{owner}/{repo}/compare/"+judged+"..."+head, "--jq", ".status")
+	return err == nil && got.ok && (got.out == "ahead" || got.out == "identical")
 }
 
 // ghCodie runs gh as the x-codie-cc app, the identity every lane write on github wears

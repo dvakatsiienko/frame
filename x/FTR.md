@@ -135,7 +135,7 @@
   - when `x lane review <pr>` runs
   - then it adds `🤖 review:requested` as the codie app
   - given the last round judged the head, a round still running on the branch, or a repo with no `review.yml`, then it prints ok and touches no label
-  - given the round already ran on another head, then it requests nothing, exits 1 and names dima's label as the way to a second round
+  - given the round already ran on an ancestor of the head, then it prints ok and touches no label; off the head's history, it requests nothing, exits 1 and names dima's label as the way to a second round
   - given the label came off and the add failed, then the failure says the pr now holds no review label
   - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and codie's «final» ping runs it as one call (FRM-355)
 - ✅ `x lane gate <msg-file>` holds a commit at commit-msg, in frame and bytes
