@@ -4779,7 +4779,7 @@ export const isSideChannel = (name: string) =>
 // a member with a chair in the fleet; a fork or a plain session has none
 export const isSeated = (name: string) =>
     !/\(fork\)/u.test(name) &&
-    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name));
+    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name) || isSideChannel(name));
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
