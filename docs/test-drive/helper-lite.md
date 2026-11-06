@@ -46,6 +46,8 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
 - 2026-10-22 · extended once to 2026-11-05 on dima's tick (o33): 3 rounds, 5 of 7 stress uses untried (log windows, an idle coder's last words, bash census, flow numbers, a coder's big reads, failure probes); its first use today: dima's raw prompts out of a 2 MB transcript, 10 prompts + 12 steers in 68 s, but it missed every mid-turn message (they sit inside tool results) — a miss caught by a word check
 - 2026-10-25 · FRM-411 coder: barely used — every reviewer output and release note was under 3 KB, cheaper to read than to brief; the coder asks for a size line («> 10 KB») in the reach rule
 - 2026-11-05 · five probes with held-back answers, one 5.4 MB transcript and two local files · 26 s, 35.7k tokens, 7 tool calls · log window exact; bash census 164, exact; not found answered «not found»; the ambiguous duration named all 3 readings; an idle coder's last words had the right text with one word off («the fixes» for «these fixes»)
+- 2026-11-06 · frm-514 codie · not used for transcripts, a read-back script answered it for free; one card ran the subagent probe, good
+- 2026-11-06 · mods lane 5 codie · unused this chunk; the codie should have used it for the logs
 
 ## verdict
 

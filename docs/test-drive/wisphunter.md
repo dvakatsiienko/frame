@@ -56,4 +56,10 @@ group by 1 order by 2 desc;
 - 4 findings, 2 reproduced real (a load false green, merged errors), 1 already fixed, 1 nit; it labelled two as inferred, so a brief names which claims it can run
 - 2026-11-05 · FRM-480, codie's two axes and sixth sense's read, 8, 6 and 7 findings, all useful, sixth sense still found 6 at round 1; two spec reads against tickets and live code on dima's word, mods 16 findings, cli 20, 4 and 3 high, each opened and held, `mods:replay`'s reach among them; frame#124's read, 5, the silent-end gap among them · ahead of the usual door, keep
 
+### round 5 — retro trial lines, 2026-11-06 (four lane retros)
+- 2026-11-06 · frm-514 sixth sense, second read · helped: found a preload gap and a replay drift it had not probed, in 3 min; 1 of its 4 repeated a known read · keep
+- 2026-11-06 · frm-514 codie · helped: 2 cards found the compaction bug the built-in missed · keep
+- 2026-11-06 · frm-517 codie · helped: found the one defect nobody else did · keep
+- 2026-11-06 · mods lane 5 codie · helped: found most real bugs
+
 ## verdict
