@@ -1,12 +1,19 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
+import { cleanStampWrite } from './rules/clean-stamp.ts';
 import type { Brief, Context, Refusal, Written } from './rules/command.ts';
 import { TICKET_KEY, UNREAD, laidOver, resolve } from './rules/command.ts';
 import { linearWritePiped, stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
+import {
+    type MergeHolds,
+    holdRecordWrite,
+    mergeHold,
+    rawMerges,
+} from './rules/merge-hold.ts';
 import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
@@ -354,6 +361,29 @@ async function ticketOf($: EngineInterface, id: string) {
 
 async function sessionName($: EngineInterface, sid: string) {
     return (await registryEntry($, sid))?.name;
+}
+
+// x's own record of dima's holds, one file per repo (`x/go/merge_hold.go`); a pr number across repos counts as held in each,
+// the safe side. no dir is no hold; a file that does not read holds everything
+async function readMergeHolds($: EngineInterface) {
+    const dir = `${await $.env.get('HOME')}/.local/state/x/merge-hold`;
+    const holds: MergeHolds = { isUnreadable: false, prs: new Set() };
+    if (!(await $.fs.exists(dir).catch(() => true))) return holds;
+    const files = await $.fs.list(dir).catch(() => undefined);
+    if (!files) return { ...holds, isUnreadable: true };
+    for (const f of files) {
+        if (!f.name.endsWith('.json')) continue;
+        try {
+            const note = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
+                prs?: unknown;
+            };
+            if (!Array.isArray(note.prs)) throw new Error('no prs list');
+            for (const pr of note.prs) holds.prs.add(String(pr));
+        } catch {
+            holds.isUnreadable = true;
+        }
+    }
+    return holds;
 }
 
 // one key per event, so parallel sessions never overwrite each other; the oldest past KEEP are dropped
@@ -1496,6 +1526,44 @@ export const register: Register = (on) => {
                 said,
             );
             if (stop) return stop;
+        }
+        // enforcing from their first head, never in WARN_ONLY: each fires only on a held layer or a clean's write (FRM-511)
+        const stamp = cleanStampWrite(typed, cwd);
+        if (stamp) {
+            const sid = await $.session.id().catch(() => undefined);
+            const name = sid ? await sessionName($, sid) : undefined;
+            if (!name || !(isSixthSense(name) || isCoordinator(name))) {
+                const said = `x-mod-guard stopped this one command. instead: ${stamp.door}. why: ${stamp.why} (rule ${stamp.rule}).`;
+                const stop = await enforce(
+                    stamp,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+                if (stop) return stop;
+            }
+        }
+        const handEdit = holdRecordWrite(typed, cwd);
+        if (handEdit) {
+            const said = `x-mod-guard stopped this one command. instead: ${handEdit.door}. why: ${handEdit.why} (rule ${handEdit.rule}).`;
+            const stop = await enforce(
+                handEdit,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
+        }
+        const merges = rawMerges(typed, cwd);
+        if (merges.length) {
+            const hold = mergeHold(merges, await readMergeHolds($));
+            if (hold) {
+                const said = `x-mod-guard stopped this one command. instead: ${hold.door}. why: ${hold.why} (rule ${hold.rule}).`;
+                const stop = await enforce(
+                    hold,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+                if (stop) return stop;
+            }
         }
         // a refusal, never in WARN_ONLY: a warn would run the merge it means to stop (dima's o102, FRM-423)
         const word = mergeWord(typed, cwd);

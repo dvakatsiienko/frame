@@ -51,6 +51,86 @@ function session() {
     return { bash, compact, home, read };
 }
 
+// a member's session: frame's clio home beside the project, and a worktree holding its own `_clio`
+function memberSession(project: string) {
+    const home = mkdtempSync(join(tmpdir(), 'agents-md-'));
+    const root = join(home, 'frame');
+    for (const clio of [
+        join(root, '_clio'),
+        join(root, '.claude/worktrees/t/_clio'),
+    ]) {
+        mkdirSync(join(clio, 'memory'), { recursive: true });
+        writeFileSync(join(clio, 'AGENTS.md'), '# clio passport\n');
+        writeFileSync(join(clio, 'memory/leaf.md'), 'a leaf\n');
+    }
+    mkdirSync(join(root, 'recipes'));
+    writeFileSync(join(root, 'AGENTS.md'), '# frame rules\n');
+    writeFileSync(join(root, 'recipes/AGENTS.md'), '# recipe rules\n');
+    writeFileSync(join(root, 'recipes/r.md'), 'a recipe\n');
+    const dir = join(root, project);
+    const id = randomUUID();
+    const attached = (
+        tool_name: string,
+        tool_input: Record<string, string>,
+    ): string => {
+        const out = spawnSync(
+            'python3',
+            [join(hooks, 'memory-load-agents-md.py')],
+            {
+                encoding: 'utf8',
+                env: { ...process.env, CLAUDE_PROJECT_DIR: dir, HOME: home },
+                input: JSON.stringify({
+                    cwd: dir,
+                    hook_event_name: 'PreToolUse',
+                    session_id: id,
+                    tool_input,
+                    tool_name,
+                }),
+            },
+        ).stdout;
+        return out ? JSON.parse(out).hookSpecificOutput.additionalContext : '';
+    };
+    return { attached, root };
+}
+
+it.each([
+    ['from the main checkout', '.', '_clio/memory/leaf.md'],
+    ['a dir arg', '.', '_clio/memory'],
+    ['from a worktree', '.claude/worktrees/t', '../../../_clio/memory/leaf.md'],
+    ["the member's own tree", '.claude/worktrees/t', '_clio/memory/leaf.md'],
+])(
+    "a member's Bash read under the coordinator's home prints no memory: %s",
+    (_, project, path) => {
+        const { attached } = memberSession(project);
+        expect(attached('Bash', { command: `cat ${path}` })).toBe('');
+    },
+);
+
+it.each(['Read', 'Edit'])(
+    "a member's %s under the coordinator's home prints no memory",
+    (tool) => {
+        const { attached, root } = memberSession('.claude/worktrees/t');
+        expect(
+            attached(tool, { file_path: join(root, '_clio/memory/leaf.md') }),
+        ).toBe('');
+    },
+);
+
+it('a line naming a clio path and another dir still attaches the other', () => {
+    const { attached } = memberSession('.claude/worktrees/t');
+    const out = attached('Bash', {
+        command: 'cat ../../../_clio/memory/leaf.md ../../../recipes/r.md',
+    });
+    expect([
+        out.includes('# recipe rules'),
+        out.includes('# clio passport'),
+    ]).toEqual([true, false]);
+});
+
+it("a session booted in the coordinator's home keeps its nested folders' memory", () => {
+    expect(session().bash('cat apps/a/f.ts')).toContain('# nested rules');
+});
+
 it("a cat of a file outside the project attaches that folder's AGENTS.md", () => {
     const out = session().bash('cat ../recipes/r.md | head -5');
     expect([
