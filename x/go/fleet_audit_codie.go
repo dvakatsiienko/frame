@@ -92,16 +92,24 @@ func shellReadPaths(command string) []string {
 
 // `sed -i` writes its file, and a read sent to /dev/null reaches nobody; errors sent there leave the read standing
 func throwsAwayItsRead(words []string) bool {
-	if words[0] == "sed" && slices.ContainsFunc(words, func(word string) bool { return strings.HasPrefix(word, "-i") }) {
+	if words[0] == "sed" && slices.ContainsFunc(words, editsInPlace) {
 		return true
 	}
 	for i, word := range words {
-		target, isOut := strings.CutPrefix(strings.TrimPrefix(word, "1"), ">")
+		target, isOut := strings.CutPrefix(strings.TrimLeft(word, "1&"), ">")
 		if isOut && (target == "/dev/null" || target == "" && i+1 < len(words) && words[i+1] == "/dev/null") {
 			return true
 		}
 	}
 	return false
+}
+
+// sed's -i alone or in a flag cluster (-Ei), or its long form
+func editsInPlace(word string) bool {
+	if strings.HasPrefix(word, "--") {
+		return strings.HasPrefix(word, "--in-place")
+	}
+	return strings.HasPrefix(word, "-") && strings.Contains(word, "i")
 }
 
 // a statement's words, a quoted one kept whole and its quotes dropped
@@ -207,6 +215,8 @@ func shellStatements(command string) []string {
 			statements = append(statements, now.String(), string(c))
 			now.Reset()
 			continue
+		case c == '&' && (i+1 < len(command) && command[i+1] == '>' || i > 0 && command[i-1] == '>'):
+			// `&>` and `2>&1` are redirects, no separator
 		case strings.IndexByte(";&|\n", c) >= 0:
 			statements = append(statements, now.String())
 			now.Reset()
