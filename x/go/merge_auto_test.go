@@ -791,6 +791,14 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 		"x/bin/x",
 		"x/go/gh.go",
 		"x/go/keys.go",
+		"x/go/stacks.go",
+		"x/go/review.go",
+		"x/go/lane.go",
+		"x/go/registry.json",
+		"x/go/merge_hold.go",
+		"x/go/lane_landed.go",
+		"x/go/panic_seam.go",
+		"x/go/panic_seam_release.go",
 	} {
 		t.Run(path, func(t *testing.T) {
 			w := newMergeWorld(t, "script/foo.ts", path)
@@ -802,6 +810,78 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 			}
 		})
+	}
+}
+
+// on a lane with no sixth sense, --dima-ok is the raw merge's one door (his tick o36): no clean planted
+func TestMergeAutoDimasWordOpensALaneWithNoSixthSense(t *testing.T) {
+	t.Parallel()
+	const noSixthSense = "🚀 dispatched 2026-11-06 — a-lane, codie abc\n"
+	const withSixthSense = "🚀 dispatched 2026-11-06 — a-lane, codie abc, sixth sense def\n"
+	cases := []struct {
+		name, body string
+		args       []string
+		store      string
+		merges     bool
+	}{
+		{name: "his word on a dispatch with no sixth sense merges", body: noSixthSense, args: []string{"--dima-ok", "7"}, store: `{}`, merges: true},
+		{name: "no store at all counts as no clean", body: noSixthSense, args: []string{"--dima-ok", "7"}, merges: true},
+		{name: "without the flag it waits as today", body: noSixthSense, store: `{}`},
+		{name: "a sixth sense on the dispatch opens nothing", body: withSixthSense, args: []string{"--dima-ok", "7"}, store: `{}`},
+		{name: "a ticket never dispatched opens nothing", body: "no dispatch line\n", args: []string{"--dima-ok", "7"}, store: `{}`},
+		{name: "a dispatch taken back opens nothing", body: noSixthSense + "↩️ taken back\n", args: []string{"--dima-ok", "7"}, store: `{}`},
+		{name: "a clean on another head is no missing clean", body: noSixthSense, args: []string{"--dima-ok", "7"}, store: `{"o/r#7":"0000000000000000000000000000000000000000"}`},
+		{name: "a store that does not parse opens nothing", body: noSixthSense, args: []string{"--dima-ok", "7"}, store: `not json`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.signs(t, "FRM-9", c.body)
+			if c.store != "" {
+				write(t, w.store, c.store)
+			} else if err := os.Remove(w.store); err != nil {
+				t.Fatal(err)
+			}
+
+			got := w.run(t, append([]string{"7", "--apply"}, c.args...)...)
+
+			merges := w.hub.sent("PUT " + repoPath + "/pulls/7/merge")
+			if c.merges && (got.code != 0 || len(merges) != 1) {
+				t.Fatalf("exit %d, %d merges, want one merge:\n%s", got.code, len(merges), got.stdout)
+			}
+			if !c.merges && (got.code != 1 || len(merges) != 0) {
+				t.Fatalf("exit %d, %d merges, want a wait and no merge:\n%s", got.code, len(merges), got.stdout)
+			}
+		})
+	}
+}
+
+// a real run reads dima's store, whatever the env says: a planted store with a clean must not open the gate
+func TestMergeAutoHonoursXVerifiedOnlyUnderXTest(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	home := t.TempDir()
+	write(t, filepath.Join(home, ".claude/shelf/pr-verified.json"), `{}`)
+
+	got := xIn(t, w.clone, append(w.env, "X_TEST=", "HOME="+home), "lane", "merge-auto", "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); len(merges) != 0 {
+		t.Fatalf("exit %d, merges %q: want the planted X_VERIFIED ignored outside X_TEST:\n%s", got.code, merges, got.stdout)
+	}
+}
+
+func TestMergeAutoDimasWordOpensNothingWhenTheTicketCannotBeRead(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.signs(t, "FRM-9", "🚀 dispatched 2026-11-06 — a-lane, codie abc\n")
+	w.env = append(w.env, "X_LINEAR_URL=http://127.0.0.1:1")
+	write(t, w.store, `{}`)
+
+	got := w.run(t, "7", "--apply", "--dima-ok", "7")
+
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 {
+		t.Fatalf("exit %d, %d merges: want a wait when linear does not answer:\n%s", got.code, len(merges), got.stdout)
 	}
 }
 
