@@ -34,6 +34,7 @@ type label struct {
 }
 
 type reviewRun struct {
+	ID         int64  `json:"id"`
 	RunNumber  int    `json:"run_number"`
 	HeadBranch string `json:"head_branch"`
 	HeadSha    string `json:"head_sha"`
@@ -72,7 +73,13 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 			case run.Status != "completed":
 				running = true
 			case run.Conclusion == "success":
-				rounds = append(rounds, run)
+				finished, err := reviewerFinishedIn(run.ID)
+				if err != nil {
+					return "", err
+				}
+				if finished {
+					rounds = append(rounds, run)
+				}
 			}
 		}
 		slices.SortFunc(rounds, func(a, b reviewRun) int { return a.RunNumber - b.RunNumber })
@@ -238,6 +245,19 @@ func reviewRuns(branch string) ([]reviewRun, bool, error) {
 		}
 	}
 	return runs, true, nil
+}
+
+// merge-auto's reader of a round: a green run with a skipped job is none
+func reviewerFinishedIn(run int64) (bool, error) {
+	got, err := ghCodie("api", fmt.Sprintf("repos/{owner}/{repo}/actions/runs/%d/jobs", run))
+	if err != nil {
+		return false, err
+	}
+	var jobs runJobs
+	if err := json.Unmarshal([]byte(got.out), &jobs); err != nil {
+		return false, &Fail{Msg: "gh answered jobs x cannot read: " + err.Error(), Next: "gh run view " + fmt.Sprint(run)}
+	}
+	return jobs.reviewerFinished(), nil
 }
 
 // merge-auto's rule, read from github first since this verb may run outside a clone. a failed read answers false:
