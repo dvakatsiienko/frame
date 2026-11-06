@@ -1,6 +1,6 @@
 // craft-fleet-flow stage 8: an In Progress ticket either closes or has a reason to stay: the label `needs human`, an open blocked-by, or an open step on a running glide card; one moved back to Todo keeps a dated door
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 type Tickets = {
@@ -49,6 +49,32 @@ function glideTickets(): Set<string> {
     }
 }
 
+// what is already built, per ticket: its lane-plan steps ticked. a commit naming an id proves nothing: 12 of 12 reds on one were notes and riders
+function builtSteps(): Map<string, string> {
+    const steps = new Map<string, { all: number; ticked: number }>();
+    const lanes = join(process.env.HOME ?? '', '.local/state/x/lanes');
+    for (const lane of existsSync(lanes) ? readdirSync(lanes) : []) {
+        const plan = join(lanes, lane, 'lane-plan.md');
+        if (!existsSync(plan)) continue;
+        for (const [, mark, id] of readFileSync(plan, 'utf8').matchAll(
+            /^- \[([ xX])\] \d+ · ([A-Z]{3}-\d+)\b/gm,
+        )) {
+            const seen = steps.get(id as string) ?? { all: 0, ticked: 0 };
+            seen.all++;
+            if (mark !== ' ') seen.ticked++;
+            steps.set(id as string, seen);
+        }
+    }
+    return new Map(
+        [...steps]
+            .filter(([, step]) => step.ticked)
+            .map(([id, step]) => [
+                id,
+                `${step.ticked} of ${step.all} plan steps ticked`,
+            ]),
+    );
+}
+
 const listed = read(['list', '--state', 'In Progress']);
 if (!listed) {
     console.log('🔴 linear unreachable, the net not run');
@@ -95,6 +121,7 @@ if (!todoList || !todo) {
     process.exit(1);
 }
 const today = new Date().toISOString().slice(0, 10);
+const built = builtSteps();
 const skipped: string[] = [];
 for (const t of todo) {
     const bodies = (t.comments ?? []).map((c) => c.body);
@@ -102,9 +129,16 @@ for (const t of todo) {
     const door = bodies
         .slice(moved + 1)
         .findLast((body) => /^(⏰|🚪)/.test(body));
+    const work = built.get(t.id);
     if (moved === -1 && !door) {
+        if (work && !glide.has(t.id)) {
+            reds++;
+            console.log(
+                `🔴 ${t.id}: built, ${work}, and still Todo: close it, or comment «⏰ due: <what is left> by <date>»`,
+            );
+        }
         // shipped work hangs here: dispatched, off every card, and no door to read
-        if (t.description?.includes('🚀 dispatched') && !glide.has(t.id))
+        else if (t.description?.includes('🚀 dispatched') && !glide.has(t.id))
             console.log(
                 `🟡 ${t.id}: dispatched, in Todo, on no lane, no door: shipped? close it; else comment «⏰ due: <what> by <date>»`,
             );
@@ -115,7 +149,7 @@ for (const t of todo) {
     // the door's words print every siesta, since what it waits on can happen long before its date
     if (by && by >= today)
         console.log(
-            `🟢 ${t.id}: due by ${by}, has it fired? ${door?.split('\n')[0]?.slice(0, 160)}`,
+            `🟢 ${t.id}: due by ${by}${work ? ` (built, ${work})` : ''}, has it fired? ${door?.split('\n')[0]?.slice(0, 160)}`,
         );
     else {
         reds++;
