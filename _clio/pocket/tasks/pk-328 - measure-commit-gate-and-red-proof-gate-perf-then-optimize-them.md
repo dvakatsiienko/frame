@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T21:47:00Z'
+updated_date: '2026-11-06T23:16:00Z'
 labels:
   - s
   - wing-1
@@ -108,4 +108,9 @@ main's correction, wishkeeper's catch: W22's «the biggest wait on the mods lane
 PK-328:W29 (2026-11-06 23:38, dima): okay, try to solve the perf issues then with your lane. i'm going afk, and i approved all merges everywhere: main, clio's lanes, yours too. once your lane is fully done, merge it yourself and sync your worktree with main, let clio know you are done and solved PK-328, and park.
 
 PK-328:W30 (2026-11-06 23:46, dima): one more steer. however your lane resolves, it is still unknown if any perf gains will actually be gained. since you explored this area thoroughly today through measures and the lane's run, once the lane is resolved, consult the actual lane to update the go cli's AGENTS.md: think how to groom it to tell the tests' best practices, how to write tests so they do not cause bottlenecks, and the gotchas you and your lane found about tests. only if go tests are identified as a cause of the cpu bottleneck: then groom AGENTS.md for the cli and tell the gotchas, so no one writes tests that bottleneck the cpu on my mac.
+
+PK-328:W31 (2026-11-07 01:15, dima): it seems like a big issue, because with cpu overload everything is slow, and i want it solved. how do we not forget it? after i halt today, how do we best preserve the context of this problem, with all cases of cpu bottlenecking? from all your replies today i did not see any surely proven verdict about the real cause of the cpu overload. how do we solve it?
+PK-328:W32 (2026-11-07 01:15, dima): i still think using fewer threads is not a solution: i currently have 14, which is not a lot, and other people run 64 parallel threads somehow. ❓ how do they?
+PK-328:W33 (2026-11-07 01:15, dima): another idea: i hear a lot that many people treat macos as not very agentic friendly and use linux instead, or buy that new mac mini for agentic workflows.
+PK-328:W34 (2026-11-07 01:15, dima): do a proposal for how to save the context of the current problem until tomorrow's reopening of this issue, and do a wide research, all research lanes, about my issue, using all the context you have: maybe there is a known solution? has anyone else met my issue with macos? hunt any similarities to see if someone solved it. also research linux vs macos, my claim.
 <!-- SECTION:NOTES:END -->
