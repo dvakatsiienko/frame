@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T15:11:00Z'
+updated_date: '2026-11-06T15:15:00Z'
 labels:
   - m
   - side-channel-owned
@@ -89,4 +89,16 @@ W (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optimiz
 17:12 ci made boring shaped, specced, handed to main for his signs, the summon and its keeping: BYT-130, BYT-94, BYT-132, BYT-106, BYT-131; BYT-128, BYT-129 cancelled; spec in my tree's .scratch/ci-boring/.
 
 17:11 PK-324 done by main on dima's word 17:06. line 16 stays open for PK-325 and PK-308. the ci made boring handover went to main at about 17:10, just before her second wind: re-send it on her «resume».
+
+17:14 the unnumbered lines above, with their ids (the fold's slip, his tick o62):
+W15 (2026-11-06 15:52, dima): prio ci made boring: revisit and plan when to do it at the nearest convenient point, maybe after the freeze cause is found and fixed.
+W16 (2026-11-06 16:28, dima): we planned ci made boring really long ago. it stayed parked for a long time. let's solve it, let's revisit it.
+W17 (2026-11-06 16:28, dima): go look and see if all chunks are still valid, relevant and useful.
+W18 (2026-11-06 16:28, dima): let's groom and shape them, because we shaped them last time with outdated habits.
+W19 (2026-11-06 16:28, dima): let's process them through the worth-it check and fully process them through the shape lane.
+W20 (2026-11-06 16:28, dima): write the specs so it is ready to be dispatched by main clio.
+W21 (2026-11-06 16:28, dima): when fully done, hand over ci made boring to main clio, so it summons it and maintains it.
+W22 (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optimized. you can spot any inefficiencies and gaps and plan fixes and optimizations if needed.
+
+17:16 his o63 half two, a check for bare W cites: reply-check's a mods part, so it goes to main on her resume, with the ci handover.
 <!-- SECTION:NOTES:END -->
