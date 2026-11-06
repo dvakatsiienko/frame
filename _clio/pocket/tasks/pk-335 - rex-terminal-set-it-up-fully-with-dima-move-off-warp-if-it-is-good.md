@@ -4,11 +4,11 @@ title: 'rex terminal: set it up fully with dima, move off warp if it is good'
 status: open
 assignee: []
 created_date: '2026-11-06T11:50:00Z'
-updated_date: '2026-11-06T16:23:00Z'
+updated_date: '2026-11-06T16:30:00Z'
 labels:
   - s
   - side-channel-owned
-  - wing-1
+  - wing-2
 dependencies: []
 priority: next
 type: task
