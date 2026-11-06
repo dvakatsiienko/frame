@@ -7,11 +7,12 @@ const PUSH_TAG = new RegExp(
 );
 const PROGRESS_TAG = new RegExp(String.raw`${EMOJI_RUN}\[progress\]`, 'u');
 const CODE_SPAN = /`[^`]*`/g;
-// a path never counts, nor a line saying there is nothing for him
+// a path never counts, nor a line saying there is nothing for him; «for dima's tick» names what a line waits on, never a line for him
 const FOR_DIMA =
-    /(?<![\w/.-])(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w)/i;
+    /(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w|['’]s\b)|(?<!\b(?:not|no longer|nothing)[ \t]+)(?:needs|waiting on) dima(?![\w/-]|\.\w))/i;
+const SW_DONE = /^\s*sw done\b/i;
 const RULE =
-    'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held';
+    'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held; a receipt or a line needing nothing from clio goes untagged';
 
 const SLIPSTREAMED = "slipstreamed: joins clio's next turn.";
 export const QUIET_SLIPSTREAMED = `${SLIPSTREAMED} ${RULE}`;
@@ -35,6 +36,7 @@ export function quietPush(body: string, kindsOff: readonly string[] = []) {
     const tag = quietTag(body);
     if (tag !== 'none' && tag !== 'progress' && !kindsOff.includes(tag))
         return 'tag';
+    if (SW_DONE.test(body)) return undefined;
     return FOR_DIMA.test(body.replace(CODE_SPAN, '')) ? 'for-dima' : undefined;
 }
 
