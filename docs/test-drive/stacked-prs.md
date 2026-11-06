@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-18
 dies-when: the verdict line below is written
 fits: codie
@@ -59,3 +59,5 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 - 2026-11-06 · frame#128 (FRM-473, cli lane 4 layer 4) · 27 files, +1861 −69 · not stacked within 10 min of opening; a rebase off #127's squash and a refused push cost 10 min, `x lane stack link` refused its briefed branch name · codie: plain prs once a lower layer is verified clean; crew-lead's pr mode line says so
 
 ## verdict
+
+adopted, 2026-11-06, dima's word: «we have stacked prs, this is the point». the test ran; no lane reached a real layer 3, so whether they pay off on a deep stack stays unmeasured; how to use them is not urgent and has no ticket. the door and `x/go/stacks.go` stay; `crew-lead` keeps plain as its default.

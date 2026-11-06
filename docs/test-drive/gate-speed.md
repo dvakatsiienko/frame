@@ -16,7 +16,7 @@ PK-328:W15 (2026-11-06 20:49, dima, on the expected gains): ensure all these poi
 
 ## where the numbers come from
 
-- `~/.local/state/x/gate-queue.log`: start, load, slot, wait, run, exit, command; each queued commit, push and long round
+- `~/.local/state/x/gate-queue.log`: start, load, slot (`gate`, `long`, `none`), wait, run, exit, session (first 8 characters, or `-`), command; each commit, push, long round and wrapped run; rows before FRM-521's turn change have no session column. `x lane rebase-main` and the stack push take no turn and log no row
 - `~/.local/state/x/gate-steps.log`: start, load, source (`commit`, `push`, `other`), branch or ref, commit, seconds, exit, command; each gate run through `script/index-run.sh`, each push's whole suite
 - `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`), staged paths, commit, seconds, exit
 - `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns
@@ -60,6 +60,9 @@ baseline is 2026-10-30 to 2026-11-06, before the fixes, unless the row says othe
 **the load**
 - load: peaks of 126 to 172 on 11-06 → peak under 60, from the logs' load field; a day with one lane is read apart from a day with four
 - whole suites at the same load: vitest about 13 s, go tests about 45 s → no worse; `gate-bench.sh` at load under 5 once, for a clean number
+- load per kind of run, `gate-speed/cpu-load.md`, re-run at each merge: only a go gate or test, 51 with sys 52 % → under 35; only a commit, 19, idle's 21 → no worse; nothing queued, 21 → read only: the running sessions and the os
+- whole suite cpu: mods 446 cpu-s, go 308, vitest 76, a `/usr/bin/time -p` row each → go per exit 5, mods read after FRM-489
+- commits with no code: 70 of 167 still run the whole test step → read per class, `gate-speed/commit-classes.mjs`
 
 **the safety rows, a break here kills the trial**
 - reds on main from a commit whose test step was `related`: 0 → 0; `gh run list --branch main --status failure` joined on `test-commit.log`'s commit
@@ -90,5 +93,6 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 
 - 2026-11-06 · red-proof on one mutant, load 38 · 15 s → 8 s, base included · better
 - 2026-11-06 · `vitest related` replay of 8 recent commits · 0, 0, 0, 0, 0, 3, 5, 23 s against about 13 s whole; catch rate unmeasured · better on speed
+- 2026-11-06 · what loads the cpu, 27 min at 14 live worktrees · only a commit load 19, nothing queued 21, only a go run 51 with sys 52 %; `gate-speed/cpu-load.md` · the baseline for the re-measures
 
 ## verdict

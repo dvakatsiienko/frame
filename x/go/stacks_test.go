@@ -298,6 +298,61 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 	}
 }
 
+func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
+	t.Parallel()
+	upper := `{"id":2,"head_branch":"coder/x-2","head_sha":"%s","status":"completed","conclusion":"success"}`
+	lower := `{"id":1,"head_branch":"coder/x","head_sha":"%s","status":"completed","conclusion":"success"}`
+	cases := []struct {
+		name string
+		runs []string
+		code int
+	}{
+		{"both layers hold a round", []string{upper, lower}, 4},
+		{"the lower layer holds none", []string{upper}, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := linkedMergeWorld(t)
+			w.env = append(w.env, "X_ROUND_REPO=o/r")
+			gitT(t, w.seed, "push", "-q", "origin", "coder/x:coder/x-2")
+			var runs []string
+			for _, run := range c.runs {
+				runs = append(runs, strings.ReplaceAll(run, "%s", w.head))
+			}
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/7"] = `{"number":7,"title":"part 1","state":"open","merged":false,"body":"b",
+				"head":{"sha":"` + w.head + `","ref":"coder/x"},"base":{"ref":"main"}}`
+			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[` + strings.Join(runs, ",") + `]}`
+			w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf("success", "")
+			w.hub.pages[repoPath+"/actions/runs/2/jobs"] = jobOf("success", "")
+			w.hub.mu.Unlock()
+
+			got := w.run(t, "8")
+
+			if got.code != c.code {
+				t.Fatalf("exit %d, want %d:\n%s", got.code, c.code, got.stdout)
+			}
+			if c.code == 1 && !strings.Contains(got.stdout, "#7") {
+				t.Errorf("the wait does not name #7:\n%s", got.stdout)
+			}
+		})
+	}
+}
+
+func TestMergeAutoLetsDimasWordOpenALowerLayersMissingClean(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.signs(t, "FRM-9", "🚀 dispatched 2026-11-06 — a-lane, codie abc\n")
+	write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
+
+	waits, word := w.run(t, "8"), w.run(t, "8", "--dima-ok", "8")
+
+	if waits.code != 1 || word.code != 4 {
+		t.Fatalf("exits %d and %d, want a wait with no word and a plan on his word:\n%s\n%s", waits.code, word.code, waits.stdout, word.stdout)
+	}
+}
+
 // github merged a head the gate never read: loud on stderr, and the brake goes on for every next merge
 func TestMergeAutoBrakesWhenTheStackMergedAnotherHead(t *testing.T) {
 	t.Parallel()
@@ -1191,5 +1246,47 @@ func TestPrOpenRefusesABaseMissingFromOrigin(t *testing.T) {
 
 	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-gone") || exists(log) {
 		t.Fatalf("exit %d, want a refusal naming the missing base and no gh call\n%s", got.code, got.stdout)
+	}
+}
+
+// a top's merge lands every layer under it
+func TestMergeAutoRefusesATopOverAHeldLowerLayer(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	plantHold(t, w, "7")
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || !strings.Contains(msg, "#7") || !strings.Contains(msg, "held") || got.next != "x lane merge-auto 8 --apply --dima-ok 8" || len(w.hub.sent("PUT ")) != 0 {
+		t.Fatalf("exit %d, error %q, next %q, puts %q: want no merge and a refusal naming held #7", got.code, msg, got.next, w.hub.sent("PUT "))
+	}
+}
+
+func TestMergeAutoLandsATopOverAHeldLowerLayerOnDimasWord(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	plantHold(t, w, "7", "8")
+
+	got := w.run(t, "8", "--apply", "--dima-ok", "8")
+
+	if got.code != 0 || len(w.hub.sent("PUT "+repoPath+"/pulls/8/merge-async")) != 1 {
+		t.Fatalf("exit %d, puts %q: want his word on the top to land the held stack\n%s", got.code, w.hub.sent("PUT"), got.stdout)
+	}
+	if exists(holdRecordOf(w)) {
+		t.Errorf("held %q: want every landed layer's mark off and the record gone", heldPrs(t, w))
+	}
+}
+
+// dima holds a stack by its top: the layers under it land with it, so they hold with it
+func TestMergeAutoHoldOnATopMarksTheLayersUnderIt(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+
+	got := w.run(t, "8", "--hold", "--apply")
+
+	held := heldPrs(t, w)
+	slices.Sort(held)
+	if got.code != 0 || !slices.Equal(held, []string{"7", "8"}) {
+		t.Fatalf("exit %d, held %q: want the top and the layer under it marked\n%s", got.code, held, got.stdout)
 	}
 }

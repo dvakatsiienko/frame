@@ -48,6 +48,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 
 - **lane** (the family) — the git door for one session's branch: commit, push, pr, merge main, unlock, seed, decamp, gate. 📌 not the fleet's lane, a working day with dima present (`fleet-vibe`)
 - **gate** — the commit-msg check `x lane gate`: a contract change carries its glossary or adr, a growing skill was groomed, app code carries its ftr line; `--held` is its other mode, the purpose lint over a local layer's own registry files
+- **gate turn** — the one machine-wide slot a commit or push hook runs in, first come, through `script/gate-queue.sh`; x takes it itself, a wrapper never holds it. avoid: queue lock
 - **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; x's is its registry
 - **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it
 - **held files** — the unstaged and untracked work outside a commit's paths, set aside while the hooks run and put back byte for byte. avoid: stash
@@ -59,7 +60,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word, unless its chunk's sign pre-approved it; his word reaches merge-auto as `--dima-ok <pr>`, which x-mod-guard lets through only when his last typed prompt names the pr
 - **pre-approved sign** — a chunk ticket's `## signed` block holding `merge: pre-approved` while its **sign state** reads match; it lets a self-edit of that chunk merge without dima's word, never past the brake
 - **sign state** — a signed ticket's body read against the last `· body <hash>` of the `## signed` block that closes it: **match** when the hash fits the raw body or the body as signed (linear's link rewrite of an id to its own issue url folded back, trailing blanks trimmed to one blank line), **drifted** when neither fits, **no hash** with no block or no `· body` line; `linear list --label signed` and merge-auto read the same one
-- **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
+- **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept; `--onto` also records the head it rewrites, so a rerun after a conflict knows that sha for its own. avoid: force
 - **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; sixth sense's bench, made by `lane verify-tree`
 - **swap** — a `lane verify-tree --revert` run's named paths holding their merge-base content for the command
 - **claim** — a file in a verify tree's git dir, naming the run that holds the tree from its first step and, during a swap, the swapped files; a live holder refuses the next run, a dead one's swap is restored from it
@@ -73,6 +74,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **stack** — prs that each open onto the branch of the one below, merged together in one async call up to the pr named; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)
 - **layer** — one pr's branch in a stack: the root `codie/<ticket>-<slug>`, then `-2`, `-3` on top
 - **brake** — every pr waiting for dima's word for 7 days after a merge-auto merge is reverted, read from git and github each run; a stack's squash, which carries no trailer, is known by its pr's `merged-by-x` label on github; a stack merge that landed another head than the gated one, or named no head at all, sets it too, through its pr's `merge-brake` label, until dima's typed word releases it; the one stored state is the mac's own record of a brake github refused to label
+- **held mark** — dima's hold on a pr, one entry in this mac's record per repo, written by `lane merge-auto --hold`; no merge door lands it or a top above it without his word; an unreadable record reads as held
 - **judged commit** — the pr head the last review round read; a verdict is **stale** when the pr head moved past it
 - **comment feed** — one of the three places a pr's comments land: the conversation, reviews, and lines in the diff; the ci reviewer posts to a different one per round
 

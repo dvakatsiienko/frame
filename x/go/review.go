@@ -12,9 +12,8 @@ import (
 	"strings"
 )
 
-// the bytes review lane: the label starts a round, a successful review.yml run on the branch is one round,
-// one round per pr at «final», and past it an approval on dima's account (dima, or clio on sixth sense's clean)
-// publishes review:clean (bytes .github/workflows; dima, 2026-10-22, PK-103 W100, W101)
+// the bytes review lane: the label starts a round, a review.yml run whose reviewer job finished on the branch is one round,
+// one round per pr at «final», and a second only when dima applies the label himself (bytes .github/workflows)
 const (
 	reviewLabel = "🤖 review:requested"
 	reviewCap   = 1
@@ -23,11 +22,11 @@ const (
 var prNumber = regexp.MustCompile(`^\d+$`)
 
 type prHead struct {
-	Title          string  `json:"title"`
-	HeadRefName    string  `json:"headRefName"`
-	HeadRefOid     string  `json:"headRefOid"`
-	ReviewDecision string  `json:"reviewDecision"`
-	Labels         []label `json:"labels"`
+	Title       string  `json:"title"`
+	HeadRefName string  `json:"headRefName"`
+	HeadRefOid  string  `json:"headRefOid"`
+	BaseRefName string  `json:"baseRefName"`
+	Labels      []label `json:"labels"`
 }
 
 type label struct {
@@ -35,6 +34,7 @@ type label struct {
 }
 
 type reviewRun struct {
+	ID         int64  `json:"id"`
 	RunNumber  int    `json:"run_number"`
 	HeadBranch string `json:"head_branch"`
 	HeadSha    string `json:"head_sha"`
@@ -73,7 +73,13 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 			case run.Status != "completed":
 				running = true
 			case run.Conclusion == "success":
-				rounds = append(rounds, run)
+				finished, err := reviewerFinishedIn(run.ID)
+				if err != nil {
+					return "", err
+				}
+				if finished {
+					rounds = append(rounds, run)
+				}
 			}
 		}
 		slices.SortFunc(rounds, func(a, b reviewRun) int { return a.RunNumber - b.RunNumber })
@@ -108,18 +114,16 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		r.Done("ok: the verdict judged the head "+short(head), "")
 		return data("current"), nil
 	}
-	// past the cap the way through is an approval on dima's account, which review-approved.yml turns
-	// into a green review:clean on the approved head; either one clears the head without a round
-	if pr.ReviewDecision == "APPROVED" || cleanOnHead(head) {
+	if len(rounds) >= reviewCap && roundOnHistory(judged, head, pr.BaseRefName, pr.HeadRefName) {
 		r.skip("request")
-		r.Done("ok: "+short(head)+" is cleared — approved on dima's account or review:clean is green on it", "")
-		return data("cleared"), nil
+		r.Done("ok: the round judged "+short(judged)+", which reaches the head; sixth sense's clean covers the commits after it", "")
+		return data("on history"), nil
 	}
 	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
-			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap clio approves #%s on dima's account once sixth sense is clean on the head, and review-approved.yml publishes review:clean on it",
+			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — another round on #%s runs only when dima applies the label himself",
 				len(rounds), pr.HeadRefName, short(judged), short(head), n),
-			Next: "ask clio to approve #" + n + " on sixth sense's clean"}
+			Next: "ask clio for dima's word on a second round of #" + n}
 	}
 
 	if err := r.Step("request", "re-labelling "+reviewLabel, func() (string, error) {
@@ -206,7 +210,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 
 /* Github */
 func readPR(n string) (prHead, error) {
-	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,reviewDecision,labels")
+	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,baseRefName,labels")
 	if err != nil {
 		return prHead{}, err
 	}
@@ -243,10 +247,27 @@ func reviewRuns(branch string) ([]reviewRun, bool, error) {
 	return runs, true, nil
 }
 
-// a failed read answers false: the caller then asks for a round, or names the cap
-func cleanOnHead(head string) bool {
-	got, err := ghRaw("api", "repos/{owner}/{repo}/commits/"+head+"/check-runs?check_name=review:clean", "--jq", `.check_runs[0].conclusion // ""`)
-	return err == nil && got.ok && got.out == "success"
+// merge-auto's reader of a round: a green run with a skipped job is none
+func reviewerFinishedIn(run int64) (bool, error) {
+	got, err := ghCodie("api", fmt.Sprintf("repos/{owner}/{repo}/actions/runs/%d/jobs", run))
+	if err != nil {
+		return false, err
+	}
+	var jobs runJobs
+	if err := json.Unmarshal([]byte(got.out), &jobs); err != nil {
+		return false, &Fail{Msg: "gh answered jobs x cannot read: " + err.Error(), Next: "gh run view " + fmt.Sprint(run)}
+	}
+	return jobs.reviewerFinished(), nil
+}
+
+// merge-auto's rule, read from github first since this verb may run outside a clone. a failed read answers false:
+// the caller then names the cap, the side that asks a person
+func roundOnHistory(judged, head, base, ref string) bool {
+	got, err := ghRaw("api", "repos/{owner}/{repo}/compare/"+judged+"..."+head, "--jq", ".status")
+	if err == nil && got.ok && (got.out == "ahead" || got.out == "identical") {
+		return true
+	}
+	return base != "" && roundReaches(judged, head, base, ref)
 }
 
 // ghCodie runs gh as the x-codie-cc app, the identity every lane write on github wears

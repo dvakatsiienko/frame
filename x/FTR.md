@@ -108,6 +108,16 @@
   - then it waits until the lock goes, up to 30 s, and the commit lands with one «index lock held, waited n s» line
   - given the lock outlives the wait, then the verb fails naming the lock's path and age, and the lock stays
   - decision: the verb never deletes a lock — a stale one is a crashed git, the caller's to check (PK-97)
+- ⬜ `x lane commit`, its `--dry` and `x lane push` wait for the gate turn, alone in it (FRM-521)
+  - given another session holds the gate turn, when one runs, then it waits first come and runs its hook alone; `gate-queue.log` has its row, wait and run seconds, session and exit
+  - given the wait passes its deadline, then nothing ran, it exits 1 and the holder stays
+  - given a peer's commit lands in the wait, then the tested-bytes proof is read after it, so a moved HEAD runs the gates again; the turn opens right after the tree check, and on main the ci jobs run inside it
+  - given it is wrapped in `script/gate-queue.sh`, or x dies while it holds, then one turn, never a wait on itself, and a dead x frees it
+  - given a chain or a script wrapped in `script/gate-queue.sh` with no `--long`, then it takes no turn and says so, and a peer's commit runs beside it; inside a held run it says nothing and logs no row
+  - given a hook that hangs past 600 s, then the turn frees with x still running, its row logs exit 124 and stderr names the cap
+  - given two commits in one checkout, then both land, the second waiting its turn; an edit made during the wait is formatted, read by the quote check and committed; a `--dry` reads the HEAD after the wait; `--hold-unstaged` moves nothing aside before its turn
+  - given `X_TEST`, then no turn is taken unless `X_GATE_TURN` asks, in its own `X_STATE`; `x lane rebase-main` and the stack push take none
+  - decision: the turn belongs to the gate, never to whoever wraps it; a landing script held the line 993 s (FRM-521:W8)
 - ⬜ `x lane commit` stops a changed quote of dima's in a memory, skill or rules file
   - given a staged `rules/`, `rules-lazy/`, `skills/`, `memory/` markdown file, or a `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, whose «» quoted lines changed against HEAD (`_clio/script/quote-diff.py`)
   - when `x lane commit` runs
@@ -135,8 +145,7 @@
   - when `x lane review <pr>` runs
   - then it adds `🤖 review:requested` as the codie app
   - given the last round judged the head, a round still running on the branch, or a repo with no `review.yml`, then it prints ok and touches no label
-  - given the head is approved on dima's account, or `review:clean` is green on it, then it prints ok («cleared») and touches no label, past the cap too
-  - given the round already ran and neither holds, then it requests nothing, exits 1 and names clio's approval on sixth sense's clean as the way past
+  - given the round already ran on an ancestor of the head, or a rebase kept its code, then it prints ok and touches no label; otherwise it requests nothing, exits 1 and names dima's label as the way to a second round
   - given the label came off and the add failed, then the failure says the pr now holds no review label
   - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and codie's «final» ping runs it as one call (FRM-355)
 - ✅ `x lane gate <msg-file>` holds a commit at commit-msg, in frame and bytes
@@ -166,6 +175,7 @@
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
   - given a lane plan naming the chunk, then 🔴 closing while its `- [ ] NN · <ticket> reviewed and closed` slice is open or missing, and `--apply` on a merged lane ticks an open one, no other line touched, so the glide card holds the chunk until it closes; a lane with no plan, or a plan without the chunk, prints no closing line (FRM-504)
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
+  - given a pr that added a rule to x-mod-guard's `WARN_ONLY`, when `x lane landed <ticket> --pr <n>` runs, then 🔴 warn-only names the rule while the land still lists it, ✅ once it left; a pr that added none prints no such line, the older rules among them; a set that does not read reds (FRM-511)
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
@@ -178,7 +188,8 @@
   - when `x lane merge-auto <pr> --apply` runs
   - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
   - given no run, a skipped or red required check, 0 required checks, an open thread, no sixth sense clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
-  - given bytes' `review:clean` is the one required check missing and the ci review round ran on the branch, then it approves the head on dima's account, waits for `review:clean` to go green on it, then merges; before that round it waits and names `x lane review`
+  - given a bytes pr whose reviewer job finished a round on an ancestor of its head, sixth sense's clean covering the commits after it, or on a head a rebase carried with its patch-id unchanged, then it merges with no approve while `review:clean` is not required; a required one still takes the approve, then the merge
+  - given no round, a round a rebase changed the code under, or a run whose reviewer job skipped or was cancelled, then it waits and names `x lane review <pr>`; given a stand-down alone, then it names the `--dima-ok` door, which passes the round; a renovate author needs no round
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
@@ -195,6 +206,15 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
+- ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
+  - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
+  - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why
+- ⬜ only the real clean store and hold record open the gate (FRM-511): `X_VERIFIED`, `X_STATE`'s hold record, `X_DEV_BUILD` and `X_NOW` count in the test binary alone, a set `X_TEST` on a real one changes nothing; given `X_LINEAR_URL` set on a real binary, then no sign reads, so a forged one pre-approves no self-edit
+- ⬜ a held pr merges only on dima's word (FRM-511)
+  - given `x lane merge-auto <pr> --hold --apply`, then the pr and every open layer under it are marked in this mac's record (`<state>/merge-hold/<owner>_<repo>.json`) and nothing merges
+  - given a held pr, or a top over a held layer, when `x lane merge-auto <pr> --apply` runs, then it refuses naming the hold; a record it cannot read reads as held; with `--dima-ok <pr>` it merges and takes the landed layers' marks off
+  - given `x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply`, then those marks come off and nothing merges, an unreadable record with them; without `--dima-ok` it exits 2
+  - decision: a local record over a github label, so x-mod-guard reads it before a raw merge runs, with no network (clio's greenlight, FRM-511)
 - ✅ `x lane rebase-main --apply` puts a codie branch on origin/main with no merge commit
   - given a `codie/*` branch behind origin/main with no conflict
   - when `x lane rebase-main --apply` runs
@@ -204,6 +224,9 @@
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
   - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
+  - given `--onto <sha>` with no `--apply`, then the plan says how many commits past origin/main replay, so a low sha shows what would leave the branch; no shape tells it from a true old base, so it does not refuse
+  - given a layer whose lower layer squash-merged, when `x lane rebase-main --onto <old base> --apply` runs, then only the layer's own commits sit on origin/main, pushed with a lease; its own pre-rebase remote head is no refusal, a rival's commit still is, and a sha that is no ancestor of HEAD refuses naming it (FRM-511)
+  - given a conflict there, then after `git rebase --continue` the same call reads the head it recorded before the rewrite and finishes the push; after `git rebase --abort` it runs the rebase again
   - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in sixth sense's round 2
   - decision: the one force-push door, `codie/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
 - ✅ `x lane verify-tree <pr url | main:<sha>>` gives sixth sense a seeded worktree of a head

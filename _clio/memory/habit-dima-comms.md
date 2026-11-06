@@ -48,9 +48,6 @@ floods; no other member prints one.
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 
 
-<!-- 2026-10-14: the reply held 5 questions, orbit Q1–Q6 -->
-
-
 **What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him, so the closing message carries it whole.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents (researchers, codies, probes),
@@ -75,7 +72,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged). a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 
-**A candidate to cancel, park or close a build gets its reason in the thread, the turn its ask goes up** (dima, 2026-11-05: «canceling planned stuff is useful, because we actually often don't know, ourselves, if a piece of stuff to build is worth it»; unused stuff gets planned even past ⚖️ worth it; widened on his tick, 11-06): what it would have done, what was measured, the door that stays, what he loses; the ask's few words never carry it alone.
+**A candidate to cancel, park or close a build gets its reason in the thread, the turn its ask goes up** (dima, 2026-11-05: «canceling planned stuff is useful, because we actually often don't know, ourselves, if a piece of stuff to build is worth it»; unused stuff gets planned even past ⚖️ worth it; widened on his tick, 11-06): what it would have done, what was measured, the door that stays, what he loses; the ask's few words never carry it alone. a plan, reorg or cut list: `clio:cut-proposals-print` first.
 
 **A spotted fix becomes an orbit ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
 

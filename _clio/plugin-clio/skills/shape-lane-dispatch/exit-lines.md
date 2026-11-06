@@ -20,6 +20,7 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 - a **cross-view claim is an equality**: «the same number on every view», never «the count is the headline everywhere» — the equality is where the bug was
 - a **rate bar names its minimum n**: «recall ≥ 95 %» on 9 prompts meant 9 of 9
 - a **count names its unit and the command that counts it**: «185 tests» was a count of names while 160 ran (FRM-422); «top-level passes in `go test -json`» leaves no room
+- a line for a **must-hold rule** names the class it holds, never a list of shapes: FRM-511's exit 3 and 8 passed every listed one while siblings broke; a guard lift, next line, goes further
 - a line for a **guard lift** names the shape it lifts as an allowlist of the whole command, never the escapes it refuses: FRM-467's round 1 passed its five named forms and fell to 27 others
 - a line that **proves a fix** says it goes red with the fix reverted: FRM-422's race line passed without proving the lock alone
 - a line **proves what its run can show**: a done test that needs five runs goes to the test drive, never one exit line that reads green at the first (FRM-496's exit 4)
@@ -28,7 +29,8 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 
 ## it says what it depends on
 
-- a line that holds only after **another pr** merges names that pr; one that can close only after its own merge or a dispatch says so in the spec, so sixth sense grades the rest (FRM-465 line 2)
+- a line that holds only after **another pr** merges names that pr; one that can close only after its own merge or a dispatch sits in the spec under `after merge`, outside the lines sixth sense's clean counts, so its clean opens the merge and it reads that line after the land (FRM-465 line 2; BYT-94's and FRM-521's post-merge lines each cost a turn against the merge gate)
+- a line or how-line that **orders steps around a shared lock or queue** carries one probe at seal, run on the shape it will meet, two runs in one checkout included: FRM-521's «no stage inside the turn» was sealed unprobed and cost an hour
 - a **cross-repo** line names where each half lands and which merges first: a hook calling the other repo's verb cannot push before the verb is on main
 - a **rename of stored data** says «migrate» or «read both», or two lines pull against each other
 - a live line names the input it trusts; a line naming store keys says «and every prefixed or dated key of that family»; a removal ships its grep as the file list and its skip list

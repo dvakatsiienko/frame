@@ -12,12 +12,12 @@ import (
 const headSha, oldSha = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 // a fake gh answering from files beside it: pr.json, runs.jsonl (absent → 404), body; every call
-// lands in calls.log behind the token it ran with. FAKE_GH_DECISION is the pr's reviewDecision,
-// FAKE_GH_CLEAN the head's review:clean conclusion, FAKE_GH_ADD_FAIL refuses a label add
+// lands in calls.log behind the token it ran with. FAKE_GH_ADD_FAIL refuses a label add, FAKE_GH_COMPARE is github's compare status,
+// FAKE_GH_JOB the reviewer job's conclusion, success when unset; FAKE_GH_JOBS_BODY replaces that answer, and «fail» makes it a 5xx
 func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 	t.Helper()
 	dir = t.TempDir()
-	write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+headSha+`","reviewDecision":"__DECISION__","labels":[{"name":"🤖 review:requested"}]}`)
+	write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+headSha+`","labels":[{"name":"🤖 review:requested"}]}`)
 	if runs != nil {
 		write(t, filepath.Join(dir, "runs.jsonl"), strings.Join(runs, "\n")+"\n")
 	}
@@ -25,11 +25,16 @@ func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 d='`+dir+`'
 printf '%s %s\n' "$GH_TOKEN" "$*" >> "$d/calls.log"
 case "$1" in
-api) case "$*" in *check-runs*) echo "$FAKE_GH_CLEAN"; exit 0 ;; esac
+api) case "$*" in
+	*compare/*) echo "$FAKE_GH_COMPARE"; exit 0 ;;
+	*/jobs*) if [ "$FAKE_GH_JOBS_BODY" = fail ]; then echo 'HTTP 502' >&2; exit 1; fi
+		if [ -n "$FAKE_GH_JOBS_BODY" ]; then echo "$FAKE_GH_JOBS_BODY"; exit 0; fi
+		echo "{\"jobs\":[{\"name\":\"review-round / reviewer\",\"conclusion\":\"${FAKE_GH_JOB:-success}\"}]}"; exit 0 ;;
+	esac
 	[ -f "$d/runs.jsonl" ] && exec cat "$d/runs.jsonl"; echo 'gh: Not Found (HTTP 404)' >&2; exit 1 ;;
 pr) case "$2 $*" in
 	view*'--json body'*) cat "$d/body"; if [ -n "$FAKE_GH_MANGLE" ]; then echo mangled; fi ;;
-	view*) sed "s/__DECISION__/$FAKE_GH_DECISION/" "$d/pr.json" ;;
+	view*) cat "$d/pr.json" ;;
 	edit*--add-label*) if [ -n "$FAKE_GH_ADD_FAIL" ]; then echo 'HTTP 502' >&2; exit 1; fi ;;
 	edit*--body-file*) for a; do last=$a; done; cp "$last" "$d/body" ;;
 	esac ;;
@@ -40,7 +45,7 @@ esac
 }
 
 func runOf(number int, sha, status, conclusion string) string {
-	return fmt.Sprintf(`{"run_number":%d,"head_branch":"coder/x","head_sha":%q,"status":%q,"conclusion":%q}`, number, sha, status, conclusion)
+	return fmt.Sprintf(`{"id":%d,"run_number":%d,"head_branch":"coder/x","head_sha":%q,"status":%q,"conclusion":%q}`, number, number, sha, status, conclusion)
 }
 
 func calls(t *testing.T, dir string) string {
@@ -67,28 +72,95 @@ func TestReviewRequestsTheFirstRoundUnderTheCap(t *testing.T) {
 
 func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
 	t.Parallel()
-	capped := []string{runOf(1, oldSha, "completed", "success")}
 	cases := []struct {
 		name   string
 		runs   []string
-		env    string
 		review string
 	}{
-		{"the verdict judged the head", []string{runOf(1, headSha, "completed", "success")}, "", "current"},
-		{"a round is running on the head", []string{runOf(1, headSha, "in_progress", "")}, "", "running"},
-		{"a round is running on an older commit", []string{runOf(1, oldSha, "queued", "")}, "", "running"},
-		{"the repo has no review lane", nil, "", "no lane"},
-		{"dima approved the head past the cap", capped, "FAKE_GH_DECISION=APPROVED", "cleared"},
-		{"review:clean is green on the head past the cap", capped, "FAKE_GH_CLEAN=success", "cleared"},
+		{"the verdict judged the head", []string{runOf(1, headSha, "completed", "success")}, "current"},
+		{"a round is running on the head", []string{runOf(1, headSha, "in_progress", "")}, "running"},
+		{"a round is running on an older commit", []string{runOf(1, oldSha, "queued", "")}, "running"},
+		{"the repo has no review lane", nil, "no lane"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			env, dir := fakeGh(t, c.runs)
 
-			got := xIn(t, t.TempDir(), append(env, c.env), "lane", "review", "7")
+			got := xIn(t, t.TempDir(), env, "lane", "review", "7")
 
 			if got.code != 0 || got.data["review"] != c.review || strings.Contains(calls(t, dir), "pr edit") {
 				t.Fatalf("exit %d, review %v, calls:\n%s", got.code, got.data["review"], calls(t, dir))
+			}
+		})
+	}
+}
+
+func TestReviewCountsNoRoundForAGreenRunWithASkippedJob(t *testing.T) {
+	t.Parallel()
+	env, dir := fakeGh(t, []string{runOf(1, headSha, "completed", "success")})
+
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_JOB=skipped"), "lane", "review", "7")
+
+	if got.code != 0 || got.data["review"] != "requested" || !strings.Contains(calls(t, dir), "--add-label") {
+		t.Fatalf("exit %d, review %v, want a round requested:\n%s%s", got.code, got.data["review"], calls(t, dir), got.stdout)
+	}
+}
+
+func TestReviewRefusesWhenARunsJobsCannotBeRead(t *testing.T) {
+	t.Parallel()
+	for _, body := range []string{"fail", "not json"} {
+		t.Run(body, func(t *testing.T) {
+			t.Parallel()
+			env, dir := fakeGh(t, []string{runOf(1, headSha, "completed", "success")})
+
+			got := xIn(t, t.TempDir(), append(env, "FAKE_GH_JOBS_BODY="+body), "lane", "review", "7")
+
+			if got.code != 1 || got.data["review"] != nil || strings.Contains(calls(t, dir), "pr edit") {
+				t.Fatalf("exit %d, review %v, want a refusal and no label:\n%s%s", got.code, got.data["review"], calls(t, dir), got.stdout)
+			}
+		})
+	}
+}
+
+func TestReviewAtTheCapAcceptsARoundOnAnAncestorOfTheHead(t *testing.T) {
+	t.Parallel()
+	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success")})
+
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_COMPARE=ahead"), "lane", "review", "7")
+
+	if got.code != 0 || got.data["review"] != "on history" || strings.Contains(calls(t, dir), "pr edit") {
+		t.Fatalf("exit %d, review %v, calls:\n%s", got.code, got.data["review"], calls(t, dir))
+	}
+}
+
+func TestReviewAtTheCapFollowsMergeAutoAcrossARebase(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name    string
+		newCode bool
+		code    int
+	}{
+		{"the same code keeps its round", false, 0},
+		{"a code change does not", true, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			judged := w.head
+			if c.newCode {
+				w.rebaseWithANewCommit(t)
+			} else {
+				w.mainMoves(t, "one.txt")
+				w.moveHead(t)
+			}
+			env, dir := fakeGh(t, []string{runOf(1, judged, "completed", "success")})
+			write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+w.head+`","baseRefName":"main","labels":[]}`)
+
+			got := xIn(t, w.clone, append(env, "FAKE_GH_COMPARE=diverged"), "lane", "review", "7")
+
+			if got.code != c.code || strings.Contains(calls(t, dir), "pr edit") {
+				t.Fatalf("exit %d, want %d, calls:\n%s%s", got.code, c.code, calls(t, dir), got.stdout)
 			}
 		})
 	}
@@ -108,17 +180,17 @@ func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
 	}
 }
 
-func TestReviewAtTheCapNamesCliosApprovalAndRequestsNothing(t *testing.T) {
+func TestReviewAtTheCapNamesDimasLabelAndRequestsNothing(t *testing.T) {
 	t.Parallel()
 	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "failure")})
 
-	got := xIn(t, t.TempDir(), env, "lane", "review", "7")
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_COMPARE=diverged"), "lane", "review", "7")
 
 	if got.code != 1 || strings.Contains(calls(t, dir), "pr edit") {
 		t.Fatalf("exit %d, calls:\n%s", got.code, calls(t, dir))
 	}
-	if !strings.Contains(got.stdout, "clio approves #7") {
-		t.Errorf("the refusal does not name clio's approval: %s", got.stdout)
+	if !strings.Contains(got.stdout, "dima applies the label") || strings.Contains(got.stdout, "approve") {
+		t.Errorf("the refusal does not name dima's label alone: %s", got.stdout)
 	}
 }
 

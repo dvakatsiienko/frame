@@ -89,6 +89,7 @@ import {
     QUIET_SLIPSTREAMED,
     isAppPrompt,
     isQuietAnswer,
+    isQuietPause,
     isQuietQuestion,
     isQuietRefusal,
     quietGlued,
@@ -147,7 +148,7 @@ const LANE_MOVES = 'lane-moves';
 const DIMA_AT = 'dima-at';
 const AFK_KEY = 'afk';
 const AWAY_NOTE =
-    'dima is afk: nothing waits on him. take reversible steps and log them, park every ask in orbit for his return, send no ping.';
+    'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 const POLL_MS = 4000;
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
@@ -1073,6 +1074,11 @@ const LEDGER_EVERY_MS = 60_000;
 // the alarms already raised, so each gap and each stuck hold notifies once, across reloads too
 const QUIET_ALARMED = 'quiet-alarmed';
 const QUIET_ALARMED_MAX = 50;
+// a member alarms past this many 🎛️ waits; one wait read 24 alarm keys on 7 members in a day
+const QUIET_SILENT_WAITS = 3;
+// when clio last sent each member a line, by session id: past its [done], that re-arms its silent alarm
+const QUIET_SENT = 'quiet-sent';
+const QUIET_PARK_MS = 7 * 24 * 60 * 60_000;
 // a transcript's last write in epoch seconds, by its session id under any project folder
 // a ping's reply ends a moment before its last transcript write
 const PING_WRITE_MS = 60_000;
@@ -1393,12 +1399,31 @@ async function lastSpokeAt($: EngineInterface, home: string, sid: string) {
     return isPingLast ? Math.floor(reply.at / 1000) * 1000 : wrote;
 }
 
-// a hung member sends nothing, so an open lane's member past the wait raises one alarm per silence, under a shift also one
-// turn of clio's; a refused or a busy turn asks again at the next poll
+// when a member's newest tagged line to clio is its [done]: an untagged receipt or a turn-end note after it changes nothing,
+// a later [ask] or [escalate] does; a week back at most, past that it reads as no [done]
+async function quietDoneAt($: EngineInterface, sid: string, now: number) {
+    for (let at = now; now - at <= QUIET_PARK_MS; at -= 24 * 60 * 60_000) {
+        const lines = ((await $.store
+            .get(quietLogKey(at))
+            .catch(() => undefined)) ?? []) as QuietLogLine[];
+        const last = lines.findLast(
+            (l) => l.sid === sid && QUIET_KINDS.some((k) => k.kind === l.tag),
+        );
+        if (last) return last.tag === 'done' ? last.at : undefined;
+    }
+    return undefined;
+}
+
+// a hung member sends nothing, so an open lane's member past three waits raises one alarm per silence, under a shift also one
+// turn of clio's; a refused or a busy turn asks again at the next poll; a member whose last word was its [done] is parked
+// until clio sends it a line, any line, since the mod can't tell work from a chat, and counts from that send
 async function quietSilentMembers($: EngineInterface, now: number) {
-    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
+    const waitMs =
+        (await readNumber($, 'quietWait')) * 60_000 * QUIET_SILENT_WAITS;
     const home = (await $.env.get('HOME')) ?? '';
     const rows = await registry($);
+    const sends = ((await $.store.get(QUIET_SENT).catch(() => undefined)) ??
+        {}) as Record<string, number>;
     const me = await currentId($);
     const pace = me
         ? ((await $.store.get(PACE + me)) as { since?: number } | undefined)
@@ -1411,8 +1436,14 @@ async function quietSilentMembers($: EngineInterface, now: number) {
             if (!name) continue;
             const row = memberOf(rows, await successorOf($, name));
             if (!row || row.base.sid === me) continue;
-            const at = await lastSpokeAt($, home, row.base.sid);
-            if (at === undefined || now - at < waitMs) continue;
+            const spokeAt = await lastSpokeAt($, home, row.base.sid);
+            if (spokeAt === undefined || now - spokeAt < waitMs) continue;
+            const doneAt = await quietDoneAt($, row.base.sid, now);
+            const sentAt = sends[row.base.sid] ?? 0;
+            if (doneAt !== undefined && sentAt <= doneAt) continue;
+            const at =
+                doneAt === undefined ? spokeAt : Math.max(spokeAt, sentAt);
+            if (now - at < waitMs) continue;
             const words = `${row.base.name} silent ${Math.round((now - at) / 60_000)} min on «${lane.title}»`;
             // one silence, one key: a ping moves `at` back to the reply before it, past the time the alarm keyed on
             const prefix = `silent:${row.base.sid}:`;
@@ -1678,7 +1709,7 @@ async function quietHoldPrompt(
 }
 
 type QuietSend =
-    | { isOwner: true; isAsking: boolean; to: string }
+    | { isOwner: true; isAsking: boolean; isPause: boolean; to: string }
     | { at: number; isAnswer: boolean; isOwner: false; message: string };
 
 // read before the send goes out: clio's gate spends the open answer the moment it lands
@@ -1693,6 +1724,7 @@ async function quietSendStart(
         return {
             isAsking: isQuietQuestion(message),
             isOwner: true,
+            isPause: isQuietPause(message),
             to,
         };
     if (!(await isToCoordinator($, to))) return undefined;
@@ -1719,8 +1751,11 @@ async function quietSendEnd(
 ): Promise<{ line?: string; held?: Record<string, unknown> }> {
     const answer = result as Record<string, unknown> | undefined;
     if (send.isOwner) {
-        if (send.isAsking && answer?.success !== false)
-            await quietLocked(() => quietAsked($, send.to));
+        if (answer?.success === false) return {};
+        await quietLocked(async () => {
+            if (send.isAsking) await quietAsked($, send.to);
+            if (!send.isPause) await quietSentTo($, send.to);
+        });
         return {};
     }
     const isHeld =
@@ -1812,6 +1847,20 @@ async function quietAsked($: EngineInterface, to: string) {
     await $.store.set(QUIET_ASKED, {
         ...Object.fromEntries(kept),
         [memberKey(row?.base.name ?? bareTo(to))]: now,
+    });
+}
+
+async function quietSentTo($: EngineInterface, to: string) {
+    const sid = rowOfTo(await registry($), to)?.base.sid;
+    if (!sid) return;
+    const now = await $.clock.now();
+    const was = ((await $.store.get(QUIET_SENT).catch(() => undefined)) ??
+        {}) as Record<string, number>;
+    await $.store.set(QUIET_SENT, {
+        ...Object.fromEntries(
+            Object.entries(was).filter(([, at]) => now - at < QUIET_PARK_MS),
+        ),
+        [sid]: now,
     });
 }
 

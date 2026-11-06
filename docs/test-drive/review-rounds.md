@@ -36,6 +36,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-06 · BYT-130 ci made boring · codie · 4 sixth sense rounds, 2 of them on steers; local reviews 4
 - 2026-11-06 · BYT-130 ci made boring · sixth sense · r1 14 min, r2 13 min (10 of it CI), r3 19 min (14 in the gate queue), r4 3 min; 4 rounds, all P2 or text, none counted to the cap; scope grew by dima's fix word · keep
 - 2026-11-06 · cli lane 6 · codie · local reviews 4 (built-in, two wisphunter cards, coderabbit); sixth sense rounds 2 so far, the ci reviewer's one spent
+- 2026-11-06 · lane retros (FRM-474, FRM-521) · FRM-474: 5 local reviews, 5 sixth sense rounds, most wall clock on queue waits; the ci reviewer's one round never read the redesign. FRM-521: 2 sixth sense rounds, 44 min first verdict to second head, the ci reviewer at final caught what two rounds did not
 ## graded lines — one per local review, from codie's done report, copied by clio at land
 
 - 2026-10-22 · frame#95 · matt's code-review, spec card (Opus 5.5) · 4 useful, 3 noise · useful
@@ -94,5 +95,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-06 · BYT-130 ci made boring · sixth sense + wisphunter · 4 rounds; wisphunter found the rev hole, his fix ask added a round, a 4th limit came from the fix itself · useful
 - 2026-11-06 · BYT-94 ci made boring, codie · 3 local reviews on both prs, 1 ci round each · each local review found something the others missed
 - 2026-11-06 · FRM-511 cli lane 5, sixth sense · 2 rounds, the second only the refuted lines plus mutants, graded lines in the done comment · helped, keep
+- 2026-11-06 · a trial from the next side lane, dima's tick: sixth sense summoned at codie's «final», not at its first commit · measure: watch and deadline pings spared, a miss an early plan read would have caught
 
 ## verdict

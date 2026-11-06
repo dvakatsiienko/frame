@@ -1,10 +1,10 @@
 ---
 id: PK-341
 title: 'day plan 11-06: wing 3'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T19:23:00Z'
-updated_date: '2026-11-06T19:47:00Z'
+updated_date: '2026-11-06T21:15:00Z'
 labels:
   - xs
   - wing-3
@@ -29,3 +29,9 @@ wing 3's durable plan, a checkbox list, one check per finished line: the mods ch
 - [ ] #5 the checks homed: check 2 in the close net, check 3 in mods/AGENTS.md
 - [ ] #6 one line to main
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+close: wing 3's day plan done, PK-325's sheet carries it
+<!-- SECTION:NOTES:END -->

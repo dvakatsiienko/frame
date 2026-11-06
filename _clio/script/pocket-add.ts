@@ -8,6 +8,9 @@ import { parseArgs } from 'node:util';
 const PRIORITIES = ['now', 'next', 'later'] as const;
 const pocket = path.resolve(import.meta.dirname, '..');
 
+// wing 01 would label `wing-01`, which no `--labels wing-1` ever finds
+export const isWingNumber = (value: string) => /^[1-9]\d*$/.test(value);
+
 export function ordinalFor(
     ordinals: number[],
     priority: Priority,
@@ -71,7 +74,7 @@ if (import.meta.main) {
         !title ||
         !PRIORITIES.includes(priority) ||
         !['xs', 's', 'm'].includes(values.size) ||
-        (values.wing !== undefined && !/^\d+$/.test(values.wing))
+        (values.wing !== undefined && !isWingNumber(values.wing))
     ) {
         console.error(
             'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m] [--priority now|next|later] [--top] [--wing <N>] [--type task] [--due YYYY-MM-DD]',

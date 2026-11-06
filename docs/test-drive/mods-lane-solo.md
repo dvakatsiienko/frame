@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-19
 dies-when: the verdict line below is written
 fits: clio
@@ -39,3 +39,5 @@ dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods l
 - 2026-11-05 · FRM-507, size S, layer 1 · greenlight 17:07 → `[done]` 17:30, 23 min, on top of 17:03 → 17:07 slicing the whole lane; 1 pr, 2 local reviews, 0 fix rounds so far · read 1: 2 high, 4 real bugs, from wishkeeper and wisphunter · fix round 17:40 → 18:21, 41 min, 5 local reviews, 2 riders of dima's in it; so 64 min build to second `[done]`, against lane 4's 88 median; read 2, 7 min: 1 high (no live frame at head), 2 medium; a CI round joined at 18:27, 1 m 43 s, clean; merged 18:39: greenlight 17:07 → merge 18:39, 92 min, with 2 riders in it. lane 4's 88 min median ends at clean, not at merge: this lane's end point for that compare is my second read's green, about 18:29, 82 min. first layer, not a pattern yet
 
 ## verdict
+
+dropped 2026-11-06 — a sixth sense is back on the mods lane from FRM-510, dima's word 23:05 and his tick: too few chunks to compare, the numbers stand as measured: 7.91 active min per 100 lines solo (n=3), 3.75 with one (n=13), no quality read.

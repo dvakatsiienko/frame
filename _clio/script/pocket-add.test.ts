@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
-import { ordinalFor, searchTerm } from './pocket-add.ts';
+import { isWingNumber, ordinalFor, searchTerm } from './pocket-add.ts';
+
+test.each(['1', '12'])('wing %s is a number', (value) => {
+    expect(isWingNumber(value)).toBe(true);
+});
+
+test.each(['0', '01', '', '-1', 'a', '1\n'])('wing %j is refused', (value) => {
+    expect(isWingNumber(value)).toBe(false);
+});
 
 describe('searchTerm', () => {
     test('keeps the first three words over 4 characters', () => {

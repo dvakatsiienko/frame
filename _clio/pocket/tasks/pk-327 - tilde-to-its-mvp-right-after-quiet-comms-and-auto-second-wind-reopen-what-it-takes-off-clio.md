@@ -3,10 +3,10 @@ id: PK-327
 title: >-
   tilde to its mvp right after quiet comms and auto second wind; reopen what it
   takes off clio
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T22:08:00Z'
-updated_date: '2026-11-06T20:06:00Z'
+updated_date: '2026-11-06T21:08:00Z'
 labels:
   - s
   - wing-1
@@ -37,4 +37,11 @@ PK-327:W8 (2026-11-06 03:06, dima): eventually i want to test drive tilde. with 
 PK-327:W9 (2026-11-06 03:06, dima): before that, we need to measure quiet comms, because quiet comms affects everyone, you and tilde as well. everything we optimize right now transfers to tilde too, so let's focus on that first.
 
 wing-1 stays only because a label off an item with same-day W-lines reds the groom check, a wing's prompts reach no log (wing 2's hole, proven 22:06); it is main's, due to fold into FRM-368.
+
+22:32 this item is main's plan, due to fold into FRM-368; wing-1 is only the groom-check record until PK-343 lands (the W-lines were folded in wing 1, with no prompt log). wing 1 does not work it.
+
+ticket: FRM-368
+close: folded into FRM-368 as FRM-368:W443–W451, W3 now moves its pace in the body; the raw lines above stay
+
+close: moved to FRM-368: PK-327:W1 as FRM-368:W443, PK-327:W2 as W444, PK-327:W3 as W445, PK-327:W4 as W446, PK-327:W5 as W447, PK-327:W6 as W448, PK-327:W7 as W449, PK-327:W8 as W450, PK-327:W9 as W451
 <!-- SECTION:NOTES:END -->

@@ -54,6 +54,7 @@ their head.
   restores byte-for-byte; exit 0 only on green, then red, then the bytes back. `red-proof --help` for many lines or another runner.
 - **A red-proof covers each allow, exemption and parse branch**, not only the refusal branch — a parser or
   lint gets ten hostile inputs (`--flag=true`, a spread, a quote, a variable path) before its first green.
+- **A rule that must hold starts as an allow-list** — the short list of what may pass; a list of what may not leaks a hole per round.
 - **A test reads fixtures, never live state** — no real `origin/main`, no real registry; a fixture plants
   its own.
 - **A test that spawns a paid or networked script runs a copy with the spender stubbed**, never the

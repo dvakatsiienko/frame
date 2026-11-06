@@ -29,6 +29,8 @@ type mergeCheck struct {
 	Name   string `json:"name"`
 	OK     bool   `json:"ok"`
 	Detail string `json:"detail"`
+	// the store has no clean for this pr at all, as against one on another head or a store that does not read
+	noClean bool
 }
 
 type mergeDecision struct {
@@ -49,7 +51,9 @@ type mergeDecision struct {
 	dimaOK   bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
 	landed   string
 	headRef  string
+	holds    []string
 	Trees    []string `json:"trees,omitempty"`
+	Holds    string   `json:"holds,omitempty"`
 }
 
 type pullHead struct {
@@ -57,7 +61,10 @@ type pullHead struct {
 	Body   string `json:"body"`
 	State  string `json:"state"`
 	Merged bool   `json:"merged"`
-	Head   struct {
+	User   struct {
+		Login string `json:"login"`
+	} `json:"user"`
+	Head struct {
 		Sha string `json:"sha"`
 		Ref string `json:"ref"`
 	} `json:"head"`
@@ -75,6 +82,18 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	word, _ := flags["dima-ok"].(string)
 	if word != "" && word != n {
 		return nil, usageFail("--dima-ok names #"+word+", this merge is #"+n+": dima's word counts for the pr it names", "x lane merge-auto "+n+" --apply --dima-ok "+n)
+	}
+	hold, _ := flags["hold"].(bool)
+	releaseHold, _ := flags["release-hold"].(bool)
+	switch {
+	case hold && releaseHold:
+		return nil, usageFail("--hold and --release-hold undo each other: name one", "x lane merge-auto "+n+" --hold --apply")
+	case releaseHold && word == "":
+		return nil, usageFail("a hold is released only on dima's typed word", "x lane merge-auto "+n+" --release-hold --dima-ok "+n+" --apply")
+	case hold:
+		return holdPlan(r, n, "hold", flags)
+	case releaseHold:
+		return holdPlan(r, n, "release-hold", flags)
 	}
 	if release, _ := flags["release-brake"].(bool); release {
 		if word == "" {
@@ -96,6 +115,8 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 
 	var pr pullHead
 	var layers *prLayers
+	var held []string
+	var holdErr error
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
@@ -106,6 +127,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 		if state != "open" {
 			return "", &Fail{Refused: true, Msg: "#" + n + " is " + state + ", nothing to merge", Next: "x gh pr " + n}
+		}
+		held, holdErr = readHolds(repo)
+		if stop := holdStop(repo, n, held, holdErr); stop != "" && word == "" {
+			return "", holdRefusal(n, stop)
 		}
 		if laneAddOn.layersOf != nil {
 			var err error
@@ -129,6 +154,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		d.heads = map[string]string{n: pr.Head.Sha}
 		if err := r.Step("layers", "gating every layer under the pr", func() (string, error) {
 			for _, below := range layers.below {
+				if stop := holdStop(repo, below, held, holdErr); stop != "" && word == "" {
+					return "", holdRefusal(n, stop+" — a stack merges all of its layers at once")
+				}
 				wait, err := layerWait(repo, api, trunk, below, d)
 				if err != nil {
 					return "", err
@@ -146,9 +174,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	var sixthSense, ci, threads mergeCheck
+	var sixthSense, ci, round, threads mergeCheck
 	if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
-		sixthSense = sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+		sixthSense = d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 		return sixthSense.shown()
 	}); err != nil {
 		return nil, err
@@ -156,11 +184,20 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	needsApprove := false
 	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
 		var err error
-		ci, needsApprove, err = ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
+		ci, needsApprove, err = ciCheck(api, trunk, pr.Head.Sha)
 		if err != nil || needsApprove {
 			return ci.Detail, err
 		}
 		return ci.shown()
+	}); err != nil {
+		return nil, err
+	}
+	if err := r.Step("round", "reading the reviewer's round on the branch", func() (string, error) {
+		var err error
+		if round, err = roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
+			return "", err
+		}
+		return round.shown()
 	}); err != nil {
 		return nil, err
 	}
@@ -174,6 +211,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	d.Checks = []mergeCheck{sixthSense, ci, threads}
+	if roundGated(repo) {
+		d.Checks = []mergeCheck{sixthSense, ci, round, threads}
+	}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
 		own, ownSelf, err := riskyPaths(api, n)
@@ -212,7 +252,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	d.Decision, d.Wait = decide(brake, selfWait, needsApprove, sixthSense, ci, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, needsApprove, sixthSense, ci, round, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -221,16 +261,16 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the brake and a self-edit outrank every check; a bytes head missing only review:clean gets the approve
-func decide(brake, selfWait string, needsApprove bool, sixthSense, ci, threads mergeCheck) (decision, wait string) {
+func decide(brake, selfWait string, needsApprove bool, sixthSense, ci, round, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
 	case selfWait != "":
 		return "wait", selfWait
-	case sixthSense.OK && threads.OK && needsApprove:
+	case sixthSense.OK && round.OK && threads.OK && needsApprove:
 		return "approve", ""
 	}
-	for _, c := range []mergeCheck{sixthSense, ci, threads} {
+	for _, c := range []mergeCheck{sixthSense, round, ci, threads} {
 		if !c.OK {
 			return "wait", c.Detail
 		}
@@ -245,8 +285,12 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	d.heads[n] = pr.Head.Sha
-	sixthSense := sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
-	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Ref, pr.Head.Sha)
+	sixthSense := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
+	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Sha)
+	if err != nil {
+		return "", err
+	}
+	round, err := roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK)
 	if err != nil {
 		return "", err
 	}
@@ -266,14 +310,14 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
-	decision, wait := decide("", selfWait, needsApprove, sixthSense, ci, threads)
+	decision, wait := decide("", selfWait, needsApprove, sixthSense, ci, round, threads)
 	switch decision {
 	case "merge":
 		return "", nil
 	case "approve":
 		return layer + " needs its review:clean first: x lane merge-auto --apply " + n, nil
 	}
-	for _, c := range []mergeCheck{sixthSense, ci, threads} {
+	for _, c := range []mergeCheck{sixthSense, ci, round, threads} {
 		if !c.OK && c.Detail == wait {
 			wait = c.Name + ": " + wait
 		}
@@ -298,8 +342,13 @@ func headsHeld(api string, heads map[string]string) error {
 
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
-	if d.Decision == "release" {
+	switch d.Decision {
+	case "release":
 		return "release the brake #" + d.PR + " holds?"
+	case "hold":
+		return "hold #" + strings.Join(d.holds, ", #") + " until dima's word?"
+	case "release-hold":
+		return "release the hold on #" + strings.Join(d.holds, ", #") + "?"
 	}
 	return "merge #" + d.PR + " at " + short(d.Head) + "?"
 }
@@ -307,6 +356,9 @@ func askMergeAuto(plan any) string {
 func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	d := plan.(*mergeDecision)
 	api := githubBase() + "/repos/" + d.Repo
+	if d.Decision == "hold" || d.Decision == "release-hold" {
+		return holdApply(r, d)
+	}
 	if d.Decision == "release" {
 		if err := r.Step("brake", "removing the "+brakeLabel+" label, on dima's typed word", func() (string, error) {
 			status, _, err := ghSend(asDima, http.MethodDelete, api+"/issues/"+d.PR+"/labels/"+brakeLabel, nil, nil)
@@ -342,6 +394,18 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
+		// a hold set since the plan read: the approve alone waits minutes
+		if !d.dimaOK {
+			held, holdErr := readHolds(d.Repo)
+			if stop := holdStop(d.Repo, d.PR, held, holdErr); stop != "" {
+				return "", holdRefusal(d.PR, stop)
+			}
+			for layer := range d.heads {
+				if stop := holdStop(d.Repo, layer, held, holdErr); stop != "" {
+					return "", holdRefusal(d.PR, stop)
+				}
+			}
+		}
 		if d.layered && laneAddOn.mergeLayers != nil {
 			// a stacked pr refuses the plain endpoint (403); its layers land together or not at all
 			if err := headsHeld(api, d.heads); err != nil {
@@ -371,6 +435,10 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	_ = r.Step("hold", "the landed layers' held marks", func() (string, error) {
+		d.Holds = dropLandedHolds(d)
+		return d.Holds, nil
+	})
 	_ = r.Step("decamp", "the merged lane's clean trees", func() (string, error) {
 		d.Trees = decampMerged(d)
 		return strings.Join(d.Trees, "; "), nil
@@ -378,6 +446,9 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	result := "merged #" + d.PR + " at " + short(d.Merged)
 	if d.layered {
 		result = d.landed
+	}
+	if d.Holds != "" {
+		result += "\n" + d.Holds
 	}
 	if len(d.Trees) > 0 {
 		result += "\n" + strings.Join(d.Trees, "\n")
@@ -708,7 +779,7 @@ func mergedByX(api string, trailered map[string]bool, key, path string) (bool, e
 }
 
 func clock() time.Time {
-	if os.Getenv("X_TEST") != "" {
+	if mergeTestEnvOn() {
 		if at, err := time.Parse(time.RFC3339, os.Getenv("X_NOW")); err == nil {
 			return at
 		}
@@ -723,11 +794,15 @@ func clock() time.Time {
 func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	c := mergeCheck{Name: "sixth-sense"}
 	home, _ := os.UserHomeDir()
-	path := cmp.Or(os.Getenv("X_VERIFIED"), filepath.Join(home, ".claude/shelf/pr-verified.json"))
+	path := filepath.Join(home, ".claude/shelf/pr-verified.json")
+	if mergeTestEnvOn() {
+		path = cmp.Or(os.Getenv("X_VERIFIED"), path)
+	}
 	raw, err := os.ReadFile(path)
 	var store map[string]string
 	if err != nil || json.Unmarshal(raw, &store) != nil {
 		c.Detail = "no sixth sense store at " + path
+		c.noClean = errors.Is(err, fs.ErrNotExist)
 		return c
 	}
 	verified := store[repo+"#"+n]
@@ -738,6 +813,7 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 	switch {
 	case verified == "":
 		c.Detail = "no clean recorded for " + repo + "#" + n
+		c.noClean = true
 	case verified == head:
 		c.OK, c.Detail = true, "clean on "+short(head)+" by "+by
 	default:
@@ -858,8 +934,8 @@ func approveAndAwait(api string, d *mergeDecision) (string, error) {
 	}
 }
 
-// «no run» and «skipped» are never green; needsApprove when review:clean alone is missing after the ci round
-func ciCheck(api, base, ref, head string) (mergeCheck, bool, error) {
+// «no run» and «skipped» are never green; needsApprove when review:clean alone is missing
+func ciCheck(api, base, head string) (mergeCheck, bool, error) {
 	c := mergeCheck{Name: "ci"}
 	var protection struct {
 		Contexts []string `json:"contexts"`
@@ -907,42 +983,107 @@ func ciCheck(api, base, ref, head string) (mergeCheck, bool, error) {
 		return c, false, nil
 	}
 	c.Detail = fmt.Sprintf("%s is %s on %s, the rest of %d required green", reviewClean, reviewState, short(head), len(required))
-	rounds, err := reviewRounds(api, ref)
-	if err != nil {
-		return c, false, err
-	}
-	if rounds == 0 {
-		c.Detail += "; no ci review round ran on " + ref + " yet — x lane review first"
-		return c, false, nil
-	}
 	return c, true, nil
 }
 
+// the one repo whose merges need a reviewer round; frame's round stays advice
+func roundGated(repo string) bool {
+	if mergeTestEnvOn() {
+		return repo == os.Getenv("X_ROUND_REPO")
+	}
+	return repo == "dvakatsiienko/bytes"
+}
+
+// a run's jobs, as github answers /actions/runs/<id>/jobs
+type runJobs struct {
+	Jobs []runJob `json:"jobs"`
+}
+
+type runJob struct {
+	Name       string `json:"name"`
+	Conclusion string `json:"conclusion"`
+	Steps      []struct {
+		Name       string `json:"name"`
+		Conclusion string `json:"conclusion"`
+	} `json:"steps"`
+}
+
+// a run counts as a round only here: a green run can hold a skipped job
+func (j runJobs) reviewerFinished() bool {
+	return slices.ContainsFunc(j.Jobs, func(job runJob) bool {
+		return strings.HasSuffix(job.Name, "reviewer") && job.Conclusion == "success"
+	})
+}
+
+// the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-guard.sh)
+var standDownSteps = []string{"A green review means a clean review", "A round with no review is red"}
+
+// a run reaches the head from its history, or by a rebase that kept the code, as a clean carries (dima, o66, o95)
+func roundReaches(sha, head, base, ref string) bool {
+	if ok(gitIn("", "merge-base", "--is-ancestor", sha, head)) {
+		return true
+	}
+	carries, _ := carried(sha, "the reviewer", head, base, ref)
+	return carries
+}
+
+// a round is a run of review.yml whose reviewer job itself finished, reaching the head: a green run can hold a
+// skipped job, a branch name can be reused, and sixth sense's clean on the head covers the commits after it.
 // the server's ?branch= filter once answered 0 over a success (review.go, #116): filtered here instead
-func reviewRounds(api, ref string) (int, error) {
+func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (mergeCheck, error) {
+	c := mergeCheck{Name: "round"}
+	switch {
+	case !roundGated(repo):
+		c.OK, c.Detail = true, "no round asked on "+repo
+		return c, nil
+	case author == "x-renovate[bot]" || author == "renovate[bot]":
+		c.OK, c.Detail = true, "renovate's pr, ci is its review"
+		return c, nil
+	}
 	type run struct {
+		ID         int64  `json:"id"`
 		HeadBranch string `json:"head_branch"`
+		HeadSha    string `json:"head_sha"`
 		Status     string `json:"status"`
 		Conclusion string `json:"conclusion"`
 	}
-	status, _, err := ghSend(asDima, http.MethodGet, api+"/actions/workflows/review.yml", nil, nil)
-	if status == http.StatusNotFound {
-		return 0, nil
-	}
-	if err != nil {
-		return 0, err
-	}
 	runs, err := ghPages[run](asDima, api+"/actions/workflows/review.yml/runs", "workflow_runs")
 	if err != nil {
-		return 0, err
+		return c, err
 	}
-	rounds := 0
+	if got, _ := gitIn("", "fetch", "-q", "origin", ref); !got.ok {
+		c.Detail = "git could not fetch " + ref + " to read the round's history: " + logLine(got.log)
+		return c, nil
+	}
+	stoodDown := false
 	for _, r := range runs {
-		if r.HeadBranch == ref && r.Status == "completed" && r.Conclusion == "success" {
-			rounds++
+		if r.HeadBranch != ref || r.Status != "completed" || (r.Conclusion != "success" && r.Conclusion != "failure") ||
+			!roundReaches(r.HeadSha, head, base, ref) {
+			continue
+		}
+		var answer runJobs
+		if _, err := ghFetch(asDima, fmt.Sprintf("%s/actions/runs/%d/jobs", api, r.ID), &answer); err != nil {
+			return c, err
+		}
+		if answer.reviewerFinished() {
+			c.OK, c.Detail = true, "the reviewer finished a round on "+short(r.HeadSha)
+			return c, nil
+		}
+		for _, job := range answer.Jobs {
+			for _, step := range job.Steps {
+				stoodDown = stoodDown || (step.Conclusion == "failure" && slices.Contains(standDownSteps, step.Name))
+			}
 		}
 	}
-	return rounds, nil
+	switch {
+	case stoodDown && dimaOK:
+		c.OK, c.Detail = true, "the reviewer stood down on #"+n+", landing on dima's word"
+	case stoodDown:
+		c.Detail = "the reviewer stood down on #" + n + ", posting nothing, so it holds no round; it lands on dima's word, his prompt or a tick quoting it: x lane merge-auto " + n + " --apply --dima-ok " + n + "; that red can also be a failed read: x lane review " + n
+	default:
+		c.Detail = "no reviewer round finished in " + ref + "'s history — x lane review " + n
+	}
+	return c, nil
 }
 
 func threadsCheck(repo, n string) (mergeCheck, error) {
