@@ -27,6 +27,13 @@ PK-328:W15 (2026-11-06 20:49, dima, on the expected gains): ensure all these poi
 
 baseline is 2026-10-30 to 2026-11-06, before the fixes, unless the row says otherwise. each row: baseline → target.
 
+**the wait, read first and per lane, dima's weight (21:37)**
+- the gate slot's wait per lane and per kind: 11-06 19:39 to 21:36, n=62: p50 95 s, p90 636 s, max 1,011 s, 189 min waited against 88 run → p90 under 60 s once FRM-521 lands; `gate-speed/queue-read.mjs`
+- commits: wait p90 663 s against run p90 40 s; pushes: wait p90 562 s against run p90 56 s → wait p90 under one run
+- share of the gate slot held by anything but a commit or push: 76 % → none
+- a mod sitting uncommitted under the queue: up to 20 min, main's report → read from the mods lane's rows
+- no «before» log exists: members' reports, 268 to 1,500 s; 21:00 on 11-06, with no long hold, read p90 66 s, one hour only
+
 **the gains**
 - commit call, mods lanes: p50 60 s, mean 74 s → p50 under 45 s
 - commit call, other lanes: coding p50 51 s → under 30 s
