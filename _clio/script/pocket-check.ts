@@ -6,10 +6,17 @@ import {
     type Groomed,
     groomStep,
     groomedOnDisk,
+    newBare,
     newUnstamped,
     ungroomedStamps,
 } from './prompt-groom.ts';
-import { citedIds, normalize, wishBlock, wishLines } from './wish-cover.ts';
+import {
+    citedIds,
+    normalize,
+    prefixWish,
+    wishBlock,
+    wishLines,
+} from './wish-cover.ts';
 
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
 const NOW_CAP = 3;
@@ -58,6 +65,7 @@ export function checkPocket(
     for (const { name, text } of tasks) {
         const front = frontmatter(text);
         const id = front.scalars.id ?? name;
+        const home = name.match(/^pk-\d+/i)?.[0].toUpperCase() ?? '';
         const report = (what: string) => problems.push(`${id}: ${what}`);
         const status = front.scalars.status ?? '';
         const priority = front.scalars.priority ?? '';
@@ -86,13 +94,13 @@ export function checkPocket(
             front.scalars.updated_date || front.scalars.created_date || '',
         );
         const born = localDay(front.scalars.created_date ?? '');
-        const wishIds = [...wishLines(text).keys()];
+        const wishIds = [...wishLines(text, [home]).keys()];
         if (
             front.scalars.type === 'wish' &&
             born >= WISH_RULES_FROM &&
             wishIds.length === 0
         )
-            report('wish born without W-lines: fold it into W1… lines');
+            report('wish born without W-lines: fold it into PK-N:W1… lines');
         // a side channel's prompts reach no prompt log; the main folds its asks from the closing report (FRM-464)
         const side = (front.lists.labels ?? []).some(
             (label) => label === 'side' || label === 'side-channel-owned',
@@ -110,13 +118,14 @@ export function checkPocket(
                     .filter((line) => CLOSE_LINE.test(line))
                     .join('\n')
                     .replace(
-                        /W(\d+)[–-]W(\d+)/g,
-                        (_, from: string, to: string) =>
+                        /((?:(?:PK|FRM|BYT)-\d+:)?)W(\d+)[–-](?:(?:PK|FRM|BYT)-\d+:)?W(\d+)/g,
+                        (_, pre: string, from: string, to: string) =>
                             Array.from(
                                 { length: Number(to) - Number(from) + 1 },
-                                (_unused, i) => `W${Number(from) + i}`,
+                                (_unused, i) => `${pre}W${Number(from) + i}`,
                             ).join(' '),
                     ),
+                [home],
             );
             if (wishIds.some((wishId) => !accounted.has(wishId)))
                 report(
@@ -133,23 +142,23 @@ export function checkPocket(
                 .filter((line) => CLOSE_LINE.test(line))
                 .flatMap((line) => line.split(/[,;]/))
                 .filter((clause) => /\bdropped\b/i.test(clause));
-            const dropped = citedIds(droppedClauses.join('\n'));
+            const dropped = citedIds(droppedClauses.join('\n'), [home]);
             // a line dima wrote or asked for dies only on his word: the clause cites it
             for (const clause of droppedClauses)
                 if (!DIMA_VERDICT.test(clause))
-                    for (const wishId of citedIds(clause))
+                    for (const wishId of citedIds(clause, [home]))
                         report(
                             `dropped ${wishId} with no verdict of dima's: cite the orbit id (oN) or «dima <date|HH:MM>» in the same clause`,
                         );
             for (const ticket of ticketsOf(text)) {
                 const block = wishBlocks.get(ticket);
                 if (block === undefined) continue;
-                const home = normalize(block);
-                for (const [wishId, words] of wishLines(text))
+                const blockText = normalize(block);
+                for (const [wishId, words] of wishLines(text, [home]))
                     if (
                         words &&
                         !dropped.has(wishId) &&
-                        !home.includes(normalize(words))
+                        !blockText.includes(normalize(words))
                     )
                         report(
                             `${wishId} moved to ${ticket} but not in its wish block: copy it there verbatim`,
@@ -367,9 +376,16 @@ function frontmatter(text: string) {
 }
 
 // a close with `backlog task edit --notes` replaces every note, dima's quoted steers included
-export function lostNoteLines(current: string, head: string): string[] {
+export function lostNoteLines(
+    current: string,
+    head: string,
+    home = '',
+): string[] {
     const kept = new Set(noteLines(current));
-    return noteLines(head).filter((line) => !kept.has(line));
+    return noteLines(head).filter(
+        (line) =>
+            !kept.has(line) && !(home && kept.has(prefixWish(line, home))),
+    );
 }
 
 function noteLines(text: string): string[] {
@@ -392,9 +408,22 @@ export function auditAgainstHead(
     const problems: string[] = [];
     const idOf = (name: string) => name.split(' ')[0];
     for (const { name, text } of tasks)
-        for (const line of newUnstamped(text, head.text('tasks', name)))
+        for (const line of newUnstamped(
+            text,
+            head.text('tasks', name),
+            idOf(name)?.toUpperCase(),
+        ))
             problems.push(
-                `${idOf(name)}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «W<n> (<date> <HH:MM>, dima)» for a prompt, «W<n> (<date> inbox, dima)» for an inbox drop`,
+                `${idOf(name)}: a W-line with no prompt stamp, so the groom check cannot see it (FRM-418): «${line.trim().slice(0, 60)}» — head it «<home>:W<n> (<date> <HH:MM>, dima)» for a prompt, «<home>:W<n> (<date> inbox, dima)» for an inbox drop`,
+            );
+    for (const { name, text } of tasks)
+        for (const line of newBare(
+            text,
+            head.text('tasks', name),
+            idOf(name)?.toUpperCase() ?? '',
+        ))
+            problems.push(
+                `${idOf(name)}: a new W-line with a bare id: «${line.trim().slice(0, 60)}» — head it ${idOf(name)?.toUpperCase()}:W<n>, the number from \`prompt-groom.ts --next\``,
             );
     for (const [dir, files] of [
         ['tasks', tasks],
@@ -412,6 +441,7 @@ export function auditAgainstHead(
                     (dir === 'archive' && before
                         ? head.text('tasks', before)
                         : ''),
+                prefix?.trim().toUpperCase(),
             );
             if (lost.length > 0)
                 problems.push(

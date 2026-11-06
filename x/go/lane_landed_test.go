@@ -231,6 +231,18 @@ func TestLandedWishLineClosesInThisTurnOnceTheDoneTestRan(t *testing.T) {
 	}
 }
 
+func TestLandedCountsWishLinesInTheFullIdShape(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	*w.body = "## wish\n\n* FRM-1:W1 (2026-10-30, dima): a thing\n* [FRM-1](https://linear.app/x/issue/FRM-1):W2 (2026-10-30, dima): another\n* W3 (2026-10-30, dima): an old bare line\n\n## signed\n\n🚀 dispatched 2026-10-30 — lane-1, codie s1, sixth sense s2\n"
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "3 W-lines") {
+		t.Errorf("want all three wish lines counted:\n%s", out)
+	}
+}
+
 // a quick lane's commits carry no id: its merged reads the range from the dispatch's base to the verified sha
 func quickWorld(t *testing.T) (landedWorld, string) {
 	t.Helper()
@@ -713,6 +725,14 @@ func TestLandedReadsAChunksClosingSlice(t *testing.T) {
 		{"a plan with no slice of this chunk says nothing", "- [ ] 01 · FRM-2 the build\n", nil, "closing"},
 		{"a slice that only mentions the words is no closing slice", "- [x] 01 · FRM-1 reviewed and closed the door\n",
 			[]string{"🔴 closing"}, ""},
+		{"a second round's own closing line is the one read", "- [x] 01 · FRM-1 reviewed and closed\n- [ ] 02 · FRM-1 round 3 reviewed and closed\n",
+			[]string{"🔴 closing", "is open"}, ""},
+		{"a plan's own closing wording reads", "- [x] 01 · FRM-1 FRM-1 closes\n",
+			[]string{"✅ closing"}, ""},
+		{"a build line ending in a closing word is no closer when steps follow it", "- [x] 01 · FRM-1 the sheet closes\n- [x] 02 · FRM-1 the rest\n",
+			[]string{"🔴 closing", "holds no closing slice"}, ""},
+		{"an open closer ahead of the last one reds, naming it", "- [ ] 01 · FRM-1 reviewed and closed\n- [x] 02 · FRM-1 round 3 reviewed and closed\n",
+			[]string{"🔴 closing", "sits open ahead"}, ""},
 		{"a chunk named mid-line still needs its closing slice", "- [x] 01 · quiet reads FRM-1\n",
 			[]string{"🔴 closing", "holds no closing slice"}, ""},
 		{"a line that leads with another ticket is that ticket's", "- [ ] 01 · FRM-2 fixes FRM-1\n", nil, "closing"},
@@ -789,8 +809,8 @@ func TestLandedApplyTicksOnlyTheClosingSlice(t *testing.T) {
 	if string(raw) != want {
 		t.Errorf("plan after --apply:\n%s", raw)
 	}
-	if out := linesOf(envelope); !strings.Contains(out, "✅ closing") {
-		t.Errorf("the archived spec must still lead to the plan:\n%s", out)
+	if out := linesOf(envelope); !strings.Contains(out, "sits open ahead") {
+		t.Errorf("the open line ahead must still read red after the tick:\n%s", out)
 	}
 }
 

@@ -17,6 +17,7 @@ import {
     outcome,
     summary,
     timedOutFiles,
+    untouchedMods,
     withRerun,
 } from './test.ts';
 
@@ -323,5 +324,23 @@ describe('clockReads', () => {
         ).toBe(
             'mods:test: red in x-mod-holds (clock read at hooks/register.ts:12), 3 pass, 0 fail',
         );
+    });
+});
+
+describe('untouchedMods', () => {
+    const all = ['x-mod-guard', 'x-mod-holds', 'x-mod-stash'];
+
+    it('a commit inside one mod leaves the others out', () => {
+        expect([...untouchedMods(['x-mod-guard/a.ts'], all)]).toEqual([
+            'x-mod-holds',
+            'x-mod-stash',
+        ]);
+    });
+
+    it.each([
+        ['a shared path under mods', ['x-mod-guard/a.ts', 'tsconfig.json']],
+        ['nothing staged', []],
+    ])('%s runs every mod', (_name, changed) => {
+        expect(untouchedMods(changed, all).size).toBe(0);
     });
 });

@@ -4,10 +4,11 @@ title: 'side channel unloads the main thread: make the habit hold until tilde de
 status: open
 assignee: []
 created_date: '2026-11-06T01:25:00Z'
-updated_date: '2026-11-06T13:43:00Z'
+updated_date: '2026-11-06T16:23:00Z'
 labels:
   - s
   - side-channel-owned
+  - wing-1
 dependencies: []
 priority: next
 type: task

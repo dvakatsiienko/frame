@@ -573,7 +573,9 @@ describe('wish accounting', () => {
                 ],
                 wishToday,
             ),
-        ).toEqual(['PK-1: wish born without W-lines: fold it into W1… lines']);
+        ).toEqual([
+            'PK-1: wish born without W-lines: fold it into PK-N:W1… lines',
+        ]);
     });
 
     test('a wish born today with W-lines passes, and an older wish is spared', () => {
@@ -617,6 +619,26 @@ describe('wish accounting', () => {
         expect(
             checkPocket(wishConfig, [closed('close: W1–W2 done')], wishToday),
         ).toEqual([]);
+    });
+
+    test.each([
+        ['full ids', 'close: PK-1:W1 PK-1:W2 done'],
+        ['a full range', 'close: PK-1:W1–PK-1:W2 done'],
+        ['a bare id and a full one', 'close: W1 PK-1:W2 done'],
+    ])('a close line cites its W-ids as %s', (_name, notes) => {
+        expect(checkPocket(wishConfig, [closed(notes)], wishToday)).toEqual([]);
+    });
+
+    test("another item's prefixed ids account for nothing here", () => {
+        expect(
+            checkPocket(
+                wishConfig,
+                [closed('close: PK-2:W1 PK-2:W2 done')],
+                wishToday,
+            ),
+        ).toEqual([
+            'PK-1: closed without accounting for W-lines: add a `close:` line citing each as done, moved or dropped',
+        ]);
     });
 
     describe('the copy into its ticket', () => {
@@ -779,6 +801,38 @@ describe('lostNoteLines', () => {
 
     test('a task with no notes at HEAD has nothing to lose', () => {
         expect(lostNoteLines(notes('done'), 'no notes here')).toEqual([]);
+    });
+
+    test('a note line that only gained its home prefix is not lost', () => {
+        expect(
+            lostNoteLines(
+                notes('PK-1:W3 (2026-11-06 10:00, dima): keep'),
+                notes('W3 (2026-11-06 10:00, dima): keep'),
+                'PK-1',
+            ),
+        ).toEqual([]);
+    });
+
+    test('a note line that swapped to another home is lost', () => {
+        expect(
+            lostNoteLines(
+                notes('PK-4:W3 (2026-11-06 10:00, dima): keep'),
+                notes('PK-1:W3 (2026-11-06 10:00, dima): keep'),
+                'PK-1',
+            ),
+        ).toEqual(['PK-1:W3 (2026-11-06 10:00, dima): keep']);
+    });
+
+    test('a note line removed beside a prefixed one is lost', () => {
+        expect(
+            lostNoteLines(
+                notes('PK-1:W3 (2026-11-06 10:00, dima): keep'),
+                notes(
+                    'W3 (2026-11-06 10:00, dima): keep\nW4 (2026-11-06 10:01, dima): gone',
+                ),
+                'PK-1',
+            ),
+        ).toEqual(['W4 (2026-11-06 10:01, dima): gone']);
     });
 });
 

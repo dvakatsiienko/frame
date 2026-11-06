@@ -4,6 +4,17 @@
 - shipped: PK-331, the afk hour's 4 wakes, FRM-514, the pocket hook and budget row fixes, ticket-sign, PK-333 and PK-324
 - open: FRM-504, FRM-505, FRM-511 and FRM-509 merges on his word, FRM-501 round 3, cli lane 6, ci made boring, then tilde's plan
 - state: both lanes pausing for second winds, x verify and ci made boring summon after the pickup
+⸻ upd 18:20
+**shipped**
+- ci made boring lane live, [BYT-130](https://linear.app/x-com/issue/BYT-130): bytes deploy reads red on a failed deploy, probed green on `figmentation`, review running
+- cli lane 6, x verify, live: [FRM-474](https://linear.app/x-com/issue/FRM-474) on a pr; four lanes at once
+- `script/gate-queue.sh`: one heavy run at a time machine-wide, after load 140 on 14 cores
+- a waiter between lanes arms its own watch; a lane past its round cap survives a compact
+- 🪽 wing named, was side channel; several allowed, code readers still to land
+**tricks gained**
+- a threshold on a shared limit stampedes; a title shape has readers in x, a guard and a mod
+**state**
+- [FRM-504](https://linear.app/x-com/issue/FRM-504) in its second fix round; wings first after this reset
 
 ## 2026-11-04-the-takeover-and-the-piles
 - shipped: FRM-499, FRM-500, FRM-502, node 26, the side channel merged, close and sign and day-plan habits

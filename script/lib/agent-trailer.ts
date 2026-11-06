@@ -1,6 +1,7 @@
 // the `Agent: <role> · <model>` trailer, derived from the session registry name and the transcript's model id
-// the desktop names a fork «<parent> (fork)», a side channel renames itself «<parent> (side)»; neither commits as the parent
+// the desktop names a fork «<parent> (fork)», a wing renames itself «🦉🪽 clio: wing <N>», its old shape «<parent> (side)»; none commits as the parent
 export function roleFor(sessionName: string): string {
+    if (sessionName.includes('🪽')) return 'clio-wing';
     const parent = sessionName.match(
         /^(.*?)\s*\((?:fork|side)[^)]*\)\s*$/,
     )?.[1];

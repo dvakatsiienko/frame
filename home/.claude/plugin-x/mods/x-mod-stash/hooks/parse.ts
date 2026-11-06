@@ -348,17 +348,27 @@ export function planSteps(text: string) {
 export const ticketOf = (name: string) =>
     name.match(/\b(?:FRM|BYT)-\d+\b/)?.[0];
 
-// the sha of codie's «round N on <sha>», only at the message's head: a quoted round further in is a report of one
-export const roundSha = (message: string) =>
-    message
-        .trimStart()
-        .match(
-            /^(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*round\s+\d+\s+on\s+\**([0-9a-f]{7,40})\b/,
-        )?.[1];
+const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
+const ROUND_HEAD = new RegExp(
+    String.raw`^${ROUND_LEAD}round\s+(\d+)\s+on\s+\**([0-9a-f]{7,40})\b`,
+);
+// a sha holds a digit, so a word like «defaced» is none
+const FINAL_HEAD = new RegExp(
+    String.raw`^${ROUND_LEAD}final\s+on\s+\**((?=[0-9a-f]*\d)[0-9a-f]{7,40})\b`,
+);
 
-// the lane a codie thread names: its name past «codie:», up to « | », since the ticket there moves within a lane
+// codie's round, only at the message's head: a quoted round further in is a report of one. «final on <sha>» is round 1
+export function roundOf(message: string) {
+    const head = message.trimStart();
+    const m = head.match(ROUND_HEAD);
+    if (m) return { n: Number(m[1]), sha: m[2] ?? '' };
+    const sha = head.match(FINAL_HEAD)?.[1];
+    return sha ? { n: 1, sha } : undefined;
+}
+
+// the count of a thread: its name past «codie:», the lane and its ticket, since a next chunk starts its own count
 export const codieLane = (name: string) =>
-    name.match(/^[^:]*\bcodie:\s*(\S.*?)\s*(?:\|.*)?$/)?.[1];
+    name.match(/^[^:]*\bcodie:\s*(\S.*?)\s*$/)?.[1];
 
 const ROUND_CAP = 3;
 // the count only signals: the cap's terms, a P0 or P1 and a scope reset, stay sixth sense's judgment
