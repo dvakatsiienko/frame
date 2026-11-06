@@ -132,15 +132,18 @@ describe('test-commit', () => {
             },
         );
 
-        test('a rename with both ends in the pocket runs no suite', () => {
-            const context = fixture({ [pocket]: 'a body long enough\n' });
-            rmSync(join(context.repo, pocket));
-            write(context.repo, moved, 'a body long enough\n');
-            context.git('add', '-A');
-            const got = runGate(context, 'main');
-            expect(got.calls).toBe('');
-            expect(got.fields.slice(1, 2)).toEqual(['none']);
-        });
+        test.each(['main', 'codie/FRM-1-x'])(
+            'a rename with both ends in the pocket runs no suite on «%s»',
+            (branch) => {
+                const context = fixture({ [pocket]: 'a body long enough\n' });
+                rmSync(join(context.repo, pocket));
+                write(context.repo, moved, 'a body long enough\n');
+                context.git('add', '-A');
+                const got = runGate(context, branch);
+                expect(got.calls).toBe('');
+                expect(got.fields.slice(1, 2)).toEqual(['none']);
+            },
+        );
 
         test('one path outside runs the whole suite on main', () => {
             const got = runGate(

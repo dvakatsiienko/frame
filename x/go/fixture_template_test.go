@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// a spawn is the suite's cost: a fixture built once and copied in process spends none per test
+// a spawn is the suite's cost: a fixture built once and copied in process spends none per test. seeds sit beside xbin, since a t.TempDir dies with its first test
 var (
 	seedRepoOnce, seedModsOnce, worldOnce sync.Once
 	seedRepoDir, seedModsDir, worldDir    string
@@ -84,12 +84,17 @@ func seedWorld(t *testing.T) string {
 	t.Helper()
 	worldOnce.Do(func() {
 		worldDir = filepath.Join(filepath.Dir(xbin), "seed-world")
-		if out, err := exec.Command("../fixtures/setup.sh", worldDir).CombinedOutput(); err != nil {
-			t.Fatalf("setup.sh: %v\n%s", err, out)
-		}
+		buildSeedWorld(t, worldDir)
 		worldDir, _ = filepath.EvalSymlinks(worldDir)
 	})
 	return worldDir
+}
+
+func buildSeedWorld(t *testing.T, dir string) {
+	t.Helper()
+	if out, err := exec.Command("../fixtures/setup.sh", dir).CombinedOutput(); err != nil {
+		t.Fatalf("setup.sh: %v\n%s", err, out)
+	}
 }
 
 // copyFixture lays a seed over a new dir, modes and times kept, and every file naming the seed's path names the copy's
@@ -140,26 +145,26 @@ func copyFixture(t *testing.T, from, to string) {
 	}
 }
 
-// serial: t.Setenv stands in for the env a commit hook hands a test
 func TestFixturesNeverReadAHooksGitEnv(t *testing.T) {
+	// serial: t.Setenv stands in for the env a commit hook hands a test
 	decoy := t.TempDir()
 	gitT(t, decoy, "init", "-q", "-b", "decoy")
-	head := filepath.Join(decoy, ".git/HEAD")
-	before := readFile(t, head)
 	t.Setenv("GIT_DIR", filepath.Join(decoy, ".git"))
 	t.Setenv("GIT_INDEX_FILE", filepath.Join(decoy, ".git/index"))
 	t.Setenv("GIT_WORK_TREE", decoy)
 
 	fresh := t.TempDir()
 	buildSeedRepo(t, fresh)
+	freshWorld := filepath.Join(t.TempDir(), "world")
+	buildSeedWorld(t, freshWorld)
 
-	if got := readFile(t, head); got != before {
-		t.Errorf("a fixture's git wrote the hook's repo: HEAD reads %q", got)
+	if exists(filepath.Join(decoy, ".git/refs/heads/decoy")) {
+		t.Error("a fixture's git committed into the hook's repo")
 	}
 	if exists(filepath.Join(decoy, ".git/index")) {
 		t.Error("a fixture's git staged into the hook's index")
 	}
-	if !exists(filepath.Join(fresh, ".git/HEAD")) {
-		t.Error("the fixture's repo was never made in its own dir")
+	if !exists(filepath.Join(fresh, ".git/HEAD")) || !exists(filepath.Join(freshWorld, "origin.git")) {
+		t.Error("a fixture was never made in its own dir")
 	}
 }

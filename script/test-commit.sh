@@ -1,6 +1,6 @@
 #!/bin/bash
 # test-commit <whole-suite command…> — the commit gate's test step, run inside script/index-run.sh's copy.
-# a commit whose every staged path sits under _clio/pocket/ runs no suite, on any branch: no test reads it, and the whole suite stays at push.
+# a commit whose every staged path sits under _clio/pocket/ runs no suite, on any branch: the whole suite stays at push.
 # a codie/* branch runs only the tests importing its staged code: the whole suite stays at push and on ci. any other branch runs the command.
 # one row a run in test-commit.log, tab-separated: start, 1-min load, branch, mode, staged paths, commit it sits on, seconds, exit.
 set -u
@@ -13,10 +13,10 @@ load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
 mode=whole
 code_paths=()
 staged=0
-# a failed read runs the branch's usual mode, never none
+# a failed read never runs none: whole on every branch
 changes=$(git -c core.quotePath=false diff --cached --name-status -M) || read_failed=1
 pocket_only=
-if [ -z "${read_failed:-}" ] && [ -n "$changes" ]; then
+if [ -n "$changes" ]; then
     pocket_only=1
     pocket_paths=0
     # a rename names both ends: each must sit under the pocket
