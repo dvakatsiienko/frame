@@ -231,6 +231,18 @@ func TestLandedWishLineClosesInThisTurnOnceTheDoneTestRan(t *testing.T) {
 	}
 }
 
+func TestLandedCountsWishLinesInTheFullIdShape(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	*w.body = "## wish\n\n* FRM-1:W1 (2026-10-30, dima): a thing\n* [FRM-1](https://linear.app/x/issue/FRM-1):W2 (2026-10-30, dima): another\n* W3 (2026-10-30, dima): an old bare line\n\n## signed\n\n🚀 dispatched 2026-10-30 — lane-1, codie s1, sixth sense s2\n"
+
+	envelope, _ := w.landed(t)
+
+	if out := linesOf(envelope); !strings.Contains(out, "3 W-lines") {
+		t.Errorf("want all three wish lines counted:\n%s", out)
+	}
+}
+
 // a quick lane's commits carry no id: its merged reads the range from the dispatch's base to the verified sha
 func quickWorld(t *testing.T) (landedWorld, string) {
 	t.Helper()

@@ -7,7 +7,7 @@ read before a ticket create, a body rewrite, or a comment clio writes (`clio:pm`
 `to-spec` runs on the body alone (dima, 2026-10-07). in order, a small ticket filling only the lines it has:
 
 - `lane: <kind>` (the four kinds: `fleet-vibe` § entities, lane) — the first line, the kind word only; `repo: <name>` under it once signed (`clio:shape-lane` § 3)
-- **wish** — dima's words, folded (`_clio/memory/craft-pm.md` § wishes), one point per numbered W-line; his raw drop stays in the pocket notes, linked (`craft-pm` § wishes)
+- **wish** — dima's words, folded (`_clio/memory/craft-pm.md` § wishes), one point per numbered W-line, `FRM-N:W1 (<date> <HH:MM>, dima): …`; his raw drop stays in the pocket notes, linked (`craft-pm` § wishes)
 - **dima notes** — his later notes and verdicts, folded and dated, read by the ask-guard; a later ask joins the wish block as W-lines
 - **`## ⚖️ worth it`** — on new surface (root invariant 3): what it removes against today's door, before → after, or the outcome dima uses; the cheaper door turned down; the upkeep; and one `🔌 fleet wired: <caller>` line naming who calls it (a skill step, a hook, a rule line, a script or verb, a launchd job, or a button or hotkey of dima's). plain work in the cli or mods: `none — fix` or `none — chore`; a chunk that adds an x verb also carries `new verb: <name>`, the one thing `x lane landed`'s wired line reads
 - **why** — what hurts today

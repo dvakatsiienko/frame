@@ -18,6 +18,7 @@ import {
     openStanding,
     rawPromptAt,
     strayRaws,
+    tagStanding,
     ungroomedPrompts,
     ungroomedStamps,
     unnumberedAsks,
@@ -712,17 +713,95 @@ describe('newUnstamped', () => {
     });
 });
 
+describe('full wish ids in the groom checks', () => {
+    const head = 'W1 an old unstamped line\n';
+
+    test.each([
+        ['stamp-first', 'PK-3:W2 (2026-11-06 10:00, dima): words'],
+        ['bulleted', '* FRM-9:W2 (2026-11-06 10:00, dima): words'],
+        ['inbox', 'PK-3:W2 (2026-11-06 inbox, dima): words'],
+        ['drift', 'PK-3:W2 · words (2026-11-06 10:00, dima)'],
+    ])('a %s full-id stamped line passes', (_name, line) => {
+        expect(newUnstamped(`${head}${line}\n`, head)).toEqual([]);
+    });
+
+    test('an old unstamped line that only gained a prefix is not new', () => {
+        expect(newUnstamped('PK-3:W1 an old unstamped line\n', head)).toEqual(
+            [],
+        );
+    });
+
+    test('an old unstamped line prefixed at HEAD and bare now is not new', () => {
+        expect(
+            newUnstamped(
+                'W1 an old unstamped line\n',
+                'PK-3:W1 an old unstamped line\n',
+            ),
+        ).toEqual([]);
+    });
+
+    test('a brand new unstamped full line is new', () => {
+        expect(newUnstamped(`${head}PK-3:W2 a fresh fold\n`, head)).toEqual([
+            'PK-3:W2 a fresh fold',
+        ]);
+    });
+
+    test.each([
+        ['a full argument', 'PK-3:W1'],
+        ['a bare argument', 'W1'],
+    ])(
+        'tagStanding takes %s and tags a full line and a bare line',
+        (_name, id) => {
+            const dir = mkdtempSync(join(tmpdir(), 'groom-tag-'));
+            const full = join(dir, '2026-11-06-1000.groomed.md');
+            const bare = join(dir, '2026-11-06-1100.groomed.md');
+            writeFileSync(full, 'PK-3:W1 (2026-11-06 10:00, dima): full\n');
+            writeFileSync(
+                bare,
+                'W1 (2026-11-06 11:00, dima): bare\nW2 (2026-11-06 11:00, dima): other\n',
+            );
+            expect(tagStanding('2026-11-06', dir, id)).toEqual(['W1', 'W1']);
+            expect(readFileSync(full, 'utf8')).toBe(
+                'PK-3:W1 (2026-11-06 10:00, dima): full #standing\n',
+            );
+            expect(readFileSync(bare, 'utf8')).toBe(
+                'W1 (2026-11-06 11:00, dima): bare #standing\nW2 (2026-11-06 11:00, dima): other\n',
+            );
+            rmSync(dir, { recursive: true });
+        },
+    );
+
+    test('liftStanding takes a full argument too', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'groom-lift-'));
+        writeFileSync(
+            join(dir, '2026-11-06-1000.groomed.md'),
+            'PK-3:W1 (2026-11-06 10:00, dima): full #standing\n',
+        );
+        expect(liftStanding('2026-11-06', dir, 'PK-3:W1')).toEqual(['W1']);
+        rmSync(dir, { recursive: true });
+    });
+});
+
 describe('the next wish id of a home (PK-312)', () => {
     test('a home with W-lines numbers on from its own highest', async () => {
         const { nextWishId } = await import('./prompt-groom.ts');
-        expect(nextWishId('W1 a\n* W12 b\nprose W40 cited, not a line')).toBe(
-            'W13',
-        );
+        expect(
+            nextWishId('W1 a\n* W12 b\nprose W40 cited, not a line', 'pk-3'),
+        ).toBe('PK-3:W13');
     });
 
     test('a home with no W-lines starts at one', async () => {
         const { nextWishId } = await import('./prompt-groom.ts');
-        expect(nextWishId('## notes\nnothing yet')).toBe('W1');
+        expect(nextWishId('## notes\nnothing yet', 'PK-3')).toBe('PK-3:W1');
+    });
+
+    test.each([
+        ['full', 'PK-3:W4 a\n* PK-3:W12 b\n'],
+        ['mixed', 'W4 a\n* PK-3:W12 b\n'],
+        ['autolinked', '* [FRM-9](https://linear.app/x/FRM-9):W12 b\n'],
+    ])('a %s home numbers on from its highest', async (_name, text) => {
+        const { nextWishId } = await import('./prompt-groom.ts');
+        expect(nextWishId(text, 'PK-3')).toBe('PK-3:W13');
     });
 });
 
@@ -734,29 +813,46 @@ describe('a pocket wish moving to a ticket is renumbered into its series (PK-312
 
     test('the moved lines take the ticket next ids, text and stamp kept whole', async () => {
         const { moveWishes } = await import('./prompt-groom.ts');
-        const { lines } = moveWishes(pocket, ticket, 'FRM-9', [
+        const { lines } = moveWishes(pocket, ticket, 'PK-3', 'FRM-9', [
             'W1975',
             'W1912',
         ]);
         expect(lines).toEqual([
-            '* W7 (2026-11-03 20:26, dima) [re: Q8]: no spam, by nature. ❓',
-            '* W8 (2026-11-03 19:16, dima): and sharpen shift even more.',
+            '* FRM-9:W7 (2026-11-03 20:26, dima) [re: Q8]: no spam, by nature. ❓',
+            '* FRM-9:W8 (2026-11-03 19:16, dima): and sharpen shift even more.',
         ]);
     });
 
     test('the pocket keeps a moved line naming each old and new id', async () => {
         const { moveWishes } = await import('./prompt-groom.ts');
-        const { note } = moveWishes(pocket, ticket, 'FRM-9', [
+        const { note } = moveWishes(pocket, ticket, 'PK-3', 'FRM-9', [
             'W1975',
             'W1912',
         ]);
-        expect(note).toBe('moved: W1975 → FRM-9:W7, W1912 → FRM-9:W8');
+        expect(note).toBe(
+            'moved: PK-3:W1975 → FRM-9:W7, PK-3:W1912 → FRM-9:W8',
+        );
+    });
+
+    test.each([
+        ['a bare id', 'W1'],
+        ['a full id', 'PK-3:W1'],
+    ])('a full-id pocket line moves when asked by %s', async (_name, id) => {
+        const { moveWishes } = await import('./prompt-groom.ts');
+        const { lines } = moveWishes(
+            'PK-3:W1 (2026-11-06 10:00, dima): words\n',
+            'FRM-9:W6 (2026-11-03 16:35, dima): six.\n',
+            'PK-3',
+            'FRM-9',
+            [id],
+        );
+        expect(lines).toEqual(['* FRM-9:W7 (2026-11-06 10:00, dima): words']);
     });
 
     test('an id the pocket item does not hold is refused, nothing moved', async () => {
         const { moveWishes } = await import('./prompt-groom.ts');
         expect(() =>
-            moveWishes(pocket, ticket, 'FRM-9', ['W1912', 'W5']),
+            moveWishes(pocket, ticket, 'PK-3', 'FRM-9', ['W1912', 'W5']),
         ).toThrow(/W5/);
     });
 });

@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-var wishItem = regexp.MustCompile(`(?m)^\s*[*-]\s+W\d+\b`)
+var wishItem = regexp.MustCompile(`(?m)^\s*[*-]\s+(?:\[?(?:PK|FRM|BYT)-\d+\]?(?:\([^)\s]*\))?:)?W\d+\b`)
 
 const archived = "_archive"
 

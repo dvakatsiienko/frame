@@ -20,7 +20,7 @@ import {
 import path from 'node:path';
 
 import { steersOf } from './chat-lines.ts';
-import { normalize } from './wish-cover.ts';
+import { bareWish, normalize, unwrapIds } from './wish-cover.ts';
 
 const home = process.env.HOME ?? '';
 const promptDir =
@@ -34,7 +34,7 @@ const pocketDir =
 const RULES_FROM = '2026-10-25 14:50';
 // both shapes: helga's stamp-first `W<n> (<date> <HH:MM>, dima): text` and its drift `W<n> · text (<date> <HH:MM>, dima)`
 const STAMP =
-    /^\s*(?:[*-]\s+)?W\d+(?: \(| · [^\n]*\()(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima(?:, (o\d+) steer)?/gm;
+    /^\s*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?W\d+(?: \(| · [^\n]*\()(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}|inbox), dima(?:, (o\d+) steer)?/gm;
 
 export type Groomed = (day: string, hhmm: string, item: string) => boolean;
 
@@ -245,7 +245,7 @@ export function homelessWishes(
     const isHomed = (line: string) => {
         const id = line.match(/\bW\d+\b/)?.[0];
         const text = line
-            .replace(/^\s*(?:[*-]\s+)?W\d+/, '')
+            .replace(/^\s*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?W\d+/, '')
             .replace(/\(\d{4}-\d{2}-\d{2} [^)]*\)/, '')
             .replace(/^[\s·:]+/, '')
             .replace(/ #(standing|lifted)$/, '')
@@ -280,7 +280,11 @@ export function homelessWishes(
         );
 }
 
-const W_LINE = /^\s*(?:[*-]\s+)?W\d+\b.*$/gm;
+const W_LINE = /^\s*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?W\d+\b.*$/gm;
+
+function bareId(id: string) {
+    return id.replace(/^(?:PK|FRM|BYT)-\d+:/i, '');
+}
 
 // a prompt groom's (never the inbox prep's) `❓ ask` line with no W-id: [file, line]
 // a session-wide instruction of dima's: helga tags its W-line ` #standing`; a lift turns it ` #lifted` (FRM-482)
@@ -312,7 +316,7 @@ export function tagStanding(day: string, dir: string, id: string) {
         const next = text.replace(
             /^(.*\b(W\d+)\b.*?)(\s*)$/gm,
             (line, head: string, wid: string, tail: string) => {
-                if (wid !== id || / #(standing|lifted)$/.test(head))
+                if (wid !== bareId(id) || / #(standing|lifted)$/.test(head))
                     return line;
                 tagged.push(wid);
                 return `${head} #standing${tail}`;
@@ -330,7 +334,7 @@ export function liftStanding(day: string, dir: string, id: string) {
         const next = text.replace(
             /^(.*\b(W\d+)\b.*) #standing(\s*)$/gm,
             (line, head: string, wid: string, tail: string) => {
-                if (id !== 'all' && wid !== id) return line;
+                if (id !== 'all' && wid !== bareId(id)) return line;
                 lifted.push(wid);
                 return `${head} #lifted${tail}`;
             },
@@ -360,10 +364,11 @@ export function unnumberedAsks(day: string, dir: string) {
 
 // a W-line added since HEAD must carry its prompt's stamp, or it slips past the groom check
 export function newUnstamped(text: string, head: string) {
-    const before = new Set(head.match(W_LINE) ?? []);
+    const before = new Set((head.match(W_LINE) ?? []).map(bareWish));
     return (text.match(W_LINE) ?? []).filter(
         (line) =>
-            !before.has(line) && !new RegExp(STAMP.source, 'm').test(line),
+            !before.has(bareWish(line)) &&
+            !new RegExp(STAMP.source, 'm').test(line),
     );
 }
 
@@ -457,29 +462,45 @@ function startHelga() {
 }
 
 // a wish id numbers on inside its home, never from a global counter (PK-312, dima o94, o96, o98)
-export const nextWishId = (homeText: string): string =>
-    `W${Math.max(0, ...[...homeText.matchAll(/^\s*(?:[*-]\s+)?W(\d+)\b/gm)].map((m) => Number(m[1]))) + 1}`;
+const highestWish = (homeText: string) =>
+    Math.max(
+        0,
+        ...[
+            ...unwrapIds(homeText).matchAll(
+                /^\s*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?W(\d+)\b/gm,
+            ),
+        ].map((m) => Number(m[1])),
+    );
+
+export const nextWishId = (homeText: string, home: string): string =>
+    `${home.toUpperCase()}:W${highestWish(homeText) + 1}`;
 
 // a pocket wish moving to a ticket takes the ticket's next ids, text and stamp whole; the pocket keeps a moved line (o98)
 export function moveWishes(
     pocketText: string,
     ticketText: string,
+    item: string,
     ticket: string,
     ids: string[],
 ) {
+    const bare = ids.map(bareId);
+    const home = item.toUpperCase();
+    const to = ticket.toUpperCase();
     const wish = new Map(
-        [...pocketText.matchAll(/^\s*(?:[*-]\s+)?(W\d+) (\(.*)$/gm)].map(
-            (m) => [m[1], m[2]],
-        ),
+        [
+            ...pocketText.matchAll(
+                /^\s*(?:[*-]\s+)?(?:(?:PK|FRM|BYT)-\d+:)?(W\d+) (\(.*)$/gm,
+            ),
+        ].map((m) => [m[1], m[2]]),
     );
-    const missing = ids.filter((id) => !wish.has(id));
+    const missing = bare.filter((id) => !wish.has(id));
     if (missing.length)
         throw new Error(`not in the pocket item: ${missing.join(', ')}`);
-    let next = Number(nextWishId(ticketText).slice(1));
-    const moved = ids.map((id) => ({ from: id, to: `W${next++}` }));
+    let next = highestWish(ticketText) + 1;
+    const moved = bare.map((id) => ({ from: id, n: next++ }));
     return {
-        lines: moved.map(({ from, to }) => `* ${to} ${wish.get(from)}`),
-        note: `moved: ${moved.map(({ from, to }) => `${from} → ${ticket}:${to}`).join(', ')}`,
+        lines: moved.map(({ from, n }) => `* ${to}:W${n} ${wish.get(from)}`),
+        note: `moved: ${moved.map(({ from, n }) => `${home}:${from} → ${to}:W${n}`).join(', ')}`,
     };
 }
 
@@ -502,7 +523,7 @@ if (import.meta.main) {
     const args = process.argv.slice(2);
     const today = new Date().toLocaleDateString('sv');
     if (args[0] === '--next') {
-        console.log(nextWishId(homeText(args[1] ?? '')));
+        console.log(nextWishId(homeText(args[1] ?? ''), args[1] ?? ''));
         process.exit(0);
     }
     if (args[0] === '--move') {
@@ -510,6 +531,7 @@ if (import.meta.main) {
         const { lines, note } = moveWishes(
             homeText(item),
             homeText(ticket),
+            item,
             ticket,
             ids,
         );
@@ -595,7 +617,7 @@ if (import.meta.main) {
         const asks = existsSync(groomDir) ? unnumberedAsks(day, groomDir) : [];
         for (const [file, line] of asks)
             console.log(
-                `🔴 ${file} — an unnumbered ask, no home check sees it: ${line.slice(0, 60)} — make it a \`W<n> … ❓\` line`,
+                `🔴 ${file} — an unnumbered ask, no home check sees it: ${line.slice(0, 60)} — make it a \`<home>:W<n> … ❓\` line`,
             );
         const reds = missing.length + homeless.length + asks.length;
         if (reds === 0 && linear)

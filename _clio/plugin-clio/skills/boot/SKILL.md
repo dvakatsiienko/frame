@@ -42,7 +42,7 @@ and the next ticket from it; never re-query what it already printed.
   first, then `inbox.md` for the parse. step 8's wishkeeper brief adds the prep: every ask and idea of
   the raw inbox kept in meaning, not only present (the check proves presence alone); wishkeeper is the one meaning check, clio scores nothing
 - the digest says clean or «N content lines». non-empty → read `inbox.md` (`/Users/dima/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq/`, beside its sibling `inbox-helga.md` and the template `inbox-template.md`, his and read-only; `habit-dima-comms` holds the creed): EVERY item —
-  smallest aside included — gets an item in the pocket (`node script/pocket-add.ts`; the contract: `habit-shared-files`), its fold one point per numbered W-line headed `W<n> (<date> inbox, dima)` (`craft-pm` § wishes)
+  smallest aside included — gets an item in the pocket (`node script/pocket-add.ts`; the contract: `habit-shared-files`), its fold one point per numbered W-line headed `PK-N:W<n> (<date> inbox, dima)` (`craft-pm` § wishes)
   and its `ordinal`, the checked prep copied to `~/.local/state/clio/grooms/<date>-inbox.groomed.md` (the groom check reads it), and its inbox line a leading `✅ PK-N` (the halt reset reads it); resolution paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 - a raw drop goes into its pocket item as one `raw drop (<day> inbox, dima): …` note per quote line, never two lines joined (notes are append-only, and a joined one reds the groom check for good)

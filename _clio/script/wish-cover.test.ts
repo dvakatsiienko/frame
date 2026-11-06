@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
+    bareWish,
     citedIds,
     itemsForTicket,
     missingText,
@@ -18,6 +19,7 @@ import {
     repeatedIds,
     sectionsFor,
     uncovered,
+    unwrapIds,
     wishBlock,
     wishLines,
 } from './wish-cover.ts';
@@ -284,7 +286,7 @@ describe('wish-cover', () => {
             const result = run('## wish\n\nno W-lines here\n', 'plain draft');
             expect(result.status).toBe(2);
             expect(result.stderr).toContain(
-                "number the ticket's wish block into W1… lines first",
+                'wish block into FRM-9:W1… lines first',
             );
         });
     });
@@ -306,5 +308,81 @@ describe('normalize, against linear’s rewrites of a body', () => {
         expect(normalize('W201 (13:34) \\[pasted\\] the \\~35 % loss')).toBe(
             normalize('W201 (13:34) [pasted] the ~35 % loss'),
         );
+    });
+});
+
+describe('wish ids in both shapes', () => {
+    test.each([
+        [
+            'an old line',
+            '- W1 hunt what feels off',
+            [['W1', 'hunt what feels off']],
+        ],
+        [
+            'a full-id line',
+            'PK-3:W1 (2026-11-06 10:00, dima): new words',
+            [['W1', 'new words']],
+        ],
+        [
+            'a bulleted full-id line',
+            '* FRM-9:W2 (2026-11-06 10:00, dima): more words',
+            [['W2', 'more words']],
+        ],
+    ])('wishLines reads %s', (_name, block, want) => {
+        expect([...wishLines(block)]).toEqual(want);
+    });
+
+    test('repeatedIds names a number used once bare and once full', () => {
+        expect(
+            repeatedIds('* W1 old\n* PK-3:W1 (2026-11-06 10:00, dima): new'),
+        ).toEqual(['W1']);
+    });
+
+    test.each([
+        ['bare ids', 'W1 and W2', [], ['W1', 'W2']],
+        ['an own-home prefix', 'PK-3:W1 ok', ['PK-3'], ['W1']],
+        ['a home matched case-insensitively', 'PK-3:W1', ['pk-3'], ['W1']],
+        ['another home is ignored', 'PK-4:W2 PK-3:W1', ['PK-3'], ['W1']],
+        ['a prefixed cite with no homes', 'PK-3:W1', [], []],
+        [
+            'both range shapes cite nothing',
+            'W1–W3 PK-3:W5–PK-3:W7',
+            ['PK-3'],
+            [],
+        ],
+        ['a range end beside a single id', 'W1–W3 W5', [], ['W5']],
+        ['a colon-glued word', 'foo:W3', ['PK-3'], []],
+    ])('citedIds reads %s', (_name, draft, homes, want) => {
+        expect([...citedIds(draft, homes)]).toEqual(want);
+    });
+
+    test('unwrapIds unwraps a linked id before :W4 and leaves a linked id elsewhere', () => {
+        expect(
+            unwrapIds('[FRM-9](https://linear.app/x/issue/FRM-9):W4 words'),
+        ).toBe('FRM-9:W4 words');
+        const elsewhere =
+            'see [FRM-9](https://linear.app/x/issue/FRM-9) for W4';
+        expect(unwrapIds(elsewhere)).toBe(elsewhere);
+    });
+
+    test('wishBlock hands back a linked id plain', () => {
+        expect(
+            wishBlock('## wish\n\n* [FRM-9](https://x.io/FRM-9):W4 a\n\n## b'),
+        ).toContain('* FRM-9:W4 a');
+    });
+
+    test('bareWish strips only a line-head home prefix', () => {
+        expect(bareWish('  * PK-3:W1 (d): see PK-4:W2')).toBe(
+            '  * W1 (d): see PK-4:W2',
+        );
+        expect(bareWish('W1 plain')).toBe('W1 plain');
+    });
+
+    test('a full-id line is covered by a draft citing it under its home', () => {
+        const block = '* PK-3:W1 (2026-11-06 10:00, dima): the words';
+        expect(missingText(block, ['PK-3:W1 the words'], ['PK-3'])).toEqual([]);
+        expect(uncovered(block, ['PK-4:W1 the words'], ['PK-3'])).toEqual([
+            ['W1', 'the words'],
+        ]);
     });
 });
