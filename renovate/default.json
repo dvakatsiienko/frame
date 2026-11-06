@@ -68,7 +68,7 @@
             ]
         }
     ],
-    "prCreation": "not-pending",
+    "prCreation": "immediate",
     "rangeStrategy": "bump",
     "semanticCommits": "disabled",
     "separateMajorMinor": true,
