@@ -54,7 +54,7 @@ the checks sixth sense or codie on `x` starts from.
 - **a secret-shape check** plants every key form it claims: base64 pem, `OPENSSH`, `ghp_`.
 - **an actor rule** (tty vs agent) runs in a python pty with and without `CLAUDECODE`.
 - **a never-fail path** (a verb a hook runs) runs against a dead-port `X_LINEAR_URL`.
-- **a test's adequacy** (base's source, head's tests) runs through `x lane verify-tree <head> --revert <base> <src paths> -- <test command>`: exit 0 only when every new test reads red, and head's content comes back.
+- **a test's adequacy** (base's source, head's tests) runs through `x lane verify-tree <head> --revert <base> <src paths> -- <test command>`: exit 0 only when every readable new test failed on an assertion on base and passed on head; unread ones are named.
 
 ## output
 

@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -67,8 +69,6 @@ FAIL	x	0.2s
 
 func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 	t.Parallel()
-	const source = "export const present = 1;\nexport const data = JSON.parse('1');\nfunction base() {}\n"
-	const headSource = source + "export const CONFIG = { field: 1 };\n"
 	cases := []struct {
 		name     string
 		log      string
@@ -87,7 +87,7 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"plugin test: a dotted name and a variable", wordsPluginRed, false, []string{"zz asserts", "zz calls a lacked export", "zz reads a lacked variable"}, verdictBroken,
 			map[string]string{"zz asserts": verdictRed, "zz calls a lacked export": verdictBroken, "zz reads a lacked variable": verdictBroken}},
 		{"plugin test: a file that did not load", wordsPluginLoad, false, []string{"zy"}, verdictBroken, map[string]string{"zy": verdictBroken}},
-		{"mods:test: a failing row and its tally", "x-mod-a:\ntests/a.test.ts:\n(fail) a row\n\nmods:test: red in x-mod-a, 3 pass, 1 fail\n", false, []string{"a row"}, verdictRed,
+		{"mods:test: a failing row and its tally", "x-mod-a:\ntests/a.test.ts:\n(fail) a row\n  AssertionError: no\n\nmods:test: red in x-mod-a, 3 pass, 1 fail\n", false, []string{"a row"}, verdictRed,
 			map[string]string{"a row": verdictRed}},
 		{"mods:test: a green tally leaves the new test still green", "mods:test: 1 mods green, 3 pass, 0 fail\n", true, []string{"a row"}, verdictStillGreen,
 			map[string]string{"a row": verdictStillGreen}},
@@ -100,16 +100,13 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"plugin test: a timeout is load, no proof", "(fail) slow [5002.31ms]\n  Error: timed out after 5000 ms\n(fail) fast [1.0ms]\n  AssertionError: no\nRan 2 tests across 1 file.\n", false, []string{"slow", "fast"}, verdictBroken,
 			map[string]string{"slow": verdictBroken, "fast": verdictRed}},
 		{"vitest: a timeout is load, no proof", " FAIL  a.test.ts > slow\nError: Test timed out in 5000ms.\n", false, []string{"slow"}, verdictBroken, map[string]string{"slow": verdictBroken}},
-		{"a template name holds each row it expanded to", "(fail) a door: gh pr merge 12\n  AssertionError: no\n(fail) a door: x as codie\n  AssertionError: no\n(fail) other row\n  AssertionError: no\n", false, []string{"a door: ${typed}", "no hint: ${typed}"}, verdictStillGreen,
-			map[string]string{"a door: gh pr merge 12": verdictRed, "a door: x as codie": verdictRed, "no hint: ${typed}": verdictStillGreen, "other row": verdictRed}},
+		{"a template name holds each row it expanded to", "(fail) a door: gh pr merge 12\n  AssertionError: no\n(fail) a door: x as codie\n  AssertionError: no\n(fail) other row\n  AssertionError: no\n", false, []string{"a door: ${typed}", "no hint: ${typed}"}, verdictRed,
+			map[string]string{"a door: gh pr merge 12": verdictRed, "a door: x as codie": verdictRed, "a door: ${typed}": verdictUnread, "no hint: ${typed}": verdictUnread, "other row": verdictRed}},
 		{"a load word in a passing title", "(pass) names a file that did not load\n(fail) one\n  AssertionError: no\nRan 2 tests across 1 file.\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
 		{"a load word in a failing title", "(fail) names a file that did not load\n  AssertionError: no\n", false, []string{"names a file that did not load"}, verdictRed, map[string]string{"names a file that did not load": verdictRed}},
 		{"a plugin title holding the vitest arrow", "tests/w.test.ts:\n(fail) a > after a write\n  AssertionError: no\n", false, []string{"a > after a write"}, verdictRed, map[string]string{"a > after a write": verdictRed}},
-		{"a destructure of a field only head binds", " FAIL  a.test.ts > one\nTypeError: Cannot destructure property 'field' of 'lib.CONFIG' as it is undefined.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"an iteration of a name only head binds", " FAIL  a.test.ts > one\nTypeError: lib.CONFIG is not iterable\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"a call vite rewrote", " FAIL  a.test.ts > one\nTypeError: (0 , __vi_import_0__.parse) is not a function\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"a test that throws from json parse is a red", " FAIL  a.test.ts > one\nSyntaxError: Unexpected token o in JSON at position 1\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
-		{"color codes around a row", "\x1b[31m FAIL  a.test.ts > one\x1b[39m\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
+		{"a throw from json parse is its own row, no load break", " FAIL  a.test.ts > one\nSyntaxError: Unexpected token o in JSON at position 1\n FAIL  a.test.ts > two\nAssertionError: no\n", false, []string{"one", "two"}, verdictBroken, map[string]string{"one": verdictBroken, "two": verdictRed}},
+		{"color codes around a row", "\x1b[31m FAIL  a.test.ts > one\x1b[39m\nAssertionError: no\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
 		{"an empty run that exits 0", "", true, []string{"a"}, verdictBroken, map[string]string{"a": verdictBroken}},
 		{"an empty run that exits red", "", false, []string{"a"}, verdictFailed, map[string]string{"a": verdictFailed}},
 		{"a tally and a red exit, nothing named", "Ran 3 tests across 1 file. [1ms]\n", false, []string{"a"}, verdictFailed, map[string]string{"a": verdictFailed}},
@@ -117,21 +114,25 @@ func TestJudgeRunReadsEachRunnersWords(t *testing.T) {
 		{"an old test red beside no new test is no proof", "(fail) old row\n  AssertionError: no\nRan 2 tests across 1 file.\n", false, nil, verdictBroken, map[string]string{"old row": verdictRed}},
 		{"an old test red beside a green new test is no proof", "(fail) old row\n  AssertionError: no\n", false, []string{"new row"}, verdictStillGreen,
 			map[string]string{"old row": verdictRed, "new row": verdictStillGreen}},
+		{"a real TypeError on existing code reads broken, a false no-proof on the safe side", " FAIL  a.test.ts > one\nTypeError: Cannot read properties of undefined (reading 'length')\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a constant asserted is a red: an assertion by the word set", " FAIL  a.test.ts > limit is three\nAssertionError: expected undefined to be 3\n", false, []string{"limit is three"}, verdictRed, map[string]string{"limit is three": verdictRed}},
+		{"a js row in no words reads as a throw", "(fail) one\nRan 1 test across 1 file.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a passing row's title lends no assertion to the throw above it", "(fail) one\n  Error: boom\n(pass) AssertionError holds\nRan 2 tests across 1 file.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a throw's message lends no assertion to itself", "(fail) one\n  Error: AssertionError is not defined\nRan 1 test across 1 file.\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a go panic reads broken", "--- FAIL: TestNew (0.00s)\npanic: boom [recovered]\n\tpanic: boom\n\ngoroutine 7 [running]:\n", false, []string{"TestNew"}, verdictBroken, map[string]string{"TestNew": verdictBroken}},
+		{"a go row with no output is a failed check", "--- FAIL: TestNew (0.00s)\nFAIL\n", false, []string{"TestNew"}, verdictRed, map[string]string{"TestNew": verdictRed}},
+		{"a literal dollar is a title, no hole", " FAIL  a.test.ts > costs $5\nAssertionError: no\n", false, []string{"costs $5"}, verdictRed, map[string]string{"costs $5": verdictRed}},
+		{"a literal percent is a title, no hole", " FAIL  a.test.ts > took 5%d\nAssertionError: no\n", false, []string{"took 5%d"}, verdictRed, map[string]string{"took 5%d": verdictRed}},
+		{"a title of holes alone claims no row", " FAIL  a.test.ts > old row\nAssertionError: no\n", false, []string{"${typed}"}, verdictBroken, map[string]string{"${typed}": verdictUnread, "a.test.ts > old row": verdictRed}},
 		{"an old test's break does not outvote a red new test", "(fail) old row\n  Error: timed out after 5000 ms\n(fail) new row\n  AssertionError: no\n", false, []string{"new row"}, verdictRed,
 			map[string]string{"old row": verdictBroken, "new row": verdictRed}},
 		{"a failed row on a command that exited 0", "--- FAIL: TestNew (0.00s)\n", true, []string{"TestNew"}, verdictFailed, map[string]string{"TestNew": verdictFailed}},
-		{"a word only the source's calls hold is lacked", " FAIL  a.test.ts > one\nTypeError: parse is not a function\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"a function the source binds is a real red", " FAIL  a.test.ts > one\nTypeError: base is not a function\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
-		{"a field only head binds", " FAIL  a.test.ts > one\nTypeError: Cannot read properties of undefined (reading 'field')\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"a field neither side binds is a real red", " FAIL  a.test.ts > one\nTypeError: Cannot read properties of undefined (reading 'length')\n", false, []string{"one"}, verdictRed, map[string]string{"one": verdictRed}},
-		{"javascriptcore's words for a field only head binds", "(fail) one\n  TypeError: undefined is not an object (evaluating 'lib.CONFIG.field')\n", false, []string{"one"}, verdictBroken, map[string]string{"one": verdictBroken}},
-		{"an each title's hole matches its row", " FAIL  a.test.ts > green each 1\nAssertionError: no\n", false, []string{"green each %s"}, verdictStillGreen, map[string]string{"a.test.ts > green each 1": verdictRed, "green each %s": verdictStillGreen}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			verdict, rows := judgeRun(c.log, c.exitedOK, namedAnywhere(c.newTests), swappedSource{source, headSource})
+			verdict, rows := judgeRun(c.log, c.exitedOK, namedAnywhere(c.newTests), testOutput{})
 
 			if verdict != c.verdict {
 				t.Errorf("the run reads %q, want %q: %+v", verdict, c.verdict, rows)
@@ -157,7 +158,7 @@ func TestJudgeRunReadsThePluginTestSample(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	verdict, rows := judgeRun(string(raw), false, namedAnywhere([]string{"a breaks"}), swappedSource{})
+	verdict, rows := judgeRun(string(raw), false, namedAnywhere([]string{"a breaks"}), testOutput{})
 
 	if verdict != verdictBroken || !strings.Contains(rows[0].Why, "did not load") {
 		t.Fatalf("the sample holds a file that did not load: %s, %+v", verdict, rows)
@@ -183,13 +184,15 @@ func TestJudgeRunReadsGoCasesAndTables(t *testing.T) {
 		{"a go case that passed", "--- FAIL: TestOld (0.00s)\n    --- FAIL: TestOld/other (0.00s)\nFAIL\n", newTest{Name: "new case", File: "a_test.go"}, verdictStillGreen},
 		{"a suite method that failed", "--- FAIL: TestSuite (0.00s)\n    --- FAIL: TestSuite/TestMethod (0.00s)\nFAIL\n", newTest{Name: "TestMethod", File: "a_test.go"}, verdictRed},
 		{"a js title is no go case", " FAIL  a.test.ts > dir/name\nAssertionError: no\n", newTest{Name: "name", File: "a.test.ts"}, verdictStillGreen},
-		{"a table with no hole in its title", " FAIL  a.test.ts > rows\nAssertionError: no\n", newTest{Name: "rows", File: "a.test.ts", IsTable: true}, verdictStillGreen},
+		{"a table with no hole in its title", " FAIL  a.test.ts > rows\nAssertionError: no\n", newTest{Name: "rows", File: "a.test.ts", IsTable: true}, verdictRed},
+		{"a table's hole matches its row", " FAIL  a.test.ts > green each 1\nAssertionError: no\n", newTest{Name: "green each %s", File: "a.test.ts", IsTable: true}, verdictRed},
+		{"a table whose rows stayed green proves nothing", " FAIL  a.test.ts > other\nAssertionError: no\n", newTest{Name: "green each %s", File: "a.test.ts", IsTable: true}, verdictBroken},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			verdict, rows := judgeRun(c.log, false, []newTest{c.test}, swappedSource{})
+			verdict, rows := judgeRun(c.log, false, []newTest{c.test}, testOutput{})
 
 			if verdict != c.want {
 				t.Fatalf("reads %q, want %q: %+v", verdict, c.want, rows)
@@ -214,7 +217,7 @@ func TestJudgeRunTellsTwoFilesApart(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			verdict, rows := judgeRun(c.log, false, []newTest{{Name: "handles empty", File: c.file}}, swappedSource{})
+			verdict, rows := judgeRun(c.log, false, []newTest{{Name: "handles empty", File: c.file}}, testOutput{})
 
 			if verdict != c.want {
 				t.Fatalf("reads %q, want %q: %+v", verdict, c.want, rows)
@@ -261,7 +264,7 @@ func TestAddedTestNamesReadsEachShape(t *testing.T) {
 				file = "a_test.go"
 			}
 			for _, test := range addedTestNames(c.added, file) {
-				if test.IsComputed {
+				if test.IsUnread {
 					computed = append(computed, test.Name)
 				} else {
 					names = append(names, test.Name)
@@ -301,13 +304,94 @@ func TestReleaseKeepsAClaimNamingFiles(t *testing.T) {
 	}
 }
 
-func TestAComputedTitleNeverProves(t *testing.T) {
+// exit line 2: a test x cannot read is named, and exit 0 stays possible beside it
+func TestAnUnreadTestHasNoVote(t *testing.T) {
 	t.Parallel()
+	unread := newTest{Name: "title", IsUnread: true, Why: "a computed title"}
+	cases := []struct {
+		name  string
+		tests []newTest
+		want  string
+	}{
+		{"beside a red", []newTest{{Name: "real"}, unread}, verdictRed},
+		{"alone", []newTest{unread}, verdictBroken},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
 
-	verdict, rows := judgeRun(" FAIL  a.test.ts > real\nAssertionError: no\n", false, []newTest{{Name: "real"}, {Name: "title", IsComputed: true}}, swappedSource{})
+			verdict, rows := judgeRun(" FAIL  a.test.ts > real\nAssertionError: no\n", false, c.tests, testOutput{})
 
-	if verdict != verdictStillGreen || len(rows) != 2 || !strings.Contains(rows[1].Why, "computed") {
-		t.Fatalf("reads %q: %+v, want a row naming the computed title", verdict, rows)
+			if verdict != c.want || !slices.ContainsFunc(rows, func(row testRow) bool { return row.Name == "title" && row.Verdict == verdictUnread }) {
+				t.Fatalf("reads %q: %+v, want %q and an unread row", verdict, rows, c.want)
+			}
+		})
+	}
+}
+
+// red means failed on base and not on head, and the head run is what tells an old red from a new one
+func TestJudgeRunReadsTheHeadRun(t *testing.T) {
+	t.Parallel()
+	const onBase = " FAIL  a.test.ts > one\nAssertionError: no\n"
+	cases := []struct {
+		name, head string
+		tests      []newTest
+		want       string
+		rows       map[string]string
+	}{
+		{"green on head", "", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"red on both is no proof", onBase, []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
+		{"an old row of the same title, red on both", " FAIL  a.test.ts > old > one\nAssertionError: no\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
+		{"red on head has no vote beside a red", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
+		{"a timeout on head is load, no proof", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictBroken}},
+		{"a row a title expanded to, red on both", onBase, []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead, "o${x}": verdictUnread}},
+		{"an old row red on both", onBase, []newTest{{Name: "new"}}, verdictStillGreen, map[string]string{"a.test.ts > one": verdictRedOnHead, "new": verdictStillGreen}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
+			verdict, rows := judgeRun(onBase, false, c.tests, readTestOutput(c.head))
+
+			if verdict != c.want {
+				t.Errorf("reads %q, want %q: %+v", verdict, c.want, rows)
+			}
+			got := map[string]string{}
+			for _, row := range rows {
+				got[row.Name] = row.Verdict
+			}
+			for name, want := range c.rows {
+				if got[name] != want {
+					t.Errorf("%q reads %q, want %q: %+v", name, got[name], want, rows)
+				}
+			}
+		})
+	}
+}
+
+func TestHolderAliveReadsThePidAndItsStart(t *testing.T) {
+	t.Parallel()
+	gone := exec.Command("sh", "-c", "exit 0")
+	if err := gone.Run(); err != nil {
+		t.Fatal(err)
+	}
+	self := os.Getpid()
+	cases := []struct {
+		name  string
+		claim treeClaim
+		want  bool
+	}{
+		{"this process", treeClaim{Pid: self, Started: processStarted(self)}, true},
+		{"a pid reused by a later process", treeClaim{Pid: self, Started: "Mon Jan  1 00:00:00 2001"}, false},
+		{"a process that is gone", treeClaim{Pid: gone.Process.Pid, Started: "Mon Jan  1 00:00:00 2001"}, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			if got := holderAlive(c.claim); got != c.want {
+				t.Fatalf("reads %v, want %v", got, c.want)
+			}
+		})
 	}
 }
 

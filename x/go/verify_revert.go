@@ -355,25 +355,10 @@ func namedOnce(tree, head string, test newTest) newTest {
 		}
 	}
 	if len(dirs) > 1 {
-		test.IsComputed = true
+		test.IsUnread = true
 		test.Why = "another package holds a test of this name, and go's output names no package beside a failure, so x cannot tell whose red this is"
 	}
 	return test
-}
-
-// the non-test files as this tree holds them now, read once per side for what a throw names
-func sourceOf(tree string, files []string) string {
-	var source strings.Builder
-	for _, file := range files {
-		if testFile.MatchString(file) {
-			continue
-		}
-		if body, err := os.ReadFile(filepath.Join(tree, file)); err == nil {
-			source.Write(body)
-			source.WriteByte('\n')
-		}
-	}
-	return source.String()
 }
 
 func revertRun(r *Run, main, tree, head, base string, paths, command []string) (any, error) {
@@ -394,10 +379,44 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		return nil, err
 	}
 	newTests := newTestNames(tree, fork, head, files)
-	source := swappedSource{head: sourceOf(tree, files)}
+	report := func(verdict, output string, rows []testRow) (any, error) {
+		lines := make([]string, len(rows))
+		for i, row := range rows {
+			lines[i] = ui.fg.Render(row.Verdict + "  " + row.Name)
+		}
+		r.Show(lines, nameCell+2)
+		data := ordered{{"tree", tree}, {"sha", head}, {"base", fork}, {"verdict", verdict}, {"tests", rows}}
+		if verdict != verdictRed {
+			return nil, &Fail{Refused: true, Msg: "no proof: " + rowsLine(rows), Next: "read the test's output above; each new test must fail on an assertion on " + short(fork) + "'s source and pass on head", Log: nonBlank(output), Data: data}
+		}
+		r.Done(rowsLine(rows)+" on "+short(fork)+"'s source; "+tree+" back on "+short(head), "cd "+tree)
+		return data, nil
+	}
+
+	var verdict, output string
+	var rows []testRow
+	var onHead testOutput
+	if err := r.Step("test-head", strings.Join(command, " "), func() (string, error) {
+		got, _ := run(tree, nil, "", command[0], command[1:]...)
+		output = got.log
+		onHead = readTestOutput(got.log)
+		if whole, why := wholeRunVerdict(onHead, got.ok); whole != "" {
+			verdict, rows = whole, wholeRunRows(newTests, whole, "on head: "+why)
+			return "", notHeld(whole)
+		}
+		return fmt.Sprintf("%d failed on head", len(onHead.failed)), sameAsBaseline(tree, baseline)
+	}); err != nil {
+		return nil, err
+	}
+	if verdict != "" {
+		if err := sameAsBaseline(tree, baseline); err != nil {
+			return nil, err
+		}
+		return report(verdict, output, rows)
+	}
+
 	mine := treeClaim{Pid: os.Getpid(), Started: processStarted(os.Getpid())}
 	restore := func() error { return restoreHead(r, tree, head, path, mine, files, baseline) }
-
 	if err := r.Step("swap", "base's content into the named paths", func() (string, error) {
 		temp, err := writeTemp(path, treeClaim{mine.Pid, mine.Started, head, fork, files})
 		if err == nil {
@@ -411,16 +430,13 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		return nil, errors.Join(err, restore())
 	}
 
-	var verdict, output string
-	var rows []testRow
 	var restoreErr error
 	func() {
 		defer func() { restoreErr = restore() }()
-		_ = r.Step("test", strings.Join(command, " "), func() (string, error) {
-			source.base = sourceOf(tree, files)
+		_ = r.Step("test-base", strings.Join(command, " "), func() (string, error) {
 			got, _ := run(tree, nil, "", command[0], command[1:]...)
 			output = got.log
-			verdict, rows = judgeRun(got.log, got.ok, newTests, source)
+			verdict, rows = judgeRun(got.log, got.ok, newTests, onHead)
 			if verdict != verdictRed {
 				return "", notHeld(verdict)
 			}
@@ -430,22 +446,12 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	if restoreErr != nil {
 		return nil, restoreErr
 	}
-	lines := make([]string, len(rows))
-	for i, row := range rows {
-		lines[i] = ui.fg.Render(row.Verdict + "  " + row.Name)
-	}
-	r.Show(lines, nameCell+2)
-	data := ordered{{"tree", tree}, {"sha", head}, {"base", fork}, {"verdict", verdict}, {"tests", rows}}
-	if verdict != verdictRed {
-		return nil, &Fail{Refused: true, Msg: "no proof: " + rowsLine(rows), Next: "read the test's output above; each new test must fail on an assertion on " + short(fork) + "'s source", Log: nonBlank(output), Data: data}
-	}
-	r.Done(rowsLine(rows)+" on "+short(fork)+"'s source; "+tree+" back on "+short(head), "cd "+tree)
-	return data, nil
+	return report(verdict, output, rows)
 }
 
 func rowsLine(rows []testRow) string {
 	var parts []string
-	for _, verdict := range []string{verdictRed, verdictStillGreen, verdictBroken, verdictFailed} {
+	for _, verdict := range []string{verdictRed, verdictUnread, verdictRedOnHead, verdictStillGreen, verdictBroken, verdictFailed} {
 		var names []string
 		for _, row := range rows {
 			if row.Verdict == verdict {
@@ -465,10 +471,6 @@ func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string
 		if err := swapTo(tree, head, files); err != nil {
 			return "", err
 		}
-		status, err := mustGitIn(tree, "status", "status", "--porcelain", "--untracked-files=no")
-		if err != nil {
-			return "", err
-		}
 		// the named paths are back, so the claim drops its files; what still differs is the command's own write
 		temp, err := writeTemp(path, mine)
 		if err == nil {
@@ -477,9 +479,17 @@ func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string
 		if err != nil {
 			return "", err
 		}
-		if status != baseline {
-			return "", &Fail{Msg: tree + " differs from before the run: " + status, Next: "git -C " + tree + " status", Log: nonBlank(status)}
-		}
-		return "the porcelain compare holds", nil
+		return "the porcelain compare holds", sameAsBaseline(tree, baseline)
 	})
+}
+
+func sameAsBaseline(tree, baseline string) error {
+	status, err := mustGitIn(tree, "status", "status", "--porcelain", "--untracked-files=no")
+	if err != nil {
+		return err
+	}
+	if status != baseline {
+		return &Fail{Msg: tree + " differs from before the run: " + status, Next: "git -C " + tree + " status", Log: nonBlank(status)}
+	}
+	return nil
 }

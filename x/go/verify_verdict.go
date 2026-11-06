@@ -1,18 +1,19 @@
 package main
 
 import (
-	"cmp"
 	"regexp"
 	"slices"
 	"strings"
 )
 
-// the proof words: red, still green, broken, failed (GLOSSARY.md)
+// the proof words: red, still green, broken, failed, red on head, unread (GLOSSARY.md)
 const (
 	verdictRed        = "red"
 	verdictStillGreen = "still green"
 	verdictBroken     = "broken"
 	verdictFailed     = "failed"
+	verdictRedOnHead  = "red on head"
+	verdictUnread     = "unread"
 )
 
 type testRow struct {
@@ -21,17 +22,17 @@ type testRow struct {
 	Why     string `json:"why,omitempty"`
 }
 
-// a test the pr adds. IsComputed: no name a runner's output can be matched to, Why says what stands in the way.
+// a test the pr adds. IsUnread: no name a runner's output can be matched to, Why says what stands in the way.
 // IsTable: one title for many rows, of which x sees only the ones that failed
 type newTest struct {
-	Name, File, Why     string
-	IsComputed, IsTable bool
+	Name, File, Why   string
+	IsUnread, IsTable bool
 }
 
-// the swapped paths' source on each side, read for what a throw names
-type swappedSource struct{ base, head string }
-
-type failedTest struct{ name, file, output string }
+type failedTest struct {
+	name, file, output string
+	isGo               bool
+}
 
 // one run's output as the runners word it: claude plugin test, pnpm mods:test, go test, vitest
 type testOutput struct {
@@ -45,22 +46,17 @@ type testOutput struct {
 }
 
 var (
-	failedRow = []*regexp.Regexp{regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`), regexp.MustCompile(`^\s*--- FAIL: (\S+)`), regexp.MustCompile(`^ FAIL  (.+?)\s*$`)}
-	passedRow = regexp.MustCompile(`^\(pass\) |^\s*--- PASS: | ✓ `)
+	goFailedRow = regexp.MustCompile(`^\s*--- FAIL: (\S+)`)
+	failedRow   = []*regexp.Regexp{regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`), goFailedRow, regexp.MustCompile(`^ FAIL  (.+?)\s*$`)}
+	passedRow   = regexp.MustCompile(`^\(pass\) |^\s*--- PASS: | ✓ `)
 	// the last alternative is vitest's row for a suite that threw before any test ran
 	loadError   = regexp.MustCompile(`SyntaxError|did not load|Cannot find module|Cannot find package|ERR_MODULE_NOT_FOUND|Failed to load|Transform failed|\[setup failed\]|\[build failed\]|hook was skipped: |^ FAIL  .* \[ .* \]$`)
 	goPackageOK = regexp.MustCompile(`^ok\s+\S+\s+\S+`)
 	testsRan    = regexp.MustCompile(`^\s*Tests\s+.*\d+ (?:passed|failed)|^Ran [1-9]\d* tests? across|^mods:test: .*, (?:[1-9]\d* pass, \d+ fail|\d+ pass, [1-9]\d* fail)`)
 	testsNone   = regexp.MustCompile(`no tests to run|no test files|No test files found|^Ran 0 tests|^mods:test: .*, 0 pass, 0 fail|^\s*Tests\s+no tests`)
-	// node's words and javascriptcore's, which claude plugin test runs on
-	namedSymbol = []*regexp.Regexp{
-		regexp.MustCompile(`([\w$]+)\)? is not a (?:function|constructor)`),
-		regexp.MustCompile(`([\w$]+) is not defined`),
-		regexp.MustCompile(`Can't find variable: ([\w$]+)`),
-	}
-	readField    = regexp.MustCompile(`\(reading '([\w$]+)'\)|Cannot destructure property '([\w$]+)'`)
-	notIterable  = regexp.MustCompile(`([\w$.]+) is not iterable`)
-	evaluateExpr = regexp.MustCompile(`\(evaluating '([\w$.]+)'\)`)
+	// vitest's and claude plugin test's word for a failed expect, at a line's start so a throw's own message cannot claim it
+	assertionWord = regexp.MustCompile(`(?m)^\s*AssertionError\b`)
+	goPanic       = regexp.MustCompile(`(?m)^\s*panic: `)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
 	addedJSTest = regexp.MustCompile("(?:^|[^.\\w$])(?:it|test)((?:\\.\\w+)*)(?:\\([^()]*\\)|`[^`]*`)?\\(\\s*(?:'((?:[^'\\\\]|\\\\.)+)'|\"((?:[^\"\\\\]|\\\\.)+)\"|`((?:[^`\\\\]|\\\\.)+)`|([^'\"`\\s)][^,\\n]*),)")
@@ -70,8 +66,9 @@ var (
 	declaredRunner = regexp.MustCompile(`\bfunction\s+(?:it|test)\b`)
 	titleEscape    = regexp.MustCompile("\\\\(['\"`])")
 	testFile       = regexp.MustCompile(`(?:\.test\.[cm]?[jt]sx?|\.spec\.[cm]?[jt]sx?|_test\.go)$`)
-	// a template's placeholder or an each table's: what a run expands
-	titleHole = regexp.MustCompile(`\$\{[^}]*\}?|%[sdifjoO#]|\$\w+`)
+	// what a run expands: a template's placeholder anywhere, `%s` and `$name` only in an each table, so `costs $5` stays a title
+	templateHole = regexp.MustCompile(`\$\{[^}]*\}?`)
+	tableHole    = regexp.MustCompile(`\$\{[^}]*\}?|%[sdifjoO#]|\$\w+`)
 )
 
 func addedTestNames(added, file string) []newTest {
@@ -96,8 +93,7 @@ func addedTestNames(added, file string) []newTest {
 			isTable := strings.Contains(m[1], ".each") || strings.Contains(m[1], ".for")
 			tests = append(tests, newTest{Name: titleEscape.ReplaceAllString(name, "$1"), File: file, IsTable: isTable})
 		} else {
-			tests = append(tests, newTest{Name: strings.TrimSpace(m[5]), File: file, IsComputed: true,
-				Why: "a computed title in " + file + ": x cannot tell its row, so a literal title is what proves it"})
+			tests = append(tests, newTest{Name: strings.TrimSpace(m[5]), File: file, IsUnread: true, Why: "a computed title: x cannot tell its row"})
 		}
 	}
 	return tests
@@ -109,8 +105,9 @@ func readTestOutput(log string) testOutput {
 	for line := range strings.SplitSeq(ansiColor.ReplaceAllString(log, ""), "\n") {
 		// a title holding a load word is a test's name, never the runner's report; the two rows below are the runner's
 		name := failedName(line)
-		isTitle := passedRow.MatchString(line) || (name != "" && name != "the file did not load" && !strings.Contains(name, " [ "))
-		// a test that throws from JSON.parse is a red, whatever the error's class
+		isPassed := passedRow.MatchString(line)
+		isTitle := isPassed || (name != "" && name != "the file did not load" && !strings.Contains(name, " [ "))
+		// a test that throws from JSON.parse is its own row, never a suite that did not load
 		if read.load == "" && !isTitle && loadError.MatchString(line) && !strings.Contains(line, "JSON") {
 			read.load = strings.TrimSpace(line)
 		}
@@ -125,15 +122,16 @@ func readTestOutput(log string) testOutput {
 		}
 		if name != "" {
 			read.ran = true
-			failed := failedTest{name: name, file: file}
+			failed := failedTest{name: name, file: file, isGo: goFailedRow.MatchString(line)}
 			if head, _, hasFile := strings.Cut(name, " > "); hasFile && testFile.MatchString(head) {
 				failed.file = head
 			}
 			read.failed = append(read.failed, failed)
 			continue
 		}
-		if passedRow.MatchString(line) {
+		if isPassed {
 			read.ran = true
+			continue
 		}
 		if n := len(read.failed); n > 0 {
 			read.failed[n-1].output += line + "\n"
@@ -151,17 +149,28 @@ func failedName(line string) string {
 	return ""
 }
 
+// a title split at what a run expands; one part means it holds no hole
+func titleParts(test newTest) []string {
+	if test.IsTable {
+		return tableHole.Split(test.Name, -1)
+	}
+	return templateHole.Split(test.Name, -1)
+}
+
 // a failure holds a new test when its name is that test, a go subtest of it, or a vitest row under a describe, in the
-// same file where the runner names one; a title's holes match whatever the run expanded them to
+// same file where the runner names one; a title's holes match whatever the run expanded them to, and a title of holes alone
+// would match every row of its file, so it matches none
 func namesTest(failed failedTest, test newTest) bool {
-	if test.IsComputed {
+	if test.IsUnread {
 		return false
 	}
 	if failed.file != "" && test.File != "" && failed.file != test.File && !strings.HasSuffix(test.File, "/"+failed.file) {
 		return false
 	}
-	if titleHole.MatchString(test.Name) {
-		parts := titleHole.Split(test.Name, -1)
+	if parts := titleParts(test); len(parts) > 1 {
+		if strings.TrimSpace(strings.Join(parts, "")) == "" {
+			return false
+		}
 		for i, part := range parts {
 			parts[i] = regexp.QuoteMeta(part)
 		}
@@ -174,114 +183,134 @@ func namesTest(failed failedTest, test newTest) bool {
 	return strings.HasSuffix(test.File, ".go") && strings.Contains(failed.name+"/", "/"+strings.ReplaceAll(test.Name, " ", "_")+"/")
 }
 
-// a declaration of the symbol, never a mention: `JSON.parse(x)` binds no `parse`
-func bindsSymbol(source, symbol string) bool {
-	word := regexp.QuoteMeta(symbol)
-	return regexp.MustCompile(`(?m)\b(?:function\*?|const|let|var|class|type|interface|enum|func|def)\s+` + word + `\b` +
-		`|\b(?:import|export)\s+(?:type\s+)?\{[^}]*\b` + word + `\b` +
-		`|\bimport\s+` + word + `\b` +
-		`|^\s*(?:(?:async|static|public|private|export)\s+)*` + word + `\s*(?::|=[^=]|\([^)]*\)\s*(?::[^{\n]*)?\{)` +
-		`|[{,]\s*` + word + `\s*:`).MatchString(source)
+// go has no throw but a panic; a js row holds an assertion only by the runner's own word, so a row in no words reads as a throw
+func failedOnAssertion(failed failedTest) bool {
+	if failed.isGo {
+		return !goPanic.MatchString(failed.output)
+	}
+	return assertionWord.MatchString(failed.output)
 }
 
-// a throw naming a symbol this source lacks proves the test is new, never that it reads the change. a field of an
-// undefined names no symbol of its own, so it counts only when head binds what base lacks: `length` stays a real red
-func lackedBy(output string, source swappedSource) string {
-	for _, shape := range namedSymbol {
-		for _, m := range shape.FindAllStringSubmatch(output, -1) {
-			if !bindsSymbol(source.base, m[1]) {
-				return m[1]
-			}
-		}
-	}
-	var fields []string
-	for _, m := range readField.FindAllStringSubmatch(output, -1) {
-		fields = append(fields, m[1]+m[2])
-	}
-	for _, shape := range []*regexp.Regexp{evaluateExpr, notIterable} {
-		for _, m := range shape.FindAllStringSubmatch(output, -1) {
-			fields = append(fields, strings.Split(m[1], ".")...)
-		}
-	}
-	for _, field := range fields {
-		if bindsSymbol(source.head, field) && !bindsSymbol(source.base, field) {
-			return field
-		}
-	}
-	return ""
+func timedOutRow(name string) testRow {
+	return testRow{name, verdictBroken, "it timed out, which a loaded machine does on any source; wait for the load to fall and run it again"}
 }
 
-// the run's one verdict and a row per test: red only when every new test is, and a failure no new test claims gets its row
-// and no vote
-func judgeRun(log string, exitedOK bool, newTests []newTest, source swappedSource) (string, []testRow) {
-	read := readTestOutput(log)
-	whole := func(verdict, why string) (string, []testRow) {
-		rows := []testRow{}
-		for _, test := range newTests {
-			rows = append(rows, testRow{test.Name, verdict, why})
-		}
-		if len(rows) == 0 {
-			rows = append(rows, testRow{"the run", verdict, why})
-		}
-		return verdict, rows
+func judgedOnBase(failed failedTest) testRow {
+	switch {
+	case hookTimedOut.MatchString(failed.output):
+		return timedOutRow(failed.name)
+	case !failedOnAssertion(failed):
+		return testRow{failed.name, verdictBroken, "it threw, which any source can do: " + firstErrorOf(failed.output)}
 	}
+	return testRow{Name: failed.name, Verdict: verdictRed}
+}
+
+func firstErrorOf(output string) string {
+	for line := range strings.SplitSeq(output, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			return line
+		}
+	}
+	return "its output names no assertion"
+}
+
+// a run whose output answers for every test at once: nothing in it reads one test's row
+func wholeRunVerdict(read testOutput, exitedOK bool) (verdict, why string) {
 	switch {
 	case read.load != "":
-		return whole(verdictBroken, read.load)
+		return verdictBroken, read.load
 	case read.none && !read.ran:
-		return whole(verdictBroken, "0 tests ran")
+		return verdictBroken, "0 tests ran"
 	case !read.ran && exitedOK:
-		return whole(verdictBroken, "the output names no test that ran")
+		return verdictBroken, "the output names no test that ran"
 	case !exitedOK && len(read.failed) == 0:
-		return whole(verdictFailed, "the command failed and its output names no failed test")
+		return verdictFailed, "the command failed and its output names no failed test"
 	case exitedOK && len(read.failed) > 0:
-		return whole(verdictFailed, "the command exited 0 while its output names a failed test")
+		return verdictFailed, "the command exited 0 while its output names a failed test"
 	}
-	judged := func(failed failedTest) testRow {
-		if hookTimedOut.MatchString(failed.output) {
-			return testRow{failed.name, verdictBroken, "it timed out, which a loaded machine does on any source; wait for the load to fall and run it again"}
-		}
-		if symbol := lackedBy(failed.output, source); symbol != "" {
-			return testRow{failed.name, verdictBroken, "it throws on " + symbol + ", which this source lacks"}
-		}
-		return testRow{Name: failed.name, Verdict: verdictRed}
+	return "", ""
+}
+
+func wholeRunRows(newTests []newTest, verdict, why string) []testRow {
+	rows := []testRow{}
+	for _, test := range newTests {
+		rows = append(rows, testRow{test.Name, verdict, why})
 	}
-	var rows []testRow
+	if len(rows) == 0 {
+		rows = append(rows, testRow{"the run", verdict, why})
+	}
+	return rows
+}
+
+// base's run read against head's: a row is red when it failed on an assertion on base and did not fail on head. only a new
+// test votes, and the run reads red when at least one voted and every vote is red
+func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (string, []testRow) {
+	read := readTestOutput(log)
+	if verdict, why := wholeRunVerdict(read, exitedOK); verdict != "" {
+		return verdict, wholeRunRows(newTests, verdict, why)
+	}
+	failedOnHead := func(name string) bool {
+		return slices.ContainsFunc(head.failed, func(failed failedTest) bool { return failed.name == name })
+	}
+	const redOnHeadWhy = "it fails on head too, so this source is not what fails it"
+	votes, rest := []testRow{}, []testRow{}
 	claimed := make([]bool, len(read.failed))
 	for _, test := range newTests {
-		if test.IsComputed {
-			rows = append(rows, testRow{test.Name, verdictStillGreen, cmp.Or(test.Why, "a computed title: x cannot tell its row")})
+		if test.IsUnread {
+			rest = append(rest, testRow{test.Name, verdictUnread, test.Why})
 			continue
 		}
+		isExpanded := test.IsTable || len(titleParts(test)) > 1
 		row := testRow{Name: test.Name, Verdict: verdictStillGreen}
-		hasHole := test.IsTable || titleHole.MatchString(test.Name)
-		if hasHole {
-			row.Why = "a title with a placeholder: x sees the rows that failed, never the ones that passed, so a literal title is what proves it"
-		}
 		for i, failed := range read.failed {
 			if !namesTest(failed, test) {
 				continue
 			}
 			claimed[i] = true
-			if hasHole {
-				rows = append(rows, judged(failed))
-			} else if got := judged(failed); row.Verdict != verdictBroken {
+			got := judgedOnBase(failed)
+			switch {
+			case !isExpanded:
 				// a go subtest prints under its parent: the worst of them stands for the test
-				row.Verdict, row.Why = got.Verdict, got.Why
+				if row.Verdict != verdictBroken {
+					row.Verdict, row.Why = got.Verdict, got.Why
+				}
+			case failedOnHead(failed.name):
+				rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
+			default:
+				votes = append(votes, got)
 			}
 		}
-		rows = append(rows, row)
-	}
-	verdict := worstOf(rows)
-	for i, failed := range read.failed {
-		if !claimed[i] {
-			rows = append(rows, judged(failed))
+		if isExpanded {
+			rest = append(rest, testRow{test.Name, verdictUnread, "a title with a placeholder: x sees the rows that failed, never the ones that passed"})
+			continue
+		}
+		onHead := slices.IndexFunc(head.failed, func(failed failedTest) bool { return namesTest(failed, test) })
+		switch {
+		case onHead < 0:
+			votes = append(votes, row)
+		case hookTimedOut.MatchString(head.failed[onHead].output):
+			votes = append(votes, timedOutRow(test.Name))
+		default:
+			rest = append(rest, testRow{test.Name, verdictRedOnHead, redOnHeadWhy})
 		}
 	}
-	if len(newTests) == 0 {
-		return verdictBroken, append(rows, testRow{"the run", verdictBroken, "the pr's test files add no test x can name, so nothing here is proved new"})
+	for i, failed := range read.failed {
+		switch {
+		case claimed[i]:
+		case failedOnHead(failed.name):
+			rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
+		default:
+			rest = append(rest, judgedOnBase(failed))
+		}
 	}
-	return verdict, rows
+	if len(votes) == 0 {
+		why := "no new test here went red that x can read, so nothing is proved"
+		if len(newTests) == 0 {
+			why = "the pr's test files add no test x can name, so nothing here is proved new"
+		}
+		return verdictBroken, append(rest, testRow{"the run", verdictBroken, why})
+	}
+	return worstOf(votes), append(votes, rest...)
 }
 
 func worstOf(rows []testRow) string {

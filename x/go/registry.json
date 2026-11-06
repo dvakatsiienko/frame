@@ -181,7 +181,7 @@
             ],
             "flags": {
                 "revert": {
-                    "description": "run head's tests on this base's source: the named paths hold their merge-base content for the command, then head's content comes back",
+                    "description": "run head's tests on head, then on this base's source: the named paths hold their merge-base content for the second run, then head's content comes back",
                     "type": "string",
                     "value": "base"
                 }
@@ -195,8 +195,9 @@
                 "seed",
                 "verify",
                 "hooks",
+                "test-head",
                 "swap",
-                "test",
+                "test-base",
                 "restore"
             ]
         },

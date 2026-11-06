@@ -73,9 +73,12 @@ func revert(t *testing.T, main string, command ...string) ran {
 	return xIn(t, main, nil, args...)
 }
 
-// a command printing go test's words for each row
+// a run on head's source passes; what follows it runs on base's only
+const greenOnHead = "grep -q '^head$' src.txt && { echo 'ok  \tp\t0.1s'; exit 0; }; "
+
+// a command green on head, printing go test's words for each row on base
 func goPrints(lines ...string) []string {
-	script := ""
+	script := greenOnHead
 	for _, line := range lines {
 		script += "echo '" + line + "'; "
 	}
@@ -92,7 +95,7 @@ func TestRevertHoldsTheMergeBaseContentForTheRun(t *testing.T) {
 	gitT(t, main, "commit", "-q", "-m", "main moves")
 	gitT(t, main, "push", "-q", "origin", "main")
 
-	got := revert(t, main, "sh", "-c", `cat src.txt secret.txt gone.txt > `+seen+`; test -e added.txt && echo added >> `+seen+`; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1`)
+	got := revert(t, main, "sh", "-c", greenOnHead+`cat src.txt secret.txt gone.txt > `+seen+`; test -e added.txt && echo added >> `+seen+`; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1`)
 
 	if want, read := "base\nplaintext\nonly on base\n", readOr(seen, "the command never ran"); read != want {
 		t.Fatalf("the command read %q, want %q (added.txt gone):\n%s", read, want, got.stdout)
@@ -122,7 +125,7 @@ func TestRevertReadsTheBaseFromOriginOverAStaleLocalBranch(t *testing.T) {
 	gitT(t, main, "reset", "-q", "--hard", "HEAD~1")
 	seen := filepath.Join(t.TempDir(), "seen")
 
-	got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--revert", "main", "src.txt", "--", "sh", "-c", "cat src.txt > "+seen+"; echo '--- FAIL: TestNewOne (0.00s)'; exit 1")
+	got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--revert", "main", "src.txt", "--", "sh", "-c", greenOnHead+"cat src.txt > "+seen+"; echo '--- FAIL: TestNewOne (0.00s)'; exit 1")
 
 	if read := readOr(seen, "the command never ran"); got.code != 0 || read != "origin's main\n" {
 		t.Fatalf("exit %d, the command read %q, want origin's main:\n%s", got.code, read, got.stdout)
@@ -207,12 +210,12 @@ func TestRevertOnAHeadAlreadyOnItsBaseRefuses(t *testing.T) {
 func TestRevertBringsHeadBackWhateverTheCommandDid(t *testing.T) {
 	t.Parallel()
 	cases := map[string][]string{
-		"a failing command":  {"sh", "-c", "exit 3"},
-		"a killed command":   {"sh", "-c", "kill -9 $$"},
+		"a failing command":  {"sh", "-c", greenOnHead + "exit 3"},
+		"a killed command":   {"sh", "-c", greenOnHead + "kill -9 $$"},
 		"a missing command":  {"/nowhere/at/all"},
-		"a passing command":  {"true"},
-		"one that edits src": {"sh", "-c", "echo mine > src.txt; exit 1"},
-		"one that drops src": {"sh", "-c", "mv src.txt src.old; exit 1"},
+		"a passing command":  {"sh", "-c", greenOnHead + "true"},
+		"one that edits src": {"sh", "-c", greenOnHead + "echo mine > src.txt; exit 1"},
+		"one that drops src": {"sh", "-c", greenOnHead + "mv src.txt src.old; exit 1"},
 	}
 	for name, command := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -237,7 +240,7 @@ func TestRevertNamesATrackedFileTheCommandChanged(t *testing.T) {
 	t.Parallel()
 	main, _, tree := revertWorld(t)
 
-	got := revert(t, main, "sh", "-c", "echo changed > readme.txt; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+	got := revert(t, main, "sh", "-c", greenOnHead+"echo changed > readme.txt; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
 
 	if got.code == 0 || !strings.Contains(got.stdout, "readme.txt") {
 		t.Fatalf("exit %d, want a failure naming readme.txt:\n%s", got.code, got.stdout)
@@ -245,6 +248,42 @@ func TestRevertNamesATrackedFileTheCommandChanged(t *testing.T) {
 	if body := readOr(filepath.Join(tree, "readme.txt"), ""); body != "changed\n" {
 		t.Errorf("readme.txt reads %q, the verb must not touch what it was not told to", body)
 	}
+}
+
+// a head run that writes a tracked file refuses before the swap, which would wipe the write
+func TestRevertRefusesAHeadRunThatChangedATrackedFile(t *testing.T) {
+	t.Parallel()
+	main, _, tree := revertWorld(t)
+	seen := filepath.Join(t.TempDir(), "seen")
+
+	got := revert(t, main, "sh", "-c", "cat src.txt >> "+seen+"; echo changed > readme.txt; echo 'ok  \tp\t0.1s'")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "readme.txt") {
+		t.Fatalf("exit %d, want a failure naming readme.txt:\n%s", got.code, got.stdout)
+	}
+	if read := readOr(seen, ""); read != "head\n" {
+		t.Fatalf("the command read %q, want one run on head's content", read)
+	}
+	if body := readOr(filepath.Join(tree, "readme.txt"), ""); body != "changed\n" {
+		t.Errorf("readme.txt reads %q, the verb must not touch what it was not told to", body)
+	}
+}
+
+// exit line 2: a head that cannot load proves nothing, so base's source never swaps in
+func TestRevertOnAHeadThatCannotLoadNeverSwaps(t *testing.T) {
+	t.Parallel()
+	main, _, tree := revertWorld(t)
+	seen := filepath.Join(t.TempDir(), "seen")
+
+	got := revert(t, main, "sh", "-c", "cat src.txt >> "+seen+"; echo '(fail) the file did not load'; exit 1")
+
+	if read := readOr(seen, ""); read != "head\n" {
+		t.Fatalf("the command read %q, want one run on head's content", read)
+	}
+	if rows := rowsOf(t, got); got.code == 0 || rows[""] != "broken" || rows["TestNewOne"] != "broken" {
+		t.Fatalf("exit %d, rows %v, want broken:\n%s", got.code, rows, got.stdout)
+	}
+	assertHeadBack(t, tree)
 }
 
 func rowsOf(t *testing.T, got ran) map[string]string {
@@ -287,8 +326,12 @@ func TestRevertNamesEachNewTest(t *testing.T) {
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "broken"}},
 		{"no test ran", []string{"sh", "-c", "echo 'ok  \tp\t0.1s [no tests to run]'"}, 1,
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "broken"}},
-		{"a throw on a symbol base lacks", goPrints(failOne, "ReferenceError: helperOnlyOnHead is not defined", failTwo, "FAIL"), 1,
+		{"a panic on base", goPrints(failOne, "panic: boom", failTwo, "FAIL"), 1,
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "red"}},
+		{"one red on head too", []string{"sh", "-c", "echo '" + failOne + "'; grep -q '^head$' src.txt && exit 1; echo '" + failTwo + "'; exit 1"}, 0,
+			map[string]string{"": "red", "TestNewOne": "red on head", "TestNewTwo": "red"}},
+		{"both red on head too", []string{"sh", "-c", "echo '" + failOne + "'; echo '" + failTwo + "'; exit 1"}, 1,
+			map[string]string{"": "broken", "TestNewOne": "red on head", "TestNewTwo": "red on head"}},
 		{"an opaque red", []string{"sh", "-c", "echo nope; exit 1"}, 1,
 			map[string]string{"": "failed", "TestNewOne": "failed", "TestNewTwo": "failed"}},
 		{"an opaque green", []string{"sh", "-c", "echo fine"}, 1,
@@ -321,7 +364,7 @@ func killedMidSwap(t *testing.T, main string) (tree string) {
 	dir := t.TempDir()
 	started, pidFile := filepath.Join(dir, "started"), filepath.Join(dir, "child.pid")
 	c := exec.Command(xbin, "lane", "verify-tree", revertPR, "--revert", "main", "src.txt", "secret.txt", "added.txt", "gone.txt", "--",
-		"sh", "-c", "echo $$ > "+pidFile+"; touch "+started+"; exec sleep 60")
+		"sh", "-c", greenOnHead+"echo $$ > "+pidFile+"; touch "+started+"; exec sleep 60")
 	c.Dir = main
 	c.Env = append(cleanEnv(), "X_TEST=1")
 	if err := c.Start(); err != nil {
@@ -381,7 +424,7 @@ func TestAKilledRevertRestoresBeforeTheNextRevert(t *testing.T) {
 	tree := killedMidSwap(t, main)
 	seen := filepath.Join(t.TempDir(), "seen")
 
-	got := revert(t, main, "sh", "-c", "cat src.txt > "+seen+"; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+	got := revert(t, main, "sh", "-c", greenOnHead+"cat src.txt > "+seen+"; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
 
 	if got.code != 0 || readOr(seen, "") != "base\n" {
 		t.Fatalf("exit %d, the second run read %q, want a clean swap:\n%s", got.code, readOr(seen, ""), got.stdout)
@@ -480,7 +523,7 @@ func TestAGoNameInTwoPackagesNeverProves(t *testing.T) {
 
 	got := map[string]bool{}
 	for _, test := range tests {
-		got[test.Name] = test.IsComputed
+		got[test.Name] = test.IsUnread
 	}
 	if unmatched, seen := got["TestLoad"]; !seen || !unmatched {
 		t.Errorf("TestLoad reads %+v, want it unmatched", tests)
@@ -541,7 +584,7 @@ func TestAKilledRevertRestoresPastASymlink(t *testing.T) {
 			gitT(t, main, "branch", "-q", "-D", "coder/y")
 			tree := filepath.Join(main, ".claude/worktrees/verify-pr-8")
 			started := filepath.Join(t.TempDir(), "started")
-			c := exec.Command(xbin, "lane", "verify-tree", revertPR, "--revert", "main", "d", "--", "sh", "-c", "touch "+started+"; exec sleep 3")
+			c := exec.Command(xbin, "lane", "verify-tree", revertPR, "--revert", "main", "d", "--", "sh", "-c", "grep -q '^head$' d/src.txt && { echo 'ok  \tp\t0.1s'; exit 0; }; touch "+started+"; exec sleep 3")
 			c.Dir, c.Env = main, append(cleanEnv(), "X_TEST=1")
 			if err := c.Start(); err != nil {
 				t.Fatal(err)
@@ -576,7 +619,7 @@ func TestTwoRevertsNeverShareATree(t *testing.T) {
 	for i := range 2 {
 		log := filepath.Join(dir, fmt.Sprint("log", i))
 		go func() {
-			results <- revert(t, main, "sh", "-c", "for s in 1 2 3 4 5 6; do cat src.txt >> "+log+"; sleep 0.5; done; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+			results <- revert(t, main, "sh", "-c", greenOnHead+"for s in 1 2 3 4 5 6; do cat src.txt >> "+log+"; sleep 0.5; done; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
 		}()
 	}
 	first, second := <-results, <-results
