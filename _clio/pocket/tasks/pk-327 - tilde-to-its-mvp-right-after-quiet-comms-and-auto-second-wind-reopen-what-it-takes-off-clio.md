@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T22:08:00Z'
-updated_date: '2026-11-05T22:08:00Z'
+updated_date: '2026-11-06T01:08:00Z'
 labels:
   - s
   - side
@@ -31,4 +31,8 @@ W3 (2026-11-06 00:07, dima): let's have tilde prioritized as soon as possible. i
 W4 (2026-11-06 00:07, dima): in mainline only one pattern works well: to solve one thing at a time. once anything external gets into a thread, like a merge request during a grill, it blurs what we do. the side channel works much better because it is parked beside clio, doesn't act as a coordinator, and nobody interferes.
 W5 (2026-11-06 00:07, dima): even with tilde, side channel capabilities could be improved. i don't really like that it's cut from crew, and i don't really like that it's parked inside a worktree, though that is probably unavoidable or it fights main clio on updates. how to make it more capable? ❓
 W6 (2026-11-06 00:07, dima): i want the side channel to operate with tickets; clashes will sometimes happen, it's the nature of it, and it's fine: we try not to work on the same tickets, as today with FRM-495.
+
+W7 (2026-11-06 03:06, dima): let's prefer side channel execution; it is a spam-free, performant channel, while side lane distractions hurt main lane performance, and even a basic merge interrupts the main lane. i'll hop between you two: you take care of coordination for lanes, and i solve the rest of the operational stuff with the side channel.
+W8 (2026-11-06 03:06, dima): eventually i want to test drive tilde. with tilde taking care of coordination, your main lane is unloaded even more, and we have a spare side channel to solve more stuff.
+W9 (2026-11-06 03:06, dima): before that, we need to measure quiet comms, because quiet comms affects everyone, you and tilde as well. everything we optimize right now transfers to tilde too, so let's focus on that first.
 <!-- SECTION:NOTES:END -->
