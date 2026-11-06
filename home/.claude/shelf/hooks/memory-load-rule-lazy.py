@@ -9,6 +9,7 @@
 # clears their marks and reloads at once each prompt or project rule loaded before it — the summary carries the
 # work on, and no trigger fires again for work already under way; a refusal-only rule refuses once more. `pnpm memory-load:replay` runs the same matching over real transcripts.
 import glob
+import hashlib
 import json
 import os
 import re
@@ -26,6 +27,8 @@ except (OSError, ValueError) as error:  # a memory hook must never break a sessi
 # the PreToolUse matcher in settings.json; the replay reads it to skip the tools the hook never sees
 TOOLS = ("Bash", "Edit", "Write", "MultiEdit")
 STATE_DIR = os.path.join(tempfile.gettempdir(), "cc-memory-load-rule-lazy")
+# a retry the model regenerates differs from the refused call; past this many the rule lets go
+MAX_REFUSALS = 5
 LOG = os.environ.get("MEMORY_LOAD_LOG", os.path.expanduser("~/.local/state/memory-load-rule-lazy.tsv"))
 
 
@@ -204,11 +207,38 @@ def load(event, session, rule, by, hit, why):
     return text
 
 
+def refusal_token(rule, tool_input):
+    digest = hashlib.sha256(json.dumps(tool_input, sort_keys=True).encode()).hexdigest()[:16]
+    return f"refused:{rule}:{digest}"
+
+
+def held_hits(event, session, tool, tool_input):
+    # a sibling in the refused call's batch runs before the guide can load, so a skill rule holds until
+    # the refused call's retry or a real load; both land as state tokens beside the rule marks
+    state, hits = loaded(session), {}
+    for rule in TRIGGERS:
+        if rule not in state or not TRIGGERS[rule].get("skill") or f"released:{rule}" in state:
+            continue
+        hit = tool_trigger(rule, tool, tool_input)
+        if not hit:
+            continue
+        refusals = sum(token.startswith(f"refused:{rule}:") for token in state)
+        if refusal_token(rule, tool_input) in state or refusals >= MAX_REFUSALS or not fires_now(event, rule):
+            mark(session, f"released:{rule}")
+        else:
+            hits[rule] = hit
+    return hits
+
+
 def on_tool(event, session, fresh):
     tool, tool_input = event.get("tool_name", ""), event.get("tool_input") or {}
     hits = {rule: tool_trigger(rule, tool, tool_input) for rule in fresh}
     hits = {rule: hit for rule, hit in hits.items() if hit and fires_now(event, rule)}
+    hits |= held_hits(event, session, tool, tool_input)
     loads = [load(event, session, r, "command", h, f"because this {tool} call matched {h!r}") for r, h in hits.items()]
+    for rule in hits:
+        if TRIGGERS[rule].get("skill"):
+            mark(session, refusal_token(rule, tool_input))
     if loads:
         reason = "refused once, so the rule below lands before the call runs. read it, then retry the same call"
         output = {

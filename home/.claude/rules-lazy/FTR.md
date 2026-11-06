@@ -42,6 +42,7 @@
   - when it first edits a `.ts`, `.tsx`, `.go`, `.py` or `.sh` file
   - then the call is refused once naming the guide; the retry and later edits pass
   - decision: only the edited path counts, a command naming `.ts` fires nothing
+  - decision: a batched sibling is refused too, once per call, 5 at most, until a retry or a real load: 33 of 137 sessions batched their first edit
 - ✅ a loaded guide costs nothing
   - given a real `Skill` call past the last compaction, in the caller's own transcript
   - then nothing is refused; a parent's load, a mention and an unreadable transcript still fire
@@ -68,7 +69,7 @@
   - a signal in a tool call is also a tool trigger, so it hits by construction; the replies are the real measure
 - ✅ each row's fires print
   - when `pnpm memory-load:replay --days 7` runs
-  - then every row prints its fires, once per transcript, grouped by tool and hit
+  - then every row prints its fires, grouped by tool and hit
 - ✅ the guide share reads a refused call as no edit
   - given a transcript with refuse, load, retry
   - when `pnpm memory-load:guide-share --transcript <path>` runs

@@ -278,10 +278,49 @@ describe('guide-load-before-edit', () => {
         expect(s.edit('/w/a.ts')).toEqual({});
     });
 
-    it('passes a second .ts edit', () => {
+    it('passes a second .ts edit after the retry', () => {
         const s = session();
         s.edit('/w/a.ts');
+        s.edit('/w/a.ts');
         expect(s.edit('/w/b.ts')).toEqual({});
+    });
+
+    it('refuses a batched sibling before any retry', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        expect(s.edit('/w/b.ts').permissionDecision).toBe('deny');
+    });
+
+    it('passes each batched call on its retry', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        s.edit('/w/b.ts');
+        expect(s.edit('/w/a.ts')).toEqual({});
+        expect(s.edit('/w/b.ts')).toEqual({});
+    });
+
+    it('passes a sibling once the guide has loaded', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        const out = s.edit('/w/b.ts', {
+            transcript_path: s.transcript([skillCall(typescript)]),
+        });
+        expect(out).toEqual({});
+    });
+
+    it('stops refusing after five distinct calls', () => {
+        const s = session();
+        const denied = ['a', 'b', 'c', 'd', 'e', 'f'].map(
+            (name) => s.edit(`/w/${name}.ts`).permissionDecision,
+        );
+        expect(denied.filter(Boolean)).toHaveLength(5);
+        expect(denied[5]).toBeUndefined();
+    });
+
+    it('holds no sibling on a rule with no skill', () => {
+        const s = session();
+        s.bash('mo uninstall Foo');
+        expect(s.bash('mo uninstall Bar')).toEqual({});
     });
 
     it('refuses again after a compaction', () => {
@@ -364,7 +403,9 @@ describe('guide-load-before-edit', () => {
     it('fires each guide once across a .ts then a .go edit', () => {
         const s = session();
         expect(s.edit('/w/a.ts').permissionDecision).toBe('deny');
+        expect(s.edit('/w/a.ts')).toEqual({});
         expect(s.edit('/w/a.go').permissionDecision).toBe('deny');
+        expect(s.edit('/w/a.go')).toEqual({});
         expect(s.edit('/w/b.ts')).toEqual({});
         expect(s.edit('/w/b.go')).toEqual({});
     });
