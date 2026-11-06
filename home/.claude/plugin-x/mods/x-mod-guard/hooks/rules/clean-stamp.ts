@@ -1,8 +1,8 @@
 import { type Context, type Refusal, commandsDeep } from './command.ts';
 import { commandWrites, pythonWrites } from './overwrite.ts';
 
-const isStore = (text: string) =>
-    /(^|\/)(\.claude|cc)\/shelf\/pr-verified\.json$/.test(text);
+const STORE = /(^|[/'"])(\.claude|cc)\/shelf\/pr-verified\.json/;
+const isStore = (text: string) => STORE.test(text);
 const isWatchPr = (text: string) => /(^|\/)watch-pr\.sh$/.test(text);
 const RUNNERS = new Set(['bash', 'dash', 'ksh', 'sh', 'zsh', 'source', '.']);
 const DESTINED = new Set(['cp', 'mv', 'ln', 'install', 'rsync', 'ditto']);
@@ -29,8 +29,7 @@ export function cleanStampWrite(
     });
     const isWrite =
         pythonWrites(command, cwd, ctx).some(isStore) ||
-        (command.includes('.claude/shelf/pr-verified.json') &&
-            INLINE_WRITE.test(command)) ||
+        (STORE.test(command) && INLINE_WRITE.test(command)) ||
         parsed.some((c) => {
             const words = c.args
                 .map((w) => w.text)

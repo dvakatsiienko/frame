@@ -77,6 +77,7 @@ const WRITES = [
     `python3 -c "from pathlib import Path; (Path.home()/'.claude/shelf/pr-verified.json').write_text('{}')"`,
     `python3 -c "import json,os; json.dump({},open(os.path.expanduser('~/.claude/shelf/pr-verified.json'),'w'))"`,
     `echo '{}' > ~/frame/cc/shelf/pr-verified.json`,
+    `node -e "require('fs').writeFileSync('cc/shelf/pr-verified.json', '{}')"`,
     'bash -o pipefail watch-pr.sh --verified 7 abc',
     'source watch-pr.sh --verified 7 abc',
     'dash watch-pr.sh --verified 7 abc',

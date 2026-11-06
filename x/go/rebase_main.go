@@ -211,7 +211,11 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			return nil, err
 		}
 	}
-	r.Done(fmt.Sprintf("%s on origin/%s, rebased onto main %s", short(sha), t.Branch, short(t.Main)), "")
+	said := fmt.Sprintf("%s on origin/%s, rebased onto main %s", short(sha), t.Branch, short(t.Main))
+	if t.finished {
+		said = fmt.Sprintf("%s on origin/%s, the rewrite git rebase --continue finished", short(sha), t.Branch)
+	}
+	r.Done(said, "")
 	return ordered{{"branch", t.Branch}, {"main", t.Main}, {"sha", sha}}, nil
 }
 

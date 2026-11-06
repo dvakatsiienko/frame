@@ -63,7 +63,7 @@ function rawMerge(c: Command) {
     if (family === 'stack' && verb === 'merge') return { pr: undefined };
     if (family === 'pr' && verb === 'merge') return { pr: prOf(target) };
     // the graphql door takes a node id, never a number, so it reads as a target it cannot name
-    if (family === 'api' && verb === 'graphql')
+    if (family === 'api' && words.includes('graphql'))
         return words.some((w) => GRAPHQL_MERGE.test(w))
             ? { pr: undefined }
             : undefined;
