@@ -113,6 +113,7 @@
             "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": [
                 "tree",
+                "turn",
                 "holds",
                 "format",
                 "mods",

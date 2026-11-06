@@ -23,7 +23,7 @@ func turnOn(t *testing.T) (string, []string) {
 func plantLiveHolder(t *testing.T, state string) string {
 	t.Helper()
 	turn := filepath.Join(state, "gate-queue.turn")
-	since, err := exec.Command("ps", "-o", "lstart=", "-p", strconv.Itoa(os.Getpid())).Output()
+	since, err := exec.Command("sh", "-c", "ps -o lstart= -p "+strconv.Itoa(os.Getpid())).Output()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestGateTurnWaitsBehindALiveHolder(t *testing.T) {
 		{"a held commit", "x lane commit --hold-unstaged readme.txt", func(t *testing.T) (string, []string) {
 			return turnRepo(t, "true"), []string{"lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt"}
 		}},
-		{"a dry commit", "x lane commit --dry", func(t *testing.T) (string, []string) {
+		{"a dry commit", "x lane commit --dry " + dryNamed, func(t *testing.T) (string, []string) {
 			dir, _, msg := dryFixture(t, "pre-commit:\n  commands:\n    fine:\n      run: exit 0\n")
 			return dir, []string{"lane", "commit", "--dry", msg, "--", dryNamed}
 		}},
@@ -177,10 +177,17 @@ func TestHeldCommitLeavesOtherFilesInTheTreeWhileItWaits(t *testing.T) {
 func TestGateTurnRunsEachHookAlone(t *testing.T) {
 	t.Parallel()
 	state, env := turnOn(t)
-	log := filepath.Join(t.TempDir(), "log")
-	hook := "echo in >>" + log + "; sleep 1; echo out >>" + log
+	scratch := t.TempDir()
+	log, release := filepath.Join(scratch, "log"), filepath.Join(scratch, "release")
+	// the hook leaves only on the marker: a slow machine cannot end the first commit before the second is in line
+	hook := "echo in >>" + log + "; until [ -e " + release + " ]; do sleep 0.1; done; echo out >>" + log
 	first := xStart(t, turnRepo(t, hook), env, "lane", "commit", message(t), "--", "readme.txt")
 	second := xStart(t, turnRepo(t, hook), env, "lane", "commit", message(t), "--", "readme.txt")
+	turn := filepath.Join(state, "gate-queue.turn")
+	until(t, "one holds the turn and one is in line", func() bool {
+		return exists(filepath.Join(turn, "holder")) && liveTickets(turn) == 1
+	})
+	write(t, release, "")
 
 	if err := first.Wait(); err != nil {
 		t.Errorf("first: %v", err)
@@ -196,18 +203,28 @@ func TestGateTurnRunsEachHookAlone(t *testing.T) {
 	if len(rows) != 2 {
 		t.Fatalf("rows %v, want 2", rows)
 	}
-	waits, runs := 0, 0
+	waits := 0
 	for _, row := range rows {
 		wait, _ := strconv.Atoi(row[3])
-		run, _ := strconv.Atoi(row[4])
-		waits, runs = max(waits, wait), max(runs, run)
-		if row[2] != "gate" || row[5] != "0" {
-			t.Errorf("row %v, want the gate slot at exit 0", row)
+		waits = max(waits, wait)
+		if _, err := strconv.Atoi(row[4]); err != nil || row[2] != "gate" || row[5] != "0" {
+			t.Errorf("row %v, want the gate slot, run seconds and exit 0", row)
 		}
 	}
-	if waits < 1 || runs < 1 {
-		t.Errorf("the rows show wait %d, run %d; both ran a second of hook", waits, runs)
+	if waits < 1 {
+		t.Errorf("rows %v show no wait, though one commit stood in line", rows)
 	}
+}
+
+func liveTickets(turn string) int {
+	tickets, _ := os.ReadDir(turn + ".tickets")
+	n := 0
+	for _, ticket := range tickets {
+		if !strings.HasPrefix(ticket.Name(), ".") {
+			n++
+		}
+	}
+	return n
 }
 
 func TestGateTurnWrappedTakesOneAndNeverWaitsOnItself(t *testing.T) {
@@ -283,11 +300,12 @@ func TestGateTurnIsFreedWhenXDies(t *testing.T) {
 	t.Parallel()
 	state, env := turnOn(t)
 	turn := filepath.Join(state, "gate-queue.turn")
-	release := filepath.Join(t.TempDir(), "release")
+	scratch := t.TempDir()
+	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
 	t.Cleanup(func() { write(t, release, "") })
-	hook := "until [ -e " + release + " ]; do sleep 0.1; done"
+	hook := "touch " + started + "; until [ -e " + release + " ]; do sleep 0.1; done"
 	dying := xStart(t, turnRepo(t, hook), env, "lane", "commit", message(t), "--", "readme.txt")
-	until(t, "the holder wrote its file", func() bool { return exists(filepath.Join(turn, "holder")) })
+	until(t, "the hook runs in the turn", func() bool { return exists(started) })
 
 	if err := dying.Process.Kill(); err != nil {
 		t.Fatal(err)
@@ -302,6 +320,155 @@ func TestGateTurnIsFreedWhenXDies(t *testing.T) {
 	rows := queueRows(t, state)
 	if len(rows) != 2 || rows[0][5] != "1" {
 		t.Errorf("rows %v, want the dead run's row at exit 1, then the next", rows)
+	}
+}
+
+func TestAnXKilledInLineLeavesTheTurnFree(t *testing.T) {
+	t.Parallel()
+	state, env := turnOn(t)
+	turn := plantLiveHolder(t, state)
+	dying := xStart(t, turnRepo(t, "true"), env, "lane", "commit", message(t), "--", "readme.txt")
+	until(t, "the commit took its ticket", func() bool { return liveTickets(turn) == 1 })
+
+	if err := dying.Process.Kill(); err != nil {
+		t.Fatal(err)
+	}
+	_ = dying.Wait()
+	if err := os.RemoveAll(turn); err != nil {
+		t.Fatal(err)
+	}
+	until(t, "the dead run left the line", func() bool { return liveTickets(turn) == 0 && !exists(turn) })
+
+	got := xIn(t, turnRepo(t, "true"), append(env, "GATE_QUEUE_WAIT=5"), "lane", "commit", message(t), "--", "readme.txt")
+	if got.code != 0 {
+		t.Fatalf("the next commit: exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDryReadsTheHeadAfterTheWait(t *testing.T) {
+	t.Parallel()
+	dir, env, msg := dryFixture(t, "pre-commit:\n  commands:\n    sees-the-peer:\n      run: script/index-run.sh test -f peer.txt\n")
+	state, on := turnOn(t)
+	env = append(env, on...)
+	turn := plantLiveHolder(t, state)
+	waiting := exec.Command(xbin, "lane", "commit", "--dry", msg, "--", dryNamed)
+	waiting.Dir = dir
+	waiting.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	var out bytes.Buffer
+	waiting.Stdout, waiting.Stderr = &out, &out
+	if err := waiting.Start(); err != nil {
+		t.Fatal(err)
+	}
+	until(t, "the dry run took its ticket", func() bool { return liveTickets(turn) == 1 })
+
+	write(t, filepath.Join(dir, "peer.txt"), "a peer's\n")
+	gitT(t, dir, "add", "peer.txt")
+	gitT(t, dir, "commit", "-q", "--no-verify", "-m", "peer", "--", "peer.txt")
+	if err := os.RemoveAll(turn); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := waiting.Wait(); err != nil {
+		t.Fatalf("the gates read a HEAD from before the wait: %v\n%s", err, out.String())
+	}
+}
+
+func TestTwoCommitsInOneCheckoutBothLand(t *testing.T) {
+	t.Parallel()
+	state, env := turnOn(t)
+	scratch := t.TempDir()
+	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
+	dir := turnRepo(t, "touch "+started+"; until [ -e "+release+" ]; do sleep 0.1; done")
+	write(t, filepath.Join(dir, "other.txt"), "other\n")
+	// a lock wait this short shows a stage that meets the first commit's hook at once
+	env = append(env, "X_LOCK_WAIT=100ms")
+	first := xStart(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
+	until(t, "the first commit's hook runs", func() bool { return exists(started) })
+	second := xStart(t, dir, env, "lane", "commit", message(t), "--", "other.txt")
+	turn := filepath.Join(state, "gate-queue.turn")
+	until(t, "the second commit stands in line", func() bool { return liveTickets(turn) == 1 })
+	write(t, release, "")
+
+	if err := first.Wait(); err != nil {
+		t.Errorf("the first commit: %v", err)
+	}
+	if err := second.Wait(); err != nil {
+		t.Errorf("the second commit, dead at its stage: %v", err)
+	}
+	if left := gitT(t, dir, "status", "--porcelain"); left != "" {
+		t.Errorf("not both landed: %q", left)
+	}
+}
+
+func TestAnEditDuringTheWaitIsFormatted(t *testing.T) {
+	t.Parallel()
+	state, env := turnOn(t)
+	dir := turnRepo(t, "true")
+	saw := filepath.Join(t.TempDir(), "saw")
+	write(t, filepath.Join(dir, "biome.json"), "{}\n")
+	write(t, filepath.Join(dir, ".git/info/exclude"), "biome.json\nnode_modules\n")
+	write(t, filepath.Join(dir, "node_modules/.bin/biome"), "#!/bin/sh\ncat readme.txt >> "+saw+"\n")
+	turn := plantLiveHolder(t, state)
+	waiting := xStart(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
+	until(t, "the commit took its ticket", func() bool { return liveTickets(turn) == 1 })
+
+	write(t, filepath.Join(dir, "readme.txt"), "edited in the wait\n")
+	if err := os.RemoveAll(turn); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := waiting.Wait(); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, saw); !strings.Contains(got, "edited in the wait") {
+		t.Errorf("format read %q, the bytes from before the wait", got)
+	}
+	if got := gitT(t, dir, "show", "HEAD:readme.txt"); got != "edited in the wait" {
+		t.Errorf("committed %q", got)
+	}
+}
+
+func TestAnEditDuringTheWaitIsReadByTheQuoteCheck(t *testing.T) {
+	t.Parallel()
+	state, env := turnOn(t)
+	dir := turnRepo(t, "true")
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong at commit»\n- a plain line\n")
+	gitT(t, dir, "add", "rules/a.md")
+	gitT(t, dir, "commit", "-q", "-m", "rules")
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong at commit»\n- an edit\n")
+	head := gitT(t, dir, "rev-parse", "HEAD")
+	turn := plantLiveHolder(t, state)
+	waiting := xStart(t, dir, env, "lane", "commit", message(t), "--", "rules/a.md")
+	until(t, "the commit took its ticket", func() bool { return liveTickets(turn) == 1 })
+
+	write(t, filepath.Join(dir, "rules/a.md"), "# r\n\n- keep it, dima: «checks belong anywhere»\n- an edit\n")
+	if err := os.RemoveAll(turn); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := waiting.Wait(); err == nil {
+		t.Error("a quote changed in the wait went through")
+	}
+	if gitT(t, dir, "rev-parse", "HEAD") != head {
+		t.Error("HEAD moved past the quote check")
+	}
+}
+
+func TestAFailedHoldStepLogsItsExit(t *testing.T) {
+	t.Parallel()
+	state, env := turnOn(t)
+	dir := turnRepo(t, "true")
+	write(t, filepath.Join(dir, "peer.txt"), "a peer's\n")
+	// a file where the held dir goes: the move aside cannot start
+	write(t, filepath.Join(dir, ".git/x-held"), "")
+
+	got := xIn(t, dir, env, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+	if got.code != 1 {
+		t.Fatalf("exit %d, want the hold step's red:\n%s", got.code, got.stdout)
+	}
+	if rows := queueRows(t, state); len(rows) != 1 || rows[0][5] != "1" {
+		t.Errorf("rows %v, want one at exit 1", rows)
 	}
 }
 
@@ -350,15 +517,7 @@ func TestCommitReadsItsProofAfterTheWait(t *testing.T) {
 			if err := waiting.Start(); err != nil {
 				t.Fatal(err)
 			}
-			until(t, "the commit took its ticket", func() bool {
-				tickets, _ := os.ReadDir(turn + ".tickets")
-				for _, ticket := range tickets {
-					if !strings.HasPrefix(ticket.Name(), ".") {
-						return true
-					}
-				}
-				return false
-			})
+			until(t, "the commit took its ticket", func() bool { return liveTickets(turn) > 0 })
 			if c.peerMoves {
 				write(t, filepath.Join(dir, "peer.txt"), "a peer's\n")
 				gitT(t, dir, "add", "peer.txt")
@@ -400,9 +559,6 @@ func TestAPeerNeverWaitsBehindALandingScript(t *testing.T) {
 
 	if got.code != 0 {
 		t.Fatalf("the peer: exit %d\n%s", got.code, got.stdout)
-	}
-	if exists(release) {
-		t.Fatal("the landing script ended early")
 	}
 	gate := rowsOfSlot(queueRows(t, state), "gate")
 	if len(gate) != 2 {

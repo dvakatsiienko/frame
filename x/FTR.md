@@ -111,10 +111,10 @@
 - ⬜ `x lane commit`, its `--dry` and `x lane push` wait for the gate turn, alone in it (FRM-521)
   - given another session holds the gate turn, when one runs, then it waits first come and runs its hook alone; `gate-queue.log` has its row, wait and run seconds, session and exit
   - given the wait passes its deadline, then nothing ran, it exits 1 and the holder stays
-  - given a peer's commit lands in the wait, then the tested-bytes proof is read after it, so a moved HEAD runs the gates again
+  - given a peer's commit lands in the wait, then the tested-bytes proof is read after it, so a moved HEAD runs the gates again; the turn opens right after the tree check, and on main the ci jobs run inside it
   - given it is wrapped in `script/gate-queue.sh`, or x dies while it holds, then one turn, never a wait on itself, and a dead x frees it
   - given a chain or a script wrapped in `script/gate-queue.sh` with no `--long`, then it takes no turn and says so, and a peer's commit runs beside it
-  - given `--hold-unstaged`, then the turn comes before any file moves aside; a stage or message step sits outside it
+  - given two commits in one checkout, then both land, the second waiting its turn; an edit made during the wait is formatted, read by the quote check and committed; a `--dry` reads the HEAD after the wait; `--hold-unstaged` moves nothing aside before its turn
   - given `X_TEST`, then no turn is taken unless `X_GATE_TURN` asks, in its own `X_STATE`; `x lane rebase-main` and the stack push take none
   - decision: the turn belongs to the gate, never to whoever wraps it; a landing script held the line 993 s (FRM-521:W8)
 - ⬜ `x lane commit` stops a changed quote of dima's in a memory, skill or rules file

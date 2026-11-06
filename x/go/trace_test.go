@@ -167,7 +167,7 @@ func TestAVerbWithStepsTracesEachStepTime(t *testing.T) {
 		}
 		names = append(names, step["name"].(string))
 	}
-	if strings.Join(names, ",") != "tree,holds,format,mods,stage,quotes,ftr,ci,commit" {
+	if strings.Join(names, ",") != "tree,turn,holds,format,mods,stage,quotes,ftr,ci,commit" {
 		t.Errorf("steps %v", names)
 	}
 }

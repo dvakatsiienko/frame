@@ -113,6 +113,20 @@ describe('gate-queue, no flag: no turn', () => {
         expect(row?.[5]).toBe('9');
     });
 
+    test('a TERM still logs its row', { timeout: 15_000 }, async () => {
+        const { state } = fixture();
+        const ran = join(state, 'ran');
+        const child = spawn(script, ['sh', '-c', `touch ${ran}; sleep 1`], {
+            env: queueEnv(state),
+            stdio: 'ignore',
+        });
+        while (!existsSync(ran)) await sleep(50);
+        child.kill('SIGTERM');
+        await new Promise((done) => child.on('exit', done));
+        expect(logRows(state).at(-1)?.slice(2, 3)).toEqual(['none']);
+        expect(logRows(state).at(-1)?.[5]).toBe('143');
+    });
+
     test('a nested run writes no row of its own', () => {
         const { state } = fixture();
         queue(state, [script, 'sh', '-c', 'exit 0']);

@@ -61,7 +61,9 @@ type prLayers struct {
 }
 
 /* Verbs */
-func commit(r *Run, args []string, flags Flags) (any, error) {
+func commit(r *Run, args []string, flags Flags) (_ any, err error) {
+	leaveTurn := func(error) {}
+	defer func() { leaveTurn(err) }()
 	msgFile, paths := args[0], args[1:]
 	// `-` takes the message on stdin, so no message file is kept or reused (a reused one glued two messages, 2026-10-14)
 	if msgFile == "-" {
@@ -108,6 +110,23 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 
 	if err := r.Step("tree", "checking the tree", func() (string, error) {
 		return home(tree), assertUnlocked(tree)
+	}); err != nil {
+		return nil, err
+	}
+	// before all that reads the tree or the index: a git commit holds the shared index lock through its hook, so a stage outside
+	// the turn dies on a peer's, an edit in the wait would skip format and quotes, and a peer's commit moves the HEAD a dry run copies
+	namedPaths := strings.Join(paths, " ")
+	verb := "x lane commit "
+	switch {
+	case dry:
+		verb += "--dry "
+	case flags["hold-unstaged"] == true:
+		verb += "--hold-unstaged "
+	}
+	if err := r.Step("turn", "waiting for the gate turn", func() (string, error) {
+		leave, err := takeGateTurn(verb+namedPaths, verb+msgFile+" -- "+namedPaths)
+		leaveTurn = leave
+		return "", err
 	}); err != nil {
 		return nil, err
 	}
@@ -228,12 +247,6 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	var stopped error
 	var aside *held
 	if hold {
-		// another session's files stay in the tree while this commit waits for its turn
-		leave, err := takeGateTurn("x lane commit --hold-unstaged "+strings.Join(paths, " "), "x lane commit --hold-unstaged "+msgFile+" -- "+strings.Join(paths, " "))
-		if err != nil {
-			return nil, err
-		}
-		defer func() { leave(stopped) }()
 		if err := r.Step("hold", "moving the other changes aside", func() (string, error) {
 			taken, err := holdAside(tree, paths)
 			if err != nil {
@@ -258,7 +271,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 	var sha string
 	if stopped == nil {
-		stopped = r.Step("commit", "hooks, then the commit", inGateTurn("x lane commit "+strings.Join(paths, " "), "x lane commit "+msgFile+" -- "+strings.Join(paths, " "), func() (string, error) {
+		stopped = r.Step("commit", "hooks, then the commit", func() (string, error) {
 			commitArgs := []string{"commit", "-F", message}
 			merging := isMerging()
 			if !merging {
@@ -295,7 +308,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			}
 			sha, err = head()
 			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
-		}))
+		})
 	}
 	// the held files come back whether the hooks passed or refused
 	if aside != nil {
@@ -334,7 +347,7 @@ func takeGateTurn(label, again string) (func(error), error) {
 	if (os.Getenv("X_TEST") != "" && os.Getenv("X_GATE_TURN") == "") || !exists(script) {
 		return stay, nil
 	}
-	c := exec.Command(script, append([]string{"--hold"}, label)...)
+	c := exec.Command(script, "--hold", label)
 	c.Stderr = os.Stderr
 	to, err := c.StdinPipe()
 	if err != nil {
@@ -375,19 +388,6 @@ func takeGateTurn(label, again string) (func(error), error) {
 		_ = to.Close()
 		_ = c.Wait()
 	}, nil
-}
-
-// a step's body inside the gate turn, so its proof read and its hook run behind every peer's
-func inGateTurn(label, again string, body func() (string, error)) func() (string, error) {
-	return func() (string, error) {
-		leave, err := takeGateTurn(label, again)
-		if err != nil {
-			return "", err
-		}
-		line, err := body()
-		leave(err)
-		return line, err
-	}
 }
 
 // lockedGit runs a git that takes the index lock: it waits out a lock a peer holds, and once more when the lock
@@ -520,7 +520,12 @@ func askPush(plan any) string {
 func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	name, sha, from := fields[0].value.(string), fields[1].value.(string), fields[2].value.(string)
-	if err := r.Step("push", "git push", inGateTurn("x lane push "+name, "x lane push --apply", func() (string, error) {
+	if err := r.Step("push", "git push", func() (_ string, err error) {
+		leave, err := takeGateTurn("x lane push "+name, "x lane push --apply")
+		if err != nil {
+			return "", err
+		}
+		defer func() { leave(err) }()
 		pushed, tries := pushRetrying(from, sha+":refs/heads/"+name)
 		if !pushed.ok {
 			return "", &Fail{Msg: fmt.Sprintf("push failed after %s — the git and hook output is above", plural(tries, "try")),
@@ -530,7 +535,7 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			return fmt.Sprintf("origin/%s, on try %d of %d", name, tries, pushTries), nil
 		}
 		return "origin/" + name, nil
-	})); err != nil {
+	}); err != nil {
 		return nil, err
 	}
 	var remote string

@@ -85,10 +85,15 @@ began=$(date +%s)
 waited=0
 if [ "$slot" = none ]; then
     echo "gate-queue: no turn here: x lane commit and push take their own, a long round takes --long" >&2
+    logged() {
+        local code=$?
+        log_run "$(($(date +%s) - began))" "$code"
+    }
+    trap logged EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
     GATE_QUEUE_HELD=none "$@"
-    code=$?
-    log_run "$(($(date +%s) - began))" "$code"
-    exit "$code"
+    exit $?
 fi
 ticket=$tickets/$began.$$
 started_at $$ >"$tickets/.new.$$"
