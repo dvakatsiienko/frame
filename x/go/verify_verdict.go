@@ -60,8 +60,8 @@ var (
 	testsRan    = regexp.MustCompile(`^\s*Tests\s+.*\d+ (?:passed|failed)|^Ran [1-9]\d* tests? across|^mods:test: .*, (?:[1-9]\d* pass, \d+ fail|\d+ pass, [1-9]\d* fail)`)
 	testsNone   = regexp.MustCompile(`no tests to run|no test files|No test files found|^Ran 0 tests|^mods:test: .*, 0 pass, 0 fail|^\s*Tests\s+no tests`)
 	// vitest's and claude plugin test's words for a failed expect, at a line's start so a throw's own message cannot claim them
-	assertionWord = regexp.MustCompile(`(?m)^\s*(?:AssertionError\b|Error: Snapshot .* mismatched)`)
-	goPanic       = regexp.MustCompile(`(?m)^\s*panic: `)
+	assertionWord  = regexp.MustCompile(`(?m)^\s*(?:AssertionError\b|Error: Snapshot .* mismatched)`)
+	goPanic        = regexp.MustCompile(`(?m)^\s*panic: `)
 	stopsAtFailure = regexp.MustCompile(`^--?(?:failfast|bail)(?:=|$)`)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
