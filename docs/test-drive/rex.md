@@ -2,6 +2,7 @@
 status: live
 until: 2026-11-20
 dies-when: the verdict line below is written
+fits: clio codie
 ---
 
 # rex — Superlogical's terminal and session server, on trial to replace warp
@@ -40,6 +41,7 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - `client.visibility.toggle` — global hotkey, against his current quick door — works yes or no
 - floating pane — a scratch shell for a minute — used again unprompted yes or no
 - lost from warp — input editor, command blocks, completions — how often he misses each, a count over the week
+- the mods in Rex — orbit, phases and glide under a Claude Code in a Rex pane, against the desktop app — what renders, what is lost; later, on his word (PK-335:W34), the input to any move of the threads
 
 ## rounds
 
@@ -52,5 +54,10 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - 2026-11-06 · dima: «i like rex, let's make it my default terminal» · macOS has no one default: the door is his Raycast hyper+t, then login items; warp stays installed until the verdict
 - 2026-11-06 · agent door: a session, 2 splits, 2 captures and a session.select, from a shell outside Rex by the server binary's full path · 35–78 ms a call, all exit 0, `TERM=xterm-rex COLORTERM=truecolor TERM_PROGRAM=rex`; `rex` is off `PATH` outside Rex terminals, so a desktop-app session finds no `rex` · clean, the `PATH` gap is the one snag
 - 2026-11-06 · `hyper+t` moved to Rex Beta by dima in Raycast, login item swapped · warp no longer starts by itself
+- 2026-11-06 · a live Claude Code 2.1.319 on Haiku 5.5, `program_status` read per state · `working` in 1 s, `blocked kind=permission` naming the file in 4 s, `done` with a summary line; 3 of 3 states right, no hook of ours · nothing like it in warp
+- 2026-11-06 · `shift+enter` sent to Claude Code by `send-key` · a new line in the prompt · works, his physical key not yet tried
+- 2026-11-06 · `rex` on `PATH` through `home/.local/bin/rex` · the hook stays silent outside Rex, 10 ms a run · Run buttons in the desktop app stay in its own panel, no setting for it; `rex run` is the door to a Rex tab
+- 2026-11-06 · persistence with a live agent: `cmd+Q`, reopen · Claude Code pid 28550 alive across the app restart at 20:22, server pid unchanged since 18:54, no restart gap he noticed · a pass, an update still untried
+- 2026-11-06 · a Claude Code started in Rex also showed in the desktop app, where dima answered its permission prompt by accident and typed to it; the Rex pane followed · both surfaces drive one session (Remote Control on at startup is the likely cause, an inference)
 
 ## verdict
