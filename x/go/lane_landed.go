@@ -205,6 +205,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		branch := landedLine{name: "branch", detail: headRef + " stands", fix: "x lane landed " + id + " --pr " + pr + " --apply"}
 		if why, _ := laneBranchWhy(asCodie, main, ghRepo, headRef, mergedHead); why != "" {
 			branch.detail += ": " + why
+			branch.fix = "settle " + headRef + " (" + why + "), then " + branch.fix
 		}
 		lines = append(lines, branch)
 	}

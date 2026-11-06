@@ -133,6 +133,24 @@ func TestLandedApplyTakesATreeAndItsBranchOnceClean(t *testing.T) {
 	}
 }
 
+func TestLandedNamesWhatHoldsABranchItCannotTake(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	w.laneBranch(t, "codie/FRM-1-x")
+	gitT(t, w.clone, "fetch", "-q", "origin", "codie/FRM-1-x:codie/FRM-1-x")
+	w.hub.pages[repoPath+"/pulls"] = `[{"number":9}]`
+	if got := w.run(t, "7", "--apply"); got.code != 0 || !w.onClone(t, "codie/FRM-1-x") {
+		t.Fatalf("exit %d: want the branch kept\n%s", got.code, got.stdout)
+	}
+
+	got := w.landedAfterMerge(t)
+
+	if !strings.Contains(got.stdout, "settle codie/FRM-1-x (#9 is based on it), then x lane landed FRM-1 --pr 7 --apply") {
+		t.Fatalf("want the fix to name what holds the branch:\n%s", got.stdout)
+	}
+}
+
 // x lane landed on the merged pr, with a linear that knows FRM-1
 func (w *mergeWorld) landedAfterMerge(t *testing.T, args ...string) ran {
 	t.Helper()
@@ -387,7 +405,7 @@ func TestDecampListStaleCountsWhatForEachRefCounts(t *testing.T) {
 	gitT(t, main, "add", "o.txt")
 	dated := exec.Command("git", "commit", "-q", "-m", "open work")
 	dated.Dir = main
-	dated.Env = append(os.Environ(), "GIT_COMMITTER_DATE=2026-10-27T00:00:00Z")
+	dated.Env = append(cleanEnv(), "GIT_COMMITTER_DATE=2026-10-27T00:00:00Z")
 	if out, err := dated.CombinedOutput(); err != nil {
 		t.Fatalf("%v: %s", err, out)
 	}
