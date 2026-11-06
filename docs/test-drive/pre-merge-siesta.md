@@ -58,5 +58,6 @@ Ticket: none
 - 2026-11-06 · the batch across the second wind, no lane diff · wishkeeper 7 min, 225k tokens, 16 findings: 3 high real (FRM-509's re-signed rider missing from the spec a codie would build from, my words carried as his in two wish lines, a wish title shrunk) · the rider held a pickup, each opened before its fix
 - 2026-11-06 · frame#129's delta, frame#131 and bytes#138, a chunk read · wishkeeper 13 min, 167k tokens, 11 findings: 2 high real (the guard's «flip» had no rule to flip and no spec, exit 6 parked past the step it must precede), 4 medium · the code held, the order did not; it reshaped the land order before any merge
 - 2026-11-06 · frame#130 at 69785a35, after sixth sense's clean, 7 of 7 · wishkeeper 3.5 min, 111k tokens, 6 findings: 1 high real (a skipped test reads red, against his o57, and my own assumption had waved it through), 3 medium · it held the merge for a round; sixth sense had graded it a decision
+- 2026-11-06 · the second wind's handoff, a checkpoint read · wishkeeper 3 min, 85k tokens, 8 findings: 4 high real (three pocket items missing, a done item carried, my order line bending his FRM-510 tick) · folded before the reset
 
 ## verdict
