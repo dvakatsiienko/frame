@@ -25,6 +25,7 @@ type prHead struct {
 	Title       string  `json:"title"`
 	HeadRefName string  `json:"headRefName"`
 	HeadRefOid  string  `json:"headRefOid"`
+	BaseRefName string  `json:"baseRefName"`
 	Labels      []label `json:"labels"`
 }
 
@@ -106,9 +107,9 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		r.Done("ok: the verdict judged the head "+short(head), "")
 		return data("current"), nil
 	}
-	if len(rounds) >= reviewCap && roundOnHistory(judged, head) {
+	if len(rounds) >= reviewCap && roundOnHistory(judged, head, pr.BaseRefName, pr.HeadRefName) {
 		r.skip("request")
-		r.Done("ok: the round judged "+short(judged)+", an ancestor of the head; sixth sense's clean covers the commits after it", "")
+		r.Done("ok: the round judged "+short(judged)+", which reaches the head; sixth sense's clean covers the commits after it", "")
 		return data("on history"), nil
 	}
 	if len(rounds) >= reviewCap {
@@ -202,7 +203,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 
 /* Github */
 func readPR(n string) (prHead, error) {
-	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,labels")
+	got, err := ghCodie("pr", "view", n, "--json", "title,headRefName,headRefOid,baseRefName,labels")
 	if err != nil {
 		return prHead{}, err
 	}
@@ -239,10 +240,14 @@ func reviewRuns(branch string) ([]reviewRun, bool, error) {
 	return runs, true, nil
 }
 
-// a failed read answers false: the caller then names the cap, the side that asks a person
-func roundOnHistory(judged, head string) bool {
+// merge-auto's rule, read from github first since this verb may run outside a clone. a failed read answers false:
+// the caller then names the cap, the side that asks a person
+func roundOnHistory(judged, head, base, ref string) bool {
 	got, err := ghRaw("api", "repos/{owner}/{repo}/compare/"+judged+"..."+head, "--jq", ".status")
-	return err == nil && got.ok && (got.out == "ahead" || got.out == "identical")
+	if err == nil && got.ok && (got.out == "ahead" || got.out == "identical") {
+		return true
+	}
+	return base != "" && roundReaches(judged, head, base, ref)
 }
 
 // ghCodie runs gh as the x-codie-cc app, the identity every lane write on github wears

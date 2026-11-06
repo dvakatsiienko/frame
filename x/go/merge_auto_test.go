@@ -1086,8 +1086,7 @@ func TestMergeAutoNamesNoStandDownDoorOffTheHeadsHistory(t *testing.T) {
 	t.Parallel()
 	w := roundWorld(t)
 	w.reviewRun("failure", "failure", "A round with no review is red")
-	w.mainMoves(t, "one.txt")
-	w.moveHead(t)
+	w.rebaseWithANewCommit(t)
 
 	got := w.run(t, "7", "--dima-ok", "7")
 
@@ -1141,14 +1140,35 @@ func TestMergeAutoCountsARoundOnAnAncestorOfTheHead(t *testing.T) {
 	}
 }
 
-func TestMergeAutoCountsNoRoundOffTheHeadsHistory(t *testing.T) {
+func TestMergeAutoCarriesARoundAcrossARebaseWithTheSameCode(t *testing.T) {
 	t.Parallel()
 	w := roundWorld(t)
 	w.mainMoves(t, "one.txt")
 	w.moveHead(t)
 
+	if got := w.run(t, "7"); got.code != 4 {
+		t.Fatalf("exit %d, want the round to carry by patch-id:\n%s", got.code, got.stdout)
+	}
+}
+
+// rebaseWithANewCommit leaves the old head off the history and the branch's change different
+func (w *mergeWorld) rebaseWithANewCommit(t *testing.T) {
+	t.Helper()
+	w.mainMoves(t, "one.txt")
+	write(t, filepath.Join(w.seed, "fix.ts"), "a change inside the rebase\n")
+	gitT(t, w.seed, "add", ".")
+	gitT(t, w.seed, "commit", "-q", "-m", "a change inside the rebase")
+	w.moveHead(t)
+	write(t, w.store, `{"o/r#7":"`+w.head+`"}`)
+}
+
+func TestMergeAutoCountsNoRoundWhenARebaseChangedTheCode(t *testing.T) {
+	t.Parallel()
+	w := roundWorld(t)
+	w.rebaseWithANewCommit(t)
+
 	if got := w.run(t, "7"); got.code != 1 || !strings.Contains(envelopeOf(got).Error, "x lane review 7") {
-		t.Fatalf("exit %d, want a rebased-away round not to count:\n%s", got.code, got.stdout)
+		t.Fatalf("exit %d, want a round on other code not to count:\n%s", got.code, got.stdout)
 	}
 }
 

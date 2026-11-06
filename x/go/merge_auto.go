@@ -169,7 +169,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}
 	if err := r.Step("round", "reading the reviewer's round on the branch", func() (string, error) {
 		var err error
-		if round, err = roundCheck(api, repo, n, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
+		if round, err = roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
 			return "", err
 		}
 		return round.shown()
@@ -265,7 +265,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	round, err := roundCheck(api, repo, n, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK)
+	round, err := roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK)
 	if err != nil {
 		return "", err
 	}
@@ -940,10 +940,19 @@ func roundGated(repo string) bool {
 // the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-guard.sh)
 var standDownSteps = []string{"A green review means a clean review", "A round with no review is red"}
 
-// a round is a run of review.yml whose reviewer job itself finished, on an ancestor of the head: a green run can
-// hold a skipped job, a branch name can be reused, and sixth sense's clean on the head covers the commits after it.
+// a run reaches the head from its history, or by a rebase that kept the code, as a clean carries (dima, o66, o95)
+func roundReaches(sha, head, base, ref string) bool {
+	if ok(gitIn("", "merge-base", "--is-ancestor", sha, head)) {
+		return true
+	}
+	carries, _ := carried(sha, "the reviewer", head, base, ref)
+	return carries
+}
+
+// a round is a run of review.yml whose reviewer job itself finished, reaching the head: a green run can hold a
+// skipped job, a branch name can be reused, and sixth sense's clean on the head covers the commits after it.
 // the server's ?branch= filter once answered 0 over a success (review.go, #116): filtered here instead
-func roundCheck(api, repo, n, ref, head, author string, dimaOK bool) (mergeCheck, error) {
+func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (mergeCheck, error) {
 	c := mergeCheck{Name: "round"}
 	switch {
 	case !roundGated(repo):
@@ -971,7 +980,7 @@ func roundCheck(api, repo, n, ref, head, author string, dimaOK bool) (mergeCheck
 	stoodDown := false
 	for _, r := range runs {
 		if r.HeadBranch != ref || r.Status != "completed" || (r.Conclusion != "success" && r.Conclusion != "failure") ||
-			!ok(gitIn("", "merge-base", "--is-ancestor", r.HeadSha, head)) {
+			!roundReaches(r.HeadSha, head, base, ref) {
 			continue
 		}
 		var answer struct {

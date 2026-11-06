@@ -100,6 +100,39 @@ func TestReviewAtTheCapAcceptsARoundOnAnAncestorOfTheHead(t *testing.T) {
 	}
 }
 
+func TestReviewAtTheCapFollowsMergeAutoAcrossARebase(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name    string
+		newCode bool
+		code    int
+	}{
+		{"the same code keeps its round", false, 0},
+		{"a code change does not", true, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			judged := w.head
+			if c.newCode {
+				w.rebaseWithANewCommit(t)
+			} else {
+				w.mainMoves(t, "one.txt")
+				w.moveHead(t)
+			}
+			env, dir := fakeGh(t, []string{runOf(1, judged, "completed", "success")})
+			write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+w.head+`","baseRefName":"main","labels":[]}`)
+
+			got := xIn(t, w.clone, append(env, "FAKE_GH_COMPARE=diverged"), "lane", "review", "7")
+
+			if got.code != c.code || strings.Contains(calls(t, dir), "pr edit") {
+				t.Fatalf("exit %d, want %d, calls:\n%s%s", got.code, c.code, calls(t, dir), got.stdout)
+			}
+		})
+	}
+}
+
 func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
 	t.Parallel()
 	env, dir := fakeGh(t, []string{`{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
