@@ -428,7 +428,7 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		return data, nil
 	}
 
-	command = inLongSlot(command)
+	command = inLongSlot(withGoTestLines(command))
 	var verdict, output string
 	var rows []testRow
 	var onHead testOutput
@@ -496,6 +496,19 @@ func runTests(tree string, command []string) result {
 		got.log += "\na background child still held the output 5 s after the command ended"
 	}
 	return got
+}
+
+// plain go prints only `ok`: the reader trusts a pass or skip line, so a bare `go test` asks for them
+func withGoTestLines(command []string) []string {
+	if len(command) < 2 || filepath.Base(command[0]) != "go" || command[1] != "test" {
+		return command
+	}
+	if slices.ContainsFunc(command[2:], func(arg string) bool {
+		return arg == "-v" || arg == "-test.v" || strings.HasPrefix(arg, "-json")
+	}) {
+		return command
+	}
+	return slices.Insert(slices.Clone(command), 2, "-v")
 }
 
 // a suite is a long round, so each run takes the queue's long slot; a test stays off the real slot unless it plants a queue

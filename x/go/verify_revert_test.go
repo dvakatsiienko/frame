@@ -418,13 +418,18 @@ func TestRevertReadsARealGoPackage(t *testing.T) {
 		name, test string
 		code       int
 		verdict    string
+		oldTest    string
+		newRow     string
 	}{
-		{"an assertion on base", "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatalf(\"got %d\", Limit)\n\t}\n}\n", 0, "red"},
-		{"a test that reads nothing", "func TestNew(t *testing.T) {}\n", 1, "still green"},
-		{"a panic on base", "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n", 1, "broken"},
-		{"a symbol base lacks", "func TestNew(t *testing.T) {\n\tif Added != 1 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
-		{"red on head too", "func TestNew(t *testing.T) {\n\tt.Fatal(\"always\")\n}\n", 1, "red on head"},
-		{"a panic on head may stop the tests after it", "func TestAFirst(t *testing.T) {\n\tif Limit == 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n\nfunc TestZNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
+		{name: "a skip on head that fails on base", test: "func TestNew(t *testing.T) {\n\tif Limit == 3 {\n\t\tt.Skip(\"not here\")\n\t}\n\tt.Fatal(\"no\")\n}\n", code: 1, verdict: "broken", newRow: "unread"},
+		{name: "an old test red on head beside a new test", test: "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", code: 0, verdict: "red", oldTest: "func TestOld(t *testing.T) {\n\tif Limit == 3 {\n\t\tt.Fatal(\"old broke\")\n\t}\n}\n"},
+		{name: "an assertion on base", test: "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatalf(\"got %d\", Limit)\n\t}\n}\n", code: 0, verdict: "red"},
+		{name: "a test that reads nothing", test: "func TestNew(t *testing.T) {}\n", code: 1, verdict: "still green"},
+		{name: "a panic on base", test: "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n", code: 1, verdict: "broken"},
+		{name: "a symbol base lacks", test: "func TestNew(t *testing.T) {\n\tif Added != 1 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", code: 1, verdict: "broken"},
+		{name: "red on head too", test: "func TestNew(t *testing.T) {\n\tt.Fatal(\"always\")\n}\n", code: 1, verdict: "red on head"},
+		{name: "a panic on head may stop the tests after it", test: "func TestAFirst(t *testing.T) {\n\tif Limit == 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n\nfunc TestZNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", code: 1, verdict: "broken"},
+		{name: "a subtest named on head", test: "func TestNew(t *testing.T) {\n\tt.Run(\"sub\", func(t *testing.T) {\n\t\tif Limit != 3 {\n\t\t\tt.Fatal(\"no\")\n\t\t}\n\t})\n}\n", code: 0, verdict: "red"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -432,6 +437,9 @@ func TestRevertReadsARealGoPackage(t *testing.T) {
 			main, _ := verifyWorld(t)
 			write(t, filepath.Join(main, "go.mod"), "module p\n\ngo 1.24\n")
 			write(t, filepath.Join(main, "lib.go"), "package p\n\nconst Limit = 1\n")
+			if c.oldTest != "" {
+				write(t, filepath.Join(main, "old_test.go"), "package p\n\nimport \"testing\"\n\n"+c.oldTest)
+			}
 			gitT(t, main, "add", ".")
 			gitT(t, main, "commit", "-q", "-m", "base")
 			gitT(t, main, "push", "-q", "origin", "main")
@@ -446,12 +454,42 @@ func TestRevertReadsARealGoPackage(t *testing.T) {
 
 			got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--revert", "main", "lib.go", "--", "go", "test", "-count=1", "./...")
 
-			if rows := rowsOf(t, got); got.code != c.code || rows[""] != c.verdict {
+			rows := rowsOf(t, got)
+			if got.code != c.code || rows[""] != c.verdict {
 				t.Fatalf("exit %d, rows %v, want %d and %s:\n%s", got.code, rows, c.code, c.verdict, got.stdout)
+			}
+			if c.newRow != "" && rows["TestNew"] != c.newRow {
+				t.Fatalf("rows %v, want TestNew %s:\n%s", rows, c.newRow, got.stdout)
 			}
 			tree := filepath.Join(main, ".claude/worktrees/verify-pr-8")
 			if body := readOr(filepath.Join(tree, "lib.go"), ""); !strings.Contains(body, "Limit = 3") {
 				t.Fatalf("lib.go reads %q, want head's", body)
+			}
+		})
+	}
+}
+
+func TestGoTestGetsItsPassAndSkipLines(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name          string
+		command, want []string
+	}{
+		{"a bare go test", []string{"go", "test", "./..."}, []string{"go", "test", "-v", "./..."}},
+		{"go by its path", []string{"/opt/go/bin/go", "test"}, []string{"/opt/go/bin/go", "test", "-v"}},
+		{"already verbose", []string{"go", "test", "-v", "./..."}, []string{"go", "test", "-v", "./..."}},
+		{"verbose by the binary's flag", []string{"go", "test", "-test.v", "./..."}, []string{"go", "test", "-test.v", "./..."}},
+		{"json output", []string{"go", "test", "-json", "./..."}, []string{"go", "test", "-json", "./..."}},
+		{"another go verb", []string{"go", "vet", "./..."}, []string{"go", "vet", "./..."}},
+		{"go alone", []string{"go"}, []string{"go"}},
+		{"a shell around it", []string{"sh", "-c", "go test"}, []string{"sh", "-c", "go test"}},
+		{"a script around it", []string{"pnpm", "x-go:test"}, []string{"pnpm", "x-go:test"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			if got := withGoTestLines(c.command); !slices.Equal(got, c.want) {
+				t.Fatalf("got %q, want %q", got, c.want)
 			}
 		})
 	}

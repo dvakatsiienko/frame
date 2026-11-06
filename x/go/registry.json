@@ -181,7 +181,7 @@
             ],
             "flags": {
                 "revert": {
-                    "description": "run head's tests on head, then on this base's source: the named paths hold their merge-base content for the second run, then head's content comes back",
+                    "description": "run head's tests on head, then on this base's source: the named paths hold their merge-base content for the second run, then head's content comes back; a bare `go test` runs with -v, so its pass and skip lines can be read",
                     "type": "string",
                     "value": "base"
                 }
