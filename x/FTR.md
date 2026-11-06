@@ -278,6 +278,14 @@
   - then its git-crypt files are plaintext, `go build` passes, each mod's ignored `tsconfig.json` is copied from the main checkout, and the hook shims still point at the main checkout
   - given the main checkout itself
   - then it is refused as a usage error
+- ⬜ a lane's end leaves nothing behind (FRM-509)
+  - given `x lane merge-auto` merges a pr, then its clean tree and its local and remote `codie/*` or `coder/*` branch go in that run; a tree on it, a rebase or bisect stopped on it in another tree, an open pr based on it, or a commit past the merged head keeps the branch, named; `x lane landed <ticket> --pr <n> --apply` takes what the reason no longer holds
+  - given a `worktree-fork-*` tree, when `x lane decamp <path> --apply` runs, then its branch goes when main holds every commit, by ancestry or a squash, read commit by commit; else it stays, named. a tree holding a change, an ignored file or a `.scratch` file stays, on any branch; the seed's link does not count
+  - given `x lane decamp --list-stale`, then each `worktree-*`, `codie/*` and `coder/*` branch prints with merged or not and its age; nothing is removed
+  - given a quick lane mid-verify, then `x lane landed` names its verify tree as under review, and it stays
+  - given a ticket with an open `blocks` relation that landed, then `x lane landed` prints it on a `freed` line, unless another open ticket still blocks it
+  - given a quick lane's own commit added a rule to `WARN_ONLY`, then `x lane landed` reds it while main still lists it, as with `--pr`
+  - no retro goes with a tree: it lives under the state dir, and no verb here reads that path
 - ✅ `x lane decamp <path> --apply` removes a worktree and points the hook shims home
   - given the shared lefthook shims point at a linked worktree
   - when `x lane decamp <path> --apply` runs
