@@ -28,8 +28,8 @@ a side channel takes dima's side questions, research, fixes, chores, plans and g
 
 ## the day plan
 
-the channel's durable plan is one pocket item he can read, so it survives a second wind (dima, 2026-11-06):
-- first act: `node script/pocket-add.ts "day plan MM-DD: side channel" --priority now --top --side-channel-owned`, then one `--ac` per line through `backlog task edit`, in his order
+the channel's durable plan is one pocket item he can read, so it survives a second wind (dima, 2026-11-06, his standing word for this item's owned tag):
+- first act: `node script/pocket-add.ts "day plan MM-DD: side channel" --priority next --top --side-channel-owned`, then one `--ac` per line through `backlog task edit`, in his order
 - a finished line: `backlog task edit <id> --check-ac <n>`, that turn; a new line: `--ac`
 - `clio:halt` closes it with the other day plans
 
