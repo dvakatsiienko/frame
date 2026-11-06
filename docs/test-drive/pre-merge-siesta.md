@@ -52,5 +52,6 @@ Ticket: none
 - 2026-11-06 · the closing batch, no code · wishkeeper 5 min, 144k tokens, 12 findings: 0 high, 5 medium real (a close without `x lane landed`, his 02:38 words homeless, a stale spec hash)
 - 2026-11-06 · the flush and the CST, a checkpoint read · wishkeeper 4 min, 110k tokens, 13 findings: 1 high real (two items missing from the side channel's list), 4 medium fixed · the card closes on that read: the only edit after it is its own finding, a split line
 - 2026-11-06 · the boot batch, a siesta read · wishkeeper 13 min, 210k tokens, 20 findings: 1 high real (his no-verifier line on neither ticket the lane closes against)
+- 2026-11-06 · the cli groom right after a second wind, and frame#129 at c77e049a · wishkeeper 19 min, 294k tokens, 27 findings: 5 high real (`-count=1` lost from a re-sign, FRM-511's close half unlanded, a silent quick-lane path, a false «doesn't hold you», the pocket's commit refused 102 min) · no code break in the pr, it shaped the merge ask
 
 ## verdict
