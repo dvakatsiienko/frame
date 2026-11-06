@@ -260,6 +260,42 @@ function indexedTree(root: string, mod: string) {
     );
 }
 
+// a commit's mods its staged paths never touch: no mod's tests read a sibling's folder, a shared path under mods/ runs them all
+export function untouchedMods(changed: string[], all: string[]) {
+    const touched = new Set(changed.map((path) => path.split('/')[0] ?? ''));
+    if (changed.length === 0 || [...touched].some((top) => !all.includes(top)))
+        return new Set<string>();
+    return new Set(all.filter((mod) => !touched.has(mod)));
+}
+
+function stagedPaths(root: string) {
+    const env = { ...process.env };
+    for (const key of [
+        'GIT_DIR',
+        'GIT_INDEX_FILE',
+        'GIT_PREFIX',
+        'GIT_WORK_TREE',
+    ])
+        delete env[key];
+    return (
+        spawnSync(
+            'git',
+            [
+                '-C',
+                root,
+                'diff',
+                '--cached',
+                '--name-only',
+                '--no-renames',
+                '--relative',
+            ],
+            { encoding: 'utf8', env },
+        ).stdout ?? ''
+    )
+        .split('\n')
+        .filter(Boolean);
+}
+
 // the mods a green overlay recorded, each line valid until its first field; a lost or stale line costs one rerun
 function testedTrees(record: string, now: number) {
     const trees = new Set<string>();
@@ -341,9 +377,20 @@ if (import.meta.main) {
     process.on('exit', startTestTempDir());
     const named = onlyMod ? [onlyMod] : positionals;
     const tested = values['skip-tested'] ? readTested() : undefined;
+    const untouched = values['skip-tested']
+        ? untouchedMods(stagedPaths(root), all)
+        : new Set<string>();
     let skipped = 0;
+    let untouchedRuns = 0;
     for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
+        if (untouched.has(mod) && !hookClockReads(dir).length) {
+            untouchedRuns++;
+            process.stdout.write(
+                `${mod}: tests skipped, this commit never touches it\n`,
+            );
+            continue;
+        }
         // a clock read reds whatever was tested, so that mod runs and reads red as it always did
         if (
             tested?.has(`${mod} ${indexedTree(root, mod)}`) &&
@@ -398,7 +445,9 @@ if (import.meta.main) {
             rmSync(dirname(dir), { force: true, recursive: true });
     }
     const line =
-        summary(runs) + (skipped ? `, ${skipped} skipped on tested bytes` : '');
+        summary(runs) +
+        (skipped ? `, ${skipped} skipped on tested bytes` : '') +
+        (untouchedRuns ? `, ${untouchedRuns} skipped as untouched` : '');
     console.log(`\n${line}`);
     logRun(
         process.argv.slice(2).join(' '),
