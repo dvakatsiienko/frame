@@ -25,7 +25,8 @@ pre-commit:
     typecheck:
       run: script/index-run.sh pnpm typecheck
     test:
-      run: script/index-run.sh pnpm test
+      # a codie/* branch: only the tests related to the staged code; the whole suite stays at push and on ci
+      run: script/index-run.sh script/test-commit.sh pnpm test
     mods:
       # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
       # a cc bump made fields required and 11 test fixtures went untyped for days before this ran (2026-10-08)
