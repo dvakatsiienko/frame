@@ -35,12 +35,13 @@ baseline is 2026-10-30 to 2026-11-06, before the fixes, unless the row says othe
 - wall time per 10 commits, mods lanes: median 65 min, 8 of 9 runs at 30+ min → read only: mostly edit and review between commits
 - the commit's test step on `codie/*`: about 13 s whole → median under 5 s, from `test-commit.log`
 - gate step seconds at commit, per gate: unknown → the first baseline, from `gate-steps.log`
-- mods tests at commit: unknown per step → p50 from `gate-steps.log`; the skip share on tested bytes: 21 of 229 runs in `mods-test.log` → over half; this is the likely saver for his 3-minute case
+- mods tests at commit: unknown per step → p50 from `gate-steps.log`; the skip share on tested bytes: 21 of the 61 `--skip-tested` runs in `mods-test.log` → all that follow a green overlay within its hour; FRM-521 builds it
 - queue wait, gate slot: 18 to 1,500 s, one evening, 11-06 only → p90 under 120 s, none over 600 s
 - gate slot held over 300 s: seen, 993 s at 20:08 on 11-06 → none; a long round in the long slot instead
 - long rounds using `--long`: 0 before 11-06 → all
 - false reds on a 5 s timeout: 7 of 19 logged reds on 11-06, 4 failed pushes and commits on one lane → none from vitest
-- mods rows timing out and rerun: 38 of 229 runs in `mods-test.log` → fewer; FRM-501 owns the retry
+- mods rows timing out and rerun: 38 of 229 runs in `mods-test.log`, 15 of them at commit → fewer; FRM-501 owns the retry
+- go suite cpu: 308 cpu-s, sys 190 over user 117 → at least 25 % under, FRM-521's exit 5
 - red-proofs: n=227, p50 32 s, p90 391 s, 468 min → p90 under 240 s
 - red-proof per pair on vitest: 15 → 8 s on one mutant, load 38 → holds over real rounds
 - red-proof per pair on `--cmd`: about 64 s, inferred → read only: nothing built, it names the next fix
