@@ -782,16 +782,31 @@ func lanePlanOf(frame, id string) (path string, lines []string) {
 	return "", nil
 }
 
-// the chunk's closing slice, -1 for none: its last step ending in a closing word, so a second round's own closing line
-// is read, not the first round's, and a plan's own wording passes
+// the chunk's closing slice, -1 for none: its last step, when that ends in a closing word, so a second round's own line
+// is read, not the first round's, and a build line that happens to end so never is
 func closingIndex(lines []string, id string) int {
 	at := -1
 	for i, l := range lines {
-		if _, text, ok := stepOf(l, id); ok && closingStep.MatchString(text) {
+		if _, _, ok := stepOf(l, id); ok {
 			at = i
 		}
 	}
+	if at >= 0 {
+		if _, text, _ := stepOf(lines[at], id); !closingStep.MatchString(text) {
+			return -1
+		}
+	}
 	return at
+}
+
+// an open closing-shaped step ahead of the closer: the card stays on it, so the closer's tick alone would not move it
+func openCloserBefore(lines []string, id string, at int) string {
+	for _, l := range lines[:at] {
+		if mark, text, ok := stepOf(l, id); ok && mark == " " && closingStep.MatchString(text) {
+			return text
+		}
+	}
+	return ""
 }
 
 // closingLine reads the slice that holds a chunk on the glide card while its reviews run; has is false when no
@@ -808,7 +823,17 @@ func closingLine(frame, id string) (line landedLine, open string, has bool) {
 		line.fix = "end " + id + "'s slices in " + home(path) + " with «- [ ] NN · " + id + " " + closingWords + "»"
 		return line, "", true
 	}
-	if mark, _, _ := stepOf(lines[at], id); mark != " " {
+	mark, _, _ := stepOf(lines[at], id)
+	isOpen := mark == " "
+	if earlier := openCloserBefore(lines, id, at); earlier != "" {
+		line.detail = "«" + earlier + "» sits open ahead of " + id + "'s closing slice in " + home(path)
+		line.fix = "tick or reword that line, the glide card stays on it"
+		if isOpen {
+			return line, path, true
+		}
+		return line, "", true
+	}
+	if !isOpen {
 		line.ok, line.detail = true, id+"'s closing slice is ticked"
 		return line, "", true
 	}
