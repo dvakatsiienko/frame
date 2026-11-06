@@ -348,7 +348,12 @@ func TestJudgeRunReadsTheHeadRun(t *testing.T) {
 		{"green on head", "", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
 		{"red on both is no proof", onBase, []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
 		{"an old row of the same title, red on both", " FAIL  a.test.ts > old > one\nAssertionError: no\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
-		{"red on head has no vote beside a red", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
+		{"red on head has no vote beside a red head says passed", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
+		{"plugin test's pass row says it passed", "(pass) one [1.0ms]\n(fail) two\n  AssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"go's pass row says it passed", "--- PASS: one (0.00s)\n--- FAIL: two (0.00s)\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"a failure on head and no line for this test: the run may not have reached it", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictBroken, map[string]string{"one": verdictBroken, "two": verdictRedOnHead}},
+		{"an expanded row head did not reach", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
+		{"an expanded row head says passed", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictRed, map[string]string{"a.test.ts > one": verdictRed}},
 		{"a row a title expanded to, timed out on head", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
 		{"an expanded row whose name varies between runs", " FAIL  a.test.ts > other\nAssertionError: no\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead}},
 		{"a timeout on head is load, no proof", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictBroken}},
@@ -473,34 +478,6 @@ func TestTreeHoldsHeadReadsContent(t *testing.T) {
 
 	if err := treeHoldsHead(main); err == nil || !strings.Contains(err.Error(), "src.txt") {
 		t.Fatalf("read %v, want a refusal naming src.txt", err)
-	}
-}
-
-func TestAHeadRunThatStoppedEarlyVouchesForNothing(t *testing.T) {
-	t.Parallel()
-	const failed = "--- FAIL: TestOld (0.00s)\nFAIL\n"
-	cases := []struct {
-		name, log string
-		command   []string
-		want      string
-	}{
-		{"a panic", "--- FAIL: TestOld (0.00s)\npanic: boom [recovered]\n", []string{"go", "test"}, verdictBroken},
-		{"go's failfast", failed, []string{"go", "test", "-failfast"}, verdictBroken},
-		{"vitest's bail", failed, []string{"vitest", "run", "--bail=1"}, verdictBroken},
-		{"a failure with no stop", failed, []string{"go", "test"}, ""},
-		{"failfast and no failure", "ok  \tp\t0.1s\n", []string{"go", "test", "-failfast"}, ""},
-		{"a word that only holds bail", failed, []string{"go", "test", "./bailout"}, ""},
-	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			t.Parallel()
-
-			verdict, why := wholeHeadVerdict(readTestOutput(c.log), !strings.Contains(c.log, "FAIL"), c.command)
-
-			if verdict != c.want {
-				t.Fatalf("reads %q (%s), want %q", verdict, why, c.want)
-			}
-		})
 	}
 }
 

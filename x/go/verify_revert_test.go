@@ -341,8 +341,10 @@ func TestRevertNamesEachNewTest(t *testing.T) {
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "broken"}},
 		{"a panic on base", goPrints(failOne, "panic: boom", failTwo, "FAIL"), 1,
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "red"}},
-		{"one red on head too", []string{"sh", "-c", "echo '" + failOne + "'; grep -q '^head$' src.txt && exit 1; echo '" + failTwo + "'; exit 1"}, 0,
+		{"one red on head too, the other passed there", []string{"sh", "-c", "echo '" + failOne + "'; grep -q '^head$' src.txt && { echo '--- PASS: TestNewTwo (0.00s)'; exit 1; }; echo '" + failTwo + "'; exit 1"}, 0,
 			map[string]string{"": "red", "TestNewOne": "red on head", "TestNewTwo": "red"}},
+		{"one red on head too, the other in no line there", []string{"sh", "-c", "echo '" + failOne + "'; grep -q '^head$' src.txt && exit 1; echo '" + failTwo + "'; exit 1"}, 1,
+			map[string]string{"": "broken", "TestNewOne": "red on head", "TestNewTwo": "broken"}},
 		{"both red on head too", []string{"sh", "-c", "echo '" + failOne + "'; echo '" + failTwo + "'; exit 1"}, 1,
 			map[string]string{"": "broken", "TestNewOne": "red on head", "TestNewTwo": "red on head"}},
 		{"an opaque red", []string{"sh", "-c", "echo nope; exit 1"}, 1,
@@ -377,7 +379,7 @@ func TestRevertDoesNotWaitOutABackgroundChild(t *testing.T) {
 	main, _, tree := revertWorld(t)
 	started := time.Now()
 
-	got := revert(t, main, "sh", "-c", greenOnHead+"sleep 25 & echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+	got := revert(t, main, "sh", "-c", "sleep 25 & "+greenOnHead+"echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
 
 	if elapsed := time.Since(started); got.code != 0 || elapsed > 20*time.Second {
 		t.Fatalf("exit %d after %s, want the proof in under 20 s:\n%s", got.code, elapsed, got.stdout)
@@ -422,7 +424,7 @@ func TestRevertReadsARealGoPackage(t *testing.T) {
 		{"a panic on base", "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n", 1, "broken"},
 		{"a symbol base lacks", "func TestNew(t *testing.T) {\n\tif Added != 1 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
 		{"red on head too", "func TestNew(t *testing.T) {\n\tt.Fatal(\"always\")\n}\n", 1, "broken"},
-		{"a panic on head stops the tests after it", "func TestAFirst(t *testing.T) {\n\tif Limit == 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n\nfunc TestZNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
+		{"a panic on head may stop the tests after it", "func TestAFirst(t *testing.T) {\n\tif Limit == 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n\nfunc TestZNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

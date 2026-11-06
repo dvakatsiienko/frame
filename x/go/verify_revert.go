@@ -402,7 +402,7 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		got := runTests(tree, command)
 		output = withoutQueueLines(got.log)
 		onHead = readTestOutput(output)
-		if whole, why := wholeHeadVerdict(onHead, got.ok, command); whole != "" {
+		if whole, why := wholeRunVerdict(onHead, got.ok); whole != "" {
 			verdict, rows = whole, wholeRunRows(newTests, whole, "on head: "+why)
 			return "", notHeld(whole)
 		}
@@ -456,7 +456,9 @@ func runTests(tree string, command []string) result {
 	c := exec.Command(command[0], command[1:]...)
 	c.Dir, c.WaitDelay = tree, 5*time.Second
 	got, err := runCmd(c)
+	// the command itself exited 0: the child is what is left
 	if errors.Is(err, exec.ErrWaitDelay) {
+		got.ok = true
 		got.log += "\na background child still held the output 5 s after the command ended"
 	}
 	return got

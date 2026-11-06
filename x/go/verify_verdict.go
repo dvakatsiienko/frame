@@ -45,24 +45,23 @@ type testOutput struct {
 	ran bool
 	// a runner's own words say none did
 	none bool
-	// a panic's line: go stopped there, so the tests after it never ran
-	stopped string
+	// the rows a runner printed as passed; go and vitest's default reporter print few or none
+	passed []failedTest
 }
 
 var (
 	goFailedRow     = regexp.MustCompile(`^\s*--- FAIL: (\S+)`)
 	vitestFailedRow = regexp.MustCompile(`^ FAIL  (.+?)\s*$`)
 	failedRow       = []*regexp.Regexp{regexp.MustCompile(`^\(fail\) (.+?)(?: \[[\d.]+ms\])?$`), goFailedRow, vitestFailedRow}
-	passedRow       = regexp.MustCompile(`^\(pass\) |^\s*--- PASS: | ✓ `)
+	passedRows      = []*regexp.Regexp{regexp.MustCompile(`^\(pass\) (.+?)(?: \[[\d.]+ms\])?$`), regexp.MustCompile(`^\s*--- PASS: (\S+)`), regexp.MustCompile(`(?:^|\s)✓ (.+?)(?: \d+(?:\.\d+)?m?s)?\s*$`)}
 	// the last alternative is vitest's row for a suite that threw before any test ran
 	loadError   = regexp.MustCompile(`SyntaxError|did not load|Cannot find module|Cannot find package|ERR_MODULE_NOT_FOUND|Failed to load|Transform failed|\[setup failed\]|\[build failed\]|hook was skipped: |^ FAIL  .* \[ .* \]$`)
 	goPackageOK = regexp.MustCompile(`^ok\s+\S+\s+\S+`)
 	testsRan    = regexp.MustCompile(`^\s*Tests\s+.*\d+ (?:passed|failed)|^Ran [1-9]\d* tests? across|^mods:test: .*, (?:[1-9]\d* pass, \d+ fail|\d+ pass, [1-9]\d* fail)`)
 	testsNone   = regexp.MustCompile(`no tests to run|no test files|No test files found|^Ran 0 tests|^mods:test: .*, 0 pass, 0 fail|^\s*Tests\s+no tests`)
 	// vitest's and claude plugin test's words for a failed expect, at a line's start so a throw's own message cannot claim them
-	assertionWord  = regexp.MustCompile(`(?m)^\s*(?:AssertionError\b|Error: Snapshot .* mismatched)`)
-	goPanic        = regexp.MustCompile(`(?m)^\s*panic: `)
-	stopsAtFailure = regexp.MustCompile(`^--?(?:failfast|bail)(?:=|$)`)
+	assertionWord = regexp.MustCompile(`(?m)^\s*(?:AssertionError\b|Error: Snapshot .* mismatched)`)
+	goPanic       = regexp.MustCompile(`(?m)^\s*panic: `)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
 	addedJSTest = regexp.MustCompile("(?:^|[^.\\w$])(?:it|test)((?:\\.\\w+)*)(?:\\([^()]*\\)|`[^`]*`)?\\(\\s*(?:'((?:[^'\\\\]|\\\\.)+)'|\"((?:[^\"\\\\]|\\\\.)+)\"|`((?:[^`\\\\]|\\\\.)+)`|([^'\"`\\s)][^,\\n]*),)")
@@ -111,14 +110,11 @@ func readTestOutput(log string) testOutput {
 	for line := range strings.SplitSeq(ansiColor.ReplaceAllString(log, ""), "\n") {
 		// a title holding a load word is a test's name, never the runner's report; the two rows below are the runner's
 		name := failedName(line)
-		isPassed := passedRow.MatchString(line)
-		isTitle := isPassed || (name != "" && name != "the file did not load" && !strings.Contains(name, " [ "))
+		passedName := firstRowName(passedRows, line)
+		isTitle := passedName != "" || (name != "" && name != "the file did not load" && !strings.Contains(name, " [ "))
 		// a test that throws from JSON.parse is its own row, never a suite that did not load
 		if read.load == "" && !isTitle && loadError.MatchString(line) && !strings.Contains(line, "JSON") {
 			read.load = strings.TrimSpace(line)
-		}
-		if read.stopped == "" && goPanic.MatchString(line) {
-			read.stopped = strings.TrimSpace(line)
 		}
 		if testsNone.MatchString(line) {
 			read.none = true
@@ -131,15 +127,14 @@ func readTestOutput(log string) testOutput {
 		}
 		if name != "" {
 			read.ran = true
-			failed := failedTest{name: name, file: file, isGo: goFailedRow.MatchString(line), isVitest: vitestFailedRow.MatchString(line)}
-			if head, _, hasFile := strings.Cut(name, " > "); hasFile && testFile.MatchString(head) {
-				failed.file = head
-			}
+			failed := rowIn(name, file)
+			failed.isGo, failed.isVitest = goFailedRow.MatchString(line), vitestFailedRow.MatchString(line)
 			read.failed = append(read.failed, failed)
 			continue
 		}
-		if isPassed {
+		if passedName != "" {
 			read.ran = true
+			read.passed = append(read.passed, rowIn(passedName, file))
 		}
 		if n := len(read.failed); n > 0 {
 			read.failed[n-1].output += line + "\n"
@@ -154,8 +149,17 @@ func readTestOutput(log string) testOutput {
 	return read
 }
 
-func failedName(line string) string {
-	for _, row := range failedRow {
+func rowIn(name, file string) failedTest {
+	if head, _, hasFile := strings.Cut(name, " > "); hasFile && testFile.MatchString(head) {
+		file = head
+	}
+	return failedTest{name: name, file: file}
+}
+
+func failedName(line string) string { return firstRowName(failedRow, line) }
+
+func firstRowName(rows []*regexp.Regexp, line string) string {
+	for _, row := range rows {
 		if m := row.FindStringSubmatch(line); m != nil {
 			return m[1]
 		}
@@ -245,19 +249,6 @@ func wholeRunVerdict(read testOutput, exitedOK bool) (verdict, why string) {
 	return "", ""
 }
 
-// no row on head says a test passed only when the run reached it
-func wholeHeadVerdict(read testOutput, exitedOK bool, command []string) (verdict, why string) {
-	switch verdict, why = wholeRunVerdict(read, exitedOK); {
-	case verdict != "":
-		return verdict, why
-	case read.stopped != "":
-		return verdictBroken, "the tests after this never ran: " + read.stopped
-	case len(read.failed) > 0 && slices.ContainsFunc(command, stopsAtFailure.MatchString):
-		return verdictBroken, "the command stops at its first failure, so the tests after it never ran"
-	}
-	return "", ""
-}
-
 func wholeRunRows(newTests []newTest, verdict, why string) []testRow {
 	rows := []testRow{}
 	for _, test := range newTests {
@@ -277,6 +268,11 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 		return verdict, wholeRunRows(newTests, verdict, why)
 	}
 	const redOnHeadWhy = "it fails on head too, so this source is not what fails it"
+	// a failure on head can stop the run however it was asked to (a config, an env, an exit), so no row there no longer says passed
+	unreached := testRow{Verdict: verdictBroken, Why: "head failed elsewhere and no line says this test passed there, so the run may never have reached it"}
+	reachedOnHead := func(isIt func(failedTest) bool) bool {
+		return len(head.failed) == 0 || slices.ContainsFunc(head.passed, isIt)
+	}
 	votes, rest := []testRow{}, []testRow{}
 	claimed := make([]bool, len(read.failed))
 	for _, test := range newTests {
@@ -300,6 +296,9 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 				if row.Verdict != verdictBroken {
 					row.Verdict, row.Why = got.Verdict, got.Why
 				}
+			case onHead < 0 && got.Verdict == verdictRed && !reachedOnHead(func(passed failedTest) bool { return passed.name == failed.name }):
+				unreached.Name = failed.name
+				votes = append(votes, unreached)
 			case onHead < 0:
 				votes = append(votes, got)
 			case hookTimedOut.MatchString(head.failed[onHead].output):
@@ -313,6 +312,9 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 			continue
 		}
 		switch {
+		case onHead < 0 && row.Verdict == verdictRed && !reachedOnHead(func(passed failedTest) bool { return namesTest(passed, test) }):
+			unreached.Name = test.Name
+			votes = append(votes, unreached)
 		case onHead < 0:
 			votes = append(votes, row)
 		case hookTimedOut.MatchString(head.failed[onHead].output):
