@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"syscall"
+	"time"
 )
 
 const revertHelp = "x lane verify-tree --help"
@@ -373,9 +375,6 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	if err != nil {
 		return nil, err
 	}
-	if err := treeHoldsHead(tree); err != nil {
-		return nil, err
-	}
 	path, err := claimPath(tree)
 	if err != nil {
 		return nil, err
@@ -400,10 +399,10 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	var rows []testRow
 	var onHead testOutput
 	if err := r.Step("test-head", strings.Join(command, " "), func() (string, error) {
-		got, _ := run(tree, nil, "", command[0], command[1:]...)
+		got := runTests(tree, command)
 		output = withoutQueueLines(got.log)
 		onHead = readTestOutput(output)
-		if whole, why := wholeRunVerdict(onHead, got.ok); whole != "" {
+		if whole, why := wholeHeadVerdict(onHead, got.ok, command); whole != "" {
 			verdict, rows = whole, wholeRunRows(newTests, whole, "on head: "+why)
 			return "", notHeld(whole)
 		}
@@ -437,7 +436,7 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	func() {
 		defer func() { restoreErr = restore() }()
 		_ = r.Step("test-base", strings.Join(command, " "), func() (string, error) {
-			got, _ := run(tree, nil, "", command[0], command[1:]...)
+			got := runTests(tree, command)
 			output = withoutQueueLines(got.log)
 			verdict, rows = judgeRun(output, got.ok, newTests, onHead)
 			if verdict != verdictRed {
@@ -450,6 +449,17 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 		return nil, restoreErr
 	}
 	return report(verdict, output, rows)
+}
+
+// a background child holding the command's output must not hold the tree on base's source with it
+func runTests(tree string, command []string) result {
+	c := exec.Command(command[0], command[1:]...)
+	c.Dir, c.WaitDelay = tree, 5*time.Second
+	got, err := runCmd(c)
+	if errors.Is(err, exec.ErrWaitDelay) {
+		got.log += "\na background child still held the output 5 s after the command ended"
+	}
+	return got
 }
 
 // a suite is a long round, so each run takes the queue's long slot; a test stays off the real slot unless it plants a queue
@@ -506,7 +516,7 @@ func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string
 }
 
 // an empty status is git's own content compare with head; two dirty trees can print the same status over different content, so
-// a run starts from a clean tree and ends on one, and a path dirty before the call can never lose its edit to the swap
+// the swap starts from a clean tree and the run ends on one, and a path dirty before the call can never lose its edit
 func treeHoldsHead(tree string) error {
 	status, err := mustGitIn(tree, "status", "status", "--porcelain", "--untracked-files=no")
 	if err != nil {

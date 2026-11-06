@@ -45,6 +45,8 @@ type testOutput struct {
 	ran bool
 	// a runner's own words say none did
 	none bool
+	// a panic's line: go stopped there, so the tests after it never ran
+	stopped string
 }
 
 var (
@@ -60,6 +62,7 @@ var (
 	// vitest's and claude plugin test's words for a failed expect, at a line's start so a throw's own message cannot claim them
 	assertionWord = regexp.MustCompile(`(?m)^\s*(?:AssertionError\b|Error: Snapshot .* mismatched)`)
 	goPanic       = regexp.MustCompile(`(?m)^\s*panic: `)
+	stopsAtFailure = regexp.MustCompile(`^--?(?:failfast|bail)(?:=|$)`)
 	// a call opens with its optional `.each(rows)`; the title is one of three quotes, each a group since a placeholder can
 	// hold the other two and go's regexp has no backreference, or anything else, which only a run knows
 	addedJSTest = regexp.MustCompile("(?:^|[^.\\w$])(?:it|test)((?:\\.\\w+)*)(?:\\([^()]*\\)|`[^`]*`)?\\(\\s*(?:'((?:[^'\\\\]|\\\\.)+)'|\"((?:[^\"\\\\]|\\\\.)+)\"|`((?:[^`\\\\]|\\\\.)+)`|([^'\"`\\s)][^,\\n]*),)")
@@ -113,6 +116,9 @@ func readTestOutput(log string) testOutput {
 		// a test that throws from JSON.parse is its own row, never a suite that did not load
 		if read.load == "" && !isTitle && loadError.MatchString(line) && !strings.Contains(line, "JSON") {
 			read.load = strings.TrimSpace(line)
+		}
+		if read.stopped == "" && goPanic.MatchString(line) {
+			read.stopped = strings.TrimSpace(line)
 		}
 		if testsNone.MatchString(line) {
 			read.none = true
@@ -239,6 +245,19 @@ func wholeRunVerdict(read testOutput, exitedOK bool) (verdict, why string) {
 	return "", ""
 }
 
+// no row on head says a test passed only when the run reached it
+func wholeHeadVerdict(read testOutput, exitedOK bool, command []string) (verdict, why string) {
+	switch verdict, why = wholeRunVerdict(read, exitedOK); {
+	case verdict != "":
+		return verdict, why
+	case read.stopped != "":
+		return verdictBroken, "the tests after this never ran: " + read.stopped
+	case len(read.failed) > 0 && slices.ContainsFunc(command, stopsAtFailure.MatchString):
+		return verdictBroken, "the command stops at its first failure, so the tests after it never ran"
+	}
+	return "", ""
+}
+
 func wholeRunRows(newTests []newTest, verdict, why string) []testRow {
 	rows := []testRow{}
 	for _, test := range newTests {
@@ -257,9 +276,6 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 	if verdict, why := wholeRunVerdict(read, exitedOK); verdict != "" {
 		return verdict, wholeRunRows(newTests, verdict, why)
 	}
-	rowOnHead := func(name string) int {
-		return slices.IndexFunc(head.failed, func(failed failedTest) bool { return failed.name == name })
-	}
 	const redOnHeadWhy = "it fails on head too, so this source is not what fails it"
 	votes, rest := []testRow{}, []testRow{}
 	claimed := make([]bool, len(read.failed))
@@ -270,6 +286,8 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 		}
 		isExpanded := test.IsTable || len(titleParts(test)) > 1
 		row := testRow{Name: test.Name, Verdict: verdictStillGreen}
+		// an expanded row's name can vary between runs, so any head row of its title stands against all of them
+		onHead := slices.IndexFunc(head.failed, func(failed failedTest) bool { return namesTest(failed, test) })
 		for i, failed := range read.failed {
 			if !namesTest(failed, test) {
 				continue
@@ -282,9 +300,9 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 				if row.Verdict != verdictBroken {
 					row.Verdict, row.Why = got.Verdict, got.Why
 				}
-			case rowOnHead(failed.name) < 0:
+			case onHead < 0:
 				votes = append(votes, got)
-			case hookTimedOut.MatchString(head.failed[rowOnHead(failed.name)].output):
+			case hookTimedOut.MatchString(head.failed[onHead].output):
 				votes = append(votes, timedOutRow(failed.name))
 			default:
 				rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
@@ -294,7 +312,6 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 			rest = append(rest, testRow{test.Name, verdictUnread, "a title with a placeholder: x sees the rows that failed, never the ones that passed"})
 			continue
 		}
-		onHead := slices.IndexFunc(head.failed, func(failed failedTest) bool { return namesTest(failed, test) })
 		switch {
 		case onHead < 0:
 			votes = append(votes, row)
@@ -307,7 +324,7 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 	for i, failed := range read.failed {
 		switch {
 		case claimed[i]:
-		case rowOnHead(failed.name) >= 0:
+		case slices.ContainsFunc(head.failed, func(onHead failedTest) bool { return onHead.name == failed.name }):
 			rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
 		default:
 			rest = append(rest, judgedOnBase(failed))

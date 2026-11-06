@@ -350,6 +350,7 @@ func TestJudgeRunReadsTheHeadRun(t *testing.T) {
 		{"an old row of the same title, red on both", " FAIL  a.test.ts > old > one\nAssertionError: no\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictRedOnHead}},
 		{"red on head has no vote beside a red", " FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictRedOnHead}},
 		{"a row a title expanded to, timed out on head", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
+		{"an expanded row whose name varies between runs", " FAIL  a.test.ts > other\nAssertionError: no\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead}},
 		{"a timeout on head is load, no proof", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictBroken}},
 		{"a row a title expanded to, red on both", onBase, []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictRedOnHead, "o${x}": verdictUnread}},
 		{"an old row red on both", onBase, []newTest{{Name: "new"}}, verdictStillGreen, map[string]string{"a.test.ts > one": verdictRedOnHead, "new": verdictStillGreen}},
@@ -472,5 +473,57 @@ func TestTreeHoldsHeadReadsContent(t *testing.T) {
 
 	if err := treeHoldsHead(main); err == nil || !strings.Contains(err.Error(), "src.txt") {
 		t.Fatalf("read %v, want a refusal naming src.txt", err)
+	}
+}
+
+func TestAHeadRunThatStoppedEarlyVouchesForNothing(t *testing.T) {
+	t.Parallel()
+	const failed = "--- FAIL: TestOld (0.00s)\nFAIL\n"
+	cases := []struct {
+		name, log string
+		command   []string
+		want      string
+	}{
+		{"a panic", "--- FAIL: TestOld (0.00s)\npanic: boom [recovered]\n", []string{"go", "test"}, verdictBroken},
+		{"go's failfast", failed, []string{"go", "test", "-failfast"}, verdictBroken},
+		{"vitest's bail", failed, []string{"vitest", "run", "--bail=1"}, verdictBroken},
+		{"a failure with no stop", failed, []string{"go", "test"}, ""},
+		{"failfast and no failure", "ok  \tp\t0.1s\n", []string{"go", "test", "-failfast"}, ""},
+		{"a word that only holds bail", failed, []string{"go", "test", "./bailout"}, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
+			verdict, why := wholeHeadVerdict(readTestOutput(c.log), !strings.Contains(c.log, "FAIL"), c.command)
+
+			if verdict != c.want {
+				t.Fatalf("reads %q (%s), want %q", verdict, why, c.want)
+			}
+		})
+	}
+}
+
+func TestAddedTestNamesTellsATableFromATitle(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, added string
+		isTable     bool
+		parts       int
+	}{
+		{"each", "it.each([1])('row %s', f);", true, 2},
+		{"for", "it.for([1])('row %s', f);", true, 2},
+		{"a plain title", "it('row %s', f);", false, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
+			tests := addedTestNames(c.added, "a.test.ts")
+
+			if len(tests) != 1 || tests[0].IsTable != c.isTable || len(titleParts(tests[0])) != c.parts {
+				t.Fatalf("read %+v, want table %v in %d parts", tests, c.isTable, c.parts)
+			}
+		})
 	}
 }

@@ -371,6 +371,20 @@ func TestRevertNamesEachNewTest(t *testing.T) {
 	}
 }
 
+// a child left running with the output open cannot hold the tree on base's source until it dies
+func TestRevertDoesNotWaitOutABackgroundChild(t *testing.T) {
+	t.Parallel()
+	main, _, tree := revertWorld(t)
+	started := time.Now()
+
+	got := revert(t, main, "sh", "-c", greenOnHead+"sleep 25 & echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+
+	if elapsed := time.Since(started); got.code != 0 || elapsed > 20*time.Second {
+		t.Fatalf("exit %d after %s, want the proof in under 20 s:\n%s", got.code, elapsed, got.stdout)
+	}
+	assertHeadBack(t, tree)
+}
+
 // exit line 7: each run goes through the queue's long slot, and the queue's own words read as no test's
 func TestRevertTakesTheLongSlot(t *testing.T) {
 	t.Parallel()
@@ -408,6 +422,7 @@ func TestRevertReadsARealGoPackage(t *testing.T) {
 		{"a panic on base", "func TestNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n", 1, "broken"},
 		{"a symbol base lacks", "func TestNew(t *testing.T) {\n\tif Added != 1 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
 		{"red on head too", "func TestNew(t *testing.T) {\n\tt.Fatal(\"always\")\n}\n", 1, "broken"},
+		{"a panic on head stops the tests after it", "func TestAFirst(t *testing.T) {\n\tif Limit == 3 {\n\t\tpanic(\"boom\")\n\t}\n}\n\nfunc TestZNew(t *testing.T) {\n\tif Limit != 3 {\n\t\tt.Fatal(\"no\")\n\t}\n}\n", 1, "broken"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
