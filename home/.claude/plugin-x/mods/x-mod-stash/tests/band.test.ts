@@ -7,7 +7,7 @@ const SID = 'b1b1b1b1-band';
 const TOOL = 'mcp__x-mod-stash__orbit';
 
 function world(on: On, hasStore = true) {
-    mock.clock(on);
+    const clock = mock.clock(on);
     if (hasStore) mock.store(on);
     on('session.id', () => ({ value: SID }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
@@ -17,6 +17,7 @@ function world(on: On, hasStore = true) {
     on('tool.register', (_$, e) => ({
         value: { tool: `mcp__x-mod-stash__${e.name}` },
     }));
+    return clock;
 }
 
 async function band($: Engine, surface: 'terminal' | 'desktop' = 'terminal') {
@@ -426,7 +427,8 @@ function pressWorld(
     refused?: string,
     store = new Map<string, unknown>(),
 ) {
-    world(on, false);
+    const clock = world(on, false);
+    const hooks: { onDraw?: () => Promise<unknown> } = {};
     const events: string[] = [];
     const views: Record<string, unknown>[] = [];
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -446,6 +448,9 @@ function pressWorld(
             const view = e.value as Record<string, unknown>;
             views.push(view);
             events.push(`view ${JSON.stringify(view)}`);
+            const onDraw = hooks.onDraw;
+            hooks.onDraw = undefined;
+            return Promise.resolve(onDraw?.()).then(() => next(e));
         }
         return next(e);
     });
@@ -455,7 +460,7 @@ function pressWorld(
         return { value: { isPlaced: true as const } };
     });
     on('ui.close', () => ({ value: undefined }));
-    return { events, store, views };
+    return { clock, events, hooks, store, views };
 }
 
 const drawnAt = (events: string[], field: string) =>
@@ -516,3 +521,42 @@ for (const [press, field] of [
             true,
         ]);
     });
+
+for (const [press, key, field] of [
+    ['afk', 'afk', 'afk'],
+    ['waker', 'waker', 'isWaker'],
+    ['hot', `hot:${SID}`, 'isHot'],
+] as const)
+    test(`a poll during the draw leaves the ${press} press standing`, async ($, on) => {
+        const { clock, hooks, store, views } = pressWorld(on);
+        const ui = await band($);
+        hooks.onDraw = () => clock.advance(10_000);
+        await ui.press({ key: press });
+        await clock.advance(10_000);
+        expect([
+            views.at(-1)?.[field],
+            JSON.stringify(store.get(key) ?? {}).includes('"off"'),
+            store.get(key) === undefined,
+        ]).toEqual([true, false, false]);
+    });
+
+test('a half-failed afk puts its first write back', async ($, on) => {
+    const { store, views } = pressWorld(on, 'waker');
+    const ui = await band($);
+    await ui.press({ key: 'afk' });
+    expect([
+        views.at(-1)?.afk,
+        (store.get('afk') as { on?: boolean }).on,
+    ]).toEqual([false, false]);
+});
+
+test('a half-failed waker puts its first write back', async ($, on) => {
+    const seeded = new Map<string, unknown>([['afk', { on: true }]]);
+    const { store, views } = pressWorld(on, 'afk', seeded);
+    const ui = await band($);
+    await ui.press({ key: 'waker' });
+    expect([
+        views.at(-1)?.isWaker,
+        (store.get('waker') as { on?: boolean }).on,
+    ]).toEqual([false, false]);
+});

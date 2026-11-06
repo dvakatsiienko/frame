@@ -28,6 +28,7 @@ function world(
             undefined,
         // a store write the test makes fail
         refuseSet = (_key: string): boolean => false,
+        dropSubmit = (_text: string): boolean => false,
         // what a SendMessage answers
         sent = { message: 'delivered', success: true } as Record<
             string,
@@ -131,7 +132,7 @@ function world(
     });
     on('prompt.submit', (_$, e) => {
         contexts.push([...(e.context ?? [])]);
-        return { text: e.text };
+        return dropSubmit(e.text) ? { drop: 'refused' } : { text: e.text };
     });
     on('session.append', (_$, e, next) => {
         if (refuseAppend) return { deny: 'no' };
@@ -2630,6 +2631,45 @@ test('a lone notice held before afk wakes clio once at the flip', async ($, on) 
     w.store.set('afk', { on: true });
     await w.clock.advance(MIN);
     expect([once, w.contexts.length - before, held(w)]).toEqual([1, 1, []]);
+});
+
+test('a lone notice held before a shift wakes clio once at its start', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await fromAppText($, noteOf(CODIE.name, '.'));
+    const before = w.contexts.length;
+    w.store.set(`pace:${SID}`, { since: EVEN });
+    await w.clock.advance(MIN);
+    expect([w.contexts.length - before, held(w)]).toEqual([1, []]);
+});
+
+test('a dropped wake holds its notices and asks again at the next poll', async ($, on) => {
+    let wakes = 0;
+    const w = world(on, {
+        dropSubmit: (text) =>
+            text.startsWith('🤫 quiet comms') && ++wakes === 1,
+        peers: [CODIE],
+    });
+    await start($);
+    await fromAppText($, noteOf(CODIE.name, '.'));
+    w.store.set('afk', { on: true });
+    await w.clock.advance(MIN);
+    expect([
+        wakes,
+        held(w),
+        logOf(w).filter((l) => l.verdict === 'flushed').length,
+    ]).toEqual([2, [], 1]);
+});
+
+test('a lone notice held with quiet off starts no turn at the flip', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await fromAppText($, noteOf(CODIE.name, '.'));
+    const before = w.contexts.length;
+    await quiet($, 'off');
+    w.store.set('afk', { on: true });
+    await w.clock.advance(MIN);
+    expect(w.contexts.length - before).toBe(0);
 });
 
 test('a keep-hot notice held before afk starts no turn at the flip', async ($, on) => {

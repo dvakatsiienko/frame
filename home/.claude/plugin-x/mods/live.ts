@@ -1,8 +1,8 @@
 // pnpm mods:live <dir> — a dev server for a mod, or every mod of a mods root or a frame tree: a real cc session in a pty
 // with those mods loaded, a text frame of its screen after every save, and a reload verdict; its first line names the
 // mods root, and it prints one `mods:live ready:` line once the first frame draws.
-// pnpm mods:live <dir> hover <label>, the dir served or one mod in it, moves the pointer onto a label in the running session and saves the frame with
-// its hover card; click <label> presses it; type <text> types the text and Enter into the prompt (a prompt, or a slash
+// pnpm mods:live <dir> hover <label>, the dir served or one mod in it, moves the pointer onto a label in the running session and saves the frame, which
+// draws no hover card on cc 2.1.318; click <label> presses it; type <text> types the text and Enter into the prompt (a prompt, or a slash
 // command such as /board); fill <text> types it with no Enter; status names the pid and session holding the slot.
 import { spawnSync } from 'node:child_process';
 import {

@@ -144,11 +144,12 @@ export function joinText(asks: OrbitAsk[]) {
 export const SIGN_ASK =
     /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
 // twin end
-// opens with sign (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
+// opens with sign, a yes or an ok before it (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
 const SIGN_PICK =
-    /^[^\p{L}]*sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b/iu;
-// opens with merge, its label form `merge: …` apart; anywhere else it counts only beside a pr
-const MERGE_PICK_OPENS = /^[^\p{L}]*merged?\b(?!:)/iu;
+    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:]?\s+)?sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?!-)/iu;
+// opens with merge, a yes or a squash before it, its label form `merge: …` apart; anywhere else it counts only beside a pr
+const MERGE_PICK_OPENS =
+    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:]?\s+(?:to\s+)?)?(?:squash and\s+)?merged?\b(?!:)/iu;
 const MERGE_PICK_NAMED = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
 const PR_NAMED = /#\d+|\bpr\b|\/pull\/\d+/i;
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr
