@@ -166,10 +166,17 @@
                     "name": "head"
                 },
                 {
-                    "description": "with --revert: the source paths to swap, then -- and the test command",
+                    "description": "with --revert: the source paths to swap, from the tree's root",
                     "isOptional": true,
                     "isVariadic": true,
                     "name": "paths"
+                },
+                {
+                    "afterDash": true,
+                    "description": "with --revert: the test command",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "command"
                 }
             ],
             "flags": {

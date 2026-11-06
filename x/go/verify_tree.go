@@ -88,6 +88,15 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	}
 
 	var sha string
+	release := func() {}
+	defer func() { release() }()
+	claim := func() error {
+		claimed, err := claimTree(path)
+		if err == nil {
+			release = claimed
+		}
+		return err
+	}
 	if err := r.Step("fetch", "fetching the head", func() (string, error) {
 		var err error
 		sha, err = resolve()
@@ -101,7 +110,7 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 			if root, _ := gitIn(path, "rev-parse", "--show-toplevel"); !root.ok || !samePath(root.out, path) {
 				return "", &Fail{Refused: true, Msg: path + " is a plain dir, not a worktree", Next: "trash " + path}
 			}
-			if err := recoverRevert(path); err != nil {
+			if err := claim(); err != nil {
 				return "", err
 			}
 			// the next round on the same pr: the tree moves, unless a probe changed a tracked file (the seed's copies are untracked)
@@ -114,7 +123,10 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 		// the key lives in the main .git: the tree holds ciphertext until the seed unlocks it
 		_, err := mustGitIn(main, "worktree", "-c", "filter.git-crypt.smudge=cat", "-c", "filter.git-crypt.required=false",
 			"worktree", "add", "-q", "--detach", path, sha)
-		return home(path), err
+		if err != nil {
+			return "", err
+		}
+		return home(path), claim()
 	}); err != nil {
 		return nil, err
 	}

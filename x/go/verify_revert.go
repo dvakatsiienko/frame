@@ -4,22 +4,140 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
-	"syscall"
 )
 
 const revertHelp = "x lane verify-tree --help"
 
-// written before the first swap, gone after the restore: a killed x runs nothing deferred, so this is what the next run reads
-type revertMarker struct {
-	Pid   int      `json:"pid"`
-	Head  string   `json:"head"`
-	Base  string   `json:"base"`
-	Files []string `json:"files"`
+// the tree's claim, in its git dir: every run holds one. a run that swaps names its files here before the first swap, so a
+// killed x, which runs nothing deferred, leaves the next run all it needs. pid and start time tell a live holder from a reused pid
+type treeClaim struct {
+	Pid     int      `json:"pid"`
+	Started string   `json:"started"`
+	Head    string   `json:"head,omitempty"`
+	Base    string   `json:"base,omitempty"`
+	Files   []string `json:"files,omitempty"`
+}
+
+func processStarted(pid int) string {
+	got, _ := run("", nil, "", "ps", "-o", "lstart=", "-p", fmt.Sprint(pid))
+	return strings.Join(strings.Fields(got.out), " ")
+}
+
+func claimPath(tree string) (string, error) {
+	dir, err := mustGitIn(tree, "rev-parse", "rev-parse", "--absolute-git-dir")
+	return filepath.Join(dir, "x-verify-tree-claim.json"), err
+}
+
+func writeTemp(path string, claim treeClaim) (string, error) {
+	raw, err := json.Marshal(claim)
+	if err != nil {
+		return "", err
+	}
+	temp := fmt.Sprintf("%s.%d", path, os.Getpid())
+	return temp, os.WriteFile(temp, raw, 0o644)
+}
+
+// a hard link fails on a path that exists, so of two runs only one claims, and a reader never sees a half-written file
+func claimTree(tree string) (release func(), err error) {
+	path, err := claimPath(tree)
+	if err != nil {
+		return nil, err
+	}
+	mine := treeClaim{Pid: os.Getpid(), Started: processStarted(os.Getpid())}
+	for range 2 {
+		temp, err := writeTemp(path, mine)
+		if err != nil {
+			return nil, err
+		}
+		err = os.Link(temp, path)
+		_ = os.Remove(temp)
+		if err == nil {
+			return func() { _ = os.Remove(path) }, nil
+		}
+		if !errors.Is(err, fs.ErrExist) {
+			return nil, err
+		}
+		if err := recoverKilledRun(tree, path); err != nil {
+			return nil, err
+		}
+	}
+	return nil, &Fail{Refused: true, Msg: "another run just took " + tree, Next: "wait for it to end, then run this again"}
+}
+
+// the holder is alive: refuse. it is dead: its swap, if any, goes back to head, and its claim goes
+func recoverKilledRun(tree, path string) error {
+	raw, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	var claim treeClaim
+	if err := json.Unmarshal(raw, &claim); err != nil {
+		return &Fail{Refused: true, Msg: path + " is no claim this x wrote: " + err.Error(), Next: "trash " + path}
+	}
+	if claim.Started != "" && processStarted(claim.Pid) == claim.Started {
+		return &Fail{Refused: true, Msg: fmt.Sprintf("a run, pid %d, holds %s", claim.Pid, tree), Next: "wait for it to end, then run this again"}
+	}
+	if len(claim.Files) > 0 {
+		if err := restoreKilledSwap(tree, claim); err != nil {
+			return err
+		}
+	}
+	// a peer may have claimed since the read: only the bytes read are removed
+	if now, err := os.ReadFile(path); err != nil || string(now) != string(raw) {
+		return nil
+	}
+	return os.Remove(path)
+}
+
+func restoreKilledSwap(tree string, claim treeClaim) error {
+	var neither []string
+	for _, file := range claim.Files {
+		disk, err := blobOnDisk(tree, file)
+		if err != nil || (disk != blobAt(tree, claim.Head, file) && disk != blobAt(tree, claim.Base, file)) {
+			neither = append(neither, file)
+		}
+	}
+	if len(neither) > 0 {
+		return &Fail{Refused: true, Msg: "a killed --revert run left " + tree + " swapped, and " + strings.Join(neither, ", ") + " holds neither head's nor base's content; it stays as it is",
+			Next: "put it back to head's content, then run this again; or trash the tree and run git worktree prune"}
+	}
+	return swapTo(tree, claim.Head, claim.Files)
+}
+
+// a link hashes as its target's text, as git stores it; a dir stands in the place of a file only when that side has none
+func blobOnDisk(tree, file string) (string, error) {
+	path := filepath.Join(tree, file)
+	info, err := os.Lstat(path)
+	switch {
+	case err != nil || info.IsDir():
+		return "", nil
+	case info.Mode()&fs.ModeSymlink != 0:
+		target, err := os.Readlink(path)
+		if err != nil {
+			return "", err
+		}
+		got, err := run(tree, nil, target, "git", "hash-object", "--no-filters", "--stdin")
+		return got.out, err
+	}
+	return mustGitIn(tree, "hash-object", "--literal-pathspecs", "hash-object", "--path="+file, "--", file)
+}
+
+// the blob a side holds at this path; a side with a dir there holds none
+func blobAt(tree, rev, file string) string {
+	got, _ := gitIn(tree, "--literal-pathspecs", "ls-tree", "--full-tree", rev, "--", file)
+	fields := strings.Fields(got.out)
+	if len(fields) < 3 || fields[1] != "blob" {
+		return ""
+	}
+	return fields[2]
 }
 
 // the words after <head>, split at the dash; only --revert takes any
@@ -88,9 +206,10 @@ func filesAt(tree, rev string, paths []string) (map[string]bool, error) {
 	return files, nil
 }
 
-// every file the named paths reach on either side; a path on neither side refuses, naming it
+// every file the named paths reach on either side; a path on neither side refuses, naming it, and so does a file only this
+// tree holds in a dir the swap replaces with base's file, since git would delete it unseen
 func swapFiles(tree, fork, head string, paths []string) ([]string, error) {
-	var files, lost []string
+	var files, onFork, lost []string
 	for _, path := range paths {
 		atFork, err := filesAt(tree, fork, []string{path})
 		if err != nil {
@@ -105,6 +224,7 @@ func swapFiles(tree, fork, head string, paths []string) ([]string, error) {
 		}
 		for file := range atFork {
 			files = append(files, file)
+			onFork = append(onFork, file)
 		}
 		for file := range atHead {
 			files = append(files, file)
@@ -114,7 +234,22 @@ func swapFiles(tree, fork, head string, paths []string) ([]string, error) {
 		return nil, &Fail{Refused: true, Msg: strings.Join(lost, ", ") + " on neither " + short(fork) + " nor " + short(head), Next: "git -C " + tree + " diff --stat " + short(fork) + " " + short(head)}
 	}
 	slices.Sort(files)
-	return slices.Compact(files), nil
+	files = slices.Compact(files)
+	var untracked []string
+	for _, file := range onFork {
+		_ = filepath.WalkDir(filepath.Join(tree, file), func(path string, entry fs.DirEntry, err error) error {
+			if err == nil && !entry.IsDir() {
+				if rel, _ := filepath.Rel(tree, path); !slices.Contains(files, filepath.ToSlash(rel)) {
+					untracked = append(untracked, filepath.ToSlash(rel))
+				}
+			}
+			return nil
+		})
+	}
+	if len(untracked) > 0 {
+		return nil, &Fail{Refused: true, Msg: "base holds a file where this tree holds a dir, and the swap would delete " + strings.Join(untracked, ", "), Next: "move it out of the tree, then run this again"}
+	}
+	return files, nil
 }
 
 // the files hold rev's content: removals first, since a file on one side can be a dir on the other
@@ -130,7 +265,8 @@ func swapTo(tree, rev string, files []string) error {
 			continue
 		}
 		path := filepath.Join(tree, file)
-		if _, err := os.Lstat(path); err != nil {
+		info, err := os.Lstat(path)
+		if err != nil || info.IsDir() {
 			continue
 		}
 		if err := os.Remove(path); err != nil {
@@ -152,91 +288,48 @@ func swapTo(tree, rev string, files []string) error {
 	return nil
 }
 
-func markerPath(tree string) (string, error) {
-	dir, err := mustGitIn(tree, "rev-parse", "rev-parse", "--absolute-git-dir")
-	return filepath.Join(dir, "x-verify-revert.json"), err
-}
-
-func blobAt(tree, rev, file string) string {
-	got, _ := gitIn(tree, "rev-parse", "--verify", "--quiet", rev+":"+file)
-	return got.out
-}
-
-// a run killed mid-swap left this tree on base's source: head comes back, or the file holding neither side is named
-func recoverRevert(tree string) error {
-	path, err := markerPath(tree)
-	if err != nil {
-		return err
-	}
-	raw, err := os.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	var marker revertMarker
-	if err := json.Unmarshal(raw, &marker); err != nil {
-		return &Fail{Refused: true, Msg: path + " is no marker this x wrote: " + err.Error(), Next: "git -C " + tree + " status"}
-	}
-	if err := syscall.Kill(marker.Pid, 0); err == nil || errors.Is(err, syscall.EPERM) {
-		return &Fail{Refused: true, Msg: fmt.Sprintf("a --revert run, pid %d, holds %s on base's source", marker.Pid, tree), Next: "wait for it to end, then run this again"}
-	}
-	var neither []string
-	for _, file := range marker.Files {
-		disk := ""
-		if exists(filepath.Join(tree, file)) {
-			hashed, err := mustGitIn(tree, "hash-object", "hash-object", "--path="+file, "--", file)
-			if err != nil {
-				return err
-			}
-			disk = hashed
-		}
-		if disk != blobAt(tree, marker.Head, file) && disk != blobAt(tree, marker.Base, file) {
-			neither = append(neither, file)
-		}
-	}
-	if len(neither) > 0 {
-		return &Fail{Refused: true, Msg: "a killed --revert run left " + tree + " swapped, and " + strings.Join(neither, ", ") + " holds neither head's nor base's content; it stays as it is",
-			Next: "put it back to head's content, then run this again"}
-	}
-	if err := swapTo(tree, marker.Head, marker.Files); err != nil {
-		return err
-	}
-	return os.Remove(path)
-}
-
 // the names head's test files add outside the swapped paths: what the run must prove
-func newTestNames(tree, fork, head string, swapped []string) []string {
+func newTestNames(tree, fork, head string, swapped []string) []newTest {
 	got, _ := gitIn(tree, "diff", "-U0", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", fork, head)
-	var names []string
-	isTest := false
-	for line := range strings.SplitSeq(got.out, "\n") {
-		if file, isHeader := strings.CutPrefix(line, "+++ "); isHeader {
-			file = strings.TrimPrefix(file, "b/")
-			isTest = testFile.MatchString(file) && !slices.Contains(swapped, file)
-			continue
-		}
-		if !isTest {
-			continue
-		}
-		if name := addedTestNameIn(line); name != "" && !slices.Contains(names, name) {
-			names = append(names, name)
-		}
-	}
-	return names
-}
-
-func sourceHolds(tree string, files []string) func(string) bool {
-	return func(symbol string) bool {
-		word := regexp.MustCompile(`(^|[^\w$])` + regexp.QuoteMeta(symbol) + `($|[^\w$])`)
-		for _, file := range files {
-			if body, err := os.ReadFile(filepath.Join(tree, file)); err == nil && word.Match(body) {
-				return true
+	var tests []newTest
+	file, added := "", ""
+	flush := func() {
+		if testFile.MatchString(file) && !slices.Contains(swapped, file) {
+			for _, test := range addedTestNames(added, file) {
+				if !slices.Contains(tests, test) {
+					tests = append(tests, test)
+				}
 			}
 		}
-		return false
+		added = ""
 	}
+	for line := range strings.SplitSeq(got.out, "\n") {
+		if name, isHeader := strings.CutPrefix(line, "+++ "); isHeader {
+			flush()
+			file = strings.TrimPrefix(name, "b/")
+			continue
+		}
+		if body, isAdded := strings.CutPrefix(line, "+"); isAdded {
+			added += body + "\n"
+		}
+	}
+	flush()
+	return tests
+}
+
+// the non-test files as this tree holds them now, read once per side for what a throw names
+func sourceOf(tree string, files []string) string {
+	var source strings.Builder
+	for _, file := range files {
+		if testFile.MatchString(file) {
+			continue
+		}
+		if body, err := os.ReadFile(filepath.Join(tree, file)); err == nil {
+			source.Write(body)
+			source.WriteByte('\n')
+		}
+	}
+	return source.String()
 }
 
 func revertRun(r *Run, main, tree, head, base string, paths, command []string) (any, error) {
@@ -252,42 +345,38 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	if err != nil {
 		return nil, err
 	}
-	marker, err := markerPath(tree)
+	path, err := claimPath(tree)
 	if err != nil {
 		return nil, err
 	}
-	swapped := []string{}
-	for _, file := range files {
-		if !testFile.MatchString(file) {
-			swapped = append(swapped, file)
-		}
-	}
 	newTests := newTestNames(tree, fork, head, files)
+	source := swappedSource{head: sourceOf(tree, files)}
+	mine := treeClaim{Pid: os.Getpid(), Started: processStarted(os.Getpid())}
+	restore := func() error { return restoreHead(r, tree, head, path, mine, files, baseline) }
 
 	if err := r.Step("swap", "base's content into the named paths", func() (string, error) {
-		raw, err := json.Marshal(revertMarker{os.Getpid(), head, fork, files})
+		temp, err := writeTemp(path, treeClaim{mine.Pid, mine.Started, head, fork, files})
 		if err == nil {
-			err = os.WriteFile(marker, raw, 0o644)
+			err = os.Rename(temp, path)
 		}
 		if err != nil {
 			return "", err
 		}
 		return fmt.Sprintf("%d files on %s", len(files), short(fork)), swapTo(tree, fork, files)
 	}); err != nil {
-		// the marker is written: the deferred restore below never armed, so this path restores by hand
-		return nil, errors.Join(err, restoreHead(r, tree, head, marker, files, baseline))
+		return nil, errors.Join(err, restore())
 	}
 
-	var verdict string
+	var verdict, output string
 	var rows []testRow
-	var output string
 	var restoreErr error
 	func() {
-		defer func() { restoreErr = restoreHead(r, tree, head, marker, files, baseline) }()
+		defer func() { restoreErr = restore() }()
 		_ = r.Step("test", strings.Join(command, " "), func() (string, error) {
+			source.base = sourceOf(tree, files)
 			got, _ := run(tree, nil, "", command[0], command[1:]...)
 			output = got.log
-			verdict, rows = judgeRun(got.log, got.ok, newTests, sourceHolds(tree, swapped))
+			verdict, rows = judgeRun(got.log, got.ok, newTests, source)
 			if verdict != verdictRed {
 				return "", notHeld(verdict)
 			}
@@ -304,7 +393,7 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 	r.Show(lines, nameCell+2)
 	data := ordered{{"tree", tree}, {"sha", head}, {"base", fork}, {"verdict", verdict}, {"tests", rows}}
 	if verdict != verdictRed {
-		return nil, &Fail{Refused: true, Msg: "no proof: " + rowsLine(rows), Next: "read the test's output above; it must fail on an assertion on " + short(fork) + "'s source", Log: nonBlank(output), Data: data}
+		return nil, &Fail{Refused: true, Msg: "no proof: " + rowsLine(rows), Next: "read the test's output above; each new test must fail on an assertion on " + short(fork) + "'s source", Log: nonBlank(output), Data: data}
 	}
 	r.Done(rowsLine(rows)+" on "+short(fork)+"'s source; "+tree+" back on "+short(head), "cd "+tree)
 	return data, nil
@@ -323,14 +412,11 @@ func rowsLine(rows []testRow) string {
 			parts = append(parts, fmt.Sprintf("%d %s: %s", len(names), verdict, strings.Join(names, ", ")))
 		}
 	}
-	if len(parts) == 0 {
-		return "no new test named and no test failed"
-	}
 	return strings.Join(parts, "; ")
 }
 
 // the proof the restore held is git's own compare against the state before the swap
-func restoreHead(r *Run, tree, head, marker string, files []string, baseline string) error {
+func restoreHead(r *Run, tree, head, path string, mine treeClaim, files []string, baseline string) error {
 	return r.Step("restore", "head's content back", func() (string, error) {
 		if err := swapTo(tree, head, files); err != nil {
 			return "", err
@@ -339,8 +425,12 @@ func restoreHead(r *Run, tree, head, marker string, files []string, baseline str
 		if err != nil {
 			return "", err
 		}
-		// the named paths are back, so the marker has done its job; what still differs is the command's own write
-		if err := os.Remove(marker); err != nil {
+		// the named paths are back, so the claim drops its files; what still differs is the command's own write
+		temp, err := writeTemp(path, mine)
+		if err == nil {
+			err = os.Rename(temp, path)
+		}
+		if err != nil {
 			return "", err
 		}
 		if status != baseline {

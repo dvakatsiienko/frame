@@ -61,11 +61,12 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **sign state** — a signed ticket's body read against the last `· body <hash>` of the `## signed` block that closes it: **match** when the hash fits the raw body or the body as signed (linear's link rewrite of an id to its own issue url folded back, trailing blanks trimmed to one blank line), **drifted** when neither fits, **no hash** with no block or no `· body` line; `linear list --label signed` and merge-auto read the same one
 - **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
 - **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; sixth sense's bench, made by `lane verify-tree`
-- **swap** — a `lane verify-tree --revert` run's named paths holding their merge-base content for the command; a **marker** in the tree's git dir, written before it and gone after the restore, is what the next run reads when a kill stopped the restore
+- **swap** — a `lane verify-tree --revert` run's named paths holding their merge-base content for the command
+- **claim** — a file in a verify tree's git dir, naming the run that holds the tree from its first step and, during a swap, the swapped files; a live holder refuses the next run, a dead one's swap is restored from it
 - **red** — a test that failed on an assertion, or threw on code that exists on the source it ran on; a proof it reads that source
 - **still green** — a test that passed on the source it should have failed on; it does not read the change
-- **broken** — nothing proved: a compile or load error, 0 tests, a timeout, or a throw naming a symbol that source lacks
-- **failed** (a proof's word) — an opaque command failed and its output names no test, so x has no verdict
+- **broken** — nothing proved: a compile or load error, 0 tests, a timeout, a throw naming a symbol that source lacks, or a pr adding no test x can name
+- **failed** (a proof's word) — an opaque command failed and its output names no test, or it exited 0 while naming a failure, so x has no verdict
 - **gone quote** — a «» quote of dima's in a memory, skill or rules file that HEAD holds and the commit drops or rewords; `lane commit` refuses it until the message says `quotes: shown`
 - **stack** — prs that each open onto the branch of the one below, merged together in one async call up to the pr named; linked on github through the gh-stack extension by the **stacks add-on**, x's one removable part (`//go:build !nostacks`)
 - **layer** — one pr's branch in a stack: the root `codie/<ticket>-<slug>`, then `-2`, `-3` on top

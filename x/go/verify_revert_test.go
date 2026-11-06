@@ -260,8 +260,6 @@ func TestRevertNamesEachNewTest(t *testing.T) {
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "broken"}},
 		{"a throw on a symbol base lacks", goPrints(failOne, "ReferenceError: helperOnlyOnHead is not defined", failTwo, "FAIL"), 1,
 			map[string]string{"": "broken", "TestNewOne": "broken", "TestNewTwo": "red"}},
-		{"a throw on a symbol base has", goPrints(failOne, "TypeError: base is not a function", failTwo, "FAIL"), 0,
-			map[string]string{"": "red", "TestNewOne": "red", "TestNewTwo": "red"}},
 		{"an opaque red", []string{"sh", "-c", "echo nope; exit 1"}, 1,
 			map[string]string{"": "failed", "TestNewOne": "failed", "TestNewTwo": "failed"}},
 		{"an opaque green", []string{"sh", "-c", "echo fine"}, 1,
@@ -381,6 +379,124 @@ func TestAKilledRevertRefusesAFileHoldingNeitherSide(t *testing.T) {
 	write(t, filepath.Join(tree, "src.txt"), "head\n")
 	if again := xIn(t, main, nil, "lane", "verify-tree", revertPR); again.code != 0 {
 		t.Fatalf("exit %d after the file went back:\n%s", again.code, again.stdout)
+	}
+	assertHeadBack(t, tree)
+}
+
+// base holds a file where head holds a dir: the swap would delete what a probe left in that dir
+func TestRevertRefusesToDeleteAnUntrackedFile(t *testing.T) {
+	t.Parallel()
+	main, _ := verifyWorld(t)
+	write(t, filepath.Join(main, "thing"), "file\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "base")
+	gitT(t, main, "push", "-q", "origin", "main")
+	gitT(t, main, "switch", "-q", "-c", "coder/y")
+	gitT(t, main, "rm", "-q", "thing")
+	write(t, filepath.Join(main, "thing/a.txt"), "in a dir\n")
+	gitT(t, main, "add", ".")
+	gitT(t, main, "commit", "-q", "-m", "the pr")
+	gitT(t, main, "push", "-q", "origin", "HEAD:refs/pull/8/head")
+	gitT(t, main, "switch", "-q", "main")
+	gitT(t, main, "branch", "-q", "-D", "coder/y")
+	if got := xIn(t, main, nil, "lane", "verify-tree", revertPR); got.code != 0 {
+		t.Fatalf("control: %s", got.stdout)
+	}
+	tree := filepath.Join(main, ".claude/worktrees/verify-pr-8")
+	write(t, filepath.Join(tree, "thing/untracked"), "a probe's\n")
+	seen := filepath.Join(t.TempDir(), "seen")
+
+	got := xIn(t, main, nil, "lane", "verify-tree", revertPR, "--revert", "main", "thing", "--", "sh", "-c", "touch "+seen)
+
+	if got.code == 0 || !strings.Contains(got.stdout, "thing/untracked") || exists(seen) {
+		t.Fatalf("exit %d, the command ran %v, want a refusal naming the file:\n%s", got.code, exists(seen), got.stdout)
+	}
+	if body := readOr(filepath.Join(tree, "thing/untracked"), "gone"); body != "a probe's\n" {
+		t.Fatalf("the probe's file reads %q", body)
+	}
+}
+
+// a tracked link under a named dir: a kill must leave the next run able to restore it
+func TestAKilledRevertRestoresPastASymlink(t *testing.T) {
+	t.Parallel()
+	for name, target := range map[string]string{"a link to a file": "../tgt.txt", "a link to a dir": "../tgtdir", "a dangling link": "../nowhere"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			main, _ := verifyWorld(t)
+			write(t, filepath.Join(main, "tgt.txt"), "t\n")
+			write(t, filepath.Join(main, "tgtdir/f"), "f\n")
+			write(t, filepath.Join(main, "d/src.txt"), "base\n")
+			if err := os.Symlink(target, filepath.Join(main, "d/link")); err != nil {
+				t.Fatal(err)
+			}
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "base")
+			gitT(t, main, "push", "-q", "origin", "main")
+			gitT(t, main, "switch", "-q", "-c", "coder/y")
+			write(t, filepath.Join(main, "d/src.txt"), "head\n")
+			gitT(t, main, "add", ".")
+			gitT(t, main, "commit", "-q", "-m", "the pr")
+			gitT(t, main, "push", "-q", "origin", "HEAD:refs/pull/8/head")
+			gitT(t, main, "switch", "-q", "main")
+			gitT(t, main, "branch", "-q", "-D", "coder/y")
+			tree := filepath.Join(main, ".claude/worktrees/verify-pr-8")
+			started := filepath.Join(t.TempDir(), "started")
+			c := exec.Command(xbin, "lane", "verify-tree", revertPR, "--revert", "main", "d", "--", "sh", "-c", "touch "+started+"; exec sleep 3")
+			c.Dir, c.Env = main, append(cleanEnv(), "X_TEST=1")
+			if err := c.Start(); err != nil {
+				t.Fatal(err)
+			}
+			for until := time.Now().Add(60 * time.Second); !exists(started) && time.Now().Before(until); {
+				time.Sleep(20 * time.Millisecond)
+			}
+			_ = c.Process.Kill()
+			_ = c.Wait()
+			if got := readOr(filepath.Join(tree, "d/src.txt"), ""); got != "base\n" {
+				t.Fatalf("control: after the kill src.txt reads %q", got)
+			}
+
+			got := xIn(t, main, nil, "lane", "verify-tree", revertPR)
+
+			if got.code != 0 || readOr(filepath.Join(tree, "d/src.txt"), "") != "head\n" {
+				t.Fatalf("exit %d, src.txt %q, want head's:\n%s", got.code, readOr(filepath.Join(tree, "d/src.txt"), ""), got.stdout)
+			}
+		})
+	}
+}
+
+// two runs started together: one claims the tree, the other refuses, and the winner reads base's content throughout
+func TestTwoRevertsNeverShareATree(t *testing.T) {
+	t.Parallel()
+	main, _, tree := revertWorld(t)
+	if got := xIn(t, main, nil, "lane", "verify-tree", revertPR); got.code != 0 {
+		t.Fatalf("control: %s", got.stdout)
+	}
+	dir := t.TempDir()
+	results := make(chan ran, 2)
+	for i := range 2 {
+		log := filepath.Join(dir, fmt.Sprint("log", i))
+		go func() {
+			results <- revert(t, main, "sh", "-c", "for s in 1 2 3 4 5 6; do cat src.txt >> "+log+"; sleep 0.5; done; echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+		}()
+	}
+	first, second := <-results, <-results
+
+	if (first.code == 0) == (second.code == 0) {
+		t.Fatalf("exits %d and %d, want one proof and one refusal:\n%s\n%s", first.code, second.code, first.stdout, second.stdout)
+	}
+	refused := first
+	if first.code == 0 {
+		refused = second
+	}
+	if !strings.Contains(refused.stdout, "holds") {
+		t.Errorf("the refusal names no holder:\n%s", refused.stdout)
+	}
+	for i := range 2 {
+		for line := range strings.SplitSeq(strings.TrimSpace(readOr(filepath.Join(dir, fmt.Sprint("log", i)), "")), "\n") {
+			if line != "" && line != "base" {
+				t.Errorf("run %d read %q mid-run", i, line)
+			}
+		}
 	}
 	assertHeadBack(t, tree)
 }
