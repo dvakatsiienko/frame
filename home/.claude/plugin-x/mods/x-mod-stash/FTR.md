@@ -941,12 +941,16 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - proof: tests/lane.test.ts::a session the registry does not name 🦉 clio is refused; ::a new clio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
 - ✅ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
   - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
-  - and a plan with a step line holding no `FRM-N` or `BYT-N` is refused at `create`, naming the line; a line added later draws with no id, since a poll refuses nothing (FRM-504); proof: tests/lane.test.ts::a plan with a step line holding no ticket id is refused, naming that line; ::a plan whose every line carries its ticket draws the ids
+  - and a plan with a step line holding no `FRM-N` or `BYT-N` is refused at `create` or `edit`, naming the line; a line added later draws with no id, since a poll refuses nothing (FRM-504); proof: tests/lane.test.ts::a plan with a step line holding no ticket id is refused, naming that line; ::a plan whose every line carries its ticket draws the ids
   - given a chunk's build slices ticked and its closing slice `- [ ] NN · FRM-N reviewed and closed` open, then the card reads that chunk, never the next one, while its reviews run; `x lane landed --apply` ticks it (FRM-504); proof: tests/lane.test.ts::a chunk with its build ticked stays on the card until its closing slice ticks
   - when codie ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
   - proof: tests/lane.test.ts::a create naming a lane plan takes its steps from the file; ::a tick in the plan file moves the card to the first unticked line on the next poll; ::an all-ticked plan file shows the lane done; ::a nested or u… — not asserted: 60-char cut not checked
+- ✅ a side channel writes the card of a lane it runs (FRM-504)
+  - given a session titled «🦉 clio (side)», then `glide` `create` writes a card stamped with its name, and every other act writes that card; a card it did not create is refused, naming it; 🦉 clio still writes any card, and its stale nag skips a side channel's card, whose turn count is another thread's
+  - and a codie, a fork or a name that only holds those words stays refused; only this door opens, every other coordinator part stays on 🦉 clio
+  - proof: tests/lane.test.ts::a side channel creates a card and writes it; ::a side channel is refused on a card it does not run, naming the card; ::stays refused: … — not asserted: two side channels share one title, so one writes the other's card (inference); the lanes file has no lock, a side write racing clio's poll can lose an update (inference); a linked card's plan still moves only on clio's poll, a steer reaches only clio
 - ✅ a lane survives a reload, a compaction and a restart, and ends at clio's siesta
   - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back
   - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — clio's next siesta — takes it off and the file records `endedAt`
@@ -983,10 +987,11 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 ## the round count — a lane's 3-round stop, kept by the mod (FRM-504)
 
 - ✅ codie's rounds count in the store, so a compact loses nothing
-  - given a `codie:` thread's send to anyone but the coordinator, opening `round N on <sha>` (a ticket id, `coder:`, `final —` or a tag may lead it), then its sha joins `lane-rounds:<what its name holds past «codie:»>`; the key is one per lane, never the lanes file
+  - given a `codie:` thread's send to anyone but the coordinator, opening `round N on <sha>` (a ticket id, `#n`, `slice NN`, `coder:`, `sixth sense,`, `final` or a tag may lead it), then its sha joins `lane-rounds:<what its name holds past «codie:», up to « | »>`; the key is one per lane, so a ticket rename keeps the count, never the lanes file
   - and a resend of a sha, a round word further in, a failed send, sixth sense's own round or any other sender counts nothing
   - given round 3, then the sender reads that a next round with a P0 or P1 is past the cap; past 3, that the stop goes to the coordinator; no message is ever refused, and the cap's terms stay sixth sense's judgment
-  - proof: tests/quiet.test.ts § the round count — not asserted: a thread renamed mid-lane starts a new key (inference from the key); `_clio`'s compact carry reads the key at the land, clio's
+  - and a `stash.rounds` switch off counts nothing and draws no line; a key never ends, so a lane name used again starts from its old count (inference)
+  - proof: tests/quiet.test.ts § the round count, tests/switches.test.ts — not asserted: `_clio`'s compact carry reads the key at the land, clio's
 
 ## spawn hints — the board's name flag only
 

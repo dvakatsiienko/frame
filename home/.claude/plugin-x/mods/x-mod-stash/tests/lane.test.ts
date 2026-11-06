@@ -313,6 +313,83 @@ for (const title of CLIO_TITLES)
         expect(kept(w).map((l) => l.id)).toEqual(['l1']);
     });
 
+/* a side channel writes the card of a lane it runs */
+
+const SIDE = '🦉 clio (side)';
+
+test('a side channel writes a card it created', async ($, on) => {
+    const w = world(on, { name: SIDE });
+    await start($);
+    expect((await create($)).deny).toBeUndefined();
+    expect(
+        await denied($, { act: 'step', current: 1, id: 'l1' }),
+    ).toBeUndefined();
+    expect([kept(w)[0]?.runner, kept(w)[0]?.current]).toEqual([SIDE, 1]);
+});
+
+test('a side channel is refused on a card it does not run, naming the card', async ($, on) => {
+    const w = world(on, { name: SIDE });
+    w.files[FILE] = JSON.stringify({
+        lanes: [
+            {
+                current: 0,
+                history: [],
+                id: 'l1',
+                items: [{ isDone: false, text: 'a' }],
+                members: {},
+                movedAt: 0,
+                title: 'mods x',
+            },
+        ],
+    });
+    await start($);
+    const was = w.files[FILE];
+    expect(await denied($, { act: 'step', current: 1, id: 'l1' })).toContain(
+        'lane l1',
+    );
+    expect(w.files[FILE]).toBe(was);
+});
+
+for (const name of [
+    '⚡ 🔧 codie: 🦉 clio (side)',
+    '🦉 clio (fork)',
+    '⚡ 🔧 codie: mods lane 5 | FRM-1',
+])
+    test(`stays refused: ${name}`, async ($, on) => {
+        world(on, { name });
+        await start($);
+        expect(
+            await denied($, { act: 'create', items: ITEMS, title: 'mods x' }),
+        ).toContain('writes the lanes');
+    });
+
+test('a side channel retitled with other spacing still writes its card', async ($, on) => {
+    const w = world(on, { name: '🦉clio (side)' });
+    w.files[FILE] = JSON.stringify({
+        lanes: [keptLane({ current: 0, id: 'l1', runner: SIDE })],
+    });
+    await start($);
+    expect(
+        await denied($, { act: 'step', current: 1, id: 'l1' }),
+    ).toBeUndefined();
+});
+
+test("a side channel's card never nags clio, its turn count being another thread's", async ($, on) => {
+    const w = world(on);
+    w.files[FILE] = JSON.stringify({
+        lanes: [keptLane({ id: 'l1', movedAt: 0, runner: SIDE })],
+    });
+    await start($);
+    for (let i = 0; i < 9; i++) {
+        await say($, 'go');
+        await endTurn($);
+    }
+    await say($, 'go');
+    expect(
+        w.contexts.flat().filter((c) => c.includes('moved nothing')),
+    ).toEqual([]);
+});
+
 test('a session whose name only ends in clio is not the lane owner', async ($, on) => {
     world(on, { name: '⚡ 🔧 codie: board for clio' });
     await start($);
@@ -967,6 +1044,7 @@ test('with 🛼 glide switched off, op glide is refused in one line naming the s
 /* Types */
 
 interface KeptLane {
+    runner?: string;
     id: string;
     title: string;
     items: { isDone: boolean; text: string; ticket?: string }[];
@@ -1482,6 +1560,34 @@ test('a plan with a step line holding no ticket id is refused, naming that line'
     });
     expect(r.deny).toContain('«the loose one»');
     expect(kept(w)).toEqual([]);
+});
+
+test('an edit naming a plan with a step line holding no ticket id is refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    w.files[PLAN] = '- [ ] 01 · the loose one\n';
+    expect(
+        await denied($, {
+            act: 'edit',
+            id: 'l1',
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        }),
+    ).toContain('«the loose one»');
+});
+
+test('an edit naming a plan its card does not follow is refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    expect(
+        await denied($, {
+            act: 'edit',
+            id: 'l1',
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        }),
+    ).toContain('edit cannot link a plan');
 });
 
 test('a plan whose every line carries its ticket draws the ids', async ($, on) => {

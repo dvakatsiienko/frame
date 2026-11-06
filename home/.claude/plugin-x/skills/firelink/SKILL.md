@@ -58,9 +58,9 @@ pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out ~/.local/share/web-
 
 `/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial: a no-name open-source project, kept only if games run well): valve's arm64 SteamOS in a libkrun vm.
 
-📌 **the vm starts only through `scripts/steamac-play.sh`, never the app or a bare `open`**: those skip the memory caps, which rebooted a 48 GB mac ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)). a running vm keeps the caps it started with.
+📌 **the vm starts only through `scripts/steamac-play.sh`, never the app or a bare `open`**: those skip the memory caps, which rebooted a 48 GB mac ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)). a running vm keeps the gpu cap it started with (compile threads too: inference). the one exception: a perf run's traced launch, `references/steamac.md`, sets the same caps itself.
 
-📌 **quit the vm when done; wake it only with lanes quiet; one game app at a time**; after a black screen, wait 5 min before the power button (the 11-06 freeze: `firelink/AGENTS.md`).
+📌 **quit the vm when done; wake it only with lanes quiet; one game app at a time**; a dark screen after a restart may be a working boot: wait about 5 min before the power button (inference; 11-05 was still dark at 336 s; the 11-06 freeze: `firelink/AGENTS.md`).
 
 - `scripts/steamac-play.sh` — launch with the caps the app can't save: gpu 10 GiB, `MESA_KK_COMPILE_THREADS=4`, control fifo `~/.local/share/steamac/control.fifo`; dima starts it from `~/Desktop/steam-fx-safe.app`, a Finder alias of `~/Applications/FX Steam (safe).app` — an applescript applet that runs this script (adhoc-signed: `codesign --force -s -` after an edit)
 - `scripts/steamac-ssh.sh [cmd]` — shell into the vm, `steamos@127.0.0.1:2222`, key `~/.ssh/steamac_ed25519`; «connection refused» = vm off; first run `--install-key`

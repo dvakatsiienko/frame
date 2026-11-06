@@ -45,7 +45,22 @@ covers 2026-11-05 and the night into 2026-11-06; no post was written for 11-05.
 **state**
 - second wind on his press; FRM-501's silent wake and `drop` unproven; 10 of 13 held notes unused, his call on the board
 
+⸻ upd 17:13
+
+**shipped**
+- the retro's tail: the pocket hook's stdout held by its own commit, so cc dropped its red: fixed, proven red; a malformed memory budget row refused every commit in frame for about 2 minutes: fixed, memory-lint now names it
+- `ticket-sign`: stamps a signed body and prints the write, so the guard's sign door still reads it; [FRM-518](https://linear.app/x-com/issue/FRM-518) and [FRM-383](https://linear.app/x-com/issue/FRM-383) its first calls
+- `x fleet audit-codie` credits no read for `sed -Ei`, `--in-place`, `&>/dev/null`, and reads «not checked» with no session; a no-wish line must name every prompt of its minute
+- [FRM-501](https://linear.app/x-com/issue/FRM-501) round 3 signed: turn-end notes logged only, the afk wake gone, a member-silence alarm with one clio wake under a shift
+
+**tricks gained**
+- a linear body can move after its sign: hash a fresh fetch, never the file you wrote
+- a backgrounded `a && b >/dev/null` holds the parent's stdout until b ends
+
+**state**
+- PK-333 and PK-324 closed; [FRM-519](https://linear.app/x-com/issue/FRM-519) and [FRM-518](https://linear.app/x-com/issue/FRM-518) on the mods lane; cli lane 6's spec written, ci made boring handed over, both summon after the pickup
+
 ## trail
-- shipped: PK-331, the afk hour's 4 wakes, FRM-514's final, the start gate and resume facts
-- open: FRM-504, FRM-505, FRM-511 and FRM-509 merges on his word, FRM-501's close, then tilde's plan
-- state: both lanes running, side channel beside them, clio on a second wind
+- shipped: PK-331, the afk hour's 4 wakes, FRM-514, the pocket hook and budget row fixes, ticket-sign, PK-333 and PK-324
+- open: FRM-504, FRM-505, FRM-511 and FRM-509 merges on his word, FRM-501 round 3, cli lane 6, ci made boring, then tilde's plan
+- state: both lanes pausing for second winds, x verify and ci made boring summon after the pickup

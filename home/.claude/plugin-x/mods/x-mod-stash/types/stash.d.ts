@@ -239,6 +239,8 @@ export type StashLane = {
     id: string;
     title: string;
     items: LaneItem[];
+    // the side channel that created this card, the one other session that writes it
+    runner?: string;
     // the lane plan file this card follows: its numbered lines are the steps, so a tick there moves the card (FRM-429)
     plan?: string;
     // the linked file could not be read: the card keeps its last state until the lane ends

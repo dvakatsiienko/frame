@@ -40,7 +40,7 @@ a freeze is a first-time Metal shader compile until proven otherwise: they fade 
 
 📌 unproven as written: these steps were folded from the 11-05 run's notes and never re-run in this order, the stall catch's `scripts/` copy included. the first perf run proves them and drops this line.
 
-1. quit the vm, then launch traced: `open -n -a "FX Steam Launcher" --env MESA_KK_COMPILE_THREADS=4 --env MESA_KK_DEBUG=compiles --args --cmdline "console=hvc0 loglevel=4 rootwait steamac.gpu_mib=10240" --control-fifo ~/.local/share/steamac/control.fifo --perf-stats`
+1. quit the vm, then launch traced, the one bare `open` the launcher rule allows, since `scripts/steamac-play.sh` lacks `--perf-stats` and this line sets its caps: `open -n -a "FX Steam Launcher" --env MESA_KK_COMPILE_THREADS=4 --env MESA_KK_DEBUG=compiles --args --cmdline "console=hvc0 loglevel=4 rootwait steamac.gpu_mib=10240" --control-fifo ~/.local/share/steamac/control.fifo --perf-stats`
 2. after a launcher update, wait ~3 min: steam replays the game's pipelines first
 3. `scripts/steamac-trace.sh [seconds] [--perf]`, in the background; it writes `~/.local/share/steamac/trace-*`; `--perf` costs one vCPU and names `GTAIV.exe`: edit the name for another game; ? `perf` in the vm is unchecked
 4. a stall catch, optional, a dxvk game only (`GAME` in the script names it): `scripts/steamac-ssh.sh 'cat > /tmp/stall.py' < scripts/steamac-stall.py`, then in the background `scripts/steamac-ssh.sh python3 /tmp/stall.py <seconds> /tmp/stall.log`; it waits up to `<seconds>` for the game, then captures `<seconds>`, so it starts before step 5
