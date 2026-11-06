@@ -23,3 +23,6 @@ one line per spawn: date, member, named skills, loaded skills, misses
 
 - 2026-11-02 · ⚡ 🔧 codie mods lane 4 · named: crew-codie, plugin-authoring, guide-code, guide-typescript, crew-subagent · loaded: crew-codie, crew-dna, plugin-authoring, crew-subagent · missed: guide-code, guide-typescript (no .ts edit yet at the first reply) · extended once to 11-09 (dima's o17 tick)
 - 2026-11-05 · 🌗 🔎 sixth sense cli lane 4 · `mods-verify` and `x-verify` loaded late, on the path hook, after it had started; the hook caught both · got in the way a little, keep; a stacked lane's brief names both
+- 2026-11-06 · frm-514 sixth sense · `x:crew-sixth-sense` and the two guides named in the first report; the guides came only by the hook's refusal, the row working on it · keep
+- 2026-11-06 · frm-514 codie · done in the first ping · misses not recorded
+- 2026-11-06 · frm-517 codie · fine · misses not recorded

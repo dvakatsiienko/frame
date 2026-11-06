@@ -29,8 +29,9 @@ fi
 # each run's output is kept: a swap that breaks the load fails every test whatever it reads, so it is named apart from a red
 out=$(mktemp)
 run() {
-  if [ ${#cmd[@]} -gt 0 ]; then "${cmd[@]}"; else npx vitest run "$test"; fi >"$out" 2>&1
+  if [ ${#cmd[@]} -gt 0 ]; then "${cmd[@]}"; else npx vitest run ${bail:+"$bail"} "$test"; fi >"$out" 2>&1
 }
+bail=
 LOAD_ERROR='SyntaxError|did not load|Cannot find module|ERR_MODULE_NOT_FOUND|Failed to load|Transform failed|\[setup failed\]|\[build failed\]'
 anchors=() replacements=()
 if [ "${1-}" = --pairs ]; then
@@ -70,6 +71,8 @@ if ! run; then
   rm -f "$out"
   exit 1
 fi
+# a swap is proven by its first failed test: the base above ran whole, so its red names them all
+bail=--bail=1
 
 backup=$(mktemp)
 cp -p "$file" "$backup"

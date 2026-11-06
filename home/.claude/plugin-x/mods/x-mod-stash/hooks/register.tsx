@@ -446,7 +446,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide (${LANE_OWNER}, or a side channel on a card it created): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · FRM-N text» lines are the steps, each with its ticket id, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide (${LANE_OWNER}, or a wing on a card it created): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · FRM-N text» lines are the steps, each with its ticket id, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
@@ -1073,6 +1073,9 @@ const LEDGER_EVERY_MS = 60_000;
 // the alarms already raised, so each gap and each stuck hold notifies once, across reloads too
 const QUIET_ALARMED = 'quiet-alarmed';
 const QUIET_ALARMED_MAX = 50;
+// a transcript's last write in epoch seconds, by its session id under any project folder
+const LAST_WRITE =
+    'stat -f %m "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | sort -n | tail -n 1';
 const QUIET_ALARM_TITLE = '🚨 quiet comms';
 // osascript's own argv, so no text is ever spliced into the script
 const NOTIFY_SCRIPT =
@@ -1195,18 +1198,14 @@ const quietLog = ($: EngineInterface, line: QuietLogLine) =>
     quietLogAll($, [line]);
 
 // each held ping that reached clio's thread gets a `flushed` line, so a deliveryTest sees held → delivered
-async function quietFlushed(
-    $: EngineInterface,
-    held: QuietPing[],
-    startedTurn = false,
-) {
+async function quietFlushed($: EngineInterface, held: QuietPing[]) {
     const at = await $.clock.now();
     for (const p of held)
         await quietLog($, {
             arm: 'on',
             at,
             from: p.from,
-            startedTurn,
+            startedTurn: false,
             tag: p.tag ?? 'none',
             verdict: 'flushed',
             ...(p.deliveryTest ? { deliveryTest: p.deliveryTest } : {}),
@@ -1366,17 +1365,65 @@ async function takeGapNotes($: EngineInterface) {
     );
 }
 
-// past this a hold reads stuck; while he is away a held notice is meant to wait up to three waits, a repeating member's
-async function heldStuckMs(
-    $: EngineInterface,
-    held: QuietPing[],
-    sid?: string,
-) {
-    const waits =
-        held.some((p) => p.tag === QUIET_NOTICE) && (await isAwayNow($, sid))
-            ? QUIET_REPEAT_WAITS
-            : 1;
-    return waits * (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
+// past this a hold reads stuck
+async function heldStuckMs($: EngineInterface) {
+    return (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
+}
+
+// a keep-hot ping's reply is no word of the member's, so its write never counts as it speaking
+async function lastSpokeAt($: EngineInterface, home: string, sid: string) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    if (reply?.pingedAt && reply.pingedAt > reply.at) return reply.at;
+    const out = await $.process
+        .run(['sh', '-c', LAST_WRITE, 'sh', home, sid])
+        .catch(() => undefined);
+    const seconds = Number(out?.stdout.trim());
+    return seconds > 0 ? seconds * 1000 : undefined;
+}
+
+// a hung member sends nothing, so an open lane's member past the wait raises one alarm per silence, under a shift also one
+// turn of clio's; a refused or a busy turn asks again at the next poll
+async function quietSilentMembers($: EngineInterface, now: number) {
+    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
+    const home = (await $.env.get('HOME')) ?? '';
+    const rows = await registry($);
+    const me = await currentId($);
+    const pace = me
+        ? ((await $.store.get(PACE + me)) as { since?: number } | undefined)
+        : undefined;
+    const isShift = await isShiftOn($, pace);
+    for (const lane of await readLanes($)) {
+        if (lane.endedAt) continue;
+        for (const name of Object.values(lane.members)) {
+            if (!name) continue;
+            const row = memberOf(rows, await successorOf($, name));
+            if (!row || row.base.sid === me) continue;
+            const at = await lastSpokeAt($, home, row.base.sid);
+            if (at === undefined || now - at < waitMs) continue;
+            const words = `${row.base.name} silent ${Math.round((now - at) / 60_000)} min on «${lane.title}»`;
+            const key = `silent:${row.base.sid}:${at}`;
+            await quietAlarm($, key, words);
+            if (!isShift || isBusy) continue;
+            const raised =
+                ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ??
+                [];
+            if (raised.includes(`wake:${key}`)) continue;
+            const r = await selfSubmit(
+                $,
+                `🚨 quiet comms: ${words}; check it, and break the hang if it is one.`,
+            ).catch(() => undefined);
+            if (!r || r.drop) {
+                isBusy = false;
+                await keepTurn($);
+                await armHot($);
+                continue;
+            }
+            await $.store.set(
+                QUIET_ALARMED,
+                [...raised, `wake:${key}`].slice(-QUIET_ALARMED_MAX),
+            );
+        }
+    }
 }
 
 // the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
@@ -1401,10 +1448,11 @@ async function quietBooks($: EngineInterface) {
             `gap:${g.from}`,
             `${g.from} sent clio ${g.sent}, her quiet log holds ${g.logged}`,
         );
+    if (await readSwitch($, 'quiet')) await quietSilentMembers($, now);
     const held = heldOf(await $.store.get(QUIET_HELD + (await currentId($))));
     if (!held) return;
     const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));
-    if (now - oldest.at > (await heldStuckMs($, held)))
+    if (now - oldest.at > (await heldStuckMs($)))
         await quietAlarm(
             $,
             `stuck:${oldest.at}`,
@@ -1457,23 +1505,6 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
     );
 }
 
-// a keep-hot ping's reply is no turn of its own, so its end is nothing to wake for
-async function isLastReplyPing($: EngineInterface, sid: string) {
-    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    return !!reply?.pingedAt && reply.pingedAt > reply.at;
-}
-
-// afk on or a shift running: nobody is at the keyboard to notice a member ending silently
-async function isAwayNow($: EngineInterface, of?: string) {
-    const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
-    if (away?.on === true && (await partsShown($))('stash.afk')) return true;
-    const sid = of ?? (await currentId($));
-    const pace = sid
-        ? ((await $.store.get(PACE + sid)) as { since?: number } | undefined)
-        : undefined;
-    return isShiftOn($, pace);
-}
-
 // the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages, or the engine's meta idle
 // notices: each held or pushed by its own words. answers the drop's reason,
 // empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text left once the held blocks are out;
@@ -1509,14 +1540,14 @@ async function quietHoldPrompt(
                 text: quietHeldText(body),
             };
         }),
-        ...glued.notes.map(({ body, from, head, held, isEvent }) => ({
+        ...glued.notes.map(({ body, from, head, isEvent }) => ({
             body,
             from,
             head,
             isEvent,
             marks: {},
             tag: QUIET_NOTICE,
-            text: held,
+            text: '',
         })),
     ];
     if (!items.length || !(await isQuietHome($))) return undefined;
@@ -1561,7 +1592,17 @@ async function quietHoldPrompt(
                 ...marks,
             };
             const isEventKept = isEvent && isTurnStarting;
-            if (isHolding && canCut && !why && !isEventKept) {
+            // a turn-end note is logged and goes no further, in every mode the switch is on: nobody acted on 10 of 13 in an hour
+            if (
+                tag === QUIET_NOTICE &&
+                isOn &&
+                canCut &&
+                !why &&
+                !isEventKept
+            ) {
+                cut.add(head);
+                lines.push({ ...line, startedTurn: false, verdict: 'logged' });
+            } else if (isHolding && canCut && !why && !isEventKept) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
@@ -1775,7 +1816,6 @@ async function isHeldSince($: EngineInterface, since: number) {
         const isOurs = lines.some(
             (l) =>
                 l.verdict === 'held' &&
-                l.tag !== QUIET_NOTICE &&
                 l.at >= since &&
                 (l.sid
                     ? l.sid === me
@@ -1805,62 +1845,8 @@ async function quietPutBack($: EngineInterface, held: QuietPing[]) {
     await saveQuiet($, { ...q, held: [...held, ...q.held] });
 }
 
-// a member repeating lone notes never goes silent, so its oldest one wakes clio at this many waits
-const QUIET_REPEAT_WAITS = 3;
-
-// he is away and a notice is held: the list stays whole until a member sits silent past the wait, or repeats past the
-// ceiling, then one turn takes all of it, so nothing wakes twice; its text carries the list, since the mod's own prompt
-// skips its prompt.submit hook. answers whether it owns the list this poll
-async function quietAwayWake($: EngineInterface) {
-    const { held } = await quietOf($);
-    const members = await registry($);
-    const notices: QuietPing[] = [];
-    for (const p of held) {
-        if (p.tag !== QUIET_NOTICE) continue;
-        const sid = memberOf(members, p.from)?.base.sid;
-        if (!(sid && (await isLastReplyPing($, sid)))) notices.push(p);
-    }
-    if (!notices.length) return false;
-    if (await quietIsBusy($)) return true;
-    const now = await $.clock.now();
-    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
-    const isSilent = notices.some(
-        ({ from }) =>
-            now -
-                Math.max(
-                    ...held.filter((p) => p.from === from).map((p) => p.at),
-                ) >=
-            waitMs,
-    );
-    const oldest = Math.min(...notices.map((p) => p.at));
-    if (!isSilent && now - oldest < waitMs * QUIET_REPEAT_WAITS) return true;
-    const due = await quietLocked(async () => {
-        const q = await quietOf($);
-        return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
-    });
-    if (!due.length) return true;
-    const r = await selfSubmit($, quietNote(due)).catch(() => undefined);
-    // a refused wake holds its lines, so the next poll asks again
-    if (!r || r.drop) {
-        await quietLocked(() => quietPutBack($, due));
-        isBusy = false;
-        await keepTurn($);
-        await armHot($);
-        return true;
-    }
-    await quietLocked(() => quietFlushed($, due, true));
-    return true;
-}
-
 // held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
-    if (
-        (await isQuietHome($)) &&
-        (await readSwitch($, 'quiet')) &&
-        (await isAwayNow($)) &&
-        (await quietAwayWake($))
-    )
-        return;
     const due = await quietLocked(() => quietDue($));
     if (!due.length) return;
     const appended = await $.session
@@ -4701,7 +4687,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             isHeldStuck:
                 !!held &&
                 now - Math.min(...held.map((p) => p.at)) >
-                    (await heldStuckMs($, held, r.sid)),
+                    (await heldStuckMs($)),
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
@@ -4773,13 +4759,13 @@ const COLUMNS = {
 export const isCoordinator = (name: string) =>
     /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
 // a coordinator's second seat, only glide's door opens to it: the rest of what a coordinator is stays on isCoordinator
-export const isSideChannel = (name: string) =>
+export const isWing = (name: string) =>
     /^(?:🦉c?clio\(side\)|🦉🪽c?clio:wing\d+)$/u.test(bare(name));
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 // a member with a chair in the fleet; a fork or a plain session has none
 export const isSeated = (name: string) =>
     !/\(fork\)/u.test(name) &&
-    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name) || isSideChannel(name));
+    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name) || isWing(name));
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -5005,7 +4991,7 @@ async function orbitCall(
     if (input.op === 'glide') {
         const isOwner = await isLaneOwner($);
         const writer = await sessionName($);
-        const side = writer && isSideChannel(writer) ? writer : undefined;
+        const side = writer && isWing(writer) ? writer : undefined;
         if (!isOwner && !side)
             return {
                 deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
@@ -5015,7 +5001,7 @@ async function orbitCall(
             const card = before.find((l) => l.id === oneLine(input.id));
             if (card && bare(card.runner ?? '') !== bare(side))
                 return {
-                    deny: `orbit glide: lane ${card.id} is not this side channel's; it writes only a card it created, ${LANE_OWNER} the rest`,
+                    deny: `orbit glide: lane ${card.id} is not this wing's; it writes only a card it created, ${LANE_OWNER} the rest`,
                 };
         }
         // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id

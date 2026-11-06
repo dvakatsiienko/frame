@@ -789,6 +789,27 @@ describe('full wish ids in the groom checks', () => {
         ).toEqual(['* FRM-9:W7 (y): mine']);
     });
 
+    test('a blank line above an old bare line never makes it new', async () => {
+        const { newBare } = await import('./prompt-groom.ts');
+        const old = 'a note\nW1 (2026-11-05 10:00, dima): old\n';
+        expect(
+            newBare(
+                'a note\n\nW1 (2026-11-05 10:00, dima): old\n',
+                old,
+                'PK-3',
+            ),
+        ).toEqual([]);
+    });
+
+    test('a bare id two homes answer to is refused, nothing lifted', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'groom-lift-'));
+        const file = join(dir, '2026-11-06-1000.groomed.md');
+        const body = 'PK-3:W1 (x): a #standing\nFRM-9:W1 (x): b #standing\n';
+        writeFileSync(file, body);
+        expect(() => liftStanding('2026-11-06', dir, 'W1')).toThrow(/full id/);
+        expect(readFileSync(file, 'utf8')).toBe(body);
+    });
+
     test('a brand new unstamped full line is new', () => {
         expect(newUnstamped(`${head}PK-3:W2 a fresh fold\n`, head)).toEqual([
             'PK-3:W2 a fresh fold',

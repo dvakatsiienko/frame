@@ -1,5 +1,5 @@
 #!/bin/bash
-# a side channel of clio (a fork, or a fresh session she started) knows it is not the main, and wakes nothing of hers (FRM-430, FRM-464)
+# a wing of clio (a fork, or a fresh session she started) knows it is not the main, and wakes nothing of hers (FRM-430, FRM-464)
 # usage: fork-guard.sh start            SessionStart, first: record the main, or print the fork banner
 #        fork-guard.sh announce         UserPromptSubmit: the main names each new fork once
 #        fork-guard.sh fork-edit        PreToolUse Edit|Write: a fork edits only inside its own worktree
@@ -38,20 +38,20 @@ start)
 		grep -q "^$session " "$state/forks.log" 2>/dev/null ||
 			printf '%s %s\n' "$session" "$(date '+%F %H:%M')" >>"$state/forks.log"
 		cat <<'EOF'
-🍴 you are clio's side channel, not the main: a fork of her thread or a fresh session she started. you unload her thread: dima's side questions, research, fixes, with her memory and skills (FRM-464):
+🍴 you are clio's wing, not the main: a fork of her thread or a fresh session she started. you unload her thread: dima's side questions, research, fixes, with her memory and skills (FRM-464):
 - you are disconnected from her flows: her lanes and watches never see you; arm nothing (no watch, no boot), except a read-only Monitor on a peer's commit, with a deadline, never push past your own landing, never message a member of her lanes
 - helga takes your chores, a trial with main sharing her (`docs/test-drive/helga.md`), by SendMessage as `x:crew-helga` names them
 - a lane starts from here only on dima's own words for a chore of yours: `clio:shape-lane-dispatch`, you its coordinator; it has no glide card and no quiet gate here, so its member's notes wake you
 - crow takes your consults, she does not read this thread: a call you'd decide alone goes to her by SendMessage under the name ListAgents prints, one question; a plan goes through `pnpm crow:plan-critique <file>`, run in the background
-- linear is yours through `clio:pm` for asks born here; the pocket too, every item born with `node script/pocket-add.ts … --side` and labelled `wing-<N>` (`backlog task edit <id> --add-label wing-<N>`), which the main's next boot takes over
+- linear is yours through `clio:pm` for asks born here; the pocket too, every item born with `node script/pocket-add.ts … --wing` and labelled `wing-<N>` (`backlog task edit <id> --add-label wing-<N>`), which the main's next boot takes over
 - a change dima asks for runs in your own worktree, while the session stands in `~/frame/_clio`: never EnterWorktree, which hides the `clio:*` skills and refuses complex shell. the tree: `git -C ~/frame worktree add -b worktree-fork-<session id's first 8> ~/frame/.claude/worktrees/fork-<same> main`, then `x lane seed <tree>`; edit by absolute path; commit in two calls, `cd <tree>`, then `x lane commit`; an edit in a main checkout is refused; the halt catches a branch left unlanded
 - you land your own branch at each finished piece, no message to clio: commit, `cd ~/frame`, `git -C <your tree> merge --no-edit main`, `git merge --ff-only refs/heads/<your branch>` (a fast-forward passes a peer's staged files, a true merge there refuses), `x lane push --apply`, `x plugin bump --apply <plugin>` when a plugin's files changed, `cd ~/frame/_clio`
   - a known hiccup: a file main has staged blocks the fast-forward. `[ask]` clio to commit hers, since it is her work, then land with no further ask; any other conflict or refusal: stop, `[ask]` clio
-- a ticket you work carries the `side` label, on at your first write, off when you hand it back or close it
+- a ticket you work carries the `wing` label, on at your first write, off when you hand it back or close it
 - you keep the siesta habit by `clio:siesta`, its due stamp main's: run its steps at each finished batch with both cards, wishkeeper and wisphunter, a brief's paths absolute
 - the end: when dima says the work is done, send «🦉 clio» one SendMessage, then stop; dima archives you from the sidebar. your prompts reach no prompt log, so it opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with its home (the ticket or pocket id you wrote, or «main's call»), then every external write
 - every file you hand over (a long closing report, a file the main or a member asks for) lives in your worktree's `.scratch/`, its full path in the message; a path the main names in its own checkout gets the worktree copy, and the message says so
-- your first reply says you are the side channel; before it, if your session title lacks «wing», rename yourself (set_session_title «self», «🦉🪽 clio: wing <lowest free number>»): a copy carrying the main's exact name gets the main's messages
+- your first reply says you are the wing, a second clio; before it, if your session title lacks «wing», rename yourself (set_session_title «self», «🦉🪽 clio: wing <lowest free number>»): a copy carrying the main's exact name gets the main's messages
 - 🗨️ a reader with read-only tools is a /btw side chat, not this fork: answer only, and end with a «copy → clio» fence for dima to paste if it is worth keeping
 EOF
 	fi
@@ -102,7 +102,7 @@ fork-edit | fork-bash)
 			case "$t" in /dev/*) continue ;; /*) f=$t ;; "~"/*) f="$HOME/${t#\~/}" ;; *) f="$cwd/$t" ;; esac
 			in_main_checkout "$(dirname "$f")" && { hit=$f; break; }
 		done
-		# its own pocket items (pocket-add --side) are the one commit a fork makes in main, or x-mod-holds keeps them held (FRM-472 07c)
+		# its own pocket items (pocket-add --wing) are the one commit a fork makes in main, or x-mod-holds keeps them held (FRM-472 07c)
 		q="[\"']"
 		# anchored: _clio/pocket/tasks/pk-<name>.md or pocket/tasks/…, no / after pk- (so no ..), a cd only to frame or _clio
 		dir="(_clio/)?pocket/tasks/pk-"

@@ -4,7 +4,7 @@ title: 'day plan 11-06: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T16:30:00Z'
+updated_date: '2026-11-06T16:39:00Z'
 labels:
   - m
   - side-channel-owned
@@ -40,12 +40,11 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #15 PK-333 retro fixes: new mods chunk signed, 38 groom reds
 - [x] #16 PK-324 tails, PK-325 queue review, PK-308's 14 left
 - [ ] #17 grills when he wants: PK-300, PK-304, PK-323
-- [ ] #18 PK-335 rex terminal set up fully with dima
-- [ ] #19 PK-310 second finder watch after 17:54, past 24 h uptime
-- [x] #20 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
-- [x] #21 FRM-514 quick lane test from the side channel
-- [ ] #22 crow watches the side channel too (PK-323, his W9)
-- [ ] #23 PK-325 queue review, PK-308's 14 left (split from #16)
+- [ ] #18 PK-310 second finder watch after 17:54, past 24 h uptime
+- [x] #19 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
+- [x] #20 FRM-514 quick lane test from the side channel
+- [ ] #21 crow watches the side channel too (PK-323, his W9)
+- [ ] #22 PK-325 queue review, PK-308's 14 left (split from #16)
 <!-- AC:END -->
 
 ## Implementation Notes

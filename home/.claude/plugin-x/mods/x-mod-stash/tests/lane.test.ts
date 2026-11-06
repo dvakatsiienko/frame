@@ -313,11 +313,11 @@ for (const title of CLIO_TITLES)
         expect(kept(w).map((l) => l.id)).toEqual(['l1']);
     });
 
-/* a side channel writes the card of a lane it runs */
+/* a wing writes the card of a lane it runs */
 
 const SIDE = '🦉 clio (side)';
 
-test('a side channel writes a card it created', async ($, on) => {
+test('a wing writes a card it created', async ($, on) => {
     const w = world(on, { name: SIDE });
     await start($);
     expect((await create($)).deny).toBeUndefined();
@@ -339,7 +339,7 @@ for (const name of [
         expect(kept(w)[0]?.runner).toBe(name);
     });
 
-test('a side channel is refused on a card it does not run, naming the card', async ($, on) => {
+test('a wing is refused on a card it does not run, naming the card', async ($, on) => {
     const w = world(on, { name: SIDE });
     w.files[FILE] = JSON.stringify({
         lanes: [
@@ -378,7 +378,7 @@ for (const name of [
         ).toContain('writes the lanes');
     });
 
-test('a side channel retitled with other spacing still writes its card', async ($, on) => {
+test('a wing retitled with other spacing still writes its card', async ($, on) => {
     const w = world(on, { name: '🦉clio (side)' });
     w.files[FILE] = JSON.stringify({
         lanes: [keptLane({ current: 0, id: 'l1', runner: SIDE })],
@@ -389,7 +389,7 @@ test('a side channel retitled with other spacing still writes its card', async (
     ).toBeUndefined();
 });
 
-test("a side channel's card never nags clio, its turn count being another thread's", async ($, on) => {
+test("a wing's card never nags clio, its turn count being another thread's", async ($, on) => {
     const w = world(on);
     w.files[FILE] = JSON.stringify({
         lanes: [keptLane({ id: 'l1', movedAt: 0, runner: SIDE })],
@@ -1638,7 +1638,7 @@ test('a second card naming one plan by another spelling is refused', async ($, o
     ).toBe(LIVE_FIX);
 });
 
-test('a card a side channel creates while a plan poll reads survives the poll', async ($, on) => {
+test('a card a wing creates while a plan poll reads survives the poll', async ($, on) => {
     const w = world(on);
     await start($);
     w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';

@@ -48,7 +48,7 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 - **second winds are mine to plan, for everyone** (dima, 2026-11-03: «since you observe and you can plan, pick good times for everyone … and you should second wind everyone»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»):
   - the line: about 55 % context, never past 60 %, at a step's end, never mid-chunk — mine through `clio:checkpoint`, a shift or his «afk» without one (o73); `get_usage` reads my context and the 5h window after every step
   - context grows slowly on a shift, so each wind is planned a step ahead, never rushed: after every step i read my own % through `get_usage` and each member's on the band, and a member near the line gets «second wind after this step» from me
-  - everyone means everyone live: codie, sixth sense, crow, helga, and a parked side channel
+  - everyone means everyone live: codie, sixth sense, crow, helga, and a parked wing
 
 ## hot caches — no member goes cold
 
@@ -62,7 +62,7 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 - a bytes app in the plan passes `apps:essentials`
 - write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces
 - every pr chunk in the plan gets its merge word while he is still here: one orbit ask, `✍️ sign FRM-1, FRM-2: merge pre-approved for this shift`, and his tick lets me write `merge: pre-approved` under each one's last sign, so a self-edit lands with him fully afk. every chunk, not the ones that look it: a fix can grow into a self path mid-shift. a re-sign voids the line, so a re-signed chunk parks ready until his word
-- every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
+- every live member's 🔥 on (§ hot caches); a wing parks with the shift, its merges and wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
 - one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
