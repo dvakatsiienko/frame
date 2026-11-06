@@ -36,19 +36,19 @@
 
 ## the first edit loads its guide
 
-- ⬜ a first source edit is refused once, naming its guide
+- ✅ a first source edit is refused once, naming its guide
   - given a session or subagent without the guide in its own context
   - when it first edits a `.ts`, `.tsx`, `.go`, `.py` or `.sh` file
   - then the call is refused once naming the guide; the retry and later edits pass
   - decision: only the edited path counts, a command naming `.ts` fires nothing
-- ⬜ a loaded guide costs nothing
+- ✅ a loaded guide costs nothing
   - given a real `Skill` call past the last compaction, in the caller's own transcript
   - then nothing is refused; a parent's load, a mention and an unreadable transcript still fire
-- ⬜ a touched subject brings its shelf file
+- ✅ a touched subject brings its shelf file
   - given `charm.land` in written text, `go get charm.land`, `go mod init`, a cask-changing `brew` verb or `mo uninstall`
   - then the call is refused once naming its `x knowledge read`
   - decision: `brew list --cask` and `brew info --cask` fire nothing, 6 of 7 replayed cask fires were reads
-- ⬜ a cost question brings the model cards
+- ✅ a cost question brings the model cards
   - given a prompt with a token, cache or cost question
   - then the rule naming `references/model-cards.md` loads
   - decision: a question word opens the sentence, or «how much», «how many»: 13 of 14 looser hits were prose in briefs
@@ -65,10 +65,10 @@
   - when `pnpm memory-load:replay --days 14` runs
   - then 100 % of linear signals come after a load
   - a signal in a tool call is also a tool trigger, so it hits by construction; the replies are the real measure
-- ⬜ each row's fires print
+- ✅ each row's fires print
   - when `pnpm memory-load:replay --days 7` runs
   - then every row prints its fires, once per transcript, grouped by tool and hit
-- ⬜ the guide share reads a refused call as no edit
+- ✅ the guide share reads a refused call as no edit
   - given a transcript with refuse, load, retry
   - when `pnpm memory-load:guide-share --transcript <path>` runs
   - then the guide counts as loaded before the first edit
