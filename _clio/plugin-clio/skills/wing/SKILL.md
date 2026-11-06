@@ -29,11 +29,11 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 
 ## the day plan
 
-the wing's durable plan is one pocket item he can read, so it survives a second wind (dima, 2026-11-06, his standing word for this item's owned tag):
-- first act: `node script/pocket-add.ts "day plan MM-DD: wing <N>" --priority next --top --wing-owned`, then one `--ac` per line through `backlog task edit`, in his order
+the wing's durable plan is one pocket item he can read, so it survives a second wind:
+- first act: `node script/pocket-add.ts "day plan MM-DD: wing <N>" --priority next --top --wing <N>`, then one `--ac` per line through `backlog task edit`, in his order
 - a finished line: `backlog task edit <id> --check-ac <n>`, that turn; a new line: `--ac`
 - `clio:halt` closes it with the other day plans
 
 ## after it
 
-its pocket items carry `wing` and `wing-<N>` (`backlog task edit <id> --add-label wing-<N>`), so each names its wing, and come back at the next boot (`clio:boot` § 3); an item dima wants solved here carries `wing-owned` (`pocket-add --wing-owned`, on his word only): a wing lists them at its start (`backlog task list --labels wing-owned --plain`), closes those with its `wing-<N>` on its fork branch, and leaves another's; with none open they wait. a wing lands its own `worktree-fork-*` branch, the banner holds the steps (dima, 2026-11-06: «do it now and merge yourself»); clio merges what it leaves unlanded by the halt, never dropped (dima, 2026-10-29). a ticket it works carries the `wing` label, off when it hands the ticket back or closes it, and a `wing: <N>` body line; clio and the other wings leave it alone.
+**`wing-<N>` is the one wing label, on a pocket item and a linear ticket alike** (dima, 2026-11-06): on, the work is that wing's and the others leave it alone; a wing takes it off when it hands the work back. a pocket item is born with `pocket-add --wing <N>`; a ticket takes `x linear set FRM-M --add-label wing-<N>` at the first write. a wing lists its own at its start (`backlog task list --labels wing-<N> --plain`), closes them on its fork branch, and with no live wing <N> they wait. a wing lands its own `worktree-fork-*` branch, the banner holds the steps (dima, 2026-11-06: «do it now and merge yourself»); clio merges what it leaves unlanded by the halt, never dropped (dima, 2026-10-29).

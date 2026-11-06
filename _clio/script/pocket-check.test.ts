@@ -1106,22 +1106,27 @@ describe('the prompt groom (FRM-418)', () => {
         });
     });
 
-    test("a wing's item waits for the main's takeover, not a groom", () => {
-        const wing = task(
-            { labels: ['m', 'wing'], updated_date: `${day} 09:30` },
-            '\nW301 (2026-10-26 09:12, dima): a fold',
-        );
-        expect(checkPocket(config, [wing], day, day, () => false)).toEqual([]);
-    });
-
-    test('a wing-owned item is groomed in its wing, not here', () => {
+    test("a numbered wing's item is groomed in its wing, not here", () => {
         const owned = task(
             {
-                labels: ['s', 'wing-owned'],
+                labels: ['s', 'wing-2'],
                 updated_date: `${day} 09:30`,
             },
             '\nW302 (2026-10-26 09:12, dima): a fold',
         );
         expect(checkPocket(config, [owned], day, day, () => false)).toEqual([]);
+    });
+
+    test('a retired wing label no longer skips the groom', () => {
+        const retired = task(
+            {
+                labels: ['s', 'wing-owned'],
+                updated_date: `${day} 09:30`,
+            },
+            '\nW303 (2026-10-26 09:12, dima): a fold',
+        );
+        expect(checkPocket(config, [retired], day, day, () => false)).toEqual([
+            expect.stringContaining('no groom'),
+        ]);
     });
 });
