@@ -211,6 +211,10 @@ for (const body of [
     'needs dima’s answer: a or b',
     'waiting on dima',
     'still waiting on Dima for the cut',
+    '🔭 waiting on **🙋‍♂️ dima**',
+    "for dima's call: a or b",
+    '[progress] sw done\nfor dima: a or b',
+    'sw done\nfor dima: a or b',
 ])
     test(`pushes, starts a turn: ${body}`, async ($, on) => {
         const w = world(on);
@@ -244,6 +248,10 @@ for (const body of [
     "sw done: needs dima's tick",
     'nothing needs dima',
     'not waiting on dima',
+    'nothing else needs dima',
+    "isn't waiting on dima",
+    '[progress] sw done: parks, waiting on dima',
+    '🐦‍🔥 sw done: needs dima',
     'step 2. decisions: none',
     'pick: a',
     'your call',
@@ -1486,9 +1494,14 @@ const laneCard = (over = {}) => ({
     title: 'mods lane',
     ...over,
 });
+// a one-minute wait: three waits are 3 min, so a row's clock stays short of its 5 s budget at load
 function silentWorld(
     on: On,
-    { card = {} as object, dropSubmit = (_t: string): boolean => false } = {},
+    {
+        card = {} as object,
+        dropSubmit = (_t: string): boolean => false,
+        wait = 1,
+    } = {},
 ) {
     const spoke = { at: EVEN };
     const w = alarmWorld(on, {
@@ -1496,13 +1509,14 @@ function silentWorld(
         files: { [LANES]: JSON.stringify({ lanes: [laneCard(card)] }) },
         lastWrite: () => spoke.at,
     });
+    w.store.set('quiet-wait', wait);
     return { ...w, spoke };
 }
 const silentAlarms = (w: { scripted: string[] }) =>
     w.scripted.filter((s) => s.includes(' silent '));
 
 test('a lane member silent past three waits raises one alarm naming it, no turn', async ($, on) => {
-    const w = silentWorld(on);
+    const w = silentWorld(on, { wait: 10 });
     await start($);
     await w.clock.advance(29 * MIN);
     const early = silentAlarms(w).length;
@@ -1517,9 +1531,9 @@ test('a lane member silent past three waits raises one alarm naming it, no turn'
 test('a member that spoke and fell silent again alarms again', async ($, on) => {
     const w = silentWorld(on);
     await start($);
-    await w.clock.advance(32 * MIN);
-    w.spoke.at = EVEN + 32 * MIN;
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
+    w.spoke.at = EVEN + 4 * MIN;
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w).length).toBe(2);
 });
 
@@ -1527,7 +1541,7 @@ test('a member whose last word to clio was its [done] raises none', async ($, on
     const w = silentWorld(on);
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
-    await w.clock.advance(90 * MIN);
+    await w.clock.advance(9 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1536,7 +1550,7 @@ test('a [done] and its turn-end notice raise none', async ($, on) => {
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
     await fromApp($, noteOf(codiePeer.name, 'landed'));
-    await w.clock.advance(90 * MIN);
+    await w.clock.advance(9 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1545,7 +1559,7 @@ test('an untagged receipt after a [done] re-arms nothing', async ($, on) => {
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
     await ping($, 'heard, parked', codiePeer.name);
-    await w.clock.advance(90 * MIN);
+    await w.clock.advance(9 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1554,7 +1568,7 @@ test('an [ask] after a [done] alarms', async ($, on) => {
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
     await ping($, '[ask] a or b?', codiePeer.name);
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w).length).toBe(1);
 });
 
@@ -1573,7 +1587,7 @@ test('a [done] from yesterday still reads', async ($, on) => {
             verdict: 'passed',
         },
     ]);
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1581,16 +1595,29 @@ test("clio's send after a [done] re-arms the member, counted from the send", asy
     const w = silentWorld(on);
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
-    await w.clock.advance(40 * MIN);
-    await send($, codiePeer.name, 'next: FRM-2');
-    await w.clock.advance(29 * MIN);
+    await w.clock.advance(5 * MIN);
+    await send($, CODIE_SID, 'next: FRM-2');
+    await w.clock.advance(2 * MIN);
     const early = silentAlarms(w).length;
-    await w.clock.advance(3 * MIN);
+    await w.clock.advance(2 * MIN);
     expect([early, silentAlarms(w)]).toEqual([
         0,
-        [`${codiePeer.name} silent 30 min on «mods lane»`],
+        [`${codiePeer.name} silent 3 min on «mods lane»`],
     ]);
 });
+
+for (const line of [
+    'pause — clio is checkpointing, hold every message',
+    "resume — clio's second wind is done",
+])
+    test(`clio's «${line.split(' ')[0]}» after a [done] re-arms nothing`, async ($, on) => {
+        const w = silentWorld(on);
+        await start($);
+        await ping($, '[done] FRM-1 landed', codiePeer.name);
+        await send($, codiePeer.name, line);
+        await w.clock.advance(9 * MIN);
+        expect(silentAlarms(w)).toEqual([]);
+    });
 
 test("clio's send before a [done] re-arms nothing", async ($, on) => {
     const w = silentWorld(on);
@@ -1598,20 +1625,20 @@ test("clio's send before a [done] re-arms nothing", async ($, on) => {
     await send($, codiePeer.name, 'next: FRM-2');
     await w.clock.advance(MIN);
     await ping($, '[done] FRM-2 landed', codiePeer.name);
-    await w.clock.advance(90 * MIN);
+    await w.clock.advance(9 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
 test('a keep-hot ping is no word of the member, so it raises no second alarm', async ($, on) => {
     const w = silentWorld(on);
     await start($);
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     w.store.set(`reply:${CODIE_SID}`, {
         at: EVEN - 3000,
-        pingedAt: EVEN + 32 * MIN,
+        pingedAt: EVEN + 4 * MIN,
     });
-    w.spoke.at = EVEN + 32 * MIN;
-    await w.clock.advance(32 * MIN);
+    w.spoke.at = EVEN + 4 * MIN;
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w).length).toBe(1);
 });
 
@@ -1619,15 +1646,15 @@ test('a member working after a ping reads as speaking', async ($, on) => {
     const w = silentWorld(on);
     await start($);
     w.store.set(`reply:${CODIE_SID}`, { at: EVEN - 60 * MIN, pingedAt: EVEN });
-    w.spoke.at = EVEN + 9 * MIN;
-    await w.clock.advance(32 * MIN);
+    w.spoke.at = EVEN + 2 * MIN;
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
 test('a member of a finished card raises none', async ($, on) => {
     const w = silentWorld(on, { card: { current: 1 } });
     await start($);
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1693,14 +1720,14 @@ test('an old held notice line leaves a refusal a refusal', async ($, on) => {
 test('a member of an ended lane raises none', async ($, on) => {
     const w = silentWorld(on, { card: { endedAt: EVEN } });
     await start($);
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
 test('a member with no lane raises none', async ($, on) => {
     const w = silentWorld(on, { card: { members: {} } });
     await start($);
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1708,7 +1735,7 @@ test('quiet off raises no silent alarm', async ($, on) => {
     const w = silentWorld(on);
     await start($);
     await quiet($, 'off');
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect(silentAlarms(w)).toEqual([]);
 });
 
@@ -1716,7 +1743,7 @@ test('under afk a silent member takes no turn of clio', async ($, on) => {
     const w = silentWorld(on);
     await start($);
     w.store.set('afk', { on: true });
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     expect([silentAlarms(w).length, w.contexts]).toEqual([1, []]);
 });
 
@@ -1725,7 +1752,7 @@ test('under a shift a silent member wakes clio once', async ($, on) => {
     await start($);
     w.store.set(`pace:${SID}`, { since: EVEN });
     const before = w.contexts.length;
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     await $.turn.complete({
         answer: 'ok',
         durationMs: 1,
@@ -1745,7 +1772,7 @@ test('under a shift a busy clio takes the wake when her turn ends', async ($, on
     w.store.set(`pace:${SID}`, { since: EVEN });
     await say($, 'status?');
     const before = w.contexts.length;
-    await w.clock.advance(32 * MIN);
+    await w.clock.advance(4 * MIN);
     const busy = w.contexts.length - before;
     await $.turn.complete({
         answer: 'ok',
@@ -1765,7 +1792,7 @@ test('under a shift a refused wake asks again at the next poll', async ($, on) =
     });
     await start($);
     w.store.set(`pace:${SID}`, { since: EVEN });
-    await w.clock.advance(34 * MIN);
+    await w.clock.advance(6 * MIN);
     expect([tries, silentAlarms(w).length]).toEqual([2, 1]);
 });
 

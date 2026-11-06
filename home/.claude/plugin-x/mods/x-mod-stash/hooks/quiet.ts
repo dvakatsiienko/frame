@@ -7,10 +7,18 @@ const PUSH_TAG = new RegExp(
 );
 const PROGRESS_TAG = new RegExp(String.raw`${EMOJI_RUN}\[progress\]`, 'u');
 const CODE_SPAN = /`[^`]*`/g;
+// the fleet's 🔭 line prints him bold, his badge glued on
+const DIMA = String.raw`(?:\*\*)?(?:[\p{Extended_Pictographic}\u200D\uFE0F]+\s*)?dima`;
 // a path never counts, nor a line saying there is nothing for him; «for dima's tick» names what a line waits on, never a line for him
-const FOR_DIMA =
-    /(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w|['’]s\b)|(?<!\b(?:not|no longer|nothing)[ \t]+)(?:needs|waiting on) dima(?![\w/-]|\.\w))/i;
-const SW_DONE = /^\s*sw done\b/i;
+const FOR_DIMA = new RegExp(
+    String.raw`(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w|['’]s tick\b)|(?<!(?:\bnot|n['’]t|\bno longer|\bnothing(?:[ \t]+\w+)?)[ \t]+)(?:needs|waiting on) ${DIMA}(?![\w/-]|\.\w))`,
+    'iu',
+);
+// a sw done line stays held by its words, the lines after it are read
+const SW_DONE_LINE = new RegExp(
+    String.raw`${EMOJI_RUN}(?:\[progress\]\s*)?sw done\b.*$`,
+    'gimu',
+);
 const RULE =
     'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held; a receipt or a line needing nothing from clio goes untagged';
 
@@ -36,9 +44,14 @@ export function quietPush(body: string, kindsOff: readonly string[] = []) {
     const tag = quietTag(body);
     if (tag !== 'none' && tag !== 'progress' && !kindsOff.includes(tag))
         return 'tag';
-    if (SW_DONE.test(body)) return undefined;
-    return FOR_DIMA.test(body.replace(CODE_SPAN, '')) ? 'for-dima' : undefined;
+    return FOR_DIMA.test(body.replace(SW_DONE_LINE, '').replace(CODE_SPAN, ''))
+        ? 'for-dima'
+        : undefined;
 }
+
+// clio's checkpoint words to the whole fleet: no work in them, so a parked member stays parked
+export const isQuietPause = (body: string) =>
+    /^\s*(?:pause|resume)\b/i.test(body);
 
 export const isQuietAnswer = (askedAt: number, now: number) =>
     now - askedAt < REPLY_MS;

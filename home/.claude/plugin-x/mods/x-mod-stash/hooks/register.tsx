@@ -89,6 +89,7 @@ import {
     QUIET_SLIPSTREAMED,
     isAppPrompt,
     isQuietAnswer,
+    isQuietPause,
     isQuietQuestion,
     isQuietRefusal,
     quietGlued,
@@ -1401,7 +1402,7 @@ async function lastSpokeAt($: EngineInterface, home: string, sid: string) {
 // when a member's newest tagged line to clio is its [done]: an untagged receipt or a turn-end note after it changes nothing,
 // a later [ask] or [escalate] does; a week back at most, past that it reads as no [done]
 async function quietDoneAt($: EngineInterface, sid: string, now: number) {
-    for (let at = now; now - at < QUIET_PARK_MS; at -= 24 * 60 * 60_000) {
+    for (let at = now; now - at <= QUIET_PARK_MS; at -= 24 * 60 * 60_000) {
         const lines = ((await $.store
             .get(quietLogKey(at))
             .catch(() => undefined)) ?? []) as QuietLogLine[];
@@ -1708,7 +1709,7 @@ async function quietHoldPrompt(
 }
 
 type QuietSend =
-    | { isOwner: true; isAsking: boolean; to: string }
+    | { isOwner: true; isAsking: boolean; isPause: boolean; to: string }
     | { at: number; isAnswer: boolean; isOwner: false; message: string };
 
 // read before the send goes out: clio's gate spends the open answer the moment it lands
@@ -1723,6 +1724,7 @@ async function quietSendStart(
         return {
             isAsking: isQuietQuestion(message),
             isOwner: true,
+            isPause: isQuietPause(message),
             to,
         };
     if (!(await isToCoordinator($, to))) return undefined;
@@ -1752,7 +1754,7 @@ async function quietSendEnd(
         if (answer?.success === false) return {};
         await quietLocked(async () => {
             if (send.isAsking) await quietAsked($, send.to);
-            await quietSentTo($, send.to);
+            if (!send.isPause) await quietSentTo($, send.to);
         });
         return {};
     }
