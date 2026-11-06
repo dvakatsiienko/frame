@@ -50,5 +50,7 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - 2026-11-06 · from scratch · `init.lua` absent, Rex defaults kept on his word, themes and fonts now his · nothing to write so far
 - 2026-11-06 · `rex terminfo setup` · entry and guard written, it refused the symlinked `~/.ssh/config` and printed the `Include` to add by hand · the right call for a dotfile mirror
 - 2026-11-06 · dima: «i like rex, let's make it my default terminal» · macOS has no one default: the door is his Raycast hyper+t, then login items; warp stays installed until the verdict
+- 2026-11-06 · agent door: a session, 2 splits, 2 captures and a session.select, from a shell outside Rex by the server binary's full path · 35–78 ms a call, all exit 0, `TERM=xterm-rex COLORTERM=truecolor TERM_PROGRAM=rex`; `rex` is off `PATH` outside Rex terminals, so a desktop-app session finds no `rex` · clean, the `PATH` gap is the one snag
+- 2026-11-06 · `hyper+t` moved to Rex Beta by dima in Raycast, login item swapped · warp no longer starts by itself
 
 ## verdict
