@@ -16,6 +16,7 @@ type landedWorld struct {
 	comments    *string // the ticket's comments as linear's json nodes
 	body        *string // the ticket's body
 	milestone   *string // the ticket's projectMilestone as linear's json
+	relations   *string // the ticket's relations as linear's json nodes
 }
 
 // the head of a done report, as crew-codie's how-you-work.md shapes it
@@ -23,8 +24,9 @@ const lookCardComment = `[{"body":"- **what**: the verb\n- **proven**: go test o
 
 func newLandedWorld(t *testing.T) landedWorld {
 	t.Helper()
-	w := landedWorld{repo: repo(t), state: t.TempDir(), comments: new(string), body: new(string), milestone: new(string)}
+	w := landedWorld{repo: repo(t), state: t.TempDir(), comments: new(string), body: new(string), milestone: new(string), relations: new(string)}
 	*w.comments = "[]"
+	*w.relations = "[]"
 	*w.milestone = "null"
 	*w.body = landedBody
 	write(t, filepath.Join(w.repo, "x.txt"), "the change\n")
@@ -34,7 +36,7 @@ func newLandedWorld(t *testing.T) landedWorld {
 	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — the chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
 	w.server = newFakeLinear(t, func(gqlCall) string {
 		body, _ := json.Marshal(*w.body)
-		return `{"data":{"issue":{"id":"uuid-1","projectMilestone":` + *w.milestone + `,"description":` + string(body) + `,"updatedAt":"2026-10-30T00:00:00.000Z","comments":{"nodes":` + *w.comments + `}}}}`
+		return `{"data":{"issue":{"id":"uuid-1","projectMilestone":` + *w.milestone + `,"description":` + string(body) + `,"updatedAt":"2026-10-30T00:00:00.000Z","comments":{"nodes":` + *w.comments + `},"relations":{"nodes":` + *w.relations + `}}}}`
 	})
 	return w
 }

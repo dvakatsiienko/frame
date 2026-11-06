@@ -6,4 +6,6 @@ a verb marked `needsApply` prints its plan and exits 4 with the exact confirm co
 - `linear` writes (`body --set`, `set`, `link`, `comment`, `update`): the hottest door stays one call; the stale check, the printed actor and linear's own history guard them. `linear archive` keeps the gate ([FRM-344](https://linear.app/x-com/issue/FRM-344), dima 2026-10-07)
 - `lane review`: it acts only on a stale verdict under the round cap, its own checks, and a coder's «final» runs it as one call ([FRM-355](https://linear.app/x-com/issue/FRM-355))
 
+- `lane decamp --list-stale`: a mode of a verb that destroys, which removes nothing; it returns from its plan, and nothing past the plan runs. it does fetch origin's main, and its squash read writes loose objects through `merge-tree` (FRM-509)
+
 a new exception needs the same shape: a guard that already holds, named here.
