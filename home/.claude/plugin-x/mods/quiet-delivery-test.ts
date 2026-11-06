@@ -79,6 +79,9 @@ async function main(argv: string[]) {
         );
         return 2;
     }
+    console.log(
+        "the test ping is real: it lands in clio's thread, so never run it while she holds messages",
+    );
     const nonce = `c${Date.now().toString(36)}`;
     const run = spawnSync(
         'claude',
