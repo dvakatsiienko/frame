@@ -2246,23 +2246,97 @@ for (const [what, submit] of [
     });
 
     for (const [state, key, value] of AWAY)
-        test(`${what} wakes the coordinator with ${state}`, async ($, on) => {
-            const w = world(on);
+        test(`${what} with ${state} holds until the wait, then starts one turn`, async ($, on) => {
+            const w = answering(on);
             await start($);
             w.store.set(key, value);
             const r = await submit($);
-            expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
+            const before = w.contexts.length;
+            await w.clock.advance(9 * MIN);
+            const early = w.contexts.length - before;
+            await w.clock.advance(2 * MIN);
+            const due = w.contexts.length - before;
+            await w.clock.advance(60 * MIN);
+            expect([r.drop, early, due, w.contexts.length - before]).toEqual([
+                '',
+                0,
+                1,
+                1,
+            ]);
         });
 }
 
-test('a wake while away logs why it passed', async ($, on) => {
-    const w = world(on);
+test('a wake while away logs its lines flushed, a turn started', async ($, on) => {
+    const w = answering(on);
     await start($);
     w.store.set('afk', { on: true });
     await fromHarness($, IDLE);
-    expect(linesFor(w, 'notice')).toEqual([
-        [IDLE_MEMBER, 'notice', 'passed', 'away', true],
+    await w.clock.advance(11 * MIN);
+    expect(
+        logOf(w)
+            .filter((l) => l.tag === 'notice')
+            .map((l) => [l.verdict, l.startedTurn]),
+    ).toEqual([
+        ['held', false],
+        ['flushed', true],
     ]);
+});
+
+test('a member repeating notes inside the wait wakes clio at three waits', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    const before = w.contexts.length;
+    for (const _ of [1, 2, 3]) {
+        await fromAppText($, noteOf(CODIE.name, 'waiting on the green run'));
+        await w.clock.advance(8 * MIN);
+    }
+    const early = w.contexts.length - before;
+    await fromAppText($, noteOf(CODIE.name, 'waiting on the green run'));
+    await w.clock.advance(7 * MIN);
+    expect([early, w.contexts.length - before]).toEqual([0, 1]);
+});
+
+test('a young note beside a repeating member wakes clio at its own wait', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    const before = w.contexts.length;
+    await fromAppText($, noteOf(CODIE.name, 'one'));
+    await w.clock.advance(8 * MIN);
+    await fromAppText($, noteOf(CODIE.name, 'two'));
+    await fromAppText($, noteOf('🎀 helga', 'stuck here'));
+    await w.clock.advance(9 * MIN);
+    const early = w.contexts.length - before;
+    await fromAppText($, noteOf(CODIE.name, 'three'));
+    await w.clock.advance(2 * MIN);
+    expect([early, w.contexts.length - before]).toEqual([0, 1]);
+});
+
+test('three members silent past the wait share one turn', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await fromAppText($, noteOf(CODIE.name, 'one'));
+    await fromAppText($, noteOf('🎀 helga', 'two'));
+    await fromAppText($, noteOf('🐦 crow', 'three'));
+    const before = w.contexts.length;
+    await w.clock.advance(5 * MIN);
+    w.store.set('afk', { on: true });
+    await w.clock.advance(60 * MIN);
+    expect(w.contexts.length - before).toBe(1);
+});
+
+test('an untagged line alone while away reaches its hidden row, no turn', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    await fromAppText($, GLUED_LINE);
+    const before = w.contexts.length;
+    await w.clock.advance(11 * MIN);
+    expect([
+        w.contexts.length - before,
+        logOf(w).filter((l) => l.verdict === 'flushed').length,
+    ]).toEqual([0, 1]);
 });
 
 test('an idle notice joins the next prompt under its member, the report its text', async ($, on) => {
@@ -2486,24 +2560,17 @@ test('a side-sessions notice beside a held message logs and holds both', async (
     ]);
 });
 
-test('a side-sessions notice beside a held message wakes clio while away', async ($, on) => {
+test('a side-sessions notice beside a held message holds while away', async ($, on) => {
     const w = world(on);
     await start($);
     w.store.set('afk', { on: true });
     const r = await fromAppText($, notice(GLUED_LINE, EVENT));
-    expect([
-        r.drop,
-        r.text,
-        linesFor(w).map((l) => [l[1], l[2], l[3]]),
-        w.contexts.length,
-    ]).toEqual([
-        undefined,
-        EVENT,
+    expect([r.drop, linesFor(w).map((l) => [l[1], l[2]])]).toEqual([
+        '',
         [
-            ['none', 'held', undefined],
-            ['notice', 'passed', 'away'],
+            ['none', 'held'],
+            ['notice', 'held'],
         ],
-        1,
     ]);
 });
 
@@ -2578,28 +2645,30 @@ test('a member named the app beside a push is judged as a member', async ($, on)
     ]).toEqual([undefined, true, false]);
 });
 
-for (const [what, reply, drop] of [
+for (const [what, reply, turns] of [
     [
-        'a lone note after a keep-hot ping holds',
+        'a lone note after a keep-hot ping starts no turn',
         { at: EVEN - 60_000, pingedAt: EVEN - 1000 },
-        '',
+        0,
     ],
     [
-        'a lone note after a real reply wakes',
+        'a lone note after a real reply starts one turn',
         { at: EVEN - 1000, pingedAt: EVEN - 60_000 },
-        undefined,
+        1,
     ],
 ] as const)
-    test(`${what} while away`, async ($, on) => {
+    test(`${what} past the wait while away`, async ($, on) => {
         const w = answering(on);
         await start($);
         w.store.set('afk', { on: true });
         w.store.set(`reply:${CODIE.sessionId}`, reply);
-        const r = await fromAppText($, noteOf(CODIE.name, '.'));
-        expect(r.drop).toBe(drop);
+        await fromAppText($, noteOf(CODIE.name, '.'));
+        const before = w.contexts.length;
+        await w.clock.advance(11 * MIN);
+        expect(w.contexts.length - before).toBe(turns);
     });
 
-test('a keep-hot notice batched beside a real one stays whole while away', async ($, on) => {
+test('a keep-hot notice batched beside a real one holds while away', async ($, on) => {
     const w = answering(on);
     await start($);
     w.store.set('afk', { on: true });
@@ -2611,35 +2680,41 @@ test('a keep-hot notice batched beside a real one stays whole while away', async
         'is idle now — it finished a turn at 11:49. Its harness reports: «.»';
     const text = `${idleOf(CODIE.name, end)}\n${idleOf('🎀 helga', end)}`;
     const r = await fromHarness($, text);
-    expect([r.drop, r.text, linesFor(w).map((l) => l[2])]).toEqual([
-        undefined,
-        text,
-        ['passed', 'passed'],
+    expect([r.drop, linesFor(w).map((l) => l[2])]).toEqual([
+        '',
+        ['held', 'held'],
     ]);
 });
 
-test('a lone notice held before afk wakes clio once at the flip', async ($, on) => {
+test('a lone notice held before afk wakes clio once, at its wait', async ($, on) => {
     const w = answering(on);
     await start($);
     await fromAppText($, noteOf(CODIE.name, '.'));
     const before = w.contexts.length;
     w.store.set('afk', { on: true });
-    await w.clock.advance(MIN);
+    await w.clock.advance(9 * MIN);
+    const early = w.contexts.length - before;
+    await w.clock.advance(2 * MIN);
     const once = w.contexts.length - before;
     w.store.set('afk', { on: false });
     await w.clock.advance(MIN);
     w.store.set('afk', { on: true });
     await w.clock.advance(MIN);
-    expect([once, w.contexts.length - before, held(w)]).toEqual([1, 1, []]);
+    expect([early, once, w.contexts.length - before, held(w)]).toEqual([
+        0,
+        1,
+        1,
+        [],
+    ]);
 });
 
-test('a lone notice held before a shift wakes clio once at its start', async ($, on) => {
+test('a lone notice held before a shift wakes clio once, at its wait', async ($, on) => {
     const w = answering(on);
     await start($);
     await fromAppText($, noteOf(CODIE.name, '.'));
     const before = w.contexts.length;
     w.store.set(`pace:${SID}`, { since: EVEN });
-    await w.clock.advance(MIN);
+    await w.clock.advance(11 * MIN);
     expect([w.contexts.length - before, held(w)]).toEqual([1, []]);
 });
 
@@ -2653,7 +2728,7 @@ test('a dropped wake holds its notices and asks again at the next poll', async (
     await start($);
     await fromAppText($, noteOf(CODIE.name, '.'));
     w.store.set('afk', { on: true });
-    await w.clock.advance(MIN);
+    await w.clock.advance(11 * MIN);
     expect([
         wakes,
         held(w),

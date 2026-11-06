@@ -1456,7 +1456,7 @@ async function isAwayNow($: EngineInterface) {
 }
 
 // the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages, or the engine's meta idle
-// notices: each held or pushed by its own words, a lone notice woken instead while he is away. answers the drop's reason,
+// notices: each held or pushed by its own words. answers the drop's reason,
 // empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text left once the held blocks are out;
 // undefined lets the prompt in as it came
 async function quietHoldPrompt(
@@ -1512,40 +1512,27 @@ async function quietHoldPrompt(
         const held: QuietPing[] = [];
         const lines: QuietLogLine[] = [];
         const cut = new Set<number>();
-        const isAway =
-            isHolding &&
-            items.some((i) => i.tag === QUIET_NOTICE) &&
-            (await isAwayNow($));
         const judged = [];
-        for (const item of items) {
-            const sid = memberOf(members, item.from)?.base.sid;
+        for (const item of items)
             judged.push({
                 ...item,
-                isWoken:
-                    item.tag === QUIET_NOTICE &&
-                    isAway &&
-                    !(sid && (await isLastReplyPing($, sid))),
-                sid,
+                sid: memberOf(members, item.from)?.base.sid,
                 why: await quietWhy($, item.from, item.body),
             });
-        }
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
-        const canCut =
-            !isEngineNotice || judged.every((j) => !j.why && !j.isWoken);
+        const canCut = !isEngineNotice || judged.every((j) => !j.why);
         // a turn is starting anyway, and the event's words are written to that turn
         const isTurnStarting = judged.some((j) => j.why);
         for (const {
             from,
             head,
             isEvent,
-            isWoken,
             marks,
             sid,
             tag,
             text,
             why,
         } of judged) {
-            const reason = why ?? (isWoken ? 'away' : undefined);
             const line = {
                 arm,
                 at,
@@ -1555,7 +1542,7 @@ async function quietHoldPrompt(
                 ...marks,
             };
             const isEventKept = isEvent && isTurnStarting;
-            if (isHolding && canCut && !reason && !isEventKept) {
+            if (isHolding && canCut && !why && !isEventKept) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
@@ -1564,7 +1551,7 @@ async function quietHoldPrompt(
                     ...line,
                     startedTurn: !isBusyNow,
                     verdict: 'passed',
-                    ...(reason ? { why: reason } : {}),
+                    ...(why ? { why } : {}),
                 });
         }
         const q = await quietOf($);
@@ -1764,52 +1751,62 @@ async function quietPutBack($: EngineInterface, held: QuietPing[]) {
     await saveQuiet($, { ...q, held: [...held, ...q.held] });
 }
 
-// a lone notice held before he went away would stay unseen while nobody prompts: the edge into away starts one turn,
-// once a real notice is held; its text carries the held list, since the mod's own prompt skips its prompt.submit hook
-const QUIET_AWAY_SEEN = 'quiet-away-seen';
+// a member repeating lone notes never goes silent, so its oldest one wakes clio at this many waits
+const QUIET_REPEAT_WAITS = 3;
+
+// he is away and a notice is held: the list stays whole until a member sits silent past the wait, or repeats past the
+// ceiling, then one turn takes all of it, so nothing wakes twice; its text carries the list, since the mod's own prompt
+// skips its prompt.submit hook. answers whether it owns the list this poll
 async function quietAwayWake($: EngineInterface) {
-    if (!(await isQuietHome($)) || !(await readSwitch($, 'quiet'))) return;
-    const isAway = await isAwayNow($);
-    const wasAway = (await $.store.get(QUIET_AWAY_SEEN)) === true;
-    if (isAway === wasAway) return;
-    if (!isAway) {
-        await $.store.set(QUIET_AWAY_SEEN, false);
-        return;
-    }
-    const isBusyNow =
-        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-        isBusy;
-    if (isBusyNow) return;
+    const { held } = await quietOf($);
     const members = await registry($);
+    const notices: QuietPing[] = [];
+    for (const p of held) {
+        if (p.tag !== QUIET_NOTICE) continue;
+        const sid = memberOf(members, p.from)?.base.sid;
+        if (!(sid && (await isLastReplyPing($, sid)))) notices.push(p);
+    }
+    if (!notices.length) return false;
+    if (await quietIsBusy($)) return true;
+    const now = await $.clock.now();
+    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
+    const isSilent = notices.some(
+        ({ from }) =>
+            now -
+                Math.max(
+                    ...held.filter((p) => p.from === from).map((p) => p.at),
+                ) >=
+            waitMs,
+    );
+    const oldest = Math.min(...notices.map((p) => p.at));
+    if (!isSilent && now - oldest < waitMs * QUIET_REPEAT_WAITS) return true;
     const due = await quietLocked(async () => {
         const q = await quietOf($);
-        for (const p of q.held) {
-            if (p.tag !== QUIET_NOTICE) continue;
-            const sid = memberOf(members, p.from)?.base.sid;
-            if (sid && (await isLastReplyPing($, sid))) continue;
-            return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
-        }
-        return [];
+        return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
     });
-    if (!due.length) {
-        await $.store.set(QUIET_AWAY_SEEN, true);
-        return;
-    }
+    if (!due.length) return true;
     const r = await selfSubmit($, quietNote(due)).catch(() => undefined);
-    // a refused wake holds its lines and leaves the edge open, so the next poll asks again
+    // a refused wake holds its lines, so the next poll asks again
     if (!r || r.drop) {
         await quietLocked(() => quietPutBack($, due));
         isBusy = false;
         await keepTurn($);
         await armHot($);
-        return;
+        return true;
     }
-    await $.store.set(QUIET_AWAY_SEEN, true);
     await quietLocked(() => quietFlushed($, due, true));
+    return true;
 }
 
 // held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
+    if (
+        (await isQuietHome($)) &&
+        (await readSwitch($, 'quiet')) &&
+        (await isAwayNow($)) &&
+        (await quietAwayWake($))
+    )
+        return;
     const due = await quietLocked(() => quietDue($));
     if (!due.length) return;
     const appended = await $.session
@@ -5137,7 +5134,6 @@ export const register: Register = (on) => {
                     await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
-                    await quietAwayWake($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await pacePoll($).catch(() => undefined);
