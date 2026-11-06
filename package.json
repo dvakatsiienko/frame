@@ -71,6 +71,7 @@
         "mods:skew": "node ./home/.claude/plugin-x/mods/skew.ts",
         "mods:test": "node ./home/.claude/plugin-x/mods/test.ts",
         "mods:typecheck": "node ./home/.claude/plugin-x/mods/typecheck.ts",
+        "memory-load:guide-share": "python3 ./script/memory-load-guide-share.py",
         "memory-load:replay": "python3 ./script/memory-load-replay.py",
         "memory:pass": "node ./recipes/nurture-memory/scripts/memory-pass.ts",
         "memory-sync:map": "node ./script/memory-sync-map.ts",
