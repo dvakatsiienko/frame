@@ -132,10 +132,15 @@ describe('gate-queue', () => {
         const { state } = fixture();
         queue(state, ['sh', '-c', 'exit 7']);
         queue(state, ['--long', 'sh', '-c', 'exit 0']);
-        expect(logRows(state).map((row) => row.slice(2))).toEqual([
-            ['gate', '0', '0', '7', 'sh -c exit 7'],
-            ['long', '0', '0', '0', 'sh -c exit 0'],
+        // the two seconds columns are wall clock: a number, never a value
+        const rows = logRows(state).map((row) => row.slice(2));
+        expect(rows.map(([slot, , , exit, cmd]) => [slot, exit, cmd])).toEqual([
+            ['gate', '7', 'sh -c exit 7'],
+            ['long', '0', 'sh -c exit 0'],
         ]);
+        expect(rows.flatMap((row) => row.slice(1, 3))).toEqual(
+            Array(4).fill(expect.stringMatching(/^\d+$/)),
+        );
     });
 
     test('a wait past its deadline logs no run seconds and exit 75', () => {

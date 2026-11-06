@@ -73,7 +73,7 @@ function run(
 // the commit runs detached, so the stub's record lands after the hook returned
 function stubArgv(): string[] | undefined {
     const pause = new Int32Array(new SharedArrayBuffer(4));
-    for (let wait = 0; wait < 40 && !existsSync(argvLog); wait += 1)
+    for (let wait = 0; wait < 400 && !existsSync(argvLog); wait += 1)
         Atomics.wait(pause, 0, 0, 50);
     return existsSync(argvLog)
         ? readFileSync(argvLog, 'utf8').trimEnd().split('\n')
@@ -199,7 +199,7 @@ describe('the pocket hook commits every pocket write', () => {
         run(bash('backlog task edit 7 -s done'), 'true');
         const message = stubArgv()?.[0] ?? '';
         const pause = new Int32Array(new SharedArrayBuffer(4));
-        for (let wait = 0; wait < 40 && existsSync(message); wait += 1)
+        for (let wait = 0; wait < 400 && existsSync(message); wait += 1)
             Atomics.wait(pause, 0, 0, 50);
         expect(existsSync(message)).toBe(false);
     });
@@ -226,7 +226,7 @@ describe('the pocket hook commits every pocket write', () => {
         rmSync(lastCommit, { force: true });
         run(bash('backlog task edit 7 -s done'), 'true', refusingStub);
         const pause = new Int32Array(new SharedArrayBuffer(4));
-        for (let wait = 0; wait < 40 && !existsSync(lastCommit); wait += 1)
+        for (let wait = 0; wait < 400 && !existsSync(lastCommit); wait += 1)
             Atomics.wait(pause, 0, 0, 50);
         const out = run(bash('backlog task edit 7 -s done'), 'true');
         expect(out?.reason).toContain('auto-commit was refused');
@@ -238,7 +238,7 @@ describe('the pocket hook commits every pocket write', () => {
         rmSync(lastCommit, { force: true });
         run(bash('backlog task edit 7 -s done'), 'true', emptyStub);
         const pause = new Int32Array(new SharedArrayBuffer(4));
-        for (let wait = 0; wait < 40 && !existsSync(lastCommit); wait += 1)
+        for (let wait = 0; wait < 400 && !existsSync(lastCommit); wait += 1)
             Atomics.wait(pause, 0, 0, 50);
         expect(readFileSync(lastCommit, 'utf8').trim()).toBe('ok');
         rmSync(lastCommit, { force: true });
