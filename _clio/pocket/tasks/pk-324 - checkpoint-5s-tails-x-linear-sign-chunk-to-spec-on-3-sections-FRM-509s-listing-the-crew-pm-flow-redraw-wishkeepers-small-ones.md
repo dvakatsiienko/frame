@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
-updated_date: '2026-11-06T00:00:00Z'
+updated_date: '2026-11-06T01:25:00Z'
 labels:
   - m
 dependencies: []
@@ -54,4 +54,6 @@ restored 00:03, wishkeeper's catch: my 23:48 description rewrite cut these with 
 from wishkeeper, 00:27. open: PK-321's 19:02 groom collision, a no-wish line keyed by minute can hide his prompt of that minute; W247–W251 prios; `siesta/SKILL.md:22` lost `x fleet` and «a miss red» to its budget, regroom; a zero-session audit with live codies should read not checked; FRM-501 W1979's «harder framework» reads like wispr for «harness», ask; `crew-pm-flow` board drift since v15. done: `body.md` names `new verb:`, his ⌘O
 
 from frame#128's last read, wisphunter, by reading, not run: x/go/fleet_audit_codie.go:95, sed -Ei and --in-place still credit a read; :99, cat how-you-work.md &>/dev/null and 2>&1 >/dev/null too. open question, FRM-473's 01:08 ✍️ re-sign passed x-mod-guard's sign door with no tick while FRM-513's same shape was refused at 01:27: read why, a possible hole. FRM-473's wired lines: one real --dry call by another codie, tomorrow's first mods or cli commit refused.
+
+x linear sign: the retro counts 42 body calls, 23 through python, 48.7k bytes: item 12 of _clio/.scratch/retro-2026-11-06.md.
 <!-- SECTION:NOTES:END -->
