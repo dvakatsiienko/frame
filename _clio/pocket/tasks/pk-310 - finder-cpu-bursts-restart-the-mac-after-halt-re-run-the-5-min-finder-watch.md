@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-06T13:34:00Z'
+updated_date: '2026-11-06T16:13:00Z'
 labels:
   - xs
   - side-channel-owned
@@ -56,4 +56,6 @@ W1 (2026-11-06 03:14, dima): once we have two side lanes at once, the side chann
 2026-11-06 15:05 settle test, his tick: 0 windows, settled 2 min, then 5 min under the lanes (load 30.7): 0 of 75 polls at or over 15 %, max 10.8 %, rss 82 MB, no samples. against 14:29 window open on ~/Downloads 8/75 max 51.5 %, and 14:36 closed 5/75 max 38.4 %, all within 96 s of his reopen. inference from one run each: bursts follow an open window or a recent touch, a settled closed Finder is quiet. past-24 h watch after 17:54 still due.
 
 2026-11-06 15:36 side channel: the mac was force reset at 15:29 (panic btn_rst, the power button; cause unknown), so Finder and uptime restarted: the past-24 h watch due 17:54 can't run. a day of uptime is now 15:29 tomorrow, moved. the 15:05 settle test stands. the day plan's line 19 was ticked wrong at 14:39: no 17:54 watch ever ran; unticked 15:21.
+
+⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W1 is numbered twice, then its lines get full ids.
 <!-- SECTION:NOTES:END -->

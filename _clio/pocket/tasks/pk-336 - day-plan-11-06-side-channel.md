@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T15:17:00Z'
+updated_date: '2026-11-06T16:13:00Z'
 labels:
   - m
   - side-channel-owned
@@ -102,4 +102,6 @@ W21 (2026-11-06 16:28, dima): when fully done, hand over ci made boring to main 
 W22 (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optimized. you can spot any inefficiencies and gaps and plan fixes and optimizations if needed.
 
 17:16 his o63 half two, a check for bare W cites: reply-check's a mods part, so it goes to main on her resume, with the ci handover.
+
+⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: its PK-334 and PK-335 lines keep their source ids, then its lines get full ids.
 <!-- SECTION:NOTES:END -->

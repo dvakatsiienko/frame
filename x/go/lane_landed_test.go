@@ -729,6 +729,10 @@ func TestLandedReadsAChunksClosingSlice(t *testing.T) {
 			[]string{"🔴 closing", "is open"}, ""},
 		{"a plan's own closing wording reads", "- [x] 01 · FRM-1 FRM-1 closes\n",
 			[]string{"✅ closing"}, ""},
+		{"a build line ending in a closing word is no closer when steps follow it", "- [x] 01 · FRM-1 the sheet closes\n- [x] 02 · FRM-1 the rest\n",
+			[]string{"🔴 closing", "holds no closing slice"}, ""},
+		{"an open closer ahead of the last one reds, naming it", "- [ ] 01 · FRM-1 reviewed and closed\n- [x] 02 · FRM-1 round 3 reviewed and closed\n",
+			[]string{"🔴 closing", "sits open ahead"}, ""},
 		{"a chunk named mid-line still needs its closing slice", "- [x] 01 · quiet reads FRM-1\n",
 			[]string{"🔴 closing", "holds no closing slice"}, ""},
 		{"a line that leads with another ticket is that ticket's", "- [ ] 01 · FRM-2 fixes FRM-1\n", nil, "closing"},
@@ -805,8 +809,8 @@ func TestLandedApplyTicksOnlyTheClosingSlice(t *testing.T) {
 	if string(raw) != want {
 		t.Errorf("plan after --apply:\n%s", raw)
 	}
-	if out := linesOf(envelope); !strings.Contains(out, "✅ closing") {
-		t.Errorf("the archived spec must still lead to the plan:\n%s", out)
+	if out := linesOf(envelope); !strings.Contains(out, "sits open ahead") {
+		t.Errorf("the open line ahead must still read red after the tick:\n%s", out)
 	}
 }
 
