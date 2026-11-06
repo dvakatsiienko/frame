@@ -56,7 +56,7 @@ _clio/plugin-clio/skills/system-checkup/SKILL.md	7600	2026-10-20: the recipe-can
 _crow/AGENTS.md	12500	seed 2026-10-16, today's size + 15 %; +600 2026-11-04: FRM-502's receipts, claim and risk wakes
 AGENTS.md	10900	seed 2026-10-16, today's size + 15 %
 docs/knowledge/AGENTS.md	1900	seed 2026-10-16, today's size + 15 %
-firelink/AGENTS.md	3100	seed 2026-11-05, its size + 15 %
+firelink/AGENTS.md	3350	bumped 2026-11-06: the launch rule and the freeze, his tick
 gifs/AGENTS.md	1200	seed 2026-10-16, today's size + 15 %
 gmail/AGENTS.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/agents/fresh-eyes.md	2600	seed 2026-10-21, its size + 15 %
@@ -94,7 +94,7 @@ home/.claude/plugin-x/skills/crew-sixth-sense/SKILL.md	12600	seed 2026-10-16, to
 home/.claude/plugin-x/skills/crew-subagent/SKILL.md	4900	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/firelink/references/steamac.md	8500	seed 2026-11-02; bumped 2026-11-05: a perf run, dima's tick on the firelink home
 home/.claude/plugin-x/skills/firelink/references/web-bot-blocked-fetch.md	2800	seed 2026-11-02, its size + 15 %
-home/.claude/plugin-x/skills/firelink/SKILL.md	9500	bumped 2026-11-02: game pages became the fourth door, gotchas kept resident (dima picked the bump)
+home/.claude/plugin-x/skills/firelink/SKILL.md	9700	bumped 2026-11-06: the vm's two safety rules, his tick; 2026-11-02: game pages became the fourth door, gotchas kept resident (dima picked the bump)
 home/.claude/plugin-x/skills/github-contrib/SKILL.md	9000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-code/SKILL.md	4300	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-conventions/SKILL.md	1700	seed 2026-10-16, today's size + 15 %
