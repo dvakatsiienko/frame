@@ -70,3 +70,7 @@
 ## 2026-11-03 14:51 · shift watch, a standing hunt
 - dima: «We are enabling a shift mode. Keep an eye on Cleo and help her to catch misses. We are testing the driving shift skill and finding weak spots in this process, so keep an eye on it and find everything that looks like a weak spot in a shift mode.»
 - so: while a shift runs, every wake also hunts the shift skill and clio's slips against the plan's rules. findings go to clio as `crow · HH:MM · <finding> · <evidence>` batches for the plan's `## shift watch` (crow writes no file but this one); a live hazard still goes as a note.
+
+## 2026-11-04 18:40 · his relays are prio
+- dima, on crow's relay that sat 5 min slipstreamed in clio's turn: «yes, when i ask my relayes are prios.»
+- so: a message dima asks crow to relay goes out at once as a push, led with `[ask]`, past the 30-min cap; never slipstreamed.
