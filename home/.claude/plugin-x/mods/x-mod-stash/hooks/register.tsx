@@ -1195,18 +1195,14 @@ const quietLog = ($: EngineInterface, line: QuietLogLine) =>
     quietLogAll($, [line]);
 
 // each held ping that reached clio's thread gets a `flushed` line, so a deliveryTest sees held → delivered
-async function quietFlushed(
-    $: EngineInterface,
-    held: QuietPing[],
-    startedTurn = false,
-) {
+async function quietFlushed($: EngineInterface, held: QuietPing[]) {
     const at = await $.clock.now();
     for (const p of held)
         await quietLog($, {
             arm: 'on',
             at,
             from: p.from,
-            startedTurn,
+            startedTurn: false,
             tag: p.tag ?? 'none',
             verdict: 'flushed',
             ...(p.deliveryTest ? { deliveryTest: p.deliveryTest } : {}),
@@ -1366,17 +1362,9 @@ async function takeGapNotes($: EngineInterface) {
     );
 }
 
-// past this a hold reads stuck; while he is away a held notice is meant to wait up to three waits, a repeating member's
-async function heldStuckMs(
-    $: EngineInterface,
-    held: QuietPing[],
-    sid?: string,
-) {
-    const waits =
-        held.some((p) => p.tag === QUIET_NOTICE) && (await isAwayNow($, sid))
-            ? QUIET_REPEAT_WAITS
-            : 1;
-    return waits * (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
+// past this a hold reads stuck
+async function heldStuckMs($: EngineInterface) {
+    return (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
 }
 
 // the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
@@ -1404,7 +1392,7 @@ async function quietBooks($: EngineInterface) {
     const held = heldOf(await $.store.get(QUIET_HELD + (await currentId($))));
     if (!held) return;
     const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));
-    if (now - oldest.at > (await heldStuckMs($, held)))
+    if (now - oldest.at > (await heldStuckMs($)))
         await quietAlarm(
             $,
             `stuck:${oldest.at}`,
@@ -1457,23 +1445,6 @@ async function quietUnread($: EngineInterface, blocks: string[]) {
     );
 }
 
-// a keep-hot ping's reply is no turn of its own, so its end is nothing to wake for
-async function isLastReplyPing($: EngineInterface, sid: string) {
-    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    return !!reply?.pingedAt && reply.pingedAt > reply.at;
-}
-
-// afk on or a shift running: nobody is at the keyboard to notice a member ending silently
-async function isAwayNow($: EngineInterface, of?: string) {
-    const away = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
-    if (away?.on === true && (await partsShown($))('stash.afk')) return true;
-    const sid = of ?? (await currentId($));
-    const pace = sid
-        ? ((await $.store.get(PACE + sid)) as { since?: number } | undefined)
-        : undefined;
-    return isShiftOn($, pace);
-}
-
 // the desktop's one prompt in clio's thread, its «finished a turn» notes and glued member messages, or the engine's meta idle
 // notices: each held or pushed by its own words. answers the drop's reason,
 // empty since a reason draws as a blocked prompt (dima's tick, a probe), or the text left once the held blocks are out;
@@ -1509,14 +1480,14 @@ async function quietHoldPrompt(
                 text: quietHeldText(body),
             };
         }),
-        ...glued.notes.map(({ body, from, head, held, isEvent }) => ({
+        ...glued.notes.map(({ body, from, head, isEvent }) => ({
             body,
             from,
             head,
             isEvent,
             marks: {},
             tag: QUIET_NOTICE,
-            text: held,
+            text: '',
         })),
     ];
     if (!items.length || !(await isQuietHome($))) return undefined;
@@ -1561,7 +1532,17 @@ async function quietHoldPrompt(
                 ...marks,
             };
             const isEventKept = isEvent && isTurnStarting;
-            if (isHolding && canCut && !why && !isEventKept) {
+            // a turn-end note is logged and goes no further, in every mode the switch is on: nobody acted on 10 of 13 in an hour
+            if (
+                tag === QUIET_NOTICE &&
+                isOn &&
+                canCut &&
+                !why &&
+                !isEventKept
+            ) {
+                cut.add(head);
+                lines.push({ ...line, startedTurn: false, verdict: 'logged' });
+            } else if (isHolding && canCut && !why && !isEventKept) {
                 held.push({ at, from, tag, text, ...marks });
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'held' });
@@ -1775,7 +1756,6 @@ async function isHeldSince($: EngineInterface, since: number) {
         const isOurs = lines.some(
             (l) =>
                 l.verdict === 'held' &&
-                l.tag !== QUIET_NOTICE &&
                 l.at >= since &&
                 (l.sid
                     ? l.sid === me
@@ -1805,62 +1785,8 @@ async function quietPutBack($: EngineInterface, held: QuietPing[]) {
     await saveQuiet($, { ...q, held: [...held, ...q.held] });
 }
 
-// a member repeating lone notes never goes silent, so its oldest one wakes clio at this many waits
-const QUIET_REPEAT_WAITS = 3;
-
-// he is away and a notice is held: the list stays whole until a member sits silent past the wait, or repeats past the
-// ceiling, then one turn takes all of it, so nothing wakes twice; its text carries the list, since the mod's own prompt
-// skips its prompt.submit hook. answers whether it owns the list this poll
-async function quietAwayWake($: EngineInterface) {
-    const { held } = await quietOf($);
-    const members = await registry($);
-    const notices: QuietPing[] = [];
-    for (const p of held) {
-        if (p.tag !== QUIET_NOTICE) continue;
-        const sid = memberOf(members, p.from)?.base.sid;
-        if (!(sid && (await isLastReplyPing($, sid)))) notices.push(p);
-    }
-    if (!notices.length) return false;
-    if (await quietIsBusy($)) return true;
-    const now = await $.clock.now();
-    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
-    const isSilent = notices.some(
-        ({ from }) =>
-            now -
-                Math.max(
-                    ...held.filter((p) => p.from === from).map((p) => p.at),
-                ) >=
-            waitMs,
-    );
-    const oldest = Math.min(...notices.map((p) => p.at));
-    if (!isSilent && now - oldest < waitMs * QUIET_REPEAT_WAITS) return true;
-    const due = await quietLocked(async () => {
-        const q = await quietOf($);
-        return (await saveQuiet($, { ...q, held: [] })) ? q.held : [];
-    });
-    if (!due.length) return true;
-    const r = await selfSubmit($, quietNote(due)).catch(() => undefined);
-    // a refused wake holds its lines, so the next poll asks again
-    if (!r || r.drop) {
-        await quietLocked(() => quietPutBack($, due));
-        isBusy = false;
-        await keepTurn($);
-        await armHot($);
-        return true;
-    }
-    await quietLocked(() => quietFlushed($, due, true));
-    return true;
-}
-
 // held pings past the wait while clio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
-    if (
-        (await isQuietHome($)) &&
-        (await readSwitch($, 'quiet')) &&
-        (await isAwayNow($)) &&
-        (await quietAwayWake($))
-    )
-        return;
     const due = await quietLocked(() => quietDue($));
     if (!due.length) return;
     const appended = await $.session
@@ -4701,7 +4627,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             isHeldStuck:
                 !!held &&
                 now - Math.min(...held.map((p) => p.at)) >
-                    (await heldStuckMs($, held, r.sid)),
+                    (await heldStuckMs($)),
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),

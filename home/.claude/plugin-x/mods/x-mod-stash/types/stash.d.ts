@@ -190,7 +190,7 @@ export type QuietLogLine = {
     from: string;
     tag: string;
     // failed-open: the hook threw, so the delivery passed unjudged
-    verdict: 'held' | 'passed' | 'flushed' | 'failed-open';
+    verdict: 'held' | 'logged' | 'passed' | 'flushed' | 'failed-open';
     startedTurn: boolean;
     arm: 'on' | 'off';
     deliveryTest?: string;
