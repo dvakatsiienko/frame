@@ -340,6 +340,19 @@ func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
 	}
 }
 
+func TestMergeAutoLetsDimasWordOpenALowerLayersMissingClean(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.signs(t, "FRM-9", "🚀 dispatched 2026-11-06 — a-lane, codie abc\n")
+	write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
+
+	waits, word := w.run(t, "8"), w.run(t, "8", "--dima-ok", "8")
+
+	if waits.code != 1 || word.code != 4 {
+		t.Fatalf("exits %d and %d, want a wait with no word and a plan on his word:\n%s\n%s", waits.code, word.code, waits.stdout, word.stdout)
+	}
+}
+
 // github merged a head the gate never read: loud on stderr, and the brake goes on for every next merge
 func TestMergeAutoBrakesWhenTheStackMergedAnotherHead(t *testing.T) {
 	t.Parallel()
