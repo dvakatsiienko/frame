@@ -212,6 +212,8 @@ for (const body of [
     'waiting on dima',
     'still waiting on Dima for the cut',
     '🔭 waiting on **🙋‍♂️ dima**',
+    'for **🙋‍♂️ dima**: a or b',
+    'nothing ships, waiting on dima',
     "for dima's call: a or b",
     '[progress] sw done\nfor dima: a or b',
     'sw done\nfor dima: a or b',
@@ -1614,10 +1616,21 @@ for (const line of [
         const w = silentWorld(on);
         await start($);
         await ping($, '[done] FRM-1 landed', codiePeer.name);
+        await w.clock.advance(5 * MIN);
         await send($, codiePeer.name, line);
         await w.clock.advance(9 * MIN);
         expect(silentAlarms(w)).toEqual([]);
     });
+
+test("clio's «resume FRM-2» after a [done] is work, so it re-arms", async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    await ping($, '[done] FRM-1 landed', codiePeer.name);
+    await w.clock.advance(5 * MIN);
+    await send($, codiePeer.name, 'resume FRM-2 from step 3');
+    await w.clock.advance(4 * MIN);
+    expect(silentAlarms(w).length).toBe(1);
+});
 
 test("clio's send before a [done] re-arms nothing", async ($, on) => {
     const w = silentWorld(on);

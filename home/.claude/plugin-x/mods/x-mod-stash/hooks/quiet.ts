@@ -11,7 +11,7 @@ const CODE_SPAN = /`[^`]*`/g;
 const DIMA = String.raw`(?:\*\*)?(?:[\p{Extended_Pictographic}\u200D\uFE0F]+\s*)?dima`;
 // a path never counts, nor a line saying there is nothing for him; «for dima's tick» names what a line waits on, never a line for him
 const FOR_DIMA = new RegExp(
-    String.raw`(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for dima(?![\w/-]|\.\w|['’]s tick\b)|(?<!(?:\bnot|n['’]t|\bno longer|\bnothing(?:[ \t]+\w+)?)[ \t]+)(?:needs|waiting on) ${DIMA}(?![\w/-]|\.\w))`,
+    String.raw`(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for ${DIMA}(?![\w/-]|\.\w|['’]s tick\b)|(?<!(?:\bnot|n['’]t|\bno longer|\bnothing(?:[ \t]+else)?)[ \t]+)(?:needs|waiting on) ${DIMA}(?![\w/-]|\.\w))`,
     'iu',
 );
 // a sw done line stays held by its words, the lines after it are read
@@ -51,7 +51,7 @@ export function quietPush(body: string, kindsOff: readonly string[] = []) {
 
 // clio's checkpoint words to the whole fleet: no work in them, so a parked member stays parked
 export const isQuietPause = (body: string) =>
-    /^\s*(?:pause|resume)\b/i.test(body);
+    /^\s*(?:pause|resume)\s*(?:[—–:-]|$)/i.test(body);
 
 export const isQuietAnswer = (askedAt: number, now: number) =>
     now - askedAt < REPLY_MS;

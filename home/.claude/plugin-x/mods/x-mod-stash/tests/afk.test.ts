@@ -119,7 +119,9 @@ test('a prompt carries the away note only while afk is on', async ($, on) => {
         wait: false,
     });
     expect(seen[0] ?? []).not.toContainEqual(expect.stringContaining('afk'));
-    expect(seen[1]).toContainEqual(expect.stringContaining('dima is afk'));
+    expect(seen[1]).toContainEqual(
+        'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.',
+    );
 });
 
 test('an afk flip mid-turn reaches the next tool call once', async ($, on) => {
