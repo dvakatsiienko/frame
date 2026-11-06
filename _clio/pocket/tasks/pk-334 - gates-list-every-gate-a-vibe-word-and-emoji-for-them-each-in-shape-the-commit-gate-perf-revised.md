@@ -6,10 +6,11 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-06T11:45:00Z'
-updated_date: '2026-11-06T11:51:00Z'
+updated_date: '2026-11-06T16:23:00Z'
 labels:
   - m
   - side-channel-owned
+  - wing-1
 dependencies: []
 priority: next
 type: task

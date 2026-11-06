@@ -1,7 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { PALETTE, ctxBar, huesOf } from '../hooks/register.tsx';
+import { PALETTE, ctxBar, huesOf, isSeated } from '../hooks/register.tsx';
 
 const NOW = 10_000_000;
 const MIN = 60 * 1000;
@@ -1356,6 +1356,14 @@ test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => 
     fleet(on, heldFor(13 * MIN));
     const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
     expect(badge?.props.color).toBe('error');
+});
+
+test('a numbered wing has a chair on the board', () => {
+    expect(isSeated('🦉🪽 clio: wing 1')).toBe(true);
+});
+
+test('a wing title with no number has no chair', () => {
+    expect(isSeated('🦉🪽 clio: wing')).toBe(false);
 });
 
 const heldNotice = (ms: number) => ({

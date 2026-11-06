@@ -93,8 +93,10 @@ const DAYS = 30;
 const SHOWN = 160;
 // the registry name is clio's: spaces and zero-width joiners dropped, the way x-mod-stash's bare() reads a name
 const COORDINATORS = ['🦉clio', '🦉cclio']; // read-both: a clio tab resumed under its old title
-const isCoordinator = (name: string) =>
-    COORDINATORS.includes(name.replaceAll(/[\s\u200d]/g, ''));
+const isCoordinator = (name: string) => {
+    const bare = name.replaceAll(/[\s\u200d]/g, '');
+    return COORDINATORS.includes(bare) || /^🦉🪽c?clio:wing\d+$/u.test(bare);
+};
 // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
 const points = (s: string) =>
     [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));

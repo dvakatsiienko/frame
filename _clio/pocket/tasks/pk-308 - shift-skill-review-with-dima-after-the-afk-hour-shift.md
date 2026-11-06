@@ -4,9 +4,10 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-06T16:13:00Z'
+updated_date: '2026-11-06T16:23:00Z'
 labels:
   - s
+  - wing-1
 dependencies: []
 priority: next
 type: task
