@@ -446,7 +446,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
-    `op glide (${LANE_OWNER}, or a side channel on a card it created): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · FRM-N text» lines are the steps, each with its ticket id, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide (${LANE_OWNER}, or a wing on a card it created): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · FRM-N text» lines are the steps, each with its ticket id, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
@@ -4759,13 +4759,13 @@ const COLUMNS = {
 export const isCoordinator = (name: string) =>
     /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
 // a coordinator's second seat, only glide's door opens to it: the rest of what a coordinator is stays on isCoordinator
-export const isSideChannel = (name: string) =>
+export const isWing = (name: string) =>
     /^(?:🦉c?clio\(side\)|🦉🪽c?clio:wing\d+)$/u.test(bare(name));
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 // a member with a chair in the fleet; a fork or a plain session has none
 export const isSeated = (name: string) =>
     !/\(fork\)/u.test(name) &&
-    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name) || isSideChannel(name));
+    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name) || isWing(name));
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -4991,7 +4991,7 @@ async function orbitCall(
     if (input.op === 'glide') {
         const isOwner = await isLaneOwner($);
         const writer = await sessionName($);
-        const side = writer && isSideChannel(writer) ? writer : undefined;
+        const side = writer && isWing(writer) ? writer : undefined;
         if (!isOwner && !side)
             return {
                 deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
@@ -5001,7 +5001,7 @@ async function orbitCall(
             const card = before.find((l) => l.id === oneLine(input.id));
             if (card && bare(card.runner ?? '') !== bare(side))
                 return {
-                    deny: `orbit glide: lane ${card.id} is not this side channel's; it writes only a card it created, ${LANE_OWNER} the rest`,
+                    deny: `orbit glide: lane ${card.id} is not this wing's; it writes only a card it created, ${LANE_OWNER} the rest`,
                 };
         }
         // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id
