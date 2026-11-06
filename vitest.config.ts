@@ -15,5 +15,7 @@ export default defineConfig({
             '_clio/blueprints/excalidraw/**',
         ],
         globalSetup: './script/lib/test-temp-dir.ts',
+        // the 5 s default false-redded commits and pushes at high load, clio-watch and index-run most
+        testTimeout: 30_000,
     },
 });
