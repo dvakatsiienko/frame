@@ -83,6 +83,12 @@ describe('memory-lint', () => {
         expect(r.lint().stderr).toContain('name why this add earned it');
     });
 
+    it('refuses a budget row with no tab before its reason', () => {
+        const r = repo('- one line\n', 20);
+        r.stage(BUDGETS, `${LEAF}\t2002026-11-06 raised: a reason\n`);
+        expect(r.lint().stderr).toContain('its budget is not a number');
+    });
+
     it('catches two bullets merged on one line', () => {
         const r = repo('- one line\n', 500);
         r.stage(LEAF, '- one fact- second bullet\n');

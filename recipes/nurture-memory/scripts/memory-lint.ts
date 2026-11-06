@@ -266,6 +266,12 @@ function lint(stagedFiles: string[]) {
     const problems: string[] = [];
     for (const [path, row] of budgets) {
         const was = before.get(path);
+        if (Number.isNaN(row.budget)) {
+            problems.push(
+                `${path}: its budget is not a number — a tab between budget and reason is missing`,
+            );
+            continue;
+        }
         if (was && was.budget !== row.budget && row.reason === was.reason)
             problems.push(
                 `${path}: its budget moved ${was.budget} → ${row.budget} with the old reason — name why this add earned it`,
