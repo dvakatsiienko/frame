@@ -4,11 +4,12 @@ title: 'wish ids full everywhere: PK-777:W144 on every line'
 status: open
 assignee: []
 created_date: '2026-11-06T15:18:00Z'
-updated_date: '2026-11-06T15:28:00Z'
+updated_date: '2026-11-06T16:21:00Z'
 labels:
   - s
   - side
   - side-channel-owned
+  - wing-1
 dependencies: []
 priority: next
 type: task
