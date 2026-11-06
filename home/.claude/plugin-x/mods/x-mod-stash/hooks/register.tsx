@@ -1073,6 +1073,9 @@ const LEDGER_EVERY_MS = 60_000;
 // the alarms already raised, so each gap and each stuck hold notifies once, across reloads too
 const QUIET_ALARMED = 'quiet-alarmed';
 const QUIET_ALARMED_MAX = 50;
+// a transcript's last write in epoch seconds, by its session id under any project folder
+const LAST_WRITE =
+    'stat -f %m "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | sort -n | tail -n 1';
 const QUIET_ALARM_TITLE = '🚨 quiet comms';
 // osascript's own argv, so no text is ever spliced into the script
 const NOTIFY_SCRIPT =
@@ -1367,6 +1370,62 @@ async function heldStuckMs($: EngineInterface) {
     return (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
 }
 
+// a keep-hot ping's reply is no word of the member's, so its write never counts as it speaking
+async function lastSpokeAt($: EngineInterface, home: string, sid: string) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    if (reply?.pingedAt && reply.pingedAt > reply.at) return reply.at;
+    const out = await $.process
+        .run(['sh', '-c', LAST_WRITE, 'sh', home, sid])
+        .catch(() => undefined);
+    const seconds = Number(out?.stdout.trim());
+    return seconds > 0 ? seconds * 1000 : undefined;
+}
+
+// a hung member sends nothing, so an open lane's member past the wait raises one alarm per silence, under a shift also one
+// turn of clio's; a refused or a busy turn asks again at the next poll
+async function quietSilentMembers($: EngineInterface, now: number) {
+    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
+    const home = (await $.env.get('HOME')) ?? '';
+    const rows = await registry($);
+    const me = await currentId($);
+    const pace = me
+        ? ((await $.store.get(PACE + me)) as { since?: number } | undefined)
+        : undefined;
+    const isShift = await isShiftOn($, pace);
+    for (const lane of await readLanes($)) {
+        if (lane.endedAt) continue;
+        for (const name of Object.values(lane.members)) {
+            if (!name) continue;
+            const row = memberOf(rows, await successorOf($, name));
+            if (!row || row.base.sid === me) continue;
+            const at = await lastSpokeAt($, home, row.base.sid);
+            if (at === undefined || now - at < waitMs) continue;
+            const words = `${row.base.name} silent ${Math.round((now - at) / 60_000)} min on «${lane.title}»`;
+            const key = `silent:${row.base.sid}:${at}`;
+            await quietAlarm($, key, words);
+            if (!isShift || isBusy) continue;
+            const raised =
+                ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ??
+                [];
+            if (raised.includes(`wake:${key}`)) continue;
+            const r = await selfSubmit(
+                $,
+                `🚨 quiet comms: ${words}; check it, and break the hang if it is one.`,
+            ).catch(() => undefined);
+            if (!r || r.drop) {
+                isBusy = false;
+                await keepTurn($);
+                await armHot($);
+                continue;
+            }
+            await $.store.set(
+                QUIET_ALARMED,
+                [...raised, `wake:${key}`].slice(-QUIET_ALARMED_MAX),
+            );
+        }
+    }
+}
+
 // the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
 // new gap or a held ping stuck past the idle wait + 2 min raises one native alarm
 let ledgerAt = 0;
@@ -1389,6 +1448,7 @@ async function quietBooks($: EngineInterface) {
             `gap:${g.from}`,
             `${g.from} sent clio ${g.sent}, her quiet log holds ${g.logged}`,
         );
+    if (await readSwitch($, 'quiet')) await quietSilentMembers($, now);
     const held = heldOf(await $.store.get(QUIET_HELD + (await currentId($))));
     if (!held) return;
     const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));

@@ -854,6 +854,13 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and when neither `$.ui.notify` nor osascript raises it, a `ui.log` line says so; nothing throws
   - decision: `$.ui.notify` first, osascript when it answers not sent — the desktop, where clio runs, answers `no-surface` (dima's o75, 2026-10-12)
   - proof: tests/quiet.test.ts::a ledger gap raises one native alarm, through osascript when notify finds no surface; ::a test child raises no alarm on the mac, its log says what it would; ::a gap that closes and opens again alarms again; ::a gap notify sends itself goes no further; ::a held ping stuck past … — not asserted: once-per-oldest-ping not separately asserted
+- ✅ a member silent on an open lane raises a native alarm
+  - given a live member of an open glide card, by its own transcript's last write, silent past the 🎛️ `🤫 quiet comms` wait, then one notification names it and its lane, at his keyboard and under afk, with no turn of clio's
+  - and again only after it spoke and fell silent again; a keep-hot ping's reply is no word of the member's; a member with no open lane, or quiet off, raises none
+  - and under a shift it also wakes clio once; a refused or a busy turn asks again at the next poll
+  - decision: a hung member can't push `[escalate]`, and turn-end notes stop reaching clio, so this is what shows it (dima's ticks, 2026-11-06: «the alarm goes to clio too: it wakes her once, shifts only»)
+  - and a member parked on purpose, waiting for a read or a green run, reads silent too: one alarm per silence is its cost
+  - proof: tests/quiet.test.ts::a lane member silent past the wait raises one alarm naming it, no turn; ::a member that spoke and fell silent again alarms again; ::a keep-hot ping is no word of the member, so it raises no second alarm; ::a member of an ended lane raises none; ::a member with no lane raises none; ::quiet off raises no silent alarm; ::under afk a silent member takes no turn of clio; ::under a shift a silent member wakes clio once; ::under a shift a refused wake asks again at the next poll — not asserted: a banner on his mac, the one staged real fire in the done comment
 - ✅ `/quiet-delivery-test` sends clio a test ping with no model
   - given any session but clio's, when it runs `/quiet-delivery-test <nonce>`, then the mod sends `[progress] quiet delivery test <nonce>: …` to `🦉 clio` through `$.session.send` and answers `sent` or `FAIL, <reason>`
   - then clio's log lines for it carry `deliveryTest: <nonce>`, so `pnpm mods:quiet-delivery-test` reads held → delivered
