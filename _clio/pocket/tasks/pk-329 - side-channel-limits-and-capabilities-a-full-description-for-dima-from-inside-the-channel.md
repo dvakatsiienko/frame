@@ -29,5 +29,5 @@ dima's word 11-06 00:24, for tomorrow: fully describe your limitations and capab
 W1 (2026-11-06 00:28, dima): helga — i'd like you to use her too. (decide tmrw)
 today's banner forbids a side channel messaging helga, so this is a rule change to weigh with the limits description.
 
-W (2026-11-06 03:27, dima): can the side channel coordinate on its own? e.g. start a lane and coordinate it? ❓
+W2 (2026-11-06 03:27, dima): can the side channel coordinate on its own? e.g. start a lane and coordinate it? ❓
 <!-- SECTION:NOTES:END -->

@@ -43,5 +43,5 @@ W2 spawn a research: maybe it is a well known issue, or someone else had somethi
 
 19:05, uptime 5 h 12: Finder 1.4 % cpu, 169 MB rss, etime 1 h 03, so it restarted about 18:00. the re-check past a day of uptime stays owed; next boot.
 
-W (2026-11-06 03:14, dima): once we have two side lanes at once, the side channel should start finder measures at once, at any point where we will be with the side channel. i want it to be solved.
+W1 (2026-11-06 03:14, dima): once we have two side lanes at once, the side channel should start finder measures at once, at any point where we will be with the side channel. i want it to be solved.
 <!-- SECTION:NOTES:END -->
