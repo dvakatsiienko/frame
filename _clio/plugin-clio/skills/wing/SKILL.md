@@ -12,7 +12,7 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 - main keeps: dispatch, merges, watches, a grill or body write on a running lane's ticket, the boot's inbox parse and its prompt groom
 - the wing takes the rest; main hands a chore or grill to it the turn it lands, with one line to dima naming it
 - 🐦‍⬛ crow reads only main's thread, so the wing's grills go unwatched; a plan goes through `pnpm crow:plan-critique <file>`
-- a heavy run (a gate, a commit, a push, mutants) takes the machine-wide turn: `~/frame/script/gate-queue.sh <command…>`, in the background
+- heavy runs go in the background: `x lane commit` and `x lane push` take the machine-wide turn themselves; a long round (mutants, a suite by hand) runs through `~/frame/script/gate-queue.sh --long <command…>`
 
 ## the doors
 
