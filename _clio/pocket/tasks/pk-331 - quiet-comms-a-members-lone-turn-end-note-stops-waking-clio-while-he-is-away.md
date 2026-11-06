@@ -4,6 +4,7 @@ title: 'quiet comms: a member''s lone turn-end note stops waking clio while he i
 status: open
 assignee: []
 created_date: '2026-11-06T00:17:00Z'
+updated_date: '2026-11-06T00:39:00Z'
 labels:
   - s
   - side-channel-owned
@@ -25,3 +26,9 @@ my pick to bring him, one short round in the side channel: a lone note holds und
 order: first act after the boot, before FRM-504 starts, since FRM-504 and FRM-505 edit the same file; x-mod-holds refuses two writers. the side channel works on its fork branch and lands by its own door. its effect feeds PK-326's empty-wakes count, so measure the count before and after.
 it changes signed FRM-501 behaviour (o70): the side's ask carries his re-sign on that line.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+from FRM-513's last reads, these belong to this item's «a stuck member is still seen»: a notice already flushed to its hidden row starts no turn; a refused wake past the idle wait falls to that row; register.tsx:1771, the quiet gate returns before the away-off edge is recorded, so a later wake is lost (wisphunter, by reading); tests/quiet.test.ts:2629's «no second turn» row passes on an empty held list.
+<!-- SECTION:NOTES:END -->
