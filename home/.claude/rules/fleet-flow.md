@@ -42,6 +42,9 @@ channel — dima may step into it and steer there, and the member answers him th
 
 ## silence
 
+a wait on another lane's commit or merge: the waiter arms its own `Monitor`, with a deadline.
+
+
 a question dima has not answered means he is in another thread. the member does not wait on it:
 a timed question goes to clio, and clio relays (the mechanics are in each brief). an ended turn
 has no clock — a member watching for dima's answer arms its own timer.
