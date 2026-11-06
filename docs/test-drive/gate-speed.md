@@ -91,6 +91,7 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 
 ## rounds
 
+- 2026-11-07 · exit 16 for real on the merged script, load 60 · the 120 s script logs slot `none` and holds nothing; the peer's wait past the script's commit is 36 s against that commit's 39 s run; both still waited 424 and 460 s, behind a mods commit that held the turn 494 s, its `mods:test --skip-tested` 294 s, exit 1 · the wrapper is fixed; the next hold is the mods suite inside a commit's turn, pr 3's skip
 - 2026-11-07 · exit 16 for real, first try, void: main's checkout still held the old script, so the wrapper took the turn: the peer waited 139 s of the script's 164 s · void, not a read of the fix
 - 2026-11-06 · red-proof on one mutant, load 38 · 15 s → 8 s, base included · better
 - 2026-11-06 · `vitest related` replay of 8 recent commits · 0, 0, 0, 0, 0, 3, 5, 23 s against about 13 s whole; catch rate unmeasured · better on speed
