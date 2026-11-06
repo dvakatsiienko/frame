@@ -59,10 +59,10 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - 2026-11-06 · `rex` on `PATH` through `home/.local/bin/rex` · the hook stays silent outside Rex, 10 ms a run · Run buttons in the desktop app stay in its own panel, no setting for it; `rex run` is the door to a Rex tab
 - 2026-11-06 · persistence with a live agent: `cmd+Q`, reopen · Claude Code pid 28550 alive across the app restart at 20:22, server pid unchanged since 18:54, no restart gap he noticed · a pass, an update still untried
 - 2026-11-06 · a Claude Code started in Rex also showed in the desktop app, where dima answered its permission prompt by accident and typed to it; the Rex pane followed · both surfaces drive one session (Remote Control on at startup is the likely cause, an inference)
+- 2026-11-06 · the blocked marker, a staged permission prompt in a `dot-check` tab · dima's two shots: a blue dot on the tab's icon, an orange Claude icon, a blue dot on the eye (Activity) button · seen by his eye, nothing like it in warp
 
 ## for the verdict
 
-- the status dot itself: `program_status` read right 3 of 3, his eye on the blocked marker is still open
 - a nudge when a reply prints a copy fence, if a session skips the Rex door
 - Rex's own `rex` skill beside `x:rex`: keep both or one
 - fold these habits into their final home
