@@ -82,9 +82,7 @@ func TestMain(m *testing.M) {
 func world(t *testing.T) string {
 	t.Helper()
 	dir := filepath.Join(t.TempDir(), "world")
-	if out, err := exec.Command("../fixtures/setup.sh", dir).CombinedOutput(); err != nil {
-		t.Fatalf("setup.sh: %v\n%s", err, out)
-	}
+	copyFixture(t, seedWorld(t), dir)
 	return dir
 }
 

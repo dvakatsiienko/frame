@@ -11,14 +11,8 @@ import (
 // fails the validator, RED in a test fails that test, NO-IMPORT makes its file fail to load
 func modsFixture(t *testing.T) (dir string, env []string) {
 	t.Helper()
-	dir = repo(t)
-	mod := filepath.Join(dir, modsDir, "m")
-	write(t, filepath.Join(mod, ".claude-plugin/plugin.json"), `{"name": "m"}`+"\n")
-	write(t, filepath.Join(mod, "hooks/register.ts"), "export const register = () => {};\n")
-	write(t, filepath.Join(mod, "tests/a.test.ts"), "green\n")
-	write(t, filepath.Join(mod, "tests/b.test.ts"), "green\n")
-	gitT(t, dir, "add", ".")
-	gitT(t, dir, "commit", "-q", "-m", "mod")
+	dir, _ = filepath.EvalSymlinks(t.TempDir())
+	copyFixture(t, seedMods(t), dir)
 	bin := t.TempDir()
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
 d="$3"
