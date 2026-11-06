@@ -9,6 +9,7 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 
 ## prove
 
+- a pr's new mod tests are proven red on base's source by `x lane verify-tree <head> --revert <base> <hooks paths> -- pnpm mods:test <mod>`, in the verify tree, so the live mod never sees the swap
 - a mod change is proven by `claude plugin test <a scratch copy>` plus a headless `claude -p --settings <file>` run, so the live mod is never the test bench (FRM-356)
 
 - a model-backed part gets one live run beside its mocked tests — `claude -p --model claude-haiku-5-5` with the real prompt files; the mocks hid the snippet expansion the live run found (FRM-382 sixth sense)

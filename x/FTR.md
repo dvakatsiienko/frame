@@ -212,6 +212,12 @@
   - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
   - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
+- ⬜ `x lane verify-tree <head> --revert <base> <paths…> -- <command>` proves head's new tests red on base's source
+  - given a verify tree on a head, when the flag runs, then for the run each named path holds its merge-base content, a path the pr added is gone, and a path on neither side refuses before any swap, naming it; a stray arg without the flag still exits 2
+  - given the run ends, then each new test reads red, still green or broken, and the exit is 0 only when every one is red; a load error, a throw on a symbol that source lacks and a run of 0 tests read broken; an opaque command that fails reads failed
+  - given the command throws or exits non-zero, then head's content is back and the tree's porcelain equals its baseline
+  - given a run killed mid-swap, when the next `x lane verify-tree` touches that tree, then it restores head's content, or refuses naming a file that holds neither side; a run still alive refuses naming its pid
+  - decision: a symbol absent from the swapped source reads broken even when head lacks it too, since a typo in a test fails on both sides and must never pass as a proof
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
   - given branch `codie/FRM-1-a-2` on top of `codie/FRM-1-a`, when `x lane pr-open --apply --base codie/FRM-1-a <title> <body-file>` runs, then one pr opens with base `codie/FRM-1-a`; a base origin lacks refuses before gh runs
   - given layers `codie/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names their 3 open prs by number, bottom-up (gh-stack pushes a named branch, and a frame worktree's push dies at the mirror gate), and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`

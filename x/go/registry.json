@@ -164,12 +164,34 @@
                 {
                     "description": "the pr's url, or main:<sha>",
                     "name": "head"
+                },
+                {
+                    "description": "with --revert: the source paths to swap, then -- and the test command",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "paths"
                 }
             ],
+            "flags": {
+                "revert": {
+                    "description": "run head's tests on this base's source: the named paths hold their merge-base content for the command, then head's content comes back",
+                    "type": "string",
+                    "value": "base"
+                }
+            },
             "name": "lane verify-tree",
             "needsApply": false,
-            "purpose": "add a seeded worktree of a pr's head or a main sha for sixth sense, git-crypt unlocked; prints its path",
-            "steps": ["fetch", "worktree", "seed", "verify", "hooks"]
+            "purpose": "add a seeded worktree of a pr's head or a main sha; --revert proves its new tests red on base's source",
+            "steps": [
+                "fetch",
+                "worktree",
+                "seed",
+                "verify",
+                "hooks",
+                "swap",
+                "test",
+                "restore"
+            ]
         },
         {
             "name": "lane merge-main",

@@ -20,6 +20,10 @@ func samePath(a, b string) bool {
 func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	target, help := args[0], "x lane verify-tree --help"
 	stacked, _ := flags["stack"].(bool)
+	paths, command, err := revertArgs(args, flags)
+	if err != nil {
+		return nil, err
+	}
 	pr := prURL.FindStringSubmatch(target)
 	if stacked && pr == nil {
 		return nil, usageFail("--stack reads a stack from its top pr's url, not "+target, "x lane verify-tree --stack <top pr url>")
@@ -79,6 +83,9 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	}
 	path := filepath.Join(main, ".claude/worktrees", name)
 	r.Open(name)
+	if len(paths) == 0 {
+		r.skip("swap", "test", "restore")
+	}
 
 	var sha string
 	if err := r.Step("fetch", "fetching the head", func() (string, error) {
@@ -93,6 +100,9 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 			// a plain dir at the path is no worktree: git there would walk up to the main checkout
 			if root, _ := gitIn(path, "rev-parse", "--show-toplevel"); !root.ok || !samePath(root.out, path) {
 				return "", &Fail{Refused: true, Msg: path + " is a plain dir, not a worktree", Next: "trash " + path}
+			}
+			if err := recoverRevert(path); err != nil {
+				return "", err
 			}
 			// the next round on the same pr: the tree moves, unless a probe changed a tracked file (the seed's copies are untracked)
 			if dirty, _ := gitIn(path, "status", "--porcelain", "--untracked-files=no"); dirty.out != "" || !dirty.ok {
@@ -110,6 +120,9 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	}
 	if err := seedTree(r, path, main); err != nil {
 		return nil, err
+	}
+	if len(paths) > 0 {
+		return revertRun(r, main, path, sha, flags["revert"].(string), paths, command)
 	}
 	r.Done(strings.Join(append([]string{"seeded " + path + " at " + short(sha)}, layers...), "\n"), "cd "+path)
 	if stacked {
