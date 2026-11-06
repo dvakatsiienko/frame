@@ -4,7 +4,7 @@ title: 'day plan 11-06: side channel'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T14:50:00Z'
+updated_date: '2026-11-06T15:11:00Z'
 labels:
   - m
   - side-channel-owned
@@ -28,7 +28,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #4 FRM-484 sixth sense posting habits written into its skill
 - [x] #5 split habit: main runs lanes, side channel takes all chores, settled with main
 - [x] #6 PK-310 finder watch when two side lanes run, again past 17:54
-- [ ] #7 ci made boring milestone planned with dima (due today)
+- [x] #7 ci made boring milestone planned with dima (due today)
 - [x] #8 PK-329 side channel limits and capabilities, helga's use decided
 - [ ] #9 FRM-495 his asks answered
 - [ ] #10 FRM-503 merge door audit printed once
@@ -85,4 +85,8 @@ W (2026-11-06 16:28, dima): when fully done, hand over ci made boring to main cl
 W (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optimized. you can spot any inefficiencies and gaps and plan fixes and optimizations if needed.
 
 16:50 PK-324 moved to main on dima's word 16:47; PK-333 closed by main. line 16 keeps PK-325 and PK-308 only.
+
+17:12 ci made boring shaped, specced, handed to main for his signs, the summon and its keeping: BYT-130, BYT-94, BYT-132, BYT-106, BYT-131; BYT-128, BYT-129 cancelled; spec in my tree's .scratch/ci-boring/.
+
+17:11 PK-324 done by main on dima's word 17:06. line 16 stays open for PK-325 and PK-308. the ci made boring handover went to main at about 17:10, just before her second wind: re-send it on her «resume».
 <!-- SECTION:NOTES:END -->
