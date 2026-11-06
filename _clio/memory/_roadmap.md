@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → pm revamp ✅ → speak → chords → trophy-sys → portfolio
 - now: mods lane 5 to tilde, then the tails, speak v2
 - next: chords v2, trophy-sys v2, the cv; beside: ci → cli, mods
-- started mils: 7: 1/7, 8/22, 4/5, 16/25, 22/32, 1/6, 3/7
+- started mils: 8: 1/7, 1/2, 10/22, 4/5, 17/25, 22/32, 2/6, 3/7
