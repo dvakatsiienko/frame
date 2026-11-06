@@ -5,6 +5,7 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    utimesSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -173,6 +174,43 @@ describe('gate-queue', () => {
         expect(readdirSync(`${turn}.tickets`)).toEqual([]);
     });
 
+    test('a dead owner with a blank ticket leaves the line', () => {
+        const { state, turn } = fixture();
+        plantTicket(turn, '1.999999', '');
+        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+    });
+
+    test('a dead holder with a blank start frees the turn', () => {
+        const { state, turn } = fixture();
+        plantHolder(turn, '999999', '');
+        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+    });
+
+    test('a turn with no holder file frees after its minute, and not before', () => {
+        const { state, turn } = fixture();
+        mkdirSync(turn);
+        expect(queue(state, ['sh', '-c', 'exit 0'], '2').status).toBe(75);
+        const old = new Date(Date.now() - 300_000);
+        utimesSync(turn, old, old);
+        expect(queue(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+    });
+
+    test('a waiter behind the line never frees a stale turn', () => {
+        const { state, turn } = fixture();
+        plantTicket(turn, `1.${process.pid}`, liveSince());
+        plantHolder(turn, '999999', 'Fri Nov  6 10:00:00 2026');
+        const got = queue(state, ['sh', '-c', 'exit 0'], '2');
+        expect(got.status).toBe(75);
+        expect(existsSync(join(turn, 'holder'))).toBe(true);
+    });
+
+    test('a gate inside a long round still takes the gate slot', () => {
+        const { state, turn } = fixture();
+        plantHolder(turn, String(process.pid), liveSince());
+        const got = queue(state, ['--long', script, 'sh', '-c', 'exit 3'], '2');
+        expect(got.status).toBe(75);
+    });
+
     test('a ticket leaves with its deadline', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
@@ -183,26 +221,27 @@ describe('gate-queue', () => {
     test('a newcomer never jumps a waiter', { timeout: 30_000 }, async () => {
         const { state, turn } = fixture();
         const log = join(state, 'log');
-        const run = (name: string, seconds = 0) =>
+        const go = join(state, 'go');
+        const run = (name: string, wait = 'true') =>
             new Promise<void>((done) => {
-                spawn(
-                    script,
-                    ['sh', '-c', `sleep ${seconds}; echo ${name} >>${log}`],
-                    { env: queueEnv(state) },
-                ).on('exit', () => done());
+                spawn(script, ['sh', '-c', `${wait}; echo ${name} >>${log}`], {
+                    env: queueEnv(state),
+                }).on('exit', () => done());
             });
         const tickets = () => readdirSync(`${turn}.tickets`).length;
         const lined = async (count: number) => {
             while (!existsSync(`${turn}.tickets`) || tickets() !== count)
                 await sleep(50);
         };
-        const holder = run('holder', 6);
+        // the holder leaves only on the marker: a slow machine cannot end the line early
+        const holder = run('holder', `until [ -e ${go} ]; do sleep 0.1; done`);
         while (!existsSync(turn)) await sleep(50);
         const first = run('first');
         await lined(1);
         await sleep(1100);
         const second = run('second');
         await lined(2);
+        writeFileSync(go, '');
         await Promise.all([holder, first, second]);
         expect(readFileSync(log, 'utf8')).toBe('holder\nfirst\nsecond\n');
     });

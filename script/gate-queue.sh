@@ -14,8 +14,8 @@ if [ $# -eq 0 ]; then
     echo "usage: gate-queue [--long] <command…>" >&2
     exit 2
 fi
-# a queued run calling another queued run keeps its turn
-if [ -n "${GATE_QUEUE_HELD:-}" ]; then exec "$@"; fi
+# a queued run calling another queued run of its slot keeps its turn; a commit inside a long round still takes the gate slot
+if [ "${GATE_QUEUE_HELD:-}" = "$slot" ]; then exec "$@"; fi
 
 state=${X_STATE:-$HOME/.local/state/x}
 turn=$state/gate-queue.turn
@@ -29,14 +29,16 @@ mkdir -p "$tickets"
 one_line() { echo $*; }
 started_at() { one_line "$(ps -o lstart= -p "$1" 2>/dev/null)"; }
 
-# a turn is stale when its holder is gone; a turn just taken has no holder file yet, so it gets 10 s
+# a turn is stale when its holder is gone; a turn just taken has no holder file yet, so it gets a minute
 is_stale() {
-    local pid since
-    if ! { read -r pid && read -r since; } 2>/dev/null <"$turn/holder"; then
-        [ -n "$(find "$turn" -maxdepth 0 -mmin +0.17 2>/dev/null)" ]
+    local pid since now
+    if [ ! -s "$turn/holder" ]; then
+        [ -n "$(find "$turn" -maxdepth 0 -mmin +1 2>/dev/null)" ]
         return
     fi
-    [ "$(started_at "$pid")" != "$(one_line "$since")" ]
+    { read -r pid && read -r since; } 2>/dev/null <"$turn/holder"
+    now=$(started_at "$pid")
+    [ -z "$now" ] || [ "$now" != "$(one_line "$since")" ]
 }
 
 # one row a run, tab-separated: start, 1-min load at the start, slot, wait s, run s (- when it never ran), exit, command
@@ -46,11 +48,12 @@ log_run() {
 
 # a ticket ahead whose owner is gone leaves the line; true when this run's ticket is the first
 first_in_line() {
-    local first since
+    local first since now
     while first=$(ls "$tickets" | head -n 1); [ -n "$first" ] && [ "$tickets/$first" != "$ticket" ]; do
         since=
         { read -r since; } 2>/dev/null <"$tickets/$first"
-        [ "$(started_at "${first##*.}")" = "$(one_line "$since")" ] && return 1
+        now=$(started_at "${first##*.}")
+        [ -n "$now" ] && [ "$now" = "$(one_line "$since")" ] && return 1
         rm -f "$tickets/$first"
     done
 }
@@ -69,8 +72,8 @@ trap 'exit 143' TERM
 waited=0
 next_say=0
 until first_in_line && mkdir "$turn" 2>/dev/null; do
-    if is_stale; then
-        # the rename is atomic: of two waiters seeing one stale turn, only one frees it
+    # only the first in line frees a stale turn, so it never takes a turn a newer run just made
+    if first_in_line && is_stale; then
         if mv "$turn" "$turn.stale.$$" 2>/dev/null; then
             echo "gate-queue: freed a dead holder's turn" >&2
             rm -rf "$turn.stale.$$"
@@ -100,4 +103,4 @@ leave
 trap release EXIT
 printf '%s\n%s\n%s\n' "$$" "$(started_at $$)" "$*" >"$turn/holder"
 [ "$waited" -gt 0 ] && echo "gate-queue: took the turn after ${waited}s" >&2
-GATE_QUEUE_HELD=1 "$@"
+GATE_QUEUE_HELD=$slot "$@"

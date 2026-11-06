@@ -19,6 +19,9 @@ mkdir "$copy" "$admin"
 git -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false checkout-index -a --prefix="$copy/"
 git rev-parse --path-format=absolute --git-common-dir >"$admin/commondir"
 git rev-parse HEAD >"$admin/HEAD"
+# the copy's HEAD is detached, so a gate that depends on the branch reads it here
+INDEX_RUN_BRANCH=$(git symbolic-ref --short -q HEAD || true)
+export INDEX_RUN_BRANCH
 # --git-path index names the hook's GIT_INDEX_FILE when git set one, the real index otherwise
 cp "$(git rev-parse --path-format=absolute --git-path index)" "$admin/index"
 echo "gitdir: $admin" >"$copy/.git"
@@ -57,4 +60,7 @@ done
 # pnpm checks its install before a script and dies on a symlinked node_modules; the copy never installs
 printf '\nverifyDepsBeforeRun: false\n' >>"$copy/pnpm-workspace.yaml"
 cd "$copy"
+# a hook exports GIT_DIR and friends: inherited, a fixture's `git init` and `git config` write the real repo (core.bare, 2026-11-06)
+# shellcheck disable=SC2046
+unset $(git rev-parse --local-env-vars)
 "$@"
