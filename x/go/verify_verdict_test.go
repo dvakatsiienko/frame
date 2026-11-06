@@ -358,7 +358,11 @@ func TestJudgeRunReadsTheHeadRun(t *testing.T) {
 		{"an expanded row head says passed", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > two\nAssertionError: no\n", []newTest{{Name: "${x}ne"}, {Name: "two"}}, verdictRedOnHead, map[string]string{"a.test.ts > one": verdictRed}},
 		{"a row a title expanded to, timed out on head", " FAIL  a.test.ts > one\nError: Test timed out in 5000ms.\n", []newTest{{Name: "o${x}"}}, verdictBroken, map[string]string{"a.test.ts > one": verdictBroken}},
 		{"an expanded row whose name varies between runs", " FAIL  a.test.ts > other\nAssertionError: no\n", []newTest{{Name: "o${x}"}}, verdictRedOnHead, map[string]string{"a.test.ts > one": verdictRedOnHead}},
-		{"an old test red on head beside a new test head says passed", "(pass) one\n(fail) old\n  AssertionError: no\n", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed}},
+		{"an old test red on head alone gets a row and no vote", "(pass) one\n(fail) old\n  AssertionError: no\n", []newTest{{Name: "one"}}, verdictRed, map[string]string{"one": verdictRed, "old": verdictRedOnHead}},
+		{"an expanded row red on head alone votes", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > row a\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "row ${x}"}}, verdictRedOnHead, map[string]string{"one": verdictRed, "a.test.ts > row a": verdictRedOnHead, "row ${x}": verdictUnread}},
+		{"a table row red on head alone votes", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > row 1\nAssertionError: no\n", []newTest{{Name: "one"}, {Name: "row %d", IsTable: true}}, verdictRedOnHead, map[string]string{"a.test.ts > row 1": verdictRedOnHead}},
+		{"an expanded row timed out on head alone is load", " ✓ a.test.ts > one 1ms\n FAIL  a.test.ts > row a\nError: Test timed out in 5000ms.\n", []newTest{{Name: "one"}, {Name: "row ${x}"}}, verdictBroken, map[string]string{"a.test.ts > row a": verdictBroken}},
+		{"a skip on both sides reads unread", "--- PASS: one (0.00s)\n--- SKIP: two (0.00s)\nok  \tp\t0.1s\n", []newTest{{Name: "one"}, {Name: "two"}}, verdictRed, map[string]string{"one": verdictRed, "two": verdictUnread}},
 		{"go's skip line on head", "--- SKIP: one (0.00s)\nok  \tp\t0.1s\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
 		{"the kit's skip line on head", "(skip) one\nRan 1 test across 1 file.\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
 		{"vitest's verbose skip on head", " ↓ a.test.ts > one\n ✓ a.test.ts > two 1ms\n      Tests  1 passed | 1 skipped (2)\n", []newTest{{Name: "one"}}, verdictBroken, map[string]string{"one": verdictUnread}},
@@ -382,6 +386,9 @@ func TestJudgeRunReadsTheHeadRun(t *testing.T) {
 			}
 			got := map[string]string{}
 			for _, row := range rows {
+				if _, isTwice := got[row.Name]; isTwice {
+					t.Errorf("%q has two rows: %+v", row.Name, rows)
+				}
 				got[row.Name] = row.Verdict
 			}
 			for name, want := range c.rows {

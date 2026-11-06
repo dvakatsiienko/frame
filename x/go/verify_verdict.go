@@ -280,7 +280,15 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 	if verdict, why := wholeRunVerdict(read, exitedOK); verdict != "" {
 		return verdict, wholeRunRows(newTests, verdict, why)
 	}
-	const redOnHeadWhy = "it fails on head too, so this source is not what fails it"
+	onHeadRow := func(name string, failed failedTest) testRow {
+		if hookTimedOut.MatchString(failed.output) {
+			return timedOutRow(name)
+		}
+		return testRow{name, verdictRedOnHead, "it fails on head, so this source is not what fails it"}
+	}
+	failedOnBase := func(onHead failedTest) bool {
+		return slices.ContainsFunc(read.failed, func(failed failedTest) bool { return failed.name == onHead.name })
+	}
 	// plain go prints no pass or skip line, so a green head with no line for this test is all it gives
 	notPassedOnHead := func(name string, isIt func(failedTest) bool) (testRow, bool) {
 		switch {
@@ -328,11 +336,7 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 				continue
 			}
 			if onHead >= 0 {
-				if hookTimedOut.MatchString(head.failed[onHead].output) {
-					votes = append(votes, timedOutRow(failed.name))
-				} else {
-					votes = append(votes, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
-				}
+				votes = append(votes, onHeadRow(failed.name, head.failed[onHead]))
 				continue
 			}
 			if not, isNot := notPassedOnHead(failed.name, func(other failedTest) bool { return other.name == failed.name }); isNot && got.Verdict == verdictRed {
@@ -341,28 +345,32 @@ func judgeRun(log string, exitedOK bool, newTests []newTest, head testOutput) (s
 			place(got)
 		}
 		if isExpanded {
+			for _, failed := range head.failed {
+				if namesTest(failed, test) && !failedOnBase(failed) {
+					votes = append(votes, onHeadRow(failed.name, failed))
+				}
+			}
 			rest = append(rest, testRow{test.Name, verdictUnread, "a title with a placeholder: x sees the rows that failed, never the ones that passed"})
 			continue
 		}
-		switch {
-		case onHead < 0:
-			if not, isNot := notPassedOnHead(test.Name, func(other failedTest) bool { return namesTest(other, test) }); isNot && row.Verdict == verdictRed {
-				row = not
-			}
-			place(row)
-		case hookTimedOut.MatchString(head.failed[onHead].output):
-			votes = append(votes, timedOutRow(test.Name))
-		default:
-			votes = append(votes, testRow{test.Name, verdictRedOnHead, redOnHeadWhy})
+		if onHead >= 0 {
+			votes = append(votes, onHeadRow(test.Name, head.failed[onHead]))
+			continue
 		}
+		isIt := func(other failedTest) bool { return namesTest(other, test) }
+		if not, isNot := notPassedOnHead(test.Name, isIt); isNot && (row.Verdict == verdictRed || row.Verdict == verdictStillGreen && slices.ContainsFunc(head.skipped, isIt)) {
+			row = not
+		}
+		place(row)
 	}
 	for i, failed := range read.failed {
-		switch {
-		case claimed[i]:
-		case slices.ContainsFunc(head.failed, func(onHead failedTest) bool { return onHead.name == failed.name }):
-			rest = append(rest, testRow{failed.name, verdictRedOnHead, redOnHeadWhy})
-		default:
+		if !claimed[i] && !slices.ContainsFunc(head.failed, func(onHead failedTest) bool { return onHead.name == failed.name }) {
 			rest = append(rest, judgedOnBase(failed))
+		}
+	}
+	for _, failed := range head.failed {
+		if !slices.ContainsFunc(newTests, func(test newTest) bool { return namesTest(failed, test) }) {
+			rest = append(rest, onHeadRow(failed.name, failed))
 		}
 	}
 	if len(votes) == 0 {

@@ -65,7 +65,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **swap** — a `lane verify-tree --revert` run's named paths holding their merge-base content for the command
 - **claim** — a file in a verify tree's git dir, naming the run that holds the tree from its first step and, during a swap, the swapped files; a live holder refuses the next run, a dead one's swap is restored from it
 - **red** — a test that failed on an assertion on base's source and passed on head; a proof it reads the change
-- **red on head** — a new test that fails on head too, so base's source is not what fails it; the run exits non-zero
+- **red on head** — a test that fails on head, so base's source is not what fails it; a new test exits the run non-zero, an old one has a row and no vote
 - **still green** — a test that passed on the source it should have failed on; it does not read the change
 - **broken** — nothing proved: a compile or load error, 0 tests, a timeout, a new test's throw on base, or a pr adding no test x can read
 - **unread** — what a pr adds that x cannot read as a proof: a computed, placeholder or table title, a name another test holds, a test that skips on head, an added line no named test holds; named, no vote

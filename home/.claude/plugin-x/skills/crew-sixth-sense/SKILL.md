@@ -53,8 +53,8 @@ read prose and ran nothing.
    started once the verdict is sent.
 3. **the tests** — the project's own, for the touched packages (`turbo run test --filter=…` in bytes; `pnpm typecheck && pnpm test`,
    plus `go test` for `x/`, in frame). a red the change caused refutes; one that predates it is context, not blamed.
-   then **test adequacy**: revert the source hunks, keep the new tests; each new test must go red, and one
-   that stays green proves nothing: a finding.
+   then **test adequacy**: in frame, `x lane verify-tree <head> --revert <base> <src paths> -- <test command>`; elsewhere,
+   revert the source hunks, keep the new tests; each new test must go red, and one that stays green proves nothing: a finding.
 4. **every exit line, the failing path too** — drive the given/when, observe the then. a state
    change runs end to end, including the path that must fail.
    - **the break pass**, round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input, a door run on the state its refused command would hit, a config pr's own consumer in dry run; a toolchain or formatter pr also proves pnpm's lockfile rewrite changes 0 lines (`pnpm install --lockfile-only && git diff --stat pnpm-lock.yaml`). a reproduced break of an exit line or the want refutes, any other is a `decision`.
