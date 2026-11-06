@@ -72,7 +72,7 @@ this file says how every member does it. A section headed with roles binds only 
 - the round cap: 3 rounds with a P0 or P1 finding, scope growth resets the count, the stop goes to clio
 - a dispute goes to clio with both sides in one message
 - after `clean`, clio approves the head and merges; the look card reaches dima, never a review request
-- on a quick lane sixth sense's one linear write is its `clean` verdict comment; on a side lane it writes none (`watch-pr.sh --verified`); codie's done comment says «verified clean, round N»
+- sixth sense's posts are `crew-sixth-sense/posting.md`; a side lane records its clean by `watch-pr.sh --verified` too; codie's done comment says «verified clean, round N»
 
 **proof**
 - a worktree: `EnterWorktree` (it seeds itself), or by hand `git worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main`, in frame with the two git-crypt `-c` flags (`x/AGENTS.md` § lane); then `pnpm worktree:seed` in bytes, `x lane seed <path>` in frame <!-- mac -->

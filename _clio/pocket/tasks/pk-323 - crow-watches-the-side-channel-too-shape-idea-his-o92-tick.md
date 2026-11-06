@@ -4,12 +4,13 @@ title: 'crow watches the side channel too: shape-idea, his o92 tick'
 status: open
 assignee: []
 created_date: '2026-11-05T21:07:00Z'
+updated_date: '2026-11-06T12:25:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 37000
 ---
 
 ## Description

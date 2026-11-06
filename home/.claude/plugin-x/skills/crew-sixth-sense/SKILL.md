@@ -161,6 +161,8 @@ are the dna's pr pair.
 dispute to the coordinator too), and the retro filed. a summon note saying «report to me only» does
 not override this file: say so in your first reply and run the loop as written.
 
+**posts**: [posting.md](posting.md), at a break and at the clean.
+
 ## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
@@ -173,8 +175,7 @@ holds, with these swaps:
 - **the head** is that final sha; the worktree checks it out.
 - **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to codie's own
   pre-verification.
-- **the clean** is a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict
-  object with `verified: <sha>`), not `watch-pr.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
+- **the clean** is its `linear` comment with `verified: <sha>`, not `watch-pr.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
 
 ## the next chunk
 

@@ -303,6 +303,68 @@ retro (14:43 on):
 - 2026-11-04 · prompt-groom · 1 · 0 · 1438 + o45 groomed W154-W159, appended PK-319
 - 2026-11-04 · prompt-groom · 1 · 0 · 1449 + o48 + o49 groomed W175-W178, appended PK-319
 - 2026-11-04 · prompt-groom · 1 · 0 · 1514 groomed W179-W183, appended PK-319
+- 2026-11-04 · prompt-groom · 1 · 0 · 7 raws groomed W187-W197 (o61, 1522, 1543, 1551, 1553, 1600, 1603)
+- 2026-11-04 · prompt-groom · 1 · 0 · 1626 groomed W201-W203
+- 2026-11-04 · prompt-groom · 1 · 0 · o72 groomed W204-W211
+- 2026-11-04 · prompt-groom · 1 · 0 · o69 groomed W213-W223
+- 2026-11-04 · prompt-groom · 1 · 0 · 1633 groomed W224-W225
+- 2026-11-05 · prompt-groom · 1 · 0 · 1651 groomed W4-W26 home FRM-507; sentence map in [done]
+- 2026-11-05 · prompt-groom · 1 · 0 · 1655 groomed W27-W28 home FRM-507
+- 2026-11-05 · prompt-groom · 1 · 0 · 1656 groomed W29-W32 home FRM-507
+- 2026-11-05 · prompt-groom · 1 · 0 · 1657 groomed W33-W34 home FRM-507
+- 2026-11-05 · prompt-groom · 1 · 0 · 1700 groomed W35 home FRM-507
+- 2026-11-05 · prompt-groom · 1 · 0 · 1705 groomed W36-W40 home FRM-507
+- 2026-11-05 · prompt-groom · 1 · 0 · 1708 groomed W41-W44 home FRM-507
+- 2026-11-05 · prompt-groom · 1 · 0 · 1734 groomed W45-W66 home FRM-507; pasted chunk list skipped
+- 2026-11-05 · prompt-groom · 1 · 0 · 1743 W67-W86 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · o9 W87 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · o12 W88-W90 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · o13 W91 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1757 W92-W118 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1800 W119 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1801 W120 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1802 W121 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · o14 W122-W123 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1807 no-wish, side-session event only
+- 2026-11-05 · prompt-groom · 1 · 0 · 1813 W124-W138 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1817 W139-W140 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1818 W141 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1819 W142 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 1823 W143 groomed
+- 2026-11-05 · prompt-groom · 1 · 0 · 18:25 groomed W144; no-wish: Ok tail
+- 2026-11-05 · prompt-groom · 1 · 0 · 18:26 groomed W145
+- 2026-11-05 · prompt-groom · 2 · 0 · 18:27 groomed W146-W147
+- 2026-11-05 · prompt-groom · 1 · 0 · 18:30 groomed W148
+- 2026-11-05 · prompt-groom · 2 · 0 · 18:34 groomed W149-W150; 18:35 no-wish line added
+- 2026-11-05 · prompt-groom · 0 · 0 · 18:41 no-wish: sw
+- 2026-11-05 · prompt-groom · 1 · 0 · 18:43 groomed W151-W159 (FRM-507)
+- 2026-11-05 · prompt-groom · 1 · 0 · 18:55 groomed W1-W10 (PK-321)
+- 2026-11-05 · prompt-groom · 1 · 0 · 18:56 groomed W11 (PK-321 home)
+- 2026-11-05 · prompt-groom · 1 · 0 · 19:11 groomed W13 (PK-321 home); 18:50 no-wish line added
+- 2026-11-05 · prompt-groom · 0 · 0 · o34 no-wish: question answered in place
+- 2026-11-05 · prompt-groom · 12 · 0 · 19:56 groomed W1909-W1920 (FRM-505 home)
+- 2026-11-05 · prompt-groom · 1 · 0 · 20:03 groomed: W1921 (FRM-505 approve line), W1984-W1991 (FRM-501)
+- 2026-11-05 · prompt-groom · 1 · 0 · 2025 groom: W1992 under FRM-501
+- 2026-11-05 · prompt-groom · 1 · 0 · 2035 groom: W1922-W1925 under FRM-505
+- 2026-11-05 · prompt-groom · 1 · 0 · 2039 groom: W1926-W1930 under FRM-505
+- 2026-11-05 · prompt-groom · 1 · 0 · o51 groom: W1931-W1935 under PK-320
+- 2026-11-05 · prompt-groom · 1 · 0 · 2054 groom: W1936-W1940 under FRM-505
+- 2026-11-05 · prompt-groom · 1 · 0 · 2213 groom: W3-W5 under FRM-513
+- 2026-11-05 · prompt-groom · 1 · 0 · 2215 groom: W6-W9 under FRM-513
+- 2026-11-05 · prompt-groom · 1 · 0 · side-naming: W10-W12 written to grooms/2026-11-05-side-naming.groomed.md; PK-322 notes appended with dima's raw naming words and ticks
+- 2026-11-05 · prompt-groom · 1 · 0 · 2221 o75 steer: W2001-W2003 under FRM-509 written to grooms/2026-11-05-2221.groomed.md
+- 2026-11-05 · prompt-groom · 1 · 0 · o76 steer: W2004-W2006 under FRM-509 written to grooms/2026-11-05-o76.groomed.md
+- 2026-11-05 · prompt-groom · 1 · 0 · 2255 cancel habit + o85 question: W1-W3 under PK-324 written to grooms/2026-11-05-2255.groomed.md
+- 2026-11-05 · prompt-groom · 1 · 0 · 2319 o90 steer: W1-W2 under FRM-387, W3-W6 under FRM-424 written to grooms/2026-11-05-2319.groomed.md
+- 2026-11-06 · prompt-groom · 1 · 0 · 2358: W1-W4 under new pocket item written to grooms/2026-11-05-2358.groomed.md
+- 2026-11-06 · prompt-groom · 1 · 0 · 0013 shift plan: W1-W7 written to grooms/2026-11-06-0013.groomed.md
+- 2026-11-06 · prompt-groom · W14 · W16 · 01:05 groom: home FRM-513 (--next returned W14, no clio-stated number to cross-check); W14-W16 written
+- 2026-11-06 · prompt-groom · 1 · 0 · PK-326 batch 1343: W8-W26, 2 ❓ lines (W11, W17); every sentence mapped
+- 2026-11-06 · inbox-prep · 1 · 1 · inbox-helga.md: 1 wish W1 (PK-334 home); check red on title ✅ PK-334 prefix, fixed by re-read + quote line; green 2/2
+- 2026-11-06 · pocket-write · 0 · 0 · PK-326 renumber W1-W7 (00:13 block) to W27-W33: blocked, notes append-only; no --notes used; nothing written
+- 2026-11-06 · prompt-groom · 1 · 0 · PK-326 batch 1400: W22-W34, 2 ❓ (W26, W30); clio-quoted segments before ← (no W-line), his words after ←; verbatim cut kept at W31
+- 2026-11-06 · prompt-groom · 1 · 0 · FRM-368 batch 1424: W426-W436, 2 ❓ (W435, W436); pasted_content d2a1 groomed W427-W433 as his words; 14:12 and 14:13 raw files not found, no no-wish lines written
+- 2026-11-06 · pocket-write · 1 · 0 · PK-326 notes: 13:43 (3), 14:00 (13), 14:24 (7) red lines appended verbatim; day check green 14:25
 
 ## rounds
 

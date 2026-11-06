@@ -1,6 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
+    chmodSync,
+    copyFileSync,
     existsSync,
     mkdirSync,
     mkdtempSync,
@@ -8,30 +10,63 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const hook = join(
     import.meta.dirname,
     '../../home/.claude/shelf/hooks/memory-load-rule-lazy.py',
 );
+const rules = join(import.meta.dirname, '../../home/.claude/rules-lazy');
+const scripts = join(import.meta.dirname, '..');
 const ruleHead = '# linear flow';
 
-function session() {
+function session(hookPath = hook) {
     const dir = mkdtempSync(join(tmpdir(), 'memory-load-'));
     const id = randomUUID();
     const log = join(dir, 'log.tsv');
 
-    function run(event: Record<string, unknown>) {
-        const result = spawnSync('python3', [hook], {
+    function spawnHook(event: Record<string, unknown>) {
+        return spawnSync('python3', [hookPath], {
             encoding: 'utf8',
-            env: { ...process.env, MEMORY_LOAD_LOG: log },
+            env: { ...process.env, MEMORY_LOAD_LOG: log, TMPDIR: dir },
             input: JSON.stringify({ cwd: '/work', session_id: id, ...event }),
         });
+    }
+
+    function run(event: Record<string, unknown>) {
+        const result = spawnHook(event);
         const out: HookOutput = result.stdout
             ? JSON.parse(result.stdout).hookSpecificOutput
             : {};
         return out;
+    }
+
+    function transcript(entries: unknown[], name = 'session.jsonl') {
+        const path = join(dir, name);
+        mkdirSync(dirname(path), { recursive: true });
+        writeFileSync(
+            path,
+            entries
+                .map((line) =>
+                    typeof line === 'string' ? line : JSON.stringify(line),
+                )
+                .join('\n'),
+        );
+        return path;
+    }
+
+    function tool(
+        tool_name: string,
+        tool_input: Record<string, unknown>,
+        extra: Record<string, unknown> = {},
+    ) {
+        return run({
+            hook_event_name: 'PreToolUse',
+            tool_input,
+            tool_name,
+            ...extra,
+        });
     }
 
     return {
@@ -44,6 +79,12 @@ function session() {
         compact: () =>
             run({ hook_event_name: 'SessionStart', source: 'compact' }),
         dir,
+        edit: (file_path: string, extra: Record<string, unknown> = {}) =>
+            tool(
+                'Edit',
+                { file_path, new_string: 'b', old_string: 'a' },
+                extra,
+            ),
         id,
         logLines: () =>
             existsSync(log)
@@ -55,29 +96,21 @@ function session() {
         prompt: (prompt: string) =>
             run({ hook_event_name: 'UserPromptSubmit', prompt }),
         run,
-        stop: (content: object[], lastMessage?: string) => {
-            const transcript = join(dir, 'session.jsonl');
-            writeFileSync(
-                transcript,
-                [
-                    { message: { content: 'ask', role: 'user' }, type: 'user' },
-                    {
-                        message: {
-                            content,
-                            role: 'assistant',
-                        },
-                        type: 'assistant',
-                    },
-                ]
-                    .map((line) => JSON.stringify(line))
-                    .join('\n'),
-            );
-            return run({
+        spawnHook,
+        stop: (content: object[], lastMessage?: string) =>
+            run({
                 hook_event_name: 'Stop',
                 last_assistant_message: lastMessage,
-                transcript_path: transcript,
-            });
-        },
+                transcript_path: transcript([
+                    { message: { content: 'ask', role: 'user' }, type: 'user' },
+                    {
+                        message: { content, role: 'assistant' },
+                        type: 'assistant',
+                    },
+                ]),
+            }),
+        tool,
+        transcript,
     };
 }
 
@@ -173,7 +206,7 @@ describe('memory-load-rule-lazy', () => {
 
     it('clears the path loader marks on a compaction', () => {
         const s = session();
-        const marks = join(tmpdir(), 'cc-memory-load-agents-md');
+        const marks = join(s.dir, 'cc-memory-load-agents-md');
         mkdirSync(marks, { recursive: true });
         writeFileSync(join(marks, s.id), '/repo/AGENTS.md\n');
         s.compact();
@@ -230,8 +263,513 @@ describe('memory-load-rule-lazy', () => {
     });
 });
 
+describe('guide-load-before-edit', () => {
+    const typescript = 'x:guide-typescript';
+
+    it('refuses the first .ts edit once, naming the guide', () => {
+        const out = session().edit('/w/a.ts');
+        expect(out.permissionDecision).toBe('deny');
+        expect(out.permissionDecisionReason).toContain(typescript);
+    });
+
+    it('passes the identical retry and a second .ts edit', () => {
+        const s = session();
+        s.edit('/w/a.ts');
+        expect(s.edit('/w/a.ts')).toEqual({});
+        expect(s.edit('/w/b.ts')).toEqual({});
+    });
+
+    it.each([
+        [
+            'a Bash command',
+            'Bash',
+            { command: 'node a.ts b.tsx c.go d.py e.sh' },
+        ],
+        [
+            'a Bash command with a .sh path',
+            'Bash',
+            { command: './script/run.sh' },
+        ],
+        [
+            'a Write content',
+            'Write',
+            { content: 'see a.ts', file_path: '/w/a.md' },
+        ],
+        [
+            'an Edit new_string',
+            'Edit',
+            { file_path: '/w/a.md', new_string: 'b.go', old_string: 'x' },
+        ],
+        [
+            'an Edit old_string',
+            'Edit',
+            { file_path: '/w/a.md', new_string: 'x', old_string: 'b.py' },
+        ],
+        [
+            'MultiEdit edits',
+            'MultiEdit',
+            { edits: [{ new_string: 'c.tsx' }], file_path: '/w/a.md' },
+        ],
+        ['a file with no extension', 'Edit', { file_path: '/w/Makefile' }],
+        ['a dotted dir name', 'Edit', { file_path: '/w/pkg.ts/README' }],
+        ['a longer extension', 'Edit', { file_path: '/w/a.ts.md' }],
+    ])('fires no guide row on %s', (_name, tool, input) => {
+        expect(session().tool(tool, input)).toEqual({});
+    });
+
+    it.each([
+        ['.go', '/w/a.go', 'x:guide-go'],
+        ['.py', '/w/a.py', 'x:guide-code'],
+        ['.sh', '/w/a.sh', 'x:guide-code'],
+    ])('refuses the first %s edit naming its guide', (_ext, path, guide) => {
+        expect(session().edit(path).permissionDecisionReason).toContain(guide);
+    });
+
+    it('fires a Write to a new .ts file', () => {
+        const out = session().tool('Write', {
+            content: '',
+            file_path: '/w/a.ts',
+        });
+        expect(out.permissionDecision).toBe('deny');
+    });
+
+    it('fires each guide once across a .ts then a .go edit', () => {
+        const s = session();
+        expect(s.edit('/w/a.ts').permissionDecision).toBe('deny');
+        expect(s.edit('/w/a.go').permissionDecision).toBe('deny');
+        expect(s.edit('/w/b.ts')).toEqual({});
+        expect(s.edit('/w/b.go')).toEqual({});
+    });
+
+    it('refuses a .tsx edit once, naming typescript and react', () => {
+        const s = session();
+        const reason = s.edit('/w/a.tsx').permissionDecisionReason;
+        expect(reason).toContain(typescript);
+        expect(reason).toContain('x:guide-react');
+        expect(s.edit('/w/a.tsx')).toEqual({});
+    });
+
+    describe('the skip', () => {
+        const edit = (s: ReturnType<typeof session>, entries: unknown[]) =>
+            s.edit('/w/a.ts', { transcript_path: s.transcript(entries) });
+
+        it('passes after a real Skill call', () => {
+            const s = session();
+            expect(edit(s, [skillCall(typescript)])).toEqual({});
+        });
+
+        it('passes a Skill call past the last boundary', () => {
+            const s = session();
+            expect(edit(s, [boundary, skillCall(typescript)])).toEqual({});
+        });
+
+        it('passes through a garbled line and a non-object line', () => {
+            const s = session();
+            expect(
+                edit(s, ['{broken "Skill"', '"Skill"', skillCall(typescript)]),
+            ).toEqual({});
+        });
+
+        it('passes when a tool result only quotes a boundary', () => {
+            const s = session();
+            expect(
+                edit(s, [
+                    skillCall(typescript),
+                    {
+                        message: {
+                            content: 'subtype compact_boundary "Skill"',
+                        },
+                        subtype: 'compact_boundary',
+                        type: 'user',
+                    },
+                ]),
+            ).toEqual({});
+        });
+
+        it.each([
+            [
+                'text naming the guide',
+                [
+                    {
+                        message: {
+                            content: [reply(`load ${typescript} "Skill"`)],
+                            role: 'assistant',
+                        },
+                        type: 'assistant',
+                    },
+                ],
+            ],
+            ['a call before the boundary', [skillCall(typescript), boundary]],
+            ['another guide', [skillCall('x:guide-go')]],
+            ['a longer name', [skillCall(`${typescript}-old`)]],
+            ['a bare name', [skillCall('guide-typescript')]],
+            [
+                'a non-Skill tool',
+                [toolCall('Read', { Skill: true, skill: typescript })],
+            ],
+            [
+                'a user entry shaped like the call',
+                [{ ...skillCall(typescript), type: 'user' }],
+            ],
+        ])('fires given only %s', (_name, entries) => {
+            const s = session();
+            expect(edit(s, entries).permissionDecision).toBe('deny');
+        });
+
+        it('fires for a subagent whose parent loaded the guide', () => {
+            const s = session();
+            const out = s.edit('/w/a.ts', {
+                agent_id: 'sub',
+                transcript_path: s.transcript([skillCall(typescript)]),
+            });
+            expect(out.permissionDecision).toBe('deny');
+        });
+
+        it('passes a subagent that loaded the guide itself', () => {
+            const s = session();
+            s.transcript(
+                [skillCall(typescript)],
+                'session/subagents/agent-sub.jsonl',
+            );
+            const out = s.edit('/w/a.ts', {
+                agent_id: 'sub',
+                transcript_path: join(s.dir, 'session.jsonl'),
+            });
+            expect(out).toEqual({});
+        });
+
+        it('fires on a transcript the hook cannot read', () => {
+            const s = session();
+            const out = s.edit('/w/a.ts', { transcript_path: s.dir });
+            expect(out.permissionDecision).toBe('deny');
+        });
+
+        it('fires with no transcript_path at all', () => {
+            expect(session().edit('/w/a.ts').permissionDecision).toBe('deny');
+        });
+
+        it('names only the guide still missing on a .tsx edit', () => {
+            const s = session();
+            const reason = s.edit('/w/a.tsx', {
+                transcript_path: s.transcript([skillCall(typescript)]),
+            }).permissionDecisionReason;
+            expect(reason).toContain('x:guide-react');
+            expect(reason).not.toContain('guide-load-before-edit-typescript');
+        });
+    });
+});
+
+describe('shelf and model-cards rows', () => {
+    const edits = (text: string) =>
+        [
+            [
+                'Edit',
+                { file_path: '/w/a.md', new_string: text, old_string: 'x' },
+            ],
+            ['Write', { content: text, file_path: '/w/a.md' }],
+            [
+                'MultiEdit',
+                { edits: [{ new_string: text }], file_path: '/w/a.md' },
+            ],
+        ] as const;
+
+    it.each(edits('import "charm.land/lipgloss/v2"'))(
+        'shelf-load-go-charm fires on charm.land in a %s',
+        (tool, input) => {
+            const reason = session().tool(tool, input).permissionDecisionReason;
+            expect(reason).toContain('x knowledge read go-charm');
+        },
+    );
+
+    it.each([
+        'go get charm.land/bubbletea/v2',
+        'cd x && go get -u charm.land/lipgloss/v2',
+        'go mod init example.com/a',
+    ])('shelf-load-go-charm fires on `%s`', (command) => {
+        const reason = session().tool('Bash', {
+            command,
+        }).permissionDecisionReason;
+        expect(reason).toContain('x knowledge read go-charm');
+    });
+
+    it.each([
+        ['Bash', { command: 'rg charm.land' }],
+        ['Bash', { command: 'go get golang.org/x/net; rg charm.land' }],
+        ['Bash', { command: 'git commit -m "go mod init"' }],
+        ['Edit', { file_path: '/w/charm.land/a.md', new_string: 'x' }],
+        [
+            'Edit',
+            { file_path: '/w/a.md', new_string: 'x', old_string: 'charm.land' },
+        ],
+    ])('shelf-load-go-charm stays out of %s %j', (tool, input) => {
+        expect(session().tool(tool, input)).toEqual({});
+    });
+
+    it.each([
+        'brew install --cask iterm2',
+        'brew uninstall --zap --cask iterm2',
+        'cd /tmp && mo uninstall Foo',
+    ])('shelf-load-macos-apps fires on `%s`', (command) => {
+        const reason = session().tool('Bash', {
+            command,
+        }).permissionDecisionReason;
+        expect(reason).toContain('x knowledge read macos-apps');
+    });
+
+    it.each([
+        'brew install ripgrep',
+        'brew list; echo --cask',
+        'brew list --cask',
+        'brew info --cask iterm2',
+        'mo status',
+        'grep "mo uninstall" a.md',
+    ])('shelf-load-macos-apps stays out of `%s`', (command) => {
+        expect(session().tool('Bash', { command })).toEqual({});
+    });
+
+    it.each([
+        'how much does a 1m cache write cost',
+        'How many tokens does this boot eat?',
+        'what is the prompt cache ttl',
+        'is opus pricing higher than sonnet?',
+    ])('model-cards-load-on-cost-question loads on «%s»', (prompt) => {
+        expect(session().prompt(prompt).additionalContext).toContain(
+            'model-cards.md',
+        );
+    });
+
+    it.each([
+        'fix the cost column in the table',
+        'the cache is stale, clear it',
+        'rotate the github token',
+        'held the same way: who asked for it, what it costs.',
+        'const tokens = usage?.context.breakdown;',
+        'the size of that cost is my inference «?»',
+    ])('model-cards-load-on-cost-question stays out of «%s»', (prompt) => {
+        expect(session().prompt(prompt)).toEqual({});
+    });
+});
+
+describe('fails open', () => {
+    function hookWithOnlyLinearFlow() {
+        const root = mkdtempSync(join(tmpdir(), 'memory-load-copy-'));
+        const hooks = join(root, 'shelf/hooks');
+        const lazy = join(root, 'rules-lazy');
+        mkdirSync(hooks, { recursive: true });
+        mkdirSync(lazy);
+        const copy = join(hooks, 'memory-load-rule-lazy.py');
+        copyFileSync(hook, copy);
+        copyFileSync(
+            join(rules, 'linear-flow.md'),
+            join(lazy, 'linear-flow.md'),
+        );
+        const row = JSON.parse(
+            readFileSync(join(rules, 'triggers.json'), 'utf8'),
+        );
+        writeFileSync(
+            join(lazy, 'triggers.json'),
+            JSON.stringify({ 'linear-flow': row['linear-flow'] }),
+        );
+        return copy;
+    }
+
+    const everyEvent = [
+        { cwd: '/w/_clio', hook_event_name: 'SessionStart', source: 'startup' },
+        { hook_event_name: 'UserPromptSubmit', prompt: 'look at FRM-12' },
+        { hook_event_name: 'SessionStart', source: 'compact' },
+        {
+            hook_event_name: 'PreToolUse',
+            tool_input: { command: 'go mod init a' },
+            tool_name: 'Bash',
+        },
+        {
+            hook_event_name: 'PreToolUse',
+            tool_input: { edits: 'not a list', file_path: 7 },
+            tool_name: 'MultiEdit',
+        },
+        { hook_event_name: 'PreToolUse', tool_input: {}, tool_name: 'Edit' },
+        { hook_event_name: 'Stop', last_assistant_message: 'FRM-12' },
+    ];
+
+    it('a row with no new key loads linear-flow and exits clean', () => {
+        const s = session(hookWithOnlyLinearFlow());
+        const result = s.spawnHook({
+            hook_event_name: 'UserPromptSubmit',
+            prompt: 'look at FRM-12',
+        });
+        expect(result.stdout).toContain(ruleHead);
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+    });
+
+    it('a row with no new key ignores a .ts edit', () => {
+        expect(session(hookWithOnlyLinearFlow()).edit('/w/a.ts')).toEqual({});
+    });
+
+    it.each(everyEvent)('no row throws on %j', (event) => {
+        const result = session().spawnHook(event);
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+    });
+
+    it('refuses nothing and exits 0 with a read-only state dir', () => {
+        const s = session();
+        const state = join(s.dir, 'cc-memory-load-rule-lazy');
+        mkdirSync(state);
+        chmodSync(state, 0o555);
+        const event = {
+            hook_event_name: 'PreToolUse',
+            tool_input: { file_path: '/w/a.ts' },
+            tool_name: 'Edit',
+        };
+        const result = s.spawnHook(event);
+        chmodSync(state, 0o755);
+        expect(result.stdout).toBe('');
+        expect(result.status).toBe(0);
+    });
+
+    it('refuses nothing and does not repeat when the log cannot be written', () => {
+        const s = session();
+        writeFileSync(join(s.dir, 'log.tsv'), '');
+        chmodSync(join(s.dir, 'log.tsv'), 0o444);
+        expect(s.edit('/w/a.ts')).toEqual({});
+        expect(s.edit('/w/a.ts')).toEqual({});
+    });
+});
+
+describe('memory-load-replay', () => {
+    function replay(entries: unknown[]) {
+        const home = mkdtempSync(join(tmpdir(), 'memory-load-home-'));
+        const dir = join(home, '.claude/projects/p');
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(
+            join(dir, 's.jsonl'),
+            entries.map((line) => JSON.stringify(line)).join('\n'),
+        );
+        return spawnSync(
+            'python3',
+            [join(scripts, 'memory-load-replay.py'), '--days', '1'],
+            {
+                encoding: 'utf8',
+                env: { ...process.env, HOME: home },
+            },
+        ).stdout;
+    }
+
+    it('prints a row fire with its tool and hit', () => {
+        const out = replay([toolCall('Edit', { file_path: '/w/a.ts' })]);
+        expect(out).toContain('guide-load-before-edit-typescript: 1 fires');
+        expect(out).toContain('1× Edit: .ts');
+    });
+
+    it('prints a row with no fires', () => {
+        const out = replay([toolCall('Edit', { file_path: '/w/a.md' })]);
+        expect(out).toContain('shelf-load-macos-apps: 0 fires');
+    });
+
+    it('counts a fire once per transcript', () => {
+        const edit = toolCall('Edit', { file_path: '/w/a.ts' });
+        expect(replay([edit, edit])).toContain(
+            'guide-load-before-edit-typescript: 1 fires',
+        );
+    });
+
+    it('skips a guide loaded before the edit', () => {
+        const out = replay([
+            skillCall('x:guide-typescript'),
+            toolCall('Edit', { file_path: '/w/a.ts' }),
+        ]);
+        expect(out).toContain('guide-load-before-edit-typescript: 0 fires');
+    });
+
+    it('fires again past a boundary that dropped an unmarked guide', () => {
+        const out = replay([
+            skillCall('x:guide-typescript'),
+            boundary,
+            toolCall('Edit', { file_path: '/w/a.ts' }),
+        ]);
+        expect(out).toContain('guide-load-before-edit-typescript: 1 fires');
+    });
+});
+
+describe('memory-load-guide-share', () => {
+    function share(entries: unknown[]) {
+        const dir = mkdtempSync(join(tmpdir(), 'memory-load-share-'));
+        const path = join(dir, 's.jsonl');
+        writeFileSync(
+            path,
+            entries.map((line) => JSON.stringify(line)).join('\n'),
+        );
+        return spawnSync(
+            'python3',
+            [join(scripts, 'memory-load-guide-share.py'), '--transcript', path],
+            { encoding: 'utf8' },
+        ).stdout;
+    }
+    const edit = (id: string) => toolCall('Edit', { file_path: '/w/a.ts' }, id);
+    const refused = (id: string) => ({
+        message: {
+            content: [
+                {
+                    content: 'PreToolUse:Edit hook error: refused once',
+                    is_error: true,
+                    tool_use_id: id,
+                    type: 'tool_result',
+                },
+            ],
+            role: 'user',
+        },
+        type: 'user',
+    });
+
+    it('counts the guide as first across refuse, load, retry', () => {
+        expect(
+            share([
+                edit('t1'),
+                refused('t1'),
+                skillCall('x:guide-typescript'),
+                edit('t2'),
+            ]),
+        ).toContain('x:guide-typescript before the first ts edit: 1/1');
+    });
+
+    it('counts a retry with no load as a miss', () => {
+        expect(share([edit('t1'), refused('t1'), edit('t2')])).toContain(
+            'x:guide-typescript before the first ts edit: 0/1',
+        );
+    });
+
+    it('counts a plain edit with no load as a miss', () => {
+        expect(share([edit('t1')])).toContain(
+            'x:guide-typescript before the first ts edit: 0/1',
+        );
+    });
+
+    it('counts no session when every edit was refused', () => {
+        expect(share([edit('t1'), refused('t1')])).toContain(
+            'x:guide-typescript before the first ts edit: 0/0',
+        );
+    });
+});
+
+const boundary = { subtype: 'compact_boundary', type: 'system' };
+
 function reply(text: string) {
     return { text, type: 'text' };
+}
+
+function toolCall(name: string, input: object, id = 'toolu_1') {
+    return {
+        message: {
+            content: [{ id, input, name, type: 'tool_use' }],
+            role: 'assistant',
+        },
+        type: 'assistant',
+    };
+}
+
+function skillCall(skill: string) {
+    return toolCall('Skill', { skill });
 }
 
 /* Types */

@@ -39,16 +39,19 @@ start)
 			printf '%s %s\n' "$session" "$(date '+%F %H:%M')" >>"$state/forks.log"
 		cat <<'EOF'
 🍴 you are clio's side channel, not the main: a fork of her thread or a fresh session she started. you unload her thread: dima's side questions, research, fixes, with her memory and skills (FRM-464):
-- you are disconnected from her flows: helga, the lanes and the watches never see you; arm nothing (no Monitor, no watch, no boot), never push past your own landing, never message a lane member or helga
+- you are disconnected from her flows: her lanes and watches never see you; arm nothing (no Monitor, no watch, no boot), never push past your own landing, never message a member of her lanes
+- helga takes your chores, a trial with main sharing her (`docs/test-drive/helga.md`), by SendMessage as `x:crew-helga` names them
+- a lane starts from here only on dima's own words for a chore of yours: `clio:shape-lane-dispatch`, you its coordinator; it has no glide card and no quiet gate here, so its member's notes wake you
 - crow takes your consults, she does not read this thread: a call you'd decide alone goes to her by SendMessage under the name ListAgents prints, one question; a plan goes through `pnpm crow:plan-critique <file>`, run in the background
 - linear is yours through `clio:pm` for asks born here; the pocket too, every item born with `node script/pocket-add.ts … --side`, which the main's next boot takes over
-- a change dima asks for runs in your own worktree: EnterWorktree with name «fork-<your session id's first 8>», edit and `x lane commit` there; an edit in a main checkout is refused; leave it with ExitWorktree «keep» (the seed's ignored files read as uncommitted), the halt catches a branch left unlanded
-- you land your own branch at each finished piece, no message to clio: commit, ExitWorktree «keep», `git -C <your tree> merge --no-edit main`, `git merge --ff-only refs/heads/<your branch>` (a fast-forward passes a peer's staged files, a true merge there refuses), `x lane push --apply`, `x plugin bump --apply <plugin>` when a plugin's files changed, EnterWorktree with your tree's path; a conflict or a refusal: stop, `[ask]` clio
+- a change dima asks for runs in your own worktree, while the session stands in `~/frame/_clio`: never EnterWorktree, which hides the `clio:*` skills and refuses complex shell. the tree: `git -C ~/frame worktree add -b worktree-fork-<session id's first 8> ~/frame/.claude/worktrees/fork-<same> main`, then `x lane seed <tree>`; edit by absolute path; commit in two calls, `cd <tree>`, then `x lane commit`; an edit in a main checkout is refused; the halt catches a branch left unlanded
+- you land your own branch at each finished piece, no message to clio: commit, `cd ~/frame`, `git -C <your tree> merge --no-edit main`, `git merge --ff-only refs/heads/<your branch>` (a fast-forward passes a peer's staged files, a true merge there refuses), `x lane push --apply`, `x plugin bump --apply <plugin>` when a plugin's files changed, `cd ~/frame/_clio`
+  - a known hiccup: a file main has staged blocks the fast-forward. `[ask]` clio to commit hers, since it is her work, then land with no further ask; any other conflict or refusal: stop, `[ask]` clio
 - a ticket you work carries the `side` label, on at your first write, off when you hand it back or close it
-- your siesta runs both cards, wishkeeper and wisphunter; a card inherits your shell's directory, so spawn it only while the shell stands in your worktree, or cc refuses its Bash
+- you keep the siesta habit by `clio:siesta`, its due stamp main's: run its steps at each finished batch with both cards, wishkeeper and wisphunter, a brief's paths absolute
 - the end: when dima says the work is done, send «🦉 clio» one SendMessage, then stop; dima archives you from the sidebar. your prompts reach no prompt log, so it opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with its home (the ticket or pocket id you wrote, or «main's call»), then every external write
 - every file you hand over (a long closing report, a file the main or a member asks for) lives in your worktree's `.scratch/`, its full path in the message; a path the main names in its own checkout gets the worktree copy, and the message says so
-- your first reply says you are the side channel; before it, if your session title lacks «(side», rename yourself (set_session_title «self», «🦉 clio (side)»): a copy carrying the main's exact name gets the main's messages and helga's trust
+- your first reply says you are the side channel; before it, if your session title lacks «(side», rename yourself (set_session_title «self», «🦉 clio (side)»): a copy carrying the main's exact name gets the main's messages
 - 🗨️ a reader with read-only tools is a /btw side chat, not this fork: answer only, and end with a «copy → clio» fence for dima to paste if it is worth keeping
 EOF
 	fi
@@ -116,7 +119,7 @@ fork-edit | fork-bash)
 		[ -n "$hit" ] || exit 0
 	fi
 	sid=$(jq -r '.session_id // ""' <<<"$input" | cut -c1-8)
-	jq -n --arg why "a fork edits only inside its own worktree: call EnterWorktree with name «fork-${sid}» first, then edit and commit there (x lane commit), and land its branch worktree-fork-$sid yourself: the banner's landing line" \
+	jq -n --arg why "a fork edits only inside its own worktree: make the tree «fork-${sid}» by the banner's line, edit it by absolute path, commit there (x lane commit), and land its branch worktree-fork-$sid yourself: the banner's landing line" \
 		'{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $why}}'
 	;;
 main-only)

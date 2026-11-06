@@ -1,6 +1,6 @@
 ---
-status: parked
-until: 7 days from the build landing
+status: dropped
+until: 2026-11-05
 ---
 
 Ticket: none · pocket PK-79 · spec `~/frame/.scratch/primer/spec.md`
@@ -32,4 +32,7 @@ read: `jq '[to_entries[] | select(.key|startswith("primer-log:")) | .value[]] | 
 
 ## rounds
 
-(none yet)
+(none: the mod was never built)
+
+## verdict
+- 2026-11-05 · **dropped**, dima's tick: one chunk of rows on the lazy-rule hook does this job at less cost, [FRM-514](https://linear.app/x-com/issue/FRM-514). the mod comes back only if the rows miss and the misses cost something.
