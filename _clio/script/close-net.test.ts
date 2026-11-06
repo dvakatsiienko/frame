@@ -18,8 +18,13 @@ type Lane = {
 };
 
 // a stub `x` on PATH: the list and the read answer from the given tickets; none means linear is down.
-// HOME is a fixture dir holding the given glide lanes.
-function run(tickets?: Ticket[], lanes: Lane[] = [], plan = '') {
+// HOME is a fixture dir holding the given glide lanes. A call whose args hold `failOn` exits 1.
+function run(
+    tickets?: Ticket[],
+    lanes: Lane[] = [],
+    failOn?: string,
+    plan = '',
+) {
     const dir = mkdtempSync(join(tmpdir(), 'close-net-'));
     const home = join(dir, 'home');
     mkdirSync(join(home, '.claude/shelf'), { recursive: true });
@@ -33,7 +38,7 @@ function run(tickets?: Ticket[], lanes: Lane[] = [], plan = '') {
     writeFileSync(
         join(dir, 'x'),
         tickets
-            ? `#!/bin/sh\ncat <<'EOF'\n${body}\nEOF\n`
+            ? `#!/bin/sh\n${failOn ? `case "$*" in *${failOn}*) exit 1;; esac\n` : ''}cat <<'EOF'\n${body}\nEOF\n`
             : '#!/bin/sh\nexit 1\n',
     );
     chmodSync(join(dir, 'x'), 0o755);
@@ -132,6 +137,7 @@ describe('close-net', () => {
             const out = run(
                 todo,
                 [],
+                undefined,
                 '- [x] 01 · FRM-1 a\n- [ ] 02 · FRM-1 b\n',
             );
             expect(out.status).toBe(1);
@@ -145,7 +151,7 @@ describe('close-net', () => {
             ['an unticked plan', '- [ ] 01 · FRM-1 a\n'],
             ['no plan line', ''],
         ])('passes on %s', (_label, plan) => {
-            expect(run(todo, [], plan).status).toBe(0);
+            expect(run(todo, [], undefined, plan).status).toBe(0);
         });
 
         test('passes while a live lane holds it', () => {
@@ -157,6 +163,7 @@ describe('close-net', () => {
                         members: { codie: 'x' },
                     },
                 ],
+                undefined,
                 '- [x] 01 · FRM-1 a\n',
             );
             expect(out.stdout).not.toContain('🔴 FRM-1: built');
@@ -171,6 +178,7 @@ describe('close-net', () => {
                     } as Ticket,
                 ],
                 [],
+                undefined,
                 '- [x] 01 · FRM-1 a\n',
             );
             expect(out.status).toBe(0);
@@ -268,5 +276,25 @@ describe('close-net', () => {
         const out = run();
         expect(out.status).toBe(1);
         expect(out.stdout).toContain('unreachable');
+    });
+
+    test('an In Progress read that fails is a red', () => {
+        const out = run([{ id: 'FRM-1' }], [], 'read');
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('In Progress tickets unread');
+    });
+
+    test('a Todo list that fails is a red', () => {
+        const out = run([], [], 'Todo');
+        expect(out.status).toBe(1);
+        expect(out.stdout).toContain('Todo tickets unread');
+    });
+
+    test('a Todo ticket never moved back, with no door, is skipped by name', () => {
+        const out = run([{ id: 'FRM-1', labels: ['needs human'] }]);
+        expect(out.status).toBe(0);
+        expect(out.stdout).toContain(
+            '⏭️ 1 Todo never moved back, skipped: FRM-1',
+        );
     });
 });

@@ -53,5 +53,6 @@ Ticket: none
 - 2026-11-06 · the flush and the CST, a checkpoint read · wishkeeper 4 min, 110k tokens, 13 findings: 1 high real (two items missing from the side channel's list), 4 medium fixed · the card closes on that read: the only edit after it is its own finding, a split line
 - 2026-11-06 · the boot batch, a siesta read · wishkeeper 13 min, 210k tokens, 20 findings: 1 high real (his no-verifier line on neither ticket the lane closes against)
 - 2026-11-06 · the cli groom right after a second wind, and frame#129 at c77e049a · wishkeeper 19 min, 294k tokens, 27 findings: 5 high real (`-count=1` lost from a re-sign, FRM-511's close half unlanded, a silent quick-lane path, a false «doesn't hold you», the pocket's commit refused 102 min) · no code break in the pr, it shaped the merge ask
+- 2026-11-06 · FRM-501 round 3 on main, no sixth sense, and the batch since 20:59 · wishkeeper 13 min, 188k tokens, 20 findings: 3 high real (a tick resolved with its write undone, his o87 with no home, the checks he asked for never shown him), 2 quiet comms gaps for the close · all three were lost hand-offs from main to a wing
 
 ## verdict
