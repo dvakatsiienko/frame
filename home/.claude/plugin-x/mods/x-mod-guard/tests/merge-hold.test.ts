@@ -232,6 +232,7 @@ for (const line of [
     `jq . ${RECORD}`,
     `ls ${HOLD_DIR}`,
     'find ~/.local/state/x/lanes -name a',
+    `f=$(rg -l FRM-411 ~/.local/state/x -g '*.md'); cut -c1-9 "$f"`,
     'cd ~/.local/state/x/merge-hold && ls',
     'x lane merge-auto 7 --hold --apply',
     'rg merge-hold home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/merge-hold.ts',

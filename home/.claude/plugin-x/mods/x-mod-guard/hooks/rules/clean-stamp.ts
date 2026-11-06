@@ -1,10 +1,22 @@
 import { type Command, type Refusal, commandsDeep } from './command.ts';
 
-// the shelf dir itself counts: `cp a/pr-verified.json ~/.claude/shelf/` lands on the store with no word for it
-const isStore = (text: string) =>
-    /(^|[/'"]|of=)pr-verified\b|(\.claude|cc)\/shelf\/?$/i.test(text);
+const isStore = (text: string) => /(^|[/'"]|of=)pr-verified\b/i.test(text);
+// `cp a/pr-verified.json ~/.claude/shelf/` lands on the store with no word for it
+const isStoreDir = (text: string) => /(\.claude|cc)\/shelf\/?$/i.test(text);
 const isWatchPr = (text: string) => /(^|\/)watch-pr\.sh$/.test(text);
 const RUNNERS = new Set(['bash', 'dash', 'ksh', 'sh', 'zsh', 'source', '.']);
+// these move or remove what they name, so naming a store's parent dir is touching the store
+const CARRIERS = new Set([
+    'cp',
+    'ditto',
+    'install',
+    'ln',
+    'mv',
+    'rm',
+    'rmdir',
+    'rsync',
+    'trash',
+]);
 const READERS = new Set([
     '[',
     'basename',
@@ -66,11 +78,21 @@ function onlyReads(c: Command, named: (text: string) => boolean) {
     return READERS.has(c.name);
 }
 
+// a copy out of the dir leaves the store alone, so cp counts only with the dir as its target
+function carriesDir(c: Command, namedDir: (text: string) => boolean) {
+    if (c.name === 'cp')
+        return namedDir(operandsOf(c.args.map((w) => w.text)).at(-1) ?? '');
+    return c.args.some(
+        (w) => namedDir(w.text) || namedDir(`${c.dir}/${w.text}`),
+    );
+}
+
 // writers are too many to list, and each one missed is a hole: past the few commands that only read, naming a store is touching it
 export function touchesStore(
     command: string,
     cwd: string,
     named: (text: string) => boolean,
+    namedDir: (text: string) => boolean,
 ) {
     const parsed = commandsDeep(command, cwd);
     const runsOpaque = (c: Command) =>
@@ -84,6 +106,7 @@ export function touchesStore(
                     !READERS.has(c.name))) ||
             (c.args.some((w) => named(w.text) || named(`${c.dir}/${w.text}`)) &&
                 !onlyReads(c, named)) ||
+            (CARRIERS.has(c.name) && carriesDir(c, namedDir)) ||
             // `trash "$(realpath <store>)"`: the name reaches the word through a substitution
             (c.args.some((w) => w.isExpanding) &&
                 c.feeders.some((f) => f.args.some((w) => named(w.text))) &&
@@ -107,7 +130,7 @@ export function cleanStampWrite(
             words.some((w) => w === '--verified' || w.startsWith('--verified='))
         );
     });
-    const isWrite = touchesStore(command, cwd, isStore);
+    const isWrite = touchesStore(command, cwd, isStore, isStoreDir);
     if (!isStamp && !isWrite) return undefined;
     return {
         door: "sixth sense's clean, or the coordinator's stamp, through watch-pr.sh --verified in that session; ask the lane's sixth sense or clio; a read goes through cat or jq",

@@ -147,18 +147,17 @@ export function mergeHold(
     return undefined;
 }
 
-// the state dir itself counts, since a move or a trash of it takes the record along
 const isHoldRecord = (text: string) =>
-    /\.local\/state\/x(\/merge-hold|\/?$)|\$\{?\w+\}?\/merge-hold\//i.test(
-        text,
-    );
+    /\.local\/state\/x\/merge-hold|\$\{?\w+\}?\/merge-hold\//i.test(text);
+const isHoldRecordDir = (text: string) => /\.local\/state\/x\/?$/i.test(text);
 
 // x is the record's one writer: a hand edit would drop a hold with no word
 export function holdRecordWrite(
     command: string,
     cwd: string,
 ): Refusal | undefined {
-    if (!touchesStore(command, cwd, isHoldRecord)) return undefined;
+    if (!touchesStore(command, cwd, isHoldRecord, isHoldRecordDir))
+        return undefined;
     return {
         door: "x lane merge-auto <pr> --hold --apply, and x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply on dima's word; a read goes through cat or jq",
         rule: 'merge-hold',
