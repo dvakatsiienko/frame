@@ -2,9 +2,9 @@
 
 the home of game side chores: what vm tuning, traces and route tests found. every door into the games (trophy-sys, game pages, the steamac vm) is the `x:firelink` skill, `home/.claude/plugin-x/skills/firelink/`.
 
-📌 the steamac vm starts only through the skill's `scripts/steamac-play.sh`: the app alone skips the memory caps, and that rebooted a 48 GB mac ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)).
+📌 the steamac vm starts only through the skill's `scripts/steamac-play.sh`, `x:firelink` § 3 holds the rule.
 
-📌 the 11-06 freeze: the vm woke at 15:22:26 with Highball's Steam and lanes running; threads wedged in one kernel wait from 15:22:37, the watchdog killed WindowServer at 15:25:38, and force-quitting the vm and Highball did not clear it. the wake as trigger is an inference from one sample: a 13:32 wake was clean. the caps held and don't cover this: the vm held 28 GB asleep. on a stall, Help → Report a Problem in the same session, for #50's maintainer.
+📌 the 11-06 freeze: the vm woke at 15:22:26 with Highball's Steam and lanes running; threads wedged in one kernel wait from 15:22:37, the watchdog killed WindowServer at 15:25:38, and force-quitting the vm and Highball did not clear it. the wake as trigger is an inference from one sample: a 13:32 wake left no watchdog report. the gpu cap held (compile threads kept: inference), and the caps don't cover the 28 GB the vm held asleep, a likely contributor, not shown as the cause. on a stall, Help → Report a Problem in the same session, for #50's maintainer.
 
 ## what goes where
 

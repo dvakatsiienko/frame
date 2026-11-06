@@ -58,7 +58,7 @@ pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out ~/.local/share/web-
 
 `/Applications/FX Steam Launcher.app` ([fxgl/steamac](https://github.com/fxgl/steamac), on trial: a no-name open-source project, kept only if games run well): valve's arm64 SteamOS in a libkrun vm.
 
-📌 **the vm starts only through `scripts/steamac-play.sh`, never the app or a bare `open`**: those skip the memory caps, which rebooted a 48 GB mac ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)). a running vm keeps the caps it started with.
+📌 **the vm starts only through `scripts/steamac-play.sh`, never the app or a bare `open`**: those skip the memory caps, which rebooted a 48 GB mac ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)). a running vm keeps the gpu cap it started with (compile threads too: inference). the one exception: a perf run's traced launch, `references/steamac.md`, sets the same caps itself.
 
 📌 **quit the vm when done; wake it only with lanes quiet; one game app at a time**; after a black screen, wait 5 min before the power button (the 11-06 freeze: `firelink/AGENTS.md`).
 
