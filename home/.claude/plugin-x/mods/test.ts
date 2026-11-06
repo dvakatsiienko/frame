@@ -19,6 +19,8 @@ import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { setup as startTestTempDir } from '../../../../script/lib/test-temp-dir.ts';
+
 type Run = { clockReads?: string[]; mod: string; output: string };
 
 // claude plugin test's words, read the same way by `x mods edit test` (x/go/mods.go testOutcome); both parsers are
@@ -336,6 +338,7 @@ if (import.meta.main) {
             console.log(`a clock read outside $.clock: ${at}`);
         process.exit(reads.length ? 1 : 0);
     }
+    process.on('exit', startTestTempDir());
     const named = onlyMod ? [onlyMod] : positionals;
     const tested = values['skip-tested'] ? readTested() : undefined;
     let skipped = 0;
