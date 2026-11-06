@@ -91,6 +91,7 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 
 ## rounds
 
+- 2026-11-07 · exit 16 for real, first run on the merged x: a peer commit during a 120 s wrapped landing script · both commits in this tree, the rows in `gate-queue.log`, the peer's wait is the script's own commit, never its 120 s
 - 2026-11-06 · red-proof on one mutant, load 38 · 15 s → 8 s, base included · better
 - 2026-11-06 · `vitest related` replay of 8 recent commits · 0, 0, 0, 0, 0, 3, 5, 23 s against about 13 s whole; catch rate unmeasured · better on speed
 - 2026-11-06 · what loads the cpu, 27 min at 14 live worktrees · only a commit load 19, nothing queued 21, only a go run 51 with sys 52 %; `gate-speed/cpu-load.md` · the baseline for the re-measures
