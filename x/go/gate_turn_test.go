@@ -304,8 +304,15 @@ func TestGateTurnIsFreedWhenXDies(t *testing.T) {
 	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
 	t.Cleanup(func() { write(t, release, "") })
 	hook := "touch " + started + "; until [ -e " + release + " ]; do sleep 0.1; done"
-	dying := xStart(t, turnRepo(t, hook), env, "lane", "commit", message(t), "--", "readme.txt")
+	dir := turnRepo(t, hook)
+	head := gitT(t, dir, "rev-parse", "HEAD")
+	dying := xStart(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
 	until(t, "the hook runs in the turn", func() bool { return exists(started) })
+	// the orphaned git lands its commit and lets go of the lock before the temp dir goes
+	defer until(t, "the orphaned git finished", func() bool {
+		return gitT(t, dir, "rev-parse", "HEAD") != head && !exists(filepath.Join(dir, ".git/index.lock"))
+	})
+	defer write(t, release, "")
 
 	if err := dying.Process.Kill(); err != nil {
 		t.Fatal(err)
@@ -469,6 +476,38 @@ func TestAFailedHoldStepLogsItsExit(t *testing.T) {
 	}
 	if rows := queueRows(t, state); len(rows) != 1 || rows[0][5] != "1" {
 		t.Errorf("rows %v, want one at exit 1", rows)
+	}
+}
+
+func TestAHungHookFreesTheTurnAtItsCap(t *testing.T) {
+	t.Parallel()
+	state, env := turnOn(t)
+	env = append(env, "GATE_QUEUE_HOLD_CAP=1")
+	scratch := t.TempDir()
+	started, release := filepath.Join(scratch, "started"), filepath.Join(scratch, "release")
+	hook := "touch " + started + "; until [ -e " + release + " ]; do sleep 0.1; done"
+	dir := turnRepo(t, hook)
+	head := gitT(t, dir, "rev-parse", "HEAD")
+	hung := xStart(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
+	until(t, "the hook runs in the turn", func() bool { return exists(started) })
+
+	got := xIn(t, turnRepo(t, "true"), append(env, "GATE_QUEUE_WAIT=20"), "lane", "commit", message(t), "--", "readme.txt")
+
+	if got.code != 0 {
+		t.Fatalf("the peer behind a hung hook: exit %d\n%s", got.code, got.stdout)
+	}
+	if gitT(t, dir, "rev-parse", "HEAD") != head {
+		t.Fatal("the commit landed with its hook still running")
+	}
+	write(t, release, "")
+	if err := hung.Wait(); err != nil {
+		t.Errorf("the hung commit, its hook released: %v", err)
+	}
+	if gitT(t, dir, "rev-parse", "HEAD") == head {
+		t.Error("x did not run on past the cap to its commit")
+	}
+	if rows := queueRows(t, state); len(rows) != 2 || rows[0][5] != "124" {
+		t.Errorf("rows %v, want the hung run at exit 124, then the peer", rows)
 	}
 }
 

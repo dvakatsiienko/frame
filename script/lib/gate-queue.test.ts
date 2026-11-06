@@ -181,6 +181,27 @@ describe('gate-queue --hold: the turn x takes', () => {
         expect(existsSync(gateTurn)).toBe(false);
     });
 
+    test('a hold past its cap frees the turn, logs 124 and names the cap', () => {
+        const { state, gateTurn } = fixture();
+        const stdin = join(state, 'stdin');
+        // an open pipe nobody writes to: a hung hook, x alive above it
+        const got = spawnSync(
+            'sh',
+            [
+                '-c',
+                `mkfifo ${stdin}; sleep 4 >${stdin} 2>/dev/null & ${script} --hold x <${stdin}`,
+            ],
+            {
+                encoding: 'utf8',
+                env: { ...queueEnv(state), GATE_QUEUE_HOLD_CAP: '1' },
+                timeout: 20_000,
+            },
+        );
+        expect(got.stderr).toContain('1s cap');
+        expect(existsSync(gateTurn)).toBe(false);
+        expect(logRows(state).at(-1)?.[5]).toBe('124');
+    });
+
     test('a live holder makes it wait to its deadline, never ready', () => {
         const { state, gateTurn } = fixture();
         plantHolder(gateTurn, String(process.pid), liveSince());

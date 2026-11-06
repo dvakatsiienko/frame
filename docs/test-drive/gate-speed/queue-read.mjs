@@ -51,6 +51,11 @@ for (const slot of ['gate', 'long'])
         `slot ${slot}`,
         rows.filter((r) => r.slot === slot),
     );
+// a tree older than the gate turn's pr runs its own x, which takes no turn under main's script
+line(
+    "slot none, an older tree's lane commit or push",
+    rows.filter((r) => r.slot === 'none' && /lane (commit|push)/.test(r.cmd)),
+);
 for (const k of ['commit', 'push', 'mods', 'round', 'script', 'other'])
     line(
         `gate slot, ${k}`,
