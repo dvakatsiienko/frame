@@ -194,6 +194,11 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
+- ⬜ a held pr merges only on dima's word (FRM-511)
+  - given `x lane merge-auto <pr> --hold --apply`, then the pr and every open layer under it are marked in this mac's record (`<state>/merge-hold/<owner>_<repo>.json`) and nothing merges
+  - given a held pr, or a top over a held layer, when `x lane merge-auto <pr> --apply` runs, then it refuses naming the hold; a record it cannot read reads as held; with `--dima-ok <pr>` it merges and takes the landed layers' marks off
+  - given `x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply`, then those marks come off and nothing merges, an unreadable record with them; without `--dima-ok` it exits 2
+  - decision: a local record over a github label, so x-mod-guard reads it before a raw merge runs, with no network (clio's greenlight, FRM-511)
 - ✅ `x lane rebase-main --apply` puts a codie branch on origin/main with no merge commit
   - given a `codie/*` branch behind origin/main with no conflict
   - when `x lane rebase-main --apply` runs

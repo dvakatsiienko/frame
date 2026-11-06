@@ -49,7 +49,9 @@ type mergeDecision struct {
 	dimaOK   bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
 	landed   string
 	headRef  string
+	holds    []string
 	Trees    []string `json:"trees,omitempty"`
+	Holds    string   `json:"holds,omitempty"`
 }
 
 type pullHead struct {
@@ -76,6 +78,18 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if word != "" && word != n {
 		return nil, usageFail("--dima-ok names #"+word+", this merge is #"+n+": dima's word counts for the pr it names", "x lane merge-auto "+n+" --apply --dima-ok "+n)
 	}
+	hold, _ := flags["hold"].(bool)
+	releaseHold, _ := flags["release-hold"].(bool)
+	switch {
+	case hold && releaseHold:
+		return nil, usageFail("--hold and --release-hold undo each other: name one", "x lane merge-auto "+n+" --hold --apply")
+	case releaseHold && word == "":
+		return nil, usageFail("a hold is released only on dima's typed word", "x lane merge-auto "+n+" --release-hold --dima-ok "+n+" --apply")
+	case hold:
+		return holdPlan(r, n, "hold", flags)
+	case releaseHold:
+		return holdPlan(r, n, "release-hold", flags)
+	}
 	if release, _ := flags["release-brake"].(bool); release {
 		if word == "" {
 			return nil, usageFail("the brake is released only on dima's typed word", releaseBrake(n))
@@ -96,6 +110,8 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 
 	var pr pullHead
 	var layers *prLayers
+	var held []string
+	var holdErr error
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
@@ -106,6 +122,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 		if state != "open" {
 			return "", &Fail{Refused: true, Msg: "#" + n + " is " + state + ", nothing to merge", Next: "x gh pr " + n}
+		}
+		held, holdErr = readHolds(repo)
+		if stop := holdStop(repo, n, held, holdErr); stop != "" && word == "" {
+			return "", holdRefusal(n, stop)
 		}
 		if laneAddOn.layersOf != nil {
 			var err error
@@ -129,6 +149,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		d.heads = map[string]string{n: pr.Head.Sha}
 		if err := r.Step("layers", "gating every layer under the pr", func() (string, error) {
 			for _, below := range layers.below {
+				if stop := holdStop(repo, below, held, holdErr); stop != "" && word == "" {
+					return "", holdRefusal(n, stop+" — a stack merges all of its layers at once")
+				}
 				wait, err := layerWait(repo, api, trunk, below, d)
 				if err != nil {
 					return "", err
@@ -298,8 +321,13 @@ func headsHeld(api string, heads map[string]string) error {
 
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
-	if d.Decision == "release" {
+	switch d.Decision {
+	case "release":
 		return "release the brake #" + d.PR + " holds?"
+	case "hold":
+		return "hold #" + strings.Join(d.holds, ", #") + " until dima's word?"
+	case "release-hold":
+		return "release the hold on #" + strings.Join(d.holds, ", #") + "?"
 	}
 	return "merge #" + d.PR + " at " + short(d.Head) + "?"
 }
@@ -307,6 +335,9 @@ func askMergeAuto(plan any) string {
 func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	d := plan.(*mergeDecision)
 	api := githubBase() + "/repos/" + d.Repo
+	if d.Decision == "hold" || d.Decision == "release-hold" {
+		return holdApply(r, d)
+	}
 	if d.Decision == "release" {
 		if err := r.Step("brake", "removing the "+brakeLabel+" label, on dima's typed word", func() (string, error) {
 			status, _, err := ghSend(asDima, http.MethodDelete, api+"/issues/"+d.PR+"/labels/"+brakeLabel, nil, nil)
@@ -371,6 +402,10 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	_ = r.Step("hold", "the landed layers' held marks", func() (string, error) {
+		d.Holds = dropLandedHolds(d)
+		return d.Holds, nil
+	})
 	_ = r.Step("decamp", "the merged lane's clean trees", func() (string, error) {
 		d.Trees = decampMerged(d)
 		return strings.Join(d.Trees, "; "), nil
@@ -378,6 +413,9 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	result := "merged #" + d.PR + " at " + short(d.Merged)
 	if d.layered {
 		result = d.landed
+	}
+	if d.Holds != "" {
+		result += "\n" + d.Holds
 	}
 	if len(d.Trees) > 0 {
 		result += "\n" + strings.Join(d.Trees, "\n")

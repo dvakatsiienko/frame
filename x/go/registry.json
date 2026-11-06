@@ -343,12 +343,20 @@
             ],
             "flags": {
                 "dima-ok": {
-                    "description": "dima's word on a self-edit with no pre-approved sign: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; a merge it never lifts the brake for, a --release-brake it releases",
+                    "description": "dima's word on a self-edit with no pre-approved sign or on a held pr: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; a merge it never lifts the brake for, a --release-brake or --release-hold it releases",
                     "type": "string",
                     "value": "pr"
                 },
+                "hold": {
+                    "description": "dima's hold: mark the pr and every open layer under it, so no door merges them without his word; nothing merges",
+                    "type": "boolean"
+                },
                 "release-brake": {
                     "description": "remove the merge-brake label from the pr instead of merging, once dima looked at the head mismatch that set it; needs --dima-ok <pr>",
+                    "type": "boolean"
+                },
+                "release-hold": {
+                    "description": "take the hold off the pr and every open layer under it; needs --dima-ok <pr>; nothing merges",
                     "type": "boolean"
                 }
             },
@@ -365,6 +373,7 @@
                 "brake",
                 "approve",
                 "merge",
+                "hold",
                 "decamp"
             ],
             "touches": [
@@ -373,6 +382,7 @@
                 "<clone>/.claude/worktrees/<tree> — a merged lane's clean tree at the landed head, decamped",
                 "~/.claude/sessions/ — who sits in a tree, read",
                 "linear — a self-edit's chunk ticket, its ## signed block read",
+                "~/.local/state/x/merge-hold/ — dima's held prs per repo, read every run, written by --hold, --release-hold and a landing",
                 "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
         },
