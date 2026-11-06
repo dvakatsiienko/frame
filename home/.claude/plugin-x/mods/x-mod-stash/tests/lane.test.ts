@@ -327,6 +327,18 @@ test('a side channel writes a card it created', async ($, on) => {
     expect([kept(w)[0]?.runner, kept(w)[0]?.current]).toEqual([SIDE, 1]);
 });
 
+for (const name of [
+    '🦉🪽 clio: wing 2',
+    '🦉🪽 clio: wing 12',
+    '🦉 🪽 clio: wing 3',
+])
+    test(`a numbered wing writes a card it created: ${name}`, async ($, on) => {
+        const w = world(on, { name });
+        await start($);
+        expect((await create($)).deny).toBeUndefined();
+        expect(kept(w)[0]?.runner).toBe(name);
+    });
+
 test('a side channel is refused on a card it does not run, naming the card', async ($, on) => {
     const w = world(on, { name: SIDE });
     w.files[FILE] = JSON.stringify({
@@ -353,6 +365,9 @@ test('a side channel is refused on a card it does not run, naming the card', asy
 for (const name of [
     '⚡ 🔧 codie: 🦉 clio (side)',
     '🦉 clio (fork)',
+    '🦉🪽 clio: wing',
+    '🦉🪽 clio: wing two',
+    '🦉 clio: wing 2',
     '⚡ 🔧 codie: mods lane 5 | FRM-1',
 ])
     test(`stays refused: ${name}`, async ($, on) => {
@@ -1445,6 +1460,23 @@ test("the linked codie's step 3 moves the lane while clio idles, and her next pr
     ]);
 });
 
+test('a card ended while a codie step is read stays ended', async ($, on) => {
+    const w = world(on, { files: shelf(codieLane()) });
+    w.store.set(stepKey(CODIE_NAME), {
+        get at() {
+            const { lanes } = JSON.parse(w.files[FILE] ?? '{"lanes":[]}');
+            w.files[FILE] = JSON.stringify({
+                lanes: lanes.map((l: object) => ({ ...l, endedAt: NOW })),
+            });
+            return NOW + 1;
+        },
+        step: 3,
+    });
+    await start($);
+    await w.clock.advance(5_000);
+    expect(kept(w)[0]?.endedAt).toBe(NOW);
+});
+
 test("a move reaches clio's running turn at her next tool call", async ($, on) => {
     const w = world(on, { files: shelf(codieLane()) });
     w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 2 });
@@ -1589,6 +1621,21 @@ test('an edit naming the plan its card follows passes, however its path is spell
             title: 'mods y',
         }),
     ).toBeUndefined();
+});
+
+test('a second card naming one plan by another spelling is refused', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    await create($, { items: undefined, plan: PLAN });
+    expect(
+        await denied($, {
+            act: 'create',
+            items: undefined,
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+            title: 'another name',
+        }),
+    ).toBe(LIVE_FIX);
 });
 
 test('a card a side channel creates while a plan poll reads survives the poll', async ($, on) => {

@@ -2461,12 +2461,14 @@ function laneCreate(
     const title = oneLine(input.title);
     if (!title) return { deny: 'orbit glide: a title names the lane' };
     const plan = oneLine(input.plan);
+    const expanded = (path: string | undefined) =>
+        path?.replace(/^~(?=\/)/, oneLine(input.planHome));
     // the same lane is the same topic or the same lane plan file, whatever the title says
     const open = lanes.find(
         (l) =>
             !l.endedAt &&
             (laneTopic(l.title) === laneTopic(title) ||
-                (!!plan && l.plan === plan)),
+                (!!plan && expanded(l.plan) === expanded(plan))),
     );
     if (open)
         return {
@@ -2560,7 +2562,7 @@ async function followCodies($: EngineInterface) {
         );
     }
     if (!moves.length) return;
-    await writeLanes($, next);
+    await writeLanes($, mergeLanes(lanes, next, await readLanes($)));
     await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
 }
 
@@ -4772,7 +4774,7 @@ export const isCoordinator = (name: string) =>
     /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
 // a coordinator's second seat, only glide's door opens to it: the rest of what a coordinator is stays on isCoordinator
 export const isSideChannel = (name: string) =>
-    /^🦉c?clio\(side\)$/u.test(bare(name));
+    /^(?:🦉c?clio\(side\)|🦉🪽c?clio:wing\d+)$/u.test(bare(name));
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 // a member with a chair in the fleet; a fork or a plain session has none
 export const isSeated = (name: string) =>
@@ -5053,7 +5055,8 @@ async function orbitCall(
                 return {
                     deny: `orbit glide: ${input.plan} has a step with no ticket id, «${unticketed.text}»: every line reads «- [ ] NN · FRM-N text»`,
                 };
-            if (input.act === 'create') given = { ...given, items: steps };
+            if (input.act === 'create')
+                given = { ...given, items: steps, planHome: home };
             else if (
                 before
                     .find((l) => l.id === oneLine(input.id))

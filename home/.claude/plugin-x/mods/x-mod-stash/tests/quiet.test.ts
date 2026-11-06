@@ -2854,6 +2854,8 @@ for (const message of [
 
 for (const message of [
     'your round 2 on abc12345 still stands',
+    'final: base 7c90198, head 6381739f',
+    'final word, your round 2 on 7c90198 stands',
     'BYT-105: clean — «round 4 on dbc4c111 — verdict: clean»',
     'parked: nothing new since the review',
 ])
@@ -2923,6 +2925,13 @@ test('a count follows the number sent, a lane opening past round 1', async ($, o
     expect(lines[0]).toBe('');
     expect(lines[1]).toContain('past the cap');
     expect(lines[2]).toContain('the stop goes to the coordinator');
+});
+
+test('a final leading a numbered round counts that round', async ($, on) => {
+    const w = world(on, { name: ROUND_CODIE });
+    await start($);
+    await send($, ROUND_SENSE, 'final FRM-9 round 3 on abc1234');
+    expect((w.store.get(LANE_KEY) as { count: number }).count).toBe(3);
 });
 
 test('a final with no number counts as round 1', async ($, on) => {

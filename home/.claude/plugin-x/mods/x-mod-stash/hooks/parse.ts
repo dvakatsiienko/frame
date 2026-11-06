@@ -348,20 +348,21 @@ export function planSteps(text: string) {
 export const ticketOf = (name: string) =>
     name.match(/\b(?:FRM|BYT)-\d+\b/)?.[0];
 
-const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|coder:|sixth sense,)\s+)*`;
+const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
 const ROUND_HEAD = new RegExp(
-    String.raw`^${ROUND_LEAD}(?:final(?:\s+[—–-])?\s+)?round\s+(\d+)\s+on\s+\**([0-9a-f]{7,40})\b`,
+    String.raw`^${ROUND_LEAD}round\s+(\d+)\s+on\s+\**([0-9a-f]{7,40})\b`,
 );
-const FINAL_HEAD = new RegExp(String.raw`^${ROUND_LEAD}final\b`);
 // a sha holds a digit, so a word like «defaced» is none
-const SHA = /\b(?=[0-9a-f]*\d)[0-9a-f]{7,40}\b/;
+const FINAL_HEAD = new RegExp(
+    String.raw`^${ROUND_LEAD}final\s+on\s+\**((?=[0-9a-f]*\d)[0-9a-f]{7,40})\b`,
+);
 
-// codie's round, only at the message's head: a quoted round further in is a report of one. «final» with no number is round 1
+// codie's round, only at the message's head: a quoted round further in is a report of one. «final on <sha>» is round 1
 export function roundOf(message: string) {
     const head = message.trimStart();
     const m = head.match(ROUND_HEAD);
     if (m) return { n: Number(m[1]), sha: m[2] ?? '' };
-    const sha = FINAL_HEAD.test(head) ? head.match(SHA)?.[0] : undefined;
+    const sha = head.match(FINAL_HEAD)?.[1];
     return sha ? { n: 1, sha } : undefined;
 }
 
