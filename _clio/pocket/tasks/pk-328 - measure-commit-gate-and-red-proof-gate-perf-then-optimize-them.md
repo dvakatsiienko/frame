@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T20:04:00Z'
+updated_date: '2026-11-06T20:06:00Z'
 labels:
   - s
   - wing-1
@@ -101,4 +101,7 @@ PK-328:W24 (2026-11-06 22:03, dima): you are responsible for PK-328. we test a l
 PK-328:W25 (2026-11-06 22:03, dima): you are allowed the full scale of capabilities: do analysis, grab and read histories, measure; consult main clio and the active lanes for useful info, tests or probes; mods codie is running too, so ask him to probe tests or commits, or start a probe in the mods area yourself.
 PK-328:W26 (2026-11-06 22:03, dima): when you fully solve this ticket, give me numbers comparing the perf gains, and measure everything: measuring is half of getting the benefit. without re-measures we won't know if these changes are worth it or if we move in the right direction.
 PK-328:W27 (2026-11-06 22:03, dima): for example, if you do nothing special right now, your commit just took 8 minutes.
+
+PK-328:W28 (2026-11-06 21:37, dima): pk-328? if so, wing 1 is solving it. tell wing 1 about the importance of the bottleneck, and tell it that it is responsible for resolving the bottleneck.
+main's correction, wishkeeper's catch: W22's «the biggest wait on the mods lane» and «through to a measured drop … tell him the number» are main's brief to wing 1, not his words; W28 holds his.
 <!-- SECTION:NOTES:END -->
