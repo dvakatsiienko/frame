@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-05T22:24:00Z'
-updated_date: '2026-11-05T22:28:00Z'
+updated_date: '2026-11-06T01:27:00Z'
 labels:
   - s
   - side
@@ -28,4 +28,6 @@ dima's word 11-06 00:24, for tomorrow: fully describe your limitations and capab
 <!-- SECTION:NOTES:BEGIN -->
 W1 (2026-11-06 00:28, dima): helga — i'd like you to use her too. (decide tmrw)
 today's banner forbids a side channel messaging helga, so this is a rule change to weigh with the limits description.
+
+W (2026-11-06 03:27, dima): can the side channel coordinate on its own? e.g. start a lane and coordinate it? ❓
 <!-- SECTION:NOTES:END -->
