@@ -84,5 +84,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-06 · FRM-514 quick lane · plain wisphunter · 5 findings, 2 useful, it found the compaction bug the built-in missed · useful
 - 2026-11-06 · FRM-514 quick lane · coderabbit · 0 findings · noise
 - 2026-11-06 · FRM-514 quick lane · sixth sense · 3 rounds, round 1 the only one that moved the design: a batched sibling edit landed unguided · useful
+- 2026-11-06 · FRM-504 mods lane 5 · wishkeeper + wisphunter · 3 and 4 highs after codie's first done, round 2 fixed all 6 · useful
 
 ## verdict

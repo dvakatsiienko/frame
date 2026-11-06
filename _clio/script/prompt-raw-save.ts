@@ -58,7 +58,7 @@ const PERSONAL_CHORE =
 // a personal chore mixed into a running lane's thread is offered clio's side channel, one line
 export function sideChannelNudge(text: string, home: string) {
     return PERSONAL_CHORE.test(text) && isLaneLive(home)
-        ? '🪟 side channel? a personal chore while a lane runs — `clio:side-channel` keeps it out of the lane'
+        ? '🪽 a wing? a personal chore while a lane runs — `clio:side-channel` keeps it out of the lane'
         : undefined;
 }
 

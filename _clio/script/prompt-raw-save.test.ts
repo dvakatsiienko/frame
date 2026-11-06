@@ -75,7 +75,7 @@ describe('sideChannelNudge', () => {
         'a personal chore while a lane runs is offered the side channel: «%s»',
         (text) => {
             const line = sideChannelNudge(text, fixture(process.ppid));
-            expect(line).toContain('side channel?');
+            expect(line).toContain('a wing?');
             expect(line?.split('\n')).toHaveLength(1);
         },
     );
@@ -92,7 +92,7 @@ describe('sideChannelNudge', () => {
         const home = fixture(process.ppid);
         writeFileSync(join(home, '.claude/sessions/12.json'), '{"na');
         expect(sideChannelNudge('what should i buy now', home)).toContain(
-            'side channel?',
+            'a wing?',
         );
     });
 
@@ -120,7 +120,7 @@ describe('sideChannelNudge', () => {
             },
         );
         expect(out.status).toBe(0);
-        expect(out.stdout).toContain('side channel?');
+        expect(out.stdout).toContain('a wing?');
     });
 
     test('with no live lane, a personal chore prints none', () => {
