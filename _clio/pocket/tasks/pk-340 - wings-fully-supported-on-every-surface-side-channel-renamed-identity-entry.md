@@ -1,10 +1,10 @@
 ---
 id: PK-340
 title: 'wings: fully supported on every surface, side channel renamed, identity entry'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T16:31:00Z'
-updated_date: '2026-11-06T16:39:00Z'
+updated_date: '2026-11-06T20:00:00Z'
 labels:
   - s
 dependencies: []
@@ -52,4 +52,8 @@ PK-340:W17 (2026-11-06 18:30, dima): so if a wing messages to anyone - anyone sh
 
 PK-340:W18 (2026-11-06 18:30, dima): so no one is confused.
 board steer o44 (2026-11-06 18:42, dima): groom fleet identities with /x:author-memory, see if you can optimize it without budget raise (with no data loss, drop fluff). if cant without data loss - raise budget
+
+close: 2026-11-06 — wings live: `fleet-identity` holds the entry and the message rule (W16–W18), `fleet-vibe` the word, `wing-<N>` the label (W1, cbeacbd2), `clio:wing` opens them, wings 1–3 run (W8–W14). rg 'side channel' across rules, skills, memory finds only 3 «was side channel» lines (W15). W10 answered by the build.
+
+close: done, each read against the live state above: PK-340:W1 PK-340:W2 PK-340:W3 PK-340:W4 PK-340:W5 PK-340:W6 PK-340:W7 PK-340:W8 PK-340:W9 PK-340:W10 PK-340:W11 PK-340:W12 PK-340:W13 PK-340:W14 PK-340:W15 PK-340:W16 PK-340:W17 PK-340:W18; board steer o44 done (18ac93e2).
 <!-- SECTION:NOTES:END -->

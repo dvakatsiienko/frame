@@ -14,7 +14,7 @@ pre-commit:
   parallel: true
   commands:
     format:
-      glob: "*.{js,ts,tsx,json,jsonc,html,css,svg}"
+      glob: "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,json,jsonc,html,css,svg}"
       # --max-diagnostics keeps a failure READABLE. Without it biome prints
       # dozens of diagnostics, then "the number exceeds the limit", and the
       # actual cause scrolls off above lefthook's summary — the commit looks
