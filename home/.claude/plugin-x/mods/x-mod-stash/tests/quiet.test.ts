@@ -1377,7 +1377,9 @@ function alarmWorld(
     on: On,
     {
         dropSubmit = (_text: string): boolean => false,
+        files = {} as Record<string, string>,
         isTestChild = false,
+        lastWrite = (): number | undefined => undefined,
         notify = 'no-surface',
         osascript = 0,
         refuseAppend = false,
@@ -1387,6 +1389,7 @@ function alarmWorld(
     const scripted: string[] = [];
     const w = world(on, {
         dropSubmit,
+        files,
         isTestChild,
         peers: [codiePeer],
         refuseAppend,
@@ -1397,6 +1400,8 @@ function alarmWorld(
             }
             if (argv[0] === 'sh' && String(argv[2]).includes('SendMessage'))
                 return sends.join('\n');
+            if (argv[0] === 'sh' && argv[5] === CODIE_SID)
+                return `${Math.floor((lastWrite() ?? 0) / 1000)}\n`;
             return undefined;
         },
     });
@@ -1425,6 +1430,118 @@ test('a ledger gap raises one native alarm, through osascript when notify finds 
         ['☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0'],
         ['☕️ 🔧 codie: mods sent clio 1, her quiet log holds 0'],
     ]);
+});
+
+/* a member with an open lane, silent past the wait */
+
+const LANES = '/home/.claude/shelf/lanes.json';
+const laneCard = (over = {}) => ({
+    current: 0,
+    history: [],
+    id: 'l1',
+    items: [{ done: false, text: 'the build' }],
+    members: { codie: codiePeer.name },
+    movedAt: 0,
+    title: 'mods lane',
+    ...over,
+});
+function silentWorld(
+    on: On,
+    { card = {} as object, dropSubmit = (_t: string): boolean => false } = {},
+) {
+    const spoke = { at: EVEN };
+    const w = alarmWorld(on, {
+        dropSubmit,
+        files: { [LANES]: JSON.stringify({ lanes: [laneCard(card)] }) },
+        lastWrite: () => spoke.at,
+    });
+    return { ...w, spoke };
+}
+const silentAlarms = (w: { scripted: string[] }) =>
+    w.scripted.filter((s) => s.includes(' silent '));
+
+test('a lane member silent past the wait raises one alarm naming it, no turn', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    await w.clock.advance(9 * MIN);
+    const early = silentAlarms(w).length;
+    await w.clock.advance(12 * MIN);
+    expect([early, silentAlarms(w), w.contexts]).toEqual([
+        0,
+        [`${codiePeer.name} silent 10 min on «mods lane»`],
+        [],
+    ]);
+});
+
+test('a member that spoke and fell silent again alarms again', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    await w.clock.advance(12 * MIN);
+    w.spoke.at = EVEN + 12 * MIN;
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w).length).toBe(2);
+});
+
+test('a keep-hot ping is no word of the member, so it raises no second alarm', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    await w.clock.advance(12 * MIN);
+    w.store.set(`reply:${CODIE_SID}`, { at: EVEN, pingedAt: EVEN + 12 * MIN });
+    w.spoke.at = EVEN + 12 * MIN;
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w).length).toBe(1);
+});
+
+test('a member of an ended lane raises none', async ($, on) => {
+    const w = silentWorld(on, { card: { endedAt: EVEN } });
+    await start($);
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w)).toEqual([]);
+});
+
+test('a member with no lane raises none', async ($, on) => {
+    const w = silentWorld(on, { card: { members: {} } });
+    await start($);
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w)).toEqual([]);
+});
+
+test('quiet off raises no silent alarm', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    await quiet($, 'off');
+    await w.clock.advance(12 * MIN);
+    expect(silentAlarms(w)).toEqual([]);
+});
+
+test('under afk a silent member takes no turn of clio', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    w.store.set('afk', { on: true });
+    await w.clock.advance(12 * MIN);
+    expect([silentAlarms(w).length, w.contexts]).toEqual([1, []]);
+});
+
+test('under a shift a silent member wakes clio once', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    w.store.set(`pace:${SID}`, { since: EVEN });
+    const before = w.contexts.length;
+    await w.clock.advance(14 * MIN);
+    expect([silentAlarms(w).length, w.contexts.length - before]).toEqual([
+        1, 1,
+    ]);
+});
+
+test('under a shift a refused wake asks again at the next poll', async ($, on) => {
+    let tries = 0;
+    const w = silentWorld(on, {
+        dropSubmit: (t) => t.includes(' silent ') && ++tries === 1,
+    });
+    await start($);
+    w.store.set(`pace:${SID}`, { since: EVEN });
+    await w.clock.advance(14 * MIN);
+    expect([tries, silentAlarms(w).length]).toEqual([2, 1]);
 });
 
 test('a test child raises no alarm on the mac, its log says what it would', async ($, on) => {
