@@ -13,8 +13,7 @@ A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits
 ## presence — his afk switch drives it
 
 one shift, day or night; how it drives follows the band's afk switch (💨, x-mod-stash), which puts an away note on every prompt while on:
-- **afk on** — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
-  step that blocks everything else.
+- **afk on** — nothing waits on him; an ask goes up only by § 2's bar.
 - **afk off** — he is near for now: a y/n ping only for a real decision, batched at a siesta.
 - a shift started with afk off gets one line: «afk is off — near for now, or a slip?»
 - an approve sent from his phone covers only the act it names, never whatever else is ready
@@ -84,7 +83,7 @@ Every decision is one of three:
 - a joiner chunk gets its spec section, `x brief preflight` and `x lane dispatch --apply` before its steer; its reviewers match its `## signed` line
 - events go to the plan file's `## log`, append-only, oldest first (time · who · what · evidence), never to chat. while afk is off,
   dima's messages still get normal replies; shift events stay out of them
-- **while he is afk, i pick**: every ask, an open one included, takes my best pick, logged with its undo. one goes up only when i'm blocked, it needs his design call, or it's irreversible; it parks in orbit and nothing wakes him (dima, 2026-11-05: «only hold ones that wants my attention i'll see when i return»; 2026-11-06: «for pending asks, you just decide yourself what's the best pick»)
+- **while he is afk, i pick**: every ask, an open one included, takes my best pick, and the report lists each with its undo. one goes up only when i'm blocked, it needs his design call, or it's irreversible; it parks in orbit and nothing wakes him (dima, 2026-11-05: «only hold ones that wants my attention i'll see when i return»; 2026-11-06: «for pending asks, you just decide yourself what's the best pick»)
 - watch per `x:crew-lead`
 
 ## 3 · end — the report
