@@ -61,6 +61,7 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 watch-pr`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
 - write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces
+- every pr chunk in the plan gets its merge word while he is still here: one orbit ask, `✍️ sign FRM-1, FRM-2: merge pre-approved for this shift`, and his tick lets me write `merge: pre-approved` under each one's last sign, so a self-edit lands with him fully afk. every chunk, not the ones that look it: a fix can grow into a self path mid-shift. a re-sign voids the line, so a re-signed chunk parks ready until his word
 - every live member's 🔥 on (§ hot caches); a side channel parks with the shift, its merges and wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
 - one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
