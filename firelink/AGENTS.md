@@ -2,6 +2,8 @@
 
 the home of game side chores: what vm tuning, traces and route tests found. every door into the games (trophy-sys, game pages, the steamac vm) is the `x:firelink` skill, `home/.claude/plugin-x/skills/firelink/`.
 
+📌 the steamac vm starts only through the skill's `scripts/steamac-play.sh`: the app alone skips the memory caps, and that rebooted a 48 GB mac ([fxgl/steamac#50](https://github.com/fxgl/steamac/issues/50)).
+
 ## what goes where
 
 - a door any session runs, or how to do something → the skill
