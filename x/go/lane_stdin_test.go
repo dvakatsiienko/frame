@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -38,6 +39,26 @@ func TestCommitRefusesAnEmptyStdinMessage(t *testing.T) {
 
 	if code := exitOf(c.Run()); code != 2 {
 		t.Fatalf("exit %d, want 2 for an empty message", code)
+	}
+}
+
+func TestRedCommitLeavesItsLogInTheTestRunsOwnTempDir(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\necho the hook said no\nexit 1\n")
+	write(t, filepath.Join(dir, "readme.txt"), "edit\n")
+
+	got := xIn(t, dir, nil, "lane", "commit", message(t), "--", "readme.txt")
+
+	path := regexp.MustCompile(`\S*x-commit-\d+\.log`).FindString(got.stdout)
+	if got.code == 0 || path == "" {
+		t.Fatalf("exit %d, no log named:\n%s", got.code, got.stdout)
+	}
+	if !strings.HasPrefix(path, filepath.Dir(xbin)+string(filepath.Separator)) {
+		t.Errorf("the log is at %s, outside this run's %s", path, filepath.Dir(xbin))
+	}
+	if body := readFile(t, path); !strings.Contains(body, "the hook said no") {
+		t.Errorf("the named log holds %q", body)
 	}
 }
 

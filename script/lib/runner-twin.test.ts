@@ -102,14 +102,54 @@ describe('runner-twin', () => {
         expect(row.slice(6)).toEqual(['4', 'test:twin']);
     });
 
+    test('a sha-named push logs its remote ref', () => {
+        const context = fixture();
+        const state = join(context.dir, 'state');
+        const got = twin(
+            context,
+            `${context.pushed} ${context.pushed} refs/heads/codie/FRM-1-x ${zeros}\n`,
+            { VITEST: '', X_STATE: state },
+        );
+        expect(got.status, got.stderr).toBe(0);
+        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+            .trimEnd()
+            .split('\t');
+        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/codie/FRM-1-x']);
+    });
+
+    test.each([
+        ['no stdin', () => []],
+        ['a named commit', (pushed: string) => [pushed]],
+    ])('a hand run with %s logs other and unnamed', (_name, args) => {
+        const context = fixture();
+        const state = join(context.dir, 'state');
+        const got = twin(
+            context,
+            '',
+            { VITEST: '', X_STATE: state },
+            args(context.pushed),
+        );
+        expect(got.status, got.stderr).toBe(0);
+        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+            .trimEnd()
+            .split('\t');
+        expect(row.slice(2, 4)).toEqual(['other', 'unnamed']);
+    });
+
     test('a deleted ref on stdin falls back to HEAD', () => {
         const context = fixture();
+        const state = join(context.dir, 'state');
         const got = twin(
             context,
             `(delete) ${zeros} refs/heads/gone ${context.head}\n`,
+            { VITEST: '', X_STATE: state },
         );
         expect(got.status, got.stderr).toBe(0);
         expect(tested(context.dir)).toBe(context.head);
+        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+            .trimEnd()
+            .split('\t');
+        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/gone']);
     });
 
     test('no stdin tests HEAD', () => {

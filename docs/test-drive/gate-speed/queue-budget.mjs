@@ -61,7 +61,7 @@ const steps = readFileSync(`${state}/gate-steps.log`, 'utf8')
     .split('\n')
     .map((l) => l.split('\t'))
     .filter((r) => inRange(r[0]));
-const twin = steps.filter((r) => /twin/.test(r[7]));
+const twin = steps.filter((r) => /twin/.test(r[7]) && r[2] === 'push');
 const test = steps.filter((r) => /test-commit/.test(r[7]));
 console.log(
     `whole-suite runs: commit step ${test.length}, push twin ${twin.length}`,

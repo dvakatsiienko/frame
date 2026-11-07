@@ -2,7 +2,7 @@
 # test-commit <whole-suite command…> — the commit gate's test step, run inside script/index-run.sh's copy.
 # a commit whose every staged path sits under _clio/pocket/ runs no suite, on any branch: the whole suite stays at push.
 # a codie/* branch runs only the tests importing its staged code: the whole suite stays at push and on ci. any other branch runs the command.
-# one row a run in test-commit.log, tab-separated: start, 1-min load, branch, mode, staged paths, commit it sits on, seconds, exit.
+# one row a run in test-commit.log, tab-separated: start, 1-min load, branch, mode, staged paths, commit it sits on, seconds, exit, source.
 set -u
 branch=${INDEX_RUN_BRANCH:-}
 state=${X_STATE:-$HOME/.local/state/x}
@@ -55,5 +55,5 @@ case $mode in
 whole) "$@" || code=$? ;;
 related) pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" || code=$? ;;
 esac
-printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$branch" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" >>"$state/test-commit.log"
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$branch" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" >>"$state/test-commit.log"
 exit "$code"

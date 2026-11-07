@@ -60,9 +60,11 @@ done
 # pnpm checks its install before a script and dies on a symlinked node_modules; the copy never installs
 printf '\nverifyDepsBeforeRun: false\n' >>"$copy/pnpm-workspace.yaml"
 cd "$copy"
-# one row a gate in gate-steps.log, read by docs/test-drive/gate-speed.md; git sets GIT_EDITOR for a commit's hook, x's own gate runs don't
+# one row a gate in gate-steps.log, read by docs/test-drive/gate-speed.md. only git exports GIT_EXEC_PATH, and only a commit's hook
+# has an index beside it: a push hook has none, x's own gate runs have no git above them, and cc sets GIT_EDITOR in every shell
 step_source=other
-[ -n "${GIT_EDITOR:-}" ] && step_source=commit
+[ -n "${GIT_EXEC_PATH:-}" ] && [ -n "${GIT_INDEX_FILE:-}" ] && step_source=commit
+export INDEX_RUN_SOURCE=$step_source
 step_head=$(git rev-parse --short HEAD)
 # a hook exports GIT_DIR and friends: inherited, a fixture's `git init` and `git config` write the real repo (core.bare, 2026-11-06)
 # shellcheck disable=SC2046

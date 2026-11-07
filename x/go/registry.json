@@ -1257,7 +1257,7 @@
             "steps": ["test", "gates"],
             "touches": [
                 "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on",
-                "$X_STATE/gates-green.tsv: each touched mod's bytes a green overlay proved, read by `pnpm mods:test --skip-tested`"
+                "$X_STATE/gates-green.tsv: each touched mod's bytes a green overlay proved; `pnpm mods:test --skip-tested` reads it and adds its own greens"
             ]
         },
         {
