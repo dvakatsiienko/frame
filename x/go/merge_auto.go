@@ -20,6 +20,8 @@ import (
 // github's own auto-merge is never turned on: a stack cannot take it (gh-stack#504)
 const mergeTrailer = "Merged-by: x lane merge-auto"
 
+const renovateExemptTrailer = "Clean-exempt: renovate's own commits, ci is their review"
+
 // the mark of a merge whose commit carries no trailer (github's async merge takes no message)
 const mergedLabel = "merged-by-x"
 
@@ -32,6 +34,8 @@ type mergeCheck struct {
 	Detail string `json:"detail"`
 	// the store has no clean for this pr at all, as against one on another head or a store that does not read
 	noClean bool
+	// passed with no clean, as renovate's own commits; the squash message records it
+	renovateExempt bool
 }
 
 type mergeDecision struct {
@@ -426,10 +430,14 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		var merged struct {
 			Sha string `json:"sha"`
 		}
+		trailers := mergeTrailer
+		if d.Checks[0].renovateExempt {
+			trailers += "\n" + renovateExemptTrailer
+		}
 		// the sha pins the merge to the head the checks read: a push since makes github refuse it
 		_, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
 			"sha": d.Head, "merge_method": "squash", "commit_title": d.title + " (#" + d.PR + ")",
-			"commit_message": strings.TrimSpace(d.body) + "\n\n" + mergeTrailer,
+			"commit_message": strings.TrimSpace(d.body) + "\n\n" + trailers,
 		}, &merged)
 		d.Merged = merged.Sha
 		return "#" + d.PR + " → " + short(merged.Sha), err
@@ -946,7 +954,7 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 		c.Detail += "; its commit list does not end at the head"
 		return c
 	}
-	c.OK, c.Detail = true, "renovate's own commits, ci is their review"
+	c.OK, c.Detail, c.renovateExempt = true, "renovate's own commits, ci is their review", true
 	return c
 }
 

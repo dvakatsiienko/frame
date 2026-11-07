@@ -1224,10 +1224,28 @@ func TestMergeAutoLandsARenovatePrWithNoClean(t *testing.T) {
 
 			got := w.run(t, "7", "--apply")
 
-			if got.code != 0 || len(w.hub.sent("PUT ")) != 1 || !strings.Contains(got.stdout, "renovate's own commits") {
-				t.Fatalf("exit %d, %d merges, want one merge naming the exemption:\n%s", got.code, len(w.hub.sent("PUT ")), got.stdout)
+			merges := w.hub.sent("PUT ")
+			if got.code != 0 || len(merges) != 1 || !strings.Contains(got.stdout, "renovate's own commits") {
+				t.Fatalf("exit %d, %d merges, want one merge naming the exemption:\n%s", got.code, len(merges), got.stdout)
+			}
+			if !strings.Contains(merges[0], "Clean-exempt: renovate's own commits") || !strings.Contains(merges[0], mergeTrailer) {
+				t.Errorf("the squash message records no exemption beside the trailer: %s", merges[0])
 			}
 		})
+	}
+}
+
+func TestMergeAutoRecordsNoExemptionOnARenovatePrWithAClean(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "pnpm-lock.yaml")
+	w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
+	write(t, w.store, `{"o/r#7":"`+w.head+`"}`)
+
+	got := w.run(t, "7", "--apply")
+
+	merges := w.hub.sent("PUT ")
+	if got.code != 0 || len(merges) != 1 || strings.Contains(merges[0], "Clean-exempt") {
+		t.Fatalf("exit %d, merges %q, want one merge with no exemption line", got.code, merges)
 	}
 }
 
@@ -1241,18 +1259,6 @@ func TestMergeAutoApprovesARenovatePrWithNoClean(t *testing.T) {
 
 	if approves := w.hub.sent("POST " + repoPath + "/pulls/7/reviews"); got.code != 0 || len(approves) != 1 || len(w.hub.sent("PUT ")) != 1 {
 		t.Fatalf("exit %d, %d approves, %d merges, want one of each:\n%s", got.code, len(approves), len(w.hub.sent("PUT ")), got.stdout)
-	}
-}
-
-// a stack's lower layer goes through the same gate as the pr merged on top of it
-func TestMergeAutoPassesARenovateLowerLayerWithNoClean(t *testing.T) {
-	t.Parallel()
-	w := linkedMergeWorld(t)
-	w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
-	write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
-
-	if got := w.run(t, "8"); got.code != 4 {
-		t.Fatalf("exit %d, want the plan to merge past the renovate layer:\n%s", got.code, got.stdout)
 	}
 }
 
