@@ -54,7 +54,15 @@ function world(on: On, opts: World = {}) {
         if (e.argv.includes('get-url'))
             return answer(0, 'https://github.com/o/r.git\n');
         if (e.argv.includes('--brake-check')) {
-            brakeReads.push(e.argv[e.argv.indexOf('--repo') + 1] ?? '');
+            // the argv x/go's TestBrakeCheckAnswersOneReader runs for real
+            expect(e.argv.slice(0, 4)).toEqual([
+                'x',
+                'lane',
+                'merge-auto',
+                '--brake-check',
+            ]);
+            expect(e.argv[5]).toBe('--json');
+            brakeReads.push(e.argv[4] ?? '');
             return opts.brake === 'fails'
                 ? answer(1, '')
                 : answer(
@@ -476,6 +484,10 @@ test('a brake that does not read refuses a raw merge under prs', async ($, on) =
 for (const [line, repo] of [
     ['gh pr merge 7', 'o/r'],
     ['gh pr merge 7 -R a/b', 'a/b'],
+    ['gh pr merge 7 -Ra/b', 'a/b'],
+    ['gh pr merge 7 --repo=a/b', 'a/b'],
+    ['GH_REPO=a/b gh pr merge 7', 'a/b'],
+    ['gh pr view 1 -R c/d && gh pr merge 7 -R a/b', 'a/b'],
     ['gh pr merge https://github.com/a/b/pull/7', 'a/b'],
     ['gh api -X PUT repos/a/b/pulls/7/merge', 'a/b'],
 ] as const)

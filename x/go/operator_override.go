@@ -214,8 +214,8 @@ func overrideClones() [][2]string {
 }
 
 // x-mod-guard's read of the brake before a raw merge under the override: one reader, brakeOn, and a failed read exits non-zero
-func brakeCheckPlan(r *Run, flags Flags) (any, error) {
-	repo, err := repoOf(flags)
+func brakeCheckPlan(r *Run, named string) (any, error) {
+	repo, err := repoOf(Flags{"repo": named})
 	if err != nil {
 		return nil, err
 	}

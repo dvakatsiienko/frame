@@ -390,8 +390,9 @@
             ],
             "flags": {
                 "brake-check": {
-                    "description": "read one repo's brake, its label, record and reverts, as x-mod-guard does before a raw merge under operator-override; a failed read exits non-zero; takes no pr",
-                    "type": "boolean"
+                    "description": "read this repo's brake, its label, record and reverts, as x-mod-guard does before a raw merge under operator-override; a failed read exits non-zero; takes no pr",
+                    "type": "string",
+                    "value": "owner/name"
                 },
                 "dima-ok": {
                     "description": "dima's word on a self-edit with no pre-approved sign or on a held pr: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; a merge it never lifts the brake for, a --release-brake or --release-hold it releases",
