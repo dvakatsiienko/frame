@@ -12,10 +12,23 @@ import (
 // a git-crypt repo standing in for frame; its pr head lives only on origin's refs/pull/7/head
 func verifyWorld(t *testing.T) (main, prHead string) {
 	t.Helper()
+	skipWithoutGitCrypt(t)
+	root := seeded(t, "verify", func(root string) { buildVerifyWorld(t, root) })
+	return filepath.Join(root, "main"), readOr(filepath.Join(root, "head"), "")
+}
+
+// outside the seed's build: a skip there kills its once, and every later test fatals instead of skipping
+func skipWithoutGitCrypt(t *testing.T) {
+	t.Helper()
 	if _, err := exec.LookPath("git-crypt"); err != nil {
 		t.Skip("git-crypt is not installed")
 	}
-	main = repo(t)
+}
+
+func buildVerifyWorld(t *testing.T, root string) {
+	t.Helper()
+	main := filepath.Join(root, "main")
+	copyFixture(t, seedRepo(t), main)
 	c := exec.Command("git-crypt", "init")
 	c.Dir, c.Env = main, cleanEnv()
 	if out, err := c.CombinedOutput(); err != nil {
@@ -25,8 +38,8 @@ func verifyWorld(t *testing.T) (main, prHead string) {
 	write(t, filepath.Join(main, "secret.txt"), "plaintext\n")
 	gitT(t, main, "add", ".")
 	gitT(t, main, "commit", "-q", "-m", "secret")
-	origin := filepath.Join(t.TempDir(), "origin.git")
-	gitT(t, filepath.Dir(origin), "init", "-q", "--bare", "-b", "main", origin)
+	origin := filepath.Join(root, "origin.git")
+	gitT(t, root, "init", "-q", "--bare", "-b", "main", origin)
 	gitT(t, main, "remote", "add", "origin", "https://github.com/o/r.git")
 	gitT(t, main, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
 	// a global pushInsteadOf (https → ssh) outranks insteadOf on a push
@@ -37,11 +50,10 @@ func verifyWorld(t *testing.T) (main, prHead string) {
 	write(t, filepath.Join(main, "change.txt"), "the pr's change\n")
 	gitT(t, main, "add", "change.txt")
 	gitT(t, main, "commit", "-q", "-m", "the pr's change")
-	prHead = gitT(t, main, "rev-parse", "HEAD")
+	write(t, filepath.Join(root, "head"), gitT(t, main, "rev-parse", "HEAD"))
 	gitT(t, main, "push", "-q", "origin", "HEAD:refs/pull/7/head")
 	gitT(t, main, "switch", "-q", "main")
 	gitT(t, main, "branch", "-q", "-D", "coder/x")
-	return main, prHead
 }
 
 func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {

@@ -802,6 +802,8 @@ type ciJob struct {
 	dir  string
 	env  []string
 	argv []string
+	// runs around argv, never named in what the caller reads
+	wrap []string
 }
 
 // a direct commit on main reaches ci only after the push, so the jobs ci.yml runs for the
@@ -817,7 +819,8 @@ func runCI(tree string, paths []string) (string, error) {
 		if job.dir != tree {
 			command = "(" + home(job.dir) + ") " + command
 		}
-		if done, _ := run(job.dir, job.env, "", job.argv[0], job.argv[1:]...); !done.ok {
+		argv := append(slices.Clone(job.wrap), job.argv...)
+		if done, _ := run(job.dir, job.env, "", argv[0], argv[1:]...); !done.ok {
 			lines := nonBlank(done.log)
 			return "", &Fail{Refused: true, Msg: command + " is red — its output is above; nothing was committed",
 				Next: command, Log: lines[max(0, len(lines)-40):]}
@@ -839,7 +842,7 @@ func ciJobs(tree string, paths []string) []ciJob {
 		if module := goModule(tree, filepath.Dir(filepath.Join(tree, path))); module != "" && !seen[module] {
 			seen[module] = true
 			// the same isolation pnpm x-go:test runs under: no global gitconfig reaches a fixture repo
-			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, []string{"go", "test", "./..."}})
+			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, []string{"go", "test", "./..."}, cpuBudgetLog(tree, module)})
 		}
 	}
 	if ts {
@@ -847,11 +850,21 @@ func ciJobs(tree string, paths []string) []ciJob {
 		hooked := preCommitRuns(tree)
 		for _, script := range []string{"typecheck", "test"} {
 			if scripts[script] != "" && !hooked[script] {
-				jobs = append(jobs, ciJob{tree, nil, []string{"pnpm", script}})
+				jobs = append(jobs, ciJob{dir: tree, argv: []string{"pnpm", script}})
 			}
 		}
 	}
 	return jobs
+}
+
+// a repo that keeps a test-cpu-budget logs this run's cost; log only, since a commit never reds on cost
+func cpuBudgetLog(tree, module string) []string {
+	suite, err := filepath.Rel(tree, module)
+	budget := filepath.Join(tree, "script/test-cpu-budget.sh")
+	if err != nil || !exists(budget) {
+		return nil
+	}
+	return []string{budget, "--log-only", strings.ReplaceAll(suite, "/", "-")}
 }
 
 var (
@@ -987,10 +1000,7 @@ func enterMain(repo string) error {
 }
 
 func midOperation() bool {
-	return slices.ContainsFunc([]string{"MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"}, func(name string) bool {
-		path, _ := git("rev-parse", "--path-format=absolute", "--git-path", name)
-		return path.ok && exists(path.out)
-	})
+	return slices.ContainsFunc(gitPaths("", "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"), exists)
 }
 
 func isMerging() bool {
@@ -1064,12 +1074,25 @@ func pushHome() (string, string, error) {
 
 // worktreeOf answers the repo's common git dir and whether tree is a linked worktree of it
 func worktreeOf(tree string) (common string, linked bool, err error) {
-	own, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+	both, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir")
 	if err != nil {
 		return "", false, err
 	}
-	common, err = mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-common-dir")
-	return common, err == nil && own != common, err
+	own, common, _ := strings.Cut(both, "\n")
+	return common, own != common, nil
+}
+
+// where git keeps each named file, one spawn for them all; nil when git could not say
+func gitPaths(cwd string, names ...string) []string {
+	args := []string{"rev-parse", "--path-format=absolute"}
+	for _, name := range names {
+		args = append(args, "--git-path", name)
+	}
+	got, _ := gitIn(cwd, args...)
+	if !got.ok {
+		return nil
+	}
+	return strings.Split(got.out, "\n")
 }
 
 func top() (string, error)  { return mustGit("rev-parse", "rev-parse", "--show-toplevel") }

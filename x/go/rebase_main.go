@@ -44,9 +44,8 @@ func readOntoRecord(path, branch string) (ontoRecord, bool) {
 
 // the branch a stopped rebase rewrites; any stopped rebase or am is codie's to finish, never the verb's
 func pausedRebase() (name string, paused bool) {
-	for _, state := range []string{"rebase-merge", "rebase-apply"} {
-		dir, _ := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-path", state)
-		if dir != "" && exists(dir) {
+	for _, dir := range gitPaths("", "rebase-merge", "rebase-apply") {
+		if exists(dir) {
 			head := strings.TrimSpace(firstLine(filepath.Join(dir, "head-name")))
 			return or(strings.TrimPrefix(head, "refs/heads/"), "a detached HEAD"), true
 		}

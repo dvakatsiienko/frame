@@ -49,6 +49,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **lane** (the family) — the git door for one session's branch: commit, push, pr, merge main, unlock, seed, decamp, gate. 📌 not the fleet's lane, a working day with dima present (`fleet-vibe`)
 - **gate** — the commit-msg check `x lane gate`: a contract change carries its glossary or adr, a growing skill was groomed, app code carries its ftr line; `--held` is its other mode, the purpose lint over a local layer's own registry files
 - **gate turn** — the one machine-wide slot a commit or push hook runs in, first come, through `script/gate-queue.sh`; x takes it itself, a wrapper never holds it. avoid: queue lock
+- **test-cpu-budget** — a suite's line in user + sys cpu-seconds, one row in `script/test-cpu-budget.tsv`; only a whole run counts, and it reds at the go doors by hand, never in ci or at a commit
 - **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; x's is its registry
 - **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it
 - **held files** — the unstaged and untracked work outside a commit's paths, set aside while the hooks run and put back byte for byte. avoid: stash

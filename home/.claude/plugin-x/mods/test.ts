@@ -15,6 +15,7 @@ import {
     readdirSync,
     realpathSync,
     rmSync,
+    writeFileSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
@@ -522,6 +523,17 @@ if (import.meta.main) {
         (untouchedRuns ? `, ${untouchedRuns} skipped as untouched` : '') +
         whys.map((why) => `, ${why}`).join('');
     console.log(`\n${line}`);
+    // index-run logs user + sys for a run marked whole: every mod ran, none named or skipped
+    const wholeMark = process.env.INDEX_RUN_WHOLE_MARK;
+    if (
+        wholeMark &&
+        !process.env.VITEST &&
+        !skipped &&
+        !untouchedRuns &&
+        !named.length &&
+        !values.extra
+    )
+        writeFileSync(wholeMark, '');
     logRun(
         process.argv.slice(2).join(' '),
         reran ? `${line} (timed-out files ran again)` : line,

@@ -72,7 +72,32 @@ unset $(git rev-parse --local-env-vars)
 step_start=$(date +%FT%T%z)
 step_load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
 step_code=0
+# user + sys in the row's last column, only for a run the suite marks whole; bash's own count of its children, no spawn, and a $(times) would read a fresh subshell's zeros
+children_ms() {
+    local user sys total=0 value minutes seconds
+    times >"$tmp/times"
+    {
+        read -r _
+        read -r user sys
+    } <"$tmp/times"
+    for value in "$user" "$sys"; do
+        minutes=${value%%m*} seconds=${value#*m}
+        seconds=${seconds%s}
+        seconds=${seconds/,/.}
+        total=$((total + 10#$minutes * 60000 + 10#${seconds%.*} * 1000 + 10#${seconds#*.}))
+    done
+    step_ms=$total
+}
+export INDEX_RUN_WHOLE_MARK=$tmp/whole
+children_ms
+step_before=$step_ms
 "$@" || step_code=$?
+children_ms
+step_cpu=-
+if [ -e "$INDEX_RUN_WHOLE_MARK" ]; then
+    step_used=$((step_ms - step_before))
+    step_cpu=$((step_used / 1000)).$((step_used % 1000 / 100))
+fi
 # the one config line that stops git in every tree: a gate that set it goes red and it goes back (core.bare, 2026-11-06)
 if [ "$(git config --local core.bare)" = true ]; then
     git config --local core.bare false
@@ -83,6 +108,6 @@ fi
 if [ -z "${VITEST:-}" ]; then
     step_state=${X_STATE:-$HOME/.local/state/x}
     mkdir -p "$step_state"
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$step_start" "$step_load" "$step_source" "$INDEX_RUN_BRANCH" "$step_head" "$SECONDS" "$step_code" "$*" >>"$step_state/gate-steps.log"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$step_start" "$step_load" "$step_source" "$INDEX_RUN_BRANCH" "$step_head" "$SECONDS" "$step_code" "$*" "$step_cpu" >>"$step_state/gate-steps.log"
 fi
 exit "$step_code"

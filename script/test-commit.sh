@@ -52,7 +52,11 @@ fi
 
 code=0
 case $mode in
-whole) "$@" || code=$? ;;
+whole)
+    "$@" || code=$?
+    # index-run logs user + sys for a run marked whole; a run nested under vitest is a fixture, and it would mark a related run
+    [ -n "${VITEST:-}" ] || [ -z "${INDEX_RUN_WHOLE_MARK:-}" ] || : >"$INDEX_RUN_WHOLE_MARK"
+    ;;
 related) pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" || code=$? ;;
 esac
 printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$branch" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" >>"$state/test-commit.log"
