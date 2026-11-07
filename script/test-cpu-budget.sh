@@ -22,7 +22,7 @@ if [ "$1 ${2-}" = "go test" ]; then
     whole=1
     for arg in "${@:3}"; do
         case $arg in
-        -count=* | -v | -json | . | ./...) ;;
+        -count=1 | -v | -json | . | ./...) ;;
         *) whole= ;;
         esac
     done
@@ -67,7 +67,8 @@ fi
 
 budget=-
 if [ -r "$here/test-cpu-budget.tsv" ]; then
-    while IFS=$'\t' read -r name line _; do
+    # a last row with no newline still counts
+    while IFS=$'\t' read -r name line _ || [ -n "$name" ]; do
         [ "$name" = "$suite" ] && budget=$line
     done <"$here/test-cpu-budget.tsv"
 fi

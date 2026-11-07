@@ -43,7 +43,7 @@ function fixture({
     chmodSync(copy, 0o755);
     writeFileSync(
         join(dir, 'test-cpu-budget.tsv'),
-        `# suite\tcpu-s\tdate\treason\nx-go\t${budget}\n`,
+        `# suite\tcpu-s\tdate\treason\nx-go\t${budget}`,
     );
     const bin = join(dir, 'bin');
     mkdirSync(bin);
@@ -122,6 +122,7 @@ describe('a run that is not whole never counts', () => {
         ['a -run filter', ['x-go', 'go', 'test', '-run', 'TestOne', './...']],
         ['a -run= filter', ['x-go', 'go', 'test', '-run=TestOne', './...']],
         ['a -skip', ['x-go', 'go', 'test', '-skip=TestOne', './...']],
+        ['many runs', ['x-go', 'go', 'test', '-count=5', './...']],
         ['a tag', ['x-go', 'go', 'test', '-tags', 'nostacks', './...']],
         ['one test file', ['x-go', 'go', 'test', 'a_test.go']],
     ])('%s logs no row and never reds', (_name, args) => {

@@ -387,7 +387,15 @@ func TestCommitOnMainLogsAGoRunPastItsBudgetAndStillCommits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	mode, err := os.Stat("../../script/test-cpu-budget.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
 	write(t, filepath.Join(dir, "script/test-cpu-budget.sh"), string(script))
+	// the real file's mode: a script with no exec bit reds every door that runs it
+	if err := os.Chmod(filepath.Join(dir, "script/test-cpu-budget.sh"), mode.Mode()); err != nil {
+		t.Fatal(err)
+	}
 	write(t, filepath.Join(dir, "script/test-cpu-budget.tsv"), "mod\t0\t2026-11-07\tany run is past it\n")
 	write(t, filepath.Join(dir, "mod/go.mod"), "module m\n\ngo 1.21\n")
 	write(t, filepath.Join(dir, "mod/m_test.go"), "package m\n\nimport \"testing\"\n\nfunc TestM(t *testing.T) {}\n")
