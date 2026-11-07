@@ -31,8 +31,8 @@ ordinal: 18998
 - [ ] #13 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
 - [ ] #14 standing: FRM-525 cpu, watch until 2026-11-13
 - [ ] #15 FRM-520 x lane commit runs x/go tests on a gate change: its chunk's owner
-- [ ] #16 standing: performance topic, wing 1 owns it
-- [ ] #17 FRM-497 speak meter: starts with speak v2, not before
+- [ ] #16 FRM-497 speak meter: starts with speak v2, not before
+- [ ] #17 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 <!-- AC:END -->
 
 ## Implementation Notes
