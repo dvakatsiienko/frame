@@ -27,11 +27,11 @@ main_pid=$(sed -n 's/^pid=//p' "$main_file" 2>/dev/null)
 # a dead main leaves the seat empty until a start fills it, so no wing's guard lifts in the gap
 is_main() { [ "$main_pid" = "$me" ]; }
 
-# a compact, a known wing and a session her registry names a wing never take the seat, even an empty one
+# a compact, a /clear, a known wing and a session her registry names a wing never take the seat, even an empty one
 takes_seat() {
 	is_main && return 0
 	[ -n "$session" ] && [ "$session" = "$(sed -n 's/^session=//p' "$main_file" 2>/dev/null)" ] && return 0
-	[ "$source" = compact ] && return 1
+	case "$source" in compact | clear) return 1 ;; esac
 	grep -q "^$session " "$state/forks.log" 2>/dev/null && return 1
 	case "$entry" in *🪽* | *wing*) return 1 ;; esac
 	[ -z "$main_pid" ] || ! kill -0 "$main_pid" 2>/dev/null
@@ -108,16 +108,11 @@ fork-edit | fork-bash)
 	}
 	if [ "$1" = fork-edit ]; then
 		file=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$input")
+		# main's gitignored .scratch holds a lane's spec, whichever clio runs the lane
+		case "$file" in */.scratch/*) exit 0 ;; esac
 		in_main_checkout "$(dirname "$file")" || exit 0
 	else
 		cmd=$(jq -r '.tool_input.command // ""' <<<"$input")
-		cwd=$(jq -r '.cwd // ""' <<<"$input")
-		hit=""
-		# redirect and tee targets, resolved against the cwd
-		for t in $(grep -oE '(>>?|tee( -a)?) *[^ ;&|<>]+' <<<"$cmd" | sed -E 's/^(>>?|tee( -a)?) *//'); do
-			case "$t" in /dev/*) continue ;; /*) f=$t ;; "~"/*) f="$HOME/${t#\~/}" ;; *) f="$cwd/$t" ;; esac
-			in_main_checkout "$(dirname "$f")" && { hit=$f; break; }
-		done
 		# its own pocket items (pocket-add --wing <N>) are the one commit a fork makes in main, or x-mod-holds keeps them held (FRM-472 07c)
 		q="[\"']"
 		# anchored: _clio/pocket/tasks/pk-<name>.md or pocket/tasks/…, no / after pk- (so no ..), a cd only to frame or _clio
@@ -126,12 +121,10 @@ fork-edit | fork-bash)
 		home="(~|$HOME)/frame(/_clio)?/?"
 		# one line, no substitution: grep matches per line, and $( or a backtick runs inside the quotes
 		case "$cmd" in *$'\n'* | *$'\t'* | *$'\r'* | *'$'* | *'`'* | *'*'* | *'?'* | *'['* | *'<'* | *'>'* | *'('*) ;; *)
-			grep -qE "^ *(cd $home && )?x lane commit [^- ;&|][^ ;&|]* -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
+			grep -qE "^ *(cd $home && )?(timeout [0-9]+ )?x lane commit [^- ;&|][^ ;&|]* -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
 		esac
-		# an in-place verb writes where the shell stands
-		if [ -z "$hit" ] && grep -qE '(^|[;&|] *)(sd|sed -i|mv|cp|trash|rm|git (commit|add|checkout|reset|stash)|x lane commit)( |$)' <<<"$cmd"; then
-			in_main_checkout "$cwd" && hit=$cwd
-		fi
+		# the guard's own parser, so a quoted `>` or a prose word stays text; a crash here passes the call, as no guard stands
+		hit=$(node "$(dirname "$0")/../../script/fork-bash-check.ts" <<<"$input" 2>/dev/null)
 		[ -n "$hit" ] || exit 0
 	fi
 	sid=$(jq -r '.session_id // ""' <<<"$input" | cut -c1-8)

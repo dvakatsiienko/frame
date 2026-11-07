@@ -103,6 +103,18 @@ describe('fork-guard', () => {
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
     });
 
+    test('a /clear never takes an empty seat', () => {
+        const state = deadMain();
+        const out = run(
+            ['start'],
+            String(process.pid),
+            state,
+            '{"session_id":"s-new","source":"clear"}',
+        );
+        expect(out.stdout).toContain("you are clio's wing");
+        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+    });
+
     test('a wing in forks.log resuming finds the seat empty and stays a wing', () => {
         const state = deadMain();
         writeFileSync(join(state, 'forks.log'), 's-wing 2026-11-07 14:01\n');
@@ -303,6 +315,130 @@ describe('fork-guard fork-edit', () => {
             }),
         ).stdout;
 
+    const bashIn = (cwd: string, command: string) =>
+        run(
+            ['fork-bash'],
+            String(process.ppid),
+            state,
+            JSON.stringify({
+                cwd,
+                session_id: 'd1bbf86b-x',
+                tool_input: { command },
+            }),
+        ).stdout;
+
+    test.each([
+        ['git -C', () => `git -C ${repo} commit -m x -- a`],
+        ['git add -C', () => `git -C ${repo} add a`],
+        ['git --git-dir', () => `git --git-dir=${repo}/.git commit -m x`],
+        ['a cd before a redirect', () => `cd ${repo} && echo x > y`],
+        ['a quoted redirect', () => `echo x > "${repo}/y"`],
+        ['touch', () => `touch ${repo}/y`],
+        ['a variable it can read', () => `d=${repo}; touch $d/y`],
+        ['sed -i', () => `sed -i '' s/a/b/ ${repo}/y`],
+        ['cp', () => `cp /tmp/f ${repo}/y`],
+        ['tee', () => `echo x | tee ${repo}/y`],
+        ['a heredoc into a file', () => `cat > ${repo}/y <<'EOF'\ntext\nEOF`],
+        ['python open', () => `python3 -c "open('${repo}/y', 'w')"`],
+        ['xargs rm', () => `echo y | xargs rm ${repo}/y`],
+        ['find -delete', () => `find ${repo} -name y -delete`],
+        ['a nested shell', () => `bash -c 'touch ${repo}/y'`],
+    ])('a real write into a main checkout is refused: %s', (_, command) => {
+        expect(bashIn(tree, command())).toContain('«fork-d1bbf86b»');
+    });
+
+    test('a plain verb standing in a main checkout is refused', () => {
+        expect(bashIn(repo, 'rm a.txt')).toContain('«fork-d1bbf86b»');
+        expect(bashIn(repo, 'x lane commit /tmp/m.txt -- a.md')).toContain(
+            '«fork-d1bbf86b»',
+        );
+    });
+
+    test.each([
+        ['a >= in a jq string', `jq 'select(.t>="a")' /tmp/f`],
+        ['a > in an rg pattern', `rg 'id>"' /tmp/f`],
+        [
+            'tee inside a word',
+            'backlog task edit PK-1 --append-notes "his steer on it"',
+        ],
+        ['a > in prose', `echo "a > b" `],
+        ['a variable it cannot read', '> $UNKNOWN/file'],
+        ['git reads', 'git status; git log -1; git rev-parse HEAD'],
+        ['a tree added from main', 'git worktree add /tmp/t main'],
+    ])('a read in a main checkout passes: %s', (_, command) => {
+        expect(bashIn(repo, command)).toBe('');
+    });
+
+    test.each([
+        ['find -exec is walked, not a write', 'find . -exec grep -l x {} +'],
+        ['a mode is no path', `chmod +x ${tree}/a.sh`],
+        ['a size is no path', `truncate -s 0 ${tree}/a`],
+        ['an unknown variable in git -C', 'git -C "$T" commit -m x'],
+        ['a cd into an unknown variable', 'cd "$T" && rm a'],
+        [
+            'python text in a heredoc into a tree',
+            `cat > ${tree}/p.py <<'EOF'\nopen('o', 'w')\nEOF`,
+        ],
+    ])('a line standing in a main checkout passes: %s', (_, command) => {
+        expect(bashIn(repo, command)).toBe('');
+    });
+
+    test.each([
+        ['mv takes its source away', () => [repo, 'mv a.txt /tmp/b']],
+        [
+            'a repo verb under .scratch acts on main',
+            () => [repo, `cd ${repo}/.scratch && git commit -am x`],
+        ],
+        [
+            'python after a cd',
+            () => [tree, `cd ${repo} && python3 -c "open('y', 'w')"`],
+        ],
+        [
+            'a python heredoc',
+            () => [repo, `python3 <<'EOF'\nopen('y', 'w')\nEOF`],
+        ],
+        ['find -delete with no path', () => [repo, 'find -name y -delete']],
+    ])('a real write still refused: %s', (_, line) => {
+        const [cwd, command] = line();
+        expect(bashIn(cwd as string, command as string)).toContain(
+            '«fork-d1bbf86b»',
+        );
+    });
+
+    test("main's .scratch takes a wing's spec, by Bash and by Edit", () => {
+        expect(bashIn(tree, `echo x > ${repo}/.scratch/lane/spec.md`)).toBe('');
+        expect(edit(String(process.ppid), join(repo, '.scratch/spec.md'))).toBe(
+            '',
+        );
+    });
+
+    test('a pocket commit under the timeout a background call needs passes', () => {
+        expect(
+            bashIn(
+                repo,
+                'timeout 600 x lane commit /tmp/m -- pocket/tasks/pk-9.md',
+            ),
+        ).toBe('');
+        expect(
+            bashIn(repo, 'timeout 600 x lane commit /tmp/m -- other/b.md'),
+        ).toContain('«fork-d1bbf86b»');
+    });
+
+    test('an empty .git folder is no repo, so a write under it passes', () => {
+        const home = mkdtempSync(join(tmpdir(), 'fg-home-'));
+        mkdirSync(join(home, '.git'));
+        expect(bashIn(home, 'touch y; mkdir -p a/b')).toBe('');
+    });
+
+    test('work in its own tree passes, a cd into it is followed', () => {
+        expect(bashIn(tree, 'rm a.txt; touch b; git commit -m x')).toBe('');
+        expect(
+            bashIn(repo, `cd ${tree} && x lane commit /tmp/m -- a > log`),
+        ).toBe('');
+        expect(bashIn(repo, `git -C ${tree} commit -m x`)).toBe('');
+        expect(bashIn(repo, `echo x > ${tree}/y`)).toBe('');
+    });
+
     test('a fork commits its own pocket items in a main checkout', () => {
         expect(
             bash(
@@ -342,7 +478,6 @@ describe('fork-guard fork-edit', () => {
         'x lane commit /tmp/m.txt -- home/.claude/pocket/tasks/pk-1.md',
         'cd ~/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9/../../../home/.claude/CLAUDE.md"',
         'x lane commit --amend -- _clio/pocket/tasks/pk-9.md',
-        'cd /etc && x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
         'git reset --hard\nx lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
         'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 $(rm -rf x).md"',
         'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 `rm -rf x`.md"',

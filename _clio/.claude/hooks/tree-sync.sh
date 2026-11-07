@@ -20,8 +20,18 @@ sync_tree() {
 		fi
 		return 0
 	fi
-	if output=$(git -C "$tree" merge --no-edit --quiet refs/heads/main 2>&1); then
+	# under the hook's own limit, since a merge the hook killed would stay half done
+	local limit="${TREE_SYNC_MERGE_LIMIT:-20}" status
+	output=$(timeout "$limit" git -C "$tree" merge --no-edit --quiet refs/heads/main 2>&1)
+	status=$?
+	if [ "$status" -eq 0 ]; then
 		echo "🌿 tree synced: $behind new from main"
+		return 0
+	fi
+	if [ "$status" -eq 124 ]; then
+		# this branch runs only on a clean tree, so a reset can take nothing of the session's
+		git -C "$tree" reset --merge --quiet
+		echo "🌿 tree $behind behind main, the merge outlasted ${limit} s and was undone, the next prompt tries again"
 		return 0
 	fi
 	if git -C "$tree" rev-parse --verify --quiet MERGE_HEAD >/dev/null; then
@@ -65,7 +75,8 @@ for _ in 1 2 3 4 5; do
 	grep -q 'index.lock' <<<"$output" || break
 	sleep 1
 done
-[ "$(git -C "$root" rev-parse refs/heads/main)" = "$(git -C "$tree" rev-parse HEAD)" ] || {
+# an ancestor, so a peer moving main right after is no refusal
+git -C "$root" merge-base --is-ancestor "$(git -C "$tree" rev-parse HEAD)" refs/heads/main || {
 	echo "tree-sync land: main refused the fast-forward: $output" >&2
 	exit 1
 }
@@ -73,12 +84,21 @@ done
 cd "$root" || exit 1
 x lane push --apply || exit 1
 changed=$(git -C "$root" diff --name-only "$before" refs/heads/main)
+# a bump writes its manifest in main, and left there it is a chore for whoever comes next
+bump() {
+	local name=$1 manifest=$2 message="$tree/.scratch/plugin-bump-message.txt"
+	x plugin bump --apply "$name" || exit 1
+	mkdir -p "$tree/.scratch"
+	echo "🔧 plugin-$name: bump for the landing of $branch" >"$message"
+	x lane commit "$message" -- "$manifest" || exit 1
+	x lane push --apply || exit 1
+}
 if grep -q '^_clio/plugin-clio/' <<<"$changed"; then
-	x plugin bump --apply clio || exit 1
+	bump clio _clio/plugin-clio/.claude-plugin/plugin.json
 fi
 # mods run from source, so only the rest of plugin x needs a bump
 if grep '^home/.claude/plugin-x/' <<<"$changed" | grep -qv '^home/.claude/plugin-x/mods/'; then
-	x plugin bump --apply x || exit 1
+	bump x home/.claude/plugin-x/.claude-plugin/plugin.json
 fi
 for other in "$trees"/fork-*; do
 	[ -d "$other" ] && [ "$other" != "$tree" ] || continue

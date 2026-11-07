@@ -151,7 +151,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/mods/m.ts', 'm\n');
         w.land();
         expect(w.xCalls()).toBe(
-            'frame: lane push --apply\nframe: plugin bump --apply clio\n',
+            `frame: lane push --apply\nframe: plugin bump --apply clio\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- _clio/plugin-clio/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
         );
     });
 
@@ -163,7 +163,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/skills/s.md', 's\n');
         w.land();
         expect(w.xCalls()).toBe(
-            'frame: lane push --apply\nframe: plugin bump --apply x\n',
+            `frame: lane push --apply\nframe: plugin bump --apply x\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- home/.claude/plugin-x/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
         );
     });
 
@@ -188,6 +188,50 @@ describe('tree-sync land', () => {
         expect(existsSync(join(clean, 'c.txt'))).toBe(true);
         expect(readFileSync(join(dirty, 'a.txt'), 'utf8')).toBe('edit\n');
         expect(existsSync(join(dirty, 'c.txt'))).toBe(false);
+    });
+
+    test('a merge that outlasts its limit is stopped and aborted, the tree as it was', () => {
+        const w = world();
+        w.write(w.root, 'b.txt', 'b\n');
+        w.write(w.tree, 'c.txt', 'c\n');
+        const head = w.git(w.tree, 'rev-parse', 'HEAD').stdout;
+        const bin = join(w.root, '..', 'bin');
+        // a commit hook is what a slow signing looks like to the merge
+        w.git(w.root, 'config', 'core.hooksPath', join(bin, 'hooks'));
+        mkdirSync(join(bin, 'hooks'));
+        writeFileSync(
+            join(bin, 'hooks', 'pre-merge-commit'),
+            '#!/bin/bash\nsleep 30\n',
+        );
+        chmodSync(join(bin, 'hooks', 'pre-merge-commit'), 0o755);
+        const out = spawnSync('bash', [SYNC], {
+            encoding: 'utf8',
+            env: { ...w.env, TREE_SYNC_MERGE_LIMIT: '1' },
+            input: JSON.stringify({ session_id: SID }),
+        });
+        expect(w.git(w.tree, 'rev-parse', 'HEAD').stdout).toBe(head);
+        expect(existsSync(join(w.tree, 'b.txt'))).toBe(false);
+        expect(w.git(w.tree, 'status', '--porcelain').stdout).toBe('');
+        expect(out.stdout).toContain('tree 1 behind main');
+    });
+
+    test('a peer moving main right after the fast-forward is no refusal', () => {
+        const w = world();
+        w.write(w.tree, 'c.txt', 'c\n');
+        // the post-merge hook is the peer: it commits on main as our fast-forward ends
+        const bin = join(w.root, '..', 'bin');
+        mkdirSync(join(bin, 'hooks'));
+        w.git(w.root, 'config', 'core.hooksPath', join(bin, 'hooks'));
+        writeFileSync(
+            join(bin, 'hooks', 'post-merge'),
+            `#!/bin/bash\nunset GIT_DIR GIT_INDEX_FILE\ngit -C '${w.root}' commit -q --allow-empty -m peer\n`,
+        );
+        chmodSync(join(bin, 'hooks', 'post-merge'), 0o755);
+        const out = w.land();
+        expect([out.status, w.xCalls()]).toEqual([
+            0,
+            'frame: lane push --apply\n',
+        ]);
     });
 
     test("a peer's brief lock on main is waited out", () => {
