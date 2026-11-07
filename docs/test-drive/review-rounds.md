@@ -40,6 +40,8 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-07 · frm-521 pr 139 · 1 round, 02:07 verdict on a 01:32 start, most of it the `--long` slot · keep
 - 2026-11-07 · mods lane 5 · 5 rounds in about 2 h, each under 20 min, none past the 30 min line; scope grew at clio's fix round, so the 3-round stop never fired · keep
 - 2026-11-07 · ci made boring · the graded lines show which layer found what · keep
+- 2026-11-03 · FRM-494 clio-lean quick lane · 1 local review (wisphunter, 5 findings, all real), 4 sixth sense rounds, the last for a live proof · logged late, at its close
+- 2026-11-03 · FRM-496 clio-lean quick lane · 2 sixth sense rounds, round 1's duplicate wish-cover runs fixed · logged late, at its close
 ## graded lines — one per local review, from codie's done report, copied by clio at land
 
 - 2026-10-22 · frame#95 · matt's code-review, spec card (Opus 5.5) · 4 useful, 3 noise · useful
