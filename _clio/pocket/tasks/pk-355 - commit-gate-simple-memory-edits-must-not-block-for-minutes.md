@@ -28,4 +28,8 @@ measured 11-07, wing 2: a commit's suite 14-36 s at load 8-41; a push about 40 s
 a draft to take or drop, never landed: /Users/dima/frame/.claude/worktrees/clio-wing-2/.scratch/winged-v2/gate-draft.patch and gate-draft-memory-only.sh beside it. an allow-list of memory paths runs only the 10 tests reading memory, about 6 s, at commit and in the push twin; a landing bumps first and pushes once. not proven red; recipe-shape's 2 reds on that set in the tree, unread.
 
 linear may own part of this: FRM-534 vitest at commit, related tests only; FRM-520; FRM-530. dima asked for a pocket item, so it stays here until wing 1 reads them. a red-proof round on a mod reruns the whole suite per plant, 2 min each at load: part of the same waste.
+
+PK-355:W4 (2026-11-07 22:26, dima): no, solve it yourself to unblock you now so we can finish winged clio v2 today sooner, but the full-scale fix is for wing 1 after monday.
+
+wing 2 lands the small fix tonight: memory-only commits and pushes run only the tests reading memory, a landing pushes once. the rethink is still wing 1's, after monday.
 <!-- SECTION:NOTES:END -->
