@@ -921,7 +921,7 @@ func renovateAuthor(login string) bool {
 
 // a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
 // makes it a member's pr, as bytes' review-renovate.yml reads it; an unread list, or one cut short of the head (github
-// stops at 250, a push can land between reads), counts as that push
+// stops at 250, a push can land between reads), counts as that push; a changed workflow file asks the clean too
 func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
 	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 	if c.OK || !renovateAuthor(pr.User.Login) {
