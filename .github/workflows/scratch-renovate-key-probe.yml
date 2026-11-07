@@ -1,0 +1,27 @@
+name: scratch-renovate-key-probe
+
+# a scratch: asks for the key from a member's branch and prints only present or empty
+on:
+  push:
+    branches: ['scratch/renovate-key-probe']
+
+permissions:
+  contents: read
+
+jobs:
+  no-environment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          KEY: ${{ secrets.RENOVATE_APP_KEY }}
+        run: 'if [ -n "$KEY" ]; then echo "key: present"; else echo "key: empty"; fi'
+
+  with-environment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: renovate-main-only
+    steps:
+      - env:
+          KEY: ${{ secrets.RENOVATE_APP_KEY }}
+        run: 'if [ -n "$KEY" ]; then echo "key: present"; else echo "key: empty"; fi'
