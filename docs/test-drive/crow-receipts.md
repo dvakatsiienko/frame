@@ -58,3 +58,6 @@ once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a 
 
 ### round, 2026-11-04 halt
 6 `#dima-caught` lines in the day's flawlog; the first-flagged share was not counted against `notes.jsonl`: the halt ran out of window. crow's notes 12:42 and 14:47 were real catches, vetted ok. no verdict from this round.
+
+### round, 2026-11-07 halt
+2 `#dima-caught` lines in the night's flawlog (the 03:00 wind, PK-336's close); no crow note came first on either, read by a grep of notes.jsonl for wind, undercount and PK-336: inference on wording. crow caught 2 others of mine first, the merge-line stall and the wrong misquote it withdrew.

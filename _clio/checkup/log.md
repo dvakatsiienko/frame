@@ -35,3 +35,4 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-11-01 · skill-shape · 🔴 1 strength-3 open: the evergreen read hand-computes renovate rows (a script) · asked: orbit; 24 lows carried unchecked, thin read
 - 2026-11-01 · correction · the day's run was partial: evergreen not run (its Wednesday turn), install-census without fire counts, recipe-candidates without the research-doc scan, skill-shape a thin read; fast-jev was a frozen trial, not an enable with no install · —
 - 2026-11-05 · naming-entity-first · 🟢 316 names, 0 lead with a verb · —
+- 2026-11-07 · boot-digest · 🟢 all checks green at the 03:06 pickup, read from its own output · —
