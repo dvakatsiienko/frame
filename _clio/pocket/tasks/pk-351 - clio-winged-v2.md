@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T19:08:00Z'
+updated_date: '2026-11-07T19:21:00Z'
 labels:
   - m
   - clio-wing-2
@@ -182,4 +182,8 @@ PK-351:W75 (2026-11-07 20:47, dima): on a missed halt: in this case finished lin
 his 20:47 tick o58: Q13 flyways never close, as printed. 20:42: the rest of step 3 agreed. names: flyway; seats clio-main, clio-wing-N.
 
 PK-351:W76 (2026-11-07 20:49, dima): note, don't forget: all clio lanes should be aware of any other clio lanes, what everyone does.
+
+PK-351:W77 (2026-11-07 21:19, dima): another small tweak to main clio's halt, do it now: when main clio halts, any existing wings have to halt too. instead of me asking them, i just run halt in the main clio window and she takes care of the wings. any wing that is parked goes through its own halt and hands everything over to clio, and clio then gracefully stops all of her wings.
+
+step 4 ⚖️ worth it (clio-lanes, name is a pick until his tick): removes his re-explaining and clios guessing what the others hold. cheaper door turned down: messaging each clio wakes them and goes stale. upkeep: one script. 🔌 fleet wired: the SessionStart hook and clio:wing.
 <!-- SECTION:NOTES:END -->
