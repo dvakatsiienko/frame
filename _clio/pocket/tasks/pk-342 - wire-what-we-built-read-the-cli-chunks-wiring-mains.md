@@ -4,7 +4,7 @@ title: 'wire what we build, cli and mods: chores go to the wings, main coordinat
 status: open
 assignee: []
 created_date: '2026-11-06T19:53:00Z'
-updated_date: '2026-11-07T13:27:00Z'
+updated_date: '2026-11-07T13:36:00Z'
 labels:
   - s
   - main-lane
@@ -70,4 +70,8 @@ PK-342:W23 (2026-11-07 15:02, dima): observe
 PK-342:W24 (2026-11-07 15:02, dima): i want all my wishes in this new format.
 
 15:27 crow's root fix, for a ticket or a no: orbit add refuses a hidden note promising a re-sign when the ask's text has no ✍️ sign shape; his 15:12 tick cost a second tick.
+
+PK-342:W25 (2026-11-07 15:12, dima): i ticked right before sending this mesage.
+
+PK-342:W26 (2026-11-07 15:12, dima): remember how this new ticking stuff works, simple words to tech terms.
 <!-- SECTION:NOTES:END -->

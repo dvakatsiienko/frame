@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T13:25:00Z'
+updated_date: '2026-11-07T13:35:00Z'
 labels:
   - s
   - wing-2
@@ -28,7 +28,8 @@ PK-326:W2 (2026-11-05 23:58, dima): tomorrow we will have quite a lot of activit
 PK-326:W3 (2026-11-05 23:58, dima): since FRM-513 will be solved today, we will have chances to test automatic second winds tomorrow, so this part can be unblocked too.
 PK-326:W4 (2026-11-05 23:58, dima): can we prio these ones (FRM-504, FRM-503)? i'd like to unblock tilde. ❓ — answered 00:01: yes, FRM-504 next after FRM-513, ahead of FRM-505; FRM-503 first on my main lane tomorrow
 
-his 00:13, the order this shift runs: W1 (2026-11-06 00:13, dima, home the new shift plan): it seems most of the tails are solved. only the ones that require some grilling are left, but i'm not in the mood to grill, so they are postponed to tomorrow or the day after.
+his 00:13, the order this shift runs:
+PK-326:W450 (2026-11-06 00:13, dima, home the new shift plan): it seems most of the tails are solved. only the ones that require some grilling are left, but i'm not in the mood to grill, so they are postponed to tomorrow or the day after.
 PK-326:W446 (2026-11-06 00:13, dima, home the new shift plan): consult the side channel if all tails are solved: the mechanical one or the ones that don't want a lot of my attention, like grilling. if it is, then i go partially AFK without the shift.
 PK-326:W447 (2026-11-06 00:13, dima, home the new shift plan): cli lane: let it finish its current chunk fully, merge it, and stop it.
 PK-326:W448 (2026-11-06 00:13, dima, home the new shift plan): mods lane: let it finish its current chunk and stop too.
@@ -114,4 +115,6 @@ PK-326:W443 (2026-11-07 14:43, dima): let's trace full day, how to have proper t
 PK-326:W444 (2026-11-07 14:43, dima): maybe crow can measure this? ❓
 
 PK-326:W445 (2026-11-07 14:43, dima): each wake it writes some log during the whole day across you and your wings, and at a halt you read that file and see measures? ❓
+
+2026-11-07 wing 2, PK-350: the ⏰ PK-338 sort above is done, ids are full; that note is history.
 <!-- SECTION:NOTES:END -->

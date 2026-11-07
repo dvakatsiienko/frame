@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T13:25:00Z'
+updated_date: '2026-11-07T13:35:00Z'
 labels:
   - m
   - wing-2
@@ -121,4 +121,6 @@ PK-336:W23 (2026-11-07 04:39, dima): closing a wing has no verb, and any `close:
 14:30 wing 2: #11 ticked as groomed, not closed: FRM-514 Done; FRM-410 re-signed 11-06, parked someday on his W128 (22:51), later than this line.
 
 14:50 main, his 14:43 word, groomed against PK-346: moved out, PK-310's watch and PK-334 to wing 1, FRM-491 and FRM-495 to main's day plan, PK-343 to main; the old line numbers 9, 12, 17, 22, 23 are gone.
+
+2026-11-07 wing 2, PK-350: the ⏰ PK-338 sort above is done, ids are full; that note is history.
 <!-- SECTION:NOTES:END -->
