@@ -61,6 +61,7 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
 - **a brief names the constraint you may break**; brief behaviours, never a count.
 - **a mods edit with a peer on the overlay lands by name**: `x mods edit push <paths…>`, the peer's half-done edit stays in scratch.
 - **a first pr, with a brief naming a sixth sense**: one message to the coordinator with its url, so she summons it.
+- **a sha reaches sixth sense only after your local reviews**, or the message says more is coming: a head that moves mid-round costs it the round's probes.
 - **a commit or push chain runs in the background**, alone in its message; what must wait for it waits on its notification, and a steer never queues behind it.
 
 ## before «final»
