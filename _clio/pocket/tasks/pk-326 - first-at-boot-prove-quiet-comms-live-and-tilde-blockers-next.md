@@ -4,9 +4,10 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T12:05:00Z'
+updated_date: '2026-11-07T12:46:00Z'
 labels:
   - s
+  - wing-2
 dependencies: []
 priority: now
 type: task
@@ -97,4 +98,6 @@ quiet comms, the widest day, read 11-07 04:47: holds, 72 of 484 messages started
 PK-326:W437 (2026-11-07 04:46, dima): what about silent comms, how they worked today? ❓
 
 PK-326:W438 (2026-11-07 04:47, dima): if comms measure holds, update corresponding files; 368 waits for a checkmark.
+
+14:50 main, his 14:43 word: today's measure goes to wing 2: both sides, spam and under-delivery, across main and the wings, read at the halt.
 <!-- SECTION:NOTES:END -->
