@@ -177,6 +177,13 @@ for (const [why, ticks, isCarried] of [
         true,
     ],
     [
+        'a url cited in notes',
+        [tick(`notes on ${PR}: 2 lows left, fix them?`)],
+        false,
+    ],
+    ['a url on «do not merge»', [tick(`do not merge ${PR} yet`)], false],
+    ['a url on a ⚠️ ask', [tick(`⚠️ land ${PR}: the guard fix`)], true],
+    [
         'a merge tick past its 2 h',
         [tick('⚠️ merge bytes#104: the guard fix', NOW - TWO_HOURS - 1)],
         false,

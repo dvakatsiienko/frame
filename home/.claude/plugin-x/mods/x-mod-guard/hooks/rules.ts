@@ -772,9 +772,14 @@ export const isSignAsk = (text: string, id: string) =>
         ?.split(/[,\s]+(?:and\s+)?/)
         .includes(id) ?? false;
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`, or reads
-// `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1)
+// `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1);
+// a url cited in passing proves nothing either: the text leads ⚠️ or says merge, and never «do not merge» (FRM-510, a tick now lives past newer ones)
+const isMergeWord = (text: string) =>
+    /⚠️|\bmerge\b/iu.test(text) &&
+    !/\b(?:do not|don'?t|never)\s+merge\b/i.test(text);
 export const quotesPr = (text: string, repo: string, pr: string) =>
-    (text.includes(`github.com/${repo}/pull/${pr}`) &&
+    (isMergeWord(text) &&
+        text.includes(`github.com/${repo}/pull/${pr}`) &&
         !new RegExp(`github\\.com/${repo}/pull/${pr}\\d`).test(text)) ||
     new RegExp(
         `(?:^|\\s)⚠️ merge ${(repo.split('/').at(-1) ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}#${pr}(?!\\d)`,

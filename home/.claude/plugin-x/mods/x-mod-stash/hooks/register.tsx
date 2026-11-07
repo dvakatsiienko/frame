@@ -2343,7 +2343,8 @@ async function unmountSteers($: EngineInterface) {
 // one press is one marking step, deciding from one read: a tick's record lands before its mark, so a tool call that
 // takes the mark finds it; an untick clears the mark first, so no tick is ever marked without its record
 const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
-const TICKS_KEPT = 20;
+// every live tick counts at the guard (FRM-510), so a record leaves only past the guard's own 2 h, never by a count
+const TICK_LIVE_MS = 2 * 60 * 60 * 1000;
 // as the orbit's read: a read from before this process's last write never wins
 let ticksKept: { value: StashTick[]; version: number } = {
     value: [],
@@ -2368,16 +2369,14 @@ async function recordTicks(
     // the press still marks: a tick with no record fails closed at the guard; a drop that fails leaves his taken-back
     // tick honoured for its 2 h, so that one tells him
     try {
+        const now = await $.clock.now();
         const rest = (await readTicks($)).filter(
-            (t) => !asks.some((a) => a.id === t.id),
+            (t) =>
+                now - t.at <= TICK_LIVE_MS && !asks.some((a) => a.id === t.id),
         );
         await writeTicks(
             $,
-            isTicked
-                ? [...rest, ...allAsksTicks(asks, await $.clock.now())].slice(
-                      -TICKS_KEPT,
-                  )
-                : rest,
+            isTicked ? [...rest, ...allAsksTicks(asks, now)] : rest,
         );
     } catch (err) {
         $.ui.log(`x-mod-stash: tick record not written: ${errorText(err)}`);

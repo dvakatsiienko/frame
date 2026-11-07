@@ -4220,6 +4220,42 @@ test('✅ is not drawn while only ⚠️ asks are left to mark', async ($, on) =
     expect(await ui.find({ key: 'orbit:all' })).toBeUndefined();
 });
 
+test('✅ on twenty-five asks keeps every record', async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    for (let i = 0; i < 25; i++) await add($, [`push \`t${i}\``, 'yes']);
+    await ui.press({ key: 'orbit:all' });
+    expect((writes.at(-1) as unknown[]).length).toBe(25);
+});
+
+test('a press drops a record past its 2 h, and keeps a live one', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    const now = w.clock.now();
+    const old = {
+        at: now - 2 * 60 * 60 * 1000 - 1,
+        id: 'o8',
+        targets: [],
+        text: 'old',
+    };
+    const live = { at: now - 1000, id: 'o9', targets: [], text: 'live' };
+    on('state.get', (_$, e, next) =>
+        e.key === 'ticks'
+            ? { value: { value: [old, live], version: 1000 } }
+            : next(e as never),
+    );
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
+        'o9',
+        'o1',
+    ]);
+});
+
 test('✅ marks only the asks on the frame he pressed', async ($, on) => {
     const w = world(on);
     const writes = tickLog(on);
