@@ -107,5 +107,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-07 · FRM-524, frame#146: clean at 3 rounds, then 6: wishkeeper's high opened round 4 on clio's open steer, 5 and 6 grew inside it · local reviews 5, only sixth sense found the path-shape writes · measure: rounds past the cap reached clio only when dima asked, FRM-504's wake row signs it
 - 2026-11-07 · FRM-528, frame#147: clean at 2 rounds, 48 min · the ci reviewer found 0, sixth sense's plants and reading 2 P2s, ci itself a third: `ci-binaries.test.ts`, which a round's fix on a go test could run first · useful
 - 2026-11-07 · FRM-532, quick lane on main: clean at 2 rounds · wisphunter, 4 findings, 3 fixed, useful; built-in and matt's skipped for the weekly window · sixth sense running raw found the door missed the Bash tool, where a clean-reading probe hid it · useful
+- 2026-11-07 · FRM-531, quick lane on main: clean at 4 rounds, one past the cap, on dima's park order to finish this fix · sixth sense found 4 breaks, one a silent loss, all fixed · matt's code-review 4 useful, built-in 10 with 4 fixed, coderabbit 0 · measure: rounds against the cap, exit 5's terminal half struck, no door could run it
 
 ## verdict
