@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T13:35:00Z'
+updated_date: '2026-11-07T13:59:00Z'
 labels:
   - s
   - wing-2
@@ -26,7 +26,8 @@ first thing at the next boot, his word. measure while his chores run through the
 PK-326:W1 (2026-11-05 23:58, dima): let's measure everything tomorrow. i will try to keep your channel free from chores and solve all chores with your side channel, so you will have many chances to measure silent comms where you are not mid-turn. also measure all other parts of quiet comms that need to be measured to be proven.
 PK-326:W2 (2026-11-05 23:58, dima): tomorrow we will have quite a lot of activity, so many chances to do that. it is important, don't forget it. maybe even create a small pocket item about this and pick it up first thing when you boot tomorrow.
 PK-326:W3 (2026-11-05 23:58, dima): since FRM-513 will be solved today, we will have chances to test automatic second winds tomorrow, so this part can be unblocked too.
-PK-326:W4 (2026-11-05 23:58, dima): can we prio these ones (FRM-504, FRM-503)? i'd like to unblock tilde. ❓ — answered 00:01: yes, FRM-504 next after FRM-513, ahead of FRM-505; FRM-503 first on my main lane tomorrow
+PK-326:W4 (2026-11-05 23:58, dima): can we prio these ones (FRM-504, FRM-503)? i'd like to unblock tilde. ❓
+— answered 00:01: yes, FRM-504 next after FRM-513, ahead of FRM-505; FRM-503 first on my main lane tomorrow
 
 his 00:13, the order this shift runs:
 PK-326:W450 (2026-11-06 00:13, dima, home the new shift plan): it seems most of the tails are solved. only the ones that require some grilling are left, but i'm not in the mood to grill, so they are postponed to tomorrow or the day after.

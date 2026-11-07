@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: done
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-07T13:07:00Z'
+updated_date: '2026-11-07T13:59:00Z'
 labels:
   - xs
   - wing-1
@@ -65,4 +65,6 @@ PK-310:W3 (2026-11-07 15:06, dima): we started with tracing finder and suspected
 close: his word 15:06; calculate all sizes stays off; finder 0 of 75 under one lane; story in docs/knowledge/cpu-overload/story.md; a burst seen again reopens it
 
 close: PK-310:W1 done, measured through the watches above, the 11-06 two-lane runs read; PK-310:W2 done, the research lives in docs/knowledge/cpu-overload/mac-agent-cpu-overload.md; PK-310:W3 done, folded in docs/knowledge/cpu-overload/story.md.
+
+close: PK-310:W2's research is this item's 17:59 note, not the prior art file: its Finder lines live here
 <!-- SECTION:NOTES:END -->

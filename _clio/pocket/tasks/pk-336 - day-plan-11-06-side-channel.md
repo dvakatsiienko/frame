@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T13:35:00Z'
+updated_date: '2026-11-07T13:49:00Z'
 labels:
   - m
   - wing-2
@@ -22,30 +22,15 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 PK-331 lone note stops waking clio: commit done, land, tell main
-- [x] #2 signature fix: side channel posts as clio, land
-- [x] #3 FRM-501 re-sign line written (o70 rule changed)
-- [x] #4 FRM-484 sixth sense posting habits written into its skill
-- [x] #5 split habit: main runs lanes, side channel takes all chores, settled with main
-- [x] #6 PK-310 finder watch when two side lanes run, again past 17:54
-- [x] #7 ci made boring milestone planned with dima (due today)
-- [x] #8 PK-329 side channel limits and capabilities, helga's use decided
-- [x] #9 FRM-503 merge door audit printed once
-- [x] #10 FRM-514 re-sign read, then FRM-410 grooming and close
-- [ ] #11 PK-332 side channel habit holds
-- [x] #12 PK-333 retro fixes: new mods chunk signed, 38 groom reds
-- [x] #13 PK-324 tails, PK-325 queue review, PK-308's 14 left
-- [ ] #14 grills when he wants: PK-300, PK-304, PK-323
-- [x] #15 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
-- [x] #16 FRM-514 quick lane test from the side channel
-- [ ] #17 crow watches the side channel too (PK-323, his W9)
-- [ ] #18 PK-308's 14 left (PK-325 moved to main, dima 19:08)
-- [x] #19 FRM-517: solve it on the fresh boot, first thing: his stopwatch time, temp dir read, the writer named by prefix (CST first-act 4)
-- [ ] #20 sharpen closing a wing: it has no verb, any close: line closes a day plan, with dima (his 11-07 04:39), beside line 23
-- [x] #21 sharpen how pocket items tied to wings are handled, with dima (his 11-07 04:18)
-- [ ] #22 PK-304 and PK-308, moved from wing 1 on his 14:43 word
-- [ ] #23 PK-348 REVIEW.md
-- [ ] #24 PK-326 quiet comms, both sides, today: read at the halt
+- [ ] #1 PK-350 wish lines batch 2: 95 own-line quotes and clio's tails, dry run to him first, then two waves (his o7 tick)
+- [ ] #2 FRM-494, FRM-496: habits and counts read, what's left named, close proposed to main
+- [ ] #3 PK-326 quiet comms, both sides, today: read at the halt (his W439)
+- [ ] #4 closing a wing and wing-labelled pocket items, sharpened with dima (his 04:18, 04:39)
+- [ ] #5 PK-348 REVIEW.md: explore, set up the convention
+- [ ] #6 PK-332 what makes the wing habit hold, a proposal
+- [ ] #7 FRM-517 the day's temp count read 11-08, close or one step named
+- [ ] #8 grills when he wants: PK-300, PK-304
+- [ ] #9 crow watches the wing too: its want lives on FRM-516
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -123,4 +108,6 @@ PK-336:W23 (2026-11-07 04:39, dima): closing a wing has no verb, and any `close:
 14:50 main, his 14:43 word, groomed against PK-346: moved out, PK-310's watch and PK-334 to wing 1, FRM-491 and FRM-495 to main's day plan, PK-343 to main; the old line numbers 9, 12, 17, 22, 23 are gone.
 
 2026-11-07 wing 2, PK-350: the ⏰ PK-338 sort above is done, ids are full; that note is history.
+
+2026-11-07 15:52 wing 2, groomed on dima's word: done lines cleared, todo sorted most wanted first. cleared: PK-331, the signature fix, FRM-501 re-sign line, FRM-484 habits, the split habit, the Finder watch PK-310 done, ci made boring, PK-329 twice, FRM-503 audit, FRM-514 and FRM-410, PK-333, PK-324, PK-325, PK-308 closed FRM-526, FRM-514 quick lane, FRM-517 first act, wing items' first sharpen. git holds the list.
 <!-- SECTION:NOTES:END -->

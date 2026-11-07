@@ -4,7 +4,7 @@ title: 'day plan 11-07: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T13:28:00Z'
+updated_date: '2026-11-07T14:01:00Z'
 labels:
   - s
   - main-lane
@@ -24,9 +24,9 @@ ordinal: 9995
 - [ ] #6 cli lane by load
 - [ ] #7 FRM-491 and FRM-495 behind FRM-505
 - [ ] #8 look cards: FRM-510, BYT-94
-- [ ] #9 PK-342 wire what we build
+- [x] #9 PK-342 wire what we build
 - [ ] #10 PK-343 wing hand-back groom red
-- [ ] #11 PK-344 retro leftovers
+- [x] #11 PK-344 retro leftovers
 - [ ] #12 FRM-368 tilde grill with dima
 - [ ] #13 retro fold, 24 lines
 - [ ] #14 redraws: crew-pm-flow, refresh-crew-coordinator boards, watch-pr.sh:64, review-rounds.md:20
