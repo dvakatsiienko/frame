@@ -2039,7 +2039,7 @@ async function saveOrbit(
         ),
     };
     const isKept = await keepOrbit($);
-    await keepState($, { orbit }).catch(() => undefined);
+    if (isKept) await keepState($, { orbit }).catch(() => undefined);
     const sid = await currentId($);
     if (!sid) return isKept;
     const open = orbit.asks.filter((a) => !a.isResolved);
@@ -2330,6 +2330,16 @@ function takeMarks($: EngineInterface, pick: (o: StashOrbit) => OrbitAsk[]) {
     });
 }
 
+// a turn takes his phases mark the same way: a reorder lands wholly before or after, never put back
+function takePlanMark($: EngineInterface) {
+    return inMarking(async () => {
+        const o = await currentOrbit($);
+        if (!hasPlanMark(o.plan)) return undefined;
+        await saveOrbit($, { ...o, plan: planTaken(o.plan) });
+        return o.plan;
+    });
+}
+
 // an unmounted box mounts again with the stored steer: a fold or a closed board drops what each box mounted with
 async function unmountSteers($: EngineInterface) {
     askTypedAt.clear();
@@ -2462,15 +2472,13 @@ async function pressMark(
     await inMarking(() => pressMarkNow($, id, mark));
 }
 
-function dropTicks($: EngineInterface, id: string) {
-    return inMarking(async () => {
-        const kept = await readTicks($);
-        if (kept.some((t) => t.id === id))
-            await writeTicks(
-                $,
-                kept.filter((t) => t.id !== id),
-            );
-    });
+async function dropTicks($: EngineInterface, id: string) {
+    const kept = await readTicks($);
+    if (kept.some((t) => t.id === id))
+        await writeTicks(
+            $,
+            kept.filter((t) => t.id !== id),
+        );
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
@@ -5296,12 +5304,14 @@ async function orbitCall(
             lines,
             isAmended,
         );
-        if (!('deny' in made)) await saveOrbit($, made.orbit);
+        if ('deny' in made) return made;
+        await saveOrbit($, made.orbit);
+        // a follow asks a new question: his tick on the old one is no longer his word on it (S3); one step with the save, so
+        // a press lands wholly before both or after both
+        if (input.op === 'follow') await dropTicks($, oneLine(input.id));
         return made;
     });
     if ('deny' in op) return { deny: op.deny };
-    // a follow asks a new question: his tick on the old one is no longer his word on it (S3)
-    if (input.op === 'follow') await dropTicks($, oneLine(input.id));
     if (input.op === 'add')
         gridQs.push(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
@@ -5549,16 +5559,9 @@ export const register: Register = (on) => {
         if (isOwner) await dropLaneOrders($);
         // dima's own prompt carries his phases mark
         const planMark =
-            isUserTurn && isOn('stash.phases') && hasPlanMark(orbit.plan)
-                ? orbit.plan
+            isUserTurn && isOn('stash.phases')
+                ? await takePlanMark($)
                 : undefined;
-        if (planMark)
-            await inMarking(async () =>
-                saveOrbit($, {
-                    ...(await currentOrbit($)),
-                    plan: planTaken(planMark),
-                }),
-            );
         // held member pings ride the next prompt of any origin, once (quiet comms)
         const quiet = await quietLocked(() => quietTake($));
         const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
@@ -8103,16 +8106,9 @@ export const register: Register = (on) => {
             if (wind) notes.push(wind);
         }
         // dima's phases mark joins the running turn at its next tool call
-        const p = (await currentOrbit($)).plan;
-        if (!isPing && isOn('stash.phases') && hasPlanMark(p)) {
-            await inMarking(async () =>
-                saveOrbit($, {
-                    ...(await currentOrbit($)),
-                    plan: planTaken(p),
-                }),
-            );
-            notes.push(planText(p));
-        }
+        const p =
+            !isPing && isOn('stash.phases') ? await takePlanMark($) : undefined;
+        if (p) notes.push(planText(p));
         const o = await currentOrbit($);
         if (
             !isNudged &&

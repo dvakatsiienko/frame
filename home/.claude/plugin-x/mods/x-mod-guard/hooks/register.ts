@@ -753,11 +753,15 @@ async function scriptMerges(
         const ran = scriptRun(c, ctx);
         if (ran === undefined || seen.has(ran)) continue;
         seen.add(ran);
-        const size = written.has(ran)
-            ? 0
-            : (await $.fs.stat(ran).catch(() => undefined))?.size;
+        // text the guard could not keep: the disk answers, as of before this line runs
+        const kept = written.get(ran);
+        const known = kept?.includes(UNREAD) ? undefined : kept;
+        const size =
+            known !== undefined
+                ? 0
+                : (await $.fs.stat(ran).catch(() => undefined))?.size;
         const text =
-            written.get(ran) ??
+            known ??
             (size !== undefined && size <= SCRIPT_READ_MAX
                 ? await $.fs.read(ran).catch(() => undefined)
                 : undefined);

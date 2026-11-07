@@ -4285,6 +4285,22 @@ test('a steer typed during a tool call outlives a save reading from before it', 
     );
 });
 
+test('a press landing right after a follow on that ask keeps its mark and its record', async ($, on) => {
+    world(on);
+    const race = pressRace(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    race.onWrite = () => void ui.press({ key: 'orbit:accepted:o1' });
+    await orbit($, { id: 'o1', op: 'follow', pick: 'yes', text: 'push `new`' });
+    await ui.find({ key: 'orbit:accepted:o1' });
+    expect([
+        askOf(race, 'o1')?.mark,
+        race.ticks.map((t) => (t as { text?: string }).text),
+    ]).toEqual(['accepted', ['push `new`']]);
+});
+
 test('✅ on twenty-five asks keeps every record', async ($, on) => {
     world(on);
     const writes = tickLog(on);

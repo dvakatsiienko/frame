@@ -139,6 +139,7 @@ for (const line of [
     'gh api graphql $ARGS',
     'gh api -X"$M" repos/o/r/pulls/5/merge',
     'bash s2.sh',
+    "sed -i '' s/a/b/ m.sh; bash m.sh",
     'gh api -X PUT "$URL"',
     'gh api -X "$M" repos/o/r/pulls/12/merge',
     'gh api --method="$M" repos/o/r/pulls/12/merge',
