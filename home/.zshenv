@@ -87,8 +87,8 @@ export PATH="$HOME/.local/bin:$PATH"
 # machine-local secrets (tokens for agent tooling), never in the repo
 [ -f ~/.zshenv.local ] && source ~/.zshenv.local
 
-# git-slim: agent shells only, a missing build is skipped by the PATH lookup; the login twin sits in .zprofile
-if [ -n "${CLAUDECODE-}" ]; then
+# git-slim: agent shells only, a missing build is skipped by the PATH lookup, an empty one by -s; the login twin sits in .zprofile
+if [ -n "${CLAUDECODE-}" ] && [ -s "$HOME/.local/state/x/git-slim/current/bin/git" ]; then
   typeset -U path
   path=("$HOME/.local/state/x/git-slim/current/bin" $path)
 fi

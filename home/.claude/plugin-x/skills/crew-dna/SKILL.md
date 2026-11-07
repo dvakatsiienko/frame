@@ -27,6 +27,8 @@ this file says how every member does it. A section headed with roles binds only 
 - a decision clio may already hold goes to clio first, not to dima
 
 **heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `~/frame/script/gate-queue.sh --long <cmd>`
+- this mac's limit is process starts: one whole go suite fills it, and two at once only share the wait (`x knowledge read cpu-overload`)
+- so while you work, run your own test by name; a whole suite once, at the chunk's end; a test you add spawns as little as it can
 
 **fences**
 - you write only inside your role's fence; a problem outside it goes into your report

@@ -4,6 +4,6 @@
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # git-slim: login startup's path_helper rebuilds PATH past .zshenv, so agent shells take it again here
-if [ -n "${CLAUDECODE-}" ]; then
+if [ -n "${CLAUDECODE-}" ] && [ -s "$HOME/.local/state/x/git-slim/current/bin/git" ]; then
   path=("$HOME/.local/state/x/git-slim/current/bin" $path)
 fi

@@ -15,7 +15,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 const repo = join(import.meta.dirname, '../..');
@@ -333,10 +333,16 @@ onMac(
                 ),
             );
             const envFile = join(dir, 'env.sh');
+            const slimGit = join(
+                dir,
+                '.local/state/x/git-slim/current/bin/git',
+            );
+            mkdirSync(dirname(slimGit), { recursive: true });
+            write(slimGit, '#!/bin/bash\n');
 
             const got = spawnSync(hook, {
                 encoding: 'utf8',
-                env: { ...process.env, CLAUDE_ENV_FILE: envFile },
+                env: { ...process.env, CLAUDE_ENV_FILE: envFile, HOME: dir },
             });
             const read = spawnSync(
                 '/bin/bash',
@@ -354,6 +360,29 @@ onMac(
             );
         });
 
+        test('with a git that fails it writes nothing', () => {
+            const dir = realpathSync(
+                mkdtempSync(
+                    join(process.env.TMPDIR ?? tmpdir(), 'git-slim-hook-'),
+                ),
+            );
+            const envFile = join(dir, 'env.sh');
+            const slimGit = join(
+                dir,
+                '.local/state/x/git-slim/current/bin/git',
+            );
+            mkdirSync(dirname(slimGit), { recursive: true });
+            write(slimGit, '#!/bin/bash\nexit 1\n');
+
+            const got = spawnSync(hook, {
+                encoding: 'utf8',
+                env: { ...process.env, CLAUDE_ENV_FILE: envFile, HOME: dir },
+            });
+
+            expect(got.status, got.stderr).toBe(0);
+            expect(existsSync(envFile)).toBe(false);
+        });
+
         test('with no env file it exits 0 and writes nothing', () => {
             const { CLAUDE_ENV_FILE: _file, ...env } = process.env;
 
@@ -368,7 +397,7 @@ onMac('the door, read by a new shell', () => {
     function shell(
         mode: '-c' | '-lc',
         agent: boolean,
-        slim: 'healthy' | 'removed' | 'dangling' | 'not executable',
+        slim: 'healthy' | 'removed' | 'dangling' | 'not executable' | 'empty',
     ) {
         const dir = realpathSync(
             mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'git-slim-door-')),
@@ -388,6 +417,7 @@ onMac('the door, read by a new shell', () => {
         if (slim === 'removed') rmSync(home, { recursive: true });
         if (slim === 'dangling') renameSync(tree, `${tree}-gone`);
         if (slim === 'not executable') chmodSync(slimGit, 0o644);
+        if (slim === 'empty') writeFileSync(slimGit, '');
 
         const { CLAUDECODE: _agent, ...env } = process.env;
         const got = spawnSync(macShell, [mode, 'whence -p git'], {
@@ -424,7 +454,7 @@ onMac('the door, read by a new shell', () => {
         },
     );
 
-    test.each(['removed', 'dangling', 'not executable'] as const)(
+    test.each(['removed', 'dangling', 'not executable', 'empty'] as const)(
         'an agent shell with the build %s falls back',
         (slim) => {
             const { brew, printed } = shell('-c', true, slim);
@@ -432,4 +462,53 @@ onMac('the door, read by a new shell', () => {
             expect(printed).toBe(brew);
         },
     );
+});
+
+onMac('the bash door, BASH_ENV for hooks and their scripts', () => {
+    const door = join(repo, 'home/.claude/shelf/hooks/git-slim-bash-env.sh');
+
+    function bashGit(firstOnPath: string, slimBody: string) {
+        const dir = realpathSync(
+            mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'git-slim-bash-')),
+        );
+        const slimGit = join(dir, '.local/state/x/git-slim/current/bin/git');
+        mkdirSync(dirname(slimGit), { recursive: true });
+        write(slimGit, slimBody);
+        // a script file, as a hook runs: bash -c on a socket stdin skips BASH_ENV
+        const script = join(dir, 'hook.sh');
+        write(script, 'command -v git\n');
+        const got = spawnSync('/bin/bash', [script], {
+            encoding: 'utf8',
+            env: {
+                BASH_ENV: door,
+                HOME: dir,
+                PATH: `${firstOnPath}${delimiter}/usr/bin${delimiter}/bin`,
+            },
+        });
+        return { printed: got.stdout.trim(), slimGit };
+    }
+
+    test("swaps brew's git for the slim one", () => {
+        const { printed, slimGit } = bashGit(
+            '/opt/homebrew/bin',
+            '#!/bin/bash\n',
+        );
+
+        expect(printed).toBe(slimGit);
+    });
+
+    test("leaves a test's fake git first", () => {
+        const fake = realpathSync(
+            mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'git-slim-fake-')),
+        );
+        write(join(fake, 'git'), '#!/bin/bash\n');
+
+        expect(bashGit(fake, '#!/bin/bash\n').printed).toBe(join(fake, 'git'));
+    });
+
+    test('keeps brew when the slim git is empty', () => {
+        expect(bashGit('/opt/homebrew/bin', '').printed).toBe(
+            '/opt/homebrew/bin/git',
+        );
+    });
 });

@@ -301,12 +301,20 @@ else
   fail "REAL FILE where the symlink belongs — silent divergence"
 fi
 
-echo "-- git-slim (agent shells fall back to brew's git silently, at about 17 % more cpu) --"
+echo "-- git-slim (agent shells fall back to brew's git silently, at about 20 % more cpu) --"
 if slim_check=$("$(dirname "$0")/../../../script/git-slim.sh" --check 2>&1); then
   echo "$slim_check"
 else
   fail "$slim_check"
 fi
+# --check reads the build, these read the door: this hook's shell gets it through BASH_ENV, the Bash tool through git-slim-path.sh
+slim_door=$(command -v git)
+case "$slim_door" in
+  */git-slim/*) echo "door OK" ;;
+  *) fail "git-slim: this shell's git is $slim_door, the door is off: BASH_ENV in settings.json" ;;
+esac
+jq -e '[.hooks.SessionStart[]?.hooks[]?.command] | any(test("git-slim-path"))' "$HOME/.claude/settings.json" >/dev/null ||
+  fail "git-slim: the git-slim-path hook left settings.json, the Bash tool falls back to brew's git"
 
 echo "-- runtime (a parked session keeps its binary, plugins and feature gates until a restart) --"
 pid=$$; born=""

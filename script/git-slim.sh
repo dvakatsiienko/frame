@@ -64,7 +64,7 @@ esac
 
 version=$(brew_git_version)
 if [ -z "$version" ]; then
-    echo "git-slim: brew has no git" >&2
+    echo "git-slim: brew has no git, or no brew on this PATH; once brew's git is back, rebuild: ~/frame/script/git-slim.sh" >&2
     exit 1
 fi
 problem=$(tree_problem "$live" "$version")
