@@ -57,10 +57,9 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 - **a merge that changes a `package.json` is followed, in the same turn, by `pnpm install` in the main
   checkout and a restart of every live dev server it feeds** (`launchctl kickstart -k gui/$(id -u)/<label>`) —
   vite keeps a failed resolution until it restarts — then `/run` on every app the merge touched.
-- **the squash-merge commit message is written `x:cmt`-style at merge** (`--subject` + `--body` on
-  `gh pr merge`), never the pr body pasted in — it describes what landed, never the plan, and
-  carries no session-url trailer (the commit contract bans it; the harness's pr-body ask would
-  smuggle it in through the squash)
+- **`x lane merge-auto` squashes the pr's title and body as written, with no `--subject`, so the pr
+  body is the commit message**: it describes what landed, never the plan, and carries no session-url
+  trailer (the commit contract bans it; the harness's pr-body ask smuggles it in through the squash)
 - **a push to main after a pr opened does not refresh that pr's base** — the diff keeps showing the
   coordinator's commits until `gh api -X PATCH repos/<o>/<r>/pulls/<n>
   -f base=main` nudges github to recompute; run it after every main push while a pr is open.
