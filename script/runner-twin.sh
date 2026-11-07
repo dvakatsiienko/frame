@@ -8,7 +8,8 @@ sha=${1:-}
 step_ref=
 # a pre-push hook names what it pushes on stdin: a worktree's push runs from the main checkout, whose HEAD is another commit
 if [ -z "$sha" ] && [ ! -t 0 ]; then
-    while read -r -t 1 ref pushed _ _; do
+    # git's order: local ref, local sha, remote ref, remote sha; `x lane push` pushes a sha, so the local ref is that sha
+    while read -r -t 1 _ pushed ref _; do
         case $pushed in *[!0]*) sha=$pushed step_ref=$ref ;; esac
     done
 fi
@@ -36,6 +37,6 @@ env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --report
 if [ -z "${VITEST:-}" ]; then
     step_state=${X_STATE:-$HOME/.local/state/x}
     mkdir -p "$step_state"
-    printf '%s\t%s\tpush\t%s\t%s\t%s\t%s\ttest:twin\n' "$step_start" "$step_load" "${step_ref:-unnamed}" "$(git rev-parse --short HEAD)" "$SECONDS" "$step_code" >>"$step_state/gate-steps.log"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\ttest:twin\n' "$step_start" "$step_load" "$([ -n "$step_ref" ] && echo push || echo other)" "${step_ref:-unnamed}" "$(git rev-parse --short HEAD)" "$SECONDS" "$step_code" >>"$step_state/gate-steps.log"
 fi
 exit "$step_code"

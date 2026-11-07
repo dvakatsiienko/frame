@@ -17,9 +17,9 @@ PK-328:W15 (2026-11-06 20:49, dima, on the expected gains): ensure all these poi
 ## where the numbers come from
 
 - `~/.local/state/x/gate-queue.log`: start, load, slot (`gate`, `long`, `none`), wait, run, exit, session (first 8 characters, or `-`), command; each commit, push, long round and wrapped run; rows before FRM-521's turn change have no session column. `x lane rebase-main` and the stack push take no turn and log no row
-- `~/.local/state/x/gate-steps.log`: start, load, source (`commit`, `push`, `other`), branch or ref, commit, seconds, exit, command; each gate run through `script/index-run.sh`, each push's whole suite
-- `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`, pocket-only commits included), staged paths, commit, seconds, exit
-- `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns
+- `~/.local/state/x/gate-steps.log`: start, load, source (`commit` a real commit's hook, `push` a real push, `other` the rest, `x lane commit --dry` and `x mods edit test` included), branch or remote ref (`unnamed` on a hand twin), commit, seconds, exit, command; each gate run through `script/index-run.sh`, each twin's whole suite. rows before FRM-521's pr 3 say `commit` for any cc session and a sha for the ref
+- `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`, pocket-only commits included), staged paths, commit, seconds, exit, source (as `gate-steps.log`); rows before FRM-521's pr 3 have no source
+- `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns; under `--skip-tested`, each mod that ran says why: `<mod> ran: no record`, `other bytes` or `past its hour`
 - transcripts: `GATE_SPEED_DIR=<tmp> node docs/test-drive/gate-speed/collect.mjs`, then `analyze.mjs`, `slow-collect.mjs`, `slow-analyze.mjs`: the same scripts as the baseline, so the classes match
 - an empty or missing log reads «unmeasured», never green; a row's load decides whether a slow day is the gate or the machine
 

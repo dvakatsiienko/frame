@@ -131,6 +131,37 @@ func realLefthookWith(t *testing.T, gate string) (string, []string, string, func
 	}
 }
 
+// cc sets GIT_EDITOR in every session, so a row's source can't read it
+func TestGateStepRowSaysCommitOnlyUnderARealHook(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name string
+		args func(msg string) []string
+		want string
+	}{
+		{"a real commit", func(msg string) []string { return []string{"lane", "commit", msg, "--", dryNamed} }, "commit"},
+		{"a dry run", func(msg string) []string { return []string{"lane", "commit", "--dry", msg, "--", dryNamed} }, "other"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env, msg, _ := dryOnRealLefthook(t)
+			if got := xIn(t, dir, append(env, "GIT_EDITOR=true"), c.args(msg)...); got.code != 0 {
+				t.Fatalf("exit %d\n%s", got.code, got.stdout)
+			}
+			rows := nonBlank(readFile(t, filepath.Join(envValue(env, "X_STATE"), "gate-steps.log")))
+			if len(rows) == 0 {
+				t.Fatal("no row")
+			}
+			for _, row := range rows {
+				if source := strings.Split(row, "\t")[2]; source != c.want {
+					t.Errorf("source %q, want %q:\n%s", source, c.want, row)
+				}
+			}
+		})
+	}
+}
+
 func TestCommitAfterAGreenDryRunsItsTestsNoSecondTime(t *testing.T) {
 	t.Parallel()
 	dir, env, msg, ran := dryOnRealLefthook(t)

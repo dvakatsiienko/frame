@@ -202,32 +202,62 @@ test('a gate that sets core.bare in the shared repo goes red and puts it back', 
     );
 });
 
-test.each([
-    ['a commit hook', { GIT_EDITOR: ':' }, 'commit'],
-    ['any other caller', {}, 'other'],
-])("%s's gate logs one step row, with its exit", (_name, extra, source) => {
-    const { gate, repo } = peerStaged();
-    const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
-    execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
-        cwd: repo,
-        env: gitEnv(),
-    });
+// what git itself exports to a commit's hook; a pre-push hook gets no index, a cc shell neither var (GIT_EDITOR is cc's own)
+const execPath = execFileSync('git', ['--exec-path'], {
+    encoding: 'utf8',
+}).trim();
 
-    const run = gate('sh -c "exit 7"', {
-        ...extra,
+test.each([
+    ['a commit hook', { GIT_EXEC_PATH: execPath }, true, 'commit'],
+    ["a cc session's GIT_EDITOR", { GIT_EDITOR: 'true' }, false, 'other'],
+    ['a dry run, an index and no hook', {}, true, 'other'],
+    ['a push hook, no index', { GIT_EXEC_PATH: execPath }, false, 'other'],
+    ['any other caller', {}, false, 'other'],
+])(
+    "%s's gate logs one step row, with its exit",
+    (_name, extra, hasIndex, source) => {
+        const { commitIndex, gate, repo } = peerStaged();
+        const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
+        execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
+            cwd: repo,
+            env: gitEnv(),
+        });
+
+        const run = gate('sh -c "exit 7"', {
+            ...extra,
+            ...(hasIndex ? { GIT_INDEX_FILE: commitIndex } : {}),
+            VITEST: '',
+            X_STATE: state,
+        });
+
+        expect(run.status, run.stderr).toBe(7);
+        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+            .trimEnd()
+            .split('\t');
+        expect(row).toHaveLength(8);
+        expect(row.slice(2, 4)).toEqual([source, 'codie/FRM-1-x']);
+        expect(row[4]).toMatch(/^[0-9a-f]+$/);
+        expect(row[6]).toBe('7');
+        expect(row[7]).toContain('exit 7');
+    },
+);
+
+test('the test step logs the source its gate row logs', () => {
+    const { commitIndex, gate } = peerStaged();
+    const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
+
+    const run = gate(`bash ${join(root, 'script/test-commit.sh')} true`, {
+        GIT_EXEC_PATH: execPath,
+        GIT_INDEX_FILE: commitIndex,
         VITEST: '',
         X_STATE: state,
     });
 
-    expect(run.status, run.stderr).toBe(7);
-    const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
-        .trimEnd()
-        .split('\t');
-    expect(row).toHaveLength(8);
-    expect(row.slice(2, 4)).toEqual([source, 'codie/FRM-1-x']);
-    expect(row[4]).toMatch(/^[0-9a-f]+$/);
-    expect(row[6]).toBe('7');
-    expect(row[7]).toContain('exit 7');
+    expect(run.status, run.stderr).toBe(0);
+    const row = (file: string) =>
+        readFileSync(join(state, file), 'utf8').trimEnd().split('\t');
+    expect(row('gate-steps.log')[2]).toBe('commit');
+    expect(row('test-commit.log').at(-1)).toBe('commit');
 });
 
 test('a gate under vitest writes no step row', () => {
