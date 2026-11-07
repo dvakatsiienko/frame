@@ -405,6 +405,15 @@ describe('fork-guard fork-edit', () => {
         );
     });
 
+    test("the shared flawlog takes a wing's own log", () => {
+        expect(
+            edit(
+                String(process.ppid),
+                join(repo, 'home/.claude/shelf/flawlog/wing.md'),
+            ),
+        ).toBe('');
+    });
+
     test("main's .scratch takes a wing's spec, by Bash and by Edit", () => {
         expect(bashIn(tree, `echo x > ${repo}/.scratch/lane/spec.md`)).toBe('');
         expect(edit(String(process.ppid), join(repo, '.scratch/spec.md'))).toBe(

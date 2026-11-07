@@ -14,8 +14,11 @@ import path from 'node:path';
 
 // the siesta check blocks the epoch's first stop (dima's o78, after sixth sense's clean); false makes it a warn
 export const gate = { isBlocking: true };
+const MAIN: Seat = { dir: '', role: 'clio' };
 const FILES_DUE = 15;
 const MISSED_AFTER_MS = 30 * 60_000;
+// an ignored nudge comes back, and a card nobody closed stops pausing the count
+const RENUDGE_AFTER_MS = 60 * 60_000;
 // a run of a pocket door, at the start of a command, after `&&`, `;` or `|`, or a loop's `do`; a read of the script (sed, rg) never counts
 const POCKET_WRITE =
     /(^|[;&|]\s*|\b(do|then|else)\s+)(node\s+\S*pocket-(add|move)\.ts|(BACKLOG_CWD=\S+\s+)?backlog task (create|edit|archive)\b)/m;
@@ -29,33 +32,42 @@ const NOT_DIMA = [
     'x-mod-stash waker:',
 ];
 const REMINDER = /<system-reminder>[\s\S]*?<\/system-reminder>/g;
+const PEER_PREFIX = /^Another Claude session sent a message:\s*/;
 // a lane's done: `[done]`, or a line naming «final» beside a sha (`final main:<base> <head>`, `<pr> <sha> final`)
 const MEMBER_DONE = /(^|\n)\s*\[done\]|^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 // only a lane member's done ends a chunk; a sidecar's chore report (helga, clio side, crow) never does
 const LANE_MEMBER = /from-name="[^"]*\b(codie|sixth sense|designer)\b/;
 
 export function stop(home: string, input: StopInput) {
-    const state = readSiesta(home);
+    const seat = seatOf(home, input.session_id);
+    if (!seat) return undefined;
+    const state = readSiesta(home, seat);
     if (state.open && state.card_printed && isAfk(home) && isSettled(state))
         close(state);
     // an open siesta pauses the count only once its card printed: one opened and dropped is nudged by its next batch
-    const reasons =
-        state.open && state.card_printed ? [] : dueReasons(home, state);
+    const isCardWaiting =
+        state.open &&
+        state.card_printed &&
+        Date.now() - new Date(state.card_at ?? 0).getTime() < RENUDGE_AFTER_MS;
+    const reasons = isCardWaiting ? [] : dueReasons(home, state, seat);
     const isDue = reasons.length > 0;
     if (isDue && !state.due) state.epoch++;
     state.due = isDue;
     // a Stop note wakes a turn of its own: each check speaks once, never inside a turn a hook woke
     if (input.stop_hook_active) {
-        writeSiesta(home, state);
+        writeSiesta(home, state, seat);
         return undefined;
     }
     const checks: string[] = [];
     const isSiestaNudged =
         isDue &&
-        state.nudged_epoch !== state.epoch &&
+        (state.nudged_epoch !== state.epoch ||
+            Date.now() - new Date(state.nudged_at ?? 0).getTime() >
+                RENUDGE_AFTER_MS) &&
         !loadedSiesta(input.transcript_path);
     if (isSiestaNudged) {
         state.nudged_epoch = state.epoch;
+        state.nudged_at = new Date().toISOString();
         checks.push(`🌤️ siesta due: ${reasons.join(', ')} — load clio:siesta`);
     }
     const ticks = deliveredTicks(home, input.session_id);
@@ -77,7 +89,7 @@ export function stop(home: string, input: StopInput) {
         );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
     const isBlock = gate.isBlocking && isSiestaNudged;
-    writeSiesta(home, state);
+    writeSiesta(home, state, seat);
     if (!checks.length) return undefined;
     const line = checks.join('; ');
     return isBlock
@@ -90,10 +102,18 @@ export function stop(home: string, input: StopInput) {
           };
 }
 
-export function prompt(home: string, input: { prompt?: string }) {
-    const text = (input.prompt ?? '').replace(REMINDER, '').trim();
+export function prompt(
+    home: string,
+    input: { prompt?: string; session_id?: string },
+) {
+    const seat = seatOf(home, input.session_id);
+    if (!seat) return undefined;
+    const text = (input.prompt ?? '')
+        .replace(REMINDER, '')
+        .trim()
+        .replace(PEER_PREFIX, '');
     const isDima = text !== '' && !NOT_DIMA.some((m) => text.startsWith(m));
-    const state = readSiesta(home);
+    const state = readSiesta(home, seat);
     if (
         text.startsWith('<cross-session-message') &&
         LANE_MEMBER.test(text.slice(0, text.indexOf('>'))) &&
@@ -107,7 +127,7 @@ export function prompt(home: string, input: { prompt?: string }) {
         (!isAfk(home) || isSettled(state))
     )
         close(state);
-    writeSiesta(home, state);
+    writeSiesta(home, state, seat);
     // the Stop block speaks once an epoch; his own prompts carry it after, and a prompt hook wakes no extra turn
     return isDima && state.due ? '🌤️ siesta due — load clio:siesta' : undefined;
 }
@@ -149,7 +169,10 @@ export function sent(home: string, input: SentInput) {
 
 // the card's chore lines: pocket writes by hand today, each send no receipt answered within 30 min, receipt-woken turns
 export function cardLines(home: string, transcriptPath?: string) {
-    const since = siestaLast(home).getTime();
+    const since = siestaLast(
+        home,
+        seatOf(home, process.env.CLAUDE_CODE_SESSION_ID) ?? MAIN,
+    ).getTime();
     const sends = tabbed(path.join(groomsDir(home), 'sent.log')).filter(
         ([at = '']) => new Date(at).getTime() > since,
     );
@@ -231,13 +254,13 @@ export function compact(
     );
 }
 
-function dueReasons(home: string, state: Siesta) {
-    const since = siestaLast(home);
+function dueReasons(home: string, state: Siesta, seat: Seat) {
+    const since = siestaLast(home, seat);
     const after = (at: string | number) =>
         new Date(at).getTime() > since.getTime();
     // a card's own fixes land before its close, so they join that card; wishkeeper's next range still reads them
     const closedAt = new Date(state.closed_at ?? 0);
-    const files = clioFiles(home, closedAt > since ? closedAt : since);
+    const files = clioFiles(home, closedAt > since ? closedAt : since, seat);
     const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
     const rows = readLines(path.join(stateDir(home), 'phases-done.jsonl'))
         .flatMap((l) => parsed<{ at: string | number }>(l) ?? [])
@@ -251,8 +274,8 @@ function dueReasons(home: string, state: Siesta) {
     ].filter(Boolean);
 }
 
-// a path counts once across her commits since the stamp; another agent's and the pocket's auto commits stay out
-function clioFiles(home: string, since: Date) {
+// a path counts once across this seat's commits since the stamp, its `Agent:` role naming the seat, so a wing's unlanded branch counts for it; another agent's and the pocket's auto commits stay out
+function clioFiles(home: string, since: Date, seat: Seat) {
     const env = Object.fromEntries(
         Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')),
     );
@@ -262,6 +285,7 @@ function clioFiles(home: string, since: Date) {
             '-C',
             path.join(home, 'frame'),
             'log',
+            '--branches',
             `--since=${since.toISOString()}`,
             '--name-only',
             '--format=%x00%s%x01%(trailers:key=Agent,valueonly,separator=%x2C)',
@@ -275,7 +299,7 @@ function clioFiles(home: string, since: Date) {
             .filter(([head = '']) => {
                 const [subject = '', agent = ''] = head.split('\x01');
                 return (
-                    agent.split(' · ')[0]?.trim() === 'clio' &&
+                    agent.split(' · ')[0]?.trim() === seat.role &&
                     !subject.endsWith('(auto)')
                 );
             })
@@ -396,8 +420,35 @@ function stateDir(home: string) {
     return path.join(home, '.local/state/clio');
 }
 
-function siestaLast(home: string) {
-    const file = path.join(stateDir(home), 'siesta-last');
+// each clio keeps its own stamp and card, so a wing's siesta never moves main's (PK-351:W78); a parked sidecar has none
+function seatOf(home: string, sessionId?: string): Seat | undefined {
+    const dir = path.join(home, '.claude/sessions');
+    if (!sessionId || !existsSync(dir)) return MAIN;
+    for (const file of readdirSync(dir)) {
+        const session = parsed<{
+            kind?: string;
+            name?: string;
+            sessionId?: string;
+        }>(readLines(path.join(dir, file)).join('\n'));
+        if (session?.sessionId !== sessionId) continue;
+        if (session.kind === 'bg') return undefined;
+        const name = session.name ?? '';
+        const wing = /wing (\d+)/.exec(name)?.[1];
+        if (wing)
+            return { dir: `seats/wing-${wing}`, role: `clio-wing-${wing}` };
+        return /\((fork|side)/.test(name)
+            ? { dir: `seats/fork-${sessionId.slice(0, 8)}`, role: 'clio-side' }
+            : MAIN;
+    }
+    return MAIN;
+}
+
+function seatDir(home: string, seat: Seat) {
+    return path.join(stateDir(home), seat.dir);
+}
+
+function siestaLast(home: string, seat: Seat) {
+    const file = path.join(seatDir(home, seat), 'siesta-last');
     const kept = existsSync(file)
         ? new Date(readFileSync(file, 'utf8').trim())
         : undefined;
@@ -422,17 +473,19 @@ function readLines(file?: string) {
         : [];
 }
 
-function readSiesta(home: string): Siesta {
-    const file = path.join(stateDir(home), 'siesta.json');
+function readSiesta(home: string, seat: Seat): Siesta {
+    const file = path.join(seatDir(home, seat), 'siesta.json');
     const kept = existsSync(file)
         ? (parsed<Partial<Siesta>>(readFileSync(file, 'utf8')) ?? {})
         : {};
     return {
+        ...(kept.card_at ? { card_at: kept.card_at } : {}),
         card_printed: kept.card_printed ?? false,
         ...(kept.closed_at ? { closed_at: kept.closed_at } : {}),
         due: kept.due ?? false,
         epoch: kept.epoch ?? 0,
         highs: kept.highs ?? [],
+        ...(kept.nudged_at ? { nudged_at: kept.nudged_at } : {}),
         nudged_epoch: kept.nudged_epoch ?? 0,
         nudged_resumes: kept.nudged_resumes ?? [],
         nudged_ticks: kept.nudged_ticks ?? [],
@@ -441,21 +494,32 @@ function readSiesta(home: string): Siesta {
     };
 }
 
-function writeSiesta(home: string, state: Siesta) {
-    mkdirSync(stateDir(home), { recursive: true });
+function writeSiesta(home: string, state: Siesta, seat: Seat) {
+    mkdirSync(seatDir(home, seat), { recursive: true });
     writeFileSync(
-        path.join(stateDir(home), 'siesta.json'),
+        path.join(seatDir(home, seat), 'siesta.json'),
         `${JSON.stringify(state, null, 2)}\n`,
     );
 }
 
 function door(home: string, [verb, ...args]: string[]) {
-    const state = readSiesta(home);
+    const seat = seatOf(home, process.env.CLAUDE_CODE_SESSION_ID) ?? MAIN;
+    const state = readSiesta(home, seat);
     switch (verb) {
         case 'open': {
             const now = new Date().toLocaleString('sv').replace(' ', 'T');
-            mkdirSync(stateDir(home), { recursive: true });
-            writeFileSync(path.join(stateDir(home), 'siesta-last'), `${now}\n`);
+            const last = path.join(seatDir(home, seat), 'siesta-last');
+            console.log(
+                `last siesta: ${readLines(last)[0] ?? 'none, count from today'}`,
+            );
+            for (const high of state.highs) {
+                if (high.state === 'open')
+                    console.log(
+                        `unsettled high of the last card: ${high.text}`,
+                    );
+            }
+            mkdirSync(seatDir(home, seat), { recursive: true });
+            writeFileSync(last, `${now}\n`);
             Object.assign(state, {
                 card_printed: false,
                 due: false,
@@ -466,6 +530,7 @@ function door(home: string, [verb, ...args]: string[]) {
         }
         case 'card':
             state.card_printed = true;
+            state.card_at = new Date().toISOString();
             state.highs = args.map((text) => ({ state: 'open', text }));
             break;
         case 'high': {
@@ -482,7 +547,7 @@ function door(home: string, [verb, ...args]: string[]) {
                 'usage: siesta-gate.ts stop|prompt|compact (hook json on stdin) | open | card [high…] | high <n> fixed|parked [why]',
             );
     }
-    writeSiesta(home, state);
+    writeSiesta(home, state, seat);
 }
 
 if (import.meta.main) {
@@ -515,14 +580,18 @@ type StopInput = {
     transcript_path?: string;
 };
 
+type Seat = { dir: string; role: string };
+
 type High = { state: 'fixed' | 'open' | 'parked'; text: string; why?: string };
 
 type Siesta = {
+    card_at?: string;
     card_printed: boolean;
     closed_at?: string;
     due: boolean;
     epoch: number;
     highs: High[];
+    nudged_at?: string;
     nudged_epoch: number;
     nudged_resumes: string[];
     nudged_ticks: string[];

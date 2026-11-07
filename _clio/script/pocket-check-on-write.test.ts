@@ -215,6 +215,62 @@ describe('a pocket red blocks its owner, once per id', () => {
         expect(out?.reason).toContain('PK-1: a');
     });
 
+    describe('in a wing', () => {
+        const sessions = join(fixtures, '.claude/sessions');
+        const seat = (name: string, kind = 'interactive') => {
+            mkdirSync(sessions, { recursive: true });
+            writeFileSync(
+                join(sessions, 'seat.json'),
+                JSON.stringify({ kind, name, sessionId: 'sid-seat' }),
+            );
+        };
+        const asSeat = { ...write, session_id: 'sid-seat' };
+
+        test('its own item blocks it, once', () => {
+            seat('🦉🪽 clio: wing 2');
+            itemWith('  - clio-wing-2\n');
+            const out = run(asSeat, redWith('a'));
+            const repeat = run(
+                asSeat,
+                redWith('a'),
+                commitStub,
+                fixtures,
+                false,
+            );
+            rmSync(item);
+            rmSync(sessions, { recursive: true });
+            expect(out?.reason).toContain('PK-1: a');
+            expect(repeat?.reason ?? '').not.toContain('PK-1');
+        });
+
+        test("another wing's item leaves it alone", () => {
+            seat('🦉🪽 clio: wing 2');
+            itemWith('  - clio-wing-1\n');
+            const out = run(asSeat, redWith('a'));
+            rmSync(item);
+            rmSync(sessions, { recursive: true });
+            expect(out?.reason ?? '').not.toContain('PK-1');
+        });
+
+        test("an unlabelled item is main's, not a wing's", () => {
+            seat('🦉🪽 clio: wing 2');
+            itemWith('');
+            const out = run(asSeat, redWith('a'));
+            rmSync(item);
+            rmSync(sessions, { recursive: true });
+            expect(out?.reason ?? '').not.toContain('PK-1');
+        });
+
+        test('a parked sidecar is never blocked', () => {
+            seat('🎀 helga', 'bg');
+            itemWith('');
+            const out = run(asSeat, redWith('a'));
+            rmSync(item);
+            rmSync(sessions, { recursive: true });
+            expect(out).toBe(undefined);
+        });
+    });
+
     test('a red blocks once, and again when its text changes', () => {
         itemWith('  - clio-main\n');
         expect(run(write, redWith('a'))?.reason).toContain('PK-1: a');

@@ -114,7 +114,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- /Users/dima/frame/_clio/.claude/hooks/pocket-check-on-write.sh",
+            "command": "/Users/dima/frame/_clio/.claude/hooks/pocket-check-on-write.sh",
             "timeout": 30
           }
         ]
@@ -185,7 +185,7 @@
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts prompt'",
+            "command": "node /Users/dima/frame/_clio/script/siesta-gate.ts prompt",
             "timeout": 5
           }
         ]
@@ -211,7 +211,7 @@
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'node /Users/dima/frame/_clio/script/siesta-gate.ts stop'",
+            "command": "node /Users/dima/frame/_clio/script/siesta-gate.ts stop",
             "timeout": 10
           }
         ]

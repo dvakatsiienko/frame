@@ -64,7 +64,7 @@ start)
 - you land your own branch at each finished piece, no message to clio: commit, then `~/frame/_clio/.claude/hooks/tree-sync.sh land` in the background (main in, fast-forward main, push, bump a changed plugin, refresh the other wings' trees); your tree stays for the next piece
   - a known hiccup: a file main has staged blocks the fast-forward. `[ask]` clio to commit hers, since it is her work, then land with no further ask; any other conflict or refusal: stop, `[ask]` clio
 - a ticket you work carries your `clio-wing-<N>` label, on at your first write, off when you hand it back or close it
-- you keep the siesta habit by `clio:siesta`, its due stamp main's: run its steps at each finished batch with both cards, wishkeeper and wisphunter, a brief's paths absolute
+- you keep the siesta habit: the gate counts your own batch on your own stamp and nudges you, `clio:siesta` is the flow, a brief's paths absolute
 - your second wind sends and ends with `clio:checkpoint`'s notice words, you as `wing <N>`
 - the end: only «halt» ends you, from dima or from main: read `~/frame/_clio/plugin-clio/skills/halt/wing.md` whole and run it; main archives you
 - every file you hand over (a long closing report, a file the main or a member asks for) lives in your worktree's `.scratch/`, its full path in the message; a path the main names in its own checkout gets the worktree copy, and the message says so
@@ -109,8 +109,8 @@ fork-edit | fork-bash)
 	}
 	if [ "$1" = fork-edit ]; then
 		file=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$input")
-		# main's gitignored .scratch holds a lane's spec, whichever clio runs the lane
-		case "$file" in */.scratch/*) exit 0 ;; esac
+		# main's gitignored .scratch holds a lane's spec, whichever clio runs the lane; a wing logs its own flaws on the shared shelf
+		case "$file" in */.scratch/* | */shelf/flawlog/*) exit 0 ;; esac
 		in_main_checkout "$(dirname "$file")" || exit 0
 	else
 		cmd=$(jq -r '.tool_input.command // ""' <<<"$input")

@@ -6,7 +6,7 @@ run in order, each step done before the next:
 
 1. **tails**: finish what is yours, and start no big ticket. a lane you run: land what is ready and stop its members, or name where it stands for step 7
 2. **flyway** (`flyway: wing <N>`): finished lines out, the rest groomed and reorganized to the real state. it stays open, for the next wing of your number
-3. **pocket**: `backlog task list --labels clio-wing-<N> -s open --plain`; each item marked done or handed back, label off, then committed: `x lane commit <msg> -- '_clio/pocket/tasks/pk-N - name.md'`
+3. **pocket**: `backlog task list --labels clio-wing-<N> -s open --plain`; each item marked done or handed back, label off; the pocket hook commits each write
 4. **tickets**: `x linear list --team FRM --label clio-wing-<N>`; close the related ones that landed (`clio:pm`), name why the rest stay, label off
 5. **cleanups**: no trash, no stray, no tail: your scratch trashed, your background tasks stopped
 6. **sync**: commit, then `~/frame/_clio/.claude/hooks/tree-sync.sh land`. your tree stays (W47)

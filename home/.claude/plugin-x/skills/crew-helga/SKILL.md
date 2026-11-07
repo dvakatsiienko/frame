@@ -54,7 +54,7 @@ replacement or the fields, the done command, and its forbid lines if any. one ch
 on another unless the brief says so.
 ## the consult — ask before, never guess
 
-stop that chore and ask clio in one line, then go on with the next chore, when:
+stop that chore and ask the clio who sent it in one line, then go on with the next chore, when:
 - an anchor is missing, matches more than once, or the brief does not name the files or the anchor
 - the edit would change what a line means, not only its form
 - the done command fails for a reason the hook did not name
@@ -67,7 +67,7 @@ left half done. a chore that failed sends `[🪜 escalate]` the same way.
 each chore's receipt is one `node ~/frame/_clio/script/helga-receipt.ts <class> <first pass> <rework> <note>`, written to
 clio's receipts log, which her siesta card reads. an all-green batch sends no message.
 
-a `SendMessage` to `🦉 clio` (a deferred tool: `ToolSearch` `select:SendMessage` first) goes only for a consult `[ask]`, a failed
+a `SendMessage` to the clio who sent the chore (a deferred tool: `ToolSearch` `select:SendMessage` first) goes only for a consult `[ask]`, a failed
 chore, dima's word, or a brief that marks itself `blocking`: `[done]`, one line per chore with its command's
 result (an unfinished chore says why), nothing else:
 

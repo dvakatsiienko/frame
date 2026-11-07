@@ -175,7 +175,12 @@ describe('the siesta comes due', () => {
     test('a siesta waiting on his word counts nothing due', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
-        writeSiesta(home, { card_printed: true, highs: [], open: true });
+        writeSiesta(home, {
+            card_at: new Date().toISOString(),
+            card_printed: true,
+            highs: [],
+            open: true,
+        });
         expect(stop(home, stopInput(home))).toBeUndefined();
     });
 
@@ -1020,5 +1025,141 @@ describe('a resume reads the 5h window', () => {
         const input = turn(home, resume('t1'));
         expect(said(stop(home, input))).toContain('5h window');
         expect(stop(home, input)).toBeUndefined();
+    });
+});
+
+describe('every clio on its own stamp', () => {
+    const WING = 'w-2';
+    const wingDir = (home: string) =>
+        join(home, '.local/state/clio/seats/wing-2');
+    const seated = (home: string) => {
+        const dir = join(home, '.claude/sessions');
+        mkdirSync(dir, { recursive: true });
+        const add = (sessionId: string, name: string, kind = 'interactive') =>
+            writeFileSync(
+                join(dir, `${sessionId}.json`),
+                JSON.stringify({ kind, name, sessionId }),
+            );
+        add(SID, '🦉 clio');
+        add(WING, '🦉🪽 clio: wing 2');
+        add('s-helga', '🎀 helga', 'bg');
+    };
+    const asWing = (home: string) => ({
+        ...stopInput(home),
+        session_id: WING,
+    });
+
+    test("a wing's commits make the wing due, never main", () => {
+        const home = fixtureHome();
+        seated(home);
+        commit(home, 15, 'clio-wing-2');
+        expect(said(stop(home, stopInput(home)))).toBeUndefined();
+        expect(said(stop(home, asWing(home)))).toContain('siesta due');
+    });
+
+    test("main's commits make main due, never a wing", () => {
+        const home = fixtureHome();
+        seated(home);
+        commit(home, 15, 'clio');
+        expect(said(stop(home, asWing(home)))).toBeUndefined();
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
+    });
+
+    test("a wing's unlanded branch counts for it", () => {
+        const home = fixtureHome();
+        seated(home);
+        commit(home, 1, 'dima');
+        const repo = join(home, 'frame');
+        const git = (...args: string[]) =>
+            spawnSync('git', args, { cwd: repo, env: gitEnv() });
+        git('checkout', '-q', '-b', 'clio-wing-2');
+        commit(home, 15, 'clio-wing-2');
+        git('checkout', '-q', '-');
+        expect(said(stop(home, asWing(home)))).toContain('siesta due');
+    });
+
+    test("a wing's state and stamp live apart from main's", () => {
+        const home = fixtureHome();
+        seated(home);
+        const before = siesta;
+        commit(home, 15, 'clio-wing-2');
+        stop(home, stopInput(home));
+        const main = before(home);
+        stop(home, asWing(home));
+        expect(before(home)).toEqual(main);
+        const out = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'siesta-gate.ts'), 'open'],
+            {
+                encoding: 'utf8',
+                env: {
+                    ...gitEnv(),
+                    CLAUDE_CODE_SESSION_ID: WING,
+                    HOME: home,
+                },
+            },
+        );
+        expect(out.stdout).toContain('last siesta: none');
+        expect(before(home)).toEqual(main);
+        expect(
+            JSON.parse(
+                readFileSync(join(wingDir(home), 'siesta.json'), 'utf8'),
+            ),
+        ).toMatchObject({ open: true });
+    });
+
+    test('a parked sidecar has no seat: no nudge, no state', () => {
+        const home = fixtureHome();
+        seated(home);
+        commit(home, 15, 'clio');
+        expect(
+            stop(home, { ...stopInput(home), session_id: 's-helga' }),
+        ).toBeUndefined();
+        expect(
+            prompt(home, { prompt: 'go', session_id: 's-helga' }),
+        ).toBeUndefined();
+    });
+
+    test('an ignored nudge blocks again after an hour, not before', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
+        expect(said(stop(home, stopInput(home)))).toBeUndefined();
+        writeSiesta(home, {
+            ...siesta(home),
+            nudged_at: new Date(Date.now() - 2 * HOUR).toISOString(),
+        });
+        expect(stop(home, stopInput(home))).toMatchObject({
+            decision: 'block',
+        });
+    });
+
+    test('a card left over an hour stops pausing the count', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        writeSiesta(home, {
+            card_at: new Date(Date.now() - 2 * HOUR).toISOString(),
+            card_printed: true,
+            highs: [{ state: 'open', text: 'a hole' }],
+            open: true,
+        });
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
+    });
+
+    test('a new siesta prints the last stamp and the high left open', () => {
+        const home = fixtureHome();
+        run(home, ['open']);
+        run(home, ['card', 'a hole']);
+        const out = run(home, ['open']);
+        expect(out.stdout).toMatch(/last siesta: 20/);
+        expect(out.stdout).toContain('unsettled high of the last card: a hole');
+    });
+
+    test("a member's done still counts through the app's peer prefix", () => {
+        const home = fixtureHome();
+        prompt(home, {
+            prompt: 'Another Claude session sent a message:\n<cross-session-message from-name="🔧 codie: x">[done] landed</cross-session-message>',
+        });
+        expect(siesta(home).pings).toHaveLength(1);
     });
 });

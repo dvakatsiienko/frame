@@ -63,7 +63,7 @@ halt report — he misses a few every session, and this is where they get caught
 proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict is dima's.
 
 ## phase 3a — flawlog flush, the one stop
-read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/clio:flawlog`.
+read the day's logs, each clio's, cluster, ONE batched proposal, ONE approval, execute and commit. see `/clio:flawlog`.
 **the pocket asks, in the same proposal**: every move or drop of a line of his made today (the sort, the triage, a copy carried elsewhere) and every item marked done in doubt, one diff line each; his one yes covers them with the flawlog (`habit-shared-files` § the pocket).
 **the retros, in the flush:** `find ~/.local/state/x/lanes ~/.claude/shelf/retros -name '*-retro.md'` (the old home drains out) — what the siestas left, sorted as `clio:siesta` step 2.7 sorts it; the new lines enter the proposal beside the flawlog's; the fold is the record. once the flush is applied, `trash` each folded file, no ask (dima, 2026-10-30: «trash them yourself always, once processed»), and the same `find` prints nothing: the halt's retro check.
 **the sweep, after the flush:** `node ~/frame/_clio/script/halt-sweep.ts --apply --only retention` — retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
@@ -145,6 +145,7 @@ the CST lists dima's chat lines since the last report, each with its answer or �
 - note-vet: before the stop, every note id with no verdict is printed and vetted (`pnpm --silent crow:note-vet ok|miss <id> "<why>" --changed file|reply|ask|ticket|none --ref <path|id>`) — an unvetted note is a lost data point for the trial
 - crow-receipts trial, until 2026-11-17: each `#dima-caught` line of today's flawlog is checked against `notes.jsonl` for a crow note on it that came first; the count goes as a round in `docs/test-drive/crow-receipts.md`
 a first-act that is a memory line is applied now, by this halt — never left for a boot.
+**his word on wings at the next boot** (PK-351:W80) goes in as a first-act, `summon wings: <which>`; no word, no line.
 🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
 
 ## phase 6 — no boot prompt

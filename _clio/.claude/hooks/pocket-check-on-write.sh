@@ -14,6 +14,13 @@ Bash)
 Edit | Write) jq -r '.tool_input.file_path // ""' <<<"$event" | grep -q '/pocket/' || exit 0 ;;
 *) exit 0 ;;
 esac
+# the seat decides whose reds block: a wing answers for its own label, main for every other item, a parked sidecar for nothing
+sid="$(jq -r '.session_id // ""' <<<"$event")"
+registry="$(grep -lE "\"sessionId\": *\"$sid\"" "${HOME:-/nonexistent}"/.claude/sessions/*.json 2>/dev/null | head -1)"
+[ -n "$registry" ] && [ "$(jq -r '.kind // ""' "$registry" 2>/dev/null)" = bg ] && exit 0
+seat_label=""
+[ -n "$registry" ] && [[ "$(jq -r '.name // ""' "$registry" 2>/dev/null)" =~ wing\ ([0-9]+) ]] && seat_label="clio-wing-${BASH_REMATCH[1]}"
+
 check="${POCKET_CHECK_CMD:-node $(dirname "$0")/../../script/pocket-check.ts}"
 out="$($check 2>&1)"
 status=$?
@@ -54,14 +61,13 @@ fi
 [ "$status" = 0 ] && [ -z "$refused" ] && exit 0
 reds="$( [ "$status" = 0 ] || grep '^🔴' <<<"$out" || printf '%s' "$out")"
 
-# this hook runs in the main session only (fork-guard main-only), so the seat is the main's: a red on an item labelled for a wing is that wing's
 # an item red blocks once per id until its text changes; a red with no item, or an item with no file, always blocks
 seen="${HOME:+$HOME/.local/state/clio/pocket-reds-seen}"
 [ -n "$seen" ] && mkdir -p "$(dirname "$seen")"
 for id in $(grep -oE '^🔴 [A-Za-z]+-[0-9]+' <<<"$reds" | cut -d' ' -f2 | sort -u); do
 	lines="$(grep -F "🔴 $id:" <<<"$reds")"
 	file="$(ls "$(dirname "$0")"/../../pocket/{,archive/}tasks/"$(tr 'A-Z' 'a-z' <<<"$id") "*.md 2>/dev/null | head -1)"
-	if [ -n "$file" ] && awk 'NR > 1 && /^---$/ {exit} /^[ ]*- clio-wing-[0-9]+$/ {found = 1} END {exit !found}' "$file"; then
+	if [ -n "$file" ] && [ "$(awk 'NR > 1 && /^---$/ {exit} /^[ ]*- clio-wing-[0-9]+$/ {print $2; exit}' "$file")" != "$seat_label" ]; then
 		reds="$(grep -vF "🔴 $id:" <<<"$reds")"
 		continue
 	fi

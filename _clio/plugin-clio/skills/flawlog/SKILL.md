@@ -7,7 +7,7 @@ description: load on «flawlog», «flush the flawlog», «flaw», the moment a 
 **a flaw just happened → try to fix it NOW. log only what survives the attempt.**
 
 loads at boot alongside `/clio:boot`, whenever a mistake/friction/retry just happened, or when
-dima asks «do you keep an eye on flawlog». coordinator-only, on purpose.
+dima asks «do you keep an eye on flawlog». every clio logs, a wing in a file of its own; main flushes them all at the halt; no member does, on purpose.
 
 ## 1. flag on the spot, same turn
 two lines in the reply. non-blocking, informational — never a topic change, never a permission

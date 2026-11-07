@@ -17,7 +17,7 @@ siesta after each (`habit-dima-comms`); heavy queries fire at the step that need
 
 📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
-🚦 **a spawn in the boot never ends its turn**: the board is the one stop (dima, 2026-10-29; guard: FRM-426). a full boot opens a wing by `clio:wing` at the first possible point, naming the day's chores (until tilde decides; mini opens none); fresh unless he says fork, a fork before the boot reads anything, and the boot runs on.
+🚦 **a spawn in the boot never ends its turn**: the board is the one stop (dima, 2026-10-29; guard: FRM-426). **no wing opens by default, pending flyways included** (PK-351:W80): a full boot opens one by `clio:wing` only on his word at the boot or a `summon wings: <which>` first-act in the CST, at the first possible point; fresh unless he says fork, a fork before the boot reads anything, and the boot runs on.
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== clio boot digest · <time> ===` at the top of this context (its sections are the script's). **one shell round at most:**

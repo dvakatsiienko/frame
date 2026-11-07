@@ -6,6 +6,8 @@ description: load at every siesta — a lane member's done lands, 15 files of cl
 
 dima, 2026-10-10: a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow and its «when» is the one trigger list; `fleet-vibe` holds the word.
 
+🪽 **every clio runs it, on its own stamp** (PK-351:W78): the gate finds the seat. a wing's batch, tickets, lanes and flyway are its own, and it never moves or touches main's; steps 3.2 and 3.3 and the chores line are main's alone.
+
 ## when
 
 - a codie's, sixth sense's or designer's `[done]` or `final` lands, or a phases line is done
@@ -13,11 +15,11 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 - dima says «siesta»
 - never on a timer
 
-`siesta-gate.ts` blocks once a siesta is due, then rides his prompts; it closes on dima's own next prompt after the card, afk once each high is settled.
+`siesta-gate.ts` blocks once a siesta is due, again each hour it stays ignored, and rides his prompts; it closes on dima's own next prompt after the card, afk once each high is settled; a card left an hour stops pausing the count.
 
 ## the flow, in one turn
 
-0. Read `~/.local/state/clio/siesta-last` (`<last siesta>` for 1, 2.5, 2.6, 3.5), then `node ~/frame/_clio/script/siesta-gate.ts open` (stamps and opens)
+0. `node ~/frame/_clio/script/siesta-gate.ts open` prints `<last siesta>` for 1, 2.5, 2.6, 3.5 and any high left open by the last card, which joins this one; it stamps and opens
 
 1. **the checks, then wishkeeper**: `node ~/frame/_clio/script/siesta-checks.ts --since <last siesta>` runs every siesta, audit-codie too; wishkeeper is never skipped, the 5h pace included (dima, 2026-11-04: «he is a prio»): spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` only on dima's ask), with the checks' output, the commit range since the last siesta, the base..head of each chunk a `[done]` named with its pr unmerged, the ticket ids touched, the pocket items touched, clio's transcript path and the `<last siesta>` stamp, local with its UTC offset, to read from (for its promises and claims checks) and the open orbit asks (so it skips what is already asked) — nothing more; it reads the tickets' want itself
 2. **meanwhile, the pick, in this order**: due reminders first, then In Progress tickets (W37), then the pocket (a red pocket-check section puts it before the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
