@@ -30,7 +30,7 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 ## the day plan
 
 the wing's durable plan is one pocket item he can read, so it survives a second wind:
-- first act: `node script/pocket-add.ts "day plan MM-DD: wing <N>" --priority next --top --wing <N>`, then one `--ac` per line through `backlog task edit`, in his order
+- first act, unless `clio:low-tide-triage` seeded yours today: `node script/pocket-add.ts "day plan MM-DD: wing <N>" --priority next --top --wing <N>`, then one `--ac` per line through `backlog task edit`, in his order
 - a finished line: `backlog task edit <id> --check-ac <n>`, that turn; a new line: `--ac`
 - `clio:halt` closes it with the other day plans
 
