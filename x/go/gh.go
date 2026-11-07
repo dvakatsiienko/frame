@@ -242,7 +242,7 @@ func originSlugIn(dir string) string {
 
 /* Github */
 
-// dima's own login does what the codie app may not: branch protection (admin), an approve, a merge
+// dima's own login does what the codie app may not: branch protection (admin), a merge
 const (
 	asCodie = "codie"
 	asDima  = "dima"
