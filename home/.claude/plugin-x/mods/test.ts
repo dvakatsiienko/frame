@@ -437,7 +437,8 @@ if (import.meta.main) {
             );
             continue;
         }
-        if (record !== undefined)
+        // a clock read's mod runs whatever its record says, and its red names why
+        if (record !== undefined && !hookClockReads(dir).length)
             whys.push(`${mod} ran: ${whyRan(record, Date.now(), mod, tree)}`);
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);

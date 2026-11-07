@@ -345,19 +345,25 @@ func modsPushPlan(repo, scratch string, changed, added []string) error {
 	return nil
 }
 
-// every target is backed up before the first write; a failed write puts back each one already written
+// every target is backed up before the first write; a failed write puts back each one already written. it lands as the
+// commit's format step leaves it, so a later overlay of this mod reads what the commit holds
 func writeAll(repo, scratch string, changed []string) error {
 	type was struct {
 		path  string
 		body  []byte
 		isNew bool
 	}
+	copyOf, done, err := formattedCopies(repo, scratch)
+	if err != nil {
+		return err
+	}
+	defer done()
 	var written []was
 	for _, path := range changed {
 		target := filepath.Join(repo, path)
 		body, err := os.ReadFile(target)
 		prior := was{path: target, body: body, isNew: errors.Is(err, fs.ErrNotExist)}
-		if err := copyFile(filepath.Join(scratch, path), target); err != nil {
+		if err := copyFile(copyOf(path), target); err != nil {
 			restoreErr := error(nil)
 			for _, w := range written {
 				if w.isNew {
@@ -372,8 +378,11 @@ func writeAll(repo, scratch string, changed []string) error {
 		written = append(written, prior)
 	}
 	for _, path := range changed {
-		if err := copyFile(filepath.Join(scratch, path), filepath.Join(scratch, scratchBase, path)); err != nil {
-			return err
+		target := filepath.Join(repo, path)
+		for _, to := range []string{filepath.Join(scratch, path), filepath.Join(scratch, scratchBase, path)} {
+			if err := copyFile(target, to); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

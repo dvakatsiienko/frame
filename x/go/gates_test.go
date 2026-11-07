@@ -388,6 +388,44 @@ func TestModsChainSkipsBytesTheFormatStepRewrites(t *testing.T) {
 	}
 }
 
+func TestModsChainSkipsAcrossTwoOverlaysOfOneMod(t *testing.T) {
+	t.Parallel()
+	dir, env, tests := modsChainFormatted(t)
+	other := modsDir + "m/hooks/other.ts"
+	edited(t, dir, env, modHooks, "import { b } from './b.ts';\nimport { a } from './a.ts';\n\nexport const register = () => [a, b];\n")
+	testOverlay(t, dir, env)
+	pushOverlay(t, dir, env)
+	edited(t, dir, env, other, "export const other = 1;\n")
+	testOverlay(t, dir, env)
+	pushOverlay(t, dir, env)
+	if got := xIn(t, dir, env, "mods", "edit", "status"); len(anyList(got.data["edited"])) != 0 {
+		t.Errorf("a push left an edit in scratch:\n%s", got.stdout)
+	}
+	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks, other); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if n := tests(); n != 2 {
+		t.Errorf("the mod's tests ran %d times across two overlays and a commit, want 2\n%s", n, suiteSaid(t, env))
+	}
+}
+
+func anyList(v any) []any {
+	list, _ := v.([]any)
+	return list
+}
+
+func TestModsChainNamesNoWhyForAClockRead(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChain(t)
+	write(t, filepath.Join(dir, modHooks), "export const register = () => Date.now();\n")
+	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks); got.code == 0 {
+		t.Fatalf("a clock read committed\n%s", got.stdout)
+	}
+	if said := suiteSaid(t, env); !strings.Contains(said, "a clock read") || strings.Contains(said, "m ran:") {
+		t.Errorf("want the clock read and no why:\n%s", said)
+	}
+}
+
 func TestModsEditOnlyReadsTheFormattedBytes(t *testing.T) {
 	t.Parallel()
 	dir, env, _ := modsChainFormatted(t)

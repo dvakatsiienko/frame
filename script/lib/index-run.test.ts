@@ -205,6 +205,7 @@ test('a gate that sets core.bare in the shared repo goes red and puts it back', 
 // what git itself exports to a commit's hook; a pre-push hook gets no index, a cc shell neither var (GIT_EDITOR is cc's own)
 const execPath = execFileSync('git', ['--exec-path'], {
     encoding: 'utf8',
+    env,
 }).trim();
 
 test.each([
