@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T02:19:00Z'
+updated_date: '2026-11-07T02:53:00Z'
 labels:
   - m
   - wing-2
@@ -45,6 +45,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #21 PK-308's 14 left (PK-325 moved to main, dima 19:08)
 - [ ] #22 PK-334 every gate listed, gate as a vibe word, maintained
 - [ ] #23 sharpen how pocket items tied to wings are handled, with dima (his 11-07 04:18), PK-343 with it
+- [ ] #24 FRM-517: solve it on the fresh boot, first thing: his stopwatch time, temp dir read, the writer named by prefix (CST first-act 4)
 <!-- AC:END -->
 
 ## Implementation Notes

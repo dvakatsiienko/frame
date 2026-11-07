@@ -4,7 +4,7 @@ title: 'parked member: codie sat 38 min with runnable work, its wing missed it t
 status: open
 assignee: []
 created_date: '2026-11-06T23:27:00Z'
-updated_date: '2026-11-07T02:49:00Z'
+updated_date: '2026-11-07T02:53:00Z'
 labels:
   - s
   - wing-1
@@ -62,4 +62,13 @@ answered, in the thread 01:39, read from FRM-505's wish: no, partly. it removes 
 from 11-07's retros: a --long protocol of 16 runs waits up to 729 s a run, and frm-521 codie parked on it twice, dima and wing each caught one: a queued run is no reason to end a turn; open the pr, rows join by edit.
 
 his 11-07 04:48: maybe quiet comms is too quiet? read that minute: held messages p50 under 1 min, max 8.3, 0 lost (115 of them). the risk left: 177 lone notices logged, read by nobody, and this item's 38 min. to do: read a sample of those 177 for a parked member or a question, and name what a turn-end note must carry to pass.
+
+details for whoever takes this, read 11-07 04:48 from `quiet-log:*` in x-mod-stash's store (~/.claude/plugins/store/x-mod-stash_inline-99d499f0f4e0.json), window 11-06 12:00 to 11-07 04:20, every coordinator session:
+- 600 log lines, 116 flushes repeating held ones, so 484 messages; 72 started a turn, 15 %: 43 done, 24 ask, 3 escalate, 2 untagged; 0 lone notices
+- held, 115: 62 untagged, p50 0.6 min, p90 3.4, max 4.5; 53 notices, p50 1.1, p90 3.2, max 8.3; 0 lost, matched by sender and tag since a flush line carries no sid. healthy
+- logged, 177: lone turn-end notices, no wake, in no turn as text or a count (x-mod-stash/FTR.md:770), read by nobody. this is the too-quiet risk
+- by sender over all lines: mods codie 125, wing 1's two threads 143, ci codie 51, cli 5 codie 44
+- not proven: whether a logged note caused this item's 38 min, or whether any of the 177 buried a question. unread both ways
+suggested steps: 1. pull the 177 by verdict logged from that key; the log holds time and sender, the text is in each sender's transcript. 2. sample 30, or all of them with helper-lite, for a parked member, a question or a blocker, and read this item's own 01:23 case first. 3. if some hide one: name what a turn-end note must carry to pass (a `[parked]` tag, or a rule on the words), and put a red row in x-mod-stash's tests/quiet.test.ts. if none do: the note drop stands, and this item's cause is elsewhere.
+pointers: docs/test-drive/gate-speed/empty-wakes.md's 11-07 round, FRM-501's re-count comment, _clio/.scratch/retro-2026-11-07.md line 1 (447 min of codie waits on clio or dima, the bigger delay, which loud comms would not shorten), FRM-368 for tilde. his words: 01:23, 01:25 «trace why it happened», 04:48 «maybe quiet coms now too quiet?»
 <!-- SECTION:NOTES:END -->
