@@ -351,7 +351,7 @@ func TestBrakeCheckAnswersOneReader(t *testing.T) {
 			w.hub.pages[repoPath+"/issues"] = c.issues
 
 			// the argv x-mod-guard's rawMergeBrake sends, its rows assert the same words
-			got := w.run(t, "--brake-check", "o/r", "--json")
+			got := xIn(t, t.TempDir(), append(w.env, "X_OVERRIDE_CLONES=o/r="+w.clone), "lane", "merge-auto", "--brake-check", "--json")
 
 			if got.code != c.code || !strings.Contains(got.stdout, c.want) {
 				t.Fatalf("exit %d, want %d and %q\n%s", got.code, c.code, c.want, got.stdout)
@@ -396,6 +396,16 @@ func TestHoldAndBrakeRecordsIgnoreHomeAndXState(t *testing.T) {
 	}
 }
 
+func TestBrakeCheckWithNoCloneToReadExitsNonZero(t *testing.T) {
+	t.Parallel()
+	for _, clones := range []string{"", "o/b=/no/such/clone"} {
+		got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=" + clones}, "lane", "merge-auto", "--brake-check")
+		if got.code == 0 || !strings.Contains(got.stdout, "the brake did not read") {
+			t.Errorf("clones %q: exit %d\n%s", clones, got.code, got.stdout)
+		}
+	}
+}
+
 func TestOverrideCheckNamesAMissingClone(t *testing.T) {
 	t.Parallel()
 	got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=o/b=/no/such/clone", "X_GITHUB_URL=http://127.0.0.1:1"}, "lane", "merge-auto", "--override-check")
@@ -406,7 +416,7 @@ func TestOverrideCheckNamesAMissingClone(t *testing.T) {
 
 func TestOverrideCheckKeepsItsArgvExact(t *testing.T) {
 	t.Parallel()
-	for _, args := range [][]string{{"--brake-check", "o/r", "7"}, {"--brake-check", "o/r", "--hold"}, {"--brake-check", "o/r", "--dima-ok", "7"}, {"--brake-check", "not a slug"}, {"--override-check", "7"}, {"--override-check", "--override-off"}, {"--override-check", "--shift-only"}} {
+	for _, args := range [][]string{{"--brake-check", "7"}, {"--brake-check", "--hold"}, {"--brake-check", "--dima-ok", "7"}, {"--override-check", "7"}, {"--override-check", "--override-off"}, {"--override-check", "--shift-only"}} {
 		if got := xIn(t, t.TempDir(), nil, append([]string{"lane", "merge-auto"}, args...)...); got.code != 2 {
 			t.Errorf("%v: exit %d, want 2\n%s", args, got.code, got.stdout)
 		}

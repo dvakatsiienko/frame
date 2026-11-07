@@ -214,29 +214,27 @@ func overrideClones() [][2]string {
 }
 
 // x-mod-guard's read of the brake before a raw merge under the override: one reader, brakeOn, and a failed read exits non-zero
-func brakeCheckPlan(r *Run, named string) (any, error) {
-	repo, err := repoOf(Flags{"repo": named})
-	if err != nil {
-		return nil, err
+func brakeCheckPlan(r *Run) (any, error) {
+	r.Open("frame and bytes")
+	clones := overrideClones()
+	if len(clones) == 0 {
+		return nil, brakeReadFail(errors.New("no clone to read it from"))
 	}
-	for _, clone := range overrideClones() {
-		if clone[0] == repo {
-			if err := os.Chdir(clone[1]); err != nil {
-				return nil, fmt.Errorf("the brake did not read, no clone of %s: %w", repo, err)
-			}
+	for _, clone := range clones {
+		if err := os.Chdir(clone[1]); err != nil {
+			return nil, brakeReadFail(fmt.Errorf("no clone of %s: %w", clone[0], err))
+		}
+		brake, err := brakeOn(clone[0], "main")
+		if err != nil {
+			return nil, brakeReadFail(err)
+		}
+		if brake != "" {
+			r.Done("on: "+clone[0]+" "+brake, "")
+			return map[string]string{"brake": clone[0] + " " + brake}, nil
 		}
 	}
-	r.Open(repo)
-	brake, err := brakeOn(repo, "main")
-	if err != nil {
-		return nil, brakeReadFail(err)
-	}
-	said := "off"
-	if brake != "" {
-		said = "on: " + brake
-	}
-	r.Done(said, "")
-	return map[string]string{"brake": brake, "repo": repo}, nil
+	r.Done("off", "")
+	return map[string]string{"brake": ""}, nil
 }
 
 // merge-auto's own plan per pr, so the answer can't drift from the door; a ref fetch is the only thing it writes

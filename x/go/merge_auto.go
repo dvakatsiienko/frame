@@ -88,17 +88,16 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	off, _ := flags["override-off"].(bool)
 	shiftOnly, _ := flags["shift-only"].(bool)
 	check, _ := flags["override-check"].(bool)
-	brakeRepo, _ := flags["brake-check"].(string)
 	switch {
-	case brakeRepo != "":
+	case flags["brake-check"] == true:
 		alone := len(args) == 0 && !off && !shiftOnly && !check
 		for _, other := range []string{"hold", "release-hold", "release-brake"} {
 			alone = alone && flags[other] != true
 		}
 		if word, _ := flags["dima-ok"].(string); !alone || word != "" {
-			return nil, usageFail("--brake-check reads one repo's brake: it takes no pr and no other switch", "x lane merge-auto --brake-check <owner/name>")
+			return nil, usageFail("--brake-check reads the fleet's brake: it takes no pr and no other switch", "x lane merge-auto --brake-check")
 		}
-		return brakeCheckPlan(r, brakeRepo)
+		return brakeCheckPlan(r)
 	case check && (off || shiftOnly || len(args) > 0):
 		return nil, usageFail("--override-check reads every open pr: it takes no pr and no other switch", "x lane merge-auto --override-check")
 	case check:

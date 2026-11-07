@@ -55,14 +55,14 @@ function world(on: On, opts: World = {}) {
             return answer(0, 'https://github.com/o/r.git\n');
         if (e.argv.includes('--brake-check')) {
             // the argv x/go's TestBrakeCheckAnswersOneReader runs for real
-            expect(e.argv.slice(0, 4)).toEqual([
+            expect(e.argv).toEqual([
                 'x',
                 'lane',
                 'merge-auto',
                 '--brake-check',
+                '--json',
             ]);
-            expect(e.argv[5]).toBe('--json');
-            brakeReads.push(e.argv[4] ?? '');
+            brakeReads.push(e.init?.cwd ?? '');
             return opts.brake === 'fails'
                 ? answer(1, '')
                 : answer(
@@ -481,18 +481,15 @@ test('a brake that does not read refuses a raw merge under prs', async ($, on) =
     expect(ran).toEqual([]);
 });
 
-for (const [line, repo] of [
-    ['gh pr merge 7', 'o/r'],
-    ['gh pr merge 7 -R a/b', 'a/b'],
-    ['gh pr merge 7 -Ra/b', 'a/b'],
-    ['gh pr merge 7 --repo=a/b', 'a/b'],
-    ['GH_REPO=a/b gh pr merge 7', 'a/b'],
-    ['gh pr view 1 -R c/d && gh pr merge 7 -R a/b', 'a/b'],
-    ['gh pr merge https://github.com/a/b/pull/7', 'a/b'],
-    ['gh api -X PUT repos/a/b/pulls/7/merge', 'a/b'],
-] as const)
-    test(`the brake read names the merge's repo: ${line}`, async ($, on) => {
+for (const line of [
+    'gh pr merge 7',
+    'gh pr merge 7 --body "see https://github.com/c/d/pull/1"',
+    'export GH_REPO=a/b; gh pr merge 7',
+    'cd ~/projects/bytes && gh pr merge 7',
+    "gh api graphql -f query='mutation { mergePullRequest }'",
+])
+    test(`a raw merge under prs reads the brake outside any tree: ${line}`, async ($, on) => {
         const { brakeReads } = world(on, { files: { [REAL]: ON } });
         await bash($, line);
-        expect(brakeReads).toEqual([repo]);
+        expect(brakeReads).toEqual(['/real-home']);
     });

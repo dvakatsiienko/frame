@@ -141,26 +141,6 @@ function rawMerge(c: Command) {
 export const rawMerges = (command: string, cwd: string) =>
     commandsDeep(command, cwd).flatMap((c) => rawMerge(c) ?? []);
 
-// every repo a line's raw merges land in: its own flag, GH_REPO, a url, else the dir gh would read from its origin
-export function rawMergeTargets(command: string, cwd: string) {
-    return commandsDeep(command, cwd).flatMap((c) => {
-        const merge = rawMerge(c);
-        if (!merge || merge.isHoldOnly) return [];
-        const words = c.args.map((w) => w.text);
-        const line = words.join(' ');
-        const flag = line.match(
-            /(?:^| )(?:-R ?|--repo[ =])(?:[^/ ]+\.[^/ ]+\/)?([\w.-]+\/[\w.-]+)/,
-        )?.[1];
-        const env = c.assigns
-            .find((a) => a.startsWith('GH_REPO='))
-            ?.slice('GH_REPO='.length);
-        const url = line.match(
-            /repos\/([\w.-]+\/[\w.-]+)\/pulls|github\.com\/([\w.-]+\/[\w.-]+)\/pull\//,
-        );
-        return [{ dir: c.dir, repo: flag ?? env ?? url?.[1] ?? url?.[2] }];
-    });
-}
-
 const DOOR = "x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word";
 
 // after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94): it refuses from

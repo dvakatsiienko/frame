@@ -20,7 +20,6 @@ import {
     holdRecordWrite,
     mergeHold,
     rawMergeRefused,
-    rawMergeTargets,
     rawMerges,
 } from './rules/merge-hold.ts';
 import { projectMoves } from './rules/milestone.ts';
@@ -483,32 +482,27 @@ async function overrideLogPass(
 }
 
 // one rule, one reader: x's brakeOn answers for each repo the line merges in, and a failed read refuses
-async function rawMergeBrake($: EngineInterface, typed: string, cwd: string) {
-    const targets = rawMergeTargets(typed, cwd);
-    const repos = new Set<string | undefined>();
-    // a merge from a script names no target here, so the session's own repo is read
-    for (const t of targets.length ? targets : [{ dir: cwd, repo: undefined }])
-        repos.add(t.repo ?? (await repoOf($, t.dir)));
-    for (const repo of repos) {
-        if (!repo) return 'the brake did not read: no repo to read it for';
-        const read = await $.process
-            .run(['x', 'lane', 'merge-auto', '--brake-check', repo, '--json'], {
-                cwd,
-                timeoutMs: 8000,
-            })
-            .catch(() => undefined);
-        try {
-            const { data } = JSON.parse(read?.stdout ?? '') as {
-                data?: { brake?: unknown };
-            };
-            if (typeof data?.brake !== 'string')
-                return 'the brake did not read, so it reads on';
-            if (data.brake) return `the brake is on: ${data.brake}`;
-        } catch {
+async function rawMergeBrake($: EngineInterface) {
+    const store = await overrideStorePath($);
+    const home = store?.replace(/\/\.local\/state\/x\/[^/]*$/, '');
+    // outside any tree, so the shim runs main's x and a stale worktree can't answer; a line can't name its repo safely, so
+    // both repos' brakes are read: a brake on either stops a raw merge, and merge-auto stays the door
+    const read = await $.process
+        .run(['x', 'lane', 'merge-auto', '--brake-check', '--json'], {
+            cwd: home,
+            timeoutMs: 20000,
+        })
+        .catch(() => undefined);
+    try {
+        const { data } = JSON.parse(read?.stdout ?? '') as {
+            data?: { brake?: unknown };
+        };
+        if (typeof data?.brake !== 'string')
             return 'the brake did not read, so it reads on';
-        }
+        return data.brake ? `the brake is on: ${data.brake}` : undefined;
+    } catch {
+        return 'the brake did not read, so it reads on';
     }
-    return undefined;
 }
 
 // x's own record of dima's holds, one file per repo (`x/go/merge_hold.go`); a pr number across repos counts as held in each,
@@ -1770,7 +1764,7 @@ export const register: Register = (on) => {
             const landsAny = merges.some((m) => !m.isHoldOnly);
             const brake =
                 !held && override && landsAny
-                    ? await rawMergeBrake($, typed, cwd)
+                    ? await rawMergeBrake($)
                     : undefined;
             const hold =
                 held ??

@@ -57,8 +57,7 @@ var impls = map[string]Impl{
 	"lane pr-body":  {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
 	"lane merge-auto": {Plan: mergeAutoPlan, Apply: mergeAuto, Undone: "nothing was merged", Ask: askMergeAuto,
 		ReadOnly: func(flags Flags) bool {
-			brake, _ := flags["brake-check"].(string)
-			return flags["override-check"] == true || brake != ""
+			return flags["override-check"] == true || flags["brake-check"] == true
 		}},
 	"plugin bump":       {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
 	"mods edit pull":    {Run: modsEditPull, Undone: "the copies sit in scratch, the mod untouched"},
