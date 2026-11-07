@@ -261,10 +261,18 @@ function indexedTree(root: string, mod: string) {
     );
 }
 
+// a path under mods/ in no mod's folder, a script any run leans on; no mods test reads an .md
+export function touchesSharedPath(changed: string[], all: string[]) {
+    return changed.some(
+        (path) =>
+            !path.endsWith('.md') && !all.includes(path.split('/')[0] ?? ''),
+    );
+}
+
 // a commit's mods its staged paths never touch: no mod's tests read a sibling's folder, a shared path under mods/ runs them all
 export function untouchedMods(changed: string[], all: string[]) {
     const touched = new Set(changed.map((path) => path.split('/')[0] ?? ''));
-    if (changed.length === 0 || [...touched].some((top) => !all.includes(top)))
+    if (changed.length === 0 || touchesSharedPath(changed, all))
         return new Set<string>();
     return new Set(all.filter((mod) => !touched.has(mod)));
 }
@@ -422,9 +430,10 @@ if (import.meta.main) {
         !values.extra &&
         !only;
     const whys: string[] = [];
-    const untouched = values['skip-tested']
-        ? untouchedMods(stagedPaths(root), all)
-        : new Set<string>();
+    const staged = values['skip-tested'] ? stagedPaths(root) : [];
+    const untouched = untouchedMods(staged, all);
+    // a record proves a mod's own bytes, and a shared path can change what its run means
+    const isSharedTouched = touchesSharedPath(staged, all);
     let skipped = 0;
     let untouchedRuns = 0;
     for (const mod of named.length ? named : all) {
@@ -438,7 +447,11 @@ if (import.meta.main) {
         }
         const tree = tested && indexedTree(root, mod);
         // a clock read reds whatever was tested, so that mod runs and reads red as it always did
-        if (tested?.has(`${mod} ${tree}`) && !hookClockReads(dir).length) {
+        if (
+            !isSharedTouched &&
+            tested?.has(`${mod} ${tree}`) &&
+            !hookClockReads(dir).length
+        ) {
             skipped++;
             process.stdout.write(
                 `${mod}: tests skipped, a green already read these bytes\n`,
@@ -447,7 +460,9 @@ if (import.meta.main) {
         }
         // a clock read's mod runs whatever its record says, and its red names why
         if (record !== undefined && !hookClockReads(dir).length)
-            whys.push(`${mod} ran: ${whyRan(record, Date.now(), mod, tree)}`);
+            whys.push(
+                `${mod} ran: ${isSharedTouched ? 'a shared path' : whyRan(record, Date.now(), mod, tree)}`,
+            );
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
             cpSync(join(root, mod), dir, { recursive: true });

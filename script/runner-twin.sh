@@ -10,7 +10,10 @@ step_ref=
 if [ -z "$sha" ] && [ ! -t 0 ]; then
     # git's order: local ref, local sha, remote ref, remote sha; `x lane push` pushes a sha, so the local ref is that sha
     while read -r -t 1 _ pushed ref _; do
-        case $pushed in *[!0]*) sha=$pushed step_ref=$ref ;; esac
+        case $pushed in
+        *[!0]*) sha=$pushed step_ref=$ref ;;
+        *) step_ref=${step_ref:-$ref} ;;
+        esac
     done
 fi
 sha=${sha:-HEAD}

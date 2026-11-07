@@ -409,6 +409,42 @@ func TestModsChainSkipsAcrossTwoOverlaysOfOneMod(t *testing.T) {
 	}
 }
 
+func TestModsEditPushKeepsASaveMadeDuringItsTests(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChainFormatted(t)
+	copied := pullCopy(t, dir, env, modHooks)
+	write(t, copied, "export const register = () => 1;\n")
+	const saved = "// saved mid-test\n"
+	if got := xIn(t, dir, append(env[:len(env):len(env)], "CLAUDE_MID_TEST=printf '"+saved+"' >> "+copied), "mods", "edit", "push"); got.code != 0 {
+		t.Fatalf("push: exit %d\n%s", got.code, got.stdout)
+	}
+	if strings.Contains(readFile(t, filepath.Join(dir, modHooks)), "saved") {
+		t.Errorf("the push wrote bytes its tests never read:\n%s", readFile(t, filepath.Join(dir, modHooks)))
+	}
+	if !strings.Contains(readFile(t, copied), "saved") {
+		t.Errorf("the push overwrote a save in scratch:\n%s", readFile(t, copied))
+	}
+}
+
+func TestModsEditFormatsEachCopyOnceARun(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChainFormatted(t)
+	stub := filepath.Join(dir, "node_modules/.bin/biome")
+	calls := filepath.Join(t.TempDir(), "biome")
+	write(t, stub, "#!/bin/sh\necho \"$*\" >> "+calls+"\n"+strings.SplitN(readFile(t, stub), "\n", 2)[1])
+	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	testOverlay(t, dir, env)
+	n := 0
+	for _, call := range nonBlank(readFile(t, calls)) {
+		if strings.Contains(call, "--stdin-file-path="+modHooks) {
+			n++
+		}
+	}
+	if n != 1 {
+		t.Errorf("the copy was formatted %d times in one run, want 1: its tests and its record could read two results", n)
+	}
+}
+
 func anyList(v any) []any {
 	list, _ := v.([]any)
 	return list
@@ -477,6 +513,13 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 		write(t, record, "1000\t"+rest)
 		return []string{modHooks}
 	}
+	shared := func(t *testing.T, dir string, env []string) []string {
+		edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+		testOverlay(t, dir, env)
+		pushOverlay(t, dir, env)
+		write(t, filepath.Join(dir, modsDir, "shared.ts"), "export {};\n")
+		return []string{modHooks, modsDir + "shared.ts"}
+	}
 	cases := []struct {
 		name  string
 		setup func(*testing.T, string, []string) []string
@@ -487,6 +530,7 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 		{"a save during the tests", saved, 2, []string{"m ran: no record"}},
 		{"a second mod in the commit", second, 2, []string{"m: tests skipped, a green already read these bytes", "n ran: no record"}},
 		{"a record past its hour", stale, 2, []string{"m ran: past its hour"}},
+		{"a shared path under mods", shared, 2, []string{"m ran: a shared path"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -507,6 +551,22 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestModsChainSkipsBesideASharedMarkdownFile(t *testing.T) {
+	t.Parallel()
+	dir, env, tests := modsChain(t)
+	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	testOverlay(t, dir, env)
+	pushOverlay(t, dir, env)
+	notes := modsDir + "NOTES.md"
+	write(t, filepath.Join(dir, notes), "# notes\n")
+	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks, notes); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if n := tests(); n != 1 {
+		t.Errorf("the suite ran %d times, want 1: no mods test reads an .md\n%s", n, suiteSaid(t, env))
 	}
 }
 

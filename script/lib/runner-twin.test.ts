@@ -138,12 +138,18 @@ describe('runner-twin', () => {
 
     test('a deleted ref on stdin falls back to HEAD', () => {
         const context = fixture();
+        const state = join(context.dir, 'state');
         const got = twin(
             context,
             `(delete) ${zeros} refs/heads/gone ${context.head}\n`,
+            { VITEST: '', X_STATE: state },
         );
         expect(got.status, got.stderr).toBe(0);
         expect(tested(context.dir)).toBe(context.head);
+        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+            .trimEnd()
+            .split('\t');
+        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/gone']);
     });
 
     test('no stdin tests HEAD', () => {

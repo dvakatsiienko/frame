@@ -406,7 +406,7 @@ func recordGreen(subject, sha string, gates []string) {
 }
 
 // each touched mod's subtree as the overlay's tests read it: the tree's mod, then the copies as the commit's format step leaves them
-func recordTestedMods(repo, scratch string, changed []string) {
+func recordTestedMods(repo string, copies *formattedCopies, changed []string) {
 	env, _, done, err := headIndex(repo)
 	if err != nil {
 		return
@@ -418,7 +418,7 @@ func recordTestedMods(repo, scratch string, changed []string) {
 			return
 		}
 	}
-	if layFormatted(repo, scratch, changed, env) != nil {
+	if layCopies(repo, changed, env, copies.path) != nil {
 		return
 	}
 	for _, mod := range mods {
@@ -428,36 +428,44 @@ func recordTestedMods(repo, scratch string, changed []string) {
 	}
 }
 
-// the commit's format step run on stdin, since biome panics on a path outside the repo, each result in a temp dir: the
-// overlay reads what a commit would hold, and a file biome cannot fix stays as it is, for the gate to red
-func formattedCopies(repo, scratch string) (copyOf func(string) string, done func(), err error) {
-	biome := filepath.Join(repo, "node_modules/.bin/biome")
-	dir, err := os.MkdirTemp("", "x-gates-format-")
-	if err != nil {
-		return nil, nil, err
-	}
-	return func(path string) string {
-		copied := filepath.Join(scratch, path)
-		body, err := os.ReadFile(copied)
-		if err != nil || !exists(biome) {
-			return copied
-		}
-		fixed, _ := run(repo, nil, string(body), biome, "check", "--write", "--stdin-file-path="+path)
-		out := filepath.Join(dir, path)
-		if !fixed.ok || fixed.out == "" || os.MkdirAll(filepath.Dir(out), 0o755) != nil || os.WriteFile(out, []byte(fixed.out+"\n"), 0o644) != nil {
-			return copied
-		}
-		return out
-	}, func() { _ = os.RemoveAll(dir) }, nil
+// what a commit would hold of each scratch copy, read and formatted once a verb run, so the bytes its tests read are the
+// bytes it records and writes
+type formattedCopies struct {
+	repo, scratch, dir string
+	out                map[string]string
+	raw                map[string][]byte
 }
 
-func layFormatted(repo, scratch string, changed []string, env []string) error {
-	copyOf, done, err := formattedCopies(repo, scratch)
+func newFormattedCopies(repo, scratch string) (*formattedCopies, error) {
+	dir, err := os.MkdirTemp("", "x-gates-format-")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer done()
-	return layCopies(repo, changed, env, copyOf)
+	return &formattedCopies{repo: repo, scratch: scratch, dir: dir, out: map[string]string{}, raw: map[string][]byte{}}, nil
+}
+
+func (c *formattedCopies) done() { _ = os.RemoveAll(c.dir) }
+
+// the commit's format step run on stdin, since biome panics on a path outside the repo: a file biome cannot fix stays as it
+// is, for the gate to red
+func (c *formattedCopies) path(path string) string {
+	if out, ok := c.out[path]; ok {
+		return out
+	}
+	biome := filepath.Join(c.repo, "node_modules/.bin/biome")
+	body, err := os.ReadFile(filepath.Join(c.scratch, path))
+	out := filepath.Join(c.dir, path)
+	fixed := body
+	if err == nil && exists(biome) {
+		if got, _ := run(c.repo, nil, string(body), biome, "check", "--write", "--stdin-file-path="+path); got.ok && got.out != "" {
+			fixed = []byte(got.out + "\n")
+		}
+	}
+	if err != nil || os.MkdirAll(filepath.Dir(out), 0o755) != nil || os.WriteFile(out, fixed, 0o644) != nil {
+		out = filepath.Join(c.scratch, path)
+	}
+	c.out[path], c.raw[path] = out, body
+	return out
 }
 
 func layCopies(repo string, changed []string, env []string, copyOf func(string) string) error {

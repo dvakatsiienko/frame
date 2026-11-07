@@ -547,7 +547,7 @@
   - given a path that matches nothing, then it reds naming it, as a real commit would; the ci jobs a real commit on main runs are not its gates and it skips them
   - given a tree with no `script/index-run.sh`, then it refuses, exit 2: it reads a frame-shaped hook
 - ⬜ a mod's tests run once across `x mods edit test`, `push` and `x lane commit` (FRM-473)
-  - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again, and its `mods-test.log` row names why: `no record`, `other bytes` or `past its hour`
+  - given a green overlay, when the commit's index holds the same bytes of that mod within the hour, then the commit's `mods:test` skips it and names it; other bytes or an older record run it again, and its `mods-test.log` row names why: `no record`, `other bytes`, `past its hour` or, beside a changed script under `mods/`, `a shared path`
   - given a copy the commit's format step rewrites, then the overlay's tests read and record the bytes that step leaves and `push` writes them, so the commit still skips, across two overlays of one mod too
   - given a hook's green suite and a later gate that refuses the commit, when the commit retries on the same bytes, then that mod skips; a red suite records nothing
   - given a hand `pnpm mods:test`, with `--skip-tested` or not, then nothing is recorded; without it nothing is skipped; given a clock read in a mod's hooks, then the commit reds it whatever was tested
