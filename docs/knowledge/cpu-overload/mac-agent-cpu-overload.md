@@ -1,12 +1,12 @@
 ---
-dies-when: the cpu overload ticket closes with its cause proven, and the findings have moved into that ticket's fix or `docs/knowledge/`
+fed-by: incidents
 ---
 
 # mac agent cpu overload — why many agent sessions saturate this mac, and who solved it
 
 Ticket: FRM-525
 
-Asked 2026-11-07: exa, parallel, an opus source lane, and a local measure on this mac. The local cases live in [gate-speed/cpu-cases.md](../test-drive/gate-speed/cpu-cases.md). Raw lanes, read for depth: [mac-agent-cpu-overload/](mac-agent-cpu-overload/).
+Asked 2026-11-07: exa, parallel, an opus source lane, and a local measure on this mac. The local cases live in [cases.md](cases.md). Raw lanes, read for depth: [mac-agent-cpu-overload/](mac-agent-cpu-overload/).
 
 ## the verdict
 

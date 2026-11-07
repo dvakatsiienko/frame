@@ -1,15 +1,49 @@
 # cpu cases — every cpu overload case measured so far, and what each proves
 
-Read this first on reopening the problem. Mac16,7, M4 Pro, 14 cores, 48 GB, macOS 27.2, about 15 sessions, cc 2.1.317. The prior art: [mac-agent-cpu-overload](../../research/mac-agent-cpu-overload.md). The raw sample: [cpu-load.md](cpu-load.md).
+Read this first on reopening the problem. Mac16,7, M4 Pro, 14 cores, 48 GB, macOS 27.2, about 15 sessions, cc 2.1.317. The prior art: [mac-agent-cpu-overload](mac-agent-cpu-overload.md). The raw sample: [cpu-load.md](cpu-load.md). The dated history: [story.md](story.md).
 
 📌 **proven, two 10 s windows: go test runs spawn the git that fills the kernel; the mods suite fills user cpu; sessions at rest are cheap.** Every line below says what it proves.
 
-📌 **the number to beat: a lane ran about 1.8× slower at 4-5 lanes than at 2** (121 → 71 tool calls per lane-hour), and more lanes is the goal, so fewer lanes is not the fix. [fleet-pace-under-load](../../research/fleet-pace-under-load.md) holds it, with its lane-count recommendation out by dima's word, relayed by main at 02:27. One unplanned window, a correlation:
+📌 **the number to beat: a lane ran about 1.8× slower at 4-5 lanes than at 2** (121 → 71 tool calls per lane-hour), and more lanes is the goal, so fewer lanes is not the fix. [fleet-pace-under-load](fleet-pace-under-load.md) holds it, with its lane-count recommendation out by dima's word, relayed by main at 02:27. One unplanned window, a correlation:
 
 - queue wait is the main suspect: 892 min waited against 605 min run in 6.6 h, about 2.25 sessions stuck at any moment; no baseline exists before 11-06 19:39
 - the same command slows little: ×1.15 p50, ×1.75 p90 same-workload, knee at load 30-40, steep at 60+; so cpu run time alone reads about +7 % wall at p50, +35 % at p90, inference
 - mods tests grew 902 → 3,430, go `func Test` 368 → 703: part of what reads as load is suite growth
 - its rows' scripts, off `/tmp`: `~/.local/state/x/lanes/frm-525/pace-under-load/`
+
+## the dose test, 2026-11-07 14:05 to 14:27, only this wing running
+
+Planned doses, `dose` and `ab-ram` rows in `~/.local/state/x/lanes/frm-525/`. At rest before it: 25 % busy, load 6. Wall s, then user + sys cpu-s per run:
+
+- go ×1: 69 and 63 s, 168 + 253 and 165 + 258, 96 % busy, load peak 107
+- go ×2: 123 s, 165 + 269 each
+- go ×3: 167 s, 166 + 272 each
+- go ×4: 219 s, 167 + 274 each
+- vitest ×1: 33 s, 81 + 36, 94 % busy, load peak 78
+- vitest ×2: 35 s, 79 + 36 each
+- go + vitest: go 73 s, 151 + 249; vitest 43 s, 77 + 34
+- mods ×1: 91 s, 429 + 38, 76 % busy
+- mods + go: mods 151 s, 454 + 41; go 78 s, 161 + 255
+
+**What it proves, doses of 1 to 4, one run each above 1:**
+
+- 🚫 **contention is not the sys**: 4 suites at once cost 5 % more cpu each than one. The old question «the suite's own, or contention» is answered: its own
+- **one go suite alone is the 100 %**: the 03:52 case needs no second cause
+- go's wall grows about 55 s per suite stacked, so the mac's rate is about one go suite a minute. A queue moves the wait and frees nothing; only a cheaper run helps
+- a go run accounts for about 6.4 cores of its 13.4 busy; rest of the mac at idle is 3.5; about 3.5 sit in other processes the run wakes (inference, daemons by the spindump)
+- go is 60 % sys, mods 8 %, vitest 31 %: two different diets, as the spindumps said
+
+**RAM disk A/B, the go suite with `TMPDIR` on a ram disk, 4 runs in abba:** apfs 248 and 244 sys; ram 233 and 234; wall 67, 69, 55, 53, no pattern. 🚫 **the disk is not the sys: 5 % at most.**
+
+## the process tree, 2026-11-07 14:33 to 14:38
+
+The same go suite and spawn loops, from a rex tab against the Bash tool, abba, `spawn-bench.tsv`, `spawn-matrix.tsv`, `lineage-*.txt` in `~/.local/state/x/lanes/frm-525/`.
+
+- go suite: rex 42.5 and 43.1 s, 130 + 200 and 132 + 205 cpu-s; tool 51.0 and 52.2 s, 152 + 237 and 151 + 239
+- 500 `git --version`: rex 2.25 s, tool 4.13 s. `/usr/bin/true`: 1.4 against 1.9 ms wall. A pure compute loop: 2.29 s in both, so it is no slow core and no QoS clamp
+- 🚫 not the gap: cwd, env (`env -i` from the tool stays slow), `PATH`, open-files limit (`ulimit -n 256` stays slow), the bash sandbox flag
+- what is left: the tree under `Claude.app` → `disclaimer` → `claude`. Its mechanism is unread; the spindump's Sandbox samples on git point the same way, inference
+- 📌 the go-suite cost here, 330 to 391 cpu-s, beats the dose runs' 420, with other work running then too; pr 139's 278 stays unreproduced, cause unread
 
 ## 100 % with one lane left, 2026-11-07 about 03:52, dima's screenshot
 
@@ -23,7 +57,7 @@ PK-328:W37 and W38: tomorrow opens with this lane alone, and catches this first.
 
 ## the spindump, 2026-11-07 01:43:54, 10 s, load about 30, a go run live
 
-Read by `spindump-read.mjs` and `spindump-git.mjs` beside this file; the sampler itself took 11.7 cpu-s of the total.
+Read by `spindump-read.mjs` and `spindump-git.mjs` in `scripts/`; the sampler itself took 11.7 cpu-s of the total.
 
 - 125 cpu-s in 10 s, about 12.5 of 14 cores
 - **6,612 distinct processes in 10 s**, 661/s; `ps` snapshots miss nearly all, which proves the «short-lived spawns» reading of the ps gap
@@ -35,7 +69,7 @@ Read by `spindump-read.mjs` and `spindump-git.mjs` beside this file; the sampler
 
 ## the second spindump, 2026-11-07 02:04:57, 10 s, no go test live
 
-The same scripts, `node spindump-read.mjs /tmp/spindump-quiet.txt`. Two windows, one each, so strong but not repeated; other work moved between them too.
+The same scripts, `node scripts/spindump-read.mjs /tmp/spindump-quiet.txt`. Two windows, one each, so strong but not repeated; other work moved between them too.
 
 - **git 3,773 → 35 processes, 36.2 → 0.3 cpu-s; x 850 → 5; `x.test` 791 → 0.** Go test runs are what spawns that git
 - running kernel samples 5,965 → 1,603, so **go test is the kernel load**
@@ -50,7 +84,7 @@ Raw data, off `/tmp` so a reboot keeps it: `~/.local/state/x/lanes/frm-525/` hol
 
 - 2026-11-07 01:08: load 47, `top` 40.6 % user, 59.4 % sys, 0.0 % idle; `ps` totals about 6 of 14 cores. CPU 106 °C on dima's screen
 - 2026-11-06: load peaks 126 to 172, 247 once at 00:12, codie's `measure.sh`
-- a commit's test step: about 13 s alone, 35 s at load, read as about 2.5×. Corrected by [fleet-pace-under-load](../../research/fleet-pace-under-load.md): most of that gap is `4739e4ed` at 11-06 19:25, which added the sleeping `gate-queue.test.ts`, and 26 to 28 s still shows at load 7 to 11. Same suite after it: ×1.14 p50, ×1.43 p90 at load 16+
+- a commit's test step: about 13 s alone, 35 s at load, read as about 2.5×. Corrected by [fleet-pace-under-load](fleet-pace-under-load.md): most of that gap is `4739e4ed` at 11-06 19:25, which added the sleeping `gate-queue.test.ts`, and 26 to 28 s still shows at load 7 to 11. Same suite after it: ×1.14 p50, ×1.43 p90 at load 16+
 - dima's screenshot: a commit at 7m57s, 201 s by the transcript, the rest unexplained
 
 ## proven

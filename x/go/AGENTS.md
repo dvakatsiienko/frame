@@ -25,7 +25,7 @@ fleet sees whether the page earns its place.
 
 ## a test's cost on the mac
 
-go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/test-drive/gate-speed/cpu-cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
+go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/knowledge/cpu-overload/cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
 
 - build a repo fixture once and copy it with `copyFixture` (`fixture_template_test.go`): no spawn per test; this cut the suite 385 → 278 cpu-s. `repo`, `world`, `modsFixture`, `layers` and `newRebaseWorld` already do
 - `fixtures/setup.sh` runs once per template: 512 ms a run, 62 runs were 32 cpu-s

@@ -6,9 +6,9 @@ Ticket: FRM-521. PK-328:W24 (2026-11-06 22:03, dima): we test a lot of lanes at 
 
 ## the run
 
-- `cpu-sample.mjs <out> 1800 10`: load, `top`'s user, sys and idle, `ps` %cpu per process family, every 10 s
-- `cpu-read.mjs <out> <from utc>`, `cpu-load-join.mjs <out> <from utc>`, `queue-budget.mjs <from> <to>`, `commit-classes.mjs <from>`
-- the raw sample: `cpu-2026-11-06.jsonl`. read from 20:09:10 UTC, past a mods bench of mine. 22:09:11 to 22:36:42 local, n=136, 14 worktrees live
+- `scripts/cpu-sample.mjs <out> 1800 10`: load, `top`'s user, sys and idle, `ps` %cpu per process family, every 10 s
+- `scripts/cpu-read.mjs <out> <from utc>`, `scripts/cpu-load-join.mjs <out> <from utc>`, `gate-speed/queue-budget.mjs <from> <to>`, `gate-speed/commit-classes.mjs <from>`
+- the raw sample: `scripts/cpu-2026-11-06.jsonl`. read from 20:09:10 UTC, past a mods bench of mine. 22:09:11 to 22:36:42 local, n=136, 14 worktrees live
 
 ## the machine
 
