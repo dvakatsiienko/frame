@@ -1,0 +1,31 @@
+---
+id: PK-355
+title: 'commit gate: simple memory edits must not block for minutes'
+status: open
+assignee: []
+created_date: '2026-11-07T20:25:00Z'
+updated_date: '2026-11-07T20:26:00Z'
+labels:
+  - s
+  - clio-wing-1
+dependencies: []
+priority: later
+type: task
+ordinal: 103000
+---
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+PK-355:W1 (2026-11-07 22:21, dima): what do you wait for for so long? the red proofs and all these tests. do you really need them to make such simple commits like memory edits?
+
+PK-355:W2 (2026-11-07 22:23, dima): build it now if you can, because for simple memory edits i have to wait for 10 minutes. it currently blocks.
+
+PK-355:W3 (2026-11-07 22:25, dima): tell wing 1 about this case. for simple commits like this, wing 1 rethinks how commit-gate-centered proofs gate work, so simple edits like this would not block for so long. wing 1 optimizes this part, via a pocket item, not today.
+
+measured 11-07, wing 2: a commit's suite 14-36 s at load 8-41; a push about 40 s, its twin reruns vitest; a landing with two plugin bumps is 3 commits and 3 pushes, about 4 min; each waits the machine-wide gate turn. most of the 10 min was retries on refused commits plus the chain.
+
+a draft to take or drop, never landed: /Users/dima/frame/.claude/worktrees/clio-wing-2/.scratch/winged-v2/gate-draft.patch and gate-draft-memory-only.sh beside it. an allow-list of memory paths runs only the 10 tests reading memory, about 6 s, at commit and in the push twin; a landing bumps first and pushes once. not proven red; recipe-shape's 2 reds on that set in the tree, unread.
+
+linear may own part of this: FRM-534 vitest at commit, related tests only; FRM-520; FRM-530. dima asked for a pocket item, so it stays here until wing 1 reads them. a red-proof round on a mod reruns the whole suite per plant, 2 min each at load: part of the same waste.
+<!-- SECTION:NOTES:END -->
