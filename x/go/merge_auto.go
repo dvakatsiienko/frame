@@ -54,16 +54,16 @@ type mergeDecision struct {
 	Cleared   []string `json:"cleared,omitempty"`
 	shiftOnly bool
 	title     string
-	body     string
-	layered  bool
-	heads    map[string]string // a stack's every gated head, pr → sha
-	signs    map[string]chunkSign
-	dimaOK   bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
-	landed   string
-	headRef  string
-	holds    []string
-	Trees    []string `json:"trees,omitempty"`
-	Holds    string   `json:"holds,omitempty"`
+	body      string
+	layered   bool
+	heads     map[string]string // a stack's every gated head, pr → sha
+	signs     map[string]chunkSign
+	dimaOK    bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
+	landed    string
+	headRef   string
+	holds     []string
+	Trees     []string `json:"trees,omitempty"`
+	Holds     string   `json:"holds,omitempty"`
 }
 
 type pullHead struct {
