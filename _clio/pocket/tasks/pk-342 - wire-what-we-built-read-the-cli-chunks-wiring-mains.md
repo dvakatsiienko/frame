@@ -79,4 +79,6 @@ PK-342:W26 (2026-11-07 15:12, dima): remember how this new ticking stuff works, 
 
 15:45 the cli half of the wiring read, a helper card, spot-checked: 14 landed cli tickets, 8 promises wired with real callers, 0 not wired, 9 tickets with nothing promised (they predate the 🔌 line). the mods half: wing 3's line above; what FRM-505 and FRM-493 owe lands with them as their 🪢 lines. W26: the tick words sit in the orbit tool's description, resident.
 close: both reads done, nothing unwired
+
+close: W1 moved to PK-332 and craft-fleet-flow's lanes-are-main's line; W2 done, this read; W3 done, FRM-410 canceled; W4, W5 done, reminders dropped; W6, W7, W8 moved to wing 1, PK-337 and PK-328; W9, W10, W11 moved to FRM-510 and BYT-94's look cards; W12, W13, W14, W15 moved to PK-348; W16 done, wing-2 labels; W17, W18 done, day plans PK-336, PK-346, PK-349; W19, W20 done, his o6 label main-lane; W21, W22, W23 done, FRM-510's toast seen and the gates card watched, FRM-527; W24 moved to PK-350; W25 done, heard; W26 done, the orbit tool's description holds the tick words
 <!-- SECTION:NOTES:END -->
