@@ -481,12 +481,12 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 		name  string
 		setup func(*testing.T, string, []string) []string
 		runs  int
-		said  string
+		said  []string
 	}{
-		{"a byte changed after the green", changed, 2, "m ran: other bytes"},
-		{"a save during the tests", saved, 2, "m ran: no record"},
-		{"a second mod in the commit", second, 2, "n ran: no record"},
-		{"a record past its hour", stale, 2, "m ran: past its hour"},
+		{"a byte changed after the green", changed, 2, []string{"m ran: other bytes"}},
+		{"a save during the tests", saved, 2, []string{"m ran: no record"}},
+		{"a second mod in the commit", second, 2, []string{"m: tests skipped, a green already read these bytes", "n ran: no record"}},
+		{"a record past its hour", stale, 2, []string{"m ran: past its hour"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -500,27 +500,13 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 			if tests() != before+1 || tests() != c.runs {
 				t.Errorf("the suite ran %d times, %d of them at the commit, want %d", tests(), tests()-before, c.runs)
 			}
-			if said := suiteSaid(t, env); !strings.Contains(said, c.said) {
-				t.Errorf("want %q in:\n%s", c.said, said)
+			said := suiteSaid(t, env)
+			for _, want := range c.said {
+				if !strings.Contains(said, want) {
+					t.Errorf("want %q in:\n%s", want, said)
+				}
 			}
 		})
-	}
-}
-
-func TestModsChainSkipsTheOverlaysModBesideASecondMod(t *testing.T) {
-	t.Parallel()
-	dir, env, _ := modsChain(t)
-	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
-	testOverlay(t, dir, env)
-	pushOverlay(t, dir, env)
-	write(t, filepath.Join(dir, modsDir, "n/.claude-plugin/plugin.json"), "{}\n")
-	write(t, filepath.Join(dir, modsDir, "n/hooks/register.ts"), "export const register = () => 1;\n")
-	write(t, filepath.Join(dir, modsDir, "n/tests/a.test.ts"), "green\n")
-	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks, modsDir+"n"); got.code != 0 {
-		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
-	}
-	if said := suiteSaid(t, env); !strings.Contains(said, "m: tests skipped, x mods edit test passed these bytes") {
-		t.Errorf("the overlay's mod ran again:\n%s", said)
 	}
 }
 

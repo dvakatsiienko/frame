@@ -300,23 +300,35 @@ function stagedPaths(root: string) {
 // the mods a green overlay recorded, each line valid until its first field; a lost or stale line costs one rerun
 function testedTrees(record: string, now: number) {
     const trees = new Set<string>();
-    for (const line of record.split('\n')) {
-        const [until, subject, sha] = line.split('\t');
-        if (subject?.startsWith('mod ') && now < Number(until) * 1000)
-            trees.add(`${subject.slice(4)} ${sha}`);
-    }
+    for (const { isLive, mod, sha } of modRows(record, now))
+        if (isLive) trees.add(`${mod} ${sha}`);
     return trees;
 }
 
-function greenRecord() {
+function modRows(record: string, now: number) {
+    return record.split('\n').flatMap((line) => {
+        const [until, subject, sha] = line.split('\t');
+        return subject?.startsWith('mod ')
+            ? [
+                  {
+                      isLive: now < Number(until) * 1000,
+                      mod: subject.slice(4),
+                      sha,
+                  },
+              ]
+            : [];
+    });
+}
+
+function greenRecordPath() {
     return join(
         process.env.X_STATE ?? join(homedir(), '.local/state/x'),
         'gates-green.tsv',
     );
 }
 
-function readTested() {
-    const path = greenRecord();
+function readGreenRecord() {
+    const path = greenRecordPath();
     return existsSync(path) ? readFileSync(path, 'utf8') : '';
 }
 
@@ -327,21 +339,17 @@ export function whyRan(
     mod: string,
     tree: string | undefined,
 ) {
-    const rows = record
-        .split('\n')
-        .map((line) => line.split('\t'))
-        .filter(([, subject]) => subject === `mod ${mod}`);
-    const isLive = ([until]: string[]) => now < Number(until) * 1000;
-    if (rows.some((row) => row[2] === tree && !isLive(row)))
+    const rows = modRows(record, now).filter((row) => row.mod === mod);
+    if (rows.some((row) => row.sha === tree && !row.isLive))
         return 'past its hour';
-    return rows.some(isLive) ? 'other bytes' : 'no record';
+    return rows.some((row) => row.isLive) ? 'other bytes' : 'no record';
 }
 
 // a green read these bytes, so a retry of the same commit skips them; the line `x mods edit test` writes, and a lost one costs one rerun
 function recordGreen(mod: string, tree: string) {
     const until = Math.floor(Date.now() / 1000) + 3600;
-    mkdirSync(dirname(greenRecord()), { recursive: true });
-    appendFileSync(greenRecord(), `${until}\tmod ${mod}\t${tree}\t\n`);
+    mkdirSync(dirname(greenRecordPath()), { recursive: true });
+    appendFileSync(greenRecordPath(), `${until}\tmod ${mod}\t${tree}\t\n`);
 }
 
 // one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
@@ -404,11 +412,11 @@ if (import.meta.main) {
     }
     process.on('exit', startTestTempDir());
     const named = onlyMod ? [onlyMod] : positionals;
-    const record = values['skip-tested'] ? readTested() : undefined;
+    const record = values['skip-tested'] ? readGreenRecord() : undefined;
     const tested =
         record === undefined ? undefined : testedTrees(record, Date.now());
     // only the gate's private copy holds exactly the index: a hand run's tests read the working tree
-    const readsTheIndex =
+    const isIndexCopy =
         values['skip-tested'] &&
         process.env.INDEX_RUN_BRANCH !== undefined &&
         !values.extra &&
@@ -433,7 +441,7 @@ if (import.meta.main) {
         if (tested?.has(`${mod} ${tree}`) && !hookClockReads(dir).length) {
             skipped++;
             process.stdout.write(
-                `${mod}: tests skipped, x mods edit test passed these bytes\n`,
+                `${mod}: tests skipped, a green already read these bytes\n`,
             );
             continue;
         }
@@ -481,7 +489,7 @@ if (import.meta.main) {
         runs.push({ clockReads: clock, mod, output, status });
         const { errored, failed: red, passed } = outcome(output);
         if (
-            readsTheIndex &&
+            isIndexCopy &&
             tree &&
             status === 0 &&
             passed &&
