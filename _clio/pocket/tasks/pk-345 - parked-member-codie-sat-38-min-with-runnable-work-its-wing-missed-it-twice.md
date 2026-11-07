@@ -4,7 +4,7 @@ title: 'parked member: codie sat 38 min with runnable work, its wing missed it t
 status: open
 assignee: []
 created_date: '2026-11-06T23:27:00Z'
-updated_date: '2026-11-07T02:53:00Z'
+updated_date: '2026-11-07T13:43:00Z'
 labels:
   - s
   - wing-1
@@ -71,4 +71,6 @@ details for whoever takes this, read 11-07 04:48 from `quiet-log:*` in x-mod-sta
 - not proven: whether a logged note caused this item's 38 min, or whether any of the 177 buried a question. unread both ways
 suggested steps: 1. pull the 177 by verdict logged from that key; the log holds time and sender, the text is in each sender's transcript. 2. sample 30, or all of them with helper-lite, for a parked member, a question or a blocker, and read this item's own 01:23 case first. 3. if some hide one: name what a turn-end note must carry to pass (a `[parked]` tag, or a rule on the words), and put a red row in x-mod-stash's tests/quiet.test.ts. if none do: the note drop stands, and this item's cause is elsewhere.
 pointers: docs/test-drive/gate-speed/empty-wakes.md's 11-07 round, FRM-501's re-count comment, _clio/.scratch/retro-2026-11-07.md line 1 (447 min of codie waits on clio or dima, the bigger delay, which loud comms would not shorten), FRM-368 for tilde. his words: 01:23, 01:25 «trace why it happened», 04:48 «maybe quiet coms now too quiet?»
+
+15:43 his o16: proposal 1 joined FRM-505's re-sign with the 5-min replay; proposals 2-5 stay here.
 <!-- SECTION:NOTES:END -->

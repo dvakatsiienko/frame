@@ -4,7 +4,7 @@ title: 'wire what we build, cli and mods: chores go to the wings, main coordinat
 status: open
 assignee: []
 created_date: '2026-11-06T19:53:00Z'
-updated_date: '2026-11-07T13:36:00Z'
+updated_date: '2026-11-07T13:42:00Z'
 labels:
   - s
   - main-lane
@@ -74,4 +74,6 @@ PK-342:W24 (2026-11-07 15:02, dima): i want all my wishes in this new format.
 PK-342:W25 (2026-11-07 15:12, dima): i ticked right before sending this mesage.
 
 PK-342:W26 (2026-11-07 15:12, dima): remember how this new ticking stuff works, simple words to tech terms.
+
+15:42 crow's root fix for the ask with no ✍️ shape is live: orbit add refused a re-sign pick with no sign text at 15:39, so no ticket; a no.
 <!-- SECTION:NOTES:END -->
