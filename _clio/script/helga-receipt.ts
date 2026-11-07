@@ -28,7 +28,10 @@ export function logReceipt(home: string, fields: string[], at: Date) {
 }
 
 if (import.meta.main) {
-    const fields = process.argv.slice(2);
+    // a receipt is one row in both logs, so a multi-line note flattens here
+    const fields = process.argv
+        .slice(2)
+        .map((field) => field.replace(/\s+/g, ' ').trim());
     if (fields.length !== 4) {
         console.error(
             'usage: node helga-receipt.ts <class> <first pass> <rework> <note>',

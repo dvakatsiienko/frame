@@ -71,3 +71,34 @@ test('the cli writes both logs, the trial file beside the script and clio’s un
         ),
     ).toContain('\tpocket-write\t1\t0\tPK-1');
 });
+
+test('a multi-line note stays one row in both logs', () => {
+    const root = mkdtempSync(join(tmpdir(), 'receipt-note-'));
+    mkdirSync(join(root, '_clio/script'), { recursive: true });
+    mkdirSync(join(root, 'docs/test-drive'), { recursive: true });
+    copyFileSync(
+        join(import.meta.dirname, 'helga-receipt.ts'),
+        join(root, '_clio/script/helga-receipt.ts'),
+    );
+    writeFileSync(join(root, 'docs/test-drive/helga.md'), log);
+    spawnSync(
+        'node',
+        [
+            join(root, '_clio/script/helga-receipt.ts'),
+            'groom',
+            '1',
+            '0',
+            'retro:\n1. first\tslip\n2. second',
+        ],
+        { encoding: 'utf8', env: { ...process.env, HOME: root } },
+    );
+    expect(
+        readFileSync(
+            join(root, '.local/state/clio/grooms/receipts.log'),
+            'utf8',
+        ),
+    ).toMatch(/^\S+\tgroom\t1\t0\tretro: 1\. first slip 2\. second\n$/);
+    expect(
+        readFileSync(join(root, 'docs/test-drive/helga.md'), 'utf8'),
+    ).toContain(' · groom · 1 · 0 · retro: 1. first slip 2. second\n');
+});
