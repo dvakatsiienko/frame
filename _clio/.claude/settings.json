@@ -18,6 +18,11 @@
           },
           {
             "type": "command",
+            "command": "node /Users/dima/frame/_clio/script/clio-lanes.ts --hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- '/Users/dima/frame/_clio/.claude/hooks/session-probe.sh'",
             "timeout": 5
           },
