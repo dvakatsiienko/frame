@@ -59,8 +59,14 @@ behind=$(git -C "$tree" rev-list --count HEAD..refs/heads/main)
 	echo "tree-sync land: stopped, the tree is still $behind behind main" >&2
 	exit 1
 }
-git -C "$root" merge --ff-only --quiet "refs/heads/$branch" || {
-	echo "tree-sync land: main refused the fast-forward; a file main has staged blocks it, ask clio to commit hers" >&2
+# a peer's git holds main's lock for moments at a time
+for _ in 1 2 3 4 5; do
+	output=$(git -C "$root" merge --ff-only --quiet "refs/heads/$branch" 2>&1) && break
+	grep -q 'index.lock' <<<"$output" || break
+	sleep 1
+done
+[ "$(git -C "$root" rev-parse refs/heads/main)" = "$(git -C "$tree" rev-parse HEAD)" ] || {
+	echo "tree-sync land: main refused the fast-forward: $output" >&2
 	exit 1
 }
 # x acts on the folder it runs in, and from a tree it would push the tree's branch

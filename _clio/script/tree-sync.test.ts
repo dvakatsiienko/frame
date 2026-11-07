@@ -69,7 +69,7 @@ function world() {
     const land = () =>
         spawnSync('bash', [SYNC, 'land'], { encoding: 'utf8', env });
     const xCalls = () => (existsSync(calls) ? readFileSync(calls, 'utf8') : '');
-    return { addTree, git, land, prompt, root, tree, write, xCalls };
+    return { addTree, env, git, land, prompt, root, tree, write, xCalls };
 }
 
 describe('tree-sync on a prompt', () => {
@@ -188,6 +188,32 @@ describe('tree-sync land', () => {
         expect(existsSync(join(clean, 'c.txt'))).toBe(true);
         expect(readFileSync(join(dirty, 'a.txt'), 'utf8')).toBe('edit\n');
         expect(existsSync(join(dirty, 'c.txt'))).toBe(false);
+    });
+
+    test("a peer's brief lock on main is waited out", () => {
+        const w = world();
+        w.write(w.tree, 'c.txt', 'c\n');
+        const lock = join(w.root, '.git', 'index.lock');
+        writeFileSync(lock, '');
+        const out = spawnSync(
+            'bash',
+            ['-c', `(sleep 1; rm -f '${lock}') & bash '${SYNC}' land`],
+            { encoding: 'utf8', env: w.env },
+        );
+        expect(out.status).toBe(0);
+        expect(existsSync(join(w.root, 'c.txt'))).toBe(true);
+    });
+
+    test("a lock that stays stops the landing with git's own words", () => {
+        const w = world();
+        w.write(w.tree, 'c.txt', 'c\n');
+        writeFileSync(join(w.root, '.git', 'index.lock'), '');
+        const out = w.land();
+        expect([out.status, out.stderr]).toEqual([
+            1,
+            expect.stringContaining('index.lock'),
+        ]);
+        expect(w.xCalls()).toBe('');
     });
 
     test('a session with no tree is refused with its path', () => {
