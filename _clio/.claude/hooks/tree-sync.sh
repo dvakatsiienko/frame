@@ -62,7 +62,8 @@ tree="$trees/fork-${sid:0:8}"
 	exit 2
 }
 branch=$(git -C "$tree" symbolic-ref --short HEAD) || exit 1
-before=$(git -C "$root" rev-parse refs/heads/main) || exit 1
+# from what origin holds, so a retry after a failed push still sees what changed
+before=$(git -C "$root" rev-parse --verify --quiet refs/remotes/origin/main || git -C "$root" rev-parse refs/heads/main) || exit 1
 sync_tree "$tree"
 behind=$(git -C "$tree" rev-list --count HEAD..refs/heads/main)
 [ "$behind" -eq 0 ] || {

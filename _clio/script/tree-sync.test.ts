@@ -234,6 +234,17 @@ describe('tree-sync land', () => {
         ]);
     });
 
+    test('a retry after a failed push still bumps what origin lacks', () => {
+        const w = world();
+        const pushed = w.git(w.root, 'rev-parse', 'HEAD').stdout.trim();
+        mkdirSync(join(w.tree, '_clio/plugin-clio'), { recursive: true });
+        w.write(w.tree, '_clio/plugin-clio/s.md', 's\n');
+        w.git(w.root, 'merge', '--ff-only', '-q', 'worktree-fork-abcd1234');
+        w.git(w.root, 'update-ref', 'refs/remotes/origin/main', pushed);
+        w.land();
+        expect(w.xCalls()).toContain('plugin bump --apply clio');
+    });
+
     test("a peer's brief lock on main is waited out", () => {
         const w = world();
         w.write(w.tree, 'c.txt', 'c\n');

@@ -476,7 +476,7 @@ describe('fork-guard fork-edit', () => {
     test.each([
         'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9/../../memory/habit-cto.md',
         'x lane commit /tmp/m.txt -- home/.claude/pocket/tasks/pk-1.md',
-        'cd ~/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9/../../../home/.claude/CLAUDE.md"',
+        `cd ${repo} && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9/../../../home/.claude/CLAUDE.md"`,
         'x lane commit --amend -- _clio/pocket/tasks/pk-9.md',
         'git reset --hard\nx lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
         'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 $(rm -rf x).md"',
