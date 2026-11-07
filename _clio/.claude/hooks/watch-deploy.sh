@@ -65,13 +65,20 @@ case "$decision" in
   *) echo "Deploy for $short: its log names no apps (run $deploy_run) — read it by hand"; exit 1 ;;
 esac
 
+pushed=$(date -juf '%Y-%m-%dT%H:%M:%SZ' "$(gh run view "$deploy_run" --json createdAt --jq .createdAt)" +%s)
 for app in $apps; do
   n=0
   seen=
   while :; do
     url=$(vercel ls "$app" --prod 2>/dev/null | head -1)
-    [ -z "$seen" ] && [ -n "$url" ] && { echo "🚀 [$app deploy](https://${url#https://})"; seen=1; }
-    st=$(vercel inspect "$url" 2>&1 | grep -E '^\s*status' | awk '{print $NF}')
+    # the newest prod deploy can be the one before this push: it reads Ready while this push's has not started
+    created=$(vercel inspect "$url" --json 2>/dev/null | jq -r '.createdAt // 0')
+    if [ "$((created / 1000))" -lt "$pushed" ]; then
+      st="waiting for a deploy newer than $short"
+    else
+      [ -z "$seen" ] && [ -n "$url" ] && { echo "🚀 [$app deploy](https://${url#https://})"; seen=1; }
+      st=$(vercel inspect "$url" 2>&1 | grep -E '^\s*status' | awk '{print $NF}')
+    fi
     case "$st" in
       Ready) echo "deploy $app → Ready $url"; break ;;
       Error|Canceled) echo "deploy $app → $st $url"; break ;;
