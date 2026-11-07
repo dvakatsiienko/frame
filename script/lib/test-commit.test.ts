@@ -128,6 +128,51 @@ describe('test-commit', () => {
         expect(got.fields.slice(1, 2)).toEqual(['none']);
     });
 
+    describe('a memory-only commit', () => {
+        const memory = '_clio/memory/habit-x.md';
+        const skill = 'home/.claude/plugin-x/skills/a/SKILL.md';
+        const manifest = '_clio/plugin-clio/.claude-plugin/plugin.json';
+
+        test.each(['main', 'codie/x'])(
+            'runs only the tests that read memory on «%s»',
+            (branch) => {
+                const got = runGate(
+                    staged({ [memory]: 'a\n', [skill]: 'b\n' }),
+                    branch,
+                );
+                expect(got.calls).toMatch(/vitest\|run\|.*recipe-shape/);
+                expect(got.calls).not.toBe('test');
+                expect(got.status).toBe(0);
+            },
+        );
+
+        test('a plugin bump alone counts as memory', () => {
+            const got = runGate(staged({ [manifest]: '{}\n' }), 'main');
+            expect(got.calls).toMatch(/vitest\|run/);
+        });
+
+        test('a code file beside it runs the whole suite', () => {
+            const got = runGate(
+                staged({ [memory]: 'a\n', 'a.ts': 'a\n' }),
+                'main',
+            );
+            expect(got.calls).toBe('test');
+        });
+
+        test('a script under skills runs the whole suite', () => {
+            const got = runGate(
+                staged({ 'home/.claude/plugin-x/skills/a/run.ts': 'a\n' }),
+                'main',
+            );
+            expect(got.calls).toBe('test');
+        });
+
+        test('a red in the memory tests reds the commit', () => {
+            const got = runGate(staged({ [memory]: 'a\n' }), 'main', '1');
+            expect(got.status).toBe(1);
+        });
+    });
+
     describe('a pocket-only commit', () => {
         const pocket = '_clio/pocket/tasks/pk-1.md';
         const moved = '_clio/pocket/archive/pk-1.md';

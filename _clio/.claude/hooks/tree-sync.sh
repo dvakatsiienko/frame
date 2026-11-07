@@ -1,7 +1,7 @@
 #!/bin/bash
 # keeps a wing's worktree level with main, both ways (PK-351:W16, W48)
 # usage: tree-sync.sh        UserPromptSubmit: main into this session's tree; a session with no tree exits fast
-#        tree-sync.sh land   a finished piece: main in, fast-forward main, push, bump a changed plugin, refresh the other wings' trees
+#        tree-sync.sh land   a finished piece: main in, fast-forward main, bump a changed plugin, one push, refresh the other wings' trees
 set -uo pipefail
 root="${TREE_SYNC_ROOT:-$HOME/frame}"
 trees="$root/.claude/worktrees"
@@ -94,7 +94,6 @@ git -C "$root" merge-base --is-ancestor "$(git -C "$tree" rev-parse HEAD)" refs/
 }
 # x acts on the folder it runs in, and from a tree it would push the tree's branch
 cd "$root" || exit 1
-x lane push --apply || exit 1
 changed=$(git -C "$root" diff --name-only "$before" refs/heads/main)
 # a bump writes its manifest in main, and left there it is a chore for whoever comes next
 bump() {
@@ -103,7 +102,6 @@ bump() {
 	mkdir -p "$tree/.scratch"
 	echo "🔧 plugin-$name: bump for the landing of $branch" >"$message"
 	x lane commit "$message" -- "$manifest" || exit 1
-	x lane push --apply || exit 1
 }
 if grep -q '^_clio/plugin-clio/' <<<"$changed"; then
 	bump clio _clio/plugin-clio/.claude-plugin/plugin.json
@@ -112,6 +110,8 @@ fi
 if grep '^home/.claude/plugin-x/' <<<"$changed" | grep -qv '^home/.claude/plugin-x/mods/'; then
 	bump x home/.claude/plugin-x/.claude-plugin/plugin.json
 fi
+# one push for the piece and its bumps: each push reruns the tests
+x lane push --apply || exit 1
 for other in "$trees"/fork-* "$trees"/clio-wing-*; do
 	[ -d "$other" ] && [ "$other" != "$tree" ] || continue
 	sync_tree "$other" >/dev/null

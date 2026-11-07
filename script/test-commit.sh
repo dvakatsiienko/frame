@@ -1,9 +1,12 @@
 #!/bin/bash
 # test-commit <whole-suite command…> — the commit gate's test step, run inside script/index-run.sh's copy.
 # a commit whose every staged path sits under _clio/pocket/ runs no suite, on any branch: the whole suite stays at push.
+# a commit of only memory runs only the tests that read memory, on any branch (script/lib/memory-only.sh); ci keeps the whole suite.
 # a codie/* branch runs only the tests importing its staged code: the whole suite stays at push and on ci. any other branch runs the command.
 # one row a run in test-commit.log, tab-separated: start, 1-min load, branch, mode, staged paths, commit it sits on, seconds, exit, source.
 set -u
+# shellcheck source=script/lib/memory-only.sh
+. "$(dirname "$0")/lib/memory-only.sh"
 branch=${INDEX_RUN_BRANCH:-}
 state=${X_STATE:-$HOME/.local/state/x}
 mkdir -p "$state"
@@ -16,14 +19,18 @@ staged=0
 # a failed read never runs none: whole on every branch
 changes=$(git -c core.quotePath=false diff --cached --name-status -M) || read_failed=1
 pocket_only=
+memory_only=
 if [ -n "$changes" ]; then
     pocket_only=1
+    memory_only=1
     pocket_paths=0
     # a rename names both ends: each must sit under the pocket
     while IFS=$'\t' read -r _ first second; do
         pocket_paths=$((pocket_paths + 1))
         case $first in _clio/pocket/*) ;; *) pocket_only= ;; esac
         case $second in '' | _clio/pocket/*) ;; *) pocket_only= ;; esac
+        is_memory_path "$first" || memory_only=
+        [ -z "$second" ] || is_memory_path "$second" || memory_only=
     done <<<"$changes"
 fi
 case $branch in
@@ -48,6 +55,9 @@ esac
 if [ -n "$pocket_only" ]; then
     mode=none
     staged=$pocket_paths
+elif [ -n "$memory_only" ]; then
+    mode=memory
+    staged=$pocket_paths
 fi
 
 code=0
@@ -58,6 +68,7 @@ whole)
     [ -n "${VITEST:-}" ] || [ -z "${INDEX_RUN_WHOLE_MARK:-}" ] || : >"$INDEX_RUN_WHOLE_MARK"
     ;;
 related) pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" || code=$? ;;
+memory) pnpm exec vitest run "${MEMORY_TESTS[@]}" || code=$? ;;
 esac
 printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$branch" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" >>"$state/test-commit.log"
 exit "$code"

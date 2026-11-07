@@ -174,7 +174,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/mods/m.ts', 'm\n');
         w.land();
         expect(w.xCalls()).toBe(
-            `frame: lane push --apply\nframe: plugin bump --apply clio\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- _clio/plugin-clio/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
+            `frame: plugin bump --apply clio\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- _clio/plugin-clio/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
         );
     });
 
@@ -186,7 +186,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/skills/s.md', 's\n');
         w.land();
         expect(w.xCalls()).toBe(
-            `frame: lane push --apply\nframe: plugin bump --apply x\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- home/.claude/plugin-x/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
+            `frame: plugin bump --apply x\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- home/.claude/plugin-x/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
         );
     });
 

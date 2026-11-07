@@ -28,11 +28,16 @@ function fixture() {
         join(root, 'script/runner-twin.sh'),
         join(repo, 'script/runner-twin.sh'),
     );
+    mkdirSync(join(repo, 'script/lib'));
+    copyFileSync(
+        join(root, 'script/lib/memory-only.sh'),
+        join(repo, 'script/lib/memory-only.sh'),
+    );
     writeFileSync(join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
     writeFileSync(join(repo, '.gitignore'), 'node_modules\n');
     writeFileSync(
         join(repo, 'node_modules/.bin/vitest'),
-        `#!/bin/sh\ngit rev-parse HEAD >"${dir}/tested"\nprintf '%s' "\${GIT_DIR:-unset}" >"${dir}/git-dir"\n`,
+        `#!/bin/sh\nprintf '%s ' "$@" >"${dir}/args"\ngit rev-parse HEAD >"${dir}/tested"\nprintf '%s' "\${GIT_DIR:-unset}" >"${dir}/git-dir"\n`,
     );
     chmodSync(join(repo, 'node_modules/.bin/vitest'), 0o755);
     const git = (...args: string[]) =>
@@ -49,7 +54,7 @@ function fixture() {
     git('commit', '-q', '--allow-empty', '-m', 'pushed');
     const pushed = git('rev-parse', 'HEAD');
     git('switch', '-q', '-');
-    return { dir, head, pushed, repo };
+    return { dir, git, head, pushed, repo };
 }
 
 function twin(
@@ -71,6 +76,37 @@ const tested = (dir: string) =>
 const zeros = '0'.repeat(40);
 
 describe('runner-twin', () => {
+    const pushOf = (path: string) => {
+        const context = fixture();
+        context.git('switch', '-q', 'codie/FRM-1-x');
+        mkdirSync(join(context.repo, path, '..'), { recursive: true });
+        writeFileSync(join(context.repo, path), 'x\n');
+        context.git('add', '-A');
+        context.git('commit', '-q', '-m', 'a push');
+        const sha = context.git('rev-parse', 'HEAD');
+        context.git('switch', '-q', '-');
+        return { context, sha };
+    };
+    const argsOf = (dir: string) => readFileSync(join(dir, 'args'), 'utf8');
+
+    test('a push of only memory runs only the tests that read memory', () => {
+        const { context, sha } = pushOf('_clio/memory/habit-x.md');
+        twin(context, `r ${sha} refs/heads/main ${context.head}\n`);
+        expect(argsOf(context.dir)).toContain('recipe-shape');
+    });
+
+    test('a push with code runs the whole suite', () => {
+        const { context, sha } = pushOf('script/a.ts');
+        twin(context, `r ${sha} refs/heads/main ${context.head}\n`);
+        expect(argsOf(context.dir)).not.toContain('recipe-shape');
+    });
+
+    test('a new branch, with nothing to compare, runs the whole suite', () => {
+        const { context, sha } = pushOf('_clio/memory/habit-x.md');
+        twin(context, `r ${sha} refs/heads/main ${zeros}\n`);
+        expect(argsOf(context.dir)).not.toContain('recipe-shape');
+    });
+
     test('tests the commit the hook names, not the checkout HEAD', () => {
         const context = fixture();
         const got = twin(

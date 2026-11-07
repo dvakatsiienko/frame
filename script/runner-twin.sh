@@ -6,17 +6,32 @@ set -euo pipefail
 repo=$(git rev-parse --show-toplevel)
 sha=${1:-}
 step_ref=
+remote_sha=
+# shellcheck source=script/lib/memory-only.sh
+. "$(dirname "$0")/lib/memory-only.sh"
 # a pre-push hook names what it pushes on stdin: a worktree's push runs from the main checkout, whose HEAD is another commit
 if [ -z "$sha" ] && [ ! -t 0 ]; then
     # git's order: local ref, local sha, remote ref, remote sha; `x lane push` pushes a sha, so the local ref is that sha
-    while read -r -t 1 _ pushed ref _; do
+    while read -r -t 1 _ pushed ref remote; do
         case $pushed in
-        *[!0]*) sha=$pushed step_ref=$ref ;;
+        *[!0]*) sha=$pushed step_ref=$ref remote_sha=$remote ;;
         *) step_ref=${step_ref:-$ref} ;;
         esac
     done
 fi
 sha=${sha:-HEAD}
+# a push of only memory runs only the tests that read memory; ci runs the whole suite on it. any doubt runs the whole suite
+twin_tests=()
+case $remote_sha in
+*[!0]*)
+    if pushed_paths=$(git -c core.quotePath=false diff --name-only "$remote_sha" "$sha" 2>/dev/null) && [ -n "$pushed_paths" ]; then
+        twin_tests=("${MEMORY_TESTS[@]}")
+        while IFS= read -r path; do
+            is_memory_path "$path" || twin_tests=()
+        done <<<"$pushed_paths"
+    fi
+    ;;
+esac
 # a hook may export GIT_DIR and friends: a fixture's git, or this clone's, must never write the real repo, as in index-run.sh
 # shellcheck disable=SC2046
 unset $(git rev-parse --local-env-vars)
@@ -35,7 +50,7 @@ cd "$tmp/frame"
 step_start=$(date +%FT%T%z)
 step_load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
 step_code=0
-env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --reporter=dot || step_code=$?
+env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --reporter=dot ${twin_tests[@]+"${twin_tests[@]}"} || step_code=$?
 # one row in gate-steps.log, read by docs/test-drive/gate-speed.md: a red here on a commit whose test step was related is what the trial counts
 if [ -z "${VITEST:-}" ]; then
     step_state=${X_STATE:-$HOME/.local/state/x}
