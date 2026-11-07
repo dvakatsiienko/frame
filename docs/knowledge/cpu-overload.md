@@ -15,7 +15,7 @@ Standing: read this before chasing a red cpu, and add to it when a round ends, s
 - **The go suite's sys is its own, not contention.** 1, 2, 3, 4 suites at once cost 420, 433, 439, 441 cpu-s each, so wall grows with the count: 66, 123, 167, 219 s. A queue only moves the wait; only a cheaper run helps
 - **About one go suite a minute is the mac's rate**, however they are arranged, with about 6 to 8 cores of the 14 in the suite's own accounting and the rest in other processes (inference on who)
 - **The disk is not the sys**: a ram disk `TMPDIR` cuts it 5 % at most
-- **A shell with no `LANG` makes every git start 1.7× slower**: 500 `git --version` 4.34 → 2.62 s, the go suite 13 % less cpu and 16 % less wall, vitest 4 % less cpu (abba, all four runs exited 1). `settings.json` now sets it for cc's shells; a new launchd job or bare `env -i` shell has none. Check a shell with `echo $LANG`
+- **A shell with no `LANG` makes every git start 1.7× slower**: 500 `git --version` 4.34 → 2.62 s, the go suite 13 % less cpu and 16 % less wall, vitest 4 % less cpu (abba, all four runs exited 1). A spindump proves why: with `LANG`, `cfprefsd` 3.56 → 0.00 cpu-s per 10 s, `opendirectoryd` 2.27 → 0.01, `notifyd` 1.60 → 0.13. `settings.json` now sets it for cc's shells; a new launchd job or bare `env -i` shell has none. Check a shell with `echo $LANG`
 - Sessions at rest are cheap: about 15 sessions, the app and the os fit in about 4 of 14 cores (two 10 s windows)
 - `ps` and activity monitor miss the load: a go run makes 661 short-lived processes a second, so the app list sums to 15 % at a real 100 %. A `spindump` sees them
 

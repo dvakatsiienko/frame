@@ -41,7 +41,8 @@ Planned doses, `dose` and `ab-ram` rows in `~/.local/state/x/lanes/frm-525/`. At
 
 - go suite, abba, `ab-lang.tsv`: none 55.9 and 55.7 s, 162 + 245 and 156 + 249 cpu-s; `LANG` 46.1 and 47.8 s, 134 + 223 and 133 + 218. **13 % less cpu, 16 % less wall**
 - vitest, abba: none 86.6 and 86.9 cpu-s; `LANG` 83.1 and 83.1; wall 14 s either way
-- why, inference: `otool -L` shows git linking homebrew's `libintl` and CoreFoundation, so with no locale it asks macOS for the language on every start. It fits `cfprefsd`, `opendirectoryd` and `notifyd` running high in the spindump; a spindump with `LANG` set would prove it
+- why, proven by a third spindump, 2026-11-07 17:10, 10 s: `otool -L` shows git linking homebrew's `libintl` and CoreFoundation, so with no locale it asks macOS for the language on every start. With `LANG`, same 10 s and about the same git count (3,758 against 3,773): `cfprefsd` 3.56 → 0.00 cpu-s, `opendirectoryd` 2.27 → 0.01, `notifyd` 1.60 → 0.13, git 36.2 → 24.9, p50 9 → 6 ms each. Two windows, one each. The live load was a codie's go proof run on its branch, since the prefilled suite waited 144 s for its turn: `spindump-lang.txt.gz`
+- sandbox did not move: 19 % of running kernel samples, against 18 %; whose profile applies stays unread, a spindump does not name it
 - fix: `"LANG"` in `settings.json`'s env; a session started before it keeps none
 
 ## a go parent's spawn, 2026-11-07 14:55, `LANG` set, load 8 to 12
@@ -139,8 +140,7 @@ Peak load halved, 100 → 49; sys share unchanged, 33 → 35 %. Not the cpu's fi
 
 0. running: FRM-528, fewer git ops per fixture and a cpu budget; its first step tags each git spawn as setup, scenario or `x` child
 0. a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16; the 1.8× at 4-5 lanes stays unproven until then
-1. a `spindump` with `LANG` set proves or kills the `cfprefsd` reading, and names whose sandbox profile hits git; needs his `sudo`
-   - then, dima's tick: a research on git's process cost, all lanes: in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
+1. dima's tick: a research on git's process cost, all lanes: in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
 2. hide the desktop window: `top` WindowServer, 2 min
 3. a Developer Tools A/B only with the gates run from a shell outside claude, since #104173 says the Bash tool is not covered
 4. a Linux VM with the checkout on its own disk: one go suite against native, when the machine is quiet. Only then think of hardware
