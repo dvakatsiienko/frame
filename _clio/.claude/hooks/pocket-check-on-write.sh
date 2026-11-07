@@ -53,4 +53,26 @@ fi
 
 [ "$status" = 0 ] && [ -z "$refused" ] && exit 0
 reds="$( [ "$status" = 0 ] || grep '^🔴' <<<"$out" || printf '%s' "$out")"
+
+# this hook runs in the main session only (fork-guard main-only), so the seat is the main's: a red on an item labelled for a wing is that wing's
+# an item red blocks once per id until its text changes; a red with no item, or an item with no file, always blocks
+seen="${HOME:+$HOME/.local/state/clio/pocket-reds-seen}"
+[ -n "$seen" ] && mkdir -p "$(dirname "$seen")"
+for id in $(grep -oE '^🔴 [A-Za-z]+-[0-9]+' <<<"$reds" | cut -d' ' -f2 | sort -u); do
+	lines="$(grep -F "🔴 $id:" <<<"$reds")"
+	file="$(ls "$(dirname "$0")"/../../pocket/{,archive/}tasks/"$(tr 'A-Z' 'a-z' <<<"$id") "*.md 2>/dev/null | head -1)"
+	if [ -n "$file" ] && awk 'NR > 1 && /^---$/ {exit} /^[ ]*- clio-wing-[0-9]+$/ {found = 1} END {exit !found}' "$file"; then
+		reds="$(grep -vF "🔴 $id:" <<<"$reds")"
+		continue
+	fi
+	[ -n "$seen" ] || continue
+	sum="$(cksum <<<"$lines" | cut -d' ' -f1)"
+	if grep -qx "$id $sum" "$seen" 2>/dev/null; then
+		reds="$(grep -vF "🔴 $id:" <<<"$reds")"
+	else
+		{ grep -v "^$id " "$seen" 2>/dev/null; echo "$id $sum"; } >"$seen.tmp" && mv "$seen.tmp" "$seen"
+	fi
+done
+reds="$(sed '/^$/d' <<<"$reds")"
+[ -z "$reds" ] && [ -z "$refused" ] && exit 0
 jq -n --arg reason "the pocket is red — fix it now: $(printf '%s\n%s' "$refused" "$reds" | sed '/^$/d')" '{decision: "block", reason: $reason}'

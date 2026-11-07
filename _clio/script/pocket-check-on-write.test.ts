@@ -47,14 +47,18 @@ writeFileSync(
 const slowStub = join(fixtures, 'slow-stub.sh');
 writeFileSync(slowStub, '#!/bin/sh\nsleep 3\n', { mode: 0o755 });
 const lastCommit = join(fixtures, '.local/state/clio/pocket-commits/last');
+const seenReds = join(fixtures, '.local/state/clio/pocket-reds-seen');
 
 function run(
     event: object,
     check: string,
     commit = commitStub,
     home = fixtures,
+    isFirstRed = true,
 ) {
     rmSync(argvLog, { force: true });
+    // each id blocks once, so a test starts from an empty seen file unless it is the repeat
+    if (isFirstRed) rmSync(seenReds, { force: true });
     const out = spawnSync('bash', [hook], {
         encoding: 'utf8',
         env: {
@@ -178,6 +182,48 @@ describe('pocket-check on a pocket write', () => {
                 redCmd,
             ),
         ).toBe(undefined);
+    });
+});
+
+describe('a pocket red blocks its owner, once per id', () => {
+    const item = join(frame, '_clio/pocket/tasks/pk-1 - owned.md');
+    const itemWith = (label: string) =>
+        writeFileSync(item, `---\nid: PK-1\nlabels:\n  - s\n${label}---\n`);
+    const redWith = (text: string) => {
+        const cmd = join(fixtures, `red-${text}.sh`);
+        writeFileSync(
+            cmd,
+            `#!/bin/sh\nprintf '🔴 PK-1: ${text}\\n🔴 PK-3: loose\\n'\nexit 1\n`,
+            { mode: 0o755 },
+        );
+        return cmd;
+    };
+    const write = bash('backlog task edit 3 -s done');
+
+    test("a red on a wing's item does not block the main, an unlabelled item's red still does", () => {
+        itemWith('  - clio-wing-2\n');
+        const out = run(write, redWith('a'));
+        rmSync(item);
+        expect(out?.reason).toContain('PK-3');
+        expect(out?.reason).not.toContain('PK-1');
+    });
+
+    test('a red on the main-labelled item blocks the main', () => {
+        itemWith('  - clio-main\n');
+        const out = run(write, redWith('a'));
+        rmSync(item);
+        expect(out?.reason).toContain('PK-1: a');
+    });
+
+    test('a red blocks once, and again when its text changes', () => {
+        itemWith('  - clio-main\n');
+        expect(run(write, redWith('a'))?.reason).toContain('PK-1: a');
+        const repeat = run(write, redWith('a'), commitStub, fixtures, false);
+        const changed = run(write, redWith('b'), commitStub, fixtures, false);
+        rmSync(item);
+        expect(repeat).toBe(undefined);
+        expect(changed?.reason).toContain('PK-1: b');
+        expect(changed?.reason).not.toContain('PK-3');
     });
 });
 
