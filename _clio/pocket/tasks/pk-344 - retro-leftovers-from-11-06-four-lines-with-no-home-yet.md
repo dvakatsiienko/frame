@@ -4,9 +4,10 @@ title: 'retro leftovers from 11-06: four lines with no home yet'
 status: open
 assignee: []
 created_date: '2026-11-06T20:31:00Z'
-updated_date: '2026-11-07T00:53:00Z'
+updated_date: '2026-11-07T13:01:00Z'
 labels:
   - xs
+  - main-lane
 dependencies: []
 priority: later
 type: task

@@ -4,9 +4,10 @@ title: 'wire what we build, cli and mods: chores go to the wings, main coordinat
 status: open
 assignee: []
 created_date: '2026-11-06T19:53:00Z'
-updated_date: '2026-11-07T12:46:00Z'
+updated_date: '2026-11-07T13:01:00Z'
 labels:
   - s
+  - main-lane
 dependencies: []
 priority: next
 type: task
