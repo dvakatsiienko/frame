@@ -802,6 +802,8 @@ type ciJob struct {
 	dir  string
 	env  []string
 	argv []string
+	// runs around argv, never named in what the caller reads
+	wrap []string
 }
 
 // a direct commit on main reaches ci only after the push, so the jobs ci.yml runs for the
@@ -817,7 +819,8 @@ func runCI(tree string, paths []string) (string, error) {
 		if job.dir != tree {
 			command = "(" + home(job.dir) + ") " + command
 		}
-		if done, _ := run(job.dir, job.env, "", job.argv[0], job.argv[1:]...); !done.ok {
+		argv := append(slices.Clone(job.wrap), job.argv...)
+		if done, _ := run(job.dir, job.env, "", argv[0], argv[1:]...); !done.ok {
 			lines := nonBlank(done.log)
 			return "", &Fail{Refused: true, Msg: command + " is red — its output is above; nothing was committed",
 				Next: command, Log: lines[max(0, len(lines)-40):]}
@@ -839,7 +842,7 @@ func ciJobs(tree string, paths []string) []ciJob {
 		if module := goModule(tree, filepath.Dir(filepath.Join(tree, path))); module != "" && !seen[module] {
 			seen[module] = true
 			// the same isolation pnpm x-go:test runs under: no global gitconfig reaches a fixture repo
-			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, goTestJob(tree, module)})
+			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, []string{"go", "test", "./..."}, cpuBudgetLog(tree, module)})
 		}
 	}
 	if ts {
@@ -847,22 +850,21 @@ func ciJobs(tree string, paths []string) []ciJob {
 		hooked := preCommitRuns(tree)
 		for _, script := range []string{"typecheck", "test"} {
 			if scripts[script] != "" && !hooked[script] {
-				jobs = append(jobs, ciJob{tree, nil, []string{"pnpm", script}})
+				jobs = append(jobs, ciJob{dir: tree, argv: []string{"pnpm", script}})
 			}
 		}
 	}
 	return jobs
 }
 
-// a repo that keeps a test-cpu-budget logs this run's cost; log only, since a commit never reds on cost (FRM-528)
-func goTestJob(tree, module string) []string {
-	goTest := []string{"go", "test", "./..."}
+// a repo that keeps a test-cpu-budget logs this run's cost; log only, since a commit never reds on cost
+func cpuBudgetLog(tree, module string) []string {
 	suite, err := filepath.Rel(tree, module)
 	budget := filepath.Join(tree, "script/test-cpu-budget.sh")
 	if err != nil || !exists(budget) {
-		return goTest
+		return nil
 	}
-	return append([]string{budget, "--log-only", strings.ReplaceAll(suite, "/", "-")}, goTest...)
+	return []string{budget, "--log-only", strings.ReplaceAll(suite, "/", "-")}
 }
 
 var (

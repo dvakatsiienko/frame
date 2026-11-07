@@ -27,10 +27,10 @@ exit ${code}
 `;
 
 function fixture({
-    budget = '1\t2026-11-07\tthe fixture line',
-    burnMs = 1300,
+    budget = '0\t2026-11-07\tthe fixture line',
+    burnMs = 150,
     code = 0,
-    printed = 'ok  \tx\t1.300s',
+    printed = 'ok  \tx\t0.150s',
 }: {
     budget?: string;
     burnMs?: number;
@@ -81,7 +81,7 @@ describe('a whole run past its line', () => {
 
         expect(got.status, got.stderr).toBe(1);
         expect(got.stderr).toMatch(
-            /x-go used [0-9]+\.[0-9] cpu-s, its budget is 1 cpu-s/,
+            /x-go used [0-9]+\.[0-9] cpu-s, its budget is 0 cpu-s/,
         );
         expect(got.stderr).toContain('script/test-cpu-budget.tsv');
         expect(got.stderr).toContain('a later lane may read a cost');
@@ -111,7 +111,7 @@ describe('a run under its line', () => {
         expect(got.status, got.stderr).toBe(0);
         expect(got.stdout).toContain('ok  \tx');
         const cpu = Number(rows()[0]?.[3]);
-        expect(cpu).toBeGreaterThanOrEqual(1.3);
+        expect(cpu).toBeGreaterThanOrEqual(0.1);
         expect(cpu).toBeLessThan(30);
         expect(rows()[0]?.[4]).toBe('60');
     });
@@ -151,6 +151,16 @@ test('a red suite keeps its own exit and its budget stays quiet', () => {
 
     expect(got.status).toBe(3);
     expect(got.stderr).not.toContain('its budget is');
+});
+
+test('a row that is no whole number says so and never reds', () => {
+    const { rows, run } = fixture({ budget: '370.5\t2026-11-07\ta typo' });
+
+    const got = run(whole);
+
+    expect(got.status, got.stderr).toBe(0);
+    expect(got.stderr).toContain("reads '370.5'");
+    expect(rows()).toHaveLength(1);
 });
 
 test('a suite with no row logs and never reds', () => {

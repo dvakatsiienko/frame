@@ -73,12 +73,18 @@ if [ -r "$here/test-cpu-budget.tsv" ]; then
     done <"$here/test-cpu-budget.tsv"
 fi
 
+case $budget in
+- | *[!0-9]* | '') ;;
+*) red_past=$((budget * 1000)) ;;
+esac
+[ -n "${red_past:-}" ] || [ "$budget" = - ] || echo "test-cpu-budget: the $suite row reads '$budget', a whole number of cpu-s; no red on this run" >&2
+
 used=$((used_ms / 1000)).$((used_ms % 1000 / 100))
 state=${X_STATE:-$HOME/.local/state/x}
 mkdir -p "$state"
 printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(date +%FT%T%z)" "$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')" "$suite" "$used" "$budget" "$code" >>"$state/test-cpu-budget.log"
 
-if [ "$code" -eq 0 ] && [ -z "$log_only" ] && [ "$budget" != - ] && [ "$used_ms" -gt $((budget * 1000)) ]; then
+if [ "$code" -eq 0 ] && [ -z "$log_only" ] && [ -n "${red_past:-}" ] && [ "$used_ms" -gt "$red_past" ]; then
     cat >&2 <<EOF
 test-cpu-budget: $suite used $used cpu-s, its budget is $budget cpu-s.
 read what grew first; a later lane may read a cost it did not add, since a related run never counts.
