@@ -31,6 +31,7 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 - a line ticks the turn it finishes; at each halt, or the seat's boot after a missed one, finished lines leave (`--remove-ac`, highest number first) and the rest stay
 - a standing line is what the seat maintains: `standing: FRM-525 cpu, watch until 11-14`, its detail in the ticket
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
+- an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
 
 ## the stash hierarchy — dima's, 2026-09-27
 

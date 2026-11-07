@@ -30,6 +30,8 @@ const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
 // a seat's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
 const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
+const FLYWAY_OPEN_LINE = /^- \[ \] #\d+ .+$/gm;
+const POCKET_ID = /\bPK-\d+\b/g;
 const FLYWAY_STANDING = /^- \[[ x]\] #\d+ standing: (.*)$/gm;
 const FLYWAY_TICKED = /^- \[x\] #\d+ /m;
 const STANDING_ENDS = /\b(?:FRM|BYT)-\d+\b|\buntil:? \d/;
@@ -66,6 +68,12 @@ export function checkPocket(
     };
     const problems: string[] = [];
     const flywayTitles = new Set<string>();
+    const openIds = new Set(
+        tasks.flatMap(({ text }) => {
+            const { id, status } = frontmatter(text).scalars;
+            return id && status !== 'done' ? [id] : [];
+        }),
+    );
     let nowCount = 0;
     const tomorrow = daysBefore(today, -1);
 
@@ -107,6 +115,12 @@ export function checkPocket(
             if (flywayTitles.has(title))
                 report(`a second «${title}»: one flyway per seat`);
             flywayTitles.add(title);
+            for (const [line = ''] of text.matchAll(FLYWAY_OPEN_LINE))
+                for (const [named = ''] of line.matchAll(POCKET_ID))
+                    if (!openIds.has(named))
+                        report(
+                            `a line points at ${named}, closed or gone: yank it with backlog task edit --remove-ac`,
+                        );
             for (const [, line] of text.matchAll(FLYWAY_STANDING))
                 if (!STANDING_ENDS.test(line ?? ''))
                     report(

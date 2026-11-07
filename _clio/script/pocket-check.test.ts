@@ -255,6 +255,36 @@ describe('checkPocket', () => {
         ).toBe('');
     });
 
+    test('an open line pointing at a closed item is red, a finished line or an open item is not', () => {
+        const withItem = (status: string, line: string) =>
+            checkPocket(
+                config,
+                [
+                    task(
+                        {
+                            labels: ['m', 'clio-wing-1'],
+                            title: 'flyway: wing 1',
+                        },
+                        line,
+                    ),
+                    task({ id: 'PK-77', status }),
+                ],
+                today,
+            ).join('\n');
+        expect(withItem('done', '- [ ] #1 PK-77 a chore')).toContain(
+            'points at PK-77',
+        );
+        expect(withItem('open', '- [ ] #1 PK-77 a chore')).not.toContain(
+            'points at',
+        );
+        expect(withItem('done', '- [x] #1 PK-77 a chore')).not.toContain(
+            'points at',
+        );
+        expect(flyway({}, '- [ ] #1 PK-404 gone')).toContain(
+            'points at PK-404',
+        );
+    });
+
     test('a wish about flyways is no flyway', () => {
         expect(flyway({ title: 'flyways board view' })).toBe('');
     });
