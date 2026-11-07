@@ -61,7 +61,7 @@ pass() {
         fi
         if [ "$state" = blocked ] && [ "$(seen "$key:blocked")" != "$sha@$v" ]; then
           quiet="~ "; [ "${v:0:8}" = "$sha" ] && quiet=
-          echo "${quiet}🟠 ${r#*/}#$n checks green on $sha but merge BLOCKED — a required check never ran on this head (review:clean?) · $title · $url"
+          echo "${quiet}🟠 ${r#*/}#$n checks green on $sha but merge BLOCKED — a required check never ran on this head · $title · $url"
           mark "$key:blocked" "$sha@$v"
         fi
       done
