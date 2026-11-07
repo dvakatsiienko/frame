@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T15:55:00Z'
+updated_date: '2026-11-07T16:01:00Z'
 labels:
   - s
   - main-lane
@@ -119,8 +119,10 @@ PK-326:W445 (2026-11-07 14:43, dima): each wake it writes some log during the wh
 
 2026-11-07 wing 2, PK-350: the ⏰ PK-338 sort above is done, ids are full; that note is history.
 
-PK-326:W446 (2026-11-07 17:47, dima, o34 steer): it goes to main clio, she does the halt; ensure she does not forget to do this today.
+PK-326:W451 (2026-11-07 17:47, dima): it goes to main clio, she does the halt; ensure she does not forget to do this today.
 handed over 17:47 to main. read so far by wing 2, 11-07: `quiet-log:2026-11-07` holds 202 rows at 17:35, 17 sessions: passed 45, held 37, flushed 37, logged 83, all 83 tagged notice; 21 woke a turn. left: the same read at the halt, a sample of the logged notices for a parked member, a question or a blocker, both sides printed to him. recipe: PK-345's notes.
 
 17:56 read, a helper card, today's 88 logged notices, its file in main's scratchpad, spot-checked by clio on 3 rows: parked 54, question 8, blocker 1, progress 10, unfound 15 (14 from the old side session). 47 of 63 reached clio another way within 30 min, 16 did not. clio's read of the 16: 13 are right silence, a member waiting on its own run or partner; 2 questions were to dima on his board; 1 is a real miss: wing 1 at 16:15 waiting on main unseen, 6 min. the helper's parked class is wide: any line ending in waiting. not proven: whether a member had other work. other side: 22 of 46 passed woke a turn, 14 done, 6 ask, 2 untagged.
+
+2026-11-07 18:00 wing 2: W446's stamp back to its minute; the o34 restamp was mine, a slip.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T15:48:00Z'
+updated_date: '2026-11-07T16:01:00Z'
 labels:
   - m
   - wing-2
@@ -104,4 +104,6 @@ PK-351:W23 (2026-11-07 17:40, dima): the worktree things and cadence are set up 
 PK-351:W24 (2026-11-07 17:40, dima): we need a way for all wings to be aware of what the other wings do. anytime i ask any wing about state, anyone should be able to know what's happening in each clio lane.
 
 2026-11-07 17:48: PK-343's red seen again: taking the wing label off PK-326 at a handover redded the groom check on a wing's prompt; the line now carries its orbit steer's stamp.
+
+2026-11-07 18:03 wing 2: the pocket's auto-commit hook runs in main's session only, so a wing's note rewrite stays red as «note line gone since HEAD» until main's next pocket write commits it.
 <!-- SECTION:NOTES:END -->
