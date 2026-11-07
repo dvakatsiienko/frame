@@ -55,6 +55,9 @@ children_ms() {
     children=$((user_ms + ms))
 }
 
+# 5 workers on this mac: 3 suites at once cost the same wall as 14 workers, at 5 % less cpu and a mac that stays responsive
+[ -n "${CI:-}" ] || set -- "$@" -parallel 5
+
 children_ms
 before=$children
 "$@" | tee "$scratch.out"

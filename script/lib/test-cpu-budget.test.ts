@@ -22,6 +22,7 @@ while :; do
     { read -r user sys; } <"$TIMES_FILE"
     [ $(( $(ms "$user") + $(ms "$sys") )) -ge ${burnMs} ] && break
 done
+echo "$*" >"$TIMES_FILE.args"
 echo '${printed}'
 exit ${code}
 `;
@@ -80,10 +81,29 @@ function fixture({
                   .split('\n')
                   .map((row) => row.split('\t'))
             : [];
-    return { brewBin, rows, run, slimBin };
+    const goArgs = () => readFileSync(join(dir, 'times.args'), 'utf8').trim();
+    return { brewBin, goArgs, rows, run, slimBin };
 }
 
 const whole = ['x-go', 'go', 'test', '-count=1', './...'];
+
+describe('the worker cap', () => {
+    test('a whole run on this mac takes 5 workers', () => {
+        const { goArgs, run } = fixture({ budget: '9999\t2026-11-07\tno red' });
+
+        run(whole);
+
+        expect(goArgs()).toBe('test -count=1 ./... -parallel 5');
+    });
+
+    test('a run in ci keeps the runner default', () => {
+        const { goArgs, run } = fixture();
+
+        run(whole, { CI: 'true' });
+
+        expect(goArgs()).toBe('test -count=1 ./...');
+    });
+});
 
 describe('a whole run past its line', () => {
     test('goes red naming the suite, the number, the budget and how to raise it', () => {

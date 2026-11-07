@@ -1,2 +1,2 @@
 # suite	cpu-s	date	reason
-x-go	344	2026-11-07	git-slim median 275.4 from 3 runs + 25 %, FRM-532
+x-go	283	2026-11-07	5 workers on git-slim, lone median 226 + 25 %, 3 at once read 263, FRM-525
