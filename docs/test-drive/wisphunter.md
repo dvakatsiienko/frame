@@ -70,5 +70,6 @@ group by 1 order by 2 desc;
 - 2026-11-06 · FRM-511 cli lane 5 sixth sense · helped: the second read found 5 of the 6 round 1 breaks, one claim (`stateDir`) refuted by the code; always reproduce it
 - 2026-11-06 · lane retros (BYT-94, FRM-474, FRM-521) · all keep; on FRM-474 2 of 3 findings on the redesign were real false proofs nobody else found; on FRM-521 it found the `--dry` HEAD bug and the shared-checkout break apart from the probe; on BYT-94 2 of 4 were by-design lines it could not see. asks: hand it the known list, name the checkouts a diff's consumers share
 - 2026-11-06 · lane retros (FRM-509, FRM-474) · keep; on FRM-509 the mid-rebase break was its read alone in sixth sense's round, the plain card the most useful of codie's five; on FRM-474 a scoped read found a false proof nobody else did
+- 2026-11-07 · lane retros (BYT-94, FRM-433, FRM-521, FRM-510) · keep, 4 of 4 helped: ci spec axis 3 of 3 acted on, standards 2 of 5; on FRM-510 2 reads found 7 real and 1 false alarm, each of it and sixth sense finding what the other missed; brief it with what's already found, or it repeats
 
 ## verdict

@@ -28,3 +28,7 @@ prove an `x` verb by running it, not reading it. the checks `x/AGENTS.md` § ver
 - a gate's row carries one real plant through the real hook before a clean: a fixture's strict flag hid a gate the hook lacked (FRM-473 sixth sense)
 - a test's adequacy is `x lane verify-tree <head> --revert <base> <src paths> -- <test command>`, on a head that exists on origin; a by-hand mutation of a file you hold stays `red-proof` until `x verify red` lands
 - mutants batch by 8 when the filter runs many go tests: 12 at load 38 took 585 s (FRM-473 sixth sense)
+- a pr's dry-run runs with its verify tree as cwd, since the shim picks the cwd's tree; `.x` in the envelope names the source that ran (BYT-94 sixth sense)
+- `verify-tree --revert` lists other lanes' tests as «still green» when the command runs one mod: its `red` list is the verdict (FRM-510 sixth sense)
+- «does this proof lean on X» is settled by one run with X stripped (FRM-521 sixth sense)
+- a test that starts a hook bounds it from its first line, and a kill-mid-run probe sees the hook alive before reading it gone; `lsof +D <temp>` sees what `ps` misses: 24 orphans ran 3 h unseen at about 240 spawns/s (FRM-521)

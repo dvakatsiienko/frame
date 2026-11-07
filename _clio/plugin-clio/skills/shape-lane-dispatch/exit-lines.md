@@ -30,6 +30,8 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 ## it says what it depends on
 
 - a line that holds only after **another pr** merges names that pr; one that can close only after its own merge or a dispatch sits in the spec under `after merge`, naming its reader and a date, outside the lines sixth sense's clean counts: its clean opens the merge, and the ticket stays open until that read (FRM-465 line 2; BYT-94's and FRM-521's post-merge lines each cost a turn against the merge gate)
+- each line names the **door that runs it**; one no door can run is struck or goes under `after merge` at seal: FRM-510's exit 4 asked a timing no tool could click, its exit 5 a replay that can't read ticks (dima's tick o145)
+- a chunk whose exits wait on **another lane** splits code clean from land proven, so the wait shows at dispatch: BYT-94's code was clean at 00:10, then sat 2 h
 - a line or how-line that **orders steps around a shared lock or queue** carries one probe at seal, run on the shape it will meet, two runs in one checkout included: FRM-521's «no stage inside the turn» was sealed unprobed and cost an hour
 - a **cross-repo** line names where each half lands and which merges first: a hook calling the other repo's verb cannot push before the verb is on main
 - a **rename of stored data** says «migrate» or «read both», or two lines pull against each other
