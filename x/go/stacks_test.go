@@ -256,6 +256,41 @@ func TestMergeAutoLandsALinkedStackInOneCall(t *testing.T) {
 	}
 }
 
+func TestOverrideOpensALowerLayersChecksNeverItsHold(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name   string
+		held   bool
+		merges int
+	}{
+		{name: "a lower layer with no clean and a failed thread read lands", merges: 1},
+		{name: "a held lower layer stops it", held: true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := linkedMergeWorld(t)
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			write(t, store, prsOn())
+			w.env = append(w.env, "X_OVERRIDE_STORE="+store)
+			write(t, w.store, `{}`)
+			w.hub.pages["graphql"] = `{"errors":[{"message":"Something went wrong"}]}`
+			if c.held {
+				write(t, holdRecordOf(w), `{"prs":["7"]}`)
+			}
+
+			got := w.run(t, "8", "--apply")
+
+			if asyncs := w.hub.sent("PUT " + repoPath + "/pulls/8/merge-async"); len(asyncs) != c.merges {
+				t.Fatalf("exit %d, %d async merges, want %d\n%s", got.code, len(asyncs), c.merges, got.stdout)
+			}
+			if !c.held && envelopeOf(got).Data.Override == nil {
+				t.Errorf("the output names no override:\n%s", got.stdout)
+			}
+		})
+	}
+}
+
 // the find on 2026-10-23: the plain endpoint answered 403 for #99, a stack's bottom layer
 func TestMergeAutoLandsAStacksBottomLayerAsync(t *testing.T) {
 	t.Parallel()

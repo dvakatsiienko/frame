@@ -383,11 +383,16 @@
         {
             "args": [
                 {
-                    "description": "the pr number, never inferred",
+                    "description": "the pr number, never inferred; only --override-off and --override-check go without it",
+                    "isOptional": true,
                     "name": "pr"
                 }
             ],
             "flags": {
+                "brake-check": {
+                    "description": "read the brake of frame and bytes, its label, record and reverts, as x-mod-guard does before a raw merge under operator-override; a failed read exits non-zero; takes no pr",
+                    "type": "boolean"
+                },
                 "dima-ok": {
                     "description": "dima's word on a self-edit with no pre-approved sign or on a held pr: the same pr number, which x-mod-guard lets through only when his last typed prompt names it; a merge it never lifts the brake for, a --release-brake or --release-hold it releases",
                     "type": "string",
@@ -397,12 +402,24 @@
                     "description": "dima's hold: mark the pr and every open layer under it, so no door merges them without his word; nothing merges",
                     "type": "boolean"
                 },
+                "override-check": {
+                    "description": "read every open pr of frame and bytes and name what would stop each one; writes nothing but a ref fetch in each clone; takes no pr",
+                    "type": "boolean"
+                },
+                "override-off": {
+                    "description": "turn operator-override off, every scope; takes no pr",
+                    "type": "boolean"
+                },
                 "release-brake": {
                     "description": "remove the merge-brake label from the pr instead of merging, once dima looked at the head mismatch that set it; needs --dima-ok <pr>",
                     "type": "boolean"
                 },
                 "release-hold": {
                     "description": "take the hold off the pr and every open layer under it; needs --dima-ok <pr>; nothing merges",
+                    "type": "boolean"
+                },
+                "shift-only": {
+                    "description": "with --override-off: clear only a grant a shift set, so his own typed word stays",
                     "type": "boolean"
                 }
             },
@@ -429,6 +446,8 @@
                 "~/.claude/sessions/ — who sits in a tree, read",
                 "linear — a self-edit's chunk ticket, its ## signed block read",
                 "~/.local/state/x/merge-hold/ — dima's held prs per repo, read every run, written by --hold, --release-hold and a landing",
+                "~/.local/state/x/operator-override.json — the switch only dima flips, read every run through the system's user record; .log beside it, one line per pass",
+                "~/projects/bytes — --override-check reads bytes' prs from its clone, a ref fetch its one write",
                 "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
         },

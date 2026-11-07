@@ -194,7 +194,7 @@
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
-  - given a pr whose ticket (its `codie/<ID>-…` branch, else its body's `- ticket: <ID>` line) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
+  - given a pr whose ticket (its `codie/<ID>-…` branch in any case, else its body's `- ticket: <ID>` line, text allowed after the id, a fenced id never counted; `x lane landed` reads the same) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
   - when `x lane merge-auto <pr> --apply` runs from the main checkout on the verifier-clean pr that touches a self-edit path
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
   - given the body edited after the last signed line, a last sign with no `merge: pre-approved`, no `## signed` block, or a build whose `x/go` differs from origin/main, then it waits and names which, the re-sign included; the brake waits whatever the sign says
@@ -207,6 +207,17 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
+- ✅ under `operator-override prs`, `x lane merge-auto <pr> --apply` lands every pr on the first call (FRM-524)
+  - given the store holding `prs`, on a self-edit with no sign line, red ci, no clean, open threads, no reviewer round, no required checks or a dev build, from main or a wing, on any layer of a stack, then it reads none of those and lands; a failed read of any stops nothing; the envelope's `override`, the squash message (a stack's async merge takes none) and one line in `operator-override.log` name its `by` and `at`
+  - given his hold or the brake, or a failed read of either, then it stops as today, naming which; a line's `HOME` or `X_STATE` moves neither record; `--brake-check` answers the same read for frame and bytes to x-mod-guard's raw door, writing nothing but a ref fetch, a missing clone exiting non-zero
+  - given github refuses the merge (a conflict, a draft, a ruleset), then it exits non-zero with github's words, prints no landing and logs no pass
+  - given no store, a store that does not read, another scope, a grant past its `until`, or the override turned off after the read, then it waits as today
+  - given a session's `HOME` or `X_STATE` pointing at a planted store, then it reads off: the path comes from the system's user record
+  - given `x lane merge-auto --override-off --apply`, then every scope clears; with `--shift-only`, only a grant `by: shift`, his word staying; no pr and no `--apply` writes nothing
+  - given `x lane merge-auto --override-check`, then every open pr of frame and bytes prints with what would stop it, read from that repo's own clone, through merge-auto's own plan; it writes nothing but a ref fetch
+  - decision: a failed read of what the merge itself targets still stops it: a stack's list on a non-main base, a layer's head, `headsHeld` at apply; no landing can name a head it did not read (FRM-524)
+  - decision: any caller may land while it's on: the crew contract, never this door, keeps a codie from merging (dima, 2026-11-07)
+  - decision: a pr onto another pr's branch with no linked stack still waits: a merge there lands in a dead end, never on main (FRM-524)
 - ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
   - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
   - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why

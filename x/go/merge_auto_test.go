@@ -31,6 +31,8 @@ type hub struct {
 	// a path's answer from its second GET on: a push landing between two reads
 	later map[string]string
 	reads map[string]int
+	// github's own refusal of the merge, as «<status> <message>»
+	refuseMerge string
 }
 
 func (h *hub) serve(t *testing.T) *httptest.Server {
@@ -45,6 +47,12 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 		w.Header().Set("Content-Type", "application/json")
 		switch {
 		case r.Method == http.MethodPut && strings.HasSuffix(r.URL.Path, "/merge"):
+			if status, message, refused := strings.Cut(h.refuseMerge, " "); refused {
+				n, _ := strconv.Atoi(status)
+				w.WriteHeader(n)
+				_, _ = w.Write([]byte(`{"message":"` + message + `"}`))
+				return
+			}
 			var body struct {
 				Sha string `json:"sha"`
 			}

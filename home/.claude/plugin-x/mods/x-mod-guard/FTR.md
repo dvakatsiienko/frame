@@ -366,6 +366,18 @@
   - decision: a refusal from its first head, never warn-only: it fires only on a held layer, and past commands carry no mark, so its replay count is 0 by construction
   - known gap: a `curl` to the merge url, and the evasion every guard rule shares
   - proof: tests/merge-hold.test.ts
+- ✅ operator-override: only dima's typed words flip it, and a raw merge opens under `prs` (FRM-524)
+  - given a whole prompt `operator-override prs` or `operator-override off`, in any case, with `-` or a space, a closing period allowed (dictated: «Operator override PRs.»), typed in `composer` or `bridge` in a session whose registry row reads as his, then the store flips with `by: word`, and the model is told; given `/clio:shift <plan path>`, then `prs` with `by: shift`, his own word left standing
+  - given the phrase inside a longer sentence, a quote, a peer message, `claude -p`, a plugin's prompt, a `--bg` session's composer or no registry row, then the store is unchanged
+  - given a Bash line carrying the phrase or `/clio:shift` through rex (`rex send`, `rex run … claude …`, or `rex` beside the phrase in an opaque runner), or a `start_session` prompt that is only the phrase, then nothing runs (rule `operator-override`): rex's keys read as his composer (probed 2026-11-07)
+  - given a Bash line past a plain read, or `Write` or `Edit`, on `~/.local/state/x/operator-override.json` or its log, then nothing runs: x and this mod are its writers
+  - given `prs` on, then `gh pr merge` and the other raw doors of `raw-merge` run, `gh stack merge` staying refused, each logging one «let through» line in the override's log before it runs; his hold and the brake still refuse, its label and reverts read through `x lane merge-auto --brake-check` from outside any tree, a failed read refusing; given a store that does not read, then `raw-merge` refuses as today
+  - decision: the raw door reads the brake of frame and bytes, never the line's repo: a value, an export or a cd can name another, so a brake on either stops any raw merge, and a repo past those two has no brake to read; merge-auto stays the door (FRM-524)
+  - decision: the store's path comes from `id -P`, the system's user record, never `HOME`; `X_STATE` is never read
+  - decision: a refusal from its first head, never warn-only: its rows name only the store and the phrase, so a past command can't meet them, and a warn would run what it means to stop
+  - decision: a line naming the store's file past a plain read is refused even when it only talks about it (`git commit -m '… operator-override.json'`): the rule reads names, and a message goes through a file
+  - known gap: a variable splitting the words on a rex line, and a script run by path, can still write the store or type the phrase: a local guard, never a cryptographic one, and the log is what catches it
+  - proof: tests/operator-override.test.ts
 - ⬜ only sixth sense and the coordinator write the clean (FRM-511)
   - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose registry name is neither sixth sense's nor `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; `🦉 clio (side)` is refused; a read or a copy out of the store passes
   - decision: past `cat`, `jq`, `rg` and the few like them, naming the store counts as touching it, and an inline script over it is refused even when it only reads: writers are too many to list; a commit message or a pr body that spells the store's path out is refused too, the price of that list

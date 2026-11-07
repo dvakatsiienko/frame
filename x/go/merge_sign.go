@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ticketOfBranch = regexp.MustCompile(`^(?:codie|coder)/([A-Z]+-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
-	ticketOfBody   = regexp.MustCompile(`(?m)^- ticket: ([A-Z]+-\d+)\s*$`)
+	ticketOfBranch = regexp.MustCompile(`(?i)^(?:codie|coder)/((?:FRM|BYT|PK)-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
+	ticketOfBody   = regexp.MustCompile(`(?m)^[ \t*-]*ticket:[ \t]*([A-Z]+-\d+)\b`)
+	fenceLine      = regexp.MustCompile("^[ \t]*(`{3,}|~{3,})(.*)$") // any indent: a fence nested in a list is a fence
 	signedHeading  = regexp.MustCompile(`(?m)^## signed\s*$`)
 	nextHeading    = regexp.MustCompile(`(?m)^## `)
 	signedBodyHash = regexp.MustCompile(`· body ([0-9a-f]{8})\s*$`)
@@ -27,12 +28,38 @@ type chunkSign struct {
 	detail string
 }
 
-func ticketOfPr(pr pullHead) string {
-	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {
-		return m[1]
+// every ticket a pr names, its branch's first: any case in a branch, text after a body's id, never a fenced id
+func ticketsOfPr(branch, body string) (tickets []string) {
+	if m := ticketOfBranch.FindStringSubmatch(branch); m != nil {
+		tickets = append(tickets, strings.ToUpper(m[1]))
 	}
-	if m := ticketOfBody.FindStringSubmatch(pr.Body); m != nil {
-		return m[1]
+	for _, m := range ticketOfBody.FindAllStringSubmatch(outsideFences(body), -1) {
+		tickets = append(tickets, m[1])
+	}
+	return tickets
+}
+
+// markdown's own fences: a line of three or more backticks or tildes opens one, a bare run as long closes it, an unclosed one runs to the end
+func outsideFences(body string) string {
+	var kept strings.Builder
+	open := ""
+	for line := range strings.Lines(body) {
+		m := fenceLine.FindStringSubmatch(strings.TrimRight(line, "\r\n"))
+		switch {
+		case open == "" && m != nil && !(m[1][0] == '`' && strings.Contains(m[2], "`")):
+			open = m[1]
+		case open != "" && m != nil && m[1][0] == open[0] && len(m[1]) >= len(open) && strings.TrimSpace(m[2]) == "":
+			open = ""
+		case open == "":
+			kept.WriteString(line)
+		}
+	}
+	return kept.String()
+}
+
+func ticketOfPr(pr pullHead) string {
+	if tickets := ticketsOfPr(pr.Head.Ref, pr.Body); len(tickets) > 0 {
+		return tickets[0]
 	}
 	return ""
 }

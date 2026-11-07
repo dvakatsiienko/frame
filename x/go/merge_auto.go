@@ -48,17 +48,22 @@ type mergeDecision struct {
 	Risky    []string     `json:"risky"`
 	Merged   string       `json:"merged,omitempty"`
 	Sign     string       `json:"sign,omitempty"`
-	title    string
-	body     string
-	layered  bool
-	heads    map[string]string // a stack's every gated head, pr → sha
-	signs    map[string]chunkSign
-	dimaOK   bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
-	landed   string
-	headRef  string
-	holds    []string
-	Trees    []string `json:"trees,omitempty"`
-	Holds    string   `json:"holds,omitempty"`
+	// set while operator-override prs is on: every check below hold and brake goes unread
+	Override *overrideUsed `json:"override,omitempty"`
+	// --override-off's scopes, and whether it clears only a shift's
+	Cleared   []string `json:"cleared,omitempty"`
+	shiftOnly bool
+	title     string
+	body      string
+	layered   bool
+	heads     map[string]string // a stack's every gated head, pr → sha
+	signs     map[string]chunkSign
+	dimaOK    bool // --dima-ok named this pr; x-mod-guard proved it against his last typed prompt
+	landed    string
+	headRef   string
+	holds     []string
+	Trees     []string `json:"trees,omitempty"`
+	Holds     string   `json:"holds,omitempty"`
 }
 
 type pullHead struct {
@@ -80,6 +85,32 @@ type pullHead struct {
 
 /* Verbs */
 func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
+	off, _ := flags["override-off"].(bool)
+	shiftOnly, _ := flags["shift-only"].(bool)
+	check, _ := flags["override-check"].(bool)
+	switch {
+	case flags["brake-check"] == true:
+		alone := len(args) == 0 && !off && !shiftOnly && !check
+		for _, other := range []string{"hold", "release-hold", "release-brake"} {
+			alone = alone && flags[other] != true
+		}
+		if word, _ := flags["dima-ok"].(string); !alone || word != "" {
+			return nil, usageFail("--brake-check reads the fleet's brake: it takes no pr and no other switch", "x lane merge-auto --brake-check")
+		}
+		return brakeCheckPlan(r)
+	case check && (off || shiftOnly || len(args) > 0):
+		return nil, usageFail("--override-check reads every open pr: it takes no pr and no other switch", "x lane merge-auto --override-check")
+	case check:
+		return overrideCheckPlan(r)
+	case shiftOnly && !off:
+		return nil, usageFail("--shift-only narrows --override-off", "x lane merge-auto --override-off --shift-only --apply")
+	case off && len(args) > 0:
+		return nil, usageFail("--override-off takes no pr: it turns the whole switch off", "x lane merge-auto --override-off --apply")
+	case off:
+		return overrideOffPlan(r, shiftOnly)
+	case len(args) == 0:
+		return nil, usageFail("name the pr", "x lane merge-auto <pr number>")
+	}
 	n := args[0]
 	if !prNumber.MatchString(n) {
 		return nil, usageFail(n+" is not a pr number", "x lane merge-auto <pr number>")
@@ -122,6 +153,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	var layers *prLayers
 	var held []string
 	var holdErr error
+	var override *overrideUsed
+	if grant, on := overrideOn(overrideScopePrs, ""); on {
+		override = &overrideUsed{Scope: overrideScopePrs, By: grant.By, At: grant.At, DevBuild: isDevBuild()}
+	}
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
@@ -139,10 +174,14 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 		if laneAddOn.layersOf != nil {
 			var err error
-			if layers, err = laneAddOn.layersOf(repo, n, pr); err != nil {
+			layers, err = laneAddOn.layersOf(repo, n, pr)
+			switch {
+			// a stack's read that failed stops nothing under the override: github refuses the plain merge of a stacked pr in its own words
+			case err != nil && override != nil && pr.Base.Ref == "main":
+				layers = nil
+			case err != nil:
 				return "", err
-			}
-			if layers != nil && layers.wait != "" {
+			case layers != nil && layers.wait != "":
 				return "", &Fail{Refused: true, Msg: "wait: " + layers.wait, Next: "x lane merge-auto " + n}
 			}
 		}
@@ -151,6 +190,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, headRef: pr.Head.Ref, signs: map[string]chunkSign{}, dimaOK: word != ""}
+	if override != nil {
+		d.Override, d.Sign = override, override.named()
+	}
 	trunk := pr.Base.Ref
 	if layers == nil {
 		r.skip("layers")
@@ -162,6 +204,14 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 				if stop := holdStop(repo, below, held, holdErr); stop != "" && word == "" {
 					return "", holdRefusal(n, stop+" — a stack merges all of its layers at once")
 				}
+				if d.Override != nil {
+					var layer pullHead
+					if _, err := ghFetch(asDima, api+"/pulls/"+below, &layer); err != nil {
+						return "", err
+					}
+					d.heads[below] = layer.Head.Sha
+					continue
+				}
 				wait, err := layerWait(repo, api, trunk, below, d)
 				if err != nil {
 					return "", err
@@ -169,6 +219,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 				if wait != "" {
 					return "", &Fail{Refused: true, Msg: "wait: " + wait + " — a stack merges all of its layers at once", Next: "x lane merge-auto " + n}
 				}
+			}
+			if d.Override != nil {
+				return "under the override, no layer's checks read", nil
 			}
 			if len(layers.below) == 0 {
 				return "the bottom layer, onto " + trunk, nil
@@ -180,46 +233,58 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}
 
 	var sixthSense, ci, round, threads mergeCheck
-	if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
-		sixthSense = d.sixthSenseOf(api, repo, n, pr)
-		return sixthSense.shown()
-	}); err != nil {
-		return nil, err
-	}
-	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
-		var err error
-		if ci, err = ciCheck(api, trunk, pr.Head.Sha); err != nil {
-			return "", err
+	if d.Override != nil {
+		r.skip("sixth-sense", "ci", "round", "threads")
+	} else {
+		if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
+			sixthSense = d.sixthSenseOf(api, repo, n, pr)
+			return sixthSense.shown()
+		}); err != nil {
+			return nil, err
 		}
-		return ci.shown()
-	}); err != nil {
-		return nil, err
-	}
-	if err := r.Step("round", "reading the reviewer's round on the branch", func() (string, error) {
-		var err error
-		if round, err = roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
-			return "", err
+		if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
+			var err error
+			if ci, err = ciCheck(api, trunk, pr.Head.Sha); err != nil {
+				return "", err
+			}
+			return ci.shown()
+		}); err != nil {
+			return nil, err
 		}
-		return round.shown()
-	}); err != nil {
-		return nil, err
-	}
-	if err := r.Step("threads", "counting the open review threads", func() (string, error) {
-		var err error
-		if threads, err = threadsCheck(repo, n); err != nil {
-			return "", err
+		if err := r.Step("round", "reading the reviewer's round on the branch", func() (string, error) {
+			var err error
+			if round, err = roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
+				return "", err
+			}
+			return round.shown()
+		}); err != nil {
+			return nil, err
 		}
-		return threads.shown()
-	}); err != nil {
-		return nil, err
-	}
-	d.Checks = []mergeCheck{sixthSense, ci, threads}
-	if roundGated(repo) {
-		d.Checks = []mergeCheck{sixthSense, ci, round, threads}
+		if err := r.Step("threads", "counting the open review threads", func() (string, error) {
+			var err error
+			if threads, err = threadsCheck(repo, n); err != nil {
+				return "", err
+			}
+			return threads.shown()
+		}); err != nil {
+			return nil, err
+		}
+		d.Checks = []mergeCheck{sixthSense, ci, threads}
+		if roundGated(repo) {
+			d.Checks = []mergeCheck{sixthSense, ci, round, threads}
+		}
 	}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
 		own, ownSelf, err := riskyPaths(api, n)
+		if d.Override != nil {
+			// the list only names; a read that failed stops nothing under the override
+			if err != nil {
+				return "the risky list did not read: " + err.Error(), nil
+			}
+			d.Risky = append(own, d.Risky...)
+			return d.Override.named(), nil
+		}
 		if err != nil {
 			return "", err
 		}
@@ -246,7 +311,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		brake, err = brakeOn(repo, trunk)
 		switch {
 		case err != nil:
-			return "", err
+			return "", brakeReadFail(err)
 		case brake != "":
 			return "", notHeld("on: " + brake)
 		}
@@ -255,6 +320,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
+	if d.Override != nil && brake == "" {
+		d.Decision = "merge"
+		return d, nil
+	}
 	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, ci, round, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
@@ -341,6 +410,8 @@ func headsHeld(api string, heads map[string]string) error {
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
 	switch d.Decision {
+	case "override-off":
+		return "turn operator-override off?"
 	case "release":
 		return "release the brake #" + d.PR + " holds?"
 	case "hold":
@@ -354,6 +425,9 @@ func askMergeAuto(plan any) string {
 func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	d := plan.(*mergeDecision)
 	api := githubBase() + "/repos/" + d.Repo
+	if d.Decision == "override-off" {
+		return overrideOffApply(r, d)
+	}
 	if d.Decision == "hold" || d.Decision == "release-hold" {
 		return holdApply(r, d)
 	}
@@ -385,6 +459,11 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return d, nil
 	}
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
+		if d.Override != nil {
+			if _, on := overrideOn(d.Override.Scope, ""); !on {
+				return "", &Fail{Refused: true, Msg: "operator-override " + d.Override.Scope + " went off after the read; nothing merged", Next: "x lane merge-auto " + d.PR}
+			}
+		}
 		// a hold set since the plan read
 		if !d.dimaOK {
 			held, holdErr := readHolds(d.Repo)
@@ -417,8 +496,11 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			Sha string `json:"sha"`
 		}
 		trailers := mergeTrailer
-		if d.Checks[0].renovateExempt {
+		if len(d.Checks) > 0 && d.Checks[0].renovateExempt {
 			trailers += "\n" + renovateExemptTrailer
+		}
+		if d.Override != nil {
+			trailers += "\nOperator-override: " + d.Override.Scope + ", by " + d.Override.By + " at " + d.Override.At
 		}
 		// the sha pins the merge to the head the checks read: a push since makes github refuse it
 		_, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
@@ -441,6 +523,16 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	result := "merged #" + d.PR + " at " + short(d.Merged)
 	if d.layered {
 		result = d.landed
+	}
+	if d.Override != nil {
+		result += "\n" + d.Override.named()
+		what := d.Repo + "#" + d.PR + " at " + short(d.Head)
+		if d.Merged == "" {
+			what += ", still enqueued"
+		}
+		if err := overrideLogPass(d.Override, what); err != nil {
+			result += "\n⚠ the override's log line did not land: " + err.Error()
+		}
 	}
 	if d.Holds != "" {
 		result += "\n" + d.Holds
@@ -766,7 +858,11 @@ func brakeLabelled(api string) (string, error) {
 
 // the brake's own record on this mac, for a brake github refused to label (dima, o194)
 func brakeRecord(repo string) string {
-	return filepath.Join(stateDir(), "merge-brake", strings.ReplaceAll(repo, "/", "_")+".json")
+	state := stateDir()
+	if !mergeTestEnvOn() {
+		state = filepath.Join(systemHome(), ".local/state/x")
+	}
+	return filepath.Join(state, "merge-brake", strings.ReplaceAll(repo, "/", "_")+".json")
 }
 
 type brakeNote struct {
@@ -799,6 +895,17 @@ func brakeRecorded(repo string) (string, error) {
 		return "", &Fail{Msg: "the brake record " + brakeRecord(repo) + " is unreadable, so the brake reads on", Next: "cat " + brakeRecord(repo)}
 	}
 	return "#" + note.PR + " " + note.Why + "; release once dima looked: " + releaseBrake(note.PR), nil
+}
+
+// a *Fail keeps its shape, or the dispatcher would print it without the name
+func brakeReadFail(err error) error {
+	const named = "the brake did not read, so it stops the merge: "
+	if fail, isFail := errors.AsType[*Fail](err); isFail {
+		copied := *fail
+		copied.Msg = named + fail.Msg
+		return &copied
+	}
+	return fmt.Errorf(named+"%w", err)
 }
 
 // the label, then this mac's record, then reverts; git's revert names the sha, github's revert button only the subject

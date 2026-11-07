@@ -527,6 +527,8 @@ let wait: string | undefined;
 let pinged = false;
 let isPolling = false;
 let afk = false;
+let overrideStore: string | undefined;
+let overrideIsOn = false;
 let isWaker = false;
 let isPaced = false;
 // the window this process already sent its last ping in: a refused one never retries every poll
@@ -3328,8 +3330,67 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
         if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
 }
 
+// twin operator-override-store — a copy lives in x-mod-guard; x/go/operator_override.go reads the same store
+const RFC3339 = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|[+-]\d\d:\d\d)$/;
+async function overrideStorePath($: EngineInterface) {
+    const record = await $.process.run(['id', '-P']).catch(() => undefined);
+    const home = record?.exitCode === 0 ? record.stdout.split(':')[8] : '';
+    return home?.startsWith('/')
+        ? `${home}/.local/state/x/operator-override.json`
+        : undefined;
+}
+
+async function overrideGrantAt(
+    $: EngineInterface,
+    path: string,
+    scope: string,
+    session = '',
+) {
+    const raw = await $.fs.read(path).catch(() => undefined);
+    if (raw === undefined) return undefined;
+    try {
+        const grants: unknown = JSON.parse(raw);
+        if (typeof grants !== 'object' || Array.isArray(grants))
+            return undefined;
+        // go reads the whole map into one shape, so one bad scope reads every scope off
+        for (const g of Object.values(grants ?? {}) as unknown[]) {
+            if (g === null) continue;
+            if (typeof g !== 'object' || Array.isArray(g)) return undefined;
+            const { at, by, until } = g as Record<string, unknown>;
+            for (const field of [at, by, until])
+                if (field != null && typeof field !== 'string')
+                    return undefined;
+        }
+        const grant = (
+            grants as Record<
+                string,
+                { at?: string; by?: string; until?: string } | null
+            > | null
+        )?.[session ? `${scope}:${session}` : scope];
+        if (!grant?.by) return undefined;
+        if (grant.until) {
+            if (!RFC3339.test(grant.until)) return undefined;
+            if (!(Date.parse(grant.until) > (await $.clock.now())))
+                return undefined;
+        }
+        return { at: grant.at ?? '', by: grant.by, scope };
+    } catch {
+        return undefined;
+    }
+}
+// twin end
+
+// the path comes once a process, the id spawn being the cost; every poll after it is one file read
+async function readOverrideOn($: EngineInterface) {
+    overrideStore ??= (await overrideStorePath($)) ?? '';
+    overrideIsOn = overrideStore
+        ? (await overrideGrantAt($, overrideStore, 'prs')) !== undefined
+        : false;
+}
+
 async function load($: EngineInterface) {
     if (bandPresses) return;
+    await readOverrideOn($).catch(() => undefined);
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     const wasAfk = afk;
     afk = flag?.on === true;
@@ -3366,6 +3427,7 @@ function viewOf(isBoardOpen: boolean): StashView {
         afk,
         isBoardOpen,
         isHot: Boolean(hot),
+        isOverrideOn: overrideIsOn,
         isPaced,
         isSettingsOpen,
         isWaker,
@@ -8146,6 +8208,23 @@ export const register: Register = (on) => {
                         (await $.state.get(VIEW)).value ?? viewOf(false);
                     const ui = $.ui.resolve(e);
                     const { Box, Text, Button } = ui;
+                    // off only: a session's Bash can press a band button through rex (probed 2026-11-07), so no press turns it on
+                    const handleOverrideOff = () =>
+                        pressSwitch(
+                            $,
+                            '🔓',
+                            { isOverrideOn: false },
+                            async () => {
+                                overrideIsOn = false;
+                                overrideStore ??= await overrideStorePath($);
+                                if (!overrideStore)
+                                    throw new Error('no user record to read');
+                                await $.fs.write(overrideStore, '{}');
+                            },
+                            async () => {
+                                overrideIsOn = view.isOverrideOn === true;
+                            },
+                        );
                     const handleAfkFlip = () => {
                         afk = !view.afk;
                         let isRead = false;
@@ -8536,6 +8615,21 @@ export const register: Register = (on) => {
                                           ⏰
                                       </Button>,
                                       leftOf('⏰', view.isWaker),
+                                  )}
+                            {!view.isOverrideOn
+                                ? null
+                                : tip(
+                                      'operator-override',
+                                      'operator-override',
+                                      <Button
+                                          key='operator-override'
+                                          onPress={() =>
+                                              void handleOverrideOff()
+                                          }
+                                          variant='secondary'>
+                                          🔓
+                                      </Button>,
+                                      leftOf('🔓', true),
                                   )}
                             {!isShown('stash.afk')
                                 ? null
