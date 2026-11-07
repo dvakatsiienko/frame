@@ -340,6 +340,18 @@ func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
 	}
 }
 
+// a stack's lower layer goes through the same gate as the pr merged on top of it
+func TestMergeAutoPassesARenovateLowerLayerWithNoClean(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
+	write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
+
+	if got := w.run(t, "8"); got.code != 4 {
+		t.Fatalf("exit %d, want the plan to merge past the renovate layer:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestMergeAutoLetsDimasWordOpenALowerLayersMissingClean(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
