@@ -41,7 +41,7 @@ only what could NOT be closed on the spot:
 
 file: `~/.claude/shelf/flawlog/<YYYY-MM-DD>-<topic-slug>.md`, created on first entry.
 
-📌 **the slug is the session's main topic, in 2-4 plain words** — `spawn-measurements-and-plugin-cache`,
+📌 **the slug is the session's main topic, in 2-4 plain words, a wing's opening `wing-<N>-`** — `spawn-measurements-and-plugin-cache`,
 `invented-ids-and-tool-limits`, `clio-first-boot`. a human scanning the dir should be able to
 guess which log holds the thing they half-remember, which a run id can never do. the run id is
 not lost: it stays in the file's H1, where provenance belongs and legibility does not.

@@ -12,13 +12,14 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 
-// the siesta check blocks the epoch's first stop (dima's o78, after sixth sense's clean); false makes it a warn
+// the siesta check blocks the epoch's first stop and again each hour it is ignored (dima's o78, after sixth sense's clean); false makes it a warn
 export const gate = { isBlocking: true };
 const MAIN: Seat = { dir: '', role: 'clio' };
 const FILES_DUE = 15;
 const MISSED_AFTER_MS = 30 * 60_000;
 // an ignored nudge comes back, and a card nobody closed stops pausing the count
 const RENUDGE_AFTER_MS = 60 * 60_000;
+const OPEN_GRACE_MS = 30 * 60_000;
 // a run of a pocket door, at the start of a command, after `&&`, `;` or `|`, or a loop's `do`; a read of the script (sed, rg) never counts
 const POCKET_WRITE =
     /(^|[;&|]\s*|\b(do|then|else)\s+)(node\s+\S*pocket-(add|move)\.ts|(BACKLOG_CWD=\S+\s+)?backlog task (create|edit|archive)\b)/m;
@@ -49,7 +50,13 @@ export function stop(home: string, input: StopInput) {
         state.open &&
         state.card_printed &&
         Date.now() - new Date(state.card_at ?? 0).getTime() < RENUDGE_AFTER_MS;
-    const reasons = isCardWaiting ? [] : dueReasons(home, state, seat);
+    // wishkeeper runs 5-7 min, and the freebie beside it must not read as the next batch
+    const isReadInFlight =
+        state.open &&
+        !state.card_printed &&
+        Date.now() - new Date(state.opened_at ?? 0).getTime() < OPEN_GRACE_MS;
+    const reasons =
+        isCardWaiting || isReadInFlight ? [] : dueReasons(home, state, seat);
     const isDue = reasons.length > 0;
     if (isDue && !state.due) state.epoch++;
     state.due = isDue;
@@ -128,7 +135,7 @@ export function prompt(
     )
         close(state);
     writeSiesta(home, state, seat);
-    // the Stop block speaks once an epoch; his own prompts carry it after, and a prompt hook wakes no extra turn
+    // between Stop blocks his own prompts carry it, and a prompt hook wakes no extra turn
     return isDima && state.due ? '🌤️ siesta due — load clio:siesta' : undefined;
 }
 
@@ -420,11 +427,11 @@ function stateDir(home: string) {
     return path.join(home, '.local/state/clio');
 }
 
-// each clio keeps its own stamp and card, so a wing's siesta never moves main's (PK-351:W78); a parked sidecar has none
+// each clio keeps its own stamp and card, so a wing's siesta never moves main's (PK-351:W78); a parked sidecar has none, and neither has a session that is not the recorded main
 function seatOf(home: string, sessionId?: string): Seat | undefined {
+    if (!sessionId) return MAIN;
     const dir = path.join(home, '.claude/sessions');
-    if (!sessionId || !existsSync(dir)) return MAIN;
-    for (const file of readdirSync(dir)) {
+    for (const file of existsSync(dir) ? readdirSync(dir) : []) {
         const session = parsed<{
             kind?: string;
             name?: string;
@@ -438,9 +445,17 @@ function seatOf(home: string, sessionId?: string): Seat | undefined {
             return { dir: `seats/wing-${wing}`, role: `clio-wing-${wing}` };
         return /\((fork|side)/.test(name)
             ? { dir: `seats/fork-${sessionId.slice(0, 8)}`, role: 'clio-side' }
-            : MAIN;
+            : recordedMain(home, sessionId);
     }
-    return MAIN;
+    return recordedMain(home, sessionId);
+}
+
+// fork-guard records the seat at each start; no record yet leaves nobody to protect it from
+function recordedMain(home: string, sessionId: string) {
+    const recorded = readLines(path.join(stateDir(home), 'main-session'))
+        .find((line) => line.startsWith('session='))
+        ?.slice('session='.length);
+    return !recorded || recorded === sessionId ? MAIN : undefined;
 }
 
 function seatDir(home: string, seat: Seat) {
@@ -490,6 +505,7 @@ function readSiesta(home: string, seat: Seat): Siesta {
         nudged_resumes: kept.nudged_resumes ?? [],
         nudged_ticks: kept.nudged_ticks ?? [],
         open: kept.open ?? false,
+        ...(kept.opened_at ? { opened_at: kept.opened_at } : {}),
         pings: kept.pings ?? [],
     };
 }
@@ -503,7 +519,9 @@ function writeSiesta(home: string, state: Siesta, seat: Seat) {
 }
 
 function door(home: string, [verb, ...args]: string[]) {
-    const seat = seatOf(home, process.env.CLAUDE_CODE_SESSION_ID) ?? MAIN;
+    const seat = seatOf(home, process.env.CLAUDE_CODE_SESSION_ID);
+    if (!seat)
+        throw new Error('this session holds no clio seat, so it has no siesta');
     const state = readSiesta(home, seat);
     switch (verb) {
         case 'open': {
@@ -525,6 +543,7 @@ function door(home: string, [verb, ...args]: string[]) {
                 due: false,
                 highs: [],
                 open: true,
+                opened_at: new Date().toISOString(),
             });
             break;
         }
@@ -596,6 +615,7 @@ type Siesta = {
     nudged_resumes: string[];
     nudged_ticks: string[];
     open: boolean;
+    opened_at?: string;
     pings: string[];
 };
 

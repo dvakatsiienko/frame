@@ -20,6 +20,8 @@ registry="$(grep -lE "\"sessionId\": *\"$sid\"" "${HOME:-/nonexistent}"/.claude/
 [ -n "$registry" ] && [ "$(jq -r '.kind // ""' "$registry" 2>/dev/null)" = bg ] && exit 0
 seat_label=""
 [ -n "$registry" ] && [[ "$(jq -r '.name // ""' "$registry" 2>/dev/null)" =~ wing\ ([0-9]+) ]] && seat_label="clio-wing-${BASH_REMATCH[1]}"
+main_session="$(sed -n 's/^session=//p' "${HOME:-/nonexistent}/.local/state/clio/main-session" 2>/dev/null)"
+[ -z "$seat_label" ] && [ -n "$main_session" ] && [ "$main_session" != "$sid" ] && exit 0
 
 check="${POCKET_CHECK_CMD:-node $(dirname "$0")/../../script/pocket-check.ts}"
 out="$($check 2>&1)"

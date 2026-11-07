@@ -261,6 +261,19 @@ describe('a pocket red blocks its owner, once per id', () => {
             expect(out?.reason ?? '').not.toContain('PK-1');
         });
 
+        test('a session that is neither a wing nor the recorded main is never blocked', () => {
+            seat('💻 a stray session');
+            const recorded = join(fixtures, '.local/state/clio/main-session');
+            mkdirSync(join(fixtures, '.local/state/clio'), { recursive: true });
+            writeFileSync(recorded, 'pid=1\nsession=sid-main\n');
+            itemWith('');
+            const out = run(asSeat, redWith('a'));
+            rmSync(item);
+            rmSync(recorded);
+            rmSync(sessions, { recursive: true });
+            expect(out).toBe(undefined);
+        });
+
         test('a parked sidecar is never blocked', () => {
             seat('🎀 helga', 'bg');
             itemWith('');

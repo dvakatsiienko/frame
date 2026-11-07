@@ -1108,6 +1108,33 @@ describe('every clio on its own stamp', () => {
         ).toMatchObject({ open: true });
     });
 
+    test('a session that is not the recorded main holds no seat, even unnamed', () => {
+        const home = fixtureHome();
+        seated(home);
+        writeFileSync(
+            join(home, '.local/state/clio/main-session'),
+            `pid=1\nsession=${SID}\n`,
+        );
+        commit(home, 15, 'clio');
+        const stranger = { ...stopInput(home), session_id: 's-stranger' };
+        expect(stop(home, stranger)).toBeUndefined();
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
+        const out = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'siesta-gate.ts'), 'open'],
+            {
+                encoding: 'utf8',
+                env: {
+                    ...gitEnv(),
+                    CLAUDE_CODE_SESSION_ID: 's-stranger',
+                    HOME: home,
+                },
+            },
+        );
+        expect(out.status).not.toBe(0);
+        expect(siesta(home).open).toBeFalsy();
+    });
+
     test('a parked sidecar has no seat: no nudge, no state', () => {
         const home = fixtureHome();
         seated(home);
@@ -1153,6 +1180,23 @@ describe('every clio on its own stamp', () => {
         const out = run(home, ['open']);
         expect(out.stdout).toMatch(/last siesta: 20/);
         expect(out.stdout).toContain('unsettled high of the last card: a hole');
+    });
+
+    test('a siesta just opened waits for its read, past 30 min its batch nudges', () => {
+        const home = fixtureHome();
+        commit(home, 15, 'clio');
+        const open = (minutes: number) =>
+            writeSiesta(home, {
+                highs: [],
+                open: true,
+                opened_at: new Date(
+                    Date.now() - minutes * 60_000,
+                ).toISOString(),
+            });
+        open(5);
+        expect(said(stop(home, stopInput(home)))).toBeUndefined();
+        open(45);
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
     test("a member's done still counts through the app's peer prefix", () => {
