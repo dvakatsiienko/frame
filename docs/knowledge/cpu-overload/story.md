@@ -161,5 +161,10 @@ key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time 
 - verdict [read]: Spotlight stays: 0.1 to 0.4 cores mean in every lane row, peak 2.2 in the first 30 min; the Search Privacy exclude is not worth his click, a real number reopens it
 - seen [read]: siesta's catch, 15:58: the go number sent to him as landed, 385 → 278, is unreproduced; the real start is about 350 cpu-s
 - tried [read]: 16:22 FRM-528 summoned, his word 16:21, «i wanted wing 1 lane to finish today it is the prio, cpu roasting issue»
+- tried [read]: 18:34 FRM-528 merged, frame#147: the go suite 385.9 → 307.8 cpu-s the same hour, a budget of 385 at its go doors. 200 missed and closed on his tick: the rest is `x` running as a real child, kept real on purpose
+- verdict [read]: a third spindump proves the `LANG` cause, frame by frame: `git-process-cost.md`. the sandbox share did not move, and `sandbox_check` reads 0 for every lane's shell, so it is no profile of ours
+- tried [read]: a git with no gettext and no CoreServices, 85 libraries against 706: the go suite 394 → 322 cpu-s, abba, on main before the fixture cut. FRM-532, signed 18:24, wires it into every agent shell
+- tried [read]: `posix_spawn` against Go's fork, one small program: 23 % less cpu per spawn. no suite number yet
+- verdict [read]: lane rows to 18:35: 3 lanes 12.8 and 13.5 cores, 2 lanes 8.0 to 13.8, 1 lane 6.7 to 9.4; the 13.8 held my own slim git suites. what runs moves the cores more than the count, still
 
 <!-- end -->

@@ -16,6 +16,8 @@ Standing: read this before chasing a red cpu, and add to it when a round ends, s
 - **About one go suite a minute is the mac's rate**, however they are arranged, with about 6 to 8 cores of the 14 in the suite's own accounting and the rest in other processes (inference on who)
 - **The disk is not the sys**: a ram disk `TMPDIR` cuts it 5 % at most
 - **A shell with no `LANG` makes every git start 1.7× slower**: 500 `git --version` 4.34 → 2.62 s, the go suite 13 % less cpu and 16 % less wall, vitest 4 % less cpu (abba, all four runs exited 1). A spindump proves why: with `LANG`, `cfprefsd` 3.56 → 0.00 cpu-s per 10 s, `opendirectoryd` 2.27 → 0.01, `notifyd` 1.60 → 0.13. `settings.json` now sets it for cc's shells; a new launchd job or bare `env -i` shell has none. Check a shell with `echo $LANG`
+- **A slim git cut the whole go suite 18 %, 394 → 322 cpu-s, with no code change**: 85 libraries against brew's 706. Not wired yet: [FRM-532](https://linear.app/x-com/issue/FRM-532); the numbers in [git-process-cost.md](cpu-overload/git-process-cost.md)
+- **FRM-528's fixture cut took the go suite from 386 to 308 cpu-s, the same hour.** 200 was missed and closed on dima's tick; a budget at 385 now holds that line at the go doors
 - Sessions at rest are cheap: about 15 sessions, the app and the os fit in about 4 of 14 cores (two 10 s windows)
 - `ps` and activity monitor miss the load: a go run makes 661 short-lived processes a second, so the app list sums to 15 % at a real 100 %. A `spindump` sees them
 
@@ -28,7 +30,11 @@ One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a cod
 - 1 lane, FRM-524, 15:40 to 15:46, 32 samples: 6.7 cores, load p50 14 p90 20, kernel 44 %, 13 % of samples at 95 %+, git start 5.8 ms (n=6): too thin
 - 2 lanes, FRM-524 + BYT-132, 15:46 to 16:22, 189 samples: 8.7 cores, load p50 15 p90 30, kernel 42 %, 29 % of samples at 95 %+, spotlight 0.1 cores, git start 6.2 ms (n=35), go suite run p50 56 s, wait p50 0 s (n=6): `LANG`-era codies
 - 3 lanes, FRM-524 + BYT-132 + FRM-528, 16:22 to 16:29, 32 samples: 13.5 cores, load p50 41 p90 50, kernel 48 %, 84 % of samples at 95 %+, spotlight 0.2 cores, git start 8.9 ms (n=7), no go suite in the window: too thin, but the first row near full
-- 2 lanes, FRM-524 + FRM-528, from 16:29, 33 min read so far, 168 samples: 9.8 cores, load p50 21 p90 46, kernel 48 %, 46 % of samples at 95 %+, spotlight 0.2 cores, git start 6.6 ms (n=33), go suite rows only filtered runs (n=3): still open
+- 2 lanes, FRM-524 + FRM-528, 16:29 to 17:59, 445 samples: 10.8 cores, load p50 23 p90 49, kernel 50 %, 55 % of samples at 95 %+, spotlight 0.2 cores, git start 7.5 ms (n=90), go suite run p50 50 s, wait p50 51 s (n=10)
+- 3 lanes, FRM-524 + FRM-528 + BYT-106, 17:59 to 18:06, 34 samples: 12.8 cores, load p50 34 p90 81, kernel 50 %, 79 % at 95 %+, git start 6.9 ms (n=7), no go suite: too thin
+- 2 lanes, FRM-528 + BYT-106, 18:06 to 18:14, 29 samples: 13.8 cores, load p50 62 p90 109, kernel 52 %, 93 % at 95 %+, git start 11.3 ms (n=8), go suite run p50 71 s (n=5): my own slim git suites ran beside them, so not a lane number
+- 1 lane, FRM-528, 18:14 to 18:29, 73 samples: 9.4 cores, load p50 20 p90 66, kernel 44 %, 49 % at 95 %+, git start 8.2 ms (n=14), a slim git rebuild beside it
+- 2 lanes, FRM-528 + FRM-531, 18:29 to 18:35, 32 samples: 8.0 cores, load p50 15 p90 22, kernel 36 %, 28 % at 95 %+, git start 6.4 ms (n=6), no go suite: too thin
 
 ## the go suite after FRM-528's fixture cut, 2026-11-07
 
