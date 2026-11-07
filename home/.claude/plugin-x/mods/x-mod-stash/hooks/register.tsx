@@ -2041,7 +2041,7 @@ async function saveOrbit(
     const isKept = await keepOrbit($);
     await keepState($, { orbit }).catch(() => undefined);
     const sid = await currentId($);
-    if (!sid) return;
+    if (!sid) return isKept;
     const open = orbit.asks.filter((a) => !a.isResolved);
     const asks = open.map((a) => a.text);
     if (asks.length)

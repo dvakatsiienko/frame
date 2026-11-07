@@ -40,9 +40,12 @@ export const oneLine = (v: unknown) =>
 const idsOf = (v: unknown) =>
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
 
-// what ✅ marks: an open ask he has not marked; a ⚠️ ask takes its own 🛎️, so one press never unlocks what he has not read
+// what ✅ marks: an open ask he has not marked; a ⚠️ or a merge ask takes its own 🛎️, so one press never unlocks what he has not read
 export const isAllAsksMarkable = (a: OrbitAsk) =>
-    !a.mark && !a.isLocked && !a.isResolved && !a.text.includes('⚠️');
+    !a.mark &&
+    !a.isLocked &&
+    !a.isResolved &&
+    !/⚠️|^\s*(?:merge|land)\b/iu.test(a.text);
 
 // the record x-mod-guard reads as dima's word, one per ask his press marks
 export const allAsksTicks = (

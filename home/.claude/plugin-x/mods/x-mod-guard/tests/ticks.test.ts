@@ -193,7 +193,15 @@ for (const [why, ticks, isCarried] of [
         false,
     ],
     ['a url on «⚠️ do not merge»', [tick(`⚠️ do not merge ${PR}`)], false],
-    ['a url on a ⚠️ ask', [tick(`⚠️ land ${PR}: the guard fix`)], true],
+    ['a url on «⚠️ merge»', [tick(`⚠️ merge ${PR}: the guard fix`)], true],
+    ['a url on «⚠️ land»', [tick(`⚠️ land ${PR}: the guard fix`)], true],
+    ['a url on another ⚠️ action', [tick(`⚠️ close ${PR} unmerged?`)], false],
+    ['a url on a force-push', [tick(`⚠️ force-push ${PR}`)], false],
+    [
+        'a url on «merge anyway»',
+        [tick(`merge ${PR}: ci not green, merge anyway`)],
+        true,
+    ],
     [
         'a merge tick past its 2 h',
         [tick('⚠️ merge bytes#104: the guard fix', NOW - TWO_HOURS - 1)],

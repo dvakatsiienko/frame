@@ -4188,6 +4188,22 @@ test('✅ leaves a ⚠️ ask unmarked, with no record', async ($, on) => {
     ]).toEqual([['o2'], ['o2 🛎️']]);
 });
 
+test('✅ leaves a bare merge ask for its own 🛎️', async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    await add(
+        $,
+        ['merge https://github.com/o/r/pull/7', 'yes'],
+        ['push `backup`', 'yes'],
+    );
+    await ui.press({ key: 'orbit:all' });
+    expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
+        'o2',
+    ]);
+});
+
 test('✅ names every ask it left unticked', async ($, on) => {
     world(on);
     const toasts: string[] = [];

@@ -773,13 +773,9 @@ export const isSignAsk = (text: string, id: string) =>
         .includes(id) ?? false;
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`, or reads
 // `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1);
-// a url cited in passing proves nothing either: the ask opens ⚠️ or «merge», an allow-list since a tick now lives past newer ones (FRM-510), and
-// no negation sits before a merge word in it
+// a url cited for anything else proves nothing either: the ask opens «merge» or «land», ⚠️ or not, an allow-list since a tick now lives past newer ones (FRM-510)
 const isMergeWord = (text: string) =>
-    /^\s*(?:⚠️|merge\b)/iu.test(text) &&
-    !/\b(?:not|never|no|hold|before|won['’]?t|don['’]?t|shouldn['’]?t)\b[^.]*\bmerge/iu.test(
-        text,
-    );
+    /^\s*(?:⚠️\s*)?(?:merge|land)\b/iu.test(text);
 export const quotesPr = (text: string, repo: string, pr: string) =>
     (isMergeWord(text) &&
         text.includes(`github.com/${repo}/pull/${pr}`) &&
