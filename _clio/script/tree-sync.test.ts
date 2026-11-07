@@ -49,7 +49,10 @@ function world() {
     const bin = join(base, 'bin');
     mkdirSync(bin);
     const calls = join(base, 'x-calls');
-    writeFileSync(join(bin, 'x'), `#!/bin/bash\necho "$*" >> '${calls}'\n`);
+    writeFileSync(
+        join(bin, 'x'),
+        `#!/bin/bash\necho "$(basename "$PWD"): $*" >> '${calls}'\n`,
+    );
     chmodSync(join(bin, 'x'), 0o755);
     const env = {
         ...gitEnv(),
@@ -133,7 +136,8 @@ describe('tree-sync land', () => {
         const out = w.land();
         expect(out.status).toBe(0);
         expect(existsSync(join(w.root, 'c.txt'))).toBe(true);
-        expect(w.xCalls()).toBe('lane push --apply\n');
+        // from the main checkout: from a tree, x pushes the tree's branch and refuses a bump
+        expect(w.xCalls()).toBe('frame: lane push --apply\n');
         expect(existsSync(w.tree)).toBe(true);
     });
 
@@ -147,7 +151,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/mods/m.ts', 'm\n');
         w.land();
         expect(w.xCalls()).toBe(
-            'lane push --apply\nplugin bump --apply clio\n',
+            'frame: lane push --apply\nframe: plugin bump --apply clio\n',
         );
     });
 
@@ -158,7 +162,9 @@ describe('tree-sync land', () => {
         });
         w.write(w.tree, 'home/.claude/plugin-x/skills/s.md', 's\n');
         w.land();
-        expect(w.xCalls()).toBe('lane push --apply\nplugin bump --apply x\n');
+        expect(w.xCalls()).toBe(
+            'frame: lane push --apply\nframe: plugin bump --apply x\n',
+        );
     });
 
     test('a conflict stops before main moves or anything is pushed', () => {

@@ -63,6 +63,8 @@ git -C "$root" merge --ff-only --quiet "refs/heads/$branch" || {
 	echo "tree-sync land: main refused the fast-forward; a file main has staged blocks it, ask clio to commit hers" >&2
 	exit 1
 }
+# x acts on the folder it runs in, and from a tree it would push the tree's branch
+cd "$root" || exit 1
 x lane push --apply || exit 1
 changed=$(git -C "$root" diff --name-only "$before" refs/heads/main)
 if grep -q '^_clio/plugin-clio/' <<<"$changed"; then
