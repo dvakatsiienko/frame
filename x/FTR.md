@@ -194,7 +194,7 @@
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
-  - given a pr whose ticket (its `codie/<ID>-…` branch, else its body's `- ticket: <ID>` line) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
+  - given a pr whose ticket (its `codie/<ID>-…` branch in any case, else its body's `- ticket: <ID>` line, text allowed after the id, a fenced id never counted; `x lane landed` reads the same) closes its body with a `## signed` block whose last sign holds `merge: pre-approved`, and no body edit since the block's last signed line
   - when `x lane merge-auto <pr> --apply` runs from the main checkout on the verifier-clean pr that touches a self-edit path
   - then it merges with no hand step and the envelope's `sign` names the ticket; a stack merges when every layer's ticket holds such a sign
   - given the body edited after the last signed line, a last sign with no `merge: pre-approved`, no `## signed` block, or a build whose `x/go` differs from origin/main, then it waits and names which, the re-sign included; the brake waits whatever the sign says

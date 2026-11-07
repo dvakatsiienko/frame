@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ticketOfBranch = regexp.MustCompile(`^(?:codie|coder)/([A-Z]+-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
-	ticketOfBody   = regexp.MustCompile(`(?m)^- ticket: ([A-Z]+-\d+)\s*$`)
+	ticketOfBranch = regexp.MustCompile(`(?i)^(?:codie|coder)/((?:FRM|BYT|PK)-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
+	ticketOfBody   = regexp.MustCompile(`(?im)^[\s>*-]*ticket:\s*((?:FRM|BYT|PK)-\d+)\b`)
+	fenced         = regexp.MustCompile("(?s)```.*?```")
 	signedHeading  = regexp.MustCompile(`(?m)^## signed\s*$`)
 	nextHeading    = regexp.MustCompile(`(?m)^## `)
 	signedBodyHash = regexp.MustCompile(`· body ([0-9a-f]{8})\s*$`)
@@ -27,12 +28,20 @@ type chunkSign struct {
 	detail string
 }
 
-func ticketOfPr(pr pullHead) string {
-	if m := ticketOfBranch.FindStringSubmatch(pr.Head.Ref); m != nil {
-		return m[1]
+// every ticket a pr names, its branch's first: any case in a branch, text after a body's id, never a fenced id
+func ticketsOfPr(branch, body string) (tickets []string) {
+	if m := ticketOfBranch.FindStringSubmatch(branch); m != nil {
+		tickets = append(tickets, strings.ToUpper(m[1]))
 	}
-	if m := ticketOfBody.FindStringSubmatch(pr.Body); m != nil {
-		return m[1]
+	for _, m := range ticketOfBody.FindAllStringSubmatch(fenced.ReplaceAllString(body, ""), -1) {
+		tickets = append(tickets, strings.ToUpper(m[1]))
+	}
+	return tickets
+}
+
+func ticketOfPr(pr pullHead) string {
+	if tickets := ticketsOfPr(pr.Head.Ref, pr.Body); len(tickets) > 0 {
+		return tickets[0]
 	}
 	return ""
 }
