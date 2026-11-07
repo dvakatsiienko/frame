@@ -11,6 +11,16 @@ Read this first on reopening the problem. Mac16,7, M4 Pro, 14 cores, 48 GB, macO
 - mods tests grew 902 → 3,430, go `func Test` 368 → 703: part of what reads as load is suite growth
 - its rows' scripts, off `/tmp`: `~/.local/state/x/lanes/frm-525/pace-under-load/`
 
+## 100 % with one lane left, 2026-11-07 about 03:52, dima's screenshot
+
+PK-328:W37 and W38: tomorrow opens with this lane alone, and catches this first.
+
+- his screen: cpu 99 % on all 14 cores, 109 °C, gpu 57 %, memory normal. The app list sums to about 15 %, the same gap `ps` showed, so short-lived processes hold the rest (inference)
+- the queue log: ci's lane ran the whole go gate at 03:50:14 for 69 s and 03:51:43 for 116 s, load 24; other rows that minute were commits and pushes. The spike's own clock is unread, so tying it to the gate is inference
+- 03:54:59, after it: 15 % user, 9 % sys, 75 % idle, load 11: `~/.local/state/x/lanes/frm-525/snapshot-1-lane-20261107-0355.txt`. wing 1's 17 pocket label edits ran near it too, each with its hook
+- **what it would mean**: a suite parallels over every core, so one heavy run reads 100 % by itself. 100 % says a heavy run is live, never how many lanes. It fits «lane count is not the load»
+- a leak still alive: pid 91919 and child 92094, a `gate-queue.sh` landing fixture from `verify-pr-132`, orphaned since 22:25, polling `sleep 0.1`, about 0.6 % of a core and 10 spawns/s. Left alive for dima's word
+
 ## the spindump, 2026-11-07 01:43:54, 10 s, load about 30, a go run live
 
 Read by `spindump-read.mjs` and `spindump-git.mjs` beside this file; the sampler itself took 11.7 cpu-s of the total.
@@ -74,6 +84,7 @@ Peak load halved, 100 → 49; sys share unchanged, 33 → 35 %. Not the cpu's fi
 
 ## next, cheapest first
 
+0. first, one lane alone: start `cpu-sample.mjs` and catch a 100 % with a spindump at minimal activity, naming the run behind it
 0. the queue and the sleep: split queue wait from cpu wait first, since lanes stuck on one turn is a lever beside cpu; cut the sleeps `4739e4ed` added to every commit's test step; a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16
 1. the third piece: a `spindump` with neither a go run nor a mods suite, and whose sandbox profile hits git, the cheapest new lever if it can go
    - then, dima's tick: a research on git's process cost, all lanes: fewer git per fixture, a repo template, in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
