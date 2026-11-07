@@ -831,6 +831,10 @@ async function isSentSteer($: EngineInterface, key: string) {
         )?.isLocked
     );
 }
+// a turn carried these boxes' text while he was away: it is sent, so a newer steer at his return offers nothing back
+function carried($: EngineInterface, keys: string[]) {
+    if (keys.filter((key) => textsLeft.delete(key)).length) keepFields($);
+}
 // a thread switch on the desktop drops the board's view: every word goes to the store as he leaves, however soon after
 // the last keystroke, and a remote steer is no longer held off by his typing; the boxes forget what they mounted with
 // here, not at the return, since the return's first draw can overtake the attach hook (FRM-531 sixth sense)
@@ -2482,6 +2486,10 @@ function takeMarks($: EngineInterface, pick: (o: StashOrbit) => OrbitAsk[]) {
         const o = await currentOrbit($);
         const asks = pick(o);
         if (asks.length) await saveOrbit($, lockJoined(o, asks));
+        carried(
+            $,
+            asks.map((a) => `orbit:steer:${a.id}`),
+        );
         return asks;
     });
 }
@@ -2492,6 +2500,7 @@ function takePlanMark($: EngineInterface) {
         const o = await currentOrbit($);
         if (!hasPlanMark(o.plan)) return undefined;
         await saveOrbit($, { ...o, plan: planTaken(o.plan) });
+        carried($, ['plan:steer']);
         return o.plan;
     });
 }
@@ -3249,6 +3258,10 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
     const taken = lanes.filter((l) => !l.endedAt && steers[l.id]?.isTaken);
     if (!taken.length) return [];
+    carried(
+        $,
+        taken.map((l) => `lane:${l.id}:steer`),
+    );
     for (const l of taken) {
         await $.store.delete(LANE_STEER + l.id);
         await $.store.delete(LANE_STEER_OLD + l.id).catch(() => undefined);
