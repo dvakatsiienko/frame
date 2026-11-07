@@ -44,8 +44,14 @@ tree_problem() {
     exec_path=$(cd -P "$("$git" --exec-path)" 2>/dev/null && pwd -P)
     case $exec_path in
     "$real"/*) ;;
-    *) echo "its exec path '$exec_path' lies outside $real" ;;
+    *)
+        echo "its exec path '$exec_path' lies outside $real"
+        return
+        ;;
     esac
+    for helper in git-remote-https git-credential-osxkeychain; do
+        [ -x "$exec_path/$helper" ] || echo "no $helper in $exec_path"
+    done
 }
 
 case ${1-} in

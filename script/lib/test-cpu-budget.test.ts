@@ -49,11 +49,23 @@ function fixture({
     mkdirSync(bin);
     writeFileSync(join(bin, 'go'), stubGo(burnMs, printed, code));
     chmodSync(join(bin, 'go'), 0o755);
+    const slimBin = join(dir, 'git-slim/current/bin');
+    mkdirSync(slimBin, { recursive: true });
+    writeFileSync(join(slimBin, 'git'), '#!/bin/bash\n');
+    chmodSync(join(slimBin, 'git'), 0o755);
+    const brewBin = join(dir, 'brew-bin');
+    mkdirSync(brewBin);
+    writeFileSync(join(brewBin, 'git'), '#!/bin/bash\n');
+    chmodSync(join(brewBin, 'git'), 0o755);
     const state = join(dir, 'state');
-    const run = (args: string[], extra: NodeJS.ProcessEnv = {}) => {
+    const run = (
+        args: string[],
+        extra: NodeJS.ProcessEnv = {},
+        gitBin = slimBin,
+    ) => {
         const env: NodeJS.ProcessEnv = {
             ...process.env,
-            PATH: `${bin}${delimiter}${process.env.PATH}`,
+            PATH: `${bin}${delimiter}${gitBin}${delimiter}${process.env.PATH}`,
             TIMES_FILE: join(dir, 'times'),
             X_STATE: state,
             ...extra,
@@ -68,7 +80,7 @@ function fixture({
                   .split('\n')
                   .map((row) => row.split('\t'))
             : [];
-    return { rows, run };
+    return { brewBin, rows, run, slimBin };
 }
 
 const whole = ['x-go', 'go', 'test', '-count=1', './...'];
@@ -99,6 +111,41 @@ describe('a whole run past its line', () => {
         expect(got.status, got.stderr).toBe(0);
         expect(rows()).toHaveLength(1);
         expect(rows()[0]?.[2]).toBe('x-go');
+    });
+});
+
+describe('a whole run reads its git', () => {
+    test('prints and logs the git path it found', () => {
+        const { rows, run, slimBin } = fixture({
+            budget: '60\t2026-11-07\troomy',
+        });
+
+        const got = run(whole);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(rows()[0]?.[6]).toBe(join(slimBin, 'git'));
+        expect(got.stderr).toContain(join(slimBin, 'git'));
+        expect(got.stderr).not.toContain('script/git-slim.sh');
+    });
+
+    test('past its line on another git it logs, names the rebuild and never reds', () => {
+        const { brewBin, rows, run } = fixture();
+
+        const got = run(whole, {}, brewBin);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(rows()[0]?.[6]).toBe(join(brewBin, 'git'));
+        expect(got.stderr).toContain('script/git-slim.sh');
+        expect(got.stderr).not.toContain('its budget is');
+    });
+
+    test('with CI set it never asks for the rebuild', () => {
+        const { brewBin, run } = fixture();
+
+        const got = run(whole, { CI: 'true' }, brewBin);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(got.stderr).not.toContain('script/git-slim.sh');
     });
 });
 

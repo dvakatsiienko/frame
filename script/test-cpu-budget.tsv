@@ -1,2 +1,2 @@
 # suite	cpu-s	date	reason
-x-go	385	2026-11-07	head median 307.8 from 2 runs + 25 %, FRM-528
+x-go	344	2026-11-07	git-slim median 275.4 from 3 runs + 25 %, FRM-532

@@ -410,7 +410,7 @@ func TestCommitOnMainLogsAGoRunPastItsBudgetAndStillCommits(t *testing.T) {
 		t.Fatalf("exit %d, want the commit to land past its budget:\n%s", got.code, got.stdout)
 	}
 	row := strings.Split(strings.TrimSpace(readOr(filepath.Join(state, "test-cpu-budget.log"), "")), "\t")
-	if len(row) != 6 || row[2] != "mod" || row[4] != "0" || row[5] != "0" {
+	if len(row) != 7 || row[2] != "mod" || row[4] != "0" || row[5] != "0" {
 		t.Errorf("the log row reads %q, want suite mod, budget 0, exit 0", row)
 	}
 }

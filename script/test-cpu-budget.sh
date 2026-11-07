@@ -2,7 +2,8 @@
 # test-cpu-budget [--log-only] <suite> go test <args…> — runs a go suite, and a whole run past its line in test-cpu-budget.tsv goes red.
 # the line is this mac's: with CI set, or --log-only (x lane commit's go step, since a commit never reds on cost), it only logs.
 # whole means go test with only the args below: a filter, a tag or a file runs through with no row, and so does a (cached) run.
-# one row a whole run in test-cpu-budget.log, tab-separated: start, 1-min load, suite, user + sys, budget, exit.
+# one row a whole run in test-cpu-budget.log, tab-separated: start, 1-min load, suite, user + sys, budget, exit, git path.
+# the line is set on git-slim: a run on any other git only logs, since its cost is the git's, and the line it prints names the rebuild.
 set -u
 log_only=
 if [ "${1-}" = --log-only ]; then
@@ -82,7 +83,16 @@ esac
 used=$((used_ms / 1000)).$((used_ms % 1000 / 100))
 state=${X_STATE:-$HOME/.local/state/x}
 mkdir -p "$state"
-printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(date +%FT%T%z)" "$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')" "$suite" "$used" "$budget" "$code" >>"$state/test-cpu-budget.log"
+git_path=$(command -v git)
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date +%FT%T%z)" "$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')" "$suite" "$used" "$budget" "$code" "$git_path" >>"$state/test-cpu-budget.log"
+echo "test-cpu-budget: $suite ran on git $git_path" >&2
+case $git_path in
+*/git-slim/*) ;;
+*)
+    [ -n "${CI:-}" ] || echo "test-cpu-budget: this git is not git-slim, so its cost never reds; rebuild: ~/frame/script/git-slim.sh" >&2
+    log_only=yes
+    ;;
+esac
 
 if [ "$code" -eq 0 ] && [ -z "$log_only" ] && [ -n "${red_past:-}" ] && [ "$used_ms" -gt "$red_past" ]; then
     cat >&2 <<EOF

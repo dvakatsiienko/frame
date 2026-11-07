@@ -81,6 +81,9 @@ esac
         `#!/bin/bash
 echo make >>"${makeLog}"
 [ -z "\${FORCE_MAKE_FAIL-}" ] || exit 2
+# what a real tree needs and no answer of the stub git can show
+case " $* " in *" RUNTIME_PREFIX=YesPlease "*) ;; *) exit 3 ;; esac
+case " $* " in *" sysconfdir="*) ;; *) exit 3 ;; esac
 for arg in "$@"; do
     case $arg in
     prefix=*) prefix=\${arg#prefix=} ;;
@@ -90,6 +93,12 @@ done
 # a real tree the recipe edited reads dirty unless the build names its version
 version=\${FORCE_BUILT_VERSION:-\${version:-$(cat "$2/tag").dirty}}
 mkdir -p "$prefix/bin" "$prefix/libexec/git-core"
+touch "$prefix/libexec/git-core/git-remote-https"
+chmod +x "$prefix/libexec/git-core/git-remote-https"
+case " $* " in *" install-git-credential-osxkeychain "*)
+    touch "$prefix/libexec/git-core/git-credential-osxkeychain"
+    chmod +x "$prefix/libexec/git-core/git-credential-osxkeychain" ;;
+esac
 cat >"$prefix/bin/git" <<'BUILT'
 ${stubBuiltGit('VERSION_HERE')}
 BUILT
@@ -255,6 +264,11 @@ onMac('the check', () => {
             'its git failing to run',
             /does not run/,
             (f) => write(join(f.current, 'bin/git'), '#!/bin/bash\nexit 3\n'),
+        ],
+        [
+            'its http helper gone',
+            /no git-remote-https/,
+            (f) => rmSync(join(f.current, 'libexec/git-core/git-remote-https')),
         ],
         [
             'brew one version ahead',
