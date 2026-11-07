@@ -21,7 +21,7 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 - `mods:live click` misses a wide emoji chip: it reads found, no press lands, exit 0; time a press by another door until `live.ts` counts cell width (FRM-513 codie)
 - a gate's row carries one real plant through the real hook before a clean (FRM-473 sixth sense)
 - a change to a list other hooks grow gets a `Promise.all` row with a prompt in it (FRM-501 sixth sense)
-- a rows probe builds on `ticks.test.ts`'s setup and runs through `pnpm mods:test x-mod-guard --extra`, until FRM-470's `mods:probe --rows` lands (FRM-478 sixth sense)
+- a rows probe of a Bash rule runs `pnpm mods:probe <mod> --rows <tsv>`; a row needing a test's setup runs `pnpm mods:test <mod> --extra <file>`, its setup copied from `ticks.test.ts` or `orbit.test.ts` until FRM-489 makes it importable, never a `cp -R` of the mods tree (FRM-510 sixth sense)
 - a change to quiet's hold or delivery ends on `pnpm mods:quiet-delivery-test`: a model-free test ping to clio, read held → delivered (FRM-501)
 - a 5 s timeout on a shifting set of tests, or red-proof's «restored fails» at load over 15, is load: rerun serially before judging, until FRM-470's bound lands (FRM-498, FRM-499 sixth sense)
 
