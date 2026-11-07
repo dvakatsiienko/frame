@@ -45,6 +45,8 @@ function world(on: On, record: string | null, dirStands = record !== null) {
         '/repo/m.sh': 'set -e\ngh pr merge 5 --squash\n',
         '/repo/nested.sh': 'bash m.sh # the merge\n',
         '/repo/plain.sh': 'echo hi\n',
+        '/repo/s1.sh': 'gh pr merge 5\n',
+        '/repo/s2.sh': 'bash s1.sh\n',
     };
     on('fs.read', (_$, e) =>
         e.path === `${HOLD_DIR}/o_r.json` && record !== null
@@ -128,6 +130,15 @@ for (const line of [
     'github-token-wrap gh api graphql -f query=@merge.graphql',
     'gh api graphql -f query="$Q"',
     'gh api graphql --input q.json',
+    'gh api graphql --input=q.json',
+    'gh api graphql -fquery="$Q"',
+    'gh api graphql -Fquery=@q.graphql',
+    'gh api graphql --raw-field=query="$Q"',
+    'gh api graphql --field query="$Q"',
+    'gh api graphql -f "$FIELD"',
+    'gh api graphql $ARGS',
+    'gh api -X"$M" repos/o/r/pulls/5/merge',
+    'bash s2.sh',
     'gh api -X PUT "$URL"',
     'gh api -X "$M" repos/o/r/pulls/12/merge',
     'gh api --method="$M" repos/o/r/pulls/12/merge',
@@ -169,6 +180,8 @@ for (const line of [
     'gh pr merge 12 -h',
     'gh pr merge 12 --disable-auto',
     `gh api graphql -F id="$ID" -f query='mutation { resolveReviewThread(input: {threadId: $id}) { thread { id } } }'`,
+    `gh api graphql -f query='query($n:Int!){ viewer { login } }' -F n="$PR"`,
+    `gh api graphql -f query='{ viewer { login } }' --jq "$J"`,
     'x lane merge-auto 12',
     "echo 'gh pr merge 12'",
     "cat <<'EOF'\ngh pr merge 12\nEOF",

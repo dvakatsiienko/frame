@@ -182,6 +182,17 @@ for (const [why, ticks, isCarried] of [
         false,
     ],
     ['a url on «do not merge»', [tick(`do not merge ${PR} yet`)], false],
+    ['a url on a curly «don’t merge»', [tick(`don’t merge ${PR}`)], false],
+    ['a url on «should not merge»', [tick(`should not merge ${PR}`)], false],
+    ['a url on «no merge of»', [tick(`no merge of ${PR}`)], false],
+    ["a url on «we won't merge»", [tick(`we won't merge ${PR}`)], false],
+    ['a url on «hold the merge of»', [tick(`hold the merge of ${PR}?`)], false],
+    [
+        'a url on «before merge»',
+        [tick(`before merge fix 2 lows on ${PR}?`)],
+        false,
+    ],
+    ['a url on «⚠️ do not merge»', [tick(`⚠️ do not merge ${PR}`)], false],
     ['a url on a ⚠️ ask', [tick(`⚠️ land ${PR}: the guard fix`)], true],
     [
         'a merge tick past its 2 h',
