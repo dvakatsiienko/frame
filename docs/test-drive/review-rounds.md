@@ -17,7 +17,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 ## the setup
 
 - `crew-codie`: one of each local review per chunk, started together in the background, coderabbit a free extra nothing waits on; no review rerun after a sixth sense round (the arm moved 2026-11-05)
-- bytes `review.yml`: the ci reviewer caps at 1 round; a later head gets `review:clean` through clio's approval on dima's gh account (`review-approved.yml`), given only when sixth sense is clean on that head and checks are green
+- bytes `review.yml`: the ci reviewer caps at 1 round, and `x lane merge-auto` reads it: a round on the head or an ancestor counts, with sixth sense clean on the head and checks green; the approval path is gone
 - the source of every number: sixth sense's verdict object (`round <n>`, `round time:`, `ci reviewer:`), codie's done report (`local reviews: <n>` and each review's graded line in this file), and the pr's «final» → merge times from `gh pr view`; clio appends the line at land (`craft-fleet-flow` stage 8)
 
 ## the round log — one line per landed pr, appended by clio at land
