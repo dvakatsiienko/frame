@@ -207,6 +207,13 @@
   - then it merges, and the envelope's `sign` says it was dima's word; on a stack it covers every layer under the pr
   - given no `--dima-ok`, then the wait names the exact command; given `--dima-ok` naming another pr, then it exits 2 before any call; given the brake on, then it waits whatever the word says
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
+- ⬜ under `operator-override prs`, `x lane merge-auto <pr> --apply` lands every pr on the first call (FRM-524)
+  - given the store holding `prs`, on a self-edit with no sign line, red ci, no clean, open threads, no reviewer round, no required checks or a dev build, from main or a wing, on any layer of a stack, then it reads none of those and lands; a failed read of any stops nothing; the envelope's `override`, the squash message and one line in `operator-override.log` name its `by` and `at`
+  - given his hold or the brake, or a failed read of either, then it stops as today, naming which
+  - given github refuses the merge (a conflict, a draft, a ruleset), then it exits non-zero with github's words, prints no landing and logs no pass
+  - given no store, a store that does not read, another scope, a grant past its `until`, or the override turned off after the read, then it waits as today
+  - decision: any caller may land while it's on: the crew contract, never this door, keeps a codie from merging (dima, 2026-11-07)
+  - decision: a pr onto another pr's branch with no linked stack still waits: a merge there lands in a dead end, never on main (FRM-524)
 - ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
   - given a ticket whose dispatch names no sixth sense and no clean in the store, when `x lane merge-auto <pr> --apply --dima-ok <pr>` runs and x-mod-guard let it through, then the sixth-sense check passes naming his word and the merge goes on; without the flag it waits
   - given a sixth sense on the dispatch, no dispatch, one taken back, a ticket that does not read, a clean on another head or a store that does not parse, then the flag opens nothing and the wait says why
