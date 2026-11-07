@@ -125,7 +125,7 @@ until first_in_line && mkdir "$turn" 2>/dev/null; do
         echo "gate-queue: waiting ${waited}s, holder: $(tail -n 1 "$turn/holder" 2>/dev/null)" >&2
         next_say=$((next_say + 30))
     fi
-    sleep 2
+    sleep "${GATE_QUEUE_POLL:-2}"
     waited=$(($(date +%s) - began))
 done
 

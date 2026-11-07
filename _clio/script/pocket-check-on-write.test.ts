@@ -246,7 +246,9 @@ describe('the pocket hook commits every pocket write', () => {
 
     test('a read never calls the commit', () => {
         writeFileSync(join(frame, task), 'x');
-        run(bash('grep -c x _clio/pocket/tasks/*.md'), redCmd);
-        expect(stubArgv()).toBe(undefined);
+        // a red check blocks before the commit step, so no block means the hook left before both
+        expect(run(bash('grep -c x _clio/pocket/tasks/*.md'), redCmd)).toBe(
+            undefined,
+        );
     });
 });

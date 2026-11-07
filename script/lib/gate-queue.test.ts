@@ -29,6 +29,7 @@ function fixture() {
 function queueEnv(state: string, wait = '20') {
     const env: NodeJS.ProcessEnv = {
         ...process.env,
+        GATE_QUEUE_POLL: '0.1',
         GATE_QUEUE_WAIT: wait,
         X_STATE: state,
     };
@@ -206,7 +207,7 @@ describe('gate-queue --hold: the turn x takes', () => {
     test('a live holder makes it wait to its deadline, never ready', () => {
         const { state, gateTurn } = fixture();
         plantHolder(gateTurn, String(process.pid), liveSince());
-        const got = hold(state, '2');
+        const got = hold(state, '1');
         expect(got.status).toBe(75);
         expect(got.stdout).toBe('');
         expect(got.stderr).toContain('old run');
@@ -223,7 +224,7 @@ describe('gate-queue --hold: the turn x takes', () => {
     test('inside a long round it still takes the gate slot', () => {
         const { state, gateTurn } = fixture();
         plantHolder(gateTurn, String(process.pid), liveSince());
-        const got = long(state, [script, '--hold', 'x'], '2');
+        const got = long(state, [script, '--hold', 'x'], '1');
         expect(got.status).toBe(75);
     });
 
@@ -243,7 +244,7 @@ describe('gate-queue --hold: the turn x takes', () => {
                 });
                 child.stdout.once('data', async () => {
                     writeFileSync(log, 'in\n', { flag: 'a' });
-                    await sleep(1000);
+                    await sleep(200);
                     writeFileSync(log, 'out\n', { flag: 'a' });
                     child.stdin.end('0\n');
                 });
@@ -282,7 +283,7 @@ describe('gate-queue --long', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
         const marker = join(state, 'ran');
-        const got = long(state, ['touch', marker], '2');
+        const got = long(state, ['touch', marker], '1');
         expect(got.status).toBe(75);
         expect(got.stderr).toContain('old run');
         expect(existsSync(marker)).toBe(false);
@@ -335,10 +336,10 @@ describe('gate-queue --long', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
         const marker = join(state, 'ran');
-        long(state, ['touch', marker], '2');
+        long(state, ['touch', marker], '1');
         const [row] = logRows(state);
         expect(row?.[1]).toMatch(/^\d+\.\d+$/);
-        expect(Number(row?.[3])).toBeGreaterThanOrEqual(2);
+        expect(Number(row?.[3])).toBeGreaterThanOrEqual(1);
         expect(row?.slice(4)).toEqual(['-', '75', '-', `touch ${marker}`]);
     });
 
@@ -346,7 +347,7 @@ describe('gate-queue --long', () => {
         const { state, turn } = fixture();
         plantTicket(turn, `1.${process.pid}`, liveSince());
         const marker = join(state, 'ran');
-        expect(long(state, ['touch', marker], '2').status).toBe(75);
+        expect(long(state, ['touch', marker], '1').status).toBe(75);
         expect(existsSync(marker)).toBe(false);
     });
 
@@ -375,7 +376,7 @@ describe('gate-queue --long', () => {
     test('a turn with no holder file frees after its minute, and not before', () => {
         const { state, turn } = fixture();
         mkdirSync(turn);
-        expect(long(state, ['sh', '-c', 'exit 0'], '2').status).toBe(75);
+        expect(long(state, ['sh', '-c', 'exit 0'], '1').status).toBe(75);
         const old = new Date(Date.now() - 300_000);
         utimesSync(turn, old, old);
         expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
@@ -385,7 +386,7 @@ describe('gate-queue --long', () => {
         const { state, turn } = fixture();
         plantTicket(turn, `1.${process.pid}`, liveSince());
         plantHolder(turn, '999999', 'Fri Nov  6 10:00:00 2026');
-        const got = long(state, ['sh', '-c', 'exit 0'], '2');
+        const got = long(state, ['sh', '-c', 'exit 0'], '1');
         expect(got.status).toBe(75);
         expect(existsSync(join(turn, 'holder'))).toBe(true);
     });
@@ -393,7 +394,7 @@ describe('gate-queue --long', () => {
     test('a ticket leaves with its deadline', () => {
         const { state, turn } = fixture();
         plantHolder(turn, String(process.pid), liveSince());
-        long(state, ['sh', '-c', 'exit 0'], '2');
+        long(state, ['sh', '-c', 'exit 0'], '1');
         expect(readdirSync(`${turn}.tickets`)).toEqual([]);
     });
 
@@ -430,7 +431,7 @@ describe('gate-queue --long', () => {
     test('two runs never overlap', { timeout: 15_000 }, async () => {
         const { state } = fixture();
         const log = join(state, 'log');
-        const body = `echo in >>${log}; sleep 1; echo out >>${log}`;
+        const body = `echo in >>${log}; sleep 0.2; echo out >>${log}`;
         const start = () =>
             new Promise<void>((done) => {
                 spawn(script, ['--long', 'sh', '-c', body], {

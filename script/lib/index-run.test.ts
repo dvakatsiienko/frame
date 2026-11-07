@@ -190,6 +190,18 @@ test("a fixture's git inside a gate never reaches the real repo under a hook's G
     );
 });
 
+test('a gate that sets core.bare in the shared repo goes red and puts it back', () => {
+    const { gate, repo } = peerStaged();
+
+    const run = gate('git config core.bare true');
+
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain('set core.bare=true');
+    expect(readFileSync(join(repo, '.git/config'), 'utf8')).toContain(
+        'bare = false',
+    );
+});
+
 test.each([
     ['a commit hook', { GIT_EDITOR: ':' }, 'commit'],
     ['any other caller', {}, 'other'],

@@ -71,6 +71,12 @@ step_start=$(date +%FT%T%z)
 step_load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
 step_code=0
 "$@" || step_code=$?
+# the one config line that stops git in every tree: a gate that set it goes red and it goes back (core.bare, 2026-11-06)
+if [ "$(git config --local core.bare)" = true ]; then
+    git config --local core.bare false
+    echo "index-run: this gate set core.bare=true in the shared repo, put back: $*" >&2
+    step_code=1
+fi
 # a nested run under vitest is a fixture, not a gate
 if [ -z "${VITEST:-}" ]; then
     step_state=${X_STATE:-$HOME/.local/state/x}
