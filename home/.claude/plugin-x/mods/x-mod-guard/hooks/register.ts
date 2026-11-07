@@ -394,6 +394,7 @@ async function overrideGrantAt(
     $: EngineInterface,
     path: string,
     scope: string,
+    session = '',
 ) {
     const raw = await $.fs.read(path).catch(() => undefined);
     if (raw === undefined) return undefined;
@@ -403,7 +404,7 @@ async function overrideGrantAt(
                 string,
                 { at?: string; by?: string; until?: string } | undefined
             >
-        )[scope];
+        )[session ? `${scope}:${session}` : scope];
         if (!grant?.by) return undefined;
         if (grant.until !== undefined) {
             const until = Date.parse(grant.until);

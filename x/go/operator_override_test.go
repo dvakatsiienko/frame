@@ -1,8 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -81,6 +86,25 @@ func TestOverrideLandsPastEveryCheck(t *testing.T) {
 	}
 }
 
+// frame#129: green and ready, about 1 h 45 behind refusals of his word. the store is the bytes x-mod-guard's
+// «his typed phrase writes the store x reads» row asserts
+func TestOverrideReplaysFrame129(t *testing.T) {
+	t.Parallel()
+	w, _ := overrideWorld(t, `{"prs":{"at":"2026-11-07T14:00:00.000Z","by":"word"}}`, "x/go/merge_auto.go")
+	var threads []string
+	for i := range 7 {
+		threads = append(threads, fmt.Sprintf(`{"isResolved":false,"path":"a%d.ts","line":1,"comments":{"nodes":[]}}`, i))
+	}
+	w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[` + strings.Join(threads, ",") + `]}}}}}`
+	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"body":"the body"`, `"body":"no sign line"`, 1)
+
+	got := w.run(t, "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
+		t.Fatalf("exit %d, %d merge calls: it must land on this first call\n%s", got.code, len(merges), got.stdout)
+	}
+}
+
 func TestOverrideLandsFromAWing(t *testing.T) {
 	t.Parallel()
 	w, _ := overrideWorld(t, prsOn(), "x/go/merge_auto.go")
@@ -145,6 +169,182 @@ func TestOverrideStillStopsOnHoldAndBrake(t *testing.T) {
 				t.Fatalf("exit %d, %d merge calls, want %q in\n%s", got.code, len(merges), c.want, got.stdout)
 			}
 		})
+	}
+}
+
+func TestOverrideQuestionTakesASessionBesideItsScope(t *testing.T) {
+	t.Parallel()
+	store := filepath.Join(t.TempDir(), "operator-override.json")
+	write(t, store, `{"prs":{"by":"word","at":"a"},"guards:s1":{"by":"word","at":"b"}}`)
+	cases := []struct {
+		scope, session string
+		on             bool
+	}{
+		{"prs", "", true},
+		{"guards", "s1", true},
+		{"guards", "s2", false},
+		{"guards", "", false},
+		{"prs", "s1", false},
+	}
+	for _, c := range cases {
+		if _, on := overrideGrantIn(store, c.scope, c.session); on != c.on {
+			t.Errorf("%s for session %q: on = %v, want %v", c.scope, c.session, on, c.on)
+		}
+	}
+}
+
+func TestOverrideStoreIgnoresHomeAndXState(t *testing.T) {
+	// serial: t.Setenv
+	planted := t.TempDir()
+	t.Setenv("HOME", planted)
+	t.Setenv("X_STATE", planted)
+	t.Setenv("X_OVERRIDE_STORE", filepath.Join(planted, "store.json"))
+	t.Setenv("X_TEST", "")
+
+	got := overrideStore()
+
+	me, err := user.Current()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(me.HomeDir, ".local/state/x/operator-override.json"); got != want || strings.HasPrefix(got, planted) {
+		t.Errorf("the store = %s, want %s, never under the planted %s", got, want, planted)
+	}
+}
+
+func TestOverrideOffClearsWhatItNames(t *testing.T) {
+	t.Parallel()
+	const both = `{"guards":{"by":"word","at":"a"},"prs":{"by":"shift","at":"b"}}`
+	cases := []struct {
+		name, store, want string
+		args              []string
+		cleared           string
+	}{
+		{"every scope", both, `{}`, []string{"--override-off"}, "guards,prs"},
+		{"shift-only takes a shift's", both, `{"guards":{"by":"word","at":"a"}}`, []string{"--override-off", "--shift-only"}, "prs"},
+		{"shift-only leaves his word", prsOn(), prsOn(), []string{"--override-off", "--shift-only"}, ""},
+		{"a store that does not parse goes", `{"prs":`, `{}`, []string{"--override-off"}, ""},
+		{"shift-only leaves one that does not parse", `{"prs":`, `{"prs":`, []string{"--override-off", "--shift-only"}, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			write(t, store, c.store)
+			env := []string{"X_OVERRIDE_STORE=" + store}
+
+			dry := xIn(t, t.TempDir(), env, append([]string{"lane", "merge-auto"}, c.args...)...)
+			if dry.code != 4 || read(t, store) != c.store {
+				t.Fatalf("without --apply: exit %d, store %s, want 4 and it unchanged\n%s", dry.code, read(t, store), dry.stdout)
+			}
+			got := xIn(t, t.TempDir(), env, append([]string{"lane", "merge-auto", "--apply"}, c.args...)...)
+
+			if got.code != 0 || !jsonEqual(read(t, store), c.want) {
+				t.Fatalf("exit %d, store %s, want %s\n%s", got.code, read(t, store), c.want, got.stdout)
+			}
+			if said := strings.Join(envelopeOf(got).Data.Cleared, ","); said != c.cleared {
+				t.Errorf("cleared %q, want %q", said, c.cleared)
+			}
+		})
+	}
+}
+
+func jsonEqual(a, b string) bool {
+	if !json.Valid([]byte(a)) || !json.Valid([]byte(b)) {
+		return a == b
+	}
+	var x, y any
+	_ = json.Unmarshal([]byte(a), &x)
+	_ = json.Unmarshal([]byte(b), &y)
+	return reflect.DeepEqual(x, y)
+}
+
+func TestOverrideOffKeepsItsArgvExact(t *testing.T) {
+	t.Parallel()
+	for _, args := range [][]string{
+		{"--override-off", "7"},
+		{"--shift-only"},
+		{"7", "--shift-only"},
+		{},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			t.Parallel()
+			got := xIn(t, t.TempDir(), nil, append([]string{"lane", "merge-auto", "--apply"}, args...)...)
+			if got.code != 2 || !strings.Contains(got.stdout, "merge-auto") {
+				t.Fatalf("exit %d, want 2\n%s", got.code, got.stdout)
+			}
+			if slices.Contains(args, "--shift-only") && !strings.Contains(got.stdout, "narrows --override-off") {
+				t.Errorf("--shift-only alone names no --override-off\n%s", got.stdout)
+			}
+		})
+	}
+}
+
+// --override-check, its one clone named: it runs outside any repo, so a read in the wrong dir fails
+func overrideCheck(t *testing.T, w *mergeWorld) (ran, overrideCheckReport) {
+	t.Helper()
+	w.hub.pages[repoPath+"/pulls"] = `[{"number":7,"title":"a pr"}]`
+	got := xIn(t, t.TempDir(), append(w.env, "X_OVERRIDE_CLONES=o/r="+w.clone), "lane", "merge-auto", "--override-check")
+	var envelope struct {
+		Data overrideCheckReport `json:"data"`
+	}
+	_ = json.Unmarshal([]byte(got.stdout), &envelope)
+	return got, envelope.Data
+}
+
+func TestOverrideCheckNamesWhatWouldStopEachPr(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, store, stops string
+		lands              bool
+		setup              func(w *mergeWorld)
+	}{
+		{name: "on, a self-edit lands", store: prsOn(), lands: true},
+		{name: "on, a held pr names the hold", store: prsOn(), stops: "held by dima's hold", setup: func(w *mergeWorld) { write(t, holdRecordOf(w), `{"prs":["7"]}`) }},
+		{name: "off, a self-edit names his word", stops: "self-edit, needs dima's word"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w, store := overrideWorld(t, c.store, "x/go/merge_auto.go")
+			if c.setup != nil {
+				c.setup(w)
+			}
+			got, report := overrideCheck(t, w)
+
+			if got.code != 0 || len(report.Prs) != 1 || report.Prs[0].PR != 7 {
+				t.Fatalf("exit %d, prs %+v\n%s", got.code, report.Prs, got.stdout)
+			}
+			if stops := report.Prs[0].Stops; (c.lands && stops != "") || !strings.Contains(stops, c.stops) {
+				t.Errorf("stops %q, want %q", stops, c.stops)
+			}
+			if writes := append(w.hub.sent("PUT "), w.hub.sent("DELETE ")...); len(writes) != 0 {
+				t.Errorf("a read-only check wrote to github: %q", writes)
+			}
+			if c.store != "" && read(t, store) != c.store {
+				t.Errorf("the store moved: %s", read(t, store))
+			}
+			if _, err := os.Stat(filepath.Join(filepath.Dir(store), "operator-override.log")); err == nil {
+				t.Errorf("a read-only check logged a pass")
+			}
+		})
+	}
+}
+
+func TestOverrideCheckNamesAMissingClone(t *testing.T) {
+	t.Parallel()
+	got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=o/b=/no/such/clone", "X_GITHUB_URL=http://127.0.0.1:1"}, "lane", "merge-auto", "--override-check")
+	if got.code != 0 || !strings.Contains(got.stdout, "no clone of o/b") {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+}
+
+func TestOverrideCheckKeepsItsArgvExact(t *testing.T) {
+	t.Parallel()
+	for _, args := range [][]string{{"--override-check", "7"}, {"--override-check", "--override-off"}} {
+		if got := xIn(t, t.TempDir(), nil, append([]string{"lane", "merge-auto"}, args...)...); got.code != 2 {
+			t.Errorf("%v: exit %d, want 2\n%s", args, got.code, got.stdout)
+		}
 	}
 }
 

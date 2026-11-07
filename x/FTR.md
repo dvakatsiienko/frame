@@ -212,6 +212,9 @@
   - given his hold or the brake, or a failed read of either, then it stops as today, naming which
   - given github refuses the merge (a conflict, a draft, a ruleset), then it exits non-zero with github's words, prints no landing and logs no pass
   - given no store, a store that does not read, another scope, a grant past its `until`, or the override turned off after the read, then it waits as today
+  - given a session's `HOME` or `X_STATE` pointing at a planted store, then it reads off: the path comes from the system's user record
+  - given `x lane merge-auto --override-off --apply`, then every scope clears; with `--shift-only`, only a grant `by: shift`, his word staying; no pr and no `--apply` writes nothing
+  - given `x lane merge-auto --override-check`, then every open pr of frame and bytes prints with what would stop it, read from that repo's own clone, through merge-auto's own plan; it writes nothing but a ref fetch
   - decision: any caller may land while it's on: the crew contract, never this door, keeps a codie from merging (dima, 2026-11-07)
   - decision: a pr onto another pr's branch with no linked stack still waits: a merge there lands in a dead end, never on main (FRM-524)
 - ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)
