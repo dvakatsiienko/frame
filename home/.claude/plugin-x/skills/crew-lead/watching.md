@@ -38,6 +38,7 @@ nearby; re-summon when the work is unrelated or the context is polluted. **Alway
 - `TaskStop` reaches only subagents *this* session spawned.
 - ⚠️ **deleting the session in the desktop Code ui does NOT stop it** — measured: card gone,
   process alive. Never report codie stopped because a ui said so.
+- **a wind order to a member says it is a context reset, keep working**: «finish first» read as a stop parked a codie 38 min with runnable steps
 - **a member compacted between chunks** re-inits by role (the pick-up list in `SKILL.md`) before its next chunk
 - 📌 before closing a summon, ask what it is still evidence for — «finished its work» and «finished
   being useful» are different states.

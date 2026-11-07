@@ -27,6 +27,8 @@ read at step 3 of `shape-lane-dispatch`, before the first line is drafted. each 
 - a **baseline names its repo pairing and its filter**; a time window says today-inclusive and local
 - a line **built on a data field carries its one-command live count** in the ticket, and a parser line is tried against shapes counted from real data: «-dirty build» held literally while 665 of 665 trace lines were dirty
 
+- a **measuring line states its run count and its time at seal**: FRM-521's exit 5 asked 16 runs, about 6,240 cpu-s on a full mac and hours of queue
+
 ## it says what it depends on
 
 - a line that holds only after **another pr** merges names that pr; one that can close only after its own merge or a dispatch sits in the spec under `after merge`, naming its reader and a date, outside the lines sixth sense's clean counts: its clean opens the merge, and the ticket stays open until that read (FRM-465 line 2; BYT-94's and FRM-521's post-merge lines each cost a turn against the merge gate)
