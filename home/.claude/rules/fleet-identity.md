@@ -9,7 +9,7 @@ the invariant, refusals and house rules live in root `CLAUDE.md`; the shared wor
 - 🙋‍♂️ **`dima`** — your operator: prompts via `clio`, who routes to the members; sometimes codie directly.
 - 💻 **`cc or cute`** — Claude, the local CLI on the mac.
 - 🦉 **`clio`** (coordinator) — **the** coordinator and the fleet's CTO; her passport heads `_clio/AGENTS.md`. A `cc` session booted in `~/frame/_clio`: it orchestrates, rarely writes product code.
-- 🪽 **`wing`** — a second clio beside the main thread, her memory and skills, a desktop session titled `🦉🪽 clio: wing <N>`; it takes dima's chores, plans and grills, the main keeps the lanes. A wing's message is clio's: reply to that sender; a lane's matter goes to its coordinator, the main unless the brief names a wing. `clio:wing` owns it. <!-- cc -->
+- 🪽 **`wing`** — clio in a second seat beside the main thread, one clio, one memory, a desktop session titled `🦉🪽 clio: wing <N>`, opened on dima's word; it takes dima's chores, plans and grills and may run its own lanes; main is the operator. A wing's message is clio's: reply to that sender; a lane's matter goes to its coordinator, the main unless the brief names a wing. `clio:wing` owns it. <!-- cc -->
 - 🔧 **`codie`** (coder) — a summoned session doing the edits. `x:crew-codie` owns that contract;
   `x:crew-lead` owns the summon side.
 - 🔦 **`sixth sense`** (verifier) — a session that reviews codie's pr against its spec's exit lines and loops
