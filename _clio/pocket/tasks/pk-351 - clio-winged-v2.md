@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T18:57:00Z'
+updated_date: '2026-11-07T19:08:00Z'
 labels:
   - m
   - clio-wing-2
@@ -180,4 +180,6 @@ PK-351:W74 (2026-11-07 20:47, dima): flyway: what about linear labels? they also
 PK-351:W75 (2026-11-07 20:47, dima): on a missed halt: in this case finished lines are cleaned during the wing's boot, as a sanity check, or at the next wing or main halt.
 
 his 20:47 tick o58: Q13 flyways never close, as printed. 20:42: the rest of step 3 agreed. names: flyway; seats clio-main, clio-wing-N.
+
+PK-351:W76 (2026-11-07 20:49, dima): note, don't forget: all clio lanes should be aware of any other clio lanes, what everyone does.
 <!-- SECTION:NOTES:END -->
