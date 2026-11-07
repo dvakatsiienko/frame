@@ -4,7 +4,7 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-07T02:47:00Z'
+updated_date: '2026-11-07T12:27:00Z'
 labels:
   - s
   - wing-1
@@ -123,4 +123,6 @@ PK-328:W38 (2026-11-07 03:54, dima): we open tomorrow with your 328 lane, only o
 2026-11-07 03:55 the case, his screenshot: cpu 99 % all 14 cores, 109 °C, gpu 57 %; the app list sums about 15 %, the same gap as ps. snapshot at 03:54:59 after the spike: 15 % user, 9 % sys, 75 % idle, load 11, in ~/.local/state/x/lanes/frm-525/snapshot-1-lane-20261107-0355.txt. the queue read: ci's lane ran the whole go gate 03:50:14 for 69 s and 03:51:43 for 116 s, load 24. inference, the spike's clock is unread: one heavy run fills the mac by itself, since a go suite parallels over all cores, so 100 % says a heavy run is live, never how many lanes.
 
 his 11-07 04:46, an important steer: core.bare=true is a point to rethink for wing 1: «i don't like bad git stuff in our setup especially given lots of cpu issues.» first in wing-1-9.
+
+2026-11-07 14:28 the cpu overload's numbers, story and traces now live only in docs/knowledge/cpu-overload.md (his words W11 to W14 in FRM-525); this item keeps his words, new findings go there.
 <!-- SECTION:NOTES:END -->

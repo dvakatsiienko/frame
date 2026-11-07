@@ -4,13 +4,14 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T12:05:00Z'
+updated_date: '2026-11-07T12:46:00Z'
 labels:
   - s
+  - wing-2
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9998
+ordinal: 45000
 ---
 
 ## Description
@@ -97,4 +98,20 @@ quiet comms, the widest day, read 11-07 04:47: holds, 72 of 484 messages started
 PK-326:W437 (2026-11-07 04:46, dima): what about silent comms, how they worked today? ❓
 
 PK-326:W438 (2026-11-07 04:47, dima): if comms measure holds, update corresponding files; 368 waits for a checkmark.
+
+14:50 main, his 14:43 word: today's measure goes to wing 2: both sides, spam and under-delivery, across main and the wings, read at the halt.
+
+PK-326:W439 (2026-11-07 14:43, dima): let's measure for today too.
+
+PK-326:W440 (2026-11-07 14:43, dima): silent comms is good but not good if too silent.
+
+PK-326:W441 (2026-11-07 14:43, dima): measure both sides: if spam is solved, but also if something is underdelivered.
+
+PK-326:W442 (2026-11-07 14:43, dima): no useless messages should be sent too: all messages should be relevant, only when needed, and everyone should know which type of silent lvl to use when.
+
+PK-326:W443 (2026-11-07 14:43, dima): let's trace full day, how to have proper tracing? ❓
+
+PK-326:W444 (2026-11-07 14:43, dima): maybe crow can measure this? ❓
+
+PK-326:W445 (2026-11-07 14:43, dima): each wake it writes some log during the whole day across you and your wings, and at a halt you read that file and see measures? ❓
 <!-- SECTION:NOTES:END -->
