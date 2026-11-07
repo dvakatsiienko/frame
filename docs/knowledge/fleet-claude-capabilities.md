@@ -108,7 +108,7 @@ since.
   to `~/frame`, `~/projects`, `~/.claude`, the vault, `~/Downloads` and `~/Desktop` (`get_config`, 2026-10-19), but DC's own README says it
   restricts file tools only — `start_process` still runs anything not in `blockedCommands`.
 - a session you start yourself (terminal, `--bg`, desktop local) cannot be added to a project; a cloud
-  session can be moved in. Remote Control sessions do not show in the Code-tab sidebar.
+  session can be moved in. A Remote Control session born in a terminal shows in the Code-tab thread list, without the app's native mods UI; `list_sessions` omits it (dima's look, 2026-11-07).
 - **shared memory across projects = the claude.ai profile instructions** (the `<!-- sync: cloud-chat -->` sections, `pnpm memory-sync:copy`): a coordinator and its threads read them, as a snapshot at session start — a new thread sees a paste at once, a running coordinator only after it is replaced **[observed by a coordinator, 2026-10-05]**
 - **the fleet cli in a project:** no MCP mirror (decided 2026-10-05) — a cloud thread runs `x` through
   the `remote-devices` DC shell, a local thread runs it natively, the coordinator routes to a thread.
