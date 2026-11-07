@@ -7,6 +7,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgs } from 'node:util';
 
 import {
@@ -17,9 +18,10 @@ import {
     WAKE_GAP_MS,
     type Wake,
     armModels,
+    clioThreadOf,
     dayOf,
+    dropStaleRelay,
     fail,
-    isCoordinatorTranscript,
     isMode,
     isParked,
     liveArm,
@@ -33,7 +35,8 @@ import {
     transcriptDelta,
     wakeIdOf,
     wakeLine,
-    writeState,
+    wakeSuffixOf,
+    writeWakeState,
 } from './lib.ts';
 
 const usage = `crow:wake --transcript <jsonl> [--mode ${modeList.join('|')}] [--precompact]
@@ -57,24 +60,46 @@ if (values.help) {
 }
 const { mode, transcript } = values;
 if (!transcript || !isMode(mode)) fail(usage);
+const LOCK_WAIT_MS = 10_000;
 
+// a session that is no clio's fires nothing and logs nothing
+const thread = clioThreadOf(transcript);
+if (!thread) {
+    console.log(`skipped: not clio's thread: ${transcript}`);
+    process.exit(0);
+}
+const threadId = thread.id;
+
+// a trigger that never woke her stays visible: every skip names its thread and reason
 function skip(reason: string): never {
+    writeFileSync(
+        join(STATE_DIR, 'harvest.log'),
+        `${new Date().toISOString()} ${threadId} skipped: ${reason}\n`,
+        { flag: 'a' },
+    );
     console.log(`skipped: ${reason}`);
     process.exit(0);
 }
 
-// a Stop hook and a PreCompact hook can fire in the same second; one wake at a time
+// the hook fires per thread, so a peer's wake is waited out, never dropped; the same thread's second hook then meets its own clock
 const lockPath = join(STATE_DIR, 'wake.lock');
-let lock: number;
-try {
-    lock = openSync(lockPath, 'wx');
-} catch {
-    const age =
-        Date.now() -
-        (statSync(lockPath, { throwIfNoEntry: false })?.mtimeMs ?? 0);
-    if (age < 60_000) skip('another wake is running');
-    unlinkSync(lockPath);
-    lock = openSync(lockPath, 'wx');
+const lock = await takeLock();
+
+async function takeLock() {
+    const started = Date.now();
+    while (true) {
+        try {
+            return openSync(lockPath, 'wx');
+        } catch {
+            const age =
+                Date.now() -
+                (statSync(lockPath, { throwIfNoEntry: false })?.mtimeMs ?? 0);
+            if (age >= 60_000) unlinkSync(lockPath);
+            else if (Date.now() - started > LOCK_WAIT_MS)
+                skip('another wake is running');
+            else await sleep(100);
+        }
+    }
 }
 
 // skip() and fail() exit the process, which never runs a finally
@@ -89,17 +114,19 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     if (existsSync(join(STATE_DIR, 'paused'))) {
         skip(`paused (${join(STATE_DIR, 'paused')} exists)`);
     }
-    if (!isCoordinatorTranscript(transcriptPath)) {
-        skip(`not clio's thread: ${transcriptPath}`);
-    }
     const state = readState();
     // a --bg crow takes socket lines; a desktop tab takes only the desktop's own door, so clio relays
     const session = oneCrow();
     const viaSocket = Boolean(session?.jobId);
-    if (state.lastWakeAt && now.getTime() - state.lastWakeAt < WAKE_GAP_MS) {
+    const lastWakeAt = state.lastWakeAt?.[threadId];
+    if (lastWakeAt && now.getTime() - lastWakeAt < WAKE_GAP_MS) {
         skip(
-            `last wake ${Math.round((now.getTime() - state.lastWakeAt) / 60_000)} min ago (gap ${WAKE_GAP_MS / 60_000} min)`,
+            `last wake ${Math.round((now.getTime() - lastWakeAt) / 60_000)} min ago (gap ${WAKE_GAP_MS / 60_000} min)`,
         );
+    }
+    // a tab's one relay slot: a wake parked for another thread keeps it, and this one's delta waits for its next turn
+    if (!viaSocket && !dropStaleRelay() && existsSync(RELAY_PATH)) {
+        skip('the relay holds an unsent wake');
     }
 
     let lines: string[];
@@ -116,27 +143,22 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         );
     }
     // the backstop saves the window while the ladder parks; decision wakes never come through here
-    if (isParked(now)) {
-        writeFileSync(
-            join(STATE_DIR, 'harvest.log'),
-            `${now.toISOString()} skipped: park\n`,
-            { flag: 'a' },
-        );
-        skip('park');
-    }
+    if (isParked(now)) skip('park');
 
     const firstWakeAt = state.firstWakeAt ?? now.getTime();
     const day = dayOf(firstWakeAt, now.getTime());
     const wakeInfo: Wake = {
-        id: wakeIdOf(now),
+        id: `${wakeIdOf(now)}${wakeSuffixOf(threadId)}`,
         mode: wakeMode,
         phase: day <= SILENT_DAYS ? 'silent' : 'live',
+        thread,
     };
     const packed = packWake({
         delta,
         lines,
         now,
         state,
+        thread: threadId,
         transcriptPath,
         wakeId: wakeInfo.id,
     });
@@ -159,10 +181,12 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         );
     }
 
-    writeState({
-        ...packed.state,
+    writeWakeState({
         firstWakeAt,
-        lastWakeAt: now.getTime(),
+        packed: packed.state,
+        thread: threadId,
+        transcriptPath,
+        wakeAt: now.getTime(),
     });
 
     if (viaSocket) spawnHarvest(wakeInfo);
@@ -171,7 +195,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         ? `, ${packed.missing.length} leaves unmatched`
         : '';
     console.log(
-        `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: clio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${packed.files.length} files${unmatched}`,
+        `woke ${wakeInfo.id} ${threadId} (${viaSocket ? 'socket' : 'relay: clio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${packed.files.length} files${unmatched}`,
     );
     if (wakeInfo.phase === 'live' && state.arm && state.arm !== liveArm) {
         console.log(

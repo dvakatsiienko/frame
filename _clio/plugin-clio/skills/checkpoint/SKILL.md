@@ -20,7 +20,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 - **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
 - **the notice, in any clio, means one thing: hold messages to me** (`<me>` = `main clio` or `wing <N>`). everyone `ListAgents` shows, every clio and every member, crow and helga too, gets one `SendMessage`, these words exactly, since `x-mod-stash` reads them as no work: «second wind — <me> is second-winding: hold messages to <me> until it says back. nothing else pauses, keep working.» a message that lands mid-compact arrives in a thinned thread and its detail is lost. the notice's roster goes into the CST.
 - **the reply says what it did**: «second-wind notice sent, messages to me hold until i'm back». the fleet keeps working through it.
-- **main only**, while crow reads main's thread alone: `touch ~/.local/state/crow/paused`, its wake skips while the file exists.
+- **main only**, since the file pauses crow for every clio: `touch ~/.local/state/crow/paused`, every wake skips while it exists; a wing's compact wakes her on its own thread.
 
 ## 1. the keep/drop list — decided, never asked
 

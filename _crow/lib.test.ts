@@ -20,13 +20,13 @@ import {
     blindSections,
     buildPacket,
     charterHash,
+    clioThreadOf,
     consoleOf,
     cutLine,
     decisionOf,
     dropStaleRelay,
     heldForAfterTurn,
     heldUnsent,
-    isCoordinatorTranscript,
     isHeldDue,
     isLocated,
     isParked,
@@ -44,8 +44,10 @@ import {
     resolveLeaves,
     setHot,
     stashModOf,
+    threadOfNoteId,
     transcriptDelta,
     wakeLine,
+    wakeMarker,
 } from './lib.ts';
 
 describe('proposalOf reads a proposal written by Bash', () => {
@@ -490,7 +492,7 @@ describe('buildPacket', () => {
         });
         expect(readdirSync(dir)).toEqual(['packet.md']);
         expect(readFileSync(join(dir, 'packet.md'), 'utf8')).toBe(
-            `# clio since the last wake\n\n## dima\nhi\n\n## leaf · ${leaf}\n\nvector: ship the fleet\n`,
+            `# clio main since the last wake\n\n## dima\nhi\n\n## leaf · ${leaf}\n\nvector: ship the fleet\n`,
         );
     });
 
@@ -717,23 +719,51 @@ describe('planNotes', () => {
     });
 });
 
-describe('isCoordinatorTranscript', () => {
+describe('clioThreadOf', () => {
     const sessions = mkdtempSync(join(tmpdir(), 'crow-sessions-'));
-    writeFileSync(
-        join(sessions, '6020.json'),
-        JSON.stringify({ name: '🦉 clio', sessionId: 'aaa' }),
-    );
-    writeFileSync(
-        join(sessions, '3356.json'),
-        JSON.stringify({ name: '☕️ 🔧 coder: mods', sessionId: 'bbb' }),
-    );
+    const entries = {
+        '3356': { name: '☕️ 🔧 coder: mods', sessionId: 'bbb' },
+        '6020': { name: '🦉 clio', sessionId: 'aaa' },
+        '7001': { name: '🦉🪽 clio: wing 12', sessionId: 'ccc' },
+        '7002': { name: '🦉 clio (fork)', sessionId: 'ddd' },
+    };
+    for (const [pid, entry] of Object.entries(entries))
+        writeFileSync(join(sessions, `${pid}.json`), JSON.stringify(entry));
 
-    test('a transcript of the session named clio wakes crow', () => {
-        expect(isCoordinatorTranscript('/p/aaa.jsonl', sessions)).toBe(true);
+    test('the session named clio is the main thread', () => {
+        expect(clioThreadOf('/p/aaa.jsonl', sessions, '/no/seat')).toEqual({
+            id: 'main',
+            name: '🦉 clio',
+        });
     });
 
-    test('a coder transcript under the clio dir does not', () => {
-        expect(isCoordinatorTranscript('/p/bbb.jsonl', sessions)).toBe(false);
+    test('any wing is its own thread, read from its number', () => {
+        expect(clioThreadOf('/p/ccc.jsonl', sessions)?.id).toBe('wing-12');
+    });
+
+    test('a coder transcript under the clio dir is no thread', () => {
+        expect(clioThreadOf('/p/bbb.jsonl', sessions)).toBeUndefined();
+    });
+
+    test("a fork still carrying main's name is no thread until it takes a wing number", () => {
+        const seat = join(sessions, 'main-session');
+        writeFileSync(seat, 'pid=1\nsession=aaa\n');
+        expect([
+            clioThreadOf('/p/aaa.jsonl', sessions, seat)?.id,
+            clioThreadOf('/p/ddd.jsonl', sessions, seat),
+        ]).toEqual(['main', undefined]);
+    });
+});
+
+describe('threadOfNoteId', () => {
+    test('a note id names its thread', () => {
+        expect([
+            threadOfNoteId('202611072240-opus'),
+            threadOfNoteId('202611072240w2-opus'),
+            threadOfNoteId('202611072240d05w12-opus'),
+            threadOfNoteId('202611072240d05-opus'),
+            threadOfNoteId('plan-20261106150807-3'),
+        ]).toEqual(['main', 'wing-2', 'wing-12', 'main', 'main']);
     });
 });
 
@@ -762,11 +792,40 @@ test('a desktop turn ends on stop_hook_summary, timed from its timestamps', () =
         },
     ];
     writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
-    expect(readTurn(path, 'crow wake 1')).toMatchObject({
+    expect(readTurn(path, wakeMarker('1'))).toMatchObject({
         model: 'claude-fable-5-1',
         note: 'none',
         seconds: 120,
     });
+});
+
+test("main's wake never harvests a wing's turn that came first in the same minute", () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'crow-turn-')), 't.jsonl');
+    const turn = (wakeId: string, note: string, minute: number) => [
+        {
+            message: { content: `crow wake ${wakeId} · mode day` },
+            timestamp: `2026-11-07T22:${minute}0:00Z`,
+            type: 'user',
+        },
+        {
+            message: { content: [{ text: note, type: 'text' }], id: note },
+            timestamp: `2026-11-07T22:${minute}1:00Z`,
+            type: 'assistant',
+        },
+        {
+            subtype: 'stop_hook_summary',
+            timestamp: `2026-11-07T22:${minute}2:00Z`,
+            type: 'system',
+        },
+    ];
+    const lines = [
+        ...turn('202611072240w3', 'the wing note', 1),
+        ...turn('202611072240', 'the main note', 2),
+    ];
+    writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
+    expect(readTurn(path, wakeMarker('202611072240'))?.note).toBe(
+        'the main note',
+    );
 });
 
 test('a delta block carries its local time when the entry has one', () => {
@@ -1021,6 +1080,14 @@ describe('heldUnsent', () => {
     });
     test('no notes file is none', () => {
         expect(heldUnsent(NOW, '/nope/n.jsonl')).toEqual([]);
+    });
+    test("a thread's packet holds only its own notes, and another thread's send settles none", () => {
+        const wingHeld = { ...session(HELD, 10), id: '202611031250w2-opus' };
+        const path = notes(wingHeld, session('🔴 sent: x', 5));
+        expect([
+            heldUnsent(NOW, path, 'wing-2').map((n) => n.id),
+            heldUnsent(NOW, path),
+        ]).toEqual([['202611031250w2-opus'], []]);
     });
     test('the packet carries the section, and a wake with none leaves it out', () => {
         const dir = join(mkdtempSync(join(tmpdir(), 'crow-')), 'packet');

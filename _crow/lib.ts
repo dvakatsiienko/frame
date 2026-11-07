@@ -7,6 +7,7 @@ import {
     openSync,
     readFileSync,
     readdirSync,
+    renameSync,
     rmSync,
     statSync,
     writeFileSync,
@@ -155,20 +156,53 @@ export function readState(): State {
 
 export function writeState(state: State) {
     mkdirSync(STATE_DIR, { recursive: true });
-    writeFileSync(
-        join(STATE_DIR, 'state.json'),
-        `${JSON.stringify(state, null, 4)}\n`,
-    );
+    // several clio threads write it side by side, and a half-written file reads as «no offsets»: every transcript resent whole
+    const temp = join(STATE_DIR, `state.json.${process.pid}`);
+    writeFileSync(temp, `${JSON.stringify(state, null, 4)}\n`);
+    renameSync(temp, join(STATE_DIR, 'state.json'));
+}
+
+// a wake's own keys over a fresh read: a peer thread's wake wrote state.json while this one packed, and its offset and clock stay
+export function writeWakeState({
+    firstWakeAt,
+    packed,
+    thread,
+    transcriptPath,
+    wakeAt,
+}: {
+    firstWakeAt?: number;
+    packed: State;
+    thread: string;
+    transcriptPath: string;
+    wakeAt?: number;
+}) {
+    const fresh = readState();
+    writeState({
+        ...fresh,
+        charterHash: packed.charterHash,
+        firstWakeAt: fresh.firstWakeAt ?? firstWakeAt,
+        lastWakeAt:
+            wakeAt === undefined
+                ? fresh.lastWakeAt
+                : { ...fresh.lastWakeAt, [thread]: wakeAt },
+        leafHashes: packed.leafHashes,
+        leavesFor: packed.leavesFor,
+        offsets: {
+            ...fresh.offsets,
+            [transcriptPath]: packed.offsets[transcriptPath] ?? 0,
+        },
+    });
 }
 
 // the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ crow»
 const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 
-// codie whose cwd is ~/frame/_clio fires clio's Stop hook too; only the coordinator's own thread wakes crow
-export function isCoordinatorTranscript(
+// codie whose cwd is ~/frame/_clio fires clio's Stop hook too; only a clio's own thread wakes crow, main or any wing
+export function clioThreadOf(
     transcriptPath: string,
     sessionsDir = SESSIONS_DIR,
-) {
+    mainSeatFile = MAIN_SEAT_FILE,
+): ClioThread | undefined {
     const sessionId = basename(transcriptPath, '.jsonl');
     for (const file of readdirSync(sessionsDir)) {
         if (!file.endsWith('.json')) continue;
@@ -181,11 +215,50 @@ export function isCoordinatorTranscript(
                 /^\p{Extended_Pictographic}+/u,
                 '',
             );
-            return /^c?clio/.test(bare); // read-both: a clio tab resumed under its old title
+            // read-both: a clio tab resumed under its old title
+            if (!/^c?clio/.test(bare)) return undefined;
+            const name = entry.name ?? '';
+            const wing = /\bwing\s*(\d+)\b/.exec(name)?.[1];
+            if (wing) return { id: `wing-${wing}`, name };
+            // a fork carries main's name until it renames itself, so a nameless wing is main only in main's seat
+            return isMainSeat(sessionId, mainSeatFile)
+                ? { id: MAIN_THREAD, name }
+                : undefined;
         } catch {}
     }
-    return false;
+    return undefined;
 }
+
+// fork-guard's record of the main session; with no record yet, the clio-named session is main
+function isMainSeat(sessionId: string, path: string) {
+    try {
+        const seated = /^session=(.*)$/m.exec(readFileSync(path, 'utf8'))?.[1];
+        return !seated || seated === sessionId;
+    } catch {
+        return true;
+    }
+}
+
+const MAIN_SEAT_FILE = join(
+    process.env.FORK_GUARD_STATE || join(homedir(), '.local/state/clio'),
+    'main-session',
+);
+
+export const MAIN_THREAD = 'main';
+
+// a wing's wake id ends in its number, so two threads in one minute keep two packets, and a note's id names its thread
+export const wakeSuffixOf = (threadId: string) =>
+    threadId === MAIN_THREAD ? '' : `w${threadId.replace('wing-', '')}`;
+
+export function threadOfNoteId(id: string) {
+    const wing = /^\d+(?:d\d+)?w(\d+)(?:-|$)/.exec(id)?.[1];
+    return wing ? `wing-${wing}` : MAIN_THREAD;
+}
+
+const threadLabel = (threadId: string) =>
+    threadId === MAIN_THREAD
+        ? 'clio main'
+        : `clio ${threadId.replace('-', ' ')}`;
 
 export function isAlive(pid: number) {
     try {
@@ -757,6 +830,7 @@ export function buildPacket({
     missing,
     proposal,
     receipts,
+    thread = MAIN_THREAD,
     unchanged = [],
 }: PacketInput) {
     mkdirSync(dir, { recursive: true });
@@ -781,7 +855,7 @@ export function buildPacket({
                   `${HELD_HEAD} · a restart ended it; send each, or drop it with a reason\n\n${held.map((n) => `${n.id}, ${n.at}\n${n.note}`).join('\n\n')}`,
               ]
             : []),
-        `# clio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
+        `# ${threadLabel(thread)} since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
         ...(receipts === undefined
             ? []
             : [
@@ -1102,6 +1176,7 @@ export function packWake({
     now,
     proposal,
     state,
+    thread = MAIN_THREAD,
     transcriptPath,
     wakeId,
 }: PackInput) {
@@ -1126,13 +1201,16 @@ export function packWake({
         cut: cutLine(delta.cut, transcriptPath),
         deltaText: delta.text,
         dir: join(STATE_DIR, 'packets', wakeId),
-        held: isHeldDue(state, crowTranscript) ? heldUnsent(now) : [],
+        held: isHeldDue(state, crowTranscript, thread)
+            ? heldUnsent(now, NOTES_PATH, thread)
+            : [],
         leaves: toSend.changed,
-        ledger: ledgerLine(now),
+        ledger: ledgerLine(now, NOTES_PATH, VERDICTS_PATH, thread),
         meter: meterLine(now),
         missing: leaves.missing,
         proposal,
         receipts,
+        thread,
         unchanged: toSend.unchanged,
     });
     return {
@@ -1181,8 +1259,14 @@ export function wakeIdOf(date: Date) {
     return `${localDay(date).replaceAll('-', '')}${pad(date.getHours())}${pad(date.getMinutes())}`;
 }
 
+// the separator ends the id: main's 2240 is a prefix of a wing's 2240w3
+export const wakeMarker = (wakeId: string) => `crow wake ${wakeId} ·`;
+
 export function wakeLine(wake: Wake) {
-    return `crow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${charterHash()} ${CHARTER_PATH}`;
+    const thread = wake.thread
+        ? ` · thread ${wake.thread.id} · reply to «${wake.thread.name}»`
+        : '';
+    return `crow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${charterHash()} ${CHARTER_PATH}${thread}`;
 }
 
 export function dayOf(firstWakeAt: number, now: number) {
@@ -1266,9 +1350,18 @@ export function packetCarriedHeld(wakeId: string) {
     }
 }
 
+// heldFor was one transcript before the seats split, and only main had a thread then
+export const heldMapOf = (state: State): Record<string, string> =>
+    typeof state.heldFor === 'string'
+        ? { [MAIN_THREAD]: state.heldFor }
+        : (state.heldFor ?? {});
+
 // no heldFor yet: the crow that read the leaves is the live one, so its own hold stays its own
-export const isHeldDue = (state: State, crowTranscript?: string) =>
-    (state.heldFor ?? state.leavesFor) !== crowTranscript;
+export const isHeldDue = (
+    state: State,
+    crowTranscript?: string,
+    thread = MAIN_THREAD,
+) => (heldMapOf(state)[thread] ?? state.leavesFor) !== crowTranscript;
 
 // moves only after crow took a turn: a parked or dropped relay keeps the note due, and a /clear
 // relay that carried none leaves it due for the transcript the relay landed in
@@ -1276,13 +1369,19 @@ export function heldForAfterTurn(
     state: State,
     turnPath: string,
     packetCarriedHeld: boolean,
+    thread = MAIN_THREAD,
 ) {
     return state.leavesFor === turnPath || packetCarriedHeld
         ? turnPath
-        : (state.heldFor ?? state.leavesFor);
+        : (heldMapOf(state)[thread] ?? state.leavesFor);
 }
 
-export function heldUnsent(now: Date, notesPath = NOTES_PATH) {
+// a thread's packet carries only the notes crow holds for that thread, and a note sent to another settles none of them
+export function heldUnsent(
+    now: Date,
+    notesPath = NOTES_PATH,
+    thread = MAIN_THREAD,
+) {
     const since = now.getTime() - 3_600_000;
     const rows = jsonlOf<{
         at?: string;
@@ -1296,7 +1395,11 @@ export function heldUnsent(now: Date, notesPath = NOTES_PATH) {
             id: n.id ?? '',
             note: (n.note ?? '').trim(),
         }))
-        .filter((n) => new Date(n.at).getTime() > since);
+        .filter(
+            (n) =>
+                new Date(n.at).getTime() > since &&
+                threadOfNoteId(n.id) === thread,
+        );
     const lastSent = rows.findLastIndex(
         (n) => n.note && n.note !== 'none' && !isHeld(n),
     );
@@ -1307,19 +1410,33 @@ export function ledgerLine(
     now: Date,
     notesPath = NOTES_PATH,
     verdictsPath = VERDICTS_PATH,
+    thread = MAIN_THREAD,
 ) {
     const today = localDay(now);
-    const notes = jsonlOf<{ at?: string; channel?: string; note?: string }>(
-        notesPath,
-    )
-        .filter((n) => n.channel === 'session' && typeof n.note === 'string')
+    const notes = jsonlOf<{
+        at?: string;
+        channel?: string;
+        id?: string;
+        note?: string;
+    }>(notesPath)
+        .filter(
+            (n) =>
+                n.channel === 'session' &&
+                typeof n.note === 'string' &&
+                threadOfNoteId(n.id ?? '') === thread,
+        )
         .map((n) => ({ at: new Date(n.at ?? 0), note: (n.note ?? '').trim() }));
     const wouldSend = notes.filter((n) => n.note !== 'none' && n.note !== '');
     const sent = wouldSend.filter((n) => !isHeld(n));
     const sentToday = sent.filter((n) => localDay(n.at) === today).length;
     const last = sent.at(-1)?.at;
-    const hits = jsonlOf<{ at?: string; value?: string }>(verdictsPath).filter(
-        (v) => v.value === 'ok' && localDay(new Date(v.at ?? 0)) === today,
+    const hits = jsonlOf<{ at?: string; id?: string; value?: string }>(
+        verdictsPath,
+    ).filter(
+        (v) =>
+            v.value === 'ok' &&
+            localDay(new Date(v.at ?? 0)) === today &&
+            threadOfNoteId(v.id ?? '') === thread,
     ).length;
     return [
         `📒 ${sentToday} sent today`,
@@ -1560,6 +1677,7 @@ export interface Wake {
     id: string;
     mode: Mode;
     phase: Phase;
+    thread?: ClioThread;
 }
 
 export interface State {
@@ -1568,11 +1686,18 @@ export interface State {
     jobId?: string;
     startedAt?: number;
     firstWakeAt?: number;
-    lastWakeAt?: number;
+    // per clio thread, each on its own 30 min clock; an older state's single number reads as no clock
+    lastWakeAt?: Record<string, number>;
     offsets: Record<string, number>;
-    heldFor?: string;
+    // per thread; a string is the state before the seats split
+    heldFor?: Record<string, string> | string;
     leafHashes?: Record<string, string>;
     leavesFor?: string;
+}
+
+export interface ClioThread {
+    id: string;
+    name: string;
 }
 
 export interface LiveSession {
@@ -1660,6 +1785,7 @@ interface PackInput {
     now: Date;
     proposal?: string;
     state: State;
+    thread?: string;
     transcriptPath: string;
     wakeId: string;
 }
@@ -1689,6 +1815,7 @@ interface PacketInput {
     proposal?: string;
     ledger?: string;
     meter?: string;
+    thread?: string;
     deltaText: string;
 }
 

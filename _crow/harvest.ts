@@ -14,6 +14,7 @@ import {
     armList,
     claudeArgs,
     heldForAfterTurn,
+    heldMapOf,
     isMode,
     newestTranscript,
     oneShotModel,
@@ -23,8 +24,10 @@ import {
     readTurn,
     reconcileMarker,
     runOneShot,
+    threadOfNoteId,
     tokensIn,
     wakeLine,
+    wakeMarker,
     writeState,
 } from './lib.ts';
 
@@ -79,7 +82,7 @@ async function waitTurn(marker: string) {
 }
 
 async function harvestSession(wake: Wake, arm: Arm) {
-    const turn = await waitTurn(`crow wake ${wake.id}`);
+    const turn = await waitTurn(wakeMarker(wake.id));
     if (!turn)
         return appendNoteOnce(
             NOTES_PATH,
@@ -87,9 +90,18 @@ async function harvestSession(wake: Wake, arm: Arm) {
         );
     // a relayed wake lands after a /clear in a transcript born after the wake keyed its leaves
     const state = readState();
+    const thread = threadOfNoteId(wake.id);
+    const heldFor = heldForAfterTurn(
+        state,
+        turn.path,
+        packetCarriedHeld(wake.id),
+        thread,
+    );
     writeState({
         ...state,
-        heldFor: heldForAfterTurn(state, turn.path, packetCarriedHeld(wake.id)),
+        heldFor: heldFor
+            ? { ...heldMapOf(state), [thread]: heldFor }
+            : heldMapOf(state),
         leavesFor: turn.path,
     });
     appendNoteOnce(NOTES_PATH, noteOf(wake, arm, 'session', turn.run));

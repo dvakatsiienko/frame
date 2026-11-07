@@ -66,7 +66,7 @@
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
+            "command": "pnpm -C /Users/dima/frame --silent crow:decision",
             "timeout": 120
           },
           {
@@ -82,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
+            "command": "pnpm -C /Users/dima/frame --silent crow:decision",
             "timeout": 120
           }
         ]
@@ -144,7 +144,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:decision'",
+            "command": "pnpm -C /Users/dima/frame --silent crow:decision",
             "timeout": 30
           }
         ]
@@ -155,7 +155,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:relay'",
+            "command": "pnpm -C /Users/dima/frame --silent crow:relay",
             "timeout": 10
           },
           {
@@ -196,12 +196,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {}'",
+            "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {}",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'pnpm -C /Users/dima/frame --silent crow:unvetted'",
+            "command": "pnpm -C /Users/dima/frame --silent crow:unvetted",
             "timeout": 10
           },
           {
@@ -222,7 +222,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/dima/frame/_clio/.claude/hooks/fork-guard.sh main-only -- 'jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {} --precompact'",
+            "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent crow:wake --transcript {} --precompact",
             "timeout": 30
           },
           {

@@ -5,16 +5,18 @@ import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import {
+    type ClioThread,
     type Decision,
     type LiveSession,
+    MAIN_THREAD,
     NOTES_PATH,
     SESSION_NAME,
     STATE_DIR,
     type Wake,
+    clioThreadOf,
     consoleOf,
     decisionOf,
     findSessions,
-    isCoordinatorTranscript,
     packWake,
     prViewArgs,
     proposalOf,
@@ -27,7 +29,8 @@ import {
     verifiedHead,
     wakeIdOf,
     wakeLine,
-    writeState,
+    wakeSuffixOf,
+    writeWakeState,
 } from './lib.ts';
 
 // a PreToolUse exit 2 or timeout blocks the merge, so every failure prints context and exits 0
@@ -43,9 +46,10 @@ const sendVia = (name = SESSION_NAME) =>
 const input: HookInput = JSON.parse(readFileSync(0, 'utf8'));
 const event = input.hook_event_name;
 const transcript = input.transcript_path;
-if (transcript && isCoordinatorTranscript(transcript)) {
+const thread = transcript ? clioThreadOf(transcript) : undefined;
+if (transcript && thread) {
     try {
-        await act(decisionNow(), transcript);
+        await act(decisionNow(), transcript, thread);
     } catch (error) {
         context(
             `🐦‍⬛ crow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
@@ -69,7 +73,18 @@ function decisionNow() {
     );
 }
 
-async function act(decision: Decision | undefined, transcriptPath: string) {
+async function act(
+    decision: Decision | undefined,
+    transcriptPath: string,
+    clio: ClioThread,
+) {
+    // no wing call waits on her, and a wing's post or close is read at its cadence wake
+    if (
+        clio.id !== MAIN_THREAD &&
+        decision?.kind !== 'spawn' &&
+        decision?.kind !== 'proposal'
+    )
+        return;
     switch (decision?.kind) {
         case undefined:
             return;
@@ -256,10 +271,12 @@ async function wakeCrow({
         lines,
         Math.min(state.offsets[transcriptPath] ?? 0, lines.length),
     );
+    const clio = thread ?? { id: MAIN_THREAD, name: '' };
     const wake: Wake = {
-        id: `${wakeIdOf(now)}d${String(now.getSeconds()).padStart(2, '0')}`,
+        id: `${wakeIdOf(now)}d${String(now.getSeconds()).padStart(2, '0')}${wakeSuffixOf(clio.id)}`,
         mode: 'decision',
         phase: 'live',
+        thread,
     };
     const packed = packWake({
         delta,
@@ -267,17 +284,20 @@ async function wakeCrow({
         now,
         proposal,
         state,
+        thread: clio.id,
         transcriptPath,
         wakeId: wake.id,
     });
     const note = withNote ? ` · note ${notePath(wake.id)}` : '';
     const line = `${wakeLine(wake)} · ${fields}${note}`;
     if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
-    writeState(
-        proposal && BOOT_BOARD.test(proposal)
-            ? { ...packed.state, lastWakeAt: now.getTime() }
-            : packed.state,
-    );
+    writeWakeState({
+        packed: packed.state,
+        thread: clio.id,
+        transcriptPath,
+        wakeAt:
+            proposal && BOOT_BOARD.test(proposal) ? now.getTime() : undefined,
+    });
     spawnHarvest(wake);
     return { ...wake, line };
 }

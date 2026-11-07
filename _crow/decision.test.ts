@@ -343,9 +343,9 @@ describe('a proposal clio writes', () => {
                 ),
             );
         await hook(fixture, { path: proposal(fixture), tool: 'Write' });
-        const before = stateOf().lastWakeAt;
+        const before = stateOf().lastWakeAt?.main;
         await hook(fixture, { path: board, tool: 'Write' });
-        expect([before, typeof stateOf().lastWakeAt]).toEqual([
+        expect([before, typeof stateOf().lastWakeAt?.main]).toEqual([
             undefined,
             'number',
         ]);
@@ -426,9 +426,49 @@ test('a decision wake leaves the Stop wake’s 30-min clock alone', async () => 
     const fixture = home();
     crow(fixture.socket, 'none');
     const state = stateOf(fixture);
-    writeFileSync(state, JSON.stringify({ lastWakeAt: 5, offsets: {} }));
+    writeFileSync(
+        state,
+        JSON.stringify({ lastWakeAt: { main: 5 }, offsets: {} }),
+    );
     await hook(fixture, 'gh pr merge 82');
-    expect(JSON.parse(readFileSync(state, 'utf8')).lastWakeAt).toBe(5);
+    expect(JSON.parse(readFileSync(state, 'utf8')).lastWakeAt).toEqual({
+        main: 5,
+    });
+});
+
+describe('a wing', () => {
+    function wing() {
+        const fixture = home();
+        writeFileSync(
+            join(fixture.dir, '.claude/sessions/1.json'),
+            JSON.stringify({ name: '🦉🪽 clio: wing 3', sessionId: 'clio-1' }),
+        );
+        return fixture;
+    }
+
+    test('holds no merge of its own', async () => {
+        const fixture = wing();
+        crow(fixture.socket, 'x');
+        const { out } = await hook(fixture, 'gh pr merge 82');
+        expect([existsSync(stateOf(fixture)), out]).toEqual([false, undefined]);
+    });
+
+    test('wakes her on its proposal, the line naming the wing to reply to', async () => {
+        const fixture = wing();
+        const path = join(fixture.dir, '.scratch/grill/grill-1-proposal.md');
+        mkdirSync(join(fixture.dir, '.scratch/grill'), { recursive: true });
+        writeFileSync(path, '# grill 1\n');
+        const { first } = crow(fixture.socket);
+        await hook(fixture, { path, tool: 'Write' });
+        const line = await first;
+        expect([
+            /crow wake \d+d\d\dw3 /.test(line),
+            line.includes('· thread wing-3 · reply to «🦉🪽 clio: wing 3»'),
+            packetOf(fixture, line).includes(
+                '# clio wing 3 since the last wake',
+            ),
+        ]).toEqual([true, true, true]);
+    });
 });
 
 const packetOf = (fixture: ReturnType<typeof home>, line: string) =>
