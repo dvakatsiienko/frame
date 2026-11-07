@@ -35,14 +35,23 @@ Planned doses, `dose` and `ab-ram` rows in `~/.local/state/x/lanes/frm-525/`. At
 
 **RAM disk A/B, the go suite with `TMPDIR` on a ram disk, 4 runs in abba:** apfs 248 and 244 sys; ram 233 and 234; wall 67, 69, 55, 53, no pattern. 🚫 **the disk is not the sys: 5 % at most.**
 
-## the process tree, 2026-11-07 14:33 to 14:38
+## `LANG`, 2026-11-07 14:40 to 14:51, the answer to the process tree below
+
+500 `git --version` from the Bash tool, one env key flipped, `tree.tsv`: none 4.34 s, `LANG=en_US.UTF-8` 2.62, `LC_ALL=C` 2.41, `TERM` 4.37, a pty 4.32. A launchd job, which has no `LANG`, read 4.17, so the tree was never the cause.
+
+- go suite, abba, `ab-lang.tsv`: none 55.9 and 55.7 s, 162 + 245 and 156 + 249 cpu-s; `LANG` 46.1 and 47.8 s, 134 + 223 and 133 + 218. **13 % less cpu, 16 % less wall**
+- vitest, abba: none 86.6 and 86.9 cpu-s; `LANG` 83.1 and 83.1; wall 14 s either way
+- why, inference: `otool -L` shows git linking homebrew's `libintl` and CoreFoundation, so with no locale it asks macOS for the language on every start. It fits `cfprefsd`, `opendirectoryd` and `notifyd` running high in the spindump; a spindump with `LANG` set would prove it
+- fix: `"LANG"` in `settings.json`'s env; a session started before it keeps none
+
+## the process tree, 2026-11-07 14:33 to 14:38, its reading corrected by `LANG` above
 
 The same go suite and spawn loops, from a rex tab against the Bash tool, abba, `spawn-bench.tsv`, `spawn-matrix.tsv`, `lineage-*.txt` in `~/.local/state/x/lanes/frm-525/`.
 
 - go suite: rex 42.5 and 43.1 s, 130 + 200 and 132 + 205 cpu-s; tool 51.0 and 52.2 s, 152 + 237 and 151 + 239
 - 500 `git --version`: rex 2.25 s, tool 4.13 s. `/usr/bin/true`: 1.4 against 1.9 ms wall. A pure compute loop: 2.29 s in both, so it is no slow core and no QoS clamp
 - 🚫 not the gap: cwd, env (`env -i` from the tool stays slow), `PATH`, open-files limit (`ulimit -n 256` stays slow), the bash sandbox flag
-- what is left: the tree under `Claude.app` → `disclaimer` → `claude`. Its mechanism is unread; the spindump's Sandbox samples on git point the same way, inference
+- assumed then, wrong: that left the tree under `Claude.app`. `env -i` had hidden it, since a clean env also has no `LANG`
 - 📌 the go-suite cost here, 330 to 391 cpu-s, beats the dose runs' 420, with other work running then too; pr 139's 278 stays unreproduced, cause unread
 
 ## 100 % with one lane left, 2026-11-07 about 03:52, dima's screenshot

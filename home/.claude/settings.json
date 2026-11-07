@@ -5,6 +5,7 @@
   "skillListingBudgetFraction": 0.025,
   "env": {
     "EDITOR": "nvim",
+    "LANG": "en_US.UTF-8",
     "CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT": "0",
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus",
     "CLAUDE_CODE_SUBAGENT_EFFORT": "medium",
