@@ -1,0 +1,58 @@
+# Findings
+
+**Scope note — measured (owner’s supplied results):** I have not independently checked the Mac’s hardware or operating-system details. The Git version and measurement date were not specified. The owner’s figures below are therefore reported as supplied, not as independently reproduced.
+
+## 1. Locale and process startup
+
+- **Measured (owner):** Setting `LANG` changed 500 `git --version` starts from 4.34 s to 2.62 s—about **1.66× faster**; `LC_ALL=C` took 2.41 s. The Go suite used 13% less CPU and 16% less wall time with `LANG`. In the paired kernel traces, `cfprefsd` fell from 3.56 to 0 CPU-s, `opendirectoryd` from 2.27 to 0.01, `notifyd` from 1.60 to 0.13, and Git from 36.2 to 24.9 CPU-s; Git p50 fell from 9 to 6 ms.
+- **Reported:** The Homebrew Git formula lists gettext as a build dependency, and Git’s source uses gettext and locale information. A November 2026 gettext mailing-list patch report also describes CoreFoundation calls from libintl in a macOS locale path. These make the owner’s finding plausible, but do **not** prove that `CFLocaleCopyCurrent` is the specific call responsible, or that `cfprefsd`/`opendirectoryd` are directly called by Git.
+- **Reported:** Other macOS users have discussed Git’s locale/language behavior, but I found no independent measured report of the same **1.7× startup gain**. Treat it as a strong local result, not a known general macOS multiplier.
+- **Inference:** `LC_ALL=C` is a reasonable *diagnostic* for Git, but it overrides every locale category. It can change translations, collation, character classification, number/date formatting, and locale-sensitive display or scripts. For everyday use, test a valid UTF-8 `LANG` first; it may avoid the slow fallback without imposing C-locale behavior everywhere.
+
+## 2. Git build, configuration, and repository settings
+
+- **Reported:** Git reads system, global, and repository config by default. `GIT_CONFIG_NOSYSTEM=1` skips system config; `GIT_CONFIG_GLOBAL=/dev/null` skips global config. `HOME` affects where Git looks for global config. `include`/`includeIf` can add more reads. I found no measured per-start savings for these controls. They may remove a few file opens, but can also remove settings that affect identity, signing, credentials, hooks, or behavior.
+- **Reported:** The built-in `core.fsmonitor=true` daemon and `core.untrackedCache=true` target repeated working-tree scans, not the cost of starting a bare Git command. A published MacBook M1 prompt benchmark on a 413,542-file Chromium checkout reported Git fallback status at 2.6 s versus 155 ms with fsmonitor; the same report found small/medium repositories could get slower. GitHub’s 2022 article reported roughly 2× faster untracked scans with the untracked cache alone and 10× with both features in its tested workload.
+- **Reported:** `feature.manyFiles` selects settings including index v4 and untracked cache; Git documents v4 path-prefix compression as reducing index size 30–50% on large repositories and improving load time. `core.splitIndex` reduces repeated index-write work. These are status/index optimizations, **not** evidence of cheaper `git --version` starts. Use only if measurements show status, index reads, or writes are material.
+- **Not established:** Per-start gains for `GIT_OPTIONAL_LOCKS`, `GIT_ATTR_NOSYSTEM`, config includes, index version, split index, or a Homebrew-versus-Apple-Git build comparison. The owner’s Homebrew Git version was not supplied, so compatibility/version-specific recommendations need verification.
+
+## 3. macOS process-start cost, security checks, and sandbox
+
+- **Measured:** A 2022 M1 benchmark reported `clang --version` at 322.3 μs via `fork()` and 315.7 μs via `posix_spawn()`—about a 2% difference in that test. A Go benchmark on an M2 Pro reported `Run(true)` at 1.90 ms with `os/exec` versus 1.24 ms with a `posix_spawn` wrapper (35% faster); `Output` improved 42%. These are end-to-end child runs on different tests, not a universal kernel floor.
+- **Reported:** A 2021 macOS/Linux comparison measured 500 shell launches at 2.08 s versus 0.38 s, but the machines and processors differed. It cannot isolate an OS effect or establish a same-hardware Linux comparison. I found no defensible per-process floor by macOS version, nor a controlled macOS 26/27 comparison showing a startup regression.
+- **Measured (owner):** In the owner’s trace, Git accounted for 3.6 cores and 65% kernel samples; sandbox frames were 18–19% of kernel samples (26% of Git samples), APFS 10%, EndpointSecurity 4%, and AMFI 2–3%. That is evidence about this trace, not proof that disabling or changing any security service is safe or would improve throughput.
+- **Reported:** Separate agent reports describe Gatekeeper-related CPU storms at extreme launch rates: one Codex Desktop issue reports about 4,000 Git launches/s with `syspolicyd` around 180% and `trustd` around 100% on macOS 26.5.1; another reports about 250 helper launches/s. A separate synthetic benchmark found repeated launches of newly copied/quarantined binaries much slower than a cleaned, stable path. These reports warrant checking whether the owner’s trace actually shows `syspolicyd`/`trustd` activity; they do not establish that Gatekeeper explains the owner’s measured `LANG` effect. **Do not disable Gatekeeper globally.**
+- **Reported:** Apple documents that a child launched by a **sandboxed** app inherits its parent’s sandbox. The absence of a `sandbox` key in Claude Code settings does not identify whether the app or Git child is sandboxed. **Unknown:** the profile applying to these Git processes and a definitive profile name from the supplied trace. The owner’s `hook_vnode_check_open` samples show sandbox evaluation, not which parent/profile caused it.
+
+## 4. Similar high-CPU cases
+
+- **Reported:** The Codex reports above show that a source-control watcher can make thousands of Git launches per second, with system security daemons consuming CPU while the main app looks relatively idle. A 2019 GitHub Desktop report also describes repeated high-CPU Git processes, but does not provide a measured fix relevant to this case.
+- **Reported:** Go’s Darwin `os/exec` uses a fork/exec path; Go issue reports document macOS fork-related hangs and spins, rather than a general measured system-CPU penalty. A 2026 engineering report recommends `posix_spawn` for its Go launcher after observing macOS framework/fork problems.
+- **Not examined for an actionable measured fix:** HN/Reddit discussions, Git mailing-list discussions, and specific Nix, Buck2, ccache, Cargo/Rust-test, Chromium-test, or Homebrew changes. A Cargo forum hang and Chromium repository status timings do not establish a general spawn-cost fix for those projects.
+
+## 5. Avoiding Git process starts
+
+- **Reported:** GitLab has used long-lived `git cat-file --batch` processes so repeated object reads go through a pipe rather than a new Git process. The material reviewed gives no per-call speedup number. This is suitable for repeated object access, not a drop-in replacement for arbitrary Git commands.
+- **Reported:** Persistent filesystem monitors and a long-lived Git-query service can amortize repeated status work. The M1 Chromium status figures above are evidence for that workload, not for every Git command.
+- **Inference:** In-process Git (libgit2, go-git, gix/gitoxide) or a shared worker can remove process-launch overhead for operations it implements. No matching published measurement for this Go fixture suite, and no verified jj process-count/speedup result, was established here. Behavior can differ from Git CLI.
+- **Reported:** Git hooks and clean/smudge filters are compatibility constraints. Git attributes can run external filter commands; `git-crypt` uses clean/smudge filters. An alternative must preserve those effects (and hooks used by the tests) or explicitly test that they are not needed.
+
+## 6. Spawn-heavy tests and fixtures
+
+- **Measured:** The owner’s fixture cut reduced the suite from about 350 to 295 CPU-s—about 16%—while `sys` remained about 60%. RAM-disk `TMPDIR` improved at most 5%; running one to four copies did not materially change per-run CPU.
+- **Measured:** A June 2026 APFS benchmark on an M3 Pro, macOS 15.5, with a 100,026-file/3.28-GiB synthetic tree, reported directory `clonefile` in 0.906–0.943 s, versus 10.617 s for per-file `cp -cR` and 13.828 s for `git worktree add`. This is a fixture-copy result, not a promise that cloning the owner’s 252,000-file tree is O(1); inode count and later copy-on-write changes matter.
+- **Inference:** For repeated test fixtures, use APFS clone-on-write snapshots where semantics permit. For Go’s Darwin child launcher, `posix_spawn` is a promising benchmark because the published wrapper beat `os/exec` by 35–42% per child on an M2 Pro. That does not predict the whole-suite gain; the wrapper requires cgo and lacks some `SysProcAttr` options.
+
+## Ranked five cheapest trials
+
+1. **Pass a valid locale to the actual suite.** Command: `for m in unset utf8; do if [ "$m" = unset ]; then /usr/bin/time -l env -u LANG go test ./...; else /usr/bin/time -l env LANG=en_US.UTF-8 go test ./...; fi; done` (use the exact existing test command if it is not `go test ./...`). **Expected:** the owner’s prior result is 13% less CPU and 16% less wall time; verify on the full workload.
+2. **Benchmark `posix_spawn` for Go child launches.** After switching the test harness’s launcher to a `posix_spawn` wrapper, command: `go test ./...`. **Expected:** published per-child improvement is 35–42% on an M2 Pro; suite gain is unmeasured and depends on launcher share.
+3. **Enable fsmonitor and untracked cache if the hot Git calls are `status`.** Command: `git config core.fsmonitor true && git config core.untrackedCache true && git status >/dev/null && /usr/bin/time -l git status`. **Expected:** large repeated-status reductions are reported, including 2.6 s to 155 ms on one M1 Chromium checkout; no gain expected for unrelated Git commands.
+4. **Try APFS clone-on-write for fixture reset.** Command: `time cp -cR "$FIXTURE" "$TMPDIR/fixture"` (compare with the current fixture-copy command on the same volume). **Expected:** in the published 100k-file benchmark, directory cloning beat `git worktree add` by about 15×; local CPU and correctness effects are unknown.
+5. **Test whether config-file reads matter in the isolated test environment.** Command: `env GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null /usr/bin/time -l go test ./...`. **Expected:** unquantified and possibly negligible; use only if removing global/system configuration does not change test behavior.
+
+**Higher-leverage, less-cheap option:** measure which callers repeatedly launch equivalent Git queries; consolidate object reads through a persistent `cat-file --batch` worker or cache equivalent read-only answers. The benefit could be large with thousands of launches, but the correct replacement and compatibility cost depend on the exact commands, hooks, and filters.
+
+## Not examined / not established
+
+No same-hardware Linux/macOS spawn comparison; no controlled macOS 26-versus-27 startup benchmark; no established universal Apple-silicon per-process floor; no direct causal identification of the locale API or sandbox profile in the owner’s run; and no measured EndpointSecurity per-exec cost. Specific Nix, Buck2, ccache, Cargo/Rust test, Chromium test, jj, and Git mailing-list changes were not established as actionable by the material examined. Per-start measurements for `GIT_OPTIONAL_LOCKS`, `GIT_ATTR_NOSYSTEM`, Git config includes, static/custom Git builds, and the listed index settings were also not established.

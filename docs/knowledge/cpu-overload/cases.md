@@ -140,7 +140,7 @@ Peak load halved, 100 → 49; sys share unchanged, 33 → 35 %. Not the cpu's fi
 
 0. running: FRM-528, fewer git ops per fixture and a cpu budget; its first step tags each git spawn as setup, scenario or `x` child
 0. a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16; the 1.8× at 4-5 lanes stays unproven until then
-1. dima's tick: a research on git's process cost, all lanes: in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
+1. the git cost research landed, [git-process-cost.md](git-process-cost.md); its cheap trials, each measured: fixtures on a git with no gettext and no CoreServices, then `GIT_TRACE2` to count what each fixture op spawns, then Go's spawn through `posix_spawn`
 2. hide the desktop window: `top` WindowServer, 2 min
 3. a Developer Tools A/B only with the gates run from a shell outside claude, since #104173 says the Bash tool is not covered
 4. a Linux VM with the checkout on its own disk: one go suite against native, when the machine is quiet. Only then think of hardware
