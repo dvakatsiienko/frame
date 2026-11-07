@@ -4,10 +4,9 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T20:36:00Z'
+updated_date: '2026-11-07T21:09:00Z'
 labels:
   - m
-  - clio-wing-2
 dependencies: []
 priority: next
 type: task
@@ -202,4 +201,6 @@ PK-351:W83 (2026-11-07 22:30, dima): step 7 is already planned, but we planned i
 PK-351:W84 (2026-11-07 22:34, dima): on the weekly at 97 %: finish normal. you will fit into 2 %, then clio halts. after you are fully done, main clio halts: the new halt's test, you and wing 1 should autohalt by main clio.
 
 PK-351:W85 (2026-11-07 22:36, dima): i go cook. fully finish PK-351. if any post-boot probes are needed to fully close it, you can leave it open for a final probe during the next boot, that's fine, but fully resolve the plan scope so the next boot boots a properly groomed winged clio v2.
+
+2026-11-07 23:10 wing 2 halt: handed back to main; PK-351 left: the fresh-wing boot probe at the next boot (W85), FRM-516's live reads by 11-09
 <!-- SECTION:NOTES:END -->

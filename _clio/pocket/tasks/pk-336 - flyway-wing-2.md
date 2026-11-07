@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T20:00:00Z'
+updated_date: '2026-11-07T21:09:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,15 +22,9 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 PK-350 wish lines batch 2: 95 own-line quotes and clio's tails, dry run to him first, then two waves (his o7 tick)
-- [x] #2 FRM-494, FRM-496: habits and counts read, what's left named, close proposed to main
-- [x] #3 PK-351 clio: winged v2 story folded, this plan updated
-- [x] #4 PK-352 chores skill: shaped, seven names, built, run right after
-- [x] #5 batch: FRM-455 code review card, FRM-407 fresh-eyes card: read, closed if stale
-- [x] #6 PK-304 api credits grill, now
-- [ ] #7 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
-- [ ] #8 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #9 FRM-454 helga on Sonnet
+- [ ] #1 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
+- [ ] #2 PK-348 REVIEW.md: explore, set up the convention
+- [ ] #3 FRM-454 helga on Sonnet
 <!-- AC:END -->
 
 ## Implementation Notes
