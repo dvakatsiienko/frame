@@ -4,7 +4,7 @@ title: 'day plan 11-07: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T14:01:00Z'
+updated_date: '2026-11-07T14:14:00Z'
 labels:
   - s
   - main-lane
@@ -31,3 +31,9 @@ ordinal: 9995
 - [ ] #13 retro fold, 24 lines
 - [ ] #14 redraws: crew-pm-flow, refresh-crew-coordinator boards, watch-pr.sh:64, review-rounds.md:20
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+PK-349:W1 (2026-11-07 16:14, dima): let ci lane and mods lane fully finish their current chunks and park. we are at 84% of weekly and i want to finish at ~98% of weekly so there is space for tmrw, and until 98% no lane should be mid-progress. let's coordinate carefully.
+<!-- SECTION:NOTES:END -->

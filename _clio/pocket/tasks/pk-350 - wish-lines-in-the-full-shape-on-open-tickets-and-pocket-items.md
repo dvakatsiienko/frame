@@ -1,10 +1,10 @@
 ---
 id: PK-350
 title: wish lines in the full shape on open tickets and pocket items
-status: open
+status: done
 assignee: []
 created_date: '2026-11-07T13:06:00Z'
-updated_date: '2026-11-07T14:06:00Z'
+updated_date: '2026-11-07T14:14:00Z'
 labels:
   - s
   - wing-2
@@ -36,4 +36,6 @@ his 15:02, relayed by main: «i want all my wishes in this new format», the FRM
 2026-11-07 16:01 wing 2: batch 2 read back equal on all 39 tickets, repeat dry run 0 lines; two safety waves next.
 
 2026-11-07 16:10 wing 2: batch 2 wave 1 fixes written: FRM-43 date, two stranded quotes, stray punctuation, 12 label-led quotes. wave 2 next.
+
+close: 2026-11-07 16:15, his o5, o7 and o9 ticks and his word to close when fully solved. about 700 lines across 78 tickets and pocket items, batches 1 and 2. two safety waves each, wishkeeper and wisphunter; every word of 78 backups still live by a final multiset read, only labels gone. left by decision: board labels, card quotes, mid-sentence quotes in prose, Tilda on PK-326; one split dropped a semicolon on FRM-26. backups: wing 2's tree, .scratch/wish-format/backup.
 <!-- SECTION:NOTES:END -->
