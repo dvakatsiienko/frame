@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T19:43:00Z'
+updated_date: '2026-11-07T20:34:00Z'
 labels:
   - m
   - clio-wing-2
@@ -194,4 +194,10 @@ PK-351:W79 (2026-11-07 21:42, dima): then FRM-483 is on you, fully solve it.
 PK-351:W80 (2026-11-07 21:42, dima): reboots bring wings back, okay, with a catch: a pocket holding flyways, even with pending lines, does not mean clio must boot them at the boot. the habit: by default no wings are summoned at the boot. the triggers to summon at boot: a line in main clio's handoff from the previous halt, for example at the halt i tell clio that during the next boot she summons wing 1, wing 2, both wings or any other amount; or i tell clio right at boot to summon wings. wing summoning is driven by me.
 
 PK-351:W81 (2026-11-07 21:42, dima): proceed. solve this step and propose the next step.
+
+PK-351:W82 (2026-11-07 22:30, dima): can we plan everything with me so you can solve all remaining steps without me? i plan to go cook. what do you need from me?
+
+PK-351:W83 (2026-11-07 22:30, dima): step 7 is already planned, but we planned it when clio's old side channel model was working, before wings. adjust it to the wings model. in short, crow should be an adviser for main clio and all possible wings, and the quantity of wings is dynamic. any wing should request crow consultations when grilling or during other decisions: consultation on request.
+
+PK-351:W84 (2026-11-07 22:34, dima): on the weekly at 97 %: finish normal. you will fit into 2 %, then clio halts. after you are fully done, main clio halts: the new halt's test, you and wing 1 should autohalt by main clio.
 <!-- SECTION:NOTES:END -->
