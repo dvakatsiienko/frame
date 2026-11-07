@@ -17,7 +17,7 @@ the invariant, refusals and house rules live in root `CLAUDE.md`; the shared wor
 - 🎨 **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude
   Design canvas and never edits an app's repo; impeccable builds the pick. `x:crew-designer`
   owns its contract, `x:crew-designer-interview` the brief clio writes with dima.
-- 🐦‍⬛ **`crow`** (adviser) — clio's parked adviser: a pinned `--bg` session that reads her thread on a wake <!-- cc -->
+- 🐦‍⬛ **`crow`** (adviser) — clio's parked adviser: a pinned `--bg` session that reads every clio thread, main and wings, on a wake <!-- cc -->
   (her Stop and PreCompact hooks) and sends one note or `none`. `_crow/AGENTS.md` owns it.
 - 🧢 **`cap`** (lane coordinator) — coming: runs one lane for clio. <!-- cc -->
 - 🎀 **`helga`** (copyist) — clio's editing sidecar: a parked `--bg` Haiku 5.5 session for her mechanical chores. `x:crew-helga` owns its contract; adopted (`docs/test-drive/helga.md`). <!-- cc -->
