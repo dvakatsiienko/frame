@@ -6,6 +6,7 @@ import {
     type Groomed,
     groomStep,
     groomedOnDisk,
+    groomedOrUnlogged,
     newBare,
     newUnstamped,
     ungroomedStamps,
@@ -606,7 +607,7 @@ if (import.meta.main) {
         tasks,
         today,
         lastTriage,
-        groomedOnDisk,
+        groomedOrUnlogged,
         closed,
         wishBlocks,
     );
