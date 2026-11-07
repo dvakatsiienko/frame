@@ -189,8 +189,9 @@ func TestReviewAtTheCapNamesDimasLabelAndRequestsNothing(t *testing.T) {
 	if got.code != 1 || strings.Contains(calls(t, dir), "pr edit") {
 		t.Fatalf("exit %d, calls:\n%s", got.code, calls(t, dir))
 	}
-	if !strings.Contains(got.stdout, "dima applies the label") || strings.Contains(got.stdout, "approve") {
-		t.Errorf("the refusal does not name dima's label alone: %s", got.stdout)
+	// the error alone: the envelope also prints the tree's path, and a tree's name can hold any word
+	if e := envelopeOf(got).Error; !strings.Contains(e, "dima applies the label") || strings.Contains(e, "approve") {
+		t.Errorf("the refusal does not name dima's label alone: %s", e)
 	}
 }
 

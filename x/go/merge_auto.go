@@ -186,12 +186,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	needsApprove := false
 	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
 		var err error
-		ci, needsApprove, err = ciCheck(api, trunk, pr.Head.Sha)
-		if err != nil || needsApprove {
-			return ci.Detail, err
+		if ci, err = ciCheck(api, trunk, pr.Head.Sha); err != nil {
+			return "", err
 		}
 		return ci.shown()
 	}); err != nil {
@@ -257,7 +255,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	d.Decision, d.Wait = decide(brake, selfWait, needsApprove, sixthSense, ci, round, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, ci, round, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -265,15 +263,13 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	return d, nil
 }
 
-// the brake and a self-edit outrank every check; a bytes head missing only review:clean gets the approve
-func decide(brake, selfWait string, needsApprove bool, sixthSense, ci, round, threads mergeCheck) (decision, wait string) {
+// the brake and a self-edit outrank every check
+func decide(brake, selfWait string, sixthSense, ci, round, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
 	case selfWait != "":
 		return "wait", selfWait
-	case sixthSense.OK && round.OK && threads.OK && needsApprove:
-		return "approve", ""
 	}
 	for _, c := range []mergeCheck{sixthSense, round, ci, threads} {
 		if !c.OK {
@@ -291,7 +287,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	}
 	d.heads[n] = pr.Head.Sha
 	sixthSense := d.sixthSenseOf(api, repo, n, pr)
-	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Sha)
+	ci, err := ciCheck(api, trunk, pr.Head.Sha)
 	if err != nil {
 		return "", err
 	}
@@ -315,12 +311,9 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
-	decision, wait := decide("", selfWait, needsApprove, sixthSense, ci, round, threads)
-	switch decision {
-	case "merge":
+	decision, wait := decide("", selfWait, sixthSense, ci, round, threads)
+	if decision == "merge" {
 		return "", nil
-	case "approve":
-		return layer + " needs its review:clean first: x lane merge-auto --apply " + n, nil
 	}
 	for _, c := range []mergeCheck{sixthSense, ci, round, threads} {
 		if !c.OK && c.Detail == wait {
@@ -391,15 +384,8 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		r.Done("brake released on #"+d.PR, "")
 		return d, nil
 	}
-	if d.Decision != "approve" {
-		r.skip("approve")
-	} else if err := r.Step("approve", "approving the head on dima's account, then waiting for review:clean", func() (string, error) {
-		return approveAndAwait(api, d)
-	}); err != nil {
-		return nil, err
-	}
 	if err := r.Step("merge", "squash-merging the read head", func() (string, error) {
-		// a hold set since the plan read: the approve alone waits minutes
+		// a hold set since the plan read
 		if !d.dimaOK {
 			held, holdErr := readHolds(d.Repo)
 			if stop := holdStop(d.Repo, d.PR, held, holdErr); stop != "" {
@@ -920,7 +906,7 @@ func renovateAuthor(login string) bool {
 }
 
 // a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
-// makes it a member's pr, as bytes' review-renovate.yml reads it; an unread list, or one cut short of the head (github
+// makes it a member's pr; an unread list, or one cut short of the head (github
 // stops at 250, a push can land between reads), counts as that push; a changed workflow file asks the clean too
 func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
 	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
@@ -1096,33 +1082,8 @@ func logLine(text string) string {
 	return line
 }
 
-// bytes: one ci review round, then an approve on dima's account makes review-approved.yml publish it
-const reviewClean = "review:clean"
-
-func approveAndAwait(api string, d *mergeDecision) (string, error) {
-	if _, _, err := ghSend(asDima, http.MethodPost, api+"/pulls/"+d.PR+"/reviews", map[string]string{
-		"commit_id": d.Head, "event": "APPROVE", "body": short(d.Head) + ": " + d.Checks[0].Detail + " — x lane merge-auto",
-	}, nil); err != nil {
-		return "", err
-	}
-	wait, poll := durationEnv("X_REVIEW_WAIT", 10*time.Minute), durationEnv("X_POLL", 15*time.Second)
-	for deadline := time.Now().Add(wait); ; time.Sleep(poll) {
-		ran, err := checksOf(asDima, api, d.Head)
-		if err != nil {
-			return "", err
-		}
-		if i := slices.IndexFunc(ran, func(p prCheck) bool { return p.Name == reviewClean }); i >= 0 && ran[i].State == "success" {
-			return "approved " + short(d.Head) + ", " + reviewClean + " green", nil
-		}
-		if time.Now().After(deadline) {
-			return "", &Fail{Msg: fmt.Sprintf("approved %s, and %s was not green on it after %s", short(d.Head), reviewClean, wait),
-				Next: "x lane merge-auto " + d.PR}
-		}
-	}
-}
-
-// «no run» and «skipped» are never green; needsApprove when review:clean alone is missing
-func ciCheck(api, base, head string) (mergeCheck, bool, error) {
+// «no run» and «skipped» are never green
+func ciCheck(api, base, head string) (mergeCheck, error) {
 	c := mergeCheck{Name: "ci"}
 	var protection struct {
 		Contexts []string `json:"contexts"`
@@ -1132,7 +1093,7 @@ func ciCheck(api, base, head string) (mergeCheck, bool, error) {
 	}
 	status, _, err := ghSend(asDima, http.MethodGet, api+"/branches/"+base+"/protection/required_status_checks", nil, &protection)
 	if err != nil && status != http.StatusNotFound {
-		return c, false, err
+		return c, err
 	}
 	required := protection.Contexts
 	for _, check := range protection.Checks {
@@ -1142,35 +1103,25 @@ func ciCheck(api, base, head string) (mergeCheck, bool, error) {
 	}
 	if len(required) == 0 {
 		c.Detail = "0 required checks on " + base + ": nothing proves the head"
-		return c, false, nil
+		return c, nil
 	}
 	ran, err := checksOf(asDima, api, head)
 	if err != nil {
-		return c, false, err
+		return c, err
 	}
-	reviewState := ""
 	for _, name := range required {
 		i := slices.IndexFunc(ran, func(p prCheck) bool { return p.Name == name })
 		switch {
-		case name == reviewClean && (i < 0 || ran[i].State != "success"):
-			reviewState = "missing"
-			if i >= 0 {
-				reviewState = ran[i].State
-			}
 		case i < 0:
 			c.Detail = "no run of " + name + " for " + short(head)
-			return c, false, nil
+			return c, nil
 		case ran[i].State != "success":
 			c.Detail = name + " is " + ran[i].State + " on " + short(head)
-			return c, false, nil
+			return c, nil
 		}
 	}
-	if reviewState == "" {
-		c.OK, c.Detail = true, fmt.Sprintf("%d of %d required green on %s", len(required), len(required), short(head))
-		return c, false, nil
-	}
-	c.Detail = fmt.Sprintf("%s is %s on %s, the rest of %d required green", reviewClean, reviewState, short(head), len(required))
-	return c, true, nil
+	c.OK, c.Detail = true, fmt.Sprintf("%d of %d required green on %s", len(required), len(required), short(head))
+	return c, nil
 }
 
 // the one repo whose merges need a reviewer round; frame's round stays advice
@@ -1202,7 +1153,7 @@ func (j runJobs) reviewerFinished() bool {
 	})
 }
 
-// the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-guard.sh)
+// the steps that end a round red when the reviewer posted nothing; a findings round ends green (review-round.yml)
 var standDownSteps = []string{"A green review means a clean review", "A round with no review is red"}
 
 // a run reaches the head from its history, or by a rebase that kept the code, as a clean carries (dima, o66, o95)

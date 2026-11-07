@@ -418,13 +418,12 @@
                 "threads",
                 "risky",
                 "brake",
-                "approve",
                 "merge",
                 "hold",
                 "decamp"
             ],
             "touches": [
-                "github — the pr's merge and a bytes approve, as dima's gh login",
+                "github — the pr's merge, as dima's gh login",
                 "~/.claude/shelf/pr-verified.json — the verified clean per pr and who read it (`:by`, none is sixth sense), read",
                 "<clone>/.claude/worktrees/<tree> — a merged lane's clean tree at the landed head, decamped",
                 "~/.claude/sessions/ — who sits in a tree, read",

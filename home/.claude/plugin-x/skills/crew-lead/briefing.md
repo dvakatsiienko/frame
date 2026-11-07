@@ -49,6 +49,6 @@
 - **a pr clio opens for codie is opened as the codie app** — codie opens its own with `x lane pr-open`; when clio opens one: `GH_TOKEN=$(node ~/frame/script/github-agent-token.ts) gh pr create …` renders as `x-codie-cc[bot]`, a plain `gh` makes it dima's.
 - **a watch lives until its pr merges or closes, never until its codie stops** — `📡 watch-pr` (`~/frame/_clio/.claude/hooks/watch-pr.sh`, armed by `clio:boot`) wakes clio once per head on a stamped head that is green or blocked, a red check or a conflict, and logs the rest to `~/.local/state/clio/watch-quiet.log`, so a summon arms no watch of its own. a lane's one sixth sense is summoned at codie's message naming its first pr. a cloud report lands on a `cloud/<slug>` branch the same hook sees.
 - **one codie with two prs in sequence gets one sixth sense that takes them in turn**.
-- **before a merge, `review:clean` is green on the head**: the one ci round at «final», or past it clio's `gh pr review --approve` on sixth sense's clean; never a hand relabel.
+- **before a bytes merge, a reviewer round finished on the head or an ancestor**: the one ci round at «final», read by `x lane merge-auto`; never a hand relabel.
 - **sixth sense's cap stop goes to clio**, who drives the side lane fully, decides the merge and tells dima the stop as info (dima, o60); dima is never added as reviewer (2026-10-22: he does not read prs).
 - **a ci reviewer's «clean» in under a minute on a big diff is a shallow pass**; sixth sense's verdict decides, the ci reviewer is a second pair of eyes.

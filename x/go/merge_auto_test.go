@@ -19,15 +19,15 @@ import (
 )
 
 // a github for merge-auto: GETs answer from pages (a key with "?page=2" beside it splits the list), the
-// merge refuses a sha that is not the pr's head, an approve may publish review:clean, and every call
+// merge refuses a sha that is not the pr's head, a read may run a hook, and every call
 // lands in calls as "METHOD path" with its json body after a space
 type hub struct {
-	mu        sync.Mutex
-	pages     map[string]string
-	calls     []string
-	auth      []string
-	head      string
-	onApprove func(h *hub)
+	mu     sync.Mutex
+	pages  map[string]string
+	calls  []string
+	auth   []string
+	head   string
+	onRead func(path string)
 	// a path's answer from its second GET on: a push landing between two reads
 	later map[string]string
 	reads map[string]int
@@ -56,12 +56,6 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			}
 			_, _ = w.Write([]byte(`{"sha":"` + mergedSha + `","merged":true,"message":"Pull Request successfully merged"}`))
 			return
-		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/reviews"):
-			if h.onApprove != nil {
-				h.onApprove(h)
-			}
-			_, _ = w.Write([]byte(`{"state":"APPROVED"}`))
-			return
 		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/labels"):
 			if h.pages["labels"] == serverDown || (h.pages["labels:"+brakeLabel] == serverDown && strings.Contains(string(raw), brakeLabel)) {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -75,6 +69,9 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 			return
 		}
 		key := r.URL.Path
+		if h.onRead != nil {
+			h.onRead(key)
+		}
 		if r.URL.Query().Get("page") != "" {
 			key += "?page=" + r.URL.Query().Get("page")
 		} else if _, paged := h.pages[key+"?page=2"]; paged {
@@ -1036,28 +1033,19 @@ func githubRevert(t *testing.T, w *mergeWorld, _, at string) string {
 	return commitAt(t, w, at, "commit", "-q", "-m", "Revert \"an earlier pr (#5)\" (#6)\n\nReverts o/r#5")
 }
 
-// bytes: review:clean is a required check, and an approve on dima's account makes review-approved.yml
-// publish it green on the approved head
-func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
+// bytes: its merges need a reviewer round
+func bytesWorld(t *testing.T) *mergeWorld {
 	w := newMergeWorld(t, "apps/speak/src/a.ts")
 	// the server already runs: a write after it takes the lock, the only edge the race detector sees, since
 	// the request that reads it comes from a child process
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
-	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build","review:clean"]}`
+	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build"]}`
 	w.hub.pages[repoPath+"/actions/workflows/review.yml"] = `{"name":"review"}`
 	w.env = append(w.env, "X_ROUND_REPO=o/r")
 	w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
 		{"id":1,"head_branch":"coder/x","head_sha":"` + w.head + `","status":"completed","conclusion":"success"}]}`
 	w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf("success", "")
-	if publishes {
-		w.hub.onApprove = func(h *hub) {
-			h.pages[repoPath+"/commits/"+h.head+"/check-runs"] = `{"check_runs":[
-				{"name":"test","status":"completed","conclusion":"success"},
-				{"name":"build","status":"completed","conclusion":"success"},
-				{"name":"review:clean","status":"completed","conclusion":"success"}]}`
-		}
-	}
 	return w
 }
 
@@ -1066,15 +1054,6 @@ func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
 func jobOf(conclusion, failedStep string) string {
 	return `{"jobs":[{"name":"review-round / reviewer","conclusion":"` + conclusion + `","steps":[{"name":"` + failedStep + `","conclusion":"failure"},
 		{"name":"A round with no review is red","conclusion":"skipped"}]}]}`
-}
-
-// bytes once review:clean left its required checks
-func roundWorld(t *testing.T) *mergeWorld {
-	w := bytesWorld(t, false)
-	w.hub.mu.Lock()
-	defer w.hub.mu.Unlock()
-	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build"]}`
-	return w
 }
 
 func (w *mergeWorld) reviewRun(conclusion, job, failedStep string) {
@@ -1087,7 +1066,7 @@ func (w *mergeWorld) reviewRun(conclusion, job, failedStep string) {
 
 func TestMergeAutoLandsABytesPrOnItsRoundWithNoApprove(t *testing.T) {
 	t.Parallel()
-	w := roundWorld(t)
+	w := bytesWorld(t)
 
 	planned := w.run(t, "7")
 	got := w.run(t, "7", "--apply")
@@ -1097,6 +1076,11 @@ func TestMergeAutoLandsABytesPrOnItsRoundWithNoApprove(t *testing.T) {
 	}
 	if approves := w.hub.sent("POST " + repoPath + "/pulls/7/reviews"); len(approves) != 0 {
 		t.Errorf("an approve went out: %v", approves)
+	}
+	for _, a := range w.hub.auth {
+		if a != "Bearer gho_dima" {
+			t.Fatalf("a call went out as %q, want dima's gh login", a)
+		}
 	}
 }
 
@@ -1135,7 +1119,7 @@ func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			w := roundWorld(t)
+			w := bytesWorld(t)
 			c.change(w)
 
 			got := w.run(t, "7")
@@ -1152,7 +1136,7 @@ func TestMergeAutoNamesTheDoorForAStandDown(t *testing.T) {
 	for _, step := range []string{"A green review means a clean review", "A round with no review is red"} {
 		t.Run(step, func(t *testing.T) {
 			t.Parallel()
-			w := roundWorld(t)
+			w := bytesWorld(t)
 			w.reviewRun("failure", "failure", step)
 
 			got := w.run(t, "7")
@@ -1169,7 +1153,7 @@ func TestMergeAutoNamesTheDoorForAStandDown(t *testing.T) {
 
 func TestMergeAutoNamesNoStandDownDoorOffTheHeadsHistory(t *testing.T) {
 	t.Parallel()
-	w := roundWorld(t)
+	w := bytesWorld(t)
 	w.reviewRun("failure", "failure", "A round with no review is red")
 	w.rebaseWithANewCommit(t)
 
@@ -1185,7 +1169,7 @@ func TestMergeAutoExemptsARenovatePrFromTheRound(t *testing.T) {
 	for _, login := range []string{"x-renovate[bot]", "renovate[bot]"} {
 		t.Run(login, func(t *testing.T) {
 			t.Parallel()
-			w := roundWorld(t)
+			w := bytesWorld(t)
 			w.hub.mu.Lock()
 			w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"number":7,`, `"number":7,"user":{"login":"`+login+`"},`, 1)
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[]}`
@@ -1279,20 +1263,7 @@ func TestMergeAutoRecordsNoExemptionOnARenovatePrWithAClean(t *testing.T) {
 	}
 }
 
-// while review:clean is required the pass reaches the approve, and that is its whole way in
-func TestMergeAutoApprovesARenovatePrWithNoClean(t *testing.T) {
-	t.Parallel()
-	w := bytesWorld(t, true)
-	w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
-
-	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
-
-	if approves := w.hub.sent("POST " + repoPath + "/pulls/7/reviews"); got.code != 0 || len(approves) != 1 || len(w.hub.sent("PUT ")) != 1 {
-		t.Fatalf("exit %d, %d approves, %d merges, want one of each:\n%s", got.code, len(approves), len(w.hub.sent("PUT ")), got.stdout)
-	}
-}
-
-// bytes' review-renovate.yml stands down on a member's push to a renovate branch; a pass here would reach the approve
+// a member's push on a renovate branch makes it a member's pr
 func TestMergeAutoAsksACleanOfARenovatePrItCannotTrust(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, login, commits string }{
@@ -1309,7 +1280,7 @@ func TestMergeAutoAsksACleanOfARenovatePrItCannotTrust(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			w := bytesWorld(t, true)
+			w := bytesWorld(t)
 			w.renovatePr(t, c.login, c.commits)
 
 			got := w.run(t, "7", "--apply")
@@ -1364,7 +1335,7 @@ func TestMergeAutoKeepsTheOtherGatesOnARenovatePr(t *testing.T) {
 
 func TestMergeAutoRefusesAFinishedRoundWithAnOpenThread(t *testing.T) {
 	t.Parallel()
-	w := roundWorld(t)
+	w := bytesWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[
 		{"isResolved":false,"path":"a.ts","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}}]}}}}}`
@@ -1377,7 +1348,7 @@ func TestMergeAutoRefusesAFinishedRoundWithAnOpenThread(t *testing.T) {
 
 func TestMergeAutoCountsARoundOnAnAncestorOfTheHead(t *testing.T) {
 	t.Parallel()
-	w := roundWorld(t)
+	w := bytesWorld(t)
 	write(t, filepath.Join(w.seed, "fix.ts"), "a fix after the round\n")
 	gitT(t, w.seed, "add", ".")
 	gitT(t, w.seed, "commit", "-q", "-m", "a fix after the round")
@@ -1391,7 +1362,7 @@ func TestMergeAutoCountsARoundOnAnAncestorOfTheHead(t *testing.T) {
 
 func TestMergeAutoCarriesARoundAcrossARebaseWithTheSameCode(t *testing.T) {
 	t.Parallel()
-	w := roundWorld(t)
+	w := bytesWorld(t)
 	w.mainMoves(t, "one.txt")
 	w.moveHead(t)
 
@@ -1413,7 +1384,7 @@ func (w *mergeWorld) rebaseWithANewCommit(t *testing.T) {
 
 func TestMergeAutoCountsNoRoundWhenARebaseChangedTheCode(t *testing.T) {
 	t.Parallel()
-	w := roundWorld(t)
+	w := bytesWorld(t)
 	w.rebaseWithANewCommit(t)
 
 	if got := w.run(t, "7"); got.code != 1 || !strings.Contains(envelopeOf(got).Error, "x lane review 7") {
@@ -1434,34 +1405,7 @@ func TestMergeAutoAsksNoRoundOutsideBytes(t *testing.T) {
 	}
 }
 
-func TestMergeAutoMergesABytesHeadAfterItsApprove(t *testing.T) {
-	t.Parallel()
-	w := bytesWorld(t, true)
-
-	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
-
-	approves := w.hub.sent("POST " + repoPath + "/pulls/7/reviews")
-	merges := w.hub.sent("PUT ")
-	if got.code != 0 || len(approves) != 1 || len(merges) != 1 {
-		t.Fatalf("exit %d, %d approves, %d merges, want one each:\n%s", got.code, len(approves), len(merges), got.stdout)
-	}
-	if !strings.Contains(approves[0], "by sixth sense") {
-		t.Errorf("the approve %q does not name whose clean it took", approves[0])
-	}
-	if !strings.Contains(approves[0], `"event":"APPROVE"`) || !strings.Contains(approves[0], `"commit_id":"`+w.head+`"`) {
-		t.Errorf("the approve %q is not an APPROVE of the head %s", approves[0], w.head)
-	}
-	if calls := strings.Join(w.hub.calls, "\n"); strings.Index(calls, "POST "+repoPath+"/pulls/7/reviews") > strings.Index(calls, "PUT ") {
-		t.Errorf("the merge went before the approve:\n%s", calls)
-	}
-	for _, a := range w.hub.auth {
-		if a != "Bearer gho_dima" {
-			t.Fatalf("a call went out as %q, want dima's gh login", a)
-		}
-	}
-}
-
-func TestMergeAutoApprovesNothingUnlessTheRestHolds(t *testing.T) {
+func TestMergeAutoMergesNothingUnlessTheRestHolds(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		name   string
@@ -1484,26 +1428,33 @@ func TestMergeAutoApprovesNothingUnlessTheRestHolds(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			w := bytesWorld(t, true)
+			w := bytesWorld(t)
 			c.change(t, w)
 
-			got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
+			got := w.run(t, "7", "--apply")
 
-			if approves, merges := w.hub.sent("POST "+repoPath+"/pulls/7/reviews"), w.hub.sent("PUT "); got.code != 1 || len(approves)+len(merges) != 0 {
-				t.Fatalf("exit %d, %d approves, %d merges, want neither:\n%s", got.code, len(approves), len(merges), got.stdout)
+			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 {
+				t.Fatalf("exit %d, %d merges, want none:\n%s", got.code, len(merges), got.stdout)
 			}
 		})
 	}
 }
 
-func TestMergeAutoStopsWhenReviewCleanNeverLands(t *testing.T) {
+// a repo that still requires it waits as on any check: nothing here approves its way past
+func TestMergeAutoWaitsOnARequiredReviewClean(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t, false)
+	w := bytesWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build","review:clean"]}`
+	w.hub.mu.Unlock()
 
-	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms", "X_REVIEW_WAIT=200ms"), "lane", "merge-auto", "7", "--apply")
+	got := w.run(t, "7", "--apply")
 
-	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "review:clean") {
-		t.Fatalf("exit %d, %d merges, error %q, want a stop naming review:clean", got.code, len(merges), envelopeOf(got).Error)
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "no run of review:clean") {
+		t.Fatalf("exit %d, %d merges, error %q, want the wait named", got.code, len(merges), envelopeOf(got).Error)
+	}
+	if approves := w.hub.sent("POST " + repoPath + "/pulls/7/reviews"); len(approves) != 0 {
+		t.Errorf("an approve went out: %v", approves)
 	}
 }
 

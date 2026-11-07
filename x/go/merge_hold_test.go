@@ -81,14 +81,14 @@ func TestMergeAutoHonoursXStateForTheHoldOnlyUnderXTest(t *testing.T) {
 	}
 }
 
-// the approve waits minutes for review:clean; a hold set in that wait still stops the merge
-func TestMergeAutoReadsAHoldSetDuringItsApproveWait(t *testing.T) {
+// a hold set after the plan read still stops the merge
+func TestMergeAutoReadsAHoldSetAfterItsPlan(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t, true)
-	publish := w.hub.onApprove
-	w.hub.onApprove = func(h *hub) {
-		write(t, holdRecordOf(w), `{"prs":["7"]}`)
-		publish(h)
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.onRead = func(path string) {
+		if strings.HasSuffix(path, "/pulls/7/files") {
+			write(t, holdRecordOf(w), `{"prs":["7"]}`)
+		}
 	}
 
 	got := w.run(t, "7", "--apply")

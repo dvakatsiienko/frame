@@ -99,15 +99,15 @@ brief says which, and when it does not, ask once, up front.
 4. **with a sixth sense** named in the brief (`🌗 🔎 sixth sense: <scope> | #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: «final», your head pushed, goes to the coordinator as `[done]`, who hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push (the ci reviewer's one round
-   was spent at «final»; past it clio approves the head on sixth sense's clean), then message «round N on <sha>»; the loop
+   was spent at «final»; a round on an ancestor of the head still counts), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your `[done]` report on `clean` quotes the verdict object, the round count, the
    head sha and the test command with its exit. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
-5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, and at
-   the 1-round cap names clio's approval as the way past. run it once, at «final», never per push.
+5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, up to
+   the 1-round cap. run it once, at «final», never per push.
    fix what is real; answer «declined: <why>» on the thread.
 6. **hand over**, once both reviews are handled: the «final» line to the coordinator (dima is never added as a
-   reviewer; clio approves and merges): `[done]` + pr url + head sha + «final». leave no untracked file in the worktree,
+   reviewer; clio merges): `[done]` + pr url + head sha + «final». leave no untracked file in the worktree,
    since one blocks the merge cleanup.
 
 the done report names every pass and what it returned; the retro says which layer found what nobody
