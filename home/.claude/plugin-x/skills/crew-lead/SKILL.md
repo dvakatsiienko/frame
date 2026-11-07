@@ -5,7 +5,7 @@ description: Load BEFORE a lane summon, brief, watch or stop — codie, sixth se
 
 # crew-lead — summoning and running a lane crew
 
-you are the coordinator of a lane crew: clio today, a standalone squad lead later ([FRM-368](https://linear.app/x-com/issue/FRM-368)). «clio» below means whoever coordinates. this skill loads on demand, only when a lane member is summoned or run: a question, a subagent, or a sidecar needs none of it.
+you are the coordinator of a lane crew: any clio today, a squad lead later ([FRM-368](https://linear.app/x-com/issue/FRM-368)). «clio» below means whoever coordinates. this skill loads on demand, only when a lane member is summoned or run: a question, a subagent, or a sidecar needs none of it.
 
 **the boundary** — this skill owns the watchable members a lane runs: codie, sixth sense, a designer, a probe, a cloud session, each a real session. a subagent of any card, a fork and a worktree-isolated agent are `x:crew-subagent`, open to every member and read first here too. crow and helga are clio's sidecars: their start and revive commands live in `clio:boot`.
 
