@@ -96,3 +96,22 @@ test('the store path costs one id spawn, every poll after it a file read', async
     expect(was).toBe(1);
     expect(spawns.filter((s) => s === 'id').length).toBe(1);
 });
+
+for (const surface of ['terminal', 'desktop'] as const)
+    test(`🔓 sits immediately left of 🎛️, on ${surface}`, async ($, on) => {
+        world(on, { [REAL]: ON });
+        const ui = await band($, surface);
+        const keys = (await ui.findAll({ type: 'Button' })).map((b) => b.key);
+        expect(
+            keys.indexOf('settings') - keys.indexOf('operator-override'),
+        ).toBe(1);
+    });
+
+test('🔓 reads «operator override» on hover', async ($, on) => {
+    world(on, { [REAL]: ON });
+    const ui = await band($);
+    const cards = (await ui.findAll({ type: 'Box' }))
+        .filter((n) => n.props.display === 'none')
+        .map((n) => n.text);
+    expect(cards).toContain('operator override');
+});
