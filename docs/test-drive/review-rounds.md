@@ -96,6 +96,8 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-06 · BYT-94 ci made boring, codie · 3 local reviews on both prs, 1 ci round each · each local review found something the others missed
 - 2026-11-06 · FRM-511 cli lane 5, sixth sense · 2 rounds, the second only the refuted lines plus mutants, graded lines in the done comment · helped, keep
 - 2026-11-06 · FRM-509 cli lane 5, sixth sense · 2 rounds, round 1 refuted: a branch mid-rebase in another tree was deleted; 14 of 14 mutants red on head; wishkeeper then caught decamp unwired in the wing landing and the halt · useful
+- 2026-11-07 · FRM-433 cli lane 5, sixth sense · 2 rounds; codie's wisphunter spec 4 and standards 6, all fixed, its done comment miscounts them; CodeRabbit not run · useful
+- 2026-11-07 · FRM-474 cli lane 6, sixth sense + wishkeeper · 7 rounds, the last from wishkeeper's hold: each fix found another way to read «no row» as passed · useful, and past the cap of 3
 - 2026-11-06 · a trial from the next side lane, dima's tick: sixth sense summoned at codie's «final», not at its first commit · measure: watch and deadline pings spared, a miss an early plan read would have caught
 
 ## verdict
