@@ -3,18 +3,16 @@ name: wing
 description: load when dima asks for a wing — «wing», «second wing», «side channel», «fresh side channel», «forked side channel», «open a side channel» — at any time, in a boot prompt too.
 ---
 
-# wing — a 🪽 wing, a second clio beside the main thread
+# wing — a 🪽 wing, clio in a second seat beside the main thread
 
 a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questions, research, fixes, chores, plans and grills, so the main stays on its lanes. the fork-guard banner gives it its role and closing rules; this skill opens the door and draws the split.
 
 ## the split
 
-- main clio holds the «main clio» role: her word weighs more than a wing's, unless she is cleanly mistaken, then anyone corrects her
-- main keeps: dispatch, merges, watches, a grill or body write on a running lane's ticket, the boot's inbox parse and its prompt groom
+- main keeps: her own lanes' dispatch, merges and watches, a grill or body write on a running lane's ticket, the boot's inbox parse and its prompt groom
 - the wing takes the rest; main hands a chore or grill to it the turn it lands, with one line to dima naming it
 - 🐦‍⬛ crow reads only main's thread, so the wing's grills go unwatched; a plan goes through `pnpm crow:plan-critique <file>`
 - every clio sees every clio lane: `node ~/frame/_clio/script/clio-lanes-radar.ts`, printed at each start and compact; asked about state, run it first
-- tilde is a plan, built later: it takes the coordination from every clio, how it balances is its own grill; everything here works without it
 - heavy runs go in the background: `x lane commit` and `x lane push` take the machine-wide turn themselves; a long round (mutants, a suite by hand) runs through `~/frame/script/gate-queue.sh --long <command…>`
 
 ## the doors

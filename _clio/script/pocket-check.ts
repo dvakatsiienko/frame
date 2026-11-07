@@ -121,6 +121,14 @@ export function checkPocket(
                         report(
                             `a line points at ${named}, closed or gone: yank it with backlog task edit --remove-ac`,
                         );
+            for (const [line = ''] of text.matchAll(FLYWAY_OPEN_LINE))
+                for (const [named = ''] of line.matchAll(
+                    /\b(?:FRM|BYT)-\d+\b/g,
+                ))
+                    if (closedTickets.has(named))
+                        report(
+                            `a line points at ${named}, closed: yank it with backlog task edit --remove-ac`,
+                        );
             for (const [, line] of text.matchAll(FLYWAY_STANDING))
                 if (!STANDING_ENDS.test(line ?? ''))
                     report(
