@@ -52,6 +52,8 @@ function ghWords(c: Command) {
 
 const GRAPHQL_MERGE =
     /\b(mergePullRequest|enqueuePullRequest|enablePullRequestAutoMerge)\b/;
+const FIELD_FLAGS = new Set(['-f', '-F', '--field', '--raw-field']);
+const FIELD_GLUED = /^(?:-[fF]|--field=|--raw-field=)(.+)$/;
 const GRAPHQL_PATH = /^(https?:\/\/[^/]+(\/api)?)?\/?graphql\/?(\?.*)?$/i;
 const MERGE_PATH = /\/pulls\/[^/]+\/merge(-async)?\/?(\?.*)?$/;
 const asPr = (digits: string | undefined) =>
@@ -91,16 +93,20 @@ function rawMerge(c: Command) {
     if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w))) {
         // a query read from a file or a variable holds text this rule cannot see; any other field's variable, a thread id
         // on a review-thread mutation, only counts against a hold
-        const isMerge = c.args.some(
-            (a) =>
-                GRAPHQL_MERGE.test(a.text) ||
-                (a.text.startsWith('query=') &&
-                    (a.isExpanding || a.text.startsWith('query=@'))) ||
-                a.text.startsWith('--input'),
-        );
         if (c.args.some((a) => GRAPHQL_MERGE.test(a.text)))
             return { pr: undefined };
-        if (isMerge) return { isUnread: true, pr: undefined };
+        const isUnread = c.args.some((a, i) => {
+            if (a.text.startsWith('--input')) return true;
+            const before = c.args[i - 1]?.text ?? '';
+            const glued = a.text.match(FIELD_GLUED)?.[1];
+            const field = FIELD_FLAGS.has(before) ? a.text : glued;
+            if (field === undefined)
+                return a.isExpanding && !VALUE_FLAGS.has(before);
+            return field.startsWith('query=')
+                ? a.isExpanding || field.startsWith('query=@')
+                : a.isExpanding && !/^\w+=/.test(field);
+        });
+        if (isUnread) return { isUnread: true, pr: undefined };
         return c.args.some((a) => a.isExpanding || /=@/.test(a.text))
             ? { isHoldOnly: true, pr: undefined }
             : undefined;
@@ -110,7 +116,7 @@ function rawMerge(c: Command) {
     const isMethodUnread = c.args.some(
         (a, i) =>
             a.isExpanding &&
-            (/^(-X|--method)=/.test(a.text) ||
+            (/^(-X|--method=)/.test(a.text) ||
                 c.args[i - 1]?.text === '-X' ||
                 c.args[i - 1]?.text === '--method'),
     );

@@ -4220,6 +4220,55 @@ test('✅ is not drawn while only ⚠️ asks are left to mark', async ($, on) =
     expect(await ui.find({ key: 'orbit:all' })).toBeUndefined();
 });
 
+test("a session's first presses, the second reading no ticks yet, keep both records", async ($, on) => {
+    world(on);
+    const race = pressRace(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    race.frozenTicks = { value: undefined, version: 0 };
+    await ui.press({ key: 'orbit:accepted:o2' });
+    race.frozenTicks = undefined;
+    expect(race.ticks.map((t) => t.id)).toEqual(['o1', 'o2']);
+});
+
+test('a mark whose orbit write is denied leaves no record', async ($, on) => {
+    world(on);
+    let ticks: unknown;
+    let isDenied = false;
+    on('state.set', (_$, e, next) => {
+        if (e.key === 'ticks') ticks = e.value;
+        return isDenied && e.key === 'orbit' ? { deny: 'disk full' } : next(e);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes']);
+    isDenied = true;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(ticks).toEqual([]);
+});
+
+test('a steer typed during a tool call outlives a save reading from before it', async ($, on) => {
+    world(on);
+    const race = pressRace(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:rejected:o2' });
+    await ui.find({ key: 'orbit:rejected:o2' });
+    const stale = race.last;
+    await ui.input({ key: 'orbit:steer:o2', text: 'wait for ci' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    race.frozen = stale;
+    await $.tool.call({ command: 'ls', tool: 'Bash' });
+    race.frozen = undefined;
+    expect((askOf(race, 'o2') as { steer?: string } | undefined)?.steer).toBe(
+        'wait for ci',
+    );
+});
+
 test('✅ on twenty-five asks keeps every record', async ($, on) => {
     world(on);
     const writes = tickLog(on);

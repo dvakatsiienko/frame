@@ -2022,9 +2022,12 @@ async function saveOrbit(
     // the one ask a steer box saved: only its steer is typing; every other ask is a read the save carried along
     typedId?: string,
 ) {
+    // as currentOrbit: a read from before this process's last write never wins, or a steer typed since reads as cleared
+    const read = await $.state.get(ORBIT).catch(() => undefined);
     const was =
-        (await $.state.get(ORBIT).catch(() => undefined))?.value?.asks ??
-        orbit.asks;
+        (!orbitWrites && (read?.version ?? 0) >= orbitVersion
+            ? read?.value?.asks
+            : undefined) ?? orbit.asks;
     orbit = {
         ...next,
         asks: next.asks.map((a) =>
@@ -2035,7 +2038,7 @@ async function saveOrbit(
             ),
         ),
     };
-    await keepOrbit($);
+    const isKept = await keepOrbit($);
     await keepState($, { orbit }).catch(() => undefined);
     const sid = await currentId($);
     if (!sid) return;
@@ -2060,6 +2063,7 @@ async function saveOrbit(
             } satisfies Entry)
             .catch(() => undefined);
     else await $.store.delete(PREFIX + sid).catch(() => undefined);
+    return isKept;
 }
 
 // every get of one dispatch reads one moment (engine.md), so a hook running while he presses reads from before the
@@ -2070,8 +2074,10 @@ async function keepOrbit($: EngineInterface) {
     orbitWrites++;
     try {
         orbitVersion = (await $.state.set(ORBIT, orbit)).version;
+        return true;
     } catch (err) {
         await $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`);
+        return false;
     } finally {
         orbitWrites--;
     }
@@ -2311,7 +2317,7 @@ async function markAsksNow(
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
     );
-    await saveOrbit($, { ...o, asks }, typedId);
+    return saveOrbit($, { ...o, asks }, typedId);
 }
 
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
@@ -2346,20 +2352,21 @@ const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 // every live tick counts at the guard (FRM-510), so a record leaves only past the guard's own 2 h, never by a count
 const TICK_LIVE_MS = 2 * 60 * 60 * 1000;
 // as the orbit's read: a read from before this process's last write never wins
-let ticksKept: { value: StashTick[]; version: number } = {
+let ticksKept: { sid?: string; value: StashTick[]; version: number } = {
     value: [],
     version: 0,
 };
 async function readTicks($: EngineInterface) {
     const read = await $.state.get(TICKS);
-    // a state that holds nothing was reset under this process: a tick lost to that fails closed at the guard
-    if (read.version >= ticksKept.version || read.value === undefined)
-        ticksKept = { value: read.value ?? [], version: read.version };
+    // a new session id: its state was reset under this process, so the kept ticks are another conversation's
+    const sid = await currentId($);
+    if (sid !== ticksKept.sid || read.version >= ticksKept.version)
+        ticksKept = { sid, value: read.value ?? [], version: read.version };
     return ticksKept.value;
 }
 async function writeTicks($: EngineInterface, value: StashTick[]) {
     const { version } = await $.state.set(TICKS, value);
-    ticksKept = { value, version };
+    ticksKept = { sid: ticksKept.sid, value, version };
 }
 async function recordTicks(
     $: EngineInterface,
@@ -2398,13 +2405,14 @@ async function pressMarkNow(
     const next = ask.mark === mark ? undefined : mark;
     const isTicked = next === 'accepted';
     if (isTicked) await recordTicks($, [ask], true);
-    await markAsksNow(
+    const isKept = await markAsksNow(
         $,
         (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
         false,
         undefined,
     );
-    if (!isTicked) await recordTicks($, [ask], false);
+    // a mark that never landed takes its record with it, so a guard never honours a tick the board does not show
+    if (!isTicked || !isKept) await recordTicks($, [ask], false);
 }
 // ✅ is a press on the frame he read: an ask added since waits for its own look
 async function pressAllAsksNow(
@@ -2429,7 +2437,7 @@ async function pressAllAsksNow(
         );
     if (!asks.length) return;
     await recordTicks($, asks, true);
-    await markAsksNow(
+    const isKept = await markAsksNow(
         $,
         (a) =>
             asks.some((x) => x.id === a.id)
@@ -2438,6 +2446,7 @@ async function pressAllAsksNow(
         false,
         undefined,
     );
+    if (!isKept) await recordTicks($, asks, false);
 }
 async function pressAllAsks(
     $: EngineInterface,

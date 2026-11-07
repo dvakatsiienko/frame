@@ -761,7 +761,7 @@ async function scriptMerges(
             (size !== undefined && size <= SCRIPT_READ_MAX
                 ? await $.fs.read(ran).catch(() => undefined)
                 : undefined);
-        if (!text || !/merge/i.test(text)) continue;
+        if (!text) continue;
         found.push(
             ...rawMerges(text, c.dir),
             ...(await scriptMerges($, text, c.dir, { ...ctx, written }, seen)),
