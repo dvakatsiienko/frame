@@ -4,7 +4,7 @@ title: 'day plan 11-07: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T13:01:00Z'
+updated_date: '2026-11-07T13:28:00Z'
 labels:
   - s
   - main-lane
@@ -16,8 +16,8 @@ ordinal: 9995
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-508 close on his tick
-- [ ] #2 FRM-410 close on his tick, leftovers to a someday ticket
+- [x] #1 FRM-508 close on his tick
+- [x] #2 FRM-410 close on his tick, leftovers to a someday ticket
 - [ ] #3 FRM-524 re-signed, dispatched, landed: the first lane
 - [ ] #4 mods quick lane with its verifier, by load
 - [ ] #5 ci made boring finished, maybe today: BYT-132, BYT-106, BYT-131
