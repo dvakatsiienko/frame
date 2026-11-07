@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T13:49:00Z'
+updated_date: '2026-11-07T15:48:00Z'
 labels:
   - m
   - wing-2
@@ -22,15 +22,15 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 PK-350 wish lines batch 2: 95 own-line quotes and clio's tails, dry run to him first, then two waves (his o7 tick)
-- [ ] #2 FRM-494, FRM-496: habits and counts read, what's left named, close proposed to main
-- [ ] #3 PK-326 quiet comms, both sides, today: read at the halt (his W439)
-- [ ] #4 closing a wing and wing-labelled pocket items, sharpened with dima (his 04:18, 04:39)
-- [ ] #5 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #6 PK-332 what makes the wing habit hold, a proposal
-- [ ] #7 FRM-517 the day's temp count read 11-08, close or one step named
-- [ ] #8 grills when he wants: PK-300, PK-304
-- [ ] #9 crow watches the wing too: its want lives on FRM-516
+- [x] #1 PK-350 wish lines batch 2: 95 own-line quotes and clio's tails, dry run to him first, then two waves (his o7 tick)
+- [x] #2 FRM-494, FRM-496: habits and counts read, what's left named, close proposed to main
+- [x] #3 PK-351 clio: winged v2 story folded, this plan updated
+- [x] #4 PK-352 chores skill: shaped, seven names, built, run right after
+- [x] #5 batch: FRM-455 code review card, FRM-407 fresh-eyes card: read, closed if stale
+- [ ] #6 PK-304 api credits grill, now
+- [ ] #7 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
+- [ ] #8 PK-348 REVIEW.md: explore, set up the convention
+- [ ] #9 postponed, maybe not today: FRM-452 jev test drive, FRM-441 changedetector board, FRM-454 helga on Sonnet
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -110,4 +110,17 @@ PK-336:W23 (2026-11-07 04:39, dima): closing a wing has no verb, and any `close:
 2026-11-07 wing 2, PK-350: the ⏰ PK-338 sort above is done, ids are full; that note is history.
 
 2026-11-07 15:52 wing 2, groomed on dima's word: done lines cleared, todo sorted most wanted first. cleared: PK-331, the signature fix, FRM-501 re-sign line, FRM-484 habits, the split habit, the Finder watch PK-310 done, ci made boring, PK-329 twice, FRM-503 audit, FRM-514 and FRM-410, PK-333, PK-324, PK-325, PK-308 closed FRM-526, FRM-514 quick lane, FRM-517 first act, wing items' first sharpen. git holds the list.
+
+2026-11-07 16:55, dima's new order: lines 4, 6 and 9 moved to PK-351; PK-352 goes first. his words live in those two items.
+
+hoist 11-07: proposing, wing 2
+
+hoist 11-07: done
+2026-11-07 17:36, dima accepted the split, wing 2's order his: batch, PK-304 now, PK-326, the three postponed, PK-351, PK-348 last.
+
+batch read 17:40: neither is stale. FRM-455 waits on wisphunter's trial verdict, due 11-13, its re-sign says it closes then. FRM-407 waits on fresh-eyes' trial, parked until 12-07 at speak v2's first screen pr. both keep their doors, left the hunt.
+
+2026-11-07 17:47: PK-326 handed to main, his word: she runs the halt.
+
+line 4 done 17:48: low-tide and low-tide-triage live in clio 0.3.438; the first split ran, consulted, settled with his yes.
 <!-- SECTION:NOTES:END -->

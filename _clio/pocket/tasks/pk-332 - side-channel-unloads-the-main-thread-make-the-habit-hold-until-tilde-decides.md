@@ -1,10 +1,10 @@
 ---
 id: PK-332
 title: 'side channel unloads the main thread: make the habit hold until tilde decides'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T01:25:00Z'
-updated_date: '2026-11-07T13:44:00Z'
+updated_date: '2026-11-07T14:59:00Z'
 labels:
   - s
   - wing-2
@@ -31,4 +31,10 @@ PK-332:W4 (2026-11-06 14:23, dima): how do you store your durable plans so they 
 landed 14:32: clio:boot, clio:side-channel, craft-fleet-flow; PK-336 the first day plan. left: what makes it hold in practice.
 
 PK-332:W5 (2026-11-06 15:43, dima, his tick o31): fix: side prompts join the prompt log. pocket-check reds every side fold today, since prompt-groom and the fold check read the day's prompt log, which side prompts never reach; a no-wish line clears --day, not pocket-check. 7 reds on closed PK-323 until then.
+
+close: moved to PK-351, his word on collocating (2026-11-07)
+
+close: PK-332:W1 moved to PK-351
+
+close: PK-332:W2 PK-332:W3 PK-332:W4 PK-332:W5 moved to PK-351
 <!-- SECTION:NOTES:END -->

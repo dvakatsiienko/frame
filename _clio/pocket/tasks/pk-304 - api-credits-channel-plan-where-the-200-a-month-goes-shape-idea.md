@@ -4,7 +4,7 @@ title: 'api credits channel: plan where the $200 a month goes (shape-idea)'
 status: open
 assignee: []
 created_date: '2026-11-03T08:43:00Z'
-updated_date: '2026-11-07T12:45:00Z'
+updated_date: '2026-11-07T15:47:00Z'
 labels:
   - m
   - wing-2
@@ -67,4 +67,10 @@ kept: 2026-11-03 — W1665–W1666, W1678–W1681, W1687–W1699, W1705–W1716 
 PK-304:W1567 (2026-11-03 10:43, dima): 🛠️ where we could spend them (ideas, nothing built).
 
 label fix (wishkeeper 12:20): W1665 and W1567 are clio's reply lines dima quoted — context, not his wants; grill 2 cites his «←» answers, never these.
+
+PK-304:W1717 (2026-11-07 17:47, dima, his tick o30): yes, it's essentially a free quota that we can use, and it is not used. let's spend it on something useful, not jev, because jev's measure has its own typesafe quota. something else that is useful, mechanical, and can be offloaded to this api credits area.
+PK-304:W1718 (2026-11-07 17:47, dima, his tick o31): i think crow and helga won't match, because this quota gets burned very quickly, and we can only do a few operations with the remaining quota. it will not be enough for crow and helga. find something else useful to burn this quota.
+PK-304:W1719 (2026-11-07 17:47, dima, his tick o32): when does my api credit reset? i just resubscribed to the $200 plan two days ago. ❓
+PK-304:W1720 (2026-11-07 17:47, dima, his tick o33): it is not too much, actually. the switch was just because of my move from the $100 plan to the $200 plan: with the $200 plan the 5-hour window is gone, so pace meter mode is disabled, along with your habits about maintaining a 5-hour window.
+PK-304:W1721 (2026-11-07 17:47, dima, his tick o33): if i move back from the $200 plan to the $100 plan, the 5-hour window is enabled again, and we need to quickly and easily move pace meter mode and habits back. this is easy. if nothing else is related to switching from one state to another, then maybe nothing needs building at all.
 <!-- SECTION:NOTES:END -->
