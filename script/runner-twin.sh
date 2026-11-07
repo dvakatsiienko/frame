@@ -16,9 +16,9 @@ sha=${sha:-HEAD}
 # a hook may export GIT_DIR and friends: a fixture's git, or this clone's, must never write the real repo, as in index-run.sh
 # shellcheck disable=SC2046
 unset $(git rev-parse --local-env-vars)
-tmp=$(mktemp -d)
-home=$(mktemp -d)
-trap 'trash "$tmp" "$home" 2>/dev/null' EXIT
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/runner-twin.XXXXXX")
+home=$(mktemp -d "${TMPDIR:-/tmp}/runner-twin-home.XXXXXX")
+trap 'rm -rf "$tmp" "$home"' EXIT
 
 git clone -q --no-local --no-checkout "$repo" "$tmp/frame"
 git -C "$tmp/frame" checkout -q "$(git -C "$repo" rev-parse "$sha")"

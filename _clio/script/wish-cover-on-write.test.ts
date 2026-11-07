@@ -1,5 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readdirSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
@@ -49,6 +56,32 @@ function runOn(spec: string) {
 }
 
 describe('wish-cover on a .scratch spec write', () => {
+    test('its section dir is gone at exit, and never reaches the Trash', () => {
+        const scratch = join(root, 'scratch');
+        mkdirSync(scratch);
+        const trashed = join(root, 'trashed');
+        writeFileSync(
+            join(root, 'bin', 'trash'),
+            `#!/bin/sh\ntouch "${trashed}"\n`,
+            { mode: 0o755 },
+        );
+        const dir = join(root, '.scratch-sections', '.scratch', 'x');
+        mkdirSync(dir, { recursive: true });
+        const file = join(dir, 'spec.md');
+        writeFileSync(file, 'wish: FRM-9\n\nW1 the exact words\n');
+        spawnSync('bash', [hook], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                TMPDIR: scratch,
+            },
+            input: JSON.stringify({ tool_input: { file_path: file } }),
+        });
+        expect(readdirSync(scratch)).toEqual([]);
+        expect(existsSync(trashed)).toBe(false);
+    });
+
     test('a spec with no wish line blocks', () => {
         const out = runOn('# spec\n\nno wish here\n');
         expect(out?.decision).toBe('block');

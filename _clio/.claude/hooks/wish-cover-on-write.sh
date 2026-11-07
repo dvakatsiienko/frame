@@ -39,8 +39,8 @@ fi
 command -v node >/dev/null || { jq -n '{systemMessage: "wish-cover: node missing, skipped"}'; exit 0; }
 # a lane spec holds a wish line per chunk section: every id in the file is checked against its own section
 reds=""
-sections="$(mktemp -d)"
-trap 'trash "$sections"' EXIT
+sections="$(mktemp -d "${TMPDIR:-/tmp}/wish-cover.XXXXXX")"
+trap 'rm -rf "$sections"' EXIT
 # the lines above the first wish line join the first section
 awk -v d="$sections" '
 	/^[Ww]ish: *\[?(PK|FRM|BYT|pk|frm|byt)-[0-9]+/ { match($0, /[A-Za-z]+-[0-9]+/); cur = toupper(substr($0, RSTART, RLENGTH)) }

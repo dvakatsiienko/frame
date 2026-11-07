@@ -5,6 +5,7 @@ import {
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    readdirSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -15,16 +16,14 @@ import { gitEnv } from './git-fixture.ts';
 
 const root = join(import.meta.dirname, '../..');
 
-// a repo with two commits on a side branch's tip and main behind it, vitest and trash stubbed on the twin's paths
+// a repo with two commits on a side branch's tip and main behind it, vitest stubbed on the twin's path
 function fixture() {
     const dir = mkdtempSync(
         join(process.env.TMPDIR ?? tmpdir(), 'runner-twin-'),
     );
     const repo = join(dir, 'repo');
-    const bin = join(dir, 'bin');
     mkdirSync(join(repo, 'script'), { recursive: true });
     mkdirSync(join(repo, 'node_modules/.bin'), { recursive: true });
-    mkdirSync(bin);
     copyFileSync(
         join(root, 'script/runner-twin.sh'),
         join(repo, 'script/runner-twin.sh'),
@@ -36,8 +35,6 @@ function fixture() {
         `#!/bin/sh\ngit rev-parse HEAD >"${dir}/tested"\nprintf '%s' "\${GIT_DIR:-unset}" >"${dir}/git-dir"\n`,
     );
     chmodSync(join(repo, 'node_modules/.bin/vitest'), 0o755);
-    writeFileSync(join(bin, 'trash'), '#!/bin/sh\n');
-    chmodSync(join(bin, 'trash'), 0o755);
     const git = (...args: string[]) =>
         execFileSync('git', args, {
             cwd: repo,
@@ -52,11 +49,11 @@ function fixture() {
     git('commit', '-q', '--allow-empty', '-m', 'pushed');
     const pushed = git('rev-parse', 'HEAD');
     git('switch', '-q', '-');
-    return { bin, dir, head, pushed, repo };
+    return { dir, head, pushed, repo };
 }
 
 function twin(
-    { bin, repo }: ReturnType<typeof fixture>,
+    { repo }: ReturnType<typeof fixture>,
     input: string,
     extra: NodeJS.ProcessEnv = {},
     args: string[] = [],
@@ -64,7 +61,7 @@ function twin(
     return spawnSync('bash', [join(repo, 'script/runner-twin.sh'), ...args], {
         cwd: repo,
         encoding: 'utf8',
-        env: { ...gitEnv(), PATH: `${bin}:${process.env.PATH}`, ...extra },
+        env: { ...gitEnv(), PATH: process.env.PATH, ...extra },
         input,
     });
 }
@@ -131,6 +128,22 @@ describe('runner-twin', () => {
             [context.pushed],
         );
         expect(tested(context.dir)).toBe(context.pushed);
+    });
+
+    test('its clone and home sit in TMPDIR, and are gone at exit', () => {
+        const context = fixture();
+        const scratch = join(context.dir, 'scratch');
+        mkdirSync(scratch);
+        writeFileSync(
+            join(context.repo, 'node_modules/.bin/vitest'),
+            `#!/bin/sh\nls "${scratch}" >"${context.dir}/during"\n`,
+        );
+        const got = twin(context, '', { TMPDIR: scratch });
+        expect(got.status, got.stderr).toBe(0);
+        expect(readFileSync(join(context.dir, 'during'), 'utf8')).toContain(
+            'runner-twin-home.',
+        );
+        expect(readdirSync(scratch)).toEqual([]);
     });
 
     test("a hook's GIT_DIR never reaches the clone or its tests", () => {
