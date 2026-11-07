@@ -658,7 +658,7 @@ func TestAModsRunOfPartOfTheModsLogsADash(t *testing.T) {
 	t.Run("one mod named", func(t *testing.T) {
 		t.Parallel()
 		dir, env, _ := modsChain(t)
-		hand := exec.Command("script/index-run.sh", "node", modsDir+"test.ts", "m")
+		hand := exec.Command("bash", "script/index-run.sh", "node", modsDir+"test.ts", "m")
 		hand.Dir, hand.Env = dir, append(append(cleanEnv(), "X_TEST=1"), env...)
 		if out, err := hand.CombinedOutput(); err != nil {
 			t.Fatalf("%v\n%s", err, out)
