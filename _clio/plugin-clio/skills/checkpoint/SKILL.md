@@ -18,7 +18,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 - **only a topic not yet started waits**: it goes to the CST as a first-act; the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on), and the wishkeeper of the batch being closed is always waited for, never carried
 
 - **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
-- **the notice, in any clio, means one thing: hold messages to me** (`<me>` = `main clio` or `wing <N>`). every live clio and every member i coordinate (`ListAgents`) gets one `SendMessage`, these words exactly, since `x-mod-stash` reads them as no work: «second wind — <me> is second-winding: hold messages to <me> until it says back. nothing else pauses, keep working.» a message that lands mid-compact arrives in a thinned thread and its detail is lost. the notice's roster goes into the CST.
+- **the notice, in any clio, means one thing: hold messages to me** (`<me>` = `main clio` or `wing <N>`). everyone `ListAgents` shows, every clio and every member, crow and helga too, gets one `SendMessage`, these words exactly, since `x-mod-stash` reads them as no work: «second wind — <me> is second-winding: hold messages to <me> until it says back. nothing else pauses, keep working.» a message that lands mid-compact arrives in a thinned thread and its detail is lost. the notice's roster goes into the CST.
 - **the reply says what it did**: «second-wind notice sent, messages to me hold until i'm back». the fleet keeps working through it.
 - **main only**, while crow reads main's thread alone: `touch ~/.local/state/crow/paused`, its wake skips while the file exists.
 
