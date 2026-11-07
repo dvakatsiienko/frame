@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-07T18:57:00Z'
+updated_date: '2026-11-07T19:04:00Z'
 labels:
   - s
   - clio-wing-1
@@ -29,6 +29,7 @@ ordinal: 18998
 - [x] #11 PK-334 every gate listed, gate as a vibe word, maintained
 - [x] #12 FRM-521's next pr, its own lane
 - [ ] #13 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
+- [ ] #14 standing: FRM-525 cpu, watch until 2026-11-13
 <!-- AC:END -->
 
 ## Implementation Notes
