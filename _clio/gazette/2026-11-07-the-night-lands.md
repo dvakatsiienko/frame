@@ -1,7 +1,7 @@
 ---
 date: 2026-11-07
 slug: the-night-lands
-tickets: [BYT-94, BYT-132, BYT-106, FRM-510, FRM-474, FRM-433, FRM-524, FRM-525, FRM-489]
+tickets: [BYT-94, BYT-132, BYT-106, FRM-510, FRM-474, FRM-433, FRM-524, FRM-525, FRM-489, FRM-528, FRM-531, FRM-532, FRM-483, FRM-529, FRM-503]
 posted: {health: yes}
 ---
 
@@ -56,7 +56,25 @@ posted: {health: yes}
 **state**
 - running: wing 1's [FRM-528](https://linear.app/x-com/issue/FRM-528), frame#147. the override not flipped yet, frame#134 its first test. weekly 89 %
 
+
+⸻ upd 23:10
+
+**shipped**
+- the override's first flip: his typed `operator-override prs` landed frame#134 on its first call, after a fix for a session note glued before his phrase; two go tests that read his live switch got a fixture: [FRM-524](https://linear.app/x-com/issue/FRM-524)
+- a typed steer survives a thread switch on the desktop, his hands twice, 🔓 moved left of 🎛️: [FRM-531](https://linear.app/x-com/issue/FRM-531)
+- the go suite 386 → 273 cpu-s on slim git and fewer spawns, wing 1's: [FRM-528](https://linear.app/x-com/issue/FRM-528), [FRM-532](https://linear.app/x-com/issue/FRM-532)
+- winged clio v2, wing 2's: one clio in many seats, flyways replace day plans, crow reads every seat, a halt that closes every wing
+- the compact digest 18.6 s → about 5 s, a pocket red on a wing's item no longer blocks main: [FRM-483](https://linear.app/x-com/issue/FRM-483)
+- trials: delve dropped and uninstalled, skill-named-load adopted, unbash kept as FRM-472's test oracle
+
+**tricks gained**
+- park is not stop: a chunk's end parks a member, a stop is his word
+- a guard refusal names every door, none used without his word
+
+**state**
+- next boot: mods [FRM-529](https://linear.app/x-com/issue/FRM-529) and cli FRM-383 start before the first reply; wing 1 on its flyway, wing 2 parked. weekly 99 %
+
 ## trail
-- shipped: the override landed, ci made boring built, retros paused for a weekly card
-- open: the override's first flip, frame#147, FRM-531's start, the mods card to tilde
-- state: wing 1's go suite lane runs, weekly 89 %, stop by 98 %
+- shipped: the override flipped and landed a pr, a steer survives a thread switch, winged clio v2, the go suite 29 % lighter
+- open: FRM-529's settings button, the mods and cli lanes at next boot, PK-326's quiet-comms read
+- state: halted at weekly 99 %, both lanes ready to dispatch
