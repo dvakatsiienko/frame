@@ -48,6 +48,8 @@ floods; no other member prints one.
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 
 
+**A guard refuses what he asked → the reply names what stopped it and every door known, he picks, and no door is used without his word** (dima's tick, 2026-11-07: «i would like to know about them beforehand»).
+
 **What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him, so the closing message carries it whole.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents (researchers, codies, probes),
