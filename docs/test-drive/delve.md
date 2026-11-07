@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-10
 fits: codie:go
 blind: true
@@ -24,3 +24,7 @@ dima, 2026-10-13: a tool used is not a tool proven useful. the next cli codie's 
 - 2026-10-22 · [FRM-401](https://linear.app/x-com/issue/FRM-401) + [FRM-403](https://linear.app/x-com/issue/FRM-403) cli coder · 0 `dlv` runs, not reached for · one red whose cause sat outside the diff (a test fixture's push died on dima's global `pushInsteadOf` https → ssh); the test's own failure output named it in one read, so delve had nothing to add — every other red was in the diff
 
 - 2026-11-02 · extended once to 11-10 (dima: «the cli coder didn't even manage to try it. push the deadline 7+ days»); the blind round stands — the next cli lane's brief stays silent on delve, the question comes at its retro
+
+## verdict
+
+- 2026-11-07 · **dropped** (dima's tick o43, clio's weighed call): 0 runs in 14 cli lane transcripts since its last extension, by rg over the commands, a kill rule fired; a debugger steps a red test and has no part in perf work, which is `go test -cpuprofile` and pprof. uninstalled: brew, `~/.dlv`, the `x:guide-go` section, the `x/AGENTS.md` line. undo: `brew install delve`, the commit.

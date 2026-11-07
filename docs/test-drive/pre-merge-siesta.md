@@ -64,5 +64,6 @@ Ticket: none
 - 2026-11-07 · the batch since 00:49, over my shift-merge proposal · wishkeeper 5.3 min, 184k tokens, 17 findings: 3 high real, all in my reply (an afk word would open holds, a false «clean and ci gate», an incomplete stop list), opened at the code · corrected to dima
 - 2026-11-07 · frame#142 and bytes#141, the renovate gaps · wishkeeper 2.4 min, 64k tokens, 5 findings: 1 high real that sixth sense's clean had missed (renovate's own automerge still lands a workflow bump), opened at the preset · back to codie before the merge
 - 2026-11-07 · bytes#138, the one-round review gate · wishkeeper 2 min, 83k tokens, 5 findings: 1 high real but moot, the pr merged while it read, on my 03:36 order · named to dima
+- 2026-11-07 · main, 15:51–21:51: 16 findings, 2 high (a false home claim on FRM-503 door 1, wishes with no W-line), 262k tokens, 7.5 min; both highs real at their spots
 
 ## verdict

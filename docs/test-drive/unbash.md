@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-09
+until: 2026-11-21
 dies-when: the verdict line below is written
 fits: codie (mods)
 ---
@@ -26,5 +26,8 @@ Ticket: FRM-472
   - **latency:** warm p50 0.004 ms, p95 0.013 ms, max 0.29 ms per call (the walker's own deep read: p95 ~0.1 ms); the first call in a process pays a ~50 ms module warm-up — far under the 20 ms bar
   - **zsh parse fails: 2 of 15,780** — a glob qualifier (`*.pem(N)`) and a quote that only zsh's reading closes; unbash recovers a partial tree with an error, so a wiring would have to fail closed there
   - codie's read: wiring it buys 0 escapes and ~14 cleaner reads for a vendored 350 KB and an adapter onto the walker's token shape (keywords glued to segments, `$( … )` read twice), which 843 lines of rules lean on. asked dima before building it
+
+- 2026-11-07 · round 2, today's proven holes against unbash 6.0.3: `echo "price $'"; rm -rf ~` and `echo "${x:-"$'"}"; rm -rf ~` both read `echo,rm`, where our reader saw one `echo` (the first fixed by hand today, the second still open, FRM-472's rider). round 1's «0 escapes closed» measured names over a table these rows were not in. my quick walker reads no `rm` inside `$( )`, `$(( ))` or a heredoc: inconclusive, the tree may hold them in a form it missed
+  - **the new shape, clio's weighed call on his steer o45**: no vendoring under the guard; a test-side oracle in FRM-472, unbash as a dev dependency compared with `commandsDeep` over the escape table and a fuzz of quote shapes, so a disagreement names a reader bug by itself. verdict at FRM-472's close
 
 ## verdict

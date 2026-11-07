@@ -54,7 +54,6 @@ brew "go"                        # sline and x are written in Go
 brew "govulncheck"               # go dependency vulnerability scan (pnpm x-go:vuln)
 brew "gopls"                     # the go language server, for the LSP and editors
 brew "staticcheck"               # go lint; brew rebuilds it on each go release
-brew "delve"                     # dlv, the go debugger — on a test drive, docs/test-drive/delve.md
 brew "uv"                        # the only approved Python package manager
 brew "typescript"                # global tsc/tsserver; the pnpm global shim died in the
                                  # brew move. no global `turbo` on purpose — it has no

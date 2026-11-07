@@ -42,7 +42,6 @@ source file is newer.
 
 the checks sixth sense or codie on `x` starts from.
 - a fake of an external cli traces one assertion to its upstream source; a staged-path gate is probed with a `git mv` and a staged delete; an exit-line count is re-counted from `go test -json` passes (FRM-422)
-- **a red test whose cause is not in the diff** is stepped through with delve before a print goes in: the headless recipe is `x:guide-go` § delve.
 - **a «no free text» exit line** is proven against hostile argv, never one example: an unknown `-word`, a bare `-`, words after `--`, free text in an id-named arg, a quoted multi-word arg as zsh `${(z)}` splits it, a flag value equal to a verb name.
 - **the zsh hook** is proven in a real `zsh -i` on a pty (python `pty` + a temp `ZDOTDIR`) with another `precmd` registered first, so `$?` reaching the hook is checked.
 - **`x stats`** runs over a planted trace dir under a temp `X_STATE`, with a fake `trash` on `PATH` for the 90-day move.

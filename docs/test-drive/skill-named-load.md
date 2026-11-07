@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-09
 fits: codie sixth-sense
 ---
@@ -33,3 +33,7 @@ one line per spawn: date, member, named skills, loaded skills, misses
 - 2026-11-06 · FRM-511 cli lane 5 sixth sense · neutral: the role skill names what to load; a Write refusal forced `x:guide-typescript` for a probe script under a job tmp
 - 2026-11-06 · lane retros (FRM-474, FRM-521) · neutral both: no effect on FRM-474; on FRM-521 `x-verify` surfaced only after cd into the tree, and the guide-code hook refused a scratch probe file once
 - 2026-11-07 · lane retros (BYT-94, FRM-521) · neutral both: no change in impression; `x-verify` named no pr 139 step sixth sense would have missed; skipped by the brief on FRM-510
+
+## verdict
+
+- 2026-11-07 · **adopted** (dima's tick o44): 13 rounds, a skill named in plain words loads; the one miss, a skill nested in a tree loading only once the tree is the cwd, is already in `x:crew-lead`'s `briefing.md`.
