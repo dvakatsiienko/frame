@@ -502,14 +502,14 @@ if (import.meta.main) {
                 `${mod}: a clock read outside $.clock (date bomb), give it the $.clock fallback or a clock-ok line above:\n${clock.map((c) => `  ${c}`).join('\n')}\n`,
             );
         runs.push({ clockReads: clock, mod, output, status });
-        const { errored, failed: red, passed } = outcome(output);
+        // a throwing hook exits 0 and reads failed; a file that cannot load exits red
+        const { failed: red, passed } = outcome(output);
         if (
             isIndexCopy &&
             tree &&
             status === 0 &&
             passed &&
             !red.length &&
-            !errored.length &&
             !clock.length
         )
             recordGreen(mod, tree);

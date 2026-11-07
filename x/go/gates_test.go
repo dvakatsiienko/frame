@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -426,6 +427,35 @@ func TestModsEditPushKeepsASaveMadeDuringItsTests(t *testing.T) {
 	}
 }
 
+func TestModsEditPushKeepsBytesTheFormatStepLeavesAlone(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, path, body string }{
+		{"last newlines of an .md", modsDir + "m/notes.md", "# notes\n\n\n"},
+		{"a first indent of a .yaml", modsDir + "m/config.yaml", "  key: value\n  other: value\n"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env, _ := modsChainFormatted(t)
+			// as biome-config-polished: biome's defaults reformat .md and .yaml too, on stdin and on a file alike
+			write(t, filepath.Join(dir, "biome.json"), `{"yaml":{"formatter":{"enabled":false}},"markdown":{"formatter":{"enabled":false}}}`+"\n")
+			gitT(t, dir, "add", "biome.json")
+			gitT(t, dir, "commit", "-q", "-m", "as frame")
+			edited(t, dir, env, c.path, c.body)
+			pushOverlay(t, dir, env)
+			if got := readFile(t, filepath.Join(dir, c.path)); got != c.body {
+				t.Errorf("landed %q, want %q", got, c.body)
+			}
+			if got := xIn(t, dir, env, "lane", "commit", message(t), "--", c.path); got.code != 0 {
+				t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+			}
+			if got := readFile(t, filepath.Join(dir, c.path)); got != c.body {
+				t.Errorf("the commit's format moved it to %q, so this file proves nothing", got)
+			}
+		})
+	}
+}
+
 func TestModsEditFormatsEachCopyOnceARun(t *testing.T) {
 	t.Parallel()
 	dir, env, _ := modsChainFormatted(t)
@@ -617,7 +647,10 @@ func TestHandSkipTestedRecordsNothing(t *testing.T) {
 	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
 	hand := exec.Command("node", modsDir+"test.ts", "--skip-tested")
 	hand.Dir = dir
-	hand.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	// a gate's own go tests inherit this; here no gate runs
+	hand.Env = slices.DeleteFunc(append(append(cleanEnv(), "X_TEST=1"), env...), func(pair string) bool {
+		return strings.HasPrefix(pair, "INDEX_RUN_BRANCH=")
+	})
 	if out, err := hand.CombinedOutput(); err != nil {
 		t.Fatalf("%v\n%s", err, out)
 	}

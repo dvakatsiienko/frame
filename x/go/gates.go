@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -457,8 +459,11 @@ func (c *formattedCopies) path(path string) string {
 	out := filepath.Join(c.dir, path)
 	fixed := body
 	if err == nil && exists(biome) {
-		if got, _ := run(c.repo, nil, string(body), biome, "check", "--write", "--stdin-file-path="+path); got.ok && got.out != "" {
-			fixed = []byte(got.out + "\n")
+		// its stdout whole: a file biome leaves alone keeps its first indent and its last newlines, as the commit's step keeps them
+		format := exec.Command(biome, "check", "--write", "--stdin-file-path="+path)
+		format.Dir, format.Stdin = c.repo, bytes.NewReader(body)
+		if got, err := format.Output(); err == nil && len(got) > 0 {
+			fixed = got
 		}
 	}
 	if err != nil || os.MkdirAll(filepath.Dir(out), 0o755) != nil || os.WriteFile(out, fixed, 0o644) != nil {
