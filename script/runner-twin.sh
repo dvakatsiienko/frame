@@ -18,7 +18,8 @@ sha=${sha:-HEAD}
 unset $(git rev-parse --local-env-vars)
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/runner-twin.XXXXXX")
 home=$(mktemp -d "${TMPDIR:-/tmp}/runner-twin-home.XXXXXX")
-trap 'rm -rf "$tmp" "$home"' EXIT
+# go's module cache in the fake home is read-only, and rm needs its dirs writable
+trap 'chmod -R u+w "$home"; rm -rf "$tmp" "$home"' EXIT
 
 git clone -q --no-local --no-checkout "$repo" "$tmp/frame"
 git -C "$tmp/frame" checkout -q "$(git -C "$repo" rev-parse "$sha")"

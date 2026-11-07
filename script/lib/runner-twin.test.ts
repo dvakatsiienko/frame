@@ -136,7 +136,7 @@ describe('runner-twin', () => {
         mkdirSync(scratch);
         writeFileSync(
             join(context.repo, 'node_modules/.bin/vitest'),
-            `#!/bin/sh\nls "${scratch}" >"${context.dir}/during"\n`,
+            `#!/bin/sh\nls "${scratch}" >"${context.dir}/during"\nmkdir -p "$HOME/go/pkg/mod/x"\ntouch "$HOME/go/pkg/mod/x/a.go"\nchmod -R a-w "$HOME/go"\n`,
         );
         const got = twin(context, '', { TMPDIR: scratch });
         expect(got.status, got.stderr).toBe(0);
