@@ -8616,21 +8616,6 @@ export const register: Register = (on) => {
                                       </Button>,
                                       leftOf('⏰', view.isWaker),
                                   )}
-                            {!view.isOverrideOn
-                                ? null
-                                : tip(
-                                      'operator-override',
-                                      'operator-override',
-                                      <Button
-                                          key='operator-override'
-                                          onPress={() =>
-                                              void handleOverrideOff()
-                                          }
-                                          variant='secondary'>
-                                          🔓
-                                      </Button>,
-                                      leftOf('🔓', true),
-                                  )}
                             {!isShown('stash.afk')
                                 ? null
                                 : tip(
@@ -8648,6 +8633,21 @@ export const register: Register = (on) => {
                                           💨
                                       </Button>,
                                       leftOf('💨', view.afk),
+                                  )}
+                            {!view.isOverrideOn
+                                ? null
+                                : tip(
+                                      'operator-override',
+                                      'operator override',
+                                      <Button
+                                          key='operator-override'
+                                          onPress={() =>
+                                              void handleOverrideOff()
+                                          }
+                                          variant='secondary'>
+                                          🔓
+                                      </Button>,
+                                      leftOf('🔓', true),
                                   )}
                             {tip(
                                 'settings',
