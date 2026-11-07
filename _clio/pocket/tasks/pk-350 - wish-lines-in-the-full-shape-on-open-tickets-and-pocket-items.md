@@ -4,7 +4,7 @@ title: wish lines in the full shape on open tickets and pocket items
 status: open
 assignee: []
 created_date: '2026-11-07T13:06:00Z'
-updated_date: '2026-11-07T14:00:00Z'
+updated_date: '2026-11-07T14:06:00Z'
 labels:
   - s
   - wing-2
@@ -34,4 +34,6 @@ his 15:02, relayed by main: «i want all my wishes in this new format», the FRM
 2026-11-07 wing 2, his o9 tick: batch 2 written, own-line quotes and clio's answers split off; board labels and card quotes left out by name.
 
 2026-11-07 16:01 wing 2: batch 2 read back equal on all 39 tickets, repeat dry run 0 lines; two safety waves next.
+
+2026-11-07 16:10 wing 2: batch 2 wave 1 fixes written: FRM-43 date, two stranded quotes, stray punctuation, 12 label-led quotes. wave 2 next.
 <!-- SECTION:NOTES:END -->
