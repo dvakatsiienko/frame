@@ -7,6 +7,8 @@ description: >-
 
 # /clio:halt
 
+📌 **in a wing, «halt» runs the fork-guard banner's end line, never the phases below**.
+
 ## phase 0 — the halt plan, printed then executed
 
 🚨 **typing the command IS the go.** Print the plan and start working through it in the same
@@ -15,7 +17,7 @@ turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes hi
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a summoned session, an
   unanswered question put to dima, an unpushed commit
-- **wings and forks first**: each live `wing` or `(fork` session (`list_sessions`) hands back its `clio-wing-<N>` items and sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*' 'clio-wing-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply` for a `worktree-fork-*` tree; a `clio-wing-*` tree stays
+- **wings and forks first** (PK-351:W77): each live `wing` or `(fork` session (`list_sessions`) gets one `SendMessage`, «halt — main is halting: run your end line», with `notify_when_idle`; each finishes, hands back its `clio-wing-<N>` items and sends its closing report before the CST; a report read and folded, `archive_session` stops that wing, his halt being the word; one silent after 30 min is named to him, never archived; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*' 'clio-wing-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply` for a `worktree-fork-*` tree; a `clio-wing-*` tree stays
 - **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
@@ -41,7 +43,7 @@ execute the «can land now» list, freebies included: a halt finishes the main l
 way (dima, 2026-10-14: «not intended to prevent you from resolving stuff efficiently»). only work bigger than a
 freebie parks.
 each park gets its resume note **where the work lives** (ticket comment, pocket item),
-not in the report. a park that only exists in a chat message is a strand.
+not in the report.
 
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
@@ -55,7 +57,7 @@ inbox clears — before the CST is written.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's codie turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
-n8n's «📭 gh notifications sweep» (`_clio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (narrower than the sweep: it marks only merged or closed pr and ci threads read, never Done) (dry run, then `--apply`) does it by hand and the failure is one line in the board.
+n8n's «📭 gh notifications sweep» (`_clio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (dry run, then `--apply`) does it by hand and the failure is one line in the board.
 
 ## phase 1.8 — glides, cleared unasked 🛼
 every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes.
@@ -146,7 +148,7 @@ run `/clio:gazette` — its wire gate stops for dima's literal answer. the CST a
 right after the post, the pocket prunes: every `done` item the post carried is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it).
 
 ## phase 5 — handoff CST 📬
-**mandatory, never skipped.** clio cannot see sibling sessions, so the CST is its ONLY
+**mandatory, never skipped.** the CST is the ONLY
 continuity — an unwritten one loses the run.
 auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads). ask once,
 before writing, whether the work continues here or in a fresh thread — a CST followed by more
@@ -165,15 +167,14 @@ a first-act that is a memory line is applied now, by this halt — never left fo
 the halt reply prints NO boot block (dima, 2026-09-18: «i'll use the command now»). the x-ray
 `handoff` command pastes `/clio:boot <slug>` on ⌘⏎, so everything the
 next session must know lives in the CST META first-acts — run id, the first moves, the pending
-decision. a steer that would have gone into the prompt goes into META instead. the reply names
+decision. the reply names
 the CST slug once, nothing more.
 after the halt the window is cleared, never compacted — the CST carries the boot; a compact block
-adds ~5k resident tokens and re-fires the prefetch hook (measured 2026-09-11). `/compact` belongs
-to `/clio:checkpoint`.
+adds ~5k resident tokens and re-fires the prefetch hook (measured 2026-09-11).
 
 ## phase 7 — one earned joke. never skip it.
 
-done when: the CST slug is in the store, crow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
+done when: every live wing's report is folded and the wing archived, the CST slug is in the store, crow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
 
 ## standing rules
 - unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms`)
