@@ -29,6 +29,18 @@ posted: {health: yes}
 - [FRM-524](https://linear.app/x-com/issue/FRM-524) carries the merge rule's open doors: curl, the merges endpoint, refs, an alias; `curl -X PUT` with a token merges past the guard now that the check flipped
 - [FRM-525](https://linear.app/x-com/issue/FRM-525) first next: wing 1 on PK-328, one lane alone; wing 2 runs PK-336's chores and sharpens wing-tied pocket items with him
 
+⸻ upd 15:32
+**shipped**
+- [FRM-524](https://linear.app/x-com/issue/FRM-524) reshaped on his word to `operator-override`: one switch only he flips, scopes `prs`, `guards`, `all`; signed, its lane summoned as the mods lane's opener, lane 2
+- [FRM-508](https://linear.app/x-com/issue/FRM-508) closed: the login field reads live, 12-01, the flag unbuilt, a re-login reminder at 11-24; [FRM-410](https://linear.app/x-com/issue/FRM-410) cancelled, [FRM-527](https://linear.app/x-com/issue/FRM-527) opens as glide's wisps home
+- wing 1: the day's cpu measure runs by lane count, a missing `LANG` found as 1.7× per git start; wing 2: [FRM-517](https://linear.app/x-com/issue/FRM-517)'s reboot logged, the wish format sweep written
+**tricks gained**
+- `x linear body` keeps one shared file per ticket: a parallel fetch makes `--set` write an old body with exit 0, read a signed write back
+- only a tick on the exact «✍️ sign» ask carries a sign
+- the ✅ toast proven in his shot; ✅ is not 🛎️
+**state**
+- lanes: gates, override; ci next on wing 1's row; a second wind at this block
+
 ## trail
 - shipped: BYT-94's one gate, the renovate door and key, FRM-510, FRM-474, FRM-433, 9 retros
 - open: FRM-525 first, BYT-132, BYT-106, BYT-131, FRM-524's merge doors, FRM-505
