@@ -30,7 +30,7 @@ function bin(fixtures: Record<string, unknown>) {
         `F="${dir}"; jqp=; prev=; for a in "$@"; do [ "$prev" = --jq ] && jqp=$a; prev=$a; done
 case "$1 $2" in
   "pr list") src=prs.json ;;
-  "run view") echo "2026-10-09T10:00:00Z to deploy: shop"; exit 0 ;;
+  "run view") case " $* " in *" createdAt "*) echo 2026-10-09T10:00:00Z ;; *) echo "2026-10-09T10:00:00Z to deploy: shop" ;; esac; exit 0 ;;
   "run list") case " $* " in *" --workflow "*) src=deploys.json ;; *) src=runs.json ;; esac ;;
   *) src=empty.json ;;
 esac
@@ -39,7 +39,7 @@ jq -r "$jqp" "$F/$src"`,
     );
     stub(
         'vercel',
-        'case "$1" in ls) echo https://shop-x.vercel.app ;; inspect) echo "  status   ● Ready" ;; esac',
+        `case "$1" in ls) echo https://shop-x.vercel.app ;; inspect) case " $* " in *" --json "*) echo "{\\"createdAt\\":$(cat "${dir}/deploy-created" 2>/dev/null || echo 1791540001000)}" ;; *) echo "  status   ● Ready" ;; esac ;; esac`,
     );
     stub('sleep', 'exit 0');
     return dir;
@@ -247,6 +247,28 @@ describe('watch-deploy', () => {
     const done = [
         { conclusion: 'success', name: 'ci', status: 'completed', url: 'u' },
     ];
+
+    it('never reads a deploy older than the push as this push being Ready', () => {
+        const dir = bin({ 'runs.json': done });
+        const sha = repo(dir);
+        writeFileSync(join(dir, 'deploy-created'), '1791539999000');
+        writeFileSync(
+            join(dir, 'deploys.json'),
+            JSON.stringify([
+                {
+                    conclusion: 'success',
+                    databaseId: 2,
+                    displayTitle: `deploy ${sha}`,
+                    event: 'workflow_run',
+                    headSha: 'main',
+                    status: 'completed',
+                },
+            ]),
+        );
+        const out = run('watch-deploy.sh', [sha, dir], dir);
+        expect(out).toContain('deploy shop: no terminal state');
+        expect(out).not.toContain('→ Ready');
+    });
 
     it('reads the workflow_run deploy by its «deploy <sha>» title', () => {
         const dir = bin({ 'runs.json': done });
