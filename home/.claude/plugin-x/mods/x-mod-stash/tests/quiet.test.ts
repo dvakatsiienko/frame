@@ -1619,6 +1619,10 @@ for (const line of [
     "resume — main clio's second wind is done, send whatever you held.",
     "resume — clio's second wind is done, chores open again.",
     'resume',
+    'second wind — main clio is second-winding: hold messages to main clio until it says back. nothing else pauses, keep working.',
+    'second wind — wing 1 is second-winding: hold messages to wing 1 until it says back. nothing else pauses, keep working.',
+    'second wind — main clio is back: send what you held.',
+    'second wind — wing 2 is back: send what you held.',
 ])
     test(`clio's «${line}» after a [done] re-arms nothing`, async ($, on) => {
         const w = silentWorld(on);
@@ -1637,6 +1641,7 @@ for (const line of [
     "resume — clio's second wind is done; send what you held, and carry on with frame#127's scoped round.",
     "resume — clio's checkpoint is done. send what you held; your final on FRM-472 (07c folded in) goes to me as before.",
     'pause — clio is taking her second wind; hold every message to me until «resume». keep working on FRM-494 and commit what you finish.',
+    'second wind — wing 1 is second-winding: hold messages to wing 1 until it says back. keep working on FRM-494.',
 ])
     test(`clio's «${line}» after a [done] is work, so it re-arms`, async ($, on) => {
         const w = silentWorld(on);

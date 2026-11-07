@@ -52,9 +52,11 @@ export function quietPush(body: string, kindsOff: readonly string[] = []) {
 // clio's checkpoint words to the whole fleet, every clause of a real send (her transcripts, 2026-11-07): no work in them,
 // so a parked member stays parked; any other clause is work, and an alarm costs less than a re-tasked member's silence
 const QUIET_CHECKPOINT_CLAUSE =
-    /^(?:(?:🦉 )?(?:main clio|clio|main)(?: \(main\))?(?:'s)? (?:is )?(?:checkpointing|taking (?:her|a) second wind|back from her (?:checkpoint|second wind)|(?:checkpoint|second wind) is done)(?: \(second wind\))?|hold every message(?: to me)?(?: until «resume»)?|send (?:what|whatever|anything) you held|finish (?:and commit )?what you are on|through the gate queue|no open chore|chores open again|window is on pace|your talk with your codie goes on)$/i;
+    /^(?:(?:🦉 )?(?:main clio|clio|main|wing \d+)(?: \(main\))?(?:'s)? (?:is )?(?:checkpointing|second-winding|back|taking (?:her|a) second wind|back from her (?:checkpoint|second wind)|(?:checkpoint|second wind) is done)(?: \(second wind\))?|hold every message(?: to me)?(?: until «resume»)?|hold messages to (?:main clio|wing \d+) until it says back|nothing else pauses|keep working|send (?:what|whatever|anything) you held|finish (?:and commit )?what you are on|through the gate queue|no open chore|chores open again|window is on pace|your talk with your codie goes on)$/i;
 export const isQuietPause = (body: string) => {
-    const head = body.trim().match(/^(?:pause|resume)\s*(?:[—–:-]\s*|$)/i);
+    const head = body
+        .trim()
+        .match(/^(?:pause|resume|second wind)\s*(?:[—–:-]\s*|$)/i);
     return (
         !!head &&
         body

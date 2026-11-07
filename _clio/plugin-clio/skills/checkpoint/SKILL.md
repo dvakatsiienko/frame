@@ -10,19 +10,17 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 
 📌 who runs the compact: on his word, `/compact` is his to type and the ritual ends by handing him the line; on a 🐦‍🔥 press, it ends with the stash tool's `second-wind` op naming the CST slug, and the mod runs the compact + ingest at that turn's end.
 
-## 0. finish the topic, then stop taking new work and tell the fleet
+## 0. finish the topic, then stop taking new work and send the notice
 
-- **in a shift** (`clio:shift` § surviving a compaction): the topic is the current step, members are paused and carried, the flawlog flush and the after-pickup move go into the plan's `## log` for the report, and the compact door is the `second-wind` op with the CST slug
+- **in a shift** (`clio:shift` § surviving a compaction): the topic is the current step, members keep working and are carried, the flawlog flush and the after-pickup move go into the plan's `## log` for the report, and the compact door is the `second-wind` op with the CST slug
 - **a 🐦‍🔥 second wind is graceful, never urgent** (dima, 2026-10-14: «a request, not an ask to do it as soon as possible … gracefully prepare yourself: resolve all subagents and park all stuff before compacting, to avoid data loss») — the same for codie's second wind
 - **the topic in flight finishes whole first** (dima, 2026-10-15: «fully resolve composer and leave no tails, because splitting the composer part into two parts between compaction is not a good idea»): every lane and agent it started lands, its findings fold, its distill, print, log and commit run — however long that takes. the checkpoint starts only at the end of a topic, never in its middle
 - **only a topic not yet started waits**: it goes to the CST as a first-act; the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on), and the wishkeeper of the batch being closed is always waited for, never carried
 
 - **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
-- **tell the fleet**: every live member (`ListAgents`) gets one `SendMessage`: «pause — clio is checkpointing, hold every
-message to me until «resume»; finish and commit what you are on». a message that lands mid-compact
-arrives in a thinned thread and its detail is lost. the roster with each paused
-member goes into the CST. crow pauses by file, not by message: `touch ~/.local/state/crow/paused`
-— its wake skips while the file exists.
+- **the notice, in any clio, means one thing: hold messages to me** (`<me>` = `main clio` or `wing <N>`). every live clio and every member i coordinate (`ListAgents`) gets one `SendMessage`, these words exactly, since `x-mod-stash` reads them as no work: «second wind — <me> is second-winding: hold messages to <me> until it says back. nothing else pauses, keep working.» a message that lands mid-compact arrives in a thinned thread and its detail is lost. the notice's roster goes into the CST.
+- **the reply says what it did**: «second-wind notice sent, messages to me hold until i'm back». the fleet keeps working through it.
+- **main only**, while crow reads main's thread alone: `touch ~/.local/state/crow/paused`, its wake skips while the file exists.
 
 ## 1. the keep/drop list — decided, never asked
 
@@ -78,8 +76,7 @@ on a 🐦‍🔥 press: no fence; the `second-wind` op with the CST slug, and th
 ✂️ **end** ✂️
 
 the first thins the thread with the hint as the steer; the second restores the precise state on
-top of what the compact kept. **then read the 5h window, then resume every paused member** — one «resume» each with `notify_when_idle: true` (a compact drops every idle subscription, silently), named from the CST roster, and
-`trash ~/.local/state/crow/paused` for crow — and read whatever they held; a window past pace keeps them parked (`habit-ctx-load-balancing`). **after the ingest, before anything else: re-read `inbox.md` and
+top of what the compact kept. **then the back line to the notice's roster**: «second wind — <me> is back: send what you held.», with `notify_when_idle: true` to each member i coordinate (a compact drops every idle subscription, silently), and on main `trash ~/.local/state/crow/paused` — then read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).
