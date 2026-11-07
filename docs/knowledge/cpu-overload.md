@@ -27,6 +27,13 @@ One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a cod
 - 2 lanes, FRM-521 pr 3 + FRM-524, 15:30 to 15:40, 52 samples: 10.0 cores, load p50 20 p90 30, kernel 50 %, 50 % of samples at 95 %+, spotlight 0.2 cores, git start 8.1 ms (n=10), no go suite in the window: too thin to compare, lane 1 merged at 15:39
 - 1 lane, FRM-524, 15:40 to 15:46, 32 samples: 6.7 cores, load p50 14 p90 20, kernel 44 %, 13 % of samples at 95 %+, git start 5.8 ms (n=6): too thin
 - 2 lanes, FRM-524 + BYT-132, 15:46 to 16:22, 189 samples: 8.7 cores, load p50 15 p90 30, kernel 42 %, 29 % of samples at 95 %+, spotlight 0.1 cores, git start 6.2 ms (n=35), go suite run p50 56 s, wait p50 0 s (n=6): `LANG`-era codies
+- 3 lanes, FRM-524 + BYT-132 + FRM-528, 16:22 to 16:29, 32 samples: 13.5 cores, load p50 41 p90 50, kernel 48 %, 84 % of samples at 95 %+, spotlight 0.2 cores, git start 8.9 ms (n=7), no go suite in the window: too thin, but the first row near full
+- 2 lanes, FRM-524 + FRM-528, from 16:29, 33 min read so far, 168 samples: 9.8 cores, load p50 21 p90 46, kernel 48 %, 46 % of samples at 95 %+, spotlight 0.2 cores, git start 6.6 ms (n=33), go suite rows only filtered runs (n=3): still open
+
+## the go suite after FRM-528's fixture cut, 2026-11-07
+
+- Head 300.7 and 290.3 cpu-s, wall 41.6 and 39.3 s, load 20 to 23, against a quiet 351 to 357: about 16 % off, no same-hour base run yet. Sys stayed 60 %, so spawning less did not cut sys per spawn
+- About 280 is this lever's floor; about 170 of what is left is `x` running as a real child, kept real on purpose. Dima accepted about 295 over 200 (FRM-528:W6)
 
 ## the files
 
