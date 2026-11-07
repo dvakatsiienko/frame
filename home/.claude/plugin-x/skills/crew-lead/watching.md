@@ -28,8 +28,7 @@
 
 ## lifetime and stopping
 
-Per-case judgment: keep codie warm when its context is expensive and the next assignment is
-nearby; re-summon when the work is unrelated or the context is polluted. **Always stop probes.**
+A member whose chunk is done **parks**: alive, idle, context kept; `claude stop` or `archive_session` only on dima's word (`rules/fleet-vibe.md`), or at his `clio:halt`, whose stop list stands. A new chunk with unrelated work or polluted context gets a fresh summon beside the parked one. **Always stop probes.**
 
 - **a lane whose last member stopped has its 🛼 glide ended at the next siesta or the halt** (`clio:siesta` 2.5, `clio:halt` phase 1.8); a parked lane gets a new card when it resumes
 - 🚨 **stop with `claude stop <jobId>`, never `kill <pid>`** — four rc sessions killed by pid came

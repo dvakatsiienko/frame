@@ -44,7 +44,8 @@ export function verdict(
         return 'fresh-eyes runs only agent-browser or the x cli help';
     if (/\seval\s/.test(` ${command} `))
         return 'fresh-eyes never runs page javascript (eval)';
-    const hint = sourceHints.find((h) => command.includes(h));
+    const lowered = command.toLowerCase();
+    const hint = sourceHints.find((h) => lowered.includes(h));
     if (hint) return `fresh-eyes never opens source: «${hint}»`;
     for (const [url] of command.matchAll(/[a-z][a-z0-9+.-]*:\/\/\S+/gi)) {
         const host = URL.parse(url)?.hostname;

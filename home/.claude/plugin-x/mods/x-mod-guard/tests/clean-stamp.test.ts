@@ -72,6 +72,7 @@ const WRITES = [
     `cp a.json ${STORE}`,
     `mv a.json $HOME/.claude/shelf/pr-verified.json`,
     `sed -i '' s/a/b/ ${STORE}`,
+    `sed -I '' s/a/b/ ${STORE}`,
     `python3 -c "open('${STORE}', 'w').write('{}')"`,
     `node -e "require('fs').writeFileSync('${STORE}', '{}')"`,
     `python3 -c "from pathlib import Path; (Path.home()/'.claude/shelf/pr-verified.json').write_text('{}')"`,

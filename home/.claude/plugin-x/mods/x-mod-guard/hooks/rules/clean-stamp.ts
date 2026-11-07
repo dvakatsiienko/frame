@@ -65,7 +65,7 @@ function onlyReads(c: Command, named: (text: string) => boolean) {
     // sed writes from inside its script too (`w <file>`), so the store may stand only as the file it reads
     if (c.name === 'sed')
         return (
-            !words.some((w) => /^(-\w*i|--in-place)/.test(w)) &&
+            !words.some((w) => /^(-\w*[iI]|--in-place)/.test(w)) &&
             words.filter(named).every((w) => w === operands.at(-1))
         );
     if (c.name === 'cp') return !named(operands.at(-1) ?? '');

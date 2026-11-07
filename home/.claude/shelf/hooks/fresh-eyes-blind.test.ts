@@ -17,6 +17,8 @@ describe('fresh-eyes-blind', () => {
         ['agent-browser open view-source:http://localhost:7373/', 'source'],
         ['agent-browser open http://localhost:7373/src/main.tsx', 'source'],
         ['agent-browser open http://localhost:7373/assets/index.js.map', 'source'],
+        ['agent-browser open FILE://localhost/x', 'source'],
+        ['agent-browser open VIEW-SOURCE:http://localhost:3000/', 'source'],
         ['agent-browser eval document.body.innerHTML', 'eval'],
         ['agent-browser open https://github.com/a/b', 'local build'],
         ['agent-browser snapshot; cat src/a.ts', 'chaining'],

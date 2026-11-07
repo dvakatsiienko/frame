@@ -222,8 +222,8 @@ export function parse(command: string): Parsed {
             quoted('subst');
             return;
         }
-        // ansi-c quoting: `$'rm'` is the word rm
-        if (next === "'") {
+        // ansi-c quoting: `$'rm'` is the word rm; inside double quotes `$'` is plain text
+        if (next === "'" && !isQuoted) {
             let j = i + 2;
             let out = '';
             while (j < command.length && command[j] !== "'") {
