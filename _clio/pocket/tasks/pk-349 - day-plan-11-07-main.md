@@ -1,13 +1,13 @@
 ---
 id: PK-349
-title: 'day plan 11-07: main'
+title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T16:16:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - s
-  - main-lane
+  - clio-main
 dependencies: []
 priority: now
 type: task

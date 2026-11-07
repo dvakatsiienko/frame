@@ -4,10 +4,10 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T16:01:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - m
-  - wing-2
+  - clio-wing-2
 dependencies: []
 priority: next
 type: task
@@ -106,4 +106,78 @@ PK-351:W24 (2026-11-07 17:40, dima): we need a way for all wings to be aware of 
 2026-11-07 17:48: PK-343's red seen again: taking the wing label off PK-326 at a handover redded the groom check on a wing's prompt; the line now carries its orbit steer's stamp.
 
 2026-11-07 18:03 wing 2: the pocket's auto-commit hook runs in main's session only, so a wing's note rewrite stays red as «note line gone since HEAD» until main's next pocket write commits it.
+
+PK-351:W25 (2026-11-07 18:31, dima): winged v2 comes after your second wind. i want it clean.
+PK-351:W26 (2026-11-07 18:31, dima): what i want of PK-351 is to revisit clio's memory, because main clio and the wings are all one clio: the clio knows about its wings, and any part of clio is aware of any other part.
+PK-351:W27 (2026-11-07 18:31, dima): i invented wings yesterday, and clio's memory is not sharp enough about them, so i keep re-explaining everything to all clios.
+PK-351:W28 (2026-11-07 18:31, dima): refresh your own memories, so your model of all clios is well known to yourself and wired with all other parts we solve in this item. next boot, you should be fully aware of all your capabilities.
+PK-351:W29 (2026-11-07 18:31, dima): sharpen the whole winged system. next boot, everything should be automated and smooth.
+PK-351:W30 (2026-11-07 18:31, dima): define all the boundaries, decide the tricky places, and hunt the weak spots in the winged model, so winged clio operates sharply and efficiently and no weak spot is hidden.
+PK-351:W31 (2026-11-07 18:31, dima): the winged idea is tied to tilde, which i plan to build soon, after a few more mods; the chunks blocking tilde get resolved first. tilde should take over the coordination part from all clios. how tilde balances precisely is an open question, to grill when we get to tilde.
+PK-351:W32 (2026-11-07 18:31, dima): winged clio is a smooth transition to tilde, and it should have tilde as a plan in mind.
+PK-351:W33 (2026-11-07 18:31, dima): winged clio is still the foundation of everything: if we throw away the tilde idea, winged clio stays fully operational and fully capable. tilde is a nice-to-have extension that integrates gracefully into it.
+PK-351:W34 (2026-11-07 18:31, dima): after your second wind, approach this item systematically. it is big, with a lot of moving parts. your job is to broadly analyze the current setup and propose how to solve it step by step, without overloading me with a lot of info.
+PK-351:W35 (2026-11-07 18:31, dima): sharpen all clio parts, miss nothing, do verifications, ensure we didn't break anything, and hunt all the weak spots with the help of wishkeeper and wisphunter.
+PK-351:W36 (2026-11-07 18:31, dima): important: use the author-memory skill during this process, for memory updates.
+PK-351:W37 (2026-11-07 18:31, dima): nice to have: while you are in your memories, use author-memory to groom them and propose optimizations.
+
+2026-11-07 18:47 wing 2: broad read done, plan in the tree at .scratch/winged-v2/plan-v2.md, crow's 5 findings folded, waits on his word. proven on a fixture: a wing can seize the main seat; the write guard passes real writes into main and refuses plain reads, even a note holding a word with those three letters inside.
+
+PK-351:W38 (2026-11-07 18:57, dima): use the author-memory skill during all updates to memories and skills.
+PK-351:W39 (2026-11-07 18:57, dima): «i'm done» said in a wing can start a full halt: not good. only «halt» means halt.
+PK-351:W40 (2026-11-07 18:57, dima, his tick o41): go step by step.
+
+PK-351:W41 (2026-11-07 19:14, dima): idea: halt in a wing window means: 1. finish all tails the wing is responsible for, without starting big tickets that are not assumed to be tails. 2. hand everything over to clio: an update on progress, what's done, what's left. 3. refresh its day plan so it shows the actual state: clean done items, groom, reorg. 4. refresh its part of the pocket items, mark them done and so on. 5. close related linear tickets. 6. do all possible cleanups: no trash left, no stray left, no tails. 7. sync its worktree with main. 8. tell main clio it's done. 9. main clio stops it and uncamps.
+PK-351:W42 (2026-11-07 19:14, dima): is it worth extending the existing halt, or creating a new halt-wing? ❓
+PK-351:W43 (2026-11-07 19:14, dima): Q2: no, yesterday i tested with wing 1 both lane types, the quick lane and the side lane: all types of lanes work with a wing. today wing 1 also ran a few git lanes.
+PK-351:W44 (2026-11-07 19:14, dima): yesterday we had an incident where wing 1 let its coder stay parked for about 40 minutes. you can consult wing 1 about it or find it yourself. it's a coordination issue, very not good, and it must be solved: a codie a wing owns is not allowed to stay parked for so long.
+PK-351:W45 (2026-11-07 19:14, dima): overall, main clio acts as an operator until we have tilde, but wings are allowed their own quick lanes and side lanes, and it actually fits well sometimes.
+PK-351:W46 (2026-11-07 19:14, dima): for example wing 1 is responsible for PK-308, the cpu problem: it fits well that it has its own quick and side lanes for related stuff, because the problem is narrow and tied to one area. it was good to have the lane attached to wing 1, not to clio, because clio manages everything else. splitting the problem between wing 1 and main clio would be less efficient and could drop information. for such cases a wing has its own lane.
+PK-351:W47 (2026-11-07 19:14, dima): Q3: i like this idea. it undoes what i said in my wing halt proposal, so the worktree decamping step is removed.
+PK-351:W48 (2026-11-07 19:14, dima): if this is a good idea, let's have persistent worktrees for all wings, and invent some easy worktree syncing automation, because it will be done often. how to help with that: a script, a cli verb, or what? ❓
+PK-351:W49 (2026-11-07 19:14, dima): we also have worktrunk, a cli tool for worktrees. can you use that for syncing worktrees with main? ❓
+PK-351:W50 (2026-11-07 19:14, dima): either way, let's invent good names for persistent wing branches. i want pretty names. propose a top seven.
+PK-351:W51 (2026-11-07 19:14, dima): Q4: yes, i agree. maybe linear should also receive a few labels that describe the wings, because a wing can operate over tickets in linear too? a label marking a wing as responsible for a ticket could also help avoid tickets drifting. a kind of assignee is possible too, but we have no entities for that in linear. a label is a possible way, but i'm not sure we truly want that proposal. ❓
+PK-351:W52 (2026-11-07 19:14, dima): Q5: what is ops? ❓ ops can also be chores. overall i agree, yes, but a wing can also own a chunk, like wing 1 did today with the cpu roasting chunk.
+PK-351:W53 (2026-11-07 19:14, dima): pocket: i also want to rethink how pocket item labels are named: clio's is «main lane», the wings' are «wing 1», «wing 2», «wing 3». i like wing 1 and wing 2, very clear and easy to tell apart because of the number, but the «main lane» tag is somewhat different. propose how to unify. ideas: clio:wing-1, clio:wing-2, clio:main, or just clio. ❓
+PK-351:W54 (2026-11-07 19:14, dima): wisp: you printed one grill, then something prompted you, and you printed another grill. it is not good. i spent a lot of time reading the first one, then i had to read another big grill and find the differences between the two. i responded to the first grill. fix it. i don't want duplicated stuff in your responses like this.
+
+his 19:14 ticks: o42 o43 o44 o45 o46, all on my picks, his typed notes above refine them. 🎙️ wispr: «PK 3 to 8» → PK-308, «work trunk» → worktrunk.
+
+PK-351:W55 (2026-11-07 19:37, dima): his steer on Q6: maybe change the skill so it is split into multiple files. the main halt would be a router skill that points either to main's halt or to the wing's, a separate sibling file: one big halt is unnecessary for wings. keep the skill efficient: what applies to both stays in the main skill file, and the rest splits by main clio and wing.
+PK-351:W56 (2026-11-07 19:37, dima): his steer on Q7: okay, but think twice and make a weighted decision whether the cli verb is worth it, or you can do this easier via a script. i'm overall fine with a verb, but i'm not sure when we can have that. how do we handle syncing until we have it, if you decide it is worth it? ❓
+PK-351:W57 (2026-11-07 19:37, dima): while we're here, sharpen another habit of main clio with you, since you can edit your own memories and they transfer to main clio too: the second-wind notice may be inefficient. when main clio second-winds, it sends a notice to everyone to stop messaging clio until she has second-winded fully, after the compaction, to remove the chance that a message sent before she compacts is lost. while this lasts, no one should message clio.
+PK-351:W58 (2026-11-07 19:37, dima): this notice means only messaging. often clio says «the second-wind notice sent, fleet stopped», «fleet paused» or «fleet parked», which confuses me: it reads as if everyone is paused and does nothing, which shouldn't be the case. the notice should mean only: do not message main clio while she is second-winding. only this one.
+PK-351:W59 (2026-11-07 19:37, dima): since wings can also have quick and side lanes, the second-wind message pause should apply to wings too. if clio maintains the mods lane and wing 1 the cpu lane, when clio second-winds she sends a notice to everyone, clearly saying main clio is second-winding. if any wing second-winds it works the same way, because anyone could send a message to a wing, and that message could be lost too. this habit works for every clio, main and winged.
+
+his 19:37 ticks: o47 Q6, o48 Q7, o49 Q8 alarm reopened, o50 Q9 split, o51 Q10 clio-wing-1 and clio-main, o52 wispr worktrunk added; o53 PK-308 wispr row rejected.
+
+2026-11-07 19:46 wing 2: PK-351:W57-W59 landed: clio:checkpoint's notice means only hold messages, any clio, words read as no work by quiet.ts. PK-351:W54's double print landed. decided: tree sync is a script first, a verb only if a second caller shows up, by his word on Q7; halt splits into a router plus main and wing files.
+
+2026-11-07 19:54 wing 2: tree sync landed: _clio/.claude/hooks/tree-sync.sh. worth it: removes the banner's 5 hand steps and the forgotten cadence; the x lane verb was turned down, no second caller; upkeep one script and 13 tests; fleet wired: the prompt hook and the banner's landing line. 10 ms with no tree, 30 ms level, at load about 25. notice recipients widened to everyone, his 19:49 word.
+
+PK-351:W60 (2026-11-07 19:49, dima): on the notice's recipients: plus crow and helga. essentially everyone.
+PK-351:W61 (2026-11-07 19:49, dima): on «i sync by hand»: by hand do you mean via script? i want this automated as much as possible, because syncs will happen often. it should also be fast and used by all clios.
+PK-351:W62 (2026-11-07 19:59, dima): don't forget the author-memory skill, and groom your memory along the way too, as a freebie since you're here.
+
+PK-351:W63 (2026-11-07 20:16, dima): one more word for this story: main clio still holds the «main clio» role. her word always weighs more, unless she is cleanly mistaken; then anyone can correct her.
+
+2026-11-07 20:24 wing 2: step 2 landed: main seat, write check on the guard's parser, replay of 2,827 wing calls (108 false refusals gone, 47 real writes refused, 14 still refused). not run live: a real main death, that is step 7's end run. a /clear changes a session id, so tree-sync loses its tree until step 3's seat names. a stray remote branch worktree-fork-2e688648 from the first landing.
+
+PK-351:W64 (2026-11-07 20:32, dima): on a real main death not run live: main death is possible but very rare. so far i have had no case of killing main clio accidentally, and hopefully won't. protection against it would be good. worst case, i just --resume it.
+PK-351:W65 (2026-11-07 20:32, dima): on a /clear losing a wing's tree: yes, but it's natural. clear is designed to clear everything.
+PK-351:W66 (2026-11-07 20:32, dima): flight plan: i like it, but propose more options that are short, vibe-natured, fun, cool, and close to clio's bird and wing topic: another top 7.
+PK-351:W67 (2026-11-07 20:32, dima): Q12: so if i tell «wing 2 lane», it is officially understood? ok.
+
+PK-351:W68 (2026-11-07 20:41, dima): wings are defined in fleet identities? everyone should be aware about wings. ❓
+PK-351:W69 (2026-11-07 20:41, dima): how do you think flyways should be persisted across reboots? in my mind they should not always be closed, maybe not closed at all, because they can serve as live trackers of each wing's progress. ❓
+PK-351:W70 (2026-11-07 20:41, dima): a wing is often set as a maintainer of some area. wing 1 currently maintains my cpu roasting issue: it completed the optimizations, and what's left is to observe and measure for a week. it's a standing topic for wing 1, so it needs to persist somewhere, and wing 1's pocket flyway is the best place for it.
+PK-351:W71 (2026-11-07 20:41, dima): maybe just drop the idea of closing flyway items in the pocket and treat them as persistent. they just become live, and must always reflect the actual picture and be pretty and clean.
+PK-351:W72 (2026-11-07 20:41, dima): the mandatory habit: always clean completed items during the day, at a wing halt or main clio's halt. main clio cleans and maintains her flyway, and every wing does too. not-completed items stay as they are until the next boot, and this way the flyway exists. maybe there are other edge cases. propose yourself.
+
+PK-351:W73 (2026-11-07 20:47, dima): on a wing that goes away: yes, the flyway number just gets parked between reboots. if ever necessary, a flyway number can be flipped to another number, so the entire flyway carries over to another wing.
+PK-351:W74 (2026-11-07 20:47, dima): flyway: what about linear labels? they also need to be synced with the new format. ❓
+PK-351:W75 (2026-11-07 20:47, dima): on a missed halt: in this case finished lines are cleaned during the wing's boot, as a sanity check, or at the next wing or main halt.
+
+his 20:47 tick o58: Q13 flyways never close, as printed. 20:42: the rest of step 3 agreed. names: flyway; seats clio-main, clio-wing-N.
 <!-- SECTION:NOTES:END -->

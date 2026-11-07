@@ -1,13 +1,13 @@
 ---
 id: PK-346
-title: 'day plan 11-07: wing 1'
+title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-07T15:37:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - s
-  - wing-1
+  - clio-wing-1
 dependencies: []
 priority: next
 type: task

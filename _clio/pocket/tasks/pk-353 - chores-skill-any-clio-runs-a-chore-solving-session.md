@@ -4,10 +4,10 @@ title: 'chores skill: any clio runs a chore-solving session'
 status: done
 assignee: []
 created_date: '2026-11-07T14:58:00Z'
-updated_date: '2026-11-07T14:58:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - s
-  - wing-2
+  - clio-wing-2
 dependencies: []
 priority: now
 type: task

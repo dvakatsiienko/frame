@@ -4,10 +4,10 @@ title: 'retro leftovers from 11-06: four lines with no home yet'
 status: done
 assignee: []
 created_date: '2026-11-06T20:31:00Z'
-updated_date: '2026-11-07T13:38:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - xs
-  - main-lane
+  - clio-main
 dependencies: []
 priority: later
 type: task

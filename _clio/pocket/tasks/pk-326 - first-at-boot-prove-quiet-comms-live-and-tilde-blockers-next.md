@@ -4,10 +4,10 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T16:01:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - s
-  - main-lane
+  - clio-main
 dependencies: []
 priority: next
 type: task

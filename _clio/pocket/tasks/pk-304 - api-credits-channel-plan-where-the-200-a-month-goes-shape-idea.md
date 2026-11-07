@@ -1,13 +1,13 @@
 ---
 id: PK-304
 title: 'api credits channel: plan where the $200 a month goes (shape-idea)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-03T08:43:00Z'
-updated_date: '2026-11-07T15:47:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - m
-  - wing-2
+  - clio-wing-2
 dependencies: []
 priority: next
 type: wish
@@ -73,4 +73,6 @@ PK-304:W1718 (2026-11-07 17:47, dima, his tick o31): i think crow and helga won'
 PK-304:W1719 (2026-11-07 17:47, dima, his tick o32): when does my api credit reset? i just resubscribed to the $200 plan two days ago. ❓
 PK-304:W1720 (2026-11-07 17:47, dima, his tick o33): it is not too much, actually. the switch was just because of my move from the $100 plan to the $200 plan: with the $200 plan the 5-hour window is gone, so pace meter mode is disabled, along with your habits about maintaining a 5-hour window.
 PK-304:W1721 (2026-11-07 17:47, dima, his tick o33): if i move back from the $200 plan to the $100 plan, the 5-hour window is enabled again, and we need to quickly and easily move pace meter mode and habits back. this is easy. if nothing else is related to switching from one state to another, then maybe nothing needs building at all.
+
+close: PK-304:W1556–PK-304:W1561 PK-304:W1567 PK-304:W1665–PK-304:W1666 PK-304:W1678–PK-304:W1681 PK-304:W1687–PK-304:W1699 PK-304:W1705–PK-304:W1721 done or answered: the key exists, the gifted credits were spent on two useful batches 11-07 ($16.02 by my usage math: the 95 ticket audit, the code bug hunt, the research scan, wing 1's spawn audit); crow and helga stay on the plan, the switch needs no build, the rest of the $44.87 lapses 11-08, the 12-01 reminder holds the next $200.
 <!-- SECTION:NOTES:END -->

@@ -4,10 +4,10 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: done
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-07T13:45:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - s
-  - wing-1
+  - clio-wing-1
 dependencies: []
 priority: next
 type: task

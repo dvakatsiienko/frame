@@ -1,13 +1,13 @@
 ---
 id: PK-352
 title: 'chores skill: any clio runs a chore-solving session'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T15:29:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - s
-  - wing-2
+  - clio-wing-2
 dependencies: []
 priority: next
 type: task
@@ -92,4 +92,6 @@ PK-352:W30 (2026-11-07 17:27, dima, on Q9): you first propose, then i accept. se
 ticked as picked: o24 triage a separate skill, o25 clio:low-tide-triage.
 
 PK-352:W31 (2026-11-07 17:29, dima): the idea of triage is to find what to do for any clio, including main. asking the other clios what they do means each clio tries to find what to do for itself. whenever a clio starts triaging, it can draft a proposal, then send it to the other clios and ask for steering, consultation, and what each clio wants to solve. they report back to you, and you settle it. the clio that initiated triage has the final word, plus my approval.
+
+close: PK-352:W1–PK-352:W31 done: clio:low-tide refreshed, clio:low-tide-triage born, the first split consulted, proposed and settled with his yes, the first batch run. not checked: a second clio starting from a seeded plan.
 <!-- SECTION:NOTES:END -->

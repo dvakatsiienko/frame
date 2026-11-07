@@ -6,10 +6,10 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-06T13:39:00Z'
-updated_date: '2026-11-07T14:38:00Z'
+updated_date: '2026-11-07T18:57:00Z'
 labels:
   - m
-  - wing-1
+  - clio-wing-1
 dependencies: []
 priority: now
 type: task
