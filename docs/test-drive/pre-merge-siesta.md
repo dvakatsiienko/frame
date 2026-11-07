@@ -60,5 +60,7 @@ Ticket: none
 - 2026-11-06 · frame#130 at 69785a35, after sixth sense's clean, 7 of 7 · wishkeeper 3.5 min, 111k tokens, 6 findings: 1 high real (a skipped test reads red, against his o57, and my own assumption had waved it through), 3 medium · it held the merge for a round; sixth sense had graded it a decision
 - 2026-11-06 · the second wind's handoff, a checkpoint read · wishkeeper 3 min, 85k tokens, 8 findings: 4 high real (three pocket items missing, a done item carried, my order line bending his FRM-510 tick) · folded before the reset
 - 2026-11-07 · the batch since 00:49, over my shift-merge proposal · wishkeeper 5.3 min, 184k tokens, 17 findings: 3 high real, all in my reply (an afk word would open holds, a false «clean and ci gate», an incomplete stop list), opened at the code · corrected to dima
+- 2026-11-07 · frame#142 and bytes#141, the renovate gaps · wishkeeper 2.4 min, 64k tokens, 5 findings: 1 high real that sixth sense's clean had missed (renovate's own automerge still lands a workflow bump), opened at the preset · back to codie before the merge
+- 2026-11-07 · bytes#138, the one-round review gate · wishkeeper 2 min, 83k tokens, 5 findings: 1 high real but moot, the pr merged while it read, on my 03:36 order · named to dima
 
 ## verdict

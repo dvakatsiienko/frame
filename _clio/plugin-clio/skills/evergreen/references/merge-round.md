@@ -13,7 +13,7 @@ same message («hold #61») subtract from the round.
   rule (bytes: the `package-json-shape` hook) — renovate commits skip our hooks, so the next human commit trips on it. a bump in a deployed app
   is proven by that app's local `pnpm --filter <app> build`, never its typecheck — jotai-devtools broke
   x-com-chat's prod build behind a green typecheck (2026-09-26).
-- **merge** → `gh pr merge <n> -R dvakatsiienko/<repo> --squash --delete-branch` — the title
+- **merge** → `x lane merge-auto <n> --apply`, from that repo's checkout — the title
   already wears `🌲 evergreen:`. one back-to-back round per day: each bytes merge costs 6 prod
   deploys, so never one per PR across the day.
 - a PR that answers «merge conflicts» after a sibling merged (lockfile) → tick renovate's
