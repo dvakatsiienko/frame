@@ -566,33 +566,52 @@ async function flushFields($: EngineInterface) {
             !saving.has(key) &&
             !due.some(([k]) => k === key),
     );
-    await Promise.all(due.map(([, p]) => p.save()));
+    await Promise.all(
+        due.map(async ([key, p]) => {
+            try {
+                await p.save();
+            } catch (err) {
+                $.ui.log(
+                    `x-mod-stash: a steer was not saved (${key}): ${errorText(err)}`,
+                );
+            }
+        }),
+    );
     const failed = new Set<string>();
     let isOffered = false;
     for (const [key, text] of lost)
-        await saveTyped($, key, text, bases.get(key)).catch((err) => {
-            const tries = (failures.get(key) ?? 0) + 1;
-            failures.set(key, tries);
-            failed.add(key);
-            if (tries >= REPLAY_TRIES) {
-                // a second give-up on the same box stacks: the board offers the newest, then the one before
-                keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
-                failures.delete(key);
-                unsaved.delete(key);
-                isOffered = true;
-            }
-            $.ui.log(
-                `x-mod-stash: a kept steer was not saved (try ${tries} of ${REPLAY_TRIES}${tries >= REPLAY_TRIES ? ', kept for the board to offer back' : ''}): ${errorText(err)}`,
-            );
-        });
+        await saveTyped($, key, text, bases.get(key))
+            .then(async (isSaved) => {
+                if (isSaved && !(await holdsSteer($, key, text)))
+                    throw new Error('the store does not hold it');
+            })
+            .catch((err) => {
+                const tries = (failures.get(key) ?? 0) + 1;
+                failures.set(key, tries);
+                failed.add(key);
+                if (tries >= REPLAY_TRIES) {
+                    // a second give-up on the same box stacks: the board offers the newest, then the one before
+                    keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
+                    failures.delete(key);
+                    remountTexts.delete(key);
+                    unsaved.delete(key);
+                    isOffered = true;
+                }
+                $.ui.log(
+                    `x-mod-stash: a kept steer was not saved (try ${tries} of ${REPLAY_TRIES}${tries >= REPLAY_TRIES ? ', kept for the board to offer back' : ''}): ${errorText(err)}`,
+                );
+            });
     if (!due.length && !lost.length) return;
     // only what this flush saved: a box typed into while it waited keeps its text
     for (const [key, { text }] of due) {
+        if (!(await holdsSteer($, key, text))) continue;
+        await settleHeld($, key);
         landed(key, text);
         if (unsaved.get(key) === text) unsaved.delete(key);
     }
     for (const [key, text] of lost)
         if (!failed.has(key) && unsaved.get(key) === text) {
+            await settleHeld($, key);
             landed(key, text);
             failures.delete(key);
             unsaved.delete(key);
@@ -605,6 +624,12 @@ const drafts = new Map<string, FieldDraft>();
 const remounts = new Map<string, number>();
 // the text each box typed since its last save
 const unsaved = new Map<string, string>();
+// what a remounted box draws while the store still refuses its text: a save that never landed has no stored steer to draw
+const remountTexts = new Map<string, string>();
+const heldOver = (key: string) =>
+    unsaved.has(key) ? remountTexts.get(key) : undefined;
+// the text each box last typed, read at a return: another board's steer that replaced it while the view was gone offers it back
+const typedTexts = new Map<string, string>();
 // the stored steer each box's unsaved text was typed over, so a replay after a reload knows a newer one came in
 const bases = new Map<string, string>();
 // the base before a box's own last save: a keystroke drawn from a render older than that save still reads it
@@ -711,6 +736,89 @@ async function dropKept($: EngineInterface, key: string) {
     keepFields($);
     await publish($);
 }
+// the steer the store holds for a box, read the way its save writes it; undefined for none or a box that is gone
+async function storedSteer($: EngineInterface, key: string) {
+    const own = /^orbit:(steer|asteer):(.+)$/.exec(key);
+    if (own) {
+        const o = await currentOrbit($);
+        return own[1] === 'steer'
+            ? o.asks.find((a) => a.id === own[2])?.steer
+            : o.assumed?.find((y) => y.id === own[2])?.steer;
+    }
+    if (key === 'plan:steer') return (await currentOrbit($)).plan?.steer;
+    const step = /^lane:([^:]+):steer$/.exec(key);
+    if (step?.[1]) return (await laneSteers($))[step[1]]?.steer;
+    const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
+    if (!member) return undefined;
+    const lane = ((await $.state.get(LANES)).value ?? []).find(
+        (l) => l.id === member[1],
+    );
+    const sid = lane?.members[member[2] as LaneRole];
+    if (!lane || !sid) return undefined;
+    const ask = ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
+        (a) => a.id === member[3],
+    );
+    if (!ask) return undefined;
+    const mark = (await $.store
+        .get(markKey(lane.memberSids?.[member[2] as LaneRole] ?? sid, ask.id))
+        .catch(() => undefined)) as RemoteMark | undefined;
+    return mark ? steered(mark).steer : ask.steer;
+}
+async function holdsSteer($: EngineInterface, key: string, text: string) {
+    return sameSteer(await storedSteer($, key), text);
+}
+// a held text reached the store: the ask's box keeps drawing it as what it mounted with, since a changed value resets the field
+async function settleHeld($: EngineInterface, key: string) {
+    const held = remountTexts.get(key);
+    remountTexts.delete(key);
+    const own = /^orbit:steer:(.+)$/.exec(key);
+    if (held === undefined || !own) return;
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        orbit = {
+            ...o,
+            asks: o.asks.map((a) =>
+                a.id === own[1] ? { ...a, shown: held } : a,
+            ),
+        };
+        await keepOrbit($);
+    });
+}
+// a dropped view's boxes mount again with the stored steer, or a text the store refused; a fold, a closed board and a
+// thread switch all come through here
+async function forgetMountedText($: EngineInterface) {
+    await takeFieldsOnce($);
+    drafts.clear();
+    remountTexts.clear();
+    for (const [key, text] of unsaved) remountTexts.set(key, text);
+    await unmountSteers($);
+}
+// a thread switch on the desktop drops the board's view: every word goes to the store as he leaves, however soon after
+// the last keystroke, and a remote steer is no longer held off by his typing
+async function leaveBoxes($: EngineInterface) {
+    await flushFields($);
+    askTypedAt.clear();
+    for (const [key, text] of typedTexts)
+        if (!unsaved.has(key) && !(await holdsSteer($, key, text)))
+            typedTexts.delete(key);
+}
+// the return draws fresh, so the boxes draw the store; a steer another board wrote meanwhile wins and his text is offered
+async function returnToBoxes($: EngineInterface) {
+    await forgetMountedText($);
+    let isOffered = false;
+    for (const [key, text] of typedTexts) {
+        if (unsaved.has(key)) continue;
+        const now = await storedSteer($, key);
+        if (sameSteer(now, text)) continue;
+        typedTexts.delete(key);
+        if (!now?.trim()) continue;
+        keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
+        isOffered = true;
+    }
+    if (!isOffered) return;
+    keepFields($);
+    await publish($);
+}
 // the save a box's closure ran, rebuilt from its key: the closure went with the old module. it lands only while the
 // stored steer is still the one the text was typed over, so a newer steer from another board wins; a text kept with no
 // base came from a module before the base was kept, and lands as it did there; true only once the steer was written, so
@@ -729,14 +837,11 @@ async function saveTyped(
         $.ui.log(`x-mod-stash: a kept steer yielded to a newer one (${key})`);
         return false;
     };
+    if (key !== 'plan:steer' && !isBase(await storedSteer($, key)))
+        return yielded();
     const own = /^orbit:(steer|asteer):(.+)$/.exec(key);
     if (own) {
         const o = await currentOrbit($);
-        const now =
-            own[1] === 'steer'
-                ? o.asks.find((a) => a.id === own[2])?.steer
-                : o.assumed?.find((y) => y.id === own[2])?.steer;
-        if (!isBase(now)) return yielded();
         if (own[1] === 'steer') {
             // a locked or resolved ask takes no steer: markAsks skips it without a word
             const ask = o.asks.find((a) => a.id === own[2]);
@@ -764,7 +869,6 @@ async function saveTyped(
     }
     const step = /^lane:([^:]+):steer$/.exec(key);
     if (step?.[1]) {
-        if (!isBase((await laneSteers($))[step[1]]?.steer)) return yielded();
         await changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
         return true;
     }
@@ -781,10 +885,6 @@ async function saveTyped(
     );
     if (!ask) return false;
     const markSid = lane.memberSids?.[role as LaneRole] ?? sid;
-    const mark = (await $.store
-        .get(markKey(markSid, ask.id))
-        .catch(() => undefined)) as RemoteMark | undefined;
-    if (!isBase(mark ? steered(mark).steer : ask.steer)) return yielded();
     await markRemote($, markSid, ask, { isSteerEdit: true, steer });
     return true;
 }
@@ -849,7 +949,8 @@ function field($: EngineInterface, key: string, saved: string) {
     else drafts.delete(key);
     if (view.kind === 'outside' && view.isRemount && !isNumber)
         remounts.set(key, (remounts.get(key) ?? 0) + 1);
-    const value = view.kind === 'held' ? view.draft.drawn : saved;
+    const value =
+        view.kind === 'held' ? view.draft.drawn : (heldOver(key) ?? saved);
     const gen = remounts.get(key);
     return {
         key: gen ? `${key}#${gen}` : key,
@@ -884,6 +985,7 @@ function typed(
     save: () => unknown,
 ) {
     pendingSaves.get(key)?.timer.cancel();
+    if (text.trim()) typedTexts.set(key, text);
     // a burst's first keystroke records the steer it types over; right after his own save the render may still show the
     // steer before it, and that one is his own save too
     if (
@@ -906,8 +1008,11 @@ function typed(
             } finally {
                 saving.delete(key);
             }
-            landed(key, text);
-            if (unsaved.get(key) === text) unsaved.delete(key);
+            if (await holdsSteer($, key, text)) {
+                await settleHeld($, key);
+                landed(key, text);
+                if (unsaved.get(key) === text) unsaved.delete(key);
+            }
             keepFields($);
         }),
     });
@@ -926,7 +1031,7 @@ function askBox($: EngineInterface, a: OrbitAsk) {
             askTypedAt.set(key, Date.now());
             typed($, key, text, a.steer ?? '', save);
         },
-        value: a.shown ?? a.steer ?? '',
+        value: heldOver(key) ?? a.shown ?? a.steer ?? '',
     };
 }
 function steerBox($: EngineInterface, prefix: string, a: OrbitAsk) {
@@ -4193,8 +4298,7 @@ async function publish($: EngineInterface) {
         !isTypingAt(typedAts(), Date.now())
     ) {
         await flushFields($);
-        drafts.clear();
-        await unmountSteers($);
+        await forgetMountedText($);
     }
     // a lane clio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
@@ -6041,6 +6145,27 @@ export const register: Register = (on) => {
         return r;
     });
 
+    // a thread switch reaches a mod only as this client leaving and coming back (the desktop log, FRM-531); a phone's
+    // comings and goings leave the desktop's view alone
+    on('session.detach', async ($, e, next) => {
+        if (e.surface === 'desktop' && e.reason === 'detach')
+            await leaveBoxes($).catch((err) =>
+                $.ui.log(
+                    `x-mod-stash: steer boxes not left: ${errorText(err)}`,
+                ),
+            );
+        return next(e);
+    });
+    on('session.attach', async ($, e, next) => {
+        if (e.surface === 'desktop')
+            await returnToBoxes($).catch((err) =>
+                $.ui.log(
+                    `x-mod-stash: steer boxes not taken back: ${errorText(err)}`,
+                ),
+            );
+        return next(e);
+    });
+
     // 🎛️: the switch list, then the auto-compact point, in a pane of its own (dima's pick a, 16:20)
     on(
         'ui.render',
@@ -6578,8 +6703,7 @@ export const register: Register = (on) => {
                             onPress={async () => {
                                 // a fold remounts its fields: they draw the stored text again
                                 await flushFields($);
-                                drafts.clear();
-                                await unmountSteers($);
+                                await forgetMountedText($);
                                 const was =
                                     (await $.state.get(FOLDS)).value ?? {};
                                 await $.state.set(FOLDS, {
