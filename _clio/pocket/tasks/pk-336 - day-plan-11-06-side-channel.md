@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T02:53:00Z'
+updated_date: '2026-11-07T12:29:00Z'
 labels:
   - m
   - wing-2
@@ -31,8 +31,8 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #7 ci made boring milestone planned with dima (due today)
 - [x] #8 PK-329 side channel limits and capabilities, helga's use decided
 - [ ] #9 FRM-495 his asks answered
-- [ ] #10 FRM-503 merge door audit printed once
-- [ ] #11 FRM-514 re-sign read, then FRM-410 grooming and close
+- [x] #10 FRM-503 merge door audit printed once
+- [x] #11 FRM-514 re-sign read, then FRM-410 grooming and close
 - [ ] #12 FRM-491 real to-spec first, 12 lint reds, after FRM-505 lands
 - [ ] #13 PK-332 side channel habit holds
 - [x] #14 PK-333 retro fixes: new mods chunk signed, 38 groom reds
@@ -45,7 +45,8 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #21 PK-308's 14 left (PK-325 moved to main, dima 19:08)
 - [ ] #22 PK-334 every gate listed, gate as a vibe word, maintained
 - [ ] #23 sharpen how pocket items tied to wings are handled, with dima (his 11-07 04:18), PK-343 with it
-- [ ] #24 FRM-517: solve it on the fresh boot, first thing: his stopwatch time, temp dir read, the writer named by prefix (CST first-act 4)
+- [x] #24 FRM-517: solve it on the fresh boot, first thing: his stopwatch time, temp dir read, the writer named by prefix (CST first-act 4)
+- [ ] #25 sharpen closing a wing: it has no verb, any close: line closes a day plan, with dima (his 11-07 04:39), beside line 23
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -113,4 +114,10 @@ close: W1, W2, W3, W4 moved: PK-334 still holds the gates list, the vibe word an
 reopened 2026-11-07 04:18, dima: not solved, lots of unticked lines; wing 2 runs it as its plan and does the chores, wing 1 is summoned to solve PK-328, so PK-328 left the list. the close line above is wing 1's hand-over, read it for each line's other home.
 
 for line 23, from the 11-07 flush: a spec lives in main's .scratch, since a wing's tree dies with its archive (FRM-521's nearly did); a wing's items keep their label at hand-back, or the groom check reds them (PK-343).
+
+14:15 wing 2: #10 ticked, the audit sits on FRM-503, wing 3's comment 11-06, its open doors main's by 11-13. #9 stays open, not a chore now: FRM-495 waits on FRM-501 → FRM-505 → FRM-491 → FRM-494, then a lane by 11-20.
+
+PK-336:W23 (2026-11-07 04:39, dima): closing a wing has no verb, and any `close:` line closes a day plan, which is how PK-336 closed with 10 lines open. that is for me to sharpen with wing 2 tmrw.
+
+14:30 wing 2: #11 ticked as groomed, not closed: FRM-514 Done; FRM-410 re-signed 11-06, parked someday on his W128 (22:51), later than this line.
 <!-- SECTION:NOTES:END -->

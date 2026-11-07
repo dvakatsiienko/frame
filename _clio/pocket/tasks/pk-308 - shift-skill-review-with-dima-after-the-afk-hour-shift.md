@@ -4,7 +4,7 @@ title: shift skill review with dima, after the afk-hour shift
 status: open
 assignee: []
 created_date: '2026-11-03T13:00:00Z'
-updated_date: '2026-11-07T02:00:00Z'
+updated_date: '2026-11-07T12:30:00Z'
 labels:
   - s
   - wing-1
@@ -198,4 +198,6 @@ close: W7–W1993 done, folded into `clio:shift` and its tickets on his o50, the
 reopened 2026-11-06 00:27, wishkeeper's high: my 00:14 range was built by script, unread, and the close it claims is not earned. the side's read says 14 left, 127 of 138 confirmed by group. true state: W1900 not landed, `_reminders.md:68`, it lands with `mods:set hot`, FRM-505's rider; W1850 half, `dormant` dropped at db11c351, `FTR.md:731`'s mark to flip; W1887–W1889, W1935 his ❓ with no answer found, W1848–W1849, W1881–W1883 unsettled; W1961's tail and W1922–W1923 no other home: my reply said `clio:shift` carries them, it does not. walk it at the boot with the side's list: /private/tmp/claude-501/-Users-dima-frame--clio/38d42581-bb48-499a-a7a6-1d8a8650b91a/tasks/ab8678450470619cb.output; W1979, W1980 are in FRM-501
 
 ⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W1834–W1854 also live in archived PK-159, then its lines get full ids.
+
+2026-11-07 14:35 wing 2 walked the 14, read at the sources; proposal printed, nothing closed. W1887–W1889 answered by clio:shift § presence and § 2, no asks. W1935: why it was said not found; the behaviour W1936 asks is live, x-mod-stash FTR.md:124. W1848–W1849, W1881–W1883: one day's asks, 11-03; PK-159 archived. W1900 stays in _reminders.md:67 until FRM-505. W1850: no dormant line left in FTR.md, rg 0 hits. W1961's tail: clio:wing took it. W1922–W1923 open: only he holds those edge cases. the side's 11-06 list file is gone. the PK-338 id sort waits on his verdict: a close archives this item as it stands.
 <!-- SECTION:NOTES:END -->
