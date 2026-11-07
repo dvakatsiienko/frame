@@ -1,13 +1,13 @@
 ---
 id: PK-336
-title: 'day plan 11-06: wing 1'
-status: done
+title: 'day plan 11-07: wing 2'
+status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T02:01:00Z'
+updated_date: '2026-11-07T02:18:00Z'
 labels:
   - m
-  - wing-1
+  - wing-2
 dependencies: []
 priority: now
 type: task
@@ -34,16 +34,17 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #10 FRM-503 merge door audit printed once
 - [ ] #11 FRM-514 re-sign read, then FRM-410 grooming and close
 - [ ] #12 FRM-491 real to-spec first, 12 lint reds, after FRM-505 lands
-- [ ] #13 PK-328 and PK-334 every gate listed, gate as a vibe word, maintained; commit gate faster
-- [ ] #14 PK-332 side channel habit holds
-- [x] #15 PK-333 retro fixes: new mods chunk signed, 38 groom reds
-- [x] #16 PK-324 tails, PK-325 queue review, PK-308's 14 left
-- [ ] #17 grills when he wants: PK-300, PK-304, PK-323
-- [ ] #18 PK-310 second finder watch after 17:54, past 24 h uptime
-- [x] #19 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
-- [x] #20 FRM-514 quick lane test from the side channel
-- [ ] #21 crow watches the side channel too (PK-323, his W9)
-- [ ] #22 PK-308's 14 left (PK-325 moved to main, dima 19:08)
+- [ ] #13 PK-332 side channel habit holds
+- [x] #14 PK-333 retro fixes: new mods chunk signed, 38 groom reds
+- [x] #15 PK-324 tails, PK-325 queue review, PK-308's 14 left
+- [ ] #16 grills when he wants: PK-300, PK-304, PK-323
+- [ ] #17 PK-310 second finder watch after 17:54, past 24 h uptime
+- [x] #18 side channel limits solved: stand in _clio, helga trial, siesta cards (PK-329)
+- [x] #19 FRM-514 quick lane test from the side channel
+- [ ] #20 crow watches the side channel too (PK-323, his W9)
+- [ ] #21 PK-308's 14 left (PK-325 moved to main, dima 19:08)
+- [ ] #22 PK-334 every gate listed, gate as a vibe word, maintained
+- [ ] #23 sharpen how pocket items tied to wings are handled, with dima (his 11-07 04:18), PK-343 with it
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -107,4 +108,6 @@ W22 (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optim
 closed 2026-11-07 at his 03:51 word, 12 of 22 done. the 10 open lines' homes: #9 FRM-495 signed Todo; #10 FRM-503 signed Todo; #11 FRM-514 Done, FRM-410 signed Todo, someday; #12 FRM-491 In Progress; #13 PK-328 and PK-334; #14 PK-332; #17 PK-300, PK-304, PK-323 done, its want FRM-516; #18 PK-310, due in _reminders.md 11-07; #21 FRM-516; #22 PK-308.
 
 close: W1, W2, W3, W4 moved: PK-334 still holds the gates list, the vibe word and the upkeep. W5 moved: PK-328, then FRM-521 and FRM-525. W12, W13, W14 moved: rex set up with him, the trial runs in docs/test-drive/rex.md, verdict 11-20. W15, W16, W17, W18, W19, W20, W21, W22 done: ci made boring shaped, specced and handed to main 17:12, BYT-130, BYT-94, BYT-132, BYT-106, BYT-131 in her lane. the 10 unchecked lines: #9 moved FRM-495; #10 moved FRM-503; #11 FRM-514 done, moved FRM-410; #12 moved FRM-491; #13 moved PK-328 and PK-334; #14 moved PK-332; #17 moved PK-300, PK-304, PK-323 done; #18 moved PK-310; #21 moved FRM-516; #22 moved PK-308. none dropped.
+
+reopened 2026-11-07 04:18, dima: not solved, lots of unticked lines; wing 2 runs it as its plan and does the chores, wing 1 is summoned to solve PK-328, so PK-328 left the list. the close line above is wing 1's hand-over, read it for each line's other home.
 <!-- SECTION:NOTES:END -->
