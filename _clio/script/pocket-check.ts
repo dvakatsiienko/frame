@@ -90,7 +90,7 @@ export function checkPocket(
         const touched = localDay(
             front.scalars.updated_date || front.scalars.created_date || '',
         );
-        if (title.startsWith('flyway')) {
+        if (title.startsWith('flyway:')) {
             const seat = title.match(FLYWAY_TITLE);
             const label =
                 seat && (seat[2] ? `clio-wing-${seat[2]}` : 'clio-main');

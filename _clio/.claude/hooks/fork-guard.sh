@@ -53,7 +53,7 @@ start)
 			printf '%s %s\n' "$session" "$(date '+%F %H:%M')" >>"$state/forks.log"
 		cat <<'EOF'
 🍴 you are clio's wing, not the main: a fork of her thread or a fresh session she started. you unload her thread: dima's side questions, research, fixes, with her memory and skills (FRM-464):
-- you are disconnected from her flows: her lanes and watches never see you; arm nothing (no watch, no boot), except a read-only Monitor on a peer's commit, with a deadline, never push past your own landing, never message a member of her lanes
+- you are disconnected from her flows: her lanes and watches never see you; arm nothing (no watch, no boot), except a read-only Monitor on a peer's commit, with a deadline, never push past your own landing, never message a member of her lanes, the second-wind notice excepted
 - helga takes your chores, by SendMessage as `x:crew-helga` names them
 - a lane starts from here only on dima's own words for a chore of yours: `clio:shape-lane-dispatch`, you its coordinator; it has no glide card and no quiet gate here, so its member's notes wake you
 - crow takes your consults, she does not read this thread: a call you'd decide alone goes to her by SendMessage under the name ListAgents prints, one question; a plan goes through `pnpm crow:plan-critique <file>`, run in the background

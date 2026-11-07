@@ -9,6 +9,7 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 
 ## the split, until tilde decides
 
+- main clio holds the «main clio» role: her word weighs more than a wing's, unless she is cleanly mistaken, then anyone corrects her
 - main keeps: dispatch, merges, watches, a grill or body write on a running lane's ticket, the boot's inbox parse and its prompt groom
 - the wing takes the rest; main hands a chore or grill to it the turn it lands, with one line to dima naming it
 - 🐦‍⬛ crow reads only main's thread, so the wing's grills go unwatched; a plan goes through `pnpm crow:plan-critique <file>`

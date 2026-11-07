@@ -255,6 +255,10 @@ describe('checkPocket', () => {
         ).toBe('');
     });
 
+    test('a wish about flyways is no flyway', () => {
+        expect(flyway({ title: 'flyways board view' })).toBe('');
+    });
+
     test('a flyway never closes', () => {
         expect(flyway({ status: 'done' })).toContain('never closes');
     });

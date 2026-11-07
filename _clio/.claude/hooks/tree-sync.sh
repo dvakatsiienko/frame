@@ -1,6 +1,6 @@
 #!/bin/bash
 # keeps a wing's worktree level with main, both ways (PK-351:W16, W48)
-# usage: tree-sync.sh        UserPromptSubmit: main into this session's tree; a session with no tree exits on one stat
+# usage: tree-sync.sh        UserPromptSubmit: main into this session's tree; a session with no tree exits fast
 #        tree-sync.sh land   a finished piece: main in, fast-forward main, push, bump a changed plugin, refresh the other wings' trees
 set -uo pipefail
 root="${TREE_SYNC_ROOT:-$HOME/frame}"

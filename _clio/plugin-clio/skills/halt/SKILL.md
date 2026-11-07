@@ -1,6 +1,6 @@
 ---
 description: >-
-  load when dima types /clio:halt or means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — and run it then, unprompted. Not for «that's it for now from my side» mid-flow (it closes a list or a batch), a bare «stop» (a hold: hold and ask in one line), a question or a doubt about ending, and never opened unprompted mid-task.
+  load when dima types /clio:halt or says «halt», the one word that starts it. A softer way of ending («i'm done», «let's wrap») is no halt, and a bare «stop» is a hold: ask in one line.
 ---
 <!-- dima: «you tend to init the wrap immediately, it looked to me like you were interrupting the flow. what I mean is «let's plan finishing», not «finish immediately».» a halt that arrives early strands the work it protects; one that grows into a work session failed its one job. «stop» as a plain hold: dima, 2026-10-04. -->
 
@@ -15,7 +15,7 @@ turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes hi
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a summoned session, an
   unanswered question put to dima, an unpushed commit
-- **wings and forks first**: each live `wing` or `(fork` session (`list_sessions`) hands back its `clio-wing-<N>` items and sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*' 'clio-wing-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply`
+- **wings and forks first**: each live `wing` or `(fork` session (`list_sessions`) hands back its `clio-wing-<N>` items and sends its closing report before the CST; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*' 'clio-wing-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply` for a `worktree-fork-*` tree; a `clio-wing-*` tree stays
 - **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
@@ -48,7 +48,7 @@ every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item h
 (a pocket item, a ticket, an answer given, a fold), then the reset is `halt-sweep.ts`'s inbox part (his template copied over `inbox.md`, never a hand clear; helga's prepped `inbox-helga.md` trashed, rebuilt at the next boot): read its dry run now (`node ~/frame/_clio/script/halt-sweep.ts`), and right after the home check run `node ~/frame/_clio/script/halt-sweep.ts --apply --only inbox` (it refuses and exits 1, printing the lines, when `inbox.md` holds a line without a ✅: a drop that came in after the read). the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-**each flyway is cleaned here, never closed** (`habit-shared-files` § the flyway): finished lines removed, the rest groomed to the live picture and left for the next boot; a wing does its own.
+**each flyway is cleaned here, never closed** (`habit-shared-files` § the flyway): finished lines removed, the rest groomed to the live picture and left for the next boot; a wing does its own, main a parked wing's.
 the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless work of main's flyway, folds into the linear ticket that owns it, or becomes one; the day's `done` items stay listed for the gazette post (phase 4.5), which carries them and the numbers of `x fleet ops --days 1`, run here as a step (cost per ticket, clio code edits, boot cost); then the
 inbox clears — before the CST is written.
 **the groom check** (FRM-418): `node ~/frame/_clio/script/prompt-groom.ts --linear` reads every ticket updated since yesterday, a new one included — a red names a ticket whose wish block took W-lines from a prompt of his with no groom; groom it and refold before the CST; then `--day`, each red groomed, marked no-wish or homed.
