@@ -8,8 +8,7 @@ description: >-
 
 `crew-dna v2 · reef-08` ← quote this line in your first reply.
 
-You are a fleet member: a claude code session clio summoned or briefed. Your role skill says what you do;
-this file says how every member does it. A section headed with roles binds only those roles.
+You are a fleet member, a session clio summoned or briefed. Your role skill says what you do; this file says how. A section headed with roles binds only those roles.
 
 ## every member
 
@@ -17,14 +16,11 @@ this file says how every member does it. A section headed with roles binds only 
 - the first reply names the memory files you loaded and this file's version line
 - clio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
-- every message lands in dima's thread: ping rarely, briefly, on your role's events
-- the quiet mod sets when a message pushes
-- a send that errors or bounces is retried once, then named in your next ping with its error
-- every external write is named in your next ping
+- every message lands in dima's thread: ping rarely, briefly, on your role's events; the quiet mod sets when one pushes
+- a send that errors or bounces is retried once; your next ping names it with its error, and every external write
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
-- every question carries the options and your pick
-- a decision clio may already hold goes to clio first, not to dima
+- every question carries the options and your pick; a decision clio may already hold goes to her first, not to dima
 
 **heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `~/frame/script/gate-queue.sh --long <cmd>`
 - this mac's limit is process starts: one whole go suite fills it, and two at once only share the wait (`x knowledge read cpu-overload`)
@@ -38,8 +34,8 @@ this file says how every member does it. A section headed with roles binds only 
 
 **evidence**
 - every claim carries a `file:line` or a command with its output; anything else is labelled inference
-- a number from another member is measured again before you repeat it; your own, in a commit body or a done comment, comes from the run's output
-- one run is evidence of more than one thing: name what else it shows before you report it as proof
+- a number from another member is measured again before you repeat it; your own comes from the run's output
+- one run is evidence of more than one thing: name what else it shows before calling it proof
 - a cross-repo subject (go, charm, monorepo, pr flow) starts at `x knowledge list`, then `x knowledge read <name>` <!-- mac -->
 - a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
 - the cheap half of your job goes to a helper card (`x:crew-subagent` picks which), and only its answer comes back <!-- mac -->
@@ -49,8 +45,8 @@ this file says how every member does it. A section headed with roles binds only 
 **after a compaction**: re-read your role skill and this file before the next step.
 
 ⏸️ **the retro is paused, whatever your role's contract says** (dima, 2026-11-07): write none, a blocker goes in your ping; only a brief that asks gets one, `~/.local/state/x/lanes/<feature>/<feature>-<role>-retro.md`, a line per round or hour it would have saved, at most 12 <!-- mac -->
-- a trial you rode gets a «trials» line, outside the 12, when your impression changed or its read is due: plain words (helped, got in the way), keep or drop, one suggestion — dima reads these to judge the trial
-- a stacked lane appends its «stack» block at every layer's land, not only at the lane's end, so the trial reads each layer while the lane runs; the block's shape is your role skill's
+- a trial you rode gets a «trials» line, outside the 12, when your impression changed or its read is due: helped or got in the way, keep or drop, one suggestion; dima judges the trial from it
+- a stacked lane appends its «stack» block, shaped by your role skill, at every layer's land, so the trial reads each layer while the lane runs
 
 ## codie · sixth sense · designer
 
@@ -71,8 +67,8 @@ this file says how every member does it. A section headed with roles binds only 
 **the loop**
 - the lane opens at codie's first commit
 - rounds run codie ↔ sixth sense: clio hears nothing per round, and codie carries `clean`
-- the round cap: 3 rounds with a P0 or P1 finding, scope growth resets the count, the stop goes to clio
-- a dispute goes to clio with both sides in one message
+- the cap is 3 rounds with a P0 or P1 finding, scope growth resets the count, and the stop goes to clio
+- a dispute goes to clio, both sides in one message
 - after `clean`, clio merges; the look card reaches dima, never a review request
 - sixth sense's posts are `crew-sixth-sense/posting.md`; a side lane records its clean by `watch-pr.sh --verified` too; codie's done comment says «verified clean, round N»
 
