@@ -50,6 +50,7 @@ One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a cod
 - [cpu-load.md](cpu-overload/cpu-load.md): the first long sample, what loads the cpu per kind of run
 - [fleet-pace-under-load.md](cpu-overload/fleet-pace-under-load.md): a lane's pace by lane count
 - [mac-agent-cpu-overload.md](cpu-overload/mac-agent-cpu-overload.md): prior art, who else hit this, its raw lanes beside it
+- [doors-left.md](cpu-overload/doors-left.md): every way left to more fast lanes, ranked, git alternatives included; read before choosing the next cpu step
 - [git-process-cost.md](cpu-overload/git-process-cost.md): what a git start costs on macOS, the `LANG` chain read frame by frame, the cheap trials left
 
 Scripts: [scripts/](cpu-overload/scripts/) (`cpu-sample.mjs`, `cpu-read.mjs`, `cpu-load-join.mjs`, `lane-count-read.mjs`, `git-start-sample.sh`, `spindump-read.mjs`, `spindump-git.mjs`). Raw data stays out of git, `~/.local/state/x/lanes/frm-525/`, except the first sample, `scripts/cpu-2026-11-06.jsonl`.
