@@ -1,10 +1,10 @@
 ---
 id: PK-342
 title: 'wire what we build, cli and mods: chores go to the wings, main coordinates'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T19:53:00Z'
-updated_date: '2026-11-07T13:42:00Z'
+updated_date: '2026-11-07T13:44:00Z'
 labels:
   - s
   - main-lane
@@ -76,4 +76,7 @@ PK-342:W25 (2026-11-07 15:12, dima): i ticked right before sending this mesage.
 PK-342:W26 (2026-11-07 15:12, dima): remember how this new ticking stuff works, simple words to tech terms.
 
 15:42 crow's root fix for the ask with no ✍️ shape is live: orbit add refused a re-sign pick with no sign text at 15:39, so no ticket; a no.
+
+15:45 the cli half of the wiring read, a helper card, spot-checked: 14 landed cli tickets, 8 promises wired with real callers, 0 not wired, 9 tickets with nothing promised (they predate the 🔌 line). the mods half: wing 3's line above; what FRM-505 and FRM-493 owe lands with them as their 🪢 lines. W26: the tick words sit in the orbit tool's description, resident.
+close: both reads done, nothing unwired
 <!-- SECTION:NOTES:END -->
