@@ -1235,6 +1235,36 @@ func TestMergeAutoLandsARenovatePrWithNoClean(t *testing.T) {
 	}
 }
 
+func TestMergeAutoAsksACleanOfARenovateWorkflowBump(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, files, want string }{
+		{"a workflow file", `[{"filename":"pnpm-lock.yaml"},{"filename":".github/workflows/ci.yml"}]`, "it changes a workflow file, so a clean reads it: .github/workflows/ci.yml"},
+		{"a workflow file moved away", `[{"filename":"old/ci.yml","previous_filename":".github/workflows/ci.yml"}]`, "it changes a workflow file, so a clean reads it: .github/workflows/ci.yml"},
+		{"the files do not read", "", "its files did not read"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "pnpm-lock.yaml")
+			w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
+			w.hub.mu.Lock()
+			w.hub.pages[repoPath+"/pulls/7/files"] = c.files
+			if c.files == "" {
+				// the risky step reads the same list next, and that read answers
+				w.hub.later = map[string]string{repoPath + "/pulls/7/files": `[{"filename":"pnpm-lock.yaml"}]`}
+				w.hub.pages[repoPath+"/pulls/7/files"] = serverDown
+			}
+			w.hub.mu.Unlock()
+
+			got := w.run(t, "7", "--apply")
+
+			if e := envelopeOf(got).Error; got.code == 0 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(e, c.want) {
+				t.Fatalf("exit %d, %d merges, error %q, want %q", got.code, len(w.hub.sent("PUT ")), e, c.want)
+			}
+		})
+	}
+}
+
 func TestMergeAutoRecordsNoExemptionOnARenovatePrWithAClean(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "pnpm-lock.yaml")
