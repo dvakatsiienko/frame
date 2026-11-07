@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-06T16:13:00Z'
+updated_date: '2026-11-07T02:48:00Z'
 labels:
   - s
 dependencies: []
@@ -91,4 +91,6 @@ FRM-368 owns W427–W433; the copies of W430–W432 here are pointers.
 afk hour read 16:01, 15:01–16:01, a forced restart 15:29–15:33 inside: 31 log lines, 17 messages once flushes are netted (14 flush lines repeat held ones), 4 woke a turn, all tagged asks; 0 lone-note wakes against the old 54 in a night, but that night ran longer and busier. held lines joined turns, none lost. the 10-min silent wake never fired: no line sat 10 min, unproven; `drop` unproven. graded by me from the lines as printed, a judgment: of 13 held notices, 3 used (mods' writeLanes flag, its file ownership answer, l43's step), 10 not, 7 of the 13 the side channel's turn-ends.
 
 ⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W2, W3, W4, W25 are numbered twice; W430–W432 are FRM-368 pointers, then its lines get full ids.
+
+quiet comms, the widest day, read 11-07 04:47: holds, 72 of 484 messages started a turn, 0 lone notices; docs/test-drive/gate-speed/empty-wakes.md. dima: FRM-368 waits for this mark, FRM-368's comment carries it.
 <!-- SECTION:NOTES:END -->
