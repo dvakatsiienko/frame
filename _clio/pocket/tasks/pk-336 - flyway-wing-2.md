@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T18:57:00Z'
+updated_date: '2026-11-07T19:49:00Z'
 labels:
   - m
   - clio-wing-2
@@ -30,7 +30,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #6 PK-304 api credits grill, now
 - [ ] #7 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
 - [ ] #8 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #9 postponed, maybe not today: FRM-452 jev test drive, FRM-441 changedetector board, FRM-454 helga on Sonnet
+- [ ] #9 FRM-454 helga on Sonnet
 <!-- AC:END -->
 
 ## Implementation Notes
