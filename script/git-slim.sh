@@ -1,7 +1,7 @@
 #!/bin/bash
 # git-slim [--check] — every agent shell's git, brew's version with no gettext, Rust, perl, python, CoreServices or fsmonitor, about 85 libraries against brew's 706.
 # bare: builds when the live one fails the check. each build gets its own tree, `current` swaps with a rename, so a lane mid-run never sees half a tree; old trees stay for that lane.
-# --check: exit 0 healthy, exit 1 naming this script. the door is the `git-slim` block in home/.zshenv and home/.zprofile, a missing build falls back to brew's.
+# --check: exit 0 healthy, exit 1 naming this script. the door is the SessionStart hook shelf/hooks/git-slim-path.sh for the Bash tool, whose snapshot resets PATH, and the `git-slim` block in home/.zshenv and home/.zprofile for a zsh started under it; a missing build falls back to brew's.
 set -u
 state=${X_STATE:-$HOME/.local/state/x}
 home=$state/git-slim

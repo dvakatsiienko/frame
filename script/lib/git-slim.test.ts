@@ -320,6 +320,50 @@ onMac('the check', () => {
     );
 });
 
+onMac(
+    'the session hook, the Bash tool shell whose snapshot resets PATH',
+    () => {
+        const hook = join(repo, 'home/.claude/shelf/hooks/git-slim-path.sh');
+        const slimDir = '$HOME/.local/state/x/git-slim/current/bin';
+
+        test('writes a line that puts the slim dir first, with the PATH of that moment kept', () => {
+            const dir = realpathSync(
+                mkdtempSync(
+                    join(process.env.TMPDIR ?? tmpdir(), 'git-slim-hook-'),
+                ),
+            );
+            const envFile = join(dir, 'env.sh');
+
+            const got = spawnSync(hook, {
+                encoding: 'utf8',
+                env: { ...process.env, CLAUDE_ENV_FILE: envFile },
+            });
+            const read = spawnSync(
+                '/bin/bash',
+                [
+                    '-c',
+                    `HOME=/h PATH=/fnm/bin:/b; . "${envFile}"; echo "$PATH"`,
+                ],
+                { encoding: 'utf8' },
+            );
+
+            expect(got.status, got.stderr).toBe(0);
+            expect(readFileSync(envFile, 'utf8')).toContain(slimDir);
+            expect(read.stdout.trim()).toBe(
+                '/h/.local/state/x/git-slim/current/bin:/fnm/bin:/b',
+            );
+        });
+
+        test('with no env file it exits 0 and writes nothing', () => {
+            const { CLAUDE_ENV_FILE: _file, ...env } = process.env;
+
+            const got = spawnSync(hook, { encoding: 'utf8', env });
+
+            expect(got.status, got.stderr).toBe(0);
+        });
+    },
+);
+
 onMac('the door, read by a new shell', () => {
     function shell(
         mode: '-c' | '-lc',
