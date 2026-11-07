@@ -912,7 +912,8 @@ func renovateAuthor(login string) bool {
 }
 
 // a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
-// makes it a member's pr, as bytes' review-renovate.yml reads it, and an unread list counts as that push
+// makes it a member's pr, as bytes' review-renovate.yml reads it; an unread list, or one cut short of the head (github
+// stops at 250, a push can land between reads), counts as that push
 func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
 	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 	if c.OK || !renovateAuthor(pr.User.Login) {
@@ -922,8 +923,9 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 		Login string `json:"login"`
 	}
 	commits, err := ghPages[struct {
-		Author    login `json:"author"`
-		Committer login `json:"committer"`
+		Sha       string `json:"sha"`
+		Author    login  `json:"author"`
+		Committer login  `json:"committer"`
 		Commit    struct {
 			Verification struct {
 				Verified bool `json:"verified"`
@@ -940,7 +942,8 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 			return c
 		}
 	}
-	if len(commits) == 0 {
+	if len(commits) == 0 || commits[len(commits)-1].Sha != pr.Head.Sha {
+		c.Detail += "; its commit list does not end at the head"
 		return c
 	}
 	c.OK, c.Detail = true, "renovate's own commits, ci is their review"

@@ -1199,7 +1199,7 @@ func TestMergeAutoExemptsARenovatePrFromTheRound(t *testing.T) {
 }
 
 // a commit as github answers it on a real renovate pr (frame#136, bytes#137)
-const renovateCommit = `{"author":{"login":"x-renovate[bot]"},"committer":{"login":"web-flow"},"commit":{"verification":{"verified":true}}}`
+const renovateCommit = `{"sha":"HEAD","author":{"login":"x-renovate[bot]"},"committer":{"login":"web-flow"},"commit":{"verification":{"verified":true}}}`
 
 // no clean in the store, so only the exemption can pass the sixth-sense check
 func (w *mergeWorld) renovatePr(t *testing.T, login, commits string) {
@@ -1209,7 +1209,7 @@ func (w *mergeWorld) renovatePr(t *testing.T, login, commits string) {
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"number":7,`, `"number":7,"user":{"login":"`+login+`"},`, 1)
 	if commits != "" {
-		w.hub.pages[repoPath+"/pulls/7/commits"] = commits
+		w.hub.pages[repoPath+"/pulls/7/commits"] = strings.ReplaceAll(commits, "HEAD", w.head)
 	}
 }
 
@@ -1231,17 +1231,43 @@ func TestMergeAutoLandsARenovatePrWithNoClean(t *testing.T) {
 	}
 }
 
+// while review:clean is required the pass reaches the approve, and that is its whole way in
+func TestMergeAutoApprovesARenovatePrWithNoClean(t *testing.T) {
+	t.Parallel()
+	w := bytesWorld(t, true)
+	w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
+
+	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
+
+	if approves := w.hub.sent("POST " + repoPath + "/pulls/7/reviews"); got.code != 0 || len(approves) != 1 || len(w.hub.sent("PUT ")) != 1 {
+		t.Fatalf("exit %d, %d approves, %d merges, want one of each:\n%s", got.code, len(approves), len(w.hub.sent("PUT ")), got.stdout)
+	}
+}
+
+// a stack's lower layer goes through the same gate as the pr merged on top of it
+func TestMergeAutoPassesARenovateLowerLayerWithNoClean(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.renovatePr(t, "x-renovate[bot]", `[`+renovateCommit+`]`)
+	write(t, w.store, `{"o/r#8":"`+w.head+`"}`)
+
+	if got := w.run(t, "8"); got.code != 4 {
+		t.Fatalf("exit %d, want the plan to merge past the renovate layer:\n%s", got.code, got.stdout)
+	}
+}
+
 // bytes' review-renovate.yml stands down on a member's push to a renovate branch; a pass here would reach the approve
 func TestMergeAutoAsksACleanOfARenovatePrItCannotTrust(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, login, commits string }{
-		{"a member's push on top", "x-renovate[bot]", `[` + renovateCommit + `,{"author":{"login":"dvakatsiienko"},"committer":{"login":"dvakatsiienko"},"commit":{"verification":{"verified":true}}}]`},
-		{"renovate's name on a member's push", "x-renovate[bot]", `[{"author":{"login":"x-renovate[bot]"},"committer":{"login":"dvakatsiienko"},"commit":{"verification":{"verified":true}}}]`},
-		{"github's name on an unsigned commit", "x-renovate[bot]", `[{"author":{"login":"x-renovate[bot]"},"committer":{"login":"web-flow"},"commit":{"verification":{"verified":false}}}]`},
-		{"a commit with no github account", "x-renovate[bot]", `[{"author":null,"committer":{"login":"web-flow"},"commit":{"verification":{"verified":true}}}]`},
+		{"a member's push on top", "x-renovate[bot]", `[` + renovateCommit + `,{"sha":"HEAD","author":{"login":"dvakatsiienko"},"committer":{"login":"dvakatsiienko"},"commit":{"verification":{"verified":true}}}]`},
+		{"renovate's name on a member's push", "x-renovate[bot]", `[{"sha":"HEAD","author":{"login":"x-renovate[bot]"},"committer":{"login":"dvakatsiienko"},"commit":{"verification":{"verified":true}}}]`},
+		{"github's name on an unsigned commit", "x-renovate[bot]", `[{"sha":"HEAD","author":{"login":"x-renovate[bot]"},"committer":{"login":"web-flow"},"commit":{"verification":{"verified":false}}}]`},
+		{"a commit with no github account", "x-renovate[bot]", `[{"sha":"HEAD","author":null,"committer":{"login":"web-flow"},"commit":{"verification":{"verified":true}}}]`},
 		{"no commits", "x-renovate[bot]", `[]`},
+		{"a list cut short of the head", "x-renovate[bot]", `[` + strings.Replace(renovateCommit, "HEAD", "0000000", 1) + `]`},
 		{"the commits do not read", "x-renovate[bot]", ""},
-		{"a user named like the bot", "x-renovate", `[{"author":{"login":"x-renovate"},"committer":{"login":"web-flow"},"commit":{"verification":{"verified":true}}}]`},
+		{"a user named like the bot", "x-renovate", `[{"sha":"HEAD","author":{"login":"x-renovate"},"committer":{"login":"web-flow"},"commit":{"verification":{"verified":true}}}]`},
 		{"a member's own pr of renovate's commit", "dvakatsiienko", `[` + renovateCommit + `]`},
 	}
 	for _, c := range cases {
