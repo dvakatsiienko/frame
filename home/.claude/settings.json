@@ -340,7 +340,7 @@
   "autoDreamEnabled": true,
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
-  "theme": "custom:gruvbox-ansi",
+  "theme": "auto",
   "editorMode": "vim",
   "verbose": false,
   "preferredNotifChannel": "notifications_disabled",
