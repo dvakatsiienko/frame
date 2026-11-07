@@ -954,6 +954,24 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 		c.Detail += "; its commit list does not end at the head"
 		return c
 	}
+	type file struct {
+		Filename         string `json:"filename"`
+		PreviousFilename string `json:"previous_filename"`
+	}
+	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
+	if err != nil {
+		c.Detail += "; its files did not read: " + err.Error()
+		return c
+	}
+	for _, f := range files {
+		for _, path := range []string{f.PreviousFilename, f.Filename} {
+			// a bumped action runs with the repo's secrets, and ci running it proves nothing about what it took
+			if strings.HasPrefix(path, ".github/workflows/") {
+				c.Detail += "; it changes a workflow file, so a clean reads it: " + path
+				return c
+			}
+		}
+	}
 	c.OK, c.Detail, c.renovateExempt = true, "renovate's own commits, ci is their review", true
 	return c
 }
