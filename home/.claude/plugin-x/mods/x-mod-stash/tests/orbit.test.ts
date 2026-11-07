@@ -17,6 +17,9 @@ let schema: {
 } = {};
 let isDeferred: boolean | undefined;
 
+// a test holds the store's key list shut, to keep a hook mid-way while a draw overtakes it
+let storeKeysGate: Promise<void> | undefined;
+
 // `files`: what `$.fs.read` finds, such as the glide shelf file
 function world(on: On, files: Record<string, string> = {}) {
     on('fs.read', (_$, e) =>
@@ -44,7 +47,10 @@ function world(on: On, files: Record<string, string> = {}) {
         store.set(e.key, e.value);
         return { value: undefined };
     });
-    on('store.keys', () => ({ value: [...store.keys()] }));
+    on('store.keys', async () => {
+        await storeKeysGate;
+        return { value: [...store.keys()] };
+    });
     on('store.delete', (_$, e) => {
         taps.delete(e.key);
         store.delete(e.key);
@@ -4456,7 +4462,7 @@ for (const [site, act] of [
     });
 
 /* FRM-531: a thread switch on the desktop detaches the client and drops the board's view; the return attaches it, and
-   the board draws fresh 7–9 ms later (the desktop log, 2026-11-07: detach → attach → draw, a timer firing in between) */
+   the board draws fresh 2–20 ms later and again 76–131 ms after that (the desktop log, 2026-11-07: detach → attach → draw, a timer firing in between) */
 const CLIENT = { clientId: 'desktop-2', surface: 'desktop' } as const;
 const FIELD_SAVE = 1500;
 type Clocked = { clock: { advance: (ms: number) => Promise<unknown> } };
@@ -5031,4 +5037,135 @@ test('a held text that yielded never draws over the words he types next', async 
     await back.input({ key, kind: 'change', text: 'a swan and' });
     await back.redraw();
     expect(await boxValue(back, key)).toBe('a swan');
+});
+
+/* FRM-531 sixth sense, round 1 */
+test('a second steer refused after a sent one cleared keeps drawing, and lands at the next chance', async ($, on) => {
+    const w = world(on);
+    const { down, state } = refusingOrbit(on);
+    const id = `o${(state.orbit as { next: number }).next}`;
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.redraw();
+    const key = `orbit:steer:${id}`;
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await w.clock.advance(FIELD_SAVE + 3500);
+    await ui.press({ key: `orbit:accepted:${id}` });
+    await say($, 'go');
+    await endTurn($);
+    await w.clock.advance(5_000);
+    await ui.redraw();
+    const live = (await steerBoxOf(ui, id))?.key ?? key;
+    down.isDown = true;
+    await ui.input({ key: live, kind: 'change', text: 'a stork' });
+    const back = await switchThread($, w, ui);
+    const first = (await steerBoxOf(back, id))?.props.value;
+    const again = await switchThread($, w, back);
+    const second = (await steerBoxOf(again, id))?.props.value;
+    down.isDown = false;
+    await say($, 'next');
+    await again.redraw();
+    expect([
+        first,
+        second,
+        (state.orbit as { asks: { steer?: string }[] }).asks[0]?.steer,
+        (await steerBoxOf(again, id))?.props.value,
+        await again.find({ key: `kept:${key}`, type: 'Button' }),
+    ]).toEqual(['a stork', 'a stork', 'a stork', 'a stork', undefined]);
+});
+
+test('a text sent before he left is not offered back over a newer steer', async ($, on) => {
+    const { id, key, ui, w } = await askBoxOnBoard($, on);
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await ui.press({ key: `orbit:accepted:${id}` });
+    await say($, 'go');
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    await endTurn($);
+    w.store.set(`marks:${SID}:${id}`, {
+        at: (w.clock as unknown as { now: () => number }).now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await $.session.attach(CLIENT);
+    const back = await board($);
+    expect(await back.find({ key: `kept:${key}`, type: 'Button' })).toBe(
+        undefined,
+    );
+});
+
+test('a text Enter saved, its timer dropped by a reload, is not offered beside itself', async ($, on) => {
+    world(on);
+    const seed = orbitSeed();
+    const state = keptState(on, { orbit: seed });
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.redraw();
+    const key = `orbit:steer:o${seed.next}`;
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await ui.input({ key, kind: 'submit', text: 'a heron' });
+    await reload($, ui, state, 'orbit');
+    await say($, 'go');
+    await ui.redraw();
+    expect(await ui.find({ key: `kept:${key}`, type: 'Button' })).toBe(
+        undefined,
+    );
+});
+
+for (const [kind, setUp] of Object.entries(SWITCH_KINDS))
+    test(`a draw ahead of a slow attach reads every word: ${kind} box`, async ($, on) => {
+        const { key, ui } = await setUp($, on);
+        await ui.input({ key, kind: 'change', text: 'a heron' });
+        await $.session.detach({ ...CLIENT, reason: 'detach' });
+        await ui.unmount();
+        let open = () => {};
+        storeKeysGate = new Promise<void>((resolve) => {
+            open = resolve;
+        });
+        const attaching = $.session.attach(CLIENT);
+        const back = await board($);
+        const first = await boxValue(back, key);
+        open();
+        storeKeysGate = undefined;
+        await attaching;
+        expect(first).toBe('a heron');
+    });
+
+test("a return's first draw ahead of a slow save at the detach reads every word", async ($, on) => {
+    world(on);
+    const seed = orbitSeed();
+    const state: Record<string, unknown> = { orbit: seed };
+    let version = 0;
+    let isHeld = false;
+    let open = () => {};
+    const gate = new Promise<void>((resolve) => {
+        open = resolve;
+    });
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? ++version : 0 },
+    }));
+    on('state.set', async (_$, e) => {
+        if (isHeld && e.key === 'orbit') await gate;
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: ++version } };
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.redraw();
+    const key = `orbit:steer:o${seed.next}`;
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    isHeld = true;
+    const leaving = $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    const back = await board($);
+    const first = await boxValue(back, key);
+    isHeld = false;
+    open();
+    await leaving;
+    await $.session.attach(CLIENT);
+    await back.redraw();
+    expect([first, await boxValue(back, key)]).toEqual(['a heron', 'a heron']);
 });

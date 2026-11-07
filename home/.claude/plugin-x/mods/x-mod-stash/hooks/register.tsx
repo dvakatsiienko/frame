@@ -617,7 +617,8 @@ async function flushFields($: EngineInterface) {
             else {
                 // it yielded, or its box is gone: a newer steer draws, and his words stay on offer
                 remountTexts.delete(key);
-                if ((await storedSteer($, key))?.trim()) {
+                const now = await storedSteer($, key);
+                if (now?.trim() && !sameSteer(now, text)) {
                     keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
                     isOffered = true;
                 }
@@ -803,31 +804,59 @@ async function settleHeld($: EngineInterface, key: string) {
 // thread switch all come through here
 async function forgetMountedText($: EngineInterface) {
     await takeFieldsOnce($);
+    holdUnsaved();
+    await unmountSteers($);
+}
+function holdUnsaved() {
     drafts.clear();
     remountTexts.clear();
     for (const [key, text] of unsaved) remountTexts.set(key, text);
-    await unmountSteers($);
+}
+// a sent steer is the turn's, so a later clear and a newer steer offer nothing back
+async function isSentSteer($: EngineInterface, key: string) {
+    const own = /^orbit:steer:(.+)$/.exec(key);
+    if (own)
+        return !!(await currentOrbit($)).asks.find((a) => a.id === own[1])
+            ?.isLocked;
+    const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
+    if (!member) return false;
+    const lane = ((await $.state.get(LANES)).value ?? []).find(
+        (l) => l.id === member[1],
+    );
+    const sid = lane?.members[member[2] as LaneRole];
+    return !!(
+        sid &&
+        ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
+            (a) => a.id === member[3],
+        )?.isLocked
+    );
 }
 // a thread switch on the desktop drops the board's view: every word goes to the store as he leaves, however soon after
-// the last keystroke, and a remote steer is no longer held off by his typing
+// the last keystroke, and a remote steer is no longer held off by his typing; the boxes forget what they mounted with
+// here, not at the return, since the return's first draw can overtake the attach hook (FRM-531 sixth sense)
 async function leaveBoxes($: EngineInterface) {
-    await flushFields($);
-    askTypedAt.clear();
+    // before the first wait: a slow save must not leave the return's first draw reading the old text
+    holdUnsaved();
+    try {
+        await flushFields($);
+    } finally {
+        await forgetMountedText($);
+    }
     textsLeft.clear();
     for (const [key, text] of bases)
         if (
             text.trim() &&
             !unsaved.has(key) &&
-            (await holdsSteer($, key, text))
+            (await holdsSteer($, key, text)) &&
+            !(await isSentSteer($, key))
         )
             textsLeft.set(key, text);
     keepFields($);
 }
-// the return draws fresh, so the boxes draw the store; a steer another board wrote meanwhile wins and his text is offered
+// a steer another board wrote while he was away wins, and his text is offered
 async function returnToBoxes($: EngineInterface) {
     // a steer another board wrote may still wait as a mark the poll has not read
     await absorbMarks($);
-    await forgetMountedText($);
     let isOffered = false;
     const left = [...textsLeft];
     textsLeft.clear();
@@ -841,7 +870,7 @@ async function returnToBoxes($: EngineInterface) {
     if (isOffered) await publish($);
 }
 // the save a box's closure ran, rebuilt from its key: the closure went with the old module. it lands only while the
-// stored steer is still the one the text was typed over, so a newer steer from another board wins; a text kept with no
+// stored steer is still the one the text was typed over or none at all, so a newer steer from another board wins; a text kept with no
 // base came from a module before the base was kept, and lands as it did there; true only once the steer was written, so
 // a yield, a target gone or a locked ask reads false; `isTyped` false (an offer pressed back) remounts an ask's box
 async function saveTyped(
@@ -853,7 +882,7 @@ async function saveTyped(
 ): Promise<boolean> {
     const steer = steerOf(text);
     const isBase = (now: string | undefined) =>
-        base === undefined || sameSteer(now, base);
+        base === undefined || !now?.trim() || sameSteer(now, base);
     const yielded = () => {
         $.ui.log(`x-mod-stash: a kept steer yielded to a newer one (${key})`);
         return false;
