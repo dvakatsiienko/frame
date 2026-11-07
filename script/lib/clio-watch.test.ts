@@ -30,7 +30,7 @@ function bin(fixtures: Record<string, unknown>) {
         `F="${dir}"; jqp=; prev=; for a in "$@"; do [ "$prev" = --jq ] && jqp=$a; prev=$a; done
 case "$1 $2" in
   "pr list") src=prs.json ;;
-  "run view") case " $* " in *" createdAt "*) echo 2026-10-09T10:00:00Z ;; *) echo "2026-10-09T10:00:00Z to deploy: shop" ;; esac; exit 0 ;;
+  "run view") case " $* " in *" createdAt "*) echo 1791540000 ;; *) echo "2026-10-09T10:00:00Z to deploy: shop" ;; esac; exit 0 ;;
   "run list") case " $* " in *" --workflow "*) src=deploys.json ;; *) src=runs.json ;; esac ;;
   *) src=empty.json ;;
 esac
